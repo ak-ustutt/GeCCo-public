@@ -57,7 +57,7 @@
      &     medef_r_t*10  = 'DEF-ME_R_T'
       
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting special targets for CC-R12 ...'
+     &     write(lulog,*) 'setting special targets for CC-R12 ...'
 
       msc = +1  ! assuming closed shell
 

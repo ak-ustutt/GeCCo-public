@@ -68,13 +68,13 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'symmetrise')
-        write(luout,*) 'IN:  ',trim(me_in%label)
-        write(luout,*) 'OUT: ',trim(me_out%label)
-        write(luout,*) 'elements on input:'
+        call write_title(lulog,wst_dbg_subr,'symmetrise')
+        write(lulog,*) 'IN:  ',trim(me_in%label)
+        write(lulog,*) 'OUT: ',trim(me_out%label)
+        write(lulog,*) 'elements on input:'
       end if
       if (ntest.ge.1000) then
-        call wrt_mel_file(luout,5,
+        call wrt_mel_file(lulog,5,
      &       me_in,
      &       1,me_in%op%n_occ_cls,
      &       str_info,orb_info)
@@ -175,7 +175,7 @@
       fac_dia = fac
 
       if (ntest.ge.100) then
-        write(luout,*) 'size of buffer: ',nbuff,nbuff2
+        write(lulog,*) 'size of buffer: ',nbuff,nbuff2
       end if
 
       ! Loop over occupation classes.
@@ -184,9 +184,9 @@
         ioff_blk = (iblk-1)*njoined
 
         if (ntest.ge.100)
-     &       write(luout,*) 'iblk: ',iblk
+     &       write(lulog,*) 'iblk: ',iblk
         if (ntest.ge.100)
-     &       call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,ioff_blk+1),
+     &       call wrt_occ_n(lulog,op_in%ihpvca_occ(1,1,ioff_blk+1),
      &           njoined)
 
         if (.not.
@@ -195,7 +195,7 @@
           jblk = iblk_occ(op_in%ihpvca_occ(1,1,ioff_blk+1),
      &                     .true.,op_in,op_in%blk_version(iblk))
           if (jblk.le.0) then
-            call wrt_occ_n(luout,op_in%ihpvca_occ(1,1,ioff_blk+1),
+            call wrt_occ_n(lulog,op_in%ihpvca_occ(1,1,ioff_blk+1),
      &           njoined)
             call quit(1,'symmetrise',
      &           'no adjoint found for this occupation')
@@ -210,9 +210,9 @@
           if (lenblk.eq.0) cycle
 
           if (ntest.ge.100) then
-            write(luout,*) 'iblk, jblk: ',iblk, jblk
-            write(luout,*) 'ioff, joff, lenblk: ',ioff, joff, lenblk
-            write(luout,*) 'off-diagonal case'
+            write(lulog,*) 'iblk, jblk: ',iblk, jblk
+            write(lulog,*) 'ioff, joff, lenblk: ',ioff, joff, lenblk
+            write(lulog,*) 'off-diagonal case'
           end if
 
           call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
@@ -237,9 +237,9 @@
           lenblk = me_in%len_op_occ(iblk)
 
           if (ntest.ge.100) then
-            write(luout,*) 'iblk: ',iblk
-            write(luout,*) 'ioff, lenblk: ',ioff, lenblk
-            write(luout,*) 'diagonal case'
+            write(lulog,*) 'iblk: ',iblk
+            write(lulog,*) 'ioff, lenblk: ',ioff, lenblk
+            write(lulog,*) 'diagonal case'
           end if
 
           call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
@@ -263,8 +263,8 @@
       if (open_close_out.and..not.same) call file_close_keep(ffout)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'elements on output:'
-        call wrt_mel_file(luout,5,
+        write(lulog,*) 'elements on output:'
+        call wrt_mel_file(lulog,5,
      &       me_in,
      &       1,me_in%op%n_occ_cls,
      &       str_info,orb_info)

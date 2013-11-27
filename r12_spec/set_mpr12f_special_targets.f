@@ -54,7 +54,7 @@ c     &     mel_mpr12lg0def*8 = 'L(MPR12)',
      &     fopt_mpr12lg0*13 = 'LAG_MPR12_OPT'
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting special targets for MP-R12 ...'
+     &     write(lulog,*) 'setting special targets for MP-R12 ...'
 
       msc = 0
 

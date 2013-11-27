@@ -1,9 +1,9 @@
-      subroutine prtim(luout,str,cpu,sys,wall)
+      subroutine prtim(lulog,str,cpu,sys,wall)
 
       implicit none
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
       character, intent(in) ::
      &     str*(*)
       real*8, intent(in) ::
@@ -20,12 +20,12 @@
       if (len.lt.mxlen)
      &     str_scr(len+1:len+mxlen-len) = ' '
       if (wall.ne.-1d0) then
-        write(luout,
+        write(lulog,
      &     '(x,"@ ",a,"  cpu/sys/wall: ",f9.2," /",f9.2," /",'//
      &     'f9.2" s")') 
      &     str_scr,cpu,sys,wall
       else
-        write(luout,
+        write(lulog,
      &     '(x,"@ ",a,"  cpu/sys:      ",f9.2," /",f9.2," s")') 
      &     str_scr,cpu,sys
       end if

@@ -37,13 +37,13 @@
      &     maxblk_in_contr, ifndmax, njres_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '--------------------------'
-        write(luout,*) 'output from contr_in_contr'
-        write(luout,*) '--------------------------'
-        write(luout,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
-        write(luout,*) 'arcs A/B:     ',contra%narc,contrb%narc
-        call prt_contr2(luout,contra,op_info)
-        call prt_contr2(luout,contrb,op_info)
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'output from contr_in_contr'
+        write(lulog,*) '--------------------------'
+        write(lulog,*) 'vertices A/B: ',contra%nvtx,contrb%nvtx
+        write(lulog,*) 'arcs A/B:     ',contra%narc,contrb%narc
+        call prt_contr2(lulog,contra,op_info)
+        call prt_contr2(lulog,contrb,op_info)
       end if
 
       contr_in_contr = .false.
@@ -74,10 +74,10 @@
 
       if (ntest.ge.100) then
         print *,'A'
-        call prt_contr_p(luout,svertex_a,vtx_a,topo_a,
+        call prt_contr_p(lulog,svertex_a,vtx_a,topo_a,
      &       xlines_a,nvtx_a,nj_a)
         print *,'B'
-        call prt_contr_p(luout,svertex_b,vtx_b,topo_b,
+        call prt_contr_p(lulog,svertex_b,vtx_b,topo_b,
      &       xlines_b,nvtx_b,nj_b)
       end if
 
@@ -101,8 +101,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result (prel.): ',contr_in_contr
-        write(luout,*) 'vtxmap: ',vtxmap
+        write(lulog,*) 'result (prel.): ',contr_in_contr
+        write(lulog,*) 'vtxmap: ',vtxmap
 c dbg
         print *,'nskip: ',nskip
 c dbgend
@@ -146,13 +146,13 @@ c dbgend
         contr_in_contr = nvtx_int.le.nj_a
 
         if (ntest.ge.100)
-     &       write(luout,*) '> ',nvtx_int, nj_a
+     &       write(lulog,*) '> ',nvtx_int, nj_a
 
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',contr_in_contr
-        write(luout,*) 'vtxmap: ',vtxmap
+        write(lulog,*) 'result: ',contr_in_contr
+        write(lulog,*) 'vtxmap: ',vtxmap
       end if
 
       deallocate(svertex_a,svertex_b,

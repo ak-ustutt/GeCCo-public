@@ -14,7 +14,7 @@ check
   compare int 2
 check
   label Optimized Residual formula
-  find FOPT_OMG
+  find MRCC_PT_OPT
   find wrote
   compare int 2
 check

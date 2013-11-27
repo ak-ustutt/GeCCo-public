@@ -85,12 +85,12 @@
 
       ! Check to see whether we want to fix the R12-amplitudes.
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 4')
-        write(luout,*) 'setting: ',trim(label_int)
-        write(luout,*) 'type : ',trim(typ_str)
-        write(luout,*) 'input ops: '
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_formal 4')
+        write(lulog,*) 'setting: ',trim(label_int)
+        write(lulog,*) 'type : ',trim(typ_str)
+        write(lulog,*) 'input ops: '
         do idx = 1, nop
-          write(luout,*) '"',trim(label_op(idx)),'"'
+          write(lulog,*) '"',trim(label_op(idx)),'"'
         end do
       end if
 
@@ -121,8 +121,8 @@
       op_int => op_info%op_arr(idx_intm)%op
 
       if (ntest.ge.100) then
-        write(luout,*) 'definition of intermediate:'
-        call print_op_occ(luout,op_int)
+        write(lulog,*) 'definition of intermediate:'
+        call print_op_occ(lulog,op_int)
       end if
 
       njoined_int = op_int%njoined
@@ -504,7 +504,7 @@ c dbg
       end select
 
       if (unknown) then
-        write(luout,*) 'njoined_int = ',njoined_int
+        write(lulog,*) 'njoined_int = ',njoined_int
         call quit(1,'set_r12intm_formal4',
      &       'unknown shape for: '//trim(typ_str))
       end if
@@ -734,8 +734,8 @@ c dbg
      &     call reorder_formula(flist_scr,op_info)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'intermediate formula'
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'intermediate formula'
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       ! replace f and g by their actual operator
@@ -756,8 +756,8 @@ c dbg
       call write_form_list(form_out%fhand,flist_scr,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula: ',trim(op_int%name)
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'final formula: ',trim(op_int%name)
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       call dealloc_formula_list(flist_scr)

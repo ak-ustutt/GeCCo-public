@@ -138,12 +138,12 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
 
           ! read diagonal pre-conditioner
           if (ntest.ge.100) then
-            write(luout,*) 'current ME-list: ',
+            write(lulog,*) 'current ME-list: ',
      &            trim(me_dia(iopt)%mel%label)
           end if
           call vec_from_da(me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
           if (ntest.ge.100)
-     &        write(luout,*) 'xbuf2 norm = ',
+     &        write(lulog,*) 'xbuf2 norm = ',
      &                       dnrm2(nwfpar(iopt),xbuf2,1)
           do iroot = 1, nroot
             if (trafo) then
@@ -152,12 +152,12 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
               ! => we have to switch around the loops
               if (iopt.ne.1)
      &             call quit(1,'leqc_init','route with trafo: problem')
-              call optc_traf(me_special(1)%mel,1,xrsnrm(iroot,iopt),
+              call optc_traf(me_special(2)%mel,1,xrsnrm(iroot,iopt),
      &                    me_rhs(iopt)%mel,iroot,
      &                    fspc(1),'B',me_special,nspecial,
      &                    nwfpar(iopt),xbuf1,
      &                    orb_info,op_info,str_info,strmap_info)
-              call vec_from_da(me_special(1)%mel%fhand,1,xbuf1,
+              call vec_from_da(me_special(2)%mel%fhand,1,xbuf1,
      &                       nwfpar(iopt))
             else
               call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
@@ -165,7 +165,7 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
             end if
             ! divide rhs's by preconditioner
             if (ntest.ge.100)
-     &           write(luout,*) 'xbuf1 norm = ',
+     &           write(lulog,*) 'xbuf1 norm = ',
      &                          dnrm2(nwfpar(iopt),xbuf1,1) 
 c            xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
 c            xrsnrm(iroot,iopt) = xnrm
@@ -178,16 +178,19 @@ c            xrsnrm(iroot,iopt) = xnrm
             call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
      &                 nwfpar(iopt))
             if (ntest.ge.100)
-     &           write(luout,*) 'xbuf1 after division: ' //
+     &           write(lulog,*) 'xbuf1 after division: ' //
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
             if (trafo) then
               call vec_to_da(me_special(2)%mel%fhand,1,
      &                       xbuf1,nwfpar(iopt))
-              call optc_traf(me_scr(iopt)%mel,iroot,xdum,
+              call optc_traf(me_opt(iopt)%mel,iroot,xdum,
      &                    me_special(2)%mel,1,
      &                    fspc(1),'F',me_special,nspecial,
      &                    nwfpar(iopt),xbuf1,
      &                    orb_info,op_info,str_info,strmap_info)
+              ! copy to scr list
+              ! original list was used to ensure spin symmetry if needed
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
             else
               call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
             end if

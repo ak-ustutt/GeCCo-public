@@ -70,11 +70,11 @@ c      integer, allocatable ::
 c     &     occ_ol_vtx(:,:,:)
 
       if (ntest.ge.100) then
-        write(luout,*) '===================='
-        write(luout,*) ' gen_contr speaking'
-        write(luout,*) '===================='
-        call prt_contr2(luout,proto_main,op_info)
-        call prt_contr3(luout,proto_main,occ_vtx(1,1,2))
+        write(lulog,*) '===================='
+        write(lulog,*) ' gen_contr speaking'
+        write(lulog,*) '===================='
+        call prt_contr2(lulog,proto_main,op_info)
+        call prt_contr3(lulog,proto_main,occ_vtx(1,1,2))
       end if
 
       if (abs(proto_main%fac).lt.1d-20) then
@@ -100,7 +100,7 @@ c     &     occ_ol_vtx(:,:,:)
       call strip_contr(proto,1) ! remove the (x 0 [C]) type arcs
 c dbg
 c      print *,'the stripped proto:'
-c      call prt_contr2(luout,proto_main,op_info)
+c      call prt_contr2(lulog,proto_main,op_info)
 c dbg
 
       ! call recursive kernel
@@ -147,9 +147,9 @@ c dbg
      &     occ_conn(:,:,:)
 
       if (ntest.ge.100) then
-        write(luout,*) '-------------------------------------------'
-        write(luout,*) ' recursive part, ivtx = ',ivtx
-        write(luout,*) '-------------------------------------------'
+        write(lulog,*) '-------------------------------------------'
+        write(lulog,*) ' recursive part, ivtx = ',ivtx
+        write(lulog,*) '-------------------------------------------'
       end if
 
       ! get working copies of proto-contraction
@@ -163,12 +163,12 @@ c dbg
       call gen_contr_unconn(occ_ol_prev,occ_ol_rem,occ_ol_vtx,
      &     ivtx,proto,occ_vtx)
       if (ntest.ge.100) then
-        write(luout,*) 'current proto-contraction:'
-        call prt_contr2(luout,proto,op_info)
-        write(luout,*) 'occ_ol_vtx:'
-        call wrt_occ_n(luout,occ_ol_vtx,nvtx)
-        write(luout,*) 'occ_ol_prev,occ_ol_rem:'
-        call wrt_occ2(luout,occ_ol_prev,occ_ol_rem)
+        write(lulog,*) 'current proto-contraction:'
+        call prt_contr2(lulog,proto,op_info)
+        write(lulog,*) 'occ_ol_vtx:'
+        call wrt_occ_n(lulog,occ_ol_vtx,nvtx)
+        write(lulog,*) 'occ_ol_prev,occ_ol_rem:'
+        call wrt_occ2(lulog,occ_ol_prev,occ_ol_rem)
       end if
 
       ! get unconnected excitation and deexcitation part of operator
@@ -183,8 +183,8 @@ c dbg
      &     iocc_xdn(1,occ_ol_rem),.true.)
 
       if (ntest.ge.100) then
-        write(luout,*) '[EX],[DX],[C2prev],[C2rem]'
-        call wrt_occ4(luout,occ_ex,occ_dx,
+        write(lulog,*) '[EX],[DX],[C2prev],[C2rem]'
+        call wrt_occ4(lulog,occ_ex,occ_dx,
      &                      occ_cnt2prev_max,occ_cnt2rem_max)
       end if
 
@@ -197,7 +197,7 @@ c dbg
 
       ok = iocc_bound('<=',occ_sum,.false.,occ_tgt_ex,.false.) 
 c dbg
-c      call wrt_occ2(luout,occ_sum,occ_tgt_ex)
+c      call wrt_occ2(lulog,occ_sum,occ_tgt_ex)
 c      print *,'ok 1: ',ok
 c dbg
       if (ok) then
@@ -207,7 +207,7 @@ c dbg
 
         ok = iocc_bound('<=',occ_sum,.false.,occ_tgt_dx,.false.)
 c dbg
-c      call wrt_occ(luout,occ_sum)
+c      call wrt_occ(lulog,occ_sum)
 c      print *,'ok 2: ',ok
 c dbg
       end if
@@ -249,8 +249,8 @@ c dbg
           occ_cnt2prev = occ_cnt2prev_min
           cnn_dist: do
             if (ntest.ge.100) then
-              write(luout,*) 'occ_cnt2prev: (nvtx_prev = ',nvtx_prev,')'
-              call wrt_occ(luout,occ_cnt2prev)
+              write(lulog,*) 'occ_cnt2prev: (nvtx_prev = ',nvtx_prev,')'
+              call wrt_occ(lulog,occ_cnt2prev)
             end if
 
             init = .true.
@@ -260,8 +260,8 @@ c dbg
               init = .false.
 
               if (ntest.ge.100) then
-                write(luout,*) 'current partition:'
-                call wrt_occ_n(luout,occ_conn,max(1,nvtx_prev))
+                write(lulog,*) 'current partition:'
+                call wrt_occ_n(lulog,occ_conn,max(1,nvtx_prev))
               end if
 
               ! check connections
@@ -329,7 +329,7 @@ c dbg
      &                  proto_new%arc(iarc)%link(2).eq.ivtx) then
 c dbg
 c                      print *,'(a) add arc at ',iarc
-c                      call wrt_occ(luout,occ_conn(1:ngastp,1:2,jvtx))
+c                      call wrt_occ(lulog,occ_conn(1:ngastp,1:2,jvtx))
 c dbg
                       ! only if this was a proto-connection (indicated
                       ! by a negative number on first entry)
@@ -349,7 +349,7 @@ c dbg
                     iarc = proto_new%narc
 c dbg
 c                      print *,'(b) add arc at ',iarc
-c                      call wrt_occ(luout,occ_conn(1:ngastp,1:2,jvtx))
+c                      call wrt_occ(lulog,occ_conn(1:ngastp,1:2,jvtx))
 c dbg
                     proto_new%arc(iarc)%link(1) = kvtx
                     proto_new%arc(iarc)%link(2) = ivtx
@@ -363,7 +363,7 @@ c dbg
                   call gen_contr_rec(ivtx+1,proto_new)!,
 c     &               occ_ol_prev,occ_ol_rem,occ_ol_vtx)
                   if (ntest.ge.100) then
-                    write(luout,*) '- back in level ',ivtx
+                    write(lulog,*) '- back in level ',ivtx
                   end if
                 else
                   ! final check for validity:
@@ -374,9 +374,9 @@ c     &               occ_ol_prev,occ_ol_rem,occ_ol_vtx)
      &                 iocc_dagger(occ_cnt2prev) - occ_tgt_ex
                   ok = .not.iocc_nonzero(occ_sum)
 c dbg
-c                  call wrt_occ4(luout,occ_ex,iocc_xdn(1,occ_ol_prev),
+c                  call wrt_occ4(lulog,occ_ex,iocc_xdn(1,occ_ol_prev),
 c     &                 iocc_dagger(occ_cnt2prev),occ_tgt_ex)
-c                  call wrt_occ(luout,occ_sum)
+c                  call wrt_occ(lulog,occ_sum)
 c                  print *,'EX : ',ok
 c dbg                  
                   if (ok) then
@@ -385,7 +385,7 @@ c dbg
      &                   occ_cnt2prev - occ_tgt_dx
                     ok = .not.iocc_nonzero(occ_sum)
 c dbg
-c                    call wrt_occ4(luout,occ_dx,iocc_xdn(2,occ_ol_prev),
+c                    call wrt_occ4(lulog,occ_dx,iocc_xdn(2,occ_ol_prev),
 c     &                   occ_tgt_dx,occ_sum)
 c                    print *,'DX : ',ok
 c dbg                  
@@ -421,8 +421,8 @@ c dbg
                   if (ok) then
 c dbg
 c                    print *,'+----+'
-c                    call prt_contr2(luout,proto_new,op_info)
-c                    call prt_contr2(luout,proto_main,op_info)
+c                    call prt_contr2(lulog,proto_new,op_info)
+c                    call prt_contr2(lulog,proto_main,op_info)
 c                    print *,'+----+'
 c dbg
                     
@@ -432,7 +432,7 @@ c dbg
                   if (ok) then
 
                     if (ntest.ge.100) then
-                      write(luout,*) 'new contraction found!'
+                      write(lulog,*) 'new contraction found!'
                     end if
 
                     ! ensure canonical order
@@ -480,7 +480,7 @@ c                    form_pnt%command = command_end_of_formula
       call dealloc_contr(proto)
       
       if (ntest.ge.100) then
-        write(luout,*) 'returning from level ',ivtx
+        write(lulog,*) 'returning from level ',ivtx
       end if
 
       return

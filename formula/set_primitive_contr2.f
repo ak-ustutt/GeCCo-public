@@ -34,7 +34,7 @@
 
       njoined = opsh%njoined
       if (.not.use_opsh_structure.and.njoined.ne.op%njoined) then
-        write(luout,*) 'njoined: ',opsh%njoined,op%njoined
+        write(lulog,*) 'njoined: ',opsh%njoined,op%njoined
         call quit(1,'set_primitive_contr2','inconsistency!')
       end if
 

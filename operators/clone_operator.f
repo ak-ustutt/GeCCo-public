@@ -110,8 +110,8 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'Clone operator produced the following:'
-        call print_op_occ(luout,op_clone)
+        write(lulog,*) 'Clone operator produced the following:'
+        call print_op_occ(lulog,op_clone)
       end if
 
       return

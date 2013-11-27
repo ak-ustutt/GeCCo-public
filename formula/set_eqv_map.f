@@ -40,7 +40,7 @@
      &     vtx_equiv
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is set_eqv_map')
+        call write_title(lulog,wst_dbg_subr,'this is set_eqv_map')
       end if
       
       neqv(1:nvtx) = 1
@@ -63,9 +63,9 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'neqv:'
+        write(lulog,*) 'neqv:'
         call iwrtma(neqv,1,nvtx,1,nvtx)
-        write(luout,*) 'idx_eqv:'
+        write(lulog,*) 'idx_eqv:'
         call iwrtma(idx_eqv,nvtx,nvtx,nvtx,nvtx)
       end if
 

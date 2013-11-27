@@ -48,9 +48,9 @@
      &     idx_oplist2
 
       if(ntest.ge.100)then
-        write(luout,*) '------------------'
-        write(luout,*) ' Element deletion '
-        write(luout,*) '------------------'
+        write(lulog,*) '------------------'
+        write(lulog,*) ' Element deletion '
+        write(lulog,*) '------------------'
       endif
 
       form_pnt => flist
@@ -59,13 +59,13 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 c          if(ntest.ge.1000)then
-c            write(luout,*)'[ADD]:'
-c            call prt_contr2(luout,form_pnt%contr,op_info)
+c            write(lulog,*)'[ADD]:'
+c            call prt_contr2(lulog,form_pnt%contr,op_info)
 c          endif
 
           nvtx = form_pnt%contr%nvtx
@@ -125,8 +125,8 @@ c          endif
             if(del_item)then
               ! Print the deleted contraction.
               if(ntest.ge.1000)then
-                write(luout,*)'Deleted formula item:'
-                call prt_contr2(luout,form_pnt%contr,op_info)
+                write(lulog,*)'Deleted formula item:'
+                call prt_contr2(lulog,form_pnt%contr,op_info)
               endif
 
               ! Delete the node.
@@ -141,7 +141,7 @@ c          endif
           enddo or_loop
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 

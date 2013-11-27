@@ -80,7 +80,7 @@
      &     ielprd, idx_msgmdst2, idx_str_blk3
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'symmetrise_blk1blk2')
+        call write_title(lulog,wst_dbg_subr,'symmetrise_blk1blk2')
       end if
 
       op  => mel%op
@@ -147,7 +147,7 @@
           igamc = multd2h(igama,mel%gamt)
 
           if (ntest.ge.100)
-     &         write(luout,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
+     &         write(lulog,*) 'MS(A), GAMMA(A): ',msa,igama,' len = ',
      &           mel%len_op_gmo(iblk_1)%gam_ms(igama,idxmsa)
 
           if (mel%len_op_gmo(iblk_1)%
@@ -184,7 +184,7 @@
 
 
             if (ntest.ge.1000)
-     &         write(luout,*) 'dist: ',idxdis_1,' len = ',
+     &         write(lulog,*) 'dist: ',idxdis_1,' len = ',
      &             mel%len_op_gmox(iblk_1)%
      &             d_gam_ms(idxdis_1,igama,idxmsa)
 
@@ -204,8 +204,8 @@
      &             d_gam_ms(idxdis_2,igamc,idxmsc) - ioff0_2
 
             if (ntest.ge.1000) then
-              write(luout,*) 'idxdis_1,idxdis_2: ',idxdis_1,idxdis_2
-              write(luout,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
+              write(lulog,*) 'idxdis_1,idxdis_2: ',idxdis_1,idxdis_2
+              write(lulog,*) 'ioff_1,ioff_2:     ',ioff_1,ioff_2
             end if
 
             call set_op_ldim_c(ldim_op_c,ldim_op_a,
@@ -216,12 +216,12 @@
      &           len_str,ncblk,nablk,.true.)
 
             if (ntest.ge.1000) then
-              write(luout,*) 'len_str(C):',len_str(1:ncblk)
-              write(luout,*) 'len_str(A):',len_str(ncblk+1:ncblk+nablk)
-              write(luout,*) 'ldim_op_c: ',ldim_op_c(1:ncblk)
-              write(luout,*) 'ldim_op_a: ',ldim_op_a(1:nablk)
-              write(luout,*) 'ldim_optr_c: ',ldim_optr_c(1:ncblk)
-              write(luout,*) 'ldim_optr_a: ',ldim_optr_a(1:nablk)
+              write(lulog,*) 'len_str(C):',len_str(1:ncblk)
+              write(lulog,*) 'len_str(A):',len_str(ncblk+1:ncblk+nablk)
+              write(lulog,*) 'ldim_op_c: ',ldim_op_c(1:ncblk)
+              write(lulog,*) 'ldim_op_a: ',ldim_op_a(1:nablk)
+              write(lulog,*) 'ldim_optr_c: ',ldim_optr_c(1:ncblk)
+              write(lulog,*) 'ldim_optr_a: ',ldim_optr_a(1:nablk)
             end if
 
             idxc_loop: do idxc = 1, lenc

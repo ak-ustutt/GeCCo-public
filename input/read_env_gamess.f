@@ -65,7 +65,7 @@ c      print *,'          ii        ioda        nrec      ifilen'
 c      print *,'------------------------------------------------'
 c      do idx=1,len_da
 c       if (ioda(idx).ge.0)
-c     &     write(luout,'(x,4i12)') idx, ioda(idx),
+c     &     write(lulog,'(x,4i12)') idx, ioda(idx),
 c     &                             ifilen(idx)/irecln+1, ifilen(idx)
 c      end do
 c dbgend
@@ -191,7 +191,7 @@ c dbg
 c      print *,'   orbital  symmetry    energy'
 c      print *,'------------------------------'
 c      do idx = 1, norbt
-c        write(luout,'(x,2i10,f10.6)') idx,orb_sym(idx),orb_en(idx)
+c        write(lulog,'(x,2i10,f10.6)') idx,orb_sym(idx),orb_en(idx)
 c      end do
 c dbgend
 
@@ -231,32 +231,32 @@ c dbgend
       deallocate(orb_en,orb_sym)
 
       if (iprint.ge.50) then
-        write(luout,*) 'data from DICTNRY:'
-        write(luout,*) 'potnuc= ',potnuc
-        write(luout,*) 'eelct = ',eelct
-        write(luout,*) 'etot2 = ',etot2
-        write(luout,*) 'emcscf= ',emcscf
-        write(luout,*) 'ecore = ',ecore
-        write(luout,*) 'estate= ',estate(1:nstate)
-        write(luout,*) 'nstate= ',nstate
-        write(luout,*) 'mult  = ',ispin
-        write(luout,*) 'Ms    = ',sz
-        write(luout,*) 'nactel= ',nactel
-        write(luout,*) 'lsym  = ',lsym
-        write(luout,*) 'symm. = ',groups(igroup)
-        write(luout,*) 'nsym  = ',nsym
-        write(luout,*) 'nfroz = ',nfroz
-        write(luout,*) 'nocct = ',nocct
-        write(luout,*) 'n_act = ',n_act
-        write(luout,*) 'norbs = ',norbs
-        write(luout,*) 'norbt = ',norbt
-        write(luout,'(x,a,8i4)') 'nfro   = ',nfro(1:8)
-        write(luout,'(x,a,8i4)') 'nrhf   = ',nrhf(1:8)
-        write(luout,'(x,a,8i4)') 'nash   = ',nash(1:8)
-        write(luout,'(x,a,8i4)') 'norb   = ',norb(1:8)
-        write(luout,'(x,a)') 'sym_bound_orbs:'
-        write(luout,'(x,10i4)') orb_info%isym_bound_orbs
-        write(luout,'(x,a,i4)')  'n_freeze_rcmd: ',
+        write(lulog,*) 'data from DICTNRY:'
+        write(lulog,*) 'potnuc= ',potnuc
+        write(lulog,*) 'eelct = ',eelct
+        write(lulog,*) 'etot2 = ',etot2
+        write(lulog,*) 'emcscf= ',emcscf
+        write(lulog,*) 'ecore = ',ecore
+        write(lulog,*) 'estate= ',estate(1:nstate)
+        write(lulog,*) 'nstate= ',nstate
+        write(lulog,*) 'mult  = ',ispin
+        write(lulog,*) 'Ms    = ',sz
+        write(lulog,*) 'nactel= ',nactel
+        write(lulog,*) 'lsym  = ',lsym
+        write(lulog,*) 'symm. = ',groups(igroup)
+        write(lulog,*) 'nsym  = ',nsym
+        write(lulog,*) 'nfroz = ',nfroz
+        write(lulog,*) 'nocct = ',nocct
+        write(lulog,*) 'n_act = ',n_act
+        write(lulog,*) 'norbs = ',norbs
+        write(lulog,*) 'norbt = ',norbt
+        write(lulog,'(x,a,8i4)') 'nfro   = ',nfro(1:8)
+        write(lulog,'(x,a,8i4)') 'nrhf   = ',nrhf(1:8)
+        write(lulog,'(x,a,8i4)') 'nash   = ',nash(1:8)
+        write(lulog,'(x,a,8i4)') 'norb   = ',norb(1:8)
+        write(lulog,'(x,a)') 'sym_bound_orbs:'
+        write(lulog,'(x,10i4)') orb_info%isym_bound_orbs
+        write(lulog,'(x,a,i4)')  'n_freeze_rcmd: ',
      &       orb_info%n_freeze_rcmd
       end if
 
@@ -275,11 +275,11 @@ c dbgend
         ! high spin open shell case:
         if (.false..and.nactel.eq.n_act.and.ispin.eq.nactel+1) then
           ! we should check the symmetry here ...
-          write(luout,*) 'high-spin valence shell detected'
+          write(lulog,*) 'high-spin valence shell detected'
           ngas = ngas+1
           nspin = 2
         else
-          write(luout,*) 'valence shell is not high-spin ...'
+          write(lulog,*) 'valence shell is not high-spin ...'
 c let pass to enable CAS calculations
           ngas = ngas+1
         end if

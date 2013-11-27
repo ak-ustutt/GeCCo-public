@@ -13,7 +13,7 @@ c
 
       if( n .lt. 0 ) then
         ifac = 0
-        write(luout,*)
+        write(lulog,*)
      &       ' warning: faculty of negative number set to zero'
       else
 c

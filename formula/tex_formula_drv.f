@@ -32,9 +32,9 @@ c      include 'def_contraction_list.h'
      &     flist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'tex_formula_drv')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
       end if
 
       call file_init(fftex,name_output,ftyp_sq_frm,0)
@@ -46,9 +46,9 @@ c      include 'def_contraction_list.h'
 
       ! TeX it ...
       if (iprlvl.gt.0) then
-        write(luout,*) 'A TeX formatted version of formula ',
+        write(lulog,*) 'A TeX formatted version of formula ',
      &       trim(f_input%label)
-        write(luout,*) 'is written to file: ',trim(fftex%name)
+        write(lulog,*) 'is written to file: ',trim(fftex%name)
       end if
 
       call tex_form_list(fftex%unit,flist,op_info)

@@ -49,7 +49,7 @@
      &     ifac
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'freq_pattern_truncation')
+        call write_title(lulog,wst_dbg_subr,'freq_pattern_truncation')
       endif
 
       ! determine frequency index pattern
@@ -62,9 +62,9 @@
       end do
 
       if (ntest.ge.100) then
-         write(luout,*)'pattern: ',
+         write(lulog,*)'pattern: ',
      &                     pattern(1:maxval(freq_idx(1:order)))
-         write(luout,*)'pop_idx: ',pop_idx(1:maxval(freq_idx(1:order)))
+         write(lulog,*)'pop_idx: ',pop_idx(1:maxval(freq_idx(1:order)))
       end if
 
       form_pnt => flist
@@ -73,9 +73,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
           form_pnt%target = idx_tgt
         case(command_add_contribution)
 
@@ -93,7 +93,7 @@
           count_freq = 0
           structure = 0
           delete = .false.
-          if (ntest.ge.100) write(luout,*)'checking ',nvtx,' vertices'
+          if (ntest.ge.100) write(lulog,*)'checking ',nvtx,' vertices'
           do ivtx = 1, nvtx
 c
 c            print *,'ivtx = ',ivtx
@@ -124,7 +124,7 @@ c
                   count_freq(op_ifreq) = count_freq(op_ifreq) + 1
                   if (.not.recognized) delete = .true.
                   if ((.not.recognized).and.ntest.ge.100)
-     &                 write(luout,*)'non-matching vertex no.',ivtx
+     &                 write(lulog,*)'non-matching vertex no.',ivtx
                 end do
               else if (op_spec.ge.4) then
                 if (op_spec.gt.3*maxpop+3)
@@ -132,7 +132,7 @@ c
      &                            'maxpop too small')
                 ! can belong to any frequency index associated to pert op
                 njoker(op_spec-3) = njoker(op_spec-3) + 1
-                if (ntest.ge.100) write(luout,*)'collected joker assoc',
+                if (ntest.ge.100) write(lulog,*)'collected joker assoc',
      &                             'iated with pert. op no. ',op_spec-3
               end if
             end if
@@ -140,8 +140,8 @@ c
           ! play all jokers and check if frequency pattern is ok
           ii = 0
           if (ntest.ge.100) then
-            write(luout,*) 'current jokers: ', njoker
-            write(luout,*) 'current counts: ', 
+            write(lulog,*) 'current jokers: ', njoker
+            write(lulog,*) 'current counts: ', 
      &                     count_freq(1:maxval(freq_idx(1:order)))
           end if
           do while (maxval(njoker).gt.0.and.
@@ -160,7 +160,7 @@ c
           if (.not.(all(count_freq-pattern.eq.0).and.
      &        all(njoker.eq.0))) delete = .true.
 
-          if (ntest.ge.100) write(luout,*) 'delete node?: ',delete
+          if (ntest.ge.100) write(lulog,*) 'delete node?: ',delete
           if (delete) then
             ! Delete the node.
             call delete_fl_node(form_pnt)
@@ -180,7 +180,7 @@ c
           deallocate(structure)
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'delete_non_fact','command undefined here')
         end select
 

@@ -41,13 +41,13 @@
      &     idx_strmap(:)
 
       if (ntest.ge.100) then
-        write(luout,*) '===================='
-        write(luout,*) ' This is strmap_man'
-        write(luout,*) '===================='
-        write(luout,*) 'igraph1: '
-        call wrt_occ(luout,igraph1)
-        write(luout,*) 'igraph2: '
-        call wrt_occ(luout,igraph2)
+        write(lulog,*) '===================='
+        write(lulog,*) ' This is strmap_man'
+        write(lulog,*) '===================='
+        write(lulog,*) 'igraph1: '
+        call wrt_occ(lulog,igraph1)
+        write(lulog,*) 'igraph2: '
+        call wrt_occ(lulog,igraph2)
       end if
 
       ngraph = str_info%ngraph
@@ -71,7 +71,7 @@
           if (igraph1(hpvx,ica1).eq.0.or.igraph2(hpvx,ica2).eq.0) cycle
 
           if (ntest.ge.100) then
-            write(luout,*) 'need map for: ',
+            write(lulog,*) 'need map for: ',
      &           igraph1(hpvx,ica1),igraph2(hpvx,ica2)
           end if
 
@@ -85,13 +85,13 @@
      &          .not.associated(strmap_info%offsets(idxmap)%msmsgmgm))
      &           call quit(1,'strmap_man','offsets not initialized?')
             if (ntest.ge.100) then
-              write(luout,*) 'I have this map already ...'
+              write(lulog,*) 'I have this map already ...'
             end if
             cycle
           end if
 
           if (ntest.ge.100) then
-            write(luout,*) 'I will generate this map ...'
+            write(lulog,*) 'I will generate this map ...'
           end if
 
           idx_strmap(idxmap) = strmap_info%idx_last+1

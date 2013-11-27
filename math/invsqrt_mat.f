@@ -66,10 +66,10 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '-------------------'
-        write(luout,'(x,a)') 'invsqrt_mat at work'
-        write(luout,'(x,a)') '-------------------'
-        write(luout,*) 'input S matrix:'
+        write(lulog,'(x,a)') '-------------------'
+        write(lulog,'(x,a)') 'invsqrt_mat at work'
+        write(lulog,'(x,a)') '-------------------'
+        write(lulog,*) 'input S matrix:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
@@ -77,9 +77,9 @@
       do idx = 2, ndim
         do idx2 = 1,idx-1
           if (abs(mat(idx,idx2)-mat(idx2,idx)).gt.1d-10) then
-            write(luout,*) 'idx,idx2:',idx,idx2
-            write(luout,*) 'mat(idx,idx2): ',mat(idx,idx2)
-            write(luout,*) 'mat(idx2,idx): ',mat(idx2,idx)
+            write(lulog,*) 'idx,idx2:',idx,idx2
+            write(lulog,*) 'mat(idx,idx2): ',mat(idx,idx2)
+            write(lulog,*) 'mat(idx2,idx): ',mat(idx2,idx)
             call quit(1,'invsqrt_mat','S must be symmetric!')
           end if
         end do
@@ -93,13 +93,13 @@ c      call svd_drv(ndim,mat,singval)
      &     wrk,lwrk,info)
 
       if (info.ne.0) then
-        write(luout,*) 'WARNING in invsqrt_mat: SVD in trouble'
+        write(lulog,*) 'WARNING in invsqrt_mat: SVD in trouble'
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'eigenvector matrix U:'
+        write(lulog,*) 'eigenvector matrix U:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
-        write(luout,*) 'singular values:'
+        write(lulog,*) 'singular values:'
       end if
 
       if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
@@ -156,13 +156,13 @@ c dbgend
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
         end if
-        if (ntest.ge.10) write(luout,'(x,a,i8,x,f24.12,3x,L1)') 'sv #',
+        if (ntest.ge.10) write(lulog,'(x,a,i8,x,f24.12,3x,L1)') 'sv #',
      &                 icnt_sv,singval(idx),sv_above
         if (sv_fix.and..not.read_file) write(luinp,*) icnt_sv, sv_above
       end do
 
       if (ntest.ge.100) then
-        write(luout,'(a,f5.2,a)') 'U*s^(',expo,')'
+        write(lulog,'(a,f5.2,a)') 'U*s^(',expo,')'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 
@@ -173,7 +173,7 @@ c dbgend
      &             0d0,mat2,ndim)
         deallocate(mat_tmp)
         if (ntest.ge.100) then
-          write(luout,*) 'U*1s*U^+ projector:'
+          write(lulog,*) 'U*1s*U^+ projector:'
           call wrtmat2(mat2,ndim,ndim,ndim,ndim)
         end if
       end if

@@ -30,14 +30,14 @@
      &     occ_vtx(:,:,:), occ_cnt(:,:)
       
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'occ_contr')
+     &     call write_title(lulog,wst_dbg_subr,'occ_contr')
       call quit(1,'occ_contr','obsolete, use occ_contr2')
 
       nvtx = contr%nvtx
 
       if (ntest.ge.100) then
-        write(luout,*) 'occupations on input:'
-        call wrt_occ_n(luout,occ_vtx_in,nvtx)
+        write(lulog,*) 'occupations on input:'
+        call wrt_occ_n(lulog,occ_vtx_in,nvtx)
       end if
 
       ierr = 0
@@ -60,8 +60,8 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'remainder occupations:'
-        call wrt_occ_n(luout,occ_vtx,nvtx)
+        write(lulog,*) 'remainder occupations:'
+        call wrt_occ_n(lulog,occ_vtx,nvtx)
       end if
 
       ! loop over remainder-occupations
@@ -100,15 +100,15 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'after joining vertices (remaining:',idx2,')'
-        call wrt_occ_n(luout,occ_vtx,idx2)
+        write(lulog,*) 'after joining vertices (remaining:',idx2,')'
+        call wrt_occ_n(lulog,occ_vtx,idx2)
       end if
 
       ! exception: density storage of (pure DX|pure EX)
       if (idx2.eq.2.and.njoined.eq.1) then
         if (iocc_nonzero(iocc_xdn(1,occ_vtx(1:ngastp,1:2,1))).or.
      &      iocc_nonzero(iocc_xdn(2,occ_vtx(1:ngastp,1:2,2)))) then
-          call wrt_occ_n(luout,occ_vtx,2)
+          call wrt_occ_n(lulog,occ_vtx,2)
           call quit(1,'occ_contr',
      &         'cannot express supervertex as density')
         end if
@@ -116,9 +116,9 @@
      &                    occ_vtx(1:ngastp,1:2,2)
       else if (idx2.gt.njoined) then
         ierr = -1-idx2
-c        write(luout,*) 'expected super-vertices: ',njoined
-c        write(luout,*) 'but found the following final occupation:'
-c        call wrt_occ_n(luout,occ_vtx,idx2)
+c        write(lulog,*) 'expected super-vertices: ',njoined
+c        write(lulog,*) 'but found the following final occupation:'
+c        call wrt_occ_n(lulog,occ_vtx,idx2)
 c        call quit(1,'occ_contr',
 c     &         'resulting supervertex is incompatible with expected
 c     &       number of joined vertices')

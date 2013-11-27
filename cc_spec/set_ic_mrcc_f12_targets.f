@@ -45,7 +45,8 @@
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, notrunc, eval_dens3, semi_r12
+     &     oldref, solve, notrunc, eval_dens3, semi_r12,
+     &     restart, prc_traf
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -58,7 +59,7 @@
       real(8) ::
      &     x_ansatz, prc_shift
 
-      if (iprlvl.gt.0) write(luout,*) 'setting icMRCC_F12 targets'
+      if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC_F12 targets'
 
       msc = +1
       if (orb_info%ims.ne.0) msc = 0
@@ -69,6 +70,8 @@
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
      &     ival=update_prc)
+      call get_argument_value('calculate.solve.non_linear','restart',
+     &     lval=restart)
       call get_argument_value('method.MRCC','maxcom_res',
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
@@ -77,6 +80,8 @@
      &     lval=h1bar)
       call get_argument_value('method.MRCC','eval_dens3',
      &     lval=eval_dens3)
+      call get_argument_value('method.MR','prc_traf',
+     &     lval=prc_traf)
       call get_argument_value('method.R12','notrunc',lval=notrunc)
       call get_argument_value('method.R12','semi_r12',lval=semi_r12)
       skip = (is_keyword_set('calculate.skip_E').gt.0)
@@ -287,15 +292,16 @@
      &     val_label=(/'F_MRCC_F12_LAG'/))
       if(notrunc) then
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',5,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+'/))
+     &     val_label=(/'BINT_R12  ','BhINT_R12 ','XINT_R12  ',
+     &                 'VINT_R12  ','VINT_R12^+'/))
       else
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
-     &     val_label=(/'BINT_R12','BhINT_R12','XINT_R12',
-     &                 'VINT_R12','VINT_R12^+',
-     &                 'CINT_R12','CINT_R12^+',
-     &                 'Vring_formal','Vring_formal^+',
-     &                 'C1_formal'/))
+     &     val_label=(/'BINT_R12      ','BhINT_R12     ',
+     &                 'XINT_R12      ',
+     &                 'VINT_R12      ','VINT_R12^+    ',
+     &                 'CINT_R12      ','CINT_R12^+    ',
+     &                 'Vring_formal  ','Vring_formal^+',
+     &                 'C1_formal     '/))
       end if
 
       if(notrunc) then
@@ -642,6 +648,8 @@ c group the energy equation for different density matrices
       call set_dependency('SOLVE_MRCC_F12','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC_F12','FOPT_T',tgt_info)
         call set_dependency('SOLVE_MRCC_F12','EVAL_Atr',tgt_info)
+      if (restart) ! project out redundant part (if sv_thr. changed)
+     &   call set_dependency('SOLVE_MRCC_F12','EVAL_Tproj',tgt_info)
       if (optref.ne.0) then
         call me_list_label(dia_label2,mel_dia,orb_info%lsym,
      &                     0,0,0,.false.)
@@ -663,12 +671,20 @@ c group the energy equation for different density matrices
      &       val_label=(/trim(dia_label)/))
       call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_E',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
-      if (optref.ne.0.and.update_prc.gt.0) then
+      if (optref.ne.0.and.(update_prc.gt.0.or.prc_traf)) then
+       if (prc_traf) then
+        call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',8,tgt_info,
+     &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
+     &                 'ME_Dproj ',
+     &                 'ME_D     ','ME_Dinv  ',
+     &                 'ME_A     ','ME_Auni  '/))
+       else
         call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',7,tgt_info,
      &     val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
      &                 'ME_Dproj ',
      &                 'ME_D     ','ME_Dinv  ',
      &                 'ME_A     '/))
+       end if
       else if (optref.ne.0.and.update_prc.le.0) then
         call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'LIST_SPC',6,tgt_info,
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag ',
@@ -679,7 +695,7 @@ c group the energy equation for different density matrices
      &     val_label=(/'ME_Ttr    ','ME_Dtr    ','ME_Dtrdag '/))
       end if
       if (optref.ne.0) then
-        if (update_prc.gt.0) then
+        if (update_prc.gt.0.or.prc_traf) then
           call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM_SPC',3,tgt_info,
      &         val_label=(/'FOPT_T  ','FOPT_D  ','FOPT_Atr'/))
         else

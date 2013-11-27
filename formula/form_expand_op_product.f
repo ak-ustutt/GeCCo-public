@@ -74,25 +74,25 @@
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.ge.100) then
-        write(luout,*) '===================================='
-        write(luout,*) ' output from form_expand_op_product'
-        write(luout,*) '===================================='
-        if (.not.init) write(luout,*) '(adding to existing formula)'
-        write(luout,*) 'result op: ',trim(label_res)
-        write(luout,*) 'nlabels = ',nlabels
+        write(lulog,*) '===================================='
+        write(lulog,*) ' output from form_expand_op_product'
+        write(lulog,*) '===================================='
+        if (.not.init) write(lulog,*) '(adding to existing formula)'
+        write(lulog,*) 'result op: ',trim(label_res)
+        write(lulog,*) 'nlabels = ',nlabels
         do ilabel = 1, nlabels
-          write(luout,'(1x,i4,1x,a)') ilabel, trim(label(ilabel))
+          write(lulog,'(1x,i4,1x,a)') ilabel, trim(label(ilabel))
         end do
-        write(luout,*) 'idx_sv  = ',idx_sv(1:nlabels)
-        write(luout,*) 'iblkmin  = ',iblkmin(1:nlabels)
-        write(luout,*) 'iblkmax  = ',iblkmax(1:nlabels)
-        write(luout,*) 'fac  = ',fac
+        write(lulog,*) 'idx_sv  = ',idx_sv(1:nlabels)
+        write(lulog,*) 'iblkmin  = ',iblkmin(1:nlabels)
+        write(lulog,*) 'iblkmax  = ',iblkmax(1:nlabels)
+        write(lulog,*) 'fac  = ',fac
       end if
 
       ! check for conflicts
       if (ninproj.gt.0.and.ndescr.gt.0) then
-         write(luout,*) 'ninproj = ',ninproj
-         write(luout,*) 'ndescr  = ',ndescr
+         write(lulog,*) 'ninproj = ',ninproj
+         write(lulog,*) 'ndescr  = ',ndescr
          call quit(1,'form_expand_op_product',
      &       'cannot use old "inproj" and new "descr" simultaneously!')
       end if
@@ -156,8 +156,8 @@
       end if
 
       if(ntest.ge.10)then
-        call write_title(luout,wst_title,'Generated formula')
-        call print_form_list(luout,flist_res,op_info)
+        call write_title(lulog,wst_title,'Generated formula')
+        call print_form_list(lulog,flist_res,op_info)
       endif
 
       ! Assign canonical name and comment.
@@ -171,7 +171,7 @@
       call dealloc_formula_list(flist_res)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'Operator product',
+      call prtim(lulog,'Operator product',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

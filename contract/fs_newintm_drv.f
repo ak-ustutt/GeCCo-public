@@ -47,12 +47,12 @@
      &     idx_oplist2, idx_mel_list
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'fs_newintm_drv')
-        write(luout,'(2x,a)') trim(fl_item%interm%name)
-        write(luout,'(2x,"attribute parentage: ",a," ",a)')
+        call write_title(lulog,wst_dbg_subr,'fs_newintm_drv')
+        write(lulog,'(2x,a)') trim(fl_item%interm%name)
+        write(lulog,'(2x,"attribute parentage: ",a," ",a)')
      &                        trim(fl_item%parent1),
      &                        trim(fl_item%parent2)
-        call print_op_occ(luout,fl_item%interm)
+        call print_op_occ(lulog,fl_item%interm)
       end if
 
       newint_info => fl_item%interm

@@ -46,14 +46,14 @@
       lblk = ffvecr%reclen
       if (lblk.ne.ffvec1%reclen.or.
      &    lblk.ne.ffvec2%reclen) then
-        write(luout,*) 'Incompatible block-lengthes: ',
+        write(lulog,*) 'Incompatible block-lengthes: ',
      &       lblk,ffvec1%reclen,ffvec2%reclen
         call quit(1,'da_diavec','Incompatible block-lengthes')
       end if
 
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_diavec','Insufficient buffer size!')
       end if
 
@@ -131,7 +131,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'diavec needed ',nbatch,' batches'
+        write(lulog,*) 'diavec needed ',nbatch,' batches'
       end if
       
       return

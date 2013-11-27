@@ -36,9 +36,9 @@
       real(8) :: fac
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'tran_one_blk')
-        write(luout,*) 'hpvx_c, hpvx_a: ', hpvx_c, hpvx_a
-        write(luout,*) 'isym = ',isym
+        call write_title(lulog,wst_dbg_subr,'tran_one_blk')
+        write(lulog,*) 'hpvx_c, hpvx_a: ', hpvx_c, hpvx_a
+        write(lulog,*) 'isym = ',isym
       end if
 
       fac = 1d0
@@ -57,7 +57,7 @@
         ixmo  = ixmo0
 
         if (ntest.ge.100)
-     &       write(luout,*) 'isymc,isyma: ',isymc,isyma
+     &       write(lulog,*) 'isymc,isyma: ',isymc,isyma
 
         naoa = nbas(isyma)
         naoc = nbas(isymc)
@@ -65,8 +65,8 @@
         ntaoc = nbas(isymc)+nxbas(isymc)
 
         if (ntest.ge.100) then
-          write(luout,*) 'naoc,naoa:   ',naoc,naoa
-          write(luout,*) 'ntaoc,ntaoa: ',ntaoc,ntaoa
+          write(lulog,*) 'naoc,naoa:   ',naoc,naoa
+          write(lulog,*) 'ntaoc,ntaoa: ',ntaoc,ntaoa
         end if
 
         if (xbas_c) naoc = ntaoc
@@ -102,7 +102,7 @@
             end if
 
             if (ntest.ge.100)
-     &           write(luout,*)
+     &           write(lulog,*)
      &           'igasc,igasa,icmoc,icmoa: ',igasc,igasa,icmoc,icmoa
 
             nmoc = mostnd(2,isymc,igasc)-mostnd(1,isymc,igasc)+1
@@ -110,18 +110,18 @@
             if (nmoa*nmoc.gt.0) then
 
               if (ntest.ge.100)
-     &             write(luout,*) 'nmoa,nmoc,naoa,naoc,ntaoc: ',
+     &             write(lulog,*) 'nmoa,nmoc,naoa,naoc,ntaoc: ',
      &                 nmoa,nmoc,naoa,naoc,ntaoc
               if (ntest.ge.100)
-     &             write(luout,*) 'ldim: ',
+     &             write(lulog,*) 'ldim: ',
      &                 ldim(isyma)
 
               if (.not.transp) then
 
                 if (ntest.ge.100)
-     &              write(luout,*) 'no transp> xao(ixao) = ',xao(ixao)
+     &              write(lulog,*) 'no transp> xao(ixao) = ',xao(ixao)
                 if (ntest.ge.100)
-     &              write(luout,*) 'no transp> cmo(icmoc) = ',cmo(icmoc)
+     &              write(lulog,*) 'no transp> cmo(icmoc) = ',cmo(icmoc)
 
                 call dgemm('t','n',nmoc,naoa,naoc,
      &                    1d0,cmo(icmoc),naoc,
@@ -129,9 +129,9 @@
      &                    0d0,xhlf,nmoc)
 
                 if (ntest.ge.100)
-     &              write(luout,*) 'no transp> xhlf(1) = ',xhlf(1)
+     &              write(lulog,*) 'no transp> xhlf(1) = ',xhlf(1)
                 if (ntest.ge.100)
-     &              write(luout,*) 'no transp> cmo(icmoa) = ',cmo(icmoa)
+     &              write(lulog,*) 'no transp> cmo(icmoa) = ',cmo(icmoa)
 
                 call dgemm('n','n',nmoc,nmoa,naoa,
      &                   fac,xhlf,nmoc,
@@ -139,7 +139,7 @@
      &                   0d0,xmo(ixmo),ldim(isyma))
 
               if (ntest.ge.100)
-     &               write(luout,'(a,5i4)')
+     &               write(lulog,'(a,5i4)')
      &               'result block ',isymc,isyma,igasc,igasa,ixmo
               if (ntest.ge.100)
      &             call wrtmat2(xmo(ixmo),nmoc,nmoa,nmoc,nmoa)
@@ -147,9 +147,9 @@
               else
 
                 if (ntest.ge.100)
-     &              write(luout,*) 'transp   > xao(ixao) = ',xao(ixao)
+     &              write(lulog,*) 'transp   > xao(ixao) = ',xao(ixao)
                 if (ntest.ge.100)
-     &              write(luout,*) 'transp   > cmo(icmoc) = ',cmo(icmoc)
+     &              write(lulog,*) 'transp   > cmo(icmoc) = ',cmo(icmoc)
 
                 call dgemm('t','n',nmoc,naoa,naoc,
      &                    1d0,cmo(icmoc),naoc,
@@ -157,9 +157,9 @@
      &                    0d0,xhlf,nmoc)
 
                 if (ntest.ge.100)
-     &              write(luout,*) 'transp   > xhlf(1) = ',xhlf(1)
+     &              write(lulog,*) 'transp   > xhlf(1) = ',xhlf(1)
                 if (ntest.ge.100)
-     &              write(luout,*) 'transp   > cmo(icmoa) = ',cmo(icmoa)
+     &              write(lulog,*) 'transp   > cmo(icmoa) = ',cmo(icmoa)
 
                 call dgemm('t','t',nmoa,nmoc,naoa,
      &                   fac,cmo(icmoa),naoa,
@@ -167,7 +167,7 @@
      &                   0d0,xmo(ixmo),ldim(isyma))
 
                 if (ntest.ge.100)
-     &               write(luout,'(a,5i4)')
+     &               write(lulog,'(a,5i4)')
      &               'result block ',isymc,isyma,igasc,igasa,ixmo
                 if (ntest.ge.100)
      &               call wrtmat2(xmo(ixmo),nmoa,nmoc,nmoa,nmoc)

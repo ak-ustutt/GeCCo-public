@@ -174,7 +174,7 @@ c dbg
      &                   lstrop1op2,ncblk_op1op2,nablk_op1op2,
      &                                               tra_op1op2)
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'News from contr_op1op2_blocked_mm')
       end if
 
@@ -239,20 +239,20 @@ c dbg
       n_exs_batch = (nstr_exsc_tot*nstr_exsa_tot-1)/maxlen_exs_batch + 1
 
       if (ntest.ge.100) then
-        write(luout,*) 'batching info: '
-        write(luout,*) 'lenop: ',lenop1,lenop2,lenop12
-        write(luout,*) 'op1shorter: ',op1shorter
-        write(luout,*) '# CNT    : ',nstr_cntc_tot*nstr_cnta_tot
-        write(luout,*) '# EXlong : ',nstr_exlc_tot*nstr_exla_tot
-        write(luout,*) '# EXshort: ',nstr_exsc_tot*nstr_exsa_tot
-        write(luout,*) 'n_cnt_batch = ',n_cnt_batch
-        write(luout,*) 'n_exl_batch = ',n_exl_batch
-        write(luout,*) 'n_exs_batch = ',n_exs_batch
-        write(luout,*) 'maxlen_cnt_batch = ',maxlen_cnt_batch
-        write(luout,*) 'maxlen_exl_batch = ',maxlen_exl_batch
-        write(luout,*) 'maxlen_exs_batch = ',maxlen_exs_batch
-        write(luout,*) 'lenscr = ',lenscr
-        write(luout,*) 'idxscr = ',idxopsscr, idxoplscr, idxop1op2scr
+        write(lulog,*) 'batching info: '
+        write(lulog,*) 'lenop: ',lenop1,lenop2,lenop12
+        write(lulog,*) 'op1shorter: ',op1shorter
+        write(lulog,*) '# CNT    : ',nstr_cntc_tot*nstr_cnta_tot
+        write(lulog,*) '# EXlong : ',nstr_exlc_tot*nstr_exla_tot
+        write(lulog,*) '# EXshort: ',nstr_exsc_tot*nstr_exsa_tot
+        write(lulog,*) 'n_cnt_batch = ',n_cnt_batch
+        write(lulog,*) 'n_exl_batch = ',n_exl_batch
+        write(lulog,*) 'n_exs_batch = ',n_exs_batch
+        write(lulog,*) 'maxlen_cnt_batch = ',maxlen_cnt_batch
+        write(lulog,*) 'maxlen_exl_batch = ',maxlen_exl_batch
+        write(lulog,*) 'maxlen_exs_batch = ',maxlen_exs_batch
+        write(lulog,*) 'lenscr = ',lenscr
+        write(lulog,*) 'idxscr = ',idxopsscr, idxoplscr, idxop1op2scr
       end if
 c dbg
       call atim_cs(cpu,sys)
@@ -273,12 +273,12 @@ c dbg
      &       maxlen_cnt_batch)
 
         if (ntest.ge.1000) then
-          write(luout,*) 'cnt-batch: ',cnt_batch
-          write(luout,*) 'maxlen_cnt_batch: ',maxlen_cnt_batch
-          write(luout,*) 'ncnt = ',ncnt
-          write(luout,*) ' CNT(C) from ',istr_cntc_bst,
+          write(lulog,*) 'cnt-batch: ',cnt_batch
+          write(lulog,*) 'maxlen_cnt_batch: ',maxlen_cnt_batch
+          write(lulog,*) 'ncnt = ',ncnt
+          write(lulog,*) ' CNT(C) from ',istr_cntc_bst,
      &                            ' to ',istr_cntc_bnd
-          write(luout,*) ' CNT(A) from ',istr_cnta_bst,
+          write(lulog,*) ' CNT(A) from ',istr_cnta_bst,
      &                            ' to ',istr_cnta_bnd
         end if
 
@@ -332,9 +332,9 @@ c dbg
         cnt_coll1(2) = cnt_coll1(2)+sys-sys0
 
         if (ntest.ge.1000) then
-          write(luout,*) ncnt,nstr_exsc_tot*nstr_exsa_tot
-          if (op1shorter)      write(luout,*) 'resorted operator 1'
-          if (.not.op1shorter) write(luout,*) 'resorted operator 2'
+          write(lulog,*) ncnt,nstr_exsc_tot*nstr_exsa_tot
+          if (op1shorter)      write(lulog,*) 'resorted operator 1'
+          if (.not.op1shorter) write(lulog,*) 'resorted operator 2'
           call wrtmat2(xscr(idxopsscr),ncnt,nstr_exsc_tot*nstr_exsa_tot,
      &                                 ncnt,nstr_exsc_tot*nstr_exsa_tot)
         end if
@@ -353,12 +353,12 @@ c dbg
      &         maxlen_exl_batch)
 
           if (ntest.ge.1000) then
-            write(luout,*) '  exl_batch: ',exl_batch
-            write(luout,*) '  maxlen_exl_batch: ',maxlen_exl_batch
-            write(luout,*) '  nexl = ',nexl
-            write(luout,*) '  istr_exlc_bst,istr_exla_bst:',
+            write(lulog,*) '  exl_batch: ',exl_batch
+            write(lulog,*) '  maxlen_exl_batch: ',maxlen_exl_batch
+            write(lulog,*) '  nexl = ',nexl
+            write(lulog,*) '  istr_exlc_bst,istr_exla_bst:',
      &           istr_exlc_bst,istr_exla_bst
-            write(luout,*) '  istr_exlc_bnd,istr_exla_bnd:',
+            write(lulog,*) '  istr_exlc_bnd,istr_exla_bnd:',
      &           istr_exlc_bnd,istr_exla_bnd
           end if
 
@@ -405,8 +405,8 @@ c dbg
      &         ireo_ex1c1,ireo_ex1a1)
           end if
           if (ntest.ge.1000) then
-            if (op1shorter)      write(luout,*) 'resorted operator 2'
-            if (.not.op1shorter) write(luout,*) 'resorted operator 1'
+            if (op1shorter)      write(lulog,*) 'resorted operator 2'
+            if (.not.op1shorter) write(lulog,*) 'resorted operator 1'
             call wrtmat2(xscr(idxoplscr),ncnt,nexl,ncnt,nexl)
           end if
           
@@ -427,12 +427,12 @@ c dbg
      &         maxlen_exs_batch)
 
             if (ntest.ge.1000) then
-              write(luout,*) '    exs_batch: ',exs_batch
-              write(luout,*) '    maxlen_exs_batch: ',maxlen_exs_batch
-              write(luout,*) '    nexs = ',nexs
-              write(luout,*) '    istr_exsc_bst,istr_exsa_bst:',
+              write(lulog,*) '    exs_batch: ',exs_batch
+              write(lulog,*) '    maxlen_exs_batch: ',maxlen_exs_batch
+              write(lulog,*) '    nexs = ',nexs
+              write(lulog,*) '    istr_exsc_bst,istr_exsa_bst:',
      &             istr_exsc_bst,istr_exsa_bst
-              write(luout,*) '    istr_exsc_bnd,istr_exsa_bnd:',
+              write(lulog,*) '    istr_exsc_bnd,istr_exsa_bnd:',
      &             istr_exsc_bnd,istr_exsa_bnd
             end if
 
@@ -464,7 +464,7 @@ c stat
               cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
 
               if (ntest.ge.1000) then
-                write(luout,*) 'result (fac was ',xfac,')'
+                write(lulog,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexs,nexl,nexs,nexl)
               end if
 
@@ -522,7 +522,7 @@ c stat
               cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
 
               if (ntest.ge.1000) then
-                write(luout,*) 'result (fac was ',xfac,')'
+                write(lulog,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexl,nexs,nexl,nexs)
               end if
 
@@ -558,7 +558,7 @@ c stat
             end if
 
             if (ntest.ge.1000) then
-              write(luout,*) 'updated OP1OP2: (first element): ',
+              write(lulog,*) 'updated OP1OP2: (first element): ',
      &             xop1op2(1)
             end if
 c dbg

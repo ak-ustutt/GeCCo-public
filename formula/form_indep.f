@@ -38,7 +38,7 @@
       logical ::
      &     ok
       integer ::
-     &     luinput, luoutput, len,
+     &     luinput, lulogput, len,
      &     nterms, idum, idxinp, idx, icmpnd
       character ::
      &     name*(form_maxlen_label*2)
@@ -47,11 +47,11 @@
      &     rd_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '========================'
-        write(luout,*) ' here speaks form_indep'
-        write(luout,*) '========================'
-        write(luout,*) ' new label: "',trim(label_out),'"'
-        write(luout,*) ' new title: "',trim(title_out),'"'
+        write(lulog,*) '========================'
+        write(lulog,*) ' here speaks form_indep'
+        write(lulog,*) '========================'
+        write(lulog,*) ' new label: "',trim(label_out),'"'
+        write(lulog,*) ' new title: "',trim(title_out),'"'
       end if
 
       write(name,'(a,".fml")') label_out
@@ -62,16 +62,16 @@
       call file_open(form_input%fhand)
       call file_open(form_output%fhand)
       luinput = form_input%fhand%unit
-      luoutput = form_output%fhand%unit
+      lulogput = form_output%fhand%unit
       rewind luinput
-      rewind luoutput
+      rewind lulogput
 
       read(luinput)
       read(luinput) idum,idxinp
 
       len = len_trim(title_out)
-      write(luoutput) len,title_out
-      write(luoutput) idum,idxinp
+      write(lulogput) len,title_out
+      write(lulogput) idum,idxinp
 
       ! signal, that still nothing is allocated
       contr%mxvtx = 0
@@ -93,9 +93,9 @@
 
         if (ok) then
           nterms = nterms+1
-          call wrt_contr(luoutput,contr)
+          call wrt_contr(lulogput,contr)
           if (ntest.ge.100) then
-            call prt_contr(luout,contr,ops)
+            call prt_contr(lulog,contr,ops)
           end if
         end if
 
@@ -107,7 +107,7 @@
       call dealloc_contr(contr)
 
       if (ntest.ge.10) then
-        write(luout,*) 'generated terms: ',nterms
+        write(lulog,*) 'generated terms: ',nterms
       end if
       
       return

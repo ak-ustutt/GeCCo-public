@@ -40,13 +40,13 @@
      &     ddot, da_ddot
 
       if (ntest.gt.0) then
-        write(luout,*) '==========================='
-        write(luout,*) ' info from optc_expand_vec' 
-        write(luout,*) '==========================='
-        write(luout,*) ' ndim : ', ndim
-        write(luout,*) ' ndim : ', nwfpar
-        write(luout,*) ' xvec : ', xvec(1:ndim)
-        write(luout,*) ' xfac : ', xfac
+        write(lulog,*) '==========================='
+        write(lulog,*) ' info from optc_expand_vec' 
+        write(lulog,*) '==========================='
+        write(lulog,*) ' ndim : ', ndim
+        write(lulog,*) ' ndim : ', nwfpar
+        write(lulog,*) ' xvec : ', xvec(1:ndim)
+        write(lulog,*) ' xfac : ', xfac
       end if
 
       if (nincore.ge.2) then
@@ -59,19 +59,19 @@
 
         if (ntest.ge.30) then
           xscr = sqrt(ddot(nwfpar,xbuf1,1,xbuf1,1))
-          write(luout,*) ' |initial| = ',xscr
+          write(lulog,*) ' |initial| = ',xscr
         end if
 
         do irec = 1, ndim
           ii = iord(irec)
           if (ntest.ge.20) then
-            write(luout,*) 'record: ', irec,ii,xvec(ii)
+            write(lulog,*) 'record: ', irec,ii,xvec(ii)
           end if
           if (xvec(ii).eq.0d0) cycle
           call vec_from_da(ff_sbsp,irec,xbuf2,nwfpar)
           if (ntest.ge.30) then
             xscr = sqrt(ddot(nwfpar,xbuf2,1,xbuf2,1))
-            write(luout,*) ' |v| = ',xscr
+            write(lulog,*) ' |v| = ',xscr
           end if
           xbuf1(1:nwfpar) = xbuf1(1:nwfpar)+xvec(ii)*xbuf2(1:nwfpar)
         end do
@@ -81,7 +81,7 @@
         if (getnrm) xnrm = xscr
 
         if (ntest.ge.30) then
-          write(luout,*) ' |final| = ',xscr
+          write(lulog,*) ' |final| = ',xscr
         end if
         call vec_to_da(ffamp,irecamp,xbuf1,nwfpar)
 

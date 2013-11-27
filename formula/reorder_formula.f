@@ -33,9 +33,9 @@
      &     fpl_reo_pnt
 
       if (ntest.ge.100) then
-        write(luout,*) '========================='
-        write(luout,*) ' reorder_formula at work'
-        write(luout,*) '========================='
+        write(lulog,*) '========================='
+        write(lulog,*) ' reorder_formula at work'
+        write(lulog,*) '========================='
       end if
 
       if (form%command.eq.command_end_of_formula) return
@@ -67,7 +67,7 @@
      &         cycle tgt_loop
             if (form_pnt%target.ne.idx_tgt .or.
      &           form_pnt%contr%idx_res.ne.idx_tgt) then
-              write(luout,*) 'idx_tgt, target, idx_res:',
+              write(lulog,*) 'idx_tgt, target, idx_res:',
      &             idx_tgt, form_pnt%target, form_pnt%contr%idx_res
               call quit(1,'reorder_formula',
      &             'suspicious change of target')
@@ -87,7 +87,7 @@
             fpl_reo_pnt => fpl_reo_pnt%next
           end do
           if (ntest.ge.100) then
-            write(luout,*) 'iblk, # terms: ',iblk_tgt,nfound
+            write(lulog,*) 'iblk, # terms: ',iblk_tgt,nfound
           end if
         end do tgt_loop
 
@@ -107,7 +107,7 @@
         call dealloc_formula_plist(fpl_reo)        
 
         if (ntest.ge.100) then
-          call print_form_list(luout,form,op_info)
+          call print_form_list(lulog,form,op_info)
         end if
 
       end if

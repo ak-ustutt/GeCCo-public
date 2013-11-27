@@ -110,7 +110,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     dnrm2
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'leqc_core entered')
+     &     call write_title(lulog,wst_dbg_subr,'leqc_core entered')
 
       nopt = opti_info%nopt
       nroot = opti_info%nroot
@@ -230,13 +230,13 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
       ! condition number and pivot vector
       call dgeco(xmat1,nred,nred,ipiv,cond,xvec)
 
-      if (ntest.ge.10) write(luout,*)'dimension ,condition number: ',
+      if (ntest.ge.10) write(lulog,*)'dimension ,condition number: ',
      &         nred,cond
 
       if (ntest.ge.50) then
-        write(luout,*) 'Factorized matrix from dgeco:'
+        write(lulog,*) 'Factorized matrix from dgeco:'
         call wrtmat2(xmat1,nred,nred,nred,nred)
-        write(luout,*) 'Pivot array:'
+        write(lulog,*) 'Pivot array:'
         call iwrtma(ipiv,1,nred,1,nred)
       end if
 
@@ -252,7 +252,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
         call dgesl(xmat1,nred,nred,ipiv,xvec,job)
 
         if (ntest.ge.50) then
-          write(luout,*) 'subspace solution for root # ',iroot
+          write(lulog,*) 'subspace solution for root # ',iroot
           call wrtmat2(xvec,nred,1,nred,1)
         end if
 
@@ -300,7 +300,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &      call optc_expand_vec(
      &           opti_info%shift*vred(idx:idx-1+ndim_vsbsp),ndim_ssbsp,
      &                     xrsnrm(iroot,iopt),.true.,
-     &           ffscr(iopt)%fhand,irecscr,1d0,ffssbsp(iopt)%fhand,
+     &           ffspc,irecscr,1d0,ffssbsp(iopt)%fhand,
      &           iord_rsbsp,
      &           nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
 
@@ -387,7 +387,7 @@ c                xnrm = dnrm2(nwfpar,xbuf1,1)
                 xnrm = sqrt(xnrm)
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,
      &                     opti_info%shift,nwfpar(iopt))
-                call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
+                call vec_to_da(ffspc,iroot,xbuf1,
      &                         nwfpar(iopt))
               end do
             else
@@ -401,7 +401,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
-                call da_diavec(ffscr(iopt)%fhand,iroot,1,0d0,
+                call da_diavec(ffspc,iroot,1,0d0,
      &                         ffscr(iopt)%fhand,iroot,1,1d0/xnrm,
      &                          me_dia(iopt)%mel%fhand,1,1,
      &                          opti_info%shift,-1d0,
@@ -459,11 +459,14 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
           ! if requested, transform new subspace vectors
           if (trafo) then
             do iroot = 1, nnew
-              call optc_traf(me_scr(iopt)%mel,iroot,xdum,
+              call optc_traf(me_opt(iopt)%mel,iroot,xdum,
      &                     me_special(2)%mel,iroot,
      &                     fspc(1),'F',me_special,nspecial,
      &                     nwfpar(iopt),xbuf1,
      &                     orb_info,op_info,str_info,strmap_info)
+              ! copy to scr list
+              ! original list was used to ensure spin symmetry if needed
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
             end do
           end if
 

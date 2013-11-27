@@ -54,7 +54,7 @@
 
 *----------------------------------------------------------------------*
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets for F12 (SP) ...'
+     &     write(lulog,*) 'setting general targets for F12 (SP) ...'
 
       msc = +1  ! assuming closed shell
 *----------------------------------------------------------------------*
@@ -98,7 +98,7 @@
       ! new defaults for MRCC:
       if (is_keyword_set('method.MRCC').gt.0) then
         if (iprlvl.gt.0) 
-     &      write(luout,*) 'MRCC-F12: switching on (F12*) approx.'
+     &      write(lulog,*) 'MRCC-F12: switching on (F12*) approx.'
         vring_mode=3
         use_CS=.true.
       end if
@@ -206,16 +206,16 @@
       ! assemble approx string
       select case(trim(F_appr))
       case('none')
-        write(luout,*) 'no approximations wrt. Fock made'
+        write(lulog,*) 'no approximations wrt. Fock made'
       case('no_Z')
-        write(luout,*) 'Z matrix omitted'
+        write(lulog,*) 'Z matrix omitted'
         approx(4:6) = 'noZ'
       case('GBC','EBC')
-        write(luout,*)
+        write(lulog,*)
      &  'GBC/EBC are currently only possible be supplying the'
-        write(luout,*)
+        write(lulog,*)
      &  'suitable integrals. Make that sure and restart w/o'
-        write(luout,*)
+        write(lulog,*)
      &  'GBC/EBC flag'
         call quit(0,'set_r12_general_targets','GBC/EBC?')
       case default
@@ -225,12 +225,12 @@
 
       select case(trim(K_appr))
       case('none')
-        write(luout,*) 'no approximations wrt. Xchange made'
+        write(lulog,*) 'no approximations wrt. Xchange made'
       case('HY1')
-        write(luout,*) 'Y contribution omitted'
+        write(lulog,*) 'Y contribution omitted'
         approx(8:10) = 'HY1'
       case('HY2')
-        write(luout,*) 'Y contribution approx with 1 CABS index'
+        write(lulog,*) 'Y contribution approx with 1 CABS index'
         approx(8:10) = 'HY2'
       case default
         call quit(0,'set_r12_general_targets',
@@ -239,10 +239,10 @@
 
       select case(trim(Z_appr))
       case('direct')
-        write(luout,*) 'direct RI evaluation of Z intermediate'
+        write(lulog,*) 'direct RI evaluation of Z intermediate'
         approx(14:17) = 'DRCT'
       case('none','J2K3')
-        write(luout,*) 'no approximations to Z intermediate made'
+        write(lulog,*) 'no approximations to Z intermediate made'
         approx(14:17) = 'J2K3'
       case default
         if (Z_appr(1:1).ne.'J'.or.Z_appr(3:3).ne.'K'.or.
@@ -256,7 +256,7 @@
           call quit(0,'set_r12_general_targets',
      &       'Z_appr unknown: "'//trim(Z_appr)//'"')
         end if
-        write(luout,*) 'approximation to Z intermediate: ',trim(Z_appr)
+        write(lulog,*) 'approximation to Z intermediate: ',trim(Z_appr)
         approx(14:17) = Z_appr(1:4)
       end select
 
@@ -265,10 +265,10 @@
       case('as-Z')
         ! do nothing, same as for Z
       case('direct')
-        write(luout,*) 'direct RI evaluation of Z2 intermediate'
+        write(lulog,*) 'direct RI evaluation of Z2 intermediate'
         approx2(14:17) = 'DRCT'
       case('none','J2K3')
-        write(luout,*) 'no approximations to Z2 intermediate made'
+        write(lulog,*) 'no approximations to Z2 intermediate made'
         approx2(14:17) = 'J2K3'
       case default
         if (Z2_appr(1:1).ne.'J'.or.Z2_appr(3:3).ne.'K'.or.
@@ -282,7 +282,7 @@
           call quit(0,'set_r12_general_targets',
      &       'Z2_appr unknown: "'//trim(Z2_appr)//'"')
         end if
-        write(luout,*) 'approximation to Z2 intermediate: ',
+        write(lulog,*) 'approximation to Z2 intermediate: ',
      &      trim(Z2_appr)
         approx2(14:17) = Z2_appr(1:4)
       end select
@@ -2112,7 +2112,8 @@ c dbg
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &     tgt_info,val_int=(/2/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'DESCR',2,tgt_info,
-     &     val_label=(/'2,3,H,X','2,,[HP][HVP],[HVX][HV]'/))
+     &     val_label=(/'2,3,H,X               ',
+     &                 '2,,[HP][HVP],[HVX][HV]'/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
 c dbg
@@ -2186,7 +2187,9 @@ c dbgend
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
-     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &       val_label=(/'3,4,,X             ',
+     &                   '2,3,,V             ',
+     &                   '4,5,,V             ',
      &                   '3,,[HVP]V,[HVX][HV]'/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &       val_int=(/1,2,3,4,5,1/))
@@ -2213,7 +2216,9 @@ c dbgend
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
-     &       val_label=(/'3,4,,X','2,3,,V','4,5,,V',
+     &       val_label=(/'3,4,,X             ',
+     &                   '2,3,,V             ',
+     &                   '4,5,,V             ',
      &                   '3,,[HVP]V,[HVX][HV]'/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &       val_int=(/1,2,3,4,5,1/))
@@ -2574,7 +2579,7 @@ c     &              parameters,2,tgt_info)
      &       tgt_info,val_int=(/2/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'DESCR',2,
      &       tgt_info,
-     &       val_label=(/'2,3,,X','2,,[VP],X'/))
+     &       val_label=(/'2,3,,X   ','2,,[VP],X'/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'IDX_SV',4,
      &       tgt_info,val_int=(/1,2,3,1/))
       else

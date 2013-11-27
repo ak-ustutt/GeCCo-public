@@ -48,12 +48,12 @@
       iprint = max(iprlvl,ntest)
 
       if (iprint.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &     'form_extract_freq reports')
-        write(luout,*) ' f_input = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
-        write(luout,*) ' order = ',order
-        write(luout,*) ' frequency pattern = ',freq_idx(1:order)
+        write(lulog,*) ' f_input = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' order = ',order
+        write(lulog,*) ' frequency pattern = ',freq_idx(1:order)
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -78,8 +78,8 @@
       call write_form_list(f_output%fhand,flist,title)
 
       if (iprint.ge.100) then
-        call write_title(luout,wst_around_double,'Extracted formula:')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_around_double,'Extracted formula:')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       call dealloc_formula_list(flist)

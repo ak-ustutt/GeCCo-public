@@ -9,7 +9,8 @@
 *     core routine for setting up the (str)->(str_other_spins) mapping
 *
 *     get for -+ -> ++ +- --
-*     get for -++ -> +++ +-+ ++- --+ -+- +-- --- 
+*     get for +-+ -> +++ -++ ++- --+ -+- +-- ---
+*     (not for -++, because orbital pairing +22 would then be forbidden)
 *
 *     andreas, april 2013
 *      
@@ -22,17 +23,18 @@
      &     ntest = 000
 
       integer, parameter ::
-     &     idspn_prm2(2,3) = (/(/+1,+1/),
-     &                         (/+1,-1/),
-     &                         (/-1,-1/)/)
+     &     idspn_prm2(6) = (/+1,+1,
+     &                       +1,-1,
+     &                       -1,-1/)
       integer, parameter ::
-     &     idspn_prm3(3,7) = (/(/+1,+1,+1/),
-     &                         (/+1,-1,+1/),
-     &                         (/+1,+1,-1/),
-     &                         (/-1,-1,+1/),
-     &                         (/-1,+1,-1/),
-     &                         (/+1,-1,-1/),
-     &                         (/-1,-1,-1/)/)
+     &     idspn_prm3(21) = (/+1,+1,+1,
+c     &                        +1,-1,+1,
+     &                        -1,+1,+1,
+     &                        +1,+1,-1,
+     &                        -1,-1,+1,
+     &                        -1,+1,-1,
+     &                        +1,-1,-1,
+     &                        -1,-1,-1/)
 
       integer, intent(out) ::
      &     strmap(*)
@@ -81,9 +83,10 @@
      &     nsym,ngas_cur))
 
         first = .false.
-
-        ! must be one of: -+, 22  or -++, 22+ 
-        if (idspn(1).ne.-1.and.idspn(1).ne.2) then
+        ! must be one of: -+, 22  or +-+, +22, 22+ ! not -++ !!! 
+c        if (idspn(1).ne.-1.and.idspn(1).ne.2) then
+        if (iocc.eq.2.and.idspn(1).ne.-1.and.idspn(1).ne.2.or.
+     &      iocc.eq.3.and.idspn(2).ne.-1.and.idspn(2).ne.2) then
           strmap(idxmap+1:idxmap+nmaps) = 0
           idxmap = idxmap+nmaps
           cycle
@@ -96,9 +99,11 @@
         do imaps = 1, nmaps
           ! flip spin indices
           if (iocc.eq.2) then
-            idspn_flipped(1:2) = idspn_prm2(1:2,imaps)
+            idspn_flipped(1:2) = 
+     &               idspn_prm2(((imaps-1)*2)+1:((imaps-1)*2)+2)
           else
-            idspn_flipped(1:3) = idspn_prm3(1:3,imaps)
+            idspn_flipped(1:3) = 
+     &               idspn_prm3(((imaps-1)*3)+1:((imaps-1)*3)+3)
           end if
 
           ! check for paired indices:
@@ -110,7 +115,7 @@
               cycle
             end if
           end if
-          if (iocc.eq.3.and.idspn(2).eq.2) then
+          if (iocc.eq.3.and.idspn(3).eq.2) then
             if (idspn_flipped(2).eq.idspn_flipped(3)) then
               idxmap = idxmap+1
               strmap(idxmap) = 0
@@ -150,12 +155,12 @@ c dbg
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'length = ',idxmap
-        write(luout,*) 'set_spprjmap_kernel: the result of my work is'
+        write(lulog,*) 'length = ',idxmap
+        write(lulog,*) 'set_spprjmap_kernel: the result of my work is'
         nstr = idxmap/nmaps
         do istr = 1, nstr
           idx = (istr-1)*nmaps+1
-          write(luout,'(x,i5,"->",20i5)') istr,strmap(idx:idx-1+nmaps)
+          write(lulog,'(x,i5,"->",20i5)') istr,strmap(idx:idx-1+nmaps)
         end do
       end if
 

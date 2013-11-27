@@ -51,7 +51,7 @@
         end do
         icoup = icoup + 1
 c dbg
-c        write(luout,'(a,20i2)') 'current branch:',branchperm
+c        write(lulog,'(a,20i2)') 'current branch:',branchperm
 c dbgend
 
         ! walk along the path and couple everything together

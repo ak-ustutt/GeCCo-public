@@ -45,8 +45,8 @@
 
 
       if(ntest.ge.100)then
-        write(luout,*)'Test Contraction'
-        write(luout,*)'Shape: ',trim(shape)
+        write(lulog,*)'Test Contraction'
+        write(lulog,*)'Shape: ',trim(shape)
       endif
 
       ! Get indices of input operators.
@@ -122,8 +122,8 @@ c      call file_init(form%fhand,name,ftyp_sq_unf,0)
 c      call write_form_list(form%fhand,flist,form%comment)
 
       if(ntest.ge.100)then
-        write(luout,*)'Final formula (test contraction)'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*)'Final formula (test contraction)'
+        call print_form_list(lulog,flist,op_info)
       endif
 
       deallocate(idxarr,svtxarr)

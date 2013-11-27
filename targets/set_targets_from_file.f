@@ -36,19 +36,19 @@
      &              trim(input_name)//'"')     
       end if
 
-      write(luout,*) 'reading file ',trim(input_name)
+      write(lulog,*) 'reading file ',trim(input_name)
 
       call init_word_list(input_list)
       call lex_file(input_list,input_file,key_start,key_end)
-      !call print_word_list(luout,input_list)
+      !call print_word_list(lulog,input_list)
 
       call init_word_list(blocked_list)
-      call parse_blocks(blocked_list,input_list,luout)
+      call parse_blocks(blocked_list,input_list,lulog)
 
       call clean_word_list(input_list)
 
       call parse_targets(tgt_info,blocked_list)
-      !call print_word_list(luout,blocked_list)
+      !call print_word_list(lulog,blocked_list)
 
       call clean_word_list(blocked_list)
 

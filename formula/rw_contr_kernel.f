@@ -177,7 +177,7 @@
         write(lu) contr%fac,idx,buffer(1:idx)
         
         if (ntest.ge.100) then
-          write(luout,*) 'wrote ',8+4+idx,' bytes'
+          write(lulog,*) 'wrote ',8+4+idx,' bytes'
         end if
         
         return
@@ -190,12 +190,12 @@
      &     'unexpected EOF while reading formula file')
 
       ! write errors:
- 101  write(luout,*) 'too large nvtx, narc, nxarc'
+ 101  write(lulog,*) 'too large nvtx, narc, nxarc'
       goto 200
- 102  write(luout,*)
+ 102  write(lulog,*)
      &     'too large numbers in vertex description'
       goto 200
- 103  write(luout,*) 'insufficient buffer size'
+ 103  write(lulog,*) 'insufficient buffer size'
 
  200  call quit(1,'wrt_contr','error writing contraction')
 

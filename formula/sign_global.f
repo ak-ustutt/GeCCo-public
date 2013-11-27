@@ -41,7 +41,7 @@
      &     arc(:)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'sign_global')
+        call write_title(lulog,wst_dbg_subr,'sign_global')
       end if
 
       nvtx = contr%nvtx
@@ -60,9 +60,9 @@
       do iarc0 = 1, narc
         iarc = arc_seq(iarc0)
         if (ntest.ge.100) then
-          write(luout,*) 'iarc = ',iarc
-          write(luout,*) 'present occ_vtx:'
-          call wrt_occ_n(luout,occ_vtx,nvtx)
+          write(lulog,*) 'iarc = ',iarc
+          write(lulog,*) 'present occ_vtx:'
+          call wrt_occ_n(lulog,occ_vtx,nvtx)
         end if
 
         count = mod(count,2)
@@ -72,9 +72,9 @@
         occ_cnt => arc(iarc)%occ_cnt
 
         if (ntest.ge.100) then
-          write(luout,*) 'ivtx1/2: ',ivtx1,ivtx2
-          write(luout,*) 'cnt='
-          call wrt_occ(luout,occ_cnt)
+          write(lulog,*) 'ivtx1/2: ',ivtx1,ivtx2
+          write(lulog,*) 'cnt='
+          call wrt_occ(lulog,occ_cnt)
         end if
 
         ! count enclosed indices
@@ -84,7 +84,7 @@
         end do
 
         if (ntest.ge.100)
-     &       write(luout,*) 'nencl = ',nencl
+     &       write(lulog,*) 'nencl = ',nencl
 
         ! remove CNT from vertices
         occ_vtx(1:,1:,ivtx1) =
@@ -95,8 +95,8 @@
      &       occ_vtx(1:,2,ivtx2) - occ_cnt(1:,1)
 
         if (ntest.ge.100) then
-          write(luout,*) 'reduced occ_vtx:'
-          call wrt_occ_n(luout,occ_vtx,nvtx)
+          write(lulog,*) 'reduced occ_vtx:'
+          call wrt_occ_n(lulog,occ_vtx,nvtx)
         end if
 
         ! count remaining A of vtx1 and C of vtx2
@@ -104,7 +104,7 @@
         n_vtx2_crem = sum(occ_vtx(1:ngastp,1,ivtx2))
 
         if (ntest.ge.100)
-     &       write(luout,*) 'n_vtx1_arem,n_vtx2_crem: ',
+     &       write(lulog,*) 'n_vtx1_arem,n_vtx2_crem: ',
      &                       n_vtx1_arem,n_vtx2_crem
 
         ! handle C part of contraction
@@ -121,11 +121,11 @@
           end do
           count = count + (nrem+nencl)*iocc
           if (ntest.eq.1000)
-     &         write(luout,*) 'C,',hpvx,': iocc, nrem, nencl: ',
+     &         write(lulog,*) 'C,',hpvx,': iocc, nrem, nencl: ',
      &                                     iocc, nrem, nencl
         end do
 
-        if (ntest.ge.100) write(luout,*) 'present count (C):   ',count
+        if (ntest.ge.100) write(lulog,*) 'present count (C):   ',count
 
         ! handle A part of contraction
         do hpvx = 1, ngastp
@@ -140,11 +140,11 @@
           end do
           count = count + (nrem+nencl)*iocc
           if (ntest.eq.1000)
-     &         write(luout,*) 'A,',hpvx,': iocc, nrem, nencl: ',
+     &         write(lulog,*) 'A,',hpvx,': iocc, nrem, nencl: ',
      &                                     iocc, nrem, nencl
         end do
 
-        if (ntest.ge.100) write(luout,*) 'present count (C+A): ',count
+        if (ntest.ge.100) write(lulog,*) 'present count (C+A): ',count
 
       end do
 
@@ -160,7 +160,7 @@
       deallocate(occ_vtx)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final sign: ',sign_global
+        write(lulog,*) 'final sign: ',sign_global
       end if
 
       return

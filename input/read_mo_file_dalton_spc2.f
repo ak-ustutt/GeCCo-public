@@ -201,7 +201,7 @@ c dbg
 
       end do
 
-      write(luout,*) 'read in finished'
+      write(lulog,*) 'read in finished'
 
       deallocate(idxbuf,valbuf)
 

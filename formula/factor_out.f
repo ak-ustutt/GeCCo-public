@@ -66,7 +66,7 @@
 
 c dbg
 c      print *,'form after fact'
-c      call print_form_list(luout,form_link,op_info)
+c      call print_form_list(lulog,form_link,op_info)
 c dbg
 
       ! remove [END] from Intm list (if any)

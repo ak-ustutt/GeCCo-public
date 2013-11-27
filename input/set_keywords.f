@@ -221,7 +221,12 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('writeFock','method.MR',type=vtyp_log,
      &                  ldef=(/.false./))
       call argument_add('spinproj','method.MR',type=vtyp_int,
-     &                  idef=(/0/)) ! spin projection (1: C0,2: C0 & T)
+     &                  idef=(/0/)) ! spin projection
+                                    ! (1: C0,2: C0 & T, 3: C0 & T & A)
+      call argument_add('prc_traf','method.MR',type=vtyp_log,
+     &     ldef=(/.false./)) ! extra unitary trafo based on prec. matrix
+      call argument_add('guess','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! if >0: use previous C0 as guess
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
@@ -324,7 +329,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/0/)) ! optimize reference fct.
       call argument_add('update_prc','calculate.solve.non_linear',
      &     type=vtyp_int,
-     &     idef=(/5/)) ! update precond. every i-th iteration (<=0: off)
+     &     idef=(/0/)) ! update precond. every i-th iteration (<=0: off)
       call argument_add('preopt','calculate.solve.non_linear',
      &     type=vtyp_log,
      &     ldef=(/.false./)) ! first one optimization with fixed metric
@@ -385,6 +390,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/1,0,0,0,0,0,0,0/))
       call argument_add('msc','calculate.excitation',
      &     type=vtyp_int,len=1,idef=(/0/))
+      call argument_add('mult','calculate.excitation',
+     &     type=vtyp_int,len=1,idef=(/0/))
       call keyword_add('normalize',context='calculate.excitation')
       call keyword_add('analyze',context='calculate.excitation')
 
@@ -420,7 +427,11 @@ c     &     ldef=(/.true./))
      &     idef=(/0/))
       call argument_add('sv_thresh','calculate.routes',type=vtyp_rl8,
      &     xdef=(/1d-12/))
+      call argument_add('jac_thresh','calculate.routes',type=vtyp_rl8,
+     &     xdef=(/-1d0/))
       call argument_add('sv_fix','calculate.routes',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('jac_fix','calculate.routes',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('Tikhonov','calculate.routes',type=vtyp_rl8,
      &     xdef=(/0d0/))
@@ -450,7 +461,7 @@ c     &     ldef=(/.true./))
       call set_experimental_keywords()
 
       if (iprint.ge.50)
-     &     call show_keywords(luout)
+     &     call show_keywords(lulog)
 
       return
       end

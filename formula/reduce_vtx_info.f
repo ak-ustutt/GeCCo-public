@@ -40,14 +40,14 @@
 
       njoined_res = 1
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'reduce_vtx_info')
-        write(luout,*) 'on entry:'
-        write(luout,*) 'info_vtx:'
-        write(luout,'(3x,2(i2,x,i2,2x))')
+        call write_title(lulog,wst_dbg_subr,'reduce_vtx_info')
+        write(lulog,*) 'on entry:'
+        write(lulog,*) 'info_vtx:'
+        write(lulog,'(3x,2(i2,x,i2,2x))')
      &       info_vtx(1:2,1:contr%nvtx+njoined_res)
-        write(luout,*) 'irestr_vtx'
+        write(lulog,*) 'irestr_vtx'
         do ivtx = 1, contr%nvtx+njoined_res
-          call wrt_rstr(luout,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)
+          call wrt_rstr(lulog,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)
         end do
       end if
 
@@ -83,13 +83,13 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'on exit:'
-        write(luout,*) 'info_vtx:'
-        write(luout,'(3x,2(i2,x,i2,2x))')
+        write(lulog,*) 'on exit:'
+        write(lulog,*) 'info_vtx:'
+        write(lulog,'(3x,2(i2,x,i2,2x))')
      &       info_vtx(1:2,1:contr%nvtx+njoined_res)
-        write(luout,*) 'irestr_vtx'
+        write(lulog,*) 'irestr_vtx'
         do ivtx = 1, contr%nvtx+1
-          call wrt_rstr(luout,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)
+          call wrt_rstr(lulog,irestr_vtx(1,1,1,1,ivtx),orb_info%ngas)
         end do
       end if
 

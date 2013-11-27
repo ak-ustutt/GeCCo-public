@@ -39,19 +39,19 @@
      &     maxvtx, idxlist, imltlist
 
       if (ntest.ge.100) then
-        write(luout,*) '------------------------------'
-        write(luout,*) ' next_fact speaks recursively'
-        write(luout,*) '------------------------------'
-        write(luout,*) ' current nel = ',nel
-        write(luout,*) ' current nuniq = ',nuniq
-        write(luout,'(x,a,20i3)') '  iperm = ',iperm(1:nel)
-        write(luout,'(x,a,20i3)') '  imult = ',imult(1:nel)
+        write(lulog,*) '------------------------------'
+        write(lulog,*) ' next_fact speaks recursively'
+        write(lulog,*) '------------------------------'
+        write(lulog,*) ' current nel = ',nel
+        write(lulog,*) ' current nuniq = ',nuniq
+        write(lulog,'(x,a,20i3)') '  iperm = ',iperm(1:nel)
+        write(lulog,'(x,a,20i3)') '  imult = ',imult(1:nel)
       end if
 
       ! two unique elements is always easy
       if (nuniq.eq.2) then
         if (ntest.ge.100)
-     &       write(luout,*) ' processing n==2 case ...'
+     &       write(lulog,*) ' processing n==2 case ...'
         ! read elements and their multiplicity
         inum1 = iperm(1)
         imlt1 = imult(1)
@@ -70,14 +70,14 @@
       ! more than two unique elements
       else if (nuniq.gt.2) then
         if (ntest.ge.100)
-     &       write(luout,*) ' processing n>2 case ...'
+     &       write(lulog,*) ' processing n>2 case ...'
 
         ! read first element and multiplicity
         inum1 = iperm(1)
         imlt1 = imult(1)
 
         if (ntest.ge.100)
-     &       write(luout,*) 'getting reduced graph for ',inum1
+     &       write(lulog,*) 'getting reduced graph for ',inum1
         ! obtain graph reduced by the present element
         ! we need a new vertex number for the result
         ivtxnew = maxvtx(iconn,nuniq)+1
@@ -91,11 +91,11 @@ c        nfused(1:nuniq) = 0
      &       inum1,ivtxnew,iconn,nuniq,nuniq)
         
         if (ntest.ge.100)
-     &       write(luout,*) 'nuniq_next = ', nuniq_next
+     &       write(lulog,*) 'nuniq_next = ', nuniq_next
 
         if (nuniq_next.ge.2) then
           ! set up next iperm imult
-          if (ntest.ge.100) write(luout,*)
+          if (ntest.ge.100) write(lulog,*)
      &         'setting up iperm and imult for next level'
 
           ioff = imlt1
@@ -139,9 +139,9 @@ c          idx = imlt1+1
           end do
 
           if (ntest.ge.100) then
-            write(luout,*) 'call to next_fact with:'
-            write(luout,*) 'iperm_next = ',iperm_next(1:nel_next)
-            write(luout,*) 'imult_next = ',imult_next(1:nel_next)
+            write(lulog,*) 'call to next_fact with:'
+            write(lulog,*) 'iperm_next = ',iperm_next(1:nel_next)
+            write(lulog,*) 'imult_next = ',imult_next(1:nel_next)
           end if
 
           succ = next_fact(iperm_next,imult_next,nel-ioff,
@@ -151,7 +151,7 @@ c          idx = imlt1+1
         end if
 
         if (ntest.ge.100)
-     &       write(luout,*) 'succes status from rightmost permut.: ',
+     &       write(lulog,*) 'succes status from rightmost permut.: ',
      &       succ
 
         if (succ) then
@@ -159,7 +159,7 @@ c          idx = imlt1+1
         else
           ! find next free arc number on iperm
           if (ntest.ge.100)
-     &         write(luout,*) 'trying to increment current 1st position'
+     &         write(lulog,*) 'trying to increment current 1st position'
           imin = huge(imin)
           idxmin = -1
           do idx = 2, nel
@@ -172,11 +172,11 @@ c          idx = imlt1+1
           succ = idxmin.gt.0
           if (succ) then
             if (ntest.ge.100)
-     &           write(luout,*) 'imin = ',imin, ' ... now rearranging'
+     &           write(lulog,*) 'imin = ',imin, ' ... now rearranging'
             if (ntest.ge.100) then
-              write(luout,*) 'original iperm, imult:'
-              write(luout,*) iperm(1:nel)
-              write(luout,*) imult(1:nel)
+              write(lulog,*) 'original iperm, imult:'
+              write(lulog,*) iperm(1:nel)
+              write(lulog,*) imult(1:nel)
             end if
             inum1 = iperm(1)
             imlt1 = imult(1)
@@ -191,10 +191,10 @@ c            iperm_next(idxmin+imlt2:nel)=iperm(idxmin+imlt2:nel)
             iperm(1:idxmin+imlt2-1) = iperm_next(1:idxmin+imlt2-1)
 c            imult(1:idxmin+imlt2-1) = imult_next(1:idxmin+imlt2-1)
             if (ntest.ge.100) then
-              write(luout,*) 'iperm after swap'
-              write(luout,*) iperm(1:nel)
-              write(luout,*) 'imult_next:'
-              write(luout,*) imult_next(1:nel)
+              write(lulog,*) 'iperm after swap'
+              write(lulog,*) iperm(1:nel)
+              write(lulog,*) 'imult_next:'
+              write(lulog,*) imult_next(1:nel)
             end if
             ! sort remaining list
             idx = imlt2+2
@@ -225,30 +225,30 @@ c            imult(1:idxmin+imlt2-1) = imult_next(1:idxmin+imlt2-1)
               idx = idx+imlt1
             end do
             if (ntest.ge.100) then
-              write(luout,*) 'iperm after sort'
-              write(luout,*) iperm(1:nel)
-              write(luout,*) 'imult_next (for checking): '
-              write(luout,*) imult_next(1:nel)              
+              write(lulog,*) 'iperm after sort'
+              write(lulog,*) iperm(1:nel)
+              write(lulog,*) 'imult_next (for checking): '
+              write(lulog,*) imult_next(1:nel)              
             end if
           end if
 
         end if
 
       else
-        write(luout,*) 'programming error (obviously)...'
+        write(lulog,*) 'programming error (obviously)...'
         stop 'programming error'
       end if
       
       lres = succ
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: '
+        write(lulog,*) 'result: '
         if (succ) then
-          write(luout,*) 'Generated the following: nel = ',nel
-          write(luout,'(x,a,20i3)') '  iperm = ',iperm(1:nel)
-c          write(luout,'(x,a,20i3)') '  imult = ',imult(1:nel)
+          write(lulog,*) 'Generated the following: nel = ',nel
+          write(lulog,'(x,a,20i3)') '  iperm = ',iperm(1:nel)
+c          write(lulog,'(x,a,20i3)') '  imult = ',imult(1:nel)
         else
-          write(luout,*) 'No success! returning to higher level'
+          write(lulog,*) 'No success! returning to higher level'
         end if
       end if
 

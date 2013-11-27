@@ -54,11 +54,11 @@
      &     ifndmax
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is strmap_man_c')
-        write(luout,*) 'igraph1r: ',igraph1r
-        write(luout,*) 'igraph2r: ',igraph2r
-        write(luout,*) 'igraph12r: ',igraph12r
-        write(luout,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
+        call write_title(lulog,wst_dbg_subr,'This is strmap_man_c')
+        write(lulog,*) 'igraph1r: ',igraph1r
+        write(lulog,*) 'igraph2r: ',igraph2r
+        write(lulog,*) 'igraph12r: ',igraph12r
+        write(lulog,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
       end if
 
       maxbuffer = 0
@@ -157,14 +157,14 @@ c        idx2mx = max(idx2,idx2mx)
 
         if (ntest.ge.100) then
           if (.not.is_fc_map) then
-            write(luout,*) 'need map for: ',
+            write(lulog,*) 'need map for: ',
      &         igraph1tmp(idx1),igraph2tmp(idx2)
           else
             if (idx1.gt.0) then
-              write(luout,*) 'need fc map for: ',
+              write(lulog,*) 'need fc map for: ',
      &             igraph1tmp(idx1),igraph12r(idx12)
             else
-              write(luout,*) 'need fc map for: ',
+              write(lulog,*) 'need fc map for: ',
      &             igraph2tmp(idx2),igraph12r(idx12)
             end if
           end if
@@ -188,7 +188,7 @@ c        idx2mx = max(idx2,idx2mx)
      &         .not.associated(strmap_info%offsets_fc(idxmap)%msgm))
      &         call quit(1,'strmap_man','offsets (fc) not initialized?')
             if (ntest.ge.100) then
-              write(luout,*) 'I have this map already ...'
+              write(lulog,*) 'I have this map already ...'
             end if
             maxbuffer = maxbuffer
      &           + strmap_info%maxlen_blk_fc(idxmap)
@@ -196,7 +196,7 @@ c        idx2mx = max(idx2,idx2mx)
           end if
 
           if (ntest.ge.100) then
-            write(luout,*) 'I will generate this fc map ...'
+            write(lulog,*) 'I will generate this fc map ...'
           end if
 
           idx_fcmap(idxmap) = strmap_info%idx_last + 1
@@ -243,14 +243,14 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
      &          .not.associated(strmap_info%offsets(idxmap)%msmsgmgm))
      &           call quit(1,'strmap_man','offsets not initialized?')
           if (ntest.ge.100) then
-            write(luout,*) 'I have this map already ...'
+            write(lulog,*) 'I have this map already ...'
           end if
           maxbuffer = maxbuffer + strmap_info%maxlen_blk(idxmap)
           cycle
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'I will generate this map ...'
+          write(lulog,*) 'I will generate this map ...'
         end if
 
         idx_strmap(idxmap) = strmap_info%idx_last+1
@@ -293,11 +293,11 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
       end do
 
       if (error) then
-        write(luout,*) 'igraph1r: ',igraph1r
-        write(luout,*) 'igraph2r: ',igraph2r
-        write(luout,*) 'igraph12r: ',igraph12r
-        write(luout,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
-        write(luout,*) 'mode: ',mode
+        write(lulog,*) 'igraph1r: ',igraph1r
+        write(lulog,*) 'igraph2r: ',igraph2r
+        write(lulog,*) 'igraph12r: ',igraph12r
+        write(lulog,*) 'map_info: ',map_info(1:n12*2*(n1+n2))
+        write(lulog,*) 'mode: ',mode
 
         idx_minf = 0
         idx12 = 0
@@ -307,15 +307,15 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
           idx2 = 0
           idx_minf = idx_minf+1
           nsplit = map_info(idx_minf)
-          write(luout,*) 'idx12, nsplit1: ',idx12,nsplit
-          write(luout,*) 'indices: ',
+          write(lulog,*) 'idx12, nsplit1: ',idx12,nsplit
+          write(lulog,*) 'indices: ',
      &         map_info(idx_minf+1:idx_minf+nsplit)
           idx_minf = idx_minf+nsplit
 
           idx_minf = idx_minf+1
           nsplit = map_info(idx_minf)
-          write(luout,*) 'idx12, nsplit2: ',idx12,nsplit
-          write(luout,*) 'indices: ',
+          write(lulog,*) 'idx12, nsplit2: ',idx12,nsplit
+          write(lulog,*) 'indices: ',
      &         map_info(idx_minf+1:idx_minf+nsplit)
           idx_minf = idx_minf+nsplit
         end do
@@ -324,7 +324,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'leaving strmap_man_c() ...'
+        write(lulog,*) 'leaving strmap_man_c() ...'
       end if
 
       return

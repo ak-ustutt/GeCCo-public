@@ -127,9 +127,9 @@
       
       iprint = max(ntest,iprlvl)
       if (ntest.gt.0.or.iprint.ge.5) then
-        write(luout,*) '============================='
-        write(luout,*) '= Entered formula scheduler ='
-        write(luout,*) '============================='
+        write(lulog,*) '============================='
+        write(lulog,*) '= Entered formula scheduler ='
+        write(lulog,*) '============================='
       end if
 
       nsym = orb_info%nsym
@@ -201,7 +201,7 @@
             end if
 
             call atim_csw(cpu,sys,wall)
-            call prtim(luout,'time for target',
+            call prtim(lulog,'time for target',
      &           cpu-cpu0,sys-sys0,wall-wall0)
 
           end if
@@ -229,10 +229,10 @@
 
           idxme_res = op2list(idxopres)  ! list index of result
           if (iprint.ge.10.and.skip) then
-            write(luout,*) 'Skipping target: ',
+            write(lulog,*) 'Skipping target: ',
      &           trim(mel_arr(idxme_res)%mel%label)
           else if (iprint.ge.10) then
-            write(luout,*) 'New target: ',
+            write(lulog,*) 'New target: ',
      &           trim(mel_arr(idxme_res)%mel%label)
           end if
 
@@ -269,7 +269,7 @@ c        case(command_set_target_update)
 
         case(command_add_contribution)
         case default
-          write(luout,*) 'command = ',cur_form%command
+          write(lulog,*) 'command = ',cur_form%command
           call quit(1,'frm_sched','command not defined/implemented')
         end select
 
@@ -278,10 +278,10 @@ c        case(command_set_target_update)
 
         iterm = iterm+1
         if (iprint.ge.20)
-     &     write(luout,*) '   term #',iterm
+     &     write(lulog,*) '   term #',iterm
 
         if (ntest.ge.50)
-     &       call prt_contr2(luout,cur_contr,op_info)
+     &       call prt_contr2(lulog,cur_contr,op_info)
          
         ! process info
         fac = cur_contr%fac
@@ -291,7 +291,7 @@ c        case(command_set_target_update)
      &       call quit(1,'frm_sched1','inconsistency in result index!')
         njoined_res = opres%njoined
 
-        if (ntest.ge.100) write(luout,*) 'nfact, fac: ',nfact,fac
+        if (ntest.ge.100) write(lulog,*) 'nfact, fac: ',nfact,fac
 
         idxmel = op2list(cur_contr%idx_res)
         me_op1op2 => mel_arr(idxmel)%mel
@@ -333,13 +333,13 @@ c fix:
             end if
 
             if (type_xret.eq.2.and.iprint.ge.3)
-     &           write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &           write(lulog,'(1x,"term # ",i5,":",2(x,g19.10))')
      &           iterm, xret_blk(1)-xret_last, xret_blk(1)
             if (type_xret.eq.2) xret_last = xret_blk(1)
 
             if (ntest.ge.50) then
-              write(luout,*) 'xret after term ',iterm
-              write(luout,'(x,4g19.10)') xret_blk(1:nblk_res)
+              write(lulog,*) 'xret after term ',iterm
+              write(lulog,'(x,4g19.10)') xret_blk(1:nblk_res)
             end if
 
           end if
@@ -405,7 +405,7 @@ c fix:
           facc = 1d0
           if (idx.eq.nfact) facc=fac
 
-          if (iprint.ge.20) write(luout,*) '    contr #',idx
+          if (iprint.ge.20) write(lulog,*) '    contr #',idx
           iarc = cur_contr%inffac(5,idx)
           ninter = ninter + 1
 
@@ -437,8 +437,8 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         iarc,.false.,-ninter,
      &         irst_res,njoined_res,orb_info,op_info)
           if (.not.possible) then
-            call prt_contr3(luout,cur_contr,-1)
-            write(luout,*) 'get_bc_info did not raise "possible"-flag!'
+            call prt_contr3(lulog,cur_contr,-1)
+            write(lulog,*) 'get_bc_info did not raise "possible"-flag!'
             call quit(1,'frm_sched1','could not continue ...')
           end if
 
@@ -567,7 +567,7 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
      &                                   (ffop1op2%current_record-1)
 
           if (ntest.ge.100)
-     &         write(luout,*) 'calling contraction kernel'
+     &         write(lulog,*) 'calling contraction kernel'
           ! do the contraction
           call contr_op1op2(facc,bc_sign,
      &       update,self,xret_pnt,type_xret_cur,
@@ -586,7 +586,7 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
      &       reo_info,
      &       str_info,strmap_info,orb_info)
           if (ntest.ge.100)
-     &         write(luout,*) 'returned from contraction kernel'
+     &         write(lulog,*) 'returned from contraction kernel'
 
           if (reo_op1op2) then
             call dealloc_me_list(meltmp)
@@ -597,13 +597,13 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
         end do bin_loop
 
         if (type_xret.eq.2.and.iprint.ge.3)
-     &       write(luout,'(1x,"term # ",i5,":",2(x,g19.10))')
+     &       write(lulog,'(1x,"term # ",i5,":",2(x,g19.10))')
      &       iterm, xret_blk(1)-xret_last, xret_blk(1)
         if (type_xret.eq.2) xret_last = xret_blk(1)
 
         if (ntest.ge.50) then
-          write(luout,*) 'xret after term ',iterm
-          write(luout,'(x,4f19.10)') xret_blk(1:nblk_res)
+          write(lulog,*) 'xret after term ',iterm
+          write(lulog,'(x,4f19.10)') xret_blk(1:nblk_res)
         end if
 
         deallocate(
@@ -635,7 +635,7 @@ c            call file_close_delete(ffscr(idx))
       ifree = mem_flushmark()
 
       if (ntest.ge.100)
-     &     write(luout,*) 'returning from frm_sched1'
+     &     write(lulog,*) 'returning from frm_sched1'
 
       return
       end

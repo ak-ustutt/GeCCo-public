@@ -37,23 +37,23 @@
       do
         read(unch) idxbuf,lenchain,chain(1:lenchain)
         if (idxbuf.le.0) exit
-        write(luout,*) 'chain # ',idxbuf
+        write(lulog,*) 'chain # ',idxbuf
 c dbg
-        write(luout,*) 'length: ',lenchain
-        write(luout,*) 'records: ',chain(1:lenchain)
+        write(lulog,*) 'length: ',lenchain
+        write(lulog,*) 'records: ',chain(1:lenchain)
 c dbg
 
         do ich = 1, lenchain
 c dbg
-          if (chain(ich).eq.0) write(luout,*)
+          if (chain(ich).eq.0) write(lulog,*)
      &         'warning: ignoring 0 record'
           if (chain(ich).eq.0) cycle
 c dbg
           read(un,rec=chain(ich)) len,val(1:len),idx(1:len)          
-          write(luout,*) 'record #',chain(ich),' length = ',len
+          write(lulog,*) 'record #',chain(ich),' length = ',len
 
           do iii = 1, len
-            write(luout,'("M(",i8,") = ",g20.14)') idx(iii),val(iii)
+            write(lulog,'("M(",i8,") = ",g20.14)') idx(iii),val(iii)
           end do
         end do
       end do

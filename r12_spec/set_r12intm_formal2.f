@@ -67,9 +67,9 @@
       call quit(1,'set_r12intm_formal2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 2')
-        write(luout,*) 'setting: ',trim(label_op(1))
-        write(luout,*) 'type : ',trim(typ_str)
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_formal 2')
+        write(lulog,*) 'setting: ',trim(label_op(1))
+        write(lulog,*) 'type : ',trim(typ_str)
       end if
 
       if (nop.lt.2)
@@ -183,8 +183,8 @@
      &     op_info)
 
       if (ntest.ge.100) then
-        write(luout,*) 'intermediate formula'
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'intermediate formula'
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       ! replace f and g by their actual operator
@@ -206,8 +206,8 @@
       end if
 
 c dbg
-c      write(luout,*) 'intermediate formula 2'
-c      call print_form_list(luout,flist_scr,op_info)
+c      write(lulog,*) 'intermediate formula 2'
+c      call print_form_list(lulog,flist_scr,op_info)
 c dbg
 
       ! generate actual formula by taking the derivative wrt dummy
@@ -230,8 +230,8 @@ c dbg
       call write_form_list(form_out%fhand,flist_pnt,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'final formula'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       call dealloc_formula_list(flist_scr)

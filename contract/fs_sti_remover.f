@@ -55,8 +55,8 @@
       end select
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'fs_sti_remover active')
-        write(luout,*) 'is_bc, is_reo: ',is_bc,is_reo
+        call write_title(lulog,wst_dbg_subr,'fs_sti_remover active')
+        write(lulog,*) 'is_bc, is_reo: ',is_bc,is_reo
       end if
 
       if (is_bc) then
@@ -79,7 +79,7 @@
         if (is_bc.and.iop.eq.2) label_op = bc%label_op2
 
         if (ntest.ge.100)
-     &       write(luout,*) 'current op label: ',trim(label_op)
+     &       write(lulog,*) 'current op label: ',trim(label_op)
 
         if (label_op(1:5).ne.'_STIN') cycle
 
@@ -87,7 +87,7 @@
         label_mel = op_info%op_arr(idx)%op%assoc_list
 
         if (ntest.ge.100)
-     &       write(luout,*) 'removing: ',trim(label_op),trim(label_mel)
+     &       write(lulog,*) 'removing: ',trim(label_op),trim(label_mel)
         
         call del_me_list(label_mel,op_info)
         call del_operator(label_op,op_info)

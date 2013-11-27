@@ -38,7 +38,7 @@
      &     trim(type).ne.'RT'.and.
      &     trim(type).ne.'RV').or.
      &     nop.lt.3) then
-        write(luout,*) 'type, nop: ',trim(type),nop
+        write(lulog,*) 'type, nop: ',trim(type),nop
         call quit(1,'set_r12mod','misguided call?')
       end if
 
@@ -141,9 +141,9 @@ c dbg
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'type: ',trim(type)
-        write(luout,*) 'result after expand_op_product'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*) 'type: ',trim(type)
+        write(lulog,*) 'result after expand_op_product'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       return
@@ -163,7 +163,8 @@ c dbg
      &       -1, -1,
      &       0,0,
      &       0,0,
-     &       (/'2,3,,P','3,,PX,[HPVX][HPVX]'/),2,
+     &       (/'2,3,,P            ',
+     &         '3,,PX,[HPVX][HPVX]'/),2,
      &       op_info)
 
       ! go to end of list
@@ -179,14 +180,15 @@ c dbg
      &       -1, -1,
      &       0,0,
      &       0,0,
-     &       (/'2,3,,X','3,,[PX]X,[HPVX][HPVX]'/),2,
+     &       (/'2,3,,X               ',
+     &         '3,,[PX]X,[HPVX][HPVX]'/),2,
      &       op_info)
 
 
       if (ntest.ge.100) then
-        write(luout,*) 'type: ',trim(type)
-        write(luout,*) 'result after expand_op_product'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*) 'type: ',trim(type)
+        write(lulog,*) 'result after expand_op_product'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       end

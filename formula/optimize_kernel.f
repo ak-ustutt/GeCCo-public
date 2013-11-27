@@ -86,8 +86,8 @@ c
 c dbg
 
 
-      if (ntest.gt.0) call write_title(luout,wst_dbg_subr,i_am)
-      if (ntest.gt.0) write(luout,*) ' pass ',pass
+      if (ntest.gt.0) call write_title(lulog,wst_dbg_subr,i_am)
+      if (ntest.gt.0) write(lulog,*) ' pass ',pass
 c dbg
 c      print *,'check at entry'
 c      call check_formula_list(fl_opt,op_info)
@@ -119,7 +119,7 @@ c dbg
       outer_loop: do
 
 C        if (ntest.ge.1000) 
-C     &      call print_form_item(luout,idxfl,fl_pnt_o,op_info)
+C     &      call print_form_item(lulog,idxfl,fl_pnt_o,op_info)
 
         if (fl_pnt_o%command.eq.command_end_of_formula.or.
      &      fl_pnt_o%command.eq.command_set_target_init) 
@@ -154,9 +154,9 @@ C     &      call print_form_item(luout,idxfl,fl_pnt_o,op_info)
           end if
 
           if (ntest.ge.100)  then
-            write(luout,*) 'now examining: '
-            call print_form_item(luout,idxfl,fl_pnt_o,op_info)
-            call print_form_item(luout,idxfl,fl_pnt_o%next,op_info)
+            write(lulog,*) 'now examining: '
+            call print_form_item(lulog,idxfl,fl_pnt_o,op_info)
+            call print_form_item(lulog,idxfl,fl_pnt_o%next,op_info)
           end if
 
           ! mark this entry and proceed to next entry (should be
@@ -197,8 +197,8 @@ c dbg
           end if
 
           if (ntest.ge.100)  then
-c            write(luout,*) 'now examining: '
-c            call print_form_item(luout,idxfl,fl_pnt_o,op_info)
+c            write(lulog,*) 'now examining: '
+c            call print_form_item(lulog,idxfl,fl_pnt_o,op_info)
           end if
 
           ! mark this entry
@@ -219,9 +219,9 @@ c            call print_form_item(luout,idxfl,fl_pnt_o,op_info)
 
 c dbg
 c        print *,'starting inner loop '
-c        call print_form_item(luout,idxfl,fl_pnt_i%next,op_info)
+c        call print_form_item(lulog,idxfl,fl_pnt_i%next,op_info)
 c        print *,'form until end:'
-c        call print_form_list(luout,fl_pnt_i%next,op_info)
+c        call print_form_list(lulog,fl_pnt_i%next,op_info)
 c dbg
 
         inner_loop: do
@@ -239,6 +239,10 @@ c dbg
             ! interm. must have the same parents:
             if (trim(fl_pnt_i%parent1).ne.trim(fl_pnt_mark1%parent1).or.
      &          trim(fl_pnt_i%parent2).ne.trim(fl_pnt_mark1%parent2))
+     &         cycle inner_loop
+            ! transposition of parents must be the same
+            if (fl_pnt_i%tra1.neqv.fl_pnt_mark1%tra1.or.
+     &          fl_pnt_i%tra2.neqv.fl_pnt_mark1%tra2)
      &         cycle inner_loop
             ! the occupation of the intermediates must match
             if (fl_pnt_i%interm%njoined.ne.fl_pnt_mark1%interm%njoined)
@@ -298,9 +302,9 @@ c dbg
      &         cycle inner_loop
             ! match: put the two entries to list
             if (ntest.ge.100) then
-              write(luout,*) 'found matching intermediate'
-              call print_form_item(luout,idxfl,fl_pnt_mark3,op_info)
-              call print_form_item(luout,idxfl,fl_pnt_i,op_info)
+              write(lulog,*) 'found matching intermediate'
+              call print_form_item(lulog,idxfl,fl_pnt_mark3,op_info)
+              call print_form_item(lulog,idxfl,fl_pnt_i,op_info)
             end if
             nlist = nlist+1
             fpl_marks_pnt%item => fl_pnt_mark3
@@ -354,8 +358,8 @@ c dbg
 c            if (fl_pnt_mark1%bcontr%nj_op1.eq.2.and.
 c     &          trim(fl_pnt_mark1%bcontr%label_op1).eq.'_STIN0001') then
 c              print *,'comparing'
-c              call print_form_item(luout,idxfl,fl_pnt_mark1,op_info)
-c              call print_form_item(luout,idxfl,fl_pnt_i,op_info)
+c              call print_form_item(lulog,idxfl,fl_pnt_mark1,op_info)
+c              call print_form_item(lulog,idxfl,fl_pnt_i,op_info)
 c              print *,'icmp = ',icmp
 c            end if
 c dbg
@@ -377,9 +381,9 @@ c dbg
 
         end do inner_loop
 
-        if (ntest.ge.100) write(luout,*)'found matching entries: ',nlist
+        if (ntest.ge.100) write(lulog,*)'found matching entries: ',nlist
         if (ntest.ge.100.and.pass.gt.0)
-     &                   write(luout,*)'found also:             ',nlist2
+     &                   write(lulog,*)'found also:             ',nlist2
 
         ! pass == 0
         if (pass.eq.0.and.nlist.gt.0) then
@@ -405,7 +409,7 @@ c dbg
      &          call quit(1,i_am,'LTIN counter exceeded')
           write(label_new,'("_LTIN",i4.4)') lti_cnt
 
-          if (ntest.ge.100) write(luout,*)'new interm: ',trim(label_new)
+          if (ntest.ge.100) write(lulog,*)'new interm: ',trim(label_new)
 c dbg
 c          print *,trim(label_new),' -> ',nlist,'  size ',size_intm,
 c     &          cost_intm
@@ -436,7 +440,7 @@ c dbg
               fl_pnt_i => fpl_marks_pnt%item%prev ! start search from here
 c dbg
 c              print *,'original start: '
-c              call print_form_list(luout,fl_pnt_i,op_info)
+c              call print_form_list(lulog,fl_pnt_i,op_info)
 c dbg
               ! delete this entry from the formula list
 c dbg
@@ -467,14 +471,14 @@ c dbg
 c              print *,'replacing ',trim(label_old),' by ',
 c     &                             trim(label_new)
 c              print *,'start from '
-c              !call print_form_item(luout,idxfl,fl_pnt_i,op_info)
-c              call print_form_list(luout,fl_pnt_i,op_info)
+c              !call print_form_item(lulog,idxfl,fl_pnt_i,op_info)
+c              call print_form_list(lulog,fl_pnt_i,op_info)
 c dbg
             replace_loop: do
               fl_pnt_i => fl_pnt_i%next
 c dbg
 c              print *,'now at'
-c              call print_form_item(luout,idxfl,fl_pnt_i,op_info)
+c              call print_form_item(lulog,idxfl,fl_pnt_i,op_info)
 c dbg
               if (fl_pnt_i%command.eq.command_end_of_formula.or.
      &            fl_pnt_i%command.eq.command_set_target_init) 
@@ -554,7 +558,7 @@ c dbg
      &          call quit(1,i_am,'LTIN counter exceeded')
 
           write(label_new,'("_LTIN",i4.4)') lti_cnt
-          if (ntest.ge.100) write(luout,*)'new interm: ',trim(label_new)
+          if (ntest.ge.100) write(lulog,*)'new interm: ',trim(label_new)
           
 c dbg
           !watch = lti_cnt.eq.10
@@ -580,9 +584,9 @@ c dbg
             if (watch) print *,'  case STIN first --- '//trim(label_op)
             if (watch) print *,'  look backward from: '
             if (watch) 
-     &         call print_form_item(luout,idxfl,fl_pnt_mark1,op_info)
+     &         call print_form_item(lulog,idxfl,fl_pnt_mark1,op_info)
             if (watch) 
-     &      call print_form_item(luout,idxfl,fl_pnt_mark1%prev,op_info)
+     &      call print_form_item(lulog,idxfl,fl_pnt_mark1%prev,op_info)
 c dbg
             fl_pnt_mark2 => find_fl_item(fl_pnt_mark1,
      &                                command=command_new_intermediate,
@@ -606,14 +610,19 @@ c dbg
               ! better choice
               fpl_marks2_pnt => fpl_marks_pnt
               do
-                if (idx_rpl.eq.1) 
-     &                label_op = fpl_marks2_pnt%item%bcontr%label_op1
-                if (idx_rpl.eq.2) 
-     &                label_op = fpl_marks2_pnt%item%bcontr%label_op2
+                if (idx_rpl.eq.1) then
+                  label_op = fpl_marks2_pnt%item%bcontr%label_op1
+                  tra_op = fpl_marks2_pnt%item%bcontr%tra_op1
+                else if (idx_rpl.eq.2) then
+                  label_op = fpl_marks2_pnt%item%bcontr%label_op2
+                  tra_op = fpl_marks2_pnt%item%bcontr%tra_op2
+                end if
                 ! a real operator? great! take it!
                 if (label_op(1:5).ne.'_STIN') then
                   fl_pnt_mark2%parent1 = label_op
                   fl_pnt_mark2%parent2 = '---'
+                  fl_pnt_mark2%tra1 = tra_op
+                  fl_pnt_mark2%tra2 = .false.
                   exit
                 else
 c dbg
@@ -631,6 +640,8 @@ c dbg
      &                fl_pnt_mark3%parent2(1:5).ne.'_STIN') then
                     fl_pnt_mark2%parent1 = fl_pnt_mark3%parent1 
                     fl_pnt_mark2%parent2 = fl_pnt_mark3%parent2 
+                    fl_pnt_mark2%tra1 = fl_pnt_mark3%tra1
+                    fl_pnt_mark2%tra2 = fl_pnt_mark3%tra2
                     exit
                   end if
                 end if
@@ -670,7 +681,7 @@ c dbg
             fl_pnt_mark2 => fl_pnt_mark2%next
             call store_def_intm(fl_pnt_mark2,
      &            label_new,occ,rst,nj,1,
-     &            label_op,'---',.false.,.false.,.false.,
+     &            label_op,'---',.false.,tra_op,.false.,
      &            orb_info)
 c dbg
             fl_pnt_watch => fl_pnt_mark2
@@ -765,12 +776,12 @@ c dbg
      &                                label_res=label_op,
      &                                backward=.true. )
               if (.not.associated(fl_pnt_mark4)) then
-                 write(luout,*) 'Did not find defining [CONTR] for '//
+                 write(lulog,*) 'Did not find defining [CONTR] for '//
      &                       trim(label_op)
-                 write(luout,*) 'I started from ... (search backwards)'
-                 call print_form_item(luout,idxfl,fl_pnt_mark3,op_info)
-                 write(luout,*) 'Preceeding item ...'
-                 call print_form_item(luout,idxfl,
+                 write(lulog,*) 'I started from ... (search backwards)'
+                 call print_form_item(lulog,idxfl,fl_pnt_mark3,op_info)
+                 write(lulog,*) 'Preceeding item ...'
+                 call print_form_item(lulog,idxfl,
      &                        fl_pnt_mark3%prev,op_info)
                  call quit(1,i_am,'mistmistmist')
               end if
@@ -798,7 +809,7 @@ c dbg
               ! after this contraction
 c dbg
 c             print *,'after inserting: formula starting from old mark 2'
-c             call print_form_list(luout,fl_pnt_mark2,op_info)
+c             call print_form_list(lulog,fl_pnt_mark2,op_info)
 c             print *,'--- finito ---'
 c dbg
               fl_pnt_mark2 => fl_pnt_mark4
@@ -814,7 +825,7 @@ c dbg
 c dbg
             if (watch) then
               print *,'Formula starting from beg. of new inter:'
-              call print_form_list(luout,fl_pnt_watch,op_info)
+              call print_form_list(lulog,fl_pnt_watch,op_info)
               print *,'--- finito ---'
             end if
 c dbg
@@ -872,23 +883,23 @@ c dbg
 
       end do outer_loop
 
-      if (ntest.gt.0) write(luout,*) 'end of '//trim(i_am)
+      if (ntest.gt.0) write(lulog,*) 'end of '//trim(i_am)
 
       return
       
- 1001 write(luout,*) 'I am still assuming that '//
+ 1001 write(lulog,*) 'I am still assuming that '//
      &          '[NEW INTERMEDIATE] is followed by its definition'
-      write(luout,*) 'Expected result: '//trim(label_old)
-      write(luout,*) 'But I found: '
-      call print_form_item(luout,idxfl,fl_pnt_o,op_info)
-      write(luout,*) 'the index is possibly wrong, ignore that'
+      write(lulog,*) 'Expected result: '//trim(label_old)
+      write(lulog,*) 'But I found: '
+      call print_form_item(lulog,idxfl,fl_pnt_o,op_info)
+      write(lulog,*) 'the index is possibly wrong, ignore that'
       call quit(1,i_am,'assumption not true? buggy formula?') 
- 1002 write(luout,*) '[NEW TARGET] or [END] occured while '//
+ 1002 write(lulog,*) '[NEW TARGET] or [END] occured while '//
      &     'trying to replace '//trim(label_old)
       call quit(1,i_am,'buggy formula?')
- 1003 write(luout,*) 'formula ended unexpectedly (without [END])'
-      write(luout,*) 'last item was:'
-      call print_form_item(luout,idxfl,fl_pnt_i,op_info)
+ 1003 write(lulog,*) 'formula ended unexpectedly (without [END])'
+      write(lulog,*) 'last item was:'
+      call print_form_item(lulog,idxfl,fl_pnt_i,op_info)
       call quit(1,i_am,'buggy formula?')
       end
 

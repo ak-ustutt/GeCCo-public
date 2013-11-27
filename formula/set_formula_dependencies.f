@@ -45,14 +45,14 @@
      &     idx_oplist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'this is set_formula_dependencies')
       end if
 
       error = .false.
       op2list => op_info%op2list 
       do ipass = 1, 2
-        if (ntest.ge.100) write(luout,*) 'pass: ',ipass
+        if (ntest.ge.100) write(lulog,*) 'pass: ',ipass
         fl_ptr => flist
         iptr = 0
         iptr_last = 0
@@ -78,7 +78,7 @@
                   ! safety trap
                   if (depends_on_idxlist(iptr,itarget).le.0) then
                     error = .true.
-                    write(luout,*) 'no list for operator '//
+                    write(lulog,*) 'no list for operator '//
      &                   trim(op_info%op_arr(idxscr(iptr))%op%name)
                   end if
                 end do
@@ -149,7 +149,7 @@
         if (ipass.eq.1) then
           depend%ntargets = itarget
           depend%ndepend  = maxlist
-          if (ntest.ge.100) write(luout,*) 'ntargets, ndepend:',
+          if (ntest.ge.100) write(lulog,*) 'ntargets, ndepend:',
      &         itarget,maxlist
           allocate(depend%idxlist(itarget),
      &             depend%depends_on_idxlist(maxlist,itarget))
@@ -161,11 +161,11 @@
 
       end do
       if (ntest.ge.100.or.error) then
-        write(luout,*) 'targets: dependencies'
+        write(lulog,*) 'targets: dependencies'
         idxlist => depend%idxlist
         depends_on_idxlist => depend%depends_on_idxlist
         do itarget = 1, depend%ntargets
-          write(luout,'(x,i3," :",20i4)') idxlist(itarget),
+          write(lulog,'(x,i3," :",20i4)') idxlist(itarget),
      &         depends_on_idxlist(1:depend%ndepend,itarget)
         end do
         if (error)

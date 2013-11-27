@@ -154,12 +154,12 @@ c dbg
       ifree = mem_flushmark()
 
       if (ntest.ge.100) then
-        write(luout,*) 'extracted diagonal: '
+        write(lulog,*) 'extracted diagonal: '
         idx = 0
         do ms = 1, -1, -2
           do imo = 1, norbs
             idx = idx+1
-            write(luout,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
+            write(lulog,'(x,i2,"/2",i5,2x,g12.6)') ms, imo, x1dia(idx)
           end do
         end do
       end if

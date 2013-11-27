@@ -80,10 +80,10 @@
       end do
 
       if (ntest.ge.1000) then
-        write(luout,*) 'set_fcmap_kernel: the result of my work is'
+        write(lulog,*) 'set_fcmap_kernel: the result of my work is'
         nstr = idxmap
         do istr = 1, nstr
-          write(luout,'(x,i5,"->",i5)') istr,strmap(istr)
+          write(lulog,'(x,i5,"->",i5)') istr,strmap(istr)
         end do
       end if
 

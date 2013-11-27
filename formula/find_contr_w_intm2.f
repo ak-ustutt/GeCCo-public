@@ -72,9 +72,9 @@
      &     contr_in_contr, cmp_contr
 
       if (ntest.ge.100) then
-        write(luout,*) '============================='
-        write(luout,*) ' entered find_contr_w_intm 2'
-        write(luout,*) '============================='
+        write(lulog,*) '============================='
+        write(lulog,*) ' entered find_contr_w_intm 2'
+        write(lulog,*) '============================='
       end if
 
       call init_contr(contr_t0)
@@ -152,12 +152,12 @@ c        else
 c        end if
 c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         if (ntest.ge.100.and.success1) then
-          write(luout,*) 'considering contraction:'
-          call prt_contr2(luout,fl_tgt%contr,op_info)
-          write(luout,*) 'split into T0 '
-          call prt_contr2(luout,contr_t0,op_info)
-          write(luout,*) 'and I'
-          call prt_contr2(luout,contr_i,op_info)
+          write(lulog,*) 'considering contraction:'
+          call prt_contr2(lulog,fl_tgt%contr,op_info)
+          write(lulog,*) 'split into T0 '
+          call prt_contr2(lulog,contr_t0,op_info)
+          write(lulog,*) 'and I'
+          call prt_contr2(lulog,contr_i,op_info)
         end if
       end if
 
@@ -187,7 +187,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
 
         nterms_gen = iterm
         if (ntest.ge.100) then
-          write(luout,*) 'looking for ',nterms_gen,' terms'
+          write(lulog,*) 'looking for ',nterms_gen,' terms'
         end if
 
         allocate(assigned(nterms_gen))
@@ -221,7 +221,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
               cycle tgt_loop
             end if
           case default
-            write(luout,*) 'command = ',fl_tgt_pnt%command
+            write(lulog,*) 'command = ',fl_tgt_pnt%command
             call quit(1,'find_contr_w_intm',
      &             'not prepared for that command (see above)')
           end select
@@ -307,7 +307,7 @@ c                end if
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'at the end: ',success1,success2
+        write(lulog,*) 'at the end: ',success1,success2
       end if
 
       success = success1.and.success2
@@ -360,8 +360,8 @@ c                end if
         call dealloc_contr(contr_int)
 
         if (ntest.ge.100) then
-          write(luout,*) 'generated term:'
-          call prt_contr2(luout,contr_rpl,op_info)
+          write(lulog,*) 'generated term:'
+          call prt_contr2(lulog,contr_rpl,op_info)
         end if
 
       end if

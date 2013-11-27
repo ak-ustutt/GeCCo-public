@@ -80,8 +80,8 @@
      &     next_perm
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'select_mrcc_lag2')
-        write(luout,*) 'mode = ',trim(mode)
+        call write_title(lulog,wst_dbg_subr,'select_mrcc_lag2')
+        write(lulog,*) 'mode = ',trim(mode)
       endif
       check = mode(1:5).eq.'CHECK'
 
@@ -95,12 +95,12 @@
       proj = nlabels.eq.4
       
       if (error) then
-        write(luout,*) 'Error for operator labels:'
+        write(lulog,*) 'Error for operator labels:'
         do ii = 1, nlabels
           if (idxop(ii).le.0) then
-            write(luout,'(a20," - ??")') trim(labels(ii))
+            write(lulog,'(a20," - ??")') trim(labels(ii))
           else
-            write(luout,'(a20," - OK")') trim(labels(ii))
+            write(lulog,'(a20," - OK")') trim(labels(ii))
           end if
         end do
         if (nlabels.ne.2)
@@ -147,9 +147,9 @@
         ! Locate actual formula items.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.1000) write(luout,*) '[END]'
+          if(ntest.ge.1000) write(lulog,*) '[END]'
         case(command_set_target_init)
-          if(ntest.ge.1000) write(luout,*) '[INIT_TARGET]'
+          if(ntest.ge.1000) write(lulog,*) '[INIT_TARGET]'
         case(command_add_contribution)
 
           iterm = iterm + 1
@@ -275,7 +275,7 @@ c dbgend
           delete = ntesting.ne.ntop+nham.and.nham.gt.0
 c          delete = ntesting.ne.ntop+nham 
           if (delete.and.check.and.abs(contr%fac).ge.1d-12) 
-     &       write(luout,'(x,a,i12)')
+     &       write(lulog,'(x,a,i12)')
      &       'Deleting nonzero disconnected term with number: ',iterm
 
           ! delete if more T-T connections than requested
@@ -331,8 +331,8 @@ c            iterm = iterm - 1 ! do not count as term
             call pack_contr(svtx1,ivtx1,topo1,xlines1,contr,nj)
             if (x_ansatz.ne.0.5d0) call isort(testing,ntesting,1)
 c dbg
-c            write(luout,*) ' initial topology:'
-c            call prt_contr_p(luout,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
+c            write(lulog,*) ' initial topology:'
+c            call prt_contr_p(lulog,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
 c dbgend
             do ivtx = 1, nvtx
               ireo(ivtx) = ivtx
@@ -374,7 +374,7 @@ c dbgend
                         if (.not.next_perm(iperm,ntesting))
      &                     exit perm_loop
 c dbg
-c                        write(luout,'(x,a,14i4)') 'skip to perm:',iperm
+c                        write(lulog,'(x,a,14i4)') 'skip to perm:',iperm
 c dbgend
                         cycle perm_loop
                       end if
@@ -386,10 +386,10 @@ c dbgend
                 call reoi8mat(topo2,ireo,nvtx,nvtx,3) !both rows and cols
                 call reoi8mat(xlines2,ireo,nvtx,nj,1)
 c dbg
-c                write(luout,'(x,a,14i4)') 'reordering array: ',
+c                write(lulog,'(x,a,14i4)') 'reordering array: ',
 c     &                                    ireo(1:nvtx)
-c                write(luout,*) ' reordered topology:'
-c                call prt_contr_p(luout,svtx1,ivtx2,topo2,xlines2,nvtx,
+c                write(lulog,*) ' reordered topology:'
+c                call prt_contr_p(lulog,svtx1,ivtx2,topo2,xlines2,nvtx,
 c     &                           nj)
 c dbgend
               end if
@@ -494,13 +494,13 @@ c dbgend
               if (idx.gt.0) then
                 extra_fac(idx) = extra_fac(idx) + contr%fac
                 delete = .true.
-                write(luout,'(x,2(a,i12),a,e10.3)') 'added to term ',
+                write(lulog,'(x,2(a,i12),a,e10.3)') 'added to term ',
      &                 extra_term(idx),
      &                 ': term ',iterm,' with factor ',contr%fac
               else if (abs(contr%fac).lt.1d-12.and.x_ansatz.eq.0.5d0)
      &             then
                 delete = .true.
-                write(luout,'(x,a,i12,a)') 'Deleting term ',
+                write(lulog,'(x,a,i12,a)') 'Deleting term ',
      &                iterm,' in good faith (term probably came before)'
               else
                 n_extra = n_extra + 1
@@ -521,7 +521,7 @@ c dbgend
                 itmp  => null()
                 r8tmp => null()
                 contr%fac = fac_tot
-                write(luout,'(x,a,i12,a,e10.3)') 'term ',iterm,
+                write(lulog,'(x,a,i12,a,e10.3)') 'term ',iterm,
      &              ': new virtual term with factor ',extra_fac(n_extra)
               end if
             end if
@@ -564,8 +564,8 @@ c              delete = (abs(contr%fac).lt.1d-12)
             bins(ntt+1,ntop+1) = bins(ntt+1,ntop+1) - 1
             ! Print the deleted contraction.
             if(ntest.ge.1000)then
-              write(luout,*) 'Deleted formula item:'
-              call prt_contr2(luout,form_pnt%contr,op_info)
+              write(lulog,*) 'Deleted formula item:'
+              call prt_contr2(lulog,form_pnt%contr,op_info)
             endif
 
             ! Delete the node.
@@ -574,7 +574,7 @@ c              delete = (abs(contr%fac).lt.1d-12)
           end if
 
         case default
-          write(luout,*)'command = ',form_pnt%command
+          write(lulog,*)'command = ',form_pnt%command
           call quit(1,'select_mrcc_lag2','command undefined here')
         end select
 
@@ -584,7 +584,7 @@ c              delete = (abs(contr%fac).lt.1d-12)
 
       enddo
 
-      if (proj) write(luout,'(x,a,i12)')
+      if (proj) write(lulog,'(x,a,i12)')
      &   'Number of terms deleted because they will be projected out:',
      &       nprojdel
 
@@ -592,27 +592,27 @@ c              delete = (abs(contr%fac).lt.1d-12)
         do itop = 0,maxtop
           binsum(itop+1) = sum(bins(1:maxtt+1,itop+1))
         end do
-        write(luout,'(x,76("-"))')
-        write(luout,'(x,a)') 'Number of terms with n-fold commutators'
-        write(luout,'(x,a)') '   n       0       1       2       3'//
+        write(lulog,'(x,76("-"))')
+        write(lulog,'(x,a)') 'Number of terms with n-fold commutators'
+        write(lulog,'(x,a)') '   n       0       1       2       3'//
      &                   '       4       5       6       7       8'
-        write(luout,'(x,76("-"))')
-        write(luout,'(5x,9i8)') binsum(1:maxtop+1)
-        write(luout,'(x,76("-"))')
-        write(luout,'(x,a)') 'By number of T-T contractions'
+        write(lulog,'(x,76("-"))')
+        write(lulog,'(5x,9i8)') binsum(1:maxtop+1)
+        write(lulog,'(x,76("-"))')
+        write(lulog,'(x,a)') 'By number of T-T contractions'
         do ii = 0, maxtt
           if (maxval(bins(ii+1,1:maxtop+1)).eq.0) cycle
-          write(luout,'(x,i4,9i8)') ii, bins(ii+1,1:maxtop+1)
+          write(lulog,'(x,i4,9i8)') ii, bins(ii+1,1:maxtop+1)
           if (deldue2maxtt.and.maxcon_tt.ge.0.and.ii.ge.maxcon_tt)
-     &        write(luout,'(x,a,i4,a)') 'Truncated at ',maxcon_tt,
+     &        write(lulog,'(x,a,i4,a)') 'Truncated at ',maxcon_tt,
      &                                ' T-T connections'
         end do
-        write(luout,'(x,76("-"))')
+        write(lulog,'(x,76("-"))')
       end if
 
       do idx = 1, n_extra
         if (abs(extra_fac(idx)).gt.1d-12) then
-          write(luout,'(x,a,i12,a,e10.3)')
+          write(lulog,'(x,a,i12,a,e10.3)')
      &         'OH NO! Virtual term belonging to term ',
      &         extra_term(idx),' has a factor ',extra_fac(idx)
           call warn('select_mrcc_lag2',
@@ -651,11 +651,11 @@ c              delete = (abs(contr%fac).lt.1d-12)
       if (ndim.le.1) return
 
 c dbg
-c      write(luout,*) '-------------------------'
-c      write(luout,*) 'n_possible_reos in action'
-c      write(luout,*) 'input connectivity matrix:'
+c      write(lulog,*) '-------------------------'
+c      write(lulog,*) 'n_possible_reos in action'
+c      write(lulog,*) 'input connectivity matrix:'
 c      do ii = 1, ndim
-c        write(luout,*) conmat(ii,1:ndim)
+c        write(lulog,*) conmat(ii,1:ndim)
 c      end do
 c dbgend
 
@@ -683,7 +683,7 @@ c dbgend
                   if (.not.next_perm(perm,ndim))
      &               exit perm_loop
 c dbg
-c                  write(luout,'(x,a,14i4)') 'skip to perm:',perm
+c                  write(lulog,'(x,a,14i4)') 'skip to perm:',perm
 c dbge
                   cycle perm_loop
                 end if
@@ -696,7 +696,7 @@ c dbge
         if (.not.next_perm(perm,ndim)) exit perm_loop
       end do perm_loop
 c dbg
-c      write(luout,*) 'number of possible reorderings:',n_possible_reos
+c      write(lulog,*) 'number of possible reorderings:',n_possible_reos
 c dbgend
 
       return

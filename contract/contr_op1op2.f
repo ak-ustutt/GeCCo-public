@@ -160,7 +160,7 @@ c dbg
         call dealloc_cnt_info(cnt_info)
 
       case default
-        write(luout,*) 'contr_op1op2: route = ',irt_contr
+        write(lulog,*) 'contr_op1op2: route = ',irt_contr
         call quit(1,'contr_op1op2','route not implemented')
       end select
       call atim_cs(cpu,sys)

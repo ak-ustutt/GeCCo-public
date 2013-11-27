@@ -18,7 +18,7 @@
      &     ivtx
 
       if (contr%nvtx.lt.0.or.contr%nvtx.gt.1000) then
-        write(luout,*) ' nvtx = ', contr%nvtx
+        write(lulog,*) ' nvtx = ', contr%nvtx
         call quit(1,'set_primitive_contr',
      &       'suspicious value of nvtx (bug)?')
       end if

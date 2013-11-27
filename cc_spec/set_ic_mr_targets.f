@@ -41,7 +41,8 @@
      &     version(60), ivers, icnt, prc_type, spinproj, project
       logical ::
      &     sv_fix, l_exist,
-     &     l_icci, l_iccc, skip, Op_eqs, svdonly
+     &     l_icci, l_iccc, skip, Op_eqs, svdonly, prc_traf,
+     &     jac_fix
       real(8) ::
      &     sv_thresh, prc_shift, tikhonov
       character(len_target_name) ::
@@ -52,7 +53,7 @@
       character*4 ::
      &     op_exc, op_deexc
 
-      if (iprlvl.gt.0) write(luout,*)
+      if (iprlvl.gt.0) write(lulog,*)
      &     'setting targets for internally contracted MR methods'
 
       ! get maximum excitation rank
@@ -75,7 +76,7 @@
       select case(gno)
       case(0)
       case(1)
-        write(luout,*) 'Using generalized normal order (GNO)'
+        write(lulog,*) 'Using generalized normal order (GNO)'
 c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
       case default
         call quit(1,'set_ic_mr_targets','unknown normal order')
@@ -83,6 +84,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
 
       call get_argument_value('calculate.routes','sv_fix',
      &     lval=sv_fix)
+      call get_argument_value('calculate.routes','jac_fix',
+     &     lval=jac_fix)
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
       call get_argument_value('calculate.routes','Tikhonov',
@@ -98,10 +101,14 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     xval=prc_shift)
       call get_argument_value('method.MR','spinproj',
      &     ival=spinproj)
+      call get_argument_value('method.MR','prc_traf',
+     &     lval=prc_traf)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
+      if (.not.l_iccc.and.prc_traf)
+     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -115,8 +122,13 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
 
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
-        if (l_exist) write(luout,*)
+        if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS file for singular value selection!'
+      end if
+      if (prc_traf.and.jac_fix) then
+        inquire(file='SINGVALS2',exist=l_exist)
+        if (l_exist) write(lulog,*)
+     &     'Using existing SINGVALS2 file for singular value selection!'
       end if
 
       if (l_iccc) then
@@ -297,6 +309,25 @@ c          if (ip.ge.2.and.ih.ge.2) cycle
       ndef = 0
       do ip = 0, maxp
         do ih = 0, maxh
+          ! more excitations than in related class is problematic
+          ! in the derivation of off-diagonal metric blocks later on
+          if (ip.ge.1.and.ih.ge.1.and.
+     &        .not.(project.eq.1.and.gno.eq.0)) then
+            iexc = excrestr(ih-1,ip-1,2)-excrestr(ih-1,ip-1,1)
+            if (iexc.ge.0.and.
+     &          excrestr(ih,ip,2)-excrestr(ih,ip,1).gt.iexc) then
+              write(lulog,'(3(a,i1),a)') 'In the excitation class n_h=',
+     &          ih,',n_p=',ip,','
+              write(lulog,'(3(a,i1),a)')
+     &          'more excitations are defined than in the class n_h=',
+     &          ih-1,',n_p=',ip-1,'.'
+              write(lulog,'(6(a,i1),a)') 'Try to use MR excrestr=(',
+     &          ih,',',ih,',',ip,',',ip,',',excrestr(ih,ip,1),
+     &          ',',excrestr(ih,ip,1)+iexc,')'
+              call quit(1,'set_ic_mr_targets',
+     &                  'Check your excitation class restrictions!')
+            end if
+          end if
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
             ! not for purely inactive excitation class
             if (ip.eq.ih.and.
@@ -729,6 +760,33 @@ c dbgend
      &       val_int=(/0/))
       end if
 
+      ! ME_Auni
+      call add_target2('DEF_ME_Auni',.false.,tgt_info)
+      call set_dependency('DEF_ME_Auni','DEF_ME_A',tgt_info)
+      call set_rule2('DEF_ME_Auni',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_Auni'/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'A'/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_Auni',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      if (prc_type.lt.3) then
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_TYPE',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_IRREP',1,
+     &       tgt_info,val_int=(/1/))
+        call set_arg('DEF_ME_Auni',DEF_ME_LIST,'DIAG_MS',1,tgt_info,
+     &       val_int=(/0/))
+      end if
+      ! reassign operator to original list
+      labels(1) = 'ME_A'
+      labels(2) = 'A'
+      call set_rule('DEF_ME_Auni',ttype_opme,ASSIGN_ME2OP,
+     &     labels,2,1,
+     &     parameters,0,tgt_info)
+
       ! ME_1
       call add_target2('DEF_ME_1',.false.,tgt_info)
       call set_dependency('DEF_ME_1','1',tgt_info)
@@ -892,6 +950,8 @@ c dbgend
       ! reordered daggered inverted ME_D
       call add_target('DEF_ME_Dtrdag',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF_ME_Dtrdag','DEF_ME_Dtr',tgt_info)
+      if (prc_traf)
+     &   call set_dependency('DEF_ME_Dtrdag','EVAL_Atr',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dtrdag'
       labels(2) = 'Dtr'
@@ -917,6 +977,12 @@ c dbgend
      &             val_int=(/13/))
       call set_arg('DEF_ME_Dtrdag',REORDER_MEL,'ADJOINT',1,tgt_info,
      &             val_log=(/.true./))
+      ! reassign operator to original list
+      call set_rule2('DEF_ME_Dtrdag',ASSIGN_ME2OP,tgt_info)
+      call set_arg('DEF_ME_Dtrdag',ASSIGN_ME2OP,'LIST',1,tgt_info,
+     &           val_label=(/'ME_Dtr'/))
+      call set_arg('DEF_ME_Dtrdag',ASSIGN_ME2OP,'OPERATOR',1,tgt_info,
+     &           val_label=(/'Dtr'/))
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Reordered transposed inverted Density matrix :',0,'LIST')

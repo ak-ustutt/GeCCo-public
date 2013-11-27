@@ -55,11 +55,11 @@
       !     c) one identical factor and result is an intermediate
       !        (potential factor out, if intermediates are summed up due to b))
 
-      if (ntest.gt.0) call write_title(luout,wst_dbg_subr,i_am)
+      if (ntest.gt.0) call write_title(lulog,wst_dbg_subr,i_am)
 
       if (ntest.ge.100) then
-        write(luout,*) 'formula on entry'
-        call print_form_list(luout,fl_opt,op_info)
+        write(lulog,*) 'formula on entry'
+        call print_form_list(lulog,fl_opt,op_info)
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -75,20 +75,20 @@
       main_loop: do
 
         if (ntest.ge.1000) 
-     &      call print_form_item(luout,idxfl,fl_pnt,op_info)
+     &      call print_form_item(lulog,idxfl,fl_pnt,op_info)
 
         if (fl_pnt%command.eq.command_end_of_formula) exit main_loop
 
         if (fl_pnt%command.ne.command_set_target_init) then
-          write(luout,*) 'I expected find [INIT] at this place, found'
-          call print_form_item(luout,idxfl,fl_pnt,op_info)
+          write(lulog,*) 'I expected find [INIT] at this place, found'
+          call print_form_item(lulog,idxfl,fl_pnt,op_info)
           call quit(1,i_am,'[INIT] (or [END]) expected')
         end if
 
         idxopres = fl_pnt%target        ! op index of result
 
         if (iprint.ge.3)
-     &     write(luout,*) 'Optimizing for target operator: ',
+     &     write(lulog,*) 'Optimizing for target operator: ',
      &                    trim(op_info%op_arr(idxopres)%op%name)
         
         if (.not.associated(fl_pnt%next))
@@ -99,18 +99,18 @@
         opti_loop: do
           
           if (ntest.ge.100) then
-            write(luout,*) 'calling kernel for ipass = ',ipass
+            write(lulog,*) 'calling kernel for ipass = ',ipass
           end if 
 
           call optimize_kernel(ipass,lti_cnt,opt,fl_pnt,
      &                         op_info,str_info,orb_info)        
 
           if (ntest.ge.100.and..not.opt) 
-     &           write(luout,*) 'no further optimizations found ...' 
+     &           write(lulog,*) 'no further optimizations found ...' 
 
           if (ntest.ge.1000) then
-             write(luout,*) 'formula after pass = ',ipass
-             call print_form_list(luout,fl_opt,op_info)
+             write(lulog,*) 'formula after pass = ',ipass
+             call print_form_list(lulog,fl_opt,op_info)
           end if
           if ((ipass.gt.0.and..not.opt).or.ipass.ge.maxpass) 
      &       exit opti_loop
@@ -129,15 +129,15 @@
       end do main_loop
 
       if (ntest.ge.150) then
-        write(luout,*) 'formula on exit'
-        call print_form_list(luout,fl_opt,op_info)
+        write(lulog,*) 'formula on exit'
+        call print_form_list(lulog,fl_opt,op_info)
       end if
 c dbg
        call check_formula_list(fl_opt,op_info)
 c dbg
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for optimization',
+      call prtim(lulog,'time for optimization',
      &           cpu-cpu0,sys-sys0,wall-wall0)
 
       return

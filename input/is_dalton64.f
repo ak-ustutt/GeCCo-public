@@ -1,4 +1,4 @@
-      logical function is_dalton64
+      logical function is_dalton64() result(is64)
 
       implicit none
       
@@ -45,7 +45,7 @@
       call file_open(ffsir)
 
       lusir = ffsir%unit
-      luerr = luout
+      luerr = lulog
       rewind lusir
       call mollab('SIR IPH ',lusir,luerr)
 
@@ -59,11 +59,11 @@
 
       ! check for inconsistent input -> set to 64 bit then
       if (ispin.eq.0.or.lsym.eq.0.or.norb(1).eq.0) then
-        write(luout,*) 'Trying 64-bit read-in routines ...'
-        is_dalton64 = .true.
+        write(lulog,*) 'Trying 64-bit read-in routines ...'
+        is64 = .true.
       else
-        write(luout,*) 'Trying 32-bit read-in routines ...'
-        is_dalton64 = .false.
+        write(lulog,*) 'Trying 32-bit read-in routines ...'
+        is64 = .false.
       end if
       call file_close_keep(ffsir)
 

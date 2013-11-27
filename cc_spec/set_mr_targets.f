@@ -11,6 +11,7 @@
       include 'ifc_input.h'
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
+      include 'opdim.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -38,11 +39,11 @@
      &     ival=sym)
       if (mult.gt.0.and.mult.ne.orb_info%imult) then
         orb_info%imult = mult
-        if (ntest.ge.100) write(luout,*) 'spin mult. = ', mult
+        if (ntest.ge.100) write(lulog,*) 'spin mult. = ', mult
       end if
       if (ms.le.orb_info%imult.and.ms.ne.orb_info%ims) then
         orb_info%ims = ms
-        if (ntest.ge.100) write(luout,*) '2Ms        = ', ms
+        if (ntest.ge.100) write(lulog,*) '2Ms        = ', ms
       end if
       ! Ms possible?
       if (orb_info%ims.lt.1-orb_info%imult
@@ -51,7 +52,7 @@
      &   call quit(1,'set_mr_targets','impossible Ms')
       if (sym.gt.0.and.sym.ne.orb_info%lsym) then
         orb_info%lsym = sym
-        if (ntest.ge.100) write(luout,*) 'symmetry   = ', sym
+        if (ntest.ge.100) write(lulog,*) 'symmetry   = ', sym
         if (sym.gt.orb_info%nsym) call quit(1,'set_mr_targets',
      &           'impossible symmetry')
       end if
@@ -126,6 +127,10 @@ c dbgend
      &               'maxh and maxp must not exceed maxexc')
       if (maxh.lt.0) maxh = maxexc
       if (maxp.lt.0) maxp = maxexc
+      ! additional restrictions from a small number of occupied
+      ! or virtual orbitals?
+      maxh = min(maxh,2*orb_info%nactt_hpv(IHOLE))
+      maxp = min(maxp,2*orb_info%nactt_hpv(IPART))
       allocate(excrestr(0:maxh,0:maxp,1:2))
       call get_exc_restr(excrestr,maxh,maxp,
      &                   orb_info%nactel,orb_info%nactorb)

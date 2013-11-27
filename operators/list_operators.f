@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine list_operators(luout,op_info)
+      subroutine list_operators(lulog,op_info)
 *----------------------------------------------------------------------*
 *     print list of operators
 *----------------------------------------------------------------------*
@@ -12,7 +12,7 @@
       type(operator_info), intent(inout), target ::
      &     op_info
       integer, intent(in) ::
-     &     luout
+     &     lulog
 
       type(operator_list), pointer ::
      &     list_pnt
@@ -25,7 +25,7 @@
       ! advance to end of operator list:
       do 
         idx = idx+1
-        write(luout,'(3x,i4,2x,a8,2x,i4)') idx,list_pnt%op%name,
+        write(lulog,'(3x,i4,2x,a8,2x,i4)') idx,list_pnt%op%name,
      &       list_pnt%op%n_occ_cls
 
         if (.not.associated(list_pnt%next)) exit

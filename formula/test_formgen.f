@@ -31,17 +31,17 @@
      &     next_part_connection
       call quit(1,'test_formgen','call to obsolete routine')
 
-c      write(luout,*) 'testing next_part_connection:'
+c      write(lulog,*) 'testing next_part_connection:'
 c      occ_min = 0
 c      occ_max = 0
 c      occ_max(1,2) = 2
 c      occ_max(2,1) = 1
 c      occ_max(4,1) = 1
 c      occ_dist = occ_max
-c      write(luout,*) 'occ, min, max: '
-c      call wrt_occ(luout,occ_dist)
-c      call wrt_occ(luout,occ_min)
-c      call wrt_occ(luout,occ_max)
+c      write(lulog,*) 'occ, min, max: '
+c      call wrt_occ(lulog,occ_dist)
+c      call wrt_occ(lulog,occ_min)
+c      call wrt_occ(lulog,occ_max)
 c
 c      idx = 0
 c      npart = 3
@@ -51,10 +51,10 @@ c     &           init,occ_dist,npart,
 c     &           occ_min,occ_max))
 c        init = .false.
 c        idx = idx+1
-c        write(luout,*) '# ',idx
-c        write(luout,'("|",4i4,"|",4i4,"|",4i4,"|",4i4,"|")')
+c        write(lulog,*) '# ',idx
+c        write(lulog,'("|",4i4,"|",4i4,"|",4i4,"|",4i4,"|")')
 c     &       occ_conn(1:ngastp,1,1:npart)
-c        write(luout,'("|",4i4,"|",4i4,"|",4i4,"|",4i4,"|")')
+c        write(lulog,'("|",4i4,"|",4i4,"|",4i4,"|",4i4,"|")')
 c     &       occ_conn(1:ngastp,2,1:npart)
 c        if (idx==100) exit
 c      end do
@@ -226,13 +226,13 @@ c      stop 'test test'
         end if
       end do
 
-      write(luout,*) 'occ_vtx:'
-      call wrt_occ_n(luout,occ_vtx,nvtx+1)
+      write(lulog,*) 'occ_vtx:'
+      call wrt_occ_n(lulog,occ_vtx,nvtx+1)
 
       call gen_contr(form_head,proto_contr,fix_vtx,occ_vtx,op_info)
 
-      write(luout,*) 'generated list:'
-      call print_form_list(luout,form_head,op_info)
+      write(lulog,*) 'generated list:'
+      call print_form_list(lulog,form_head,op_info)
 
       deallocate(occ_vtx)
 

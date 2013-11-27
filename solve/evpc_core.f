@@ -113,7 +113,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     dnrm2, ddot
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'evpc_core entered')
+     &     call write_title(lulog,wst_dbg_subr,'evpc_core entered')
 
       zero_vec(1:opti_stat%ndim_vsbsp) = .false.
       nopt = opti_info%nopt
@@ -232,13 +232,13 @@ c dbg
       end do
 
       if (ntest.ge.50) then
-        write(luout,*) 'Eigenvalues in subspace:'
+        write(lulog,*) 'Eigenvalues in subspace:'
         do idx = 1, nred
-          write(luout,'(2x,i4,x,g20.12,x,g20.12)')
+          write(lulog,'(2x,i4,x,g20.12,x,g20.12)')
      &         idx, eigr(idx), eigi(idx)
         end do
         if (ntest.ge.100) then
-          write(luout,*) 'eigenvectors:'
+          write(lulog,*) 'eigenvectors:'
           call wrtmat2(vred,nred,nred,mxsub,mxsub)
         end if
       end if
@@ -478,6 +478,10 @@ c              xnrm = 1d0
             if (nspecial.eq.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
+            ! assign op. with original list 
+            ! (to ensure proper spin symmetry if needed)
+            call assign_me_list(me_opt(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
 
             ! calculate transformed vector
             allocate(xret(depend%ntargets),idxselect(depend%ntargets))
@@ -486,13 +490,17 @@ c              xnrm = 1d0
      &                  me_trv(iopt)%mel%label,depend,op_info)
             do iroot = 1, nnew
               call switch_mel_record(me_special(1)%mel,iroot)
-              call switch_mel_record(me_scr(iopt)%mel,iroot)
+              call switch_mel_record(me_opt(iopt)%mel,iroot)
               ! pretend that me_trv is not up to date
               call reset_file_rec(me_trv(iopt)%mel%fhand)
               call frm_sched(xret,flist,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
               ! in reality me_trv is still up to date:
               call touch_file_rec(me_trv(iopt)%mel%fhand)
+              ! copy to scr list and reassign
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
+              call assign_me_list(me_scr(iopt)%mel%label,
+     &                            me_opt(iopt)%mel%op%name,op_info)
             end do
             deallocate(xret,idxselect)
 c dbg

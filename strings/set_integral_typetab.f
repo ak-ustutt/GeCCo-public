@@ -69,28 +69,28 @@
         typetab(jdx) = itype
         perm0(1:4) = perm(1:4,jdx)
         if (ntest.ge.100)
-     &       write(luout,*) '1: ',perm0
+     &       write(lulog,*) '1: ',perm0
         
         ! 2
         call perm_mult(perm1,perm0,p12,4)
         jdx = rank_ivec(rank,perm1,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '2: ',perm1
+     &       write(lulog,*) '2: ',perm1
 
         ! 3
         call perm_mult(perm1,perm0,p34,4)
         jdx = rank_ivec(rank,perm1,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '3: ',perm1
+     &       write(lulog,*) '3: ',perm1
 
         ! 4
         call perm_mult(perm1,perm0,p1324,4)
         jdx = rank_ivec(rank,perm1,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '4: ',perm1
+     &       write(lulog,*) '4: ',perm1
 
         ! 5
         call perm_mult(perm1,perm0,p12,4)
@@ -98,7 +98,7 @@
         jdx = rank_ivec(rank,perm2,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '5: ',perm2
+     &       write(lulog,*) '5: ',perm2
 
         ! 6
         call perm_mult(perm1,perm0,p12,4)
@@ -106,7 +106,7 @@
         jdx = rank_ivec(rank,perm2,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '6: ',perm2
+     &       write(lulog,*) '6: ',perm2
 
         ! 7
         call perm_mult(perm1,perm0,p34,4)
@@ -114,7 +114,7 @@
         jdx = rank_ivec(rank,perm2,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '7: ',perm2
+     &       write(lulog,*) '7: ',perm2
 
         ! 8
         call perm_mult(perm1,perm0,p12,4)
@@ -123,7 +123,7 @@
         jdx = rank_ivec(rank,perm1,4)+1
         typetab(jdx) = itype
         if (ntest.ge.100)
-     &       write(luout,*) '8: ',perm1
+     &       write(lulog,*) '8: ',perm1
 
         else if (ntypes.eq.6) then
 
@@ -133,7 +133,7 @@
         fac = 1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '1: ',perm0,fac,jdx
+     &       write(lulog,*) '1: ',perm0,fac,jdx
         
         ! 2
         call perm_mult(perm1,perm0,p1234,4)
@@ -142,7 +142,7 @@
         if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '2: ',perm1,fac,jdx
+     &       write(lulog,*) '2: ',perm1,fac,jdx
 
         ! 3
         call perm_mult(perm1,perm0,p1324,4)
@@ -151,7 +151,7 @@
         if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '3: ',perm1,fac,jdx
+     &       write(lulog,*) '3: ',perm1,fac,jdx
 
         ! 4
         call perm_mult(perm1,perm0,p1234,4)
@@ -161,7 +161,7 @@
         if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '4: ',perm2,fac,jdx
+     &       write(lulog,*) '4: ',perm2,fac,jdx
 
         else if (ntypes.eq.12) then
 
@@ -171,7 +171,7 @@ c        if ((perm0(1)-1)*4+perm0(3).gt.perm0(2)*4+perm0(4)) fac = -1
         fac = 1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '1: ',perm0,fac,jdx
+     &       write(lulog,*) '1: ',perm0,fac,jdx
         
         ! 2
         call perm_mult(perm1,perm0,p1324,4)
@@ -180,7 +180,7 @@ c        if ((perm0(1)-1)*4+perm0(3).gt.perm0(2)*4+perm0(4)) fac = -1
 c        if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
         typetab(jdx) = fac*itype
         if (ntest.ge.100)
-     &       write(luout,*) '2: ',perm1,fac,jdx
+     &       write(lulog,*) '2: ',perm1,fac,jdx
 
         end if
 
@@ -190,8 +190,8 @@ c        if (rank(1)*4+rank(3).gt.rank(2)*4+rank(4)) fac = -1
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'typetab: '
-        write(luout,'(5x,5i4,x,5i4)') typetab
+        write(lulog,*) 'typetab: '
+        write(lulog,'(5x,5i4,x,5i4)') typetab
       end if
 
       

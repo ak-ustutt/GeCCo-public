@@ -41,13 +41,13 @@
      &     imltlist
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'occ_op2ex')
-        write(luout,*) 'set_cnt, set_map: ', set_cnt, set_map
-        write(luout,*) 'isupvtx_op: ',isupvtx_op
-        write(luout,*) 'iop1or2: ',iop1or2_in
-        write(luout,*) 'ld_map:  ',ld_map
-        write(luout,*) 'OP:'
-        call wrt_occ_n(luout,iocc_op,njoined)
+        call write_title(lulog,wst_dbg_subr,'occ_op2ex')
+        write(lulog,*) 'set_cnt, set_map: ', set_cnt, set_map
+        write(lulog,*) 'isupvtx_op: ',isupvtx_op
+        write(lulog,*) 'iop1or2: ',iop1or2_in
+        write(lulog,*) 'ld_map:  ',ld_map
+        write(lulog,*) 'OP:'
+        call wrt_occ_n(lulog,iocc_op,njoined)
       end if
 
       iop1or2 = iop1or2_in
@@ -79,7 +79,7 @@
 
       npass = 1
       if (self) npass = 2
-      if (ntest.ge.100) write(luout,*) 'self = ',self
+      if (ntest.ge.100) write(lulog,*) 'self = ',self
 
       do ipass = 1, npass
        if (ipass.eq.2) then
@@ -159,16 +159,16 @@ c        end do
 c      end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'EX:'
-        call wrt_occ_n(luout,iocc_ex,njoined)
-        write(luout,*) 'CNT:'
-        if (.not.self) call wrt_occ_n(luout,iocc_cnt,len_list)
-        if (     self)call wrt_occ_n(luout,iocc_cnt,2*len_list)
+        write(lulog,*) 'EX:'
+        call wrt_occ_n(lulog,iocc_ex,njoined)
+        write(lulog,*) 'CNT:'
+        if (.not.self) call wrt_occ_n(lulog,iocc_cnt,len_list)
+        if (     self)call wrt_occ_n(lulog,iocc_cnt,2*len_list)
 
-        write(luout,*) 'merge map:'
+        write(lulog,*) 'merge map:'
         do ivtx = 1, njoined
           do ii = 1, 2
-            write(luout,'(4x,i4," <-",i4," :",10i4)')
+            write(lulog,'(4x,i4," <-",i4," :",10i4)')
      &           ivtx,ii,merge_map(1:ld_map,ii,ivtx)
           end do
         end do

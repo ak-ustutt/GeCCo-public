@@ -75,12 +75,12 @@
 
       ! Check to see whether we want to fix the R12-amplitudes.
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_r12_intm_formal 3')
-        write(luout,*) 'setting: ',trim(label_int)
-        write(luout,*) 'type : ',trim(typ_str)
-        write(luout,*) 'input ops: '
+        call write_title(lulog,wst_dbg_subr,'set_r12_intm_formal 3')
+        write(lulog,*) 'setting: ',trim(label_int)
+        write(lulog,*) 'type : ',trim(typ_str)
+        write(lulog,*) 'input ops: '
         do iop = 1, nop
-          write(luout,*) '"',trim(label_op(iop)),'"'
+          write(lulog,*) '"',trim(label_op(iop)),'"'
         end do
       end if
 
@@ -152,8 +152,8 @@ c dbg
       op_int => op_info%op_arr(idx_intm)%op
 
       if (ntest.ge.100) then
-        write(luout,*) 'definition of intermediate:'
-        call print_op_occ(luout,op_int)
+        write(lulog,*) 'definition of intermediate:'
+        call print_op_occ(lulog,op_int)
       end if
 
       ! dummy operator: 1 particle part of H 
@@ -305,8 +305,8 @@ c test
      &     .false.,op_info)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'intermediate formula'
-        call print_form_list(luout,flist_scr,op_info)
+        write(lulog,*) 'intermediate formula'
+        call print_form_list(lulog,flist_scr,op_info)
       end if
 
       ! replace f and g by their actual operator
@@ -330,8 +330,8 @@ c test
       call write_form_list(form_out%fhand,flist_scr,form_out%comment)
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'final formula'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       call dealloc_formula_list(flist_scr)

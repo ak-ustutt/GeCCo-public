@@ -33,15 +33,15 @@
      &     iocc_sum(ngastp)
       
       if (ntest.ge.100) then
-        write(luout,*) '======================='
-        write(luout,*) ' here speaks fit_restr'
-        write(luout,*) '======================='
-        write(luout,*) 'input restriction: '
+        write(lulog,*) '======================='
+        write(lulog,*) ' here speaks fit_restr'
+        write(lulog,*) '======================='
+        write(lulog,*) 'input restriction: '
         do ijoin = 1, njoined_raw
-          call wrt_rstr(luout,irestr_raw(1,1,1,1,ijoin),ngas)
+          call wrt_rstr(lulog,irestr_raw(1,1,1,1,ijoin),ngas)
         end do
-        write(luout,*) 'input occupation:'
-        call wrt_occ_n(luout,iocc_fit,njoined_fit)
+        write(lulog,*) 'input occupation:'
+        call wrt_occ_n(lulog,iocc_fit,njoined_fit)
       end if
 
       if (njoined_raw.ne.1.and.njoined_raw.ne.njoined_fit)
@@ -68,9 +68,9 @@ c            iocc_sum(ityp) = iocc_sum(ityp)+iocc_fit(ityp,ica)
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'output restriction: '
+        write(lulog,*) 'output restriction: '
         do ijoin = 1, njoined_fit
-          call wrt_rstr(luout,irestr_out(1,1,1,1,ijoin),ngas)
+          call wrt_rstr(lulog,irestr_out(1,1,1,1,ijoin),ngas)
         end do
       end if
 

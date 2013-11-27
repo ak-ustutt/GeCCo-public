@@ -70,14 +70,14 @@
       if (s2.lt.0) s2 = me_out%s2
 
       if (ntest.ge.50) then
-        call write_title(luout,wst_dbg_subr,'spin_prj_list')
-        write(luout,*) 'IN:  ',trim(me_in%label)
-        write(luout,*) 'OUT: ',trim(me_out%label)
-        write(luout,*) 's2 = ',s2
+        call write_title(lulog,wst_dbg_subr,'spin_prj_list')
+        write(lulog,*) 'IN:  ',trim(me_in%label)
+        write(lulog,*) 'OUT: ',trim(me_out%label)
+        write(lulog,*) 's2 = ',s2
       end if
       if (ntest.ge.1000) then
-        write(luout,*) 'elements on input:'
-        call wrt_mel_file(luout,5,
+        write(lulog,*) 'elements on input:'
+        call wrt_mel_file(lulog,5,
      &       me_in,
      &       1,me_in%op%n_occ_cls,
      &       str_info,orb_info)
@@ -154,7 +154,7 @@
       endif
 
       if (ntest.ge.100) then
-        write(luout,*) 'size of buffer: ',nbuff
+        write(lulog,*) 'size of buffer: ',nbuff
       end if
 
       idisc_off_in  = ffin%length_of_record*(ffin%current_record-1)
@@ -171,7 +171,7 @@
         lenblk = me_in%len_op_occ(iblk)
 
         if (ntest.ge.100)
-     &       write(luout,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
+     &       write(lulog,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
         if (lenblk.eq.0) cycle
 
         call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
@@ -196,8 +196,8 @@
       if (open_close_out.and..not.same) call file_close_keep(ffout)
 
       if (ntest.ge.1000) then
-        write(luout,*) 'elements on output:'
-        call wrt_mel_file(luout,5,
+        write(lulog,*) 'elements on output:'
+        call wrt_mel_file(lulog,5,
      &       me_out,
      &       1,me_in%op%n_occ_cls,
      &       str_info,orb_info)

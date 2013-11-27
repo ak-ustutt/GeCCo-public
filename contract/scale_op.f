@@ -57,21 +57,21 @@
       call atim_csw(cpu0,sys0,wall0)
 
       if(ntest.ge.100)then
-        write(luout,*) '===================='
-        write(luout,*) ' scale operators   '
-        write(luout,*) '===================='
-        write(luout,*) 'Result: ',trim(label_res)
+        write(lulog,*) '===================='
+        write(lulog,*) ' scale operators   '
+        write(lulog,*) '===================='
+        write(lulog,*) 'Result: ',trim(label_res)
         if (mode.eq.1) then
-          write(luout,*) 'The factors and summands: '
+          write(lulog,*) 'The factors and summands: '
           do idx = 1, nblk
-            write(luout,'(3x,f12.6,x,i8)') fac(idx),idx_blk(idx)
+            write(lulog,'(3x,f12.6,x,i8)') fac(idx),idx_blk(idx)
           end do
           if (nblk.lt.0) then
-            write(luout,'(3x,f12.6,x,a)')
+            write(lulog,'(3x,f12.6,x,a)')
      &           fac(idx),'applied to all blocks'
           end if
         else
-          write(luout,*) 'Scaling factor(s) on: ',trim(label_inp(2))
+          write(lulog,*) 'Scaling factor(s) on: ',trim(label_inp(2))
         end if
       endif
 
@@ -85,18 +85,18 @@
       end if
 
       if (idx_res.lt.0) then
-        write(luout,*) '"',trim(label_res),'"'
-        write(luout,*) idx_res
+        write(lulog,*) '"',trim(label_res),'"'
+        write(lulog,*) idx_res
         call quit(1,'scale_op','label not on list (1)')
       end if
       if (idx_inp.lt.0) then
-        write(luout,*) '"',trim(label_inp(1)),'"'
-        write(luout,*) idx_inp
+        write(lulog,*) '"',trim(label_inp(1)),'"'
+        write(lulog,*) idx_inp
         call quit(1,'scale_op','label not on list (2)')
       end if
       if (idx_fac.lt.0) then
-        write(luout,*) '"',trim(label_inp(2)),'"'
-        write(luout,*) idx_fac
+        write(lulog,*) '"',trim(label_inp(2)),'"'
+        write(lulog,*) idx_fac
         call quit(1,'scale_op','label not on list (3)')
       end if
 
@@ -158,7 +158,7 @@
           call get_vec(me_fac%fhand,factor,1,1)
         end if
         if (mode.ge.3) factor = 1d0/factor
-        if (ntest.ge.10) write(luout,*)
+        if (ntest.ge.10) write(lulog,*)
      &       'factor from list: ',factor
       else
         factor = fac(1)
@@ -189,19 +189,19 @@
      &     call file_close_keep(me_inp%fhand)
 
       if (ntest.ge.10) then
-        write(luout,*) 'dump of scaled list:'
+        write(lulog,*) 'dump of scaled list:'
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
         if (ntest.ge.1000) ipri = 5
-        call wrt_mel_file(luout,ipri,me_res,
+        call wrt_mel_file(lulog,ipri,me_res,
      &       1,me_res%op%n_occ_cls,
      &       str_info,orb_info)
       end if
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for scaling',
+      call prtim(lulog,'time for scaling',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

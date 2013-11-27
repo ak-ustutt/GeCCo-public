@@ -34,7 +34,7 @@
       lusir = ffsir%unit
       rewind lusir
       
-      luerr = luout
+      luerr = lulog
       call mollab('SIR IPH ',lusir,luerr)
 
       ! the following is also OK for 64 bit as the integers
@@ -51,7 +51,7 @@
       if (fock(1).ge.0d0) goto 16
       goto 1
       ! on error try next record
- 16   write(luout,*) 'Trying new DALTON format ...'
+ 16   write(lulog,*) 'Trying new DALTON format ...'
       read (lusir) fock(1:nfock) 
 
   1   call file_close_keep(ffsir)

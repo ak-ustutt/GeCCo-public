@@ -66,14 +66,14 @@
       base = pack_base
 
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) ' contr_insert at work'
-        write(luout,*) '====================='
-        write(luout,*) ' Contraction on input:'
-        call prt_contr2(luout,contr,op_info)
-        write(luout,*) 'vtxinlist = ',vtxinlist
-        write(luout,*) 'idxins = ',idxins
-        write(luout,*) 'iblkins= ',iblkins
+        write(lulog,*) '====================='
+        write(lulog,*) ' contr_insert at work'
+        write(lulog,*) '====================='
+        write(lulog,*) ' Contraction on input:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'vtxinlist = ',vtxinlist
+        write(lulog,*) 'idxins = ',idxins
+        write(lulog,*) 'iblkins= ',iblkins
       end if
 
       op_arr => op_info%op_arr
@@ -106,8 +106,8 @@
      &       'only for scalar target operator!')
 
       if (ntest.ge.100) then
-        write(luout,*) 'contraction in topo form:'
-        call prt_contr_p(luout,svertex,vtx,topo,xlines,nvtx,njoined_res)
+        write(lulog,*) 'contraction in topo form:'
+        call prt_contr_p(lulog,svertex,vtx,topo,xlines,nvtx,njoined_res)
       end if
 
       occ_sum_x(1:nvtx) = 0
@@ -252,8 +252,8 @@ c dbgend
         topo_new(1:nvtx,1:nvtx) = topo(1:nvtx,1:nvtx)
         vil_new(1:nvtx) = vtxinlist(1:nvtx)
 c dbg
-c          write(luout,*) 'modified contraction (1):'
-c          call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
+c          write(lulog,*) 'modified contraction (1):'
+c          call prt_contr_p(lulog,svertex_new,vtx_new,topo_new,
 c     &         xlines_new,nvtx_new,njoined_res)
 c dbgend
       end if
@@ -280,8 +280,8 @@ c dbgend
      &           ins_at_vtx(jins) = ins_at_vtx(jins) + 1
         end do
 c dbg
-c        write(luout,*) 'modified contraction for iins=',iins
-c        call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
+c        write(lulog,*) 'modified contraction for iins=',iins
+c        call prt_contr_p(lulog,svertex_new,vtx_new,topo_new,
 c     &       xlines_new,nvtx_new,njoined_res)
 c        print *,'insert:     ',insert(1:nins)
 c        print *,'ins_at_vtx: ',ins_at_vtx(1:nins)
@@ -367,8 +367,8 @@ c dbgend
       if (nins.gt.0) then
 
         if (ntest.ge.100) then
-          write(luout,*) 'modified contraction:'
-          call prt_contr_p(luout,svertex_new,vtx_new,topo_new,
+          write(lulog,*) 'modified contraction:'
+          call prt_contr_p(lulog,svertex_new,vtx_new,topo_new,
      &         xlines_new,nvtx_new,njoined_res)
         end if
 
@@ -384,7 +384,7 @@ c dbgend
         end do
         deallocate(neqv,idx_eqv)
         if (ntest.ge.100)
-     &       write(luout,*) 'Divide contraction factor by ',ieqvfac
+     &       write(lulog,*) 'Divide contraction factor by ',ieqvfac
         contr%fac = contr%fac/dble(ieqvfac)
 
         ! set result
@@ -401,8 +401,8 @@ c dbgend
      &                vil_new)
 
       if (ntest.ge.100) then
-        write(luout,*) 'Generated term:'
-        call prt_contr2(luout,contr,op_info)
+        write(lulog,*) 'Generated term:'
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       return

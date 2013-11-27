@@ -50,11 +50,11 @@
 
       call quit(1,'contr_deriv','call to obsolete routine')
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) ' contr_deriv at work'
-        write(luout,*) '====================='
-        write(luout,*) ' Contraction on input:'
-        call prt_contr(luout,contr,ops)
+        write(lulog,*) '====================='
+        write(lulog,*) ' contr_deriv at work'
+        write(lulog,*) '====================='
+        write(lulog,*) ' Contraction on input:'
+        call prt_contr(lulog,contr,ops)
       end if
 
       ! count appearence of operator in contraction
@@ -126,8 +126,8 @@
           end if
           idx = iblk_occ(iocc,.false.,ops(idxres))
           if (idx.le.0) then
-            write(luout,*) 'occupation not found for operator ',idxres
-            call wrt_occ(luout,iocc)
+            write(lulog,*) 'occupation not found for operator ',idxres
+            call wrt_occ(lulog,iocc)
             call quit(0,'contr_deriv','occupation not found') 
           end if
           cur_conder%contr%iblk_res = idx
@@ -208,11 +208,11 @@
       deallocate(nord,iblk)
 
       if (ntest.ge.100) then
-        write(luout,*) 'Generated derivative terms: ',nder
+        write(lulog,*) 'Generated derivative terms: ',nder
         cur_conder => conder
         do ider = 1, nder
-          write(luout,*) 'term #',ider
-          call prt_contr(luout,cur_conder%contr,ops)
+          write(lulog,*) 'term #',ider
+          call prt_contr(lulog,cur_conder%contr,ops)
           if (ider.lt.nder) cur_conder => cur_conder%next
         end do
       end if

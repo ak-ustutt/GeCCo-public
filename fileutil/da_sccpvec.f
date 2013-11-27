@@ -31,33 +31,33 @@
      &     irecstin, irecstout, lenbat, ibatch
 
       if (ntest.ne.0) then
-        write(luout,*) '----------------------'
-        write(luout,*) ' info from da_sccpvec'
-        write(luout,*) '----------------------'
+        write(lulog,*) '----------------------'
+        write(lulog,*) ' info from da_sccpvec'
+        write(lulog,*) '----------------------'
       end if
       if (ntest.ge.10) then
-        write(luout,*) 'ffvecin, idxvecin:  ',
+        write(lulog,*) 'ffvecin, idxvecin:  ',
      &       trim(ffvecin%name),idxvecin
-        write(luout,*) 'ffvecout,idxvecout: ',
+        write(lulog,*) 'ffvecout,idxvecout: ',
      &       trim(ffvecout%name),idxvecout
-        write(luout,*) 'xfac: ',xfac
+        write(lulog,*) 'xfac: ',xfac
       end if
       if (ntest.ge.100) then
-        write(luout,*) 'lenvec,lenbuf: ',lenvec,lenbuf
+        write(lulog,*) 'lenvec,lenbuf: ',lenvec,lenbuf
       end if
 
       luvecin  = ffvecin%unit
       luvecout = ffvecout%unit
       lblk = ffvecin%reclen
       if (lblk.ne.ffvecout%reclen) then
-        write(luout,*) 'Incompatible block-lengthes: ',
+        write(lulog,*) 'Incompatible block-lengthes: ',
      &       lblk,ffvecout%reclen
         call quit(1,'da_sccpvec','Incompatible block-lengthes')
       end if
 
       if (lenbuf.lt.min(lenvec,lblk)) then
-        write(luout,*) 'Insufficient buffer size!'
-        write(luout,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
+        write(lulog,*) 'Insufficient buffer size!'
+        write(lulog,*) ' buffer length = ',lenbuf,' blocksize = ',lblk
         call quit(1,'da_sccpvec','Insufficient buffer size!')
       end if
 
@@ -103,7 +103,7 @@
       end do
 
       if (ntest.ge.10) then
-        write(luout,*) 'scale/copy needed ',nbatch,' batches'
+        write(lulog,*) 'scale/copy needed ',nbatch,' batches'
       end if
       
       return

@@ -131,13 +131,13 @@
 
 * be verbose?
       if (iprint.ge.5) then
-        write(luout,'(/,x,a,/,x,a)')
+        write(lulog,'(/,x,a,/,x,a)')
      &         'Optimization control',
      &         '===================='
       end if
       if (ntest.ge.10) then
-        write(luout,*) 'entered optcont with:'
-        write(luout,*) ' imacit, imicit, imicit_tot: ',
+        write(lulog,*) 'entered optcont with:'
+        write(lulog,*) ' imacit, imicit, imicit_tot: ',
      &         imacit, imicit, imicit_tot
       end if
 
@@ -149,15 +149,15 @@
       iroute = opti_info%mode_nleq
 
       if (iprint.ge.5.or.imacit.eq.0) then
-        write(luout,*) 'Optimization algorithm:    ',name_alg(iroute)
-        write(luout,'(x,a,i10)')
+        write(lulog,*) 'Optimization algorithm:    ',name_alg(iroute)
+        write(lulog,'(x,a,i10)')
      &                 'Max. number of iterations: ',opti_info%maxmacit
-        write(luout,'(x,a,e10.2)')
+        write(lulog,'(x,a,e10.2)')
      &                 'Threshold for residual:    ',opti_info%thrgrd(1)
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) 'our route is: ',iroute
+        write(lulog,*) 'our route is: ',iroute
       end if
 *======================================================================*
 *     unless this is the initial call:
@@ -168,8 +168,8 @@
         ifree = mem_setmark('optc_temp')
         call optc_mem(nincore,lenbuf,
      &       ifree,opti_info%nwfpar,opti_info%nopt,opti_info%max_incore)
+        call file_init(ffscr,'optscr.da',ftyp_da_unf,lblk_da)
         if (nincore.le.1) then
-          call file_init(ffscr,'optscr.da',ftyp_da_unf,lblk_da)
           call file_open(ffscr)
         end if
       end if
@@ -201,7 +201,7 @@
 *======================================================================*
       else if (imicit.eq.0) then
         if (ntest.ge.10) then
-          write(luout,*) 'macro iteration part entered'
+          write(lulog,*) 'macro iteration part entered'
         end if
 
         call optc_macit(imacit,imicit,imicit_tot,
@@ -222,7 +222,7 @@
 * micro-iteration
 *======================================================================*
         if (ntest.ge.10) then
-          write(luout,*) 'micro iteration part entered'
+          write(lulog,*) 'micro iteration part entered'
         end if
 
         call optc_micit()
@@ -249,11 +249,11 @@
 
         if (iprint.ge.5) then
           if (opti_info%norder.eq.1)
-     &         write(luout,*) 'after iteration ',imacit
+     &         write(lulog,*) 'after iteration ',imacit
           if (opti_info%norder.eq.2)
-     &         write(luout,*) 'after macro-iteration ',imacit
+     &         write(lulog,*) 'after macro-iteration ',imacit
           do iopt = 1, opti_info%nopt
-            write(luout,'(x,2(a,e10.3),a,l)')
+            write(lulog,'(x,2(a,e10.3),a,l)')
      &                      ' norm of gradient:  ', xngrd(iopt),
      &                           '   threshold:  ',
      &                                   opti_info%thrgrd(iopt),
@@ -263,11 +263,11 @@
         end if
 
         if (lconv.and.opti_info%norder.eq.1)
-     &         write(luout,'(x,a,i5,a)')
+     &         write(lulog,'(x,a,i5,a)')
      &         'CONVERGED IN ',imacit,' ITERATIONS'
         if (lconv.and.opti_info%norder.eq.2) then
           imicit_tot = imicit_tot-1
-          write(luout,'(x,a,i5,a,i6,a)')
+          write(lulog,'(x,a,i5,a,i6,a)')
      &         'CONVERGED IN ',imacit,' MACRO-ITERATIONS (',imicit_tot,
      &         ' MICRO-ITERATIONS)'
         end if
@@ -279,7 +279,7 @@
         if (.not.lconv.and.
      &       (imacit.gt.opti_info%maxmacit.or.
      &       imicit_tot.gt.opti_info%maxmicit)) then
-          write(luout,*) 'NO CONVERGENCE OBTAINED'
+          write(lulog,*) 'NO CONVERGENCE OBTAINED'
 c          imacit = imacit - 1
 c          imicit_tot = imicit_tot - 1
           imicit = 0
@@ -321,9 +321,9 @@ c          call optc_prepnext()
         end if
 
         if (ntest.ge.10) then
-          write(luout,*) 'at the end of optcont:'
-          write(luout,*) ' task = ',task
-          write(luout,*) ' imacit,imicit,imicit_tot: ',
+          write(lulog,*) 'at the end of optcont:'
+          write(lulog,*) ' task = ',task
+          write(lulog,*) ' imacit,imicit,imicit_tot: ',
      &         imacit,imicit,imicit_tot
         end if
 
@@ -336,7 +336,7 @@ c          call optc_prepnext()
 
       call atim_csw(cpu,sys,wall)
       if (iprint.ge.1)
-     &     call prtim(luout,'time in optimizer',
+     &     call prtim(lulog,'time in optimizer',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return
@@ -377,7 +377,7 @@ c      implicit none
       nincore = min(3,mem_free/nmax_per_vec)
       if (max_incore.gt.0) then
         nincore = min(nincore,max_incore)
-        write(luout,*) ' restricting nincore to ',nincore
+        write(lulog,*) ' restricting nincore to ',nincore
       end if
 
       if (nincore.eq.3) then
@@ -419,14 +419,14 @@ c      implicit none
       if (nbuf.ne.3) xbuf3 => null()
       
       if (iprint.ge.5) then
-        write(luout,*) ' allocated ',nbuf,' buffers'
-        write(luout,*) ' # incore vectors: ',nincore
-        write(luout,*) ' total size of buffers: ',len1+len2+len3
-        write(luout,*) ' remaining core memory: ',ifree
+        write(lulog,*) ' allocated ',nbuf,' buffers'
+        write(lulog,*) ' # incore vectors: ',nincore
+        write(lulog,*) ' total size of buffers: ',len1+len2+len3
+        write(lulog,*) ' remaining core memory: ',ifree
         if (nincore.le.1) then
           nbatch = nmax_per_vec/lenbuf
           if (nbatch*lenbuf.lt.nmax_per_vec) nbatch = nbatch+1
-          write(luout,*) ' out-of-core routines need ',nbatch,' cycles'
+          write(lulog,*) ' out-of-core routines need ',nbatch,' cycles'
         end if
       end if
 

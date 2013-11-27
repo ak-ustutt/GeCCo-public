@@ -51,9 +51,9 @@
       if (fl_tgt%command.eq.command_end_of_formula) return
 
       if (ntest.ge.100) then
-        write(luout,*) '====================='
-        write(luout,*) ' info from sum_terms'
-        write(luout,*) '====================='
+        write(lulog,*) '====================='
+        write(lulog,*) ' info from sum_terms'
+        write(lulog,*) '====================='
       end if
 
       if (fl_tgt%command.ne.command_set_target_init) then
@@ -75,9 +75,9 @@
      &         call quit(1,'sum_terms',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
-            write(luout,'(70("="))')
-            write(luout,*) 'New operator target: ',idxop_tgt
-            write(luout,'(70("="))')
+            write(lulog,'(70("="))')
+            write(lulog,*) 'New operator target: ',idxop_tgt
+            write(lulog,'(70("="))')
           end if
           fl_tgt_current => fl_tgt_current%next
         end if
@@ -115,8 +115,8 @@ c dbg
 c        print *,'term: ',iterm
 c dbgend
         if (ntest.ge.100) then
-          write(luout,*) 'current term: # ',iterm
-          call prt_contr2(luout,fl_tgt_current%contr,op_info)
+          write(lulog,*) 'current term: # ',iterm
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
 
         if (.not.associated(fl_tgt_current%next))
@@ -206,10 +206,10 @@ c dbg
 c            print *,' -> summing!'
 c dbgend
             if (ntest.ge.100) then
-              write(luout,*) 'found equal term: # ',jterm
-              call prt_contr2(luout,fl_tgt_pnt%contr,
+              write(lulog,*) 'found equal term: # ',jterm
+              call prt_contr2(lulog,fl_tgt_pnt%contr,
      &             op_info)
-              write(luout,*) 'now summing and deleting'
+              write(lulog,*) 'now summing and deleting'
             end if
             fl_tgt_current%contr%fac =
      &           fl_tgt_current%contr%fac + fl_tgt_pnt%contr%fac

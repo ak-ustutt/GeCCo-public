@@ -124,10 +124,10 @@
      &           rst_cnt_dagger(1,1,1,1,ijoin),.true.,
      &           ihpvgas,ngas,nspin)) then
             do ii = 1, njoined_cnt
-              call wrt_occ_rstr(luout,ii,occ_cnt(:,:,ii),
+              call wrt_occ_rstr(lulog,ii,occ_cnt(:,:,ii),
      &                                     rst_cnt(:,:,:,:,ijoin),
      &                                     ngas,nspin)
-              call wrt_occ_rstr(luout,ii,occ_cnt_dagger(:,:,ii),
+              call wrt_occ_rstr(lulog,ii,occ_cnt_dagger(:,:,ii),
      &                                   rst_cnt_dagger(:,:,:,:,ijoin),
      &                                     ngas,nspin)
             end do
@@ -155,10 +155,10 @@
      &           rst_cnt_in(1,1,1,1,ijoin),.false.,
      &             ihpvgas,ngas,nspin)) then
               do ii = 1, njoined_cnt
-                call wrt_occ_rstr(luout,ii,occ_cnt(:,:,ii),
+                call wrt_occ_rstr(lulog,ii,occ_cnt(:,:,ii),
      &                                     rst_cnt(:,:,:,:,ijoin),
      &                                     ngas,nspin)
-                call wrt_occ_rstr(luout,ii,occ_cnt(:,:,ii),
+                call wrt_occ_rstr(lulog,ii,occ_cnt(:,:,ii),
      &                                   rst_cnt_in(:,:,:,:,ijoin),
      &                                     ngas,nspin)
               end do
@@ -173,47 +173,47 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'generated restrictions: CNT'
+        write(lulog,*) 'generated restrictions: CNT'
         do ijoin = 1, njoined_cnt
-          if (njoined_cnt.gt.1) write(luout,*) 'pair # ',ijoin
-          call wrt_rstr(luout,rst_cnt(1,1,1,1,ijoin),ngas)
-          call wrt_rstr(luout,rst_cnt_dagger(1,1,1,1,ijoin),ngas)
+          if (njoined_cnt.gt.1) write(lulog,*) 'pair # ',ijoin
+          call wrt_rstr(lulog,rst_cnt(1,1,1,1,ijoin),ngas)
+          call wrt_rstr(lulog,rst_cnt_dagger(1,1,1,1,ijoin),ngas)
         end do
-        write(luout,*) 'OP1 is'
+        write(lulog,*) 'OP1 is'
         do ijoin = 1, njoined_op1
-          call wrt_occ_rstr(luout,ijoin,occ_op1(:,:,ijoin),
+          call wrt_occ_rstr(lulog,ijoin,occ_op1(:,:,ijoin),
      &         rst_op1(:,:,:,:,ijoin),
      &         ngas,nspin)
         end do
-        write(luout,*) 'EX1 is'
+        write(lulog,*) 'EX1 is'
         do ijoin = 1, njoined_op1
-          call wrt_occ_rstr(luout,ijoin,occ_ex1(:,:,ijoin),
+          call wrt_occ_rstr(lulog,ijoin,occ_ex1(:,:,ijoin),
      &         rst_ex1(:,:,:,:,ijoin),
      &         ngas,nspin)
         end do
         if (.not.self) then
-          write(luout,*) 'OP2 is'
+          write(lulog,*) 'OP2 is'
           do ijoin = 1, njoined_op2
-            call wrt_occ_rstr(luout,ijoin,occ_op2(:,:,ijoin),
+            call wrt_occ_rstr(lulog,ijoin,occ_op2(:,:,ijoin),
      &                                    rst_op2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
           end do
-          write(luout,*) 'EX2 is'
+          write(lulog,*) 'EX2 is'
           do ijoin = 1, njoined_op2
-            call wrt_occ_rstr(luout,ijoin,occ_ex2(:,:,ijoin),
+            call wrt_occ_rstr(lulog,ijoin,occ_ex2(:,:,ijoin),
      &                                    rst_ex2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
           end do
         end if
-        write(luout,*) 'OP1OP2TMP is'
+        write(lulog,*) 'OP1OP2TMP is'
         do ijoin = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ijoin,occ_op1op2tmp(:,:,ijoin),
+          call wrt_occ_rstr(lulog,ijoin,occ_op1op2tmp(:,:,ijoin),
      &                                    rst_op1op2tmp(:,:,:,:,ijoin),
      &                                    ngas,nspin)
         end do
-        write(luout,*) 'OP1OP2 is'
+        write(lulog,*) 'OP1OP2 is'
         do ijoin = 1, njoined_op1op2
-          call wrt_occ_rstr(luout,ijoin,occ_op1op2(:,:,ijoin),
+          call wrt_occ_rstr(lulog,ijoin,occ_op1op2(:,:,ijoin),
      &                                    rst_op1op2(:,:,:,:,ijoin),
      &                                    ngas,nspin)
         end do

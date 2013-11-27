@@ -50,17 +50,17 @@
      &     advance_word_list_entry, next_dist2
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,i_am)
-        write(luout,*) 'string: "',trim(dstring),'"'
-        write(luout,*) ' njoined, maxlist: ',njoined,maxlist
+        call write_title(lulog,wst_dbg_subr,i_am)
+        write(lulog,*) 'string: "',trim(dstring),'"'
+        write(lulog,*) ' njoined, maxlist: ',njoined,maxlist
       end if
 
       call init_word_list(wlist)
       call lex_line(wlist,dstring,0,' ,;|',' ','"')
 
       if (ntest.ge.100) then
-        write(luout,*) 'lex''ed string:'
-        call print_word_list(luout,wlist)
+        write(lulog,*) 'lex''ed string:'
+        call print_word_list(lulog,wlist)
       end if
 
       nl_c = 1
@@ -83,8 +83,8 @@
         if (mod(icnt,2).eq.1) ijoin = ijoin+1
 
         if (ntest.ge.100) then
-          write(luout,*) 'ijoin,icnt: ',ijoin,icnt
-          write(luout,*) 'cur_entry: "',trim(cur_entry),'" sep=',sep
+          write(lulog,*) 'ijoin,icnt: ',ijoin,icnt
+          write(lulog,*) 'cur_entry: "',trim(cur_entry),'" sep=',sep
         end if
 
         if (mod(icnt,2).eq.1) then
@@ -98,8 +98,8 @@
         if (ijoin.eq.njoined.and.mod(icnt,2).eq.0) then
 
           if (ntest.ge.100) then
-            write(luout,*) 'C: ',nl_c
-            write(luout,*) 'A: ',nl_a
+            write(lulog,*) 'C: ',nl_c
+            write(lulog,*) 'A: ',nl_a
           end if
 
           n_one = 1
@@ -149,15 +149,15 @@
       end do main_lp
 
       if (ntest.ge.100)
-     &     write(luout,*) 'nlist = ',nlist
+     &     write(lulog,*) 'nlist = ',nlist
 
       if (nlist.gt.maxlist)
      &     call quit(1,i_am,'maxlen too small')
 
       if (ntest.ge.100) then
-        write(luout,*) 'final occupation list'
+        write(lulog,*) 'final occupation list'
         do ilist = 1, nlist
-          call wrt_occ_n(luout,occ_list(1:,1:,1:,ilist),njoined)
+          call wrt_occ_n(lulog,occ_list(1:,1:,1:,ilist),njoined)
         end do
       end if
  

@@ -43,21 +43,21 @@
      &     idxseq1(ngastp,2,njoined1), idxseq2(ngastp,2,njoined2)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_mapping_info')
-        write(luout,*) 'occ1 (dag = ',dagger1,')'
-        call wrt_occ_n(luout,iocc1,njoined1)
-        write(luout,*) 'occ2 (dag = ',dagger2,')'
-        call wrt_occ_n(luout,iocc2,njoined2)
-        write(luout,*) 'occ12'
-        call wrt_occ_n(luout,iocc12,njoined12)
-        write(luout,*) 'merge_map:'
+        call write_title(lulog,wst_dbg_subr,'set_mapping_info')
+        write(lulog,*) 'occ1 (dag = ',dagger1,')'
+        call wrt_occ_n(lulog,iocc1,njoined1)
+        write(lulog,*) 'occ2 (dag = ',dagger2,')'
+        call wrt_occ_n(lulog,iocc2,njoined2)
+        write(lulog,*) 'occ12'
+        call wrt_occ_n(lulog,iocc12,njoined12)
+        write(lulog,*) 'merge_map:'
         idx_base = 1
         do ijoin12 = 1, njoined12
-          write(luout,'(i3,"<- op1 #vtx:",i3," - ",10i3)')
+          write(lulog,'(i3,"<- op1 #vtx:",i3," - ",10i3)')
      &                        ijoin12, merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1
-          write(luout,'(3x,"<- op2 #vtx:",i3," - ",10i3)')
+          write(lulog,'(3x,"<- op2 #vtx:",i3," - ",10i3)')
      &                             merge_map(idx_base),
      &              merge_map(idx_base+1:idx_base+merge_map(idx_base))
           idx_base = idx_base + merge_map(idx_base) + 1
@@ -166,13 +166,13 @@
       end do ! ica
 
       if (ntest.ge.100) then
-        write(luout,*) 'map_info_c: '
+        write(lulog,*) 'map_info_c: '
         if (icast.eq.1.and.nc12.gt.0)
-     &      write(luout,'(10i5)')
+     &      write(lulog,'(10i5)')
      &       map_info_c(1:nc12*2*(njoined1+njoined2))
-        write(luout,*) 'map_info_a: '
+        write(lulog,*) 'map_info_a: '
         if (icand.eq.2.and.na12.gt.0)
-     &      write(luout,'(10i5)')
+     &      write(lulog,'(10i5)')
      &       map_info_a(1:na12*2*(njoined1+njoined2))
       end if
 

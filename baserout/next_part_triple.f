@@ -83,12 +83,12 @@
 
       if (ntest.ge.100) then
         if (succ) then
-          write(luout,*) '  created partitioning: '
-          write(luout,'(2x,">",10i4)') ipart(1,1:nsum)
-          write(luout,'(2x,">",10i4)') ipart(2,1:nsum)
-          write(luout,'(2x,">",10i4)') ipart(3,1:nsum)
+          write(lulog,*) '  created partitioning: '
+          write(lulog,'(2x,">",10i4)') ipart(1,1:nsum)
+          write(lulog,'(2x,">",10i4)') ipart(2,1:nsum)
+          write(lulog,'(2x,">",10i4)') ipart(3,1:nsum)
         else
-          write(luout,*) ' no (further) partitioning possible'
+          write(lulog,*) ' no (further) partitioning possible'
         end if
       end if
 

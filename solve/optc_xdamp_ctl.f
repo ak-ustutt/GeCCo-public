@@ -42,7 +42,7 @@
      &     xdiff, xgr, dxdamp, dxdsign
 
       if (inuse.and.iter.eq.0) then
-        write(luout,*) 'fatal: initialization call to optc_xdamp_ctl '//
+        write(lulog,*) 'fatal: initialization call to optc_xdamp_ctl '//
      &       'while used by other instance!'
         call quit(1,'optc_xdamp_ctl','fatal -- re-entrant call')
       end if
@@ -60,7 +60,7 @@
      &     (abs(xval).lt.max(abs(xdamp)*1d-6,1d-6))
 
 c        if (ixd_iter.gt.0)
-      write(luout,'(x,">>",2i4,2e12.3,l)')
+      write(lulog,'(x,">>",2i4,2e12.3,l)')
      &       iter,isubcnt,xdamp,xval,converged
 
       if (converged) then
@@ -79,7 +79,7 @@ c        if (ixd_iter.gt.0)
       end if
 
       if (xdamp.lt.0d0) then    ! that should never ever happen!!
-        write(luout,*) 'What did you do? xdamp = ',xdamp
+        write(lulog,*) 'What did you do? xdamp = ',xdamp
         call quit(1,'optc_xdamp_ctl','xdamn')
       end if
 
@@ -99,7 +99,7 @@ c        if (ixd_iter.gt.0)
           dxdamp = - max(xinc,abs(xdamp*xinc))
         end if
         if (ntest.ge.150)
-     &       write(luout,*)
+     &       write(lulog,*)
      &       'xdamp> initialized num. gradient with xinc = ',
      &       dxdamp
              ! next time we see us in step two
@@ -113,7 +113,7 @@ c        if (ixd_iter.gt.0)
           dxdamp = - max(xinc,abs(xdamp*xinc))
         end if
         if (ntest.ge.150)
-     &       write(luout,*)
+     &       write(lulog,*)
      &       'xdamp> initialized num. gradient with xinc = ',
      &       dxdamp
         ! next time we see us in step two
@@ -121,37 +121,37 @@ c        if (ixd_iter.gt.0)
       else if (isubcnt.eq.2) then
         ! get gradient from finite difference
         if (ntest.ge.150) then
-          write(luout,*) 'xdamp> linear model '
-          write(luout,*) ' points used:'
+          write(lulog,*) 'xdamp> linear model '
+          write(lulog,*) ' points used:'
           do ii = 0, 1
-            write(luout,'(3x,i2,2(2x,e25.8))')
+            write(lulog,'(3x,i2,2(2x,e25.8))')
      &           ii, xd(iter-ii), xv(iter-ii)
           end do
         end if
         xdiff = xd(iter)-xd(iter-1)
         xgr = (xv(iter)-xv(iter-1))/xdiff
         if (ntest.ge.150)
-     &             write(luout,*) 'xdamp> current num. gradient: ',xgr    
+     &             write(lulog,*) 'xdamp> current num. gradient: ',xgr    
         ! gradient has to be negative
         if (xgr.lt.0d0) then
           if (ntest.ge.150)
-     &             write(luout,*) 'xdamp> accepting step'  
+     &             write(lulog,*) 'xdamp> accepting step'  
           ! make a Newton step
           dxdamp = - xv(iter)/xgr
           isubcnt = 1
           if (ntest.eq.150)
-     &         write(luout,*) 'xdamp> step = ',dxdamp
+     &         write(lulog,*) 'xdamp> step = ',dxdamp
           if (dxdamp.lt.0.5d0) isubcnt = 2
         else
           if (ntest.ge.150)
-     &             write(luout,*) 'xdamp> search at a new place'  
+     &             write(lulog,*) 'xdamp> search at a new place'  
           ! retry with a larger xdamp
           dxdamp = +10d0       !+ xfailfac*xinc
           iter = iter-1
           isubcnt = 0
         end if
       else
-        write(luout,*) 'unknown isubcnt = ',isubcnt
+        write(lulog,*) 'unknown isubcnt = ',isubcnt
         call quit(1,'optc_xdamp_ctl','unexpected event')
       end if
 

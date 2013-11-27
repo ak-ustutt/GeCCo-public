@@ -57,8 +57,8 @@
         if (idxop.gt.0) then
           idxmel = op_info%op2list(idxop)
           if (idxmel.le.0) then
-            call prt_contr2(luout,contr,op_info)
-            write(luout,*) op_info%op2list(1:op_info%nops)
+            call prt_contr2(lulog,contr,op_info)
+            write(lulog,*) op_info%op2list(1:op_info%nops)
             call quit(1,'vtxinf4contr',
      &         'No list associated with operator '//
      &         trim(op_info%op_arr(idxop)%op%name))

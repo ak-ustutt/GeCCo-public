@@ -60,8 +60,8 @@
       ffmo  => me_mo%fhand
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'tran_one')
-        write(luout,*) 'transform one-particle part of: ',
+        call write_title(lulog,wst_dbg_subr,'tran_one')
+        write(lulog,*) 'transform one-particle part of: ',
      &       trim(me_mo%label)
       end if
 
@@ -176,7 +176,7 @@
         iblkoff = (iblk-1)*njoined
 
         if (ntest.ge.100) then
-          call wrt_occ_n(luout,hpvx_occ(1,1,iblkoff+1),njoined)
+          call wrt_occ_n(lulog,hpvx_occ(1,1,iblkoff+1),njoined)
         end if
 
         ! set standard frozen core settings:

@@ -32,7 +32,7 @@
      &     njoined_intm, njoined_op
 
       if (idx.gt.nop) then
-        write(luout,*) 'idx, nop: ',idx,nop
+        write(lulog,*) 'idx, nop: ',idx,nop
         call quit(1,'set_1contrib','not enough operators on input list')
       end if
 
@@ -77,8 +77,8 @@
       end if
 
       if (ntest.ge.100) then
-        write (luout,*) 'generated in set_1contrib:'
-        call print_form_list(luout,flist_pnt,op_info)
+        write (lulog,*) 'generated in set_1contrib:'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       return

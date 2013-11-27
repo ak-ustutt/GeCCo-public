@@ -68,8 +68,8 @@ cmh      call quit(1,'list_copy','not yet debugged (*might* work)')
       nblkmax = ifree/ffop_src%reclen
       if (swap) nblkmax = nblkmax/2
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop_src%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffop_src%reclen
         call quit(1,'list_copy','not even 1 record fits into memory?')
       end if
 

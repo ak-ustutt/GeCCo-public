@@ -55,7 +55,7 @@
      &     xfock(:), xh1reo(:)
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'import_fock_dalton')
+     &     call write_title(lulog,wst_dbg_subr,'import_fock_dalton')
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -200,7 +200,7 @@ c dbg end fix
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in 1int import',
+     &     call prtim(lulog,'time in 1int import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

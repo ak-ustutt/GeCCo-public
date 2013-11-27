@@ -53,7 +53,7 @@
 
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,i_am)
+        call write_title(lulog,wst_dbg_subr,i_am)
       end if 
 
       ! list of binary contractions which have to be
@@ -108,8 +108,8 @@
           if (associated(fl_pnt)) then
             ! put it on list to move
             if (ntest.ge.100) then
-              write(luout,*) 'for iop = ',iop
-              write(luout,*) 'put on lists: definition of '//
+              write(lulog,*) 'for iop = ',iop
+              write(lulog,*) 'put on lists: definition of '//
      &                       trim(label_op)
             end if
 
@@ -151,14 +151,14 @@
       do
         if (ntest.ge.100) then
           if (loop_pnt%item%command.eq.command_new_intermediate) then
-            write(luout,*) 'now moving: [NEW] '//
+            write(lulog,*) 'now moving: [NEW] '//
      &                      trim(loop_pnt%item%interm%name)
           else if (loop_pnt%item%command.eq.command_reorder) then
-            write(luout,*) 'now moving: [REORDER] '//
+            write(lulog,*) 'now moving: [REORDER] '//
      &                  trim(loop_pnt%item%reo%label_in)//'->'//
      &                  trim(loop_pnt%item%reo%label_out)
           else
-            write(luout,*) 'now moving: [CONTR] '//
+            write(lulog,*) 'now moving: [CONTR] '//
      &                  trim(loop_pnt%item%bcontr%label_op1)//'*'//
      &                  trim(loop_pnt%item%bcontr%label_op2)//'->'//
      &                  trim(loop_pnt%item%bcontr%label_res)

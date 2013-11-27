@@ -46,7 +46,7 @@
      &     occ_is_diag_blk
       
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'set_primitive_formula')        
+        call write_title(lulog,wst_dbg_subr,'set_primitive_formula')        
       end if
 
       blk_select = idx_op.ne.idx_opsh
@@ -56,10 +56,10 @@
       opsh => op_info%op_arr(idx_opsh)%op
 
       if (ntest.ge.100) then
-        write(luout,*) 'op:   ',trim(op%name)
-        call print_op_occ(luout,op)
-        write(luout,*) 'opsh: ',trim(opsh%name)
-        call print_op_occ(luout,opsh)
+        write(lulog,*) 'op:   ',trim(op%name)
+        call print_op_occ(lulog,op)
+        write(lulog,*) 'opsh: ',trim(opsh%name)
+        call print_op_occ(lulog,opsh)
       end if
 
       if (opsh%name.eq.op_unity)
@@ -153,8 +153,8 @@ c??        form_pnt%contr%iblk_res = iblk_off_sh+1
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result:'
-        call print_form_list(luout,form,op_info)
+        write(lulog,*) 'result:'
+        call print_form_list(lulog,form,op_info)
       end if
 
       return

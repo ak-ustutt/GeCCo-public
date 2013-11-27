@@ -61,9 +61,9 @@
      &     vtx_type, iblk_occ
 
       if (ntest.ge.100) then
-        write(luout,*) '=========================='
-        write(luout,*) ' info from sum_hermite'
-        write(luout,*) '=========================='
+        write(lulog,*) '=========================='
+        write(lulog,*) ' info from sum_hermite'
+        write(lulog,*) '=========================='
       end if
 
       if (.not.sum) ! but it likely works
@@ -87,9 +87,9 @@
      &         call quit(1,'sum_hermite',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
-            write(luout,'(70("="))')
-            write(luout,*) 'New operator target: ',idxop_tgt
-            write(luout,'(70("="))')
+            write(lulog,'(70("="))')
+            write(lulog,*) 'New operator target: ',idxop_tgt
+            write(lulog,'(70("="))')
           end if
           fl_tgt_current => fl_tgt_current%next
           
@@ -121,8 +121,8 @@
         iterm = iterm+1
         jterm = iterm+1
         if (ntest.ge.100) then
-          write(luout,*) 'current term: # ',iterm
-          call prt_contr2(luout,fl_tgt_current%contr,op_info)
+          write(lulog,*) 'current term: # ',iterm
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
 
         found = .false.
@@ -171,10 +171,10 @@
      &                    fl_tgt_current%contr,.true.)) then
                 found = .true.
                 if (ntest.ge.100) then
-                  write(luout,*) 'found equal term: # ',jterm
-                  call prt_contr2(luout,fl_tgt_pnt%contr,
+                  write(lulog,*) 'found equal term: # ',jterm
+                  call prt_contr2(lulog,fl_tgt_pnt%contr,
      &                 op_info)
-                  write(luout,*) 'now deleting'
+                  write(lulog,*) 'now deleting'
                 end if
                 if (sum)
      &               fl_tgt_current%contr%fac =
@@ -183,11 +183,11 @@
                 deallocate(fl_tgt_pnt)
                 exit search_loop ! we look only for one (see header)
               else if (ntest.ge.1000) then              
-                write(luout,*) 'non-equiv term: # ',jterm
-                call prt_contr2(luout,fl_tgt_pnt%contr,
+                write(lulog,*) 'non-equiv term: # ',jterm
+                call prt_contr2(lulog,fl_tgt_pnt%contr,
      &               op_info)
-                write(luout,*) 'transposed:'
-                call prt_contr2(luout,contr_scr,
+                write(lulog,*) 'transposed:'
+                call prt_contr2(lulog,contr_scr,
      &               op_info)
               end if
             end if
@@ -199,8 +199,8 @@
         end if
 
         if (strict.and..not.found) then
-          write(luout,*) 'no adjungate found for term:'
-          call prt_contr2(luout,fl_tgt_current%contr,op_info)
+          write(lulog,*) 'no adjungate found for term:'
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
           call quit(1,'sum_hermite','check failed')
         end if
         ! advance to next item

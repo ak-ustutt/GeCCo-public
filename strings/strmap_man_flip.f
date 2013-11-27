@@ -45,8 +45,8 @@
      &     ifndmax
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'This is strmap_man_flip')
-        write(luout,*) 'igraph: ',igraph
+        call write_title(lulog,wst_dbg_subr,'This is strmap_man_flip')
+        write(lulog,*) 'igraph: ',igraph
       end if
 
       maxbuffer = 0
@@ -65,7 +65,7 @@
         iocc = str_info%ispc_occ(igraph(idx))
 
         if (ntest.ge.100) then
-          write(luout,*) 'need flip-map for: graph ',igraph(idx)
+          write(lulog,*) 'need flip-map for: graph ',igraph(idx)
         end if
 
         ! does primitive map exist?
@@ -79,7 +79,7 @@
      &         .not.associated(strmap_info%offsets_flip(idxgraph)%msgm))
      &         call quit(1,'strmap_man_flip','offsets not initialized?')
           if (ntest.ge.100) then
-            write(luout,*) 'I have this map already ...'
+            write(lulog,*) 'I have this map already ...'
           end if
           maxbuffer = maxbuffer
      &             + strmap_info%maxlen_blk_flip(idxgraph)
@@ -87,7 +87,7 @@
         end if
 
         if (ntest.ge.100) then
-          write(luout,*) 'I will generate this map ...'
+          write(lulog,*) 'I will generate this map ...'
         end if
 
         idx_flipmap(idxgraph) = strmap_info%idx_last+1
@@ -118,7 +118,7 @@ C               ! ADAPT FOR OPEN SHELL  ^^^
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'leaving strmap_man_flip() ...'
+        write(lulog,*) 'leaving strmap_man_flip() ...'
       end if
 
       return

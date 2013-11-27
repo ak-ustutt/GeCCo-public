@@ -120,7 +120,7 @@
       read (lumok,err=16) kexch(1:nexch)
       goto 1
       ! on error try next record
- 16   write(luout,*) 'Trying new DALTON format ...'
+ 16   write(lulog,*) 'Trying new DALTON format ...'
       read (lumok) kexch(1:nexch) 
 
   1   call file_close_keep(ffmok)
@@ -142,7 +142,7 @@
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5) 
-     &     call prtim(luout,'time in exchange integral import',
+     &     call prtim(lulog,'time in exchange integral import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return

@@ -42,7 +42,7 @@
       setr12 = is_keyword_set('method.R12').gt.0
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting targets for CC ionized states ...'
+     &     write(lulog,*) 'setting targets for CC ionized states ...'
 
 *----------------------------------------------------------------------*
 *     Operators:

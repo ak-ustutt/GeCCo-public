@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine show_keywords(luout)
+      subroutine show_keywords(lulog)
 *----------------------------------------------------------------------*
 *     wrapper routine
 *----------------------------------------------------------------------*
@@ -8,9 +8,9 @@
       implicit none
 
       integer, intent(in) ::
-     &     luout
+     &     lulog
 
-      call keyword_list(luout,keyword_root,show_args=.true.)
+      call keyword_list(lulog,keyword_root,show_args=.true.)
 
       return
       end

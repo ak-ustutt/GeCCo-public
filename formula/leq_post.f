@@ -51,7 +51,7 @@ c     &     label_traf(nx), label_rhs(nx), label_x(nx)
      &     idx_formlist, idx_oplist2
 
       if (ntest.ge.100)
-     &     call write_title(luout,wst_dbg_subr,'leq_post at work')
+     &     call write_title(lulog,wst_dbg_subr,'leq_post at work')
 
 c      if (nx.gt.1)
 c     &     call quit(1,'leq_post','under construction')
@@ -86,12 +86,12 @@ c     &     call quit(1,'leq_post','under construction')
       end do
 
       if (idx_traf.le.0.or.idx_rhs.le.0.or.any(idx_x(1:nx).le.0)) then
-        write(luout,*) 'labels: "',trim(label_traf),'" "',
+        write(lulog,*) 'labels: "',trim(label_traf),'" "',
      &                             trim(label_rhs), '" "'
         do ix = 1, nx
-          write(luout,*)'"', trim(label_x(ix)),'"'
+          write(lulog,*)'"', trim(label_x(ix)),'"'
         end do
-        write(luout,*) 'indices: ',idx_traf,idx_rhs,idx_x(1:nx)
+        write(lulog,*) 'indices: ',idx_traf,idx_rhs,idx_x(1:nx)
         call quit(1,'leq_post',
      &       'one or more of the above labels was not defined')
       end if
@@ -122,11 +122,11 @@ c     &     call quit(1,'leq_post','under construction')
       call write_form_list(form_rhs%fhand,fl_rhs,title_rhs)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_around_single,'Extracted lists')
-        call write_title(luout,wst_uline_single,'RHS')
-        call print_form_list(luout,fl_rhs,op_info)
-        call write_title(luout,wst_uline_single,'Trafo')
-        call print_form_list(luout,fl_traf,op_info)
+        call write_title(lulog,wst_around_single,'Extracted lists')
+        call write_title(lulog,wst_uline_single,'RHS')
+        call print_form_list(lulog,fl_rhs,op_info)
+        call write_title(lulog,wst_uline_single,'Trafo')
+        call print_form_list(lulog,fl_traf,op_info)
       end if
 
       ! tidy up again

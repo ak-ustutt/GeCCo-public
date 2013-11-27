@@ -34,10 +34,10 @@
       info = 0
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '--------------------'
-        write(luout,'(x,a)') 'svd_get_left at work'
-        write(luout,'(x,a)') '--------------------'
-        write(luout,*) 'input matrix:'
+        write(lulog,'(x,a)') '--------------------'
+        write(lulog,'(x,a)') 'svd_get_left at work'
+        write(lulog,'(x,a)') '--------------------'
+        write(lulog,*) 'input matrix:'
         call wrtmat2(mat,nrow,ncol,nrow,ncol)
       end if
 
@@ -48,13 +48,13 @@
      &     wrk,lwrk,info)
 
       if (info.ne.0) then
-        write(luout,*) 'WARNING in svd_get_left: SVD in trouble'
+        write(lulog,*) 'WARNING in svd_get_left: SVD in trouble'
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'left-hand eigenvector matrix U:'
+        write(lulog,*) 'left-hand eigenvector matrix U:'
         call wrtmat2(mat,nrow,ncol,nrow,ncol)
-        write(luout,*) 'singular values:'
+        write(lulog,*) 'singular values:'
         call wrtmat2(singval,min(nrow,ncol),1,min(nrow,ncol),1)
       end if
 
@@ -63,7 +63,7 @@
         if (singval(idx).lt.sv_thresh) then
           mat(1:nrow,idx) = 0d0
           if (singval(idx).gt.warn_sv) then
-            write(luout,*) 'small singular value: ',singval(idx)
+            write(lulog,*) 'small singular value: ',singval(idx)
             call warn('svd_get_left','small singular values')
           end if
         end if

@@ -97,7 +97,7 @@ c dbg
      &                                                 tra_trop)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'News from trace_op_blk')
       end if
 

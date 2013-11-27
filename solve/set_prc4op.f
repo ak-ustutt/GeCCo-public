@@ -221,20 +221,20 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
       end if
 
       if (iprlvl.ge.1)
-     &     write(luout,*) 'set up diagonal'//
+     &     write(lulog,*) 'set up diagonal'//
      &     ' from rank 1 part of ',trim(me_ham%op%name)
       if (iprlvl.ge.1.and.use_id)
-     &     write(luout,*)
+     &     write(lulog,*)
      &     '     and from rank 0 part of ',trim(me_ham%op%name)
       if (iprlvl.ge.1.and.use_h2)
-     &     write(luout,*)
+     &     write(lulog,*)
      &     '     and from rank 2 part of ',trim(me_ham%op%name)
       if (iprlvl.ge.1.and.use_b.and.use_x)
-     &     write(luout,*) 
+     &     write(lulog,*) 
      &     '     and the diagonals of ',trim(me_b%op%name),
      &                          ' and ',trim(me_x%op%name)
       if (iprlvl.ge.1.and.use_b.and..not.use_x)
-     &     write(luout,*) 
+     &     write(lulog,*) 
      &     '     and the diagonal of ',trim(me_b%op%name)
 
       if (open_close_prc)
@@ -286,7 +286,7 @@ cmh        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
       end if
 
       if (ntest.ge.1000) then
-        call wrt_mel_file(luout,5,me_prc,1,
+        call wrt_mel_file(lulog,5,me_prc,1,
      &       me_prc%op%n_occ_cls,str_info,orb_info)
       end if
 
@@ -303,7 +303,7 @@ cmh        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
 
       call atim_csw(cpu,sys,wall)
 
-      call prtim(luout,'time for diagonal ',
+      call prtim(lulog,'time for diagonal ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
 

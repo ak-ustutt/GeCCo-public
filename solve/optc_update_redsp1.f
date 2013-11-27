@@ -42,14 +42,14 @@
      &     ddot, da_ddot
 
       if (ntest.gt.0) then
-        write(luout,*) '==============================='
-        write(luout,*) ' welcome to optc_update_redsp1'
-        write(luout,*) '==============================='
-        write(luout,*) 'nwfpar = ',nwfpar
+        write(lulog,*) '==============================='
+        write(lulog,*) ' welcome to optc_update_redsp1'
+        write(lulog,*) '==============================='
+        write(lulog,*) 'nwfpar = ',nwfpar
       end if
 
       if (ntest.ge.20) then
-        write(luout,*) 'subspace matrix on input:'
+        write(lulog,*) 'subspace matrix on input:'
         call prtrlt(xmat,ndim)
       end if
 
@@ -64,7 +64,7 @@
           end do
         end do
         if (ntest.ge.20) then
-          write(luout,*) 'subspace matrix after shift:'
+          write(lulog,*) 'subspace matrix after shift:'
           call prtrlt(xmat,ndim)
         end if
       end if
@@ -112,7 +112,7 @@
       end do
 
       if (ntest.ge.20) then
-        write(luout,*) 'updated subspace matrix:'
+        write(lulog,*) 'updated subspace matrix:'
         call prtrlt(xmat,ndim)
       end if
 

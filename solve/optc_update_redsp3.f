@@ -40,17 +40,17 @@
      &     ddot, da_ddot
 
       if (ntest.gt.0) then
-        write(luout,*) '==============================='
-        write(luout,*) ' welcome to optc_update_redsp3'
-        write(luout,*) '==============================='
-        write(luout,*) ' ndim, nadd, ndel: ',ndim, nadd, ndel
+        write(lulog,*) '==============================='
+        write(lulog,*) ' welcome to optc_update_redsp3'
+        write(lulog,*) '==============================='
+        write(lulog,*) ' ndim, nadd, ndel: ',ndim, nadd, ndel
       end if
 
       if (ntest.ge.20) then
-        write(luout,*) 'subspace matrix on input:'
+        write(lulog,*) 'subspace matrix on input:'
         call wrtmat2(xmat,ndim,ndim,mxdim,mxdim)
         if (nrhs.gt.0) then
-          write(luout,*) 'subspace rhs on input:'
+          write(lulog,*) 'subspace rhs on input:'
           call wrtmat2(xvec,ndim,nrhs,mxdim,nrhs)
         end if
       end if
@@ -64,7 +64,7 @@
           end do
         end do
         if (ntest.ge.20) then
-          write(luout,*) 'subspace matrix after shift:'
+          write(lulog,*) 'subspace matrix after shift:'
           call wrtmat2(xmat,ndim,ndim,mxdim,mxdim)
         end if
       end if
@@ -76,7 +76,7 @@
           end do
         end do
         if (ntest.ge.20) then
-          write(luout,*) 'subspace rhs after shift:'
+          write(lulog,*) 'subspace rhs after shift:'
           call wrtmat2(xmat,ndim,nrhs,mxdim,nrhs)
         end if
       end if
@@ -158,10 +158,10 @@
       end do
 
       if (ntest.ge.20) then
-        write(luout,*) 'updated subspace matrix:'
+        write(lulog,*) 'updated subspace matrix:'
         call wrtmat2(xmat,ndim,ndim,mxdim,mxdim)
         if (nrhs.gt.0) then
-          write(luout,*) 'updated subspace rhs:'
+          write(lulog,*) 'updated subspace rhs:'
           call wrtmat2(xvec,ndim,nrhs,mxdim,nrhs)
         end if
       end if

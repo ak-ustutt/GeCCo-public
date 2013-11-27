@@ -46,14 +46,14 @@
      &     contr_in_contr
 
 
-      call write_title(luout,wst_dbg_subr,
+      call write_title(lulog,wst_dbg_subr,
      &     'Checking Formula Generator Routines')
 
-      write(luout,*) 'I will define a few operators for testing'
+      write(lulog,*) 'I will define a few operators for testing'
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding A operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding A operator'
+      write(lulog,*) '-------------------'
       call add_operator('A',op_info)
 
       iformal=3
@@ -62,9 +62,9 @@
       call set_xop(opa,'A',.false.,
      &     2,2,0,0,iformal,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding B operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding B operator'
+      write(lulog,*) '-------------------'
       call add_operator('B',op_info)
 
       idxopb =  idx_oplist2('B',op_info)
@@ -74,9 +74,9 @@
       call set_uop(opb,'B',.false.,
      &     occ_def,1,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding C operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding C operator'
+      write(lulog,*) '-------------------'
       call add_operator('C',op_info)
 
       idxopc =  idx_oplist2('C',op_info)
@@ -86,9 +86,9 @@
       call set_uop(opc,'C',.false.,
      &     occ_def,1,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding D operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding D operator'
+      write(lulog,*) '-------------------'
       call add_operator('D',op_info)
 
       idxopd =  idx_oplist2('D',op_info)
@@ -98,9 +98,9 @@
       call set_uop(opd,'D',.false.,
      &     occ_def,1,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding E operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding E operator'
+      write(lulog,*) '-------------------'
       call add_operator('E',op_info)
       idxope =  idx_oplist2('E',op_info)
       ope => op_info%op_arr(idxope)%op
@@ -109,9 +109,9 @@
       call set_uop(ope,'E',.false.,
      &     occ_def,1,orb_info)
 
-      write(luout,*) '-------------------'
-      write(luout,*) ' adding R operator'
-      write(luout,*) '-------------------'
+      write(lulog,*) '-------------------'
+      write(lulog,*) ' adding R operator'
+      write(lulog,*) '-------------------'
       call add_operator('R',op_info)
 
       idxopr =  idx_oplist2('R',op_info)
@@ -126,9 +126,9 @@
 
       deallocate(defop)
 
-      call list_operators(luout,op_info)
+      call list_operators(lulog,op_info)
 
-      write(luout,*) 'now we generate: R = B B B x A A x'
+      write(lulog,*) 'now we generate: R = B B B x A A x'
 
       call init_formula(form_r)
 
@@ -143,8 +143,8 @@
      &     0,0,
      &     .false.,op_info)
 
-c      write(luout,*) 'expansion 1 (result: r)'
-c      call print_form_list(luout,form_r,op_info)
+c      write(lulog,*) 'expansion 1 (result: r)'
+c      call print_form_list(lulog,form_r,op_info)
 c      call dealloc_formula_list(form_r)
 c      call init_formula(form_c)
 c
@@ -159,8 +159,8 @@ c     &     (/1,6, 2,5, 3,6, 4,7, 5,6, 2,8, 3,9/),7,
 c     &     0,0,
 c     &     .false.,op_info)
 c
-c      write(luout,*) 'expansion 2 (result: c)'
-c      call print_form_list(luout,form_c,op_info)
+c      write(lulog,*) 'expansion 2 (result: c)'
+c      call print_form_list(lulog,form_c,op_info)
 c
 c      call add_operator('R2',op_info)
 c
@@ -193,19 +193,19 @@ c     &     (/2,6,2,7,3,6,3,7/),4,
 c     &     0,0,
 c     &     .false.,op_info)
 c
-c      write(luout,*) 'expansion 3 (result: r2)'
-c      call print_form_list(luout,form_r2,op_info)
+c      write(lulog,*) 'expansion 3 (result: r2)'
+c      call print_form_list(lulog,form_r2,op_info)
 c
-c      write(luout,*) 'trying to split'
+c      write(lulog,*) 'trying to split'
 c
 c      if (.not.associated(form_c%contr)) stop '1'
 c      if (.not.associated(form_r2%contr)) stop '2'
 c
-c      write(luout,*) 'contr_in_contr(1): ',
+c      write(lulog,*) 'contr_in_contr(1): ',
 c     &     contr_in_contr(form_r2%contr,form_c%contr)
-c      write(luout,*) 'contr_in_contr(2): ',
+c      write(lulog,*) 'contr_in_contr(2): ',
 c     &     contr_in_contr(form_r2%next%contr,form_c%contr)
-c      write(luout,*) 'contr_in_contr(3): ',
+c      write(lulog,*) 'contr_in_contr(3): ',
 c     &     contr_in_contr(form_r2%next%next%contr,form_c%contr)
 c
 c      call init_contr(ctest)

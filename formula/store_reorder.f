@@ -51,7 +51,7 @@
      &     len_merge_map
 
       if (ntest.ge.100)
-     &     write(luout,*) 'storing reordering'
+     &     write(lulog,*) 'storing reordering'
       
       ngas = orb_info%ngas
       nspin = orb_info%nspin

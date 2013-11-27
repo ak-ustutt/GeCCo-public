@@ -74,10 +74,10 @@
       off = 0
 
       if (ntest.eq.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'output from set_mrcc_lagrangian')
-        write(luout,*) ' max_n = ',max_n
-        write(luout,*) ' approx = ',trim(approx)
+        write(lulog,*) ' max_n = ',max_n
+        write(lulog,*) ' approx = ',trim(approx)
       end if
 
       min_n = 0
@@ -192,9 +192,9 @@
         if (esym.and.nn.gt.0) fac = 0.5d0*fac
 
 c dbg
-c        write(luout,'(a,4i6)') 'nl,nh,n,k:',0,iblk_ham,nn,kk
-c        write(luout,'(a,10i4)') 'iblk_min: ',iblk_min
-c        write(luout,'(a,10i4)') 'iblk_max: ',iblk_max
+c        write(lulog,'(a,4i6)') 'nl,nh,n,k:',0,iblk_ham,nn,kk
+c        write(lulog,'(a,10i4)') 'iblk_min: ',iblk_min
+c        write(lulog,'(a,10i4)') 'iblk_max: ',iblk_max
 c dbgend
 
         call atim_csw(cpu10,sys10,wall10)
@@ -221,7 +221,7 @@ c dbgend
         if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c        print *,'# of generated terms: ',iterm
-c        call prtim(luout,'time in expand_op_product2 ',
+c        call prtim(lulog,'time in expand_op_product2 ',
 c     &             cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
         if (esym.and.nn.gt.0) then
@@ -230,9 +230,9 @@ c dbgend
           fac = 0.5d0/dble(ifac(kk)*ifac(nn-kk))
           if (mod(nn-kk,2).ne.0) fac = -fac
 c dbg
-c          write(luout,'(a,4i6)') 'nl,nh,n,k:',0,iblk_ham,nn,kk
-c          write(luout,'(a,10i4)') 'iblk_min: ',iblk_min
-c          write(luout,'(a,10i4)') 'iblk_max: ',iblk_max
+c          write(lulog,'(a,4i6)') 'nl,nh,n,k:',0,iblk_ham,nn,kk
+c          write(lulog,'(a,10i4)') 'iblk_min: ',iblk_min
+c          write(lulog,'(a,10i4)') 'iblk_max: ',iblk_max
 c dbgend  
           call atim_csw(cpu10,sys10,wall10)
           icall = icall + 1
@@ -258,7 +258,7 @@ c dbgend
           if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c          print *,'# of generated terms: ',iterm
-c          call prtim(luout,'time in expand_op_product2 ',
+c          call prtim(lulog,'time in expand_op_product2 ',
 c     &               cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend  
         end if
@@ -272,7 +272,7 @@ c dbgend
       call sum_terms(start_pnt,op_info)
       call atim_csw(cpu1,sys1,wall1)
 c dbg
-c      call prtim(luout,'time in sum_terms ',
+c      call prtim(lulog,'time in sum_terms ',
 c     &           cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
 
@@ -390,9 +390,9 @@ c            if (lu-ho+hu.gt.4*nn) cycle
                 if (sym) fac = 0.5d0*fac
 
 c dbg
-c                write(luout,'(a,4i6)') 'nl,nh,n,k:',nl,iblk_ham,nn,kk
-c                write(luout,'(a,12i4)') 'iblk_min: ',iblk_min
-c                write(luout,'(a,12i4)') 'iblk_max: ',iblk_max
+c                write(lulog,'(a,4i6)') 'nl,nh,n,k:',nl,iblk_ham,nn,kk
+c                write(lulog,'(a,12i4)') 'iblk_min: ',iblk_min
+c                write(lulog,'(a,12i4)') 'iblk_max: ',iblk_max
 c dbgend
                 call atim_csw(cpu10,sys10,wall10)
                 icall = icall + 1
@@ -417,7 +417,7 @@ c dbgend
                 if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c                print *,'# of generated terms: ',iterm
-c                call prtim(luout,'time in expand_op_product2 ',
+c                call prtim(lulog,'time in expand_op_product2 ',
 c     &                     cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
@@ -425,7 +425,7 @@ c dbgend
                 call sum_terms(start_pnt2,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
-c            call prtim(luout,'time in sum_terms (2) ',
+c            call prtim(lulog,'time in sum_terms (2) ',
 c     &                 cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 if (sym) then
@@ -464,9 +464,9 @@ c dbgend
                  if (mod(nn-kk,2).ne.0) fac = -fac
 
 c dbg
-c                 write(luout,'(a,4i6)') 'nl,nh,n,k:',nl,iblk_ham,nn,kk
-c                 write(luout,'(a,12i4)') 'iblk_min: ',iblk_min
-c                 write(luout,'(a,12i4)') 'iblk_max: ',iblk_max
+c                 write(lulog,'(a,4i6)') 'nl,nh,n,k:',nl,iblk_ham,nn,kk
+c                 write(lulog,'(a,12i4)') 'iblk_min: ',iblk_min
+c                 write(lulog,'(a,12i4)') 'iblk_max: ',iblk_max
 c dbgend
                  call atim_csw(cpu10,sys10,wall10)
                  icall = icall + 1
@@ -491,7 +491,7 @@ c dbgend
                  if (iterm.eq.0) icall0 = icall0 + 1
 c dbg
 c                 print *,'# of generated terms: ',iterm
-c                 call prtim(luout,'time in expand_op_product2 ',
+c                 call prtim(lulog,'time in expand_op_product2 ',
 c     &                      cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
 
@@ -511,7 +511,7 @@ c dbgend
                call sum_terms(start_pnt,op_info)
                call atim_csw(cpu1,sys1,wall1)
 c dbg
-c               call prtim(luout,'time in sum_terms ',
+c               call prtim(lulog,'time in sum_terms ',
 c     &                    cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
              end if
@@ -531,8 +531,8 @@ c dbgend
      &   call del_zero_terms(flist,'---',op_info,1d-12)
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_title,'Final formula')
-        call print_form_list(luout,flist,op_info)
+        call write_title(lulog,wst_title,'Final formula')
+        call print_form_list(lulog,flist,op_info)
       end if
 
       ! assign comment
@@ -546,13 +546,13 @@ c dbgend
       call dealloc_formula_list(flist)
 
       if (ntest.ge.10) then
-        write(luout,*) 'total # of initially generated terms: ',nterm
-        write(luout,'(i6,a,i6,a)') icall0,' out of ',icall,
+        write(lulog,*) 'total # of initially generated terms: ',nterm
+        write(lulog,'(i6,a,i6,a)') icall0,' out of ',icall,
      &              ' calls (of exp_op_pr2) lead to zero terms'
       end if
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'time for formula generation',
+      call prtim(lulog,'time for formula generation',
      &           cpu-cpu0,sys-sys0,wall-wall0)
 
       return

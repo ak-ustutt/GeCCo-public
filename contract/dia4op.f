@@ -78,7 +78,7 @@
       ifree = mem_setmark('dia4op')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'this is dia4op')
+        call write_title(lulog,wst_dbg_subr,'this is dia4op')
       end if
 
       op => me_dia%op
@@ -110,7 +110,7 @@ c        if (imltlist(0,iocc(1:,1),ngastp,1).lt.3.or.
 c     &      imltlist(0,iocc(1:,2),ngastp,1).lt.3.or.
 c     &      iocc(ihole,1).gt.0 .or.
 c     &      iocc(ipart,2).gt.0 ) then
-c          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+c          call wrt_occ(lulog,op%ihpvca_occ(1,1,iblk))
 c          call quit(1,'dia4op',
 c     &         'routine not tested for this kind of occupation')
 c        end if
@@ -120,13 +120,13 @@ c        end if
       ! we should of course use a better memory management
       ! when going to large calculations
       if (maxbuff.gt.ifree) then
-        write(luout,*) 'maxbuff, ifree: ',maxbuff,ifree
+        write(lulog,*) 'maxbuff, ifree: ',maxbuff,ifree
         call mem_map(.true.)
         call quit(1,'dia4op','inadequate memory management')
       end if
 
       if (ntest.ge.100)
-     &     write(luout,*)'allocating result buffer of size: ',maxbuff
+     &     write(lulog,*)'allocating result buffer of size: ',maxbuff
         
       ifree = mem_alloc_real(buffer,maxbuff,'buffer')
       ! loop over operator elements
@@ -142,8 +142,8 @@ c        end if
         idx_graph => me_dia%idx_graph(1:ngastp,1:2,iblk)
 
         if (ntest.ge.100) then
-          write(luout,*) 'current occupation class:'
-          call wrt_occ(luout,op%ihpvca_occ(1,1,iblk))
+          write(lulog,*) 'current occupation class:'
+          call wrt_occ(lulog,op%ihpvca_occ(1,1,iblk))
         end if
 
         ncidx = op%ica_occ(1,iblk)
@@ -190,7 +190,7 @@ c        end if
         end do
 
         if (ntest.ge.100)
-     &       write(luout,*) 'allocating xsum-buffer of size ',maxstrbuf
+     &       write(lulog,*) 'allocating xsum-buffer of size ',maxstrbuf
         ! buffer for orbital energy sums
         ifree = mem_alloc_real(xsum,maxstrbuf,'xsum')
 
@@ -232,11 +232,11 @@ c     &             d_gam_ms(idis,igama,idxms).eq.0)
 c     &             cycle distr_loop
               
               if (ntest.ge.100) then
-                write(luout,*) 'msc,msa,igamc,igama: ',
+                write(lulog,*) 'msc,msa,igamc,igama: ',
      &               msc,msa,igamc,igama
-                write(luout,*) 'current distribution (MS,GAMMA):'
-                call wrt_occ(luout,msdst)
-                call wrt_occ(luout,igamdst)
+                write(lulog,*) 'current distribution (MS,GAMMA):'
+                call wrt_occ(lulog,msdst)
+                call wrt_occ(lulog,igamdst)
               end if
 
               ! strings for HPV/CA
@@ -381,7 +381,7 @@ c dbg
       call atim_csw(cpu,sys,wall)
 
       if (iprlvl.ge.5)
-     &     call prtim(luout,'time in dia4op ',
+     &     call prtim(lulog,'time in dia4op ',
      &                cpu-cpu0,sys-sys0,wall-wall0)
 
       return

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine get_unconnected4vertex2(iocc,ivtx,
-&                                        contr,occ_vtx,op_info)
+     &                                   contr,occ_vtx,op_info)
 *----------------------------------------------------------------------*
 *     return (in occupation form) the number of unconnected indices 
 *     of vertex #ivtx in contraction contr
@@ -42,15 +42,15 @@
      &     arc(:)
 
       if (ntest.ge.100) then
-        call prt_contr2(luout,contr,op_info)
+        call prt_contr2(lulog,contr,op_info)
       end if
 
       ! get vertex occupation
       iocc(:,:) = occ_vtx(:,:,ivtx)
       
       if (ntest.ge.100) then
-        write(luout,*) 'initial'
-        call wrt_occ(luout,iocc)
+        write(lulog,*) 'initial'
+        call wrt_occ(lulog,iocc)
       end if
 
       ! loop over all arcs and remove contractions
@@ -64,14 +64,14 @@
           iocc = iocc - iocc_dagger(arc(iarc)%occ_cnt)
         end if
         if (ntest.ge.100) then
-          write(luout,*) 'after arc ',iarc
-          call wrt_occ(luout,iocc)
+          write(lulog,*) 'after arc ',iarc
+          call wrt_occ(lulog,iocc)
         end if
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'final'
-        call wrt_occ(luout,iocc)
+        write(lulog,*) 'final'
+        call wrt_occ(lulog,iocc)
       end if
 
       return

@@ -71,7 +71,7 @@
       mel%fix_vertex_ms = ms_fix
       mel%diag_type = diag_type
       if (diag_type.eq.1) then
-        write(luout,*) 'defining diagonal blocks only!'
+        write(lulog,*) 'defining diagonal blocks only!'
         mel%gamdiag = gamdiag
         mel%msdiag = msdiag
       else if (diag_type.ne.0) then
@@ -81,11 +81,11 @@
 
       if (abs(absym).gt.1.or.abs(casym).gt.1.or.
      &     gamma.le.0.or.gamma.gt.orb_info%nsym) then
-        write(luout,*) 'absym: ',absym,abs(absym).gt.1
-        write(luout,*) 'casym: ',casym,abs(casym).gt.1
-        write(luout,*) 'gamma: ',gamma,
+        write(lulog,*) 'absym: ',absym,abs(absym).gt.1
+        write(lulog,*) 'casym: ',casym,abs(casym).gt.1
+        write(lulog,*) 'gamma: ',gamma,
      &       gamma.le.0.or.gamma.gt.orb_info%nsym
-        write(luout,*)
+        write(lulog,*)
      &       'the symmetry specifiers marked by T are not correct'
         call quit(1,'define_me_list',
      &       'incorrect symmetry specifier for ME list')

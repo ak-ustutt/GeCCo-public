@@ -22,9 +22,9 @@
      &     iarg
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'this is idx_command_arg')
-        write(luout,*) ' looking for: "',trim(arg_label),'"'
+        write(lulog,*) ' looking for: "',trim(arg_label),'"'
       end if
 
       idx_command_arg = -1
@@ -36,7 +36,7 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'result: ',idx_command_arg
+        write(lulog,*) 'result: ',idx_command_arg
       end if
 
       return

@@ -40,10 +40,10 @@
 
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'here speaks form_select_special')
-        write(luout,*) ' f_input  = ',trim(f_input%label)
-        write(luout,*) ' f_output = ',trim(f_output%label)
+        write(lulog,*) ' f_input  = ',trim(f_input%label)
+        write(lulog,*) ' f_output = ',trim(f_output%label)
       end if
 
       same = trim(f_input%label).eq.trim(f_output%label)
@@ -53,8 +53,8 @@
       call read_form_list(f_input%fhand,flist,.true.)
 
       if (ntest.ge.150) then
-        write(luout,*) 'initial formula:'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*) 'initial formula:'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       select case(trim(type))
@@ -82,6 +82,8 @@
         call select_formal_blk(flist,mode,op_info)
       case('NONZERO','nonzero')
         call del_zero_terms(flist,mode,op_info,1d-12)
+      case('RANK','rank')
+        call select_rank(flist,labels,nlabels,mode,op_info)
       case default
         call quit(1,'form_select_special','unknown type: "'
      &       //trim(type)//'"')
@@ -96,8 +98,8 @@
       call write_form_list(f_output%fhand,flist,'XXX')
 
       if (ntest.ge.100) then
-        write(luout,*) 'final formula:'
-        call print_form_list(luout,flist,op_info)
+        write(lulog,*) 'final formula:'
+        call print_form_list(lulog,flist,op_info)
       end if
 
       call dealloc_formula_list(flist)

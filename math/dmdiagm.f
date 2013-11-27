@@ -31,12 +31,12 @@
       if (ndim.eq.0) return
 
       if (ntest.ge.100) then
-        write(luout,'(x,a)') '---------------'
-        write(luout,'(x,a)') 'dmdiagm at work'
-        write(luout,'(x,a)') '---------------'
-        write(luout,*) 'input matrix:'
+        write(lulog,'(x,a)') '---------------'
+        write(lulog,'(x,a)') 'dmdiagm at work'
+        write(lulog,'(x,a)') '---------------'
+        write(lulog,*) 'input matrix:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
-        write(luout,*) 'normalization vector:'
+        write(lulog,*) 'normalization vector:'
         call wrtmat2(diag,1,ndim,1,ndim)
       end if
 
@@ -73,7 +73,7 @@ c              mat(idx,1:ndim) = 0d0
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'output matrix:'
+        write(lulog,*) 'output matrix:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
       end if
 

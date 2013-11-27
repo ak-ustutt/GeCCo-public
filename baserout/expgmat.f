@@ -69,7 +69,7 @@ c     &              ndim,ndim,0d0,fac,0)
         if (xnrm.lt.thrsh) conv = .true.
 
         if (ntest.ge.10)
-     &       write(luout,*) ' N = ',n,'  |1/N! X^N| = ',xnrm
+     &       write(lulog,*) ' N = ',n,'  |1/N! X^N| = ',xnrm
 
         expx(1:ndim,1:ndim) = expx(1:ndim,1:ndim) + xscr1(1:ndim,1:ndim)
 
@@ -78,7 +78,7 @@ c     &              ndim,ndim,0d0,fac,0)
       end do
 
       if (.not.conv) then
-        write(luout,*) ' Taylor expansion of exp(X) did not converge!'
+        write(lulog,*) ' Taylor expansion of exp(X) did not converge!'
         call quit(1,'expgmat','no convergence')
       end if
 

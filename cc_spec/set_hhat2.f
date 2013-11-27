@@ -53,9 +53,9 @@ c      include 'par_formnames_gen.h'
      &     cpu, wall, sys, cpu0, wall0, sys0
 
       if (ntest.eq.100) then
-        write(luout,*) '======================'
-        write(luout,*) ' output from set_hhat'
-        write(luout,*) '======================'
+        write(lulog,*) '======================'
+        write(lulog,*) ' output from set_hhat'
+        write(lulog,*) '======================'
       end if
 
       call atim_csw(cpu0,sys0,wall0)
@@ -84,7 +84,7 @@ c      include 'par_formnames_gen.h'
       call reorder_formula(form_hhat,op_info)
 c dbg
 c      print *,'generated (1):'
-c      call print_form_list(luout,form_hhat,op_info)
+c      call print_form_list(lulog,form_hhat,op_info)
 c      stop 'testing'
 c dbg      
       ! write to disc
@@ -97,6 +97,6 @@ c      formula_hhat%label = label_cchhat
       call dealloc_formula_list(form_hhat)
 
       call atim_csw(cpu,sys,wall)
-      call prtim(luout,'CC Hhat',cpu-cpu0,sys-sys0,wall-wall0)
+      call prtim(lulog,'CC Hhat',cpu-cpu0,sys-sys0,wall-wall0)
 
       end

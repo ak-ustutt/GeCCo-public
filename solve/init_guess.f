@@ -122,7 +122,7 @@
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
             if (abs(xret(idxselect(1))).lt.1d-12) then
-              if (iprlvl.ge.5) write(luout,*)
+              if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding guess vector with wrong spin symmetry.'
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
@@ -146,7 +146,7 @@ c     &            call warn('init_guess','guess vector not normalized')
 c                if (abs(abs(xover)-xretlast).lt.1d-6) then
                 if (abs(xover**2/xnrm2(iroot-1)
      &              -xret(idxselect(1))**2).lt.1d-6) then
-                  if (iprlvl.ge.5) write(luout,*)
+                  if (iprlvl.ge.5) write(lulog,*)
      &                'Discarding twin guess vector.'
                   me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
                   iroot = iroot - 1
@@ -181,7 +181,7 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
             ifree = mem_flushmark()
             xnrm = xnrm**2 ! makes things easier below
             if (xnrm.lt.1d-12) then
-              if (iprlvl.ge.5) write(luout,*)
+              if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding guess vector due to projection.'
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
@@ -199,14 +199,14 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
      &                          xbuf1,xbuf2,
      &                          opti_info%nwfpar(iopt))
                 if (abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6) then
-                  if (iprlvl.ge.5) write(luout,*)
+                  if (iprlvl.ge.5) write(lulog,*)
      &                'Discarding redundant guess vector.'
                   me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
                   iroot = iroot - 1
                   exit
                 else if (abs(xover).ge.1d-12) then
                   ! remove this component using norm-conserving factors
-                  if (iprlvl.ge.5) write(luout,*)
+                  if (iprlvl.ge.5) write(lulog,*)
      &               'Removing overlap to root',jroot,'(',xover,')'
                   fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
                   fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2

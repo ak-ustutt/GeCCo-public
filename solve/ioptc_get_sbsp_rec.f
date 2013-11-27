@@ -30,12 +30,12 @@
      &     irec, itarget
 
       if (ntest.ge.10) then
-        write(luout,*) '------------------------------'
-        write(luout,*) ' info from ioptc_get_sbsp_rec'
-        write(luout,*) '------------------------------'
-        write(luout,*) ' ivec = ',ivec
-        write(luout,*) ' ndim, maxdim: ', ndim, maxdim
-        write(luout,*) ' iord = ',iord(1:maxdim)
+        write(lulog,*) '------------------------------'
+        write(lulog,*) ' info from ioptc_get_sbsp_rec'
+        write(lulog,*) '------------------------------'
+        write(lulog,*) ' ivec = ',ivec
+        write(lulog,*) ' ndim, maxdim: ', ndim, maxdim
+        write(lulog,*) ' iord = ',iord(1:maxdim)
       end if
       
       if (ivec.eq.0) then
@@ -60,9 +60,9 @@
         else if (ivec.gt.0.and.ivec.le.ndim) then
           itarget = ivec
         else
-          write(luout,*) 'invalid ivec passed to ioptc_get_sbsp_rec: '
-          write(luout,*) ' ndim, maxdim: ',ndim,maxdim
-          write(luout,*) ' ivec:         ',ivec
+          write(lulog,*) 'invalid ivec passed to ioptc_get_sbsp_rec: '
+          write(lulog,*) ' ndim, maxdim: ',ndim,maxdim
+          write(lulog,*) ' ivec:         ',ivec
           call quit(1,'ioptc_get_sbsp_rec',
      &         'invalid ivec passed to function')
         end if
@@ -76,11 +76,11 @@
       end if
 
       if (ntest.ge.10) then
-        write(luout,*) 'function returns ',ioptc_get_sbsp_rec
+        write(lulog,*) 'function returns ',ioptc_get_sbsp_rec
         if (ivec.eq.0) then
-          write(luout,*) 'Updated subspace:'
-          write(luout,*) ' ndim: ', ndim
-          write(luout,*) ' iord = ',iord(1:maxdim)
+          write(lulog,*) 'Updated subspace:'
+          write(lulog,*) ' ndim: ', ndim
+          write(lulog,*) ' iord = ',iord(1:maxdim)
         end if
 
       end if

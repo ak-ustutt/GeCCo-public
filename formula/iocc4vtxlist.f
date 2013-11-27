@@ -48,11 +48,11 @@
 
       op_arr => op_info%op_arr
       if (ntest.ge.100) then
-        write(luout,*) '----------------------'
-        write(luout,*) ' iocc4vtxlist at work'
-        write(luout,*) '----------------------'
-        call prt_contr2(luout,contr,op_arr)
-        write(luout,*) 'vertex list: ',vtxlist(1:nlist)
+        write(lulog,*) '----------------------'
+        write(lulog,*) ' iocc4vtxlist at work'
+        write(lulog,*) '----------------------'
+        call prt_contr2(lulog,contr,op_arr)
+        write(lulog,*) 'vertex list: ',vtxlist(1:nlist)
       end if
 
       ! initialize
@@ -91,10 +91,10 @@
       end do
 
       if (ntest.ge.100) then
-        write(luout,*) 'resulting occupation'
-        call wrt_occ(luout,iocc)
-        write(luout,*) 'there-of already contracted'
-        call wrt_occ(luout,icnt)
+        write(lulog,*) 'resulting occupation'
+        call wrt_occ(lulog,iocc)
+        write(lulog,*) 'there-of already contracted'
+        call wrt_occ(lulog,icnt)
       end if
 
       return

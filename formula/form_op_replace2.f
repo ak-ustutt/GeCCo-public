@@ -48,9 +48,9 @@
       call quit(1,'form_op_replace2','call to obsolete routine')
 
       if (ntest.ge.100) then
-        call write_title(luout,wst_dbg_subr,'form_op_replace')
-        write(luout,*) 'opin:  "',trim(opin),'"'
-        write(luout,*) 'opout: "',trim(opout),'"'
+        call write_title(lulog,wst_dbg_subr,'form_op_replace')
+        write(lulog,*) 'opin:  "',trim(opin),'"'
+        write(lulog,*) 'opout: "',trim(opout),'"'
       end if
 
 
@@ -75,13 +75,13 @@
         ! Navigate to the correct parts of the formula.
         select case(form_pnt%command)
         case(command_end_of_formula)
-          if(ntest.ge.100) write(luout,*) '[END]'
+          if(ntest.ge.100) write(lulog,*) '[END]'
         case(command_set_target_init)
           if(ntest.ge.100)
-     &         write(luout,*) '[INIT TARGET]',form_pnt%target
+     &         write(lulog,*) '[INIT TARGET]',form_pnt%target
         case(command_add_contribution)
           ! The necessary contractions are here.
-c          write(luout,*) '[ADD]'
+c          write(lulog,*) '[ADD]'
 
           change = .false.
           ! Loop over the contraction's vertices.
@@ -198,12 +198,12 @@ c          write(luout,*) '[ADD]'
           
 
           if(ntest.ge.100.and.change)then
-            write(luout,*) 'Operator-replaced contraction'
-            call prt_contr2(luout,form_pnt%contr,op_info)
+            write(lulog,*) 'Operator-replaced contraction'
+            call prt_contr2(lulog,form_pnt%contr,op_info)
           endif
 
         case default
-          write(luout,*) 'command = ',form_pnt%command
+          write(lulog,*) 'command = ',form_pnt%command
           call quit(1,'form_op_replace','command undefined here')
         end select
 

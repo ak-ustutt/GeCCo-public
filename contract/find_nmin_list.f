@@ -57,8 +57,8 @@
 
       nblkmax = ifree/ffop%reclen
       if (nblkmax.le.0) then
-        write(luout,*) 'free memory (words):  ',ifree
-        write(luout,*) 'block length (words): ',ffop%reclen
+        write(lulog,*) 'free memory (words):  ',ifree
+        write(lulog,*) 'block length (words): ',ffop%reclen
         call quit(1,'find_nmin_list',
      &       'not even 1 record fits into memory?')
       end if
@@ -86,10 +86,10 @@
           call find_nmin(xlist,idxlist,nlist,buffer,
      &         idxnd-idxst+1,idxst-idisc_off-1,init)
           if (ntest.ge.100) then
-            write(luout,*) 'after batch: ',idxst-idisc_off,
+            write(lulog,*) 'after batch: ',idxst-idisc_off,
      &                              ' to ',idxnd-idisc_off
             do kdx = 1, nlist
-              write(luout,*) kdx,xlist(kdx),idxlist(kdx)
+              write(lulog,*) kdx,xlist(kdx),idxlist(kdx)
             end do
           end if
           idxst = idxnd+1

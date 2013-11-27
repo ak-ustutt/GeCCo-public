@@ -131,7 +131,7 @@
      &     ddot
 
       if (ntest.gt.0) then
-        call write_title(luout,wst_dbg_subr,
+        call write_title(lulog,wst_dbg_subr,
      &       'reo_op_wmaps_c at work')
       end if
 
@@ -151,19 +151,19 @@
       ngam = orb_info%nsym
 
       if (ntest.ge.10) then
-        write(luout,*) 'list1:   ',trim(me_opori%label),
+        write(lulog,*) 'list1:   ',trim(me_opori%label),
      &       ' transp:',tra_opori
-        write(luout,*) 'list2:   ',trim(me_opreo%label),' transp:',
+        write(lulog,*) 'list2:   ',trim(me_opreo%label),' transp:',
      &       tra_opreo
-        write(luout,*) 'ffopori:   ',
+        write(lulog,*) 'ffopori:   ',
      &       ffopori%name(1:len_trim(ffopori%name))
-        write(luout,*) 'ffopreo:   ',
+        write(lulog,*) 'ffopreo:   ',
      &       ffopreo%name(1:len_trim(ffopreo%name))
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on entry = ',xret(1)
-        write(luout,*) 'opori: ',trim(opori%name),
+     &       write(lulog,*) 'xret on entry = ',xret(1)
+        write(lulog,*) 'opori: ',trim(opori%name),
      &       ' block ',iblkopori
-        write(luout,*) 'opreo: ',trim(opreo%name),
+        write(lulog,*) 'opreo: ',trim(opreo%name),
      &       ' block ',iblkopreo
       end if
 
@@ -195,21 +195,21 @@
 
       if (me_opori%op%formal_blk(iblkopori).or.
      &    me_opreo%op%formal_blk(iblkopreo)) then
-        write(luout,*) me_opori%op%formal_blk(iblkopori),
+        write(lulog,*) me_opori%op%formal_blk(iblkopori),
      &                 me_opreo%op%formal_blk(iblkopreo)
-        write(luout,*) 'opori: ',trim(opori%name),
+        write(lulog,*) 'opori: ',trim(opori%name),
      &       ' block ',iblkopori
-        write(luout,*) 'opreo: ',trim(opreo%name),
+        write(lulog,*) 'opreo: ',trim(opreo%name),
      &       ' block ',iblkopreo
         call quit(1,'reo_op_wmaps_c','called for formal block')
       end if
 
 ! just accept that in some strange cases this happens not being an error
 !      if (lenopori.le.0.or.lenopreo.le.0) then
-!        write(luout,*)
+!        write(lulog,*)
 !     &       trim(opori%name),' ',
 !     &       trim(opreo%name),' '
-!        write(luout,*) 'lenopori, lenopreo: ',
+!        write(lulog,*) 'lenopori, lenopreo: ',
 !     &                  lenopori, lenopreo
 !        call quit(1,'reo_oporiopreo_wmaps_c',
 !     &     'zero length for operator?')
@@ -249,18 +249,18 @@
       if (.not.update)
      &     xopreo(1:lenopreo) = 0d0
 
-      if (ntest.ge.100) write(luout,*) ' bufopori/2: ',bufopori,bufopreo
+      if (ntest.ge.100) write(lulog,*) ' bufopori/2: ',bufopori,bufopreo
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
-        write(luout,*) 'operator 1 (',trim(opori%name),
+        write(lulog,*) 'operator 1 (',trim(opori%name),
      &                    ',list=',trim(me_opori%label),')'
-        call wrt_mel_buf(luout,5,xopori,me_opori,iblkopori,iblkopori,
+        call wrt_mel_buf(lulog,5,xopori,me_opori,iblkopori,iblkopori,
      &                  str_info,orb_info)
         if (update) then
-          write(luout,*) 'operator 2 (',trim(opreo%name),
+          write(lulog,*) 'operator 2 (',trim(opreo%name),
      &                    ',list=',trim(me_opreo%label),')'
-          call wrt_mel_buf(luout,5,xopreo,me_opreo,iblkopreo,iblkopreo,
+          call wrt_mel_buf(lulog,5,xopreo,me_opreo,iblkopreo,iblkopreo,
      &                  str_info,orb_info)
         end if
       end if
@@ -360,8 +360,8 @@
       call sum_occ(na_opreo,cinfo_opreoa,nablk_opreo)
 
       if (nc_opori.ne.nc_opreo .or. na_opori.ne.na_opreo) then
-        write(luout,*) 'NC (ORI/REO): ',nc_opori,nc_opreo
-        write(luout,*) 'NA (ORI/REO): ',na_opori,na_opreo
+        write(lulog,*) 'NC (ORI/REO): ',nc_opori,nc_opreo
+        write(lulog,*) 'NA (ORI/REO): ',na_opori,na_opreo
         call quit(1,'reo_op_wmaps_c','inconsistent particle numbers')
       end if
 
@@ -492,9 +492,9 @@ c dbg
             end if
 
 c dbg
-c          write(luout,*) 'input block '
-c          write(luout,'(x,5g15.8)')    xbf12tmp(1:lblk_oporiopreotmp)
-c          call wrt_mel_buf(luout,5,xoporiopreo,me_oporiopreo,
+c          write(lulog,*) 'input block '
+c          write(lulog,'(x,5g15.8)')    xbf12tmp(1:lblk_oporiopreotmp)
+c          call wrt_mel_buf(lulog,5,xoporiopreo,me_oporiopreo,
 c     &         iblkoporiopreo,iblkoporiopreo,str_info,orb_info)
 c dbg
             call reo_blk_wmaps_c(fac,xopreo,xopori(idxopori),
@@ -517,8 +517,8 @@ c dbg
      &                   reo_info%map_reo2c,reo_info%map_reo2a,
      &                   ngam,str_info,strmap_info)
 c dbg
-c          write(luout,*) 'reordered operator (',trim(oporiopreo%name),')'
-c          call wrt_mel_buf(luout,5,xoporiopreo,me_oporiopreo,
+c          write(lulog,*) 'reordered operator (',trim(oporiopreo%name),')'
+c          call wrt_mel_buf(lulog,5,xoporiopreo,me_oporiopreo,
 c     &         iblkoporiopreo,iblkoporiopreo,str_info,orb_info)
 c dbg
             
@@ -528,8 +528,8 @@ c dbg
       end do ms_loop
           
       if (ntest.ge.1000) then
-        write(luout,*) 'operator 2 on exit (',trim(opreo%name),')'
-          call wrt_mel_buf(luout,5,xopreo,me_opreo,
+        write(lulog,*) 'operator 2 on exit (',trim(opreo%name),')'
+          call wrt_mel_buf(lulog,5,xopreo,me_opreo,
      &         iblkopreo,iblkopreo,str_info,orb_info)
       end if
 
@@ -562,7 +562,7 @@ c dbg
 
       if (ntest.ge.100) then
         if (type_xret.ne.0)
-     &       write(luout,*) 'xret on exit = ',xret(1)
+     &       write(lulog,*) 'xret on exit = ',xret(1)
       end if
 
       return

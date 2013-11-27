@@ -45,8 +45,8 @@
       read(ludump,'(a)') line
 
       if (line(1:5).ne.' &FCI') then
-        write(luout,*) 'File FCIDUMP does not start with "&FCI":'
-        write(luout,*) trim(line)
+        write(lulog,*) 'File FCIDUMP does not start with "&FCI":'
+        write(lulog,*) trim(line)
         call quit(0,i_am,'wrong format of FCIDUMP?')
       end if
       rewind ludump
@@ -54,13 +54,13 @@
       read(ludump,nml=fci)
 
       if (ntest.ge.100) then
-        write(luout,*) 'Namelist FCI:'
-        write(luout,'(1x,a,i5)') 'NORB =  ',norb
-        write(luout,'(1x,a,i5)') 'NELEC = ',nelec
-        write(luout,'(1x,a,i5)') 'MS2 =   ',ms2
-        write(luout,'(1x,a,i5)') 'ISYM =  ',isym
-        write(luout,'(1x,a)')   'ORBSYM:'
-        write(luout,'(1x,20i3)') ORBSYM(1:NORB)  
+        write(lulog,*) 'Namelist FCI:'
+        write(lulog,'(1x,a,i5)') 'NORB =  ',norb
+        write(lulog,'(1x,a,i5)') 'NELEC = ',nelec
+        write(lulog,'(1x,a,i5)') 'MS2 =   ',ms2
+        write(lulog,'(1x,a,i5)') 'ISYM =  ',isym
+        write(lulog,'(1x,a)')   'ORBSYM:'
+        write(lulog,'(1x,20i3)') ORBSYM(1:NORB)  
       end if
 
 C takes too long for large cases, we read enuc when importing
@@ -71,7 +71,7 @@ C        read(ludump,'(a)',end=1234) line
 C      end do
 C 1234 read(line,*) enuc, i1, i2, i3, i4
 C
-C      if (ntest.ge.100) write(luout,*) 'last rec: ',enuc, i1, i2, i3, i4
+C      if (ntest.ge.100) write(lulog,*) 'last rec: ',enuc, i1, i2, i3, i4
 
       ! analyze orbsym to get number of irreps
       nirr = 0

@@ -36,15 +36,15 @@
 
       if (irdag.gt.nop.or.
      &    icint.gt.nop) then
-        write(luout,*) 'idx: ',irdag,icint
-        write(luout,*) 'nop: ',nop
+        write(lulog,*) 'idx: ',irdag,icint
+        write(lulog,*) 'nop: ',nop
         call quit(1,'set_Zcontrib',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irdag).le.0.or.
      &    idx_op(icint).le.0) then
-        write(luout,*) 'idx: ',idx_op(irdag),idx_op(icint)
+        write(lulog,*) 'idx: ',idx_op(irdag),idx_op(icint)
         call quit(1,'set_Ycontrib',
      &         'operator(s) not on input list')
       end if
@@ -92,8 +92,8 @@
       end if
 
       if (ntest.ge.100) then
-        write(luout,*) 'R^+.C contribution'
-        call print_form_list(luout,flist_pnt,op_info)
+        write(lulog,*) 'R^+.C contribution'
+        call print_form_list(lulog,flist_pnt,op_info)
       end if
 
       return

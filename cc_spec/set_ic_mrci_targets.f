@@ -45,7 +45,7 @@
       logical ::
      &     skip
 
-      if (iprlvl.gt.0) write(luout,*) 'setting icMRCI targets'
+      if (iprlvl.gt.0) write(lulog,*) 'setting icMRCI targets'
 
       ! CAVEAT: should be adapted as soon as open-shell version
       !         is up and running

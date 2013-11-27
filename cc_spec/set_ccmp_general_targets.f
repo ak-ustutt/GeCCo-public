@@ -37,7 +37,7 @@
      &     parameters(2)
 
       if (iprlvl.gt.0)
-     &     write(luout,*) 'setting general targets for MP/CC ...'
+     &     write(lulog,*) 'setting general targets for MP/CC ...'
 
       msc = 1 ! presently assuming closed shell
 

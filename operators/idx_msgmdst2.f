@@ -97,35 +97,35 @@ c dbg
 c dbg
 c        print *,'nsym = ',nsym
 c dbg
-        write(luout,*) 'list: ',trim(mel%label)
-        write(luout,*) 'op:   ',trim(mel%op%name)
-        write(luout,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
-        write(luout,*) 'nc,na    ',nc,na
-        write(luout,*) 'occ_c:   ',occ_c(1:nc)
-        write(luout,*) 'idxms_c: ',idxms_c(1:nc)
-        write(luout,*) 'gam_c:   ',gam_c(1:nc)
-        write(luout,*) 'occ_a:   ',occ_a(1:na)
-        write(luout,*) 'idxms_a: ',idxms_a(1:na)
-        write(luout,*) 'gam_a:   ',gam_a(1:na)
-        write(luout,*) 'mgdid: ',mgdid
-        write(luout,*) 'didarr:',
+        write(lulog,*) 'list: ',trim(mel%label)
+        write(lulog,*) 'op:   ',trim(mel%op%name)
+        write(lulog,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
+        write(lulog,*) 'nc,na    ',nc,na
+        write(lulog,*) 'occ_c:   ',occ_c(1:nc)
+        write(lulog,*) 'idxms_c: ',idxms_c(1:nc)
+        write(lulog,*) 'gam_c:   ',gam_c(1:nc)
+        write(lulog,*) 'occ_a:   ',occ_a(1:na)
+        write(lulog,*) 'idxms_a: ',idxms_a(1:na)
+        write(lulog,*) 'gam_a:   ',gam_a(1:na)
+        write(lulog,*) 'mgdid: ',mgdid
+        write(lulog,*) 'didarr:',
      &       didarr(1:idx_end,gama_blk,idxmsa_blk)
         call quit(1,'idx_msgmdst2','distribution not found')
       end if
 
 c dbg
-c        write(luout,*) 'list: ',trim(mel%label)
-c        write(luout,*) 'op:   ',trim(mel%op%name)
-c        write(luout,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
-c        write(luout,*) 'nc,na    ',nc,na
-c        write(luout,*) 'occ_c:   ',occ_c(1:nc)
-c        write(luout,*) 'idxms_c: ',idxms_c(1:nc)
-c        write(luout,*) 'gam_c:   ',gam_c(1:nc)
-c        write(luout,*) 'occ_a:   ',occ_a(1:na)
-c        write(luout,*) 'idxms_a: ',idxms_a(1:na)
-c        write(luout,*) 'gam_a:   ',gam_a(1:na)
-c        write(luout,*) 'mgdid: ',mgdid
-c        write(luout,*) 'didarr:',
+c        write(lulog,*) 'list: ',trim(mel%label)
+c        write(lulog,*) 'op:   ',trim(mel%op%name)
+c        write(lulog,*) 'gamma(A),idxms(A):',gama_blk,idxmsa_blk
+c        write(lulog,*) 'nc,na    ',nc,na
+c        write(lulog,*) 'occ_c:   ',occ_c(1:nc)
+c        write(lulog,*) 'idxms_c: ',idxms_c(1:nc)
+c        write(lulog,*) 'gam_c:   ',gam_c(1:nc)
+c        write(lulog,*) 'occ_a:   ',occ_a(1:na)
+c        write(lulog,*) 'idxms_a: ',idxms_a(1:na)
+c        write(lulog,*) 'gam_a:   ',gam_a(1:na)
+c        write(lulog,*) 'mgdid: ',mgdid
+c        write(lulog,*) 'didarr:',
 c     &       didarr(1:idx_end,gama_blk,idxmsa_blk)
 c dbg
 

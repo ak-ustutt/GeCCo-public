@@ -94,6 +94,7 @@
         if (excrestr0(6).lt.0) excrestr0(6) = maxexc
         do ip = excrestr0(3), excrestr0(4)
           do ih = excrestr0(1), excrestr0(2)
+            if (ip.gt.maxp.or.ih.gt.maxh) cycle
             excrestr(ih,ip,1) = max(excrestr(ih,ip,1),excrestr0(5))
             excrestr(ih,ip,2) = min(excrestr(ih,ip,2),excrestr0(6))
             if (excrestr(ih,ip,2).lt.excrestr(ih,ip,1)) then
@@ -164,17 +165,17 @@
       end select
 
       if (ntest.ge.100) then
-        write(luout,'(x,39("="))')
-        write(luout,'(x,a)') 'min.-max. ranks in the cluster operator'
-        write(luout,'(x,a)') '(for each excitation class)'
-        write(luout,'(x,39("-"))')
+        write(lulog,'(x,39("="))')
+        write(lulog,'(x,a)') 'min.-max. ranks in the cluster operator'
+        write(lulog,'(x,a)') '(for each excitation class)'
+        write(lulog,'(x,39("-"))')
         write(idx_str(1:1),'(i1)') maxp+1
-        write(luout,'(x,a,'//idx_str//'i8)') 'n_h\n_p',(ip,ip=0,maxp)
+        write(lulog,'(x,a,'//idx_str//'i8)') 'n_h\n_p',(ip,ip=0,maxp)
         do ih = 0, maxh
-          write(luout,'(x,i7,'//idx_str//'(i6,"-",i1))')
+          write(lulog,'(x,i7,'//idx_str//'(i6,"-",i1))')
      &         ih,((excrestr(ih,ip,icnt),icnt=1,2),ip=0,maxp)
         end do
-        write(luout,'(x,39("="))')
+        write(lulog,'(x,39("="))')
       end if
 
       return
