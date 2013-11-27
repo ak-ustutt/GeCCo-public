@@ -78,19 +78,24 @@
 c dbg
 c        print *,'ivtx',ivtx
 c dbg
+        ! handle super-vertex only once
+        isuper = svertex(ivtx)          
+        skip = .false.
+        do jvtx = 1, ivtx-1 ! previously visited?
+          skip = skip.or.(isuper.eq.svertex(jvtx))
+        end do
+        if (skip) cycle
+
         if (vertex(ivtx)%dagger) then
           ! if the vertex was transpose, we know that iblk
           ! refers to the un-transpose operator, so we merely
           ! change the dagger label
           vertex(ivtx)%dagger = .false.
-        else
-          ! handle super-vertex only once
-          isuper = svertex(ivtx)          
-          skip = .false.
-          do jvtx = 1, ivtx-1 ! previously visited?
-            skip = skip.or.(isuper.eq.svertex(jvtx))
+          do jvtx = ivtx+1, nvtx
+            if (svertex(jvtx).ne.isuper) cycle
+            vertex(jvtx)%dagger = .false.
           end do
-          if (skip) cycle
+        else
           ! find out whether the transposed block exists:
           op => op_info%op_arr(vertex(ivtx)%idx_op)%op
           njoined = op%njoined
@@ -128,7 +133,10 @@ c dbg
               idx = idx+1
             end do
           else
-            vertex(ivtx)%dagger = .true.
+            do jvtx = ivtx, nvtx
+              if (svertex(jvtx).ne.isuper) cycle
+              vertex(jvtx)%dagger = .true.
+            end do
           end if
         end if
       end do

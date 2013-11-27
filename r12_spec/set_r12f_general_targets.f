@@ -37,7 +37,8 @@
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2, CC,
-     &     pf12_trunc, frozen, pz_eval, use_CS, xsp_opt1, active_orbs
+     &     pf12_trunc, frozen, pz_eval, use_CS, xsp_opt1, active_orbs,
+     &     semi_r12
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -85,6 +86,7 @@
       call get_argument_value('method.R12','vring',ival=vring_mode)
       call get_argument_value('method.R12','use_CS',lval=use_CS)
       call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
+      call get_argument_value('method.R12','semi_r12',lval=semi_r12)
       truncate = trunc_type.ge.0
       if (is_keyword_set('method.truncate').gt.0) then
         truncate = is_keyword_set('method.truncate').gt.0
@@ -200,9 +202,6 @@
         ntpp_max=max_rank
         n_pp=2
       end select
-c dbg
-c      print *,'n_pp = ',n_pp
-c dbg
 
       ! assemble approx string
       select case(trim(F_appr))
@@ -2360,6 +2359,13 @@ c dbg
       call set_rule(form_r12_xhcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,5,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_xhcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! formal definition of X'
       labels(1:10)(1:len_target_name) = ' '
@@ -2476,6 +2482,13 @@ c dbg
       call set_rule(form_r12_bcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,nlab,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_bcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
       ! formal definition of Bh
       labels(1:10)(1:len_target_name) = ' '
@@ -2517,6 +2530,13 @@ c dbg
       call set_rule(form_r12_bhcabs,ttype_frm,DEF_R12INTM_CABS,
      &              labels,7,1,
      &              parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,
+c     &     parameters,2,'stdout',0,'---')
+c      call set_rule(form_r12_bhcabs,ttype_frm,PRINT_FORMULA,
+c     &              labels,2,1,
+c     &              parameters,2,tgt_info)
+c dbg
 
 c     for response: may define formal B_V in this way
 c      ! formal definition of B_V
@@ -2943,6 +2963,146 @@ c     &              parameters,2,tgt_info)
 c dbg
 
 
+      ! set semi-internal R12 geminals
+      if (semi_r12) then
+      descr = 'VX,[VH]V|VX,HH'
+      call add_target2('R12si',.false.,tgt_info)
+      call set_rule2('R12si',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('R12si',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'R12si'/))
+      call set_arg('R12si',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('R12si',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+      descr = 'X,V|X,H'
+      call add_target2('sR12',.false.,tgt_info)
+      call set_rule2('sR12',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('sR12',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'sR12'/))
+      call set_arg('sR12',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('sR12',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+
+      descr = ',V,V,'
+      call add_target2('DENSinv',.false.,tgt_info)
+      call set_rule2('DENSinv',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('DENSinv',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'DENSinv'/))
+      call set_arg('DENSinv',DEF_OP_FROM_OCC,'JOIN',1,tgt_info,
+     &     val_int=(/2/))
+      call set_arg('DENSinv',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+      call add_target2('DEF_ME_DENSinv',.false.,tgt_info)
+      call set_dependency('DEF_ME_DENSinv','DENSinv',tgt_info)
+      call set_rule2('DEF_ME_DENSinv',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_DENSinv',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_DENSinv'/))
+      call set_arg('DEF_ME_DENSinv',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'DENSinv   '/))
+      call set_arg('DEF_ME_DENSinv',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_DENSinv',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_DENSinv',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_dependency('DEF_ME_DENSinv','EVAL_D',tgt_info)
+      call set_rule2('DEF_ME_DENSinv',SCALE_COPY,tgt_info)
+      call set_arg('DEF_ME_DENSinv',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &             val_label=(/'ME_DENSinv'/))
+      call set_arg('DEF_ME_DENSinv',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &             val_label=(/'ME_DENS   '/))
+      call set_arg('DEF_ME_DENSinv',SCALE_COPY,'FAC',1,tgt_info,
+     &             val_rl8=(/1d0/))
+      call set_rule2('DEF_ME_DENSinv',INVERT,tgt_info)
+      call set_arg('DEF_ME_DENSinv',INVERT,'LIST_INV',1,tgt_info,
+     &             val_label=(/'ME_DENSinv'/))
+      call set_arg('DEF_ME_DENSinv',INVERT,'LIST',1,tgt_info,
+     &             val_label=(/'ME_DENSinv'/))
+      call set_arg('DEF_ME_DENSinv',INVERT,'MODE',1,tgt_info,
+     &             val_str='pseudoinv')
+
+      call add_target2('sR12-INT',.false.,tgt_info)
+      call set_dependency('sR12-INT','sR12',tgt_info)
+      call set_dependency('sR12-INT','R12si',tgt_info)
+      call set_dependency('sR12-INT','F_DENS0',tgt_info)
+      call set_dependency('sR12-INT','DEF_ME_DENSinv',tgt_info)
+      call set_rule2('sR12-INT',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'sR12-INT'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.true./))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'sR12'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &     tgt_info,
+     &     val_label=(/'sR12','DENS','R12si','DENS','sR12'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &     val_int=(/1,2,3,2,1/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+     &     val_label=(/'3,,VX,VH'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'CONNECT',4,tgt_info,
+     &             val_int=(/2,3,3,4/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &             val_int=(/2,4/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+      call set_rule2('sR12-INT',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'sR12-INT'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'sR12'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',7,
+     &     tgt_info,
+     &     val_label=(/'sR12','DENSinv','DENS','R12si',
+     &                 'DENS','DENSinv','sR12'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',7,tgt_info,
+     &     val_int=(/1,2,3,4,3,2,1/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',3,tgt_info,
+     &     val_label=(/'3,4,,V','4,,VX,VV','4,5,,VV'/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'AVOID',10,tgt_info,
+     &             val_int=(/2,3,5,6,2,6,3,5,2,5/))
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/-1d0/))
+
+c dbg
+c      call set_rule2('sR12-INT',PRINT_FORMULA,tgt_info)
+c      call set_arg('sR12-INT',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'sR12-INT'/))
+c dbgend
+
+      call add_target2('Rsi-INT',.false.,tgt_info)
+      call set_dependency('Rsi-INT','R12si',tgt_info)
+      call set_rule2('Rsi-INT',CLONE_OP,tgt_info)
+      call set_arg('Rsi-INT',CLONE_OP,'LABEL',1,tgt_info,
+     &     val_label=(/'Rsi-INT'/))
+      call set_arg('Rsi-INT',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'R12si'/))
+      call set_arg('Rsi-INT',CLONE_OP,'ADJOINT',1,tgt_info,
+     &     val_log=(/.false./))
+      call add_target2('ME_Rsi',.false.,tgt_info)
+      call set_dependency('ME_Rsi','Rsi-INT',tgt_info)
+      call set_rule2('ME_Rsi',DEF_ME_LIST,tgt_info)
+      call set_arg('ME_Rsi',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Rsi '/))
+      call set_arg('ME_Rsi',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'Rsi-INT'/))
+      call set_arg('ME_Rsi',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('ME_Rsi',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('ME_Rsi',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_rule2('ME_Rsi',IMPORT,tgt_info)
+      call set_arg('ME_Rsi',IMPORT,'LIST',1,tgt_info,
+     &             val_label=(/'ME_Rsi '/))
+      call set_arg('ME_Rsi',IMPORT,'TYPE',1,tgt_info,
+     &             val_str='F12_INT')
+      call set_arg('ME_Rsi',IMPORT,'ENV',1,tgt_info,
+     &             val_str=env_type)
+      end if
 *----------------------------------------------------------------------*
 *     Opt. Formulae
 *----------------------------------------------------------------------*
