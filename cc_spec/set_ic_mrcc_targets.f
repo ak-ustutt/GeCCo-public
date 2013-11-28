@@ -48,7 +48,7 @@
       logical ::
      &     skip, preopt, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, use_f12, restart, prc_traf
+     &     oldref, solve, use_f12, restart, eval_dens3, prc_traf
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -137,6 +137,8 @@
      &     ival=maxcum)
       call get_argument_value('method.MR','cum_appr_mode',
      &     ival=cum_appr_mode)
+      call get_argument_value('method.MRCC','eval_dens3',
+     &     lval=eval_dens3)
       call get_argument_value('calculate.solve','maxiter',
      &     ival=maxit)
       if (is_argument_set('calculate.solve.linear','maxiter').gt.0)
@@ -252,6 +254,7 @@
       do ip = 0, maxp
         do ih = 0, maxh
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          if(iexc.eq.3.and.eval_dens3) cycle
             ndef = ndef + 1
             occ_def(IHOLE,1,ndef) = ih
             occ_def(IPART,2,ndef) = ip
@@ -275,6 +278,7 @@
         do ih = 0, maxh
           first = .true.
           do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+          if(iexc.eq.3.and.eval_dens3) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef) = ih
             occ_def(IPART,1,ndef) = ip
@@ -327,6 +331,7 @@ c     &             val_int=(/1/))
             if (ip.eq.ih.and.
      &          ip.eq.maxval(excrestr(0:maxh,0:maxp,2))) cycle
             ndef = ndef + 1
+            if (eval_dens3.and.excrestr(ih,ip,1).gt.2) cycle 
             if (first) then
               nsupD = nsupD + 1
               stndD(1,nsupD) = ndef
@@ -341,7 +346,8 @@ c     &             val_int=(/1/))
           end do
         end do
       end do
-      if (nsupD.gt.nsupT) call quit(1,'set_ic_mrcc_targets',
+      if (nsupD.gt.nsupT)
+     &       call quit(1,'set_ic_mrcc_targets',
      &       'more super-blocks for metric than for T?')
 
       ! TT intermediate
@@ -403,6 +409,7 @@ c     &             val_int=(/1/))
       do ip = 0, maxp
         do ih = 0, maxh
           do iexc = max(excrestr(ih,ip,1),1), excrestr(ih,ip,2)
+          if(iexc.eq.3.and.eval_dens3) cycle
             ndef = ndef + 1
             occ_def(IHOLE,2,ndef*2) = ih
             occ_def(IPART,1,ndef*2) = ip
