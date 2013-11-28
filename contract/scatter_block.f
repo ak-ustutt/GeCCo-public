@@ -21,7 +21,7 @@
 *----------------------------------------------------------------------*
       implicit none
 
-      real(8), intent(out) ::
+      real(8), intent(inout) ::
      &     xop(*)
       real(8), intent(in) ::
      &     xblk(*)
