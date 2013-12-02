@@ -171,7 +171,7 @@ c dbg
       if (irt_sched.gt.0.and.use_auto_opt)
      &   call optimize(fl_opt,op_info,str_info,orb_info,f_opt%label)
 
-      if (iprint.ge.10) then
+      if (iprint.ge.20) then
         call write_title(lulog,wst_around_double,'Optimized formula:')
         call print_form_list(lulog,fl_opt,op_info)
       end if

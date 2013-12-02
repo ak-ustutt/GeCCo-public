@@ -257,6 +257,12 @@ c dbgend
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
         iblkoff = (iocc_cls-1)*njoined
+        if (ntest.ge.100) then
+          write(lulog,*) 'iocc_cls = ',iocc_cls
+          write(lulog,*) 'formal:   ',op_inp%formal_blk(iocc_cls)
+          write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
+          call wrt_occ_n(lulog,op_inp%ihpvca_occ(1,1,iblkoff+1),njoined)
+        end if
         if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined))
      &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
@@ -481,9 +487,11 @@ c dbgend
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
+                if (ntest.ge.100) write(lulog,*) '+ case, nsing=',nsing
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
      &                           svs,icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins(1,iexc_cls))
+                if (ntest.ge.100) write(lulog,*) '- case, ntrip=',ntrip
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
      &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,

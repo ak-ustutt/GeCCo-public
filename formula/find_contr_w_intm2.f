@@ -88,6 +88,7 @@ c      iocc_tgt = op_info%op_arr(idxop_tgt)%
 c     &           op%ihpvca_occ(1:ngastp,1:2,iblk_tgt)
 
       success1 = .false.
+      success2 = .false.
       fpl_intm_pnt => fpl_intm
       ! loop intermediates and check whether I_i is contained in T
       iterm = 0
@@ -151,6 +152,7 @@ c        else
      &                      success1)
 c        end if
 c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
+
         if (ntest.ge.100.and.success1) then
           write(lulog,*) 'considering contraction:'
           call prt_contr2(lulog,fl_tgt%contr,op_info)
@@ -161,6 +163,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         end if
       end if
 
+      success2 = .true.
       ! more than one term (which should be the usual case)?
       ! look for the remaining terms
       if (success1.and.associated(fl_tgt%next)) then
@@ -299,8 +302,10 @@ c                end if
           if (.not.associated(fl_tgt_pnt%next)) exit tgt_loop
           fl_tgt_pnt => fl_tgt_pnt%next
 
+
         end do tgt_loop
 
+        deallocate(assigned)
         call dealloc_formula_list(fl_t0_i)
         deallocate(fl_t0_i)
 
