@@ -147,6 +147,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('notrunc','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('semi_r12','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
 
       ! special keywords for multireference wave functions
       call keyword_add('MR',context='method')
@@ -267,6 +269,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/-1/)) ! perturbation order of T1
       call argument_add('simp','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! special simplifications for (T)
+      call argument_add('eval_dens3','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./)) ! evaluate 3-body dens matrix for transforming T3
 
       call keyword_add('excite',context='method.MRCC')
       call argument_add('method','method.MRCC.excite',
