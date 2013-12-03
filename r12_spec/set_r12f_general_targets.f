@@ -33,7 +33,7 @@
      &     min_rank_tp, min_rank_tpp, nblk, nj,
      &     isim, ncat, nint, icnt, nlab, irank, idef,
      &     isym, ms, msc, sym_arr(8), extend, r12op,
-     &     occ_def(ngastp,2,60), vring_mode,
+     &     occ_def(ngastp,2,120), vring_mode,
      &     ntp_min, ntp_max, ntpp_min, ntpp_max, t1ext, trunc_type
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2, CC,
@@ -3041,7 +3041,7 @@ c dbg
      &     val_label=(/'sR12'/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &     tgt_info,
-     &     val_label=(/'sR12','DENS','R12si','DENS','sR12'/))
+     &     val_label=(/'sR12 ','DENS ','R12si','DENS ','sR12 '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &     val_int=(/1,2,3,2,1/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
@@ -3061,12 +3061,12 @@ c dbg
      &     val_label=(/'sR12'/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',7,
      &     tgt_info,
-     &     val_label=(/'sR12','DENSinv','DENS','R12si',
-     &                 'DENS','DENSinv','sR12'/))
+     &     val_label=(/'sR12   ','DENSinv','DENS   ','R12si  ',
+     &                 'DENS   ','DENSinv','sR12   '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',7,tgt_info,
      &     val_int=(/1,2,3,4,3,2,1/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',3,tgt_info,
-     &     val_label=(/'3,4,,V','4,,VX,VV','4,5,,VV'/))
+     &     val_label=(/'3,4,,V  ','4,,VX,VV','4,5,,VV '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'AVOID',10,tgt_info,
      &             val_int=(/2,3,5,6,2,6,3,5,2,5/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
