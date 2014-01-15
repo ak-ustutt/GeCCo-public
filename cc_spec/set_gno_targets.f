@@ -35,7 +35,7 @@
      &     ioff, gno, nv, cum_appr_mode, idef, maxmetric,
      &     spinproj
       logical ::
-     &     pure_vv
+     &     pure_vv, l_exist
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -44,7 +44,7 @@
       character ::
      &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10, triples*1
       real(8) ::
-     &     factor
+     &     factor, densmix
 
       ! first set targets for CASSCF or uncontracted CI wave function
       ! (if not done already)
@@ -113,6 +113,12 @@
         write(lulog,*) 'maxcum       = ',maxcum
         if (maxtop.gt.0)
      &     write(lulog,*) 'cum_appr_mode= ',cum_appr_mode
+      end if
+      call get_argument_value('method.MR','densmix',xval=densmix)
+      if (densmix.gt.0d0) then
+        inquire(file='ME_DENSmix_list.da',exist=l_exist)
+        if (.not.l_exist) call quit(1,'set_gno_targets',
+     &           'densmix: requires file ME_DENSmix_list.da!')
       end if
 
 *----------------------------------------------------------------------*
@@ -836,6 +842,74 @@ c dbg
      &       val_label=(/'F_DENS_appr'/))
 c dbgend
       end if
+
+      ! formula for mixed density matrices
+      call add_target2('F_DENSmix',.false.,tgt_info)
+      call set_dependency('F_DENSmix','F_preDENS0',tgt_info)
+      call set_dependency('F_DENSmix','DENS',tgt_info)
+      call set_dependency('F_DENSmix','DEF_ME_DENSmix',tgt_info)
+      call set_rule2('F_DENSmix',DERIVATIVE,tgt_info)
+      call set_arg('F_DENSmix',DERIVATIVE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_DENSmix'/))
+      call set_arg('F_DENSmix',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_preDENS0'/))
+      call set_arg('F_DENSmix',DERIVATIVE,'OP_RES',1,tgt_info,
+     &     val_label=(/'DENS'/))
+      call set_arg('F_DENSmix',DERIVATIVE,'OP_DERIV',1,tgt_info,
+     &     val_label=(/'DENS_dag'/))
+      ! subtract a portion of the actual density matrix
+      call set_rule2('F_DENSmix',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_DENSmix'/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'DENS'/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &     tgt_info,
+     &     val_label=(/'DENS   ','DENSmix','DENS   ',
+     &                 'DENS   ','DENSmix','DENS   '/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &     val_int=(/1,2,1,1,2,1/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &     val_int=(/2,5/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/-densmix/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+      call set_rule2('F_DENSmix',REPLACE,tgt_info)
+      call set_arg('F_DENSmix',REPLACE,'LABEL_RES',1,tgt_info,
+     &             val_label=(/'F_DENSmix'/))
+      call set_arg('F_DENSmix',REPLACE,'LABEL_IN',1,tgt_info,
+     &             val_label=(/'F_DENSmix'/))
+      call set_arg('F_DENSmix',REPLACE,'OP_LIST',2,tgt_info,
+     &             val_label=(/'DENSmix','DENS   '/))
+      ! mix in a portion of the "reference" density matrix
+      call set_rule2('F_DENSmix',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'F_DENSmix'/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'DENS'/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'OPERATORS',6,
+     &     tgt_info,
+     &     val_label=(/'DENS   ','DENSmix','DENS   ',
+     &                 'DENS   ','DENSmix','DENS   '/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
+     &     val_int=(/1,2,1,1,2,1/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'N_AVOID',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'AVOID',2,tgt_info,
+     &     val_int=(/2,5/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/+densmix/))
+      call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &     val_log=(/.false./))
+c dbg
+      call set_rule2('F_DENSmix',PRINT_FORMULA,tgt_info)
+      call set_arg('F_DENSmix',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_DENSmix'/))
+c dbgend
+
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -989,6 +1063,26 @@ c     &             val_label=(/'F_HOLE'/))
      &                 val_int=(/msc/))
         end do
       end if
+
+      ! ME for densities of "reference" state to be mixed in
+      call add_target2('DEF_ME_DENSmix',.false.,tgt_info)
+      call set_dependency('DEF_ME_DENSmix','DENS',tgt_info)
+      call set_rule2('DEF_ME_DENSmix',CLONE_OP,tgt_info)
+      call set_arg('DEF_ME_DENSmix',CLONE_OP,'LABEL',1,tgt_info,
+     &             val_label=(/'DENSmix'/))
+      call set_arg('DEF_ME_DENSmix',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &             val_label=(/'DENS'/))
+      call set_rule2('DEF_ME_DENSmix',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_DENSmix',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_DENSmix'/))
+      call set_arg('DEF_ME_DENSmix',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'DENSmix'/))
+      call set_arg('DEF_ME_DENSmix',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_DENSmix',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_DENSmix',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
 *----------------------------------------------------------------------*
 *     "phony" targets: solve equations, evaluate expressions
 *----------------------------------------------------------------------*

@@ -227,6 +227,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./)) ! extra unitary trafo based on prec. matrix
       call argument_add('guess','method.MR',type=vtyp_int,
      &                  idef=(/0/)) ! if >0: use previous C0 as guess
+      call argument_add('densmix','method.MR',type=vtyp_rl8,
+     &                  xdef=(/0d0/))
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

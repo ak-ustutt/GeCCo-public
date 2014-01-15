@@ -62,7 +62,7 @@
       character(len=3) ::
      &     prc_mode_str
       real(8) ::
-     &     x_ansatz, prc_shift, prc_min, prc_impfac
+     &     x_ansatz, prc_shift, prc_min, prc_impfac, densmix
 
       if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC targets'
 
@@ -88,6 +88,8 @@
      &     lval=svdonly)
       call get_argument_value('method.MR','spinproj',
      &     ival=spinproj)
+      call get_argument_value('method.MR','densmix',
+     &     xval=densmix)
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
       call get_argument_value('calculate.solve.non_linear','update_prc',
@@ -1912,7 +1914,7 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &      val_str='MRCC2')
       end if
       ! b) factor out spin-adapted RDMs if needed
-      if (spinproj.ge.3.and.orb_info%nactel.gt.0) then
+      if (spinproj.ge.3.and.orb_info%nactel.gt.0.or.densmix.gt.0d0) then
         call set_dependency('F_E(MRCC)tr','F_DENS0',tgt_info)
         call set_rule2('F_E(MRCC)tr',FACTOR_OUT,tgt_info)
         call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -4032,9 +4034,14 @@ c dbg
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
       if (maxcum.gt.0) then
-        call set_dependency('FOPT_OMG','F_DENS0',tgt_info)
         call set_dependency('FOPT_OMG','DEF_ME_DENS',tgt_info)
+        if (densmix.gt.0d0) then
+          call set_dependency('FOPT_OMG','F_DENSmix',tgt_info)
+          labels(ndef+1) = 'F_DENSmix'
+        else
+        call set_dependency('FOPT_OMG','F_DENS0',tgt_info)
         labels(ndef+1) = 'F_DENS0'
+        end if
         ndef = ndef + 1
         if (cum_appr_mode.eq.0) then
           call set_dependency('FOPT_OMG','F_CENT',tgt_info)
@@ -5800,37 +5807,37 @@ c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
 c     &       val_str='BLKS')
 c dbgend
 c dbg
-      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
-      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
-      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-     &     'ME_S(S+1)',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-     &     'FOPT_T_S2',1,0,
-     &     parameters,0,tgt_info)
-      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
-      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-     &     'ME_NORM',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-     &     'FOPT_T_NORM',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
-      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
-     &             val_label=(/'ME_S(S+1)'/))
-      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
-     &             val_label=(/'ME_NORM'/))
-      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
-     &             val_rl8=(/1d0/))
-      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
-     &             val_str='precond')
-      call form_parameters(-1,parameters,2,
-     &     'Spin expectation value '//
-     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
-     &     0,'SCAL F20.12')
-      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
-     &     'ME_S(S+1)',1,0,
-     &     parameters,2,tgt_info)
+c      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
+c      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
+c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+c     &     'ME_S(S+1)',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+c     &     'FOPT_T_S2',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
+c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+c     &     'ME_NORM',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+c     &     'FOPT_T_NORM',1,0,
+c     &     parameters,0,tgt_info)
+c      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+c     &             val_label=(/'ME_S(S+1)'/))
+c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+c     &             val_label=(/'ME_NORM'/))
+c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
+c     &             val_rl8=(/1d0/))
+c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
+c     &             val_str='precond')
+c      call form_parameters(-1,parameters,2,
+c     &     'Spin expectation value '//
+c     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
+c     &     0,'SCAL F20.12')
+c      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
+c     &     'ME_S(S+1)',1,0,
+c     &     parameters,2,tgt_info)
 c dbgend
 
 c dbg
