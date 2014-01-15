@@ -97,6 +97,7 @@ crange:=@crange@
 cldflags:=@cldflags@
 
 ifdef DEBUG
+  fopt:=
   fcflags:=$(fdebug) 
   cflags:=$(cdebug) 
 endif

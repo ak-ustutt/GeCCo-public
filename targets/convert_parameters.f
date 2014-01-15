@@ -619,7 +619,7 @@ C     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
      &     n_par_str,
      &     ninclude,ninclude_or,nexclude,
      &     iblk_include(*),iblk_include_or(*),iblk_exclude(*)
-      character(*), intent(inout) ::
+      character(len=*), intent(inout) ::
      &     parameters(n_par_str)
 
       if (rw.lt.0) then
@@ -630,12 +630,24 @@ C     &       imode,nfac,((idxblk(ii),fac(ii)), ii=1,nfac)
         if (ninclude_or.gt.30)
      &                      call quit(1,'select_parameters','too much')
         if (nexclude.gt.30) call quit(1,'select_parameters','too much')
-        write(parameters(1),'(i2,30i4)')
+        if (ninclude.gt.0) then
+          write(parameters(1),'(i2,30i4)')
      &       ninclude,iblk_include(1:ninclude)
-        write(parameters(2),'(i2,30i4)')
+        else
+          write(parameters(1),'(" 0   0")')
+        end if
+        if (ninclude_or.gt.0) then
+          write(parameters(2),'(i2,30i4)')
      &       ninclude_or,iblk_include_or(1:ninclude_or)
-        write(parameters(3),'(i2,30i4)')
+        else
+          write(parameters(2),'(" 0   0")')
+        end if
+        if (nexclude.gt.0) then
+          write(parameters(3),'(i2,30i4)')
      &       nexclude,iblk_exclude(1:nexclude)
+        else
+          write(parameters(3),'(" 0   0")')
+        end if
       else
         read(parameters(1),'(i2,30i4)')
      &       ninclude,iblk_include(1:ninclude)
