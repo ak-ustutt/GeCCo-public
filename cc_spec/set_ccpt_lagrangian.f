@@ -435,7 +435,8 @@ c     &       op_info)
       call del_operator(op_f_temp,op_info)
 
       call atim_csw(cpu,sys,wall)
-      write(lulog,*) 'Number of generated terms: ',nterms
+c nterms is no longer updated
+c      write(lulog,*) 'Number of generated terms: ',nterms
       call prtim(lulog,'CCPT Lagrangian',cpu-cpu0,sys-sys0,wall-wall0)
 
       end

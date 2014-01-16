@@ -44,7 +44,7 @@
      &     l_icci, l_iccc, skip, Op_eqs, svdonly, prc_traf,
      &     jac_fix
       real(8) ::
-     &     sv_thresh, prc_shift, tikhonov
+     &     sv_thresh, prc_shift, tikhonov, densmix
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -103,6 +103,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     ival=spinproj)
       call get_argument_value('method.MR','prc_traf',
      &     lval=prc_traf)
+      call get_argument_value('method.MR','densmix',
+     &     xval=densmix)
 
       if (.not.l_iccc.and.prc_type.ne.0.and.prc_type.ne.3.or.
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
@@ -724,9 +726,15 @@ c dbgend
      &               val_label=(/'F_D'/))
       else if (gno.eq.0) then
         call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
+       if (densmix.gt.0d0) then
+        call set_dependency('FOPT_D','F_DENSmix',tgt_info)
+        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
+     &               val_label=(/'F_DENSmix','F_D      '/))
+       else
         call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',2,tgt_info,
      &               val_label=(/'F_DENS0','F_D    '/))
+       end if
       else if (gno.eq.1) then
         call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
         call set_dependency('FOPT_D','F_DENS0',tgt_info)

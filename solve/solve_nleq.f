@@ -198,6 +198,8 @@ c dbgend
 
       ! for safety reasons, we allocate the two guys
       allocate(me_trv(1),me_h_trv(1))
+      call get_argument_value('calculate.solve.non_linear',
+     &                        'restart',lval=restart)
 
       do iopt = 1, nopt
         ! open result vector file(s)
@@ -209,8 +211,6 @@ cmh     if file already open, use as initial guess!
         else
           call file_open(ffopt(iopt)%fhand)
           ! hard restart? (just use old amplitude file as initial guess)
-          call get_argument_value('calculate.solve.non_linear',
-     &         'restart',lval=restart)
           if (restart) then
             inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
             if (.not.restart) call warn('solve_nleq',
@@ -331,7 +331,7 @@ c     &       ff_trv,ff_h_trv,
         ! quick and dirty (for experimental use):
         ! do C0 optimization if requested
         if (opti_info%optref.eq.-3.and.
-     &      (imacit.gt.1.or.opti_info%skip_resx)
+     &      (imacit.gt.1.or.restart.or.opti_info%skip_resx)
      &      .and..not.conv.and.nspcfrm.gt.1) then
           call get_argument_value('method.MR','ciroot',
      &       ival=idx)

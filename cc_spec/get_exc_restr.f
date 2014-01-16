@@ -94,6 +94,7 @@
         if (excrestr0(6).lt.0) excrestr0(6) = maxexc
         do ip = excrestr0(3), excrestr0(4)
           do ih = excrestr0(1), excrestr0(2)
+            if (ip.gt.maxp.or.ih.gt.maxh) cycle
             excrestr(ih,ip,1) = max(excrestr(ih,ip,1),excrestr0(5))
             excrestr(ih,ip,2) = min(excrestr(ih,ip,2),excrestr0(6))
             if (excrestr(ih,ip,2).lt.excrestr(ih,ip,1)) then

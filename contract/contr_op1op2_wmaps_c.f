@@ -1353,7 +1353,9 @@ c     &                   - idxst_op1op2+1
 
                   if (.not.reo_op1op2) then
                     ! direct update of result block
-                    xop1op2blk => xop1op2(idxop1op2:)
+c                    xop1op2blk => xop1op2(idxop1op2:)
+                    ! somehow, "=> xxx(i:)" may lead to seg. faults(?)
+                    xop1op2blk => xop1op2(idxop1op2:lenop1op2)
                   else
                     ! put result to intermediate buffer
                     xop1op2blk => xbf12tmp

@@ -19,7 +19,7 @@
 
       integer, intent(in) ::
      &     nj_res
-      type(contraction), intent(in) ::
+      type(contraction), intent(inout) ::
      &     contr
       integer, intent(out) ::
      &     svertex(contr%nvtx)
@@ -66,7 +66,7 @@
       ! -----------------------------
       ! make packed contraction table
       ! -----------------------------
-      topo = 0
+      topo(1:nvtx,1:nvtx) = 0
       do iarc = 1, narc
         ivtx = arc(iarc)%link(1)
         jvtx = arc(iarc)%link(2)
@@ -83,7 +83,7 @@
       ! -------------------------------
       ! make packed external line table
       ! -------------------------------
-      xlines = 0
+      xlines(1:nvtx,1:nj_res) = 0
       do iarc = 1, nxarc
         ivtx = xarc(iarc)%link(1)
         jvtx = xarc(iarc)%link(2)
