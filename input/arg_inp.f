@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine arg_inp(l_exit,l_infile,l_logfile,
-&                        name_infile,name_logfile)
+     &                        name_infile,name_logfile)
 *----------------------------------------------------------------------*
 *     process the command line argument list to GeCCo
 *----------------------------------------------------------------------*
