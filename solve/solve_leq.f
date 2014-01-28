@@ -403,16 +403,19 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
           xresmax = fndmnx(xresnrm(1:nroots,iopt),nroots,2)
           if (conv) then
             write(lulog,'("L>> conv.",21x,x,g10.4)') xresmax
+            if (lulog.ne.luout)
+     &         write(luout,'("L>> conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
             write(lulog,'("L>> |rhs|",21x,x,g10.4)') xresmax
+            if (lulog.ne.luout)   
+     &        write(luout,'("L>> |rhs|",21x,x,g10.4)') xresmax
             xrhsnorm = xresmax
           else
             write(lulog,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
+            if (lulog.ne.luout) 
+     &         write(luout,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
           end if
         end do
-c dbg
-c        if(iter.gt.1)print *,'>>> resnorm = ',xresnrm
-c dbg
 
         ! 4 - get residual
         if (iand(task,4).eq.4) then

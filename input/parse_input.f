@@ -818,8 +818,8 @@ c      end function
      &     shw_arg
       integer ::
      &     level, max_level
-      character ::
-     &     fmtstr*80
+      character(len=80) ::
+     &     fmtstr
       
       level = 0
       current => tree_root
@@ -1050,7 +1050,7 @@ cc     &     ibacksl  = 6,
      &     curkey,nxtkey
       type(argument), pointer ::
      &     curarg
-      character*(maxlen) ::
+      character(len=maxlen) ::
      &     context
       integer ::
      &     allowed_delim(n_delim), n_allowed_delim
@@ -1251,15 +1251,24 @@ c        ipst = first_nonblank(line)
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character ::
-     &     fmtstr*80
-      write(lulog,'(x,a)') trim(line)
+      character(len=80) ::
+     &     fmtstr, fmtstr2
+
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
+      write(fmtstr2,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
+ 
+      write(lulog,'(x,a)') trim(line)
       write(lulog,fmtstr) 
-      write(fmtstr,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
-      write(lulog,fmtstr) 'INPUT ERROR: unexpected delimiter, '//
+      write(lulog,fmtstr2) 'INPUT ERROR: unexpected delimiter, '//
      &     'expected one of ',
      &     delimiter(allowed_delim(1:n_allowed_delim))
+      if (lulog.ne.luout) then
+        write(luout,'(x,a)') trim(line)
+        write(luout,fmtstr) 
+        write(luout,fmtstr2) 'INPUT ERROR: unexpected delimiter, '//
+     &     'expected one of ',
+     &     delimiter(allowed_delim(1:n_allowed_delim))
+      end if
 
       return
       end subroutine
@@ -1273,13 +1282,20 @@ c        ipst = first_nonblank(line)
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character ::
-     &     fmtstr*80
+      character(len=80) ::
+     &     fmtstr
+
+      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
 
       write(lulog,'(x,a)') trim(line)
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(lulog,fmtstr) 
       write(lulog,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
+      if (lulog.ne.luout) then
+        write(luout,'(x,a)') trim(line)
+        write(luout,fmtstr) 
+        write(luout,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
+      end if
+
       return
       end subroutine
 
@@ -1292,13 +1308,20 @@ c        ipst = first_nonblank(line)
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character ::
-     &     fmtstr*80
+      character(len=80) ::
+     &     fmtstr
+
+      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
 
       write(lulog,'(x,a)') trim(line)
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(lulog,fmtstr) 
       write(lulog,'(x,a)') 'INPUT ERROR: missing )'
+      if (lulog.ne.luout) then
+        write(luout,'(x,a)') trim(line)
+        write(luout,fmtstr) 
+        write(luout,'(x,a)') 'INPUT ERROR: missing )'
+      end if
+
       return
       end subroutine
 
@@ -1311,13 +1334,20 @@ c        ipst = first_nonblank(line)
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character ::
-     &     fmtstr*80
+      character(len=80) ::
+     &     fmtstr
+
+      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
 
       write(lulog,'(x,a)') trim(line)
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
       write(lulog,fmtstr) 
       write(lulog,'(x,a)') 'INPUT ERROR: missing ='
+      if (lulog.ne.luout) then
+        write(luout,'(x,a)') trim(line)
+        write(luout,fmtstr) 
+        write(luout,'(x,a)') 'INPUT ERROR: missing ='
+      end if
+
       return
       end subroutine
 
@@ -1332,14 +1362,19 @@ c        ipst = first_nonblank(line)
      &     ipos
       type(keyword), intent(in) ::
      &     curkey
-      character ::
-     &     fmtstr*80
+      character(len=80) ::
+     &     fmtstr
 
-      write(lulog,'(x,a)') trim(line)
       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
+      write(lulog,'(x,a)') trim(line)
       write(lulog,fmtstr) 
       write(lulog,'(x,a)') 'INPUT ERROR: unexpected keyword '
-
+      if (lulog.ne.luout) then
+        write(luout,'(x,a)') trim(line)
+        write(luout,fmtstr) 
+        write(luout,'(x,a)') 'INPUT ERROR: unexpected keyword '
+      end if
+  
       return
       end subroutine
 

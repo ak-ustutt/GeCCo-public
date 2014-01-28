@@ -13,10 +13,11 @@ c      include 'ifc_fileutil.h'
 c work around for problem with interface file
       logical, external :: file_exists
 
-      if (iprlvl.ge.1)
-     &     write(lulog,*) 'Reading input file ....'
-      if (iprlvl.ge.2)
-     &     write(lulog,*) 'Input file: ',
+      write(lulog,*) 'Reading input file ....'
+      write(lulog,*) 'Input file: ',
+     &     trim(ffinput%name)
+      if (iprlvl.ge.2.and.luout.ne.lulog)
+     &     write(luout,*) 'Input file: ',
      &     trim(ffinput%name)
 
       call set_keywords()
@@ -28,6 +29,7 @@ c work around for problem with interface file
       call file_open(ffinput)
 
       call list_file(lulog,ffinput%unit)
+      if (luout.ne.lulog) call list_file(luout,ffinput%unit)
 
       call keyword_parse(ffinput%unit)
 

@@ -18,9 +18,9 @@
       include 'ifc_input.h'
 
       logical ::
-     &     l_infile,l_exit,one_more, do_stat
+     &     l_infile,l_logfile,l_exit,one_more, do_stat
       character(256) ::
-     &     name_infile, host
+     &     name_infile, name_logfile, host
       character(32) ::
      &     env_type
       character(24) ::
@@ -30,23 +30,43 @@
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(filinf) ::
-     &     ffinput, ffwarn, ffstat
+     &     ffinput, fflog, ffwarn, ffstat
       type(orbinf) ::
      &     orb_info
 
       ! a few settings
-      lulog = 6      ! output unit
+      luout = 6      ! output unit
+      lulog = 6      ! logfile (stdout by default)
 
 c      iprlvl = 3     ! print level
       iprlvl = 10    ! print level
 
       call hostname(host)
       call datum(date)
+
+      ! process arguments to GeCCo
+      call arg_inp(l_exit,l_infile,l_logfile,
+     &             name_infile,name_logfile)
+      if (l_exit) goto 2308
+
+      ! init the file-handler
+      call fh_init(iprlvl)
+
+      ! open the logfile
+      if (l_logfile) then
+        call file_init(fflog,trim(name_logfile),ftyp_sq_frm,idum)
+        call file_open(fflog)
+        lulog = fflog%unit
+      end if
+
       write(lulog,'(x,"run starts at ",a,"   host: ",a)')
+     &     trim(date),trim(host)
+      if (lulog.ne.luout)
+     &  write(luout,'(x,"run starts at ",a,"   host: ",a)')
      &     trim(date),trim(host)
       
       ! give information about compilation date etc.
-      call printversion()
+      call printversion(lulog)
 
       ! set internal counter to 0
       event_time = 0
@@ -54,14 +74,8 @@ c      iprlvl = 3     ! print level
       call init_time()
       call atim_csw(cpu0,sys0,wall0)
 
-      call printheader()
-
-      ! process arguments to GeCCo
-      call arg_inp(l_exit,l_infile,name_infile)
-      if (l_exit) goto 2308
-
-      ! init the file-handler
-      call fh_init(iprlvl)
+      call printheader(lulog)
+      if (luout.ne.lulog) call printheader(luout)
 
       ! warnings
       nwarn = 0
@@ -124,6 +138,8 @@ c      iprlvl = 3     ! print level
         call file_close_keep(ffwarn)
         write(lulog,'(1x,a,i4,a)')
      &     'There were ',nwarn,' warnings, see file '//trim(ffwarn%name)
+        if (lulog.ne.luout) write(luout,'(1x,a,i4,a)')
+     &     'There were ',nwarn,' warnings, see file '//trim(ffwarn%name)
       else
         call file_close_delete(ffwarn)
       end if
@@ -133,10 +149,18 @@ c      iprlvl = 3     ! print level
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
+      if (lulog.ne.luout)
+     &   call prtim(luout,'total time in GeCCo run',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
 
  2308 call datum(date)
       write(lulog,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
+      if (lulog.ne.luout)
+     &   write(luout,'(x,"run ends at ",a,"   host: ",a)')
+     &     trim(date),trim(host)
+
+      if (l_logfile) call file_close_keep(fflog)
 
       stop '+++ GeCCo run finished +++'
       end

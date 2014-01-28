@@ -220,13 +220,16 @@ c        end if
       if (lconv)
      &       write(lulog,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
+      if (lconv.and.luout.ne.lulog)
+     &       write(luout,'(x,a,i5,a)')
+     &         'CONVERGED IN ',iter,' ITERATIONS'
       if (lconv) conv = .true.
 
       if (.not.lconv) iter = iter + 1
 
       if (.not.lconv.and.
      &       (iter.gt.opti_info%maxmacit)) then
-        write(lulog,*) 'NO CONVERGENCE OBTAINED'
+        call warn('linear solver','NO CONVERGENCE OBTAINED')
         iter = iter - 1
         lexit = .true.
       end if

@@ -76,7 +76,7 @@ c dbgend
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret,
-     &     ndx, idx_res_xret(nopt), jdx, spinproj
+     &     ndx, idx_res_xret(nopt), jdx, spinproj, it_print
       real(8) ::
      &     energy, xresnrm(nopt), xdum, thr_suggest
       real(8), pointer ::
@@ -294,9 +294,6 @@ c dbg
       task = 0
       opt_loop: do !while(task.lt.8)
 
-c dbg
-        print *,'at head of opt_loop'
-c dbg
         call optcont
      &       (imacit,imicit,imicit_tot,
      &       task,conv,
@@ -310,19 +307,42 @@ c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
+        ! output
+        it_print = imacit-1
+        if (conv) it_print = imacit
+        if (luout.ne.lulog) then
+          if (nopt.eq.1.and.imacit.gt.1)
+     &       write(luout,'(3x,i3,f24.12,x,g10.4)')
+     &       it_print,energy,xresnrm(1)
+          if (nopt.eq.2.and.imacit.gt.1)
+     &       write(luout,'(3x,i3,f24.12,2(x,g10.4))')
+     &       it_print,energy,xresnrm(1:2)
+          if (nopt.eq.3.and.imacit.gt.1)
+     &       write(luout,'(3x,i3,f24.12,3(x,g10.4))')
+     &       it_print,energy,xresnrm(1:3)
+          if (.not.conv.and.task.ge.8) then
+            write(luout,'("    NOT CONVERGED!")')
+          else if (task.ge.8) then
+            write(luout,'("    CONVERGED")')
+C            write(luout,'(">>> final energy:",f24.12," <<<")')
+C     &       energy
+          end if
+        end if
+
         if (nopt.eq.1.and.imacit.gt.1)
      &     write(lulog,'(">>>",i3,f24.12,x,g10.4)')
-     &     imacit-1,energy,xresnrm(1)
+     &     it_print,energy,xresnrm(1)
         if (nopt.eq.2.and.imacit.gt.1)
      &     write(lulog,'(">>>",i3,f24.12,2(x,g10.4))')
-     &     imacit-1,energy,xresnrm(1:2)
+     &     it_print,energy,xresnrm(1:2)
         if (nopt.eq.3.and.imacit.gt.1)
      &     write(lulog,'(">>>",i3,f24.12,3(x,g10.4))')
-     &     imacit-1,energy,xresnrm(1:3)
+     &     it_print,energy,xresnrm(1:3)
         if (.not.conv.and.task.ge.8) then
           write(lulog,'(">>> NOT CONVERGED! <<<")')
           exit opt_loop
         else if (task.ge.8) then
+          write(lulog,'(">>> CONVERGED <<<")')
           write(lulog,'(">>> final energy:",f24.12," <<<")')
      &     energy
            exit opt_loop
