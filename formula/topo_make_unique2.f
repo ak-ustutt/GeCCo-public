@@ -133,11 +133,19 @@ c dbg
             jdx = jdx+1
           end do
           jdx = idx+nj_sub-1
-          do while(jdx.lt.nvtx.and.vtx(jdx+1).eq.vtx(idx).and.
-     &         i8list_cmp(xlines(jdx+1:jdx+nj_sub,1:nj),
-     &                   xlines(jdx-nj_sub+1:jdx,1:nj),nj_sub*nj).eq.0)
+          do 
+            if (jdx.ge.nvtx) exit
+            if (vtx(jdx+1).ne.vtx(idx)) exit
+            if (i8list_cmp(xlines(jdx+1:jdx+nj_sub,1:nj),
+     &               xlines(jdx-nj_sub+1:jdx,1:nj),nj_sub*nj).ne.0) exit
             jdx = jdx+nj_sub
           end do
+c possibly unsafe -- fails for gfortran
+c          do while(jdx.lt.nvtx.and.vtx(jdx+1).eq.vtx(idx).and.
+c     &         i8list_cmp(xlines(jdx+1:jdx+nj_sub,1:nj),
+c     &                   xlines(jdx-nj_sub+1:jdx,1:nj),nj_sub*nj).eq.0)
+c            jdx = jdx+nj_sub
+c          end do
           if (idx+nj_sub-1.ne.jdx) then
             neqv_blocks = neqv_blocks+1
             ! sort such that topo gives ascending seq

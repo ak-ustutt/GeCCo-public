@@ -498,10 +498,11 @@ c              xnrm = 1d0
               ! in reality me_trv is still up to date:
               call touch_file_rec(me_trv(iopt)%mel%fhand)
               ! copy to scr list and reassign
+              call switch_mel_record(me_scr(iopt)%mel,iroot)
               call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
-              call assign_me_list(me_scr(iopt)%mel%label,
-     &                            me_opt(iopt)%mel%op%name,op_info)
             end do
+            call assign_me_list(me_scr(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
             deallocate(xret,idxselect)
 c dbg
 c            print *,'back-transformed trial vector:'

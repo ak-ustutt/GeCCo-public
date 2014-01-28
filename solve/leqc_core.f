@@ -466,6 +466,7 @@ c     &               iord_vsbsp,ndim_vsbsp,mxsbsp)
      &                     orb_info,op_info,str_info,strmap_info)
               ! copy to scr list
               ! original list was used to ensure spin symmetry if needed
+              call switch_mel_record(me_scr(iopt)%mel,iroot)
               call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
             end do
           end if

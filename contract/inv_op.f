@@ -110,7 +110,6 @@
      &                  trim(me_u%label))
 
       open_close_inv = me_inv%fhand%unit.le.0
-      open_close_inp = me_inp%fhand%unit.le.0
       open_close_u = .false.
       open_close_spc = .false.
       if (nlist.eq.2) open_close_u = me_u%fhand%unit.le.0
@@ -118,6 +117,7 @@
       if(open_close_inv)then
         call file_open(me_inv%fhand)
       endif
+      open_close_inp = me_inp%fhand%unit.le.0
       if(open_close_inp)then
         call file_open(me_inp%fhand)
       endif

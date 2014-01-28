@@ -41,7 +41,7 @@
      &     digit, ilabels, ord2, op_par2, x_max_ord2,
      &     ncnt, icnt, pos,
      &     spec, trunc_type, ipop, npop, ncmp, restart,
-     &     ntcex, itcex, itcex2
+     &     ntcex, itcex, itcex2, iblk_list(20)
 
       character(len_target_name) ::
      &     mel_dia1,
@@ -1899,9 +1899,17 @@ c     &                  labels,2,1,parameters,2,tgt_info)
      &                      tgt_info)
               call set_dependency(trim(formname),trim(opname3),
      &                      tgt_info)
+              ! must provide valid array in select_parameters
+              if (nint.lt.20) then
+                iblk_list(1:20) = 0
+              else
+                call quit(1,'set_response_targets',
+     &               'iblk_list too small; consider changing this '//
+     &               'section to new input style')
+              end if
               call select_parameters(-1,
      &             parameters,3,
-     &             0,nint,0,0,0,0)
+     &             0,nint,0,0,iblk_list,0)
               call set_rule(trim(formname),ttype_frm,SELECT_TERMS,
      &                    labels,3+nint,1,
      &                    parameters,3,tgt_info)

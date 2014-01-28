@@ -137,14 +137,6 @@ c dbg
       cmp_contr = cmp_contr.and.
      &            i8list_cmp(topo1,topo2,nvtx*nvtx).eq.0
       if (ntest.ge.100) write(lulog,*) 'cmp_contr > (3): ',cmp_contr
-c dbg
-c      if (.not.cmp_contr.and.contr1%idx_res.eq.15) then
-c        print *,'topo1'
-c        call prt_contr_p(6,svtx1,ivtx1,topo1,xlines1,nvtx,nj)
-c        print *,'topo2'
-c        call prt_contr_p(6,svtx2,ivtx2,topo2,xlines2,nvtx,nj)
-c      end if
-c dbg
 
       return
       ! OLD:

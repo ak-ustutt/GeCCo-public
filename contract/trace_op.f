@@ -601,7 +601,9 @@ c dbg
 
             if (.not.reo_trop) then
               ! direct update of result block
-              xtropblk => xtrop(idxtrop:)
+c              xtropblk => xtrop(idxtrop:)
+              ! somehow, "=> xxx(i:)" may lead to seg. faults(?)
+              xtropblk => xtrop(idxtrop:lentrop)
             else
               ! put result to intermediate buffer
               xtropblk => xbftrtmp
