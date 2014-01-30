@@ -57,10 +57,6 @@
       
       ! set up orbital info
       call set_orbinf(orb_info,env_type,.false.)!.true.)
-c dbg
-      if (env_type(1:6).eq.'MOLPRO') call quit(1,'do_calc',
-     &                    'Molpro import not yet finished')
-c dbg
 
       ! initialize target list
       call init_target_info(tgt_info)

@@ -250,6 +250,18 @@ c     &                                str_info,orb_info)
           call quit(1,'import_op_el','GAMESS: cannot handle list_type "'
      &         //trim(list_type)//'"')
         end select
+      case ('molpro_dump','MOLPRO_DUMP')
+        ! what to import?
+        select case(trim(list_type))
+        case ('H_INT')
+          call import_hamint_molpro_dump(mel_target,str_info,orb_info)
+        case default
+          call quit(1,'import_op_el',
+     &         'MOLPRO_DUMP: cannot handle list_type "'
+     &         //trim(list_type)//'"')
+        end select
+      case ('molpro','MOLPRO')
+        call quit(1,'import_op_el','type MOLPRO not implemented')
       case ('intern','INTERN')
         call quit(1,'import_op_el','type INTERN not implemented')
       case ('aces2','ACES2')
@@ -276,7 +288,7 @@ c dbg
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)
 c dbg
-c        if (trim(list_type).eq.'H_INT') stop 'H stop'
+c       if (trim(list_type).eq.'H_INT') stop 'H stop'
 c dbg
       end if
 
