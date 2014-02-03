@@ -229,6 +229,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/0/)) ! if >0: use previous C0 as guess
       call argument_add('densmix','method.MR',type=vtyp_rl8,
      &                  xdef=(/0d0/))
+      call argument_add('refproj','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! project out ref. functions
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,

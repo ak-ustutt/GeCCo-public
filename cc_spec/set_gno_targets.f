@@ -107,14 +107,15 @@
       end if
       call get_argument_value('method.MR','spinproj',
      &     ival=spinproj)
-      if (spinproj.ge.3) ioff = ioff + 1 ! higher RDMs for linear Jacobian
+      call get_argument_value('method.MR','densmix',xval=densmix)
+      if (spinproj.ge.3.or.densmix.gt.0d0) 
+     &   ioff = ioff + 1 ! higher RDMs for linear Jacobian
 
       if (ntest.ge.100) then
         write(lulog,*) 'maxcum       = ',maxcum
         if (maxtop.gt.0)
      &     write(lulog,*) 'cum_appr_mode= ',cum_appr_mode
       end if
-      call get_argument_value('method.MR','densmix',xval=densmix)
       if (densmix.gt.0d0) then
         inquire(file='ME_DENSmix_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_gno_targets',
@@ -135,7 +136,8 @@ c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
         nv = min(maxcum,orb_info%nactel)
       else if (gno.gt.0) then
         nv = maxcum
-        if (spinproj.ge.3) nv = max(maxcum,ioff+maxmetric-3)
+        if (spinproj.ge.3.or.densmix.gt.0d0) 
+     &     nv = max(maxcum,ioff+maxmetric-3)
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)
       end if
@@ -174,7 +176,8 @@ c     &     val_int=(/orb_info%nactel+1/))
 c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
       if (maxtop.le.0.or.gno.gt.0) then
         nv = maxcum
-        if (spinproj.ge.3) nv = max(maxcum,ioff+maxmetric-3)
+        if (spinproj.ge.3.or.densmix.gt.0d0) 
+     &     nv = max(maxcum,ioff+maxmetric-3)
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)
       end if

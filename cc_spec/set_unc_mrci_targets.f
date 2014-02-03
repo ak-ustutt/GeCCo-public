@@ -34,13 +34,15 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
-     &     spinproj, guess
+     &     spinproj, guess, refproj
       logical ::
      &     oldref, l_exist, writeF
       character(len_target_name) ::
      &     dia_label, dia_label2, labels(20)
       character(len_command_par) ::
      &     parameters(3)
+      character ::
+     &     opstr*4, mestr*7, filestr*15
 
       if (iprlvl.gt.0)
      &     write(lulog,*) 'setting targets for multiref. wave function'
@@ -81,6 +83,8 @@
      &     ival=spinproj)
       call get_argument_value('method.MR','guess',
      &     ival=guess)
+      call get_argument_value('method.MR','refproj',
+     &     ival=refproj)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
@@ -99,6 +103,7 @@
         write(lulog,*) 'oldref  = ',oldref
         write(lulog,*) 'spinproj= ',spinproj
         if (guess.gt.0) write(lulog,*) 'guess   =',guess
+        if (refproj.gt.0) write(lulog,*) 'refproj =',refproj
       end if
 
       if (guess.gt.0) then
@@ -107,6 +112,18 @@
      &           'Initial guess: Did not find file ME_C0start_list.da!')
         if (maxroot.gt.1) call quit(1,'set_unc_mrci_targets',
      &           'option guess only available for ciroot=1/maxroot=1')
+      end if
+      if (refproj.gt.0) then
+        if (refproj.gt.9.or.spinproj.gt.0)
+     &     call quit(1,'set_unc_mrci_targets',
+     &          'refproj>9 or with spinproj>0 not available yet')
+        filestr='ME_C0_x_list.da'
+        do ip = 1, refproj
+          write(filestr(7:7),'(i1)') ip
+          inquire(file=filestr,exist=l_exist)
+          if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
+     &         'Reference projection: Did not find file '//filestr//'!')
+        end do
       end if
 
 *----------------------------------------------------------------------*
@@ -525,6 +542,34 @@ c      call set_rule2('F_C0_sp',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_C0_sp',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_C0_sp'/))
 c dbgend
+
+      ! formula for reference projection: -|C1><C0|C1>-|C2><C0|C2>...
+      call add_target2('F_C0_prj',.false.,tgt_info)
+      call set_dependency('F_C0_prj','C0',tgt_info)
+      call set_dependency('F_C0_prj','DEF_ME_C0_x',tgt_info)
+      opstr='C0_x'
+      do ip = 1, refproj
+        write(opstr(4:4),'(i1)') ip
+        call set_rule2('F_C0_prj',EXPAND_OP_PRODUCT,tgt_info)
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &       val_label=(/'F_C0_prj'/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &       val_label=(/'C0'/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'OPERATORS',5,
+     &       tgt_info,
+     &       val_label=(/'C0  ',opstr,'C0^+',opstr,'C0  '/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+     &       val_int=(/1,2,3,4,1/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'N_AVOID',1,
+     &       tgt_info,val_int=(/2/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'AVOID',4,tgt_info,
+     &       val_int=(/1,4,3,5/))
+        call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &       val_rl8=(/-1d0/))
+        if (ip.gt.1)
+     &     call set_arg('F_C0_prj',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+     &          val_log=(/.false./))
+      end do
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -603,6 +648,17 @@ c dbgend
      &             val_label=(/'FOPT_C0_sp'/))
       call set_arg('FOPT_C0_sp',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_C0_sp'/))
+
+      ! formula for reference projection
+      call add_target2('FOPT_C0_prj',.false.,tgt_info)
+      call set_dependency('FOPT_C0_prj','F_C0_prj',tgt_info)
+      call set_dependency('FOPT_C0_prj','DEF_ME_C0',tgt_info)
+      call set_dependency('FOPT_C0_prj','DEF_ME_C0_x',tgt_info)
+      call set_rule2('FOPT_C0_prj',OPTIMIZE,tgt_info)
+      call set_arg('FOPT_C0_prj',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_C0_prj'/))
+      call set_arg('FOPT_C0_prj',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_C0_prj'/))
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -666,6 +722,31 @@ c dbgend
         call set_arg('DEF_ME_C00',SCALE_COPY,'FAC',1,tgt_info,
      &       val_rl8=(/1d0/))
 
+      ! ME_C0_x
+      call add_target2('DEF_ME_C0_x',.false.,tgt_info)
+      call set_dependency('DEF_ME_C0_x','C0',tgt_info)
+      opstr='C0_x'
+      mestr='ME_C0_x'
+      do ip = 1, refproj
+        write(opstr(4:4),'(i1)') ip
+        write(mestr(7:7),'(i1)') ip
+        call set_rule2('DEF_ME_C0_x',CLONE_OP,tgt_info)
+        call set_arg('DEF_ME_C0_x',CLONE_OP,'LABEL',1,tgt_info,
+     &       val_label=(/opstr/))
+        call set_arg('DEF_ME_C0_x',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &       val_label=(/'C0'/))
+        call set_rule2('DEF_ME_C0_x',DEF_ME_LIST,tgt_info)
+        call set_arg('DEF_ME_C0_x',DEF_ME_LIST,'LIST',1,tgt_info,
+     &               val_label=(/mestr/))
+        call set_arg('DEF_ME_C0_x',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &               val_label=(/opstr/))
+        call set_arg('DEF_ME_C0_x',DEF_ME_LIST,'2MS',1,tgt_info,
+     &               val_int=(/ims/))
+        call set_arg('DEF_ME_C0_x',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &               val_int=(/orb_info%lsym/))
+        call set_arg('DEF_ME_C0_x',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &               val_int=(/msc/))
+      end do
 
       ! ME_A_C0
       call add_target('DEF_ME_A_C0',ttype_opme,.false.,tgt_info)
@@ -827,6 +908,8 @@ c dbgend
         call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
         call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
       end if
+      if (refproj.gt.0)
+     &   call set_dependency('SOLVE_REF','FOPT_C0_prj',tgt_info)
       if (guess.gt.0)
      &   call set_dependency('SOLVE_REF','C0guess',tgt_info)
       if (.not.oldref) then
@@ -845,16 +928,21 @@ c dbgend
      &       val_label=(/'C0'/))
         call set_arg('SOLVE_REF',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_A_C0'/))
-        if (spinproj.eq.0) then
+        if (spinproj.eq.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
-        else
+        else if (spinproj.ne.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='SPP')
           call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
      &         val_label=(/'ME_C0_sp'/))
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
      &         val_label=(/'FOPT_C0_sp'/))
+        else ! refproj.ne.0
+          call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
+     &         val_str='PRJ')
+          call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
+     &         val_label=(/'FOPT_C0_prj'/))
         end if
       else
         inquire(file='ME_C0_list.da',exist=l_exist)
