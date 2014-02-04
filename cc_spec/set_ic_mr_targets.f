@@ -1147,6 +1147,13 @@ c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'RDMs :',0,'LIST')
+c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
+c     &     'ME_DENS',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! eval list needed for sequential orthogonalization within GNO
       ! a) evaluate

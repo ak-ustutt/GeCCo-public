@@ -52,7 +52,8 @@
      &     iblkoff, ncblk, nablk, msc_max, msa_max,
      &     istr, istr_csub0, istr_asub0, icmp, ngraph, maxbuf,
      &     imap, ld_spprj_c, ld_spprj_a, idx, nmap, idxmap,
-     &     nel, nn, is2, ncoup, naa, nca
+     &     nel, nn, is2, ncoup, naa, nca, nomni,
+     &     omnistrings(4)
       real(8) ::
      &     fac_off, fac_dia, relfac2
 
@@ -217,74 +218,8 @@
       end if
 
       ! our target distributions
-      ok = .true.
-      select case (msa_max)
-      case(1)
-        msdis_c_tgt(1) = 1
-        msdis_a_tgt(1) = 1
-      case(2)
-        if (nablk.eq.1.and.ncblk.eq.1) then
-          msdis_c_tgt(1) = 0
-          msdis_a_tgt(1) = 0
-        else if (nablk.eq.1.and.ncblk.eq.2) then
-          msdis_c_tgt(1:2) = (/1,-1/)
-          msdis_a_tgt(1) = 0
-        else if (nablk.eq.2.and.ncblk.eq.1) then
-          msdis_c_tgt(1) = 0
-          msdis_a_tgt(1:2) = (/1,-1/)
-        else if (nablk.eq.2.and.ncblk.eq.2) then
-          msdis_c_tgt(1:2) = (/1,-1/)
-          msdis_a_tgt(1:2) = (/1,-1/)
-        end if
-      case(3)
-        if (ncblk.eq.1) then
-          msdis_c_tgt(1) = 1
-        else if (ncblk.eq.2) then
-          if (occ_csub(1).eq.2) then
-            msdis_c_tgt(1:2) = (/0,1/)
-          else ! occ_csub(1).eq.1
-            msdis_c_tgt(1:2) = (/1,0/)
-          end if
-        else ! ncblk.eq.3
-           msdis_c_tgt(1:3) = (/1,1,-1/)
-        end if
-        if (nablk.eq.1) then
-          msdis_a_tgt(1) = 1
-        else if (nablk.eq.2) then
-          if (occ_asub(1).eq.2) then
-            msdis_a_tgt(1:2) = (/0,1/)
-          else ! occ_asub(1).eq.1
-            msdis_a_tgt(1:2) = (/1,0/)
-          end if
-        else ! nablk.eq.3
-           msdis_a_tgt(1:3) = (/1,1,-1/)
-        end if
-c        if (nablk.eq.1.and.ncblk.eq.1) then
-c          msdis_c_tgt(1) = 1
-c          msdis_a_tgt(1) = 1
-c        else if (nablk.eq.2.and.ncblk.eq.2) then
-c          if (occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
-c            msdis_c_tgt(1:2) = (/0,1/)
-c            msdis_a_tgt(1:2) = (/1,0/)
-c          else if (occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
-c            msdis_c_tgt(1:2) = (/1,0/)
-c            msdis_a_tgt(1:2) = (/0,1/)
-c          else
-c            ok = .false.
-c          end if
-c        else
-c          ok = .false.
-c        end if
-      case default
-        ok = .false.     
-      end select
-      if (.not.ok) then
-        write(lulog,*) ' rank: ',msa_max
-        write(lulog,*) ' ncblk, nablk: ',ncblk,nablk
-        write(lulog,*) ' occ_csub = ',occ_csub(1:ncblk)
-        write(lulog,*) ' occ_asub = ',occ_asub(1:ncblk)
-        call quit(1,'spin_prj_blk','case not covered')
-      end if
+      call get_target_dis(ncblk,occ_csub,msdis_c_tgt)
+      call get_target_dis(nablk,occ_asub,msdis_a_tgt)
 
       if (ntest.ge.100) then
         write(lulog,*) 'our target ms distribution: '
@@ -385,7 +320,7 @@ C          if (.not.ok) cycle
      &            nsplc,mel,iblk,ioff0,igama,ngam,graphs,
      &            msdis_c,gamdis_c,hpvx_csub,occ_csub,graph_csub,ncblk,
      &            msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk,
-     &            s2,mel%mst,ncoup,coeff) 
+     &            s2,mel%mst,ncoup,coeff,nomni,omnistrings) 
 
           call get_spprjmap_blk(spprjmap_c,
      &         ncblk,occ_csub,len_str,graph_csub,idxmsdis_c,gamdis_c,
@@ -463,35 +398,9 @@ c     &               dble(asign(isplc)*csign(isplc))
 
               end do
 
-              ! collect values (remember sign!)
-              ! check uniqueness: idx1<2<3<...
-              ! handle sign=0 (non-ex. el.)
-c dbg
-              if (nsplc.le.6) then
-                ! if any of these indices is zero, this means
-                ! that the element has been treated before
-                if (nsplc.eq.6.and.(idxel(2).eq.0.or.idxel(3).eq.0.or.
-     &              idxel(4).eq.0.or.idxel(5).eq.0)) cycle
-c                print '(x,a,20i6)','idx = ',idxel(1:nsplc)
-c                print '(x,a,20f12.6)','val = ',value(1:nsplc)
-              else
-                ! I am not yet sure about, how to decide whether
-                ! we are on a element that has been spin projected
-                ! before; most likely elements 4,6,7,14,15,17,18 
-                ! could be good candidates
-                ! elements 6 and 15 seem to work for the three-particle
-                ! density matrices in ic-MRCCSD
-                if (idxel(6).eq.0.or.idxel(15).eq.0) 
-     &                cycle
-c                print '(x,a,i6,x,9i6)','idx = ',idxel(1:10)
-c                print '(x,a,6x,x,9i6,x,i6)','      ',idxel(11:20)
-c                print '(x,a,f12.6)','val = ',value(1)
-c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(2:7)
-c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(8:13)
-c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(14:19)
-c                print '(x,a,3f12.6,x,3f12.6)', '      ',value(20)
-              end if
-c dbg
+              ! check if element has been treated before:
+              ! if any of the "omnipresent" elements is zero
+              if (any(idxel(omnistrings(1:nomni)).eq.0)) cycle
 
 
               ! spin-adapt: project onto the desired spin components
@@ -537,4 +446,78 @@ c     &               dble(asign(isplc)*csign(isplc))
       ifree = mem_flushmark('spin_prj_blk')
 
       return
+
+      contains
+
+      subroutine get_target_dis(nocc,occ,tgtdis)
+
+      implicit none
+
+      integer, intent(in) ::
+     &     nocc, occ(nocc)
+      integer, intent(out) ::
+     &     tgtdis(nocc)
+      integer ::
+     &     ii, jj, nodd, noddlarge, icnt
+      logical ::
+     &     assigned(nocc)
+
+      ! assign dis=0 to even occupations, and
+      ! count occurrences of odd numbers (and those larger than 1)
+      assigned(1:nocc) = .false.
+      nodd = 0
+      noddlarge = 0
+      do ii = 1, nocc
+        if (mod(occ(ii),2).eq.1) then
+          nodd = nodd + 1
+          if (occ(ii).gt.1) noddlarge = noddlarge + 1
+        else
+          tgtdis(ii) = 0
+          assigned(ii) = .true.
+        end if
+      end do
+
+      if (all(assigned(1:nocc))) return
+
+      ! odd occupations >1 must be assigned +1 distribution
+      ! otherwise, handling of maps needs to be changed...
+      if (noddlarge.gt.(nodd+1)/2) call warn('get_target_dis',
+     &      'will not be able to assign enough +1 distributions')
+      do jj = 1, min(noddlarge,(nodd+1)/2)
+        do ii = 1, nocc
+          if (assigned(ii)) cycle
+          if (occ(ii).gt.1) then
+            tgtdis(ii) = +1
+            assigned(ii) = .true.
+            exit
+          end if
+        end do
+      end do
+
+      ! now fill up with +1 distributions from the left
+      ! and +1 distributions from the right
+      icnt = min(noddlarge,(nodd+1)/2)
+      do while (.not.all(assigned(1:nocc)))
+        if (icnt.le.0) then ! +1 dist. on the left
+          do ii = 1, nocc
+            if (assigned(ii)) cycle
+            tgtdis(ii) = +1
+            assigned(ii) = .true.
+            icnt = icnt+1
+            exit
+          end do
+        else ! -1 dist. on the right
+          do ii = nocc, 1, -1
+            if (assigned(ii)) cycle
+            tgtdis(ii) = -1
+            assigned(ii) = .true.
+            icnt = icnt-1
+            exit
+          end do
+        end if
+      end do
+
+      return
+      end subroutine
+
       end

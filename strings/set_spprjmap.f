@@ -32,7 +32,8 @@
      &     nsym, ifree, ms,
      &     lenbuf, idxbuf, idxms, idxms_spprj, ioff_sym,
      &     idxmap, igam, nstr, nmaps, imaps,
-     &     maxlen_blk, maxlenbuf
+     &     maxlen_blk, maxlenbuf,
+     &     idspn_prm(0:iocc,0:2**iocc-1)
       integer, pointer ::
      &     mostnd(:,:,:), idx_gas(:), ngas_hpv(:), igamorb(:)
 
@@ -94,6 +95,9 @@ c      end do
         strmap_info%offsets_spprj(idxspprj)%msgm(1:(iocc+1)*nsym) = -1
       end if
 
+      ! get strmap cases
+      call set_spprjmap_cases(iocc,idspn_prm)
+
       idxmap = 0
 c      do ms = iocc, -iocc, -2
       strmap_info%offsets_spprj(idxspprj)%ms(idxms)=strmap_info%idx_last
@@ -109,7 +113,7 @@ c          print *,'ityp,ngas_hpv(ityp)',ityp,ngas_hpv(ityp)
 c dbg
         if (nstr.eq.0) cycle
         call set_spprjmap_kernel(buffer(idxbuf+1),
-     &                 iocc,irestr,idxms,igam,
+     &                 iocc,idspn_prm,irestr,idxms,igam,
      &                 grph%y4sg,grph%yinf,
      &                 grph%yssg,grph%wssg,
      &                 grph%ioffstr_dgm,grph%ndis,

@@ -74,11 +74,11 @@ c          print *,'get coeff. for is2,ims2,sigma=',is2,ims2,sigma
 c dbgend
           if (branchperm(iel).eq.0) then ! up case
             coeff(icoup) = coeff(icoup) *
-     &         sqrt((dble(is2)/2d0+sigma*dble(ims2))/dble(is2))
+     &         sqrt(max(0d0,(dble(is2)/2d0+sigma*dble(ims2))/dble(is2)))
           else ! down case
             coeff(icoup) = -2d0*sigma*coeff(icoup) *
-     &         sqrt((dble(is2)/2d0+1d0-sigma*dble(ims2))/
-     &              (dble(is2)+2d0))
+     &         sqrt(max(0d0,(dble(is2)/2d0+1d0-sigma*dble(ims2))/
+     &              (dble(is2)+2d0)))
           end if
         end do
         ! now A string in reverse order
@@ -90,11 +90,11 @@ c dbgend
           sigma = -0.5d0*dble(aperm(ia)) ! beta or alpha
           if (branchperm(iel).eq.0) then ! up case
             coeff(icoup) = coeff(icoup) *
-     &         sqrt((dble(is2)/2d0+sigma*dble(ims2))/dble(is2))
+     &         sqrt(max(0d0,(dble(is2)/2d0+sigma*dble(ims2))/dble(is2)))
           else ! down case
             coeff(icoup) = -2d0*sigma*coeff(icoup) *
-     &         sqrt((dble(is2)/2d0+1d0-sigma*dble(ims2))/
-     &              (dble(is2)+2d0))
+     &         sqrt(max(0d0,(dble(is2)/2d0+1d0-sigma*dble(ims2))/
+     &              (dble(is2)+2d0)))
           end if
           ! beta? -> change sign!
           if (aperm(ia).eq.-1) coeff(icoup)

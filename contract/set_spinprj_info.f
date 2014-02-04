@@ -3,7 +3,7 @@
      &           nsplc,mel,iblk,ioff0,igama,ngam,graphs,
      &           msdis_c,gamdis_c,hpvx_csub,occ_csub,graph_csub,ncblk,
      &           msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk,
-     &           s2,ms2,ncoup,coeff)
+     &           s2,ms2,ncoup,coeff,nomni,omnistrings)
 
       implicit none
 
@@ -31,16 +31,21 @@
       integer, intent(out) ::
      &    gsign(nsplc), offsets(nsplc), 
      &    maps_c(nsplc,ncblk), maps_a(nsplc,nablk),
-     &    ldim_op_c(ncblk,nsplc), ldim_op_a(nablk,nsplc)
+     &    ldim_op_c(ncblk,nsplc), ldim_op_a(nablk,nsplc),
+     &    nomni, omnistrings(4)
       real(8), intent(out) ::
      &    coeff(nsplc,ncoup)
 
       integer ::
-     &    isplc, idxmsa, idxdis, occ, msc, msa
+     &    isplc, idxmsa, idxdis, occ, msc, msa,
+     &    isub, ist, ind, isgn, iel
       integer ::
      &    msdiscmp_c(ncblk,nsplc), msdiscmp_a(nablk,nsplc),
      &    len_str(ncblk+nablk), idxmsdis_c(ncblk), idxmsdis_a(nablk),
      &    setc3(3), seta3(3)
+
+      integer, allocatable ::
+     &    setc(:), seta(:)
 
       integer, external ::
      &    std_spsign_msdis, ielsum, idx_msgmdst2
@@ -49,52 +54,45 @@
       if (occ.ne.ielsum(occ_csub,ncblk)) 
      &     call quit(1,'set_spinprj_info','occ(A)/=occ(C) not allowed!')
 
-      ! for the cases below, the spin distributions of the
-      ! first sceleton element differ a bit, cf. also spin_prj_blk
-      if (occ.eq.1) then
-        call set_case((/+1/),(/+1/),1)
-      else if (occ.eq.2.and.ncblk.eq.1.and.nablk.eq.1) then
-        call set_case((/-1,+1/),(/-1,+1/),2)
-      else if (occ.eq.2.and.ncblk.eq.2.and.nablk.eq.1) then
-        call set_case((/+1,-1/),(/-1,+1/),2)
-      else if (occ.eq.2.and.ncblk.eq.1.and.nablk.eq.2) then
-        call set_case((/-1,+1/),(/+1,-1/),2)
-      else if (occ.eq.2.and.ncblk.eq.2.and.nablk.eq.2) then
-        call set_case((/+1,-1/),(/+1,-1/),2)
-      else if (occ.eq.3) then
-        if (ncblk.eq.1) then
-          setc3(1:3) = (/+1,-1,+1/)
-        else if (ncblk.eq.2.and.occ_csub(1).eq.2) then
-          setc3(1:3) = (/-1,+1,+1/)
-        else if (ncblk.eq.2) then ! occ_csub(1).eq.1
-          setc3(1:3) = (/+1,-1,+1/)
-        else ! ncblk.eq.3
-          setc3(1:3) = (/+1,+1,-1/)
-        end if
-        if (nablk.eq.1) then
-          seta3(1:3) = (/+1,-1,+1/)
-        else if (nablk.eq.2.and.occ_asub(1).eq.2) then
-          seta3(1:3) = (/-1,+1,+1/)
-        else if (nablk.eq.2) then ! occ_asub(1).eq.1
-          seta3(1:3) = (/+1,-1,+1/)
-        else ! nablk.eq.3
-          seta3(1:3) = (/+1,+1,-1/)
-        end if
-        call set_case(setc3,seta3,3)
-c      else if (occ.eq.3.and.ncblk.eq.1.and.nablk.eq.1) then
-c        call set_case((/-1,+1,+1/),(/-1,+1,+1/),3)
-c      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
-c     &         occ_csub(1).eq.2.and.occ_asub(1).eq.1) then
-c        call set_case((/-1,+1,+1/),(/+1,-1,+1/),3)
-c      else if (occ.eq.3.and.ncblk.eq.2.and.nablk.eq.2.and.
-c     &         occ_csub(1).eq.1.and.occ_asub(1).eq.2) then
-c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
-      else
-        write(lulog,*) 'occ, ncblk, nablk = ',occ, ncblk, nablk
-        write(lulog,*) 'occ_csub: ',occ_csub(1:ncblk)
-        write(lulog,*) 'occ_asub: ',occ_asub(1:nablk)
-        call quit(1,'set_spinprj_info','case not covered')
-      end if
+      allocate(setc(occ),seta(occ))
+      ! set spin distribution for c string, loop over subblocks
+      ist = 1
+      do isub = 1, ncblk
+        ind = ist + occ_csub(isub) - 1
+        select case (msdis_c(isub))
+        case (1)
+          isgn = +1 ! start with alpha
+        case (0,-1)
+          isgn = -1 ! start with beta
+        case default
+          call quit(1,'set_spinprj_info','unexpected spin distribution')
+        end select
+        do iel = ist, ind
+          setc(iel) = isgn
+          isgn = -isgn
+        end do
+        ist = ind + 1
+      end do
+      ! set spin distribution for a string, loop over subblocks
+      ist = 1
+      do isub = 1, nablk
+        ind = ist + occ_asub(isub) - 1
+        select case (msdis_a(isub))
+        case (1)
+          isgn = +1 ! start with alpha
+        case (0,-1)
+          isgn = -1 ! start with beta
+        case default
+          call quit(1,'set_spinprj_info','unexpected spin distribution')
+        end select
+        do iel = ist, ind
+          seta(iel) = isgn
+          isgn = -isgn
+        end do
+        ist = ind + 1
+      end do
+      ! now set this case
+      call set_case(setc,seta,occ)
 
       do isplc = 1, nsplc
 
@@ -104,7 +102,7 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
           write(lulog,*) 'msdiscmp_a = ',msdiscmp_a(1:nablk,isplc)
           write(lulog,*) 'maps_c = ',maps_c(isplc,1:ncblk)
           write(lulog,*) 'maps_a = ',maps_a(isplc,1:nablk)
-          write(lulog,'(a,10f10.6)') 'coupling coefficients: ',
+          write(lulog,'(a,14f10.6)') 'coupling coefficients: ',
      &                               coeff(isplc,1:ncoup)
         end if
 
@@ -161,7 +159,7 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
      &     npart, spin_ref_c(npart), spin_ref_a(npart)
 
       integer ::
-     &     idx_spc, len, ioff, idx,
+     &     idx_spc, len, ioff, idx, idx2,
      &     mind(npart), maxd(npart),
      &     spin_dis_a(npart), spin_dis_c(npart)
 
@@ -170,6 +168,7 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
 
       mind(1:npart) = -1 
       maxd(1:npart) = +1
+      nomni = 0
 
       idx_spc = 0
       spin_dis_a(1:npart) = maxd(1:npart)
@@ -211,6 +210,30 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
             call get_genealogical_coeff(s2,ms2,npart,npart,ncoup,
      &               coeff(idx_spc,1:ncoup),spin_dis_c,spin_dis_a)
 
+            ! omnipresent string? (i.e. with alternating alpha and beta)
+            do idx = 1, npart - 1
+              if (spin_dis_c(idx)*spin_dis_c(idx+1).ne.-1) exit
+              if (idx.eq.npart-1) then
+                do idx2 = 1, npart - 1
+                  if (spin_dis_a(idx2)*spin_dis_a(idx2+1).ne.-1) exit
+                  if (idx2.eq.npart-1) then
+                    nomni = nomni + 1
+                    if (nomni.gt.4) call quit(1,'set_case',
+     &                   'increase bound for nomni')
+                    omnistrings(nomni) = idx_spc
+                  end if
+                end do
+              end if
+            end do
+c            The following exception for single elements seems
+c            not to be necessary (handled differently later)
+c            if (npart.eq.1) then
+c              nomni = nomni + 1
+c              if (nomni.gt.4) call quit(1,'set_case',
+c     &             'increase bound for nomni')
+c              omnistrings(nomni) = idx_spc
+c            end if
+
           end if
           if (.not.next_dist2(spin_dis_c,npart,mind,maxd,-2)) exit cloop
         end do cloop
@@ -224,45 +247,47 @@ c        call set_case((/+1,-1,+1/),(/-1,+1,+1/),3)
       integer, intent(in) ::
      &     npart, distgt(npart), disref(npart)
       integer ::
-     &     res
+     &     res, idspn_prm(0:npart,0:2**npart-1), tgtbits, refbits, ii
+
+      ! get strmap cases
+      call set_spprjmap_cases(npart,idspn_prm)
 
       res=-1
+
       select case(npart)
       case(1)
         if (distgt(1).eq.disref(1)) res = 0
         if (distgt(1).ne.disref(1)) res = 1
-      case(2)
-        if (disref(1).eq.-1.and.disref(2).eq.+1) then
-          if (distgt(1).eq.+1) then
-            if (distgt(2).eq.+1) res = 1
-            if (distgt(2).eq.-1) res = 2
-          else if (distgt(1).eq.-1) then
-            if (distgt(2).eq.+1) res = 0
-            if (distgt(2).eq.-1) res = 3
-          end if
-        end if
-      case(3)
-        if (disref(1).eq.+1.and.disref(2).eq.-1
-     &      .and.disref(3).eq.+1) then
-          if (distgt(1).eq.+1) then
-            if (distgt(2).eq.+1) then
-              if (distgt(3).eq.+1) res = 1  ! +++
-              if (distgt(3).eq.-1) res = 3  ! ++-
-            else if (distgt(2).eq.-1) then
-              if (distgt(3).eq.+1) res = 0  ! +-+
-              if (distgt(3).eq.-1) res = 6  ! +--
+      case default
+
+        ! translate target and reference distributions into bit strings
+        tgtbits = 0
+        refbits = 0
+        do ii = 1, npart
+          if (distgt(ii).eq.-1) tgtbits = ibset(tgtbits,npart-ii)
+          if (disref(ii).eq.-1) refbits = ibset(refbits,npart-ii)
+        end do
+c dbg
+c      print *,'tgt dis:',distgt(1:npart)
+c      print *,'tgt bits:',tgtbits
+c      print *,'ref dis:',disref(1:npart)
+c      print *,'ref bits:',refbits
+c      print *,'idspn_prm(0,0)',idspn_prm(0,0)
+c dbgend
+
+        ! reference distribution should be the same as stored in idspn_prm
+        if (refbits.eq.idspn_prm(0,0)) then
+          ! find index of target distribution
+          do ii = 0, 2**npart-1
+            if (tgtbits.eq.idspn_prm(0,ii)) then
+              res = ii
+              exit
             end if
-          else if (distgt(1).eq.-1) then
-            if (distgt(2).eq.+1) then
-              if (distgt(3).eq.+1) res = 2  ! -++
-              if (distgt(3).eq.-1) res = 5  ! -+-
-            else if (distgt(2).eq.-1) then
-              if (distgt(3).eq.+1) res = 4  ! --+
-              if (distgt(3).eq.-1) res = 7  ! ---
-            end if
-          end if
+          end do
         end if
+
       end select
+
 c dbg
 c      print *,'tgt = ',distgt(1:npart)
 c      print *,'ref = ',disref(1:npart)
