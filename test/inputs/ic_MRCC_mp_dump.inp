@@ -1,0 +1,14 @@
+general
+  print=0
+orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(1,0,0,0)
+  shell type=frozen,def=(1,0,0,0)
+method
+  MR maxexc=2,ms=0,mult=3,sym=4,prc_type=3,pure_vv=F
+  MRCC maxcom_res=2,maxcom_en=2
+calculate
+ solve maxiter=50,conv=1d-8,maxsub=10
+ solve non_linear optref=-3
+ routes maxbranch=4,sv_thresh=1d-6
+

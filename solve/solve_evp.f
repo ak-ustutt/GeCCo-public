@@ -391,14 +391,24 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
+          if (lulog.ne.luout) 
+     &      write(luout,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
+                if (lulog.ne.luout)
+     &           write(luout,'(" E>",3x,f24.12,x,3g10.4)')
+     &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
+     &                              idx = 0, nopt-1)
               else
                 write(lulog,
+     &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
+     &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
+                if (lulog.ne.luout)
+     &            write(lulog,
      &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
@@ -592,32 +602,8 @@ c dbgend
       end do
 
       ! print results
-      call write_title(lulog,wst_title,
-     &     'Results for '//trim(label_opt(1)))
-      write(lulog,'("E>>",66("="))')
-      write(lulog,'("E>>",2x,'//
-     &     '"root     eigenvalue (real)       eigenvalue (img.)'//
-     &     '  |residual|")')
-      write(lulog,'("E>>",66("-"))') 
-      do iroot = 1, nroots
-        if (xeig(iroot,2).eq.0d0) then
-          write(lulog,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
-     &         iroot,xeig(iroot,1),xresnrm(iroot)
-        else
-          write(lulog,
-     &         '("E>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
-     &         iroot,xeig(iroot,1:2),xresnrm(iroot)
-        end if
-c dbg
-c         do iopt=1,nopt
-c           call switch_mel_record(me_opt(iopt)%mel,iroot)
-c           call wrt_mel_file(lulog,5,me_opt(iopt)%mel,
-c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
-c    &             str_info,orb_info)
-c         enddo
-c dbg     
-      end do
-      write(lulog,'("E>>",66("="))') 
+      call print_roots(lulog)
+      if (lulog.ne.luout) call print_roots(luout)
 
       ! switch to target root if possible
 !      ! (we assume that nroots has been chosen for this reason,
@@ -644,6 +630,42 @@ c dbg
       ifree = mem_flushmark()
 
       return
+
+      contains 
+      
+      subroutine print_roots(lu)
+
+      integer, intent(in) :: lu
+
+      call write_title(lu,wst_title,
+     &     'Results for '//trim(label_opt(1)))
+      write(lu,'("E>>",66("="))')
+      write(lu,'("E>>",2x,'//
+     &     '"root     eigenvalue (real)       eigenvalue (img.)'//
+     &     '  |residual|")')
+      write(lu,'("E>>",66("-"))') 
+      do iroot = 1, nroots
+        if (xeig(iroot,2).eq.0d0) then
+          write(lu,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
+     &         iroot,xeig(iroot,1),xresnrm(iroot)
+        else
+          write(lu,
+     &         '("E>>",3x,i2,x,f22.12,x,g24.12,x,g10.4)')
+     &         iroot,xeig(iroot,1:2),xresnrm(iroot)
+        end if
+c dbg
+c         do iopt=1,nopt
+c           call switch_mel_record(me_opt(iopt)%mel,iroot)
+c           call wrt_mel_file(lulog,5,me_opt(iopt)%mel,
+c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
+c    &             str_info,orb_info)
+c         enddo
+c dbg     
+      end do
+      write(lu,'("E>>",66("="))') 
+
+      end subroutine
+
       end
 
 

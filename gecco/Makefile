@@ -34,7 +34,7 @@ all: $(INST_PROGS)
 
 $(bindir)/gecco.x: $(objs) $(libs)
 	$(MAKE) $(ARCH)/printversion.o
-	$(FC) $(FLDFLAGS) -o $@ $+ $(libs) $(ARCH)/printversion.o $(BLAS_LIBS) 
+	$(FC) $(FLDFLAGS) -o $@ $+ $(libs) $(ARCH)/printversion.o $(BLAS_LIBS) $(LAPACK_LIBS)
 
 date.h:
 	./date.sh "$(FC)" "$(FCFLAGS)"

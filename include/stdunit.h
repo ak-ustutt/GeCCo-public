@@ -1,5 +1,5 @@
       include 'write_styles.h'
       integer ::
-     &     lulog, iprlvl, lustat
-      common/stdunit/ lulog, iprlvl,lustat
+     &     luout, lulog, iprlvl, lustat
+      common/stdunit/ luout, lulog, iprlvl,lustat
 

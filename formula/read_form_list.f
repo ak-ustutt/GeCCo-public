@@ -44,14 +44,10 @@ c dbg
       form_ptr => form_head
       ! we need init_formula here??? -->yes!
       if (init) call init_formula(form_ptr)
-c dbg
       nterms = 0
-c dbg
       do while(rd_formula(ffform,form_ptr))
         if (form_ptr%command.eq.command_end_of_formula) exit
-c dbg
         nterms = nterms+1
-c dbg
 c        allocate(form_ptr%next)
 c        form_ptr%next%prev => form_ptr
         form_ptr => form_ptr%next
@@ -60,9 +56,7 @@ c        nullify(form_ptr%contr)
 c        nullify(form_ptr%interm)
 c        form_ptr%command = command_end_of_formula
       end do
-c dbg
-      print *,'read ',nterms,' entries'
-c dbg
+      write(lulog,*) 'read ',nterms,' entries'
 
       if (closeit)
      &     call file_close_keep(ffform)

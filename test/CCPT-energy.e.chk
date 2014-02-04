@@ -15,11 +15,11 @@ check
   compare int 3
 check
   label CCSD energy
-  find CC energy [ ]*
+  find CC energy [ ]*:
   compare real 5 1e-12
 check
   label (T) energy
-  find CC-PT energy [ ]*
+  find CC-PT energy [ ]*:
   compare real 5 1e-12
 check
   label Total CCSD(T) energy

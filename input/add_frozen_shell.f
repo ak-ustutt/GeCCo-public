@@ -22,15 +22,19 @@
      &     orb_info
 
       integer ::
-     &     idx, ierr, nsym, ngas, nspin, igas, iprint
+     &     idx, ierr, nsym, ngas, nspin, igas, iprint, norb_shell
       integer, allocatable ::
      &     igassh_sv(:,:), iad_gas_sv(:), ihpvgas_sv(:,:)
+
+      integer, external ::
+     &     ielsum
 
       iprint = max(iprlvl,ntest)
 
       nsym  = orb_info%nsym
       ngas  = orb_info%ngas
       nspin = orb_info%nspin
+      norb_shell = ielsum(ishell,len)
       if (iprint.ge.50) then
         write(lulog,*) '------------------'
         write(lulog,*) ' add_frozen_shell'
@@ -91,17 +95,26 @@
         orb_info%ihpvgas(1,1:nspin) = 1
         orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
       case('occ')
-        orb_info%iad_gas(1) = 0
+        orb_info%iad_gas(1) = 2
         orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
 
         orb_info%ihpvgas(1,1:nspin) = IVALE
         orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+        
+        ! all orbitals are active
+        orb_info%nactorb = norb_shell
+
       case('cls')
-        orb_info%iad_gas(1) = 0
+        orb_info%iad_gas(1) = 2
         orb_info%iad_gas(2:ngas) = iad_gas_sv(1:ngas-1)
 
         orb_info%ihpvgas(1,1:nspin) = IHOLE
         orb_info%ihpvgas(2:ngas,1:nspin) = ihpvgas_sv(1:ngas-1,1:nspin)
+
+        ! reduce active electrons by 2 x number of closed orbitals
+        orb_info%nactel = orb_info%nactel - 2*norb_shell
+        ! ... and active orbitals accordingly
+        orb_info%nactorb = orb_info%nactorb - norb_shell
 
       end select
 

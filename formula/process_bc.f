@@ -41,6 +41,7 @@
       include 'def_reorder_info.h'
       include 'def_formula_item.h'
       include 'multd2h.h'
+      include 'routes.h'
       
       integer, parameter ::
      &     ntest = 00
@@ -147,7 +148,7 @@
      &     tra_op1, tra_op2, tra_op1op2, tra_reo, tra_ori,
      &     reo_op1op2, reo_other, reo_before
       real(8) ::
-     &     flops, xmemtot, xmemblk, bc_sign
+     &     flops, xmemtot, xmemblk, bc_sign, factor
 
       integer, external ::
      &     idxlist, int_expand, int_pack, maxxlvl_op
@@ -370,7 +371,13 @@ c          mode_rst_cnt = 1 ! set and return irst_ex1/ex2/cnt
           call dealloc_cnt_info(cnt_info)
 c          if (flops.eq.0d0) call quit(1,'process_bc',
 c     &        'operator with zero length?')
-          cost(1) = cost(1)+flops
+          ! reorderings are expensive:
+          factor = 1d0
+          if (reo_before) factor = factor+reo_factor
+          if (reo_other)  factor = factor+reo_factor
+          if (reo_op1op2) factor = factor+reo_factor
+
+          cost(1) = cost(1)+flops*factor
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)
 
@@ -407,7 +414,7 @@ c     &        'operator with zero length?')
           end if
 
           if (idxop_ori.gt.0) then
-            label = op_arr(idxop_ori)%op%name
+            label1 = op_arr(idxop_ori)%op%name
           else
             write(label1,'("_STIN",i4.4)') abs(idxop_ori)
           end if
@@ -432,7 +439,7 @@ c     &        'operator with zero length?')
 
           call store_def_intm(fl_pnt,
      &         label_reo,iocc_reo,irst_reo,nj_ret,1,
-     &         label,' ',tra_reo,tra_ori,.false.,
+     &         label1,' ',tra_reo,tra_ori,.false.,
      &         orb_info)
           if (lustat.gt.0) then
             call print_form_item(lustat,iitem,fl_pnt,op_info)
@@ -448,7 +455,7 @@ c     &        'operator with zero length?')
           call new_formula_item(fl_pnt,command,target)
 
           call store_reorder(fl_pnt,
-     &       label_reo,label,
+     &       label_reo,label1,
      &       iblkop_reo,iblkop_ori,
      &       tra_reo, tra_ori,
      &       reo_info0%sign_reo,reo_info0%iocc_opreo0,

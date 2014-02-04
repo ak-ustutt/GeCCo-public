@@ -681,6 +681,14 @@
       call set_arg('_PROTO_',PRINT_MEL,'EXPECTED',1,tgt_info,
      &     val_rl8=(/0d0/),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(PRINT_MEL_INFO_,tgt_info)
+      call set_arg('_PROTO_',PRINT_MEL_INFO_,'LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(PRINT_,tgt_info)
+      call set_arg('_PROTO_',PRINT_,'STRING',0,tgt_info,
+     &     val_str=' ',req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
       call set_arg('_PROTO_',SET_MEL,'LIST',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

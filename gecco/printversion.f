@@ -1,18 +1,18 @@
 *----------------------------------------------------------------------*
-      subroutine printversion()
+      subroutine printversion(lu)
 *----------------------------------------------------------------------*
       implicit none
 *----------------------------------------------------------------------*
 * date.h is automatically created by date.sh:      
 *----------------------------------------------------------------------*
       include 'date.h'
-      include 'stdunit.h'
+      integer, intent(in) :: lu
 
-      write (lulog,'(/,x,2a,/)') vers
-      write (lulog,'(/,x,2a)') 'compiled with: ',cmp(1:len_trim(cmp))
-      write (lulog,'(x,2a)') 'level 1 optimization: ',trim(opt1)
-      write (lulog,'(x,2a)') 'level 2 optimization: ',trim(opt2)
-      write (lulog,'(x,2a/)')'level 3 optimization: ',trim(opt3)
+      write (lu,'(/,x,2a,/)') vers
+      write (lu,'(/,x,2a)') 'compiled with: ',cmp(1:len_trim(cmp))
+      write (lu,'(x,2a)') 'level 1 optimization: ',trim(opt1)
+      write (lu,'(x,2a)') 'level 2 optimization: ',trim(opt2)
+      write (lu,'(x,2a/)')'level 3 optimization: ',trim(opt3)
 
       end
 *----------------------------------------------------------------------*

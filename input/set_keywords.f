@@ -423,6 +423,8 @@ c     &     idef=(/0/))
      &     idef=(/5/)) ! (-1=check all possible contraction sequences)
       call argument_add('auto_opt','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
+      call argument_add('reo_factor','calculate.routes',type=vtyp_rl8,
+     &     xdef=(/0d0/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
      &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,

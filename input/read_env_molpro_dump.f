@@ -104,7 +104,7 @@ C      if (ntest.ge.100) write(lulog,*) 'last rec: ',enuc, i1, i2, i3, i4
       allocate(orb_info%cab_orb(nirr),
      &              orb_info%nxbas(nirr) )
 
-      orb_info%iad_gas(1)=0
+      orb_info%iad_gas(1)=2
       orb_info%ihpvgas(1,1)=IPART
       orb_info%igassh(1:nirr,1) = 0
       do ii = 1, norb
