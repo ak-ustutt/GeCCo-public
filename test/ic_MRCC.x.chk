@@ -16,6 +16,7 @@ check
   find F_MRCC_LAG
   find F_MRCC_LAG
   find EXPAND
+  find EXPAND
   find wrote
   compare int 2
 check

@@ -19,6 +19,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -32,8 +33,7 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum,
-     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric,
-     &     spinproj
+     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric
       logical ::
      &     pure_vv, l_exist
       character(len_target_name) ::
@@ -105,10 +105,8 @@
      &        'GNO=1 and pure_vv=T currently forbidden')
         maxcum = ioff+2*maxexc-3
       end if
-      call get_argument_value('method.MR','spinproj',
-     &     ival=spinproj)
       call get_argument_value('method.MR','densmix',xval=densmix)
-      if (spinproj.ge.3.or.densmix.gt.0d0) 
+      if (spinadapt.ge.3.or.densmix.gt.0d0) 
      &   ioff = ioff + 1 ! higher RDMs for linear Jacobian
 
       if (ntest.ge.100) then
@@ -136,7 +134,7 @@ c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
         nv = min(maxcum,orb_info%nactel)
       else if (gno.gt.0) then
         nv = maxcum
-        if (spinproj.ge.3.or.densmix.gt.0d0) 
+        if (spinadapt.ge.3.or.densmix.gt.0d0) 
      &     nv = max(maxcum,ioff+maxmetric-3)
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)
@@ -176,7 +174,7 @@ c     &     val_int=(/orb_info%nactel+1/))
 c      do iv = 1, 2 + maxexc*(maxtop+1) - ioff
       if (maxtop.le.0.or.gno.gt.0) then
         nv = maxcum
-        if (spinproj.ge.3.or.densmix.gt.0d0) 
+        if (spinadapt.ge.3.or.densmix.gt.0d0) 
      &     nv = max(maxcum,ioff+maxmetric-3)
       else
         nv = min(ioff + (maxexc-1)*(maxtop+1),orb_info%nactel)
@@ -993,7 +991,7 @@ c     &             val_label=(/'F_HOLE'/))
      &             val_int=(/1/))
       call set_arg('DEF_ME_DENS',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
-      if (spinproj.ge.3)
+      if (spinadapt.ge.3)
      &   call set_arg('DEF_ME_DENS',DEF_ME_LIST,'S2',1,tgt_info,
      &                val_int=(/0/))
 
@@ -1224,7 +1222,7 @@ c dbgend
      &             val_int=(/0/))
       call set_arg('Y_GNO',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
-      if (spinproj.ge.2)
+      if (spinadapt.ge.2)
      &   call set_arg('Y_GNO',DEF_ME_LIST,'S2',1,tgt_info,
      &                val_int=(/0/))
 

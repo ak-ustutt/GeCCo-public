@@ -306,7 +306,9 @@
       do iopt = 1, nopt
         ! open result vector file(s)
         ! if file already open, use as initial guess (if requested)!
-        if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume) then
+        if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume
+     &      .and.nroots.eq.1) then ! switched off due to frequent
+                                   ! problems for nroots>1
           write(lulog,'(a,i4,a)')
      &          'Using last vector as initial guess (iopt =',iopt,')'
           init(iopt) = .false.

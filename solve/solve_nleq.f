@@ -43,6 +43,7 @@
 c dbg
       include 'ifc_input.h'
 c dbgend
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 000
@@ -76,7 +77,7 @@ c dbgend
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout, idx_en_xret,
-     &     ndx, idx_res_xret(nopt), jdx, spinproj
+     &     ndx, idx_res_xret(nopt), jdx
       real(8) ::
      &     energy, xresnrm(nopt), xdum, thr_suggest
       real(8), pointer ::
@@ -338,14 +339,12 @@ c     &       ff_trv,ff_h_trv,
           call get_argument_value('method.MR','maxroot',
      &       ival=ndx)
           if(ndx.le.0) ndx=idx
-          call get_argument_value('method.MR','spinproj',
-     &       ival=spinproj)
           call me_list_label(dia_label,'DIA',orb_info%lsym,
      &                       0,0,0,.false.)
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
           thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
-          if (spinproj.gt.0) then
+          if (spinadapt.gt.0) then
             call solve_evp('SPP',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
      &                 'C0','FOPT_OMG_C0',

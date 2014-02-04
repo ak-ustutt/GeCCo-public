@@ -19,6 +19,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -34,7 +35,7 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
-     &     spinproj, guess, refproj
+     &     guess, refproj, spinexpec
       logical ::
      &     oldref, l_exist, writeF
       character(len_target_name) ::
@@ -79,31 +80,31 @@
      &     lval=oldref)
       call get_argument_value('method.MR','writeFock',
      &     lval=writeF)
-      call get_argument_value('method.MR','spinproj',
-     &     ival=spinproj)
       call get_argument_value('method.MR','guess',
      &     ival=guess)
       call get_argument_value('method.MR','refproj',
      &     ival=refproj)
+      call get_argument_value('method.MR','spinexpec',
+     &     ival=spinexpec)
       if (cmaxh.lt.0) cmaxh = cmaxexc
       if (cmaxp.lt.0) cmaxp = cmaxexc
       cmaxv = orb_info%norb_hpv(IVALE,1)*2
 
       if (ntest.ge.100) then
-        write(lulog,*) 'cminh   = ',cminh
-        write(lulog,*) 'cmaxh   = ',cmaxh
-        write(lulog,*) 'cminp   = ',cminp
-        write(lulog,*) 'cmaxp   = ',cmaxp
-        write(lulog,*) 'cmaxv   = ',cmaxv
-        if (cminexc.gt.0) write(lulog,*) 'cminexc = ',cminexc
-        write(lulog,*) 'cmaxexc = ',cmaxexc
-        write(lulog,*) 'nactel  = ',orb_info%nactel
-        write(lulog,*) 'ciroot  = ',ciroot
+        write(lulog,*) 'cminh    = ',cminh
+        write(lulog,*) 'cmaxh    = ',cmaxh
+        write(lulog,*) 'cminp    = ',cminp
+        write(lulog,*) 'cmaxp    = ',cmaxp
+        write(lulog,*) 'cmaxv    = ',cmaxv
+        if (cminexc.gt.0) write(lulog,*) 'cminexc  = ',cminexc
+        write(lulog,*) 'cmaxexc  = ',cmaxexc
+        write(lulog,*) 'nactel   = ',orb_info%nactel
+        write(lulog,*) 'ciroot   = ',ciroot
         write(lulog,*) 'maxroot  = ',maxroot
-        write(lulog,*) 'oldref  = ',oldref
-        write(lulog,*) 'spinproj= ',spinproj
-        if (guess.gt.0) write(lulog,*) 'guess   =',guess
-        if (refproj.gt.0) write(lulog,*) 'refproj =',refproj
+        write(lulog,*) 'oldref   = ',oldref
+        write(lulog,*) 'spinadapt= ',spinadapt
+        if (guess.gt.0) write(lulog,*) 'guess    =',guess
+        if (refproj.gt.0) write(lulog,*) 'refproj  =',refproj
       end if
 
       if (guess.gt.0) then
@@ -114,9 +115,9 @@
      &           'option guess only available for ciroot=1/maxroot=1')
       end if
       if (refproj.gt.0) then
-        if (refproj.gt.9.or.spinproj.gt.0)
+        if (refproj.gt.9.or.spinadapt.gt.0)
      &     call quit(1,'set_unc_mrci_targets',
-     &          'refproj>9 or with spinproj>0 not available yet')
+     &          'refproj>9 or with spinadapt>0 not available yet')
         filestr='ME_C0_x_list.da'
         do ip = 1, refproj
           write(filestr(7:7),'(i1)') ip
@@ -819,7 +820,7 @@ c dbgend
       if (ims.eq.0)
      &   call set_arg('DEF_ME_FREF',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &        val_int=(/1/))
-      if (spinproj.ge.2)
+      if (spinadapt.ge.2)
      &   call set_arg('DEF_ME_FREF',DEF_ME_LIST,'S2',1,tgt_info,
      &        val_int=(/0/))
 
@@ -904,7 +905,7 @@ c dbgend
      &     0,0,0,.false.)
       dia_label2 = trim(dia_label)//'C0'
       call set_dependency('SOLVE_REF',trim(dia_label2),tgt_info)
-      if (spinproj.gt.0) then
+      if (spinadapt.gt.0) then
         call set_dependency('SOLVE_REF','DEF_ME_C0_sp',tgt_info)
         call set_dependency('SOLVE_REF','FOPT_C0_sp',tgt_info)
       end if
@@ -928,10 +929,10 @@ c dbgend
      &       val_label=(/'C0'/))
         call set_arg('SOLVE_REF',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_A_C0'/))
-        if (spinproj.eq.0.and.refproj.eq.0) then
+        if (spinadapt.eq.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
-        else if (spinproj.ne.0) then
+        else if (spinadapt.ne.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='SPP')
           call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
@@ -968,7 +969,11 @@ c dbgend
 
       ! Evaluate reference energy
       call add_target('EVAL_E_REF',ttype_gen,calc,tgt_info)
-      call set_dependency('EVAL_E_REF','EVAL_REF_S(S+1)',tgt_info)
+      if (spinexpec.gt.0.or.cmaxexc.eq.0) then
+        call set_dependency('EVAL_E_REF','EVAL_REF_S(S+1)',tgt_info)
+      else
+        call set_dependency('EVAL_E_REF','SOLVE_REF',tgt_info)
+      end if
       call set_dependency('EVAL_E_REF','FOPT_REF',tgt_info)
       call set_rule('EVAL_E_REF',ttype_opme,EVAL,
      &     'FOPT_REF',1,0,
@@ -984,7 +989,11 @@ c dbgend
       ! Evaluate Fock operator wrt reference function
       call add_target('EVAL_FREF',ttype_gen,writeF,tgt_info)
       call set_dependency('EVAL_FREF','FOPT_FREF',tgt_info)
-      call set_dependency('EVAL_FREF','EVAL_REF_S(S+1)',tgt_info)
+      if (spinexpec.gt.0.or.cmaxexc.eq.0) then
+        call set_dependency('EVAL_FREF','EVAL_REF_S(S+1)',tgt_info)
+      else
+        call set_dependency('EVAL_FREF','SOLVE_REF',tgt_info)
+      end if
       call set_rule('EVAL_FREF',ttype_opme,EVAL,
      &     'FOPT_FREF',1,0,
      &     parameters,0,tgt_info)

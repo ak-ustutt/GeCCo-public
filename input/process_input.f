@@ -260,6 +260,16 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &     xval=jac_thresh)
       call get_argument_value('calculate.routes','Tikhonov',
      &     xval=tikhonov)
+      call get_argument_value('calculate.routes','spinadapt',
+     &     ival=spinadapt)
+      if (spinadapt.gt.3)
+     &   call quit(0,'process_input','illegal value for spinadapt (>3')
+      if (spinadapt.lt.0) then ! set up by default
+        ! full spin adaptation for non-singlet MRCC, else none
+        spinadapt = 0
+        if (is_keyword_set('method.MRCC').gt.0.and.orb_info%imult.ne.1)
+     &     spinadapt = 3
+      end if
 
       return
 
