@@ -44,6 +44,10 @@
         idxop  = contr%vertex(ivtx)%idx_op
         iblkop = (contr%vertex(ivtx)%iblk_op-1)/nj+1
 
+        ! ignore formal operators (to avoid tacit removal of terms)
+        if (op_info%op_arr(idxop)%op%formal.or.
+     &      op_info%op_arr(idxop)%op%formal_blk(iblkop)) cycle
+
         ! get name of associated ME list
         me_name = op_info%op_arr(idxop)%op%assoc_list
 
