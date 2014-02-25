@@ -38,7 +38,7 @@
       logical ::
      &     needed, r12fix, set_tp, set_tpp, truncate, set_RT2T2, CC,
      &     pf12_trunc, frozen, pz_eval, use_CS, xsp_opt1, active_orbs,
-     &     semi_r12
+     &     semi_r12, use_u3
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -84,6 +84,7 @@
       call get_argument_value('method.R12','T1ext',ival=t1ext)
       call get_argument_value('method.R12','trunc',ival=trunc_type)
       call get_argument_value('method.R12','vring',ival=vring_mode)
+      call get_argument_value('method.R12','use_U3',lval=use_u3)
       call get_argument_value('method.R12','use_CS',lval=use_CS)
       call get_argument_value('method.R12','xsp1',lval=xsp_opt1)
       call get_argument_value('method.R12','semi_r12',lval=semi_r12)
@@ -1446,42 +1447,11 @@ C     &              parameters,2,tgt_info)
       call set_arg('V-Ccore',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &             val_str=descr)
 
-      ! V' intermediate
+      ! V' intermediate (now called "U")
       if (vring_mode.eq.2) then
-        nblk = 6
-        nj = 1
-        occ_def = 0
         descr = 'P,[HP]|[HP]P,H[HP]'
-        !
-        occ_def(IPART,1,1) = 1
-        occ_def(IHOLE,2,1) = 1
-        !
-        occ_def(IPART,1,2) = 1
-        occ_def(IPART,2,2) = 1
-        !
-        occ_def(IPART,1,3) = 2
-        occ_def(IHOLE,2,3) = 2
-        !
-        occ_def(IPART,1,4) = 1
-        occ_def(IHOLE,2,4) = 1
-        occ_def(IHOLE,1,4) = 1
-        occ_def(IPART,2,4) = 1
-        !
-        occ_def(IHOLE,1,5) = 1
-        occ_def(IPART,1,5) = 1
-        occ_def(IHOLE,2,5) = 2
-        !
-        occ_def(IPART,1,6) = 2
-        occ_def(IHOLE,2,6) = 1
-        occ_def(IPART,2,6) = 1
       else if (vring_mode.eq.1) then
         descr = 'PP,HH'
-        nblk = 1
-        nj = 1
-        occ_def = 0
-        !
-        occ_def(IPART,1,1) = 2
-        occ_def(IHOLE,2,1) = 2
       else
         descr = 'P,H|PP,HH'
         if (active_orbs) descr = 'P,[HV]|PP,[HV][HV]|VP,HH'
@@ -1489,27 +1459,28 @@ C     &              parameters,2,tgt_info)
           descr = 'P,H|PP,HH'
           if (active_orbs) descr = 'P,[HV]|PP,[HV][HPV]|VP,[PH]H'
         end if
-        nblk = 2
-        nj = 1
-        occ_def = 0
-        occ_def(IPART,1,1) = 1
-        occ_def(IHOLE,2,1) = 1
-        occ_def(IPART,1,2) = 2
-        occ_def(IHOLE,2,2) = 2
       end if
       call add_target2(op_vp_inter,.false.,tgt_info)
       call set_dependency(op_vp_inter,op_v_inter,tgt_info)
       call set_rule2(op_vp_inter,DEF_OP_FROM_OCC,tgt_info)
       call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
      &     val_label=(/op_vp_inter/))
-C      call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
-C     &     val_int=(/nblk/))
-C      call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'OCC',nblk*nj,tgt_info,
-C     &     val_occ=occ_def(1:ngastp,1:2,1:nblk*nj))
       call set_arg(op_vp_inter,DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
      &     val_str=descr)
+
+      ! U3 intermediate)
+      if (active_orbs) then
+        descr = 'PPV,[HV][HV]V'
+        call add_target2('U3',.false.,tgt_info)
+        call set_dependency('U3',op_v_inter,tgt_info)
+        call set_rule2('U3',DEF_OP_FROM_OCC,tgt_info)
+        call set_arg('U3',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'U3'/))
+        call set_arg('U3',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
+     &     val_str=descr)
+      end if
       
-      ! V' intermediate
+      ! VR2' intermediate
 c      if () then
 c        nblk = 1
 c        occ_def = 0
@@ -2053,7 +2024,7 @@ c dbg
      &              labels,2+nint*2,1,
      &              parameters,2,tgt_info)
 
-      ! formal definition of VR
+      ! formal definition of U intermediate (Vring formerly)
       call add_target2('Vring_formal',.false.,tgt_info)
       if (.not.active_orbs) then
       call set_dependency('Vring_formal',op_vp_inter,tgt_info)
@@ -2121,6 +2092,31 @@ c      call set_rule2('Vring_formal',PRINT_FORMULA,tgt_info)
 c      call set_arg('Vring_formal',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'Vring_formal'/))
 c dbgend
+
+      call add_target2('U3_formal',.false.,tgt_info)
+      call set_dependency('U3_formal','H',tgt_info)
+      call set_dependency('U3_formal','R12',tgt_info)
+      call set_dependency('U3_formal','U3',tgt_info)
+      call set_rule2('U3_formal',EXPAND_OP_PRODUCT,tgt_info)
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+     &     val_label=(/'U3_formal'/))
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+     &     val_label=(/'U3'/))
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'OPERATORS',4,
+     &     tgt_info,
+     &     val_label=(/'U3 ','H  ','R12','U3 '/))
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
+     &     tgt_info,val_int=(/2/))
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+     &     val_label=(/'2,3,,X                '/))
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
+     &     val_int=(/1,2,3,1/))
+c dbg
+      call set_rule2('U3_formal',PRINT_FORMULA,tgt_info)
+      call set_arg('U3_formal',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'U3_formal'/))
+c dbgend
+
       end if
 
       call add_target2('Vring_CABS',.false.,tgt_info)
@@ -2171,7 +2167,7 @@ c dbgend
      &              val_label=(/op_r12/))
         call set_arg('Vring_CABS',INVARIANT,'TITLE',1,tgt_info,
      &              val_str='V(ring) intermediate, for evaluation')
-      else
+      else if (.not.use_u3) then
       ! adding terms to U
         call set_rule2('Vring_CABS',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
