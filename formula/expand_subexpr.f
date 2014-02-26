@@ -183,6 +183,9 @@ c dbg
             advance = .true.
             select case(mode)
             case(0)
+              write(lulog,*) 'current term:'
+              call prt_contr2(lulog,fl_tgt_current%contr,op_info)
+ 
               call quit(1,'expand_subexpr',
      &                  'no terms! block not defined?')
             case(1)

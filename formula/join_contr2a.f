@@ -79,6 +79,7 @@
         write(lulog,*) 'joining: AC, B'
         call prt_contr2(lulog,contr_ac,op_info)
         call prt_contr2(lulog,contr_b,op_info)
+        write(lulog,*) 'mode = ',mode
       end if
 
       nvtx_ac = contr_ac%nvtx
@@ -121,11 +122,20 @@
         ! CAUTION: not clear if this works in the general case
         svmap = 0
         ioff = (contr_b%iblk_res-1)*njoined
-        do idx = 1, njoined
-          if (iocc_nonzero(op_info%op_arr(
-     &        contr_b%idx_res)%op%ihpvca_occ(1:ngastp,1:2,ioff+idx)))
-     &        svmap(idx) = idx
-        end do
+        if (.not.contr_b%dagger) then
+          do idx = 1, njoined
+            if (iocc_nonzero(op_info%op_arr(
+     &          contr_b%idx_res)%op%ihpvca_occ(1:ngastp,1:2,ioff+idx)))
+     &          svmap(idx) = idx
+          end do
+        else
+          do idx = 1, njoined
+            if (iocc_nonzero(op_info%op_arr(
+     &          contr_b%idx_res)%op%
+     &                ihpvca_occ(1:ngastp,1:2,ioff+njoined+1-idx)))
+     &          svmap(idx) = idx
+          end do
+        end if
         unique = .true.
 c        ! need to call old svmap4contr because svmap4contr2 cannot
 c        ! deal with single operator intermediates where open lines
@@ -198,7 +208,7 @@ c      end if
       ! generate a map: which vertex goes where
       allocate(ivtx_old(nvtx_abc))
 
-      call joinmap4contr(ivtx_old,contr_ac,
+      call joinmap4contr(ivtx_old,contr_ac,nvtx_abc,
      &                   0,-1,
      &                   svmap,nvtx_b,njoined)
 

@@ -116,7 +116,7 @@
       ! generate a map: which vertex goes where
       allocate(ivtx_old(nvtx_abc))
 
-      call joinmap4contr(ivtx_old,contr_ac,
+      call joinmap4contr(ivtx_old,contr_ac,nvtx_abc,
      &                   0,-1,
      &                   svmap,nvtx_b,njoined)
 
