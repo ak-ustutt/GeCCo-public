@@ -343,6 +343,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',PRINT_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout',def=.true.)
+      call set_arg('_PROTO_',PRINT_FORMULA,'MODE',1,tgt_info,
+     &     val_str='LONG',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(TEX_FORMULA,tgt_info)
       call set_arg('_PROTO_',TEX_FORMULA,'LABEL',0,tgt_info,
