@@ -292,6 +292,12 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
      &         xret_blk,
      &         op_info,str_info,orb_info)
 
+        case(command_psinv,command_inv)
+
+          measure = .true.
+c          call inv_op()
+          call quit(1,'frm_sched2','[PS_INV], [INV] are not yet fit!')
+
         case(command_add_contribution)
           call quit(1,'frm_sched2',
      &       'command not valid in this version of frm_sched!: [CONTR]')

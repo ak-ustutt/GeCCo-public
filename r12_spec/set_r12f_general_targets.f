@@ -104,6 +104,12 @@
         use_CS=.true.
       end if
 
+      if (ansatz.lt.1.or.ansatz.gt.3) then
+        write(lulog,*) ' ansatz = ',ansatz
+        call quit(0,'set_r12f_general_targets',
+     &       'insane value for "ansatz"')
+      end if
+
       pf12_trunc = truncate.and.trunc_type.eq.0
       ! Frozen core?
       frozen = .false.
@@ -3025,7 +3031,8 @@ c dbg
 
       call add_target2('sR12-INT',.false.,tgt_info)
       call set_dependency('sR12-INT','sR12',tgt_info)
-      call set_dependency('sR12-INT','R12si',tgt_info)
+C      call set_dependency('sR12-INT','R12si',tgt_info)
+      call set_dependency('sR12-INT','Rsi-INT',tgt_info)
       call set_dependency('sR12-INT','F_DENS0',tgt_info)
       call set_dependency('sR12-INT','DEF_ME_DENSinv',tgt_info)
       call set_rule2('sR12-INT',EXPAND_OP_PRODUCT,tgt_info)
@@ -3037,7 +3044,9 @@ c dbg
      &     val_label=(/'sR12'/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',5,
      &     tgt_info,
-     &     val_label=(/'sR12 ','DENS ','R12si','DENS ','sR12 '/))
+C     &     val_label=(/'sR12 ','DENS ','R12si','DENS ','sR12 '/))
+     &     val_label=(/'sR12   ','DENS   ',
+     &                 'Rsi-INT','DENS   ','sR12   '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &     val_int=(/1,2,3,2,1/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
@@ -3057,7 +3066,9 @@ c dbg
      &     val_label=(/'sR12'/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'OPERATORS',7,
      &     tgt_info,
-     &     val_label=(/'sR12   ','DENSinv','DENS   ','R12si  ',
+C     &     val_label=(/'sR12   ','DENSinv','DENS   ','R12si  ',
+C     &                 'DENS   ','DENSinv','sR12   '/))
+     &     val_label=(/'sR12   ','DENSinv','DENS   ','Rsi-INT ',
      &                 'DENS   ','DENSinv','sR12   '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',7,tgt_info,
      &     val_int=(/1,2,3,4,3,2,1/))
@@ -3103,6 +3114,28 @@ c dbgend
      &             val_str='F12_INT')
       call set_arg('ME_Rsi',IMPORT,'ENV',1,tgt_info,
      &             val_str=env_type)
+
+      call add_target2('ME_sR12',.false.,tgt_info)
+      call set_dependency('ME_sR12','sR12',tgt_info)
+      call set_rule2('ME_sR12',DEF_ME_LIST,tgt_info)
+      call set_arg('ME_sR12',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_sR12 '/))
+      call set_arg('ME_sR12',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'sR12'/))
+      call set_arg('ME_sR12',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('ME_sR12',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('ME_sR12',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+C**
+      call add_target3([character(80) ::
+     &     'target make-sR12-INT(',
+     &     '  depend ME_sR12',
+     &     '  OPTIMIZE(labels_in=sR12-INT,label_opt=FOPT-sR12-INT)',
+     &     '  EVALUATE(form=FOPT-sR12-INT)',
+     &     ')'],tgt_info) 
+
       end if
 *----------------------------------------------------------------------*
 *     Opt. Formulae
