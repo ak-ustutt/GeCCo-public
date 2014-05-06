@@ -216,7 +216,7 @@
             write(lulog,*) 'iopt:   ',iopt
             write(lulog,*) 'idxset: ',idxset(1:nset)
             write(lulog,*) 'valset: ',valset(1:nset)
-            write(lulog,*) *,'=> switching to iroot = ',iroot
+            write(lulog,*) '=> switching to iroot = ',iroot
           end if
 
           do jopt = 1, nopt
