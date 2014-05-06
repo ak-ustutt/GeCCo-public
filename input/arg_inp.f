@@ -25,6 +25,9 @@
       l_logfile = .false.
       l_arg_ml = .false.
 
+      name_infile  = 'no_infile_given'
+      name_logfile = 'no_logfile_given'
+
       nargs = command_argument_count()
 
       do iarg = 1, nargs

@@ -10,7 +10,7 @@
 
       include 'def_filinf.h'
 
-      type(filinf), intent(out) ::
+      type(filinf), intent(inout) ::
      &     fhand
       integer, intent(in) ::
      &     type, reclen

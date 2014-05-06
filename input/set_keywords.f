@@ -273,6 +273,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/0/)) ! special simplifications for (T)
       call argument_add('eval_dens3','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./)) ! evaluate 3-body dens matrix for transforming T3
+      call argument_add('Favg_fix','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
 
       call keyword_add('excite',context='method.MRCC')
       call argument_add('method','method.MRCC.excite',

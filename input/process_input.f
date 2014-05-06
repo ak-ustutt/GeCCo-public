@@ -22,7 +22,7 @@
      &     current
 
       integer ::
-     &     icnt, len, nfreeze, ncnt, ncnt2, nactel
+     &     icnt, len, nfreeze, ncnt, ncnt2, nactel, iread
       integer, allocatable ::
      &     iscr(:)
       character ::
@@ -81,8 +81,8 @@ c      end if
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       ! set file block-length
-      call get_argument_value('general','da_block',ival=lblk_da)
-      lblk_da = lblk_da*1024/nrecfc
+      call get_argument_value('general','da_block',ival=iread)
+      lblk_da = iread*1024/nrecfc
 
       ncnt = is_keyword_set('orb_space.shell')
 
