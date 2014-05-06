@@ -21,6 +21,7 @@
       include 'par_formnames_gen.h'
       include 'par_gen_targets.h'
       include 'par_actions.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -38,13 +39,12 @@
      &     ndef, occ_def(ngastp,2,124),!60),
      &     msc, maxexc, ip, ih, iv,
      &     gno, idef, iexc, jexc,
-     &     version(60), ivers, icnt, prc_type, spinproj, project
+     &     version(60), ivers, icnt, prc_type, project
       logical ::
-     &     sv_fix, l_exist,
-     &     l_icci, l_iccc, skip, Op_eqs, svdonly, prc_traf,
-     &     jac_fix
+     &     l_exist,
+     &     l_icci, l_iccc, skip, Op_eqs, svdonly, prc_traf
       real(8) ::
-     &     sv_thresh, prc_shift, tikhonov, densmix
+     &     prc_shift, densmix
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -82,15 +82,6 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
         call quit(1,'set_ic_mr_targets','unknown normal order')
       end select
 
-      call get_argument_value('calculate.routes','sv_fix',
-     &     lval=sv_fix)
-      call get_argument_value('calculate.routes','jac_fix',
-     &     lval=jac_fix)
-      call get_argument_value('calculate.routes','sv_thresh',
-     &     xval=sv_thresh)
-      call get_argument_value('calculate.routes','Tikhonov',
-     &     xval=tikhonov)
-
       call get_argument_value('method.MR','project',
      &     ival=project)
       call get_argument_value('method.MR','svdonly',
@@ -99,8 +90,6 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
      &     xval=prc_shift)
-      call get_argument_value('method.MR','spinproj',
-     &     ival=spinproj)
       call get_argument_value('method.MR','prc_traf',
      &     lval=prc_traf)
       call get_argument_value('method.MR','densmix',
@@ -110,7 +99,8 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
      &    prc_type.gt.4.or.prc_type.ne.2.and.prc_shift.ne.0d0)
      &  call quit(1,'set_ic_mr_targets','Choose other preconditioner!')
       if (.not.l_iccc.and.prc_traf)
-     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
+     &   write(lulog,'(a)') 'Ignoring prc_traf option in ic-MRCI'
+c     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
 
       if (ntest.ge.100) then
         print *,'gno     = ',gno
@@ -127,7 +117,7 @@ c        call quit(1,'set_ic_mr_targets','Use of GNO not debugged yet')
         if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS file for singular value selection!'
       end if
-      if (prc_traf.and.jac_fix) then
+      if (l_iccc.and.prc_traf.and.jac_fix) then
         inquire(file='SINGVALS2',exist=l_exist)
         if (l_exist) write(lulog,*)
      &     'Using existing SINGVALS2 file for singular value selection!'
@@ -843,7 +833,7 @@ c dbgend
       ! automatic enforcement of S2 only without GNO
       ! In case of GNO, this is done manually, because cumulant-based 
       ! overlap tensors have different spin symmetrization rules
-      if (spinproj.ge.2.and.gno.eq.0)
+      if (spinadapt.ge.2.and.gno.eq.0)
      &   call set_arg('DEF_ME_D',DEF_ME_LIST,'S2',1,tgt_info,
      &        val_int=(/0/))
 
@@ -958,7 +948,7 @@ c dbgend
       ! reordered daggered inverted ME_D
       call add_target('DEF_ME_Dtrdag',ttype_opme,.false.,tgt_info)
       call set_dependency('DEF_ME_Dtrdag','DEF_ME_Dtr',tgt_info)
-      if (prc_traf)
+      if (l_iccc.and.prc_traf)
      &   call set_dependency('DEF_ME_Dtrdag','EVAL_Atr',tgt_info)
       labels(1:20)(1:len_target_name) = ' '
       labels(1) = 'ME_Dtrdag'
@@ -1120,7 +1110,7 @@ c dbgend
      &     parameters,0,tgt_info)
       if (gno.gt.0.and.l_iccc) then
         ! perform spin projection? (not done automatically for GNO)
-        if (spinproj.ge.2) then
+        if (spinadapt.ge.2) then
           call set_rule2('EVAL_D',SPIN_PROJECT,tgt_info)
           call set_arg('EVAL_D',SPIN_PROJECT,'LIST',1,tgt_info,
      &                 val_label=(/'ME_D'/))
@@ -1147,6 +1137,13 @@ c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'RDMs :',0,'LIST')
+c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
+c     &     'ME_DENS',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
 
       ! eval list needed for sequential orthogonalization within GNO
       ! a) evaluate

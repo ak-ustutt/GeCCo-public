@@ -44,7 +44,7 @@
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
-     &     prc_iter, spinproj, project, simp
+     &     prc_iter, project, simp, spinexpec
       logical ::
      &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
@@ -86,8 +86,6 @@
      &     ival=prc_iter)
       call get_argument_value('method.MR','svdonly',
      &     lval=svdonly)
-      call get_argument_value('method.MR','spinproj',
-     &     ival=spinproj)
       call get_argument_value('method.MR','densmix',
      &     xval=densmix)
       call get_argument_value('calculate.solve.non_linear','optref',
@@ -100,6 +98,8 @@
      &     lval=restart)
       call get_argument_value('method.MR','project',
      &     ival=project)
+      call get_argument_value('method.MR','spinexpec',
+     &     ival=spinexpec)
       call get_argument_value('method.MRCC','Op_eqs',
      &     lval=Op_eqs)
       call get_argument_value('method.MRCC','maxcom_res',
@@ -184,13 +184,15 @@
         write(lulog,*) 'Tred_mode    = ', tred
         write(lulog,*) 'trunc        = ', trunc
         if (tfix.gt.0) write(lulog,*) 'Tfix         = ', tfix
-        if (t1ord.ge.0) write(lulog,*) 'T1ord        = ', t1ord
-        if (simp.ge.0) write(lulog,*) 'simp         = ', simp
-        if (spinproj.eq.1) then
+        if (trunc.and.t1ord.ge.0) write(lulog,*)
+     &                 'T1ord        = ', t1ord
+        if (trunc.and.simp.ge.0) write(lulog,*)
+     &                 'simp         = ', simp
+        if (spinadapt.eq.1) then
           write(lulog,*) 'Using spin adapted reference function.'
-        else if (spinproj.eq.2) then
+        else if (spinadapt.eq.2) then
           write(lulog,*) 'Using full spin adaptation.'
-        else if (spinproj.eq.3) then
+        else if (spinadapt.eq.3) then
           write(lulog,*)
      &         'Using full spin adaptation, including preconditioner.'
         end if
@@ -208,9 +210,10 @@
       if (tfix.gt.0.and.(.not.oldref.or.project.eq.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tfix>0 only allowed with oldref=T,project>0')
-C?      if (t1ord.ge.0.and.tfix.eq.0)
-C?     &    call quit(1,'set_ic_mrcc_targets',
-C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
+C?
+      if (trunc.and.t1ord.ge.0.and.tfix.eq.0)
+     &    call quit(1,'set_ic_mrcc_targets',
+     &     'Manually setting T1ord only enabled yet for Tfix>0')
       if (tfix.gt.0.and.(gno.eq.1.or.project.eq.3)) then
         ! new (T) implementation
         if (tfix.ne.2.or.ntrunc.ne.4.or.h1bar
@@ -233,10 +236,10 @@ C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
       if ((prc_iter.gt.0.or.prc_traf).and.prc_type.ne.3)
      &    call quit(1,'set_ic_mrcc_targets',
      &     'prc_iter>0 or prc_traf only available for prc_type=3')
-      if (prc_traf.and.spinproj.lt.2.and.orb_info%imult.ne.1)
+      if (prc_traf.and.spinadapt.lt.2.and.orb_info%imult.ne.1)
      &    call warn('set_ic_mrcc_targets',
      &     'prc_traf may mess up spinflip symmetry of metric! '//
-     &     'Use spinproj=2 or better spinproj=3.')
+     &     'Use spinadapt=2 or better spinadapt=3.')
       if (restart) then
         inquire(file='ME_T_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
@@ -1302,7 +1305,7 @@ c        end if
      &       val_str='COUNT_L')
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCtrunc')
-        if (t1ord.ge.0) then
+        if (trunc.and.t1ord.ge.0) then
           ! expand fixed part of energy again (not necessary in principle)
           call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
           call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
@@ -1919,7 +1922,7 @@ c     &     tgt_info,val_label=(/'L','FREF','T','C0'/))
      &      val_str='MRCC2')
       end if
       ! b) factor out spin-adapted RDMs if needed
-      if (spinproj.ge.3.and.orb_info%nactel.gt.0.or.densmix.gt.0d0) then
+      if (spinadapt.ge.3.and.orb_info%nactel.gt.0.or.densmix.gt.0d0)then
         call set_dependency('F_E(MRCC)tr','F_DENS0',tgt_info)
         call set_rule2('F_E(MRCC)tr',FACTOR_OUT,tgt_info)
         call set_arg('F_E(MRCC)tr',FACTOR_OUT,'LABEL_RES',1,tgt_info,
@@ -2002,7 +2005,7 @@ c dbgend
       call add_target2('F_Atr',.false.,tgt_info)
       call set_dependency('F_Atr','F_A_Ttr',tgt_info)
       call set_dependency('F_Atr','A',tgt_info)
-      if (spinproj.ge.3) call set_dependency('F_Atr','EVAL_D',tgt_info)
+      if (spinadapt.ge.3) call set_dependency('F_Atr','EVAL_D',tgt_info)
       call set_rule2('F_Atr',DERIVATIVE,tgt_info)
       call set_arg('F_Atr',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_Atr'/))
@@ -3909,7 +3912,7 @@ c dbgend
       call set_dependency('FOPT_Atr','DEF_ME_1',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_Dtr',tgt_info)
       call set_dependency('FOPT_Atr','DEF_ME_C0',tgt_info)
-      if (spinproj.ge.3.and.orb_info%nactel.gt.0)
+      if (spinadapt.ge.3.and.orb_info%nactel.gt.0)
      &   call set_dependency('FOPT_Atr','DEF_ME_DENS',tgt_info)
 c      call set_rule2('FOPT_Atr',ASSIGN_ME2OP,tgt_info)
 c      call set_arg('FOPT_Atr',ASSIGN_ME2OP,'LIST',1,tgt_info,
@@ -4472,7 +4475,7 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_T',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
-      if (spinproj.ge.2)
+      if (spinadapt.ge.2)
      &   call set_arg('DEF_ME_T',DEF_ME_LIST,'S2',1,tgt_info,
      &               val_int=(/0/))
 
@@ -4556,7 +4559,7 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_OMG',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
-      if (spinproj.ge.2)
+      if (spinadapt.ge.2)
      &   call set_arg('DEF_ME_OMG',DEF_ME_LIST,'S2',1,tgt_info,
      &               val_int=(/0/))
 
@@ -4882,7 +4885,7 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
-      if (spinproj.ge.2)
+      if (spinadapt.ge.2)
      &   call set_arg('DEF_ME_OMG_RHS',DEF_ME_LIST,'S2',1,tgt_info,
      &               val_int=(/0/))
 
@@ -4977,8 +4980,13 @@ c dbgend
      &             val_label=(/trim(dia_label)/))
       call set_arg('EVAL_Atr',SCALE_COPY,'LIST_INP',1,tgt_info,
      &             val_label=(/trim(dia_label)/))
-      call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
-     &             val_rl8=(/prc_min/))
+      if (tfix.gt.0) then
+        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/-1234567890d0/)) ! only report neg. el.
+      else
+        call set_arg('EVAL_Atr',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/prc_min/))
+      end if
       call set_arg('EVAL_Atr',SCALE_COPY,'MODE',1,tgt_info,
      &             val_str='prc_thresh')
 c dbg
@@ -5423,7 +5431,7 @@ c      if (optref.gt.0.and.icnt.ne.optref) then !not in last iteration
      &     val_label=(/'C0'/))
         call set_arg('SOLVE_MRCC',SOLVEEVP,'FORM',1,tgt_info,
      &       val_label=(/'FOPT_OMG_C0'/))
-        if (spinproj.eq.0) then
+        if (spinadapt.eq.0) then
           call set_arg('SOLVE_MRCC',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
         else
@@ -5480,38 +5488,39 @@ c dbg
      &       'ME_S(S+1)',1,0,
      &       parameters,2,tgt_info)
       end if
-      call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
-      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
-     &     'ME_S(S+1)',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-     &     'FOPT_T_S2',1,0,
-     &     parameters,0,tgt_info)
-      call set_dependency('SOLVE_MRCC','FOPT_T_NORM',tgt_info)
-      call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
-     &     'ME_NORM',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
-     &     'FOPT_T_NORM',1,0,
-     &     parameters,0,tgt_info)
-      call set_rule2('SOLVE_MRCC',SCALE_COPY,tgt_info)
-      call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_RES',1,tgt_info,
-     &             val_label=(/'ME_S(S+1)'/))
-      call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_INP',1,tgt_info,
-     &             val_label=(/'ME_NORM'/))
-      call set_arg('SOLVE_MRCC',SCALE_COPY,'FAC',1,tgt_info,
-     &             val_rl8=(/1d0/))
-      call set_arg('SOLVE_MRCC',SCALE_COPY,'MODE',1,tgt_info,
-     &             val_str='precond')
-      call form_parameters(-1,parameters,2,
-     &     'Spin expectation value <C0|T^+ S^2 T|C0>/<C0|T^+ T|C0> :',
-     &     0,'SCAL F20.12')
-      call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-     &     'ME_S(S+1)',1,0,
-     &     parameters,2,tgt_info)
-c dbg
-      if (.false.) then
-c dbg      if (.not.h1bar.and.tfix.eq.0.and.maxcum.le.0) then
+      if (spinexpec.gt.0) then
+        call set_dependency('SOLVE_MRCC','FOPT_T_S2',tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_T_S2',1,0,
+     &       parameters,0,tgt_info)
+        call set_dependency('SOLVE_MRCC','FOPT_T_NORM',tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
+     &       'ME_NORM',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
+     &       'FOPT_T_NORM',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule2('SOLVE_MRCC',SCALE_COPY,tgt_info)
+        call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_S(S+1)'/))
+        call set_arg('SOLVE_MRCC',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_NORM'/))
+        call set_arg('SOLVE_MRCC',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/1d0/))
+        call set_arg('SOLVE_MRCC',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='precond')
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value <C0|T^+ S^2 T|C0>/<C0|T^+ T|C0> :',
+     &       0,'SCAL F20.12')
+        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
+      end if
+      if (spinexpec.ge.2.and..not.h1bar.and.tfix.eq.0.and.maxcum.le.0)
+     &   then
         call set_dependency('SOLVE_MRCC','FOPT_MRCC_S(S+1)',tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,RES_ME_LIST,
      &       'ME_S(S+1)',1,0,
@@ -5526,7 +5535,6 @@ c dbg      if (.not.h1bar.and.tfix.eq.0.and.maxcum.le.0) then
      &       'ME_S(S+1)',1,0,
      &       parameters,2,tgt_info)
       end if
-c dbgend
 c dbg
 c        call form_parameters(-1,parameters,2,
 c     &       'final T amplitudes :',0,'LIST')
@@ -5813,39 +5821,39 @@ c     &       val_str='Final T amplitudes, norms for blocks:')
 c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
 c     &       val_str='BLKS')
 c dbgend
-c dbg
-c      ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
-c      call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-c     &     'ME_S(S+1)',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-c     &     'FOPT_T_S2',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
-c     &     'ME_NORM',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
-c     &     'FOPT_T_NORM',1,0,
-c     &     parameters,0,tgt_info)
-c      call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
-c     &             val_label=(/'ME_S(S+1)'/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
-c     &             val_label=(/'ME_NORM'/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
-c     &             val_rl8=(/1d0/))
-c      call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
-c     &             val_str='precond')
-c      call form_parameters(-1,parameters,2,
-c     &     'Spin expectation value '//
-c     &                      '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
-c     &     0,'SCAL F20.12')
-c      call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
-c     &     'ME_S(S+1)',1,0,
-c     &     parameters,2,tgt_info)
-c dbgend
+      if (spinexpec.gt.0) then
+        ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
+        call set_dependency('EVAL_PERT_CORR','FOPT_T_S2',tgt_info)
+        call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &       'FOPT_T_S2',1,0,
+     &       parameters,0,tgt_info)
+        call set_dependency('EVAL_PERT_CORR','FOPT_T_NORM',tgt_info)
+        call set_rule('EVAL_PERT_CORR',ttype_opme,RES_ME_LIST,
+     &       'ME_NORM',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule('EVAL_PERT_CORR',ttype_opme,EVAL,
+     &       'FOPT_T_NORM',1,0,
+     &       parameters,0,tgt_info)
+        call set_rule2('EVAL_PERT_CORR',SCALE_COPY,tgt_info)
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_RES',1,tgt_info,
+     &               val_label=(/'ME_S(S+1)'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'LIST_INP',1,tgt_info,
+     &               val_label=(/'ME_NORM'/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'FAC',1,tgt_info,
+     &               val_rl8=(/1d0/))
+        call set_arg('EVAL_PERT_CORR',SCALE_COPY,'MODE',1,tgt_info,
+     &               val_str='precond')
+        call form_parameters(-1,parameters,2,
+     &       'Spin expectation value '//
+     &                        '<C0|PT^+ S^2 PT|C0>/<C0|PT^+ PT|C0> :',
+     &       0,'SCAL F20.12')
+        call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
+     &       'ME_S(S+1)',1,0,
+     &       parameters,2,tgt_info)
+      end if
 
 c dbg
 c      ! Evaluate transformed metric

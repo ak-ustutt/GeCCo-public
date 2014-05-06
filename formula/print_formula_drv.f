@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_formula_drv(f_input,name_output,op_info)
+      subroutine print_formula_drv(f_input,name_output,mode,op_info)
 *----------------------------------------------------------------------*
 *
 *     driver for printing formula
@@ -19,7 +19,7 @@ c      include 'def_contraction_list.h'
      &     ntest = 00
 
       character(len=*), intent(in) ::
-     &     name_output
+     &     name_output, mode
       type(formula), intent(inout) ::
      &     f_input
       type(operator_info), intent(in) ::
@@ -52,7 +52,13 @@ c      include 'def_contraction_list.h'
       call read_form_list(f_input%fhand,flist,.true.)
 
       ! print it ...
-      call print_form_list(luprint,flist,op_info)
+      if (mode.eq.'long'.or.mode.eq.'LONG') then
+        call print_form_list(luprint,flist,op_info)
+      else if  (mode.eq.'short'.or.mode.eq.'SHORT') then
+        call print_form_list_short(luprint,flist,op_info)
+      else
+        call warn('PRINT_FORMULA','unknown mode: '//trim(mode))
+      end if
 
       if (name_output.ne.'stdout')
      &     call file_close_keep(ffprint)

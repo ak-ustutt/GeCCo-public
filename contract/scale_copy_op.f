@@ -252,9 +252,9 @@ c            end do
             do idx = 1, idxnd_src-idxst_src+1
               if (buffer(idx).lt.fac(ifac)) then
                 smapre_num = smapre_num + 1
-                if (buffer(idx).lt.0d0) negpre_num = negpre_num + 1
                 buffer(idx) = fac(ifac)
               end if
+              if (buffer(idx).lt.0d0) negpre_num = negpre_num + 1
               ifac = ifac + 1
               if (ifac.gt.nfac) ifac = 1
             end do

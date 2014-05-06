@@ -26,9 +26,9 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, replace
+     &     delete, error, replace, red
       integer ::
-     &     idxfeff, idxr12, idxham, idxtop, idxtbar, idxrsi
+     &     idxfeff, idxr12, idxham, idxtop, idxtbar, idxrsi, idxsr12
       integer ::
      &     trunc_e, trunc_t1, trunc_t2, ii, trunc_r12,
      &     idx_op, iblk_op, ivtx, nvtx, max2t1, max2r12,
@@ -189,13 +189,14 @@
 
       enddo
 
-      case('MRCC_SI','mrcc_si')
+      case('MRCC_SI','mrcc_si','MRCC_SI_RED','mrcc_si_red')
       do ii = 1, nlabels
         idxop(ii) = idx_oplist2(trim(labels(ii)),op_info)
         error = error.or.idxop(ii).le.0
       end do
-      error = error.or.nlabels.ne.6
-      
+      error = error.or.nlabels.ne.7!6
+      red = (mode.eq.'MRCC_SI_RED'.or.mode.eq.'mrcc_si_red')      
+
       if (error) then
         write(lulog,*) 'Error for operator labels:'
         do ii = 1, nlabels
@@ -222,6 +223,7 @@
       idxr12  = idxop(4)
       idxfeff = idxop(5)
       idxrsi  = idxop(6)
+      idxsr12 = idxop(7)
 
       form_pnt => flist
       do 
@@ -274,7 +276,7 @@
                 nr12 = nr12+1
               end if
             end if
-            if (idx_op.eq.idxrsi) then
+            if (idx_op.eq.idxrsi .or. idx_op.eq.idxsr12) then
               if (vertex(ivtx)%dagger) then
                 nrsidag = nrsidag+1
               else
@@ -307,6 +309,13 @@
           delete=delete.or.
      &    (nr12+nrsi.ge.1.and.nrdag+nrsidag.ge.1
      &     .and.ntop.ge.1.and.ord_ham.eq.0)
+
+          ! more strict delete rule for semi-internals:
+          if (red) then
+            delete=delete.or.
+     &      (nrsidag.ge.1.and.ntop.gt.1).or.(nrsi.ge.1.and.ntop.gt.0)
+          end if
+
           replace = replace .and. 
      &              nr12+nrsi.eq.1.and.nrdag+nrsidag.eq.1.and.ntop.eq.0
 

@@ -1,7 +1,7 @@
 general
  memmax=30000000
 method
- MR maxexc=2,pure_vv=T,prc_type=0
+ MR maxexc=2,pure_vv=T,prc_type=0,project=1
  MRCI
 calculate
  solve maxiter=20,conv=1d-5,maxsub=20

@@ -22,6 +22,7 @@
       include 'def_formula_item.h'
       include 'def_dependency_info.h'
       include 'ifc_input.h'
+      include 'routes.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -52,7 +53,7 @@
       real(8) ::
      &     xdum, prc_min, prc_impfac
       integer ::
-     &     gno, prc_type, prc_iter, spinproj, idx_jac, project,
+     &     gno, prc_type, prc_iter, idx_jac, project,
      &     idx_jacuni
       logical ::
      &     prc_traf
@@ -64,7 +65,6 @@
       if (nspecial.lt.6) call quit(1,'update_metric',
      &      'Not enough special lists passed.')
       call get_argument_value('method.MR','GNO',ival=gno)
-      call get_argument_value('method.MR','spinproj',ival=spinproj)
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','prc_traf',lval=prc_traf)
 
@@ -74,7 +74,7 @@
 
       if (gno.gt.0) then
         ! perform spin projection?
-        if (spinproj.ge.2)
+        if (spinadapt.ge.2)
      &     call spin_prj_list(1d0,me_special(5)%mel,me_special(5)%mel,0,
      &                        xdum,.false.,
      &                        op_info,str_info,strmap_info,orb_info)

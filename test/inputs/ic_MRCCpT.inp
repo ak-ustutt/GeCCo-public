@@ -3,10 +3,10 @@ general
 orb_space
  shell type=frozen,def=(1,0,0,0)
 method
- MR maxexc=3,oldref=T,triples=a,maxh=2
+ MR maxexc=3,oldref=T,triples=a,maxh=2,project=1,prc_traf=F
  MR excrestr=(0,0,1,1,1,1)
  MR excrestr=(1,1,0,0,1,1)
- MRCC maxcom_res=2,maxcom_en=2,trunc_order=4,Tfix=2
+ MRCC maxcom_res=2,maxcom_en=2,trunc_order=4,Tfix=2,T1ord=-1,simp=0
 calculate
  solve linear maxiter=1
- routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=4,sv_thresh=1d-12
+ routes contract=3,simtraf=0,schedule=1,use_tr=T,maxbranch=4,sv_thresh=1d-12,auto_opt=F

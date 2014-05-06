@@ -23,6 +23,8 @@
 
       integer, parameter ::
      &     ntest = 100
+      logical, parameter ::
+     &     test_semi = .false.
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -37,7 +39,7 @@
      &     msc, ip, ih, ivv, iv, ivv2, jvv,
      &     maxcom, maxcom_en, maxcom_h1bar, h1bar_maxp,
      &     n_t_cls, i_cls,
-     &     n_tred_cls, len_form, optref, idef, ciroot,
+     &     n_tred_cls, len_form, optref, isemi, ciroot,
      &     version(60), ivers, stndT(2,60), stndD(2,60), nsupT, nsupD,
      &     G_level, iexc, jexc, maxtt, iblk, jblk, kblk, prc_type,
      &     tred, nremblk, remblk(60), igasreo(3), ngas, lblk, ntrunc,
@@ -45,8 +47,9 @@
       logical ::
      &     skip, preopt, project, first, Op_eqs,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
-     &     oldref, solve, notrunc, eval_dens3, semi_r12,
-     &     restart, prc_traf
+     &     oldref, solve, notrunc, eval_dens3, 
+     &     semi_r12, semi_red, semi_intm,
+     &     restart, prc_traf, use_u3
       character(len_target_name) ::
      &     dia_label, dia_label2,
      &     labels(20)
@@ -83,7 +86,28 @@
       call get_argument_value('method.MR','prc_traf',
      &     lval=prc_traf)
       call get_argument_value('method.R12','notrunc',lval=notrunc)
+      call get_argument_value('method.R12','use_U3',lval=use_u3)
       call get_argument_value('method.R12','semi_r12',lval=semi_r12)
+      call get_argument_value('method.R12','semi_int',ival=isemi)
+      if (semi_r12) call warn('set_ic_mrcc_f12_targets',
+     &                'semi_r12 is obsolete!')
+      if (isemi.eq.0) then
+        ! semi_r12 = .false.  ! for the moment, we leave semi_r12
+        semi_red = .false.
+        semi_intm = .false. 
+      else if (isemi.eq.1) then
+        semi_r12 = .true.
+        semi_red = .true.
+        semi_intm = .true.
+      else if (isemi.eq.2) then
+        semi_r12 = .true.
+        semi_red = .true.
+        semi_intm = .false.
+      else
+        semi_r12 = .true.
+        semi_red = .false.
+        semi_intm = .false.
+      end if
       skip = (is_keyword_set('calculate.skip_E').gt.0)
       solve = .not.svdonly.and..not.skip
       if (h1bar) call quit(1,'set_ic_mrcc_f12_targets',
@@ -215,6 +239,7 @@
      &                 'S      ','R12    ','Sbar   ','R12^+  ',
      &                 'S      ','sR12   ','Sbar   ','sR12^+ ',
      &                 'S      ','T      ','Sbar   ','L      '/))
+      if (test_semi) then
         call set_dependency('F_MRCC_F12_LAG','sR12-INT',tgt_info)
         call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
         call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
@@ -230,6 +255,7 @@
      &       val_label=(/'F_MRCC_F12_LAG'/))
         call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
      &       val_label=(/'sR12-INT^+'/))
+      end if
 
       call set_rule2('F_MRCC_F12_LAG',SELECT_SPECIAL,tgt_info)
       call set_dependency('F_MRCC_F12_LAG','Favg',tgt_info)
@@ -239,14 +265,23 @@
       call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'LABEL_IN',1,
      &     tgt_info,
      &     val_label=(/'F_MRCC_F12_LAG'/))
-      call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'OPERATORS',6,
+      if (test_semi) then
+        call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'OPERATORS',7,
+     &     tgt_info,
+     &     val_label=(/'L      ','H      ','T      ',
+     &                 'R12    ','Favg   ','R12si  ','Rsi-INT'/))
+      else
+        call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'OPERATORS',7,
      &     tgt_info,
      &     val_label=(/'L    ','H    ','T    ',
-     &                 'R12  ','Favg ','R12si'/))
+     &                 'R12  ','Favg ','R12si','sR12 '/))
+      end if
       call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &     val_str='MRCC_F12')
+      descr='MRCC_SI'
+      if (semi_red) descr='MRCC_SI_RED'
       call set_arg('F_MRCC_F12_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
-     &     val_str='MRCC_SI')
+     &     val_str=descr)
       else
       call set_arg('F_MRCC_F12_LAG',REPLACE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_MRCC_F12_LAG'/))
@@ -283,6 +318,8 @@
       call set_dependency('F_MRCC_F12_LAG','CINT_R12',tgt_info)
       call set_dependency('F_MRCC_F12_LAG','C1_formal',tgt_info)
       call set_dependency('F_MRCC_F12_LAG','Vring_formal',tgt_info)
+      if (use_u3)
+     &call set_dependency('F_MRCC_F12_LAG','U3_formal',tgt_info)
       end if
 
       call set_rule2('F_MRCC_F12_LAG',FACTOR_OUT,tgt_info)
@@ -294,7 +331,7 @@
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',5,tgt_info,
      &     val_label=(/'BINT_R12  ','BhINT_R12 ','XINT_R12  ',
      &                 'VINT_R12  ','VINT_R12^+'/))
-      else
+      else if (.not.use_u3) then
       call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',10,tgt_info,
      &     val_label=(/'BINT_R12      ','BhINT_R12     ',
      &                 'XINT_R12      ',
@@ -302,6 +339,15 @@
      &                 'CINT_R12      ','CINT_R12^+    ',
      &                 'Vring_formal  ','Vring_formal^+',
      &                 'C1_formal     '/))
+      else
+      call set_arg('F_MRCC_F12_LAG',FACTOR_OUT,'INTERM',12,tgt_info,
+     &     val_label=(/'BINT_R12      ','BhINT_R12     ',
+     &                 'XINT_R12      ',
+     &                 'VINT_R12      ','VINT_R12^+    ',
+     &                 'CINT_R12      ','CINT_R12^+    ',
+     &                 'Vring_formal  ','Vring_formal^+',
+     &                 'C1_formal     ',
+     &                 'U3_formal     ','U3_formal^+   '/))
       end if
 
       if(notrunc) then
@@ -326,6 +372,56 @@
      &       val_label=(/'R12  ','R12^+'/))
         call set_arg('F_MRCC_F12_LAG',INVARIANT,'TITLE',1,tgt_info,
      &       val_str='MRCC-R12 Lagrangian for pert. eval.')
+      end if
+      if (use_u3) then
+        ! re-expand U3
+        call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'U3_formal'/))
+        call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'U3_formal^+'/))
+        ! re-expand C as well, otherwise we get into double counting trouble
+        call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'CINT_R12'/))
+        call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
+     &       val_label=(/'CINT_R12^+'/))
+C        ! C1 intermediate? No -- there is no clash
+C        call set_rule2('F_MRCC_F12_LAG',EXPAND,tgt_info)
+C        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_RES',1,tgt_info,
+C     &       val_label=(/'F_MRCC_F12_LAG'/))
+C        call set_arg('F_MRCC_F12_LAG',EXPAND,'LABEL_IN',1,tgt_info,
+C     &       val_label=(/'F_MRCC_F12_LAG'/))
+C        call set_arg('F_MRCC_F12_LAG',EXPAND,'INTERM',1,tgt_info,
+C     &       val_label=(/'C1_formal'/))
+        ! and replace R12 by R12_INT
+        call set_rule2('F_MRCC_F12_LAG',REPLACE,tgt_info)
+        call set_dependency('F_MRCC_F12_LAG','R12-INT',tgt_info)
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_MRCC_F12_LAG'/))
+        call set_arg('F_MRCC_F12_LAG',REPLACE,'OP_LIST',4,tgt_info,
+     &       val_label=(/'R12      ','R12-INT  ',
+     &                   'R12^+    ','R12-INT^+'/))
       end if
       if (semi_r12) then
         call set_rule2('F_MRCC_F12_LAG',REPLACE,tgt_info)
@@ -469,7 +565,8 @@ c dbgend
       call set_arg('F_E_F12_C0',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC-F12 energy expression for C0 equations')
 
-      ! Residual for C0
+      ! Residual for C0  ---- NOTE: using target F_OMG_C0 instead
+      !      (see set_ic_mrcc_targets.f; correct Lagrangian provided there! )
       call add_target2('F_OMG_F12_C0',.false.,tgt_info)
       call set_dependency('F_OMG_F12_C0','F_E_F12_C0',tgt_info)
       call set_dependency('F_OMG_F12_C0','A_C0',tgt_info)
@@ -482,7 +579,11 @@ c dbgend
      &     val_label=(/'A_C0'/))
       call set_arg('F_OMG_F12_C0',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'C0^+'/))
-
+c dbg
+c      call set_rule2('F_OMG_F12_C0',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_OMG_F12_C0',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_OMG_F12_C0'/))
+c dbgend
       ! Residual for C0
       call add_target2('FOPT_OMG_F12_C0',.false.,tgt_info)
       call set_dependency('FOPT_OMG_F12_C0','DEF_ME_C0',tgt_info)
@@ -622,6 +723,15 @@ c group the energy equation for different density matrices
       end if
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
+      if (semi_r12) then
+        call set_dependency('FOPT_OMG_F12','make-sR12-INT',tgt_info)
+c        call set_dependency('FOPT_OMG_F12','ME_sR12',tgt_info)
+c        call set_dependency('FOPT_OMG_F12','F_DENS0',tgt_info)
+c        labels(ndef+1) = 'F_DENS0'
+c        ndef = ndef + 1
+c        labels(ndef+1) = 'sR12-INT'
+c        ndef = ndef + 1
+      end if
       labels(ndef+1) = 'F_MRCC_F12_E'
       ndef = ndef + 1
       labels(ndef+1) = 'F_OMG_F12'

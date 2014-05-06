@@ -657,7 +657,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),OLD)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
-        call print_formula_drv(form_pnt,title,op_info)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call print_formula_drv(form_pnt,title,mode,op_info)
 *----------------------------------------------------------------------*
       case(TEX_FORMULA)
 *----------------------------------------------------------------------*

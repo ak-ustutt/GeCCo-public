@@ -36,7 +36,7 @@
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(10)
       character(len_command_par) ::
-     &     parameters
+     &     parameters, z2str
       integer, allocatable ::
      &     iRsys(:)
 
@@ -51,6 +51,7 @@
      &       ival=trunc_type)
       end if
       call get_argument_value('method.R12','maxexc',ival=maxr12exc)
+      call get_argument_value('method.R12','Z2_appr',str=z2str)
 
       call get_argument_value('method.CCPT','extern',ival=extern)
       call get_argument_value('method.CC','T1ext',ival=t1ext_mode)
@@ -85,8 +86,10 @@
      &     iformal = 3
       call add_target2(op_ham,.false.,tgt_info)
 c patch for CCPT-R12 tests:
+c      if (explicit.and.
+c     &     (is_keyword_set('method.CCPT').gt.0.or.maxr12exc.ge.3))
       if (explicit.and.
-     &     (is_keyword_set('method.CCPT').gt.0.or.maxr12exc.ge.3))
+     &     trim(z2str).eq.'direct'.or.trim(z2str).eq.'DIRECT')
      &     iformal = 4
 c patch end
       if (t1ext_mode.gt.0) iformal = min(5,max(t1ext_mode+2,iformal))

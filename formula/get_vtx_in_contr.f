@@ -34,7 +34,8 @@
           ivtx(1) = jvtx
           ijoin = 1
           if (ijoin.eq.njoined) exit
-          iblk_next = contr%vertex(jvtx)%iblk_op+1
+          if (.not.adjop) iblk_next = contr%vertex(jvtx)%iblk_op+1
+          if (adjop) iblk_next = contr%vertex(jvtx)%iblk_op-1
           first = .false.
         else if (contr%vertex(jvtx)%idx_op.eq.idxop .and.
      &          (contr%vertex(jvtx)%dagger.eqv.adjop) .and.

@@ -139,6 +139,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('vring','method.R12',type=vtyp_int,
      &     idef=(/0/))
+      call argument_add('use_U3','method.R12',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('use_CS','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('pert','method.R12',type=vtyp_log,
@@ -147,6 +149,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./))
       call argument_add('notrunc','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('semi_int','method.R12',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('semi_r12','method.R12',type=vtyp_log,
      &     ldef=(/.false./))
 
@@ -189,7 +193,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('excrestr','method.MR',type=vtyp_int,len=6,
      &                  idef=(/-1,-1,-1,-1,-1,-1/)) ! restr. exc. in T
       call argument_add('triples','method.MR',type=vtyp_str,len=1,
-     &                  cdef=(/'F'/)) ! triples model (F: full)
+     &                  cdef=(/'b'/)) ! triples model (F: full)
       call argument_add('GNO','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! 1 for generalized normal order
       call argument_add('maxcum','method.MR',type=vtyp_int,
@@ -209,7 +213,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('prc_min','method.MR',type=vtyp_rl8,
      &                  xdef=(/0.2d0/))
       call argument_add('project','method.MR',type=vtyp_int,
-     &     idef=(/1/)) ! project out singles from doubles a.s.o.
+     &     idef=(/3/)) ! project out singles from doubles a.s.o.
       call argument_add('svdonly','method.MR',type=vtyp_log,
      &                  ldef=(/.false./)) ! stop after first SVD
       call argument_add('mult','method.MR',type=vtyp_int,
@@ -220,15 +224,16 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/0/))  ! symmetry (0: read fr. interface)
       call argument_add('writeFock','method.MR',type=vtyp_log,
      &                  ldef=(/.false./))
-      call argument_add('spinproj','method.MR',type=vtyp_int,
-     &                  idef=(/0/)) ! spin projection
-                                    ! (1: C0,2: C0 & T, 3: C0 & T & A)
       call argument_add('prc_traf','method.MR',type=vtyp_log,
-     &     ldef=(/.false./)) ! extra unitary trafo based on prec. matrix
+     &     ldef=(/.true./)) ! extra unitary trafo based on prec. matrix
       call argument_add('guess','method.MR',type=vtyp_int,
      &                  idef=(/0/)) ! if >0: use previous C0 as guess
       call argument_add('densmix','method.MR',type=vtyp_rl8,
      &                  xdef=(/0d0/))
+      call argument_add('refproj','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! project out ref. functions
+      call argument_add('spinexpec','method.MR',type=vtyp_int,
+     &                  idef=(/0/)) ! (0=off)
 
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
@@ -236,9 +241,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
 
       call keyword_add('MRCC',context='method')
       call argument_add('maxcom_res','method.MRCC',type=vtyp_int,
-     &     idef=(/4/))
+     &     idef=(/2/))
       call argument_add('maxcom_en','method.MRCC',type=vtyp_int,
-     &     idef=(/4/))
+     &     idef=(/2/))
       call argument_add('maxtt','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
       call argument_add('G_level','method.MRCC',type=vtyp_int,
@@ -268,9 +273,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('Tfix','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! read in fixed T with max. rank Tfix
       call argument_add('T1ord','method.MRCC',type=vtyp_int,
-     &     idef=(/-1/)) ! perturbation order of T1
+     &     idef=(/2/)) ! perturbation order of T1
       call argument_add('simp','method.MRCC',type=vtyp_int,
-     &     idef=(/0/)) ! special simplifications for (T)
+     &     idef=(/2/)) ! special simplifications for (T)
       call argument_add('eval_dens3','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./)) ! evaluate 3-body dens matrix for transforming T3
       call argument_add('Favg_fix','method.MRCC',type=vtyp_log,
@@ -312,7 +317,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call keyword_add('non_linear',context='calculate.solve')
       call argument_add('maxiter','calculate.solve.non_linear',
      &     type=vtyp_int,
-     &     idef=(/30/))
+     &     idef=(/50/))
       call argument_add('maxmic','calculate.solve.non_linear',
      &     type=vtyp_int,
      &     idef=(/20/))
@@ -330,7 +335,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     cdef=(/'d','i','i','s',' ',' ',' ',' '/))
       call argument_add('optref','calculate.solve.non_linear',
      &     type=vtyp_int,
-     &     idef=(/0/)) ! optimize reference fct.
+     &     idef=(/-3/)) ! optimize reference fct.
       call argument_add('update_prc','calculate.solve.non_linear',
      &     type=vtyp_int,
      &     idef=(/0/)) ! update precond. every i-th iteration (<=0: off)
@@ -421,10 +426,9 @@ c     &     idef=(/0/))
      &     'calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('maxbranch','calculate.routes',type=vtyp_int,
-     &     idef=(/-1/))
+     &     idef=(/5/)) ! (-1=check all possible contraction sequences)
       call argument_add('auto_opt','calculate.routes',type=vtyp_log,
-c     &     ldef=(/.true./))
-     &     ldef=(/.false./)) ! check in as false until thoroghly tested
+     &     ldef=(/.true./))
       call argument_add('reo_factor','calculate.routes',type=vtyp_rl8,
      &     xdef=(/0d0/))
       call argument_add('use_tr','calculate.routes',type=vtyp_log,
@@ -432,7 +436,7 @@ c     &     ldef=(/.true./))
       call argument_add('simtraf','calculate.routes',type=vtyp_int,
      &     idef=(/0/))
       call argument_add('sv_thresh','calculate.routes',type=vtyp_rl8,
-     &     xdef=(/1d-12/))
+     &     xdef=(/1d-5/))
       call argument_add('jac_thresh','calculate.routes',type=vtyp_rl8,
      &     xdef=(/-1d0/))
       call argument_add('sv_fix','calculate.routes',type=vtyp_log,
@@ -441,6 +445,9 @@ c     &     ldef=(/.true./))
      &     ldef=(/.false./))
       call argument_add('Tikhonov','calculate.routes',type=vtyp_rl8,
      &     xdef=(/0d0/))
+      call argument_add('spinadapt','calculate.routes',type=vtyp_int,
+     &     idef=(/-1/)) ! spin projection (=3 for non-singlet MRCC)
+                        ! (1: C0,2: C0 & T, 3: C0 & T & RDMs,A)
 
       ! special keywords for response theory
       call keyword_add('response',context='method')

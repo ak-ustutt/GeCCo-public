@@ -125,8 +125,8 @@ c     &       + intm%narc
 
         allocate(vtxmap(nvtx))
 
-        call joinmap4contr(vtxmap,term,
-     &                     -1,ipos_vtx,
+        call joinmap4contr(vtxmap,term,nvtx,
+     &                     iop_intm,ipos_vtx,
      &                     svmap,intm%nvtx,njoined)
 
         deallocate(svmap)
