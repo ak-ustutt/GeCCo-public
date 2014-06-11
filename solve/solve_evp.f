@@ -661,12 +661,15 @@ c dbgend
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
 c dbg
+c        if (xresnrm(iroot).lt.opti_info%thrgrd(iopt)
+c    &                  .and.abs(xeig(iroot,2)).lt.1d-12) then
 c         do iopt=1,nopt
 c           call switch_mel_record(me_opt(iopt)%mel,iroot)
 c           call wrt_mel_file(lulog,5,me_opt(iopt)%mel,
 c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
 c    &             str_info,orb_info)
 c         enddo
+c        end if
 c dbg     
       end do
       write(lu,'("E>>",66("="))') 

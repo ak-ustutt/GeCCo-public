@@ -23,7 +23,7 @@
      &     maxlines = 100 !-1 !75
       ! set to -1 if you want the full output
       real(8), parameter ::
-     &     thrsh = 1d-12  !-0.5d0
+     &     thrsh = 1d-2 !1d-12  !-0.5d0
       ! set < 0d0 if you want the full output
 
       integer, intent(in) ::
