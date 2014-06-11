@@ -598,6 +598,17 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       title,op_info
      &       )
 *----------------------------------------------------------------------*
+      case(SUMTERMS)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call get_arg('THRESH',rule,tgt_info,val_rl8=fac(1))
+        call form_sum_terms(form_pnt,form0_pnt,title,fac(1),op_info
+     &       )
+*----------------------------------------------------------------------*
       case(DERIVATIVE)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
