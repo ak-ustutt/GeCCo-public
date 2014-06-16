@@ -36,6 +36,7 @@
      &     EXPAND*6                 = 'EXPAND',
      &     REPLACE*7                = 'REPLACE',
      &     SUM_HERMIT*13            = 'SUM_HERMITIAN',
+     &     SUMTERMS*9               = 'SUM_TERMS',
      &     INVARIANT*9              = 'INVARIANT',
      &     REORDER_FORMULA*15       = 'REORDER_FORMULA',
      &     DERIVATIVE*10            = 'DERIVATIVE',

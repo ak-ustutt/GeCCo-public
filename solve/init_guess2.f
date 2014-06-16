@@ -86,7 +86,7 @@
 
       if (ntest.gt.100) call write_title(luout,wst_dbg_subr,i_am)
 
-      maxtrials = max(1000,4*nroots)
+      maxtrials = max(5000,4*nroots)
       nout = depend%ntargets
       allocate(xret(nout), isign(nopt), ntrials(nopt))
       allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
@@ -251,6 +251,7 @@ c dbg
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
+
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding guess vector with wrong spin symmetry.'
