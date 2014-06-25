@@ -109,6 +109,12 @@
      &     call quit(1,'inv_op','no file handle defined for '//
      &                  trim(me_u%label))
 
+      if(ntest.ge.1000)then
+        write(lulog,*) 'input mat on ',trim(me_inp%op%name)
+        call wrt_mel_file(lulog,5,me_inp,1,
+     &       me_inp%op%n_occ_cls,str_info,orb_info)
+      end if
+
       open_close_inv = me_inv%fhand%unit.le.0
       open_close_u = .false.
       open_close_spc = .false.
@@ -200,8 +206,12 @@
       end if
 
       if(ntest.ge.1000)then
+        write(lulog,*) 'output mat on ',trim(me_inv%op%name)
         call wrt_mel_file(lulog,5,me_inv,1,
      &       me_inv%op%n_occ_cls,str_info,orb_info)
+        write(lulog,*) 'output mat on ',trim(me_inp%op%name)
+        call wrt_mel_file(lulog,5,me_inp,1,
+     &       me_inp%op%n_occ_cls,str_info,orb_info)
       endif
 
       if (open_close_u)
