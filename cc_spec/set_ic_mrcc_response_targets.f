@@ -30,7 +30,7 @@
      &     s2_r, ms_r, isym_r, msc_r,
      &     s2_0, ms_0, isym_0, msc_0 
       logical ::
-     &     needed
+     &     needed, first_iter
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     me_label_l, me_label_r, me_label_lr,
@@ -299,7 +299,8 @@ C     !&      ')'/),tgt_info)
      &      ')'],tgt_info)
 C     &      ')'/),tgt_info)
           endif
-              
+ 
+      first_iter = .true.             
       do icnt = 1, ncnt 
         call get_argument_value('calculate.excitation','sym',
      &       keycount=icnt,
@@ -431,6 +432,21 @@ C     !&        ')'/),tgt_info)
      &         trim(string(19)),string(17),                      ! trim(string(17)) FIXME 
      &         ')'],tgt_info)
 
+         if (first_iter) then
+           call add_target3([character(len=256) ::
+     &      'target PRJ_FORM(',
+     &      string(12),
+     &      '  depend DEF_ME_C0',
+     &      '  EXPAND_OP_PRODUCT(label=F_prj,op_res=R_mu,',
+     &      '     operators=(R_mu,C0,C0^+,R_mu,R_mu),',
+     &      '     idx_sv=(1,2,3,4,1),',
+     &      '     avoid=(1,4,3,5),',
+     &      '     fac=-1d0)',
+C     &      '  PRINT_FORMULA(label=F_prj)',
+     &      '  OPTIMIZE(label_opt=FOPT_prj,labels_in=F_prj)',
+     &      ')'],tgt_info)
+         end if
+
 
          write(string(13),'("RSPNS_OPT_",I1,"_",I2.2)') isym,msc+1
          write(string(14),'("OPTIMIZE(label_opt=RSPNS_OPT_",I1,"_",I2.2,
@@ -447,8 +463,11 @@ C    &     'F_AR_rspns_mu,F_SR_rspns_q,F_SR_rspns_mu,F_R_q),',
 C    &     'interm=F_PPrint)',
      &     ')'],tgt_info)
 
-       write(string(12),'("mode=""TRF DIA"",n_roots=",I1,")")')
+       write(string(12),'("mode=""TRF PRJ"",form_spc=FOPT_prj,'//
+     &                  'n_roots=",I1,")")')
      &                   sym_arr(isym)
+c       write(string(12),'("mode=""TRF DIA"",n_roots=",I1,")")')
+c     &                   sym_arr(isym)
        write(string(13),'("MY_TARGET_",I1,"_",I2.2)') isym,msc+1
        write(string(14),'("depend RSPNS_OPT_",I1,"_",I2.2)') isym,msc+1
        write(string(15),'("depend DIAG_CAL_q_",I1,"_",I2.2)') isym,msc+1
@@ -465,6 +484,7 @@ C    &     'interm=F_PPrint)',
      &     'target', trim(string(13)), '(',
      &     'required',
      &     trim(string(14)),trim(string(15)),trim(string(16)),
+     &     'depend PRJ_FORM',
      &     'SOLVE_EVP(',
      &     trim(string(17)),
      &     string(18),
@@ -474,7 +494,7 @@ C    &     'interm=F_PPrint)',
      &     string(12),
      &     ')'],tgt_info)
 
-
+          first_iter = .false.
         end do
       end do
        

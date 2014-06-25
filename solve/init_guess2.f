@@ -98,6 +98,13 @@
         call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
      &       maxtrials,me_dia(iopt)%mel)
         ntrials(iopt) = min(maxtrials,me_dia(iopt)%mel%len_op)
+c dbg
+c        call wrt_mel_file(lulog,5,me_dia(iopt)%mel,1,
+c     &     me_dia(iopt)%mel%op%n_occ_cls,
+c     &     str_info,orb_info)
+c        write(*,*) 'xlist ',iopt
+c        write(*,'(5f12.6)') xlist(1:ntrials(iopt),iopt)
+c dbg
       end do
 
       call merge_min_lists(xlist_all,idxlist_all,ntrials_all,
@@ -193,8 +200,8 @@
      &                  /sqrt(2d0)
             else if (idxlist_all(2,iguess).eq.abs(idxlist_ba(iguess))
      &           .and.isign(iopt).eq.+1) then
-c              if (idxlist_ba(idx).lt.0)
-c     &             call quit(1,i_am,'unexpected case')
+              if (idxlist_ba(iguess).lt.0)
+     &             call quit(1,i_am,'unexpected case')
               ! set a single element
               iroot = iroot+1
               nset = 1
