@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine set_target_list(tgt_info,orb_info,env_type)
+      subroutine set_target_list(tgt_info,orb_info,env_type,
+     &     name_infile,name_orbinfo)
 *----------------------------------------------------------------------*
 *     set up targets
 *----------------------------------------------------------------------*
@@ -17,6 +18,8 @@
      &     orb_info
       character(*), intent(in) ::
      &     env_type
+      character(*), intent(in) ::
+     &     name_infile, name_orbinfo
 
       type(filinf) ::
      &     fftgt
@@ -60,6 +63,11 @@
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)
+      end if
+
+      ! Interfaces
+      if (is_keyword_set('calculate.interfaces').gt.0) then
+        call set_interface_targets(tgt_info,name_infile,name_orbinfo)
       end if
 
       call set_idx4deps(tgt_info)

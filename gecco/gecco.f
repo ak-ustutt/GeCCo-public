@@ -124,7 +124,7 @@ c      iprlvl = 3     ! print level
       
         if (.not.one_more) exit
 
-        call do_calc(orb_info,env_type)
+        call do_calc(orb_info,env_type,name_infile)
 
         ! post-process input up to next "calculate" block
         ! (data resides in module parse_input)

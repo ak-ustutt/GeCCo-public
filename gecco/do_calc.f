@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine do_calc(orb_info,env_type)
+      subroutine do_calc(orb_info,env_type,name_infile)
 *----------------------------------------------------------------------*
       
       implicit none
@@ -29,6 +29,8 @@
      &     orb_info
       character, intent(in) ::
      &     env_type*(*)
+      character(*), intent(in) ::
+     &     name_infile
 
       type(target_info) ::
      &     tgt_info
@@ -41,6 +43,9 @@
      &     str_info
       type(strmapinf) ::
      &     strmap_info
+
+      type(filinf) ::
+     &     fforbinf
 
       integer ::
      &     ifree, idx, jdx, kdx, ldx
@@ -58,10 +63,14 @@
       ! set up orbital info
       call set_orbinf(orb_info,env_type,.false.)!.true.)
 
+      ! print orbital informations to be accessed by an interface
+      call put_orbinfo(orb_info, fforbinf)
+
       ! initialize target list
       call init_target_info(tgt_info)
       call set_command_prototypes(tgt_info,env_type)
-      call set_target_list(tgt_info,orb_info,env_type)
+      call set_target_list(tgt_info,orb_info,env_type,name_infile,
+     &     fforbinf%name)
 
       ! initialize basis info blocks and set memory blocks:
       !  operators:
@@ -141,6 +150,9 @@ c          end do
       end do
 
       write(lulog,*) '... all targets processed!'
+c dbg
+c      call print_target_graph(tgt_info,.true.)
+c dbg end
      
       ! still a few deallocs missing .... !!      
       call clean_strmap(strmap_info)
