@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_item(lulog,idx,fl_item,op_info)
+      subroutine print_form_list_short(lulog,form_head,op_info)
 *----------------------------------------------------------------------*
-*     print formula item to unit lulog
+*     print formula on linked list to unit lulog
 *----------------------------------------------------------------------*
       implicit none
 
@@ -12,14 +12,27 @@
 
       integer, intent(in) ::
      &     lulog
-      integer, intent(inout) ::
-     &     idx
       type(formula_item), intent(in), target ::
-     &     fl_item
+     &     form_head
       type(operator_info), intent(in) ::
      &     op_info
 
-      ! just a convenience wrapper
-      call print_form_item2(lulog,'long',idx,fl_item,op_info)
-      
+      integer ::
+     &     idx
+
+      type(formula_item), pointer ::
+     &     form_ptr
+
+      idx = 0
+      form_ptr => form_head
+      do
+        call print_form_item2(lulog,'shrt',idx,form_ptr,op_info)
+
+        if (.not.associated(form_ptr%next)) exit
+        form_ptr => form_ptr%next
+
+      end do
+
+      return
       end
+

@@ -160,7 +160,7 @@
       call set_arg('_PROTO_',DEF_MRCC_LAGRANGIAN,'MAXCOM_EN',0,tgt_info,
      &     val_int=(/-1/),req=.true.)
       call set_arg('_PROTO_',DEF_MRCC_LAGRANGIAN,'MODE',0,tgt_info,
-     &     val_label=(/' '/),req=.true.)
+     &     val_str=' ',req=.true.)
       call set_arg('_PROTO_',DEF_MRCC_LAGRANGIAN,'TITLE',1,tgt_info,
      &     val_str='CC Lagrange functional',def=.true.)
 *----------------------------------------------------------------------*
@@ -276,6 +276,16 @@
       call set_arg('_PROTO_',SUM_HERMIT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(SUMTERMS,tgt_info)
+      call set_arg('_PROTO_',SUMTERMS,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SUMTERMS,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SUMTERMS,'THRESH',1,tgt_info,
+     &     val_rl8=(/1d-10/),def=.true.)
+      call set_arg('_PROTO_',SUMTERMS,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(REORDER_FORMULA,tgt_info)
       call set_arg('_PROTO_',REORDER_FORMULA,'LABEL_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -343,6 +353,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',PRINT_FORMULA,'OUTPUT',1,tgt_info,
      &     val_str='stdout',def=.true.)
+      call set_arg('_PROTO_',PRINT_FORMULA,'MODE',1,tgt_info,
+     &     val_str='LONG',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(TEX_FORMULA,tgt_info)
       call set_arg('_PROTO_',TEX_FORMULA,'LABEL',0,tgt_info,

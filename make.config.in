@@ -98,8 +98,8 @@ cldflags:=@cldflags@
 
 ifdef DEBUG
   fopt:=
-  fcflags:=$(fdebug) 
-  cflags:=$(cdebug) 
+  fcflags+=$(fdebug) 
+  cflags+=$(cdebug) 
 endif
 
 fcflags+=-I$(includedir) $(fmodule) $(ARCH) 

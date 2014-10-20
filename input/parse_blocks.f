@@ -6,6 +6,9 @@
 
       include 'def_word_list.h'
 
+      integer, parameter ::
+     &      ntest = 00
+
       character, parameter ::
      &      char_block_open  = '(',
      &      char_block_close = ')',
@@ -94,6 +97,11 @@
      &    write(luerr,*) 'It seems that not all "(" are matched by ")"'
         write(luerr,'(x,a,i4,a,i3)') 'I noted this in line',
      &         wlist%current%line,' near column ',wlist%current%col
+        if (associated(wlist%head).and.associated(wlist%head%next))
+     &      write(luerr,*) 'Current context starts with "',
+     &         trim(wlist%head%word),' ',
+     &         trim(wlist%head%next%word),' ... "'
+        if (ntest.ge.100) call print_word_list(luerr,wlist)
         call quit(0,'parse_blocks','Error while parsing blocks')
       end if
 

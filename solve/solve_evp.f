@@ -365,10 +365,17 @@ c dbgend
       end do
 
       ! get initial amplitudes
+      if (nopt.eq.1) then
       call init_guess(nopt,init,nroots,
      &                me_opt,me_trv,me_dia,me_special,nspecial,
      &                fl_mvp,depend,fl_spc,nspcfrm,
      &                opti_info,orb_info,op_info,str_info,strmap_info)
+      else
+      call init_guess2(nopt,init,nroots,
+     &                me_opt,me_trv,me_dia,me_special,nspecial,
+     &                fl_mvp,depend,fl_spc,nspcfrm,
+     &                opti_info,orb_info,op_info,str_info,strmap_info)
+      end if
 
       ! start optimization loop
       iter = 0
@@ -432,7 +439,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
               ! (if requested)
 c              if (me_trv(iopt)%mel%absym.ne.0)
 c dbg
-c        write(lulog,*) 'current trial vector (before):'
+c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
 c        call wrt_mel_file(lulog,5,
 c     &       me_trv(iopt)%mel,
 c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
@@ -654,12 +661,15 @@ c dbgend
      &         iroot,xeig(iroot,1:2),xresnrm(iroot)
         end if
 c dbg
+c        if (xresnrm(iroot).lt.opti_info%thrgrd(iopt)
+c    &                  .and.abs(xeig(iroot,2)).lt.1d-12) then
 c         do iopt=1,nopt
 c           call switch_mel_record(me_opt(iopt)%mel,iroot)
 c           call wrt_mel_file(lulog,5,me_opt(iopt)%mel,
 c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
 c    &             str_info,orb_info)
 c         enddo
+c        end if
 c dbg     
       end do
       write(lu,'("E>>",66("="))') 

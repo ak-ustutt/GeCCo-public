@@ -46,7 +46,7 @@
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
      &     prc_iter, project, simp, spinexpec
       logical ::
-     &     skip, preopt, first, Op_eqs,
+     &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart, eval_dens3, prc_traf
       character(len_target_name) ::
@@ -131,6 +131,8 @@
      &     ival=tfix)
       call get_argument_value('method.MRCC','T1ord',
      &     ival=t1ord)
+      call get_argument_value('method.MRCC','Favg_fix',
+     &     lval=F0_fix)
       call get_argument_value('method.MRCC','simp',
      &     ival=simp)
       call get_argument_value('method.MR','oldref',
@@ -208,9 +210,10 @@
       if (tfix.gt.0.and.(.not.oldref.or.project.eq.0))
      &    call quit(1,'set_ic_mrcc_targets',
      &     'Tfix>0 only allowed with oldref=T,project>0')
-      if (trunc.and.t1ord.ge.0.and.tfix.eq.0)
-     &    call quit(1,'set_ic_mrcc_targets',
-     &     'Manually setting T1ord only enabled yet for Tfix>0')
+C?
+C?      if (trunc.and.t1ord.ge.0.and.tfix.eq.0)
+C?     &    call quit(1,'set_ic_mrcc_targets',
+C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
       if (tfix.gt.0.and.(gno.eq.1.or.project.eq.3)) then
         ! new (T) implementation
         if (tfix.ne.2.or.ntrunc.ne.4.or.h1bar
@@ -1231,7 +1234,7 @@ c        end if
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCrem0res')
       end if
-      if (.not.Op_eqs.and.trunc.and.t1ord.ge.0) then
+      if (tfix.gt.0.and.(.not.Op_eqs.and.trunc.and.t1ord.ge.0)) then
         ! Factor out fixed part of energy (not to be truncated)
         call set_dependency('F_MRCC_LAG','F_Efix',tgt_info)
         call set_rule2('F_MRCC_LAG',FACTOR_OUT,tgt_info)
@@ -1302,7 +1305,7 @@ c        end if
      &       val_str='COUNT_L')
         call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'TYPE',1,tgt_info,
      &       val_str='MRCCtrunc')
-        if (trunc.and.t1ord.ge.0) then
+        if (tfix.gt.0.and.(trunc.and.t1ord.ge.0)) then
           ! expand fixed part of energy again (not necessary in principle)
           call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
           call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
@@ -1323,6 +1326,8 @@ c        end if
      &         val_label=(/'F_H1bar'/))
         end if
         ! expand effective Fock operator (if it was inserted)
+        ! unless we work with fixed F0
+        if (.not.F0_fix) then
         call set_rule2('F_MRCC_LAG',EXPAND,tgt_info)
         call set_arg('F_MRCC_LAG',EXPAND,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
@@ -1337,6 +1342,7 @@ c        else
         call set_arg('F_MRCC_LAG',EXPAND,'INTERM',1,tgt_info,
      &       val_label=(/'F_FREF'/))
 c        end if
+        end if ! fix_F0
       end if
 c dbg
 c      ! h) let only diagonal blocks of Jacobian survive
@@ -3968,6 +3974,8 @@ c     &           val_label=(/'Dtr'/))
       call set_dependency('FOPT_OMG','F_MRCC_E',tgt_info)
       call set_dependency('FOPT_OMG','DEF_ME_C0',tgt_info)
       call set_dependency('FOPT_OMG','DEF_ME_T',tgt_info)
+      if (F0_fix)
+     &  call set_dependency('FOPT_OMG','DEF_ME_FREF',tgt_info)
       if (Op_eqs) then
         call set_dependency('FOPT_OMG','F_Heff',tgt_info)
         call set_dependency('FOPT_OMG','F_Geff',tgt_info)

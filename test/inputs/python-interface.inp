@@ -1,0 +1,8 @@
+general
+ print=0
+orb_space
+ shell type=occ,def=(3,1,1,0)
+ shell type=closed,def=(3,1,1,0)
+ shell type=frozen,def=(1,0,0,0)
+calculate
+ interfaces file=MP2.py,file=orb_inp.py

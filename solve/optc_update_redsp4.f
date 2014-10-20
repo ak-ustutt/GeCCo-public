@@ -141,6 +141,8 @@ c              end if
 c dbg
               if (ii.eq.jj) print *,'cartesian scalar product: ',
      &          ddot(nwfpar,xbuf1,1,xbuf1,1)
+              if (ii.eq.jj) print *,'cartesian scalar product II: ',
+     &          ddot(nwfpar,xbuf2,1,xbuf2,1)
 c dbgend
               xmat(ii,jj) = xmat(ii,jj)
      &                    + ddot(nwfpar,xbuf1,1,xbuf2,1)

@@ -1,0 +1,427 @@
+ run starts at 2014-10-21 17:01:16.754   host: guest15.theochem.uni-stuttgart.de
+
+ Version compiled 21 Oct 2014 at 15:49:05 on guest15.theochem.uni-stuttgart.de   
+
+ compiled with: gfortran
+ level 1 optimization: -O2 -arch x86_64 -fdefault-integer-8 -DM_I686 -I../include i
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal authors:                                      |
+        |       andreas koehn (university of mainz, germany)        |
+        |       matthias hanauer (university of mainz, germany)     |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       wenlan liu (university of mainz, germany)           |
+        |       gareth richings (university of mainz, germany)      |
+        |       pradipta k samanta (IACS kolkata, india)            |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: MOLPRO_DUMP
+ Namelist FCI:
+ NORB =     19
+ NELEC =    10
+ MS2 =       0
+ ISYM =      1
+ ORBSYM:
+   1  1  1  1  1  1  1  1  1  1  2  2  2  2  3  3  3  3  4
+ Reading input file ....
+ Input file: python_interface.inp
+ +-----------------------------------------------------------------------------+
+ general
+  print=0
+ orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(3,1,1,0)
+  shell type=frozen,def=(1,0,0,0)
+ calculate
+  interfaces file=MP2.py,file=orb_inp.py
+ +-----------------------------------------------------------------------------+
+A keyword hist
+I   general
+       print 2  1
+  >                     0
+I   orb_space
+I     shell
+         type 8  3
+  > occ
+         def 2  4
+  >                     3                    1                    1                    0
+I     shell
+         type 8  6
+  > closed
+         def 2  4
+  >                     3                    1                    1                    0
+I     shell
+         type 8  6
+  > frozen
+         def 2  4
+  >                     1                    0                    0                    0
+I   calculate
+I     interfaces
+         file 8  6
+  > MP2.py
+         file 8 10
+  > orb_inp.py
+A keyword hist
+A   general
+A   orb_space
+A     shell
+A     shell
+A     shell
+A   calculate
+A     interfaces
+ printlevel is set to                     0
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     3                    1                    1                    0
+  defined shells: 
+   1    10   4   4   1
+  new shell definition: 
+   1     3   1   1   0
+   2     7   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     3                    1                    1                    0
+  defined shells: 
+   1     3   1   1   0
+   2     7   3   3   1
+  new shell definition: 
+   1     3   1   1   0
+   2     0   0   0   0
+   3     7   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     1                    0                    0                    0
+  defined shells: 
+   1     3   1   1   0
+   2     0   0   0   0
+   3     7   3   3   1
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   1   0
+   3     0   0   0   0
+   4     7   3   3   1
+ Warning from Python interface: 2MS is not a valid name for a Python variable. Use quotes for this keyword.
+ Warning from Python interface: REPLACE is an argument and a rule. Use quotes for this keyword.
+ Reading target file MP2.py.tgt_list:  Python interface
+ Warning from Python interface: 2MS is not a valid name for a Python variable. Use quotes for this keyword.
+ Warning from Python interface: REPLACE is an argument and a rule. Use quotes for this keyword.
+ Reading target file orb_inp.py.tgt_list:  Python interface
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Rule: SET_HERMITIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer in geth2:        0.31Mb
+
+ 2-el. integrals on disk:                     0
+    thereof nonredundant:                     0
+     integrals reordered:                 40554
+ My next target: MP2_OPS
+ Rule: DEF_SCALAR
+ Rule: DEF_SCALAR
+ Rule: DEF_EXCITATION
+ Rule: CLONE_OPERATOR
+ My next target: DIAG
+ Rule: CLONE_OPERATOR
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: MP2_HAM
+ Rule: DEF_HAMILTONIAN
+ Rule: DEF_HAMILTONIAN
+ Rule: DEF_HAMILTONIAN
+ My next target: MP2_FORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     3  entries
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     4  entries
+ wrote                     6  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: REPLACE
+ read                     5  entries
+ wrote                     6  entries
+ Rule: PRINT_FORMULA
+ read                     5  entries
+ [INIT TARGET]                    2
+ [CONTR]                    2 ( term #                    1 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ T2^+ H   T2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]                    2 ( term #                    2 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ T2^+ H   T2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]                    2 ( term #                    3 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ T2^+ H
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H          12    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]                    2 ( term #                    4 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [END]
+ My next target: MP2_RES
+ Rule: DERIVATIVE
+ Rule: PRINT_FORMULA
+ read                     4  entries
+ [INIT TARGET]                    5
+ [CONTR]                    5 ( term #                    1 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           2    1  0  0  0
+                      1  0  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  0  0  0
+                     1  0  0  0
+  x      2   1       0  2  0  0
+                     1  0  0  0
+ [CONTR]                    5 ( term #                    2 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           5    0  1  0  0
+                      0  1  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  1  0  0
+                     2  0  0  0
+ [CONTR]                    5 ( term #                    3 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ H
+ v01 H          12    0  2  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     2  0  0  0
+ [END]
+ My next target: MP2_EN
+ Rule: FACTOR_OUT
+ read                     5  entries
+ read                     4  entries
+ wrote                     4  entries
+ Rule: PRINT_FORMULA
+ read                     3  entries
+ [INIT TARGET]                    2
+ [CONTR]                    2 ( term #                    1 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ T2^+ O2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 O2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]                    2 ( term #                    2 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [END]
+ My next target: MP2_LISTS
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: MP2_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     9
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2    LMP2   1   1           ME_LMP2
+    3    EMP2   1   1                  
+    4      T2   1   1             ME_T2
+    5      O2   1   1             ME_O2
+    6      D2   1   1              DIAG
+    7  FOCK_2   1   4                  
+    8    FOCK   1   4                  
+    9     PHI   1   9                  
+ ----------------------------------------
+ Number of lists defined:                     5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        40783        H                    H0_list.da
+    2            DIAG  1  0         1134       D2                  DIAG_list.da
+    3         ME_LMP2  1  0            1     LMP2               ME_LMP2_list.da
+    4           ME_T2  1  0         1134       T2                 ME_T2_list.da
+    5           ME_O2  1  0         1134       O2                 ME_O2_list.da
+ ------------------------------------------------------------------------------
+ read                     4  entries
+ read                     3  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.384E+05(  74.1%)
+  term #    1 - H^ 3 P^ 2 V^ 0 X^ 0 - flops:  0.121E+05(  23.3%)
+  term #    4 - H^ 2 P^ 2 V^ 0 X^ 0 - flops:  0.662E+03(   1.3%)
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0 - flops:  0.662E+03(   1.3%)
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00(   0.0%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #    1 - H^ 3 P^ 2 V^ 0 X^ 0
+  term #    4 - H^ 2 P^ 2 V^ 0 X^ 0
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.807E-01
+  term #    2 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.807E-01
+  term #    4 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.763E-05
+  term #    5 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.763E-05
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                     8  entries
+ My next target: MY_TARGET
+ Rule: PRINT
+ Now solving the equations ...
+ Rule: SOLVE_NLEQ
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:     1134
+idstsec:        1
+signsec :      1.0
+ read                     7  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+ @ time for target O2                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target LMP2                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  1          0.000000000000  1.100    
+ @ time for target O2                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target LMP2                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ CONVERGED IN     2 ITERATIONS
+>>>  2         -0.196151291382 0.6554E-14
+>>> CONVERGED <<<
+>>> final energy:         -0.196151291382 <<<
+ Rule: PRINT_MEL
+ ---
++=============================================================================+
+  block no.    1 len =            1
+ /  0  0  0  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.196151    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                    1
++.............................................................................+
+    -0.1961513
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =   0.19615129138153189     
+ total norm =   0.19615129138153189     
+ Rule: PRINT
+ All over ...
+ My next target: INPUT_INFO
+ Rule: PRINT
+ >>> Information from input:
+ Rule: PRINT
+ occ shell: ['3', '1', '1', '0']
+ Rule: PRINT
+ closed shell: ['3', '1', '1', '0']
+ Rule: PRINT
+ frozen shell: ['1', '0', '0', '0']
+ My next target: ORB_INFO
+ Rule: PRINT
+ Number of active electrons: 0
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   45136547 real(8)-words (  344.36 Mb)
+   Largest memory block:       43773043 real(8)-words (  333.96 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      0.05 /     0.03 /     0.15 s
+ run ends at 2014-10-21 17:01:16.906   host: guest15.theochem.uni-stuttgart.de

@@ -327,7 +327,7 @@ c dbg end fix
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,
      &       title,idum,strdum)
-        call print_formula_drv(form_pnt,title,op_info)
+        call print_formula_drv(form_pnt,title,'LONG',op_info)
       case(TEX_FORMULA)
         call form_parameters(+1,
      &       rule%parameters,rule%n_parameter_strings,

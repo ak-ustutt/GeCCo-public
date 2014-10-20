@@ -71,7 +71,7 @@ c      logical ::
 c     &     loop(nocc_cls)
       integer ::
      &     ifree, nbuff, idxmsa, iocc_cls, iexc_cls,
-     &     msmax, msa, igama, idx, jdx, ngam,
+     &     msmax, msa, igama, idx, jdx, ngam, idxt,
      &     ioff, njoined,
      &     idxdis, lenca, iblkoff, ncblk, nablk,
      &     msc, igamc, idxmsc, mscmax,
@@ -247,9 +247,12 @@ c dbgend
       tocc_cls = 0
 
       ! (assuming name 'T' for cluster op.
-      op_t => op_info%op_arr(idx_oplist2('T',op_info))%op
-      if (is_keyword_set('method.MRCI').gt.0)
-     &   op_t => op_info%op_arr(idx_oplist2('C',op_info))%op
+      ! but ... uuups ... sometimes it will not be there ....
+      idxt = idx_oplist2('T',op_info)
+      if (is_keyword_set('method.MRCI').gt.0) 
+     &      idxt = idx_oplist2('C',op_info)
+      if (idxt.gt.0) 
+     &   op_t => op_info%op_arr(idxt)%op
 
       if (.not.half.and.max(iprlvl,ntest).ge.3) write(lulog,*)
      &         'Input list will be overwritten by projector.'
@@ -1747,7 +1750,7 @@ c dbgend
      &       'Singular value histogram (by excitation classes)'
         if (lmodspc) then
           write(lulog,'(x,a,x,14i10)') 'class:', (idx,idx=1,iexc_cls)
-        else
+        else if (idxt.gt.0) then
           write(lulog,'(x,a,x,14i10)') 'n_h = ',
      &         op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
           write(lulog,'(x,a,x,14i10)') 'n_p = ',
@@ -1800,6 +1803,8 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
         call get_argument_value('method.MR','svdonly',lval=svdonly)
         if (svdonly.and..not.lmodspc) then
           ! Excplicitly print restrictions for input file
+          if (idxt.lt.0) call quit(0,'invsqrt',
+     &         'inconsistency in program: fix reference to op_t')
           write(lulog,*)
           write(lulog,'(x,a)') 'Copy the following into the input file:'
           ih = -1

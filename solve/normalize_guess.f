@@ -65,24 +65,31 @@
       end if
       xnrm = sqrt(xnrm)
 
-      if (ntest.ge.100)
+      ! zero norm: this may happen for multi-component vectors (nopt>1)
+      ! the current handling is a bit unclear (why is the routine called
+      ! for fixed iopt then)??
+      if (xnrm.gt.1d-12) then 
+
+        if (ntest.ge.100)
      &     write(lulog,*) 'Normalizing root with norm ',xnrm
 
-      call da_sccpvec(ff_v,irecv,
+        call da_sccpvec(ff_v,irecv,
      &                ff_v,irecv,
      &                1d0/xnrm,nwfpar(iopt),
      &                xbuf1,nwfpar(iopt))
-      do jopt = 1, nopt
-        call da_sccpvec(ff_mvp(jopt)%fhand,irecmvp,
-     &                  ff_mvp(jopt)%fhand,irecmvp,
-     &                  1d0/xnrm,nwfpar(jopt),
-     &                  xbuf1,nwfpar(jopt))
-        if (use_s(jopt))
-     &     call da_sccpvec(ff_met(jopt)%fhand,irecmet,
+        do jopt = 1, nopt
+          call da_sccpvec(ff_mvp(jopt)%fhand,irecmvp,
+     &                    ff_mvp(jopt)%fhand,irecmvp,
+     &                    1d0/xnrm,nwfpar(jopt),
+     &                    xbuf1,nwfpar(jopt))
+          if (use_s(jopt))
+     &       call da_sccpvec(ff_met(jopt)%fhand,irecmet,
      &                  ff_met(jopt)%fhand,irecmet,
      &                  1d0/xnrm,nwfpar(jopt),
      &                  xbuf1,nwfpar(jopt))
-      end do
+        end do
+
+      end if
       ifree = mem_flushmark()
 
       return

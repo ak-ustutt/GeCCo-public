@@ -30,7 +30,7 @@
      &     s2_r, ms_r, isym_r, msc_r,
      &     s2_0, ms_0, isym_0, msc_0 
       logical ::
-     &     needed
+     &     needed, first_iter
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     me_label_l, me_label_r, me_label_lr,
@@ -67,7 +67,6 @@
         call get_argument_value('method.MRCC.excite','method',
      &       str=method)
   
-        print*, trim(method)
         select case(trim(method))
         case('LR')
           write(lulog,*) 'doing ic_mrcc response in LR framework'
@@ -81,7 +80,7 @@
         end select
 
 
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target RSPNS_OP(                                  ',
      &      'depend (OMG,D,L,DENS,C0,A_C0,T)                   ',
      &      'CLONE_OPERATOR(label=R_prime_q,template=T)        ',
@@ -97,7 +96,7 @@
      &      tgt_info)
 
       if(lr_opt.eq.1) then
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target FORM_AR_RSPNS_Q(                              ',
      &      'depend (RSPNS_OP,F_OMG)                              ',
      &      'DERIVATIVE(label_res=F_AR_rspns_q,label_in=F_OMG,    ',
@@ -111,7 +110,7 @@
      &      tgt_info)
    
        else
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &  '    target FORM_AR_RSPNS_Q(                                 ',
      &  '    depend (RSPNS_OP,H0)                                    ',
      &  '    EXPAND_OP_PRODUCT(label=F_AR_rspns_t,new=T,op_res=den12,',
@@ -159,7 +158,7 @@
 
       ! trying fortran2003 style:
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target F_prePPrint(',
      &      'depend (FORM_AR_RSPNS_Q,DEF_ME_INT_PP,H_PP)',
      &      'CLONE_OPERATOR(label=INT_PPr,template=INT_PP)',
@@ -171,7 +170,7 @@
 C     !&      ')'/),tgt_info)
 
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target F_PPrint(',
      &      'depend F_prePPrint',
      &      'DERIVATIVE(label_res=F_PPrint,label_in=F_prePPrint,',
@@ -183,7 +182,7 @@ C     !&      ')'/),tgt_info)
  
         if(lr_opt.eq.1) then
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target FORM_AR_RSPNS_MU(',
      &      'depend(RSPNS_OP,F_OMG_C0,"E(MR)")',
      &      'DERIVATIVE(label_res=F_AR_rspns_mu,label_in=F_OMG_C0,',
@@ -197,7 +196,7 @@ C     !&      ')'/),tgt_info)
 C     !&      ')'/),tgt_info)
         else
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target FORM_AR_RSPNS_MU(',
      &      'depend(RSPNS_OP,F_E_C0,"E(MR)")',
      &      'DERIVATIVE(label_res=F_AR_rspns_c,label_in=F_E_C0,',
@@ -222,7 +221,7 @@ C     !&      ')'/),tgt_info)
 
         if(lr_opt.eq.1)then
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target RSPNS_FORM(',
      &      'depend (Dtr,F_T,Ttr,RSPNS_OP,C0)',
      &      'EXPAND_OP_PRODUCT(label=F_den12,new=T,op_res=den12,',
@@ -277,7 +276,7 @@ C     !&      ')'/),tgt_info)
          else 
 
       !call add_target3((/
-      call add_target3([character(len=80) ::
+      call add_target3([character(len=256) ::
      &      'target RSPNS_FORM(',
      &      'depend (Dtr,F_T,Ttr,RSPNS_OP,C0)',
      &      'EXPAND_OP_PRODUCT(label=F_den12,new=T,op_res=den12,',
@@ -300,7 +299,8 @@ C     !&      ')'/),tgt_info)
      &      ')'],tgt_info)
 C     &      ')'/),tgt_info)
           endif
-              
+ 
+      first_iter = .true.             
       do icnt = 1, ncnt 
         call get_argument_value('calculate.excitation','sym',
      &       keycount=icnt,
@@ -384,7 +384,7 @@ c dbg
      &     trim(mel_dia1)
 
           write(string(12),'("LIST_RSPNS_",I1,"_",I2.2)') isym,msc+1
-          call add_target3([character(len=80) ::
+          call add_target3([character(len=256) ::
      &        'target ', trim(string(12)), '(',
      &        'depend (RSPNS_OP,DEF_ME_C0,DEF_ME_Dtrdag,H0,DEF_ME_T,',
      &        'DIA_T,DIA_C0,"DEF_ME_E(MR)",F_prePPrint)',
@@ -404,7 +404,7 @@ C     !&        ')'/),tgt_info)
          write(string(18),'("PRECONDITIONER(list_prc=",a,
      &              ",list_inp=ME_FREF)")') trim(medef_label)
 
-         call add_target3([character(len=80) ::
+         call add_target3([character(len=256) ::
      &        'target ', trim(string(13)), '(',
      &        'depend (EVAL_FREF,FOPT_Atr)',
      &        trim(string(12)),
@@ -425,12 +425,27 @@ C     !&        ')'/),tgt_info)
      &                     ",list_inp=H0,mode=dia-H)")') trim(dia_label)
          write(string(19),'("SCALE_COPY(list_res=",a,
      &            ",list_inp=""ME_E(MR)"",fac=-1d0)")') trim(mel_dia1)
-         call add_target3([character(len=80) ::
+         call add_target3([character(len=256) ::
      &         'target',trim(string(13)),'(',
      &         trim(string(12)),
      &         trim(string(18)),
      &         trim(string(19)),string(17),                      ! trim(string(17)) FIXME 
      &         ')'],tgt_info)
+
+         if (first_iter) then
+           call add_target3([character(len=256) ::
+     &      'target PRJ_FORM(',
+     &      string(12),
+     &      '  depend DEF_ME_C0',
+     &      '  EXPAND_OP_PRODUCT(label=F_prj,op_res=R_mu,',
+     &      '     operators=(R_mu,C0,C0^+,R_mu,R_mu),',
+     &      '     idx_sv=(1,2,3,4,1),',
+     &      '     avoid=(1,4,3,5),',
+     &      '     fac=-1d0)',
+C     &      '  PRINT_FORMULA(label=F_prj)',
+     &      '  OPTIMIZE(label_opt=FOPT_prj,labels_in=F_prj)',
+     &      ')'],tgt_info)
+         end if
 
 
          write(string(13),'("RSPNS_OPT_",I1,"_",I2.2)') isym,msc+1
@@ -438,7 +453,7 @@ C     !&        ')'/),tgt_info)
      &   ",labels_in=(F_AR_rspns_q,F_AR_rspns_mu,F_SR_rspns_q,",
      &    "F_SR_rspns_mu,F_R_q),interm=F_PPrint)")') isym,msc+1
 
-           call add_target3([character(len=80) ::
+           call add_target3([character(len=256) ::
      &     'target',trim(string(13)),'(',
      &     'depend (RSPNS_FORM,FORM_AR_RSPNS_Q,',
      &     'FORM_AR_RSPNS_MU,"DEF_ME_E(MR)",F_PPrint)',
@@ -448,8 +463,11 @@ C    &     'F_AR_rspns_mu,F_SR_rspns_q,F_SR_rspns_mu,F_R_q),',
 C    &     'interm=F_PPrint)',
      &     ')'],tgt_info)
 
-       write(string(12),'("mode=""TRF DIA"",n_roots=",I1,")")')
+       write(string(12),'("mode=""TRF PRJ"",form_spc=FOPT_prj,'//
+     &                  'n_roots=",I1,")")')
      &                   sym_arr(isym)
+c       write(string(12),'("mode=""TRF DIA"",n_roots=",I1,")")')
+c     &                   sym_arr(isym)
        write(string(13),'("MY_TARGET_",I1,"_",I2.2)') isym,msc+1
        write(string(14),'("depend RSPNS_OPT_",I1,"_",I2.2)') isym,msc+1
        write(string(15),'("depend DIAG_CAL_q_",I1,"_",I2.2)') isym,msc+1
@@ -462,10 +480,11 @@ C    &     'interm=F_PPrint)',
      &          ",list_spc=(",a,",ME_Dtr,ME_Dtrdag),")')
      &                     isym,msc+1,trim(me_label_lr)
 
-       call add_target3([character(len=80) ::
+       call add_target3([character(len=256) ::
      &     'target', trim(string(13)), '(',
      &     'required',
      &     trim(string(14)),trim(string(15)),trim(string(16)),
+     &     'depend PRJ_FORM',
      &     'SOLVE_EVP(',
      &     trim(string(17)),
      &     string(18),
@@ -475,7 +494,7 @@ C    &     'interm=F_PPrint)',
      &     string(12),
      &     ')'],tgt_info)
 
-
+          first_iter = .false.
         end do
       end do
        

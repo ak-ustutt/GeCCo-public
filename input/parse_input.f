@@ -1365,7 +1365,11 @@ c        ipst = first_nonblank(line)
       character(len=80) ::
      &     fmtstr
 
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
+      if(abs(ipos).EQ.1) then
+       write(fmtstr,'("(x,""^"")")')
+      else
+       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
+      end if
       write(lulog,'(x,a)') trim(line)
       write(lulog,fmtstr) 
       write(lulog,'(x,a)') 'INPUT ERROR: unexpected keyword '

@@ -1,15 +1,20 @@
 *----------------------------------------------------------------------*
-      subroutine init_guess(nopt,init,nroots,
+      subroutine init_guess2(nopt,init,nroots,
      &                me_opt,me_trv,me_dia,me_special,nspecial,
      &                fl_mvp,depend,fl_spc,nspcfrm,
      &                opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
 * get suitable initial guess vectors for the EVP solver
-*
+* 
 * matthias, nov 2012
+*
+* improved version, when multi-component vectors are present (iopt>1)
+*
+* andreas, may 2014
+*
 *----------------------------------------------------------------------*
-      implicit none             ! for sure
+      implicit none
 
       include 'opdim.h'
       include 'stdunit.h'
@@ -26,6 +31,11 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
+
+      integer, parameter ::
+     &     ntest = 00
+      character(len=12), parameter ::
+     &     i_am = 'init_guess2 '
 
       integer, intent(in) ::
      &     nopt, nroots, nspecial, nspcfrm
@@ -49,80 +59,182 @@
      &     strmap_info
 
       integer ::
-     &     ifree, iopt, jopt, iroot, ntrials, nout, jroot,
-     &     idxlist(max(1000,4*nroots)), nselect, iguess
+     &     ifree, iopt, jopt, iroot, maxtrials, idx, nset,
+     &     nselect, nout,
+     &     jroot, iguess, ntrials_all
       logical ::
-     &     trafo
+     &     trafo, read_in
       real(8) ::
-     &     xnrm, xnrm2(nroots), xover, xlist(max(1000,4*nroots)),
+     &     xnrm, xnrm2(nroots), xover, 
      &     fac1, fac2, xlow
       type(me_list), pointer ::
      &     me_pnt
 
+      integer ::
+     &     idxset(2)
+      real(8) ::
+     &     valset(2)
+
       integer, pointer ::
-     &     idxselect(:)
+     &     idxselect(:), isign(:), ntrials(:),
+     &     idxlist(:,:), idxlist_all(:,:), idxlist_ba(:), idxscr(:)
       real(8), pointer ::
-     &      xret(:), xbuf1(:), xbuf2(:)
+     &      xret(:), xbuf1(:), xbuf2(:), xlist_all(:), xlist(:,:)
 
       real(8), external ::
      &     da_ddot
 
-      ntrials = max(1000,4*nroots)
-      nout = depend%ntargets
-      allocate(xret(nout))
+      if (ntest.gt.100) call write_title(luout,wst_dbg_subr,i_am)
 
-      !do iopt = 1, nopt
-      
-      ! improved preliminary solution: check which diagonal is best
+      maxtrials = max(5000,4*nroots)
+      nout = depend%ntargets
+      allocate(xret(nout), isign(nopt), ntrials(nopt))
+      allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
+     &     idxlist_ba(maxtrials))
+      allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
+
       xlow = huge(xlow)
       do iopt = 1, nopt
-        call find_nmin_list(xlist,idxlist,ntrials,me_dia(iopt)%mel)
-
-        if (xlist(1).lt.xlow) then
-          jopt = iopt
-          xlow = xlist(1)
-        end if
+        call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
+     &       maxtrials,me_dia(iopt)%mel)
+        ntrials(iopt) = min(maxtrials,me_dia(iopt)%mel%len_op)
+c dbg
+c        call wrt_mel_file(lulog,5,me_dia(iopt)%mel,1,
+c     &     me_dia(iopt)%mel%op%n_occ_cls,
+c     &     str_info,orb_info)
+c        write(*,*) 'xlist ',iopt
+c        write(*,'(5f12.6)') xlist(1:ntrials(iopt),iopt)
+c dbg
       end do
 
-      if (nopt.gt.1) write(lulog,*) 'diag_guess: choosing iopt = ',jopt
+      call merge_min_lists(xlist_all,idxlist_all,ntrials_all,
+     &     xlist,idxlist,
+     &     nopt,maxtrials,ntrials)
 
-
+      ! read from file?
+      read_in = .false.
       do iopt = 1, nopt
+        read_in = read_in.or..not.init(iopt)
+      end do
 
-        if (.not.init(iopt)) then
-          do iroot = 1, nroots
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_opt(iopt)%mel,iroot)
-            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
-          end do
-          cycle
-        end if
-        ! preliminary solution: set only component 1, rest is zero
-!        if (iopt.gt.1) then
-        if (iopt.ne.jopt) then
-          do iroot = 1, nroots
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call zeroop(me_trv(iopt)%mel)
-          end do
-          cycle
-        end if
-        ! transformed preconditioner => transformed initial guess vector
-        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-          me_pnt => me_special(1)%mel
-          trafo = .true.
-        else
-          me_pnt => me_trv(iopt)%mel
-          trafo = .false.
-        end if
-        call find_nmin_list(xlist,idxlist,ntrials,me_dia(iopt)%mel)
+      if (read_in) then
+
+        do iopt = 1, nopt
+          if (.not.init(iopt)) then
+            do iroot = 1, nroots
+              call switch_mel_record(me_trv(iopt)%mel,iroot)
+              call switch_mel_record(me_opt(iopt)%mel,iroot)
+              call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
+            end do
+          else
+            do iroot = 1, nroots
+              call switch_mel_record(me_trv(iopt)%mel,iroot)
+              call zeroop(me_trv(iopt)%mel)
+            end do
+          end if
+        end do
+
+      else
+
         iroot = 0
-        do iguess = 1, ntrials
-          iroot = iroot + 1    
+        allocate(idxscr(maxtrials))
+        do iopt = 1, nopt
 
-          call switch_mel_record(me_pnt,iroot)
-          call diag_guess(me_pnt,
-     &         xlist,idxlist,ntrials,iguess,me_pnt%absym,
+          isign(iopt) = me_trv(iopt)%mel%absym
+          ! get index list for iopt and
+          ! generate list of indices with spins inverted
+          if (isign(iopt).eq.0) cycle
+          call symidx_ab(idxscr,
+     &         idxlist(1,iopt),ntrials(iopt),me_dia(iopt)%mel,
      &         op_info,str_info,strmap_info,orb_info)
+
+          if (ntest.ge.200) then
+            write(lulog,*) 'ntrials(iopt),maxtrials: ',
+     &           ntrials(iopt),maxtrials
+            write(lulog,*) 'idxscr = '
+            write(lulog,'(1x,5i4,x,5i4)') idxscr(1:ntrials(iopt))
+          end if
+
+          ! distribute into full list
+          idx = 0
+          do iguess = 1, ntrials_all
+            if (idxlist_all(1,iguess).ne.iopt) cycle
+            idx = idx+1
+            idxlist_ba(iguess) = idxscr(idx)
+          end do
+
+        end do
+        deallocate(idxscr)
+
+        if (ntest.ge.100) then
+          write(lulog,*) 'final guess lists:'
+          do iguess = 1, ntrials_all
+            write(lulog,'(1x,i6,1x,i3,i6,1x,i6)')
+     &           iguess, idxlist_all(1:2,iguess), idxlist_ba(iguess)
+          end do
+        end if
+
+        do iguess = 1, ntrials_all
+          
+          iopt = idxlist_all(1,iguess)
+
+         ! transformed preconditioner => transformed initial guess vector
+          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+            me_pnt => me_special(1)%mel
+            trafo = .true.
+          else
+            me_pnt => me_trv(iopt)%mel
+            trafo = .false.
+          end if
+
+          nset = 0
+          if (isign(iopt).ne.0) then
+            if (idxlist_all(2,iguess).lt.abs(idxlist_ba(iguess))) then
+              iroot = iroot+1
+              nset = 2
+              idxset(1) = abs(idxlist_all(2,iguess))
+              idxset(2) = abs(idxlist_ba(iguess))
+              valset(1) = 1d0/sqrt(2d0)
+              valset(2) = dble(isign(iopt))*
+     &             dble(sign(1,idxlist_ba(iguess)))
+     &                  /sqrt(2d0)
+            else if (idxlist_all(2,iguess).eq.abs(idxlist_ba(iguess))
+     &           .and.isign(iopt).eq.+1) then
+              if (idxlist_ba(iguess).lt.0)
+     &             call quit(1,i_am,'unexpected case')
+              ! set a single element
+              iroot = iroot+1
+              nset = 1
+              idxset(1) = abs(idxlist_all(2,iguess))
+              valset(1) = 1d0
+            end if
+          else
+            ! set a single element
+            iroot = iroot+1
+            nset = 1
+            idxset(1) = abs(idxlist_all(2,iguess))
+            valset(1) = 1d0
+          end if
+          
+          ! skip if nothing was found
+          if (nset.eq.0) cycle
+
+          if (ntest.ge.100) then
+            write(lulog,*) 'iopt:   ',iopt
+            write(lulog,*) 'idxset: ',idxset(1:nset)
+            write(lulog,*) 'valset: ',valset(1:nset)
+            write(lulog,*) '=> switching to iroot = ',iroot
+          end if
+
+          do jopt = 1, nopt
+            if (jopt.eq.iopt) then
+              call switch_mel_record(me_pnt,iroot)
+              call set_list(me_pnt,idxset,valset,nset)
+            else
+              call switch_mel_record(me_trv(jopt)%mel,iroot)
+              call zeroop(me_trv(jopt)%mel)
+            end if
+          end do
 
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
@@ -139,6 +251,7 @@
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
+
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding guess vector with wrong spin symmetry.'
@@ -177,7 +290,7 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
               end if
             end if
             deallocate(idxselect)
-          end if
+          end if ! trafo
 
           ! project out spin contaminations or other components?
           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
@@ -246,19 +359,14 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
 
           if (iroot.eq.nroots) exit
 
-c dbg
-c          if (file_exists(me_opt(iopt)%mel%fhand)) then
-c            print *,' *** RESTARTING ***'
-c            call switch_mel_record(me_opt(iopt)%mel,iroot)
-c            call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
-c          end if
-c dbg
-        end do
-        if (iroot.ne.nroots) call quit(1,'init_guess',
-     &        'Could not find enough guess vectors')
-      end do
+        end do ! loop over iguess
 
-      deallocate(xret)
+        if (iroot.ne.nroots) call quit(1,i_am,
+     &        'Could not find enough guess vectors')
+      end if
+
+      deallocate(xret,isign,ntrials)
+      deallocate(idxlist,idxlist_all,idxlist_ba,xlist,xlist_all)
 
       return
       end

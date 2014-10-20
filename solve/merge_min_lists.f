@@ -1,0 +1,66 @@
+      subroutine merge_min_lists(xlist_all,idxlist_all,ntrials_all,
+     &     xlist,idxlist,nopt,maxtrials,ntrials)
+
+      implicit none
+
+      include 'stdunit.h'
+
+      integer, parameter ::
+     &     ntest = 00
+
+      integer, intent(in) ::
+     &     nopt, maxtrials, ntrials(nopt), idxlist(maxtrials,nopt)
+      real(8), intent(in) ::
+     &     xlist(maxtrials,nopt)
+
+      integer, intent(out) ::
+     &     idxlist_all(2,maxtrials), ntrials_all
+      real(8), intent(out) ::
+     &     xlist_all(maxtrials)
+      
+      integer ::
+     &     itry, idx(nopt), iopt, jopt
+      real(8) ::
+     &     xlow
+
+      idx(1:nopt) = 0
+
+      ntrials_all = min(maxtrials,sum(ntrials(1:nopt)))
+
+      do itry = 1, ntrials_all
+        
+        ! look for next-lowest element in all lists
+        xlow = huge(xlow)
+        jopt = -1
+        do iopt = 1, nopt
+          if (idx(iopt).lt.ntrials(iopt)) then
+            if (xlist(idx(iopt)+1,iopt).lt.xlow) then
+              xlow = xlist(idx(iopt)+1,iopt)
+              jopt = iopt
+            end if
+          end if
+        end do
+
+        if (jopt.le.0)
+     &       call quit(1,'merge_min_lists','something''s wrong !')
+
+        ! increment this index
+        idx(jopt) = idx(jopt)+1
+        
+        ! store information on new list
+        xlist_all(itry) = xlist(idx(jopt),jopt)
+        idxlist_all(1:2,itry) = (/jopt,idxlist(idx(jopt),jopt)/)
+
+      end do
+
+      if (ntest.ge.100) then
+        write(lulog,*) 'new array:'
+        do itry = 1, ntrials_all
+          write(lulog,'(1x,f14.8,2x,i3,i10)')
+     &         xlist_all(itry), idxlist_all(1:2,itry)
+        end do
+        write(lulog,*) 'end of array'
+
+      end if
+
+      end
