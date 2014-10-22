@@ -92,7 +92,7 @@
       ifree = mem_setmark('frm_sched0')
       
       iprint = max(ntest,iprlvl)
-      if (ntest.gt.0.or.iprint.ge.5) then
+      if (ntest.gt.10.or.iprint.ge.20) then
         write(lulog,*) '============================='
         write(lulog,*) '= Entered formula scheduler ='
         write(lulog,*) '============================='
@@ -181,6 +181,7 @@
      &           idxlist(idxres,idxselect,nselect,1).le.0
           ! check dependency
 c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
+
           skip = skip.or.
      &           ((.not.no_skip).and.init
      &             .and.me_list_uptodate(idxres,depend_info,op_info))

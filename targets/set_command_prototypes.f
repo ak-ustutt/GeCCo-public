@@ -587,6 +587,16 @@
       call set_arg('_PROTO_',INVERT,'MODE',0,tgt_info,
      &     val_str='-',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(TRANSF,tgt_info)
+      call set_arg('_PROTO_',TRANSF,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSF,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSF,'FORM',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSF,'INIT',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(EVAL,tgt_info)
       call set_arg('_PROTO_',EVAL,'FORM',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -692,6 +702,16 @@
      &     val_rl8=(/-1d0/),def=.true.)
       call set_arg('_PROTO_',PRINT_MEL,'EXPECTED',1,tgt_info,
      &     val_rl8=(/0d0/),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ANALYZE_MEL,tgt_info)
+      call set_arg('_PROTO_',ANALYZE_MEL,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ANALYZE_MEL,'LISTS_CV',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ANALYZE_MEL,'MODE',1,tgt_info,
+     &     val_str='NORM',def=.true.)
+      call set_arg('_PROTO_',ANALYZE_MEL,'RECS',2,tgt_info,
+     &     val_int=(/1,-1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_MEL_INFO_,tgt_info)
       call set_arg('_PROTO_',PRINT_MEL_INFO_,'LIST',0,tgt_info,
