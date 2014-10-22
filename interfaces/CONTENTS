@@ -1,2 +1,5 @@
 Directory for codes related to the interface between gecco and the user:
-python module, rules and variable names, 
+python module, rules and variable names.
+
+Maybe set_interface_targets.f get_targets_from_file.f and put_orbinfo.f
+could also be here?

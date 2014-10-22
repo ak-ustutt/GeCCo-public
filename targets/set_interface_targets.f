@@ -3,13 +3,17 @@
      &     name_orbinfo)
 *----------------------------------------------------------------------*
 *
-* Set targets form script interfaces
+* Set targets form script interfaces: python iterface
+* name_infile is the input file name and name_orbinfo
+* is the name of the file with orbital informations, generated
+* by interfaces/put_orbinfo
 *
+* yuri, oct, 2014
+*----------------------------------------------------------------------*
       implicit none
 
       include 'mdef_target_info.h'
       include 'ifc_input.h'
-
 
       type(target_info), intent(inout) ::
      &     tgt_info

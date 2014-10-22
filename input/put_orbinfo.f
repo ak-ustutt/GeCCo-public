@@ -7,7 +7,7 @@
 *     The purpose is create a file that will be read by a Python target
 *     script.
 *
-*     yuri, nov 2014
+*     yuri, oct 2014
 *----------------------------------------------------------------------*
       implicit none
 

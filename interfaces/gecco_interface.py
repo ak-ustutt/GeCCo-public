@@ -581,7 +581,7 @@ if not( "GECCO_DIR" in os.environ):
 gecco_dir = os.environ["GECCO_DIR"]
 
 # Functions for rules
-rules_names_file = gecco_dir + "/experimental/rules_names.txt"
+rules_names_file = gecco_dir + "/interfaces/rules_names.txt"
 
 f = open( rules_names_file, 'r')
 rules = f.readlines()
@@ -591,7 +591,7 @@ for r in rules:
     exec ('def ' + r + ' ( arguments):\n\trule("' + r + '", arguments)')
 
 # Variables for arguments
-arguments_names_file = gecco_dir + "/experimental/arguments_names.txt"
+arguments_names_file = gecco_dir + "/interfaces/arguments_names.txt"
 
 f = open( arguments_names_file, 'r')
 keywords = f.readlines()
