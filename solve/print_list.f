@@ -33,10 +33,15 @@
 
       logical ::
      &     openit
+      integer ::
+     &     nblk
       real(8) ::
      &     value
       type(filinf) ::
      &     ffout
+
+      real(8), pointer ::
+     &     xnrm(:)
 
       real(8), external ::
      &     xnormop
@@ -83,10 +88,16 @@
 
         write(luout,'(x,a)') trim(message)
 
-        call wrt_mel_file(luout,1,
-     &       mel,
-     &       1,mel%op%n_occ_cls,
-     &       str_info,orb_info)
+        nblk = mel%op%n_occ_cls
+        allocate(xnrm(nblk))
+        call blk_norm_for_list(xnrm,nblk,mel,mel)
+        call print_mel_contribs(luout,mel,'e10.4',xnrm,nblk)
+        deallocate(xnrm)
+
+c        call wrt_mel_file(luout,1,
+c     &       mel,
+c     &       1,mel%op%n_occ_cls,
+c     &       str_info,orb_info)
 
       case default
 

@@ -54,7 +54,7 @@
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
      &     connect(maxterms*2), avoid(maxterms*2),
-     &     inproj(maxterms*2), 
+     &     inproj(maxterms*2), iarr2(2), 
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
@@ -73,7 +73,8 @@
       character(len_command_par) ::
      &     env_type, list_type
       character(len_command_par) ::
-     &     label, label2, label_list(max_label), descr(max_label)
+     &     label, label2, label_list(max_label), 
+     &     label_list2(max_label), descr(max_label)
 
       integer, allocatable ::
      &     ifreq(:), pop_idx(:) 
@@ -1016,6 +1017,23 @@ c dbg
      &                  orb_info,str_info)
 
 *----------------------------------------------------------------------*
+      case(ANALYZE_MEL)
+*----------------------------------------------------------------------*
+
+        call get_arg('LISTS',rule,tgt_info,
+     &               val_label_list=label_list,ndim=nop)
+        call get_arg('LISTS_CV',rule,tgt_info,
+     &               val_label_list=label_list2,ndim=nop2)
+        call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('RECS',rule,tgt_info,val_int_list=iarr2)
+
+        if (form_test) return
+
+        call analyze_list_drv(label_list,nop,label_list2,nop2,
+     &                   mode,iarr2,
+     &                   orb_info,str_info,op_info)
+
+*----------------------------------------------------------------------*
       case(PRINT_MEL_INFO_)
 *----------------------------------------------------------------------*
 
@@ -1133,6 +1151,19 @@ c          mode = 'dia-R12'
 
         if (form_test) return
         call evaluate(label,init,
+     &       op_info,form_info,str_info,strmap_info,orb_info)
+
+*----------------------------------------------------------------------*
+      case(TRANSF)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST_IN',rule,tgt_info,val_label=label_list(1))
+        call get_arg('LIST_OUT',rule,tgt_info,val_label=label_list(2))
+        call get_arg('FORM',rule,tgt_info,val_label=label_list(3))
+        call get_arg('INIT',rule,tgt_info,val_log=init)
+
+        if (form_test) return
+        call transform(label_list(1),label_list(2),label_list(3),init,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
 *----------------------------------------------------------------------*
