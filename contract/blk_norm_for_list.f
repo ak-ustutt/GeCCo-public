@@ -1,9 +1,9 @@
 *------------------------------------------------------------------------*
       subroutine blk_norm_for_list(xnorm,nblk_in,melist_a,melist_b)
 *------------------------------------------------------------------------*
-*     get norm of blocks of ME-list melist_a
+*     get norm^2 (=weight) of blocks of ME-list melist_a
 *     if the second list melist_b is not equal to melist_a, 
-*     the subroutine will assume that you want sqrt(<A|B>) 
+*     the subroutine will assume that you want <A|B>) 
 *     (needed f.x. if a proper norm requires a metric: pass metric x list
 *     in one of the two lists)
 *------------------------------------------------------------------------*
@@ -89,7 +89,7 @@ c            xnrm2 = xnrm2 +
             xnrm_cur =    ddot(melist_a%len_op_occ(iblk),
      &           ffopa%buffer(melist_a%off_op_occ(iblk)+1),1,
      &           ffopb%buffer(melist_a%off_op_occ(iblk)+1),1)
-            xnorm(jblk) = sqrt(xnrm_cur)
+            xnorm(jblk) = xnrm_cur !sqrt(xnrm_cur)
             xnrm2 = xnrm2 + xnrm_cur
           else if((ffopa%incore(iblk).gt.0.and.ffopb%incore(iblk).eq.0)
      &        .or.(ffopa%incore(iblk).eq.0.and.ffopb%incore(iblk).gt.0))
@@ -163,7 +163,7 @@ c            xnrm2 = xnrm2 +
             idxst_b = idxnd_b+1
           end do
         end if
-        xnorm(jblk) = sqrt(xnrm_cur)
+        xnorm(jblk) = xnrm_cur !sqrt(xnrm_cur)
         xnrm2 = xnrm2 + xnrm_cur
       end do
       

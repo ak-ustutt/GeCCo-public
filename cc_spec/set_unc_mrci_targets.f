@@ -965,6 +965,12 @@ c dbgend
         call set_rule('SOLVE_REF',ttype_opme,PRINT_MEL,
      &       'ME_C0',1,0,
      &       parameters,2,tgt_info)
+      else
+        call set_rule2('SOLVE_REF',ANALYZE_MEL,tgt_info)
+        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS',1,tgt_info,
+     &               val_label=(/'ME_C0'/))
+        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS_CV',1,tgt_info,
+     &               val_label=(/'ME_C0'/))
       end if
 
       ! Evaluate reference energy
