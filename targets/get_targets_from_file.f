@@ -281,6 +281,6 @@
        end if
       end do
 
-      end
+      end subroutine get_whole_line
 
       end

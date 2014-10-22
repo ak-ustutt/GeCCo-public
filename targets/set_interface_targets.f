@@ -112,6 +112,6 @@
      &     "not acessible. Add the proper directory to the "//
      &     "PYTHONPATH environment variable.")
 
-      end
+      end subroutine verify_python_module
       end
 
