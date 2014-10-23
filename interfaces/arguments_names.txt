@@ -51,9 +51,11 @@ LABEL_TRF label
 LEVEL int
 LIST label
 LISTS label
+LISTS_CV label
 LIST_E label
 LIST_IN label
 LIST_INP label
+LIST_OUT label
 LIST_INV label
 LIST_OPT label
 LIST_PRC label
