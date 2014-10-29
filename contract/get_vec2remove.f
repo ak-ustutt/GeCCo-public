@@ -138,7 +138,7 @@
         end do
         ifree = mem_setmark('premultiplication')
         ifree = mem_alloc_real(buffer,nbuf,'buffer')
-        call get_vec(mel_spc%fhand,buffer,1,nbuf)
+        call get_vec(mel_spc%fhand,buffer,1,nbuf) ! YAA: offset for records?
         ! which block do we need?
         if (na1mx.eq.1.and.nc1mx.eq.2) then
           i_cls = 1

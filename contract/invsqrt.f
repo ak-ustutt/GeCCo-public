@@ -90,7 +90,7 @@ c dbgend
      &     rankdim(maxrank), rankoff(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
-     &     krank, idxst3, idxnd3, rdim3
+     &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec
       real(8) ::
      &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
@@ -192,6 +192,8 @@ c dbgend
 
       ! Allocations made to maximum block length to save time.
       if(.not.bufin)then
+        curr_rec=ffinp%current_record
+        len_rec =ffinp%length_of_record
         nbuff = 0
         do iocc_cls = 1, nocc_cls
           if(op_inp%formal_blk(iocc_cls))
@@ -200,7 +202,8 @@ c dbgend
           nbuff = nbuff+mel_inp%len_op_occ(iocc_cls)
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffinp,buffer_in,1,nbuff)
+        call get_vec(ffinp,buffer_in,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       else
         if(ntest.ge.100)
      &       write(lulog,*)'Invert: input not incore'
@@ -1854,13 +1857,22 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       deallocate(blk_redundant)
 
       if(.not.bufout)then
-        call put_vec(ffinv,buffer_out,1,nbuff)
+        curr_rec=ffinv%current_record
+        len_rec =ffinv%length_of_record
+        call put_vec(ffinv,buffer_out,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       endif  
       if(.not.bufin.and.(.not.half.or.lmodspc))then
+        curr_rec=ffinp%current_record
+        len_rec =ffinp%length_of_record
         ! return projector matrix on input list
-        call put_vec(ffinp,buffer_in,1,nbuff)
+        call put_vec(ffinp,buffer_in,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       endif
-      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,1,nbuff)
+      curr_rec=ffu%current_record
+      len_rec =ffu%length_of_record
+      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,
+     &     (curr_rec-1)*len_rec+1,(curr_rec-1)*len_rec+nbuff)
 
       ifree = mem_flushmark('invsqrt')
 

@@ -108,7 +108,10 @@ c      print *,'core energy: ',const
      &         'idxrec inconsistent for file '//trim(ffop%name))
           buffer => ffop%buffer(idxbuf:)
         else
-          call get_vec(ffop,buffer,ioff_blk+1,ioff_blk+ilen_blk)
+          call get_vec(ffop,buffer,ioff_blk+1
+     &        + ffop%length_of_record*(ffop%current_record-1),
+     &        ioff_blk+ilen_blk
+     &        + ffop%length_of_record*(ffop%current_record-1))
         end if
 c dbg
 c        print *,'ioff_blk, ilen_blk: ',ioff_blk, ilen_blk

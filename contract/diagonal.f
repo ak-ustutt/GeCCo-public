@@ -76,7 +76,7 @@
       ! Find total block length.
       ioff_blk_in = mel_in%off_op_occ(iblkin)
       len_blk_in  = mel_in%len_op_occ(iblkin)
-      ioff_blk_out = mel_out%off_op_occ(iblkout)
+      ioff_blk_out = mel_out%off_op_occ(iblkout) !YAA: offset for records?
       len_blk_out  = mel_out%len_op_occ(iblkout)
 
       ! Allocations made to maximum block length to save time.

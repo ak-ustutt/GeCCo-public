@@ -131,7 +131,7 @@
       ngam = orb_info%nsym
 
       ! Find total block length.
-      ioff_blk = mel_out%off_op_occ(iblkout)
+      ioff_blk = mel_out%off_op_occ(iblkout) !YAA: offset for records?
       len_blk  = mel_out%len_op_occ(iblkout)
 
       if(len_blk.gt.ifree)

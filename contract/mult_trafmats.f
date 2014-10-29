@@ -139,7 +139,10 @@ c dbgend
           nbuff_in = nbuff_in+mel_inp%len_op_occ(iocc_cls)
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff_in,'buffer_in')
-        call get_vec(ffinp,buffer_in,1,nbuff_in)
+        call get_vec(ffinp,buffer_in,1
+     &       + ffinp%length_of_record*(ffinp%current_record-1),
+     &       nbuff_in
+     &       + ffinp%length_of_record*(ffinp%current_record-1))
       else
         if(ntest.ge.100)
      &       write(lulog,*)'mult_trafmats: input not incore'
@@ -154,7 +157,10 @@ c dbgend
           nbuff = nbuff + mel_inv%len_op_occ(iocc_cls)
         enddo
         ifree= mem_alloc_real(buffer_2,nbuff,'buffer_2')
-        call get_vec(ffinv,buffer_2,1,nbuff)
+        call get_vec(ffinv,buffer_2,1
+     &       + ffinv%length_of_record*(ffinv%current_record-1),
+     &       nbuff
+     &       + ffinv%length_of_record*(ffinv%current_record-1))
       else
         if(ntest.ge.100)
      &       write(lulog,*)'mult_trafmats: output not incore'
@@ -1038,7 +1044,10 @@ c dbgend
       deallocate(blk_used)
 
       if(.not.bufin)then
-        call put_vec(ffinp,buffer_in,1,nbuff_in)
+        call put_vec(ffinp,buffer_in,1
+     &      + ffinp%length_of_record*(ffinp%current_record-1),
+     &      nbuff_in
+     &      + ffinp%length_of_record*(ffinp%current_record-1))
       endif
 
       ifree = mem_flushmark('mult_trafmats')
