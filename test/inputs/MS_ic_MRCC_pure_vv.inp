@@ -1,0 +1,14 @@
+general
+ memmax=1500000000
+ print=5
+orb_space
+ shell type=occ,def=(5,1,1,0)
+ shell type=closed,def=(3,1,1,0)
+ shell type=frozen,def=(3,0,0,0)
+method
+ MR maxexc=2,minexc=0,pure_vv=T,project=3,ms=0,sym=1,mult=1,multistate=T,ciroot=2
+ MRCC maxcom_en=1,maxcom_res=1
+calculate
+ solve maxiter=100,conv=1d-7,maxsub=8
+ solve non_linear maxsub=8,optref=0,preopt=F
+ routes maxbranch=4,sv_thresh=1d-6

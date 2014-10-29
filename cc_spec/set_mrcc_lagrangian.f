@@ -21,6 +21,7 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'ifc_input.h'
+      include 'mdef_target_info.h'
 
       type(formula), intent(inout), target ::
      &     form_lag
@@ -38,6 +39,8 @@
       ! local variables
       character ::
      &     name*(form_maxlen_label*2)
+      character(len_target_name) ::
+     &     c_st
 
       type(formula_item), target ::
      &     flist
@@ -49,10 +52,12 @@
      &     nvtx, min_n, nn, ii, jj, iblk, mini, maxc, off, nl, nham,
      &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm,
      &     lu(2), ho(2), hu(2), tto(2), tto_l(2), idxddag, ioff, idx_h,
-     &     max_n0, nsumcalls, G_level
+     &     max_n0, nsumcalls, G_level, ciroot, n_states, i_state
+      integer, allocatable, dimension(:) ::
+     &     idxt_list, idxtbar_list, idxd_list
 
       logical ::
-     &     next, set_zero, set_scalar, esym, sym, pure_vv
+     &     next, set_zero, set_scalar, esym, sym, pure_vv, multistate
 
       real(8) ::
      &     fac
@@ -65,6 +70,8 @@
      &     idx_oplist2, ifac
       logical, external ::
      &     next_dist, next_perm
+      character(len_target_name), external ::
+     &     state_label
 
       ! for timings:
       real(8) ::
@@ -108,6 +115,15 @@
       if (G_level.lt.0) G_level = max(max_n,max_n0) ! no approximation
       call get_argument_value('method.MR','pure_vv',
      &     lval=pure_vv)
+      call get_argument_value('method.MR','multistate',
+     &     lval=multistate)
+      call get_argument_value('method.MR','ciroot',
+     &     ival=ciroot)
+      if(multistate) then
+       n_states = ciroot
+      else
+       n_states = 1
+      end if
 
       call atim_csw(cpu0,sys0,wall0)
       nterm = 0
@@ -115,21 +131,39 @@
       icall0 = 0
 
       ! transform labels into indices in this way
+      allocate(idxd_list(n_states),
+     &     idxt_list(n_states),
+     &     idxtbar_list(n_states))
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
      &       call quit(1,'set_mrcc_lagrangian',
      &       'label not on list: '//trim(label(ilabel)))
         if (ilabel.eq.1) idxen = idx
-        if (ilabel.eq.2) idxtbar = idx
+        if (ilabel.eq.2) idxtbar_list(1) = idx
         if (ilabel.eq.3) idxham = idx
-        if (ilabel.eq.4) idxt = idx
-        if (ilabel.eq.5) idxd = idx
+        if (ilabel.eq.4) idxt_list(1) = idx
+        if (ilabel.eq.5) idxd_list(1) = idx
       end do
-      idxddag = idxd
-      if (ioff.eq.0) idxddag = -idxd
-
-      maxc = op_info%op_arr(idxt)%op%n_occ_cls-off
+      ! indices for other states
+      do i_state = 2,n_states
+       c_st = state_label(i_state, .false.)
+       idxtbar_list(i_state) =
+     &      idx_oplist2(trim(label(2))//trim(c_st),op_info)
+       idxt_list(i_state) =
+     &      idx_oplist2(trim(label(4))//trim(c_st),op_info)
+       idxd_list(i_state) =
+     &      idx_oplist2(trim(label(5))//trim(c_st),op_info)
+       if (idxtbar_list(i_state).le.0)
+     &      call quit(1,'set_mrcc_lagrangian',
+     &      'label not on list: '//trim(label(2))//trim(c_st))
+       if (idxt_list(i_state).le.0)
+     &      call quit(1,'set_mrcc_lagrangian',
+     &      'label not on list: '//trim(label(2))//trim(c_st))
+       if (idxd_list(i_state).le.0)
+     &      call quit(1,'set_mrcc_lagrangian',
+     &      'label not on list: '//trim(label(2))//trim(c_st))
+      end do
 
       ! initialize formula
       call init_formula(flist)
@@ -138,6 +172,12 @@
       call new_formula_item(flist_pnt,command_set_target_init,idxen)
       flist_pnt => flist_pnt%next
 
+      states_1: do i_state=1,n_states,1
+      idxd = idxd_list(i_state)
+      idxt = idxt_list(i_state)
+      idxddag = idxd
+      if (ioff.eq.0) idxddag = -idxd
+      maxc = op_info%op_arr(idxt)%op%n_occ_cls-off
       fac = 1d0
 
       if (nham.eq.1.and.set_scalar) then
@@ -281,7 +321,16 @@ c dbgend
       end do
 
       end if
+      end do states_1
 
+      states_2: do i_state=1,n_states,1
+      idxd = idxd_list(i_state)
+      idxt = idxt_list(i_state)
+      idxtbar = idxtbar_list(i_state)
+      idxddag = idxd
+      if (ioff.eq.0) idxddag = -idxd
+      maxc = op_info%op_arr(idxt)%op%n_occ_cls-off
+      fac = 1d0
       if (ioff.eq.0.and.(.not.esym.or.sym)) then
       ! <0| C0^+ L e^(-T) H e^T C0 |0>
       do nl = 1, op_info%op_arr(idxtbar)%op%n_occ_cls
@@ -523,6 +572,7 @@ c dbgend
         end do
       end do
       end if
+      end do states_2
 
       ! delete terms with factor zero (disconnected terms)
       ! quick fix: only for up to quadratic terms

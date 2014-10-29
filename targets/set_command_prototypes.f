@@ -752,5 +752,36 @@
       call add_command_proto(ORB_FLIP,tgt_info)
       call set_arg('_PROTO_',ORB_FLIP,'LIST',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(SPREAD_MEL,tgt_info)
+      call set_arg('_PROTO_',SPREAD_MEL,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SPREAD_MEL,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ADV_STATE,tgt_info)
+      call set_arg('_PROTO_',ADV_STATE,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+      call set_arg('_PROTO_',ADV_STATE,'USE1',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',ADV_STATE,'OPERATORS',0,tgt_info,
+     &     val_label=(/' '/))
+      call set_arg('_PROTO_',ADV_STATE,'LISTS',0,tgt_info,
+     &     val_label=(/' '/))
+*----------------------------------------------------------------------*
+      call add_command_proto(EVP_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_EVEC',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_E',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ABORT,tgt_info)
+      call set_arg('_PROTO_',ABORT,'COMMENT',0,tgt_info,
+     &     val_str='non specified reason.',def=.true.)
+
 
       end

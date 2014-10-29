@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &     nwfpar,xbuf1,xbuf2,
-     &     fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
+     &     fspc,nspcfrm,xngrd,iopt,imacit,i_state,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -29,12 +29,13 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'ifc_input.h'
+      include 'mdef_target_info.h'
 
       integer, parameter ::
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, iopt, nspcfrm, nwfpar, imacit
+     &     nspecial, iopt, nspcfrm, nwfpar, imacit, i_state
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
@@ -71,6 +72,12 @@
       integer, external ::
      &     idx_mel_list
 
+      character(len_target_name) ::
+     &     c_st
+      character(len_target_name), external ::
+     &     state_label
+      integer :: iii
+
       ! pointers to file handle
       ffamp => me_amp%fhand
       ffgrd => me_grd%fhand
@@ -78,13 +85,20 @@
 
       nopt = opti_info%nopt
 
+      ! Quick & dirty over quick & dirty:
+      ! The list for the reference is ME_C0_<state> for opt_ref=-1,-2
+      if(opti_info%optref.EQ.-1.or.opti_info%optref.EQ.-2)then
+       c_st = state_label(i_state,.false.)
+      else
+       c_st = ""
+      end if
+      idx = idx_mel_list('ME_C0'//trim(c_st),op_info) ! quick & dirty
       ! update me lists for transformation matrices if required
-      idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
-      
       if (opti_info%optref.ne.0.and.
      &    op_info%mel_arr(idx)%mel%fhand%last_mod(
      &    op_info%mel_arr(idx)%mel%fhand%current_record).gt.
-     &    me_special(2)%mel%fhand%last_mod(1)) then
+     &    me_special(2)%mel%fhand%last_mod( ! 1
+     &    me_special(2)%mel%fhand%current_record)) then
         call update_metric(me_dia,me_special,nspecial,
      &      fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &      opti_info%update_prc.gt.0.and.
@@ -135,8 +149,12 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
      &            op_info,str_info,strmap_info,orb_info,
      &            xngrd(iopt),.true.) !get transformed res. norm
 
-      call vec_from_da(me_special(1)%mel%fhand,1,xbuf1,nwfpar)
-      call vec_from_da(ffdia,1,xbuf2,nwfpar)
+      call vec_from_da(me_special(1)%mel%fhand,
+     &     me_special(1)%mel%fhand%current_record,
+     &     xbuf1,nwfpar)
+      call vec_from_da(ffdia,
+     &     ffdia%current_record,
+     &     xbuf2,nwfpar)
 
       if (ntest.ge.100) then
         write(lulog,*) 'transformed gradient vector:'
@@ -171,6 +189,8 @@ c        write(lulog,*) xbuf1(1:nwfpar)
       end if
 
       ! get current trial vector (list will be overwritten)
+      ! attention !! If, for some reason, the amplitudes ME
+      ! be stored in different records, the 1 has to be changed
       call vec_from_da(ffamp,1,xbuf2,nwfpar)
 
       ! Transform new vector into original basis
@@ -201,7 +221,9 @@ c dbgend
 
       if (ntest.ge.100) then
         write(lulog,*) 'gradient vector afterwards:'
-        write(lulog,*) xbuf1(1:nwfpar)
+        do iii=1,nwfpar
+        write(lulog,*) xbuf1(iii)
+       end do
 c      call wrt_mel_buf(lulog,5,xbuf1,me_amp,1,
 c     &     me_amp%op%n_occ_cls,
 c     &     str_info,orb_info)

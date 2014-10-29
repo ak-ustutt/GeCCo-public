@@ -8,7 +8,7 @@
      &     typ_prc,
      &     nincore,nwfpar,
      &     lenbuf,xbuf1,xbuf2,xbuf3,
-     &     fspc,nspcfrm,energy,xngrd,iopt,imacit,opti_info,
+     &     fspc,nspcfrm,energy,xngrd,iopt,imacit,i_state,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -37,7 +37,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, iopt, nspcfrm, imacit
+     &     nspecial, iopt, nspcfrm, imacit,i_state
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
@@ -122,7 +122,7 @@ c dbg
         case(optinf_prc_file,optinf_prc_norm)
           call vec_from_da(ffgrd,1,xbuf1,nwfpar)
           if (ntest.ge.100) then
-            write(lulog,*) 'gradient vector before:'
+            write(lulog,*) 'aaaaaa gradient vector before:'
             write(lulog,*) xbuf1(1:nwfpar)
           end if
 
@@ -170,7 +170,8 @@ c dbg
 
           call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
-     &                       fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
+     &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,
+     &                       opti_info,
      &                       orb_info,op_info,str_info,strmap_info)
 
         case default

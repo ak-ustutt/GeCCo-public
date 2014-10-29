@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
-     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,opti_info,
+     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,opti_info,
      &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -30,12 +30,13 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'mdef_target_info.h'
 
       integer, parameter ::
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nspecial, nspcfrm, nwfpar, iopt, imacit
+     &     nspecial, nspcfrm, nwfpar, iopt, imacit, i_state
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial)
       type(me_list), intent(in) ::
@@ -75,12 +76,19 @@
 
       real(8), external :: dnrm2
 
+      character(len_target_name) ::
+     &     c_st
+      character(len_target_name), external ::
+     &     state_label
+
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
-        idx = idx_mel_list('ME_C0',op_info)  ! quick & dirty
+        c_st = state_label(i_state,.false.)
+        idx = idx_mel_list('ME_C0'//trim(c_st),op_info)  ! quick & dirty
         if (op_info%mel_arr(idx)%mel%fhand%last_mod(
      &      op_info%mel_arr(idx)%mel%fhand%current_record).gt.
-     &      me_special(2)%mel%fhand%last_mod(1))
+     &      me_special(2)%mel%fhand%last_mod(
+     &      me_special(2)%mel%fhand%current_record))
      &      call update_metric(me_dia,me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &        opti_info%update_prc.gt.0.and.

@@ -33,9 +33,10 @@
 
       integer ::
      &     ndef, occ_def(ngastp,2,60), msc, maxexc, iv, maxcum,
-     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric
+     &     ioff, gno, nv, cum_appr_mode, idef, maxmetric,
+     &     ciroot, n_states, i_state
       logical ::
-     &     pure_vv, l_exist
+     &     pure_vv, l_exist, multistate
       character(len_target_name) ::
      &     me_label, medef_label, dia_label, mel_dia1,
      &     labels(20)
@@ -45,6 +46,11 @@
      &     op_dint*7, f_dint*9, defme_dint*14, me_dint*10, triples*1
       real(8) ::
      &     factor, densmix
+
+      character(len_target_name) ::
+     &     c_st
+      character(len_target_name), external ::
+     &     state_label
 
       ! first set targets for CASSCF or uncontracted CI wave function
       ! (if not done already)
@@ -118,6 +124,16 @@
         inquire(file='ME_DENSmix_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_gno_targets',
      &           'densmix: requires file ME_DENSmix_list.da!')
+      end if
+
+      call get_argument_value('method.MR','ciroot',
+     &     ival=ciroot)
+      call get_argument_value('method.MR','multistate',
+     &     lval=multistate)
+      if(multistate)then
+       n_states = ciroot
+      else
+       n_states = 1
       end if
 
 *----------------------------------------------------------------------*
@@ -320,6 +336,7 @@ c dbg
 c      call set_rule2('F_DENS0',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_DENS0',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_DENS0'/))
+c      call set_rule2('F_DENS0',ABORT,tgt_info)
 c dbgend
 
       ! precursor for density expression in terms of cumulants
@@ -994,6 +1011,12 @@ c     &             val_label=(/'F_HOLE'/))
       if (spinadapt.ge.3)
      &   call set_arg('DEF_ME_DENS',DEF_ME_LIST,'S2',1,tgt_info,
      &                val_int=(/0/))
+      call set_arg('DEF_ME_DENS',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_DENS',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/n_states/))
+      call set_arg('DEF_ME_DENS',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/1/))
 
       ! ME for cumulants
       call add_target2('DEF_ME_CUM',.false.,tgt_info)

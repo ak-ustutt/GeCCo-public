@@ -17,6 +17,7 @@
       include 'ifc_operators.h'
       include 'def_formula_item.h'
       include 'def_formula.h'
+      include 'mdef_target_info.h'
 
       integer, parameter ::
      &     maxtt = 12, maxtop = 8
@@ -32,9 +33,11 @@
 
       logical ::
      &     delete, error, deldue2maxtt, check_fac, first, check, proj,
-     &     alt_ansatz, set_t2t2, set_t2t3
+     &     alt_ansatz, set_t2t2, set_t2t3, multistate
       integer ::
      &     idxtop, idxham, idxc, idxl, nprojdel
+      integer, allocatable ::
+     &     idxtop_list(:)
       integer ::
      &     ii, idx_op, ivtx, nvtx, iarc, vtx1, vtx2,
      &     ntt, ntop, nham, idx_op1, idx_op2, itop,
@@ -42,7 +45,7 @@
      &     jvtx, kvtx, nhash, ham_vtx, kk, iterm, n_extra, idx,
      &     nopen(2), nclos(2), vtxc1, vtxc2, nvtxc, cnt(ngastp,2),
      &     nvtxl, vtxl, nfac_l, nfac_r, iblk1, iblk2, rank1, rank2,
-     &     ncon
+     &     ncon, ciroot, n_states, i_state
       integer ::
      &     idxop(nlabels), bins(maxtt+1,maxtop+1), binsum(maxtop+1)
       integer(8) ::
@@ -63,6 +66,10 @@
       real(8), pointer ::
      &     extra_fac(:), r8tmp(:)
 
+      character(len_target_name) ::
+     &     c_st
+      character(len_target_name), external ::
+     &     state_label
 
       type(contraction), pointer ::
      &     contr
@@ -85,6 +92,17 @@
       endif
       check = mode(1:5).eq.'CHECK'
 
+      call get_argument_value('method.MR','ciroot',
+     &     ival=ciroot)
+      call get_argument_value('method.MR','multistate',
+     &     lval=multistate)
+      if(multistate)then
+       n_states = ciroot
+      else
+       n_states = 1
+      end if
+      allocate(idxtop_list(n_states))
+
       ! get operator indices
       error = .false.
       do ii = 1, nlabels
@@ -94,6 +112,13 @@
       error = nlabels.ne.2.and.nlabels.ne.4
       proj = nlabels.eq.4
       
+      do i_state = 1, n_states ! Get idx of T operators for all states
+       c_st = state_label(i_state,.false.)
+       idxtop_list(i_state) = idx_oplist2(
+     &      trim(labels(2))//trim(c_st),op_info)
+       error = error.or.idxtop_list(i_state).le.0
+      end do
+
       if (error) then
         write(lulog,*) 'Error for operator labels:'
         do ii = 1, nlabels
@@ -103,6 +128,16 @@
             write(lulog,'(a20," - OK")') trim(labels(ii))
           end if
         end do
+        if (multistate) then
+         do i_state = 1, n_states
+          c_st = state_label(i_state,.false.)
+          if (idxtop_list(i_state).le.0) then
+           write(lulog,'(a20," - ??")') trim(labels(2))//trim(c_st)
+          else
+           write(lulog,'(a20," - OK")') trim(labels(2))//trim(c_st)
+          end if
+         end do
+        end if
         if (nlabels.ne.2)
      &       call quit(1,'select_mrcc_lag2','need 2 or 4 labels')
         call quit(1,'select_mrcc_lag2','Labels not on list!')
@@ -178,7 +213,9 @@ c dbgend
           ham_vtx = 0
           do ivtx = 1, nvtx
             idx_op  = vertex(ivtx)%idx_op
-            if (idx_op.eq.idxtop) then
+            if (any([
+     &           (idx_op.eq.idxtop_list(i_state),i_state=1,n_states)
+     &           ])) then
               ntop = ntop+1
               bchpart(ivtx) = .true.
               if (nham.eq.0) ham_vtx = ham_vtx + 1
@@ -218,14 +255,17 @@ c dbgend
             vtx2 = contr%arc(iarc)%link(2)
             idx_op1 = vertex(vtx1)%idx_op
             idx_op2 = vertex(vtx2)%idx_op
-            if (idx_op1.eq.idxtop.and.idx_op2.eq.idxtop) then
+            if (idx_op1.eq.idx_op2.and.
+     &           any([
+     &           (idx_op1.eq.idxtop_list(i_state),i_state=1,n_states)
+     &           ])) then
               ntt = ntt + 1
               if (x_ansatz.eq.-1d0) then
                 ! single connection between double excitations?
                 iblk1 = vertex(vtx1)%iblk_op
                 iblk2 = vertex(vtx2)%iblk_op
-                rank1 = op_info%op_arr(idxtop)%op%ica_occ(1,iblk1)
-                rank2 = op_info%op_arr(idxtop)%op%ica_occ(1,iblk2)
+                rank1 = op_info%op_arr(idx_op1)%op%ica_occ(1,iblk1)
+                rank2 = op_info%op_arr(idx_op1)%op%ica_occ(1,iblk2)
                 ncon = contr%arc(iarc)%occ_cnt(IVALE,2)
                 if (set_t2t2.and.ncon.eq.1.and.rank1.eq.2.and.rank2.eq.2
      &              .or.set_t2t3.and.max(rank1,rank2).gt.2.and.

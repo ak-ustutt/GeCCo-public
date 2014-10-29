@@ -176,6 +176,14 @@
         igamt_op2 = 1
         mst_op2   = 0
       end if
+c dbg
+c      write(lulog,*) "DBG info: fs_contr_drv"
+c      write(lulog,*) "ME op1 and record:",
+c     &     trim(me_op1%label),me_op1%fhand%current_record
+c      if (.not.self)
+c     &     write(lulog,*) "ME op2 and record:",
+c     &     trim(me_op2%label),me_op2%fhand%current_record
+c dbgend
 
       iocc_res => bc_info%occ_res
       iocc_op1 => bc_info%occ_op1

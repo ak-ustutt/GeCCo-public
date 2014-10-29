@@ -2,6 +2,7 @@
       subroutine solve_nleq(mode_str,
      &     nopt,label_opt,label_res,label_prc,label_en,
      &     label_form,
+     &     n_states,
      &     label_special,nspecial,           !<- eg. for R12
      &     label_spcfrm,nspcfrm,             !<- eg. for MRCC
      &     op_info,form_info,str_info,strmap_info,orb_info)
@@ -44,12 +45,13 @@ c dbg
       include 'ifc_input.h'
 c dbgend
       include 'routes.h'
+      include 'mdef_target_info.h'
 
       integer, parameter ::
      &     ntest = 000
 
       integer, intent(in) ::
-     &     nopt, nspecial, nspcfrm
+     &     nopt, nspecial, nspcfrm, n_states
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
@@ -71,15 +73,20 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, traf
+     &     conv, restart, traf, last_state, multistate
       character(len_opname) ::
      &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
-     &     idx, idxmel, ierr, nout, idx_en_xret,
-     &     ndx, idx_res_xret(nopt), jdx, it_print
+     &     idx, idxmel, ierr, nout,
+     &     ndx, idx_res_xret(nopt), jdx, it_print,
+     &     i_state, i_state2, ndx_eff, n_energies, nopt_state
+      integer, allocatable ::
+     &     idx_en_xret(:)
       real(8) ::
-     &     energy, xresnrm(nopt), xdum, thr_suggest
+     &     xresnrm(nopt), xdum
+      real(8), allocatable ::
+     &     thr_suggest(:), energy(:)
       real(8), pointer ::
      &     xret(:)
       type(dependency_info) ::
@@ -94,7 +101,7 @@ c dbgend
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
       type(optimize_info) ::
      &     opti_info
-      type(optimize_status) ::
+      type(optimize_status), pointer ::
      &     opti_stat
       type(formula), pointer ::
      &     form_en_res
@@ -107,8 +114,21 @@ c dbgend
      &     file_exists
       real(8), external ::
      &     xnormop
+      character(len_target_name) ::
+     &     c_st, c_st2
+      character(len_target_name), external ::
+     &     state_label
+      type(me_list), pointer ::
+     &     mel_pnt, mel_pnt2
+      character(50) ::
+     &     out_format
 
       ifree = mem_setmark('solve_nleq')
+
+      call get_argument_value('method.MR','multistate',
+     &     lval=multistate)
+
+      nopt_state = nopt/n_states
 
       if (iprlvl.ge.5) then
         write(lulog,*) 'formula: ',trim(label_form)
@@ -129,6 +149,8 @@ c dbgend
 
       allocate(ffopt(nopt),ffdia(nopt),ffgrd(nopt),ffspecial(nspecial),
      &     me_opt(nopt),me_dia(nopt),me_grd(nopt),me_special(nspecial))
+      allocate(thr_suggest(n_states))
+      allocate(opti_stat)
 
       do iopt = 1, nopt
         jopt = iopt
@@ -159,6 +181,11 @@ c dbgend
       ! special lists needed?
       if (ierr.eq.0) then
         do idx = 1, nspecial
+c dbg
+      write(lulog,*),"form energy: ", trim(label_form)
+      write(lulog,*),"solve_nleq: label_special: ",
+     &        trim(label_special(idx))
+c dbgend
           jopt = idx
           idxmel = idx_mel_list(label_special(idx),op_info)
           ierr = 7
@@ -188,6 +215,10 @@ c dbgend
 
       ! special formulae
       do jdx = 1, nspcfrm
+c dbg
+       write(lulog,*),"solve_nleq: label_spcfrm: ",
+     &      trim(label_spcfrm(jdx))
+c dbg end
         idx = idx_formlist(label_spcfrm(jdx),form_info)
         if (idx.le.0)
      &       call quit(1,'solve_nleq',
@@ -272,13 +303,30 @@ cmh      end do
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
+      if(multistate) then
+       n_energies=n_states
+      else
+       n_energies=0
+      end if
+      allocate(idx_en_xret(0:n_energies))
+      allocate(energy(0:n_energies))
 
       ! find out, which entries of xret are the ones that we need
-      idx_en_xret = idx_xret(label_en,op_info,depend)
+      idx_en_xret(0) = idx_xret(label_en,op_info,depend)
+      if(multistate)then
+       do i_state = 1,n_states
+        c_st = state_label(i_state,.true.)
+        idx_en_xret(i_state) =
+     &       idx_xret(trim(label_en)//trim(c_st),op_info,depend)
+        if (idx_en_xret(i_state).le.0)
+     &       call quit(1,'solve_nleq',
+     &       'formula does not provide an update for all the energies')
+       end do
+      end if
 c dbg
 c      print *,'idx_en_xret: ',idx_en_xret
 c dbg
-      if (idx_en_xret.le.0)
+      if (idx_en_xret(0).le.0)
      &     call quit(1,'solve_nleq',
      &     'formula does not provide an update for the energy')
       do iopt = 1, nopt
@@ -301,6 +349,7 @@ c dbg
      &       energy,xresnrm,
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
+     &       n_states,
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
@@ -312,41 +361,61 @@ c     &       ff_trv,ff_h_trv,
         it_print = imacit-1
         if (conv) it_print = imacit
         if (luout.ne.lulog) then
-          if (nopt.eq.1.and.imacit.gt.1)
-     &       write(luout,'(3x,i3,f24.12,x,g10.4)')
-     &       it_print,energy,xresnrm(1)
-          if (nopt.eq.2.and.imacit.gt.1)
-     &       write(luout,'(3x,i3,f24.12,2(x,g10.4))')
-     &       it_print,energy,xresnrm(1:2)
-          if (nopt.eq.3.and.imacit.gt.1)
-     &       write(luout,'(3x,i3,f24.12,3(x,g10.4))')
-     &       it_print,energy,xresnrm(1:3)
-          if (.not.conv.and.task.ge.8) then
-            write(luout,'("    NOT CONVERGED!")')
-          else if (task.ge.8) then
-            write(luout,'("    CONVERGED")')
-C            write(luout,'(">>> final energy:",f24.12," <<<")')
-C     &       energy
+         write(out_format,fmt='(A,i0,A,i0,A)')
+     &        '(3x,i3,',n_states,'(f24.12,',nopt_state,
+     &        '(x,g10.4)))'
+         if (imacit.gt.1) then
+          if(multistate)then
+           write(luout,out_format)
+     &          it_print, [(
+     &          [energy(i_state),
+     &          xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
+     &          ,i_state = 1,n_states)]
+          else
+           write(luout,out_format)
+     &          it_print,energy(0),xresnrm(1:nopt)
           end if
+         end if
+         if (task.ge.8) then
+          if (conv) then
+           write(luout,'("    CONVERGED")')
+          else
+           write(luout,'("    NOT CONVERGED!")')
+          end if
+         end if
         end if
 
-        if (nopt.eq.1.and.imacit.gt.1)
-     &     write(lulog,'(">>>",i3,f24.12,x,g10.4)')
-     &     it_print,energy,xresnrm(1)
-        if (nopt.eq.2.and.imacit.gt.1)
-     &     write(lulog,'(">>>",i3,f24.12,2(x,g10.4))')
-     &     it_print,energy,xresnrm(1:2)
-        if (nopt.eq.3.and.imacit.gt.1)
-     &     write(lulog,'(">>>",i3,f24.12,3(x,g10.4))')
-     &     it_print,energy,xresnrm(1:3)
-        if (.not.conv.and.task.ge.8) then
-          write(lulog,'(">>> NOT CONVERGED! <<<")')
-          exit opt_loop
-        else if (task.ge.8) then
+        ! write on lulog
+        write(out_format,fmt='(A,i0,A,i0,A)')
+     &       '(">>>",i3,',n_states,'(f24.12,',nopt_state,
+     &       '(x,g10.4)))'
+        if (imacit.gt.1) then
+         if(multistate)then
+          write(lulog,out_format)
+     &         it_print,[( [energy(i_state),
+     &         xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
+     &         ,i_state = 1,n_states)]
+         else
+          write(lulog,out_format)
+     &         it_print,energy(0),xresnrm(1:nopt)
+         end if
+        end if
+        if (task.ge.8) then
+         if (conv) then
           write(lulog,'(">>> CONVERGED <<<")')
-          write(lulog,'(">>> final energy:",f24.12," <<<")')
-     &     energy
-           exit opt_loop
+          write(out_format,fmt='(A,i0,A)')
+     &         '(A,',n_states,'(x,f24.12)," <<<")'
+          if(multistate)then
+           write(lulog,out_format)
+     &          ">>> final energies:", energy(1:n_states)
+          else
+           write(lulog,out_format)
+     &          ">>> final energy:", energy(0)
+          end if
+         else
+          write(lulog,'(">>> NOT CONVERGED! <<<")')
+         end if
+         exit opt_loop
         end if
 
         ! quick and dirty (for experimental use):
@@ -363,26 +432,75 @@ C     &       energy
      &                       0,0,0,.false.)
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
-          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
+          do i_state=1,n_states
+           thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt+1)*
+     &          opti_info%mic_ahead,1d-5)
+          end do
+
+          idxmel = idx_mel_list("ME_C0",op_info)
+          mel_pnt => op_info%mel_arr(idxmel)%mel
+
           if (spinadapt.gt.0) then
-            call solve_evp('SPP',1,ndx,idx,
-     &                 'ME_C0',trim(dia_label),'A_C0',
-     &                 'C0','FOPT_OMG_C0',
-     &                 'ME_C0_sp',1,
-     &                 'FOPT_C0_sp',1,thr_suggest,
-     &                 op_info,form_info,str_info,strmap_info,orb_info)
+
+           do i_state=1,n_states!,1,-1 ! other direction to get the correct C0
+            c_st  = state_label(i_state,.false.)
+            c_st2 = state_label(i_state,.true.)
+            if(multistate) call switch_mel_record(mel_pnt,i_state)
+            if(multistate)then
+             ndx_eff = i_state
+            else
+             ndx_eff = ndx
+            end if
+
+            call solve_evp('SPP',1,ndx_eff,i_state, !ndx,idx,
+     &                     'ME_C0',trim(dia_label),'A_C0',
+     &                     'C0','FOPT_OMG_C0'//trim(c_st),
+     &                     'ME_C0_sp',1,
+     &                     'FOPT_C0_sp',1,thr_suggest(i_state),
+     &                     op_info,form_info,str_info,strmap_info,
+     &                     orb_info)
+
+            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
+             idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
+             mel_pnt2 => op_info%mel_arr(idxmel)%mel
+             call list_copy(mel_pnt,mel_pnt2,.false.)
+            end if
+
+           end do
+
+           ! copy the saved ME_C0//c_st2 back to the records of ME_C0
+           if(multistate)then
+            do i_state=1,n_states
+             c_st = state_label(i_state,.true.)
+             call switch_mel_record(mel_pnt,i_state)
+             idxmel = idx_mel_list("ME_C0"//trim(c_st),op_info)
+             mel_pnt2 => op_info%mel_arr(idxmel)%mel
+             call list_copy(mel_pnt2,mel_pnt,.false.)
+            end do
+            call switch_mel_record(mel_pnt,1)
+           end if
+
           else
+
+           if(multistate)
+     &          call quit(1,'solve_nleq',
+     &          'multistate not set for spinadapt!= 0')
+
             call solve_evp('DIA',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',
-     &                 'C0','FOPT_OMG_C0','-',0,'-',0,thr_suggest,
+     &                 'C0','FOPT_OMG_C0','-',0,'-',0,
+     &                 thr_suggest(i_state),
      &                 op_info,form_info,str_info,strmap_info,orb_info)
           end if
 c dbg
-c          idx = idx_mel_list('ME_C0',op_info)
-c          print *,'current C0 vector: '
+c          do i_state = 1,n_states
+c          c_st = state_label(i_state,.false.)
+c          idx = idx_mel_list('ME_C0'//trim(c_st),op_info)
+c          print *,'current C0'//trim(c_st)//' vector: '
 c          call wrt_mel_file(lulog,1000,op_info%mel_arr(idx)%mel,
 c     &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
+c          end do
 c dbgend
         end if
 
@@ -440,7 +558,9 @@ c dbgend
      &         .true.,.false.,op_info,str_info,strmap_info,orb_info)
           ! intermediates should be generated first, energy
           ! is expected to be the last "intermediate"
-          energy =  xret(idx_en_xret)
+          do i_state = 0,n_energies
+           energy(i_state) = xret(idx_en_xret(i_state))
+          end do
 c dbg
 c          print *,'xret : ',xret
 c dbg
@@ -476,7 +596,7 @@ c test
 
         ! report untransformed residual
         if (traf) 
-     &   write(lulog,'(x,"norm of untransformed residual ",3(x,g10.4))')
+     &   write(lulog,'(x,"norm of untransformed residual ",4(x,g10.4))')
      &   xresnrm(1:opti_info%nopt)
 
         ! another quick and dirty call to the linear solver
@@ -484,7 +604,11 @@ c test
         if (opti_info%optref.eq.-3.and.
      &      opti_info%typ_prc(1).eq.optinf_prc_invH0.and.
      &      .not.conv) then
-          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
+
+          do i_state=1,n_states
+           thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt+1)*
+     &          opti_info%mic_ahead,1d-4)
+          end do
 
           idx = idx_mel_list('ME_C0',op_info)
           if (opti_info%optref.ne.0.and.
@@ -501,7 +625,7 @@ c test
      &                 1,1,'ME_DlT',label_prc(1),'H0_DlT','DlT',!'S_DlT',
      &                 'OMGprj',xdum,'FOPT_H0INV',
      &            (/'ME_Tout  ','ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/),4,
-     &                 'FOPT_Ttr_GEN',1,  thr_suggest,
+     &                 'FOPT_Ttr_GEN',1,  thr_suggest(i_state),
      &                 op_info,form_info,str_info,strmap_info,orb_info)
           ! overwrite the gradient with preconditioned gradient
           call scale_copy_op(label_res(1),'ME_DlT',1d0,1,'--',0,
@@ -546,6 +670,8 @@ c dbgend
         if (ffspecial(idx)%fhand%unit.gt.0)
      &       call file_close_keep(ffspecial(idx)%fhand)
       end do
+
+      deallocate(thr_suggest)
 
       deallocate(ffopt,ffdia,ffgrd,ffspecial,
      &     me_opt,me_dia,me_grd,me_special,me_trv,me_h_trv,xret)

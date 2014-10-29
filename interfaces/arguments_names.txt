@@ -53,6 +53,7 @@ LIST label
 LISTS label
 LISTS_CV label
 LIST_E label
+LIST_EVEC label
 LIST_IN label
 LIST_INP label
 LIST_OUT label
@@ -125,5 +126,6 @@ TITLE str
 TITLE_RHS str
 TITLE_TRF str
 TYPE str
+USE1 log
 VAL_LIST real
 X_SPCS int

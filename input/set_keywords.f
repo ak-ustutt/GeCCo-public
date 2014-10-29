@@ -173,7 +173,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('ciroot','method.MR',type=vtyp_int,
      &                  idef=(/1/))  ! root to be taken for wf
       call argument_add('multistate','method.MR',type=vtyp_log,
-     &                  ldef=(/.false./))  ! root to be taken for wf
+     &                  ldef=(/.false./))  ! multi state version
       call argument_add('minh','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! min. number of holes
       call argument_add('maxh','method.MR',type=vtyp_int,
@@ -470,6 +470,10 @@ c     &     idef=(/0/))
 
       call keyword_add('experimental',context='calculate')
       call argument_add('file','calculate.experimental',
+     &     type=vtyp_str,len=256)
+
+      call keyword_add('interfaces',context='calculate')
+      call argument_add('file','calculate.interfaces',
      &     type=vtyp_str,len=256)
 
       ! set additional experimental keyword in this subroutine:

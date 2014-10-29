@@ -3,13 +3,14 @@
      &       task,iroute,nopt,
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
+     &       n_states,
      &       me_special,nspecial,
 c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
      &       fspc,nspcfrm,energy,xngrd,
-     &       opti_info,opti_stat,
+     &       opti_info,opti_stat_ini,
      &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     driver for macro-iterations
@@ -31,13 +32,14 @@ c      include 'mdef_me_list.h'
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'ifc_adv.h'
 
       integer, intent(inout) ::
      &     task
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm
+     &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm, n_states
 
       type(me_list_array), intent(in) ::
      &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
@@ -51,11 +53,11 @@ c      include 'mdef_me_list.h'
 
       type(optimize_info), intent(in) ::
      &     opti_info
-      type(optimize_status), intent(inout) ::
-     &     opti_stat
+      type(optimize_status), intent(inout), target ::
+     &     opti_stat_ini
 
       real(8), intent(inout) ::
-     &     xbuf1(*), xbuf2(*), xbuf3(*), energy, xngrd(*)
+     &     xbuf1(*), xbuf2(*), xbuf3(*), energy(0:*), xngrd(*)
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -74,15 +76,25 @@ c      include 'mdef_me_list.h'
       integer ::
      &     irecr, irecv, klsmat,
      &     imet, idamp,
-     &     ndim_save, ndel, iopt, lenscr, ifree
+     &     ndel, iopt, lenscr, ifree,
+     &     nspcfrm_eff, i_spc, i_state, i_state_energy,
+     &     nopt_state, iopt_state, idx
+      integer, allocatable ::
+     &     ndim_save(:)
       real(8) ::
      &     xnrm
       real(8), pointer ::
      &     xscr(:), xscr2(:), vec(:)
       integer, pointer ::
      &     ivec(:)
+      type(optimize_status), pointer ::
+     &     opti_stat
 
       real(8), external :: dnrm2
+
+      integer, external ::
+     &     idx_mel_list
+      integer :: iii
 
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
@@ -92,6 +104,10 @@ c      include 'mdef_me_list.h'
         ffdia(iopt)%fhand => me_dia(iopt)%mel%fhand
       end do
 
+      allocate(ndim_save(n_states))
+      ! for using the special formulas specifically for each state
+      nspcfrm_eff = nspcfrm/n_states
+      nopt_state = nopt/n_states
 * check last step
 
       accept = .true.
@@ -108,44 +124,139 @@ c      include 'mdef_me_list.h'
           ! (for DIIS, damping is allowed)
           if (iroute.eq.1) then
 
-            ndim_save = opti_stat%ndim_rsbsp
-            
-            do iopt = 1, opti_info%nopt
+           opti_stat => opti_stat_ini
+           do i_state = 1,n_states
+            ndim_save(i_state) = opti_stat%ndim_rsbsp
+            opti_stat => opti_stat%next_state
+           end do
 
-              init = iopt.eq.1
+           opti_stat => opti_stat_ini
+           i_state = 0
+           iopt_state = nopt_state
+           do iopt = 1, opti_info%nopt
+            if(iopt_state.eq.nopt_state)then
+             i_state = i_state+1
+             iopt_state = 1
+            else
+             iopt_state = iopt_state + 1
+            end if
+
+c dbg
+c            write(lulog,*) "MACIT, first part:"
+c            write(lulog,*) " imacit    : ",imacit
+c            write(lulog,*) " iopt      : ",iopt
+c            write(lulog,*) " iopt_state: ",iopt_state
+c            write(lulog,*) " i_state   : ",i_state
+c dbg end            
+
+            if(n_states.gt.1)then
+             i_state_energy = i_state
+            else
+             i_state_energy = 0
+            end if
+
+            init = iopt_state.eq.1
 c dbg
 c              print *,'xbuf2 (2)',xbuf2(1:opti_info%nwfpar(iopt))
 c dbg
+
+c dbg
+c$$$              if(imacit.gt.1)then
+c$$$              write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &             trim( me_opt(iopt)%mel%label)
+c$$$              call wrt_mel_file(lulog,5,
+c$$$     &             me_opt(iopt)%mel,
+c$$$     &             1,me_opt(iopt)%mel%op%n_occ_cls,
+c$$$     &             str_info,orb_info)
+c$$$              write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &             trim( me_grd(iopt)%mel%label)
+c$$$              call wrt_mel_file(lulog,5,
+c$$$     &             me_grd(iopt)%mel,
+c$$$     &             1,me_grd(iopt)%mel%op%n_occ_cls,
+c$$$     &             str_info,orb_info)
+c$$$              write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &             trim( me_dia(iopt)%mel%label)
+c$$$              call wrt_mel_file(lulog,5,
+c$$$     &             me_dia(iopt)%mel,
+c$$$     &             1,me_dia(iopt)%mel%op%n_occ_cls,
+c$$$     &             str_info,orb_info)
+c$$$              idx = idx_mel_list('ME_DENS',op_info)
+c$$$              write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &             trim(op_info%mel_arr(idx)%mel%label)
+c$$$              call wrt_mel_file(lulog,5,
+c$$$     &             op_info%mel_arr(idx)%mel,
+c$$$     &             1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c$$$     &             str_info,orb_info)
+c$$$              idx = idx_mel_list('ME_C0',op_info)
+c$$$              write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &             trim(op_info%mel_arr(idx)%mel%label)
+c$$$              call wrt_mel_file(lulog,5,
+c$$$     &             op_info%mel_arr(idx)%mel,
+c$$$     &             1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c$$$     &             str_info,orb_info)
+c$$$              do iii=1,nspecial
+c$$$               write(lulog,*) 'MACIT 1: dump of result for ',
+c$$$     &              trim( me_special(iii)%mel%label)
+c$$$               call wrt_mel_file(lulog,5,
+c$$$     &              me_special(iii)%mel,
+c$$$     &              1,me_special(iii)%mel%op%n_occ_cls,
+c$$$     &              str_info,orb_info)
+c$$$              end do
+c$$$              end if
+c dbg
+
               call optc_diis_sbsp_add(opti_stat%ndim_rsbsp,
      &             opti_stat%ndim_vsbsp,opti_stat%mxdim_sbsp,
      &             init,
      &             opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
      &             me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
      &             me_special,nspecial,
-     &             opti_stat%ffrsbsp(iopt)%fhand,
-     &             opti_stat%ffvsbsp(iopt)%fhand,
+     &             opti_stat_ini%ffrsbsp(iopt)%fhand,
+     &             opti_stat_ini%ffvsbsp(iopt)%fhand,
      &             opti_info%typ_prc(iopt),
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3,
-     &             fspc,nspcfrm,energy,xngrd,iopt,imacit,opti_info,
+     &             fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
+     &             nspcfrm_eff,
+     &             energy(i_state_energy),xngrd,iopt,imacit,i_state,
+     &             opti_info,
      &             orb_info,op_info,str_info,strmap_info)
 
-              shift = ndim_save.eq.opti_stat%ndim_rsbsp.and.iopt.eq.1
+              shift = ndim_save(i_state).eq.opti_stat%ndim_rsbsp.and.
+     &             iopt_state.eq.1
+
               call optc_update_redsp1(opti_stat%sbspmat,
      &             opti_stat%ndim_rsbsp,opti_stat%mxdim_sbsp,
      &             shift,init,
-     &             opti_stat%iord_rsbsp,opti_stat%ffrsbsp(iopt)%fhand,
+     &             opti_stat%iord_rsbsp,
+     &             opti_stat_ini%ffrsbsp(iopt)%fhand,
      &             nincore,opti_info%nwfpar(iopt),
      &             lenbuf,xbuf1,xbuf2,xbuf3)
 
+              if(n_states.gt.1.and.iopt_state.eq.nopt_state) then
+               do i_spc = 1,nspecial
+                call mel_adv_state(me_special(i_spc)%mel,n_states)
+               end do
+               idx = idx_mel_list('ME_DENS',op_info) ! quick & dirty
+               call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+               idx = idx_mel_list('ME_C0',op_info) ! quick & dirty -> one can pass another "me_spacial", just to advance the states...
+               call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+               call op_adv_state(["C0"],1,n_states,op_info,.false.)
+               if(i_state.lt.n_states.and.iopt_state.eq.nopt_state)
+     &              opti_stat => opti_stat%next_state
+              end if
 
             end do
 
           else
+           if(n_states.gt.1)
+     &          call quit(1,'optc_macit',
+     &          'this else part is not adapt for n_states>1')
+
             if (opti_info%nopt.gt.1)
      &           call quit(1,'optc_macit','adapt for nopt.gt.1')
             ! add |vec(n)> , on xbuf1 if incore, xbuf2 unused
-            ndim_save = opti_stat%ndim_vsbsp
+            ndim_save(i_state) = opti_stat%ndim_vsbsp
             call optc_sbsp_add(opti_stat%ndim_vsbsp,
      &           opti_stat%mxdim_sbsp,opti_stat%iord_vsbsp,
      &           ffopt(1)%fhand,1,ffdia(1)%fhand,.false.,
@@ -156,12 +267,12 @@ c dbg
      &         call vec_from_da(ffopt(1)%fhand,1,
      &                          xbuf1,opti_info%nwfpar(1))
 c dbg
-            print *,'amp: ',opti_info%nwfpar(1),
-     6              dnrm2(opti_info%nwfpar(1),xbuf1,1)
+c            print *,'amp: ',opti_info%nwfpar(1),
+c     6              dnrm2(opti_info%nwfpar(1),xbuf1,1)
 c dbg
             klsmat = opti_stat%mxdim_sbsp**2 + 1
             ! if incore: xbuf1 remains unchanged
-            shift = ndim_save.eq.opti_stat%ndim_vsbsp
+            shift = ndim_save(i_state).eq.opti_stat%ndim_vsbsp
             call optc_update_redsp1(opti_stat%sbspmat(klsmat),
      &           opti_stat%ndim_vsbsp,
      &           opti_stat%mxdim_sbsp,shift,.true.,
@@ -171,7 +282,18 @@ c dbg
 
             ! add |gradient(n)>
             ! project out linear dependencies if required
+
+            opti_stat => opti_stat_ini
+            i_state = 0
+            iopt_state = nopt_state
             do iopt = 1, opti_info%nopt
+             if(iopt_state.eq.nopt_state)then
+              i_state = i_state+1
+              iopt_state = 1
+             else
+              iopt_state = iopt_state + 1
+             end if
+
              if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.and.
      &          opti_info%optref.ne.0.and.nspecial.ge.4) then
 
@@ -188,22 +310,22 @@ C     &            orb_info,op_info,str_info,strmap_info)
               end if
             end do
             ! add |gradient(n)>, on xbuf2 if incore, xbuf1 unused
-            ndim_save = opti_stat%ndim_rsbsp
-            call optc_sbsp_add(opti_stat%ndim_rsbsp,
+            ndim_save(i_state) = opti_stat%ndim_rsbsp
+            call optc_sbsp_add(opti_stat%ndim_rsbsp, ! yaa, attention: maybe advance or something is necessary: ffgrd
      &           opti_stat%mxdim_sbsp,opti_stat%iord_rsbsp,
      &           ffgrd(1)%fhand,1,ffdia(1)%fhand,.false.,
-     &           opti_stat%ffrsbsp(1)%fhand,
+     &           opti_stat_ini%ffrsbsp(1)%fhand,
      &           nincore,opti_info%nwfpar(1),lenbuf,xbuf2,xbuf1)
 
             if (nincore.ge.2)
      &         call vec_from_da(ffgrd(1)%fhand,1,
      &                          xbuf2,opti_info%nwfpar(1))
-            shift = ndim_save.eq.opti_stat%ndim_rsbsp
+            shift = ndim_save(i_state).eq.opti_stat%ndim_rsbsp
             call optc_update_redsp2(
      &           opti_stat%sbspmat,opti_stat%ndim_vsbsp,
      &              opti_stat%ndim_rsbsp,opti_stat%mxdim_sbsp,shift,
      &           opti_stat%iord_vsbsp,opti_stat%ffvsbsp(1)%fhand,
-     &           opti_stat%iord_rsbsp,opti_stat%ffrsbsp(1)%fhand,
+     &           opti_stat%iord_rsbsp,opti_stat_ini%ffrsbsp(1)%fhand,
      &           nincore,opti_info%nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
 
           end if
@@ -236,48 +358,158 @@ C     &            orb_info,op_info,str_info,strmap_info)
 
       else if (iroute.eq.1) then
 * do DIIS extrapolation for current subspace
-        if (opti_stat%ndim_rsbsp.ne.opti_stat%ndim_vsbsp)
+        if (opti_stat_ini%ndim_rsbsp.ne.opti_stat_ini%ndim_vsbsp)
      &       call quit(1,'optc_macit','inconsistency (DIIS)')
 
-        lenscr = (opti_stat%ndim_rsbsp+1)*(opti_stat%ndim_rsbsp+2)/2
-        ifree = mem_alloc_real(xscr,lenscr,'DIIS_mat')
-        ifree = mem_alloc_real(vec,opti_stat%ndim_rsbsp+1,'DIIS_vec')
-        ifree = mem_alloc_int(ivec,opti_stat%ndim_rsbsp+1,'DIIS_piv')
-        call optc_diis_extr(opti_stat%sbspmat,
-     &       vec,opti_stat%ndim_rsbsp,ndel,
-     &       xscr,ivec)
-
+        opti_stat => opti_stat_ini
+        i_state = 0
+        iopt_state = nopt_state
         do iopt = 1, opti_info%nopt
-          normalize = opti_info%typ_prc(iopt).eq.optinf_prc_norm
-          call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xnrm,normalize,
-     &         ffopt(iopt)%fhand,
-     &         ffopt(iopt)%fhand%current_record,0d0,
-     &         opti_stat%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,
-     &         nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
-          if (normalize) then
-            call dscal(opti_info%nwfpar(iopt),1d0/xnrm,xbuf1,1)
-            call vec_to_da(ffopt(iopt)%fhand,
-     &                     ffopt(iopt)%fhand%current_record,xbuf1,
-     &                     opti_info%nwfpar(iopt))
+         if(iopt_state.eq.nopt_state)then
+          i_state = i_state+1
+          iopt_state = 1
+         else
+          iopt_state = iopt_state + 1
+         end if
+
+c dbg
+c         write(lulog,*) "MACIT, second part:"
+c         write(lulog,*) " imacit    : ",imacit
+c         write(lulog,*) " iopt      : ",iopt
+c         write(lulog,*) " iopt_state: ",iopt_state
+c         write(lulog,*) " i_state   : ",i_state
+c dbg end
+
+         if(iopt_state.eq.1)then
+          lenscr = (opti_stat%ndim_rsbsp+1)*(opti_stat%ndim_rsbsp+2)/2
+          ifree = mem_alloc_real(xscr,lenscr,'DIIS_mat')
+          ifree = mem_alloc_real(vec,opti_stat%ndim_rsbsp+1,'DIIS_vec')
+          ifree = mem_alloc_int(ivec,opti_stat%ndim_rsbsp+1,'DIIS_piv')
+          call optc_diis_extr(opti_stat%sbspmat,
+     &         vec,opti_stat%ndim_rsbsp,ndel,
+     &         xscr,ivec)
+         end if
+
+         normalize = opti_info%typ_prc(iopt).eq.optinf_prc_norm
+         call optc_expand_vec(vec,opti_stat%ndim_vsbsp,xnrm,normalize,
+     &        ffopt(iopt)%fhand,
+     &        ffopt(iopt)%fhand%current_record,0d0,
+     &        opti_stat_ini%ffvsbsp(iopt)%fhand,opti_stat%iord_vsbsp,
+     &        nincore,opti_info%nwfpar(iopt),lenbuf,xbuf1,xbuf2)
+         if (normalize) then
+          call dscal(opti_info%nwfpar(iopt),1d0/xnrm,xbuf1,1)
+          call vec_to_da(ffopt(iopt)%fhand,
+     &         ffopt(iopt)%fhand%current_record,xbuf1,
+     &         opti_info%nwfpar(iopt))
+         end if
+
+         call touch_file_rec(ffopt(iopt)%fhand)
+         if(iopt_state.eq.nopt_state)then
+          if(n_states.GT.1)then
+           do i_spc = 1,nspecial
+            call mel_adv_state(me_special(i_spc)%mel,n_states)
+           end do
+           idx = idx_mel_list('ME_DENS',op_info) ! quick & dirty
+           call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+           idx = idx_mel_list('ME_C0',op_info) ! quick & dirty
+           call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+           call op_adv_state(["C0"],1,n_states,op_info,.false.)
+           if(i_state.lt.n_states)
+     &          opti_stat => opti_stat%next_state
           end if
-          call touch_file_rec(ffopt(iopt)%fhand)
+          ifree = mem_dealloc('DIIS_mat')
+          ifree = mem_dealloc('DIIS_vec')
+          ifree = mem_dealloc('DIIS_piv')
+         end if
+
         end do
 
         ! project out linear dependencies if required
+        opti_stat => opti_stat_ini
+        i_state = 0
+        iopt_state = nopt_state
         do iopt = 1, opti_info%nopt
+         if(iopt_state.eq.nopt_state)then
+          i_state = i_state+1
+          iopt_state = 1
+         else
+          iopt_state = iopt_state + 1
+         end if
          if ((opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
      &        opti_info%typ_prc(iopt).eq.optinf_prc_invH0 ).and.
      &        opti_info%optref.ne.0.and.nspecial.ge.5) then
          call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
      &        me_dia(iopt)%mel,me_special,nspecial,
-     &        opti_info%nwfpar(iopt),xbuf1,fspc,nspcfrm,iopt,imacit,
+     &        opti_info%nwfpar(iopt),xbuf1,
+     &        fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
+     &        nspcfrm_eff,iopt,imacit,i_state,
      &        opti_info,orb_info,op_info,str_info,strmap_info)
+         end if
 
+         if(n_states.gt.1.and.iopt_state.eq.nopt_state)then
+          do i_spc = 1,nspecial
+           call mel_adv_state(me_special(i_spc)%mel,n_states)
+          end do
+          idx = idx_mel_list('ME_DENS',op_info) ! quick & dirty
+          call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+          idx = idx_mel_list('ME_C0',op_info) ! quick & dirty
+          call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
+          call op_adv_state(["C0"],1,n_states,op_info,.false.)
          end if
         end do
 
+c dbg
+c$$$        do iopt=1,opti_info%nopt
+c$$$         if(imacit.gt.1)then
+c$$$          write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &         trim( me_opt(iopt)%mel%label)
+c$$$          call wrt_mel_file(lulog,5,
+c$$$     &         me_opt(iopt)%mel,
+c$$$     &         1,me_opt(iopt)%mel%op%n_occ_cls,
+c$$$     &         str_info,orb_info)
+c$$$          write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &         trim( me_grd(iopt)%mel%label)
+c$$$          call wrt_mel_file(lulog,5,
+c$$$     &         me_grd(iopt)%mel,
+c$$$     &         1,me_grd(iopt)%mel%op%n_occ_cls,
+c$$$     &         str_info,orb_info)
+c$$$          write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &         trim( me_dia(iopt)%mel%label)
+c$$$          call wrt_mel_file(lulog,5,
+c$$$     &         me_dia(iopt)%mel,
+c$$$     &         1,me_dia(iopt)%mel%op%n_occ_cls,
+c$$$     &         str_info,orb_info)
+c$$$          idx = idx_mel_list('ME_DENS',op_info)
+c$$$          write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &         trim(op_info%mel_arr(idx)%mel%label)
+c$$$          call wrt_mel_file(lulog,5,
+c$$$     &         op_info%mel_arr(idx)%mel,
+c$$$     &         1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c$$$     &         str_info,orb_info)
+c$$$          idx = idx_mel_list('ME_C0',op_info)
+c$$$          write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &         trim(op_info%mel_arr(idx)%mel%label)
+c$$$          call wrt_mel_file(lulog,5,
+c$$$     &         op_info%mel_arr(idx)%mel,
+c$$$     &         1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c$$$     &         str_info,orb_info)
+c$$$          do iii=1,nspecial
+c$$$           write(lulog,*) 'MACIT final: dump of result for ',
+c$$$     &          trim( me_special(iii)%mel%label)
+c$$$           call wrt_mel_file(lulog,5,
+c$$$     &          me_special(iii)%mel,
+c$$$     &          1,me_special(iii)%mel%op%n_occ_cls,
+c$$$     &          str_info,orb_info)
+c$$$          end do
+c$$$         end if
+c$$$        end do
+c dbg
+
 * do ASSJ step for current subspace
       else if (iroute.eq.2) then
+
+       if(n_states.gt.1)
+     &      call quit(1,'optc_macit','ASSJ: adapt for n_states>1')
 
         if (opti_stat%ndim_rsbsp.ne.opti_stat%ndim_vsbsp)
      &       call quit(1,'optc_macit','inconsistency (ASSJ)')
@@ -318,12 +550,22 @@ C     &            orb_info,op_info,str_info,strmap_info)
      &                          xbuf1,opti_info%nwfpar(1))
           call optc_expand_vec(vec,opti_stat%ndim_rsbsp,xnrm,.false.,
      &         ffgrd(1)%fhand,1,1d0,
-     &       opti_stat%ffrsbsp(1)%fhand,opti_stat%iord_rsbsp,
+     &       opti_stat_ini%ffrsbsp(1)%fhand,opti_stat%iord_rsbsp,
      &       nincore,opti_info%nwfpar(1),lenbuf,xbuf1,xbuf2)
         end if
 
         ! make external step
+        opti_stat => opti_stat_ini
+        i_state = 0
+        iopt_state = nopt_state
         do iopt = 1, opti_info%nopt
+         if(iopt_state.eq.nopt_state)then
+          i_state = i_state+1
+          iopt_state = 1
+         else
+          iopt_state = iopt_state + 1
+         end if
+
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
 
             if (nincore.lt.2) 
@@ -333,9 +575,16 @@ C     &            orb_info,op_info,str_info,strmap_info)
      &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
      &              me_special,nspecial,
      &              opti_info%nwfpar(iopt),xbuf1,xbuf2,
-     &              fspc,nspcfrm,xngrd,iopt,imacit,opti_info,
+     &              fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
+     &              nspcfrm_eff,
+     &              xngrd,iopt,imacit,i_state,opti_info,
      &              orb_info,op_info,str_info,strmap_info)
 
+            if(n_states.gt.1.and.iopt_state.eq.nopt_state)then
+             do i_spc = 1,nspecial
+              call mel_adv_state(me_special(i_spc)%mel,n_states)
+             end do
+            end if
           else
             call optc_pert_step(ffopt(iopt)%fhand,
      &         ffgrd(iopt)%fhand,ffdia(iopt)%fhand,opti_stat%trrad,

@@ -30,6 +30,9 @@
       integer, allocatable ::
      &     excrestr(:,:,:)
 
+      integer ::
+     &     stndD(2,60), nsupD, nremblk, remblk(60)
+
       ! redefine spin/symmetry of reference state (if requested)
       call get_argument_value('method.MR','mult',
      &     ival=mult)
@@ -137,13 +140,15 @@ c dbgend
 
       ! set targets common for internally contracted methods
       call set_ic_mr_targets(tgt_info,orb_info,
-     &                       excrestr,maxh,maxp,use_met)
+     &                       excrestr,maxh,maxp,use_met,
+     &                       nsupD,stndD,nremblk,remblk)
 
       ! set icMRCI or icMRCC targets
       if (l_icci) call set_ic_mrci_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp,use_met)
       if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
-     &                       excrestr,maxh,maxp,.not.use_f12)
+     &                       excrestr,maxh,maxp,.not.use_f12,
+     &                       nsupD,stndD,nremblk,remblk)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
       if (response) call set_ic_mrcc_response_targets(tgt_info,orb_info)

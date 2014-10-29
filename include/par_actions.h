@@ -87,4 +87,8 @@
      &     REORDER_MEL*11     = 'REORDER_MEL',
      &     SPIN_PROJECT*12    = 'SPIN_PROJECT',
      &     SCALE_COPY*10      = 'SCALE_COPY',
-     &     ORB_FLIP*8         = 'ORB_FLIP'
+     &     ORB_FLIP*8         = 'ORB_FLIP',
+     &     SPREAD_MEL*10      = 'SPREAD_MEL',
+     &     ADV_STATE*9        = 'ADV_STATE',
+     &     ABORT*5            = 'ABORT',
+     &     EVP_PACKED_OP*13   = 'EVP_PACKED_OP'

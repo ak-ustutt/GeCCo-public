@@ -18,6 +18,7 @@
       include 'par_actions.h'     
       include 'ifc_input.h'
       include 'ifc_targets.h'
+      include 'ifc_adv.h'
 
       type(action), intent(in) ::
      &     rule
@@ -58,7 +59,8 @@
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
-     &     dagger, explicit, ms_fix, form_test, init, arg_there, reo
+     &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
+     &     last_state, use_1
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -67,7 +69,7 @@
       type(formula), pointer ::
      &     form_pnt, form0_pnt
       type(me_list), pointer ::
-     &     mel_pnt
+     &     mel_pnt, mel_pnt2, mel_pnt3
       character(len=512) ::
      &     title, title2, form_str, mode, strscr
       character(len_command_par) ::
@@ -1117,6 +1119,54 @@ c dbg
         call orb_flip_mel(mel_pnt,str_info,orb_info)
 
 *----------------------------------------------------------------------*
+      case(SPREAD_MEL)
+*----------------------------------------------------------------------*
+
+       call get_arg('LIST_IN',rule,tgt_info,val_label=label)
+       call get_arg('LIST_OUT',rule,tgt_info,
+     &      val_label_list=label_list, ndim=nroots)
+
+       if (form_test) return
+
+       call get_mel(mel_pnt,label,OLD)
+       do idx = nroots,1,-1
+        call switch_mel_record(mel_pnt,idx)
+        call get_mel(mel_pnt2,label_list(idx),OLD)
+        if(mel_pnt%fhand%unit.gt.0) call file_open(mel_pnt2%fhand)
+        call list_copy(mel_pnt,mel_pnt2,.false.)
+       enddo
+
+*----------------------------------------------------------------------*
+      case(ADV_STATE)
+*----------------------------------------------------------------------*
+
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call get_arg('USE1',rule,tgt_info,val_log=use_1,
+     &      success=arg_there)
+       if (.not.arg_there) use_1=.false.
+       call get_arg('OPERATORS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop,success=arg_there)
+       if (arg_there)
+     &      call op_adv_state(label_list,nop,nroots,op_info,use_1)
+       call get_arg('LISTS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop,success=arg_there)
+       if(arg_there)
+     &      call mel_adv_state_wrap(label_list,nop,nroots,op_info)
+
+*----------------------------------------------------------------------*
+      case(EVP_PACKED_OP)
+*----------------------------------------------------------------------*
+
+       call get_arg('LIST_IN',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt,label,OLD)
+       call get_arg('LIST_EVEC',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt2,label,OLD)
+       call get_arg('LIST_E',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt3,label,OLD)
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots,orb_info)
+
+*----------------------------------------------------------------------*
 *     subsection EVALUATE
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
@@ -1257,6 +1307,9 @@ c          mode = 'dia-R12'
      &       val_label=label2)
         call get_arg('FORM_SPC',rule,tgt_info,
      &       val_label_list=label_list(3*nopt+nspecial+1:),ndim=nspcfrm)
+        call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots,
+     &       success=arg_there)
+        if(.not.arg_there) nroots = 1
 
         if (form_test) return
 
@@ -1266,6 +1319,7 @@ c          mode = 'dia-R12'
      &       label_list(2*nopt+1:2*nopt+nopt), ! precond.
      &       label,                            ! energy
      &       label2,                           ! formula
+     &       nroots,
      &       label_list(3*nopt+1:
      &                  3*nopt+nspecial),
      &          nspecial,
@@ -1350,6 +1404,18 @@ c          mode = 'dia-R12'
      &                  4*nopt+nspecial+nspcfrm),
      &          nspcfrm,0d0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
+*----------------------------------------------------------------------*
+*     subsection: others
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      case(ABORT)
+*----------------------------------------------------------------------*
+
+       call get_arg('COMMENT',rule,tgt_info,val_label=label,
+     &      success=arg_there)
+       if(.not.arg_there) label = 'non specified reason.'
+       call quit(0,'process_rule','abort required: '//
+     &      trim(label))
 
 
 *----------------------------------------------------------------------*
