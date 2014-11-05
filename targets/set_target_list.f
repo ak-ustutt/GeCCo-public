@@ -58,7 +58,8 @@
 
       ! multireference section
       if (is_keyword_set('method.MR').gt.0)
-     &    call set_mr_targets(tgt_info,orb_info,env_type)
+     &     call set_mr_targets(tgt_info,orb_info,env_type,
+     &     name_infile,name_orbinfo)
 
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then

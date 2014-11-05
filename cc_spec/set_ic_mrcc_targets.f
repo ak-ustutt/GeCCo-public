@@ -1047,32 +1047,6 @@ c      call set_arg('DYALL_HAM',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Hdyall'/))
 c dbgend
 
-      ! define packed Effective Hamiltonian for multistate
-      call add_target2('pack_Heff_MS',.false.,tgt_info)
-      call set_dependency('pack_Heff_MS','E(MR)',tgt_info)
-      call set_rule2('pack_Heff_MS',CLONE_OP,tgt_info)
-      call set_arg('pack_Heff_MS',CLONE_OP,'LABEL',1,tgt_info,
-     &     val_label=(/'pack_Heff_MS'/))
-      call set_arg('pack_Heff_MS',CLONE_OP,'TEMPLATE',1,tgt_info,
-     &     val_label=(/'E(MR)'/))
-
-      ! Multi state wave function coefficients
-      call add_target2('C_MS',.false.,tgt_info)
-      call set_dependency('C_MS','C0',tgt_info)
-      call set_rule2('C_MS',CLONE_OP,tgt_info)
-      call set_arg('C_MS',CLONE_OP,'LABEL',1,tgt_info,
-     &     val_label=(/'C_MS'/))
-      call set_arg('C_MS',CLONE_OP,'TEMPLATE',1,tgt_info,
-     &     val_label=(/'C0'/))
-
-      ! Multi state energies
-      call add_target('E_MS',ttype_op,.false.,tgt_info)
-      call hop_parameters(-1,parameters,0,0,1,.false.)
-      call set_rule('E_MS',ttype_op,DEF_HAMILTONIAN,'E_MS',
-     &              1,1,parameters,1,tgt_info)
-
-
-
 *----------------------------------------------------------------------*
 *     Formulae 
 *----------------------------------------------------------------------*
@@ -1466,9 +1440,9 @@ c dbgend
         end if
       end if
 c dbg
-c      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_MRCC_LAG'/))
+      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
+      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'F_MRCC_LAG'/))
 c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
 c dbgend
 
@@ -4114,37 +4088,6 @@ c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'MRCC_PT_LAG'/))
 c dbgend
 
-      ! Multistate Heff: similar to the E(MR) but with variable C0_1
-      call add_target2('F_pack_Heff_MS',.false.,tgt_info)
-      call set_dependency('F_pack_Heff_MS','F_MRCC_E',tgt_info)
-      call set_dependency('F_pack_Heff_MS','pack_Heff_MS',tgt_info)
-      ! This INVARIANT is only to change the OP_RES.
-      ! Its a goor idea implement this in the REPLACE rule
-      call set_rule2('F_pack_Heff_MS',INVARIANT,tgt_info)
-      call set_arg('F_pack_Heff_MS',INVARIANT,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'F_pack_Heff_MS'/))
-      call set_arg('F_pack_Heff_MS',INVARIANT,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'F_MRCC_E_1'/))
-      call set_arg('F_pack_Heff_MS',INVARIANT,'OP_RES',1,tgt_info,
-     &     val_label=(/'pack_Heff_MS'/))
-      call set_arg('F_pack_Heff_MS',INVARIANT,'OPERATORS',0,
-     &     tgt_info,val_label=["D"])
-      call set_rule2('F_pack_Heff_MS',REPLACE,tgt_info)
-      call set_arg('F_pack_Heff_MS',REPLACE,'LABEL_RES',1,tgt_info,
-     &             val_label=(/'F_pack_Heff_MS'/))
-      call set_arg('F_pack_Heff_MS',REPLACE,'LABEL_IN',1,tgt_info,
-     &             val_label=(/'F_pack_Heff_MS'/))
-      call set_arg('F_pack_Heff_MS',REPLACE,'OP_LIST',2,tgt_info,
-     &             val_label=(/
-     &     'C0  ',
-     &     'C0_1'/))
-c dbg
-c      call set_rule2('F_pack_Heff_MS',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_pack_Heff_MS',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_pack_Heff_MS'/))
-c      call set_rule2('F_pack_Heff_MS',ABORT,tgt_info)
-c dbg end
-
 *----------------------------------------------------------------------*
 *     Opt. Formulae 
 *----------------------------------------------------------------------*
@@ -4708,17 +4651,6 @@ c dbgend
       call set_arg('FOPT_T_PT',OPTIMIZE,'LABELS_IN',1,tgt_info,
      &             val_label=(/'F_T_PT'/))
 
-      ! Optimize packed effective Hamiltonian for multistate
-      call add_target2('FOPT_pack_Heff_MS',.false.,tgt_info)
-      call set_dependency('FOPT_pack_Heff_MS','F_pack_Heff_MS',tgt_info)
-      call set_dependency('FOPT_pack_Heff_MS','DEF_ME_pack_Heff_MS',
-     &     tgt_info)
-      call set_rule2('FOPT_pack_Heff_MS',OPTIMIZE,tgt_info)
-      call set_arg('FOPT_pack_Heff_MS',OPTIMIZE,'LABEL_OPT',1,tgt_info,
-     &     val_label=['FOPT_pack_Heff_MS'])
-      call set_arg('FOPT_pack_Heff_MS',OPTIMIZE,'LABELS_IN',1,tgt_info,
-     &     val_label=['F_pack_Heff_MS'])
-
 *----------------------------------------------------------------------*
 *     ME-lists
 *----------------------------------------------------------------------*
@@ -5053,69 +4985,6 @@ c     &     parameters,1,tgt_info)
       call set_arg('DEF_ME_Geff',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 c dbgend
-
-      ! ME_pack_Heff_MS: the effective hamiltonian is "packed" in
-      ! the records!
-      call add_target2('DEF_ME_pack_Heff_MS',.false.,tgt_info)
-      call set_dependency('DEF_ME_pack_Heff_MS','pack_Heff_MS',tgt_info)
-      call set_rule2('DEF_ME_pack_Heff_MS',DEF_ME_LIST,tgt_info)
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'LIST',1,tgt_info,
-     &     val_label=(/'ME_pack_Heff_MS'/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'OPERATOR',1,
-     &     tgt_info,val_label=(/'pack_Heff_MS'/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'IRREP',1,tgt_info,
-     &     val_int=(/1/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'2MS',1,tgt_info,
-     &     val_int=(/0/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'AB_SYM',1,
-     &     tgt_info,val_int=(/msc/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'MIN_REC',1,
-     &     tgt_info,val_int=(/1/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'MAX_REC',1,
-     &     tgt_info,val_int=(/n_states*n_states/))
-      call set_arg('DEF_ME_pack_Heff_MS',DEF_ME_LIST,'REC',1,tgt_info,
-     &     val_int=(/1/))
-
-      call add_target2('DEF_ME_C_MS',.false.,tgt_info)
-      call set_dependency('DEF_ME_C_MS','C_MS',tgt_info)
-      call set_rule2('DEF_ME_C_MS',DEF_ME_LIST,tgt_info)
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'LIST',1,tgt_info,
-     &             val_label=(/'ME_C_MS'/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'OPERATOR',1,tgt_info,
-     &             val_label=(/'C_MS'/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'2MS',1,tgt_info,
-     &             val_int=(/orb_info%ims/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'IRREP',1,tgt_info,
-     &             val_int=(/orb_info%lsym/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'AB_SYM',1,tgt_info,
-     &             val_int=(/msc/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'MIN_REC',1,tgt_info,
-     &             val_int=(/1/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'MAX_REC',1,tgt_info,
-     &             val_int=(/n_states/))
-      call set_arg('DEF_ME_C_MS',DEF_ME_LIST,'REC',1,tgt_info,
-     &             val_int=(/1/))
-
-      ! ME for multistate energy
-      call add_target2('DEF_ME_E_MS',.false.,tgt_info)
-      call set_dependency('DEF_ME_E_MS','E_MS',tgt_info)
-      call set_rule2('DEF_ME_E_MS',DEF_ME_LIST,tgt_info)
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'LIST',1,tgt_info,
-     &             val_label=(/'ME_E_MS'/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'OPERATOR',1,tgt_info,
-     &             val_label=(/'E_MS'/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'2MS',1,tgt_info,
-     &             val_int=(/0/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'IRREP',1,tgt_info,
-     &             val_int=(/1/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'AB_SYM',1,tgt_info,
-     &             val_int=(/0/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'MIN_REC',1,tgt_info,
-     &             val_int=(/1/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'MAX_REC',1,tgt_info,
-     &             val_int=(/n_states/))
-      call set_arg('DEF_ME_E_MS',DEF_ME_LIST,'REC',1,tgt_info,
-     &             val_int=(/1/))
 
       ! ME for H1bar
       call add_target2('DEF_ME_H1bar',.false.,tgt_info)
@@ -6116,109 +5985,6 @@ c     &      parameters,2,tgt_info)
 c      end do
 c dbgend
 
-      ! EVAL packed effective Hamiltonian for Multistate:
-      ! each element goes to a different record
-      call add_target2('EVAL_pack_Heff_MS',multistate,tgt_info)
-c dbg
-c      do i_state = 1,n_states
-c       c_st = state_label(i_state,.true.)
-c       call form_parameters(-1,parameters,2,
-c     &      'ME_C0 :',0,'LIST')
-c       call set_rule('EVAL_pack_Heff_MS',ttype_opme,PRINT_MEL,
-c     &      'ME_C0',1,0,
-c     &      parameters,2,tgt_info)
-c       call form_parameters(-1,parameters,2,
-c     &      'ME_C0'//trim(c_st),0,'LIST')
-c       call set_rule('EVAL_pack_Heff_MS',ttype_opme,PRINT_MEL,
-c     &      'ME_C0'//trim(c_st),1,0,
-c     &      parameters,2,tgt_info)
-c       call set_rule2('EVAL_pack_Heff_MS',ADV_STATE,tgt_info)
-c       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'LISTS',1,tgt_info,
-c     &      val_label=['ME_C0'])
-c       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-c     &      val_int=[n_states])
-c      end do
-c dbgend
-      call set_dependency('EVAL_pack_Heff_MS','FOPT_pack_Heff_MS',
-     &     tgt_info)
-      do i_state = 1,n_states*n_states
-       call set_rule('EVAL_pack_Heff_MS',ttype_opme,EVAL,
-     &      'FOPT_pack_Heff_MS',1,0,
-     &      parameters,0,tgt_info)
-c dbg
-       call form_parameters(-1,parameters,2,
-     &      'packed H_eff:',0,'LIST')
-       call set_rule('EVAL_pack_Heff_MS',ttype_opme,PRINT_MEL,
-     &      "ME_pack_Heff_MS",1,0,
-     &      parameters,2,tgt_info)
-c dbg end
-       call set_rule2('EVAL_pack_Heff_MS',ADV_STATE,tgt_info)
-       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'LISTS',1,tgt_info,
-     &      val_label=['ME_pack_Heff_MS'])
-       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-     &      val_int=[n_states*n_states])
-       call set_rule2('EVAL_pack_Heff_MS',ADV_STATE,tgt_info)
-       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'LISTS',1,tgt_info,
-     &      val_label=['ME_C0'])
-       call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-     &      val_int=[n_states])
-       if(mod(i_state,n_states).eq.0)then
-        call set_rule2('EVAL_pack_Heff_MS',ADV_STATE,tgt_info)
-        call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'OPERATORS',1,
-     &       tgt_info,val_label=['C0_1'])
-        call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-     &       val_int=[n_states])
-        call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'USE1',1,tgt_info,
-     &       val_log=[.true.])
-        call set_rule2('EVAL_pack_Heff_MS',ADV_STATE,tgt_info)
-        call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'OPERATORS',1,
-     &       tgt_info,val_label=['T'])
-        call set_arg('EVAL_pack_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-     &       val_int=[n_states])
-       end if
-      end do
-
-      ! SOLVE reference eigenvalue equation
-      call add_target2('SOLVE_Heff_MS',multistate,tgt_info)
-      call set_dependency('SOLVE_Heff_MS','EVAL_pack_Heff_MS',
-     &     tgt_info)
-      call set_dependency('SOLVE_Heff_MS','DEF_ME_C_MS',tgt_info)
-      call set_dependency('SOLVE_Heff_MS','DEF_ME_E_MS',tgt_info)
-      call set_rule2('SOLVE_Heff_MS',EVP_PACKED_OP,tgt_info)
-      call set_arg('SOLVE_Heff_MS',EVP_PACKED_OP,'LIST_IN',1,tgt_info,
-     &     val_label=['ME_pack_Heff_MS'])
-      call set_arg('SOLVE_Heff_MS',EVP_PACKED_OP,'LIST_EVEC',1,tgt_info,
-     &     val_label=['ME_C_MS'])
-      call set_arg('SOLVE_Heff_MS',EVP_PACKED_OP,'LIST_E',1,tgt_info,
-     &     val_label=['ME_E_MS'])
-      call set_arg('SOLVE_Heff_MS',EVP_PACKED_OP,'N_ROOTS',1,tgt_info,
-     &     val_int=[n_states])
-c dbg
-c      do i_state=1,n_states,1
-c       write(label_title,
-c     &      '("Multistate energy for state ",i0,":")')
-c     &      i_state
-c       call form_parameters(-1,parameters,2,
-c     &      label_title,0,'LIST')
-c       call set_rule('SOLVE_Heff_MS',ttype_opme,PRINT_MEL,
-c     &      "ME_E_MS",1,0,
-c     &      parameters,2,tgt_info)
-c       write(label_title,
-c     &      '("Multistate CI coefficients for state ",i0,":")')
-c     &      i_state
-c       call form_parameters(-1,parameters,2,
-c     &      label_title,0,'LIST')
-c       call set_rule('SOLVE_Heff_MS',ttype_opme,PRINT_MEL,
-c     &      "ME_C_MS",1,0,
-c     &      parameters,2,tgt_info)
-c       call set_rule2('SOLVE_Heff_MS',ADV_STATE,tgt_info)
-c       call set_arg('SOLVE_Heff_MS',ADV_STATE,'LISTS',2,tgt_info,
-c     &      val_label=['ME_C_MS','ME_E_MS'])
-c       call set_arg('SOLVE_Heff_MS',ADV_STATE,'N_ROOTS',1,tgt_info,
-c     &      val_int=[n_states])
-c      enddo
-c      call set_rule2('SOLVE_Heff_MS',ABORT,tgt_info)
-c dbg end
 
       ! Non-iterative higher-order correction
       call add_target2('EVAL_PERT_CORR',.not.svdonly.and.tfix.gt.0

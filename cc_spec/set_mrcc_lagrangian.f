@@ -3,9 +3,32 @@
      &     title,label,nlabels,max_n,max_n_en,approx,
      &     op_info,orb_info)
 *----------------------------------------------------------------------*
-*     lagrangian for internally contracted MRCC
+*     lagrangian for internally contracted MRCC:
+*
+*     E = <0| C0^+ (1 + L) e^(-T) H e^T C0 |0>
+*       = <0| C0^+ e^(-T) H e^T C0 |0> + <0| C0^+ L e^(-T) H e^T C0 |0>
+*       = scalar_part + L_part
+*
+*     form_lag: formula for the lagrangian
+*     title: comment of formula
+*     label(nlabels): some needed operators:
+*       (1) = E -> OP_RES
+*       (2) = L
+*       (3) = H
+*       (4) = T
+*       (5) = C0
+*     max_n: maximum commutator for the L_part
+*     max_n_en: maximum commutator for scalar_part
+*     approx: a string with the following meaning:
+*       NORM -> do not use H and skip scalar part:
+*               E = <0| C0^+ L e^(-T) e^T C0 |0>
+*               (it is never used)
+*       FIX_N -> only for a fixed rank in the commutator expansion,
+*                namely, max_n
 *
 *     matthias, summer 2010
+*     yuri, summer 2014 -> uncoupled multistate version
+*
 *----------------------------------------------------------------------*
       implicit none
 
