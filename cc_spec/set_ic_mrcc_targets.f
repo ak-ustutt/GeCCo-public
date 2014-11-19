@@ -1,7 +1,8 @@
 *----------------------------------------------------------------------*
       subroutine set_ic_mrcc_targets(tgt_info,orb_info,
      &                               excrestr,maxh,maxp,execute,
-     &                               nsupD,stndD,nremblk,remblk)
+     &                               nsupD,stndD,nremblk,remblk,
+     &                               name_infile,name_orbinfo)
 *----------------------------------------------------------------------*
 *     set targets for internally contracted MRCC
 *
@@ -36,6 +37,8 @@
      &     execute
       integer, intent(in) ::
      &     nsupD, stndD(2,60), nremblk, remblk(60)
+      character(*), intent(in) ::
+     &     name_infile, name_orbinfo
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
@@ -48,12 +51,12 @@
      &     tred, igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
      &     prc_iter, project, simp, spinexpec,
-     &     real_minexc
+     &     real_minexc, len
       logical ::
      &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart, eval_dens3, prc_traf,
-     &     pure_vv, multistate
+     &     pure_vv, multistate, MS_coupled
       character(len_target_name) ::
      &     dia_label, dia_label2, dia_label_2,
      &     labels(20), c_st, c_st_2
@@ -76,6 +79,8 @@
 
       character(len_target_name), external ::
      &     state_label
+      character(len=256) ::
+     &     gecco_path
 
       if (iprlvl.gt.0) write(lulog,*) 'setting icMRCC targets'
 
@@ -89,6 +94,8 @@
       if(maxroot.le.0) maxroot=ciroot
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
+      call get_argument_value('method.MR','coupled_states',
+     &     lval=MS_coupled)
       call get_argument_value('method.MR','prc_type',
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
@@ -224,6 +231,12 @@
         end if
       end if
 
+      call get_environment_variable( "GECCO_DIR", value=gecco_path,
+     &     length = len)
+      if (len.EQ.0)
+     &     call quit(1,'set_mr_targets',
+     &     "Please, set the GECCO_DIR environment variable.")
+
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.abs(x_ansatz).ne.1d0
      &    .and.x_ansatz.ne.-2d0.and.x_ansatz.ne.-3d0
      &    .and.(maxcom_en.gt.2.or.maxcom.gt.2
@@ -252,6 +265,12 @@ C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
         if (excrestr(0,0,1).lt.excrestr(0,0,2))
      &     call quit(1,'set_ic_mrcc_targets',
      &     'Implement missing terms for pure_vv in new (T)')
+c_T_proj_3_fix = ctest 11/15/14
+        inquire(file='ME_T2fix_list.da',exist=l_exist)
+        if (.not.l_exist)
+     &       call quit(1,'set_ic_mrcc_targets',
+     &       'File for fixed T2 amplitudes not found!')
+c_T_proj_3_fix
       end if
       if (h1bar_maxp.eq.0.or.h1bar_maxp.eq.1)
      &    call quit(1,'set_ic_mrcc_targets',
@@ -979,26 +998,36 @@ c dbg
      &              parameters,2,tgt_info)
 
       ! define fixed T2 operator
-      call add_target('T2fix',ttype_op,.false.,tgt_info)
-      occ_def = 0
-      ndef = 0
-      do ip = 0, maxp
-        do ih = 0, maxh
-          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
-            if (iexc.ne.2) cycle ! just the doubles
-            ndef = ndef + 1
-            occ_def(IHOLE,2,ndef) = ih
-            occ_def(IPART,1,ndef) = ip
-            occ_def(IVALE,1,ndef) = iexc - ip
-            occ_def(IVALE,2,ndef) = iexc - ih
-          end do
-        end do
-      end do
-      call op_from_occ_parameters(-1,parameters,2,
-     &              occ_def,ndef,1,(/0,0/),ndef)
-      call set_rule('T2fix',ttype_op,DEF_OP_FROM_OCC,
-     &              'T2fix',1,1,
-     &              parameters,2,tgt_info)
+c_T_proj_3_fix = ctest 11/15/14
+c$$$      call add_target('T2fix',ttype_op,.false.,tgt_info)
+c$$$      occ_def = 0
+c$$$      ndef = 0
+c$$$      do ip = 0, maxp
+c$$$        do ih = 0, maxh
+c$$$          do iexc = excrestr(ih,ip,1), excrestr(ih,ip,2)
+c$$$            if (iexc.ne.2) cycle ! just the doubles
+c$$$            ndef = ndef + 1
+c$$$            occ_def(IHOLE,2,ndef) = ih
+c$$$            occ_def(IPART,1,ndef) = ip
+c$$$            occ_def(IVALE,1,ndef) = iexc - ip
+c$$$            occ_def(IVALE,2,ndef) = iexc - ih
+c$$$          end do
+c$$$        end do
+c$$$      end do
+c$$$      call op_from_occ_parameters(-1,parameters,2,
+c$$$     &              occ_def,ndef,1,(/0,0/),ndef)
+c$$$      call set_rule('T2fix',ttype_op,DEF_OP_FROM_OCC,
+c$$$     &              'T2fix',1,1,
+c$$$     &              parameters,2,tgt_info)
+c  -> new version
+      call add_target2('T2fix',.false.,tgt_info)
+      call set_dependency('T2fix','Tfix',tgt_info)
+      call set_rule2('T2fix',CLONE_OP,tgt_info)
+      call set_arg('T2fix',CLONE_OP,'LABEL',1,tgt_info,
+     &     val_label=(/'T2fix'/))
+      call set_arg('T2fix',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'Tfix'/))
+c_T_proj_3_fix end of change
 
       ! define fixed energy (e.g. E_icMRCCSD when doing a (T) calc.)
       call add_target('E_fix',ttype_op,.false.,tgt_info)
@@ -1080,7 +1109,7 @@ c dbgend
      &       tgt_info,val_int=(/maxcom_en/))
         call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'MODE',1,tgt_info,
      &       val_str='---')
-          call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'TITLE',1,
+        call set_arg('F_MRCC_LAG',DEF_MRCC_LAGRANGIAN,'TITLE',1,
      &       tgt_info,val_str='ic-MRCC Lagrangian')
       else
         call set_dependency('F_MRCC_LAG','Heff',tgt_info)
@@ -1114,6 +1143,12 @@ c dbgend
         call set_arg('F_MRCC_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &       val_log=(/.false./))
       end if
+c dbg
+c      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
+c dbgend
       if (optref.eq.-1.or.optref.eq.-2) then
         call set_dependency('F_MRCC_LAG','E(MR)',tgt_info)
         labels(1) = 'E(MR)'
@@ -1223,6 +1258,12 @@ c        end if
         if (G_level.lt.0) ! approximation will change factors
      &       call set_arg('F_MRCC_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
      &                    val_str='CHECK_FAC')
+c dbg
+c      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
+c dbgend
       else
         ! Separate equation for each block of Geff
         call set_rule2('F_MRCC_LAG',SELECT_SPECIAL,tgt_info)
@@ -1440,11 +1481,16 @@ c dbgend
         end if
       end if
 c dbg
-      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
-      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_MRCC_LAG'/))
+c      call set_rule2('F_MRCC_LAG',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_MRCC_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_MRCC_LAG'/))
 c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
 c dbgend
+
+c To be released
+c$$$      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
+c$$$     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
+c$$$     &     name_infile,name_orbinfo)
 
       ! Residual part of Lagrangian
       call add_target2('F_LAG_L',.false.,tgt_info)
@@ -2264,9 +2310,9 @@ c        call set_arg(f_ht,FACTOR_OUT,'INTERM',1,tgt_info,
 c     &       val_label=(/'F_HT1'/))
 c        end if
 c dbgend
-        call set_rule2(f_ht,PRINT_FORMULA,tgt_info)
-        call set_arg(f_ht,PRINT_FORMULA,'LABEL',1,tgt_info,
-     &       val_label=(/f_ht/))
+c        call set_rule2(f_ht,PRINT_FORMULA,tgt_info)
+c        call set_arg(f_ht,PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &       val_label=(/f_ht/))
       end do
 
       ! sums of HT intermediates
@@ -2518,9 +2564,9 @@ c dbgend
       call set_arg('F_Geff',DEF_MRCC_INTM,'TITLE',1,tgt_info,
      &     val_str='Effective Hamiltonian in the excitation space')
 c dbg
-      call set_rule2('F_Geff',PRINT_FORMULA,tgt_info)
-      call set_arg('F_Geff',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_Geff'/))
+c      call set_rule2('F_Geff',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_Geff',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_Geff'/))
 c dbgend
 
       ! T1 transformed Hamiltonian
@@ -2796,19 +2842,19 @@ c dbgend
      &     '    EXPAND_OP_PRODUCT(new=T,label=F_H0Dy,op_res=H0Dy,',
      &     '       operators=(H0Dy,H,H0Dy),',
      &     '       idx_sv=(1,2,1),',
-     &     '       descr="2,,[HPV],[HPV]",avoid=(1,3)',
+     &     '       label_descr="2,,[HPV],[HPV]",avoid=(1,3)',
      &     '    )',
      &     '    EXPAND_OP_PRODUCT(new=F,label=F_H0Dy,op_res=H0Dy,',
      &     '       OPERATORS=(H0Dy,C00^+,H,C00,H0Dy),',
      &     '       IDX_SV=(1,2,3,4,1),',
-     &     '       DESCR=("1,,H,","1,,,P","5,,P,","5,,,H",',
+     &     '       LABEL_DESCR=("1,,H,","1,,,P","5,,P,","5,,,H",',
      &     '                              "3,,[HPV]V,[HPV]V"),',
      &     '       CONNECT=(2,3,3,4)',
      &     '    )',
      &     '    EXPAND_OP_PRODUCT(new=F,label=F_H0Dy,op_res=H0Dy,',
      &     '       OPERATORS=(H0Dy,H,H0Dy),',
      &     '       IDX_SV=(1,2,1),',
-     &     '       DESCR="2,,VV,VV",avoid=(1,3)',
+     &     '       LABEL_DESCR="2,,VV,VV",avoid=(1,3)',
      &     '    )',
      &     '    PRINT_FORMULA(label=F_H0Dy)',
      &     ')'],
@@ -2970,8 +3016,8 @@ C     &             val_log=(/.false./))
      &                         'T      ','INT_HT2'/))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &             val_int=(/1,2,3,1/))
-      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
-     &             val_label=(/'3,,[VP][VP],[HV][HV]'/))
+      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
+     &             tgt_info,val_label=(/'3,,[VP][VP],[HV][HV]'/))
       call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
      &             val_int=(/2,3/))
 
@@ -2986,8 +3032,8 @@ c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'OPERATORS',4,tgt_info,
 c     &             val_label=(/'INT_HT2','T','H','INT_HT2'/))
 c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
 c     &             val_int=(/1,2,3,1/))
-c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
-c     &             val_label=(/'2,,[VP][VP],[HV][HV]'/))
+c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
+c     &             tgt_info,val_label=(/'2,,[VP][VP],[HV][HV]'/))
 c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
 c     &             val_int=(/2,3/))
       call set_rule2('F_INT_HT2',PRINT_FORMULA,tgt_info)
@@ -3010,7 +3056,8 @@ c     &             val_int=(/2,3/))
      &                         'H      ','INT_T2H'/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &             val_int=(/1,2,3,1/))
-      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+      call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
+     &             tgt_info,
      &             val_label=(/'2,,[VP][VP],[HV][HV]'/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
      &             val_int=(/2,3/))
@@ -3631,7 +3678,9 @@ c dbgend
       call set_dependency('MRCC_PT_LAG','T',tgt_info)
       call set_dependency('MRCC_PT_LAG','L',tgt_info)
       call set_dependency('MRCC_PT_LAG','Tfix',tgt_info)
-      call set_dependency('MRCC_PT_LAG','T2fix',tgt_info)
+c_T_proj_3_fix = ctest 11/15/14     call set_dependency('MRCC_PT_LAG','T2fix',tgt_info)
+      call set_dependency('MRCC_PT_LAG','DEF_ME_T2fix',tgt_info)
+c_T_proj_3_fix end of change
       call set_dependency('MRCC_PT_LAG','E(MR)',tgt_info)
       call set_dependency('MRCC_PT_LAG','OMG',tgt_info)
       call set_dependency('MRCC_PT_LAG','DYALL_HAM',tgt_info)
@@ -3742,62 +3791,64 @@ c dbgend
      &             val_rl8=(/0.5d0/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &             val_log=(/.false./))
-      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &             val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &             val_label=(/'E(MR)'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &             tgt_info,val_label=(/'C0^+ ','T2fix','H    ',
-     &                                  'T    ','C0   '/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &             val_int=(/2,3,4,5,6/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &             val_rl8=(/-1d0/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/.false./))
-      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &             val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &             val_label=(/'E(MR)'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &             tgt_info,val_label=(/'C0^+ ','T    ','H    ',
-     &                                  'T2fix','C0   '/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &             val_int=(/2,3,4,5,6/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &             val_rl8=(/-1d0/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/.false./))
-      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &             val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &             val_label=(/'E(MR)'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &             tgt_info,val_label=(/'C0^+ ','T    ','T2fix',
-     &                                  'H    ','C0   '/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &             val_int=(/2,3,4,5,6/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &             val_rl8=(/0.5d0/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/.false./))
-      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
-     &             val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
-     &             val_label=(/'E(MR)'/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
-     &             tgt_info,val_label=(/'C0^+ ','T2fix','T    ',
-     &                                  'H    ','C0   '/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
-     &             val_int=(/2,3,4,5,6/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
-     &             val_rl8=(/0.5d0/))
-      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/.false./))
+c_T_proj_3_fix = ctest 11/15/14
+c$$$      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c$$$     &             val_label=(/'MRCC_PT_LAG'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c$$$     &             val_label=(/'E(MR)'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c$$$     &             tgt_info,val_label=(/'C0^+ ','T2fix','H    ',
+c$$$     &                                  'T    ','C0   '/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c$$$     &             val_int=(/2,3,4,5,6/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c$$$     &             val_rl8=(/-1d0/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c$$$     &             val_log=(/.false./))
+c$$$      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c$$$     &             val_label=(/'MRCC_PT_LAG'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c$$$     &             val_label=(/'E(MR)'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c$$$     &             tgt_info,val_label=(/'C0^+ ','T    ','H    ',
+c$$$     &                                  'T2fix','C0   '/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c$$$     &             val_int=(/2,3,4,5,6/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c$$$     &             val_rl8=(/-1d0/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c$$$     &             val_log=(/.false./))
+c$$$      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c$$$     &             val_label=(/'MRCC_PT_LAG'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c$$$     &             val_label=(/'E(MR)'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c$$$     &             tgt_info,val_label=(/'C0^+ ','T    ','T2fix',
+c$$$     &                                  'H    ','C0   '/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c$$$     &             val_int=(/2,3,4,5,6/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c$$$     &             val_rl8=(/0.5d0/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c$$$     &             val_log=(/.false./))
+c$$$      call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
+c$$$     &             val_label=(/'MRCC_PT_LAG'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OP_RES',1,tgt_info,
+c$$$     &             val_label=(/'E(MR)'/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'OPERATORS',5,
+c$$$     &             tgt_info,val_label=(/'C0^+ ','T2fix','T    ',
+c$$$     &                                  'H    ','C0   '/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
+c$$$     &             val_int=(/2,3,4,5,6/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+c$$$     &             val_rl8=(/0.5d0/))
+c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
+c$$$     &             val_log=(/.false./))
+c_T_proj_3_fix end of change
       ! (c) triples correction from the singles and doubles residual terms
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
@@ -4038,13 +4089,15 @@ c dbgend
      &     val_str='nonzero')
       call set_arg('MRCC_PT_LAG',SELECT_SPECIAL,'MODE',1,tgt_info,
      &     val_str='sum')
-      call set_rule2('MRCC_PT_LAG',REPLACE,tgt_info)
-      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_RES',1,tgt_info,
-     &     val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_IN',1,tgt_info,
-     &     val_label=(/'MRCC_PT_LAG'/))
-      call set_arg('MRCC_PT_LAG',REPLACE,'OP_LIST',2,tgt_info,
-     &     val_label=(/'T2fix','Tfix '/))
+c_T_proj_3_fix = ctest 11/15/14
+c      call set_rule2('MRCC_PT_LAG',REPLACE,tgt_info)
+c      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_LAG'/))
+c      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+c     &     val_label=(/'MRCC_PT_LAG'/))
+c      call set_arg('MRCC_PT_LAG',REPLACE,'OP_LIST',2,tgt_info,
+c     &     val_label=(/'T2fix','Tfix '/))
+c_T_proj_3_fix end of change
       call set_rule2('MRCC_PT_LAG',EXPAND,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND,'LABEL_RES',1,tgt_info,
      &     val_label=(/'MRCC_PT_LAG'/))
@@ -5182,6 +5235,23 @@ c dbgend
       call set_arg('DEF_ME_Tfix',DEF_ME_LIST,'AB_SYM',1,tgt_info,
      &             val_int=(/msc/))
 
+c_T_proj_3_fix = ctest 11/15/14
+      ! ME for T2fix
+      call add_target2('DEF_ME_T2fix',.false.,tgt_info)
+      call set_dependency('DEF_ME_T2fix','T2fix',tgt_info)
+      call set_rule2('DEF_ME_T2fix',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_T2fix',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_T2fix'/))
+      call set_arg('DEF_ME_T2fix',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'T2fix'/))
+      call set_arg('DEF_ME_T2fix',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/0/))
+      call set_arg('DEF_ME_T2fix',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_T2fix',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+c_T_proj_3_fix end of change
+
       ! ME for Residual
       call add_target2('DEF_ME_OMG_RHS',.false.,tgt_info)
       call set_dependency('DEF_ME_OMG_RHS','OMG_RHS',tgt_info)
@@ -6065,8 +6135,8 @@ c      call set_rule2('DEF_CHECK',DEF_OP_FROM_OCC,tgt_info)
 c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
 c     &     val_label=(/'L3'/))
 c           descr='VVP,HHH|VPP,VHH|VPP,HHH|PPP,VVH|PPP,HVH|PPP,HHH'
-c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'DESCR',1,tgt_info,
-c     &     val_str=descr)
+c      call set_arg('DEF_CHECK',DEF_OP_FROM_OCC,'LABEL_DESCR',1,
+c     &     tgt_info,val_str=descr)
 c      call add_target2('DEF_CHECK_RES',.false.,tgt_info)
 c      call set_dependency('DEF_CHECK_RES','DEF_CHECK',tgt_info)
 c      call set_dependency('DEF_CHECK_RES','F_MRCC_LAG',tgt_info)

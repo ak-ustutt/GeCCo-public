@@ -221,7 +221,7 @@
      &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_INPROJ',1,tgt_info,
      &     val_int=(/0/),def=.true.)
-      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'DESCR',0,tgt_info,
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL_DESCR',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_DESCR',1,tgt_info,
      &     val_int=(/0/),def=.true.)

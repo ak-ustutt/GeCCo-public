@@ -41,6 +41,7 @@ INTERM label
 IRREP int
 JOIN int
 LABEL label
+LABEL_DESCR label
 LABELS_IN label
 LABEL_IN label
 LABEL_OPT label

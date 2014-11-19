@@ -29,7 +29,8 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate
+     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate,
+     &     set_up_T_corr
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -69,6 +70,9 @@
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
 
+      call get_argument_value('method.MRCC','set_up_T_corr',
+     &     lval=set_up_T_corr)
+
       ! get maximum excitation rank
       call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
@@ -77,7 +81,6 @@
 
       call get_environment_variable( "GECCO_DIR", value=gecco_path,
      &     length = len)
-
       if (len.EQ.0)
      &     call quit(1,'set_mr_targets',
      &     "Please, set the GECCO_DIR environment variable.")
@@ -164,7 +167,8 @@ c dbgend
      &                       excrestr,maxh,maxp,use_met)
       if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp,.not.use_f12,
-     &                       nsupD,stndD,nremblk,remblk)
+     &                       nsupD,stndD,nremblk,remblk,
+     &                       name_infile,name_orbinfo)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
       if (response) call set_ic_mrcc_response_targets(tgt_info,orb_info)
@@ -174,6 +178,9 @@ c dbgend
      &     trim(gecco_path)//"/cc_spec/multistate_eff_ham.py",
      &     name_infile,name_orbinfo)
 
+      if (set_up_T_corr) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/set_up_T_corr.py",
+     &     name_infile,name_orbinfo)
 
       return
       end

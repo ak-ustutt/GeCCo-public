@@ -2088,7 +2088,8 @@ c dbg
      &     val_label=(/'U  ','H  ','R12','U  '/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &     tgt_info,val_int=(/2/))
-      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'DESCR',2,tgt_info,
+      call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'LABEL_DESCR',2,
+     &     tgt_info,
      &     val_label=(/'2,3,H,X               ',
      &                 '2,,[HP][HVP],[HVX][HV]'/))
       call set_arg('Vring_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
@@ -2113,7 +2114,8 @@ c dbgend
      &     val_label=(/'U3 ','H  ','R12','U3 '/))
       call set_arg('U3_formal',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &     tgt_info,val_int=(/2/))
-      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+      call set_arg('U3_formal',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
+     &     tgt_info,
      &     val_label=(/'2,3,,X                '/))
       call set_arg('U3_formal',EXPAND_OP_PRODUCT,'IDX_SV',4,tgt_info,
      &     val_int=(/1,2,3,1/))
@@ -2188,7 +2190,8 @@ c dbgend
      &                   'R12 ','C0  ','U   '/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
-        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'LABEL_DESCR',4,
+     &       tgt_info,
      &       val_label=(/'3,4,,X             ',
      &                   '2,3,,V             ',
      &                   '4,5,,V             ',
@@ -2217,7 +2220,8 @@ c dbgend
      &                   'R12 ','C0  ','U   '/))
         call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/4/))
-        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'DESCR',4,tgt_info,
+        call set_arg('Vring_CABS',EXPAND_OP_PRODUCT,'LABEL_DESCR',4,
+     &       tgt_info,
      &       val_label=(/'3,4,,X             ',
      &                   '2,3,,V             ',
      &                   '4,5,,V             ',
@@ -2579,7 +2583,7 @@ c     &              parameters,2,tgt_info)
      &                   'R12  ','C-INT'/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'N_DESCR',1,
      &       tgt_info,val_int=(/2/))
-        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'DESCR',2,
+        call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'LABEL_DESCR',2,
      &       tgt_info,
      &       val_label=(/'2,3,,X   ','2,,[VP],X'/))
         call set_arg('CINT_R12',EXPAND_OP_PRODUCT,'IDX_SV',4,
@@ -2655,7 +2659,7 @@ c     &       val_label=(/'C-INT','C0^+ ','H    ',
 c     &                   'R12  ','C0   ','C-INT'/))
 c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'N_DESCR',1,
 c     &       tgt_info,val_int=(/4/))
-c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'DESCR',4,
+c        call set_arg('CINT_R12_CABS',EXPAND_OP_PRODUCT,'LABEL_DESCR',4,
 c     &       tgt_info,
 c     &       val_label=(/'3,4,,X','3,,[VP]V,XV',
 c     &                   '2,3,,V','3,5,,V'/))
@@ -3049,7 +3053,8 @@ C     &     val_label=(/'sR12 ','DENS ','R12si','DENS ','sR12 '/))
      &                 'Rsi-INT','DENS   ','sR12   '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',5,tgt_info,
      &     val_int=(/1,2,3,2,1/))
-      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',1,tgt_info,
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
+     &     tgt_info,
      &     val_label=(/'3,,VX,VH'/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'CONNECT',4,tgt_info,
      &             val_int=(/2,3,3,4/))
@@ -3072,7 +3077,8 @@ C     &                 'DENS   ','DENSinv','sR12   '/))
      &                 'DENS   ','DENSinv','sR12   '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'IDX_SV',7,tgt_info,
      &     val_int=(/1,2,3,4,3,2,1/))
-      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'DESCR',3,tgt_info,
+      call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'LABEL_DESCR',3,
+     &     tgt_info,
      &     val_label=(/'3,4,,V  ','4,,VX,VV','4,5,,VV '/))
       call set_arg('sR12-INT',EXPAND_OP_PRODUCT,'AVOID',10,tgt_info,
      &             val_int=(/2,3,5,6,2,6,3,5,2,5/))

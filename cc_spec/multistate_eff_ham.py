@@ -77,7 +77,8 @@ DEF_ME_LIST({LIST:'ME_E_MS',
 
 
 # Multistate packed effective Hamiltonian:
-# similar to the E(MR) but with variable C0_1
+# similar to the E(MR) but with C0_1,
+# < 0| C0^+ e^-T H e^T C0_1 |0>
 
 # Set its formula...
 new_target('F_pack_Heff_MS')
@@ -104,7 +105,7 @@ depend('F_pack_Heff_MS','DEF_ME_pack_Heff_MS')
 OPTIMIZE({LABEL_OPT:'FOPT_pack_Heff_MS',
           LABELS_IN:'F_pack_Heff_MS'})
 
-# and evaluate
+# and evaluate:
 new_target('EVAL_pack_Heff_MS')
 depend('FOPT_pack_Heff_MS','SOLVE_MRCC')
 for i_state in range( 1, n_states*n_states+1):
@@ -122,7 +123,6 @@ for i_state in range( 1, n_states*n_states+1):
         ADV_STATE({OPERATORS:'C0_1',
                    N_ROOTS:n_states,
                    USE1:True})
-
         ADV_STATE({OPERATORS:'T',
                    N_ROOTS:n_states})
 

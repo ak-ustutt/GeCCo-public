@@ -107,12 +107,12 @@ def _is_var( var):
 #
 class GeCCo_Input:
 
-    data = {}
-
     def __init__( self, *print_data):
         if (len( print_data) > 1):
             quit_error('Getting GeCCo input: too much arguments. Pass, optionally, a boolean for printing.')
-   
+
+        self.data = {}
+
         f = open( gecco_input, 'r')
         input_lines = f.readlines()
         f.close()
@@ -210,12 +210,13 @@ class GeCCo_Input:
 #
 class Orb_Info:
     # TODO: Try some exception handling
-    data = {}
 
     # Initialise class
     def __init__( self, *print_data):
         if (len( print_data) > 1):
             quit_error('Orb_Info: too much arguments. Pass, optionally, a boolean for printing.')
+
+        self.data = {}
 
         f = open( orb_info_name, 'r')
         for line in f:
@@ -372,11 +373,6 @@ _current_tgt = ''
 # Class for targets
 # 
 class _target:
-    name = ""
-    required = False
-    dependencies = []
-    joined = []
-    rules = []
 
     def __init__( self, name):
         self.name = name

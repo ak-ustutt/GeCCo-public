@@ -174,6 +174,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/1/))  ! root to be taken for wf
       call argument_add('multistate','method.MR',type=vtyp_log,
      &                  ldef=(/.false./))  ! multi state version
+      call argument_add('coupled_states','method.MR',type=vtyp_log,
+     &                  ldef=(/.true./))  ! coupled states
       call argument_add('minh','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! min. number of holes
       call argument_add('maxh','method.MR',type=vtyp_int,
@@ -281,6 +283,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('eval_dens3','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./)) ! evaluate 3-body dens matrix for transforming T3
       call argument_add('Favg_fix','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('set_up_T_corr','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./))
 
       call keyword_add('excite',context='method.MRCC')
