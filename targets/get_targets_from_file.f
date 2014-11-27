@@ -106,8 +106,8 @@
       if (trim(thing).EQ."Error when creating list:") then
        read(lutgt,FMT='(A256)',iostat=ios_var) args
        do while(ios_var.eq.0)
-        write(lulog,*) trim(args)
-        if (lulog.ne.luout) write(luout,*) trim(args)
+        write(lulog,fmt='(A)') trim(args)
+        if (lulog.ne.luout) write(luout,fmt='(A)') trim(args)
         read(lutgt,FMT='(A256)',iostat=ios_var) args
        end do
        call quit(0,'get_targets_from_file','Error signal from '//
@@ -119,8 +119,8 @@
      &     'Strange first line: '//
      &     'Target files have a well defined format.')
 
-      write(lulog,*) "Reading target file ",trim(file_name),":",
-     &     trim(file_origin)
+      write(lulog,fmt='("Reading target file ",A,":",A)')
+     &     trim(file_name),trim(file_origin)
       
       read(lutgt,*,iostat=ios_var) thing, tgt_name
       do while(ios_var.eq.0)
@@ -284,7 +284,7 @@
        str(ilett:ilett) = char
        ilett = ilett+1
        if(ilett.gt.len_str) then
-        write(lulog,*) "get_targets_from_file: Warning:"//
+        write(lulog,fmt='(A)') "get_targets_from_file: Warning:"//
      &       " string is larget than len_str."
         exit
        end if
