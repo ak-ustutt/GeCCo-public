@@ -35,7 +35,7 @@
      &     excrestr(:,:,:)
 
       integer ::
-     &     stndD(2,60), nsupD, nremblk, remblk(60), len
+     &     stndD(2,60), nsupD, nremblk, remblk(60)
       character(len=256) ::
      &     gecco_path
 
@@ -79,11 +79,7 @@
       call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
 
-      call get_environment_variable( "GECCO_DIR", value=gecco_path,
-     &     length = len)
-      if (len.EQ.0)
-     &     call quit(1,'set_mr_targets',
-     &     "Please, set the GECCO_DIR environment variable.")
+      call get_environment_variable( "GECCO_DIR", value=gecco_path)
 
       ! icMRCI calculation?
       l_icci = is_keyword_set('method.MRCI').gt.0

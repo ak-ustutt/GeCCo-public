@@ -1411,12 +1411,8 @@ c          mode = 'dia-R12'
       case(ABORT)
 *----------------------------------------------------------------------*
 
-       call get_arg('COMMENT',rule,tgt_info,val_label=label,
-     &      success=arg_there)
-       if(.not.arg_there) label = 'non specified reason.'
-       call quit(0,'process_rule','abort required: '//
-     &      trim(label))
-
+       call get_arg('COMMENT',rule,tgt_info,val_str=title)
+       call quit(0,'process_rule','abort required: '//trim(title))
 
 *----------------------------------------------------------------------*
 *     unknown:

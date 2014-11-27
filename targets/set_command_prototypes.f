@@ -780,7 +780,7 @@
      &     val_int=(/1/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(ABORT,tgt_info)
-      call set_arg('_PROTO_',ABORT,'COMMENT',0,tgt_info,
+      call set_arg('_PROTO_',ABORT,'COMMENT',1,tgt_info,
      &     val_str='non specified reason.',def=.true.)
 
 

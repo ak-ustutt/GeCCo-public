@@ -23,6 +23,20 @@
 
       type(filinf) ::
      &     fftgt
+      integer ::
+     &     len
+      character(len=256) ::
+     &     gecco_path
+
+      call get_environment_variable( "GECCO_DIR", value=gecco_path,
+     &     length = len)
+      if (len.EQ.0)
+     &     call quit(1,'set_mr_targets',
+     &     "Please, set the GECCO_DIR environment variable.")
+      ! Dummy python interface for warnings and general checks
+      call set_python_targets(tgt_info,
+     &     trim(gecco_path)//'/interfaces/setting_up_python_interface',
+     &     name_infile,name_orbinfo)
 
       call set_general_targets(tgt_info,orb_info,env_type)
 

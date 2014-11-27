@@ -55,7 +55,7 @@ DEF_HAMILTONIAN({LABEL:'PHI',
 new_target('MP2_FORM')
 # This is how dependencies are added:
 depend('MP2_HAM','MP2_OPS')
-# The following rule has list. As all python lists,
+# The following rule has lists. As all python lists,
 # they are defined with square brackets:
 EXPAND_OP_PRODUCT({LABEL:'MP2_FORM',
                    NEW:True,

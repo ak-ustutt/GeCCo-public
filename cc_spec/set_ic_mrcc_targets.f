@@ -51,7 +51,7 @@
      &     tred, igasreo(3), ngas, lblk, ntrunc,
      &     tfix, maxit, t1ord, maxcum, cum_appr_mode, gno, update_prc,
      &     prc_iter, project, simp, spinexpec,
-     &     real_minexc, len
+     &     real_minexc
       logical ::
      &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
@@ -94,8 +94,6 @@
       if(maxroot.le.0) maxroot=ciroot
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
-      call get_argument_value('method.MR','coupled_states',
-     &     lval=MS_coupled)
       call get_argument_value('method.MR','prc_type',
      &     ival=prc_type)
       call get_argument_value('method.MR','prc_shift',
@@ -128,6 +126,8 @@
      &     ival=maxcom)
       call get_argument_value('method.MRCC','maxcom_en',
      &     ival=maxcom_en)
+      call get_argument_value('method.MRCC','coupled_states',
+     &     lval=MS_coupled)
       call get_argument_value('method.MRCC','H1bar',
      &     lval=h1bar)
       call get_argument_value('method.MRCC','maxcom_h1bar',
@@ -231,11 +231,7 @@
         end if
       end if
 
-      call get_environment_variable( "GECCO_DIR", value=gecco_path,
-     &     length = len)
-      if (len.EQ.0)
-     &     call quit(1,'set_mr_targets',
-     &     "Please, set the GECCO_DIR environment variable.")
+      call get_environment_variable( "GECCO_DIR", value=gecco_path)
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.abs(x_ansatz).ne.1d0
      &    .and.x_ansatz.ne.-2d0.and.x_ansatz.ne.-3d0
@@ -1488,9 +1484,9 @@ c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
 c dbgend
 
 c To be released
-c$$$      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
-c$$$     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
-c$$$     &     name_infile,name_orbinfo)
+c      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
+c     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
+c     &     name_infile,name_orbinfo)
 
       ! Residual part of Lagrangian
       call add_target2('F_LAG_L',.false.,tgt_info)
@@ -1556,7 +1552,12 @@ c dbgend
 
       ! Residual
       call add_target2('F_OMG',.false.,tgt_info)
-      call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
+c YAA to be released
+c      if (multistate.and.MS_coupled) then
+c       call set_dependency('F_OMG','F_MRCC_LAG_coupl',tgt_info)
+c      else
+       call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
+c      end if
       call set_dependency('F_OMG','OMG',tgt_info)
       if (maxcum.gt.0) then
         call set_dependency('F_OMG','F_LAG_L',tgt_info)
@@ -1577,6 +1578,9 @@ c dbgend
      &     val_label=(/'OMG'//trim(c_st)/))
       call set_arg('F_OMG',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'L'//trim(c_st)/))
+c select_special delete disconected multistate couplings terms:
+c Maybe the 'MODE' can be extended for the coupled case. Investigate!
+      if (.not.(MS_coupled.and.multistate)) then
       if (tfix.eq.0) then ! tfix>0: contains both T and Tfix
         call set_rule2('F_OMG',SELECT_SPECIAL,tgt_info)
         call set_arg('F_OMG',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
@@ -1602,17 +1606,17 @@ c dbgend
         call set_arg('F_OMG',INVARIANT,'TITLE',1,tgt_info,
      &       val_str='Higher-order residual for first iteration')
       end if
+      end if
       end do
-c      if (tfix.gt.0) then
+c dbg
 c      do i_state=1,n_states
 c       c_st = state_label(i_state,.false.)
-c        call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
-c        call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &       val_label=(/'F_OMG'//trim(c_st)/))
+c       call set_rule2('F_OMG',PRINT_FORMULA,tgt_info)
+c       call set_arg('F_OMG',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &      val_label=(/'F_OMG'//trim(c_st)/))
 c      end do
 c      call set_rule2('F_OMG',ABORT,tgt_info)
-c      end if
-
+c dbgeng
 
       ! Lagrangian without Lambda...
       call add_target2('F_E_C0',.false.,tgt_info)
@@ -1715,7 +1719,6 @@ c dbgend
      &     val_label=(/'A_C0'//trim(c_st)/))
       call set_arg('F_OMG_C0',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'C0'//trim(c_st)//'^+'/))
-
       if(multistate) then
       labels(1) = "E(MR)"
       labels(2) = "E(MR)"//trim(c_st_2)
@@ -1727,7 +1730,6 @@ c dbgend
       call set_arg('F_OMG_C0',REPLACE,'OP_LIST',2,tgt_info,
      &     val_label=labels)
       end if
-
 c      call set_rule2('F_OMG_C0',INVARIANT,tgt_info)
 c      call set_arg('F_OMG_C0',INVARIANT,'LABEL_RES',1,tgt_info,
 c     &     val_label=(/'F_OMG_C0'/))
@@ -1829,8 +1831,6 @@ c dbgend
         call set_arg('F_MRCC_E',SELECT_SPECIAL,'MODE',1,tgt_info,
      &       val_str='CHECK    X')
       end if
-
-c Actually, it seems it is not needed
 c Energies for individual states
       if(multistate)then
        do i_state = 1,n_states
@@ -2763,10 +2763,10 @@ c dbgend
       end do
 c dbg
 c      do i_state = 1, n_states
-c      c_st = state_label(i_state,.false.)
-c      call set_rule2('F_PPint',PRINT_FORMULA,tgt_info)
-c      call set_arg('F_PPint',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'F_PPint'//trim(c_st)/))
+c       c_st = state_label(i_state,.false.)
+c       call set_rule2('F_PPint',PRINT_FORMULA,tgt_info)
+c       call set_arg('F_PPint',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &      val_label=(/'F_PPint'//trim(c_st)/))
 c      end do
 c dbgend
 
@@ -2949,6 +2949,7 @@ c      call set_rule2('F_preHHint',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_preHHint',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_preHHint'//trim(c_st)/))
 c      end do
+c      call set_rule2('F_preHHint',ABORT,tgt_info)
 c dbgend
 
       call add_target2('F_HHint',.false.,tgt_info)
@@ -4275,6 +4276,9 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
+c The presence of these intermediates crash the optimization
+c of F_OMG for the coupled-states case. Investigate!
+      if(.not.(MS_coupled.and.multistate)) then
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
         labels(1:20)(1:len_target_name) = ' '
         ndef = 0
@@ -4316,6 +4320,7 @@ c        labels(ndef+2) = 'F_INT_T2H'
 c dbg
         call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
      &               val_label=labels(1:ndef))
+      end if
       end if
 
       labels(1:20)(1:len_target_name) = ' '

@@ -14,10 +14,13 @@ msc = 1
 if (orb.get('ims') != 0):
     msc = 0
 
+solve_mrcc = 'SOLVE_MRCC'
+if (inp.is_keyword_set('method.R12')):
+    solve_mrcc += '_F12' 
 
 # create the Tfix list, to be used by the (T) correction
 new_target('save_Tfix')
-depend('SOLVE_MRCC')
+depend(solve_mrcc)
 DEF_ME_LIST({LIST:'ME_Tfix',
              OPERATOR:'T',
              '2MS':0,
