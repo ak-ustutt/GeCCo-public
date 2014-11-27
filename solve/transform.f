@@ -101,7 +101,7 @@
       call read_form_list(f_eval%fhand,fl_eval,.true.)
 
 c dbg
-      call print_form_list_short(lulog,fl_eval,op_info)
+c     call print_form_list_short(lulog,fl_eval,op_info)
 c dbg
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_eval,op_info)
