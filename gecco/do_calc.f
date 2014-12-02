@@ -70,7 +70,7 @@
       call init_target_info(tgt_info)
       call set_command_prototypes(tgt_info,env_type)
       call set_target_list(tgt_info,orb_info,env_type,name_infile,
-     &     fforbinf%name)
+     &     fforbinf)
 
       ! initialize basis info blocks and set memory blocks:
       !  operators:

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_target_list(tgt_info,orb_info,env_type,
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf)
 *----------------------------------------------------------------------*
 *     set up targets
 *----------------------------------------------------------------------*
@@ -18,8 +18,10 @@
      &     orb_info
       character(*), intent(in) ::
      &     env_type
+      type(filinf), intent(in) ::
+     &     fforbinf
       character(*), intent(in) ::
-     &     name_infile, name_orbinfo
+     &     name_infile
 
       type(filinf) ::
      &     fftgt
@@ -36,7 +38,7 @@
       ! Dummy python interface for warnings and general checks
       call set_python_targets(tgt_info,
      &     trim(gecco_path)//'/interfaces/setting_up_python_interface',
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf%name)
 
       call set_general_targets(tgt_info,orb_info,env_type)
 
@@ -73,7 +75,7 @@
       ! multireference section
       if (is_keyword_set('method.MR').gt.0)
      &     call set_mr_targets(tgt_info,orb_info,env_type,
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf)
 
       ! experimental section
       if (is_keyword_set('calculate.experimental').gt.0) then
@@ -82,7 +84,7 @@
 
       ! Interfaces
       if (is_keyword_set('calculate.interfaces').gt.0) then
-        call set_interface_targets(tgt_info,name_infile,name_orbinfo)
+        call set_interface_targets(tgt_info,name_infile,fforbinf%name)
       end if
 
       call set_idx4deps(tgt_info)

@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine set_mr_targets(tgt_info,orb_info,env_type,
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf)
 *----------------------------------------------------------------------*
 *     calls target generators for multireference methods
 *
@@ -13,6 +13,7 @@
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
       include 'opdim.h'
+      include 'def_filinf.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -23,8 +24,10 @@
      &     orb_info
       character(len=*), intent(in) ::
      &     env_type
+      type(filinf), intent(in) ::
+     &     fforbinf
       character(*), intent(in) ::
-     &     name_infile, name_orbinfo
+     &     name_infile
 
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
@@ -65,6 +68,10 @@
         if (sym.gt.orb_info%nsym) call quit(1,'set_mr_targets',
      &           'impossible symmetry')
       end if
+
+      ! print orbital informations (after get it changed from input)
+
+      call put_orbinfo(orb_info, fforbinf)
 
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
@@ -169,12 +176,12 @@ c dbgend
      &                       excrestr,maxh,maxp)
       if (response) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/cc_spec/icmrcc_ee_targets.py",
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf%name)
       deallocate(excrestr)
 
       if (multistate) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/cc_spec/multistate_eff_ham.py",
-     &     name_infile,name_orbinfo)
+     &     name_infile,fforbinf%name)
 
 
       return
