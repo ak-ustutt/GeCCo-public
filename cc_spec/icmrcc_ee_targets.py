@@ -659,15 +659,16 @@ for _icnt in range (0,_ncnt):
                      OPERATOR:'SR_rspns_q',
                      IRREP:_isym_r,
                      '2MS':0,
-                     AB_SYM:_msc_r})
+                     AB_SYM:_msc_r,
+                     MIN_REC:1,MAX_REC:_no_root})
 
 
-        OPTIMIZE({LABEL_OPT:'F_OPT_SR',
+        OPTIMIZE({LABEL_OPT:'F_OPT_SR'+_extnsn,
                   LABELS_IN:'F_SR_rspns_q'})
 
         TRANSFORM({LIST_IN:'ME_R_q'+_extnsn,
                    LIST_OUT:'ME_SR_q'+_extnsn,
-                   FORM:'F_OPT_SR'})
+                   FORM:'F_OPT_SR'+_extnsn})
        
         ANALYZE_MEL({LISTS:['ME_R_mu'+_extnsn,'ME_R_q'+_extnsn],
                      LISTS_CV:['ME_R_mu'+_extnsn,'ME_SR_q'+_extnsn]})
