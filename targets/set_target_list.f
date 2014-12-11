@@ -33,7 +33,7 @@
       call get_environment_variable( "GECCO_DIR", value=gecco_path,
      &     length = len)
       if (len.EQ.0)
-     &     call quit(1,'set_mr_targets',
+     &     call quit(1,'set_target_list',
      &     "Please, set the GECCO_DIR environment variable.")
       ! Dummy python interface for warnings and general checks
       call set_python_targets(tgt_info,

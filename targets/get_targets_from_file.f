@@ -119,7 +119,7 @@
      &     'Strange first line: '//
      &     'Target files have a well defined format.')
 
-      write(lulog,fmt='("Reading target file ",A,":",A)')
+      write(lulog,fmt='(" Reading target file ",A,":",A)')
      &     trim(file_name),trim(file_origin)
       
       read(lutgt,*,iostat=ios_var) thing, tgt_name
@@ -284,8 +284,8 @@
        str(ilett:ilett) = char
        ilett = ilett+1
        if(ilett.gt.len_str) then
-        write(lulog,fmt='(A)') "get_targets_from_file: Warning:"//
-     &       " string is larget than len_str."
+        write(lulog,fmt='("get_targets_from_file: Warning: "'//
+     &       '"string is larget than len_str.")')
         exit
        end if
       end do

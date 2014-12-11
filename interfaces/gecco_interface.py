@@ -66,6 +66,11 @@ if (len( sys.argv) != 3):
 _gecco_input = sys.argv[1]
 _orb_info_name = sys.argv[2]
 
+# For GeCCo_Input
+_possible_contexts=['general',
+                    'orb_space',
+                    'method',
+                    'calculate']
 # ====================================================================
 # Class for input information
 #
@@ -161,8 +166,15 @@ class GeCCo_Input:
                         else:
                             self.data[new_key] = new_value
                 
-            else:
+            elif (line in _possible_contexts):
                 context = line
+            else:
+                info = line.split(' ')
+                key = ''
+                if (len( info) >= 1):
+                    for i in range(0, len(info)):
+                        key += '.' + info[i]
+                self.data[context + key] = None
 
         # Print, if required
         if (len( print_data) == 1):
@@ -173,7 +185,7 @@ class GeCCo_Input:
 
     def is_keyword_set( self, arg):
         for k in self.data:
-            if (re.match(arg + '\.', k)):
+            if (re.match(arg + '\.{0,1}', k)):
                 return True
         return False
 
@@ -591,8 +603,8 @@ _f = open( _rules_names_file, 'r')
 _rules = _f.readlines()
 _f.close()
 _rules = map( str.strip, _rules)
-for r in _rules:
-    exec ('def ' + r + ' ( arguments):\n\trule("' + r + '", arguments)')
+for _r in _rules:
+    exec ('def ' + _r + ' ( arguments):\n\trule("' + _r + '", arguments)')
 
 # Variables for arguments
 _arguments_names_file = _gecco_dir + "/interfaces/arguments_names.txt"
@@ -601,26 +613,27 @@ _f = open( _arguments_names_file, 'r')
 _keywords = _f.readlines()
 _f.close()
 _keywords = map( str.strip, _keywords)
-for k in _keywords:
-    [k_name, k_type] =  k.split()
-    if (k_type == 'int'):
-        _list_int_arg.append( k_name)
-    elif (k_type == 'label'):
-        _list_label_arg.append( k_name)
-    elif (k_type == 'log'):
-        _list_log_arg.append( k_name)
-    elif (k_type == 'real'):
-        _list_real_arg.append( k_name)
-    elif (k_type == 'str'):
-        _list_str_arg.append( k_name)
+for _k in _keywords:
+    [_k_name, _k_type] =  _k.split()
+    if (_k_type == 'int'):
+        _list_int_arg.append( _k_name)
+    elif (_k_type == 'label'):
+        _list_label_arg.append( _k_name)
+    elif (_k_type == 'log'):
+        _list_log_arg.append( _k_name)
+    elif (_k_type == 'real'):
+        _list_real_arg.append( _k_name)
+    elif (_k_type == 'str'):
+        _list_str_arg.append( _k_name)
     else:
-        quit_error('Unknown type of argument: ' + k_type)
+        quit_error('Unknown type of argument: ' + _k_type)
 
-    if k_name in _rules:
+    if _k_name in _rules:
         if (_dummy_call):
-            warning( '"' + k_name + '" is an argument and a rule. Use quotes for this keyword.')
-    elif (not( re.match("[a-zA-Z_][a-zA-Z0-9_]*", k_name))):
+            warning( '"' + _k_name + '" is an argument and a rule. Use quotes for this keyword.')
+    elif (not( re.match("[a-zA-Z_][a-zA-Z0-9_]*", _k_name))):
         if (_dummy_call):
-            warning( '"' + k_name + '" is not a valid name for a Python variable. Use quotes for this keyword.')
+            warning( '"' + _k_name + '" is not a valid name for a Python variable. Use quotes for this keyword.')
     else:
-        exec (k_name + ' = "' + k_name + '"')
+        exec (_k_name + ' = "' + _k_name + '"')
+
