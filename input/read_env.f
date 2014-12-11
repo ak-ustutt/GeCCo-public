@@ -15,6 +15,10 @@
      &     write(lulog,*) 'Environment type: ',
      &     trim(env_type)
 
+c     gfortran does not initialize components of derived data types to zero,
+c     even with -finit-local-zero flag!
+      call init_orbinf_to_zero()
+
       select case(trim(env_type))
       case ('dalton','DALTON','dalton_special','DALTON_SPECIAL')
         call read_env_dalton(orb_info)
@@ -35,4 +39,25 @@
       end select
 
       return
+
+      contains
+
+      subroutine init_orbinf_to_zero()
+      implicit none
+      orb_info%nsym = 0
+      orb_info%ngas = 0
+      orb_info%nspin = 0
+      orb_info%ntoob = 0
+      orb_info%caborb = 0
+      orb_info%nbast = 0
+      orb_info%nxbast = 0
+      orb_info%nactel = 0
+      orb_info%nactorb = 0
+      orb_info%lsym = 0
+      orb_info%imult = 0
+      orb_info%ims = 0
+      orb_info%n_bound_orbs = 0
+      orb_info%n_freeze_rcmd = 0
+      end subroutine init_orbinf_to_zero
+
       end
