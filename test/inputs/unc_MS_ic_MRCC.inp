@@ -7,7 +7,7 @@ orb_space
  shell type=frozen,def=(3,0,0,0)
 method
  MR maxexc=2,minexc=1,pure_vv=F,project=3,ms=0,sym=1,mult=1,multistate=T,ciroot=2
- MRCC maxcom_en=2,maxcom_res=1,coupled_states=T
+ MRCC maxcom_en=2,maxcom_res=1,coupled_states=F
 calculate
  solve maxiter=100,conv=1d-8,maxsub=8
  solve non_linear maxsub=8,optref=-3,conv=1d-4,preopt=F

@@ -9,6 +9,7 @@ orb = Orb_Info()
 
 multistate=inp.get('method.MR.multistate') == 'T'
 ciroot=int(inp.get('method.MR.ciroot'))
+skip=inp.is_keyword_set('calculate.skip_E')
 
 msc = 1
 if (orb.get('ims') != 0):
@@ -128,7 +129,7 @@ for i_state in range( 1, n_states*n_states+1):
 
 
 # Diagonalise the effective Hamiltonian
-new_target('SOLVE_Heff_MS',multistate)
+new_target('SOLVE_Heff_MS',multistate and not(skip))
 depend('EVAL_pack_Heff_MS','DEF_ME_C_MS','DEF_ME_E_MS')
 
 EVP_PACKED_OP({LIST_IN:'ME_pack_Heff_MS',

@@ -171,7 +171,8 @@ c dbgend
      &                       excrestr,maxh,maxp,use_met)
       if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp,.not.use_f12,
-     &                       nsupD,stndD,nremblk,remblk)
+     &                       nsupD,stndD,nremblk,remblk,
+     &                       name_infile,fforbinf%name)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
       if (response) call set_python_targets(tgt_info,

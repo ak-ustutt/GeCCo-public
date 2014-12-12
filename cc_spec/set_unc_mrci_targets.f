@@ -705,8 +705,13 @@ c dbgend
      &             val_int=(/1/))
       call set_arg('DEF_ME_C0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
      &             val_int=(/maxroot/))
-      call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
-     &             val_int=(/ciroot/))
+      if (multistate) then
+       call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
+     &      val_int=(/1/))
+      else
+       call set_arg('DEF_ME_C0',DEF_ME_LIST,'REC',1,tgt_info,
+     &      val_int=(/ciroot/))
+      end if
 !     ME_C0_<i_state>
       if (multistate) then
        do i_state=1,n_states,1
@@ -1034,6 +1039,14 @@ c dbgend
      &   call set_dependency('SOLVE_REF','FOPT_C0_prj',tgt_info)
       if (guess.gt.0)
      &   call set_dependency('SOLVE_REF','C0guess',tgt_info)
+      if (multistate) then
+       do i_state = 1,n_states
+        c_st = state_label(i_state,.true.)
+        labels(i_state) = "ME_C0"//trim(c_st)
+       end do
+      else
+       labels(1) = "ME_C0"
+      endif
       if (.not.oldref) then
         call set_rule2('SOLVE_REF',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
@@ -1066,10 +1079,32 @@ c dbgend
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
      &         val_label=(/'FOPT_C0_prj'/))
         end if
+!     Spread ME_C0 for the states
+        if (multistate) then
+         call set_rule2('SOLVE_REF',SPREAD_MEL,tgt_info)
+         call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_IN',1,tgt_info,
+     &        val_label=(/'ME_C0'/))
+         if (n_states.GT.20) call quit(1,'set_unc_mrci_targets',
+     &      'Static vector labels does not suport more than 20 states')
+         call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_OUT',n_states,
+     &        tgt_info,val_label=labels)
+        endif
       else
+       call set_rule2('SOLVE_REF',PRINT_,tgt_info)
+       call set_arg('SOLVE_REF',PRINT_,'STRING',1,tgt_info,
+     &      val_str='Reference coefficients from old file.')
         inquire(file='ME_C0_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
      &           'File for CASSCF coefficients not found!')
+        if (multistate) then
+         do i_state=1,n_states,1
+          c_st = state_label(i_state,.true.)
+          inquire(file='ME_C0'//trim(c_st)//'_list.da',exist=l_exist)
+          if (.not.l_exist) call quit(1,'set_unc_mrci_targets',
+     &         'File for CASSCF coefficients not found! State:'
+     &         //trim(c_st))
+         end do
+        end if
 c dbg
 c        call set_rule2('SOLVE_REF',SET_MEL,tgt_info)
 c        call set_arg('SOLVE_REF',SET_MEL,'LIST',1,tgt_info,
@@ -1080,22 +1115,6 @@ c        call set_arg('SOLVE_REF',SET_MEL,'VAL_LIST',2,tgt_info,
 c     &       val_rl8=(/1d0,1d0/))
 c dbgend
       end if
-!     Spread ME_C0 for the states
-      if (multistate) then
-       do i_state = 1,n_states
-        c_st = state_label(i_state,.true.)
-        labels(i_state) = "ME_C0"//trim(c_st)
-       end do
-       call set_rule2('SOLVE_REF',SPREAD_MEL,tgt_info)
-       call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_IN',1,tgt_info,
-     &      val_label=(/'ME_C0'/))
-       if (n_states.GT.20) call quit(1,'set_unc_mrci_targets',
-     &      'Static vector labels does not suport more than 20 states')
-       call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_OUT',n_states,tgt_info,
-     &      val_label=labels)
-      else
-       labels(1) = "ME_C0"
-      endif
       if (cmaxexc.eq.0) then
        do i_state=1,n_states,1
         if (.NOT.multistate) then

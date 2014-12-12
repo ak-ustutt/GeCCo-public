@@ -1,9 +1,9 @@
 title
-  Multistate icMRCC: LiF, r=4.0, Li:cc-pVDZ, F:aug-cc-pVDZ; MOLPRO env
+  Uncoupled multistate icMRCC: LiF, r=4.0, Li:cc-pVDZ, F:aug-cc-pVDZ; MOLPRO env
 molecule
   LiF_SA_CAS_MOLPRO
 input
-  MS_ic_MRCC.inp
+  unc_MS_ic_MRCC.inp
 check
   label verify multistate
   find multistate =

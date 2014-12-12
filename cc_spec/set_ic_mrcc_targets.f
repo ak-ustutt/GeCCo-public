@@ -290,10 +290,16 @@ c_T_proj_3_fix
      &    call quit(1,'set_ic_mrcc_targets',
      &              'no restart for jac_thresh>0')
       end if
+
+!     (current) restrictions on multistate calculculations
       if (multistate) then
-       if(tfix.gt.0)
+       if(tfix.ne.0)
      &      call quit(1,'set_ic_mrcc_targets',
-     &      'Tfix not yet implemented for multistate')
+     &      'Tfix!=0 not yet implemented for multistate.')
+       if ((optref.eq.-1.or.optref.eq.-2).and.MS_coupled)
+     &      call quit(1,'set_ic_mrcc_targets',
+     &      'coupled multistate calculation not yet set to'//
+     &      'optref=-1,-2: reference states are not kept orthogonal!')
       end if
 
 !     L, T and OMG ops need the scalar block for project = 2,3
@@ -1483,10 +1489,10 @@ c     &     val_label=(/'F_MRCC_LAG'/))
 c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
 c dbgend
 
-c To be released
-c      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
-c     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
-c     &     name_infile,name_orbinfo)
+      ! Multistate Coupling term in Lagrangian
+      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
+     &     name_infile,name_orbinfo)
 
       ! Residual part of Lagrangian
       call add_target2('F_LAG_L',.false.,tgt_info)
@@ -1552,12 +1558,11 @@ c dbgend
 
       ! Residual
       call add_target2('F_OMG',.false.,tgt_info)
-c YAA to be released
-c      if (multistate.and.MS_coupled) then
-c       call set_dependency('F_OMG','F_MRCC_LAG_coupl',tgt_info)
-c      else
+      if (multistate.and.MS_coupled) then
+       call set_dependency('F_OMG','F_MRCC_LAG_coupl',tgt_info)
+      else
        call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
-c      end if
+      end if
       call set_dependency('F_OMG','OMG',tgt_info)
       if (maxcum.gt.0) then
         call set_dependency('F_OMG','F_LAG_L',tgt_info)
@@ -1578,8 +1583,8 @@ c      end if
      &     val_label=(/'OMG'//trim(c_st)/))
       call set_arg('F_OMG',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'L'//trim(c_st)/))
-c select_special delete disconected multistate couplings terms:
-c Maybe the 'MODE' can be extended for the coupled case. Investigate!
+c     ATTENTION: select_special delete disconected multistate couplings terms:
+c     Maybe the 'MODE' can be extended for the coupled case. Investigate!
       if (.not.(MS_coupled.and.multistate)) then
       if (tfix.eq.0) then ! tfix>0: contains both T and Tfix
         call set_rule2('F_OMG',SELECT_SPECIAL,tgt_info)
@@ -1801,24 +1806,15 @@ c dbgend
        call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',n_states+1,
      &       tgt_info,val_label=labels)
       else if (maxit.gt.1) then ! attention!! not for multistate!
-       if(multistate)
-     &      call quit(1,'set_ic_mrcc_targets',
-     &      'tfix.ne.0 not implemented for multistate')
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',3,tgt_info,
      &       val_label=(/'L     ','Tfix^+','E(MR) '/))
       else
-       if(multistate)
-     &      call quit(1,'set_ic_mrcc_targets',
-     &      'tfix.ne.0 not implemented for multistate')
         call set_arg('F_MRCC_E',INVARIANT,'OPERATORS',4,tgt_info,
      &       val_label=(/'L     ','Tfix^+','E(MR) ','T     '/))
       end if
       call set_arg('F_MRCC_E',INVARIANT,'TITLE',1,tgt_info,
      &     val_str='MRCC energy expression')
       if (tfix.ne.0) then
-       if(multistate)
-     &      call quit(1,'set_ic_mrcc_targets',
-     &      'tfix.ne.0 not implemented for multistate')
         call set_rule2('F_MRCC_E',SELECT_SPECIAL,tgt_info)
         call set_arg('F_MRCC_E',SELECT_SPECIAL,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_MRCC_E'/))
@@ -4276,7 +4272,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
-c The presence of these intermediates crash the optimization
+c     ATTENTION: The presence of these intermediates crash the optimization
 c of F_OMG for the coupled-states case. Investigate!
       if(.not.(MS_coupled.and.multistate)) then
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
@@ -5580,6 +5576,8 @@ c dbgend
       call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
+      if (multistate.and.MS_coupled.and.optref.eq.-3)
+     &     call set_dependency('SOLVE_MRCC','FOPT_MS_C0_prj',tgt_info)
       if (restart) ! project out redundant part (if sv_thr. changed)
      &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
       prc_mode_str = 'TRF'  ! use diagonal in orth. basis (for T part)
@@ -5630,16 +5628,34 @@ c dbgend
       call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
       if (optref.lt.0) then
         if (preopt) then
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',1,tgt_info,
-     &         val_label=(/'ME_T'/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
-     &         val_str=prc_mode_str)
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',1,tgt_info,
-     &         val_label=(/'ME_OMG'/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',1,tgt_info,
-     &         val_label=(/trim(dia_label)/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
-     &       val_label=(/'ME_E(MR)'/))
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'N_ROOTS',1,tgt_info,
+     &        val_int=[n_states])
+         do i_state = 1,n_states
+          c_st = state_label(i_state,.false.)
+          labels(i_state) = 'ME_T'//trim(c_st)
+         end do
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_OPT',n_states,
+     &        tgt_info,val_label=labels)
+         prc_mode_str_2 = trim(prc_mode_str)
+         do i_state = 2,n_states
+          prc_mode_str_2 = trim(prc_mode_str_2)//" "//trim(prc_mode_str)
+         end do
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'MODE',1,tgt_info,
+     &        val_str=prc_mode_str_2)
+         do i_state = 1,n_states
+          c_st = state_label(i_state,.false.)
+          labels(i_state) = 'ME_OMG'//trim(c_st)
+         end do
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_RESID',n_states,
+     &        tgt_info,val_label=labels)
+         do i_state = 1,n_states
+          c_st = state_label(i_state,.false.)
+          labels(i_state) = trim(dia_label)//trim(c_st)
+         end do
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_PRC',n_states,
+     &        tgt_info,val_label=labels)
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_E',1,tgt_info,
+     &        val_label=(/'ME_E(MR)'/))
           if (prc_iter.ge.1) then
             call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',4,tgt_info,
      &         val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag',
@@ -5648,11 +5664,15 @@ c dbgend
             call set_arg('SOLVE_MRCC',SOLVENLEQ,'LIST_SPC',3,tgt_info,
      &         val_label=(/'ME_Ttr   ','ME_Dtr   ','ME_Dtrdag'/))
           end if
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',1,tgt_info,
-     &       val_label=(/'FOPT_T'/))
-          call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
-     &         val_label=(/'FOPT_OMG'/))
-          call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
+         do i_state = 1,n_states
+          c_st = state_label(i_state,.false.)
+          labels(i_state) = "FOPT_T"//trim(c_st)
+         end do
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM_SPC',n_states,
+     &        tgt_info,val_label=labels)
+         call set_arg('SOLVE_MRCC',SOLVENLEQ,'FORM',1,tgt_info,
+     &        val_label=(/'FOPT_OMG'/))
+         call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
         end if
       end if
       call set_arg('SOLVE_MRCC',SOLVENLEQ,'N_ROOTS',1,tgt_info,
@@ -5994,12 +6014,14 @@ c dbgend
         call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
      &       'ME_S(S+1)',1,0,
      &       parameters,2,tgt_info)
-        call set_rule2('SOLVE_MRCC',ADV_STATE,tgt_info)
-        call set_arg('SOLVE_MRCC',ADV_STATE,'LISTS',2,tgt_info,
-     &       val_label=['ME_C0    ',
-     &                  'ME_S(S+1)'])
-        call set_arg('SOLVE_MRCC',ADV_STATE,'N_ROOTS',1,tgt_info,
-     &       val_int=[n_states])
+        if (multistate) then
+         call set_rule2('SOLVE_MRCC',ADV_STATE,tgt_info)
+         call set_arg('SOLVE_MRCC',ADV_STATE,'LISTS',2,tgt_info,
+     &        val_label=['ME_C0    ',
+     &                   'ME_S(S+1)'])
+         call set_arg('SOLVE_MRCC',ADV_STATE,'N_ROOTS',1,tgt_info,
+     &        val_int=[n_states])
+        end if
        end do
       end if
       if (spinexpec.gt.0) then

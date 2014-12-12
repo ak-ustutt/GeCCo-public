@@ -73,14 +73,14 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, traf, last_state, multistate
+     &     conv, restart, traf, last_state, multistate, MS_coupled
       character(len_opname) ::
      &     label, dia_label
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout,
      &     ndx, idx_res_xret(nopt), jdx, it_print,
-     &     i_state, i_state2, ndx_eff, n_energies, nopt_state
+     &     i_state, i_state2, ndx_eff, idx_eff, n_energies, nopt_state
       integer, allocatable ::
      &     idx_en_xret(:)
       real(8) ::
@@ -122,11 +122,19 @@ c dbgend
      &     mel_pnt, mel_pnt2
       character(50) ::
      &     out_format
+      character(5) ::
+     &     evp_mode
+      character(len_target_name) ::
+     &     evp_spc_me, evp_spc_form
+      integer ::
+     &     evp_n_spc_me, evp_n_spc_form
 
       ifree = mem_setmark('solve_nleq')
 
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
+      call get_argument_value('method.MRCC','coupled_states',
+     &     lval=MS_coupled)
 
       nopt_state = nopt/n_states
 
@@ -422,7 +430,7 @@ c     &       ff_trv,ff_h_trv,
         ! do C0 optimization if requested
         if (opti_info%optref.eq.-3.and.
      &      (imacit.gt.1.or.restart.or.opti_info%skip_resx)
-     &      .and..not.conv.and.nspcfrm.gt.1) then
+     &      .and..not.conv.and.nspcfrm.gt.n_states) then
           call get_argument_value('method.MR','ciroot',
      &       ival=idx)
           call get_argument_value('method.MR','maxroot',
@@ -433,73 +441,86 @@ c     &       ff_trv,ff_h_trv,
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
           do i_state=1,n_states
-           thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt+1)*
+           thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt_state+1)*
      &          opti_info%mic_ahead,1d-5)
           end do
 
           idxmel = idx_mel_list("ME_C0",op_info)
           mel_pnt => op_info%mel_arr(idxmel)%mel
 
-          if (spinadapt.gt.0) then
-
-           do i_state=1,n_states!,1,-1 ! other direction to get the correct C0
-            c_st  = state_label(i_state,.false.)
-            c_st2 = state_label(i_state,.true.)
-            if(multistate) call switch_mel_record(mel_pnt,i_state)
-            if(multistate)then
-             ndx_eff = i_state
-            else
-             ndx_eff = ndx
-            end if
-
-            call solve_evp('SPP',1,ndx_eff,i_state, !ndx,idx,
-     &                     'ME_C0',trim(dia_label),'A_C0',
-     &                     'C0','FOPT_OMG_C0'//trim(c_st),
-     &                     'ME_C0_sp',1,
-     &                     'FOPT_C0_sp',1,thr_suggest(i_state),
-     &                     op_info,form_info,str_info,strmap_info,
-     &                     orb_info)
-
-            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
-             idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
-             mel_pnt2 => op_info%mel_arr(idxmel)%mel
-             call list_copy(mel_pnt,mel_pnt2,.false.)
-            end if
-
-           end do
-
-           ! copy the saved ME_C0//c_st2 back to the records of ME_C0
-           if(multistate)then
-            do i_state=1,n_states
-             c_st = state_label(i_state,.true.)
-             call switch_mel_record(mel_pnt,i_state)
-             idxmel = idx_mel_list("ME_C0"//trim(c_st),op_info)
-             mel_pnt2 => op_info%mel_arr(idxmel)%mel
-             call list_copy(mel_pnt2,mel_pnt,.false.)
-            end do
-            call switch_mel_record(mel_pnt,1)
+          do i_state=1,n_states
+           c_st  = state_label(i_state,.false.)
+           c_st2 = state_label(i_state,.true.)
+           if (multistate) call switch_mel_record(mel_pnt,i_state)
+           if (multistate) then
+            ndx_eff = i_state
+            idx_eff = i_state
+           else
+            ndx_eff = ndx
+            idx_eff = idx
            end if
 
-          else
+           ! ATTENTION! coupled multistates are not using spinadapt!!!
+           ! This should be changed also inside the EVP solver.
+           if (multistate.and.MS_coupled.and.i_state.gt.1) then
+            evp_mode = 'PRJ'
+            evp_spc_me = '-'
+            evp_n_spc_me = 0
+            evp_spc_form = 'FOPT_C0'//trim(c_st)//'_prj'
+            evp_n_spc_form = 1
 
-           if(multistate)
-     &          call quit(1,'solve_nleq',
-     &          'multistate not set for spinadapt!= 0')
+           else if (spinadapt.gt.0) then
+            evp_mode = 'SPP'
+            evp_spc_me = 'ME_C0_sp'
+            evp_n_spc_me = 1
+            evp_spc_form = 'FOPT_C0_sp'
+            evp_n_spc_form = 1
 
-            call solve_evp('DIA',1,ndx,idx,
-     &                 'ME_C0',trim(dia_label),'A_C0',
-     &                 'C0','FOPT_OMG_C0','-',0,'-',0,
-     &                 thr_suggest(i_state),
-     &                 op_info,form_info,str_info,strmap_info,orb_info)
+           else
+            evp_mode = 'DIA'
+            evp_spc_me = '-'
+            evp_n_spc_me = 0
+            evp_spc_form = '-'
+            evp_n_spc_form = 0
+
+           end if
+
+           call solve_evp(evp_mode,1,ndx_eff,idx_eff,
+     &          'ME_C0',trim(dia_label),'A_C0',
+     &          'C0','FOPT_OMG_C0'//trim(c_st),
+     &          evp_spc_me,  evp_n_spc_me,
+     &          evp_spc_form,evp_n_spc_form,
+     &          thr_suggest(i_state),
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+
+           if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
+            idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
+            mel_pnt2 => op_info%mel_arr(idxmel)%mel
+            call list_copy(mel_pnt,mel_pnt2,.false.)
+           end if
+
+          end do
+
+          ! copy the saved ME_C0//c_st2 back to the records of ME_C0
+          if(multistate)then
+           do i_state=1,n_states
+            c_st = state_label(i_state,.true.)
+            call switch_mel_record(mel_pnt,i_state)
+            idxmel = idx_mel_list("ME_C0"//trim(c_st),op_info)
+            mel_pnt2 => op_info%mel_arr(idxmel)%mel
+            call list_copy(mel_pnt2,mel_pnt,.false.)
+           end do
+           call switch_mel_record(mel_pnt,1)
           end if
+
 c dbg
 c          do i_state = 1,n_states
-c          c_st = state_label(i_state,.false.)
-c          idx = idx_mel_list('ME_C0'//trim(c_st),op_info)
-c          print *,'current C0'//trim(c_st)//' vector: '
-c          call wrt_mel_file(lulog,1000,op_info%mel_arr(idx)%mel,
-c     &       1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
-c     &       str_info,orb_info)
+c           c_st = state_label(i_state,.false.)
+c           idx = idx_mel_list('ME_C0'//trim(c_st),op_info)
+c           print *,'current C0'//trim(c_st)//' vector: '
+c           call wrt_mel_file(lulog,1000,op_info%mel_arr(idx)%mel,
+c     &        1,op_info%mel_arr(idx)%mel%op%n_occ_cls,
+c     &        str_info,orb_info)
 c          end do
 c dbgend
         end if
@@ -653,7 +674,7 @@ c dbg
         ! very dirty: don't close file if needed for following opt.
         if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
      &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
-     &      opti_info%optref.eq.0.or.nopt.ne.1) then
+     &      opti_info%optref.eq.0.or.nopt.ne.n_states) then
 c dbgend
         call file_close_keep(ffopt(iopt)%fhand)
 c dbg
