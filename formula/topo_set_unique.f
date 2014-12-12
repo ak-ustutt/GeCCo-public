@@ -37,7 +37,7 @@
       allocate(contr%vtx(nvtx),contr%topo(nvtx,nvtx),
      &         contr%xlines(nvtx,nj),scr(nvtx),svtx(nvtx))
       call pack_contr(scr,contr%vtx,contr%topo,contr%xlines,contr,nj)
-      svtx = contr%svertex
+      svtx(1:nvtx) = contr%svertex(1:nvtx)
       call topo_make_unique2(scr,contr%vtx,svtx,contr%topo,contr%xlines,
      &                       nvtx,nj)
 

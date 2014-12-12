@@ -155,8 +155,9 @@ c dbg
         call svmap4contr2(svmap,contr_b,unique)
 
         ! quick fix: middle zero vertex would not be accounted for
-        if (njoined.eq.3.and.svmap(3).eq.3.and.svmap(2).eq.0)
-     &          unique = .false.
+        if (njoined.eq.3) then
+         if(svmap(3).eq.3.and.svmap(2).eq.0) unique = .false.
+        end if
 
         if (.not.unique) call pseudo_svmap(svmap,contr_b,njoined)
 c        deallocate(occ_vtx)
