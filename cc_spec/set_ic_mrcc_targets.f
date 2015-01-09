@@ -282,9 +282,12 @@ c_T_proj_3_fix
      &     'prc_traf may mess up spinflip symmetry of metric! '//
      &     'Use spinadapt=2 or better spinadapt=3.')
       if (restart) then
-        inquire(file='ME_T_list.da',exist=l_exist)
+       do i_state = 1, n_states
+        c_st = state_label(i_state,.false.)
+        inquire(file='ME_T'//trim(c_st)//'_list.da',exist=l_exist)
         if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
      &           'Restart: File for T amplitudes not found!')
+       end do
       ! if jac_thresh>0, projector won't be sufficient for restart
       if (prc_traf.and.restart.and.jac_thresh.ge.0)
      &    call quit(1,'set_ic_mrcc_targets',
@@ -6528,11 +6531,13 @@ c dbgend
       call set_dependency('EVAL_Tproj','DEF_ME_T',tgt_info)
       call set_dependency('EVAL_Tproj','DEF_ME_Ttr',tgt_info)
       ! (a) first copy T list to Ttr
+      do i_state = 1,n_states
+      c_st = state_label(i_state,.false.)
       call set_rule2('EVAL_Tproj',SCALE_COPY,tgt_info)
       call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_RES',1,tgt_info,
      &             val_label=(/'ME_Ttr'/))
       call set_arg('EVAL_Tproj',SCALE_COPY,'LIST_INP',1,tgt_info,
-     &             val_label=(/'ME_T'/))
+     &             val_label=(/'ME_T'//trim(c_st)/))
       call set_arg('EVAL_Tproj',SCALE_COPY,'FAC',1,tgt_info,
      &             val_rl8=(/1d0/))
       ! (just for safety: should be already assigned this way)
@@ -6544,7 +6549,15 @@ c dbgend
       ! (b) evaluate projection
       call set_rule2('EVAL_Tproj',EVAL,tgt_info)
       call set_arg('EVAL_Tproj',EVAL,'FORM',1,tgt_info,
-     &             val_label=(/'FOPT_T'/))
+     &             val_label=(/'FOPT_T'//trim(c_st)/))
+      if(multistate)then
+       call set_rule2('EVAL_Tproj',ADV_STATE,tgt_info)
+       call set_arg('EVAL_Tproj',ADV_STATE,'LISTS',2,tgt_info,
+     &      val_label=['ME_Ttr  ','ME_Dproj'])
+       call set_arg('EVAL_Tproj',ADV_STATE,'N_ROOTS',1,tgt_info,
+     &      val_int=[n_states])
+      end if
+      end do
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'T before projection :',0,'LIST')
