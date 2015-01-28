@@ -51,6 +51,7 @@
       include 'opdim.h'
       include 'mdef_target_info.h'
       include 'def_filinf.h'
+      include 'ifc_input.h'
 
       include 'ifc_targets.h'
 
@@ -83,7 +84,8 @@
      &     arg_type
       character(len_val_number) ::
      &     val_number
-
+      integer ::
+     &     print_level
       character(30), allocatable, dimension(:) ::
      &     label_list
       logical, allocatable, dimension(:) ::
@@ -96,6 +98,9 @@
      &     len_str = 100
       character(len_str) ::
      &     str
+
+      call get_argument_value('general','print',
+     &     ival=print_level)
 
       call file_init(fftgt,trim(file_name),ftyp_sq_frm,idum)
       call file_open(fftgt)
@@ -119,7 +124,8 @@
      &     'Strange first line: '//
      &     'Target files have a well defined format.')
 
-      write(lulog,fmt='(" Reading target file ",A,":",A)')
+      if (print_level.ge.3)
+     &     write(lulog,fmt='(" Reading target file ",A,":",A)')
      &     trim(file_name),trim(file_origin)
       
       read(lutgt,*,iostat=ios_var) thing, tgt_name
