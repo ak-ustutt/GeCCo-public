@@ -41,7 +41,7 @@
       inquire(file=trim(python_file(pos:))//trim(tgt_sufix),
      &     exist=file_exists)
       if (.not.file_exists)
-     &     call quit(1,'set_interface_targets',
+     &     call quit(1,'set_python_targets',
      &     "Target file not generated!")
       
       call get_targets_from_file(tgt_info,

@@ -624,6 +624,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       val_label_list=label_list,ndim=nop)
         call get_arg('OP_MULT',rule,tgt_info,
      &       val_label_list=label_list(nop+1:),ndim=nop2)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
         call form_deriv2(form_pnt,form0_pnt,
      &       title,nop,
      &       label,
