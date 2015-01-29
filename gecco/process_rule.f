@@ -1155,6 +1155,25 @@ c dbg
      &      call mel_adv_state_wrap(label_list,nop,nroots,op_info)
 
 *----------------------------------------------------------------------*
+      case(SET_STATE)
+*----------------------------------------------------------------------*
+
+       call get_arg('ISTATE',rule,tgt_info,val_int=targ_root)
+       call get_arg('USE1',rule,tgt_info,val_log=use_1,
+     &      success=arg_there)
+       if (.not.arg_there) use_1=.false.
+       call get_arg('OPERATORS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop,success=arg_there)
+       if (arg_there)
+     &      call op_adv_state(label_list,nop,-1,op_info,use_1,
+     &      new_state=targ_root)
+       call get_arg('LISTS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop,success=arg_there)
+       if(arg_there)
+     &      call mel_adv_state_wrap(label_list,nop,-1,op_info,
+     &      new_state=targ_root)
+
+*----------------------------------------------------------------------*
       case(EVP_PACKED_OP)
 *----------------------------------------------------------------------*
 

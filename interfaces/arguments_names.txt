@@ -35,6 +35,7 @@ IDX_LIST int
 IDX_SV int
 IGAST int
 IMODE int
+ISTATE int
 INIT log
 INPROJ int
 INTERM label

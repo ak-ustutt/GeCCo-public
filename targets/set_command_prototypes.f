@@ -769,6 +769,16 @@
       call set_arg('_PROTO_',ADV_STATE,'LISTS',0,tgt_info,
      &     val_label=(/' '/))
 *----------------------------------------------------------------------*
+      call add_command_proto(SET_STATE,tgt_info)
+      call set_arg('_PROTO_',SET_STATE,'ISTATE',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+      call set_arg('_PROTO_',SET_STATE,'USE1',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',SET_STATE,'OPERATORS',0,tgt_info,
+     &     val_label=(/' '/))
+      call set_arg('_PROTO_',SET_STATE,'LISTS',0,tgt_info,
+     &     val_label=(/' '/))
+*----------------------------------------------------------------------*
       call add_command_proto(EVP_PACKED_OP,tgt_info)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_IN',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

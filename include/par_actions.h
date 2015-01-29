@@ -90,5 +90,6 @@
      &     ORB_FLIP*8         = 'ORB_FLIP',
      &     SPREAD_MEL*10      = 'SPREAD_MEL',
      &     ADV_STATE*9        = 'ADV_STATE',
+     &     SET_STATE*9        = 'SET_STATE',
      &     ABORT*5            = 'ABORT',
      &     EVP_PACKED_OP*13   = 'EVP_PACKED_OP'

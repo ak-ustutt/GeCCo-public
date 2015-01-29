@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine mel_adv_state_wrap(label_mel,nmel,max_state,op_info,
-     &     last_state)
+     &     last_state,new_state)
 *----------------------------------------------------------------------*
 *     advance the state of the MELs in label_mel
 *     wraper to mel_adv_state
@@ -14,7 +14,7 @@
       include 'mdef_operator_info.h'
 
       interface
-       subroutine mel_adv_state(mel,max_state,last_state)
+       subroutine mel_adv_state(mel,max_state,last_state,new_state)
        import :: me_list
        implicit none
        type(me_list), intent(inout) ::
@@ -23,6 +23,8 @@
      &      max_state
        logical, intent(out), optional ::
      &      last_state
+       integer, intent(in), optional ::
+     &      new_state
        end subroutine
       end interface
 
@@ -37,6 +39,8 @@
      &     op_info
       logical, intent(out), optional ::
      &     last_state
+      integer, intent(in), optional ::
+     &     new_state
 
       integer ::
      &     i_label, idx
@@ -60,7 +64,7 @@
        
        mel_pnt => op_info%mel_arr(idx)%mel
               
-       call mel_adv_state(mel_pnt,max_state,last_state)
+       call mel_adv_state(mel_pnt,max_state,last_state,new_state)
 
       end do
 
