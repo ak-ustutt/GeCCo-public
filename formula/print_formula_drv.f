@@ -39,12 +39,14 @@ c      include 'def_contraction_list.h'
         write(lulog,*) ' f_input  = ',trim(f_input%label)
       end if
 
-      if (name_output.ne.'stdout') then
+      if (name_output.eq.'stdout') then
+        luprint = luout
+      else if (name_output.eq.'stderr') then
+        luprint = lulog
+      else
         call file_init(ffprint,name_output,ftyp_sq_frm,0)
         call file_open(ffprint)
         luprint = ffprint%unit
-      else
-        luprint = lulog
       end if
 
       ! read in input formula

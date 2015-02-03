@@ -13,6 +13,7 @@
 *----------------------------------------------------------------------*
       implicit none
 
+      include 'stdunit.h'
       include 'mdef_target_info.h'
 
       type(target_info), intent(inout) ::
@@ -34,7 +35,7 @@
      &     exist=file_exists)
       if (file_exists)
      &     call system("rm "//trim(python_file(pos:))//trim(tgt_sufix))
-      
+
       call system("python "//trim(python_file)//" "//
      &     trim(name_infile)//" "//trim(name_orbinfo))
      
@@ -43,7 +44,8 @@
       if (.not.file_exists)
      &     call quit(1,'set_python_targets',
      &     "Target file not generated!")
-      
+      end if    
+  
       call get_targets_from_file(tgt_info,
      &     trim(python_file(pos:))//trim(tgt_sufix))
 
