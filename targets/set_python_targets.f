@@ -44,7 +44,6 @@
       if (.not.file_exists)
      &     call quit(1,'set_python_targets',
      &     "Target file not generated!")
-      end if    
   
       call get_targets_from_file(tgt_info,
      &     trim(python_file(pos:))//trim(tgt_sufix))
