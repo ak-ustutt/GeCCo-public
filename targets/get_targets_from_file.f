@@ -93,7 +93,7 @@
       real(8), allocatable, dimension(:) ::
      &     real_list
       integer, parameter ::
-     &     len_str = 100
+     &     len_str = 256
       character(len_str) ::
      &     str
 
