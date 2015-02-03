@@ -74,7 +74,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       character, parameter ::
      &     i_am = 'expand_op_product3'
 

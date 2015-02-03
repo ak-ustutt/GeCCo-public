@@ -95,7 +95,7 @@
       real(8), allocatable, dimension(:) ::
      &     real_list
       integer, parameter ::
-     &     len_str = 100
+     &     len_str = 650
       character(len_str) ::
      &     str
 
@@ -210,7 +210,7 @@
 
           select case( trim(arg_type))
           case('label')
-           read(lutgt,*,iostat=ios_var) label_list(i3)
+           read(lutgt,'(A)',iostat=ios_var) label_list(i3)
           case('log')
            read(lutgt,*,iostat=ios_var) log_list(i3)
           case('int')
