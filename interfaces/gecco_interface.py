@@ -606,6 +606,12 @@ _rules = map( str.strip, _rules)
 for _r in _rules:
     exec ('def ' + _r + ' ( arguments):\n\trule("' + _r + '", arguments)')
 
+# We want the print level:
+_inp = GeCCo_Input()
+_print_level = _inp.get('general.print')
+if _print_level == None:
+    _print_level = 3
+
 # Variables for arguments
 _arguments_names_file = _gecco_dir + "/interfaces/arguments_names.txt"
 
@@ -629,10 +635,10 @@ for _k in _keywords:
         quit_error('Unknown type of argument: ' + _k_type)
 
     if _k_name in _rules:
-        if (_dummy_call):
+        if (_dummy_call and _print_level>=10):
             warning( '"' + _k_name + '" is an argument and a rule. Use quotes for this keyword.')
     elif (not( re.match("[a-zA-Z_][a-zA-Z0-9_]*", _k_name))):
-        if (_dummy_call):
+        if (_dummy_call and _print_level>=10):
             warning( '"' + _k_name + '" is not a valid name for a Python variable. Use quotes for this keyword.')
     else:
         exec (_k_name + ' = "' + _k_name + '"')
