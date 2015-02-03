@@ -10,7 +10,7 @@ C
       DO WHILE (ICOLH.NE.NCOL)
         ICOLL = ICOLH+1
         ICOLH = MIN(ICOLL-1+ICOLMX,NCOL)
-        WRITE(6,1000) (J,J=ICOLL,ICOLH)
+        WRITE(lulog,1000) (J,J=ICOLL,ICOLH)
         DO I=1,NROW
           WRITE(lulog,1010) I,(A(I,J),J=ICOLL,ICOLH)
         END DO
