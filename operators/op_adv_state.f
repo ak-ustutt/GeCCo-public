@@ -17,7 +17,7 @@
       include 'mdef_target_info.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 00
 
       integer, intent(in) ::
      &     max_state, nop

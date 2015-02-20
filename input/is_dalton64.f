@@ -10,7 +10,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       type(filinf) ::
      &     ffsir

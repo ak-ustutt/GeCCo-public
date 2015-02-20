@@ -11,7 +11,7 @@
       include 'mdef_operator_info.h'
 
       integer, parameter ::
-     &     ntest = 10
+     &     ntest = 00
       character(len=16), parameter ::
      &     i_am='analyze_list_drv'
 

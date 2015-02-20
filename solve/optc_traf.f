@@ -35,7 +35,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest =   00
       character(len=9), parameter ::
      &     i_am = 'optc_traf'
 

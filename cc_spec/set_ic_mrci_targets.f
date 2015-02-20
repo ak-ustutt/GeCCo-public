@@ -22,7 +22,7 @@
       include 'par_actions.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       type(target_info), intent(inout) ::
      &     tgt_info

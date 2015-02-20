@@ -43,7 +43,7 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest = 5
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info

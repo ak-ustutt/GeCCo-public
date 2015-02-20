@@ -19,7 +19,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       type(filinf) ::
      &     ff_sbsp1, ff_sbsp2

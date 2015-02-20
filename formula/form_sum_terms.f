@@ -15,7 +15,7 @@
       include 'def_formula.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       character(len=*), intent(in) ::
      &     title

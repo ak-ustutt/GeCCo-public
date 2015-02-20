@@ -12,7 +12,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
       character(len=20), parameter ::
      &     i_am = 'read_env_molpro_dump'
 

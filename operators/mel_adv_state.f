@@ -15,7 +15,7 @@
       include 'mdef_operator_info.h'
 
       integer, parameter ::
-     &     ntest = 2
+     &     ntest = 00
 
       type(me_list), intent(inout) ::
      &     mel
