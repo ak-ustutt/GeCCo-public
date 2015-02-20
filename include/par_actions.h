@@ -56,6 +56,7 @@
      &     SELECT_LINE*11           = 'SELECT_LINE',
      &     DEF_CUMULANTS*13         = 'DEF_CUMULANTS',
      &     INSERT*6                 = 'INSERT',
+     &     TRANSPS_FORMULA*15       = 'TRANSPS_FORMULA',
      &     DEF_MRCC_INTM*13         = 'DEF_MRCC_INTM'
 ! ME-lists:
       character, parameter ::
@@ -87,6 +88,8 @@
      &     REORDER_MEL*11     = 'REORDER_MEL',
      &     SPIN_PROJECT*12    = 'SPIN_PROJECT',
      &     SCALE_COPY*10      = 'SCALE_COPY',
+     &     TRANS_LIST*10      = 'TRANS_LIST',
+     &     COPY_LIST*9        = 'COPY_LIST',
      &     ORB_FLIP*8         = 'ORB_FLIP',
      &     SPREAD_MEL*10      = 'SPREAD_MEL',
      &     ADV_STATE*9        = 'ADV_STATE',

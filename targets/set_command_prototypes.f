@@ -196,6 +196,10 @@
       call set_arg('_PROTO_',DEF_FORMULA,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(TRANSPS_FORMULA,tgt_info)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'LABEL',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -553,6 +557,18 @@
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(TRANS_LIST,tgt_info)
+      call set_arg('_PROTO_',TRANS_LIST,'LIST_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'LIST_INP',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'TYPE',0,tgt_info,
+     &     val_str='-',req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'FORM',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -578,6 +594,16 @@
      &     val_str='---',def=.true.)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
      &     (/'-'/),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(COPY_LIST,tgt_info)
+      call set_arg('_PROTO_',COPY_LIST,'LIST_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'LIST_INP',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'ADJOINT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
       call set_arg('_PROTO_',INVERT,'LIST_INV',0,tgt_info,

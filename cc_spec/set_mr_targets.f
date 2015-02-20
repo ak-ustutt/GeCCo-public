@@ -32,7 +32,8 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate
+     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate,
+     &     set_up_T_corr
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -75,6 +76,9 @@
 
       call get_argument_value('method.MR','multistate',
      &     lval=multistate)
+
+      call get_argument_value('method.MRCC','set_up_T_corr',
+     &     lval=set_up_T_corr)
 
       ! get maximum excitation rank
       call get_argument_value('method.MR','maxexc',
@@ -183,6 +187,11 @@ c dbgend
       if (multistate) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/cc_spec/multistate_eff_ham.py",
      &     name_infile,fforbinf%name)
+
+      if (set_up_T_corr) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/set_up_T_corr.py",
+     &     name_infile,fforbinf%name)
+
 
 
       return

@@ -10,7 +10,9 @@
       include 'stdunit.h'
       include 'mdef_target_info.h'
       include 'mdef_operator_info.h'
+      include 'def_contraction.h'
       include 'mdef_formula_info.h'
+      include 'def_formula_item.h'
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
@@ -60,7 +62,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     last_state, use_1
+     &     last_state, use_1,trnsps
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -68,12 +70,14 @@
      &     op_pnt, op_pnt2
       type(formula), pointer ::
      &     form_pnt, form0_pnt
+      type(formula_item) ::
+     &     flist
       type(me_list), pointer ::
      &     mel_pnt, mel_pnt2, mel_pnt3
       character(len=512) ::
      &     title, title2, form_str, mode, strscr
       character(len_command_par) ::
-     &     env_type, list_type
+     &     env_type, list_type,ctype
       character(len_command_par) ::
      &     label, label2, label_list(max_label), 
      &     label_list2(max_label), descr(max_label)
@@ -470,6 +474,14 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call set_formula(form_pnt,
      &       form_str,title,
+     &       op_info)
+*----------------------------------------------------------------------*
+      case(TRANSPS_FORMULA)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),OLD)
+        call read_form_list(form_pnt%fhand,flist,.true.)
+        call transpose_formula(flist,
      &       op_info)
 *----------------------------------------------------------------------*
       case(EXPAND_OP_PRODUCT)
@@ -1263,6 +1275,25 @@ c          mode = 'dia-R12'
      &       op_info,orb_info,str_info,init)
 
 *----------------------------------------------------------------------*
+      case(TRANS_LIST)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST_INP',rule,tgt_info,val_label=label_list(1))
+        call get_mel(mel_pnt2,label_list(1),OLD)
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label_list(2))
+        call get_mel(mel_pnt,label_list(2),OLD)
+        call get_arg('TYPE',rule,tgt_info,val_str=ctype)
+        call get_arg('FORM',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),OLD)
+        call read_form_list(form_pnt%fhand,flist,.true.)
+        call get_arg('LISTS',rule,tgt_info,
+     &       val_label_list=label_list(3:),ndim=nspecial)
+
+        call optc_traf_wrap(mel_pnt,mel_pnt2,ctype,
+     &       flist,label_list(3:),nspecial,
+     &       orb_info,op_info,str_info,strmap_info)
+
+*----------------------------------------------------------------------*
       case(SCALE)
 *----------------------------------------------------------------------*
 
@@ -1294,6 +1325,18 @@ c          mode = 'dia-R12'
         if (form_test) return
 
         call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
+     &       op_info,orb_info,str_info)
+
+*----------------------------------------------------------------------*
+      case(COPY_LIST)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST_RES',rule,tgt_info,val_label=label)
+        call get_arg('LIST_INP',rule,tgt_info,val_label=label2)
+        call get_arg('ADJOINT',rule,tgt_info,val_log=trnsps)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
+
+        call copy_mel(label,label2,trnsps,fac,
      &       op_info,orb_info,str_info)
 
 *----------------------------------------------------------------------*
