@@ -119,7 +119,7 @@ c     &       'copy means to have a second list...')
       me_res => op_info%mel_arr(idx_res)%mel
       ffop_tgt => me_res%fhand
       if (.not.associated(ffop_tgt))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,'scale_copy_op','no file handle defined for '//
      &                  trim(me_res%label))
       open_close_res = ffop_tgt%unit.le.0
 
@@ -131,7 +131,7 @@ c     &       'copy means to have a second list...')
       ffop_src => me_inp%fhand
       if (.not.same) then
         if (.not.associated(ffop_src))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,'scale_copy_op','no file handle defined for '//
      &                  trim(me_inp%label))
         open_close_inp = ffop_src%unit.le.0
         if (open_close_inp) then

@@ -90,7 +90,7 @@
         end if
         me_current => op_info%mel_arr(idx_sum(isum))%mel
         if (.not.associated(me_current%fhand))
-     &       call quit(1,'inv_op','no file handle defined for '//
+     &       call quit(1,'add_op','no file handle defined for '//
      &                  trim(me_current%label))
       end do
 

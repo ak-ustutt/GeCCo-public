@@ -83,7 +83,7 @@ c          print *,'ilist out: ',ilist(1:nel)
 c          call quit(0,'idxsort','check descending quicksort!')
         end if
       else
-        call quit(0,'isort','mode == 0')
+        call quit(0,'idxsort','mode == 0')
       end if
 
       return
@@ -132,7 +132,7 @@ c      end do
 c          call idxsort8_qs_dsc(ilist,nel)
         end if
       else
-        call quit(0,'isort','mode == 0')
+        call quit(0,'idxsort8','mode == 0')
       end if
 
       return
@@ -174,7 +174,7 @@ c          call idxsort8_qs_dsc(ilist,nel)
           call idxsortx_qs_dsc(xlist,ireo,nel)
         end if
       else
-        call quit(0,'isort','mode == 0')
+        call quit(0,'idxsortx','mode == 0')
       end if
 
       return

@@ -66,12 +66,12 @@
       call init_contr(contr_rpl)
 
       if (fl_tgt%command.ne.command_set_target_init)
-     &       call quit(1,'factor_out_subexpr',
+     &       call quit(1,'factor_out_subexpr2',
      &       'target formula definition must start with [INIT]')
 
       ! first item should define new operator target
       if (fl_intm%command.ne.command_set_target_init)
-     &     call quit(1,'factor_out_subexpr',
+     &     call quit(1,'factor_out_subexpr2',
      &     'intermediate definition must start with [INIT]')
 
       fl_tgt_current => fl_tgt
@@ -85,7 +85,7 @@ c dbgend
         if (fl_tgt_current%command.eq.command_set_target_init) then
           idxop_tgt = fl_tgt_current%target
           if (.not.associated(fl_tgt_current%next))
-     &         call quit(1,'factor_out_subexpr',
+     &         call quit(1,'factor_out_subexpr2',
      &         'unexpected end of list (target)')
           if (ntest.ge.100) then
             write(lulog,'(70("="))')
@@ -103,7 +103,7 @@ c dbgend
         end if
 
         if (.not.associated(fl_tgt_current%contr))
-     &       call quit(1,'factor_out_subexpr','I''m confused ...')
+     &       call quit(1,'factor_out_subexpr2','I''m confused ...')
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
         if (ntest.ge.100) then

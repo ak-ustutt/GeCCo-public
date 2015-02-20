@@ -80,7 +80,7 @@
       call init_contr(contr_t0)
 
       if (fl_tgt%command.ne.command_add_contribution)
-     &     call quit(1,'find_contr_w_intm','[ADD] expected on entry')
+     &     call quit(1,'find_contr_w_intm2','[ADD] expected on entry')
       ! get current operator, blk
       idxop_tgt = fl_tgt%contr%idx_res
       iblk_tgt = fl_tgt%contr%iblk_res
@@ -225,7 +225,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
             end if
           case default
             write(lulog,*) 'command = ',fl_tgt_pnt%command
-            call quit(1,'find_contr_w_intm',
+            call quit(1,'find_contr_w_intm2',
      &             'not prepared for that command (see above)')
           end select
 

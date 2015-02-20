@@ -29,11 +29,11 @@
 
       do ifile = 1, nfiles
         if (.not.associated(current%fhand))
-     &       call quit(1,'file_list2arr',
+     &       call quit(1,'file_list2arr2',
      &                   'unallocated file handle on list')
         fl_arr(ifile)%fhand => current%fhand
         if (ifile.lt.nfiles.and..not.(associated(current%next)))
-     &       call quit(1,'file_list2arr','unexpected end of list')
+     &       call quit(1,'file_list2arr2','unexpected end of list')
         current => current%next
       end do
 

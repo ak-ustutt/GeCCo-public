@@ -12,7 +12,7 @@
 
 
       character(len=19) ::
-     &     i_am = 'fl_item_rename_intm'
+     &     i_am = 'fl_item_rename_res'
 
       type(formula_item), intent(inout) ::
      &     fl_item

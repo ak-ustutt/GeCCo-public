@@ -134,7 +134,7 @@
         idx = idx_tup(itup)
         if (contr%vertex(idx)%idx_op.eq.idxder) then
           if (contr%joined(0,contr%svertex(idx)).gt.1)
-     &         call quit(1,'contr_deriv',
+     &         call quit(1,'contr_deriv2',
      &         'cannot take derivative wrt. non-primitive vertices')
           ider = ider+1
           iblk(ider) = contr%vertex(idx)%iblk_op
@@ -230,7 +230,7 @@ c dbg-QUICK FIX:::
             print *,'QUICK FIX active'
 c            call wrt_occ_n(lulog,iocc,1)
           else if (ipcr_mlt.ne.0.or.ipcr_der.ne.0) then
-            call quit(1,'contr_deriv',
+            call quit(1,'contr_deriv2',
      &           'QUICK FIX is not prepared for this')
           end if
           idx = iblk_occ(iocc,.false.,op_arr(idxmlt)%op,
@@ -366,7 +366,7 @@ c     &         (cur_conder%contr%iblk_res-1)*njoined_res+1
             if (strict) then
               write(lulog,*) 'resulting occupation:'
               call wrt_occ_n(lulog,iocc,njoined_res)
-              call quit(1,'contr_deriv',
+              call quit(1,'contr_deriv2',
      &           'result occupation not defined for operator '//
      &           trim(op_arr(idxres)%op%name))
             end if

@@ -242,7 +242,7 @@ c dbgend
           if (nham.gt.1) call warn('select_mrcc_lag2',
      &       'More than one Hamiltonian? Are we completely crazy now?!')
           if (proj.and.(nvtxc.gt.2.or.nvtxl.gt.1))
-     &          call quit(1,'set_mrcc_lag2','max. C0^+, C0, and L')
+     &          call quit(1,'select_mrcc_lag2','max. C0^+, C0, and L')
 
           ! number of T-T contractions
           ntt = 0

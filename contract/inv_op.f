@@ -194,7 +194,7 @@
      &       op_info,orb_info,str_info,strmap_info)
         if (mode(8:11).eq.'mult') then
           if (nlist.ne.2)
-     &       call quit('inv_op','Provide list for unitary matrix!')
+     &       call quit(1,'inv_op','Provide list for unitary matrix!')
           ! now multiply previous transformation list with
           call mult_trafmats(me_u,me_inv,
      &         op_info,orb_info,str_info)

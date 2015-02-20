@@ -75,7 +75,7 @@
           write(lulog,*) 'doing ic_mrcc response in EOM framework'
           lr_opt = 2
         case default
-          call quit(0,'set_ic_mrcc_response_target',
+          call quit(0,'set_ic_mrcc_response_targets',
      &    'invalid method: '//trim(method))
         end select
 
@@ -322,7 +322,7 @@ C     &      ')'/),tgt_info)
           else if (abs(s2-s2_0).eq.2) then
             s2_r = 3
           else
-            call quit(0,'set_ic_mrcc_response',
+            call quit(0,'set_ic_mrcc_response_targets',
      &                  'cannot handle this S2 difference')
           end if
           ms_r = ms - ms_0

@@ -270,7 +270,7 @@ c        case(command_set_target_update)
         case(command_add_contribution)
         case default
           write(lulog,*) 'command = ',cur_form%command
-          call quit(1,'frm_sched','command not defined/implemented')
+          call quit(1,'frm_sched1','command not defined/implemented')
         end select
 
         ! get *copy* of contr as we are going to modify that

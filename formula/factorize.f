@@ -82,7 +82,7 @@
           end if
         end if
         if (.not.associated(form_ptr%next))
-     &       call quit(1,'form_opt','buggy formula list')
+     &       call quit(1,'factorize','buggy formula list')
         form_ptr => form_ptr%next
       end do
 

@@ -85,7 +85,7 @@ c      njoined = op_intm%njoined
      &     iblk = (iblk-1)/njoined + 1
 
       if (iblk.ne.iblk_intm)
-     &     call quit(1,'expand_term','inconsistency')
+     &     call quit(1,'expand_term2','inconsistency')
 
       call init_contr(intm_spl)
       call set_primitive_contr2(intm_spl,

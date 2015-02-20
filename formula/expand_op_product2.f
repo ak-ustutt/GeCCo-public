@@ -129,7 +129,7 @@
      &       'for the adjoint operator: set up the formula for the'
         write(lulog,*)
      &       'actual operator and use transpose_formula()'
-        call quit(1,'expand_op_product','incorrect usage')
+        call quit(1,'expand_op_product2','incorrect usage')
       end if
 
       form_pnt => form_list
@@ -232,7 +232,7 @@ c dbg*
         if (nvtx_res.ne.2*op_res%njoined) then
           write(lulog,*) 'nvtx_res, njoined: ',nvtx_res,op_res%njoined
           write(lulog,*) 'nvtx_res must be 2 times njoined!'
-          call quit(1,'expand_op_product','inconsistency')
+          call quit(1,'expand_op_product2','inconsistency')
         end if
         njoined_res = nvtx_res/2
       end if
