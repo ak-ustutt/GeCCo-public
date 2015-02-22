@@ -5,6 +5,10 @@
 *-------------------------------------------------------------------------------*
 *
 *     wrapper for optc_traf, to use it as a rule
+*
+*     NOTE(andreas): THE ROUTINE optc_traf IS VERY UNSAFE, DO NOT PROCEED
+*           USING THIS AS A "PUBLIC" RULE UNLESS THIS IS CHANGED
+*           ACTUALLY, A SIMPLE "EVALUATE" IS SUFFICIENT IN A "RULE-CONTEXT"
 *     
 *     Pradipta, Jan. 2015
 *-------------------------------------------------------------------------------*

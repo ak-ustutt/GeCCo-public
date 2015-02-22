@@ -17,6 +17,9 @@
 *     me_traf(5)      : projector
 *
 *     andreas, oct. 2012 from matthias's routines
+*
+*     WARNING: EXREMELY UNSAFE ROUTINE, NO "PUBLIC" USE
+*
 *----------------------------------------------------------------------*
 
       implicit none
@@ -32,7 +35,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
       character(len=9), parameter ::
      &     i_am = 'optc_traf'
 
@@ -117,7 +120,9 @@ c      op_out_mel = trim(me_out%op%assoc_list)
 
       select case(ctype)
       case ('F','f')
-        ! do nothing
+        ! do nothing THIS MUST BE CHANGED AS WE CANNOT RELY ON PROPER ASSIGNMENTS OF LISTS
+         ! PRIOR TO CALL !!!!!!
+        ! ACTUALLY, THIS NEEDS SOME RETHINKING OF THE WHOLE PROCEDURE ....
       case ('B','b')
         ! backtrafo: use daggered transformation matrix
         if (n_me_traf.lt.4) call quit(1,i_am,'B: missing me_traf(4)')
