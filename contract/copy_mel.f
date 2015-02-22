@@ -118,7 +118,7 @@
         if (trnsps) then
 
           call add_opblk_transp(xnorm2,1,fac,me_current,me_res,
-     &         .false.,.true.,   
+     &         .true.,.false., ! the INPUT list is to be transposed    
      &         iblk_cur,iblk,op_info,str_info,orb_info,copy_only)
 
         else
