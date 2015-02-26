@@ -21,6 +21,9 @@
 *       /0 0 x 0\
 *       \0 0 0 0/
 *
+*     IMPORTANT NOTE: At present the sequence matters (for project!=1):          
+*        e.g.  (,V;V,V;V,) then (,V;V,;,) then (,;,V;V,) and then (,;,;,)
+*
 *     matthias, dec 2009 (adopted from invert.f)
 *----------------------------------------------------------------------*
 
@@ -667,6 +670,8 @@ c dbgend
           ndim = 0
           nrank = 0
           ! loops over coupling blocks. Must be in correct order!
+          ! it seems: all lower rank coupling blocks are expected behind this block
+          !       e.g. after (,V;V,V;V,) we have to have (,V;V,;,), (,;,V;V,) and (,;,;,)
           jocc_cls = iocc_cls
           jblkoff = (jocc_cls-1)*njoined
           na1 = na1mx
@@ -804,6 +809,8 @@ c           ndim = 0
              rankoff(1) = 0
              if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
           else if (ndim.ne.rankoff(1)+rankdim(1)) then
+            write(lulog,'(1x,a,3i12)') 
+     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff(1),rankdim(1)
             call quit(1,'invsqrt','dimensions don''t add up!')
           end if
 
@@ -1170,7 +1177,7 @@ c dbgend
 c dbg
 c            if (ntest.ge.100) then
 c              write(lulog,*) 'initial overlap matrix:'
-c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
 c dbg
@@ -1256,7 +1263,7 @@ c dbgend
              end do
              if (ntest.ge.100) then
                write(lulog,*) 'Projector for removing lower-rank exc.:'
-               call wrtmat2(proj,rdim,rdim,rdim,rdim)
+               call wrtmat3(proj,rdim,rdim,rdim,rdim)
              end if
              ! Apply projector to current metric block
              ! (a) Q^+*S
@@ -1281,7 +1288,7 @@ c dbg
      &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
                if (ntest.ge.100) then
                  write(lulog,*) 'Projected off-diagonal block:'
-                 call wrtmat2(scratch(idxst:idxnd,idxnd+1:ndim),
+                 call wrtmat3(scratch(idxst:idxnd,idxnd+1:ndim),
      &                        rdim,ndim-idxnd,rdim,ndim-idxnd)
                end if
                if (any(abs(scratch(idxst:idxnd,idxnd+1:ndim)).gt.1d-12))
@@ -1462,7 +1469,7 @@ c dbgend
               scratch(idxst:idxnd,idxst:idxnd) = scratch4
               if (ntest.ge.100) then
                 write(lulog,*) 'Trafo matrix:'
-                call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
+                call wrtmat3(scratch(idxst:idxnd,idxst:idxnd),
      &                       rdim,rdim,rdim,rdim)
               end if
               if (.not.half) then
@@ -1473,7 +1480,7 @@ c dbgend
                 scratch2(idxst:idxnd,idxst:idxnd) = scratch4
                 if (ntest.ge.100) then
                   write(lulog,*) 'Projector matrix:'
-                  call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
+                  call wrtmat3(scratch2(idxst:idxnd,idxst:idxnd),
      &                         rdim,rdim,rdim,rdim)
                 end if
               end if
@@ -1519,7 +1526,7 @@ c     &        blk_redundant(iocc_cls+irank-1)
 c dbg
 c            if (ntest.ge.100) then
 c              write(lulog,*) 'final transformation matrix:'
-c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
 
