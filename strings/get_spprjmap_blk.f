@@ -33,7 +33,7 @@
      &     idxgraph, ioff, ilen, iblk
 
       if (strmap_info%mxgraph.lt.ngraph)
-     &     call quit(1,'get_flipmap_blk',
+     &     call quit(1,'get_spprjmap_blk',
      &     'you forgot to update the maps after adding a graph')
       offsets => strmap_info%offsets_spprj
 

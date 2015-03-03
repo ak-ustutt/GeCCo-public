@@ -45,7 +45,7 @@
 
       ! the label should not exist previously ...
       if (idx_mel_list(label_mel,op_info).gt.0)
-     &     call quit(1,'def_me_list',
+     &     call quit(1,'define_me_list',
      &     'list exists already: "'//trim(label_mel)//'"')
       call add_me_list(label_mel,op_info)
       idx = idx_mel_list(label_mel,op_info)
@@ -54,7 +54,7 @@
       ! ... but the operator-label must be defined
       idx = idx_oplist2(label_op,op_info)
       if (idx.le.0)
-     &       call quit(1,'def_me_list',
+     &       call quit(1,'define_me_list',
      &     'operator not found: "'//trim(label_op)//'"')
       mel%op => op_info%op_arr(idx)%op
       ! set associated list on operator:

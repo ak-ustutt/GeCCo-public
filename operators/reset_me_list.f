@@ -29,7 +29,7 @@
         list_pnt => list_pnt%next
       end do
       if (trim(list_pnt%mel%label).ne.trim(name)) then
-        call quit(1,'del_me_list','unknown label: "'//trim(name)//'"')
+        call quit(1,'reset_me_list','unknown label: "'//trim(name)//'"')
       end if
 
       mel => list_pnt%mel

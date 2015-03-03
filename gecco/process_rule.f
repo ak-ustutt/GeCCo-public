@@ -1612,13 +1612,13 @@ c          mode = 'dia-R12'
       select case(status)
       case(NEW)
         if (idx.gt.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_op',
      &       'operator does already exist: '//trim(label))
         call add_operator(trim(label),op_info)
         idx = idx_oplist2(trim(label),op_info)
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_op',
      &       'operator does not exist: '//trim(label))
       case(ANY)
         if (idx.le.0) then
@@ -1653,14 +1653,14 @@ c          mode = 'dia-R12'
 
       select case(status)
       case(NEW)
-        call quit(0,'process_rule',
+        call quit(0,'get_mel',
      &       'get_mel(NEW) '//trim(label)//': use DEF_ME_LIST')
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_mel',
      &       'ME list does not exist: '//trim(label))
       case(ANY)
-        call quit(0,'process_rule',
+        call quit(0,'get_mel',
      &       'get_mel(ANY) '//trim(label)//': use DEF_ME_LIST')
       end select
 
@@ -1691,13 +1691,13 @@ c          mode = 'dia-R12'
       select case(status)
       case(NEW)
         if (idx.gt.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_form',
      &       'formula does already exist: '//trim(label))
         call add_formula(form_info,trim(label))
         idx = idx_formlist(trim(label),form_info)
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_form',
      &       'formula does not exist: '//trim(label))
       case(ANY)
         if (idx.le.0) then

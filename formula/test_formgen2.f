@@ -143,7 +143,7 @@
 
       call print_form_list(lulog,form_bhb,op_info)
 
-      call quit(1,'test_formgen','test exit')
+      call quit(1,'test_formgen2','test exit')
 
       return
       end

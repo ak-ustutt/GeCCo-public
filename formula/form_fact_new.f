@@ -98,9 +98,9 @@ c dbg
       call atim_csw(cpu0,sys0,wall0)
 
       if (orb_info%ngas.eq.0)
-     &     call quit(1,'form_fact_new2','buggy ngas !')
+     &     call quit(1,'form_fact_new','buggy ngas !')
       if (orb_info%nsym.eq.0)
-     &     call quit(1,'form_fact_new2','buggy nsym !')
+     &     call quit(1,'form_fact_new','buggy nsym !')
 
       ngas = orb_info%ngas
       nsym = orb_info%nsym
@@ -358,7 +358,7 @@ c dbg
      &     joint_idx
      
       if (orb_info%nsym.eq.0)
-     &     call quit(1,'form_fact_new2_r1','buggy nsym !')
+     &     call quit(1,'form_fact_rec_new','buggy nsym !')
       if (ntest.ge.1000) then
         call write_title(lulog,wst_dbg_subr,
      &       'form_fact_rec_new rursively at work')
@@ -384,7 +384,8 @@ c dbg
       if (nlevel.gt.narc_full+ndisconn)
      &     call quit(1,'form_fact_rec_new','emergency exit')
 
-      if (orb_info%nsym.eq.0) call quit(1,'form_fact2_rc','buggy nsym!')
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact_rec_new'
+     &                                   ,'buggy nsym!')
       if (mode(1:4).eq.'FIND'.and..not.predef) then
         ! get list of (non-redundant) arcs, ordered according to
         ! contractraction strength (descending)
@@ -395,7 +396,8 @@ c dbg
         len_list = 1
         arc_list(1) = ifact(4,nlevel)
       else
-        call quit(1,'form_fact_new','unknown mode: "'//trim(MODE)//'"')
+        call quit(1,'form_fact_rec_new'
+     &             ,'unknown mode: "'//trim(MODE)//'"')
       end if
 
       ! only try first maxbranch elements of arc_list (if maxbranch is set)

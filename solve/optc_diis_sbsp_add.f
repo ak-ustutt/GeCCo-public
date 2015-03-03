@@ -183,7 +183,7 @@ c dbg
      &                       lzero_flag)
 
         case default
-          call quit(1,'optc_diis_subsp_add','unknown route')
+          call quit(1,'optc_diis_sbsp_add','unknown route')
         end select
 
         xbuf2(1:nwfpar) = xbuf2(1:nwfpar) - xbuf1(1:nwfpar)

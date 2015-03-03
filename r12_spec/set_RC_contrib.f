@@ -38,14 +38,14 @@
      &    icint.gt.nop) then
         write(lulog,*) 'idx: ',irdag,icint
         write(lulog,*) 'nop: ',nop
-        call quit(1,'set_Zcontrib',
+        call quit(1,'set_RC_contrib',
      &         'not enough operators on input list')
       end if
 
       if (idx_op(irdag).le.0.or.
      &    idx_op(icint).le.0) then
         write(lulog,*) 'idx: ',idx_op(irdag),idx_op(icint)
-        call quit(1,'set_Ycontrib',
+        call quit(1,'set_RC_contrib',
      &         'operator(s) not on input list')
       end if
 

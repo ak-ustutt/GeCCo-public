@@ -82,7 +82,8 @@
      &     parameters(n_par_str)
 
       if (n_par_str.ne.2)
-     &       call quit(1,'genop_parameters','n_par_str must be 2!')
+     &       call quit(1,'op_from_occ_parameters'
+     &                  ,'n_par_str must be 2!')
       if (rw.lt.0) then
         parameters(1)(1:len(parameters(1))) = ' '
         parameters(2)(1:len(parameters(2))) = ' '

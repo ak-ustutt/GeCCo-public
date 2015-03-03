@@ -104,7 +104,7 @@
           opti_info%mode_nleq = mode_nleq_assj
           opti_info%norder = 1
         case default
-          call quit(0,'set_opti','invalid method: '//trim(str))
+          call quit(0,'set_opti_info','invalid method: '//trim(str))
         end select
 
         call get_argument_value('method.MR','ciroot',
@@ -114,7 +114,7 @@
         if(multistate)then
          n_states = ciroot
          if(n_states.lt.2)
-     &        call quit(1,'set_ic_mrcc_targets',
+     &        call quit(1,'set_opti_info',
      &        'Please, do not use multistate=T for one state!')
         else
          n_states = 1
@@ -169,14 +169,15 @@
           opti_info%mode_leq = mode_leq_subsp
           opti_info%norder = 1
         case default
-          call quit(0,'set_opti','invalid method: '//trim(str))
+          call quit(0,'set_opti_info','invalid method: '//trim(str))
         end select
      
         ! set shift
         opti_info%shift = mel_opt(1)%mel%frequency
         do iopt = 2,nopt
           if (mel_opt(iopt)%mel%frequency.ne.opti_info%shift)
-     &      call quit(0,'set_opti','shift associated with solution '//
+     &      call quit(0,'set_opti_info'
+     &                 ,'shift associated with solution '//
      &                'vectors must be identical for all of them')
         end do
  
@@ -209,7 +210,7 @@
           opti_info%mode_evp = mode_leq_subsp
           opti_info%norder = 1
         case default
-          call quit(0,'set_opti','invalid method: '//trim(str))
+          call quit(0,'set_opti_info','invalid method: '//trim(str))
         end select
 
         call get_argument_value('calculate.solve.eigen','resume',

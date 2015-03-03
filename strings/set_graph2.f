@@ -174,7 +174,7 @@ c dbg
 
                 if (.not.next_rvlex(nexc,idss,idmin,idmax)
      &               .and.idis.ne.ndis)
-     &               call quit(1,'set_graph','unexpected case (b)')
+     &               call quit(1,'set_graph2','unexpected case (b)')
               end do
               str_info%g(igraph)%ndis_a = ndis_a
               str_info%g(igraph)%lenstr_gm(igam,ims) = isum
@@ -197,7 +197,7 @@ c dbg
           
         else
 
-          call quit(1,'set_graph','illegal value for ipass')
+          call quit(1,'set_graph2','illegal value for ipass')
 
         end if
       

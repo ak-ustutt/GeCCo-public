@@ -45,7 +45,7 @@
         do jdx = 1, idx-1
           if (vtx_list(jdx).ge.vtx_list(idx)) then
             write(lulog,*) '>',vtx_list(1:nlist)
-            call quit(1,'topo_merge_vtxs',
+            call quit(1,'topo_merge_vtxs2',
      &           'a unique, ascending list was expected')
 
           end if

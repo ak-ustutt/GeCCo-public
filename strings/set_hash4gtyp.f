@@ -37,7 +37,7 @@
         igtyp = ngastp*(nocc-1) + ihpv
         if (igtyp.gt.max_igtyp) then
           write(lulog,*) 'dimension problem ',igtyp,max_igtyp
-          call quit(1,'set_hash4typ',
+          call quit(1,'set_hash4gtyp',
      &       'max_igtyp was not set correctly')
         end if
         ! set up hashing information
@@ -45,7 +45,7 @@
         if (str_info%gtab(1,igtyp).gt.ld_gtab-1) then
           write(lulog,*) 'dimension problem',str_info%gtab(1,igtyp),
      &             ld_gtab-1
-          call quit(1,'set_hash4typ',
+          call quit(1,'set_hash4gtyp',
      &       'parameter ld_gtab (def_strinf.h) is too small')
         end if
         str_info%gtab(1+str_info%gtab(1,igtyp),igtyp) = igraph

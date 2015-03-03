@@ -270,7 +270,7 @@ c            print *,'read new block, length = ',nel8,lenbuf
 c            print *,'idxstr = ',idxstr
 c dbg
             if (lenbuf.le.0)
-     &           call quit(1,'import_intm_fc',
+     &           call quit(1,'import_intm_fc:inner_loop',
      &           'arrived at end of file, but import seems'//
      &           ' not complete !?')
             idxbuf = 0

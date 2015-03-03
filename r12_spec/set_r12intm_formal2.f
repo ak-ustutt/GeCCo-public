@@ -73,17 +73,17 @@
       end if
 
       if (nop.lt.2)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &                 'nop < 2 ?? too few! phew!')
       nfact = len_trim(typ_str)
       if (nfact.ne.nop+1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &                 'typ_str not compatible with nop?')
 
       ! get indices of operators on label_list
       idx_intm = idx_oplist2(label_int,op_info)
       if (idx_intm.lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &     'label not on list: '//label_int)
 
       iop = 0
@@ -93,7 +93,7 @@
         iop = iop+1
         idx_op(idx) = idx_oplist2(label_op(iop),op_info)
         if (idx_op(idx).lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &     'label not on list: '//label_op(iop))
       end do
 
@@ -108,13 +108,13 @@
       end do
 
       if (n_x.gt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &     'more than one x in typ_str: '//trim(typ_str))
       if (n_f.gt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &     'more than one f in typ_str: '//trim(typ_str))
       if (n_g.gt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal2',
      &     'more than one g in typ_str: '//trim(typ_str))
 
       ! dummy operator: the target shape for operator product expansion

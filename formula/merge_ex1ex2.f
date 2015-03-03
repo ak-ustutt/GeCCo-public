@@ -49,7 +49,7 @@
       logical, external ::
      &     merge_check
 
-      call quit(1,'merge_ex1e2','obsolete routine')
+      call quit(1,'merge_ex1ex2','obsolete routine')
 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'merge_ex1ex2')

@@ -71,7 +71,7 @@
       idx_fcmap => strmap_info%idx_fcmap
 
       if (strmap_info%ffstrmap%unit.le.0)
-     &     call quit(1,'strmap_man',
+     &     call quit(1,'strmap_man_c',
      &     'ffstrmap must be open when calling strmap_man')
 
       idx_minf = 0
@@ -182,11 +182,13 @@ c        idx2mx = max(idx2,idx2mx)
           if (idx_fcmap(idxmap).gt.-1) then
             ! check that offsets are set
             if (.not.associated(strmap_info%offsets_fc))
-     &         call quit(1,'strmap_man','offsets (fc) not initialized?')
+     &         call quit(1,'strmap_man_c'
+     &                    ,'offsets (fc) not initialized?')
             if (.not.associated(strmap_info%offsets_fc(idxmap)%ms)
      &           .or.
      &         .not.associated(strmap_info%offsets_fc(idxmap)%msgm))
-     &         call quit(1,'strmap_man','offsets (fc) not initialized?')
+     &         call quit(1,'strmap_man_c'
+     &                    ,'offsets (fc) not initialized?')
             if (ntest.ge.100) then
               write(lulog,*) 'I have this map already ...'
             end if

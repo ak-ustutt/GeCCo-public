@@ -175,7 +175,7 @@ c dbg
           write(lulog,*) ' iocc: ',trim(op%name)
           call wrt_occ(lulog,iocc)
           write(lulog,*) iblk_ca, iblk_ac
-          call quit(1,'idx42str','something''s buggy!')
+          call quit(1,'idx42str2','something''s buggy!')
         end if 
       end if
 

@@ -88,7 +88,7 @@
       end if
 
       if (len_trim(name).gt.len_opname)
-     &     call quit(1,'set_genop','name too long: "'//trim(name)//'"')
+     &     call quit(1,'set_genop2','name too long: "'//trim(name)//'"')
 
       if (type.ne.optyp_operator.and.type.ne.optyp_density) then
         if (type.eq.optyp_intermediate) then
@@ -97,7 +97,7 @@
         else
           write(lulog,*) 'type: ',type,' ?'
         end if
-        call quit(1,'set_genop','illegal type specification')
+        call quit(1,'set_genop2','illegal type specification')
       end if
 
       nspin => orb_info%nspin

@@ -79,7 +79,7 @@
 
       lbuf=oplist%len_op
       if(lbuf.gt.ifree)
-     &     call quit(1,'import_r12','insufficient memory')
+     &     call quit(1,'import_r12_dalton','insufficient memory')
       ifree=mem_alloc_real(r12scr,lbuf,'r12buf')
 
       r12scr(1:lbuf)=0d0

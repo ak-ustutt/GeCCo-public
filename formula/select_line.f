@@ -50,14 +50,14 @@
      &         trim(mode_str).eq.'ext') then
         del_mode = .false.
       else
-        call quit(1,'form_select_line',
+        call quit(1,'select_line',
      &            'mode must be "delete", "keep", "no_ext" or "ext"')
       end if
 
       fl_pnt => flist
 
       if (.not.associated(fl_pnt))
-     &     call quit(1,'form_select_line',
+     &     call quit(1,'select_line',
      &     'empty formula list? something is buggy')
 
       nterms = 0
@@ -127,7 +127,7 @@
 
         fl_pnt => fl_pnt_next
         if (.not.associated(fl_pnt))
-     &       call quit(1,'form_select_line',
+     &       call quit(1,'select_line',
      &       'unexpected end of formula list')
 
       end do fl_loop

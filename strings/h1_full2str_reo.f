@@ -152,7 +152,7 @@ c          idxstr = hlist%off_op_occ(iblk)+1
         igc = hlist%idx_graph(ihpv_c,1,iblk)
         iga = hlist%idx_graph(ihpv_a,2,iblk)
         if (min(iga,igc).le.0)
-     &       call quit(1,'h1_sym2str_reo','corrupted idx_graph array')
+     &       call quit(1,'h1_full2str_reo','corrupted idx_graph array')
         
         ! -----------------------------
         ! loop over Ms (actually: 2*Ms)

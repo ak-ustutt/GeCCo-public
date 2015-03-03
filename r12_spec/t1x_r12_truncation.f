@@ -93,7 +93,8 @@
         max_pert = 5
         max_t1x  = 2
       case default
-        call quit(1,'t1x_truncation','what do you mean: '//trim(mode))
+        call quit(1,'t1x_r12_truncation',
+     &              'what do you mean: '//trim(mode))
       end select
       h0_def = 0
       if (mode(6:6).eq.'1') h0_def=1
@@ -175,7 +176,7 @@
           end do
 
           if (nham.ne.1)
-     &         call quit(1,'t1x_truncation','strange: nham.ne.1')
+     &         call quit(1,'t1x_r12_truncation','strange: nham.ne.1')
           ! restrict order
           delete = (ord_ham+nt1x+nl1x+nrdag+nr12).gt.max_pert
           ! restrict max. T1
@@ -198,7 +199,7 @@
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'t1x_truncation','command undefined here')
+          call quit(1,'t1x_r12_truncation','command undefined here')
         end select
 
         ! Exit or move to the next item.

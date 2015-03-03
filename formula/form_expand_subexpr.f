@@ -95,7 +95,7 @@ c      include 'def_contraction_list.h'
 
         ffintm => form_info%form_arr(idx)%form%fhand
         if (.not.associated(ffintm))
-     &       call quit(1,'form_factor_out',
+     &       call quit(1,'form_expand_subexpr',
      &       'formula file does not exist for '//
      &       trim(form_info%form_arr(idx)%form%label))
 

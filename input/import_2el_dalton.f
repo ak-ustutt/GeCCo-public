@@ -97,7 +97,7 @@
       ! Open the required MO-integral file.
       inquire(file=fname_inp,exist=fexist)
       if(.not.fexist)
-     &     call quit(1,'import_r12_dalton','No MO integral file: '//
+     &     call quit(1,'mport_2el_dalton','No MO integral file: '//
      &       trim(fname_inp))
 
       if (mode.gt.0) then
@@ -207,7 +207,7 @@ c dbg
 c FUSK FIX - we currently allow up to 3 times of ifree:
         if (nbuffer.gt.3*ifree) then
           write(lulog,*) nbuffer,ifree
-          call quit(0,'DAimport buffer','definitely too large')
+          call quit(0,'import_2el_dalton','definitely too large')
         end if
         !ifree = mem_alloc_real(buffer,nbuffer,'DAbuffer')
         allocate(buffer(nbuffer))        

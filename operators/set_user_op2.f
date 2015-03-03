@@ -61,7 +61,8 @@ c     &     freeze(2)
       end if
 
       if (len_trim(name).gt.len_opname)
-     &    call quit(1,'set_user_op','name too long: "'//trim(name)//'"')
+     &    call quit(1,'set_user_op2','name too long: "'//
+     &                                trim(name)//'"')
 
       if (type.ne.optyp_operator.and.type.ne.optyp_density) then
         if (type.eq.optyp_intermediate) then
@@ -70,7 +71,7 @@ c     &     freeze(2)
         else
           write(lulog,*) 'type: ',type,' ?'
         end if
-        call quit(1,'set_user_op','illegal type specification')
+        call quit(1,'set_user_op2','illegal type specification')
       end if
 
       if (nblk.le.0) then

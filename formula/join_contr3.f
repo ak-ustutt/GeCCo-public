@@ -93,7 +93,7 @@
       end do
 
       if (nvtx_b.le.0.or.nproto_b.ne.0)
-     &     call quit(1,'join_contr',
+     &     call quit(1,'join_contr3',
      &     'inserted contraction fragment must be non-empty and '//
      &     'must not contain proto-vertices!')
 
@@ -109,7 +109,7 @@
       nsuper = ifndmax(svmap,1,nvtx_b,1)
 
       if (nsuper.ne.nproto_ac)
-     &     call quit(1,'join_contr','incompatible contractions!')
+     &     call quit(1,'join_contr3','incompatible contractions!')
       
       nvtx_abc = nvtx_ac-nproto_ac+nvtx_b
 

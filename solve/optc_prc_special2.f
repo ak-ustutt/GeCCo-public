@@ -114,11 +114,11 @@ c      include 'ifc_input.h'
       end if
 
       if (nincore.ne.3)
-     &     call quit(1,'optc_prc_special',
+     &     call quit(1,'optc_prc_special2',
      &     'currently: special preconditioning for nincore==3, only')
 
       if (nspecial.lt.1)
-     &     call quit(1,'optc_prc_special',
+     &     call quit(1,'optc_prc_special2',
      &     'nspecial must be >= 1')
 
       me_bmat => me_special(1)%mel
@@ -131,7 +131,7 @@ c      include 'ifc_input.h'
 
       if (beyond_A) then
         if (nspecial.lt.3)
-     &       call quit(1,'optc_prc_special','nspecial must be >= 3')
+     &       call quit(1,'optc_prc_special2','nspecial must be >= 3')
 
         me_xmat => me_special(2)%mel
         nxmat = me_xmat%len_op
@@ -467,13 +467,13 @@ c test -- special insert
               ! Gamma and Ms of B and X
               idx = idxlist(IHOLE,hpvx_csub,ncsub,1)
               if (idx.le.0.and.njoined.eq.2)
-     &             call quit(1,'optc_prc_special','no HOLE??')
+     &             call quit(1,'optc_prc_special2','no HOLE??')
               if (njoined.eq.1.and..not.ca_reverse)
      &             idx = imltlist(IPART,hpvx_csub,ncsub,1)
               if (njoined.eq.1.and.ca_reverse)
      &             idx = imltlist(IPART,hpvx_asub,nasub,1)
               if (idx.le.0.or.idx.gt.2)
-     &             call quit(1,'optc_prc_special','strange')
+     &             call quit(1,'optc_prc_special2','strange')
               if (.not.ca_reverse) then
                 idxms_bx  = idxmsdis_c(idx)
                 gam_bx = gamdis_c(idx)

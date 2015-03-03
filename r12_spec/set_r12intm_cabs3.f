@@ -148,7 +148,7 @@
      &      len_trim(labels(iop)).eq.0 ) cycle
         idx_op(iop) = idx_oplist2(labels(iop),op_info)
         if (idx_op(iop).lt.0)
-     &       call quit(1,'set_r12intm_cabs',
+     &       call quit(1,'set_r12intm_cabs3',
      &       'label not on list: '//labels(iop))
       end do
 

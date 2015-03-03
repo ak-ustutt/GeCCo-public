@@ -117,7 +117,7 @@
       end do
 
       if (error) then
-        call quit(1,'check_graph','inconsistency')
+        call quit(1,'check_graph_kernel','inconsistency')
       end if
 
       return

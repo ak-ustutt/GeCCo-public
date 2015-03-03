@@ -488,13 +488,13 @@ c test -- special insert
               ! Gamma and Ms of B and X
               idx = idxlist(IHOLE,hpvx_csub,ncsub,1)
               if (idx.le.0.and.njoined.eq.2)
-     &             call quit(1,'optc_prc_special','no HOLE??')
+     &             call quit(1,'optc_prc_mixed','no HOLE??')
               if (njoined.eq.1.and..not.ca_reverse)
      &             idx = imltlist(IPART,hpvx_csub,ncsub,1)
               if (njoined.eq.1.and.ca_reverse)
      &             idx = imltlist(IPART,hpvx_asub,nasub,1)
               if (idx.le.0.or.idx.gt.2)
-     &             call quit(1,'optc_prc_special','strange')
+     &             call quit(1,'optc_prc_mixed','strange')
               if (.not.ca_reverse) then
                 idxms_bx  = idxmsdis_c(idx)
                 gam_bx = gamdis_c(idx)

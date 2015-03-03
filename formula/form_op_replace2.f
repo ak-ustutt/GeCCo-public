@@ -65,7 +65,7 @@
 
       ! make sure that the operators match:
       if (opin_pnt%njoined.ne.njoined)
-     &     call quit(1,'form_op_replace',
+     &     call quit(1,'form_op_replace2',
      &     'the shape of the operators does not match: '//
      &     trim(opin)//' '//trim(opout))
 
@@ -110,7 +110,7 @@ c          write(lulog,*) '[ADD]'
      &                        opin_pnt%blk_version(idx_form_blk))
 
                 if (idx_blk_out.le.0) then
-                  call quit(1,'form_op_replace',
+                  call quit(1,'form_op_replace2',
      &                 'There is no block of '//trim(opout)//
      &                 ' that corresponds to the present block of '//
      &                 trim(opin)//'!')
@@ -146,7 +146,8 @@ c          write(lulog,*) '[ADD]'
                 ! contraction.
                 idx_join = idx_join+1
                 if(idx_join.gt.njoined)
-     &              call quit(1,'form_op_replace','idx_join gt njoined')
+     &              call quit(1,'form_op_replace2',
+     &                          'idx_join gt njoined')
                 vtx_chng_idx(idx_join) = idx
 
                 ! Copy the flagged vertex to a temporary array.
@@ -204,7 +205,7 @@ c          write(lulog,*) '[ADD]'
 
         case default
           write(lulog,*) 'command = ',form_pnt%command
-          call quit(1,'form_op_replace','command undefined here')
+          call quit(1,'form_op_replace2','command undefined here')
         end select
 
         if(.not.associated(form_pnt%next))exit

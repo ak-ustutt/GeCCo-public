@@ -29,10 +29,10 @@
 
       do iop = 1, nops
         if (.not.associated(current%op))
-     &       call quit(1,'op_list2arr','unallocated operator on list')
+     &       call quit(1,'op_list2arr2','unallocated operator on list')
         op_arr(iop)%op => current%op
         if (iop.lt.nops.and..not.(associated(current%next)))
-     &       call quit(1,'op_list2arr','unexpected end of list')
+     &       call quit(1,'op_list2arr2','unexpected end of list')
         current => current%next
       end do
 

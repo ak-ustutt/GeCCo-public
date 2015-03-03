@@ -68,7 +68,7 @@
 
       ! prefactor
       if (abs(contr_spl%fac).lt.1d-100)
-     &     call quit(1,'split_contr','division by zero encountered')
+     &     call quit(1,'split_contr2','division by zero encountered')
       contr_rem%fac = contr%fac / contr_spl%fac
 
       nvtx = contr%nvtx

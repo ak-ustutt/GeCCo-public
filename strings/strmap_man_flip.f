@@ -53,12 +53,12 @@
 
       ngraph = strmap_info%mxgraph
       if (ngraph.lt.str_info%ngraph)
-     &     call quit(1,'strmap_man_c',
+     &     call quit(1,'strmap_man_flip',
      &     'you forgot to update the maps after adding a new graph')
       idx_flipmap => strmap_info%idx_flipmap
 
       if (strmap_info%ffstrmap%unit.le.0)
-     &     call quit(1,'strmap_man',
+     &     call quit(1,'strmap_man_flip',
      &     'ffstrmap must be open when calling strmap_man')
 
       do idx = 1, nblk

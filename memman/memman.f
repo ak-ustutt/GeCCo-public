@@ -288,7 +288,7 @@
       case(mtyp_reg)
         mem_reg = nalloc+2*npad
       case default
-        call quit(1,'mem_alloc','illegal type')
+        call quit(1,'memman_alloc','illegal type')
       end select
 
       mem_free = mem_free - mem_reg
@@ -307,9 +307,9 @@
           write(lulog,'(x,a,i25)') 'memmax had been set to:   ',
      &         mem_total
           call memman_map(lulog,.true.)
-          call quit(0,'memman','memory exceeded')
+          call quit(0,'memman_alloc','memory exceeded')
         else if (over.gt.over_warn) then
-          call warn('memman','memory exeeded')
+          call warn('memman_alloc','memory exeeded')
           write(lulog,'(x,a,e8.1,a)') 'WARNING: memory exceeded by ',
      &         over*100d0,' %'
           write(lulog,'(x,2a)') 'trying to allocate slice: ',
@@ -327,7 +327,7 @@
           mem_curslice%imem(nalloc+1:nalloc+npad) = ipad
         end if
         if (.not.present(ipnt))
-     &       call quit(1,'mem_alloc','ipnt not present')
+     &       call quit(1,'memman_alloc','ipnt not present')
         ipnt => mem_curslice%imem(1:nalloc)
       case(mtyp_rl8)
         allocate(mem_curslice%xmem(1-npad:nalloc+npad),stat=istat)
@@ -338,7 +338,7 @@
           mem_curslice%xmem(nalloc+1:nalloc+npad) = xpad
         end if
         if (.not.present(xpnt))
-     &       call quit(1,'mem_alloc','xpnt not present')
+     &       call quit(1,'memman_alloc','xpnt not present')
         xpnt => mem_curslice%xmem(1:nalloc)
       end select
 
@@ -446,7 +446,8 @@ c      in_last_section = associated(cursection,mem_cursection)
      &        .not.cmpiarr(ipad,slice%imem(nalloc+1:nalloc+npad),npad)) 
      &    then 
             call memman_map(lulog,.true.)
-            call quit(1,'memman','range error for '//trim(slice%name))
+            call quit(1,'memman_dealloc','range error for '//
+     &                                        trim(slice%name))
           end if
         end if
         deallocate(slice%imem)
@@ -462,7 +463,8 @@ c      in_last_section = associated(cursection,mem_cursection)
      &        .not.cmpxarr(xpad,slice%xmem(nalloc+1:nalloc+npad),npad)) 
      &    then
             call memman_map(lulog,.true.)
-            call quit(1,'memman','range error for '//trim(slice%name))
+            call quit(1,'memman_dealloc','range error for '//
+     &                                    trim(slice%name))
           end if
         end if
         deallocate(slice%xmem)
@@ -471,7 +473,7 @@ c      in_last_section = associated(cursection,mem_cursection)
         mem_reg = nalloc+2*npad
       case default
         call memman_map(lulog,.true.)
-        call quit(1,'mem_dealloc','illegal type')
+        call quit(1,'memman_dealloc','illegal type')
       end select
 
       mem_free = mem_free + mem_reg
@@ -939,13 +941,13 @@ c      include 'def_filinf.h'
 
       len = len_trim(name)
       if (len.gt.membuffer_maxname)
-     &     call quit(1,'memman_init_buffer',
+     &     call quit(1,'memman_init_vbuffer',
      &     'identifier too long "'//trim(name)//'"')
       if (max_len.le.0.or.max_slots.le.0)
-     &     call quit(1,'memman_init_buffer',
+     &     call quit(1,'memman_init_vbuffer',
      &     'negative dimensions encountered')
       if (max_len.gt.mem_free.or.max_slots.gt.membuffer_maxmax_slots)
-     &     call quit(1,'memman_init_buffer',
+     &     call quit(1,'memman_init_vbuffer',
      &     'too much memory or too many slots requested')
       ! note: we need to implement a mechanism to reserve memory space
 
@@ -1019,11 +1021,11 @@ c      include 'def_membuffer.h'
      &     mem_buf_rem
 
       if (.not.associated(mem_buf_tail))
-     &     call quit(1,'memman_clean_buffer','buffer list seems empty')
+     &     call quit(1,'memman_clean_vbuffer','buffer list seems empty')
       mem_buf_pnt => mem_buf_tail
       do while(trim(mem_buf_pnt%name).ne.trim(name))
         if (.not.associated(mem_buf_pnt%prev))
-     &       call quit(1,'memman_clean_buffer',
+     &       call quit(1,'memman_clean_vbuffer',
      &       'did not find: '//trim(name))
         mem_buf_pnt => mem_buf_pnt%prev
       end do
@@ -1080,7 +1082,7 @@ c      include 'def_membuffer.h'
         mem_buf_pnt => mem_buf_tail
         do while(mem_buf_pnt%id.ne.id_buf)
           if (.not.associated(mem_buf_pnt%prev))
-     &         call quit(1,'memman_new_buffer','unknown buffer')
+     &         call quit(1,'memman_vbuffer_get_int','unknown buffer')
           mem_buf_pnt => mem_buf_pnt%prev
         end do
       end if
@@ -1165,7 +1167,7 @@ c      include 'def_membuffer.h'
         mem_buf_pnt => mem_buf_tail
         do while(mem_buf_pnt%id.ne.id_buf)
           if (.not.associated(mem_buf_pnt%prev))
-     &         call quit(1,'memman_new_buffer','unknown buffer')
+     &         call quit(1,'memman_vbuffer_put_int','unknown buffer')
           mem_buf_pnt => mem_buf_pnt%prev
         end do
       end if
@@ -1296,13 +1298,13 @@ c      include 'def_membuffer.h'
         mem_buf_pnt => mem_buf_tail
         do while(mem_buf_pnt%id.ne.id_buf)
           if (.not.associated(mem_buf_pnt%prev))
-     &         call quit(1,'memman_new_buffer','unknown buffer')
+     &         call quit(1,'memman_new_bufblk','unknown buffer')
           mem_buf_pnt => mem_buf_pnt%prev
         end do
       end if
 
       if (id_slot.gt.mem_buf_pnt%max_buf_slots)
-     &     call quit(1,'memman_new_buffer',
+     &     call quit(1,'memman_new_bufblk',
      &     'requested slot is out of range')
 
 
@@ -1312,7 +1314,7 @@ c      include 'def_membuffer.h'
       case(mtyp_rl8) 
         actual_len = length
       case default
-        call quit(1,'memman_new_buffer','illegal type encountered')
+        call quit(1,'memman_new_bufblk','illegal type encountered')
       end select
 
       if (ntest.ge.100) then
@@ -1323,7 +1325,7 @@ c      include 'def_membuffer.h'
       end if
 
       if (actual_len.gt.mem_buf_pnt%max_buf_len)
-     &     call quit(1,'memman_new_buffer',
+     &     call quit(1,'memman_new_bufblk',
      &     'requested array is too large')
 
 c      if (memman_idx_mem_buf_pnt(mem_buf_pnt,id_buf).ge.0)
@@ -1372,7 +1374,7 @@ c     &     call quit(1,'memman_new_mem_buf_pnt','ID is already in use!')
         if (mem_buf_pnt%cur_buf_len+actual_len.gt.
      &      mem_buf_pnt%max_buf_len) then
           if (n_usage_min.gt.n_usage_max)
-     &         call quit(1,'memman_new_mem_buf_pnt','inconsistency')
+     &         call quit(1,'memman_new_bufblk','inconsistency')
           usage_loop: do i_usage = n_usage_min, n_usage_max
             do idx = 1, mem_buf_pnt%max_buf_slots
               id_cur = slot_info(2*idx-1)
@@ -1609,7 +1611,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         mem_buf_pnt => mem_buf_tail
         do while(mem_buf_pnt%id.ne.id_buf)
           if (.not.associated(mem_buf_pnt%prev))
-     &         call quit(1,'memman_idx_buffer','unknown buffer')
+     &         call quit(1,'memman_idx_bufblk','unknown buffer')
           mem_buf_pnt => mem_buf_pnt%prev
         end do
       end if
@@ -1621,7 +1623,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         write(lulog,*) ' modify set? ',present(modify)
         call print_vbuffer_int(lulog,id_buf,.true.)
         call memman_map(lulog,.true.)
-        call quit(1,'memman_idx_buffer',
+        call quit(1,'memman_idx_bufblk',
      &     'requested slot is out of range')
       end if
 
@@ -1680,7 +1682,7 @@ c      mem_buf_pnt%slot(idx_slot)%length = actual_len
         mem_buf_pnt => mem_buf_tail
         do while(mem_buf_pnt%id.ne.id_buf)
           if (.not.associated(mem_buf_pnt%prev))
-     &         call quit(1,'memman_new_buffer','unknown buffer')
+     &         call quit(1,'print_vbuffer_int','unknown buffer')
           mem_buf_pnt => mem_buf_pnt%prev
         end do
       end if

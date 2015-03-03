@@ -66,7 +66,7 @@
 
       idxop_res = idx_oplist2(label_res,op_info)
       if (idxop_res.le.0)
-     &       call quit(1,'form_select_terms',
+     &       call quit(1,'form_r12exc_split',
      &       'label not on list: '//trim(label_res))
       do idx = 1, nlabels
         if (trim(labels(idx)).eq.'-') then
@@ -75,7 +75,7 @@
         end if
         idxop(idx) = idx_oplist2(labels(idx),op_info)
         if (idxop(idx).le.0)
-     &       call quit(1,'form_select_terms',
+     &       call quit(1,'form_r12exc_split',
      &       'label not on list: '//trim(labels(idx)))
       end do
 

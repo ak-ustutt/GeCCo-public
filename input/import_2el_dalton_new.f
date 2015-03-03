@@ -182,7 +182,7 @@ c        fac_ccaa = -1d0
       ! Open the required MO-integral file.
       inquire(file=fname_inp,exist=fexist)
       if(.not.fexist)
-     &     call quit(1,'import_2_dalton','No MO integral file: '//
+     &     call quit(1,'import_2_dalton_new','No MO integral file: '//
      &       trim(fname_inp))
 
       call file_init(ffinp,fname_inp,ftyp_sq_unf,0)

@@ -71,7 +71,7 @@
 
       ! make sure that the operators match:
       if (opin_pnt%njoined.ne.njoined)
-     &     call quit(1,'form_op_replace',
+     &     call quit(1,'op_replace',
      &     'the shape of the operators does not match: '//
      &     trim(opin_pnt%name)//' '//trim(opout_pnt%name))
 
@@ -157,7 +157,7 @@ c          write(lulog,*) '[ADD]'
                   write(lulog,*) trim(opin_pnt%name),
      &                 ' block no. ', idx_form_blk
                   call wrt_occ(lulog,occ_temp)
-                  call quit(1,'form_op_replace',
+                  call quit(1,'op_replace',
      &                 'There is no block of '//trim(opout_pnt%name)//
      &                 ' that corresponds to the present block of '//
      &                 trim(opin_pnt%name)//'!')
