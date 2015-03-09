@@ -365,6 +365,24 @@ c     &       ff_trv,ff_h_trv,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
+        if (multistate.and.
+     &       (opti_info%optref.eq.-1.or.opti_info%optref.eq.-2)) then ! save the just calculated ME_C0 in ME_C0_1
+         idxmel = idx_mel_list("ME_C0",op_info)
+         mel_pnt => op_info%mel_arr(idxmel)%mel
+         idxmel = idx_mel_list("ME_C0_1",op_info)
+         mel_pnt2 => op_info%mel_arr(idxmel)%mel
+         call list_copy(mel_pnt,mel_pnt2,.false.)
+         ! copy the saved ME_C0//c_st2 back to the records of ME_C0
+         do i_state=2,n_states
+          c_st = state_label(i_state,.true.)
+          call switch_mel_record(mel_pnt,i_state)
+          idxmel = idx_mel_list("ME_C0"//trim(c_st),op_info)
+          mel_pnt2 => op_info%mel_arr(idxmel)%mel
+          call list_copy(mel_pnt2,mel_pnt,.false.)
+         end do
+         call switch_mel_record(mel_pnt,1)
+        end if
+
         ! output
         it_print = imacit-1
         if (conv) it_print = imacit
@@ -466,7 +484,7 @@ c     &       ff_trv,ff_h_trv,
             evp_mode = 'PRJ'
             evp_spc_me = '-'
             evp_n_spc_me = 0
-            evp_spc_form = 'FOPT_C0'//trim(c_st)//'_prj'
+            evp_spc_form = 'FOPT_C0'//trim(c_st)//'_prj'  ! Give this as an special formula???
             evp_n_spc_form = 1
 
            else if (spinadapt.gt.0) then
