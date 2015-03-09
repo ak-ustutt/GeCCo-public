@@ -169,10 +169,10 @@ c dbg
         ! update reduced space:
         ! ffvsbsp and ffrsbsp point to ff_trv(iopt)%fhand ...
         if (.not.use_s(iopt)) then
-          if (nopt.ne.1) call quit(1,'evpc_core','not this route')
+!         if (nopt.ne.1) call quit(1,'evpc_core','not this route')
           call optc_update_redsp3
      &       (mred,xdum,nred,0,mxsub,
-     &       opti_stat%nadd,opti_stat%ndel,
+     &       opti_stat%nadd,opti_stat%ndel,init,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,fdum,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)
