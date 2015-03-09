@@ -4275,12 +4275,11 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
-c     ATTENTION: The presence of these intermediates crash the optimization
-c of F_OMG for the coupled-states case. Investigate!
-      if(.not.(MS_coupled.and.multistate)) then
+
+c     Intermediates in Lagrangian optimization
+      labels(1:20)(1:len_target_name) = ' '
+      ndef = 0
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
-        labels(1:20)(1:len_target_name) = ' '
-        ndef = 0
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
@@ -4317,11 +4316,24 @@ c        labels(ndef+2) = 'F_INT_T2H'
 !        labels(ndef+1) = 'F_INT_D'
 !        ndef = ndef + 1!3
 c dbg
-        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
-     &               val_label=labels(1:ndef))
       end if
+      if(MS_coupled.and.multistate) then
+       call set_dependency('FOPT_OMG','F_MS_Heff_int',tgt_info)
+       do i_state = 1,n_states
+        c_st = state_label(i_state,.true.)
+        do i_state2 = 1,n_states
+         c_st_2 = state_label(i_state2,.true.)
+         if (i_state.EQ.i_state2) cycle
+         ndef=ndef+1
+         labels(ndef) = 'F_MS_Heff'//trim(c_st)//trim(c_st_2)
+        end do
+       end do
       end if
+      if (ndef.gt.0)
+     &     call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
+     &     val_label=labels(1:ndef))
 
+      ! Formulas to be optimized
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
       if (maxcum.gt.0) then
