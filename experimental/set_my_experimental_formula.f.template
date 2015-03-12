@@ -83,7 +83,7 @@ c     &     op_scrbar = '_TB'
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
-     &       call quit(1,'set_exp',
+     &       call quit(1,'set_my_experimental_formula',
      &       'label not on list: '//trim(label(ilabel)))
         if (ilabel.eq.1) idxmet = idx
         if (ilabel.eq.2) idxr12 = idx

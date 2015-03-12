@@ -93,7 +93,7 @@
 
           if (ffham%incore(iocc_cls).gt.0.and.
      &        ffham%idxrec(iocc_cls).ne.hlist%off_op_occ(iocc_cls)) then
-            call quit(1,'import_fock_dalton',
+            call quit(1,'import_fock_molpro',
      &           'non-contiguous buffering: not prepared for that')
           end if
         end do
