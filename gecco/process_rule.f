@@ -73,7 +73,7 @@
       type(formula_item) ::
      &     flist
       type(me_list), pointer ::
-     &     mel_pnt, mel_pnt2, mel_pnt3
+     &     mel_pnt, mel_pnt2, mel_pnt3, mel_pnt4
       character(len=512) ::
      &     title, title2, form_str, mode, strscr
       character(len_command_par) ::
@@ -1195,8 +1195,16 @@ c dbg
        call get_mel(mel_pnt2,label,OLD)
        call get_arg('LIST_E',rule,tgt_info,val_label=label)
        call get_mel(mel_pnt3,label,OLD)
+       call get_arg('LIST_S',rule,tgt_info,val_label=label,
+     &      success=arg_there)
+       if (arg_there) call get_mel(mel_pnt4,label,OLD)
        call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
-       call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots,orb_info)
+       if (arg_there) then
+        call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots,
+     &       mel_S=mel_pnt4)
+       else
+        call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
+       endif
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE

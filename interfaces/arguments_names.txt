@@ -64,6 +64,7 @@ LIST_OPT label
 LIST_PRC label
 LIST_RES label
 LIST_RESID label
+LIST_S label
 LIST_SCAL label
 LIST_SHAPE label
 LIST_SPC label

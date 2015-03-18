@@ -808,6 +808,8 @@
       call add_command_proto(EVP_PACKED_OP,tgt_info)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_IN',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_S',0,tgt_info,
+     &     val_label=(/' '/),req=.false.)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_EVEC',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_E',0,tgt_info,
