@@ -23,7 +23,7 @@ from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
 
-import math
+from BCH_fac import set_BCH_factor
 
 # Set some parameters fom input
 #
@@ -86,13 +86,6 @@ def set_avoid_list( n1, n2):
             avoid.extend([i1, i2])
     return avoid
 
-# The factor of the BCH expansion
-def set_factor(n, k):
-    fac = 1.0/(math.factorial(k)*math.factorial(n-k))
-    if (k % 2 == 1):
-        fac = -fac
-    return fac
-
 # The next two targets will be constructed simultaneously:
 
 #  (a) the lagrangian coupling term:
@@ -140,10 +133,10 @@ for i_state in range(1, n_states+1):
                 nop_H = 3 + nH
 
                 for kL in range(0, nL+1):
-                    fac_L = set_factor(nL, kL)
+                    fac_L = set_BCH_factor(nL, kL)
                     # Since pure_vv=F, there is no T on the left side of H. Otherwise use range( 1, nH+1)
                     for kH in range(0, 1):
-                        fac_H = set_factor(nH, kH)
+                        fac_H = set_BCH_factor(nH, kH)
 
                         op_list_Heff_int = [cdg_j] + [top_i]*kH + [hop] + [top_i]*(nH-kH) + [cop_i]
 
