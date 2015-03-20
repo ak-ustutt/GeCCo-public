@@ -71,6 +71,7 @@ c dbg
      &     S_matrix_ini(ndim,ndim),
      &     A_matrix(ndim,ndim),
      &     eigenvec(ndim,ndim),
+     &     eigenvec_ini(ndim,ndim),
      &     eigenval_r(ndim),
      &     eigenval_i(ndim),
      &     xscr(ndim,ndim))
