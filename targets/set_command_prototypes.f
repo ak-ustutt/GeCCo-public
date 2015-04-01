@@ -692,6 +692,8 @@
      &     val_str=' ',req=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'N_ROOTS',0,tgt_info,
      &     val_int=(/0/),req=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'CHOICE_OPT',0,tgt_info,
+     &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'LIST_SPC',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'FORM_SPC',0,tgt_info,

@@ -19,6 +19,18 @@ _multd2h = np.matrix('1 2 3 4 5 6 7 8;2 1 4 3 6 5 8 7;3 4 1 2 7 8 5 6;4 3 2 1 8 
 
 _method= _inp.get('method.MRCC.excite.method')
 
+if (_method == 'LR' or _method == None):
+    _lr_opt = 1
+elif (_method == 'EOM'):
+    _lr_opt = 2
+else:
+    quit_error('Input Error: specified wrong method to calculate excitation energy')
+
+_choice= _inp.get('calculate.solve.eigen.guess')
+if (_choice == None):
+    _choice = 0
+
+
 _s2_0 = _orb.get('imult')
 _isym_0 = _orb.get('lsym')
 _ms_0 = _orb.get('ims')
@@ -31,14 +43,6 @@ elif ((_ms_0 == 0) and ((_s2_0+1 % 4) == 0)):
     _msc_0 = -1
 else:
     _msc_0 = 0
-
-
-if (_method == 'LR' or _method == None):
-    _lr_opt = 1
-elif (_method == 'EOM'):
-    _lr_opt = 2
-else:
-    quit_error('Input Error: specified wrong method to calculate excitation energy')
 
 _sym = _inp.get('calculate.excitation.sym')
 _mult = _inp.get('calculate.excitation.mult')
@@ -268,7 +272,7 @@ depend('RSPNS_OP')
 if (_lr_opt == 1):
 
     depend('F_OMG_C0',
-           '"E(MR)"')
+           'E(MR)')
  
     DERIVATIVE({LABEL_RES:'F_AR_rspns_mu',
                 LABEL_IN:'F_OMG_C0',
@@ -279,7 +283,7 @@ if (_lr_opt == 1):
 elif (_lr_opt == 2):
 
     depend('F_E_C0',
-           '"E(MR)"')
+           'E(MR)')
 
 
     DERIVATIVE({LABEL_RES:'F_AR_rspns_c',
@@ -314,7 +318,7 @@ elif (_lr_opt == 2):
 EXPAND_OP_PRODUCT({LABEL:'F_AR_rspns_mu',
                   NEW:False,
                   OP_RES:'AR_rspns_mu',
-                  OPERATORS:['AR_rspns_mu','"E(MR)"','R_mu','AR_rspns_mu'],
+                  OPERATORS:['AR_rspns_mu','E(MR)','R_mu','AR_rspns_mu'],
                   IDX_SV:[1,2,3,1],
                   FAC:-1.0})
 
@@ -501,7 +505,7 @@ for _icnt in range (0,_ncnt):
 
         new_target(_list_rspns)
         depend('RSPNS_OP','DEF_ME_C0','DEF_ME_Dtrdag','H0','DEF_ME_T',
-               'DIA_T','DIA_C0','"DEF_ME_E(MR)"','F_prePPrint')
+               'DIA_T','DIA_C0','DEF_ME_E(MR)','F_prePPrint')
         
         _op_list={'R_q':[_isym_r,_msc_r],
                   'R_mu':[_isym+1,_msc],
@@ -535,11 +539,11 @@ for _icnt in range (0,_ncnt):
                         '2MS':0})
         
         DEF_ME_LIST({LIST:'ME_MINEN'+_extnsn,
-                     OPERATOR:'"E(MR)"',
+                     OPERATOR:'E(MR)',
                      IRREP:1,
                      '2MS':0})
         
-        ASSIGN_ME2OP({LIST:'"ME_E(MR)"',OPERATOR:'"E(MR)"'})
+        ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
         
         _diag_cal_q = 'DIAG_CAL_q_' + _extnsn
 
@@ -576,7 +580,7 @@ for _icnt in range (0,_ncnt):
                         MODE:'dia-H'})
         
         SCALE_COPY({LIST_RES:'ME_MINEN'+_extnsn,
-                    LIST_INP:'"ME_E(MR)"',
+                    LIST_INP:'ME_E(MR)',
                     FAC:-1.0})
         
         EXTRACT_DIAG({LIST_RES:'ME_DIAG_c'+_extnsn,
@@ -592,7 +596,7 @@ for _icnt in range (0,_ncnt):
         new_target(_rspns_opt)
         
         depend('RSPNS_FORM ',_list_rspns,'FORM_AR_RSPNS_Q','FORM_AR_RSPNS_MU',
-               '"DEF_ME_E(MR)"','F_PPrint')
+               'DEF_ME_E(MR)','F_PPrint')
         
         OPTIMIZE({LABEL_OPT:'RSPNS_OPT'+_extnsn,
                   LABELS_IN:['F_AR_rspns_q','F_AR_rspns_mu','F_SR_rspns_q','F_SR_rspns_mu','F_R_q'],
@@ -640,6 +644,7 @@ for _icnt in range (0,_ncnt):
         _solve_evp_basis[MODE]='TRF PRJ'
         _solve_evp_basis[FORM_SPC]='FOPT_prj'
         _solve_evp_basis[N_ROOTS]=_no_root
+        _solve_evp_basis[CHOICE_OPT]=_choice
 
         PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) + 
                        '  and of spin multiplicity:    ' + str(_s2)})

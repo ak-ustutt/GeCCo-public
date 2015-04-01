@@ -52,7 +52,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root
+     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root, choice
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -1446,6 +1446,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(1:),ndim=nopt)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+        call get_arg('CHOICE_OPT',rule,tgt_info,val_int=choice)
         call get_arg('TARG_ROOT',rule,tgt_info,val_int=targ_root)
         if (targ_root.le.0) targ_root=nroots
         call get_arg('LIST_PRC',rule,tgt_info,
@@ -1473,7 +1474,7 @@ c          mode = 'dia-R12'
      &                   4*nopt+nspecial),nspecial,
      &       label_list(4*nopt+nspecial+1:     ! spec. form.
      &                  4*nopt+nspecial+nspcfrm),
-     &          nspcfrm,0d0,
+     &          nspcfrm,0d0,choice,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     subsection: others

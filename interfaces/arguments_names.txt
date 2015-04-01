@@ -132,3 +132,4 @@ TYPE str
 USE1 log
 VAL_LIST real
 X_SPCS int
+CHOICE_OPT int

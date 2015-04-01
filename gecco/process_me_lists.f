@@ -292,7 +292,7 @@ c dbg
      &                   4*nopt+ioff+nspecial),nspecial,
      &       rule%labels(3*nopt+ioff+1:         ! spec. form.
      &                   3*nopt+ioff),
-     &          0,0d0,
+     &          0,0d0,0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SET_FREQ)

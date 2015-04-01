@@ -508,7 +508,7 @@ c     &       ff_trv,ff_h_trv,
      &          'C0','FOPT_OMG_C0'//trim(c_st),
      &          evp_spc_me,  evp_n_spc_me,
      &          evp_spc_form,evp_n_spc_form,
-     &          thr_suggest(i_state),
+     &          thr_suggest(i_state),0,
      &          op_info,form_info,str_info,strmap_info,orb_info)
 
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2

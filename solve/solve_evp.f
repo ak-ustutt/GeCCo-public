@@ -3,6 +3,7 @@
      &     nopt,nroots,targ_root,label_opt,label_prc,label_op_mvp,
      &     label_op_met,label_form,
      &     label_special,nspecial,label_spcfrm,nspcfrm,thr_suggest,
+     &     choice_opt,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -57,7 +58,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial, nspcfrm, targ_root
+     &     nopt, nroots, nspecial, nspcfrm, targ_root,choice_opt
       character(*), intent(in) ::
      &     mode_str,
      &     label_opt(nopt),
@@ -373,7 +374,7 @@ c dbgend
       else
       call init_guess2(nopt,init,nroots,
      &                me_opt,me_trv,me_dia,me_special,nspecial,
-     &                fl_mvp,depend,fl_spc,nspcfrm,
+     &                fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
      &                opti_info,orb_info,op_info,str_info,strmap_info)
       end if
 
