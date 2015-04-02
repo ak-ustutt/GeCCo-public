@@ -637,6 +637,12 @@
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type,def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(NORM_MEL,tgt_info)
+      call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',NORM_MEL,'IMODE',1,tgt_info,
+     &     val_int=(/1/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SOLVENLEQ,tgt_info)
       call set_arg('_PROTO_',SOLVENLEQ,'LIST_OPT',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

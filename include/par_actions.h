@@ -73,6 +73,7 @@
      &     EVAL*8             = 'EVALUATE',
      &     TRANSF*9           = 'TRANSFORM',
      &     EVALPROP*9         = 'EVAL_PROP',
+     &     NORM_MEL*8         = 'NORM_MEL',
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',
      &     SOLVEEVP*9         = 'SOLVE_EVP',

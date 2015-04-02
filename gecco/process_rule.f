@@ -1360,6 +1360,21 @@ c          mode = 'dia-R12'
      &       env_type,op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
+      case(NORM_MEL)
+*----------------------------------------------------------------------*
+
+        call get_arg('LISTS',rule,tgt_info,
+     &       val_label_list=label_list(1:),ndim=nopt)
+        call get_arg('LIST_SPC',rule,tgt_info,
+     &       val_label_list=label_list(nopt+1:2*nopt),success=arg_there)
+        if(.NOT.arg_there) 
+     &  label_list(nopt+1:2*nopt) = label_list(1:nopt)
+        call get_arg('IMODE',rule,tgt_info,val_int=imode)
+
+        call normalize_vector_wrap(
+     &       label_list(1:nopt),label_list(nopt+1:2*nopt),
+     &       nopt,imode,op_info)
+*----------------------------------------------------------------------*
       case(SOLVENLEQ)
 *----------------------------------------------------------------------*
 
