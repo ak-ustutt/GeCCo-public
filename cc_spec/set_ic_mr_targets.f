@@ -782,10 +782,16 @@ c dbgend
        end if
       else if (gno.eq.1) then
         call set_dependency('FOPT_D','DEF_ME_DENS',tgt_info)
-        call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_dependency('FOPT_D','Y_GNO',tgt_info)
+       if (densmix.gt.0d0) then
+        call set_dependency('FOPT_D','F_DENSmix',tgt_info)
+        call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
+     &               val_label=(/'F_DENSmix','F_Y_GNO  ','F_D      '/))
+       else
+        call set_dependency('FOPT_D','F_DENS0',tgt_info)
         call set_arg('FOPT_D',OPTIMIZE,'LABELS_IN',3,tgt_info,
      &               val_label=(/'F_DENS0','F_Y_GNO','F_D    '/))
+       end if
       end if
 
 *----------------------------------------------------------------------*
