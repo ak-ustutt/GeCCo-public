@@ -1,5 +1,5 @@
       subroutine merge_min_lists(xlist_all,idxlist_all,ntrials_all,
-     &     xlist,idxlist,nopt,maxtrials,ntrials)
+     &     xlist,idxlist,nopt,maxtrials,ntrials,choice)
 
       implicit none
 
@@ -9,7 +9,8 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     nopt, maxtrials, ntrials(nopt), idxlist(maxtrials,nopt)
+     &     nopt, maxtrials, ntrials(nopt), idxlist(maxtrials,nopt),
+     &     choice
       real(8), intent(in) ::
      &     xlist(maxtrials,nopt)
 
@@ -23,35 +24,49 @@
       real(8) ::
      &     xlow
 
-      idx(1:nopt) = 0
+      if (choice.eq.0) then
 
-      ntrials_all = min(maxtrials,sum(ntrials(1:nopt)))
-
-      do itry = 1, ntrials_all
-        
-        ! look for next-lowest element in all lists
-        xlow = huge(xlow)
-        jopt = -1
-        do iopt = 1, nopt
-          if (idx(iopt).lt.ntrials(iopt)) then
-            if (xlist(idx(iopt)+1,iopt).lt.xlow) then
-              xlow = xlist(idx(iopt)+1,iopt)
-              jopt = iopt
+        idx(1:nopt) = 0
+  
+        ntrials_all = min(maxtrials,sum(ntrials(1:nopt)))
+  
+        do itry = 1, ntrials_all
+          
+          ! look for next-lowest element in all lists
+          xlow = huge(xlow)
+          jopt = -1
+          do iopt = 1, nopt
+            if (idx(iopt).lt.ntrials(iopt)) then
+              if (xlist(idx(iopt)+1,iopt).lt.xlow) then
+                xlow = xlist(idx(iopt)+1,iopt)
+                jopt = iopt
+              end if
             end if
-          end if
+          end do
+  
+          if (jopt.le.0)
+     &         call quit(1,'merge_min_lists','something''s wrong !')
+  
+          ! increment this index
+          idx(jopt) = idx(jopt)+1
+          
+          ! store information on new list
+          xlist_all(itry) = xlist(idx(jopt),jopt)
+          idxlist_all(1:2,itry) = (/jopt,idxlist(idx(jopt),jopt)/)
+  
         end do
+       elseif (choice.eq.1.or.choice.eq.2) then
+         ntrials_all = min(maxtrials,ntrials(choice))
 
-        if (jopt.le.0)
-     &       call quit(1,'merge_min_lists','something''s wrong !')
+         do itry = 1, ntrials_all
 
-        ! increment this index
-        idx(jopt) = idx(jopt)+1
-        
-        ! store information on new list
-        xlist_all(itry) = xlist(idx(jopt),jopt)
-        idxlist_all(1:2,itry) = (/jopt,idxlist(idx(jopt),jopt)/)
+           xlist_all(itry) = xlist(itry,choice)
+           idxlist_all(1:2,itry) = (/choice,idxlist(itry,choice)/)
 
-      end do
+         enddo
+       else
+         call quit(1,'merge_min_lists','wrong choice')
+       endif
 
       if (ntest.ge.100) then
         write(lulog,*) 'new array:'

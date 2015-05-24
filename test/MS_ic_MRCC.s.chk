@@ -14,7 +14,7 @@ check
   compare real 4 1e-9
   compare real 5 1e-9
 check
-  label Effective hamiltonal elements
+  label Effective Hamiltonian elements
   find EVAL_pack_Heff_MS
   find Rule: EVALUATE
   find >>>
@@ -29,7 +29,7 @@ check
   find >>>
   compare real 4 1e-9
 check
-  label effective Hamiltonian eigenproblem
+  label Effective Hamiltonian eigenproblem
   find Multistate energies and eigenvectors:
   find >>>
   compare real 2 1e-9

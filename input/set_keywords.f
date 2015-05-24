@@ -389,6 +389,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('resume','calculate.solve.eigen',
      &     type=vtyp_log,
      &     ldef=(/.true./)) ! resume with last vec. as initial guess
+      call argument_add('guess','calculate.solve.eigen',
+     &     type=vtyp_int,
+     &     idef=(/0/))
 
       call keyword_add('CC_solve_tbar',context='calculate')
       call keyword_add('CC_solve_sim',context='calculate')

@@ -637,6 +637,12 @@
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type,def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(NORM_MEL,tgt_info)
+      call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',NORM_MEL,'IMODE',1,tgt_info,
+     &     val_int=(/1/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SOLVENLEQ,tgt_info)
       call set_arg('_PROTO_',SOLVENLEQ,'LIST_OPT',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -692,6 +698,8 @@
      &     val_str=' ',req=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'N_ROOTS',0,tgt_info,
      &     val_int=(/0/),req=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'CHOICE_OPT',0,tgt_info,
+     &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'LIST_SPC',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'FORM_SPC',0,tgt_info,
@@ -808,6 +816,8 @@
       call add_command_proto(EVP_PACKED_OP,tgt_info)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_IN',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_S',0,tgt_info,
+     &     val_label=(/' '/),req=.false.)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_EVEC',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_E',0,tgt_info,

@@ -23,7 +23,7 @@ from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
 
-import math
+from BCH_fac import set_BCH_factor
 
 # Set some parameters fom input
 #
@@ -59,6 +59,12 @@ if (maxcom_en == None):
         maxcom_en = maxcom_en_default
 maxcom_en = int(maxcom_en)
 
+if inp.get('method.MR.pure_vv') == True:
+    quit_error("MRCC_Lagrangian_coupl_term.py: pure_vv=T not implemented for coupling term.")
+
+msc = 1
+if (orb.get('ims') != 0):
+    msc = 0
 
 # Set some variables for operator labels
 #
@@ -80,15 +86,17 @@ def set_avoid_list( n1, n2):
             avoid.extend([i1, i2])
     return avoid
 
-# The factor of the BCH expansion
-def set_factor(n, k):
-    fac = 1.0/(math.factorial(k)*math.factorial(n-k))
-    if (k % 2 == 1):
-        fac = -fac
-    return fac
+# The next two targets will be constructed simultaneously:
 
+#  (a) the lagrangian coupling term:
 new_target('F_MRCC_LAG_coupl')
 depend('F_MRCC_LAG')
+
+#  (b) the Heff_ij, to be used as intermediate:
+new_target('F_MS_Heff_int')
+depend('E(MR)')
+
+print 'F_MS_Heff_int'
 
 for i_state in range(1, n_states+1):
     state_label = "" if (i_state == 1) else "_" + str(i_state)
@@ -106,19 +114,48 @@ for i_state in range(1, n_states+1):
         top_j = top + state_label
         cop_j = cop + state_label
 
+        heff_ij_op='MS_Heff_' + str( i_state)  + "_" + str( j_state)
+
+        # Elements of the multistate effective Hamiltonian...
+        modify_target( 'F_MS_Heff_int')
+
+        CLONE_OPERATOR({LABEL:heff_ij_op,
+                        TEMPLATE:'E(MR)'})
+
+        DEF_ME_LIST({LIST:'ME_' + heff_ij_op,
+             OPERATOR:heff_ij_op,
+             IRREP:1,
+             '2MS':0,
+             AB_SYM:msc})
+
+        # and the formulas:
         for nL in range(0, maxcom+1):
             nop_L = 3 + nL
             for nH in range(0, maxcom_en+1):
                 nop_H = 3 + nH
 
                 for kL in range(0, nL+1):
-                    fac_L = set_factor(nL, kL)
-                    for kH in range(0, nH+1):
-                        fac_H = set_factor(nH, kH)
+                    fac_L = set_BCH_factor(nL, kL)
+                    # Since pure_vv=F, there is no T on the left side of H. Otherwise use range( 1, nH+1)
+                    for kH in range(0, 1):
+                        fac_H = set_BCH_factor(nH, kH)
+
+                        op_list_Heff_int = [cdg_j] + [top_i]*kH + [hop] + [top_i]*(nH-kH) + [cop_i]
 
                         op_list = [cdg_i, lop_i] + [top_i]*kL  + [top_j]*(nL-kL) + [cop_j] +\
-                                  [cdg_j] + [top_i]*kH + [hop] + [top_i]*(nH-kH) + [cop_i]
+                                  op_list_Heff_int
                         
+                        if (nL == 0):
+                            modify_target( 'F_MS_Heff_int')
+                            EXPAND_OP_PRODUCT({LABEL: 'F_' + heff_ij_op,
+                                               OP_RES: heff_ij_op,
+                                               OPERATORS: op_list_Heff_int,
+                                               IDX_SV: range(1, nop_H + 1),
+                                               NEW: nH==0,
+                                               FIX_VTX: True,
+                                               FAC: fac_H})
+
+                        modify_target( 'F_MRCC_LAG_coupl')
                         EXPAND_OP_PRODUCT({LABEL: lag_label,
                                            OP_RES: res,
                                            OPERATORS: op_list,
@@ -128,7 +165,16 @@ for i_state in range(1, n_states+1):
                                            FIX_VTX: True,
                                            FAC: -fac_L*fac_H})
 
-SUM_TERMS({LABEL_IN:'F_MRCC_LAG',LABEL_RES:'F_MRCC_LAG'})
+        modify_target( 'F_MS_Heff_int')
+        SUM_TERMS({LABEL_IN:'F_' + heff_ij_op, LABEL_RES:'F_' + heff_ij_op})
+
+        # dbg
+        #PRINT_FORMULA({LABEL:'F_' + heff_ij_op})
+        #ABORT({})
+        # dbg
+
+modify_target( 'F_MRCC_LAG_coupl')
+SUM_TERMS({LABEL_IN:'F_MRCC_LAG', LABEL_RES:'F_MRCC_LAG'})
 
 # dbg
 #PRINT_FORMULA({LABEL:'F_MRCC_LAG'})

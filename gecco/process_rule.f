@@ -52,7 +52,7 @@
      &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
-     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root
+     &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root, choice
       integer ::
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
@@ -73,7 +73,7 @@
       type(formula_item) ::
      &     flist
       type(me_list), pointer ::
-     &     mel_pnt, mel_pnt2, mel_pnt3
+     &     mel_pnt, mel_pnt2, mel_pnt3, mel_pnt4
       character(len=512) ::
      &     title, title2, form_str, mode, strscr
       character(len_command_par) ::
@@ -1195,8 +1195,16 @@ c dbg
        call get_mel(mel_pnt2,label,OLD)
        call get_arg('LIST_E',rule,tgt_info,val_label=label)
        call get_mel(mel_pnt3,label,OLD)
+       call get_arg('LIST_S',rule,tgt_info,val_label=label,
+     &      success=arg_there)
+       if (arg_there) call get_mel(mel_pnt4,label,OLD)
        call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
-       call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots,orb_info)
+       if (arg_there) then
+        call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots,
+     &       mel_S=mel_pnt4)
+       else
+        call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
+       endif
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE
@@ -1352,6 +1360,21 @@ c          mode = 'dia-R12'
      &       env_type,op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
+      case(NORM_MEL)
+*----------------------------------------------------------------------*
+
+        call get_arg('LISTS',rule,tgt_info,
+     &       val_label_list=label_list(1:),ndim=nopt)
+        call get_arg('LIST_SPC',rule,tgt_info,
+     &       val_label_list=label_list(nopt+1:2*nopt),success=arg_there)
+        if(.NOT.arg_there) 
+     &  label_list(nopt+1:2*nopt) = label_list(1:nopt)
+        call get_arg('IMODE',rule,tgt_info,val_int=imode)
+
+        call normalize_vector_wrap(
+     &       label_list(1:nopt),label_list(nopt+1:2*nopt),
+     &       nopt,imode,op_info)
+*----------------------------------------------------------------------*
       case(SOLVENLEQ)
 *----------------------------------------------------------------------*
 
@@ -1438,6 +1461,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(1:),ndim=nopt)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+        call get_arg('CHOICE_OPT',rule,tgt_info,val_int=choice)
         call get_arg('TARG_ROOT',rule,tgt_info,val_int=targ_root)
         if (targ_root.le.0) targ_root=nroots
         call get_arg('LIST_PRC',rule,tgt_info,
@@ -1465,7 +1489,7 @@ c          mode = 'dia-R12'
      &                   4*nopt+nspecial),nspecial,
      &       label_list(4*nopt+nspecial+1:     ! spec. form.
      &                  4*nopt+nspecial+nspcfrm),
-     &          nspcfrm,0d0,
+     &          nspcfrm,0d0,choice,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     subsection: others

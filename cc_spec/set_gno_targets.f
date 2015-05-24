@@ -1229,6 +1229,17 @@ c dbgend
      &             val_int=(/1,2,1,1,3,1/))
       call set_arg('Y_GNO',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &             val_rl8=(/-1d0/))
+      if (densmix.gt.0d0) then
+        ! Factor out reduced density matrices
+        call set_rule2('Y_GNO',FACTOR_OUT,tgt_info)
+        call set_dependency('Y_GNO','F_DENS0',tgt_info)
+        call set_arg('Y_GNO',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'F_Y_GNO'/))
+        call set_arg('Y_GNO',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_Y_GNO'/))
+        call set_arg('Y_GNO',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS0'/))
+      end if
 c dbg
       call set_rule2('Y_GNO',PRINT_FORMULA,tgt_info)
       call set_arg('Y_GNO',PRINT_FORMULA,'LABEL',1,tgt_info,

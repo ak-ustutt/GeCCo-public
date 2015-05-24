@@ -47,4 +47,15 @@
      &      new_state
        end subroutine
 
+       subroutine diag_packed_op(mel_in,mel_evec,mel_eval,ndim,mel_S)
+       import :: me_list
+       implicit none
+       type(me_list), intent(inout) ::
+     &      mel_in, mel_evec, mel_eval
+       integer, intent(in) ::
+     &      ndim
+       type(me_list), intent(inout), optional ::
+     &      mel_S
+       end subroutine
+
       end interface

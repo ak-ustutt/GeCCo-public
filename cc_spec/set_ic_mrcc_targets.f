@@ -253,14 +253,18 @@ C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
         ! new (T) implementation
         if (tfix.ne.2.or.ntrunc.ne.4.or.h1bar
      &      .or.t1ord.ne.2.or.simp.lt.1.or.maxcom.gt.2
-     &      .or.maxcom_en.gt.4.or.maxcom.lt.2.or.maxcom_en.lt.2) 
+     &      .or.maxcom_en.gt.4.or.maxcom.lt.2.or.maxcom_en.lt.2
+     &      .or.maxcum.ge.0)
      &     call quit(1,'set_ic_mrcc_targets',
      &     'New (T) implementation only works for '//
      &     'Tfix=2,trunc_order=4,H1bar=F,T1ord=2,simp=1-2,'//
-     &     'maxcom_res=2,maxcom_en=2-4')
+     &     'maxcom_res=2,maxcom_en=2-4,maxcum=-1')
         if (excrestr(0,0,1).lt.excrestr(0,0,2))
      &     call quit(1,'set_ic_mrcc_targets',
      &     'Implement missing terms for pure_vv in new (T)')
+        if (densmix.gt.0d0.and.simp.lt.2)
+     &     call quit(1,'set_ic_mrcc_targets',
+     &     'Maximum rank of RDM is probably too low.')
 c_T_proj_3_fix = ctest 11/15/14
         inquire(file='ME_T2fix_list.da',exist=l_exist)
         if (.not.l_exist)
@@ -1514,7 +1518,7 @@ c dbgend
       call set_arg('F_LAG_L',SELECT_TERMS,'BLK_INCL',1,tgt_info,
      &     val_int=(/0/))
       ! Cumulant approximation?
-      if (maxcum.gt.0) then
+      if (maxcum.gt.0.or.densmix.gt.0d0) then
         ! Factor out reduced density matrices
         call set_rule2('F_LAG_L',FACTOR_OUT,tgt_info)
         call set_dependency('F_LAG_L','F_DENS0',tgt_info)
@@ -1524,6 +1528,8 @@ c dbgend
      &       val_label=(/'F_LAG_L'/))
         call set_arg('F_LAG_L',FACTOR_OUT,'INTERM',1,tgt_info,
      &       val_label=(/'F_DENS0'/))
+       end if
+       if (maxcum.gt.0) then
         ! Expand density matrices in terms of cumulants
         call set_rule2('F_LAG_L',EXPAND,tgt_info)
         call set_arg('F_LAG_L',EXPAND,'LABEL_RES',1,tgt_info,
@@ -1567,7 +1573,7 @@ c dbgend
        call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
       end if
       call set_dependency('F_OMG','OMG',tgt_info)
-      if (maxcum.gt.0) then
+      if (maxcum.gt.0.or.densmix.gt.0d0) then
         call set_dependency('F_OMG','F_LAG_L',tgt_info)
       end if
       do i_state = 1,n_states
@@ -1575,7 +1581,7 @@ c dbgend
       call set_rule2('F_OMG',DERIVATIVE,tgt_info)
       call set_arg('F_OMG',DERIVATIVE,'LABEL_RES',1,tgt_info,
      &     val_label=(/'F_OMG'//trim(c_st)/))
-      if (maxcum.gt.0) then
+      if (maxcum.gt.0.or.densmix.gt.0d0) then
         call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_LAG_L'/))
       else
@@ -3237,7 +3243,7 @@ c dbgend
      &     val_str='Energy + correction from MRCC Lagrangian')
       ! preliminary: only (T) correction for F12
       ! as our current Lagrangian neglect F12 contributions
-      if (orb_info%norb_hpv(IEXTR,1).gt.0) then
+      if (orb_info%norb_hpv(IEXTR,1).gt.0.or.densmix.gt.0d0) then
         call set_rule2('F_Ecorrected',SELECT_TERMS,tgt_info)
         call set_arg('F_Ecorrected',SELECT_TERMS,'LABEL_RES',1,tgt_info,
      &       val_label=(/'F_Ecorrected'/))
@@ -3686,7 +3692,8 @@ c_T_proj_3_fix end of change
       call set_dependency('MRCC_PT_LAG','DYALL_HAM',tgt_info)
       ! (a) ic-MRCCSD energy (only if not just a corr. to ic-MRCCSD-F12)
       ! for pure_vv, one should also include terms with Tfix on the left
-      if (orb_info%norb_hpv(IEXTR,1).eq.0) then
+      print*,'debugging set_ic_mrcc_target', orb_info%norb_hpv(IEXTR,1)
+      if (orb_info%norb_hpv(IEXTR,1).eq.0.and.densmix.eq.0d0) then
         call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &               val_label=(/'MRCC_PT_LAG'/))
@@ -3776,7 +3783,8 @@ c_T_proj_3_fix end of change
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &             val_rl8=(/0.5d0/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
-     &             val_log=(/orb_info%norb_hpv(IEXTR,1).ne.0/))
+     &             val_log=(/orb_info%norb_hpv(IEXTR,1).ne.0.or.
+     &             densmix.gt.0d0/))
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &             val_label=(/'MRCC_PT_LAG'/))
@@ -4105,6 +4113,17 @@ c_T_proj_3_fix end of change
      &     val_label=(/'MRCC_PT_LAG'/))
       call set_arg('MRCC_PT_LAG',EXPAND,'INTERM',1,tgt_info,
      &     val_label=(/'F_Hdyall'/))
+      ! Factor out RDMs?
+      if (densmix.gt.0d0) then
+        call set_rule2('MRCC_PT_LAG',FACTOR_OUT,tgt_info)
+        call set_dependency('MRCC_PT_LAG','F_DENS0',tgt_info)
+        call set_arg('MRCC_PT_LAG',FACTOR_OUT,'LABEL_RES',1,tgt_info,
+     &       val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',FACTOR_OUT,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'MRCC_PT_LAG'/))
+        call set_arg('MRCC_PT_LAG',FACTOR_OUT,'INTERM',1,tgt_info,
+     &       val_label=(/'F_DENS0'/))
+      end if
 c dbg
 c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
 c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
@@ -4275,12 +4294,13 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
       call set_rule2('FOPT_OMG',OPTIMIZE,tgt_info)
       call set_arg('FOPT_OMG',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_OMG'/))
+
+c     Intermediates in Lagrangian optimization
+      labels(1:20)(1:len_target_name) = ' '
+      ndef = 0
 c     ATTENTION: The presence of these intermediates crash the optimization
 c of F_OMG for the coupled-states case. Investigate!
-      if(.not.(MS_coupled.and.multistate)) then
       if ((maxp.ge.2.or.maxh.ge.2).and.tfix.eq.0) then
-        labels(1:20)(1:len_target_name) = ' '
-        ndef = 0
         if (maxp.ge.2.and.h1bar_maxp.lt.4) then
           call set_dependency('FOPT_OMG','F_PP0int',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_INT_PP0',tgt_info)
@@ -4317,14 +4337,27 @@ c        labels(ndef+2) = 'F_INT_T2H'
 !        labels(ndef+1) = 'F_INT_D'
 !        ndef = ndef + 1!3
 c dbg
-        call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
-     &               val_label=labels(1:ndef))
       end if
+      if(MS_coupled.and.multistate) then
+       call set_dependency('FOPT_OMG','F_MS_Heff_int',tgt_info)
+       do i_state = 1,n_states
+        c_st = state_label(i_state,.true.)
+        do i_state2 = 1,n_states
+         c_st_2 = state_label(i_state2,.true.)
+         if (i_state.EQ.i_state2) cycle
+         ndef=ndef+1
+         labels(ndef) = 'F_MS_Heff'//trim(c_st)//trim(c_st_2)
+        end do
+       end do
       end if
+      if (ndef.gt.0)
+     &     call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
+     &     val_label=labels(1:ndef))
 
+      ! Formulas to be optimized
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
-      if (maxcum.gt.0) then
+      if (maxcum.gt.0.or.densmix.gt.0d0) then
         call set_dependency('FOPT_OMG','DEF_ME_DENS',tgt_info)
         if (densmix.gt.0d0) then
           call set_dependency('FOPT_OMG','F_DENSmix',tgt_info)
@@ -4334,6 +4367,8 @@ c dbg
         labels(ndef+1) = 'F_DENS0'
         end if
         ndef = ndef + 1
+      end if
+      if (maxcum.gt.0) then
         if (cum_appr_mode.eq.0) then
           call set_dependency('FOPT_OMG','F_CENT',tgt_info)
           call set_dependency('FOPT_OMG','DEF_ME_CENT',tgt_info)
@@ -4655,6 +4690,12 @@ c dbgend
      &             val_label=(/'MRCC_PT_OPT'/))
       labels(1:20)(1:len_target_name) = ' '
       ndef = 0
+      if (densmix.gt.0d0) then
+        call set_dependency('MRCC_PT_OPT','DEF_ME_DENS',tgt_info)
+        call set_dependency('MRCC_PT_OPT','F_DENSmix',tgt_info)
+        labels(ndef+1) = 'F_DENSmix'
+        ndef = ndef + 1
+      end if
       if (h1bar) then
         call set_dependency('MRCC_PT_OPT','F_H1bar',tgt_info)
         call set_dependency('MRCC_PT_OPT','DEF_ME_H1bar',tgt_info)

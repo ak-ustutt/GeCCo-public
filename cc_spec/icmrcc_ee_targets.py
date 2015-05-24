@@ -19,6 +19,18 @@ _multd2h = np.matrix('1 2 3 4 5 6 7 8;2 1 4 3 6 5 8 7;3 4 1 2 7 8 5 6;4 3 2 1 8 
 
 _method= _inp.get('method.MRCC.excite.method')
 
+if (_method == 'LR' or _method == None):
+    _lr_opt = 1
+elif (_method == 'EOM'):
+    _lr_opt = 2
+else:
+    quit_error('Input Error: specified wrong method to calculate excitation energy')
+
+_choice= _inp.get('calculate.solve.eigen.guess')
+if (_choice == None):
+    _choice = 0
+
+
 _s2_0 = _orb.get('imult')
 _isym_0 = _orb.get('lsym')
 _ms_0 = _orb.get('ims')
@@ -31,14 +43,6 @@ elif ((_ms_0 == 0) and ((_s2_0+1 % 4) == 0)):
     _msc_0 = -1
 else:
     _msc_0 = 0
-
-
-if (_method == 'LR' or _method == None):
-    _lr_opt = 1
-elif (_method == 'EOM'):
-    _lr_opt = 2
-else:
-    quit_error('Input Error: specified wrong method to calculate excitation energy')
 
 _sym = _inp.get('calculate.excitation.sym')
 _mult = _inp.get('calculate.excitation.mult')
@@ -114,63 +118,27 @@ if (_lr_opt == 1):
 
 elif (_lr_opt == 2):
 
-    depend('H0')
+    depend('H0','F_MRCC_LAG')
 
 ### calculate <Psi_0|L H_bar|Phi> R_c and then diff. w.r.t. L ####
 
-    _expand_product_basis={LABEL:'F_AR_rspns_t',
-                           NEW:True,
-                           OP_RES:'den12'}
+    DERIVATIVE({LABEL_RES:'F_LAG_1',
+                LABEL_IN:'F_MRCC_LAG',
+                OP_RES:'RED_LAG',
+                OP_DERIV:'L',
+                OP_MULT:'L'})
 
-    _ops_contract={OPERATORS:['C0^+','L','H','R_mu'],
-                   IDX_SV:[1,2,3,4]}
+    DERIVATIVE({LABEL_RES:'F_AR_rspns_t',
+                LABEL_IN:'F_LAG_1',
+                OP_RES:'den12',
+                OP_DERIV:'C0',
+                OP_MULT:'R_mu'})
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-
+### calculate <Psi_0|L[H_bar,tau]|Psi_0>R_t and then diff. w.r.t L ###
 
     _expand_product_basis={LABEL:'F_AR_rspns_t',
                            NEW:False,
                            OP_RES:'den12'}
-
-    _ops_contract={OPERATORS:['C0^+','L','H','T','R_mu'],
-                   IDX_SV:[1,2,3,4,5],
-                   CONNECT:[3,4]}
-
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-    
-
-    _ops_contract={OPERATORS:['C0^+','L','T','H','R_mu'],
-                   IDX_SV:[1,2,3,4,5],
-                   CONNECT:[3,4],
-                   FAC:-1.0}
-
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-
-
-    _ops_contract={OPERATORS:['C0^+','L','H','T','T','R_mu'],
-                   IDX_SV:[1,2,3,4,5,6],
-                   FIX_VTX:True,
-                   FAC:0.50}
-
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-
-
-    _ops_contract={OPERATORS:['C0^+','L','T','H','T','R_mu'],
-                   IDX_SV:[1,2,3,4,5,6],
-                   FIX_VTX:True,
-                   FAC:-1.0}
-
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-
-
-    _ops_contract={OPERATORS:['C0^+','L','T','T','H','R_mu'],
-                   IDX_SV:[1,2,3,4,5,6],
-                   FIX_VTX:True,
-                   FAC:0.50}
-
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
-
-### calculate <Psi_0|L[H_bar,tau]|Psi_0>R_t and then diff. w.r.t L ###
 
     _ops_contract={OPERATORS:['C0^+','L','H','R_q','C0'],
                    IDX_SV:[1,2,3,4,5],
@@ -211,6 +179,44 @@ elif (_lr_opt == 2):
                    IDX_SV:[1,2,3,4,5,6]}
 
     EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+    if _maxcom == 3:
+
+        _ops_contract={OPERATORS:['C0^+','L','H','T','T','R_q','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:0.5}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+        _ops_contract={OPERATORS:['C0^+','L','T','H','T','R_q','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:-1.0}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+        _ops_contract={OPERATORS:['C0^+','L','T','T','H','R_q','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:0.5}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+        _ops_contract={OPERATORS:['C0^+','L','R_q','H','T','T','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:-0.5}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+        _ops_contract={OPERATORS:['C0^+','L','R_q','T','H','T','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:1.0}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+
+        _ops_contract={OPERATORS:['C0^+','L','R_q','T','T','H','C0'],
+                       IDX_SV:[1,2,3,4,5,6,7],
+                       FAC:-0.5}
+
+        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
 
 
     SELECT_SPECIAL({LABEL_RES:'F_AR_rspns_t',
@@ -298,6 +304,14 @@ elif (_lr_opt == 2):
                        OP_RES:'den12',
                        OPERATORS:['C0^+','H','T','R_q','C0'],
                        IDX_SV:[1,2,3,4,5]})
+
+    if(_maxcom == 3):
+
+        EXPAND_OP_PRODUCT({LABEL:'F_AR_rspns_c',NEW:False,
+                           OP_RES:'den12',
+                           OPERATORS:['C0^+','H','T','T','R_q','C0'],
+                           IDX_SV:[1,2,3,4,5,6],
+                           FAC:0.5})
 
     SELECT_SPECIAL({LABEL_RES:'F_AR_rspns_c',
                     LABEL_IN:'F_AR_rspns_c',
@@ -503,13 +517,13 @@ for _icnt in range (0,_ncnt):
         depend('RSPNS_OP','DEF_ME_C0','DEF_ME_Dtrdag','H0','DEF_ME_T',
                'DIA_T','DIA_C0','DEF_ME_E(MR)','F_prePPrint')
         
-        _op_list={'R_q':[_isym_r,_msc_r],
-                  'R_mu':[_isym+1,_msc],
-                  'R_prime_q':[_isym_r,0]}
+        _op_list={'R_q':[_isym_r,_ms_r,_msc_r],
+                  'R_mu':[_isym+1,_ms_0,_msc],
+                  'R_prime_q':[_isym_r,_ms_r,0]}
         
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
-                        '2MS':0,AB_SYM:_op_list[_op][1],MIN_REC:1,MAX_REC:_no_root})
+                        '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2],MIN_REC:1,MAX_REC:_no_root})
 
 #       DEF_ME_LIST({LIST:'ME_DIAG_t'+_extnsn,OPERATOR:'DAI_T',IRREP:_op_list[_op][0],
 #                    '2MS':0,AB_SYM:_op_list[_op][1],MIN_REC:1,MAX_REC:_no_root})
@@ -517,22 +531,22 @@ for _icnt in range (0,_ncnt):
 #       DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
 #                    '2MS':0,AB_SYM:_op_list[_op][1],MIN_REC:1,MAX_REC:_no_root})
 
-        _op_list={'AR_rspns_q':[_isym_r,_msc_r],
-                  'AR_rspns_mu':[_isym+1,_msc],
-                  'SR_rspns_q':[_isym_r,_msc_r],
-                  'SR_rspns_mu':[_isym+1,_msc],
-                  'INT_PPr':[_isym_r,_msc_r]}
+        _op_list={'AR_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'AR_rspns_mu':[_isym+1,_ms_0,_msc],
+                  'SR_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'SR_rspns_mu':[_isym+1,_ms_0,_msc],
+                  'INT_PPr':[_isym_r,_ms_r,_msc_r]}
         
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
-                        '2MS':0,AB_SYM:_op_list[_op][1]})
+                        '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2]})
         
-        _op_list={'DIA_T':['ME_DIAG_t',_isym_r],
-                  'DIA_C0':['ME_DIAG_c',_isym+1]}
+        _op_list={'DIA_T':['ME_DIAG_t',_isym_r,_ms_r],
+                  'DIA_C0':['ME_DIAG_c',_isym+1,_ms_0]}
         
         for _op in _op_list:
             DEF_ME_LIST({LIST:_op_list[_op][0]+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][1],
-                        '2MS':0})
+                        '2MS':_op_list[_op][2]})
         
         DEF_ME_LIST({LIST:'ME_MINEN'+_extnsn,
                      OPERATOR:'E(MR)',
@@ -640,6 +654,7 @@ for _icnt in range (0,_ncnt):
         _solve_evp_basis[MODE]='TRF PRJ'
         _solve_evp_basis[FORM_SPC]='FOPT_prj'
         _solve_evp_basis[N_ROOTS]=_no_root
+        _solve_evp_basis[CHOICE_OPT]=_choice
 
         PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) + 
                        '  and of spin multiplicity:    ' + str(_s2)})
