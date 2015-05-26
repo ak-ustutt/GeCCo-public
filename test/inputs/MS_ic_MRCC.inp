@@ -1,5 +1,5 @@
 general
- memmax=1500000000
+ memmax=150000000
  print=5
 orb_space
  shell type=occ,def=(5,1,1,0)
