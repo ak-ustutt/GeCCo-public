@@ -595,6 +595,14 @@
       call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
      &     (/'-'/),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(SET_BLOCKS,tgt_info)
+      call set_arg('_PROTO_',SET_BLOCKS,'LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'DESCR',0,tgt_info,
+     &     val_str=' ',req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'FAC',0,tgt_info,
+     &     val_rl8=(/0d0/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(COPY_LIST,tgt_info)
       call set_arg('_PROTO_',COPY_LIST,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

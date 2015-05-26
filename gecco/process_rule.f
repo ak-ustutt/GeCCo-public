@@ -1334,6 +1334,18 @@ c          mode = 'dia-R12'
 
         call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
      &       op_info,orb_info,str_info)
+*---------------------------------------------------------------------*
+      case(SET_BLOCKS)
+*---------------------------------------------------------------------*
+         call get_arg('LIST',rule,tgt_info,val_label=label_list(1))
+
+         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+         call get_arg('DESCR', rule,tgt_info,val_str=strscr)
+         call get_mel(mel_pnt,label_list(1),OLD)
+
+         if (form_test) return
+
+         call  set_blks(mel_pnt,strscr,fac)
 
 *----------------------------------------------------------------------*
       case(COPY_LIST)

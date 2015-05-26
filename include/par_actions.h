@@ -91,6 +91,7 @@
      &     SCALE_COPY*10      = 'SCALE_COPY',
      &     TRANS_LIST*10      = 'TRANS_LIST',
      &     COPY_LIST*9        = 'COPY_LIST',
+     &     SET_BLOCKS*10      = 'SET_BLOCKS',
      &     ORB_FLIP*8         = 'ORB_FLIP',
      &     SPREAD_MEL*10      = 'SPREAD_MEL',
      &     ADV_STATE*9        = 'ADV_STATE',
