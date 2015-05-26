@@ -212,7 +212,7 @@ c        write(lulog,*) xbuf1(1:nwfpar)
      &                      me_special(nspecial)%mel%op%name,op_info)
         write(lulog,'(a,i4,a)') 'Trying to improve preconditioner in',
      &                 prc_iter,' iteration(s)'
-      end if:
+      end if
       if (lzero_flag)then
       call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
      &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
