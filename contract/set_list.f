@@ -1,3 +1,15 @@
+
+!>    initialize ME-list with zero and set certain elements.
+!!
+!!    initalizes the ME-list to zero and sets the elements given
+!!    in idxset(1:nset) to the values valset(1:nset)
+!!    @param[inout] mel ME-list to be worked on
+!!    @param[in] idxset list of indexes if first value negative:
+!!                  cycle though valset for the whole operator
+!!    @param[in] valset list of values that are written to the corresponding indices
+!!    @param[in] nset length of idxset and valset
+
+
 *------------------------------------------------------------------------*
       subroutine set_list(mel,idxset,valset,nset)
 *------------------------------------------------------------------------*
@@ -35,6 +47,9 @@
      &     ffop
       real(8), pointer ::
      &     buffer(:)
+
+c      call get_argument_value('general','print',ival=iprlvl)
+c      ntest=max(ntest,iprlvl)
 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'set_list')

@@ -1,4 +1,11 @@
 *----------------------------------------------------------------------*
+!>Read vector from file
+!! 
+!! Reads all elements between idxst and idxnd from file to buffer
+!! \param[in] fhand File handler
+!! \param[in] idxst Starting index on file 
+!! \param[in] idxnd Ending index on file
+!! \param[out] buf The buffer to which the file is read
       subroutine get_vec(fhand,buf,idxst,idxnd)
 *----------------------------------------------------------------------*
       implicit none
