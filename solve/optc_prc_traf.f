@@ -2,7 +2,8 @@
       subroutine optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &     nwfpar,xbuf1,xbuf2,
      &     fspc,nspcfrm,xngrd,iopt,imacit,i_state,opti_info,
-     &     orb_info,op_info,str_info,strmap_info)
+     &     orb_info,op_info,str_info,strmap_info,
+     &     lzero_flag)
 *----------------------------------------------------------------------*
 *
 *     preconditioning step when transformations are involved
@@ -56,6 +57,8 @@
      &     strmap_info
       type(operator_info), intent(inout) ::
      &     op_info
+      logical,intent(in) ::
+     &     lzero_flag
 
 
       integer ::
@@ -118,7 +121,19 @@ c dbgend
       ! Transform residual into orthogonal basis:
 
       op_grd_name = trim(me_grd%op%name)
-      op_trf_name = trim(me_special(1)%mel%op%name)
+
+!     whenever a zeroing of the t1 part is requested,
+!     also transform this according to the second formula 
+!     and use the fourth ME_special for the transformed vector
+!     d.h.: when using 'TR0'
+!     set the transformation formula for Tges to Fspec 2
+!     and the list to me_special(4)
+!     very ugly hack
+      if(lzero_flag)then
+         op_trf_name = trim(me_special(4)%mel%op%name)
+      else
+         op_trf_name = trim(me_special(1)%mel%op%name)
+      end if
       op_amp_name = trim(me_amp%op%name)
 
 c dbg
@@ -132,26 +147,44 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
       call optc_fix_signs2(me_grd%fhand,1,
      &                    opti_info,iopt,
      &                    nwfpar,xbuf1)
-
       ! assign op. to be transformed with list of gradient
       call assign_me_list(me_grd%label,
      &                    trim(op_trf_name),op_info)
+
+      if (lzero_flag)then
       ! assign op. with list containing special vector
-      call assign_me_list(me_special(1)%mel%label,
+         call assign_me_list(me_special(4)%mel%label,
      &                    trim(op_amp_name),op_info)
+         else
+      ! assign op. with list containing special vector
+            call assign_me_list(me_special(1)%mel%label,
+     &                    trim(op_amp_name),op_info)
+         end if
       ! use daggered transformation matrix if requested
       if (nspecial.ge.3)
      &   call assign_me_list(me_special(3)%mel%label,
      &                       me_special(3)%mel%op%name,op_info)
 
       ! calculate transformed residual
-      call evaluate2(fspc(1),.true.,.true.,
+
+      if (lzero_flag)then
+         call evaluate2(fspc(2),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,
      &            xngrd(iopt),.true.) !get transformed res. norm
-
-      call vec_from_da(me_special(1)%mel%fhand,
+         else
+         call evaluate2(fspc(1),.true.,.true.,
+     &            op_info,str_info,strmap_info,orb_info,
+     &            xngrd(iopt),.true.) !get transformed res. norm
+         end if
+      if (lzero_flag)then
+         call vec_from_da(me_special(4)%mel%fhand,
+     &     me_special(4)%mel%fhand%current_record,
+     &     xbuf1,nwfpar)
+      else
+         call vec_from_da(me_special(1)%mel%fhand,
      &     me_special(1)%mel%fhand%current_record,
      &     xbuf1,nwfpar)
+      end if
       call vec_from_da(ffdia,
      &     ffdia%current_record,
      &     xbuf2,nwfpar)
@@ -159,9 +192,15 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
       if (ntest.ge.100) then
         write(lulog,*) 'transformed gradient vector:'
 c        write(lulog,*) xbuf1(1:nwfpar)
+        if (lzero_flag)then
+        call wrt_mel_buf(lulog,5,xbuf1,me_special(4)%mel,1,
+     &       me_special(4)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
+        else
         call wrt_mel_buf(lulog,5,xbuf1,me_special(1)%mel,1,
      &       me_special(1)%mel%op%n_occ_cls,
      &       str_info,orb_info)
+        end if
       end if
 
       ! preconditioning step (optional: with iterative improvement)
@@ -173,25 +212,48 @@ c        write(lulog,*) xbuf1(1:nwfpar)
      &                      me_special(nspecial)%mel%op%name,op_info)
         write(lulog,'(a,i4,a)') 'Trying to improve preconditioner in',
      &                 prc_iter,' iteration(s)'
-      end if
+      end if:
+      if (lzero_flag)then
       call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
+     &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
+     &                     me_special(4)%mel,me_special(nspecial)%mel,
+     &                     me_grd,fspc(2),opti_info,
+     &                     orb_info,op_info,str_info,strmap_info)
+      else
+         call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
      &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
      &                     me_special(1)%mel,me_special(nspecial)%mel,
      &                     me_grd,fspc(1),opti_info,
      &                     orb_info,op_info,str_info,strmap_info)
-
+      end if
       if (ntest.ge.100) then
         write(lulog,*) 'preconditioned gradient vector:'
 c        write(lulog,*) xbuf1(1:nwfpar)
+      if (lzero_flag)then
+        call wrt_mel_buf(lulog,5,xbuf1,me_special(4)%mel,1,
+     &       me_special(4)%mel%op%n_occ_cls,
+     &       str_info,orb_info)
+        else
         call wrt_mel_buf(lulog,5,xbuf1,me_special(1)%mel,1,
      &       me_special(1)%mel%op%n_occ_cls,
      &       str_info,orb_info)
+        end if
       end if
 
       ! get current trial vector (list will be overwritten)
       ! attention !! If, for some reason, the amplitudes ME
       ! be stored in different records, the 1 has to be changed
+
+!     set all single excitations to zero if requestes
+!     after long deliberation, I decided to also include V,V so one can be sure to include
+!     **all** singular excitations
+
+      if (lzero_flag) then
+      if (ntest.ge.100) write (lulog,*) " setting T1 part to 0.0"
+         call set_blks(me_special(4)%mel,"P,H|P,V|V,H|V,V",0d0)
+      end if
       call vec_from_da(ffamp,1,xbuf2,nwfpar)
+
 
       ! Transform new vector into original basis
 
@@ -199,8 +261,13 @@ c        write(lulog,*) xbuf1(1:nwfpar)
       call assign_me_list(me_amp%label,
      &                    trim(op_amp_name),op_info)
       ! assign op. to be transformed with special list
-      call assign_me_list(me_special(1)%mel%label,
+      if (lzero_flag) then
+         call assign_me_list(me_special(4)%mel%label,
      &                    trim(op_trf_name),op_info)
+      else
+         call assign_me_list(me_special(1)%mel%label,
+     &                    trim(op_trf_name),op_info)
+      end if
       ! use non-daggered transformation matrix if requested
       if (nspecial.ge.3)
      &   call assign_me_list(me_special(2)%mel%label,
@@ -210,8 +277,13 @@ c        write(lulog,*) xbuf1(1:nwfpar)
      &                    trim(op_grd_name),op_info)
 
       ! calculate transformed vector
-      call evaluate2(fspc(1),.true.,.true.,
+      if (lzero_flag) then
+         call evaluate2(fspc(2),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,xdum,.false.)
+      else
+         call evaluate2(fspc(1),.true.,.true.,
+     &            op_info,str_info,strmap_info,orb_info,xdum,.false.)
+      end if   
 
       call vec_from_da(ffamp,1,xbuf1,nwfpar)
 c dbg
@@ -221,9 +293,9 @@ c dbgend
 
       if (ntest.ge.100) then
         write(lulog,*) 'gradient vector afterwards:'
-        do iii=1,nwfpar
+      do iii=1,nwfpar
         write(lulog,*) xbuf1(iii)
-       end do
+      end do
 c      call wrt_mel_buf(lulog,5,xbuf1,me_amp,1,
 c     &     me_amp%op%n_occ_cls,
 c     &     str_info,orb_info)

@@ -4,10 +4,11 @@
      &       optinf_prc_blocked = 2,! as used for R12
      &       optinf_prc_mixed = 3,  ! both 1 and 2
      &       optinf_prc_traf = 4,   ! via transformation to orth. basis 
-     &       optinf_prc_norm = 5,   ! like usual, but normal. to 1
-     &       optinf_prc_spinp = 6,  ! like 1, but with spin projection
-     &       optinf_prc_invH0 = 7,  ! invert non-diagonal H0
-     &       optinf_prc_prj = 8     ! apply (projection) formula
+     &       optinf_prc_traf_spc = 5,! like 4 but with setting the T1 parts to zero  
+     &       optinf_prc_norm = 6,   ! like usual, but normal. to 1
+     &       optinf_prc_spinp = 7,  ! like 1, but with spin projection
+     &       optinf_prc_invH0 = 8,  ! invert non-diagonal H0
+     &       optinf_prc_prj = 9     ! apply (projection) formula
 
       ! input variables to control optimization
       type optimize_info

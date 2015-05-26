@@ -231,6 +231,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_mixed
         case('TRF') 
           opti_info%typ_prc(iopt) = optinf_prc_traf
+        case('TR0') 
+          opti_info%typ_prc(iopt) = optinf_prc_traf_spc
         case('IH0') 
           opti_info%typ_prc(iopt) = optinf_prc_invH0
         case('NRM')
