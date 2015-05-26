@@ -33,7 +33,7 @@
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
      &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate,
-     &     set_up_T_corr
+     &     set_up_T_corr,skip
       integer, allocatable ::
      &     excrestr(:,:,:)
 
@@ -41,8 +41,9 @@
      &     stndD(2,60), nsupD, nremblk, remblk(60), len
       character(len=256) ::
      &     gecco_path
+      
 
-
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
       ! redefine spin/symmetry of reference state (if requested)
       call get_argument_value('method.MR','mult',
      &     ival=mult)
@@ -125,7 +126,7 @@
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
-     &                          .not.(l_icci.or.l_iccc))
+     &                          .not.((l_icci.or.l_iccc).or.skip))
 c dbg for calculating cumulants
 c      call set_gno_targets(tgt_info,orb_info,1)
 c dbgend
