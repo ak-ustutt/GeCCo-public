@@ -242,6 +242,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/1/))  ! number of roots (for ic-MRCI)
 
       call keyword_add('MRCC',context='method')
+
       call argument_add('maxcom_res','method.MRCC',type=vtyp_int,
      &     idef=(/2/))
       call argument_add('maxcom_en','method.MRCC',type=vtyp_int,
@@ -295,6 +296,13 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('method','method.MRCC.excite',
      &     type=vtyp_str,len=8,
      &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
+
+
+
+
+      call keyword_add('MRCCPT',context='method')
+      call argument_add('lagrangian','method.MRCCPT',type=vtyp_int,
+     &                  idef=(/0/)) ! type of lagrangian
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
