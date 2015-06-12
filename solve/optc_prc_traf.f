@@ -80,6 +80,9 @@
       character(len_target_name), external ::
      &     state_label
       integer :: iii
+      real(8),external::
+     & xnormop
+
 
       ! pointers to file handle
       ffamp => me_amp%fhand
@@ -175,7 +178,30 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
          call evaluate2(fspc(1),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,
      &            xngrd(iopt),.true.) !get transformed res. norm
-         end if
+       end if
+cdbg
+!      if (lzero_flag)then
+!       call print_list('before zeroing',me_special(4)%mel,"NORM",
+!     &                  -1d0,0d0,
+!     &                  orb_info,str_info)
+!       end if
+cdbg
+
+!     set all single excitations to zero if requestes
+!     after long deliberation, I decided to also include V,V so one can be sure to include
+!     **all** singular excitations
+!     originally i set the T1 part after preconditioning to zero. 
+!     But we need the gradient of the zeroed omega andd since preconditioning doesn't mix the 
+!     T_parts, it is instead done here.
+      if (lzero_flag) then
+         if (ntest.ge.100) write (lulog,*) " setting O1 part to 0.0"
+         call set_blks(me_special(4)%mel,"P,H|P,V|V,H|V,V",0d0)
+
+      xngrd(iopt)=xnormop(me_special(4)%mel)
+      endif
+
+      write (lulog,*) "Norm of transformed Gradient ",xngrd(iopt)
+
       if (lzero_flag)then
          call vec_from_da(me_special(4)%mel%fhand,
      &     me_special(4)%mel%fhand%current_record,
@@ -243,15 +269,6 @@ c        write(lulog,*) xbuf1(1:nwfpar)
       ! get current trial vector (list will be overwritten)
       ! attention !! If, for some reason, the amplitudes ME
       ! be stored in different records, the 1 has to be changed
-
-!     set all single excitations to zero if requestes
-!     after long deliberation, I decided to also include V,V so one can be sure to include
-!     **all** singular excitations
-
-      if (lzero_flag) then
-      if (ntest.ge.100) write (lulog,*) " setting T1 part to 0.0"
-         call set_blks(me_special(4)%mel,"P,H|P,V|V,H|V,V",0d0)
-      end if
       call vec_from_da(ffamp,1,xbuf2,nwfpar)
 
 
