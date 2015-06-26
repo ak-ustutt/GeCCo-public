@@ -87,6 +87,8 @@
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_oplist2
+      logical ::
+     &     closeit
 
       ! form_test = true skips time consuming steps -> dry run
       call get_argument_value('general','form_test',lval=form_test)
@@ -1141,12 +1143,19 @@ c dbg
 
        if (form_test) return
 
+!     modification to make the final list with the same open/closed fhand as inp list
        call get_mel(mel_pnt,label,OLD)
+       closeit = .false.
+       if(mel_pnt%fhand%unit.le.0) closeit = .true.
        do idx = nroots,1,-1
         call switch_mel_record(mel_pnt,idx)
         call get_mel(mel_pnt2,label_list(idx),OLD)
-        if(mel_pnt%fhand%unit.gt.0) call file_open(mel_pnt2%fhand)
+        closeit = .false.
+        if(mel_pnt2%fhand%unit.le.0) then
+         call file_open(mel_pnt2%fhand)
+        end if
         call list_copy(mel_pnt,mel_pnt2,.false.)
+        if (closeit) call file_close_keep(mel_pnt2%fhand)
        enddo
 
 *----------------------------------------------------------------------*

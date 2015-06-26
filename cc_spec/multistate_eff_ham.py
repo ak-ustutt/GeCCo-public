@@ -305,7 +305,7 @@ EVP_PACKED_OP({LIST_IN:'ME_pack_Heff_MS',
 
 
 # Diagonalise the coupling state Hamiltonian
-new_target( 'SOLVE_Hcpl_MS', multistate and not(skip))
+new_target( 'SOLVE_Hcpl_MS')  # multistate and not(skip))
 depend( 'EVAL_pack_Hcpl_MS', 'EVAL_pack_Smat_MS', 'C_MS', 'E_MS')
 
 EVP_PACKED_OP({LIST_IN:'ME_pack_Hcpl_MS',

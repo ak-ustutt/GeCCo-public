@@ -10,7 +10,7 @@ c      use parse_input
      &     ntest = 00
 
       integer ::
-     &     iprint
+     &     iprint, i
 
       iprint = max(ntest,iprlvl)
 
@@ -462,6 +462,12 @@ c     &     idef=(/0/))
      &     idef=(/-1/)) ! spin projection (=3 for non-singlet MRCC)
                         ! (1: C0,2: C0 & T, 3: C0 & T & RDMs,A)
 
+      call keyword_add('class',context='calculate')
+      call argument_add('hpclass','calculate.class',type=vtyp_int,len=2,
+     &                  idef=(/-1,-1/)) ! ih,ip
+      call argument_add('sv_thr_hp','calculate.class',type=vtyp_rl8,
+     &                  xdef=(/1d-5/)) ! sv_thr for this particular oih,ip
+
       ! special keywords for response theory
       call keyword_add('response',context='method')
       call argument_add('order','method.response',type=vtyp_int,
@@ -486,6 +492,11 @@ c     &     idef=(/0/))
       call keyword_add('interfaces',context='calculate')
       call argument_add('file','calculate.interfaces',
      &     type=vtyp_str,len=256)
+
+      call keyword_add('reference',context='calculate')
+      call argument_add('def','calculate.reference',type=vtyp_rl8,
+     &     len=30,
+     &     xdef=[(0.0d0, i=1,30)])
 
       ! set additional experimental keyword in this subroutine:
       call set_experimental_keywords()
