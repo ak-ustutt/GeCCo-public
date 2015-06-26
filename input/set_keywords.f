@@ -296,6 +296,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     type=vtyp_str,len=8,
      &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
 
+      call keyword_add('MRCCPT',context='method')
+      call argument_add('lagrangian','method.MRCCPT',type=vtyp_int,
+     &                  idef=(/0/)) ! type of lagrangian
+
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
       call argument_add('trunc_type','method.truncate',
