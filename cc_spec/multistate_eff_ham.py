@@ -7,7 +7,7 @@ from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
 
-from BCH_fac import set_BCH_factor
+from gecco_modules.BCH_fac import set_BCH_factor
 
 multistate=inp.get('method.MR.multistate') == 'T'
 coupled_states=inp.get('method.MRCC.coupled_states')
@@ -180,9 +180,6 @@ SET_STATE({OPERATORS:'T_2',
            ISTATE:2})
 
 
-
-
-
 # Multistate packed overlap matrix:
 # Smat = < 0| C0^+ e^T_2^+ e^T C0_1 |0>
 #
@@ -261,7 +258,6 @@ SET_STATE({OPERATORS:'T_2',
            ISTATE:2})
 
 
-
 # Multi-state wave function coefficients
 new_target('C_MS')
 depend('C0')
@@ -276,6 +272,32 @@ DEF_ME_LIST({LIST:'ME_C_MS',
              MAX_REC:n_states,
              REC:1})
 
+for i_state in range( 1, n_states+1):
+    for j_state in range( 1, n_states+1):
+
+        ij = '_' + str(i_state) + '_' + str(j_state)
+
+        DEF_HAMILTONIAN({LABEL:'C_MS'+ij,
+                         MIN_RANK:0,
+                         MAX_RANK:0})
+
+        DEF_ME_LIST({LIST: 'ME_C_MS' + ij,
+                     OPERATOR:'C_MS' + ij,
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:0,
+                     MIN_REC:1,
+                     MAX_REC:n_states,
+                     REC:1})
+
+        for k_state in range( 1, n_states+1):
+
+            SET_MEL({LIST: 'ME_C_MS' + ij,
+                     IDX_LIST: [1],
+                     VAL_LIST: [1.0]})
+
+            ADV_STATE({LISTS:'ME_C_MS' + ij,
+                       N_ROOTS:n_states})
 
 # Multi-state energies
 new_target('E_MS')

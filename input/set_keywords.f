@@ -252,6 +252,11 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/2/))
       call argument_add('maxcom_en_cpl','method.MRCC',type=vtyp_int,
      &     idef=(/2/))
+      call argument_add('type','method.MRCC',
+     &     type=vtyp_str,len=2,
+     &     cdef=(/'S','U'/))
+      call argument_add('req_state','method.MRCC',type=vtyp_int,
+     &     idef=(/1/))          ! desired state for SS-MRCCs
       call argument_add('maxtt','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
       call argument_add('G_level','method.MRCC',type=vtyp_int,

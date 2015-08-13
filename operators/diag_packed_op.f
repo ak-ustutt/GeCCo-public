@@ -1,5 +1,6 @@
 *------------------------------------------------------------------------*
-      subroutine diag_packed_op(mel_in,mel_evec,mel_eval,ndim,mel_S)
+      subroutine diag_packed_op(mel_in,mel_evec,mel_eval,ndim,mel_S,
+     &     verbose)
 *------------------------------------------------------------------------*
 *     Diagonalise an the "packed" operator
 *
@@ -40,6 +41,8 @@
      &     ndim
       type(me_list), intent(inout), optional ::
      &     mel_S
+      logical, intent(in), optional ::
+     &     verbose
 
       type(operator), pointer ::
      &     op
@@ -60,6 +63,8 @@
      &     zero_thr = 1d-10
       character(50) ::
      &     out_format
+      character(3) ::
+     &     indicator
 
 c dbg
 c      real(8) :: K_delta
@@ -236,13 +241,20 @@ c      end if
 c dbgend
 
       ! A nice output, specific for the multistate problem
+      indicator = ">>>"
+      if (present(verbose)) then
+       if(.not.verbose) indicator = "   "
+      end if
+
       write(out_format,fmt='(A,i0,A)')
-     &     '(">>>",x,f24.12,',ndim,'(x,f12.6))'
+     &     '("'//indicator//'",x,f24.12,',ndim,'(x,f12.6))'
       if (present(mel_S)) then
-       write(lulog,'(">>> Multistate energies and eigenvectors ",'//
+       write(lulog,'("'//indicator//
+     &      ' Multistate energies and eigenvectors ",'//
      &      '"(with overlap):")')
       else
-       write(lulog,'(">>> Multistate energies and eigenvectors:")')
+       write(lulog,'("'//indicator//
+     &      ' Multistate energies and eigenvectors:")')
       endif
       do ic = 1,ndim
        write(lulog,out_format)

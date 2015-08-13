@@ -128,6 +128,8 @@ c dbgend
      &     evp_spc_me, evp_spc_form
       integer ::
      &     evp_n_spc_me, evp_n_spc_form
+      character(2) ::
+     &     MRCC_type
 
       ifree = mem_setmark('solve_nleq')
 
@@ -135,6 +137,8 @@ c dbgend
      &     lval=multistate)
       call get_argument_value('method.MRCC','coupled_states',
      &     lval=MS_coupled)
+      call get_argument_value('method.MRCC','type',
+     &     str=MRCC_type)
 
       nopt_state = nopt/n_states
 
@@ -350,6 +354,10 @@ c dbg
       imicit_tot = 0
       task = 0
       opt_loop: do !while(task.lt.8)
+
+       if (multistate.and.MRCC_type.NE.'SU')
+     &     call opt_solve_Heff(n_states,
+     &     op_info,form_info,str_info,strmap_info,orb_info)
 
         call optcont
      &       (imacit,imicit,imicit_tot,
