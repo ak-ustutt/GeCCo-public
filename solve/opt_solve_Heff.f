@@ -129,7 +129,7 @@ c     dbg
        C_i = coef_Heff(i_state)
        if (ABS(C_i).LT.small_den) then
         write(luout, '("WARNING: small coefficient: ", E10.5,'//
-     &       '" Using ", F8.5, " as denominator.")') C_i, sman
+     &       '" Using ", F8.5, " as denominator.")') C_i, small_den
         C_i = sign(small_den, C_i)
        end if
 
