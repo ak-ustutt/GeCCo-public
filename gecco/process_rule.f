@@ -49,7 +49,7 @@
      &     nblk, njoined, min_rank, max_rank, min_xrank, max_xrank,
      &     ncadiff, iformal, n_ap, ansatz, hermitian, iorder, spec,
      &     ninclude, ninclude_or, nexclude, norb, icase, icaseF,
-     &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
+     &     minblk, maxblk, idx, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
      &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root, choice
@@ -62,7 +62,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     last_state, use_1,trnsps
+     &     use_1,trnsps
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -1149,6 +1149,9 @@ c dbg
        if(mel_pnt%fhand%unit.le.0) closeit = .true.
        do idx = nroots,1,-1
         call switch_mel_record(mel_pnt,idx)
+c dbg
+c        print*,trim(label_list(idx))
+c dbgend
         call get_mel(mel_pnt2,label_list(idx),OLD)
         closeit = .false.
         if(mel_pnt2%fhand%unit.le.0) then
@@ -1214,6 +1217,32 @@ c dbg
        else
         call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
        endif
+
+*----------------------------------------------------------------------*
+      case(INV_PACKED_OP)
+*----------------------------------------------------------------------*
+
+       call get_arg('LIST_IN',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt,label,OLD)
+       call get_arg('LIST_OUT',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt2,label,OLD)
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call inv_pack_op(mel_pnt,mel_pnt2,nroots)
+
+*----------------------------------------------------------------------*
+      case(MULT_PACKED_OP)
+*----------------------------------------------------------------------*
+
+       call get_arg('LISTS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop)
+       if (nop.NE.2) call quit(1,'process_rule',
+     &      'MULT_PACKED_OP only for two lists')
+       call get_mel(mel_pnt,label_list(1),OLD)
+       call get_mel(mel_pnt2,label_list(2),OLD)
+       call get_arg('LIST_OUT',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt3,label,OLD)
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call prod_pack_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE

@@ -44,11 +44,11 @@
 
       integer ::
      &     req_state, idxmel, idoff,
-     &     rec_Heff, rec_C_MS, rec_C0,
+     &     rec_Heff, rec_C_MS, rec_C0_bar,
      &     i_state, j_state
 
       type(me_list), pointer ::
-     &     mel_Heff, mel_C_MS, mel_E_MS, mel_C0, mel_C_ji
+     &     mel_Heff, mel_C_MS, mel_E_MS, mel_C0_bar, mel_C_ji
 
       type(filinf), pointer ::
      &     ffop, ffop2
@@ -72,8 +72,8 @@
       call get_argument_value('method.MRCC','req_state',
      &     ival=req_state)
       
-      idxmel = idx_mel_list("ME_C0",op_info)
-      mel_C0 => op_info%mel_arr(idxmel)%mel
+      idxmel = idx_mel_list("ME_C0_bar",op_info)
+      mel_C0_bar => op_info%mel_arr(idxmel)%mel
 
       idxmel = idx_mel_list('ME_pack_Heff_MS',op_info)
       mel_Heff => op_info%mel_arr(idxmel)%mel
@@ -84,7 +84,7 @@
       idxmel = idx_mel_list('ME_E_MS',op_info)
       mel_E_MS => op_info%mel_arr(idxmel)%mel
       
-      rec_C0 = get_mel_record( mel_C0)
+      rec_C0_bar = get_mel_record( mel_C0_bar)
       rec_Heff = get_mel_record( mel_Heff)
       rec_C_MS = get_mel_record( mel_C_MS)
 
@@ -93,7 +93,7 @@
      &      op_info,form_info,str_info,strmap_info,orb_info)
 
        call mel_adv_state(mel_Heff,n_states*n_states)
-       call mel_adv_state(mel_C0,n_states)
+       call mel_adv_state(mel_C0_bar,n_states)
        if ( MOD(i_state, n_states) .EQ. 0) then
         call op_adv_state(["C0_1"],1,n_states,op_info,.true.)
         call op_adv_state(["T"],1,n_states,op_info,.false.)
@@ -167,7 +167,7 @@ c     dbg
       if (closeit)
      &     call file_close_keep(ffop)
       
-      call switch_mel_record( mel_C0, rec_C0)
+      call switch_mel_record( mel_C0_bar, rec_C0_bar)
       call switch_mel_record( mel_Heff, rec_Heff)
       call switch_mel_record( mel_C_MS, rec_C_MS)
             

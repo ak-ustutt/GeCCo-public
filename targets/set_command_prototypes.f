@@ -833,6 +833,22 @@
       call set_arg('_PROTO_',EVP_PACKED_OP,'N_ROOTS',0,tgt_info,
      &     val_int=(/1/),req=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(INV_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(MULT_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(ABORT,tgt_info)
       call set_arg('_PROTO_',ABORT,'COMMENT',1,tgt_info,
      &     val_str='non specified reason.',def=.true.)

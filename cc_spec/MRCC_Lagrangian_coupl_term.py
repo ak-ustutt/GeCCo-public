@@ -90,6 +90,7 @@ top = 'T'
 hop = 'H'
 lop = 'L'
 cop = 'C0'
+cbar = 'C0_bar'
 
 # A function to set the avoid list, where n1 and n2
 # are the number of operators: every operator
@@ -118,10 +119,10 @@ new_target('F_MS_Heff_int')
 
 modify_target( 'F_MRCC_LAG_coupl')
 depend( lag_label)
-depend( 'C_MS')
+depend( 'C_MS', 'C0_non_orth')
 
 modify_target('F_MS_Heff_int')
-depend('E(MR)')
+depend('E(MR)', 'C0_non_orth')
 
 for i_state in range(1, n_states+1):
     state_label = "" if (i_state == 1) else "_" + str(i_state)
@@ -129,6 +130,7 @@ for i_state in range(1, n_states+1):
     lop_i = lop + state_label
     top_i = top + state_label
     cop_i = cop + state_label
+    cbardg_i = cbar + state_label + '^+'
 
     for j_state in range(1, n_states+1):
         if (j_state == i_state):
@@ -138,6 +140,7 @@ for i_state in range(1, n_states+1):
         cdg_j = cop + state_label + '^+'
         top_j = top + state_label
         cop_j = cop + state_label
+        cbardg_j = cbar + state_label + '^+'
 
         MS_coef_ji = 'C_MS_' + str(j_state) + "_" + str(i_state)
 
@@ -171,7 +174,7 @@ for i_state in range(1, n_states+1):
 
                         if (MRCC_type == "SU" or MRCC_type == "sr"):
 
-                            op_list_Heff_int = [cdg_j] + [top_i]*kH + [hop] + [top_i]*(nH-kH) + [cop_i]
+                            op_list_Heff_int = [cbardg_j] + [top_i]*kH + [hop] + [top_i]*(nH-kH) + [cop_i]
 
                             op_list = [cdg_i, lop_i] + [top_i]*kL + [top_j]*(nL-kL) + [cop_j] +\
                                       op_list_Heff_int
@@ -187,7 +190,7 @@ for i_state in range(1, n_states+1):
 
                         if (MRCC_type == 'Mk' or MRCC_type == "sr"):
 
-                            op_list_Heff_int = [cdg_i] + [top_j]*kH + [hop] + [top_j]*(nH-kH) + [cop_j]
+                            op_list_Heff_int = [cbardg_i] + [top_j]*kH + [hop] + [top_j]*(nH-kH) + [cop_j]
 
                             op_list = [cdg_i, lop_i] + [top_i]*kL + [top_j]*(nL-kL) + [cop_i] +\
                                       op_list_Heff_int + [MS_coef_ji]
