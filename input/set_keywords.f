@@ -29,6 +29,8 @@ c      use parse_input
      &     ldef=(/.true./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
+      call argument_add('print_tgt_graph',context='general',
+     &     type=vtyp_log, ldef=(/.false./))
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
