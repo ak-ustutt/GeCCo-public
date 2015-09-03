@@ -88,6 +88,11 @@ for i_state in range( 1, n_states*n_states+1):
 
     EVALUATE({FORM:'FOPT_pack_P_S'})
 
+# dbg
+#    PRINT_MEL({LIST:'ME_pack_P_S',
+#               COMMENT:'ME_pack_P_S'})
+# dbgend
+
     ADV_STATE({LISTS:['ME_pack_P_S'],
                N_ROOTS:n_states*n_states})
     ADV_STATE({LISTS:'ME_C0',
@@ -237,10 +242,11 @@ for i_state in range( 1, n_states+1):
     if (assume_orth):
         ADV_STATE({LISTS:['ME_C0'],
                    N_ROOTS:n_states})
-    for j_state in range( 1, n_states+1):
-        state_label = "_" + str(j_state)
-        ADV_STATE({LISTS:['ME_P_Sinv' + state_label],
-                   N_ROOTS:n_states})
+    else:
+        for j_state in range( 1, n_states+1):
+            state_label = "_" + str(j_state)
+            ADV_STATE({LISTS:['ME_P_Sinv' + state_label],
+                       N_ROOTS:n_states})
 
 lists_to_spread = []
 for i_state in range( 1, n_states+1):
