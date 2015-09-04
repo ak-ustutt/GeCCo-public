@@ -5,6 +5,8 @@
 #
 # Yuri, Mar 2015
 #
+# This can be considered obsolete: now the MRCC residual equations
+# hold for non-orthogonal basis
 from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()

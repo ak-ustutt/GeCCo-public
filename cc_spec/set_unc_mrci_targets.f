@@ -185,11 +185,6 @@
       if (multistate)
      &     call set_multistate_operator(tgt_info,n_states,'C0',1)
 
-! Orthogonalise reference
-      call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/GramSchm_C0_ortho.py",
-     &     name_infile,name_orbinfo)
-
       ! clone of C0 for spin projections
       call add_target2('C0_sp',.false.,tgt_info)
       call set_dependency('C0_sp','C0',tgt_info)
@@ -1148,7 +1143,6 @@ c dbgend
         if (.not.multistate)
      &       call quit(1,'set_unc_mrci_targets',
      &       'File for CASSCF coefficients not found!')
-        call set_dependency('SOLVE_REF','FOPT_MS_C0_prj',tgt_info)
         call set_rule2('SOLVE_REF',SET_STATE,tgt_info)
         call set_arg('SOLVE_REF',SET_STATE,'LISTS',1,tgt_info,
      &       val_label=['ME_C0'])
@@ -1167,16 +1161,6 @@ c dbgend
      &        val_label=['ME_C0'//trim(c_st)])
          call set_arg('SOLVE_REF',SCALE_COPY,'FAC',1,tgt_info,
      &        val_rl8=[1.0d0])
-         if (i_state.GT.1) then ! orthogonalise
-            call set_rule2('SOLVE_REF',EVAL,tgt_info)
-            call set_arg('SOLVE_REF',EVAL,'FORM',1,tgt_info,
-     &           val_label=(/'FOPT_C0'//trim(c_st)//'_prj'/))
-            call set_arg('SOLVE_REF',EVAL,'INIT',1,tgt_info,
-     &           val_log=(/.false./))
-            call set_rule2('SOLVE_REF',NORM_MEL,tgt_info)
-            call set_arg('SOLVE_REF',NORM_MEL,'LISTS',1,tgt_info,
-     &           val_label=(/'ME_C0'/))
-         end if
          call set_rule2('SOLVE_REF',SPREAD_MEL,tgt_info)
          call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_IN',1,tgt_info,
      &        val_label=(/'ME_C0'/))

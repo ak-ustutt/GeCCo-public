@@ -28,6 +28,10 @@
       include 'mdef_target_info.h'
       include 'ifc_input.h'
 
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+
       integer ::
      &     n_states
 
@@ -43,7 +47,7 @@
      &     orb_info
 
       integer ::
-     &     req_state, idxmel, idoff,
+     &     req_state, idxmel, idoff, idx,
      &     rec_Heff, rec_C_MS, rec_C0_bar,
      &     i_state, j_state
 
@@ -65,9 +69,17 @@
      &     closeit, closeit2
 
       integer, external ::
-     &     idx_mel_list, get_mel_record
+     &     idx_mel_list, get_mel_record, idx_formlist
       character(len_target_name), external ::
      &     state_label
+
+      real(8) ::
+     &    xdum
+
+      type(formula), pointer ::
+     &     f_eval
+      type(formula_item) ::
+     &     fl_eval
 
       call get_argument_value('method.MRCC','req_state',
      &     ival=req_state)
@@ -88,10 +100,15 @@
       rec_Heff = get_mel_record( mel_Heff)
       rec_C_MS = get_mel_record( mel_C_MS)
 
+      idx = idx_formlist('FOPT_pack_Heff_MS',form_info)
+      if (idx.le.0)
+     &     call quit(1,'opt_get_C0bar',
+     &     'did not find formula FOPT_pack_P_S')
+      f_eval => form_info%form_arr(idx)%form
+      call read_form_list(f_eval%fhand,fl_eval,.true.)
       do i_state = 1, n_states*n_states
-       call evaluate('FOPT_pack_Heff_MS',.true.,
-     &      op_info,form_info,str_info,strmap_info,orb_info)
-
+       call evaluate2(fl_eval,.true.,.true.,
+     &      op_info,str_info,strmap_info,orb_info,xdum,.false.)
        call mel_adv_state(mel_Heff,n_states*n_states)
        call mel_adv_state(mel_C0_bar,n_states)
        if ( MOD(i_state, n_states) .EQ. 0) then

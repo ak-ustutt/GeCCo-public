@@ -5644,8 +5644,6 @@ c dbgend
        call set_dependency('SOLVE_MRCC','C_MS',tgt_info)
        call set_dependency('SOLVE_MRCC','FOPT_pack_Heff_MS',tgt_info)
       endif
-      if (multistate.and.MS_coupled.and.optref.eq.-3)
-     &     call set_dependency('SOLVE_MRCC','FOPT_MS_C0_prj',tgt_info)
       if (restart) ! project out redundant part (if sv_thr. changed)
      &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
       prc_mode_str = 'TRF'  ! use diagonal in orth. basis (for T part)

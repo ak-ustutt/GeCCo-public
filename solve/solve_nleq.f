@@ -485,16 +485,7 @@ c     &       ff_trv,ff_h_trv,
             idx_eff = idx
            end if
 
-           ! ATTENTION! coupled multistates are not using spinadapt!!!
-           ! This should be changed also inside the EVP solver.
-           if (multistate.and.MS_coupled.and.i_state.gt.1) then
-            evp_mode = 'PRJ'
-            evp_spc_me = '-'
-            evp_n_spc_me = 0
-            evp_spc_form = 'FOPT_C0'//trim(c_st)//'_prj'  ! Give this as an special formula???
-            evp_n_spc_form = 1
-
-           else if (spinadapt.gt.0) then
+           if (spinadapt.gt.0) then
             evp_mode = 'SPP'
             evp_spc_me = 'ME_C0_sp'
             evp_n_spc_me = 1
