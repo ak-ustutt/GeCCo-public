@@ -1,9 +1,9 @@
 title
-  Uncoupled multistate icMRCC: LiF, r=4.0, Li:cc-pVDZ, F:aug-cc-pVDZ; MOLPRO env
+  Mk-MRCC: LiF, r=4.0, Li:cc-pVDZ, F:aug-cc-pVDZ; MOLPRO env
 molecule
-  LiF_SA_CAS_MOLPRO
+  BeH2-MOLPRO-z-2_8
 input
-  unc_MS_ic_MRCC.inp
+  Mk_MRCCSD.inp
 check
   label verify multistate
   find multistate =
@@ -11,10 +11,10 @@ check
 check
   label Uncoupled final energies
   find final energies:
-  compare real 4 1e-12
-  compare real 5 1e-12
+  compare real 4 1e-9
+  compare real 5 1e-9
 check
-  label Effective hamiltonal elements
+  label Effective Hamiltonian elements
   find EVAL_pack_Heff_MS
   find Rule: EVALUATE
   find >>>
@@ -29,7 +29,7 @@ check
   find >>>
   compare real 4 1e-9
 check
-  label effective Hamiltonian eigenproblem
+  label Effective Hamiltonian eigenproblem
   find Multistate energies and eigenvectors:
   find >>>
   compare real 2 1e-9
