@@ -32,6 +32,9 @@ if (maxcom_en == None):
     maxcom_en = 2
 maxcom_en = int(maxcom_en)
 
+# Symmetrize Heff?
+Heff_symm = inp.get('method.MRCC.Heff_symm') == 'T'
+
 # Assume orthonormal basis?
 assume_orth = inp.get('method.MRCC.assume_orth') == 'T'
 
@@ -341,6 +344,60 @@ for i_state in range( 1, n_states*n_states+1):
         ADV_STATE({OPERATORS:'T',
                    N_ROOTS:n_states})
 
+if (Heff_symm):
+    DEF_ME_LIST({LIST:'ME_symm_buf',
+                 OPERATOR:'pack_Heff_MS',
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:msc,
+                 MIN_REC:1,
+                 MAX_REC:n_states*n_states,
+                 REC:1})
+
+    DEF_ME_LIST({LIST:'ME_symm_buf_2',
+                 OPERATOR:'pack_Heff_MS',
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:msc,
+                 MIN_REC:1,
+                 MAX_REC:n_states*n_states,
+                 REC:1})
+
+    ASSIGN_ME2OP({LIST:'ME_pack_Heff_MS',
+                  OPERATOR:'pack_Heff_MS'})
+
+    for i_state in range( 1, n_states*n_states+1):
+        i_tr = n_states*((i_state-1)%n_states) + (i_state-1)/n_states + 1
+        SET_STATE({ISTATE:i_state,
+                   LISTS:'ME_pack_Heff_MS'})
+        SET_STATE({ISTATE:i_tr,
+                   LISTS:'ME_symm_buf'})
+        SET_STATE({ISTATE:i_state,
+                   LISTS:'ME_symm_buf_2'})
+        SCALE_COPY({LIST_INP:'ME_pack_Heff_MS',
+                    LIST_RES:'ME_symm_buf',
+                    FAC:0.5})
+        SCALE_COPY({LIST_INP:'ME_pack_Heff_MS',
+                    LIST_RES:'ME_symm_buf_2',
+                    FAC:0.5})
+
+    for i_state in range( 1, n_states*n_states+1):
+
+        SET_STATE({ISTATE:i_state,
+                   LISTS:['ME_pack_Heff_MS','ME_symm_buf','ME_symm_buf_2']})
+
+        ADD({LIST_SUM:'ME_pack_Heff_MS',
+             LISTS:['ME_symm_buf','ME_symm_buf_2'],
+             FAC:[1.0,1.0]})
+
+        PRINT_MEL({LIST:'ME_pack_Heff_MS',
+                   COMMENT:'ME_pack_Heff_MS'})
+
+    DELETE_ME_LIST({LIST:'ME_symm_buf'})
+    DELETE_ME_LIST({LIST:'ME_symm_buf_2'})
+
+SET_STATE({ISTATE:1,
+           LISTS:'ME_pack_Heff_MS'})
 
 #==================================================
 # Multi-state wave function coefficients
