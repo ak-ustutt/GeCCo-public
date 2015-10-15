@@ -49,7 +49,7 @@
       integer ::
      &     req_state, idxmel, idoff, idx,
      &     rec_Heff, rec_C_MS, rec_C0_bar,
-     &     i_state, j_state
+     &     i_state, i_state_tr, j_state
 
       type(me_list), pointer ::
      &     mel_Heff, mel_C_MS, mel_E_MS, mel_C0_bar, mel_C_ji
@@ -61,12 +61,13 @@
      &     c_st_i, c_st_j
 
       real(8) ::
-     &     coef_Heff(n_states), C_i, ratio_C_ji
+     &     coef_Heff(n_states), C_i, ratio_C_ji,
+     &     Heff_tr(n_states*n_states),Heff_s(n_states*n_states)
       real(8), parameter ::
      &     small_den = 0.01d0
 
       logical ::
-     &     closeit, closeit2
+     &     closeit, closeit2, Heff_symm
 
       integer, external ::
      &     idx_mel_list, get_mel_record, idx_formlist
@@ -83,6 +84,8 @@
 
       call get_argument_value('method.MRCC','req_state',
      &     ival=req_state)
+      call get_argument_value('method.MRCC','Heff_symm',
+     &     lval=Heff_symm)
       
       idxmel = idx_mel_list("ME_C0_bar",op_info)
       mel_C0_bar => op_info%mel_arr(idxmel)%mel
@@ -116,6 +119,27 @@
         call op_adv_state(["T"],1,n_states,op_info,.false.)
        end if
       end do
+
+!     Diagonalize the symmetrized Heff
+      if (Heff_symm) then
+       do i_state = 1, n_states*n_states
+        i_state_tr = n_states*(MOD((i_state-1),n_states))
+     &       + (i_state-1)/n_states + 1
+        ffop => mel_Heff%fhand
+        idoff = ffop%length_of_record*(i_state-1)
+        call get_vec( ffop, Heff_tr(i_state_tr:),
+     &       idoff+1, idoff+1)
+        call get_vec( ffop, Heff_s(i_state:),
+     &       idoff+1, idoff+1)
+       end do
+       do i_state = 1, n_states*n_states
+        Heff_s(i_state) = (Heff_s(i_state) + Heff_tr(i_state))/2
+        ffop => mel_Heff%fhand
+        idoff = ffop%length_of_record*(i_state-1)
+        call put_vec( ffop, [Heff_s(i_state)],
+     &       idoff+1, idoff+1)
+       end do
+      end if
 
       call diag_packed_op(mel_Heff,mel_C_MS,mel_E_MS,
      &     n_states,verbose=.false.)
