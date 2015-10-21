@@ -515,9 +515,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL_DESCR',rule,tgt_info,val_label_list=descr,
      &               ndim=ndescr)
         !call get_arg('N_DESCR',rule,tgt_info,val_int=ndescr)
-        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac)
+        call get_arg('FAC',rule,tgt_info,val_rl8=fac(1))
+        call get_arg('FAC_INV',rule,tgt_info,val_rl8=fac(2))
         call get_arg('FIX_VTX',rule,tgt_info,val_log=ms_fix)
-        call form_expand_op_product(init,form_pnt,fac,
+        call form_expand_op_product(init,form_pnt,fac(1)/fac(2),
      &       title,label,label_list,nop,
      &       idx_sv,iblkmin,iblkmax,
      &       connect,nconnect,

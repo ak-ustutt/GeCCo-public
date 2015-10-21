@@ -235,6 +235,8 @@
      &     val_log=(/.true./),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
      &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC_INV',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
