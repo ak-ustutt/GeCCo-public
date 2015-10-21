@@ -23,6 +23,7 @@ DIAG_TYPE int
 ENV str
 EXPECTED real
 FAC real
+FAC_INV real
 FIX_VTX log
 FORM label
 FORMAL int
