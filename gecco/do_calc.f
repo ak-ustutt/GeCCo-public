@@ -1,4 +1,11 @@
 *----------------------------------------------------------------------*
+!>    Driver subroutine for target setting and evaluation on target level
+!>
+!>    calls set_target and process_*** with the relevant rule to be evaluated.
+!>    @param[inout] orb_info
+!>    @param[in] env_type 
+!>    @param[in] name_infile
+*----------------------------------------------------------------------*
       subroutine do_calc(orb_info,env_type,name_infile)
 *----------------------------------------------------------------------*
       

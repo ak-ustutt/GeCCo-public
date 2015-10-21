@@ -1,14 +1,20 @@
+*--------------------------------------------------------------------------*
+!>    parse a general occupation descriptor of the syntax
+!>
+!>    <OP_DESCR>|<OP_DESCR>|... 
+!>    <OP_DESCR>: (<HPVX_DESCR>,<HPVX_DSCR>);(<HPVX_DESCR>,<HPVX_DESCR>)...
+!>    <HPVX_DSCR>: [HPVX]* 
+!>    separators: ' ,;|'
+!>    quotes: '"'
+!>    @param[out] occ_list 
+!>    @param[out] nlist used length of occ_list
+!>    @param[in] dstring Descriptor string
+!>    @param[in] njoined number of vertices
+!>    @maxlist[in] allocated length of occ_list in operator descriptors
+*--------------------------------------------------------------------------*
       subroutine process_occ_descr(occ_list,nlist,
      &                             dstring,njoined,maxlist)
-!
-!     parse a general occupation descriptor of the syntax
-!
-!     <OP_DESCR>|<OP_DESCR>|...
-!
-!     <OP_DESCR>: (<HPVX_DESCR>,<HPVX_DSCR>)(<HPVX_DESCR>,<HPVX_DESCR>)...
-!
-!     <HPVX_DSCR>: 
-!
+*--------------------------------------------------------------------------*
       implicit none
 
       include 'stdunit.h'

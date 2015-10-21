@@ -1,8 +1,10 @@
 *----------------------------------------------------------------------*
-      program GeCCo
+!>     main program of GeCCo
+!>
+!>     started by andreas in march 2007 
+!>     from a pilot version within LUCIA
 *----------------------------------------------------------------------*
-*     started by andreas in march 2007 
-*     from a pilot version within LUCIA
+      program GeCCo
 *----------------------------------------------------------------------*
 
       implicit none
