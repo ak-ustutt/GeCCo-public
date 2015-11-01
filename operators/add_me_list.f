@@ -1,8 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine add_me_list(label,op_info)
+!>     add a ME-List to an operator     
+!>
+!>     allocate a new slot for an me_list structure in op_info
+!>     the list is extended and the array is updated
+!>     @param[in]  label name of the newly assigned list
+!>     @param[inout] op_info info struct of the operator to be assigned to
 *----------------------------------------------------------------------*
-*     allocate a new slot for an me_list structure in op_info
-*     the list is extended and the array is updated
+      subroutine add_me_list(label,op_info)
 *----------------------------------------------------------------------*
 
       implicit none

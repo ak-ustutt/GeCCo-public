@@ -1,11 +1,13 @@
 *----------------------------------------------------------------------*
+!>     set up an array of pointers that point to the entries of the
+!>     list on mel_list
+!>     new version with a real pointer array
+!>     @param[in] mel_list linked list of ME-lists
+!>     @param[in] nmels number of ME-Lists
+!>     @param[out] mel_arr array to be populated
+*----------------------------------------------------------------------*
       subroutine mel_list2arr(mel_list,mel_arr,nmels)
 *----------------------------------------------------------------------*
-*     set up an array of pointers that point to the entries of the
-*     list on mel_list
-*     new version with a real pointer array
-*----------------------------------------------------------------------*
-
       implicit none
       include 'stdunit.h'
       include 'def_filinf.h'

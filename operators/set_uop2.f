@@ -1,10 +1,20 @@
 *----------------------------------------------------------------------*
+!>     wrapper for set_user_op
+!>
+!>     set up user-provided operator 
+!>     irestr is chosen appropriately
+!>     @param[inout] op the operator struct
+!>     @param[in] name name of the operator
+!>     @param[in] occ_def
+!>     @param[in] ndef 
+!>     @param[in] njoined number if joined vertices
+!>     @param[in] occ_def definition of the ca stings 
+!>     @param[in] freeze ???
+!>     @param[in] min_formal lower end of the formal blocks
+!>     @param[in] orb_info information about the orbital spaces
+*----------------------------------------------------------------------*
       subroutine set_uop2(op,name,
      &     occ_def,ndef,njoined,freeze,min_formal,orb_info)
-*----------------------------------------------------------------------*
-*     wrapper for set_user_op
-*     set up user-provided operator 
-*     irestr is chosen appropriately
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -20,8 +30,6 @@
      &     name*(*)
       integer, intent(in) ::
      &     occ_def(ngastp,2,ndef*njoined), ndef, njoined, min_formal
-c      logical, intent(in) ::
-c     &     freeze(2)
       integer, intent(in) ::
      &     freeze(2,njoined)
 

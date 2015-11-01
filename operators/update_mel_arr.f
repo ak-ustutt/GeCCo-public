@@ -1,8 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine update_mel_arr(op_info)
+!>     setup or update direct acces pointer array for linked list
+!>     here: ME-lists
+!>
+!>    destroy array and recreate from linked list
+!>    @param op_info info struct of the operator whose array is updated.
 *----------------------------------------------------------------------*
-*     setup or update direct acces pointer array for linked list
-*     here: ME-lists
+      subroutine update_mel_arr(op_info)
 *----------------------------------------------------------------------*
 
       implicit none

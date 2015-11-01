@@ -1,9 +1,9 @@
 *----------------------------------------------------------------------*
+!>     assign an existing ME-list with label "label_mel"
+!>     to operator "label_op" (must exist as well),
+!>     but NOT the operator to this list!
+*---------------------------------------------------------------------*
       subroutine assign_me2op(label_mel,label_op,op_info)
-*----------------------------------------------------------------------*
-*     assign an existing ME-list with label "label_mel"
-*     to operator "label_op" (must exist as well),
-*     but NOT the operator to this list!
 *----------------------------------------------------------------------*
       implicit none
 

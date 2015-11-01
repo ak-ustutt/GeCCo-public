@@ -1,10 +1,17 @@
+*---------------------------------------------------------------------*
+!>     wrapper for set_user_op ( very old)
+!>
+!>     set up user-provided operator
+!>     irestr is chosen appropriately
+!>     @param[inout] op the operator struct
+!>     @param[in] name name of the operator
+!>     @param[in] dagger should the transposed of the indicated current operator be created?
+!>     @param[in] occ_def definition of the ca stings 
+!>     @param[in] ndef length of occ_def (indirect?) 
+!>     @param[in] orb_info information about the orbital spaces
 *----------------------------------------------------------------------*
       subroutine set_uop(op,name,dagger,
      &     occ_def,ndef,orb_info)
-*----------------------------------------------------------------------*
-*     wrapper for set_user_op
-*     set up user-provided operator 
-*     irestr is chosen appropriately
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'

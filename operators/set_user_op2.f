@@ -1,17 +1,18 @@
 *----------------------------------------------------------------------*
+!>     set up occupations for a general operator described by
+!>     occ_def:   user provided occupations
+!>     irestr:    restriction on subspaces 
+!>                min, max. number of operators after completion of
+!>                subspace within H/P/V/X, for C/A
+!>       new: the array freeze(1:2,1:njoined) contains the max number
+!>            of active electrons in frozen shells (0 = all frozen)
+!>            per vertex -> allow for semi-frozen cores
+!     old freeze syntax
+!     freeze(1): use settings on iadgas to enforce frozen C occupations
+!     freeze(2): use settings on iadgas to enforce frozen A occupations
+*----------------------------------------------------------------------*
       subroutine set_user_op2(op,name,type,
      &     occ_def,nblk,njoined,irestr,freeze,min_formal,orb_info)
-*----------------------------------------------------------------------*
-*     set up occupations for a general operator described by
-*     occ_def:   user provided occupations
-*     irestr:    restriction on subspaces 
-*                min, max. number of operators after completion of
-*                subspace within H/P/V/X, for C/A
-*     freeze(1): use settings on iadgas to enforce frozen C occupations
-*     freeze(2): use settings on iadgas to enforce frozen A occupations
-*       new: the array freeze(1:2,1:njoined) contains the max number
-*            of active electrons in frozen shells (0 = all frozen)
-*            per vertex -> allow for semi-frozen cores
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
