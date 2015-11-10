@@ -643,3 +643,5 @@ for _k in _keywords:
     else:
         exec (_k_name + ' = "' + _k_name + '"')
 
+orbitals=Orb_Info()
+keywords=GeCCo_Input()

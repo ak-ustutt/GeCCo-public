@@ -1,0 +1,39 @@
+title
+  B/vdz; MOLPRO env.: ic-MRCC2 (n el. in m act. orb.)
+molecule
+  B-MRCC2-MOLPRO
+input
+  icMRCC2.inp
+check
+  label CASSCF energy
+  find CONVERGED
+  find ^...    1
+  compare real 3 1e-10
+  compare real 5 1e-10
+check
+  rewind
+  label Number of terms of Lagrangian
+  find Mark: PT-LAGRANGIAN
+  find SUM_TERMS
+  find wrote
+  compare int 2
+check
+  rewind
+  label H_0
+  find Make_HAM_D
+  find Number of occupation classes
+  compare int 7
+check
+  label CC2 eq.: first iteration
+  find SOLVE_NLEQ
+  find ^>>>
+  compare int 2
+  compare real 3 1e-10
+  compare real 4 1e-6
+check
+  label final energy
+  find CONVERGED
+  find final energy
+  compare real 4 1e-8
+end
+
