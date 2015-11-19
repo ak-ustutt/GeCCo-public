@@ -191,7 +191,7 @@ cdbg
 !     after long deliberation, I decided to also include V,V so one can be sure to include
 !     **all** singular excitations
 !     originally i set the T1 part after preconditioning to zero. 
-!     But we need the gradient of the zeroed omega andd since preconditioning doesn't mix the 
+!     But we need the gradient of the zeroed omega andd since preconditioning doesn't mix the
 !     T_parts, it is instead done here.
       if (lzero_flag) then
          if (ntest.ge.100) write (lulog,*) " setting O1 part to 0.0"

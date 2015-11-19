@@ -1,14 +1,16 @@
 *------------------------------------------------------------------------*
-      subroutine diag_packed_op(mel_in,mel_evec,mel_eval,ndim,mel_S)
+      subroutine diag_packed_op(mel_in,mel_evec,mel_eval,ndim,mel_S,
+     &     verbose)
 *------------------------------------------------------------------------*
 *     Diagonalise an the "packed" operator
 *
-*     mel_in -> contains the "packed" operator: each entries of
-*               the operator is in a different record, in a total of
-*               ndim x ndim records
+*     mel_in -> contains a "packed" operator of dimension ndim
 *     mel_evec -> resulting eigenvectors, in ndim records
 *     mel_eval -> resulting eigenvalues, in ndim records
 *     mel_S    -> overlap matrix, in ndim x ndim records
+*
+*     See file prod_packed_op.f for a description on how the elements
+*     are packed.
 *     
 *     yuri, oct 2014
 *------------------------------------------------------------------------*
@@ -40,6 +42,8 @@
      &     ndim
       type(me_list), intent(inout), optional ::
      &     mel_S
+      logical, intent(in), optional ::
+     &     verbose
 
       type(operator), pointer ::
      &     op
@@ -60,6 +64,8 @@
      &     zero_thr = 1d-10
       character(50) ::
      &     out_format
+      character(3) ::
+     &     indicator
 
 c dbg
 c      real(8) :: K_delta
@@ -92,7 +98,7 @@ c dbg
      &      (ffop%active_records(2)-ffop%active_records(1)+1))
      &      call quit(1,'diag_packed_op',
      &      'inconsistent number of records in the S-matrix list!'//
-     &      ' It must be equal the square of the number or states')
+     &      ' It must be equal the square of ndim')
 
        ! Get S matrix
        irec_ini = ffop%current_record
@@ -136,7 +142,8 @@ c     dbgend
       end if
 
 c dbg
-c      print*, "Check: It must be a Kronecker delta:"
+c      print*, "Check for diag_packed_op:"//
+c     &     "It must be a Kronecker delta:"
 c      do i=1,ndim
 c       do j=1,ndim
 c        K_delta = 0.0d0
@@ -166,7 +173,7 @@ c dbg
      &     (ffop%active_records(2)-ffop%active_records(1)+1))
      &     call quit(1,'diag_packed_op',
      &     'inconsistent number of records in input list!'//
-     &     ' It must be equal the square of the number or states')
+     &     ' It must be equal the square of ndim')
 
       ! Get matrix
       irec_ini = ffop%current_record
@@ -236,13 +243,20 @@ c      end if
 c dbgend
 
       ! A nice output, specific for the multistate problem
+      indicator = ">>>"
+      if (present(verbose)) then
+       if(.not.verbose) indicator = "   "
+      end if
+
       write(out_format,fmt='(A,i0,A)')
-     &     '(">>>",x,f24.12,',ndim,'(x,f12.6))'
+     &     '("'//indicator//'",x,f24.12,',ndim,'(x,f12.6))'
       if (present(mel_S)) then
-       write(lulog,'(">>> Multistate energies and eigenvectors ",'//
+       write(lulog,'("'//indicator//
+     &      ' Multistate energies and eigenvectors ",'//
      &      '"(with overlap):")')
       else
-       write(lulog,'(">>> Multistate energies and eigenvectors:")')
+       write(lulog,'("'//indicator//
+     &      ' Multistate energies and eigenvectors:")')
       endif
       do ic = 1,ndim
        write(lulog,out_format)
@@ -265,7 +279,7 @@ c dbgend
      &     (ffop%active_records(2)-ffop%active_records(1)+1))
      &     call quit(1,'diag_packed_op',
      &     'inconsistent number of records in eigenvector list!'//
-     &     ' It must be equal the number or states')
+     &     ' It must be equal ndim')
 
       irec_ini = ffop%current_record
       do irec = ffop%active_records(1),ffop%active_records(2)
@@ -294,7 +308,7 @@ c dbgend
      &     (ffop%active_records(2)-ffop%active_records(1)+1))
      &     call quit(1,'diag_packed_op',
      &     'inconsistent number of records in eigenvector list!'//
-     &     ' It must be equal the number or states')
+     &     ' It must be equal ndim')
 
       irec_ini = ffop%current_record
       do irec = ffop%active_records(1),ffop%active_records(2)

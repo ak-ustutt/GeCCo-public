@@ -73,6 +73,8 @@
      &     prc_mode_str_2
       real(8) ::
      &     x_ansatz, prc_shift, prc_min, prc_impfac, densmix
+      character(2) ::
+     &     MRCC_type
 
       character(100) ::
      &     label_title
@@ -128,6 +130,8 @@
      &     ival=maxcom_en)
       call get_argument_value('method.MRCC','coupled_states',
      &     lval=MS_coupled)
+      call get_argument_value('method.MRCC','type',
+     &     str=MRCC_type)
       call get_argument_value('method.MRCC','H1bar',
      &     lval=h1bar)
       call get_argument_value('method.MRCC','maxcom_h1bar',
@@ -1089,6 +1093,12 @@ c dbgend
 *     Formulae 
 *----------------------------------------------------------------------*
 
+!     BW-MRCC - Lagrangian
+      if (MRCC_type.EQ."BW")
+     &     call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/BW_MRCC_Lagrangian.py",
+     &     name_infile,name_orbinfo)
+
       ! multireference CC lagrangian
       ! a) set up
       call add_target2('F_MRCC_LAG',.false.,tgt_info)
@@ -1497,7 +1507,8 @@ c      call set_rule2('F_MRCC_LAG',ABORT,tgt_info)
 c dbgend
 
       ! Multistate Coupling term in Lagrangian
-      if (multistate.and.MS_coupled) call set_python_targets(tgt_info,
+      if (multistate.and.MS_coupled.and.MRCC_type.NE."BW")
+     &     call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
      &     name_infile,name_orbinfo)
 
@@ -1567,7 +1578,9 @@ c dbgend
 
       ! Residual
       call add_target2('F_OMG',.false.,tgt_info)
-      if (multistate.and.MS_coupled) then
+      if (MRCC_type.EQ."BW") then
+       call set_dependency('F_OMG','F_BW_MRCC_LAG',tgt_info)
+      elseif (multistate.and.MS_coupled) then
        call set_dependency('F_OMG','F_MRCC_LAG_coupl',tgt_info)
       else
        call set_dependency('F_OMG','F_MRCC_LAG',tgt_info)
@@ -1585,8 +1598,13 @@ c dbgend
         call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_LAG_L'/))
       else
+       if (MRCC_type.EQ."BW") then
+        call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
+     &       val_label=(/'F_BW_MRCC_LAG'/))
+       else
         call set_arg('F_OMG',DERIVATIVE,'LABEL_IN',1,tgt_info,
      &       val_label=(/'F_MRCC_LAG'/))
+       end if
       end if
       call set_arg('F_OMG',DERIVATIVE,'OP_RES',1,tgt_info,
      &     val_label=(/'OMG'//trim(c_st)/))
@@ -2215,6 +2233,7 @@ c dbg
 c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_rule2('F_E(MRCC)tr',ABORT,tgt_info)
 c dbgend
 
       ! (transformed) Jacobian times vector
@@ -4338,7 +4357,7 @@ c        labels(ndef+2) = 'F_INT_T2H'
 !        ndef = ndef + 1!3
 c dbg
       end if
-      if(MS_coupled.and.multistate) then
+      if(MS_coupled.and.multistate.and.mrcc_type.NE."BW") then
        call set_dependency('FOPT_OMG','F_MS_Heff_int',tgt_info)
        do i_state = 1,n_states
         c_st = state_label(i_state,.true.)
@@ -5620,8 +5639,11 @@ c dbgend
       call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
-      if (multistate.and.MS_coupled.and.optref.eq.-3)
-     &     call set_dependency('SOLVE_MRCC','FOPT_MS_C0_prj',tgt_info)
+      if (multistate) then
+       call set_dependency('SOLVE_MRCC','E_MS',tgt_info)
+       call set_dependency('SOLVE_MRCC','C_MS',tgt_info)
+       call set_dependency('SOLVE_MRCC','FOPT_pack_Heff_MS',tgt_info)
+      endif
       if (restart) ! project out redundant part (if sv_thr. changed)
      &   call set_dependency('SOLVE_MRCC','EVAL_Tproj',tgt_info)
       prc_mode_str = 'TRF'  ! use diagonal in orth. basis (for T part)

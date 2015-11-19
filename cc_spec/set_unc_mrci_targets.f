@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine set_unc_mrci_targets(tgt_info,orb_info,calc)
+      subroutine set_unc_mrci_targets(tgt_info,orb_info,calc,
+     &                                name_infile,name_orbinfo)
 *----------------------------------------------------------------------*
 *     set targets for CASSCF or uncontracted CI coefficient optimization
 *
@@ -30,12 +31,15 @@
      &     orb_info
       logical, intent(in) ::
      &     calc
+      character(*), intent(in) ::
+     &     name_infile, name_orbinfo
 
       integer ::
      &     ndef, occ_def(ngastp,2,124),!60),
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
-     &     guess, refproj, spinexpec, n_states, i_state, optref
+     &     guess, refproj, spinexpec, n_states, i_state, optref,
+     &     ncnt, ncnt2, icnt, arglen, i
       logical ::
      &     oldref, l_exist, writeF, multistate
       character(len_target_name) ::
@@ -48,6 +52,10 @@
      &     opstr*4, mestr*7, filestr*15
       character(len_target_name), external ::
      &     state_label
+      real(8), allocatable ::
+     &     xscr(:)
+      character(len=256) ::
+     &     gecco_path
 
       if (iprlvl.gt.0)
      &     write(lulog,*) 'setting targets for multiref. wave function'
@@ -100,6 +108,8 @@
       else
        n_states = 1
       end if
+
+      call get_environment_variable( "GECCO_DIR", value=gecco_path)
 
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
@@ -1047,7 +1057,52 @@ c dbgend
       else
        labels(1) = "ME_C0"
       endif
-      if (.not.oldref) then
+!     use reference given in input
+      ncnt = is_keyword_set('calculate.reference')
+      if (ncnt.GT.0) then
+       if (oldref) call quit(1,'set_unc_mrci_targets',
+     &      'We cannot use oldref and read the reference '//
+     &      'from input at the same time.')
+       if (ncnt.NE.n_states) call quit(1,'set_unc_mrci_targets',
+     &      'Give one set of reference coefficients '//
+     &      'for each state.')
+
+       call set_rule2('SOLVE_REF',PRINT_,tgt_info)
+       call set_arg('SOLVE_REF',PRINT_,'STRING',1,tgt_info,
+     &      val_str='Reference coefficients from input.')
+
+       do icnt=1,ncnt
+        if (is_argument_set
+     &         ('calculate.reference','def',keycount=icnt).NE.1)
+     &         call quit(0,'set_unc_mrci_targets',
+     &         'There must be exactly one def for each reference!')
+        call set_rule2('SOLVE_REF',SET_STATE,tgt_info)
+        call set_arg('SOLVE_REF',SET_STATE,'LISTS',1,tgt_info,
+     &       val_label=['ME_C0'])
+        call set_arg('SOLVE_REF',SET_STATE,'ISTATE',1,tgt_info,
+     &       val_int=[icnt])
+        call get_argument_dimension(arglen,'calculate.reference','def',
+     &       keycount=icnt)
+        if (allocated(xscr)) deallocate(xscr)
+        allocate(xscr(arglen))
+        call get_argument_value('calculate.reference','def',
+     &       keycount=icnt,xarr=xscr)
+        call set_rule2('SOLVE_REF',SET_MEL,tgt_info)
+        call set_arg('SOLVE_REF',SET_MEL,'LIST',1,tgt_info,
+     &       val_label=['ME_C0'])
+        call set_arg('SOLVE_REF',SET_MEL,'IDX_LIST',arglen,tgt_info,
+     &       val_int=[(i,i=1,arglen)])
+        call set_arg('SOLVE_REF',SET_MEL,'VAL_LIST',arglen,tgt_info,
+     &       val_rl8=xscr(1:arglen))
+       end do
+
+       call set_rule2('SOLVE_REF',SET_STATE,tgt_info)
+       call set_arg('SOLVE_REF',SET_STATE,'LISTS',1,tgt_info,
+     &      val_label=['ME_C0'])
+       call set_arg('SOLVE_REF',SET_STATE,'ISTATE',1,tgt_info,
+     &      val_int=[1])
+
+      else if (.not.oldref) then
         call set_rule2('SOLVE_REF',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_C0'/))
@@ -1106,6 +1161,13 @@ c dbgend
      &        val_label=['ME_C0'//trim(c_st)])
          call set_arg('SOLVE_REF',SCALE_COPY,'FAC',1,tgt_info,
      &        val_rl8=[1.0d0])
+         call set_rule2('SOLVE_REF',SPREAD_MEL,tgt_info)
+         call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_IN',1,tgt_info,
+     &        val_label=(/'ME_C0'/))
+         if (n_states.GT.20) call quit(1,'set_unc_mrci_targets',
+     &       'Static vector labels does not suport more than 20 states')
+         call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_OUT',i_state,
+     &        tgt_info,val_label=labels)
          call set_rule2('SOLVE_REF',ADV_STATE,tgt_info)
          call set_arg('SOLVE_REF',ADV_STATE,'LISTS',1,tgt_info,
      &        val_label=['ME_C0'])

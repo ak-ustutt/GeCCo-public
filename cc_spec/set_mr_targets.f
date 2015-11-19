@@ -126,7 +126,8 @@
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
-     &                          .not.((l_icci.or.l_iccc).or.skip))
+     &                          .not.((l_icci.or.l_iccc).or.skip),
+     &                          name_infile,fforbinf%name)
 c dbg for calculating cumulants
 c      call set_gno_targets(tgt_info,orb_info,1)
 c dbgend
