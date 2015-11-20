@@ -2,23 +2,41 @@ from gecco_interface import *
 from gecco_modules.NoticeUtil import *
 import gecco_modules.string_to_form as stf
 
+i_am="MRCC2lag.py"
 
 lag_type=4
-if keywords.is_keyword_set('method.MRCCPT.lagrangian'):
-    lag_type=int(keywords.get('method.MRCCPT.lagrangian'))
-    print("lagrangian:",lag_type,type(lag_type))
+if keywords.is_keyword_set('method.MRCC2.lagrangian'):
+    lag_type=int(keywords.get('method.MRCC2.lagrangian'))
+print("lagrangian:",lag_type,type(lag_type))
 
+known_hamiltonians={"DYALL","REPT","F_EFF"}
+hamiltonian="DYALL"
+if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
+    hamiltonian=str(keywords.get('method.MRCC2.hamiltonian')).strip()
+print("hamiltonian: ", hamiltonian, type(hamiltonian))
+
+if hamiltonian not in known_hamiltonians : 
+    modify_target("Initial_preparations")
+    raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
 
 #--------------------------------------------------------------------------------------#
 #Define the lagrangian
 #--------------------------------------------------------------------------------------#
+
 new_target('DEF_FORM_PT_LAG2')
-depend('Make_HAM_D')
+
 depend('T-Operators')
 
 depend('MakeRefState')
 
 depend('H0')
+
+if hamiltonian=="DYALL":
+    depend('EVAL_HAM_D')
+elif hamiltonian=="REPL":
+    depend('EVAL_REPT_HAM')
+elif hamiltonian=="REPL":
+    depend('EVAL_F_EFF')
 
 
 DEF_SCALAR({
@@ -54,10 +72,14 @@ if lag_type >= 1 :
         "<C0^+*(T2_ca^+)*("\
             "H"\
             "+[H,T1_ca]"\
-            "+[HAM_D,T2_ca]"\
         ")*C0>"             
     )
-
+    if hamiltonian=="DYALL":
+        LAG.append("<C0^+*(T2_ca^+)*([HAM_D,T2_ca])*C0>")
+    elif hamiltonian=="REPT":
+        LAG.append("<C0^+*(T2_ca^+)*([REPT_HAM,T2_ca])*C0>")
+    elif hamiltonian=="F_EFF":
+        LAG.append("<C0^+*(T2_ca^+)*([F_EFF,T2_ca])*C0>")
 #quadratic lagrangian: linear lagrangian+something
 #something:
 if lag_type >= 2 :
@@ -150,8 +172,8 @@ if not 0<lag_type<5 :
 
 
 
-#for item in LAG.show():
-#    print item
+for item in LAG.show():
+    print item
 LAG.set_rule()
 
 mark("PT-LAGRANGIAN")
