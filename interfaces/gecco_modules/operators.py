@@ -84,5 +84,4 @@ class Vertex(object):
         pass
 
     def __str__(self):
-        print(self.arguments["LABEL"])
         return self.arguments["LABEL"]

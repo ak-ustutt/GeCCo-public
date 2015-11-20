@@ -143,7 +143,7 @@ class _InputStringBase(object):
 
 
     #******************************************
-    # Overwrite of builtins
+    # make available for buildin
     def __len__(self):
         """allows the use of len(string)"""
         return len(self.string)
@@ -421,7 +421,6 @@ class _OPRep(_InitOperation,_SinglePartOperation):
     def process_string(self,string):
         string.set_start()
         self.check_illegal_char(string, ("<",">","+","","|") ,"first") 
-        ##\todo think about which chars are illegal at the beginning of objects 
         while string.has_not_ended:
 
             self.check_illegal_char(string,("<"))            

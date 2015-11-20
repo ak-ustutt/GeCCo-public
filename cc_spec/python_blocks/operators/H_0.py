@@ -3,9 +3,61 @@ from gecco_modules.NoticeUtil import *
 
 
 #---------------------------------------------------------------------------------
+# Finks excitation retaining hamiltonian
+#---------------------------------------------------------------------------------
+new_target('MAKE_REPT_HAM')
+heading('===Building of excitation retaining hamiltonian===')
+#generalized from
+#Fink Chemical Physics Letters 428 (2006) 461 DOI: 10.1016/j.cplett.2006.07.081
+depend('H0')
+depend('MakeRefState')
+
+comment("defining REPT-hamiltonian and building formula")
+
+DEF_OP_FROM_OCC({
+        LABEL:'REPT_HAM',
+        JOIN:1,
+        DESCR:'H,H|V,V|P,P|HH,HH|VV,VV|PP,PP|HV,HV|HP,HP|PV,PV'})
+
+DEF_ME_LIST({
+        LIST:'REPT_HAM_LST',
+        OPERATOR:'REPT_HAM',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_REPT_HAM',
+        NEW:True,
+        OP_RES:'REPT_HAM',
+        OPERATORS:['REPT_HAM','H','REPT_HAM'],
+        IDX_SV:[1,2,1]})
+
+debug_FORM('FORM_REPL_HAM')
+
+
+
+
+new_target('EVAL_REPT_HAM')
+depend('MAKE_REPT_HAM')
+comment("evaluate REPT-hamiltonian")
+
+OPTIMIZE({
+        LABELS_IN:'FORM_REPT_HAM',
+        LABEL_OPT:'FOPT_REPT_HAM'})
+EVALUATE({
+        FORM:'FOPT_REPT_HAM'})
+
+
+debug_MEL('REPT_HAM_LST')
+
+
+
+
+
+#---------------------------------------------------------------------------------
 # Effective Fock operator
 #---------------------------------------------------------------------------------
-
 new_target('MAKE_FOCK_EFF')
 heading('===Building of effective fock matrix===')
 depend('H0')
@@ -111,9 +163,6 @@ depend('EVAL_F_EFF_INACT')
 depend('H0')
 
 
-
-
-
 DEF_OP_FROM_OCC({
         LABEL:'HAM_D',
         DESCR:'H,H|P,P|V,V|VV,VV'})
@@ -129,8 +178,6 @@ debug_MEL('HAM_D_LIST',info_only=True)
 
 
  
-
-
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_HAM_D',
         OP_RES:'HAM_D',
@@ -156,8 +203,6 @@ EXPAND_OP_PRODUCT({
 debug_FORM('FORM_HAM_D')
 
 
-
-
 OPTIMIZE({
         LABELS_IN:'FORM_HAM_D',
         LABEL_OPT:'FOPT_HAM_D'})
@@ -170,6 +215,20 @@ debug_MEL('HAM_D_LIST')
 
 
 
+new_target("EVAL_HAM_D")
+#this target should contain the evaluation of FORM_HAM_D but currently there are targets that expect that in 
+#Make_HAM_D
+depend('Make_HAM_D')
+
+
+
+
+
+
+#-------------------------------------------------------------------------------
+#the fluctuation hamiltonian for H_0=Ham_D 
+#-------------------------------------------------------------------------------
+#currently never used
 new_target('Make_V')
 depend('EVAL_F_EFF')
 depend('H0')

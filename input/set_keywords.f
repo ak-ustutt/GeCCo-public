@@ -398,6 +398,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call keyword_add('MRCC2',context='method')
       call argument_add('lagrangian','method.MRCC2',type=vtyp_int,
      &                  idef=(/0/)) ! type of lagrangian
+      call argument_add('hamiltonian','method.MRCC2',
+     &     type=vtyp_str,len=4,
+     &     cdef=(/'D','Y','A','L',' '/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

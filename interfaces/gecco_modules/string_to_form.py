@@ -556,13 +556,9 @@ class Formula(_Formula):
         #Are there Problems with unicode strings?
         elif isinstance(other, basestring):
             interm=_Formula()
-	    print("this works1")
             interm.preprocess_string(other)
-	    print("this works2")
             interm.process_string(interm.string)
-	    print("this works3")
             interm.extract()
-	    print("this works4")
             self.append_(interm)
 
         else:
