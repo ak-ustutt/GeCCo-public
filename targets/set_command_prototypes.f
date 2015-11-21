@@ -595,6 +595,14 @@
       call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
      &     (/'-'/),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(SET_BLOCKS,tgt_info)
+      call set_arg('_PROTO_',SET_BLOCKS,'LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'DESCR',0,tgt_info,
+     &     val_str=' ',req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'FAC',0,tgt_info,
+     &     val_rl8=(/0d0/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(COPY_LIST,tgt_info)
       call set_arg('_PROTO_',COPY_LIST,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -823,6 +831,22 @@
       call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_E',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',EVP_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(INV_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(MULT_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'N_ROOTS',0,tgt_info,
      &     val_int=(/1/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(ABORT,tgt_info)

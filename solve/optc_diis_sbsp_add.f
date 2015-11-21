@@ -70,7 +70,8 @@
       type(operator_info), intent(inout) ::
      &     op_info
 
-
+      logical::
+     &     lzero_flag
       integer ::
      &     irecr, irecv, inum, idx_inv
       character(len_opname) ::
@@ -101,8 +102,12 @@
       irecv = ioptc_get_sbsp_rec(inum,iord_vsbsp,ndim_vsbsp,mxdim_sbsp)
 
       if (ntest.ge.100) then
+        write(lulog,*) 'this is optc_diis_sbsp_add.f'
         write(lulog,*) 'added records: ',irecv, irecr
         write(lulog,*) 'nwfpar: ',nwfpar
+        write(lulog,*) 'typ_prc',typ_prc
+        write(lulog,*) 'nincore',nincore
+        write(lulog,*) 'set T1 zero',lzero_flag
       end if
 
       if (nincore.ge.2) then
@@ -166,13 +171,16 @@ c dbg
      &                          orb_info,op_info,str_info,strmap_info)
           call vec_from_da(ffamp,1,xbuf2,nwfpar)
 
-        case(optinf_prc_traf)
+        case(optinf_prc_traf,optinf_prc_traf_spc)
+           lzero_flag=.false.
+           if (typ_prc .eq. optinf_prc_traf_spc) lzero_flag=.true.
 
           call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
      &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,
      &                       opti_info,
-     &                       orb_info,op_info,str_info,strmap_info)
+     &                       orb_info,op_info,str_info,strmap_info,
+     &                       lzero_flag)
 
         case default
           call quit(1,'optc_diis_subsp_add','unknown route')
@@ -208,6 +216,6 @@ c dbg
      &       nwfpar,xbuf1,xbuf2,lenbuf)
 
       end if
-
+c dbg      write (lulog,*) "optc_diis_sbsp_add ended"
       return
       end

@@ -49,7 +49,7 @@
      &     nblk, njoined, min_rank, max_rank, min_xrank, max_xrank,
      &     ncadiff, iformal, n_ap, ansatz, hermitian, iorder, spec,
      &     ninclude, ninclude_or, nexclude, norb, icase, icaseF,
-     &     minblk, maxblk, idx, jdx, ioff, nfac, nspecial, imode,
+     &     minblk, maxblk, idx, nfac, nspecial, imode,
      &     nop, nop2, nint, ncat, level, nconnect, navoid, ninproj,
      &     absym,casym,gamma,s2,ms,nopt,nroots,ndens,rank,nterms,ncmp,
      &     dgam, dms, nspcfrm, ndescr, ntmp, targ_root, choice
@@ -62,7 +62,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     last_state, use_1,trnsps
+     &     use_1,trnsps
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -87,6 +87,8 @@
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_oplist2
+      logical ::
+     &     closeit
 
       ! form_test = true skips time consuming steps -> dry run
       call get_argument_value('general','form_test',lval=form_test)
@@ -1141,12 +1143,22 @@ c dbg
 
        if (form_test) return
 
+!     modification to make the final list with the same open/closed fhand as inp list
        call get_mel(mel_pnt,label,OLD)
+       closeit = .false.
+       if(mel_pnt%fhand%unit.le.0) closeit = .true.
        do idx = nroots,1,-1
         call switch_mel_record(mel_pnt,idx)
+c dbg
+c        print*,trim(label_list(idx))
+c dbgend
         call get_mel(mel_pnt2,label_list(idx),OLD)
-        if(mel_pnt%fhand%unit.gt.0) call file_open(mel_pnt2%fhand)
+        closeit = .false.
+        if(mel_pnt2%fhand%unit.le.0) then
+         call file_open(mel_pnt2%fhand)
+        end if
         call list_copy(mel_pnt,mel_pnt2,.false.)
+        if (closeit) call file_close_keep(mel_pnt2%fhand)
        enddo
 
 *----------------------------------------------------------------------*
@@ -1205,6 +1217,32 @@ c dbg
        else
         call diag_packed_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
        endif
+
+*----------------------------------------------------------------------*
+      case(INV_PACKED_OP)
+*----------------------------------------------------------------------*
+
+       call get_arg('LIST_IN',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt,label,OLD)
+       call get_arg('LIST_OUT',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt2,label,OLD)
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call inv_pack_op(mel_pnt,mel_pnt2,nroots)
+
+*----------------------------------------------------------------------*
+      case(MULT_PACKED_OP)
+*----------------------------------------------------------------------*
+
+       call get_arg('LISTS',rule,tgt_info,val_label_list=label_list,
+     &      ndim=nop)
+       if (nop.NE.2) call quit(1,'process_rule',
+     &      'MULT_PACKED_OP only for two lists')
+       call get_mel(mel_pnt,label_list(1),OLD)
+       call get_mel(mel_pnt2,label_list(2),OLD)
+       call get_arg('LIST_OUT',rule,tgt_info,val_label=label)
+       call get_mel(mel_pnt3,label,OLD)
+       call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
+       call prod_pack_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE
@@ -1334,6 +1372,18 @@ c          mode = 'dia-R12'
 
         call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
      &       op_info,orb_info,str_info)
+*---------------------------------------------------------------------*
+      case(SET_BLOCKS)
+*---------------------------------------------------------------------*
+         call get_arg('LIST',rule,tgt_info,val_label=label_list(1))
+
+         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+         call get_arg('DESCR', rule,tgt_info,val_str=strscr)
+         call get_mel(mel_pnt,label_list(1),OLD)
+
+         if (form_test) return
+
+         call  set_blks(mel_pnt,strscr,fac)
 
 *----------------------------------------------------------------------*
       case(COPY_LIST)

@@ -16,7 +16,7 @@
      &     SET_HERMIT*13      = 'SET_HERMITIAN'
 ! formulae:
       character, parameter ::
-     &     CHECK_FORMGEN*12         = 'CHECK_FORMGEN',
+     &     CHECK_FORMGEN*13         = 'CHECK_FORMGEN',
      &     DEF_CC_LAGRANGIAN*17     = 'DEF_CC_LAGRANGIAN',
      &     DEF_ECC_LAGRANGIAN*18    = 'DEF_ECC_LAGRANGIAN',
      &     DEF_CCPT_LAGRANGIAN*19   = 'DEF_CCPT_LAGRANGIAN',
@@ -91,9 +91,12 @@
      &     SCALE_COPY*10      = 'SCALE_COPY',
      &     TRANS_LIST*10      = 'TRANS_LIST',
      &     COPY_LIST*9        = 'COPY_LIST',
+     &     SET_BLOCKS*10      = 'SET_BLOCKS',
      &     ORB_FLIP*8         = 'ORB_FLIP',
      &     SPREAD_MEL*10      = 'SPREAD_MEL',
      &     ADV_STATE*9        = 'ADV_STATE',
      &     SET_STATE*9        = 'SET_STATE',
      &     ABORT*5            = 'ABORT',
-     &     EVP_PACKED_OP*13   = 'EVP_PACKED_OP'
+     &     EVP_PACKED_OP*13   = 'EVP_PACKED_OP',
+     &     INV_PACKED_OP*13   = 'INV_PACKED_OP',
+     &     MULT_PACKED_OP*14  = 'MULT_PACKED_OP'

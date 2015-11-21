@@ -95,7 +95,7 @@
        if(ntest.GE.100) write(lulog,*)
      &      "new ME: ", trim(new_mel)
 
-       call assign_me_list(trim(new_mel),
+       call assign_me2op(trim(new_mel),
      &      trim(label_op(i_label)),op_info)
 
       end do

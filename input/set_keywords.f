@@ -10,7 +10,7 @@ c      use parse_input
      &     ntest = 00
 
       integer ::
-     &     iprint
+     &     iprint, i
 
       iprint = max(ntest,iprlvl)
 
@@ -29,6 +29,8 @@ c      use parse_input
      &     ldef=(/.true./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
+      call argument_add('print_tgt_graph',context='general',
+     &     type=vtyp_log, ldef=(/.false./))
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
@@ -252,6 +254,15 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/2/))
       call argument_add('maxcom_en_cpl','method.MRCC',type=vtyp_int,
      &     idef=(/2/))
+      call argument_add('type','method.MRCC',
+     &     type=vtyp_str,len=2,
+     &     cdef=(/'S','U'/))
+      call argument_add('req_state','method.MRCC',type=vtyp_int,
+     &     idef=(/1/))          ! desired state for SS-MRCCs
+      call argument_add('assume_orth','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('Heff_symm','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('maxtt','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
       call argument_add('G_level','method.MRCC',type=vtyp_int,
@@ -295,6 +306,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('method','method.MRCC.excite',
      &     type=vtyp_str,len=8,
      &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
+
+      call keyword_add('MRCCPT',context='method')
+      call argument_add('lagrangian','method.MRCCPT',type=vtyp_int,
+     &                  idef=(/0/)) ! type of lagrangian
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
@@ -462,6 +477,12 @@ c     &     idef=(/0/))
      &     idef=(/-1/)) ! spin projection (=3 for non-singlet MRCC)
                         ! (1: C0,2: C0 & T, 3: C0 & T & RDMs,A)
 
+      call keyword_add('class',context='calculate')
+      call argument_add('hpclass','calculate.class',type=vtyp_int,len=2,
+     &                  idef=(/-1,-1/)) ! ih,ip
+      call argument_add('sv_thr_hp','calculate.class',type=vtyp_rl8,
+     &                  xdef=(/1d-5/)) ! sv_thr for this particular oih,ip
+
       ! special keywords for response theory
       call keyword_add('response',context='method')
       call argument_add('order','method.response',type=vtyp_int,
@@ -486,6 +507,11 @@ c     &     idef=(/0/))
       call keyword_add('interfaces',context='calculate')
       call argument_add('file','calculate.interfaces',
      &     type=vtyp_str,len=256)
+
+      call keyword_add('reference',context='calculate')
+      call argument_add('def','calculate.reference',type=vtyp_rl8,
+     &     len=30,
+     &     xdef=[(0.0d0, i=1,30)])
 
       ! set additional experimental keyword in this subroutine:
       call set_experimental_keywords()
