@@ -2,7 +2,7 @@ general
   print=10
   memmax=10000000
 orb_space
-  shell type=occ,def=(3,2,0,0,0,0,0,0)
+  shell type=occ,def=(2,1,1,0,1,0,0,0)
   shell type=closed,def=(1,0,0,0,0,0,0,0)
   shell type=frozen,def=(0,0,0,0,0,0,0,0)
 method
