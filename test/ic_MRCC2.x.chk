@@ -1,5 +1,5 @@
 title
-  B/vdz; MOLPRO env.: ic-MRCC2 (n el. in m act. orb.)
+  B/STO-3G; MOLPRO env.: ic-MRCC2 quartic; w. spinadapt; DYALL
 molecule
   B-MRCC2-MOLPRO
 input
