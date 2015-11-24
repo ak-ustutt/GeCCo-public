@@ -33,9 +33,9 @@ depend('H0')
 
 if hamiltonian=="DYALL":
     depend('EVAL_HAM_D')
-elif hamiltonian=="REPL":
+elif hamiltonian=="REPT":
     depend('EVAL_REPT_HAM')
-elif hamiltonian=="REPL":
+elif hamiltonian=="F_EFF":
     depend('EVAL_F_EFF')
 
 
@@ -79,7 +79,7 @@ if lag_type >= 1 :
     elif hamiltonian=="REPT":
         LAG.append("<C0^+*(T2_ca^+)*([REPT_HAM,T2_ca])*C0>")
     elif hamiltonian=="F_EFF":
-        LAG.append("<C0^+*(T2_ca^+)*([F_EFF,T2_ca])*C0>")
+        LAG.append("<C0^+*(T2_ca^+)*([FOCK_EFF,T2_ca])*C0>")
 #quadratic lagrangian: linear lagrangian+something
 #something:
 if lag_type >= 2 :
