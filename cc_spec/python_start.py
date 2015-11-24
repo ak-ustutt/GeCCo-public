@@ -13,6 +13,10 @@ if ( keywords.is_keyword_set("method.MRCC2") ):
     print "begin setting MRCC2 targets"
     import python_blocks.MRCC2
 
+if ( keywords.is_keyword_set("method.MRCCPT2") ):
+    print "begin setting MRCCPT2 targets"
+    import python_blocks.MRCCPT2
+
 
 
 export_targets();
