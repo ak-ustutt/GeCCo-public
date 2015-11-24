@@ -7,27 +7,21 @@ import gecco_modules.default_keywords as dk
 
 
 ##
-#@date 10.11.15
+#@date 24.11.15
 #@author arne bargholz
 
 
-
-
-
-#------------------------------------------------------------------#
-#------------------------------------------------------------------#
+####################################################################
+####################################################################
 #global switches
-#------------------------------------------------------------------#
-#------------------------------------------------------------------#
+####################################################################
+####################################################################
 
 ntest=000
 
-
-
-
-#----------------------------------------------------------------#
+##################################################################
 #Things to do before calculation starts
-#---------------------------------------------------------------##
+##################################################################
 new_target("general considerations",True)
 
 ims = int(orbitals.get('ims'))   
@@ -45,20 +39,14 @@ else :
 wf_sym=orbitals.get('lsym')        #symmetry of wavefunction
 
 
-
-
 import operators.cluster_residue_op 
 import operators.ref_wf_op
 import operators.H_0
 #Important note: prepared for MR_P preparation of wavefunction
 import icMR_orthogonalization.seq_orthogonalization
 import preconditioner.diag_precon
-import lagrangians.MRCC2lag
-import solve.MRCC2solve
-
-
-
-
+import lagrangians.MRCCPT2lag
+import solve.MRCCPT2solve
 
 #-----------------------------------------------------------------#
 # ... do it ...
@@ -66,21 +54,3 @@ import solve.MRCC2solve
 
 modify_target('do all')
 depend('SOLVE_MRCCPT2')
-
-
-#debug_MEL('X_TRM_LIST')
-#debug_MEL('ME_Dtr')
-
-#debug_MEL('ME_A')
-
-#debug_MEL('A_TRF_LST')
-
-
-#debug_FORM('F_Atr')
-#debug_FORM('FORM_A_TRF_FINAL')
-
-#debug_MEL('ME_Dinv')
-
-#debug_MEL('ME_D')
-#debug_MEL('GSLST')
-

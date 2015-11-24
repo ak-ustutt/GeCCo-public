@@ -400,7 +400,12 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/0/)) ! type of lagrangian
       call argument_add('hamiltonian','method.MRCC2',
      &     type=vtyp_str,len=4,
-     &     cdef=(/'D','Y','A','L',' '/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
+     &     cdef=(/'D','Y','A','L','L'/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
+
+      call keyword_add('MRCCPT2',context='method')
+      call argument_add('hamiltonian','method.MRCCPT2',
+     &     type=vtyp_str,len=4,
+     &     cdef=(/'D','Y','A','L','L'/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')

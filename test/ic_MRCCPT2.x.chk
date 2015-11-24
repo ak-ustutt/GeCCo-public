@@ -1,9 +1,9 @@
 title
-  B/STO-3G; MOLPRO env.: ic-MRCC2 quartic; w. spinadapt; DYALL
+  B/STO-3G; MOLPRO env.: ic-MRCCPT2; w. spinadapt; DYALL
 molecule
   B-MRCC2-MOLPRO
 input
-  ic-MRCC2.inp
+  ic-MRCCPT2.inp
 check
   label CASSCF energy
   find CONVERGED

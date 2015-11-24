@@ -11,9 +11,9 @@ spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 
-###################################################################
+#-----------------------------------------------------------------#
 # operators associated with T
-###################################################################
+#-----------------------------------------------------------------#
 
 t_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
 t1_shape='V,H|P,V|P,H'
@@ -62,27 +62,6 @@ DEF_ME_LIST(ME_param)
 debug_MEL('T1_ca_LST',info_only=True)
 
 
-#DEF_OP_FROM_OCC({
-#        LABEL:'T2_TRF',
-#        DESCR:t2_shape})
-
-#ME_param={
-#        LIST:'T2_TRF_LST',
-#        OPERATOR:'T2_TRF',
-#        IRREP:1,
-#        '2MS':0,
-#        AB_SYM:+1}
-#if spinadapt>=2:
-#    ME_param['S2']= 0
-
-#DEF_ME_LIST(ME_param)
-
-#debug_MEL('T2_LST',info_only=True)
-
-
-
-
-#DEF_OP_FROM_OCC({LABEL:'Oges',JOIN:2,DESCR:',;[PV],H|,V;P,|,;PP,HH|,V;PP,H|,VV;PP,|,;PV,HH|,V;PV,H|,VV;PV,|,;VV,HH|,V;VV,H'})
 DEF_OP_FROM_OCC({
         LABEL:'Oges',
         JOIN:2,
