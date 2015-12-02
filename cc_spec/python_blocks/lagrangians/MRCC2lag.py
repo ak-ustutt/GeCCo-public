@@ -16,7 +16,6 @@ if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
 print("hamiltonian: ", hamiltonian, type(hamiltonian))
 
 if hamiltonian not in known_hamiltonians : 
-    modify_target("Initial_preparations")
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
 
 #--------------------------------------------------------------------------------------#

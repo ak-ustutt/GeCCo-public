@@ -54,7 +54,7 @@ if hamiltonian=="DYALL":
 elif hamiltonian=="REPT":
     LAG.append("<C0^+*(T2_ca^+)*([REPT_HAM,T2_ca])*C0>")
 elif hamiltonian=="F_EFF":
-    LAG.append("<C0^+*(T2_ca^+)*([F_EFF,T2_ca])*C0>")
+    LAG.append("<C0^+*(T2_ca^+)*([FOCK_EFF,T2_ca])*C0>")
 
 
 for item in LAG.show():
