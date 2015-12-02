@@ -6,8 +6,8 @@ i_am="MRCCPT2lag.py"
 
 known_hamiltonians={"DYALL","REPT","F_EFF"}
 hamiltonian="DYALL"
-if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
-    hamiltonian=str(keywords.get('method.MRCC2.hamiltonian')).strip()
+if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
+    hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
 print("hamiltonian: ", hamiltonian, type(hamiltonian))
 
 if hamiltonian not in known_hamiltonians : 
