@@ -11,15 +11,15 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 
 ciroot=1
-if keywords.is_keyword_set('method.MR_P.ciroot')
+if keywords.is_keyword_set('method.MR_P.ciroot'):
     ciroot=int(keywords.get('method.MR_P.ciroot'))
 print "ciroot: "+str(ciroot)
 
 
 maxroots=ciroot
-if keywords.is_keyword_set('method.MR_P.maxroot')
+if keywords.is_keyword_set('method.MR_P.maxroot'):
     maxroots=int(keywords.get('method.MR_P.maxroot'))
-print "maxroot: "+str(maxroot)
+print "maxroot: "+str(maxroots)
 ###################################################################
 # ---- solve for reference state
 ###################################################################
@@ -68,7 +68,7 @@ SOLVE_map={
         OP_SVP:'C0',
         FORM:'FOPT_H_C0',
         MODE:'DIA',
-        N_ROOTS:maxroots
+        N_ROOTS:maxroots,
         TARG_ROOT:ciroot
 }
 
