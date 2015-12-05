@@ -81,7 +81,13 @@
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)
       end if
-
+      if ( (is_keyword_set('method.MRCC2').gt.0 ).or. 
+     &     (is_keyword_set('method.MR_P') .gt.0 ) )then
+         call set_python_targets(tgt_info,
+     &        trim(gecco_path)//'/cc_spec/python_start.py',
+     &        name_infile,fforbinf%name)
+      end if
+      
       ! Interfaces
       if (is_keyword_set('calculate.interfaces').gt.0) then
         call set_interface_targets(tgt_info,name_infile,fforbinf%name)
@@ -92,7 +98,7 @@
       if (iprlvl.ge.20) then
         call print_target_list(lulog,tgt_info)
       end if
-      
+
       call file_init(fftgt,'target_list',ftyp_sq_frm,0)
       call file_open(fftgt)
       call print_target_list(fftgt%unit,tgt_info)

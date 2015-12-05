@@ -1,9 +1,10 @@
-from gecco_interface import * # This is an extension to the gecco interface. 
+#from gecco_interface import * # This is an extension to the gecco interface. 
                               # it relies on the functions provided there 
-
+import copy # to produce deepcopys of objects
 import re #support for Regular expressions
 import itertools as it # some iterators
-#import traceback as tb # to print exceptions
+from traceback import format_exc
+#mport traceback as tb # to print exceptions
 
 from stf_exceptions import * #custom made exceptions for this package
 from stf_regexp import * # The regular expressions for numbers ... 
@@ -16,20 +17,12 @@ from ArneUtil import combine_dicts  # a function to combine dictionaries
 #
 #Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT from a string
 #\author Arne Bargholz
-#\date 21.05.2015
-#\version 1.09 tested, but without updated documentation
+#\date 17.06.2015
+#\version 1.19 tested, but without updated documentation
 
 
 #*********************************************************
 #General idea: 
-#String expansion: 
-#    The expansion of a string into a Formula object is handled in two steps
-#    In the first step the object hierachy is build from the string. 
-#    This is done by taking the string and passing it to a lower tier object, which is stored 
-#    in a member list (self.content)
-#        The lowest tier objects (_OPRep) contain strings of the operator names.
-#    In the second step the extract method demands extraction of all 
-#    lower tier objects and then returns a sum of operator products (a list of lists)
 #Generation of prefactors
 #    The Bracket object (_ExpBracket) 
 #     (which at this point contains only a list of strings representing OP product)
@@ -40,6 +33,9 @@ from ArneUtil import combine_dicts  # a function to combine dictionaries
 #     Every OP without a single quote in it is deemed a standalone vertex 
 #     and get its own number in the idx_sv list.
 #     those with single quotes are compared to each other. (see specs for details, )
+#Append functionality.
+#     Either strings or other formula objects can be appended. If another formula is 
+#     appended, only the body part is appended, LABEL and OP_RES stay active
 ## \todo don't forget to change this comment when the  implementation changes
 
 #General considerations: 
@@ -63,51 +59,65 @@ from ArneUtil import combine_dicts  # a function to combine dictionaries
 
 #What to find where? 
 # everything is found in the following order:
-# class declarations 
-# Exception declarations
-# global functions for functionality
-# global objects
-# class definions for _InputString
-# class definitions concerning the disassembling and extraction of the string
-# class definitions for the formula object
-# class definitions and functions for the user interface
+# environment preparation for unit tests 
+# global functions  and objects
+# class definitions(each preceeded by base classes and Util classes):
+#    _OPProduct
+#    _Bracket
+#    Formula and GenForm
+# functions of the user interface
 # class definiton of the Test-object
 
 
-#Possible arguments for EXPAND_OP_PRODUCT:
-#I could make a dictionary, mapping the actual keywords to placeholder I define 
-# Nah, it's good like this, effectively the list positions are my placeholders
 
+
+
+#for unit testing ensures that all functionality (besides set_rule) can be tested even when gecco_interface is not imported
 _g_argument_names=[
-              'LABEL', #0
-              'OP_RES',#1
-              'OPERATORS',#2
-              'IDX_SV', #3
-              'NEW',    #4
-              'TITLE', #5
-              'FAC',    #6
-              'FAC_INV',#7 
-              'CONNECT',#8
-              'AVOID',  #9
-              'LABEL_DESCR',#10
-              'FIX_VTX',#11
-              'BLK_MIN',#12
-              'BLK_MAX',#13
-              'N_CONNECT',#14
-              'N_AVOID',#15
-              'INPROJ',#16
-              'N_INPROJ',#17
-              'N_DESCR',#18
+              'LABEL', 
+              'OP_RES',
+              'OPERATORS',
+              'IDX_SV', 
+              'NEW',    
+              'TITLE', 
+              'FAC',    
+              'FAC_INV',
+              'CONNECT',
+              'AVOID', 
+              'LABEL_DESCR',
+              'FIX_VTX',
+              'BLK_MIN',
+              'BLK_MAX',
+              'N_CONNECT',
+              'N_AVOID',
+              'INPROJ',
+              'N_INPROJ',
+              'N_DESCR',
 ]
 
 
-
-
+#used to detect if gecco_interface is loaded otherwise testmode is assumed
+try:
+    LABEL
+except NameError: 
+    for i in _g_argument_names:
+        exec(i +"='"+i+"'" )
+    def quit_error(msg):
+        print msg
+        print(format_exc())
 _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
-###############################################
-#Classes
 
-##########################################################################################
+
+
+
+def _remove_whites(string):    
+    """removes all (Unicode) white space characters"""
+    return re.sub("\s", "",string,flags=re.U)
+
+
+#----------------------------------------------------------------------------------------
+#Classes
+#----------------------------------------------------------------------------------------
 
 
 
@@ -115,52 +125,12 @@ _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 class _NumberCollectUtil(object):
     """Utility class to derive a factor from operator prefactors"""
 
-#    ##
-#    #@param parts output of a re.split function
-#    #@param OP_no current OP
-#    #@return returns 0 if no (zero) splits occured
-#    #         returns 1 if a split occurred
-#    def process_parts(self,parts,OP_no):
-#        """processes the output of a re.split operation"""#
-#
-#        if len(parts) not in (1,3):
-#            raise BadSplitError("Operator"+str(self.operators[OP_no])+
-#                                "was split into "+str(len(parts))+" parts")
-#        elif len(parts) == 1:
-#            return 0
-#        else:
-#            self.operators[OP_no]=parts[2]
-#            if stf_number_extract_reg_exp.match(parts[1]):
-#                self.factor=self.factor*float(re.sub(_pow_sep("reg_exp"),"e",parts[1])) 
-#            elif _special_reg_exp.match(parts[1]):
-#                self.factor=-self.factor
-#            return 1
-
-     
-#    ##
-#    #@param regexp a compiled regular expression
-#    #@param OP_no number of current operator
-#    #@return returns the return of self.process parts
-#
-#    def split(self,regexp,OP_no):
-#        """ Splits by a regular expression """
-#        #
-#        return self.process_parts(regexp.split(self.operators[OP_no]),OP_no)
-#        #if there was a match:
-#        #[0] is an empty string 
-#            #because our strings match the beginning. read documentation of re
-#        #[1] contains our match 
-#        #[2] contains the rest (at least an empty string)
-#        # if there is no match:
-#        #[0] contains our string
-
     ##
     #@param string str to be matched
     #@param nominator
     #@param denominator
     #@return tuple (x,y,z): x new nominator, y new denominator, 
     #z nonnumber part of string.
-
     def _eval_numbers(self, string, nominator=1, denominator=1):
         """converts the number matched by the regexps to floats
 
@@ -185,7 +155,6 @@ class _NumberCollectUtil(object):
         nominator,denominator=self._normalize(nominator,denominator)
         return nominator,denominator,residue
 
-
     def _pop_numbers(self):
         """Collects the numbers from operators
         
@@ -203,17 +172,14 @@ class _NumberCollectUtil(object):
         nominator=self.arguments.get(FAC,1)
         #identical to self.arguments.get('FAC_INV',1)
         denominator=self.arguments.get(FAC_INV,1)
-
         #indexing the list from the end to avoid messing with indices during deletion
         i=-len(OPs) # 0
         while i<0:
             i+=1
-
             a,b,c=self._eval_numbers(OPs[i])
             nominator*=a
             denominator*=b
             OPs[i]=c
-
             if OPs[i] == '' or OPs[i] is None :
                 del OPs[i]
                 # OPs is an alias not a copy for self.arguments[OPERATORS]
@@ -235,7 +201,6 @@ class _IDXUtil(object):
     
     def _set_idx_sv(self):
         """function to generate a idx_sv list
-
         """
         #generator that returns a row of increasing numbers
         counter=it.count(1)
@@ -248,8 +213,7 @@ class _IDXUtil(object):
         try:
             OPs=self._OPs
         except KeyError:
-            print "set_idx_sv: 'OPERATORS' not set"
-            raise 
+            raise KeyError("set_idx_sv: 'OPERATORS' not set")
         for OP in OPs:
             if OP.find("'")>=0:
                 if OP.replace("'","") in special_OPs:
@@ -292,10 +256,15 @@ class _OPProduct(_IDXUtil,_NumberCollectUtil):
         dictionary.
         """
         self.arguments[OPERATORS]=self._strip_ticks_from_OPs()
+    
 
     def __str__(self):
-        return str(self.arguments[FAC]) + "/" + str(self.arguments[FAC_INV])\
-            + "*<"+"*".join(self.arguments[OPERATORS])+">"
+        ret=""
+        if self.arguments[FAC_INV]!=1:
+            ret=str(self.arguments[FAC])+"/"+str(self.arguments[FAC_INV])+"*"
+        elif self.arguments[FAC]!=1:
+            ret=str(self.arguments[FAC])+"*"
+        return ret + "*".join(self.arguments[OPERATORS])
 
     def _combine_dicts(self,bracket_dict={},other_dict={}):
         """Combines the arguments dictionary with another dict
@@ -339,11 +308,15 @@ class _Bracket(_NumberCollectUtil):
         self.content=""
 
     def __init__(self, string):
+        print(string.display_error)
         self.set_members()
         self.process_string(string)
         self.extract()
 
+    #Functions of the process - extract mechanic
+    # see stf_string_expansion for details
     def process_string(self, string):
+        print(string.this_char)
         string.set_start()
         try:
             string.goto("<")
@@ -371,23 +344,16 @@ class _Bracket(_NumberCollectUtil):
 
 
     def extract(self):
+        print(self.content.extract())
         self.OP_products=map( _OPProduct, self.content.extract())
 
-    def __str__(self):
-        return str(self.arguments[FAC]) + "/" + str(self.arguments[FAC_INV])+"("\
-            +"\n+ ".join(map(str, self.OP_products))+")"
-
-    def _combine_dicts(self,form_dict={}):
-        """Combines the arguments dictionary with another dict
-
-        The foreign dictionary takes precedence, 
-        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
-        """
-        return combine_dicts(form_dict,self.arguments)
-
-
+    #other functions
     def set_rule(self,form_dic={},settle=True):
-        """Invokes set_rule"""
+        """Invokes set_rule of contained objects
+
+        Combines own arguments with formula lvl arguments (from form_dic)
+        and invokes EXPAND_OP_PRODUCT
+        """
         ges_dic=self._combine_dicts(form_dic)
         new=ges_dic.get(NEW,False)
         ret_list=[]
@@ -402,28 +368,60 @@ class _Bracket(_NumberCollectUtil):
     def show(self,form_dic={}):
         return self.set_rule(form_dic,settle=False)
 
-##########################################################################################
-#the surface class Formula for handling formula on the python surface
+    def __str__(self):        
+        ret=""
+        if self.arguments[FAC_INV]!=1:
+            ret=str(self.arguments[FAC])+"/"+str(self.arguments[FAC_INV])+"*"
+        elif self.arguments[FAC]!=1:
+            ret=str(self.arguments[FAC])+"*"
+        return ret + "<\n" + "\n+".join(map(str, self.OP_products))+"\n>"
 
-class _Formula(object):
+    def _combine_dicts(self,form_dict={}):
+        """Combines the arguments dictionary with another dict
+
+        The foreign dictionary takes precedence, 
+        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
+        """
+        return combine_dicts(form_dict,self.arguments)
+
+#    def scan 
+    
+#************************************************************************
+#the surface class Formula for handling formula on the user surface
+
+class _FormulaStringRepUtil(object):
+    """Collection of string representation methods 
+    
+    Collection of methods that represent the Formula as a string or list of strings
+    """
+    def show(self,special_dic={}):
+        """Returns the dictionaries that would be given to EXPAND_OP_PRODUCT"""
+        return self.set_rule(special_dic=special_dic,settle=False)
+
+    def str_short(self):
+        """Returns the original input as string"""
+        return str(self._string)
+        
+    def __str__(self):
+        return self._to_string()
+
+    def _to_string(self):
+        return self._strings()[0]+"\n+ ".join(self._strings()[1:])
+
+    def _strings(self):
+        """Returns the formula as list of strings representing strings """
+        head= [self.arguments[LABEL]+":"+self.arguments[OP_RES]+"="]
+        body=[str(bracket) for bracket in self._content]
+        return head+body
+    
+
+class _Formula( _FormulaStringRepUtil):
     """Base class for all User interfaces"""
 
-
     def set_members(self):
-        self.content=[]
-        self.arguments={NEW:True, FIX_VTX:True}
-        self.string=InputString("")
-        self.new=True
-        self.OP_res=""
-        self.label=""
-
-    def _combine_dicts(self,special_dict={}):        
-        """ Creates a dictionary of the member variables 
- 
-        The dictionary is the basis for all EXPORT_OP_PRODUCT dicts of this formula
-        
-        """
-        return combine_dicts(special_dict,self.arguments)
+        self._content=[]
+        self.arguments={LABEL:None,OP_RES:None,NEW:True, FIX_VTX:True}
+        self._string=InputString("")
 
     def __init__(self):
         self.set_members()
@@ -431,30 +429,49 @@ class _Formula(object):
     def preprocess_string(self,string):
         """ prepares the input for processing
         
-        Removes whitespaces and
-        saves the input as _InputString in self.string
+        Removes whitespaces and converts string to InputString
+        @param string string to be preprocessed
+        @return preprocessed string 
         """
         #remove all white spaces
-        string= re.sub(" ", "",string)
-        self.string=InputString(string)
+        string=_remove_whites(string)
+        return InputString(string)
 
 
-
+    #Functions of the process - extract mechanic
+    # see stf_string_expansion for details
     def process_string(self,string):
+        """processes the string to a hierachy of operation objects
+
+        @param string string to process (should be preprocessed)
+        @return None 
+        """
         while True:
-            self.content.append(_Bracket(self.string))
+            self._content.append(_Bracket(self._string))
             try:
                 string.goto("+")
                 string.next()
             except ValueError:
                 break
 
+    def extract(self):
+        """triggers the extraction of the deeper layers"""
+        for bracket in self._content:
+            bracket.extract()
+
+    #
+    #Methods to invoke EXPAND_OP_PRODUCT
     def set_rule(self,special_dic={},settle=True):
-        """Invokes set_rule of the brackets"""
+        """Invokes set_rule of the brackets
+        
+        @param special_dic dictionary of touples that may overwrite the self.arguments of this instance (default: empty)
+        @param settle for internal use only
+        @return None (the combined dicts if settle is False)
+        """
         ges_dic=self._combine_dicts(special_dic)
         new=ges_dic.get(NEW,True)
         ret_list=[]
-        for bracket in self.content:
+        for bracket in self._content:
             ret_list+=bracket.set_rule(ges_dic,settle=settle)
             ges_dic[NEW]=False
         if settle:
@@ -462,116 +479,160 @@ class _Formula(object):
         else:
             return ret_list
 
-    def show(self,special_dic={}):
-        """Returns the dictionaries that arewould be given to EXPAND_OP_PRODUCT"""
-        return self.set_rule(special_dic=special_dic,settle=False)
-
-    def str_short(self):
-        """Returns the original input as string"""
-        return str(self.string)
-        
-    def __str__(self):
-        return self.strings[0]+"\n+ ".join(self.strings[1:])
-
-    def strings(self):
-        """Returns the formula as list of strings representing strings 
-        
-
+    def _combine_dicts(self,special_dict={}):        
+        """ Creates a dictionary of the member variables 
+ 
+        @return dictionary that is the basis for all EXPORT_OP_PRODUCT dicts of this formula
         """
-        beginning= [self.label+":"+self.OP_res+"="]
-        body=[str(bracket) for bracket in self.content]
-        return beginning+body
+        return combine_dicts(special_dict,self.arguments)
 
-    def extract(self):
-        """ triggert die extraction in the deeper layers"""
-        for bracket in self.content:
-            bracket.extract()
-
-    def append_(self,other):
-        """Appends another _Formula object.
-        
-        With tailing underline so other classes can implement .append and access this method.
+    #Append functionality
+    def _append(self,other):
+        """Appends another formula body either from _Formula or from a string.
         """
-        self.content=self.content+other.content
+        if isinstance(other, _Formula):
+            self._content=self._content+other.content
+            self._string.extend(str(other.string))
+        elif isinstance(other, basestring):
+            interm=_Formula()
+            #relying on the parent class, not GenFormula, 
+            #  to make Formula independent from other interface classes 
+            interm.preprocess_string(other)
+            interm.process_string(interm.string)
+            interm.extract()
+            self._append(interm)
+        elif isinstance(other,list):
+            for member in other:
+                self._append(member)
+        else:
+            raise NotImplementedError
+
+    def append(self,other):
+        """Appending a string or a formula
+
+        @parameter other either a formula (only the body is appended) 
+        or a  string representing a formula body """
+        try:
+            self._append(other)
+        except ExpFormException as ex:
+            quit_error(ex.msg)
+
+
+    #the "remove" functionality
+    ##\todo implemente remove functionality
+
+    #operator overload
+    def __add__(self,other):
+        """Overload the addition to append formula or string to a deepcopy of self
+
+        @param other see this_class.append(other)
+        @return the extended formula
+        """
+        interm=copy.deepcopy(self)
+        interm.append(other)
+        return interm
+
+    def __iadd__(self,other):
+        """Overload increment '+=' with appending
+        
+        @param other see this_class.append(other)
+        @return self with 
+        """
+        self.append(other)
+        return self
 
 
 
+
+# interfaces (classes and functions)
+#
+class GenForm(_Formula):
+    """ Interface for generic formulas"""
+
+    def __init__(self,label=None,OP_res=None,body=None):
+        """The constructor
+
+        @param label LABEL of the formula (can be None)
+        @param OP_res OP_RES of this formula (can be None)
+        @param body body of the formula"""
+        self.set_members()  
+        self._set_values(label,OP_res,body)
+
+    def _set_values(self,label,OP_res,body):
+        """Deal with the arguments of __init__"""
+        if label is not None:
+            self.arguments[LABEL]=label
+        if OP_res is not None:
+            self.arguments[OP_res]=OP_res
+        if body is not None:
+            self._string=self.preprocess_string(body)
+            self.process_string(self._string)
+
+        
 
     
-
-#User interfaces (classes and functions)
-#
 class Formula(_Formula):
-    """Class exposed to user"""
-    def extract_label(self):
+    """Interface for complete formulas """
+
+    def __init__(self,string):
+        """The constructor
+        
+        @param string string of the form 'LABEL:OP_RES=body' """
+        #        try:
+        self.set_members()     
+        self._string=self._preprocess_string(string)
+        self.process_string(self._string)
+        self.extract()
+#        except Exception as ex:
+#            quit_error("string_to_form.py:"+ex.msg)
+#            raise ex
+    def _extract_label(self,string):
         """Extracts the formula label from the input string"""
-        self.string.set_start()
+        string.set_start()
         try: 
-            self.string.goto(":")<0
+            string.goto(":")<0
         except ValueError:
-            raise MissingLabelError("Please precede your formula by <my_label>: ")
-        self.arguments[LABEL]=self.string.substring
+            raise MissingLabelError("Please precede your formula by LABEL: ")
+        self.arguments[LABEL]=string.substring
         if len(self.arguments[LABEL])==0:
             raise MissingLabelError("This formula label is empty")
-        self.string.next()
+        string.next()
+        return string
         
-    def extract_OP_res(self):
-        """Extracts the result operators label from the input string"""
-        self.string.set_start()
+    def _extract_OP_res(self,string):
+        """Extracts the result operator label from the input string"""
+        string.set_start()
         try:
-            self.string.goto("=")
+            string.goto("=")
         except:
             raise MissingOP_ResError("Please precede your formula by"\
                                      "'LABEL:OP_RES=' ")
-        self.arguments[OP_RES]=self.string.substring
+        self.arguments[OP_RES]=string.substring
         if len(self.arguments[OP_RES])==0:
             raise MissingOP_ResError("This result Operator is empty")
-        self.string.next()
+        string.next()
+        return string
         
-    def preprocess_string(self,string):
+    def _preprocess_string(self,string):
         """Preprocesses the input
         
         Removes any whitespaces (including tabs)
         Extracts Formula Label and OP_res
-        Puts input in self.string (as _InputString)
+        converts string to InputString
+        @param string string to be preprocessed
+        @return preprocessed string
         """
-        #remove all (Unicode) white space characters
-        string= re.sub("\s", "",string,flags=re.U)
-        #set string as _InputString
-        self.string=InputString(string)
-        self.extract_label()
-        self.extract_OP_res()
-
-    def __init__(self,string):
-        """The constructor"""
-        self.set_members()     
-        self.preprocess_string(string)
-        self.process_string(self.string)
-        self.extract()
-
-    def append(self,other):
-        if isinstance(other, _Formula):
-            self.append_(other)
-
-        #Are there Problems with unicode strings?
-        elif isinstance(other, basestring):
-            interm=_Formula()
-            interm.preprocess_string(other)
-            interm.process_string(interm.string)
-            interm.extract()
-            self.append_(interm)
-
-        else:
-            raise NotImplemented
+        string=_remove_whites(string) 
+        return self._extract_OP_res(self._extract_label(InputString(string)))
+        
+        
 
 
-def make_dicts(string):
-    thisformula=Formula1(string)
-    thisformula.show()
+
 
 def make_formula(string):
-    thisformula=Formula1(string)
-    thisformula.set_rules()
+    thisformula=Formula(string)
+    thisformula.set_rule()
 
 
 
@@ -581,7 +642,7 @@ def make_formula(string):
 
 
 class Test(object):
-    def test_OP_product(verbose=True):
+    def test_OP_product(self,verbose=True):
         if verbose:
             print("testing _OPProduct")
         try:
@@ -837,7 +898,7 @@ class Test(object):
                 print("all test of _OPProduct were successful")
 
 
-    def test_Bracket(verbose=True):
+    def test_Bracket(self,verbose=True):
         def factory(string):
             return _Bracket(InputString(string))
 
@@ -930,9 +991,11 @@ class Test(object):
         ]
         try_(string,inp,exp_res)
         
+
+        string="<C0^+*(H+1/2V)C0>"
         i=factory(string)
         try:
-            assert str(i) == '1/1(1/1*<H>)'
+            assert str(i) == '<H>'
         except Exception:
             print("Warning _OPProduct.__str__ seems not to be working")
         else:
@@ -940,7 +1003,7 @@ class Test(object):
                 print("all test of _Bracket were successful")
 
 
-    def test_formula(verbose=True):
+    def test_formula(self,verbose=True):
         inp={"LABEL":"F_LAG","OP_RES":"L"}
         exp_res=[{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 1, 'NEW': True, 'IDX_SV': [1]},
 {'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 0.5, 'NEW': False, 'IDX_SV': [1, 2]},
@@ -952,25 +1015,21 @@ class Test(object):
 
 
         i=_Formula()
-        i.preprocess_string("<H>+0.5<[H,T1]>+1/6*<[[H,T1],T1]>")
-        i.process_string(i.string)
+        i._string=i.preprocess_string("<H>+0.5<[H,T1]>+1/6*<[[H,T1],T1]>")
+        i.process_string(i._string)
         assert i.show(inp) == exp_res
 
         print("all tests of _Formula were successful")       
 
         #currently only one test for _Formula. 
-    def test_Formula(verbose=True):
+    def test_Formula(self,verbose=True):
         print("Formula is currently not tested")
     
 
-    def test_all(verbose=True):
-        try:
-            LABEL
-        except NameError: 
-            for i in _g :
-                exec(i +"='"+i+"'" )
-	test_OP_product(verbose)
-        test_Bracket(verbose)
-        test_formula(verbose)
-        test_Formula(verbose)
+    def test_all(self,verbose=True):
+        #if arguments are not defined as variables, define them
+	self.test_OP_product(verbose)
+        self.test_Bracket(verbose)
+        self.test_formula(verbose)
+        self.test_Formula(verbose)
 
