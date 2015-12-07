@@ -363,7 +363,7 @@ C     &       energy
      &                       0,0,0,.false.)
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
-          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-4)
+          thr_suggest = min(xresnrm(1)*opti_info%mic_ahead,1d-3)!1d-4)
           if (spinadapt.gt.0) then
             call solve_evp('SPP',1,ndx,idx,
      &                 'ME_C0',trim(dia_label),'A_C0',

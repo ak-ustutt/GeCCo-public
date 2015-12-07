@@ -59,6 +59,10 @@
      &       irestr2(1:2*orb_info%nspin*orb_info%ngas)
       end if
 
+      ! message on statistics file
+      write(lustat,'(">new fc-map in space ",i1," occ ",i2,",",i2)')
+     &       ityp1, iocc1, iocc2
+
       ifree = mem_setmark('set_fcmap')
 
       if (ityp1.ne.ityp2)

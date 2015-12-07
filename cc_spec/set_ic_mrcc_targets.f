@@ -4030,12 +4030,12 @@ c dbg
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
 !        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
-!        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
-!        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
 c        labels(ndef+1) = 'F_INT_HT2'
 c        labels(ndef+2) = 'F_INT_T2H' 
-!        labels(ndef+1) = 'F_INT_D'
-!        ndef = ndef + 1!3
+        labels(ndef+1) = 'F_INT_D'
+        ndef = ndef + 1!3
 c dbg
         call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
      &               val_label=labels(1:ndef))
