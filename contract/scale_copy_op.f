@@ -1,3 +1,17 @@
+!> Subroutine to scale matrix element lists
+!!
+!!This suroutine has mutiple uses depending on mode. 
+!!+ "":  scales all matrix elements by fac.
+!!+ mult: multiplies the MELs elementwise and ap
+!!+ square: squares all matrix elements and multiplies them by fac.
+!!+ precond: divides label_res elementwise by label_inp and applies fac(1).
+!!+ prc_thresh: sets all elements to at least fac.
+!!
+!!
+!!\param[in] mode one of: "square", "mult", "precond", "prc_thresh",
+!!\param[in] fac list of factors which are applied (repeatedly)
+!!\param[in] op_info
+!!\param[out] label_res
       subroutine scale_copy_op(label_res,label_inp,fac,nfac,mode,nspc,
      &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*

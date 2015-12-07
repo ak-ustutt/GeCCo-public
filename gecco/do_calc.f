@@ -56,7 +56,9 @@
 
       integer, external ::
      &     idx_next_target, idx_target
-      
+
+      logical ::
+     &     print_tgt_graph
 
       ifree = mem_setmark('do_calc')
       
@@ -70,7 +72,7 @@
       call init_target_info(tgt_info)
       call set_command_prototypes(tgt_info,env_type)
       call set_target_list(tgt_info,orb_info,env_type,name_infile,
-     &     fforbinf%name)
+     &     fforbinf)
 
       ! initialize basis info blocks and set memory blocks:
       !  operators:
@@ -150,9 +152,10 @@ c          end do
       end do
 
       write(lulog,*) '... all targets processed!'
-c dbg
-c      call print_target_graph(tgt_info,.true.)
-c dbg end
+
+      call get_argument_value('general','print_tgt_graph',
+     &     lval=print_tgt_graph)
+      if (print_tgt_graph) call print_target_graph(tgt_info,.true.)
      
       ! still a few deallocs missing .... !!      
       call clean_strmap(strmap_info)

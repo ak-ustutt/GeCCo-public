@@ -10,4 +10,8 @@
      &       sbspmat(:)
         integer, pointer ::
      &       iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:)
+        type(optimize_status), pointer ::
+     &       next_state
+        integer ::
+     &       i_state ! Not realy necessary
       end type optimize_status

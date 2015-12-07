@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine init_guess2(nopt,init,nroots,
      &                me_opt,me_trv,me_dia,me_special,nspecial,
-     &                fl_mvp,depend,fl_spc,nspcfrm,
+     &                fl_mvp,depend,fl_spc,nspcfrm,choice,
      &                opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
@@ -13,6 +13,10 @@
 *
 * andreas, may 2014
 *
+* new argument 'choice' added by Pradipta, march 2015
+* 'choice' is used to prefer a particular operator over other for the guess
+* choice = 0 (default), consider both the operator
+* choice = iopt, consider operator iopt, iopt=1,nopt
 *----------------------------------------------------------------------*
       implicit none
 
@@ -38,7 +42,7 @@
      &     i_am = 'init_guess2 '
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial, nspcfrm
+     &     nopt, nroots, nspecial, nspcfrm, choice
       logical, intent(in) ::
      &     init(nopt)
       type(me_list_array), intent(inout) :: 
@@ -86,7 +90,7 @@
 
       if (ntest.gt.100) call write_title(luout,wst_dbg_subr,i_am)
 
-      maxtrials = max(5000,4*nroots)
+      maxtrials = max(1000,4*nroots)
       nout = depend%ntargets
       allocate(xret(nout), isign(nopt), ntrials(nopt))
       allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
@@ -109,7 +113,7 @@ c dbg
 
       call merge_min_lists(xlist_all,idxlist_all,ntrials_all,
      &     xlist,idxlist,
-     &     nopt,maxtrials,ntrials)
+     &     nopt,maxtrials,ntrials,choice)
 
       ! read from file?
       read_in = .false.

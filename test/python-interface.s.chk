@@ -14,6 +14,30 @@ check
   compare str 4
   compare str 5
   compare str 6
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
+check
+  rewind
+  label Is keyword set
+  find Is keywort set
+  find calculate.interfaces
+  compare str 2
+  find method.R12
+  compare str 2
+check
+  rewind
+  label Python warnings
+  find Warning from
+  compare str 4
+  find Warning from
+  compare str 4
+  find Warning from
+  compare str 4
+  compare str 5
+  compare str 6
+  compare str 7
 check
   label Final energy
   find final energy

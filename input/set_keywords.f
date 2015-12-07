@@ -10,7 +10,7 @@ c      use parse_input
      &     ntest = 00
 
       integer ::
-     &     iprint
+     &     iprint, i
 
       iprint = max(ntest,iprlvl)
 
@@ -29,6 +29,8 @@ c      use parse_input
      &     ldef=(/.true./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
+      call argument_add('print_tgt_graph',context='general',
+     &     type=vtyp_log, ldef=(/.false./))
 
       call keyword_add('orb_space')
       call keyword_add('shell',context='orb_space')
@@ -172,6 +174,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &                  idef=(/-1/))  ! max trial roots for wf
       call argument_add('ciroot','method.MR',type=vtyp_int,
      &                  idef=(/1/))  ! root to be taken for wf
+      call argument_add('multistate','method.MR',type=vtyp_log,
+     &                  ldef=(/.false./))  ! multi state version
       call argument_add('minh','method.MR',type=vtyp_int,
      &                  idef=(/0/))  ! min. number of holes
       call argument_add('maxh','method.MR',type=vtyp_int,
@@ -235,6 +239,94 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('spinexpec','method.MR',type=vtyp_int,
      &                  idef=(/0/)) ! (0=off)
 
+
+
+!---------------------------------------------------------------------------
+      ! special keywords for multireference wave functions
+      call keyword_add('MR_P',context='method')
+!      call argument_add('cminh','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! min. number of holes for wf
+!      call argument_add('cmaxh','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of holes for wf
+!      call argument_add('cminp','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! min. number of particles for wf
+!      call argument_add('cmaxp','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of particles for wf
+!      call argument_add('cmaxexc','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! max. excitation for wf
+!      call argument_add('cminexc','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! min. excitation for wf
+      call argument_add('maxroot','method.MR_P',type=vtyp_int,
+     &                  idef=(/-1/))  ! max trial roots for wf
+      call argument_add('ciroot','method.MR_P',type=vtyp_int,
+     &                  idef=(/1/))  ! root to be taken for wf
+!      call argument_add('multistate','method.MR_P',type=vtyp_log,
+!     &                  ldef=(/.false./))  ! multi state version
+!      call argument_add('minh','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! min. number of holes
+!      call argument_add('maxh','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of holes
+!      call argument_add('minp','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/))  ! min. number of particles
+!      call argument_add('maxp','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of particles
+!      call argument_add('maxv','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of valence ops
+!      call argument_add('maxvv','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/)) ! max. number of val-val exc.
+!      call argument_add('maxexc','method.MR_P',type=vtyp_int,
+!     &                  idef=(/2/))  ! max. excitation
+!      call argument_add('minexc','method.MR_P',type=vtyp_int,
+!     &                  idef=(/1/))  ! min. excitation
+!      call argument_add('pure_vv','method.MR_P',type=vtyp_log,
+!     &                  ldef=(/.false./)) ! pure act.-act. excitations
+!      call argument_add('excrestr','method.MR_P',type=vtyp_int,len=6,
+!     &                  idef=(/-1,-1,-1,-1,-1,-1/)) ! restr. exc. in T
+!      call argument_add('triples','method.MR_P',type=vtyp_str,len=1,
+!     &                  cdef=(/'b'/)) ! triples model (F: full)
+!      call argument_add('GNO','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/)) ! 1 for generalized normal order
+!      call argument_add('maxcum','method.MR_P',type=vtyp_int,
+!     &                  idef=(/-1/))  ! max. cumulant rank
+!      call argument_add('cum_appr_mode','method.MR_P',type=vtyp_int,
+!     &                  idef=(/3/))  ! cumulant approximation mode
+!      call argument_add('oldref','method.MR_P',type=vtyp_log,
+!     &                  ldef=(/.false./)) ! use existing CASSCF coeff.
+!      call argument_add('prc_type','method.MR_P',type=vtyp_int,
+!     &                  idef=(/3/)) ! type of preconditioner
+!      call argument_add('prc_shift','method.MR_P',type=vtyp_rl8,
+!     &                  xdef=(/0d0/))
+!      call argument_add('prc_impfac','method.MR_P',type=vtyp_rl8,
+!     &                  xdef=(/1d0/))
+!      call argument_add('prc_iter','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/)) ! #iter for iterative improvement
+!      call argument_add('prc_min','method.MR_P',type=vtyp_rl8,
+!     &                  xdef=(/0.2d0/))
+!      call argument_add('project','method.MR_P',type=vtyp_int,
+!     &     idef=(/3/)) ! project out singles from doubles a.s.o.
+!      call argument_add('svdonly','method.MR_P',type=vtyp_log,
+!     &                  ldef=(/.false./)) ! stop after first SVD
+      call argument_add('mult','method.MR_P',type=vtyp_int,
+     &                  idef=(/0/))  ! spin multiplicity (0: interface)
+      call argument_add('ms','method.MR_P',type=vtyp_int,
+     &                  idef=(/123456789/))  ! Ms
+      call argument_add('sym','method.MR_P',type=vtyp_int,
+     &                  idef=(/0/))  ! symmetry (0: read fr. interface)
+!      call argument_add('writeFock','method.MR_P',type=vtyp_log,
+!     &                  ldef=(/.false./))
+!      call argument_add('prc_traf','method.MR_P',type=vtyp_log,
+!     &     ldef=(/.true./)) ! extra unitary trafo based on prec. matrix
+!      call argument_add('guess','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/)) ! if >0: use previous C0 as guess
+!      call argument_add('densmix','method.MR_P',type=vtyp_rl8,
+!     &                  xdef=(/0d0/))
+!      call argument_add('refproj','method.MR_P',type=vtyp_int,
+!     &                  idef=(/0/)) ! project out ref. functions
+      call argument_add('spinexpec','method.MR_P',type=vtyp_int,
+     &                  idef=(/0/)) ! (0=off)
+!--------------------------------------------------------------------------------------
+
+
       call keyword_add('MRCI',context='method')
       call argument_add('nroots','method.MRCI',type=vtyp_int,
      &                  idef=(/1/))  ! number of roots (for ic-MRCI)
@@ -244,6 +336,21 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     idef=(/2/))
       call argument_add('maxcom_en','method.MRCC',type=vtyp_int,
      &     idef=(/2/))
+      call argument_add('coupled_states','method.MRCC',type=vtyp_log,
+     &     ldef=(/.true./))     ! coupled states
+      call argument_add('maxcom_res_cpl','method.MRCC',type=vtyp_int,
+     &     idef=(/2/))
+      call argument_add('maxcom_en_cpl','method.MRCC',type=vtyp_int,
+     &     idef=(/2/))
+      call argument_add('type','method.MRCC',
+     &     type=vtyp_str,len=2,
+     &     cdef=(/'S','U'/))
+      call argument_add('req_state','method.MRCC',type=vtyp_int,
+     &     idef=(/1/))          ! desired state for SS-MRCCs
+      call argument_add('assume_orth','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
+      call argument_add('Heff_symm','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
       call argument_add('maxtt','method.MRCC',type=vtyp_int,
      &     idef=(/-1/))
       call argument_add('G_level','method.MRCC',type=vtyp_int,
@@ -270,6 +377,8 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &            0,0,0,0,0,0/))
       call argument_add('trunc_ham','method.MRCC',type=vtyp_int,len=5,
      &     idef=(/0,0,1,1,1/))
+      call argument_add('rept_ham','method.MRCC',type=vtyp_int,
+     &     idef=(/0/))
       call argument_add('Tfix','method.MRCC',type=vtyp_int,
      &     idef=(/0/)) ! read in fixed T with max. rank Tfix
       call argument_add('T1ord','method.MRCC',type=vtyp_int,
@@ -280,11 +389,25 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
      &     ldef=(/.false./)) ! evaluate 3-body dens matrix for transforming T3
       call argument_add('Favg_fix','method.MRCC',type=vtyp_log,
      &     ldef=(/.false./))
+      call argument_add('set_up_T_corr','method.MRCC',type=vtyp_log,
+     &     ldef=(/.false./))
 
       call keyword_add('excite',context='method.MRCC')
       call argument_add('method','method.MRCC.excite',
      &     type=vtyp_str,len=8,
      &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
+
+      call keyword_add('MRCC2',context='method')
+      call argument_add('lagrangian','method.MRCC2',type=vtyp_int,
+     &                  idef=(/0/)) ! type of lagrangian
+      call argument_add('hamiltonian','method.MRCC2',
+     &     type=vtyp_str,len=4,
+     &     cdef=(/'D','Y','A','L','L'/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
+
+      call keyword_add('MRCCPT2',context='method')
+      call argument_add('hamiltonian','method.MRCCPT2',
+     &     type=vtyp_str,len=4,
+     &     cdef=(/'D','Y','A','L','L'/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
 
       ! Truncations (obsolete)
       call keyword_add('truncate',context='method')
@@ -379,6 +502,9 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('resume','calculate.solve.eigen',
      &     type=vtyp_log,
      &     ldef=(/.true./)) ! resume with last vec. as initial guess
+      call argument_add('guess','calculate.solve.eigen',
+     &     type=vtyp_int,
+     &     idef=(/0/))
 
       call keyword_add('CC_solve_tbar',context='calculate')
       call keyword_add('CC_solve_sim',context='calculate')
@@ -400,7 +526,7 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('msc','calculate.excitation',
      &     type=vtyp_int,len=1,idef=(/0/))
       call argument_add('mult','calculate.excitation',
-     &     type=vtyp_int,len=1,idef=(/0/))
+     &     type=vtyp_int,len=1,idef=(/1/))
       call keyword_add('normalize',context='calculate.excitation')
       call keyword_add('analyze',context='calculate.excitation')
 
@@ -449,6 +575,12 @@ c     &     idef=(/0/))
      &     idef=(/-1/)) ! spin projection (=3 for non-singlet MRCC)
                         ! (1: C0,2: C0 & T, 3: C0 & T & RDMs,A)
 
+      call keyword_add('class',context='calculate')
+      call argument_add('hpclass','calculate.class',type=vtyp_int,len=2,
+     &                  idef=(/-1,-1/)) ! ih,ip
+      call argument_add('sv_thr_hp','calculate.class',type=vtyp_rl8,
+     &                  xdef=(/1d-5/)) ! sv_thr for this particular oih,ip
+
       ! special keywords for response theory
       call keyword_add('response',context='method')
       call argument_add('order','method.response',type=vtyp_int,
@@ -469,6 +601,15 @@ c     &     idef=(/0/))
       call keyword_add('experimental',context='calculate')
       call argument_add('file','calculate.experimental',
      &     type=vtyp_str,len=256)
+
+      call keyword_add('interfaces',context='calculate')
+      call argument_add('file','calculate.interfaces',
+     &     type=vtyp_str,len=256)
+
+      call keyword_add('reference',context='calculate')
+      call argument_add('def','calculate.reference',type=vtyp_rl8,
+     &     len=30,
+     &     xdef=[(0.0d0, i=1,30)])
 
       ! set additional experimental keyword in this subroutine:
       call set_experimental_keywords()

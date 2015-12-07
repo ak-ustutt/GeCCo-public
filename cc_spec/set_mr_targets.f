@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine set_mr_targets(tgt_info,orb_info,env_type)
+      subroutine set_mr_targets(tgt_info,orb_info,env_type,
+     &     name_infile,fforbinf)
 *----------------------------------------------------------------------*
 *     calls target generators for multireference methods
 *
@@ -12,6 +13,7 @@
       include 'mdef_target_info.h'
       include 'def_orbinf.h'
       include 'opdim.h'
+      include 'def_filinf.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -22,14 +24,26 @@
      &     orb_info
       character(len=*), intent(in) ::
      &     env_type
+      type(filinf), intent(in) ::
+     &     fforbinf
+      character(*), intent(in) ::
+     &     name_infile
 
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12,response
+     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate,
+     &     set_up_T_corr,skip
       integer, allocatable ::
      &     excrestr(:,:,:)
 
+      integer ::
+     &     stndD(2,60), nsupD, nremblk, remblk(60), len
+      character(len=256) ::
+     &     gecco_path
+      
+
+      skip = (is_keyword_set('calculate.skip_E').gt.0)
       ! redefine spin/symmetry of reference state (if requested)
       call get_argument_value('method.MR','mult',
      &     ival=mult)
@@ -57,11 +71,28 @@
      &           'impossible symmetry')
       end if
 
+      ! print orbital informations (after get it changed from input)
+
+      call put_orbinfo(orb_info, fforbinf)
+
+      call get_argument_value('method.MR','multistate',
+     &     lval=multistate)
+
+      call get_argument_value('method.MRCC','set_up_T_corr',
+     &     lval=set_up_T_corr)
+
       ! get maximum excitation rank
       call get_argument_value('method.MR','maxexc',
      &     ival=maxexc)
       call get_argument_value('method.MR','cmaxexc',
      &     ival=cmaxexc)
+
+      call get_environment_variable( "GECCO_DIR", value=gecco_path,
+     &     length = len)
+
+      if (len.EQ.0)
+     &     call quit(1,'set_mr_targets',
+     &     "Please, set the GECCO_DIR environment variable.")
 
       ! icMRCI calculation?
       l_icci = is_keyword_set('method.MRCI').gt.0
@@ -95,7 +126,8 @@
 
       ! first set targets for CASSCF or uncontracted CI wave function
       call set_unc_mrci_targets(tgt_info,orb_info,
-     &                          .not.(l_icci.or.l_iccc))
+     &                          .not.((l_icci.or.l_iccc).or.skip),
+     &                          name_infile,fforbinf%name)
 c dbg for calculating cumulants
 c      call set_gno_targets(tgt_info,orb_info,1)
 c dbgend
@@ -137,17 +169,32 @@ c dbgend
 
       ! set targets common for internally contracted methods
       call set_ic_mr_targets(tgt_info,orb_info,
-     &                       excrestr,maxh,maxp,use_met)
+     &                       excrestr,maxh,maxp,use_met,
+     &                       nsupD,stndD,nremblk,remblk)
 
       ! set icMRCI or icMRCC targets
       if (l_icci) call set_ic_mrci_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp,use_met)
       if (l_iccc) call set_ic_mrcc_targets(tgt_info,orb_info,
-     &                       excrestr,maxh,maxp,.not.use_f12)
+     &                       excrestr,maxh,maxp,.not.use_f12,
+     &                       nsupD,stndD,nremblk,remblk,
+     &                       name_infile,fforbinf%name)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
-      if (response) call set_ic_mrcc_response_targets(tgt_info,orb_info)
-       deallocate(excrestr)
+      if (response) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/icmrcc_ee_targets.py",
+     &     name_infile,fforbinf%name)
+      deallocate(excrestr)
+
+      if (multistate) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/multistate_eff_ham.py",
+     &     name_infile,fforbinf%name)
+
+      if (set_up_T_corr) call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/cc_spec/set_up_T_corr.py",
+     &     name_infile,fforbinf%name)
+
+
 
       return
       end

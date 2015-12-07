@@ -96,7 +96,9 @@
         call write_title(lulog,wst_title,
      &       'norms/values of output operators')
         do iout = 1, nout
-          write(lulog,'(">>>",1x,i4," --> ",g20.14)') iout, xret(iout)
+          write(lulog,'(">>>",1x,i4," --> ",g20.14,x,"(",a,")")')
+     &        iout, xret(iout), trim(label_form)
+
         end do
       end if
 

@@ -80,7 +80,10 @@ c     &         loop(iocc_cls) = .true.
           nbuff = nbuff+mel_inp%len_op_occ(iocc_cls)
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffinp,buffer_in,1,nbuff)
+        call get_vec(ffinp,buffer_in,1
+     &       + ffinp%length_of_record*(ffinp%current_record-1),
+     &       nbuff
+     &       + ffinp%length_of_record*(ffinp%current_record-1))
       else
         if(ntest.ge.100)
      &       write(lulog,*)'Invert: input not incore'
@@ -193,7 +196,10 @@ c     &         loop(iocc_cls) = .true.
       enddo out_loop
 
       if(.not.bufout)then
-        call put_vec(ffinv,buffer_out,1,nbuff)
+        call put_vec(ffinv,buffer_out,1
+     &      + ffinv%length_of_record*(ffinv%current_record-1),
+     &      nbuff
+     &      + ffinv%length_of_record*(ffinv%current_record-1))
       endif  
 
       ifree = mem_flushmark('invert')

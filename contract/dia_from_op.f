@@ -190,7 +190,9 @@ c           ad hoc: add scalar contrib. only to purely inactive blks
             ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
             ifree = mem_alloc_real(buffer_out,lenblkout,'buffer_out') 
             ioffinp = meinp%off_op_occ(i_occ_cls)
+     &       +ffinp%length_of_record*(ffinp%current_record-1)
             ioffout = meout%off_op_occ(iblkout)
+     &       +ffout%length_of_record*(ffout%current_record-1)
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
             if (extend.and..not.zero_dia) then ! no reset of output, only add!
               call get_vec(ffout,buffer_out,ioffout+1,ioffout+lenblkout)

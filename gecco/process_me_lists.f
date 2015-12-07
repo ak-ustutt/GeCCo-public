@@ -229,6 +229,7 @@ c dbg
      &       rule%labels(2*nopt+1:2*nopt+nopt), ! precond.
      &       rule%labels(3*nopt+1),             ! energy
      &       rule%labels(3*nopt+2),             ! formula
+     &       1,       !  nroots,  !! ATTENTION !! is it fine?
      &       rule%labels(3*nopt+ioff+1:
      &                   3*nopt+ioff+nspecial),
      &          nspecial,
@@ -291,7 +292,7 @@ c dbg
      &                   4*nopt+ioff+nspecial),nspecial,
      &       rule%labels(3*nopt+ioff+1:         ! spec. form.
      &                   3*nopt+ioff),
-     &          0,0d0,
+     &          0,0d0,0,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 
       case(SET_FREQ)

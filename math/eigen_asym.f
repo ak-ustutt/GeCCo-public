@@ -1,9 +1,17 @@
 *----------------------------------------------------------------------*
       subroutine eigen_asym(ndim,xmat,eigr,eigi,vecs,xscr,ierr)
 *----------------------------------------------------------------------*
-*     wrapper for eispack call
+*     Solve the eigenvalue problem for an asymmetric matrix
+*     Wrapper for eispack call
 *     covers some ordering and renormalization issues as needed
 *     in GeCCo
+*
+*     xmat -> matrix to be diagonalised
+*     eigr -> real part of the resulting eigenvalues
+*     eigi -> imaginary part of the resulting eigenvalues
+*     vecs -> resulting eigenvectors
+*     xscr -> scratch variable (?)
+*     ierr -> error
 *----------------------------------------------------------------------*
       implicit none
 

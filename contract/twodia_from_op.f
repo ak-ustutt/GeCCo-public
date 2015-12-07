@@ -133,7 +133,10 @@ c      nblk = 0
      &         'idxrec inconsistent for file '//trim(ffop%name))
           buffer => ffop%buffer(idxbuf:)
         else
-          call get_vec(ffop,buffer,ioff_blk+1,ioff_blk+ilen_blk)
+          call get_vec(ffop,buffer,ioff_blk+1
+     &        + ffop%length_of_record*(ffop%current_record-1),
+     &        ioff_blk+ilen_blk
+     &        + ffop%length_of_record*(ffop%current_record-1))
         endif
 
         if (ntest.ge.100) then

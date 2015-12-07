@@ -24,7 +24,9 @@
       character ::
      &     str*16
       integer ::
-     &     ifree, iopt, ioff
+     &     ifree, iopt, ioff, n_states, ciroot
+      logical ::
+     &     multistate
 
       integer, external ::
      &     ndisblk_mel
@@ -104,7 +106,20 @@
         case default
           call quit(0,'set_opti','invalid method: '//trim(str))
         end select
-      
+
+        call get_argument_value('method.MR','ciroot',
+     &       ival=ciroot)
+        call get_argument_value('method.MR','multistate',
+     &       lval=multistate)
+        if(multistate)then
+         n_states = ciroot
+         if(n_states.lt.2)
+     &        call quit(1,'set_ic_mrcc_targets',
+     &        'Please, do not use multistate=T for one state!')
+        else
+         n_states = 1
+        end if
+
         call get_argument_value('calculate.solve.non_linear','tr_ini',
      &       xval=opti_info%trini)
 
@@ -116,7 +131,7 @@
         call get_argument_value('calculate.solve.non_linear',
      &       'preopt',
      &       lval=opti_info%skip_resx)
-        opti_info%skip_resx = opti_info%skip_resx.and.nopt.eq.1
+        opti_info%skip_resx = opti_info%skip_resx.and.nopt.eq.n_states
 
         call get_argument_value('calculate.solve.non_linear',
      &       'mic_ahead',
@@ -216,6 +231,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_mixed
         case('TRF') 
           opti_info%typ_prc(iopt) = optinf_prc_traf
+        case('TR0') 
+          opti_info%typ_prc(iopt) = optinf_prc_traf_spc
         case('IH0') 
           opti_info%typ_prc(iopt) = optinf_prc_invH0
         case('NRM')

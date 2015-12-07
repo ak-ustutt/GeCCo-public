@@ -88,7 +88,7 @@ c            xnrm2 = xnrm2 +
      &          call quit(1,'blk_norm_for_list','incompatible lists!')
             xnrm_cur =    ddot(melist_a%len_op_occ(iblk),
      &           ffopa%buffer(melist_a%off_op_occ(iblk)+1),1,
-     &           ffopb%buffer(melist_a%off_op_occ(iblk)+1),1)
+     &           ffopb%buffer(melist_b%off_op_occ(iblk)+1),1)
             xnorm(jblk) = xnrm_cur !sqrt(xnrm_cur)
             xnrm2 = xnrm2 + xnrm_cur
           else if((ffopa%incore(iblk).gt.0.and.ffopb%incore(iblk).eq.0)

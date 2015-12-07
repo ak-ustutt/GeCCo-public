@@ -21,6 +21,9 @@
 *       /0 0 x 0\
 *       \0 0 0 0/
 *
+*     IMPORTANT NOTE: At present the sequence matters (for project!=1):          
+*        e.g.  (,V;V,V;V,) then (,V;V,;,) then (,;,V;V,) and then (,;,;,)
+*
 *     matthias, dec 2009 (adopted from invert.f)
 *----------------------------------------------------------------------*
 
@@ -90,7 +93,7 @@ c dbgend
      &     rankdim(maxrank), rankoff(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
-     &     krank, idxst3, idxnd3, rdim3
+     &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec
       real(8) ::
      &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
@@ -192,6 +195,8 @@ c dbgend
 
       ! Allocations made to maximum block length to save time.
       if(.not.bufin)then
+        curr_rec=ffinp%current_record
+        len_rec =ffinp%length_of_record
         nbuff = 0
         do iocc_cls = 1, nocc_cls
           if(op_inp%formal_blk(iocc_cls))
@@ -200,7 +205,8 @@ c dbgend
           nbuff = nbuff+mel_inp%len_op_occ(iocc_cls)
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
-        call get_vec(ffinp,buffer_in,1,nbuff)
+        call get_vec(ffinp,buffer_in,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       else
         if(ntest.ge.100)
      &       write(lulog,*)'Invert: input not incore'
@@ -664,6 +670,8 @@ c dbgend
           ndim = 0
           nrank = 0
           ! loops over coupling blocks. Must be in correct order!
+          ! it seems: all lower rank coupling blocks are expected behind this block
+          !       e.g. after (,V;V,V;V,) we have to have (,V;V,;,), (,;,V;V,) and (,;,;,)
           jocc_cls = iocc_cls
           jblkoff = (jocc_cls-1)*njoined
           na1 = na1mx
@@ -801,6 +809,8 @@ c           ndim = 0
              rankoff(1) = 0
              if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
           else if (ndim.ne.rankoff(1)+rankdim(1)) then
+            write(lulog,'(1x,a,3i12)') 
+     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff(1),rankdim(1)
             call quit(1,'invsqrt','dimensions don''t add up!')
           end if
 
@@ -1167,7 +1177,7 @@ c dbgend
 c dbg
 c            if (ntest.ge.100) then
 c              write(lulog,*) 'initial overlap matrix:'
-c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
 c dbg
@@ -1253,7 +1263,7 @@ c dbgend
              end do
              if (ntest.ge.100) then
                write(lulog,*) 'Projector for removing lower-rank exc.:'
-               call wrtmat2(proj,rdim,rdim,rdim,rdim)
+               call wrtmat3(proj,rdim,rdim,rdim,rdim)
              end if
              ! Apply projector to current metric block
              ! (a) Q^+*S
@@ -1278,7 +1288,7 @@ c dbg
      &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
                if (ntest.ge.100) then
                  write(lulog,*) 'Projected off-diagonal block:'
-                 call wrtmat2(scratch(idxst:idxnd,idxnd+1:ndim),
+                 call wrtmat3(scratch(idxst:idxnd,idxnd+1:ndim),
      &                        rdim,ndim-idxnd,rdim,ndim-idxnd)
                end if
                if (any(abs(scratch(idxst:idxnd,idxnd+1:ndim)).gt.1d-12))
@@ -1459,7 +1469,7 @@ c dbgend
               scratch(idxst:idxnd,idxst:idxnd) = scratch4
               if (ntest.ge.100) then
                 write(lulog,*) 'Trafo matrix:'
-                call wrtmat2(scratch(idxst:idxnd,idxst:idxnd),
+                call wrtmat3(scratch(idxst:idxnd,idxst:idxnd),
      &                       rdim,rdim,rdim,rdim)
               end if
               if (.not.half) then
@@ -1470,7 +1480,7 @@ c dbgend
                 scratch2(idxst:idxnd,idxst:idxnd) = scratch4
                 if (ntest.ge.100) then
                   write(lulog,*) 'Projector matrix:'
-                  call wrtmat2(scratch2(idxst:idxnd,idxst:idxnd),
+                  call wrtmat3(scratch2(idxst:idxnd,idxst:idxnd),
      &                         rdim,rdim,rdim,rdim)
                 end if
               end if
@@ -1516,7 +1526,7 @@ c     &        blk_redundant(iocc_cls+irank-1)
 c dbg
 c            if (ntest.ge.100) then
 c              write(lulog,*) 'final transformation matrix:'
-c              call wrtmat2(scratch,ndim,ndim,ndim,ndim)
+c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
 c dbgend
 
@@ -1854,13 +1864,22 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       deallocate(blk_redundant)
 
       if(.not.bufout)then
-        call put_vec(ffinv,buffer_out,1,nbuff)
+        curr_rec=ffinv%current_record
+        len_rec =ffinv%length_of_record
+        call put_vec(ffinv,buffer_out,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       endif  
       if(.not.bufin.and.(.not.half.or.lmodspc))then
+        curr_rec=ffinp%current_record
+        len_rec =ffinp%length_of_record
         ! return projector matrix on input list
-        call put_vec(ffinp,buffer_in,1,nbuff)
+        call put_vec(ffinp,buffer_in,(curr_rec-1)*len_rec+1,
+     &       (curr_rec-1)*len_rec+nbuff)
       endif
-      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,1,nbuff)
+      curr_rec=ffu%current_record
+      len_rec =ffu%length_of_record
+      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,
+     &     (curr_rec-1)*len_rec+1,(curr_rec-1)*len_rec+nbuff)
 
       ifree = mem_flushmark('invsqrt')
 

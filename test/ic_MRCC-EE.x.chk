@@ -1,0 +1,30 @@
+title
+  CH2/MINI; DALTON env.: ic-MRCCD LR (2 el. in 2 act. orb.)
+molecule
+  CH2-MINI-DALTON
+input
+  ic_MRCC-EE.inp
+check
+  label Number of terms of Lagrangian
+  find F_MRCC_LAG
+  find wrote
+  compare int 2
+check
+  label No of terms
+  find F_AR_rspns_q
+  find read
+  compare int 2
+  find read
+  compare int 2
+check
+  label excitation energy 
+  find CONVERGED
+  find E>>    1
+  compare real 3 1e-10
+  compare real 5 1e-10
+check
+  label NORM
+  find ANALYZE_MEL
+  find VV
+  compare real 3 1e-10
+end

@@ -78,7 +78,8 @@
       use_x1 = .false.
       use_id = .false.
       use_h2 = .false.
-      use_shift = .false.
+c      use_shift = .false.
+      use_shift = shift.ne.0d0
       select case(trim(mode_str))
       case('','dia-F')
         use_h = .true.
@@ -157,7 +158,7 @@
         open_close_ham = me_ham%fhand%unit.le.0
       end if
 
-      if (use_b.or.use_shift) then
+      if (use_b) then!.or.use_shift) then
         idx_b = idx_mel_list(label_inp(2),op_info)
         if (idx_b.lt.0) then
           call quit(1,'set_prc4op',
@@ -247,8 +248,10 @@ c     &     ifree = mem_alloc_real(h1dia,2*orb_info%ntoob,'h1dia')
      &     call file_open(me_x%fhand)
 
       ! extract diagonal from one-particle density
-      if (use_shift)
+      if (use_shift.and.use_b)
      &     call onedia_from_op(d1dia,ecore,me_b,.false.,orb_info)
+      if (use_shift.and..not.use_b)
+     &     d1dia = 1d0
       ! extract the fock-matrix diagonal
       if (use_h)
      &     call onedia_from_op(h1dia,ecore,me_ham,.true.,orb_info)

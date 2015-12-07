@@ -4,6 +4,7 @@
      &                   energy,xngrd,
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
+     &                   n_states,
      &                   me_special,nspecial,
      &                   fspc,nspcfrm,
      &                   opti_info,opti_stat,
@@ -96,10 +97,10 @@
      &     imacit, imicit, imicit_tot
 
       real(8), intent(inout) ::
-     &     energy, xngrd(*)
+     &     energy(0:*), xngrd(*)
 
       integer, intent(in) ::
-     &     nspecial
+     &     nspecial, n_states
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_grd(*), me_dia(*), me_special(nspecial),
@@ -107,7 +108,7 @@
       
       type(optimize_info), intent(in) ::
      &     opti_info
-      type(optimize_status), intent(inout) ::
+      type(optimize_status), intent(inout), target ::
      &     opti_stat
       
 *     buffers for incore/out-of-core work:
@@ -121,7 +122,7 @@
       logical ::
      &     lexit, lconv
       integer ::
-     &     iprint, iroute, ifree, iopt
+     &     iprint, iroute, ifree, iopt, i_state
       real(8) ::
      &     de, cpu, sys, wall, cpu0, sys0, wall0
 
@@ -208,6 +209,7 @@
      &       task,iroute,opti_info%nopt,
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
+     &       n_states,
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,
@@ -215,7 +217,7 @@
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
-        de = opti_stat%energy_last - energy
+        de = opti_stat%energy_last - energy(0)
 
       else
 *======================================================================*
@@ -296,7 +298,7 @@ c          imicit_tot = imicit_tot - 1
 
 c          if (opti_info%norder.eq.2.and.imicit.eq.0) itransf = 1
 c          call optc_prepnext()
-          opti_stat%energy_last = energy
+          opti_stat%energy_last = energy(0)
           task = 3
           
         else 
@@ -449,22 +451,31 @@ c      include 'stdunit.h'
      &     name*64
       integer ::
      &     lenord, lenmat
+      type(optimize_status), pointer ::
+     &     c_opti_stat
+
+      c_opti_stat => opti_stat
 
 * open internal files
-      if (iroute.ge.1) then
-        allocate(opti_stat%ffrsbsp(opti_info%nopt),
-     &       opti_stat%ffvsbsp(opti_info%nopt))
+      do i_state = 1,n_states
+
+      allocate(c_opti_stat%next_state)
+      c_opti_stat%i_state = i_state
+
+      if (iroute.ge.1.and.i_state.eq.1) then
+        allocate(c_opti_stat%ffrsbsp(opti_info%nopt),
+     &       c_opti_stat%ffvsbsp(opti_info%nopt))
         do iopt = 1, opti_info%nopt
-          allocate(opti_stat%ffrsbsp(iopt)%fhand)
-          allocate(opti_stat%ffvsbsp(iopt)%fhand)
+          allocate(c_opti_stat%ffrsbsp(iopt)%fhand)
+          allocate(c_opti_stat%ffvsbsp(iopt)%fhand)
           write(name,'("resd_sbsp",i2.2,".da")') iopt
-          call file_init(opti_stat%ffrsbsp(iopt)%fhand,
+          call file_init(c_opti_stat%ffrsbsp(iopt)%fhand,
      &         trim(name),ftyp_da_unf,lblk_da)
           write(name,'("vect_sbsp",i2.2,".da")') iopt
-          call file_init(opti_stat%ffvsbsp(iopt)%fhand,
+          call file_init(c_opti_stat%ffvsbsp(iopt)%fhand,
      &         trim(name),ftyp_da_unf,lblk_da)
-          call file_open(opti_stat%ffrsbsp(iopt)%fhand)
-          call file_open(opti_stat%ffvsbsp(iopt)%fhand)
+          call file_open(c_opti_stat%ffrsbsp(iopt)%fhand)
+          call file_open(c_opti_stat%ffvsbsp(iopt)%fhand)
         end do
       end if
 
@@ -484,30 +495,36 @@ c      include 'stdunit.h'
         lenord = 0
       end if
 
-      opti_stat%mxdim_sbsp = lenord
+      c_opti_stat%mxdim_sbsp = lenord
 
       if (lenmat.gt.0) then
-        ifree = mem_alloc_real(opti_stat%sbspmat,lenmat,'sbspmat')
-        ifree = mem_alloc_int (opti_stat%iord_rsbsp,lenord,'iord_rsbsp')
-        ifree = mem_alloc_int (opti_stat%iord_vsbsp,lenord,'iord_vsbsp')
-        opti_stat%iord_rsbsp(1:lenord) = 0
-        opti_stat%iord_vsbsp(1:lenord) = 0
+        ifree = mem_alloc_real(c_opti_stat%sbspmat,lenmat,'sbspmat')
+        ifree = mem_alloc_int
+     &       (c_opti_stat%iord_rsbsp,lenord,'iord_rsbsp')
+        ifree = mem_alloc_int
+     &       (c_opti_stat%iord_vsbsp,lenord,'iord_vsbsp')
+        c_opti_stat%iord_rsbsp(1:lenord) = 0
+        c_opti_stat%iord_vsbsp(1:lenord) = 0
       end if
 
 * initialize variables
-      opti_stat%ndim_rsbsp = 0
-      opti_stat%ndim_vsbsp = 0
+      c_opti_stat%ndim_rsbsp = 0
+      c_opti_stat%ndim_vsbsp = 0
 
-      opti_stat%trrad = opti_info%trini
-      opti_stat%energy_last = 0d0
+      c_opti_stat%trrad = opti_info%trini
+      c_opti_stat%energy_last = 0d0
 
 * init 2nd-order solver
       if (opti_info%norder.eq.2) then
         ! begin with Newton-eigenvector method ...
-        opti_stat%mode_2nd = 2
+        c_opti_stat%mode_2nd = 2
         ! ... and a gamma of 1
-        opti_stat%gamma = 1d0 
+        c_opti_stat%gamma = 1d0
       end if
+
+      c_opti_stat => c_opti_stat%next_state
+
+      end do
 
       return
       end subroutine
@@ -522,6 +539,9 @@ c      implicit none
       integer ::
      &     iopt
 
+      type(optimize_status), pointer ::
+     &     c_opti_stat, c_opti_stat_2
+
       if (iroute.ge.1) then
         do iopt = 1, opti_info%nopt
           call file_delete(opti_stat%ffvsbsp(iopt)%fhand)
@@ -531,6 +551,13 @@ c      implicit none
         end do
         deallocate(opti_stat%ffrsbsp,opti_stat%ffvsbsp)
       end if
+
+      c_opti_stat => opti_stat
+      do i_state=1,n_states
+       c_opti_stat_2 => c_opti_stat%next_state
+       deallocate(c_opti_stat)
+       c_opti_stat => c_opti_stat_2
+      end do
 
       return
       end subroutine

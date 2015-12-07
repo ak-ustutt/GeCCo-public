@@ -367,8 +367,10 @@ c     &       print *,'final buffer: ',
 c     &       buffer(1:me_dia%len_op_occ(iblk))
 c dbg
         ! put buffer to disc
-        call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1,
-     &                            me_dia%off_op_occ(iblk)+len_blk)
+        call put_vec(ffdia,buffer,me_dia%off_op_occ(iblk)+1
+     &       + ffdia%length_of_record*(ffdia%current_record-1),
+     &                            me_dia%off_op_occ(iblk)+len_blk,
+     &       + ffdia%length_of_record*(ffdia%current_record-1))
         
         ifree = mem_flushmark()
 

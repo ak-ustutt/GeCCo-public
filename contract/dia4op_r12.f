@@ -412,8 +412,10 @@ c dbg
         end if
 
         ! put buffer to disc
-        call put_vec(ffdia,buffer,me_dia%off_op_occ(iocc_cls)+1,
+        call put_vec(ffdia,buffer,me_dia%off_op_occ(iocc_cls)+1
+     &       + ffdia%length_of_record*(ffdia%current_record-1),
      &                            me_dia%off_op_occ(iocc_cls)
+     &       + ffdia%length_of_record*(ffdia%current_record-1)
      &                           +me_dia%len_op_occ(iocc_cls))
         
         ifree = mem_flushmark()

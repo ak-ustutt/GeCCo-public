@@ -1,6 +1,6 @@
- run starts at 2014-10-21 17:01:16.754   host: guest15.theochem.uni-stuttgart.de
+ run starts at 2014-11-25 12:45:05.540   host: guest3.theochem.uni-stuttgart.de
 
- Version compiled 21 Oct 2014 at 15:49:05 on guest15.theochem.uni-stuttgart.de   
+ Version compiled 24 Nov 2014 at 13:38:26 on guest3.theochem.uni-stuttgart.de    
 
  compiled with: gfortran
  level 1 optimization: -O2 -arch x86_64 -fdefault-integer-8 -DM_I686 -I../include i
@@ -34,7 +34,7 @@
  ORBSYM:
    1  1  1  1  1  1  1  1  1  1  2  2  2  2  3  3  3  3  4
  Reading input file ....
- Input file: python_interface.inp
+ Input file: python-interface.inp
  +-----------------------------------------------------------------------------+
  general
   print=0
@@ -113,12 +113,15 @@ A     interfaces
    2     2   1   1   0
    3     0   0   0   0
    4     7   3   3   1
- Warning from Python interface: 2MS is not a valid name for a Python variable. Use quotes for this keyword.
- Warning from Python interface: REPLACE is an argument and a rule. Use quotes for this keyword.
- Reading target file MP2.py.tgt_list:  Python interface
- Warning from Python interface: 2MS is not a valid name for a Python variable. Use quotes for this keyword.
- Warning from Python interface: REPLACE is an argument and a rule. Use quotes for this keyword.
- Reading target file orb_inp.py.tgt_list:  Python interface
+ Warning from setting_up_python_interface: "2MS" is not a valid name for a Python variable. Use quotes for this keyword.
+ Warning from setting_up_python_interface: "REPLACE" is an argument and a rule. Use quotes for this keyword.
+ Reading target file setting_up_python_interface.tgt_list: Python Interface (setting_up_python_interface)
+ Reading target file MP2.py.tgt_list: Python Interface (MP2.py)
+ Is keywort set???
+ calculate.interfaces:  True
+ method.R12:  False
+ Warning from orb_inp.py: We can give warnings!
+ Reading target file orb_inp.py.tgt_list: Python Interface (orb_inp.py)
  My next target: H
  Rule: DEF_HAMILTONIAN
  Rule: SET_HERMITIAN
@@ -386,7 +389,7 @@ signsec :      1.0
  CONVERGED IN     2 ITERATIONS
 >>>  2         -0.196151291382 0.6554E-14
 >>> CONVERGED <<<
->>> final energy:         -0.196151291382 <<<
+>>> final energy:          -0.196151291382 <<<
  Rule: PRINT_MEL
  ---
 +=============================================================================+
@@ -424,4 +427,4 @@ signsec :      1.0
    Name of largest block:    contr1.contr_scr
  +----------------------------------------------------------------------------+
  @ total time in GeCCo run             cpu/sys/wall:      0.05 /     0.03 /     0.15 s
- run ends at 2014-10-21 17:01:16.906   host: guest15.theochem.uni-stuttgart.de
+ run ends at 2014-11-25 12:45:05.696   host: guest3.theochem.uni-stuttgart.de

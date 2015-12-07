@@ -161,6 +161,8 @@
             ! a) save first block
             lenblkinp = meinp%len_op_occ(i_occ_cls)
             ioffinp = meinp%off_op_occ(i_occ_cls)
+     &           +(meinp%fhand%length_of_record*
+     &           (meinp%fhand%current_record-1))
             ifree = mem_alloc_real(buffer_inp,lenblkinp,'buffer_inp')
             call get_vec(ffinp,buffer_inp,ioffinp+1,ioffinp+lenblkinp)
             ! b) transpose second block --> first block
@@ -195,6 +197,8 @@
        reorder = .not.iocc_zero(iocc_inp(1:ngastp,1:2,ifrom))
        lenblkinp = meinp%len_op_occ(i_occ_cls)
        ioffinp = meinp%off_op_occ(i_occ_cls)
+     &      +(meinp%fhand%length_of_record*
+     &      (meinp%fhand%current_record-1))
 
        if (search) then
        ! search corresponding block
@@ -228,6 +232,8 @@
         if (lenblkinp.ne.lenblkout) call quit(1,'reo_mel',
      &           'input and output blocks should have same length')
         ioffout = meout%off_op_occ(j_occ_cls)
+     &       +(meout%fhand%length_of_record*
+     &       (meout%fhand%current_record-1))
         if (reorder) then
           if (ntest.ge.100) write(lulog,*) 'reorder block no',i_occ_cls
           call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,
@@ -251,6 +257,8 @@
         if (lenblkinp.ne.lenblkout) call quit(1,'reo_mel',
      &           'input and output blocks should have same length')
         ioffout = meout%off_op_occ(j_occ_cls)
+     &           +(meout%fhand%length_of_record*
+     &           (meout%fhand%current_record-1))
         if (reorder) then
           if (ntest.ge.100) write(lulog,*) 'reorder block no',i_occ_cls
           call reo_mel_blk(meinp,meout,i_occ_cls,j_occ_cls,

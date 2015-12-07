@@ -23,6 +23,7 @@ DIAG_TYPE int
 ENV str
 EXPECTED real
 FAC real
+FAC_INV real
 FIX_VTX log
 FORM label
 FORMAL int
@@ -35,12 +36,14 @@ IDX_LIST int
 IDX_SV int
 IGAST int
 IMODE int
+ISTATE int
 INIT log
 INPROJ int
 INTERM label
 IRREP int
 JOIN int
 LABEL label
+LABEL_DESCR label
 LABELS_IN label
 LABEL_IN label
 LABEL_OPT label
@@ -53,6 +56,7 @@ LIST label
 LISTS label
 LISTS_CV label
 LIST_E label
+LIST_EVEC label
 LIST_IN label
 LIST_INP label
 LIST_OUT label
@@ -61,6 +65,7 @@ LIST_OPT label
 LIST_PRC label
 LIST_RES label
 LIST_RESID label
+LIST_S label
 LIST_SCAL label
 LIST_SHAPE label
 LIST_SPC label
@@ -125,5 +130,7 @@ TITLE str
 TITLE_RHS str
 TITLE_TRF str
 TYPE str
+USE1 log
 VAL_LIST real
 X_SPCS int
+CHOICE_OPT int

@@ -1,8 +1,11 @@
 *----------------------------------------------------------------------*
       subroutine op_adv_state(label_op,nop,max_state,op_info,use_1,
-     &     last_state)
+     &     last_state,new_state)
 *----------------------------------------------------------------------*
 *     advance the state of the operators in label_op
+*     if the state goes beyond max_state, restore to the first state
+*     case that last_state is set to T. If new_state is present,
+*     set the state to that particular state.
 *
 *     yuri 2014
 *----------------------------------------------------------------------*
@@ -26,6 +29,8 @@
      &     use_1
       logical, intent(out), optional ::
      &     last_state
+      integer, intent(in), optional ::
+     &     new_state
 
       integer ::
      &     idx, i_state, i_label, size_name, ios_var
@@ -37,8 +42,6 @@
      &     state_label
       integer, external ::
      &     idx_oplist2
-
-
 
       character(mxlen_melabel) ::
      &     current_mel, new_mel
@@ -73,21 +76,26 @@
         i_state = 1
        end if
 
-       if (i_state.ge.max_state) then
-        i_state = 1
-        if(ntest.GE.10) write(lulog,FMT='(" All states processed.")')
-        if(present(last_state)) last_state = .true.
+       if (present(new_state)) then
+        i_state = new_state
+        if(ntest.GT.1) write(lulog,FMT='(" State set to: ",i0)') i_state
        else
-        i_state = i_state + 1
-        if(present(last_state)) last_state = .false.
-        if(ntest.GE.10) write(lulog,FMT='(" Next state: ",i0)') i_state
+        if (i_state.ge.max_state) then
+         i_state = 1
+         if(ntest.GE.10) write(lulog,FMT='(" All states processed.")')
+         if(present(last_state)) last_state = .true.
+        else
+         i_state = i_state + 1
+         if(present(last_state)) last_state = .false.
+         if(ntest.GE.10) write(lulog,FMT='(" Next state: ",i0)') i_state
+        end if
        end if
        c_st = state_label(i_state,use_1)
        new_mel = current_mel(1:size_name-1)//trim(c_st)
        if(ntest.GE.100) write(lulog,*)
      &      "new ME: ", trim(new_mel)
 
-       call assign_me_list(trim(new_mel),
+       call assign_me2op(trim(new_mel),
      &      trim(label_op(i_label)),op_info)
 
       end do

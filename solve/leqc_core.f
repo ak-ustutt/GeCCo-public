@@ -165,7 +165,7 @@ c      iopt = 1  ! preliminary
         if (.not.use_s(iopt).and.nopt.eq.1) then
           call optc_update_redsp3
      &       (mred,gred,nred,nroot,mxsub,
-     &       opti_stat%nadd,opti_stat%ndel,
+     &       opti_stat%nadd,opti_stat%ndel,init,
      &       iord_vsbsp,ffvsbsp(iopt)%fhand,
      &       iord_rsbsp,ffrsbsp(iopt)%fhand,me_rhs(iopt)%mel%fhand,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2,xbuf3)

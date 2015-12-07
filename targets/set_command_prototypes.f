@@ -196,6 +196,10 @@
       call set_arg('_PROTO_',DEF_FORMULA,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(TRANSPS_FORMULA,tgt_info)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'LABEL',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -221,7 +225,7 @@
      &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_INPROJ',1,tgt_info,
      &     val_int=(/0/),def=.true.)
-      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'DESCR',0,tgt_info,
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL_DESCR',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'N_DESCR',1,tgt_info,
      &     val_int=(/0/),def=.true.)
@@ -230,6 +234,8 @@
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.true./),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FAC_INV',1,tgt_info,
      &     val_rl8=(/1d0/),def=.true.)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'FIX_VTX',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
@@ -553,6 +559,18 @@
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(TRANS_LIST,tgt_info)
+      call set_arg('_PROTO_',TRANS_LIST,'LIST_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'LIST_INP',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'TYPE',0,tgt_info,
+     &     val_str='-',req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANS_LIST,'FORM',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SCALE,tgt_info)
       call set_arg('_PROTO_',SCALE,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -578,6 +596,24 @@
      &     val_str='---',def=.true.)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_SHAPE',0,tgt_info,
      &     (/'-'/),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(SET_BLOCKS,tgt_info)
+      call set_arg('_PROTO_',SET_BLOCKS,'LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'DESCR',0,tgt_info,
+     &     val_str=' ',req=.true.)
+      call set_arg('_PROTO_',SET_BLOCKS,'FAC',0,tgt_info,
+     &     val_rl8=(/0d0/),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(COPY_LIST,tgt_info)
+      call set_arg('_PROTO_',COPY_LIST,'LIST_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'LIST_INP',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'ADJOINT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',COPY_LIST,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(INVERT,tgt_info)
       call set_arg('_PROTO_',INVERT,'LIST_INV',0,tgt_info,
@@ -610,6 +646,12 @@
      &     val_int=(/1/),req=.true.)
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type,def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(NORM_MEL,tgt_info)
+      call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',NORM_MEL,'IMODE',1,tgt_info,
+     &     val_int=(/1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SOLVENLEQ,tgt_info)
       call set_arg('_PROTO_',SOLVENLEQ,'LIST_OPT',0,tgt_info,
@@ -666,6 +708,8 @@
      &     val_str=' ',req=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'N_ROOTS',0,tgt_info,
      &     val_int=(/0/),req=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'CHOICE_OPT',0,tgt_info,
+     &     val_int=(/0/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'LIST_SPC',0,tgt_info,
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'FORM_SPC',0,tgt_info,
@@ -752,5 +796,64 @@
       call add_command_proto(ORB_FLIP,tgt_info)
       call set_arg('_PROTO_',ORB_FLIP,'LIST',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(SPREAD_MEL,tgt_info)
+      call set_arg('_PROTO_',SPREAD_MEL,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SPREAD_MEL,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ADV_STATE,tgt_info)
+      call set_arg('_PROTO_',ADV_STATE,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+      call set_arg('_PROTO_',ADV_STATE,'USE1',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',ADV_STATE,'OPERATORS',0,tgt_info,
+     &     val_label=(/' '/))
+      call set_arg('_PROTO_',ADV_STATE,'LISTS',0,tgt_info,
+     &     val_label=(/' '/))
+*----------------------------------------------------------------------*
+      call add_command_proto(SET_STATE,tgt_info)
+      call set_arg('_PROTO_',SET_STATE,'ISTATE',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+      call set_arg('_PROTO_',SET_STATE,'USE1',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',SET_STATE,'OPERATORS',0,tgt_info,
+     &     val_label=(/' '/))
+      call set_arg('_PROTO_',SET_STATE,'LISTS',0,tgt_info,
+     &     val_label=(/' '/))
+*----------------------------------------------------------------------*
+      call add_command_proto(EVP_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_S',0,tgt_info,
+     &     val_label=(/' '/),req=.false.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_EVEC',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'LIST_E',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EVP_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(INV_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',INV_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(MULT_PACKED_OP,tgt_info)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LISTS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'LIST_OUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',MULT_PACKED_OP,'N_ROOTS',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ABORT,tgt_info)
+      call set_arg('_PROTO_',ABORT,'COMMENT',1,tgt_info,
+     &     val_str='non specified reason.',def=.true.)
+
 
       end

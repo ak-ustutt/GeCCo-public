@@ -132,6 +132,9 @@
         select case(cur_form%command)
         case(command_end_of_formula,command_set_target_init)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case end and set"
+cdbg end
           ! set pointers again, as the targets may change
           mel_arr => op_info%mel_arr
           op2list => op_info%op2list
@@ -232,15 +235,24 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
         case(command_new_intermediate)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case new int"
+cdbg end
           call fs_newintm_drv(cur_form,
      &         op_info,str_info,strmap_info,orb_info)
 
         case(command_del_intermediate)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case del int"
+cdbg end
           call fs_delintm_drv(cur_form,op_info)
 
         case(command_reorder,command_add_reo)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case reo, add reo"
+cdbg end
           measure = .true.
           !update = cur_form%command.eq.command_add_reo
           update = idx_oplist2(cur_form%reo%label_out,op_info)
@@ -255,6 +267,9 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
         case(command_add_intm,command_cp_intm)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case add int cp int"
+cdbg end
           measure = .true.
           icmd = icmd+1
           !update = cur_form%command.eq.command_add_intm
@@ -270,6 +285,9 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
         case(command_bc,command_add_bc,
      &       command_bc_reo,command_add_bc_reo)
 
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case bc stuffs"
+cdbg end
           measure = .true.
           icmd = icmd+1
           add    = (cur_form%command.eq.command_add_bc.or.
@@ -288,6 +306,9 @@ c          skip = skip.or.me_list_uptodate(idxres,depend_info,op_info)
 
         case(command_symmetrise)
           
+c dbg
+c         write(lulog,*) "DBG info frm_sched2: case symm"
+cdbg end
           measure = .true.
           call symmetrise(1d0,me_res,me_res,
      &         xret_blk,
