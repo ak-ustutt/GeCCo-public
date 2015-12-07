@@ -76,11 +76,12 @@
 
         ioff = 0
         do idx = 1, nvec
-          call maxcontrb_for_list(
-     &         coeff_list,weight_list,idx_list,
-     &         maxlist,ioff,idx.eq.1,
-     &         me_cov(idx)%mel,me_contrv(idx)%mel)
-          ioff = ioff + me_cov(idx)%mel%len_op
+           call quit(0,i_am,'not yet active')
+c          call maxcontrb_for_list(
+c     &         coeff_list,weight_list,idx_list,
+c     &         maxlist,ioff,idx.eq.1,
+c     &         me_cov(idx)%mel,me_contrv(idx)%mel)
+c          ioff = ioff + me_cov(idx)%mel%len_op
         end do
 
         ! reduce list to 99% of norm (but cut behind degen. dets.)
