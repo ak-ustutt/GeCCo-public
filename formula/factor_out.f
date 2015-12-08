@@ -26,10 +26,10 @@
      &     op_info
 
       integer ::
-     &     idx_intm, nrpl
+     &     idx_intm, nrpl, len
 
       integer, external ::
-     &     idx_formlist
+     &     idx_formlist, form_count
 
       type(formula_item), pointer ::
      &     form_link, form_ptr, fintm_head, fintm_tail
@@ -63,6 +63,12 @@
 
       ! factor out the sub-expressions
       call factor_out_subexpr2(form_link,fintm_head,nrpl,op_info)
+      if (iprlvl.ge.2) write(lulog,'(5x,i6," replacements")')
+     &     nrpl
+      if (iprlvl.ge.2) then
+         len = form_count(form_link)
+         write(lulog,'(5x,"formula reduced to ",i10," items")') len
+      end if
 
 c dbg
 c      print *,'form after fact'
