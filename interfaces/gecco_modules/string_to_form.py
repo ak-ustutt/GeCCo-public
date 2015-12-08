@@ -1,15 +1,23 @@
+from gecco_interface import * # This is an extension to the gecco interface. 
+                              # it relies on the functions provided there 
+
 import re #support for Regular expressions
 import itertools as it # some iterators
-import traceback as tb
+#import traceback as tb # to print exceptions
 
-from gecco_interface import *
+from stf_exceptions import * #custom made exceptions for this package
+from stf_regexp import * # The regular expressions for numbers ... 
+from stf_string_expansion import InputString,BracketRep  # what I actually need to expand the string 
+
+
+from ArneUtil import combine_dicts  # a function to combine dictionaries 
 
 ##@module A module to convert string representations of formulas to formula objects
 #
 #Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT from a string
 #\author Arne Bargholz
 #\date 21.05.2015
-#\vaersion 1.0
+#\version 1.09 tested, but without updated documentation
 
 
 #*********************************************************
@@ -66,888 +74,330 @@ from gecco_interface import *
 # class definiton of the Test-object
 
 
+#Possible arguments for EXPAND_OP_PRODUCT:
+#I could make a dictionary, mapping the actual keywords to placeholder I define 
+# Nah, it's good like this, effectively the list positions are my placeholders
 
-#Declare classes
-#I have circular dependencies (e.g. parenteses as summands in a sum in parentheses ... )
-#Instead of declaring some class I just declare all Rep and base classes
-    #better to remember which classes are declare
-
-class _StringConvUtil(object):
-    pass
-class _ExpFormBaseClass(_StringConvUtil):
-    pass
-
-
-class _SinglePartOperation( _ExpFormBaseClass):
-    pass
-class _DoublePartOperation( _ExpFormBaseClass):
-    pass
-class _MultiPartOperation( _ExpFormBaseClass):
-    pass
-
-
-class _InitOperation(_ExpFormBaseClass):
-    pass
-class _UInitOperation(_ExpFormBaseClass):
-    pass
-
-
-class _OPRep(_InitOperation,_SinglePartOperation):
-    pass
-class _OPRepAlt(_OPRep):
-    pass
-
-class _AddRep(_UInitOperation,_MultiPartOperation):
-    pass
-
-class _ComRep( _InitOperation,_DoublePartOperation):
-    pass
-
-class _MultRep( _UInitOperation,_DoublePartOperation):
-    pass
-class _MultRepAlt(_MultRep):
-    pass
-
-class _ParRep( _InitOperation,_SinglePartOperation):
-    pass
-
-class _BracketRep( _InitOperation,_SinglePartOperation):
-    pass
+_g_argument_names=[
+              'LABEL', #0
+              'OP_RES',#1
+              'OPERATORS',#2
+              'IDX_SV', #3
+              'NEW',    #4
+              'TITLE', #5
+              'FAC',    #6
+              'FAC_INV',#7 
+              'CONNECT',#8
+              'AVOID',  #9
+              'LABEL_DESCR',#10
+              'FIX_VTX',#11
+              'BLK_MIN',#12
+              'BLK_MAX',#13
+              'N_CONNECT',#14
+              'N_AVOID',#15
+              'INPROJ',#16
+              'N_INPROJ',#17
+              'N_DESCR',#18
+]
 
 
 
-class _BracketUtil( object):
-    pass
 
-#******************************************************************************************
-#Exceptions
-class ExpFormError(Exception):
-    #base class for all exceptions special to this module
-    pass
-
-class DevError(ExpFormError):
-    #class for all Errors in Develoment
-    pass
-
-class NotImplementedError(DevError):
-    pass
-
-class InputError(ExpFormError):
-    # For all bugs on the other side of the monitor
-    pass
-
-class IllegalCharError(InputError):
-    pass
-
-class IllegalFirstCharError(IllegalCharError):
-    pass
-
-class MissingCommaError(IllegalCharError):
-    pass
-
-class TooManyCommaError(IllegalCharError):
-    pass
-
-
-#not implemented
-#class UnclosedCommutatorError(IllegalCharError):
-#    pass
-
-#class UnclosedBracketError(IllegalCharError):
-#    pass
-
-#class UnclosedParenthesisError(IllegalCharError):
-#    pass
-
-class UnexpectedEndOfStringError(InputError):
-    pass
-
-class BadSplitError(InputError):
-    pass
-
-class MissingArgumentError(InputError):
-    pass
-
-class MissingLabelError(MissingArgumentError):
-    pass
-
-class MissingOP_ResError(MissingArgumentError):
-    pass
-
-
-#######################################################################
-#global functions
-
-def _pow_sep(context):
-    """ returns the possible separators of the decimal power
-    
-    Returns the separators either as RegExp string "[...]" or as tuple
-    @param context ="reg_exp" "!reg_exp" (inverted RegExp) or "tuple"
-    """
-    pow_sep=('d','e')
-    if context=="reg_exp":
-        return "["+"".join(pow_sep)+"]"
-    elif context =="!reg_exp":
-        return "[^"+"".join(pow_sep)+"]"
-    elif context =="tuple":
-        return pow_sep
-    else:
-        raise NotImplementedError("context "+str(context)+"not implemented")
-
-def _num_reg_exp_total(context="start"):
-    """just a function to store and explain the total regexp used to scan for numbers"""
-    d=_pow_sep("reg_exp")
-    reg_exp1="-?[0-9]*"+    "\.[0-9]+"  +"(?:"+d+"-?[0-9]+)?"
-    reg_exp2="-?[0-9]+"+ "(?:\.[0-9]*)?"+"(?:"+d+"-?[0-9]+)?"
-    #as described in the re libary
-    # "-?" matches zero or one "-"
-    # "[0-9]*" matches zero or more digits "[0-9]+" matches one or more digits
-        #for internationality this might be changed to "\d"
-    # "\." matches a "." backslash for escaping
-    # "(?:"  and ")" groups an expression combined with the tailing "?" 
-        #this matches zero or one times this group of expressions      
-    # more digit matching 
-    # more "(?:" ")" and "?"
-    # d returns a string that is the reg_exp for the power separator so "[de]" by default
-    # matching anoter group of positive or negative integers
-    # the connection by "|" let us have the longer match by either RegExp1 or RegExp2
-    # "^" matches the beginning of a string
-    # getting it all in Parentheses tells re.split to also return the matched expression
-    # So this regexp matches every of the following number formats: 1 , 1. 1.234 , .234
-        # all cases can have a preceeding minus or a following exponent(which in turn can 
-        #be negative)
-    if context=="start":
-        return "(^"+reg_exp1+"|^"+reg_exp2+")"
-    elif context=="anywhere":
-        return "("+reg_exp1+"|"+reg_exp2+")"
-    elif context=="bare":
-        return reg_exp1+"|"+reg_exp2
-    else:
-        raise Exception("_num_reg_exp_total: unkown context")
-    
-
-
-def _combine_dicts(first,second):
-    """concatenates two dictionaries
-
-    if both have an identical key. the first dictionary takes precedence
-    """
-
-    def _combine_dicts_core(alpha,beta,x):
-        if x in alpha:
-            return alpha.get(x)
-        else:
-            return beta.get(x)
-    return {x: _combine_dicts_core(first,second,x)  for x in set(first).union(second)}
-
-
-######################################################################
-#global objects 
-
-_number_reg_exp=re.compile(_num_reg_exp_total())
-#regexpused to scan for numbers at the start of a string (e.g an operator)
-#any match bby _NumberRegExp is (apart from _pow_sep) avalid float 
-
-_special_reg_exp=re.compile("(^-)")
-#matches anything that begins with a  minus
-#second regexp like numbers, but has to be treated as -1 
-
-_special_bch_reg_exp=re.compile("BCH",flags=re.I)
-#ignore case, but if you ever type bCh, I will hate you
-
-
-_div_reg_exp=re.compile("("+_num_reg_exp_total(context="bare")+
-                           " */ *"
-                           +_num_reg_exp_total(context="bare")+ ")" )
-# matches any division of numbers
-# 
-
-
+_g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 ###############################################
 #Classes
 
-class _InputStringBase(object):
-
-    def __init__(self,string):
-        """The constructor"""
-        self.set_member()
-        self.string=string
-
-    #functions that change the internal state
-    def set_start(self,start=0):
-        """Sets self.begin to this position
-        
-        Later a substring can be extracted beginning at this postition
-        """
-        self.begin=self.i+start
-
-    def goto(self,character):
-        """Jumps to character
-        
-        This method jumps to the next occurence of character.
-        this method does not jump to a specific index.
-        """
-        self.i=self.string.find(character,self.i)
-        return self.i
-        ## \todo  something. I forgot. The world is fading
-
-    def reset(self,i=0,begin=0,toggle=False):
-        """ Resets the counters
-
-        For testing
-        """
-        self.begin=begin
-        self.i=i
-        self.toggle_advance_on_minus=toggle
-
-    # Overwrite of builtins
-    def __len__(self):
-        """allows the use of len(string)"""
-        return len(self.string)
-
-    def __str__(self):
-        """makes object printable"""
-        return self.string
-
-    #display functions (as property getters)
-    @property
-    def display_error(self): 
-        """returns the string and a vizualization of the current character
-        
-        will get called by the Exception handlers"""
-        return "\n"+self.string+"\n"+"-"*self.i+"^"
-
-
-    @property
-    def has_not_ended(self):
-        """tests if end of string is reached"""
-        return self.i<len(self.string)
-        #for while string.has_not_ended
-
-    @property
-    def substring_number_match(self):
-        """test if current position is in the number part of an OP"""
-        #If current position is within the number part of an Operator starting at self.begin
-        #  return True
-        #  else return False
-        for reg_exp in [_number_reg_exp,_special_reg_exp]:
-            match=reg_exp.match(self.string[self.begin:])
-            if match and  match.end() >= (self.i-self.begin):
-                return True
-        return False
-
-
-    @property
-    def substring(self):
-        return self.string[self.begin:self.i]
-
-class _HiddenMinusUtil(_InputStringBase):
-    """Utility class with methods that hide the minus from objects
-
-    The true_xxx methods are also defined here
-    """
-    def set_member(self):
-        """sets the variables of the class that store information"""
-        self.string=''
-        self.i=0 #"pointer" to current char
-        self.begin=0  
-        #"pointer" to beginn of current string. is updated at beginn of an object
-        self.toggle_advance_on_minus=False
-        #next() is called when an object has processed a character
-        # minus signs must be processed by two objects (_AddRep and _OPRep)
-        # therefor only every second something should advance over a minus the 
-        # next() really will advance
-
-    def next(self):
-        """advances to next char
-        
-        Sets pointer to next char3
-        """
-        if self.true_this_char != "-":
-            self.i +=1
-        else:
-            if self.toggle_advance_on_minus:
-                self.i+=1
-            self.toggle_advance_on_minus=not self.toggle_advance_on_minus
-
-    #display only functions as property getters
-    @property
-    def this_char(self):
-        """returns the current character hides minus"""
-        if self.string[self.i] != "-":
-            return self.string[self.i]
-        else:
-            return "+"
-        #it's basically the same
-
-    @property
-    def last_char(self): 
-        """returns the previous character hides minus"""
-        return self.string[self.i-1]
-        #if this is a minus you ended your operator ended on(was a) minus
-
-    @property
-    def next_char(self): 
-        """returns the next character hides minus"""
-        #notice: self.next_char only returns something.
-        # self.next() increases the pointer and returns nothing
-        if self.string[self.i+1] != "-" :
-            return self.string[self.i+1]
-        else:
-            return "+"
-
-    #and the implementations that don't hide "-"
-    @property 
-    def true_this_char(self):
-        """returns the current character"""
-        return self.string[self.i]
-
-    @property
-    def true_last_char(self): 
-        """returns the previous character"""
-        return self.string[self.i-1]
-
-    @property
-    def true_next_char(self): 
-        """returns the next character"""
-        return self.string[self.i+1]
-
-
-class _InputString(_HiddenMinusUtil):
-    """class to handle the string that is converted to the formula"""
-
-    def __init__(self,string):
-        """The constructor"""
-        self.set_member()
-        self.string=string
-
-class _InputStringAlt(_InputString):
-    """advanced constructor for testing"""
-    def __init__(self,string,i=0,begin=0,toggle=False):
-        self.set_member()
-        self.string=string
-        self.reset(i,begin,toggle)
-
-#########################
-#Classes for the string to expanded (without addition) 
-
-class _StringConvUtil(object):
-    """Store all functions helping to convert the string to an object hierachy
-
-    
-    """
-    @staticmethod
-    def check_illegal_char(string,tuple,context='not first'):
-        """Tests if the current char is forbidden at this point
-        
-        raises an exception if the current character is in tuple. 
-        @param tuple tuple should be tuple or list
-        """
-        if string.true_this_char in tuple:
-            if context=="first":
-                raise IllegalFirstCharError(string.true_this_char,
-                                            " may not come directly after ",
-                                            string.true_last_char,
-                                            string.display_error,)
-            ##\todo implement a switch for different objects
-            else :
-                raise IllegalCharError("Illegal character detected:",
-                                       string.true_this_char,
-                                       string.display_error,)
-
-    @staticmethod
-    def check_close_char(string,tuple):
-        """Tests if the current char closes the object."""
-        #
-        if string.this_char in tuple:
-            return True
-        else:
-            return False 
-
-    def _create_next_operation(self,string):
-        """Creates and returns a lower tier object"""
-        ## \todo find a better name, that doesn't imply case is a loop
-
-        #intended order of use:
-        #self.check_illegal_char( ... )
-        #if self.check_close_char(...)
-        #    close
-        #elif "special cases"
-        #    ...
-        #else:
-        #    self._create_next_operation(string)
-        if string.this_char=="[":
-            return _ComRep(string)
-                    
-        elif string.this_char=="(":
-            return _ParRep(string)
-    
-        elif string.this_char=="*":
-            return _MultRep(string,self.content[self.part])
-
-        elif string.this_char=="(":
-            return _AddRep(string,self.content[self.part])
-        else:
-            return _OPRep(string)
-
-
-
-
-class _ExpFormBaseClass(_StringConvUtil): 
-    """
-    Abstract class for operator containing objects
-    This class has only prototypes of functions
-    """
-
-    def set_members(self):
-        # sets content and part 
-        self.content=[]
-        #contains a list of objects joined by the operation the class represents
-        self.part=0
-        #pointer to current object in list   
-        raise NotImplementedError()
-
-    def process_string(self,string):
-        #creates content from string
-        raise NotImplementedError()
-    
-    def close(self):
-        #method that is called, when the string processing finishes
-        #part of an old architecture. does nothing now.
-        raise NotImplementedError()
-
-    def extract(self):
-        #returns a sum of Operator products (a list of lists)
-        raise NotImplementedError()
-
-class _SinglePartOperation( _ExpFormBaseClass):
-    def set_members(self):
-        self.content=[""]
-        self.part=0
-
-class _DoublePartOperation( _ExpFormBaseClass):
-    def set_members(self):
-        self.content=["",""]
-        self.part=0
-
-class _MultiPartOperation( _ExpFormBaseClass):
-    def set_members(self):
-        self.content=[""]  
-        # For _AddRep : the first object is stored by __init__ 
-        # all other objects are appended
-        self.part=0
-
-
-class _InitOperation(_ExpFormBaseClass):
-    """Abstract class for all operations with an initializing command
-    
-    These operations are "(" "[" and operators
-    """
-    def __init__(self,string):
-        self.set_members()
-        self.process_string(string)
-
-class _UInitOperation(_ExpFormBaseClass):
-    """ Abstract class for all operations without an initializing command
-
-    These operations are:"+" "*"
-    """
-    def __init__(self,obj,string):
-        self.set_members()
-        self.content[self.part]=obj
-        self.part=1
-        self.process_string(string)
-
-
-
-class _OPRep(_InitOperation,_SinglePartOperation):
-    """Class for operators """
-
-    def process_string(self,string):
-        string.set_start()
-        self.check_illegal_char(string, ("<",">","+",""),"first") 
-        ##\todo think about which chars are illegal at the beginning of objects 
-        while string.has_not_ended:
-
-            self.check_illegal_char(string,("<"))            
-            if ( string.true_this_char == "+" and string.last_char == "^" ):
-                #Ignore ^+ combinations
-                string.next()
-            elif ( string.true_this_char=="-" and string.substring_number_match ): 
-                string.next()
-                #ignore "-" that belong to a number -1.0d-4
-                #                                  -^----^
-                # thanks to toggle minus advance this will be done twice on the second minus
-            elif self.check_close_char(string,("[",",","]","(",")","*","+",">","-")):
-                self.content=[string.substring]
-                self.close()
-                return 0
-            else:
-                string.next()
-        raise UnexpectedEndOfStringError(string.display_error)
-
-    def close(self):
-        return 
-    
-    def extract(self):
-        return [self.content]
-        #Since self.content is also a list (of one object)
-        # this returns a list of lists like any other Rep object, allowing recursion.
-
-class _OPRepAlt(_OPRep):
-    """Alternative class for operators,
- 
-    when you only have to convert a str to an operator
-    """
-    def __init__(self,str_):
-        self.set_members()
-        self.content=[str(str_)]
-
-
-class _AddRep(_UInitOperation,_MultiPartOperation):
-    """Class to store all summands of an addition"""
-
-
-    def process_string(self,string):
-        self.part-=1
-        while string.has_not_ended:
-            if string.this_char=="+" and string.true_next_char =="-" :
-                # can occur with input: T1+-0.5T2 
-                string.next()
-            elif string.this_char=="+":
-                string.next()
-                self.check_illegal_char(string, ("]",")",",","*","+")) 
-                self.part +=1
-                #string.i can point neither to * nor to + so part may point to out of scope
-                self.content.append(self._create_next_operation(string))
-
-
-            elif self.check_close_char(string,(",","]",")",">")):
-                self.close()
-                return 
-
-            elif string.this_char=="*": 
-                print self.part,self.content
-                self.content[self.part]=_MultRep(self.content[self.part],string)
-      
-            else:
-                #implicit multipication T1+(T2+T3)T4
-                # after handling the parethesis the _AddRep sees the T of T4 
-                self.content[self.part]=_MultRep(self.content[self.part],string)
-        raise UnexpectedEndOfStringError(string.display_error)
-
-    def close(self):
-        return 0    
-
-    def extract(self):
-        #self.content contains a list of objects. upon extraction those return a list of 
-        # additively joined lists of mutiplicatively joined operators
-        # to extract those lists have simply to be concatenated
-        return reduce(lambda x,y: x+y.extract() ,self.content, [])
-
-
-        
-class _ComRep( _InitOperation,_DoublePartOperation):
-    """Class to store the commutator parts"""
-#    counter=0
-#    @classfunction
-#    def increase_counter(cls):
-#        cls.counter+=1
-
-    def process_string(self,string):                
-        string.next() # String pointed to "["
-
-        self.check_illegal_char(string, ("<",">","*","","+"),"first")
-        self.content[self.part]=self._create_next_operation(string)
-        while string.i <len(string):
-            self.check_illegal_char(string,("<",")")) 
-            
-            if string.this_char==",":
-                if self.part==0: # If not, it is a [,, combination
-                    self.part=1
-                    string.next()
-                    self.check_illegal_char(string,("<",")","",",","]"))
-                    self.content[self.part]=self._create_next_operation(string)
-                else:
-                    raise TooManyCommasError("There may only be one ',' ",
-                                             "in any commutator",
-                                             string.display_error)
-
-            elif self.check_close_char(string,("]")):
-                if self.part==1: # If not, it is a [] combination
-                    self.close()
-                    string.next()
-                    return 
-                else:
-                    raise MissingCommaError("All commutators are of the form [...,...]",
-                                            string.display_error)
-
-            elif string.this_char=="+": 
-                self.content[self.part] = _AddRep(self.content[self.part],string)
-
-            else:
-                #implicit multipication T1+(T2+T3)T4
-                # after handling the parethesis the AddRep sees the T of T4 
-                self.content[self.part]=_MultRep(self.content[self.part],string)
-        raise UnexpectedEndOfStringError(string.display_error)
-
-    def close(self):
-        return 0
-
-    def extract(self):
-        #Transform [O1,O2] -> O1*O2 + ("-1"*(O2*O1)) then extract those and concatenate them 
-        #(see addition)
-        interm1 = _MultRepAlt(self.content[0],self.content[1])
-        interm2 = _MultRepAlt(_OPRepAlt("-1"),_MultRepAlt(self.content[1],self.content[0]))
-        return interm1.extract()+interm2.extract()
-        #Yeah, i could do this without intermediates. Do you want me to push that in one line?
-
-
-
-class _MultRep( _UInitOperation,_DoublePartOperation):
-    """Class to store two Factors of a multiplication
-    
-    _MultRep only handles two factors at a time to allow for easy extraction
-    """
-
-    def process_string(self,string,obj=''):
-        if string.this_char=="*": 
-            #not necessarily true since (F+V)(T1+T2) also triggers a Multiplication
-            string.next()
-
-        self.check_illegal_char(string, (")","]","*",",","","+") )
-        
-        self.content[self.part]=self._create_next_operation(string)
-
-        while string.has_not_ended:
-            self.check_illegal_char(string,("<")) 
-
-            if self.check_close_char(string,(",","]",")",">","+")):
-                self.close()
-                return 
-
-            else:
-                self.content[self.part]=_MultRep(self.content[self.part],string)
-
-        raise UnexpectedEndOfStringError(string.display_error)
-
-    def close(self):
-        if self.part != 1:
-            raise ToManyPartsError("this is a _MultRep object with "+str(self.part) +"parts" )
-        return 
-
-    def extract(self):
-        return [x+y for x in self.content[0].extract() for y in self.content[1].extract()]
-
-
-class _MultRepAlt(_MultRep):
-    """ When you already have two objects an only need to multiply them. """
-    #look at _ComRep
-    def __init__(self,obj1,obj2):
-        self.set_members()
-        self.content=[obj1,obj2]
-        self.part=1
-
-        
-class _ParRep( _InitOperation,_DoublePartOperation):
-    """Class to store the content of a parenthesis"""
-
-    def process_string(self,string):
-        string.next()
-        self.check_illegal_char(string, ("<",">","*","]",")","","+"),"first") 
-        self.content[self.part]=self._create_next_operation(string)
-
-        while string.has_not_ended:
-            self.check_illegal_char(string,("<",",","]")) 
-
-            if self.check_close_char(string,(")")):
-                self.close()
-                string.next()
-                return 
-
-            elif string.this_char=="+": 
-                self.content[self.part] = _AddRep(self.content[self.part],string)
-
-            else: 
-                self.content[self.part] = _MultRep(self.content[self.part],string)
-
-        raise UnexpectedEndOfStringError(string.display_error)
-
-    def close(self):
-        return 0
-
-    def extract(self):
-        return self.content[0].extract()
-
-
-
-class _BracketRep(_InitOperation,_SinglePartOperation):
- 
-    def process_string(self,string):
-        string.next()
-        self.check_illegal_char(string,("<",",","]",")","")) #
-        
-        self.content[self.part]=self._create_next_operation(string)
-
-        while string.has_not_ended:
-            self.check_illegal_char(string,("<",",","]",")","")) # 
-
-            if string.this_char=="+": 
-                self.content[self.part]=_AddRep(self.content[self.part],string)
-
-            elif self.check_close_char(string,(">")):
-                self.close()
-                string.next()
-                return 
-
-            else: 
-                self.content[self.part]=_MultRep(self.content[self.part],string)
-
-        raise UnexpectedEndOfStringError(string.display_error)
-        
-    def close(self):
-        return  
-
-    def extract(self):
-        return self.content[0].extract()
-
-
 ##########################################################################################
-#the surface classes: _ExpBraketRep and _Formula 
-# _ExpBracketRep is for already 
+
+
+
+
 class _NumberCollectUtil(object):
-    """Utility class to derive a factor for bracket from operator prefactors"""
+    """Utility class to derive a factor from operator prefactors"""
 
-    def process_parts(self,parts,OP_no):
-        """processes the output of a re.split operation"""
-        ##@return returns 0 if no (zero) splits occured
-        #         returns 1 if a split occurred
-        if len(parts) not in (1,3):
-            raise BadSplitError("Operator"+str(self.operators[OP_no])+
-                                "was split into "+str(len(parts))+" parts")
-        elif len(parts) == 1:
-            return 0
+#    ##
+#    #@param parts output of a re.split function
+#    #@param OP_no current OP
+#    #@return returns 0 if no (zero) splits occured
+#    #         returns 1 if a split occurred
+#    def process_parts(self,parts,OP_no):
+#        """processes the output of a re.split operation"""#
+#
+#        if len(parts) not in (1,3):
+#            raise BadSplitError("Operator"+str(self.operators[OP_no])+
+#                                "was split into "+str(len(parts))+" parts")
+#        elif len(parts) == 1:
+#            return 0
+#        else:
+#            self.operators[OP_no]=parts[2]
+#            if stf_number_extract_reg_exp.match(parts[1]):
+#                self.factor=self.factor*float(re.sub(_pow_sep("reg_exp"),"e",parts[1])) 
+#            elif _special_reg_exp.match(parts[1]):
+#                self.factor=-self.factor
+#            return 1
+
+     
+#    ##
+#    #@param regexp a compiled regular expression
+#    #@param OP_no number of current operator
+#    #@return returns the return of self.process parts
+#
+#    def split(self,regexp,OP_no):
+#        """ Splits by a regular expression """
+#        #
+#        return self.process_parts(regexp.split(self.operators[OP_no]),OP_no)
+#        #if there was a match:
+#        #[0] is an empty string 
+#            #because our strings match the beginning. read documentation of re
+#        #[1] contains our match 
+#        #[2] contains the rest (at least an empty string)
+#        # if there is no match:
+#        #[0] contains our string
+
+    ##
+    #@param string str to be matched
+    #@param nominator
+    #@param denominator
+    #@return tuple (x,y,z): x new nominator, y new denominator, 
+    #z nonnumber part of string.
+
+    def _eval_numbers(self, string, nominator=1, denominator=1):
+        """converts the number matched by the regexps to floats
+
+ 
+        """
+        residue=""
+        match_div=stf_div_extract_regexp.match(string)
+        match_num=stf_number_extract_regexp.match(string)
+        match_neg=stf_negative_extract_regexp.match(string)
+        if match_div is not None :
+            nominator=nominator*float(match_div.group("nominator") )
+            denominator=denominator*float(match_div.group("denominator") )
+            residue=match_div.group("operator")
+        elif match_num is not None :
+            nominator=nominator*float(match_num.group("number"))
+            residue=match_num.group("operator")
+        elif match_neg is not None :
+            nominator=-nominator
+            residue=match_neg.group("operator")
         else:
-            self.operators[OP_no]=parts[2]
-            if _number_reg_exp.match(parts[1]):
-                self.factor=self.factor*float(re.sub(_pow_sep("reg_exp"),"e",parts[1])) 
-            elif _special_reg_exp.match(parts[1]):
-                self.factor=-self.factor
-            return 1
-
-    def split(self,reg_exp,OP_no):
-        """ Splits an operator into """
-        return self.process_parts(reg_exp.split(self.operators[OP_no]),OP_no)
-        #if there was a match:
-        #parts[0] is an empty string 
-            #because our strings match the beginning. read documentation of re
-        #parts[1] contains our match 
-        #parts[2] contains the rest (at least an empty string)
-        # if there is no match:
-        # parts[0] contains our string
-
-        ##@return returns the return of self.process parts
+            residue=string
+        nominator,denominator=self._normalize(nominator,denominator)
+        return nominator,denominator,residue
 
 
-    def pop_numbers(self):
+    def _pop_numbers(self):
         """Collects the numbers from operators
         
         Find all numerical prefixes,
         multiply the numbers, eliminate the numbers 
         from the elements and delete those elements that become empty
-        return the product
+        
         """
-        i=len(self.operators)
-        while i>0:
-            i-=1
-            #going backwards to not mess up indices
-            #a for loop may be more intelligent
-            
-            if self.split(_number_reg_exp,i):
-                #splits the ith operator into number and residue
-                # if there was a split continue.
-                pass
-            else:
-                #else try the special regexp
-                self.split(_special_reg_exp,i)
+        try:
+            OPs=self._OPs
+        except KeyError:
+            print "pop_numbers: 'OPERATORS' not set"
+            raise 
+        #identical to self.arguments.get('FAC',1)
+        nominator=self.arguments.get(FAC,1)
+        #identical to self.arguments.get('FAC_INV',1)
+        denominator=self.arguments.get(FAC_INV,1)
 
-            if (self.operators[i]==''):
-                del self.operators[i]
+        #indexing the list from the end to avoid messing with indices during deletion
+        i=-len(OPs) # 0
+        while i<0:
+            i+=1
+
+            a,b,c=self._eval_numbers(OPs[i])
+            nominator*=a
+            denominator*=b
+            OPs[i]=c
+
+            if OPs[i] == '' or OPs[i] is None :
+                del OPs[i]
+                # OPs is an alias not a copy for self.arguments[OPERATORS]
+                # so its not required to copy it back to arguments[OPERATORS]
+        self.arguments[FAC]=nominator
+        self.arguments[FAC_INV]=denominator
+    
+
+    def _normalize(self,nominator,denominator):
+        """function called to normalize nominator and denominator
+
+        Does nothing right now.
+        """
+        return nominator,denominator
+
 
 class _IDXUtil(object):
-    """collection of methods to create the idx_sv list"""
+    """Collection of methods to create the idx_sv list"""
     
-    def set_idx_sv(self):
+    def _set_idx_sv(self):
         """function to generate a idx_sv list
 
         """
+        #generator that returns a row of increasing numbers
         counter=it.count(1)
-        #generator that returns 
-        special_OPs=[]
-        special_OP_numbers=[]
-        #two lists. 
+        #Two lists: 
         #the first contains the operators with ticks ("'") 
         #the second one their respective idx_indices.
-        ##\todo make them into one class
-        for OP in self.operators:
+        special_OPs=[]
+        special_OP_numbers=[]
+        idx_sv=[]
+        try:
+            OPs=self._OPs
+        except KeyError:
+            print "set_idx_sv: 'OPERATORS' not set"
+            raise 
+        for OP in OPs:
             if OP.find("'")>=0:
                 if OP.replace("'","") in special_OPs:
                     index=special_OPs.index(OP.replace("'",""))
-                    self.idx_sv.append(special_OP_numbers[index])
+                    idx_sv.append(special_OP_numbers[index])
                 else:
                     special_OPs.append(OP.replace("'",""))
                     special_OP_numbers.append(counter.next())
-                    self.idx_sv.append(special_OP_numbers[-1])
+                    idx_sv.append(special_OP_numbers[-1])
             else:
-                self.idx_sv.append(counter.next())
+                idx_sv.append(counter.next())
+        self.arguments[IDX_SV]=idx_sv
 
 
+class _OPProduct(_IDXUtil,_NumberCollectUtil):
+    """Handles a sequence of multiplicatively joined operators"""
 
-class _BracketBase(_IDXUtil,_NumberCollectUtil):
-    def __init__(self):
-        self.set_members()
+    def _set_members(self):
+        #self.arguments[OPERATORS] contains the OPs as they appear 
+        #in EXPAND_OP_PRODUCT(without ticks).
+        #self.OPs contains the original copy
+        self.arguments={OPERATORS:[],FAC:1,FAC_INV:1,IDX_SV:[]}
+        self._OPs=[]
 
-    def set_members(self):
-        self.factor=1.0
-        self.operators=[]
-        self.idx_sv=[]
+    def __init__(self,OPs):
+        self._set_members()
+        self._OPs=OPs
+        self._pop_numbers()
+        self._set_idx_sv()
+        self._process_operators()
 
+    def _strip_ticks_from_OPs(self):
+        """returns the OPs without single quotes"""
+        return  map(lambda x: re.sub("'","",x),self._OPs)
 
+    def _process_operators(self):
+        """Put OPs into the arguments dict 
 
-class _ExpBracket(_BracketBase):
-    """Class for expanded Brackets (contain only OP_Products)"""
-    def __init__(self,OpProd):
-        self.set_members()
-        self.operators=OpProd[:]
-        self.pop_numbers()
-        self.set_idx_sv()
+        Puts strips the single quotes from the OPs and puts them into the arguments
+        dictionary.
+        """
+        self.arguments[OPERATORS]=self._strip_ticks_from_OPs()
 
     def __str__(self):
-        return str(self.factor)+"*<"+"*".join(self.operators)+">"
+        return str(self.arguments[FAC]) + "/" + str(self.arguments[FAC_INV])\
+            + "*<"+"*".join(self.arguments[OPERATORS])+">"
 
-    def _strip_operators_from_tics(self):
-        """returns the operators without single quotes"""
-        return map(lambda x: re.sub("'","",x),self.operators)
+    def _combine_dicts(self,bracket_dict={},other_dict={}):
+        """Combines the arguments dictionary with another dict
 
+        The foreign dictionary takes precedence, 
+        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
+        """
+        if other_dict=={}:
+            other_dict=self.arguments
+        nominator=other_dict[FAC]*bracket_dict[FAC]
+        denominator=other_dict[FAC_INV]*bracket_dict[FAC_INV]
+        new_dict=combine_dicts(bracket_dict,other_dict)
+        return combine_dicts({FAC:nominator,FAC_INV:denominator}, new_dict)
 
-    def dic(self,form_dic):
-        #builds a dictionary for EXPAND_OP_PRODUCT
-        dic={}
-        dic['OPERATORS']=self._strip_operators_from_tics()
-        dic['FAC']=self.factor
-        dic['IDX_SV']=self.idx_sv
-        return _combine_dicts(dic,form_dic)
-
-    def set_rule(self,form_dic={},settle=True):
+    def _set_rule(self,bracket_dict={},settle=True):
         """Invokes EXPAND_OP_PRODUCT"""
-        ges_dic=self.dic(form_dic)
-        for argument in ("LABEL", "OP_RES", "OPERATORS", "IDX_SV"):
+        ges_dic=self._combine_dicts(bracket_dict,self.arguments)
+        for argument in _g_required_args:
             if argument not in ges_dic:
-                raise MissingArgumentError(argument+"is missing for EXPAND_OP_PRODUCT of "+str(self))
+                raise MissingArgumentError(argument+\
+                        "is missing for EXPAND_OP_PRODUCT of "+str(self))
         if settle:
             EXPAND_OP_PRODUCT(ges_dic)
+            return [None]
         else:
             return ges_dic
+
+    def _show(self,form_dic={}):
+        return self._set_rule(form_dic,settle=False)
+
+#****************************************************************************#
+#A Bracket is a collection of operator products
+
+class _Bracket(_NumberCollectUtil):
+    """Handles information, that are specific to every bracket"""
+
+    def set_members(self):
+        self.arguments={FAC:1,FAC_INV:1}
+        self.OP_products=[]
+        #self.content normally is a BracketRep
+        self.content=""
+
+    def __init__(self, string):
+        self.set_members()
+        self.process_string(string)
+        self.extract()
+
+    def process_string(self, string):
+        string.set_start()
+        try:
+            string.goto("<")
+        except ValueError:
+            raise UnexpectedEndOfStringError(string.display_error)
+        else : 
+            nominator,denominator,residue=self._eval_numbers(string.substring)
+            if residue not in ("",None,"*"):
+                raise UnknownEntity("there is something non numerical"\
+                                   "before this bracket"+string.display_error)
+            self.arguments[FAC]=nominator
+            self.arguments[FAC_INV]=denominator
+        #If bracket has "|" as delimiters, ignore everything before "|"
+        which,where=string.find_first( ("|",">") )
+        if which == 0 :
+            try:
+                string.goto("|")            
+            except ValueError:
+                raise UnexpectedEndOfStringError(string.display_error)
+        self.content=BracketRep(string)        
+        try:
+            string.goto(">")
+        except ValueError:
+            raise UnexpectedEndOfStringError(string.display_error)
+
+
+    def extract(self):
+        self.OP_products=map( _OPProduct, self.content.extract())
+
+    def __str__(self):
+        return str(self.arguments[FAC]) + "/" + str(self.arguments[FAC_INV])+"("\
+            +"\n+ ".join(map(str, self.OP_products))+")"
+
+    def _combine_dicts(self,form_dict={}):
+        """Combines the arguments dictionary with another dict
+
+        The foreign dictionary takes precedence, 
+        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
+        """
+        return combine_dicts(form_dict,self.arguments)
+
+
+    def set_rule(self,form_dic={},settle=True):
+        """Invokes set_rule"""
+        ges_dic=self._combine_dicts(form_dic)
+        new=ges_dic.get(NEW,False)
+        ret_list=[]
+        for prod in self.OP_products:
+            ret_list.append( prod._set_rule(ges_dic,settle=settle) )
+            ges_dic[NEW]=False
+        if settle:
+            return [None]
+        else:
+            return ret_list
 
     def show(self,form_dic={}):
         return self.set_rule(form_dic,settle=False)
@@ -955,28 +405,25 @@ class _ExpBracket(_BracketBase):
 ##########################################################################################
 #the surface class Formula for handling formula on the python surface
 
-class Formula(object):
+class _Formula(object):
     """Base class for all User interfaces"""
 
 
     def set_members(self):
         self.content=[]
-        self.part=0
-        self.string=""
+        self.arguments={NEW:True, FIX_VTX:True}
+        self.string=InputString("")
         self.new=True
         self.OP_res=""
         self.label=""
 
-    def dic(self,special_dic):
-        """ creates a dictionary of the member variables
+    def _combine_dicts(self,special_dict={}):        
+        """ Creates a dictionary of the member variables 
  
-        the dictionary is the basis for all EXPORT_OP_PRODUCT dicts of this formula
+        The dictionary is the basis for all EXPORT_OP_PRODUCT dicts of this formula
+        
         """
-        dic={}
-        dic['NEW']=self.new
-        dic['OP_RES']=self.OP_res
-        dic['LABEL']=self.label
-        return _combine_dicts(special_dic,dic)
+        return combine_dicts(special_dict,self.arguments)
 
     def __init__(self):
         self.set_members()
@@ -987,39 +434,36 @@ class Formula(object):
         Removes whitespaces and
         saves the input as _InputString in self.string
         """
-        string= re.sub(" ", "",string)
         #remove all white spaces
-        self.string=_InputString(string)
+        string= re.sub(" ", "",string)
+        self.string=InputString(string)
 
-    def process_string(self):
-        while self.string.has_not_ended:
-            self.string.goto("<")
-            self.content.append(_BracketRep(self.string))
-            
-        
-    def extract(self):
-        interm=list(reduce(lambda x,y: x+y.extract() , self.content, [] ))
-        self.content=[]
-        for item in interm:
-            self.content.append(_ExpBracket(item))
 
-#    def show(self,form_dic={}):
-#        return map(lambda item: item.show(form_dic), self.content)
-        
+
+    def process_string(self,string):
+        while True:
+            self.content.append(_Bracket(self.string))
+            try:
+                string.goto("+")
+                string.next()
+            except ValueError:
+                break
+
     def set_rule(self,special_dic={},settle=True):
-        new=special_dic.get('NEW',self.new)
-        ret=[]
-        for item in self.content:
-            special_dic['NEW']=new
-            if settle:
-                item.set_rule(self.dic(special_dic),settle=settle)
-            else:
-                ret.append( item.set_rule(self.dic(special_dic),settle=settle))
-            new=False
-        return ret
+        """Invokes set_rule of the brackets"""
+        ges_dic=self._combine_dicts(special_dic)
+        new=ges_dic.get(NEW,True)
+        ret_list=[]
+        for bracket in self.content:
+            ret_list+=bracket.set_rule(ges_dic,settle=settle)
+            ges_dic[NEW]=False
+        if settle:
+            return None
+        else:
+            return ret_list
 
     def show(self,special_dic={}):
-        """Returns the dictionaries that are given to EXPAND_OP_PRODUCT"""
+        """Returns the dictionaries that arewould be given to EXPAND_OP_PRODUCT"""
         return self.set_rule(special_dic=special_dic,settle=False)
 
     def str_short(self):
@@ -1030,35 +474,57 @@ class Formula(object):
         return self.strings[0]+"\n+ ".join(self.strings[1:])
 
     def strings(self):
-        """Returns the formula as list of brackets 
+        """Returns the formula as list of strings representing strings 
         
-        
+
         """
         beginning= [self.label+":"+self.OP_res+"="]
         body=[str(bracket) for bracket in self.content]
         return beginning+body
 
+    def extract(self):
+        """ triggert die extraction in the deeper layers"""
+        for bracket in self.content:
+            bracket.extract()
+
+    def append_(self,other):
+        """Appends another _Formula object.
+        
+        With tailing underline so other classes can implement .append and access this method.
+        """
+        self.content=self.content+other.content
+
+
+
+
+    
+
 #User interfaces (classes and functions)
 #
-class Formula1(Formula):
-    """First actual user interfacing class"""
+class Formula(_Formula):
+    """Class exposed to user"""
     def extract_label(self):
         """Extracts the formula label from the input string"""
         self.string.set_start()
-        if self.string.goto(":")<0:
-            raise MissingLabelError("Please precede your formula by 'my_label:' ")
-        self.label=self.string.substring
-        if len(self.label)==0:
+        try: 
+            self.string.goto(":")<0
+        except ValueError:
+            raise MissingLabelError("Please precede your formula by <my_label>: ")
+        self.arguments[LABEL]=self.string.substring
+        if len(self.arguments[LABEL])==0:
             raise MissingLabelError("This formula label is empty")
         self.string.next()
         
     def extract_OP_res(self):
         """Extracts the result operators label from the input string"""
         self.string.set_start()
-        if self.string.goto("=")<1:
-            raise MissingOP_ResError("Please precede your formula by 'LABEL:OP_RES=' ")
-        self.OP_res=self.string.substring
-        if len(self.OP_res)==0:
+        try:
+            self.string.goto("=")
+        except:
+            raise MissingOP_ResError("Please precede your formula by"\
+                                     "'LABEL:OP_RES=' ")
+        self.arguments[OP_RES]=self.string.substring
+        if len(self.arguments[OP_RES])==0:
             raise MissingOP_ResError("This result Operator is empty")
         self.string.next()
         
@@ -1072,7 +538,7 @@ class Formula1(Formula):
         #remove all (Unicode) white space characters
         string= re.sub("\s", "",string,flags=re.U)
         #set string as _InputString
-        self.string=_InputString(string)
+        self.string=InputString(string)
         self.extract_label()
         self.extract_OP_res()
 
@@ -1080,10 +546,23 @@ class Formula1(Formula):
         """The constructor"""
         self.set_members()     
         self.preprocess_string(string)
-        self.process_string()
+        self.process_string(self.string)
         self.extract()
 
+    def append(self,other):
+        if isinstance(other, _Formula):
+            self.append_(other)
 
+        #Are there Problems with unicode strings?
+        elif isinstance(other, basestring):
+            interm=_Formula()
+            interm.preprocess_string(other)
+            interm.process_string(interm.string)
+            interm.extract()
+            self.append_(interm)
+
+        else:
+            raise NotImplemented
 
 
 def make_dicts(string):
@@ -1101,306 +580,397 @@ def make_formula(string):
 
 
 
-
-
-
-
-
-#---------------------------------------------------------------------------------
-#Testing utility
 class Test(object):
-    """class to access the hidden classes even when importing"""
-    def set_member(self):
-        self.helpful="undefined"
-        #as soon as set this should be a boolean
-    @staticmethod
-    def make_string(string):
-        return _InputString(string)
-    @staticmethod
-    def make_formula(string):
-        return _Formula(string)
-    @staticmethod
-    def make_bracket(string):
-        return _BracketRep(string)
-    @staticmethod
-    def make_parenthesis(string):
-        return _ParRep(string)
-    @staticmethod
-    def make_mult(string):
-        return _MultRep(string)
-    @staticmethod
-    def make_commutator(string):
-        return _ComRep(string)
-    @staticmethod
-    def make_add(string):
-        return _AddRep(string)
-    @staticmethod
-    def make_OP(string):
-        return _OPRep(string)
-    @staticmethod
-    def make_Formula(string):
-        return _Formula(string)
-    def ask_helpful(self):
-        """asks user to rate the errormessage as (un-)helpful
-        
-        If self.helpful is not set asks the user above question
-        """
-        if self.helpful=="undefined":
-            while True:
-                answer=raw_input("Was this error-message helpful? (y/n)")
-                if answer in ("y","Y","yes","Yes","YES"):
-                    return True
-                elif answer in ("n","N","no","No","NO"):
-                    return False
-        else: 
-            return bool(self.helpful)
-            # Hopefully no idiot put something besides True or False into self.helpful
-            #especially not "False"
-        
-
-    def try_(self,string,exp_res):
-        """core function for all testing functions
-
-        can only administer tests for  Rep objects, deriving from _Init
-        """
-
-        cls=self.test_class
+    def test_OP_product(verbose=True):
+        if verbose:
+            print("testing _OPProduct")
         try:
-            print "input:" +str(string)
-            if issubclass(cls ,_UInitOperation):
-                handle=cls(self.OP1,string)
-            else:
-                handle=cls(string)
-            print "Sucessfully created "+str(handle)
-            #res for result
-            res=handle.extract()
-            if res==exp_res:
-                print "the object was sucessfully extracted:"
-                print res
-                return 1
-            else:
-                print "Oh, no extraction didn't work as planned"
-                print "expected: " + str(exp_res)
-                print "result: " + str(res)
-                return 0
-        except(Exception):
-            print tb.print_exc()
+            i=_OPProduct(["C0","H0","T1"])
+        except( Exception):
+            print("There was an error at creation of _OPProduct")
+            tb.print_exc()
+            raise
+        inp={LABEL:"LAG", 
+             IDX_SV:[1,2,3], 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res= {"OP_RES": 'L',
+                  'OPERATORS': ['C0', 'H0', 'T1'], 
+                  'LABEL': 'LAG', 
+                  'FAC_INV': 1, 
+                  'FAC': 1, 
+                  'IDX_SV': [1, 2, 3]}
+        if ( i._show(inp)!=  exp_res ):
+            print("there was a problem with _OPProduct._show()"
+                  +"\nprobably a problem in the dictionary generation"
+                  +"\nresult: " +str(i.show(inp))
+                  +"\n expected res:" +str(exp_res))
+            raise Exception
 
-    def test_OPRep(self):
-        """ testing _OPRep with valid strings"""
-        print self.test_OPRep.__doc__
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        if i._show(inp) != exp_res :
+            print("the idx_sv generation does not yield correct results"
+                   +"\nresult:" + str(i.show(inp))
+                   +"\n expected res:" + str(exp_res))
+            raise Exception
         
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_OPRep
-        error_counter=0
+        def try_num(op_list,inp,exp_res):
+            
+            try:
+                i=_OPProduct(op_list)
+            except( Exception):
+                print("There was an error at creation of _OPProduct")
+                tb.print_exc()  
+                raise
 
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
+            if  i._show(inp) != exp_res :
+                print( "error"
+                       +"\nresult:" + str(i.show(inp))
+                       +"\n expected res:" + str(exp_res))
+                raise Exception
+        op_list=["2C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 2.0, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)        
+
+        op_list=["2.4C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 2.4, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)
+
+        op_list=[".4C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 0.4, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)
         
-
-        #1-try because try gives back 0 or 1 and one (true) 
-        # should correspond to a successfull test
-        error_counter+=1-try_(Ts("T3)"),[["T3"]])
-        error_counter+=1-try_(Ts("3T_evy)"),[["3T_evy"]])
-        error_counter+=1-try_(Ts("-GAM)"),[["-GAM"]])
-        error_counter+=1-try_(Ts("1d-1T2)"),[["1d-1T2"]])
-        error_counter+=1-try_(Ts(".5Gam_g)"),[[".5Gam_g"]])
-        error_counter+=1-try_(Ts("C0^+)"),[["C0^+"]])
- 
-
-
-
-        error_counter+=1-try_(Ts("T3+"),[["T3"]])
-        error_counter+=1-try_(Ts("T3^++"),[["T3^+"]])
-        error_counter+=1-try_(Ts("T3,"),[["T3"]])
-        error_counter+=1-try_(Ts("T3("),[["T3"]])
-        error_counter+=1-try_(Ts("T3["),[["T3"]])
-        error_counter+=1-try_(Ts("T3]"),[["T3"]])
-        print "Testing operator creation, we encountered ",error_counter," errors."        
-        return error_counter
-
-    def test_MultRep(self):
-        """ testing _MultRep with valid strings"""
-        print self.test_MultRep.__doc__
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_MultRep
-        error_counter=0
-
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
-
-        # And another variable used to communicate with self.try_
-        self.OP1=_OPRepAlt("T1")
-
-        error_counter+=1-try_(Ts("*T3+"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("*3T3+"),[["T1","3T3"]])
-        error_counter+=1-try_(Ts("*-T3+"),[["T1","-T3"]])
-        error_counter+=1-try_(Ts("*1d-1T3+"),[["T1","1d-1T3"]])
-        error_counter+=1-try_(Ts("*.5T_3+"),[["T1",".5T_3"]])
-        error_counter+=1-try_(Ts("*T3'^++"),[["T1","T3'^+"]])
-        error_counter+=1-try_(Ts("*-T3+"),[["T1","-T3"]])
-
-
-        error_counter+=1-try_(Ts("T3+"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("T3*T2+"),[["T1","T3","T2"]])
-        error_counter+=1-try_(Ts("T3)"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("T3,"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("T3]"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("T3-"),[["T1","T3"]])
         
-        print "Testing Multiplication, we encountered ",error_counter," errors."
-        return error_counter
+        op_list=["-2.4C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': -2.4, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)
 
-    def test_AddRep(self):
-        """ testing _AddRep with valid strings"""
-        print self.test_AddRep.__doc__
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_AddRep
-        error_counter=0
+        op_list=["-.4C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': -0.4, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)     
 
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
+        op_list=["-2C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': -2.0, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)
 
-        # And another variable used to communicate with self.try_
-        self.OP1=_OPRepAlt("T1")
+        op_list=["-4e-001C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': -0.4, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res) 
 
-        error_counter+=1-try_(Ts("+T3)"),[["T1"],["T3"]])
-        error_counter+=1-try_(Ts("+3T3)"),[["T1"],["3T3"]])
-        error_counter+=1-try_(Ts("+-T3)"),[["T1"],["-T3"]])
-        error_counter+=1-try_(Ts("+1d-1T3)"),[["T1"],["1d-1T3"]])
-        error_counter+=1-try_(Ts("+.5T_3)"),[["T1"],[".5T_3"]])
-        error_counter+=1-try_(Ts("+T3'^+)"),[["T1"],["T3'^+"]])
-        error_counter+=1-try_(Ts("-T3)"),[["T1"],["-T3"]])
+        op_list=["1/24C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 24.0, 
+                 'FAC': 1, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res) 
 
 
-        error_counter+=1-try_(Ts("+T3)"),[["T1"],["T3"]])
-        error_counter+=1-try_(Ts("+T3]"),[["T1"],["T3"]])
-        error_counter+=1-try_(Ts("+T3,"),[["T1"],["T3"]])
+        op_list=["-C0"]
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': -1.0, 
+                 'IDX_SV': [1]}
+        try_num(op_list,inp,exp_res)
 
-        self.OP1=_MultRepAlt(_OPRepAlt("T1"),_OPRepAlt("T2"))
+        #There are many more combinations to test for numbers.
+        # I am omitting many of them.
+        #
+
         
-        error_counter+=1-try_(Ts("+T3*T4)"),[["T1","T2"],["T3","T4"]])
+        op_list=["1/24C0","-H","10.543T1"]              
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['C0','H','T1'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 24.0, 
+                 'FAC': -10.543, 
+                 'IDX_SV': [1,2,3]}
+        try_num(op_list,inp,exp_res)
 
-        print "Testing Addition, we encountered ",error_counter," errors."
-        return error_counter
+        if verbose:
+            print("number extraction seems to be working")
 
+        #try_num also works for tests of sv_idx
+        #
 
-
-    def test_ParRep(self):
-        """ testing _ParRep with valid strings"""
-        print self.test_ParRep.__doc__
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_ParRep
-        error_counter=0
-
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
-
-        error_counter+=1-try_(Ts("(T3)"),[["T3"]])
-        error_counter+=1-try_(Ts("(3T3)"),[["3T3"]])
-        error_counter+=1-try_(Ts("(-0.5T3)"),[["-0.5T3"]])
-        error_counter+=1-try_(Ts("(1d-1T3)"),[["1d-1T3"]])
-        error_counter+=1-try_(Ts("(.5T_3)"),[[".5T_3"]])
-        error_counter+=1-try_(Ts("(T3'^+)"),[["T3'^+"]])
-        error_counter+=1-try_(Ts("(-T3)"),[["-T3"]])
-
-        error_counter+=1-try_(Ts("(T1+T3)"),[["T1"],["T3"]])
-        error_counter+=1-try_(Ts("(T1*T3)"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("(T1+T2*T3)"),[["T1"],
-                                                ["T2","T3"]])
-        error_counter+=1-try_(Ts("(T1*(T2+T3))"),[["T1","T2"],
-                                                  ["T1","T3"]])
-        error_counter+=1-try_(Ts("((T1+T2)*(T3+T4)))"),[["T1","T3"],
-                                                        ["T1","T4"],
-                                                        ["T2","T3"],
-                                                        ["T2","T4"]])
-        error_counter+=1-try_(Ts("(T1(T2+T3))"),[["T1","T2"],
-                                                 ["T1","T3"]])
-        error_counter+=1-try_(Ts("((T1+T2)(T3+T4)))"),[["T1","T3"],
-                                                       ["T1","T4"],
-                                                       ["T2","T3"],
-                                                       ["T2","T4"]])
-        error_counter+=1-try_(Ts("(T1-T3)"),[["T1"],["-T3"]])
-
-        print "Testing parentheses, we encountered ",error_counter," errors."
-
-        return error_counter
-
-    def test_ComRep(self):
-        """ testing _ParRep with valid strings"""
-        print self.test_ComRep.__doc__
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_ComRep
-        error_counter=0
-
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
-
-        error_counter+=1-try_(Ts("[T1,T3]"),[["T1","T3"],
-                                             ["-1","T3","T1"]])
-        error_counter+=1-try_(Ts("[-T1,-T3]"),[["-T1","-T3"],
-                                               ["-1","-T3","-T1"]])
-        error_counter+=1-try_(Ts("[1.0d-3T1,2.3d-4T3]"),[["1.0d-3T1","2.3d-4T3"],
-                                                         ["-1","2.3d-4T3","1.0d-3T1"]])
-        error_counter+=1-try_(Ts("[T1+T2,T3]"),[["T1","T3"],
-                                                   ["T2","T3"],
-                                                   ["-1","T3","T1"],
-                                                   ["-1","T3","T2"]
-                                               ])
-
-        error_counter+=1-try_(Ts("[T1-T2,T3]"),[["T1","T3"],
-                                                   ["-T2","T3"],
-                                                   ["-1","T3","T1"],
-                                                   ["-1","T3","-T2"]
-                                               ])
-        error_counter+=1-try_(Ts("[T1,T3*T4]"),[["T1","T3","T4"],
-                                                ["-1","T3","T4","T1"]])
-        print "Testing commutation, we encountered ",error_counter," errors."
-        return error_counter
-#        error_counter+=1-try_(Ts("(3T3)"),[["3T3"]])
-#        error_counter+=1-try_(Ts("(-0.5T3)"),[["-0.5T3"]])
-#        error_counter+=1-try_(Ts("(1d-1T3)"),[["1d-1T3"]])
-#        error_counter+=1-try_(Ts("(.5T_3)"),[[".5T_3"]])
-#        error_counter+=1-try_(Ts("(T3'^+)"),[["T3'^+"]])
-#        error_counter+=1-try_(Ts("(-T3)"),[["-T3"]])
- 
-    def test_BracketRep(self):
-        """ testing _BracketRep with valid strings"""
-        print self.test_BracketRep.__doc__
-        #self.test_class is a variable that tells try_ which class to test
-        self.test_class=_BracketRep
-        error_counter=0
-
-        #Shortening names (Ts for Test string)
-        try_=self.try_
-        Ts=_InputStringAlt
-
-        error_counter+=1-try_(Ts("<T3>"),[["T3"]])
-        error_counter+=1-try_(Ts("<(T3)>"),[["T3"]])
-        error_counter+=1-try_(Ts("<-T3>"),[["-T3"]])
-        error_counter+=1-try_(Ts("<(T1)T3>"),[["T1","T3"]])
-        error_counter+=1-try_(Ts("<T1+T3>"),[["T1"],["T3"]])
-        error_counter+=1-try_(Ts("<T1-T3>"),[["T1"],["-T3"]])
-        error_counter+=1-try_(Ts("<(T1+T2)T3>"),[["T1","T3"],["T2","T3"]])
-
-        print "Testing brackets, we encountered ",error_counter," errors."
-        return error_counter
-
-    def run_test(self,helpful="undefined"):
-        """ Testsuite for string_to_form V0.8"""
-        self.helpful=helpful
-        print self.run_test.__doc__
         
-        error_counter=0
-        error_counter+=self.test_OPRep()
-        error_counter+=self.test_MultRep()
-        error_counter+=self.test_AddRep()
-        error_counter+=self.test_ComRep()
-        error_counter+=self.test_BracketRep()
-        print "there were ",error_counter," Errors"
+        op_list=["GAM'","H","GAM'"]              
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['GAM','H','GAM'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 1, 
+                 'IDX_SV': [1,2,1]}
+        try_num(op_list,inp,exp_res)
+
         
+        op_list=["GAM1'","H","GAM2'"]              
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['GAM1','H','GAM2'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 1, 
+                 'IDX_SV': [1,2,3]}
+        try_num(op_list,inp,exp_res)
+
+
+
+        op_list=["GAM'","H","GA'M"]              
+        inp={LABEL:"LAG", 
+             OP_RES:"L", 
+             FAC:1, 
+             FAC_INV:1 }
+        exp_res={'OP_RES': 'L', 
+                 'OPERATORS': ['GAM','H','GAM'], 
+                 'LABEL': 'LAG', 
+                 'FAC_INV': 1, 
+                 'FAC': 1, 
+                 'IDX_SV': [1,2,1]}
+        try_num(op_list,inp,exp_res)
+
+
+        if verbose:
+            print("creation of index list seems to be working")
+
+        #testing __str__
+        #
+        #reusing last _OPProduct
+        i=_OPProduct(op_list)
+        try:
+            assert str(i) == '1/1*<GAM*H*GAM>'
+        except Exception:
+            print("Warning _OPProduct.__str__ seems not to be working"
+                  +" according to specifications"
+                  +"\nresult:"+str(i)) 
+        else:
+            if verbose:
+                print("all test of _OPProduct were successful")
+
+
+    def test_Bracket(verbose=True):
+        def factory(string):
+            return _Bracket(InputString(string))
+
+        def try_(string,inp,exp_res):
+            try:
+                i=factory(string)
+            except( Exception):
+                print("There was an error at creation of _OPProduct from input"+str(string))
+                tb.print_exc()  
+                raise
+
+            if  i.show(inp) != exp_res :
+                print( "error"
+                       +"\nresult:" + str(i.show(inp))
+                       +"\n expected res:" + str(exp_res))
+                raise Exception
+
+        string="<H>"
+        inp={"LABEL":"L", 
+             "OP_RES":"L", 
+             "NEW":True}
+
+        exp_res=[{'OP_RES': 'L', 'OPERATORS': ['H'], 'LABEL': 'L', 'FAC_INV': 1, 'NEW': True, 'FAC': 1, 'IDX_SV': [1]}]
+        try_(string,inp,exp_res)
+
+
+        string="2.4*<H>"
+        inp={"LABEL":"L", 
+             "OP_RES":"L", 
+             "NEW":True}
+
+        exp_res=[    {'OP_RES': 'L', 
+                      'OPERATORS': ['H'], 
+                      'LABEL': 'L', 
+                      'FAC_INV': 1, 
+                      'NEW': True, 
+                      'FAC': 2.4, 
+                      'IDX_SV': [1]
+                  }
+        ]
+        try_(string,inp,exp_res)
+
+        string="2/7<H>"
+        inp={"LABEL":"L", 
+             "OP_RES":"L", 
+             "NEW":True}
+
+        exp_res=[    {'OP_RES': 'L', 
+                      'OPERATORS': ['H'], 
+                      'LABEL': 'L', 
+                      'FAC_INV': 7.0, 
+                      'NEW': True, 
+                      'FAC': 2.0, 
+                      'IDX_SV': [1]
+                  }
+        ]
+        try_(string,inp,exp_res)
+
+
+        string="2.5<H>"
+        inp={"LABEL":"L", 
+             "OP_RES":"L", 
+             "NEW":True}
+
+        exp_res=[    {'OP_RES': 'L', 
+                      'OPERATORS': ['H'], 
+                      'LABEL': 'L', 
+                      'FAC_INV': 1, 
+                      'NEW': True, 
+                      'FAC': 2.5, 
+                      'IDX_SV': [1]
+                  }
+        ]
+        try_(string,inp,exp_res)
+
+        
+        string="<C0*D|H|C0+-*[[[>"
+        inp={"LABEL":"L", 
+             "OP_RES":"L", 
+             "NEW":True}
+
+        exp_res=[    {'OP_RES': 'L', 
+                      'OPERATORS': ['H'], 
+                      'LABEL': 'L', 
+                      'FAC_INV': 1, 
+                      'NEW': True, 
+                      'FAC': 1, 
+                      'IDX_SV': [1]
+                  }
+        ]
+        try_(string,inp,exp_res)
+        
+        i=factory(string)
+        try:
+            assert str(i) == '1/1(1/1*<H>)'
+        except Exception:
+            print("Warning _OPProduct.__str__ seems not to be working")
+        else:
+            if verbose:
+                print("all test of _Bracket were successful")
+
+
+    def test_formula(verbose=True):
+        inp={"LABEL":"F_LAG","OP_RES":"L"}
+        exp_res=[{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 1, 'NEW': True, 'IDX_SV': [1]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 0.5, 'NEW': False, 'IDX_SV': [1, 2]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': -0.5, 'NEW': False, 'IDX_SV': [1, 2]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H', 'T1', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': 1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': -1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': -1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
+{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'T1', 'H'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': 1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]}]
+
+
+        i=_Formula()
+        i.preprocess_string("<H>+0.5<[H,T1]>+1/6*<[[H,T1],T1]>")
+        i.process_string(i.string)
+        assert i.show(inp) == exp_res
+
+        print("all tests of _Formula were successful")       
+
+        #currently only one test for _Formula. 
+    def test_Formula(verbose=True):
+        print("Formula is currently not tested")
+    
+
+    def test_all(verbose=True):
+        try:
+            LABEL
+        except NameError: 
+            for i in _g :
+                exec(i +"='"+i+"'" )
+	test_OP_product(verbose)
+        test_Bracket(verbose)
+        test_formula(verbose)
+        test_Formula(verbose)
+

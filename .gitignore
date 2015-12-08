@@ -1,6 +1,7 @@
 *.o
 *.a
 *~
+*.pyc
 *.mod
 deps.mk
 autom4te.cache

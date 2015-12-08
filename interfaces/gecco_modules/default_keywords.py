@@ -16,7 +16,7 @@ regexp_argument_extr = re.compile("^ +call +argument_add *\( *"+
                                   "(?:context=)?'(?P<context>.+?)' *, *"+
                                   "type=vtyp_(?P<type>.+?) *, *"+
                                   "(?:len=(?P<len>[0-9]+?)(?: *, *|\))"+")?"+
-                                  "(:?"+".def=\(/(?P<value>.+?)/\)"+")?"+
+                                  "(?:"+".def=\(/(?P<value>.+?)/\)"+")?"+
                                   "(?:\)? *! *(?P<comment>.*))?")
 #Description of regexp:
 # "^" matches the beginning and " +" matches an arbitrary amount (at least on) whitespace.
@@ -163,7 +163,7 @@ def _find_parent_core(context,root):
 
 
 def _find_parent_wrap(match,root):
-    """A wrapper fpr the wrapper so I can reuse the internal wrapper
+    """A wrapper for the wrapper so I can reuse the internal wrapper
 
     """
     if match.group("context")==None:
@@ -262,16 +262,68 @@ def _check_for_comment(content,index):
         return True
     return False
 
-def restructure_xml(out_file):
+#simplified version of regexp for tag matching
+regexp_empty_tag=re.compile("<[^<>]+/>")
+regexp_open_tag=re.compile("<[^/][^<>]*[^/]>")
+regexp_close_tag=re.compile("</[^<>]*[^/]>")
+regext_comment_tag=re.compile("<!-- .* -->")
+
+regexp_parser_instruction=re.compile("<\?[^x][^m][^l][^<>]*>" ,flags=re.I)
+#for parser instructions
+regexp_xml_def=re.compile("<\?xml[^<>]*>")
+regexp_cdata_tag=re.compile("<![CDATA[.*?]]>")
+re_list=[regexp_empty_tag,regexp_open_tag,regexp_close_tag,
+         regext_comment_tag,regexp_cdata_tag,regexp_parser_instruction,
+         regexp_xml_def,]
+class EndOfFile(Exception):
+    pass
+class IllformedXml(Exception):
+    pass
+
+def regexp_match(content,index):
+    index=find(content,"<",index)
+    if index<0:
+        #communicating to outer layers via exception: not nice, but useful.
+        raise EndOfFile
+    i=0
+    while i<len(re_list):
+        regexp=re_list[i]
+        match=regexp.match(content,index)
+        if match:
+            return match,i
+        i+=1
+    raise IllformedXml
+
+def restructure_xml(file):
     content=""
-    with open(out_file,"r") as f:
+    with open(file,"r") as f:
         content=f.read()
-    with open(out_file,"w") as f:
+    with open(file,"w") as f:
         ident=4
         ident_lvl=0
         index=0
         start_index=content.find("<",index)
         index=start_index
+        end_index=start_index 
+        match=None #match for current tag,next tag, after the next tag
+        match_kind=-1# kind of match corresponds to the index in re_list
+        i=0
+        while True:
+            match,match_kind=regexp_match(content,index)
+            if match_kind>=5 :# parser instructions and xml_def
+                write_file(content,index,match.start(),ident=ident*ident_lvl) 
+                write_file(content,match.start(),match.end(),ident=0)
+                start_index=match.end()+1
+                index=start_index
+                ident=ident+next_ident
+                next_ident=0
+            elif match_kind>=3: #cdata and comment
+                index=match.end()
+            elif match_kind==2:
+                next_ident-=1
+
+            
+
         while 0<=index<len(content):
             if _check_for_close_tag(content,index):
                 ident_lvl-=1
@@ -291,8 +343,7 @@ def restructure_xml(out_file):
 _read_keyword_file(keyword_file)#writes to the global arrays
 default_keys=_construct_xml_tree(tree)
 
-def find_by_context(context,name):
-    tree=default_keys
+def find_by_context(context,name,tree=default_keys):
     full_context=context+"."+name
     root=tree.getroot()
 
@@ -319,9 +370,8 @@ def convert_to_float(string):
         print "unconvertible string: "+string
         exit
 
-def get_value_by_context(context,name):
-    tree=default_keys
-    elem= find_by_context(context,name)
+def get_value_by_context(context,name,tree=default_keys):
+    elem= find_by_context(context,name,default_keys)
     type_=elem.get("type","str")
     if    type_=="str":
         return str(elem.text)

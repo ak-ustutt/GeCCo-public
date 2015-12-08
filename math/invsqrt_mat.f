@@ -17,7 +17,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 00
       real(8), parameter ::
      &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::
@@ -70,7 +70,7 @@
         write(lulog,'(x,a)') 'invsqrt_mat at work'
         write(lulog,'(x,a)') '-------------------'
         write(lulog,*) 'input S matrix:'
-        call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        call wrtmat3(mat,ndim,ndim,ndim,ndim)
       end if
 
       ! check if S is symmetric
@@ -98,7 +98,7 @@ c      call svd_drv(ndim,mat,singval)
 
       if (ntest.ge.100) then
         write(lulog,*) 'eigenvector matrix U:'
-        call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        call wrtmat3(mat,ndim,ndim,ndim,ndim)
         write(lulog,*) 'singular values:'
       end if
 
@@ -163,7 +163,7 @@ c dbgend
 
       if (ntest.ge.100) then
         write(lulog,'(a,f5.2,a)') 'U*s^(',expo,')'
-        call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        call wrtmat3(mat,ndim,ndim,ndim,ndim)
       end if
 
       if (.not.half) then
@@ -174,7 +174,7 @@ c dbgend
         deallocate(mat_tmp)
         if (ntest.ge.100) then
           write(lulog,*) 'U*1s*U^+ projector:'
-          call wrtmat2(mat2,ndim,ndim,ndim,ndim)
+          call wrtmat3(mat2,ndim,ndim,ndim,ndim)
         end if
       end if
 c dbg  can be used to set 1

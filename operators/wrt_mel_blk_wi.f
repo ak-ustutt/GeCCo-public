@@ -92,7 +92,7 @@ c      else
      &               op%ihpvca_occ(1,1,idx_occ),orb_info%nsym,njoined)
 c      end if
         
-      fmtstr(1:) = '(x,i5,2x,'
+      fmtstr(1:) = '(i7,2x,'
       idxst = 10
       do ijoin = 1, njoined
         if (nelc(ijoin).gt.0) then
