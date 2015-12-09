@@ -498,7 +498,7 @@ class _Formula( _FormulaStringRepUtil):
             #relying on the parent class, not GenFormula, 
             #  to make Formula independent from other interface classes 
             interm.preprocess_string(other)
-            interm.process_string(interm.string)
+            interm.process_string(interm._string)
             interm.extract()
             self._append(interm)
         elif isinstance(other,list):
@@ -514,7 +514,7 @@ class _Formula( _FormulaStringRepUtil):
         or a  string representing a formula body """
         try:
             self._append(other)
-        except ExpFormException as ex:
+        except ExpFormError as ex:
             quit_error(ex.msg)
 
 
