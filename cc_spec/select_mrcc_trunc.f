@@ -226,7 +226,8 @@ c dbgend
                 case(4)
                   ihampart = 2
                 case default
-                  call quit(1,'select_mrcc_trunc','impossible!')
+                   call quit(1,'select_mrcc_trunc',&
+                  'impossible! Hamiltonian of rank>4')
                 end select
               case default
                 call quit(1,'select_mrcc_trunc','nrank>2 for H?!')
