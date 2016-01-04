@@ -62,6 +62,12 @@ DEF_ME_LIST(ME_param)
 debug_MEL('T1_ca_LST',info_only=True)
 
 
+
+
+
+#new_target('DEF_Oges')
+comment('=== Residue Operators ===')
+
 DEF_OP_FROM_OCC({
         LABEL:'Oges',
         JOIN:2,
@@ -80,6 +86,9 @@ DEF_ME_LIST(ME_param)
 
 debug_MEL('Oges_LST',info_only=True)
 
+
+
+
 DEF_OP_FROM_OCC({
         LABEL:'O1',
         JOIN:2,
@@ -97,3 +106,45 @@ if spinadapt>=2:
 DEF_ME_LIST(ME_param)
 
 debug_MEL('O1_LST',info_only=True)
+
+
+
+
+new_target('DEF_LAM')
+comment('=== Lambda Operators ===')
+depend('T-Operators')
+
+
+CLONE_OPERATOR({
+        LABEL:'LAMges',
+        TEMPLATE:'T2_ca',
+        ADJOINT:True})
+
+ME_param={
+        LIST:'LAMges_LST',
+        OPERATOR:'LAMges',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:+1}
+
+DEF_ME_LIST(ME_param)
+
+debug_MEL('LAMges_LST',info_only=True)
+
+
+
+CLONE_OPERATOR({
+        LABEL:'LAM1',
+        TEMPLATE:'T1_ca',
+        ADJOINT:True})
+
+ME_param={
+        LIST:'LAM1_LST',
+        OPERATOR:'LAM1',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:+1}
+
+DEF_ME_LIST(ME_param)
+
+debug_MEL('LAM1_LST',info_only=True)

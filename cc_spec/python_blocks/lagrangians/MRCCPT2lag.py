@@ -20,7 +20,7 @@ if hamiltonian not in known_hamiltonians :
 new_target('DEF_FORM_PT_LAG')
 
 depend('T-Operators')
-
+depend('DEF_LAM')
 depend('MakeRefState')
 
 depend('H0')
@@ -33,7 +33,6 @@ elif hamiltonian=="REPT":
 elif hamiltonian=="F_EFF":
     depend('EVAL_F_EFF')
 
-
 DEF_SCALAR({
         LABEL:'PT_LAG'})
 DEF_ME_LIST({
@@ -43,23 +42,39 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-#Energy equation no 
-LAG=stf.Formula("FORM_PT_LAG:PT_LAG="\
-                "<C0^+*(H+H*T2_ca)C0>")
+DEF_SCALAR({
+        LABEL:'PT_LAG_A'})
 
-LAG.append("<C0^+*(T2_ca^+)*(H)C0>")
+
+#Energy equation no 
+LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+                  "<C0^+*(H+H*T2_ca)C0>")
+
+LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+                  "<C0^+*(LAMges)*(H)C0>")
+
+
 
 if hamiltonian=="DYALL":
-    LAG.append("<C0^+*(T2_ca^+)*([HAM_D,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAMges)*([HAM_D,T2_ca])*C0>")
 elif hamiltonian=="REPT":
-    LAG.append("<C0^+*(T2_ca^+)*([REPT_HAM,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAMges)*([REPT_HAM,T2_ca])*C0>")
 elif hamiltonian=="F_EFF":
-    LAG.append("<C0^+*(T2_ca^+)*([FOCK_EFF,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAMges)*([FOCK_EFF,T2_ca])*C0>")
 
+LAG_E.append("<C0^+*(T2_ca^+)*Oges*C0>")
 
-for item in LAG.show():
+for item in LAG_E.show():
     print item
-LAG.set_rule()
+LAG_E.set_rule()
+
+comment("LAG_E finished")
+
+for item in LAG_A.show():
+    print item
+LAG_A.set_rule()
+comment("LAG_A finished")
+
 
 mark("PT-LAGRANGIAN")
 
@@ -67,42 +82,30 @@ SUM_TERMS({
         LABEL_IN:'FORM_PT_LAG',
         LABEL_RES:'FORM_PT_LAG'})
 
+SUM_TERMS({
+        LABEL_IN:'FORM_PT_LAG_A',
+        LABEL_RES:'FORM_PT_LAG_A'})
+
 
 
 debug_FORM('FORM_PT_LAG')
 
 
 
-#Make the Derivative with respect to T2_ca^+ and factor that out. 
-#PT_LAG=E+A => PT_LAG=E_1,2,3+T1_ca^+*O1+T2_ca^+*Oges
-DERIVATIVE({LABEL_IN:'FORM_PT_LAG',
-        LABEL_RES:'FORM_PT_Ampl',
+#Make the Derivative with respect to LAMges.
+DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
+        LABEL_RES:'FORM_PT_Amp',
         OP_RES:'Oges',
-        OP_DERIV:'T2_ca^+'})
+        OP_DERIV:'LAMges'})
 
 
-debug_FORM('FORM_PT_Ampl_T1')
+
+debug_FORM('FORM_PT_Amp')
 
 # For some reason the reorder formulas are necessary. 
-REORDER_FORMULA({
-        LABEL_IN:'FORM_PT_LAG',
-        LABEL_RES:'FORM_PT_LAG'})
-
-REORDER_FORMULA({
-        LABEL_IN:'FORM_PT_Ampl',
-        LABEL_RES:'FORM_PT_Ampl'})
-FACTOR_OUT({
-        LABEL_IN:'FORM_PT_LAG',
-        LABEL_RES:'FORM_PT_LAG',
-        INTERM:'FORM_PT_Ampl'})
-
-
-debug_FORM('FORM_PT_LAG')
-
-debug_FORM('FORM_PT_Ampl')
 
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG',
-        LABELS_IN:['FORM_PT_Ampl','FORM_PT_LAG']})
+        LABELS_IN:['FORM_PT_Amp','FORM_PT_LAG']})
 
