@@ -56,12 +56,12 @@ DEF_ME_LIST({
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_A_TRF',
         OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','LAM_TRF','H','T2g','C0'],
+        OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
         IDX_SV:[1,2,3,4,5],
         NEW:True})
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_A_TRF',OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','LAM_TRF','T2g','H','C0'],
+        OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
         IDX_SV:[1,2,3,4,5],
         FIX_VTX:True,
         FAC:-1,
