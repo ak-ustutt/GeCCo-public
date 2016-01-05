@@ -16,7 +16,7 @@ debug_MEL('PRECON_LST')
 #SOLVE_NLEQ uses FOPT_T2_orth for both transformations and needs X_TRM_LIST_DAG also bound to that opperator
 
 ASSIGN_ME2OP({
-        LIST:'X_TRM_LIST_DAG',
+        LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM'})
 
 debug_FORM('FORM_T1_orth')
@@ -25,14 +25,14 @@ debug_FORM('FORM_T2_orth')
 
 
 SOLVE_NLEQ({
-        LIST_OPT:['T1_ca_LST','T2_ca_LST'],
-        LIST_RESID:['O1_LST','Oges_LST'],
-        LIST_PRC:['PRECON1_LST','PRECON_LST'],
+        LIST_OPT:['ME_T1','ME_T2g'],
+        LIST_RESID:['ME_O1','ME_O2g'],
+        LIST_PRC:['ME_PRECON1','ME_PRECON2g'],
         LIST_E:'PT_LAG_LST',
         FORM:'FOPT_PT_LAG2',
         MODE:'TRF TR0',
         FORM_SPC:['FOPT_T1_orth','FOPT_T2_orth'],
-        LIST_SPC:['T1_orth_LIST','X_TRM_LIST','X_TRM_LIST_DAG','T2_orth_LIST']
+        LIST_SPC:['ME_T1_orth','ME_X_TRM','ME_X_TRM_DAG','ME_T2_orth']
         })
 
 

@@ -19,8 +19,16 @@ if hamiltonian not in known_hamiltonians :
 
 new_target('DEF_FORM_PT_LAG')
 
-depend('T-Operators')
-depend('DEF_LAM')
+
+depend('DEF_T2g')
+depend('DEF_T1')
+
+depend('DEF_LAM2g')
+depend('DEF_LAM1')
+
+depend('DEF_O2g')
+depend('DEF_O1')
+
 depend('MakeRefState')
 
 depend('H0')
@@ -42,38 +50,52 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
+#dummy for residue of amplitude equation
 DEF_SCALAR({
         LABEL:'PT_LAG_A'})
 
 
 #Energy equation no 
 LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
-                  "<C0^+*(H+H*T2_ca)C0>")
+                  "<C0^+*(H+H*T2g)C0>")
 
 LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
-                  "<C0^+*(LAMges)*(H)C0>")
-
-
+                  "<C0^+*(LAM2g)*(H)C0>")
 
 if hamiltonian=="DYALL":
-    LAG_A.append("<C0^+*(LAMges)*([HAM_D,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
 elif hamiltonian=="REPT":
-    LAG_A.append("<C0^+*(LAMges)*([REPT_HAM,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
 elif hamiltonian=="F_EFF":
-    LAG_A.append("<C0^+*(LAMges)*([FOCK_EFF,T2_ca])*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
 
-LAG_E.append("<C0^+*(T2_ca^+)*Oges*C0>")
+#LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
+
 
 for item in LAG_E.show():
     print item
 LAG_E.set_rule()
 
-comment("LAG_E finished")
+print("LAG_E finished")
+
 
 for item in LAG_A.show():
     print item
 LAG_A.set_rule()
-comment("LAG_A finished")
+
+print("LAG_A finished")
+
+
+FACTOR_OUT({
+        LABEL_RES:'FORM_PT_LAG',
+        LABEL_IN:'FORM_PT_LAG',
+        INTERM:'FORM_GAM0'})
+
+FACTOR_OUT({
+        LABEL_RES:'FORM_PT_LAG_A',
+        LABEL_IN:'FORM_PT_LAG_A',
+        INTERM:'FORM_GAM0'})
+
 
 
 mark("PT-LAGRANGIAN")
@@ -91,18 +113,14 @@ SUM_TERMS({
 debug_FORM('FORM_PT_LAG')
 
 
-
-#Make the Derivative with respect to LAMges.
+#Make the Derivative with respect to LAM2g.
 DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         LABEL_RES:'FORM_PT_Amp',
-        OP_RES:'Oges',
-        OP_DERIV:'LAMges'})
-
-
+        OP_RES:'O2g',
+        OP_DERIV:'LAM2g'})
 
 debug_FORM('FORM_PT_Amp')
 
-# For some reason the reorder formulas are necessary. 
 
 
 OPTIMIZE({

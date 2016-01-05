@@ -6,6 +6,7 @@ from gecco_modules.NoticeUtil import *
 spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+ntest=100
 
 ###################################################################
 ###################################################################
@@ -13,7 +14,13 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
 ###################################################################
 ###################################################################
 new_target('MakeOrthBasis')
-depend('T-Operators')
+depend('DEF_T2g')
+depend('DEF_T1')
+depend('DEF_O2g')
+depend('DEF_O1')
+depend('DEF_LAM2g')
+depend('DEF_LAM1')
+
 depend('MakeRefState')
 depend('GAM0_CALC')
 
@@ -41,7 +48,6 @@ ADD_UNITY({
         INIT:True})
 
 
-
 DEF_OP_FROM_OCC({
         LABEL:'Tv',
         DESCR:'V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'})
@@ -62,7 +68,7 @@ else:
     S2_val=-1  # the default
 
 DEF_ME_LIST({
-        LIST:'GSLST',
+        LIST:'ME_GAM_S',
         OPERATOR:'GAM_S',
         IRREP:1,
         '2MS':0,
@@ -74,11 +80,11 @@ CLONE_OPERATOR({
         TEMPLATE:'GAM_S'})
 
 DEF_ME_LIST({
-        LIST:'GS_ISQ_LST',
+        LIST:'ME_GAM_S_ISQ',
         OPERATOR:'ISQ_GAM',
         IRREP:1,
         '2MS':0,
-        'S2':0, # markS2 was 1
+        'S2':0,
         AB_SYM:0})
 
 
@@ -87,9 +93,9 @@ DEF_ME_LIST({
 
 CLONE_OPERATOR({
         LABEL:'T2_orth',
-        TEMPLATE:'T2_ca'})
+        TEMPLATE:'T2g'})
 DEF_ME_LIST({
-        LIST:'T2_orth_LIST',
+        LIST:'ME_T2_orth',
         OPERATOR:'T2_orth',
         IRREP:1,
         '2MS':0,
@@ -145,13 +151,14 @@ comment('Evaluate effective densities for overlap ...')
 OPTIMIZE({
         LABEL_OPT:'FOPT_GAM_S',
         LABELS_IN:'FORM_GAM_S'})
+
 EVALUATE({
         FORM:'FOPT_GAM_S'})
  
 if False : # (gno >= 0 and l_iccc) 
     if (spinadapt >= 2): 
         SPIN_PROJECT({ 
-                LIST:'GSLST',
+                LIST:'ME_GAM_S',
                 S2:0})
     EVALUATE({
             FORM:'',  # was  'FOPT_D_GNO'
@@ -161,11 +168,11 @@ if False : # (gno >= 0 and l_iccc)
 
 # SVD
 INVERT({
-        LIST_INV:'GSLST',
-        LIST:'GS_ISQ_LST',
+        LIST_INV:'ME_GAM_S',
+        LIST:'ME_GAM_S_ISQ',
         MODE:'invsqrt'})
 
-debug_MEL('GS_ISQ_LST')
+debug_MEL('ME_GAM_S_ISQ',only_this=True)
 
 
 
@@ -180,7 +187,7 @@ CLONE_OPERATOR({
         LABEL:'X_TRM_DAG',
         TEMPLATE:'X_TRM'})
 DEF_ME_LIST({
-        LIST:'X_TRM_LIST',
+        LIST:'ME_X_TRM',
         OPERATOR:'X_TRM',
         IRREP:1,
         '2MS':0,
@@ -188,7 +195,7 @@ DEF_ME_LIST({
 
 #SET_MEL({LIST:'X_TRM_LIST',IDX_LIST:1,VAL_LIST:0.0})
 
-DEF_ME_LIST({LIST:'X_TRM_LIST_DAG',
+DEF_ME_LIST({LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM_DAG',
         IRREP:1,
         '2MS':0,
@@ -196,17 +203,18 @@ DEF_ME_LIST({LIST:'X_TRM_LIST_DAG',
 
 
 REORDER_MEL({
-        LIST_RES:'X_TRM_LIST',
-        LIST_IN:'GS_ISQ_LST',
+        LIST_RES:'ME_X_TRM',
+        LIST_IN:'ME_GAM_S_ISQ',
         FROMTO: 13})
+#IMPORTANT: transposes on the input list. 
 REORDER_MEL({
-        LIST_RES:'X_TRM_LIST_DAG',
-        LIST_IN:'GS_ISQ_LST',
+        LIST_RES:'ME_X_TRM_DAG',
+        LIST_IN:'ME_GAM_S_ISQ',
         FROMTO: 13,
         ADJOINT:True})
 
 
-debug_MEL('X_TRM_LIST')
+debug_MEL('ME_X_TRM')
 
 
 
@@ -218,8 +226,8 @@ debug_MEL('X_TRM_LIST')
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_T2_orth',
         NEW:True,
-        OP_RES:'T2_ca',
-        OPERATORS:['T2_ca','X_TRM','T2_orth','X_TRM','T2_ca'],
+        OP_RES:'T2g',
+        OPERATORS:['T2g','X_TRM','T2_orth','X_TRM','T2g'],
         IDX_SV:[1,2,3,2,1],
 # No self contractions of the density matrix, no open lines from the wrong vertex
         AVOID:[2,4,1,4,2,5],
@@ -230,7 +238,7 @@ EXPAND_OP_PRODUCT({
 SELECT_LINE({
         LABEL_IN:'FORM_T2_orth',
         LABEL_RES:'FORM_T2_orth',
-        OP_RES:'T2_ca',
+        OP_RES:'T2g',
         OP_INCL:'T2_orth',
         IGAST:3,
         MODE:'no_ext'})
@@ -241,27 +249,30 @@ OPTIMIZE({
 
 
 #Building the adjoint of FORM_T2_orth to transform T^+ # only needed for Building of A_trf
+
 CLONE_OPERATOR({
-        LABEL:'L_NONTRF',
-        TEMPLATE:'T2_ca',
-        ADJOINT:True})
-CLONE_OPERATOR({
-        LABEL:'L_TRF',
-        TEMPLATE:'L_NONTRF'})
+        LABEL:'LAM_TRF',
+        TEMPLATE:'LAM2g'})
+
+
 EXPAND_OP_PRODUCT({
-        LABEL:'FORM_L_TRF',
+        LABEL:'FORM_LAM_TRF',
         NEW:True,
-        OP_RES:'L_NONTRF',
-        OPERATORS:['L_NONTRF','X_TRM^+','L_TRF','X_TRM^+','L_NONTRF'],
+        OP_RES:'LAM2g',
+        OPERATORS:['LAM2g','X_TRM^+','LAM_TRF','X_TRM^+','LAM2g'],
         IDX_SV:[1,2,3,2,1],
-        AVOID:[2,4,1,4,2,5],
+# No self contractions of the density matrix, no open lines from the wrong vertex
+        AVOID:[2,4,
+               1,4,
+               2,5],
         })
+
 SELECT_LINE({
-        LABEL_IN:'FORM_L_TRF',
-        LABEL_RES:'FORM_L_TRF',
-        OP_RES:'L_NONTRF',
-        OP_INCL:'L_TRF',
-        IGAST:3,
+        LABEL_IN:'FORM_LAM_TRF',
+        LABEL_RES:'FORM_LAM_TRF',
+        OP_RES:'LAM2g',
+        OP_INCL:'LAM_TRF',
+        IGAST:3,         #virtual
         MODE:'no_ext'})
 
 
@@ -272,9 +283,9 @@ SELECT_LINE({
 
 CLONE_OPERATOR({
         LABEL:'T1_orth',
-        TEMPLATE:'T1_ca'})
+        TEMPLATE:'T1'})
 DEF_ME_LIST({
-        LIST:'T1_orth_LIST',
+        LIST:'ME_T1_orth',
         OPERATOR:'T1_orth',
         IRREP:1,
         '2MS':0,
@@ -283,19 +294,20 @@ DEF_ME_LIST({
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_T1_orth',
         NEW:True,
-        OP_RES:'T1_ca',
-        OPERATORS:['T1_ca','X_TRM','T1_orth','X_TRM','T1_ca'],
+        OP_RES:'T1',
+        OPERATORS:['T1','X_TRM','T1_orth','X_TRM','T1'],
         IDX_SV:[1,2,3,2,1],
-# No self contractions of the density matrix, no open lines from the wrong vertex
-        AVOID:[2,4,1,4,2,5],
+        AVOID:[2,4,
+               1,4,
+               2,5],
         })
 
-#delete all terms where T2_orth has active external lines. external lines should be modified by X_trm
+#delete all terms where T1_orth has active external lines. external lines should be modified by X_trm
 
 SELECT_LINE({
         LABEL_IN:'FORM_T1_orth',
         LABEL_RES:'FORM_T1_orth',
-        OP_RES:'T1_ca',
+        OP_RES:'T1',
         OP_INCL:'T1_orth',
         IGAST:3,
         MODE:'no_ext'})
@@ -305,64 +317,8 @@ OPTIMIZE({
         LABELS_IN:'FORM_T1_orth'})
 
 OPTIMIZE({
-        LABEL_OPT:'FOPT_GES_TRF',
+        LABEL_OPT:'FOPT_GES',
         LABELS_IN:['FORM_T2_orth']})
 #        LABELS_IN:['FORM_T1_orth','FORM_T2_orth']})
 
-
-
-#Formula to transform T2 only
-#
-
-#EXPAND_OP_PRODUCT({
-#        LABEL:'FORM_T2_TRF',
-#        NEW:True,
-#        OP_RES:'T2_ca',
-#        OPERATORS:['T2_ca','X_TRM','T2_TRF','X_TRM','T2_ca'],
-#        IDX_SV:[1,2,3,2,1],
-# No self contractions of the density matrix, no open lines from the wrong vertex
-#        AVOID:[2,4,1,4,2,5],
-#        })
-
-#delete all terms where T2_orth has active external lines. external lines should be modified by X_trm
-
-#SELECT_LINE({
-#        LABEL_IN:'FORM_T2_TRF',
-#        LABEL_RES:'FORM_T2_TRF',
-#        OP_RES:'T2_ca',
-#        OP_INCL:'T2_TRF',
-#        IGAST:3,
-#        MODE:'no_ext'})
-
-#OPTIMIZE({
-#        LABEL_OPT:'FOPT_T2_TRF',
-#        LABELS_IN:'FORM_T2_TRF'})
-
-
-
-
-
-#EXPAND_OP_PRODUCT({
-#        LABEL:'FORM_T2_TRF_BACK',
-#        NEW:True,
-#        OP_RES:'T2_TRF',
-#        OPERATORS:['T2_TRF','X_TRM','T2_ca','X_TRM','T2_TRF'],
-#        IDX_SV:[1,2,3,2,1],
-# No self contractions of the density matrix, no open lines from the wrong vertex
-#        AVOID:[2,4,1,4,2,5],
-#        })
-
-#delete all terms where T2_orth has active external lines. external lines should be modified by X_trm
-
-#SELECT_LINE({
-#        LABEL_IN:'FORM_T2_TRF_BACK',
-#        LABEL_RES:'FORM_T2_TRF_BACK',
-#        OP_RES:'T2_TRF',
-#        OP_INCL:'T2_ca',
-#        IGAST:3,
-#        MODE:'no_ext'})
-
-#OPTIMIZE({
-#        LABEL_OPT:'FOPT_T2_TRF_BACK',
-#        LABELS_IN:'FORM_T2_TRF_BACK'})
 

@@ -24,9 +24,9 @@ debug_FORM('FORM_T2_orth')
 
 
 SOLVE_NLEQ({
-        LIST_OPT:'T2_ca_LST',
-        LIST_RESID:'Oges_LST',
-        LIST_PRC:'PRECON_LST',
+        LIST_OPT:'ME_T2g',
+        LIST_RESID:'ME_O2g',
+        LIST_PRC:'ME_PRECON2g',
         LIST_E:'PT_LAG_LST',
         FORM:'FOPT_PT_LAG',
         MODE:'TRF',

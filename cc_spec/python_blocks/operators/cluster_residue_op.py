@@ -15,22 +15,22 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
 # operators associated with T
 #-----------------------------------------------------------------#
 
-t_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
+t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
 t1_shape='V,H|P,V|P,H'
 
 
 
-new_target('T-Operators')
+new_target('DEF_T2g')
 comment('=== Cluster Operators ===')
 
 
 DEF_OP_FROM_OCC({
-        LABEL:'T2_ca',
-        DESCR:t_shape})
+        LABEL:'T2g',
+        DESCR:t2g_shape})
 
 ME_param={
-        LIST:'T2_ca_LST',
-        OPERATOR:'T2_ca',
+        LIST:'ME_T2g',
+        OPERATOR:'T2g  ',
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
@@ -39,16 +39,23 @@ if spinadapt>=2:
 
 DEF_ME_LIST(ME_param)
 
-debug_MEL('T2_ca_LST',info_only=True)
 
+
+debug_MEL('ME_T2g',info_only=True)
+
+
+
+
+
+new_target('DEF_T1 ')
 
 DEF_OP_FROM_OCC({
-        LABEL:'T1_ca',
+        LABEL:'T1',
         DESCR:t1_shape})
 
 ME_param={
-        LIST:'T1_ca_LST',
-        OPERATOR:'T1_ca',
+        LIST:'ME_T1',
+        OPERATOR:'T1',
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
@@ -59,23 +66,23 @@ DEF_ME_LIST(ME_param)
 
 
 
-debug_MEL('T1_ca_LST',info_only=True)
+debug_MEL('ME_T1',info_only=True)
 
 
 
 
 
-#new_target('DEF_Oges')
+new_target('DEF_O2g')
 comment('=== Residue Operators ===')
 
 DEF_OP_FROM_OCC({
-        LABEL:'Oges',
+        LABEL:'O2g',
         JOIN:2,
-        DESCR:omg_generator(t_shape)})
+        DESCR:omg_generator(t2g_shape)})
 
 ME_param={
-        LIST:'Oges_LST',
-        OPERATOR:'Oges',
+        LIST:'ME_O2g',
+        OPERATOR:'O2g',
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
@@ -84,10 +91,15 @@ if spinadapt>=2:
 
 DEF_ME_LIST(ME_param)
 
-debug_MEL('Oges_LST',info_only=True)
+
+
+debug_MEL('ME_O2g',info_only=True)
 
 
 
+
+
+new_target('DEF_O1')
 
 DEF_OP_FROM_OCC({
         LABEL:'O1',
@@ -95,7 +107,7 @@ DEF_OP_FROM_OCC({
         DESCR:omg_generator(t1_shape)})
 
 ME_param={
-        LIST:'O1_LST',
+        LIST:'ME_O1',
         OPERATOR:'O1',
         IRREP:1,
         '2MS':0,
@@ -105,41 +117,49 @@ if spinadapt>=2:
 
 DEF_ME_LIST(ME_param)
 
-debug_MEL('O1_LST',info_only=True)
+debug_MEL('ME_O1',info_only=True)
 
 
 
 
-new_target('DEF_LAM')
+new_target('DEF_LAM2g')
 comment('=== Lambda Operators ===')
-depend('T-Operators')
+depend('DEF_T2g')
 
 
 CLONE_OPERATOR({
-        LABEL:'LAMges',
-        TEMPLATE:'T2_ca',
+        LABEL:'LAM2g',
+        TEMPLATE:'T2g  ',
         ADJOINT:True})
 
 ME_param={
-        LIST:'LAMges_LST',
-        OPERATOR:'LAMges',
+        LIST:'ME_LAM2g',
+        OPERATOR:'LAM2g',
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
 
 DEF_ME_LIST(ME_param)
 
-debug_MEL('LAMges_LST',info_only=True)
 
 
+debug_MEL('ME_LAM2g',info_only=True)
+
+
+
+
+
+new_target('DEF_LAM1')
+comment('=== Lambda Operators ===')
+depend('DEF_T1')
 
 CLONE_OPERATOR({
         LABEL:'LAM1',
-        TEMPLATE:'T1_ca',
+        TEMPLATE:'T1',
         ADJOINT:True})
 
 ME_param={
-        LIST:'LAM1_LST',
+        LIST:'ME_LAM1',
         OPERATOR:'LAM1',
         IRREP:1,
         '2MS':0,
@@ -147,4 +167,4 @@ ME_param={
 
 DEF_ME_LIST(ME_param)
 
-debug_MEL('LAM1_LST',info_only=True)
+debug_MEL('ME_LAM1',info_only=True)
