@@ -893,12 +893,21 @@ c     &     'range errors detected (see above)')
      &     lulog
 
       write(lulog,'(x,"+",76("-"),"+")')
-      write(lulog,'(3x,a,i10,a,f8.2,a)')
+      if (max_mem.lt.1024*1024*1024*64) then
+      write(lulog,'(3x,a,i14,a,f10.2,a)')
      &     'Maximum allocated memory: ',max_mem,
      &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'
-      write(lulog,'(3x,a,i10,a,f8.2,a)')
+      write(lulog,'(3x,a,i14,a,f10.2,a)')
      &     'Largest memory block:     ',max_blk,
      &     ' real(8)-words (',dble(max_blk)/1024d0/128d0,' Mb)'
+      else
+      write(lulog,'(3x,a,i14,a,f10.2,a)')
+     &     'Maximum allocated memory: ',max_mem,
+     &     ' real(8)-words (',dble(max_mem)/1024d0/1024d0/128d0,' Gb)'
+      write(lulog,'(3x,a,i14,a,f10.2,a)')
+     &     'Largest memory block:     ',max_blk,
+     &     ' real(8)-words (',dble(max_blk)/1024d0/1024d0/128d0,' Gb)'
+      end if
       write(lulog,'(3x,a,a)')
      &     'Name of largest block:    ',trim(name_max)
       write(lulog,'(x,"+",76("-"),"+")')

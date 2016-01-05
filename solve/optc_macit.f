@@ -41,7 +41,7 @@ c      include 'mdef_me_list.h'
       integer, intent(in) ::
      &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm, n_states
 
-      type(me_list_array), intent(in) ::
+      type(me_list_array), intent(inout) ::
      &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
      &     me_trv(nopt), me_h_trv(nopt),
      &     me_special(nspecial)

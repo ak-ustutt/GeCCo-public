@@ -36,12 +36,13 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, replace, count_l, prescreen, h1bar
+     &     delete, error, replace, count_l, prescreen, h1bar, 
+     &     is_rept
       integer ::
      &     idxtop, idxham, norder, len, idxfeff, iorder, iblk, 
      &     ihampart, nact, iblknew, idx_op, nrank, cgastp, agastp,
      &     ivtx, ii, nvtx, nham, ham_vtx, iterm, idxl, t1ord,
-     &     lrank, trank, ntop, simp
+     &     lrank, trank, ntop, simp, mode_rept
       integer ::
      &     idxop(nlabels), occ_ham(ngastp,2)
 
@@ -59,7 +60,9 @@
 
       integer, external ::
      &     idx_oplist2, idxlist, iblk_occ
-
+      logical, external ::
+     &     zero_ivec
+ 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'select_mrcc_trunc')
         write(lulog,*) 'mode = ',trim(mode)
@@ -116,6 +119,8 @@
      &                        iarr=horder)
       if (horder(1).gt.horder(3)) call quit(1,'select_mrcc_trunc',
      &            'Order of F0 may not exceed order of Fdiff')
+      call get_argument_value('method.MRCC','rept_ham',
+     &                        ival=mode_rept)
 
       ! prescreen: assume minimum pert. order for all Hamiltonian blks
       if (prescreen) horder(1:5) = minval(horder(1:5))
@@ -218,9 +223,22 @@ c dbgend
               case(2)
                 nact = op_ham%ihpvca_occ(IVALE,1,iblk)
      &                +op_ham%ihpvca_occ(IVALE,2,iblk)
+                is_rept = .false.
+                if (mode_rept.eq.1) is_rept = 
+     &                    zero_ivec(op_ham%ihpvca_occ(1:ngastp,1,iblk)
+     &                             -op_ham%ihpvca_occ(1:ngastp,2,iblk),
+     &                              ngastp)
+                if (mode_rept.eq.2) is_rept =
+     &                 (op_ham%ihpvca_occ(IHOLE,1,iblk).eq.2.and.
+     &                  op_ham%ihpvca_occ(IHOLE,2,iblk).eq.2) .or.
+     &                 (op_ham%ihpvca_occ(IPART,1,iblk).eq.2.and.
+     &                  op_ham%ihpvca_occ(IPART,2,iblk).eq.2) .or.
+     &                 (op_ham%ihpvca_occ(IVALE,1,iblk).eq.2.and.
+     &                  op_ham%ihpvca_occ(IVALE,2,iblk).eq.2) 
                 select case(nact)
                 case(0,1,2)
                   ihampart = 4
+                  if (mode_rept.gt.0.and.is_rept) ihampart=2
                 case(3)
                   ihampart = 5
                 case(4)
@@ -243,6 +261,7 @@ c dbgend
           ! do we have to replace H by effective Fock operator?
           if (.not.delete.and.replace) then
             replace = replace.and.iorder-horder(1)+horder(3).gt.norder
+            replace = replace.and..not.mode_rept.eq.1 ! no replacement for REPT
           end if
           ! special simplifications requested (for (T))?
           if (.not.delete.and.simp.eq.2) then
