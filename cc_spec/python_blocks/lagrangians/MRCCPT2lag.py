@@ -13,6 +13,16 @@ print("hamiltonian: ", hamiltonian, type(hamiltonian))
 if hamiltonian not in known_hamiltonians : 
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
 
+third_ord_energy=False
+if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
+    if (keywords.get('method.MRCCPT2.3rd_E') == "T"):
+        third_ord_energy=True
+    elif(keywords.get('method.MRCCPT2.3rd_E') == "F"):
+        third_ord_energy=False
+    else :
+        raise Exception(i_am+": unrecognised value for opion 3rd_E:"+str(hamiltonian))
+print("3rd_E ", third_ord_energy, type(third_order_energy))
+
 #------------------------------------------------------------------------------#
 #Define the MRCCPT(2) lagrangian
 #------------------------------------------------------------------------------#
@@ -69,7 +79,20 @@ elif hamiltonian=="REPT":
 elif hamiltonian=="F_EFF":
     LAG_A.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
 
+
+if (third_ord_energy):
+    if hamiltonian=="DYALL":
+        LAG_A.append("<C0^+*(T2g^+)*((H-HAM_D)*T2g)*C0>")
+    elif hamiltonian=="REPT":
+        LAG_A.append("<C0^+*(T2g^+)*((H-REPT_HAM)*T2g)*C0>")
+    elif hamiltonian=="F_EFF":
+        LAG_A.append("<C0^+*(T2g^+)*((H-FOCK_EFF)*T2g)*C0>")
+
+
+# optional penality term
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
+
+
 
 
 for item in LAG_E.show():
