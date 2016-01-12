@@ -1096,7 +1096,7 @@ c dbgend
 !     BW-MRCC - Lagrangian
       if (MRCC_type.EQ."BW")
      &     call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/BW_MRCC_Lagrangian.py",
+     &     trim(gecco_path)//"/python_spec/BW_MRCC_Lagrangian.py",
      &     name_infile,name_orbinfo)
 
       ! multireference CC lagrangian
@@ -1509,7 +1509,8 @@ c dbgend
       ! Multistate Coupling term in Lagrangian
       if (multistate.and.MS_coupled.and.MRCC_type.NE."BW")
      &     call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/MRCC_Lagrangian_coupl_term.py",
+     &     trim(gecco_path)//
+     &     "/python_spec/MRCC_Lagrangian_coupl_term.py",
      &     name_infile,name_orbinfo)
 
       ! Residual part of Lagrangian

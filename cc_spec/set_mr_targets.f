@@ -182,16 +182,16 @@ c dbgend
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
       if (response) call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/icmrcc_ee_targets.py",
+     &     trim(gecco_path)//"/python_spec/icmrcc_ee_targets.py",
      &     name_infile,fforbinf%name)
       deallocate(excrestr)
 
       if (multistate) call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/multistate_eff_ham.py",
+     &     trim(gecco_path)//"/python_spec/multistate_eff_ham.py",
      &     name_infile,fforbinf%name)
 
       if (set_up_T_corr) call set_python_targets(tgt_info,
-     &     trim(gecco_path)//"/cc_spec/set_up_T_corr.py",
+     &     trim(gecco_path)//"/python_spec/set_up_T_corr.py",
      &     name_infile,fforbinf%name)
 
 
