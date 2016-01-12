@@ -21,7 +21,7 @@ if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
         third_ord_energy=False
     else :
         raise Exception(i_am+": unrecognised value for opion 3rd_E:"+str(hamiltonian))
-print("3rd_E ", third_ord_energy, type(third_order_energy))
+print("3rd_E ", third_ord_energy, type(third_ord_energy))
 
 #------------------------------------------------------------------------------#
 #Define the MRCCPT(2) lagrangian
