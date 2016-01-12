@@ -2,6 +2,8 @@
 #This is a python interface for GeCCo to calculate excitation energies using ic-MRCEOM-LRT.
 #This code is originally written as an experimental file by Pradipta Samanta on October, 2012.
 #This particular interface is written on November, 2014 by Pradipta Samanta.
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 
 from gecco_interface import *
 import numpy as np

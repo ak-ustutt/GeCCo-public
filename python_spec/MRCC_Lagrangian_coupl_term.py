@@ -27,6 +27,10 @@
 # Yuri, Nov 2014
 #       Ago 2015 -> include Mk and sr MRCC methods
 #
+
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
+
 from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()

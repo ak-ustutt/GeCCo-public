@@ -2,6 +2,9 @@
 # The MP2 tutorial as a tutorial for the python interface to GeCCo
 #
 # First one has to import the interface module:
+
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 from gecco_interface import *
 
 # One can define targets, like this:

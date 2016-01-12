@@ -1,3 +1,6 @@
+
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 from gecco_interface import *
 
 # Get the access for input file and orbital informations by:

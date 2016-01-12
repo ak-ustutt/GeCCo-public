@@ -37,7 +37,8 @@
      &     "Please, set the GECCO_DIR environment variable.")
       ! Dummy python interface for warnings and general checks
       call set_python_targets(tgt_info,
-     &     trim(gecco_path)//'/interfaces/setting_up_python_interface',
+     &     trim(gecco_path)//
+     &     '/python_spec/setting_up_python_interface.py',
      &     name_infile,fforbinf%name)
 
       call set_general_targets(tgt_info,orb_info,env_type)

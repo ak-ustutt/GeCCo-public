@@ -5,6 +5,9 @@
 #       sep 2015 -> extend to non-orthonormal basis in the P-space
 #
 
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
+
 from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
