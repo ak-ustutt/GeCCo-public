@@ -1,0 +1,8 @@
+# A dummy target file, to make the preliminary checks and print warnings
+#
+# yuri, nov 2014
+from gecco_interface import *
+inp = GeCCo_Input()
+orb = Orb_Info()
+
+export_targets();

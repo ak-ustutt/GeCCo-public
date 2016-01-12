@@ -123,24 +123,24 @@ endif
 
 TAGS:
 ifneq ($(dirs),)
-        @set -e; \
-                for i in $(dirs); do \
-                        if [ -d $$i ]; then \
-                          if [ -f $$i/Makefile ]; then \
-                            $(MAKE) -C $$i $@ || exit 1; \
-                          fi; \
-                        fi; \
-                done;
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done;
 endif
 
 tags:
 ifneq ($(dirs),)
-        @set -e; \
-                for i in $(dirs); do \
-                        if [ -d $$i ]; then \
-                          if [ -f $$i/Makefile ]; then \
-                            $(MAKE) -C $$i $@ || exit 1; \
-                          fi; \
-                        fi; \
-                done;
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done;
 endif
