@@ -6,6 +6,8 @@
 deps.mk
 autom4te.cache
 bin
+TAGS
+tags
 config.h
 config.log
 config.status

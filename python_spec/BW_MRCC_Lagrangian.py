@@ -12,6 +12,9 @@
 #
 # Yuri, Ago 2015
 #
+
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()

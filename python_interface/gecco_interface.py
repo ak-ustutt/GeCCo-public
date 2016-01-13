@@ -33,8 +33,8 @@ import os
 if not( "GECCO_DIR" in os.environ):
     quit_error( "Set the environmental variable GECCO_DIR to the GeCCo location.")
 _gecco_dir = os.environ["GECCO_DIR"]
-_dummy_call = True if (sys.argv[0] == _gecco_dir + '/interfaces/setting_up_python_interface') else False
-
+_dummy_call = True if (sys.argv[0] == _gecco_dir + '/python_spec/setting_up_python_interface.py') else False
+print _gecco_dir, sys.argv[0]
 # interface script and output names
 _script_file_name = sys.argv[0].split('/')
 _script_file_name = _script_file_name[ len( _script_file_name)-1]
@@ -597,7 +597,7 @@ def export_targets():
 #
 
 # Functions for rules
-_rules_names_file = _gecco_dir + "/interfaces/rules_names.txt"
+_rules_names_file = _gecco_dir + "/python_interface/rules_names.txt"
 
 _f = open( _rules_names_file, 'r')
 _rules = _f.readlines()
@@ -613,7 +613,7 @@ if _print_level == None:
     _print_level = 3
 
 # Variables for arguments
-_arguments_names_file = _gecco_dir + "/interfaces/arguments_names.txt"
+_arguments_names_file = _gecco_dir + "/python_interface/arguments_names.txt"
 
 _f = open( _arguments_names_file, 'r')
 _keywords = _f.readlines()

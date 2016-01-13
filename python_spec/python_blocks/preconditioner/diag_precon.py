@@ -1,6 +1,5 @@
 from gecco_interface import *
 from gecco_modules.NoticeUtil import *
-
 #------------------------------------------------------------------
 #Setting up A_TRF
 #-------------------------------------------------------------------
@@ -8,7 +7,16 @@ from gecco_modules.NoticeUtil import *
 
 new_target('MAKE_A_TRF')
 depend('MakeOrthBasis')
-depend('T-Operators')
+
+depend('DEF_T2g')
+depend('DEF_T1')
+
+depend('DEF_LAM2g')
+depend('DEF_LAM1')
+
+depend('DEF_O2g')
+depend('DEF_O1')
+
 depend('MakeRefState')
 depend('H0')
 
@@ -19,7 +27,13 @@ DEF_SCALAR({
 DEF_OP_FROM_OCC({
         LABEL:'A_TRF',
         JOIN:3,
-        DESCR:',;V,V;,|,V;VV,VV;V,|,;VV,VV;,|,V;,;V,|,VV;V,V;VV,|,V;V,V;V,|,VV;,;VV,'})
+        DESCR:',;V,V;,|'\
+              ',V;VV,VV;V,|'\
+              ',;VV,VV;,|'\
+              ',V;,;V,|'\
+              ',VV;V,V;VV,|'\
+              ',V;V,V;V,|'\
+              ',VV;,;VV,'})
 DEF_ME_LIST({
         LIST:'A_TRF_LST',
         OPERATOR:'A_TRF',
@@ -42,11 +56,12 @@ DEF_ME_LIST({
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_A_TRF',
         OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','L_NONTRF','H','T2_ca','C0'],
+        OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
         IDX_SV:[1,2,3,4,5],
         NEW:True})
-EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF',OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','L_NONTRF','T2_ca','H','C0'],
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_A_TRF',OP_RES:'A_TRF_SCAL',
+        OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
         IDX_SV:[1,2,3,4,5],
         FIX_VTX:True,
         FAC:-1,
@@ -64,7 +79,7 @@ FACTOR_OUT({
 EXPAND({
         LABEL_IN:'FORM_A_TRF',
         LABEL_RES:'FORM_A_TRF',
-        INTERM:'FORM_L_TRF'})
+        INTERM:'FORM_LAM_TRF'})
 EXPAND({
         LABEL_IN:'FORM_A_TRF',
         LABEL_RES:'FORM_A_TRF',
@@ -72,7 +87,7 @@ EXPAND({
 SELECT_SPECIAL({
         LABEL_IN:'FORM_A_TRF',
         LABEL_RES:'FORM_A_TRF', 
-        OPERATORS:['T2_orth','L_TRF'], 
+        OPERATORS:['T2_orth','LAM_TRF'], 
         TYPE:'SAME'})
 
 #Double derivative to T' and T'^+ to get A_TRF=<|t^+[H,t]|>
@@ -80,7 +95,7 @@ DERIVATIVE({
         LABEL_IN:'FORM_A_TRF',
         LABEL_RES:'FORM_A_TRF_INTERM',
         OP_RES:'Ov',
-        OP_DERIV:'L_TRF'})
+        OP_DERIV:'LAM_TRF'})
 DERIVATIVE({
         LABEL_IN:'FORM_A_TRF_INTERM',
         LABEL_RES:'FORM_A_TRF_FINAL',
@@ -98,7 +113,7 @@ OPTIMIZE({
 EVALUATE({
         FORM:'FOPT_A_TRF_FINAL'})
 
-debug_MEL('A_TRF_LST')
+debug_MEL('A_TRF_LST',only_this=True)
 
 
 
@@ -120,9 +135,9 @@ depend('EVAL_F_EFF_INACT')
 
 CLONE_OPERATOR({
         LABEL:'PRECON',
-        TEMPLATE:'T2_ca'})
+        TEMPLATE:'T2g'})
 DEF_ME_LIST({
-        LIST:'PRECON_LST',
+        LIST:'ME_PRECON2g',
         OPERATOR:'PRECON',
         IRREP:1,
         '2MS':0,
@@ -130,20 +145,20 @@ DEF_ME_LIST({
 
 #extract preconditioner 
 PRECONDITIONER({
-        LIST_PRC:'PRECON_LST',
+        LIST_PRC:'ME_PRECON2g',
         LIST_INP:'FOCK_EFF_INACT_LST'})
 
 EXTRACT_DIAG({
-        LIST_RES:'PRECON_LST',
+        LIST_RES:'ME_PRECON2g',
         LIST_IN:'A_TRF_LST',
         MODE:'extend'})
 SCALE_COPY({
-        LIST_RES:'PRECON_LST',
-        LIST_INP:'PRECON_LST',
+        LIST_RES:'ME_PRECON2g',
+        LIST_INP:'ME_PRECON2g',
         FAC:0.2,
         MODE:'prc_thresh'})
 
-debug_MEL('PRECON_LST')
+debug_MEL('ME_PRECON2g')
 
 
 #----------------------------------------------------------
@@ -152,9 +167,9 @@ debug_MEL('PRECON_LST')
 
 CLONE_OPERATOR({
         LABEL:'PRECON1',
-        TEMPLATE:'T1_ca'})
+        TEMPLATE:'T1'})
 DEF_ME_LIST({
-        LIST:'PRECON1_LST',
+        LIST:'ME_PRECON1',
         OPERATOR:'PRECON1',
         IRREP:1,
         '2MS':0,
@@ -162,19 +177,19 @@ DEF_ME_LIST({
 
 #extract preconditioner 
 PRECONDITIONER({
-        LIST_PRC:'PRECON1_LST',
+        LIST_PRC:'ME_PRECON1',
         LIST_INP:'FOCK_EFF_INACT_LST'})
 
 EXTRACT_DIAG({
-        LIST_RES:'PRECON1_LST',
+        LIST_RES:'ME_PRECON1',
         LIST_IN:'A_TRF_LST',
         MODE:'extend'})
 SCALE_COPY({
-        LIST_RES:'PRECON1_LST',
-        LIST_INP:'PRECON1_LST',
+        LIST_RES:'ME_PRECON1',
+        LIST_INP:'ME_PRECON1',
         FAC:0.2,
         MODE:'prc_thresh'})
 
-debug_MEL('PRECON_LST')
+debug_MEL('ME_PRECON1')
 
 

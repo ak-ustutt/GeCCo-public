@@ -67,20 +67,3 @@ import solve.MRCC2solve
 modify_target('do all')
 depend('SOLVE_MRCCPT2')
 
-
-#debug_MEL('X_TRM_LIST')
-#debug_MEL('ME_Dtr')
-
-#debug_MEL('ME_A')
-
-#debug_MEL('A_TRF_LST')
-
-
-#debug_FORM('F_Atr')
-#debug_FORM('FORM_A_TRF_FINAL')
-
-#debug_MEL('ME_Dinv')
-
-#debug_MEL('ME_D')
-#debug_MEL('GSLST')
-

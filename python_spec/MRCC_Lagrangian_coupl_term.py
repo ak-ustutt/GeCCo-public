@@ -27,6 +27,10 @@
 # Yuri, Nov 2014
 #       Ago 2015 -> include Mk and sr MRCC methods
 #
+
+import sys,os
+sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
+
 from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
@@ -221,7 +225,7 @@ for i_state in range(1, n_states+1):
         SUM_TERMS({LABEL_IN:'F_' + heff_ij_op, LABEL_RES:'F_' + heff_ij_op})
 
         # dbg
-        #PRINT_FORMULA({LABEL:'F_' + heff_ij_op})
+        #PRINT_FORMULA({LABEL:'F_' + heff_ij_op, MODE:'SHORT'})
         #ABORT({})
         # dbg
 
@@ -229,7 +233,7 @@ modify_target( 'F_MRCC_LAG_coupl')
 SUM_TERMS({LABEL_IN: lag_label, LABEL_RES: lag_label})
 
 # dbg
-#PRINT_FORMULA({LABEL: lag_label})
+#PRINT_FORMULA({LABEL: lag_label, MODE:'SHORT'})
 #ABORT({})
 # dbg
 
