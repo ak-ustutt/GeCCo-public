@@ -82,11 +82,11 @@ elif hamiltonian=="F_EFF":
 
 if (third_ord_energy):
     if hamiltonian=="DYALL":
-        LAG_A.append("<C0^+*(T2g^+)*((H-HAM_D)*T2g)*C0>")
+        LAG_E.append("<C0^+*(T2g^+)*((H-HAM_D)*T2g)*C0>")
     elif hamiltonian=="REPT":
-        LAG_A.append("<C0^+*(T2g^+)*((H-REPT_HAM)*T2g)*C0>")
+        LAG_E.append("<C0^+*(T2g^+)*((H-REPT_HAM)*T2g)*C0>")
     elif hamiltonian=="F_EFF":
-        LAG_A.append("<C0^+*(T2g^+)*((H-FOCK_EFF)*T2g)*C0>")
+        LAG_E.append("<C0^+*(T2g^+)*((H-FOCK_EFF)*T2g)*C0>")
 
 
 # optional penality term
