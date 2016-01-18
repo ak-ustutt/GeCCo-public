@@ -17,7 +17,7 @@ comment("defining REPT-hamiltonian and building formula")
 DEF_OP_FROM_OCC({
         LABEL:'REPT_HAM',
         JOIN:1,
-        DESCR:'H,H|V,V|P,P|HH,HH|VV,VV|PP,PP|HV,HV|HP,HP|PV,PV'})
+        DESCR:',|H,H|V,V|P,P|HH,HH|VV,VV|PP,PP|HV,HV|HP,HP|PV,PV'})
 
 DEF_ME_LIST({
         LIST:'REPT_HAM_LST',
