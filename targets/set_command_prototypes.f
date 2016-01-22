@@ -196,9 +196,15 @@
       call set_arg('_PROTO_',DEF_FORMULA,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
-      call add_command_proto(TRANSPS_FORMULA,tgt_info)
-      call set_arg('_PROTO_',TRANSPS_FORMULA,'LABEL',0,tgt_info,
+      call add_command_proto(TRANSPS_FORMULA,tgt_info) 
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'LABEL_IN',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'OP_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'INIT',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,

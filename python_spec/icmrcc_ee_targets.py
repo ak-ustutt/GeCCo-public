@@ -28,6 +28,12 @@ elif (_method == 'EOM'):
 else:
     quit_error('Input Error: specified wrong method to calculate excitation energy')
 
+_maxcom=_inp.get('method.MRCC.maxcom_res')
+if (_maxcom == None):
+    _maxcom == 2
+else:
+    _maxcom = int(_maxcom)
+
 _choice= _inp.get('calculate.solve.eigen.guess')
 if (_choice == None):
     _choice = 0
@@ -98,6 +104,7 @@ for _op in _op_list:
                     TEMPLATE:_op_list[_op]})
 
 DEF_SCALAR({LABEL:'den12'})
+DEF_SCALAR({LABEL:'RED_LAG'})
 
 
 #################################
