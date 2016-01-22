@@ -4,7 +4,8 @@
       integer, parameter ::
      &     ftyp_da_unf = 1,
      &     ftyp_sq_unf = 2,
-     &     ftyp_sq_frm = 3
+     &     ftyp_sq_frm = 3,
+     &     ftyp_st_unf = 4
 *------------------------------------------------------------------------*
       integer, parameter ::
      &     maxfilnam = 512 

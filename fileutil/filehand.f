@@ -237,6 +237,29 @@ c      lblk_da = 1024*1024/nrecfc
       end
 
 *----------------------------------------------------------------------*
+      integer function iopen_nustr(filename)
+*----------------------------------------------------------------------*
+* open  named unformatted stream
+
+      implicit none
+      include "freeunits.h"
+      include "stdunit.h"
+
+      character, intent(in) :: filename*(*)
+
+      integer :: iunit, len
+      integer, external :: igetunit
+
+      iunit = igetunit(-1)
+      len = len_trim(filename)
+      open(unit=iunit,file=filename(1:len),
+     &     form="unformatted",access="stream")
+
+      iopen_nustr = iunit
+
+      end
+
+*----------------------------------------------------------------------*
       integer function iopen_nuss(filename,statstr)
 *----------------------------------------------------------------------*
 * open  named unformatted sequential in status 'statstr'

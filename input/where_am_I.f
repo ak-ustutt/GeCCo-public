@@ -50,6 +50,13 @@
         end if
       end if
 
+      ! try new MOLPRO interface file
+      if (.not.ok) then
+        inquire(file='mpro_gecco_ifc.dat',exist=l_exist)
+        ok = l_exist
+        if (ok) env_type='MOLPRO_IFC'
+      end if
+
       ! try MOLPRO fci interface
       if (.not.ok) then
         inquire(file='FCIDUMP',exist=l_exist)
