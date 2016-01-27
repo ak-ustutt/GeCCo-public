@@ -187,7 +187,7 @@
       orb_info%ntoob = sum(norbs(1:nirr))
       orb_info%lsym  = isym
       orb_info%imult = mult
-      orb_info%ims   = mod(mult,2) ! MS = 0 or 1/2
+      orb_info%ims   = 1 - mod(mult,2) ! MS = 0 or 1/2
 
       orb_info%nxbast = 0 ! no CABS stuff so far
       orb_info%caborb = 0      
