@@ -400,24 +400,24 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (lulog.ne.luout) 
-     &      write(luout,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
+     &      write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
-                if (lulog.ne.luout)
-     &           write(luout,'(" E>",3x,f24.12,x,3g10.4)')
+                if (lulog.ne.luout.and.iprlvl.ge.5)
+     &           write(luout,'("   ",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
               else
                 write(lulog,
      &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
-                if (lulog.ne.luout)
-     &            write(lulog,
-     &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
+                if (lulog.ne.luout.and.iprlvl.ge.5)
+     &            write(luout,
+     &               '("   ",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
             end do
@@ -611,7 +611,7 @@ c dbgend
 
       ! print results
       call print_roots(lulog)
-      if (lulog.ne.luout) call print_roots(luout)
+      if (lulog.ne.luout.and.iprlvl.ge.10) call print_roots(luout)
 
       ! switch to target root if possible
 !      ! (we assume that nroots has been chosen for this reason,

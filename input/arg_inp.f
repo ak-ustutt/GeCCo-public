@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine arg_inp(l_exit,l_infile,l_logfile,
+      subroutine arg_inp(l_exit,l_infile,l_logfile,l_molpro,
      &                        name_infile,name_logfile)
 *----------------------------------------------------------------------*
 *     process the command line argument list to GeCCo
@@ -8,7 +8,7 @@
       implicit none
       
       logical, intent(out) ::
-     &     l_exit, l_infile, l_logfile
+     &     l_exit, l_infile, l_logfile, l_molpro
       character(len=*), intent(out) ::
      &     name_infile, name_logfile
       
@@ -40,6 +40,9 @@
 
         case('-l','--logfile')
           l_arg_ml = .true.
+
+        case('-m','--molpro')
+          l_molpro = .true.
 
         case default
           if (l_arg_ml) then
