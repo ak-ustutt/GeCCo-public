@@ -404,16 +404,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
           if (conv) then
             write(lulog,'("L>> conv.",21x,x,g10.4)') xresmax
             if (lulog.ne.luout)
-     &         write(luout,'("L>> conv.",21x,x,g10.4)') xresmax
+     &         write(luout,'("    conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
             write(lulog,'("L>> |rhs|",21x,x,g10.4)') xresmax
             if (lulog.ne.luout)   
-     &        write(luout,'("L>> |rhs|",21x,x,g10.4)') xresmax
+     &        write(luout,'("    |rhs|",21x,x,g10.4)') xresmax
             xrhsnorm = xresmax
           else
             write(lulog,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
             if (lulog.ne.luout) 
-     &         write(luout,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
+     &         write(luout,'("   ",i3,24x,x,g10.4)')iter-1,xresmax
           end if
         end do
 

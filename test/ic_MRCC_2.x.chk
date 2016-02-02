@@ -15,8 +15,7 @@ check
   label Number of terms of Lagrangian
   find F_MRCC_LAG
   find F_MRCC_LAG
-  find EXPAND
-  find EXPAND
+  find SELECT_SPECIAL
   find wrote
   compare int 2
 check

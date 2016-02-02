@@ -61,8 +61,8 @@ def runtest_kernel(commands,options,testname):
     os.chdir(scrdir)
 
     cmd = options.program + ' ' + commands['input'][-1][0].split()[0] + ' > ' + out_name
-#    print "executing: " + cmd
-    ret_code = os.system(cmd)
+   # QUICK FIX for current MAC OS 10.11.3, should not affect other OSs
+    ret_code = os.system('export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH;' + cmd)
 
     os.chdir(curdir)
 

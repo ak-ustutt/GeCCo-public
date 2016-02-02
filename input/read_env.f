@@ -26,6 +26,8 @@ c     even with -finit-local-zero flag!
         call read_env_dalton64(orb_info)
       case ('gamess','GAMESS')
         call read_env_gamess(orb_info)
+      case ('molpro_ifc','MOLPRO_IFC')
+        call read_env_molpro(orb_info)
       case ('molpro_dump','MOLPRO_DUMP')
         call read_env_molpro_dump(orb_info)
       case ('intern','INTERN')

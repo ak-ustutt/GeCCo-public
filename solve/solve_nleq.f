@@ -470,7 +470,7 @@ c     &       ff_trv,ff_h_trv,
           ! use weaker convergence threshold for micro-iterations
           do i_state=1,n_states
            thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt_state+1)*
-     &          opti_info%mic_ahead,1d-5)
+     &          opti_info%mic_ahead,1d-3)
           end do
 
           do i_state=1,n_states

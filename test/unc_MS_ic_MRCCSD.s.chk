@@ -11,32 +11,32 @@ check
 check
   label Uncoupled final energies
   find final energies:
-  compare real 4 1e-12
-  compare real 5 1e-12
+  compare real 4 1e-6
+  compare real 5 1e-6
 check
   label Effective hamiltonal elements
   find EVAL_pack_Heff_MS
   find Rule: EVALUATE
   find >>>
-  compare real 4 1e-9
+  compare real 4 1e-6
   find Rule: EVALUATE
   find >>>
-  compare real 4 1e-9
+  compare real 4 1e-6
   find Rule: EVALUATE
   find >>>
-  compare real 4 1e-9
+  compare real 4 1e-6
   find Rule: EVALUATE
   find >>>
-  compare real 4 1e-9
+  compare real 4 1e-6
 check
   label effective Hamiltonian eigenproblem
   find Multistate energies and eigenvectors:
   find >>>
-  compare real 2 1e-9
+  compare real 2 1e-6
   compare real 3 1e-6
   compare real 4 1e-6
   find >>>
-  compare real 2 1e-9
+  compare real 2 1e-6
   compare real 3 1e-6
   compare real 4 1e-6
 end

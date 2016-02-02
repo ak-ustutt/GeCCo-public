@@ -788,11 +788,11 @@ c dbgend
         call set_arg('DEF_ME_C00',SCALE_COPY,'FAC',1,tgt_info,
      &       val_rl8=(/1d0/))
 c dbg
-      call form_parameters(-1,parameters,2,
-     &     'Saved C0, C00: ',0,'LIST')
-      call set_rule('DEF_ME_C00',ttype_opme,PRINT_MEL,
-     &     'ME_C00',1,0,
-     &     parameters,2,tgt_info)
+c      call form_parameters(-1,parameters,2,
+c     &     'Saved C0, C00: ',0,'LIST')
+c       call set_rule('DEF_ME_C00',ttype_opme,PRINT_MEL,
+c     &     'ME_C00',1,0,
+c     &     parameters,2,tgt_info)
 c dbg end
       if(multistate)then
        call set_rule2('DEF_ME_C00',ADV_STATE,tgt_info)
@@ -1103,6 +1103,9 @@ c dbgend
      &      val_int=[1])
 
       else if (.not.oldref) then
+        call set_rule2('SOLVE_REF',PRINT_,tgt_info)
+        call set_arg('SOLVE_REF',PRINT_,'STRING',1,tgt_info,
+     &      val_str='Now solving equations for reference state')
         call set_rule2('SOLVE_REF',SOLVEEVP,tgt_info)
         call set_arg('SOLVE_REF',SOLVEEVP,'LIST_OPT',1,tgt_info,
      &       val_label=(/'ME_C0'/))
@@ -1230,6 +1233,13 @@ c dbgend
       call set_rule('EVAL_E_REF',ttype_opme,EVAL,
      &     'FOPT_REF',1,0,
      &     parameters,0,tgt_info)
+      call set_rule2('EVAL_E_REF',PRINT_MEL,tgt_info)
+      call set_arg('EVAL_E_REF',PRINT_MEL,'LIST',1,tgt_info,
+     &     val_label=(/'ME_E_REF'/))
+      call set_arg('EVAL_E_REF',PRINT_MEL,'COMMENT',1,tgt_info,
+     &     val_str='Reference energy :')
+      call set_arg('EVAL_E_REF',PRINT_MEL,'FORMAT',1,tgt_info,
+     &     val_str='SCAL F20.12')
 c dbg
 c      call form_parameters(-1,parameters,2,
 c     &     'Hamiltonian :',0,'LIST')

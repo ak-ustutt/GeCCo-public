@@ -308,16 +308,16 @@ c      ! vector could be put back to list here:
 c      call vec_to_da(ffamp,1,xbuf2,nwfpar)
 c dbgend
 
-cdbg
-      if (lzero_flag)then
-       call print_list('before zeroing',me_special(4)%mel,"NORM",
-     &                  -1d0,0d0,
-     &                  orb_info,str_info)
-      else 
-       call print_list('before zeroing',me_special(1)%mel,"NORM",
-     &                  -1d0,0d0,
-     &                  orb_info,str_info)
-      end if
+cdbg - the following lines do not give any sensible output:
+c      if (lzero_flag)then
+c       call print_list('before zeroing',me_special(4)%mel,"NORM",
+c     &                  -1d0,0d0,
+c     &                  orb_info,str_info)
+c      else 
+c       call print_list('before zeroing',me_special(1)%mel,"NORM",
+c     &                  -1d0,0d0,
+c     &                  orb_info,str_info)
+c      end if
 cdbg
       if (ntest.ge.100) then
         write(lulog,*) 'gradient vector afterwards:'

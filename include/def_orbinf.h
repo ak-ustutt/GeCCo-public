@@ -2,7 +2,10 @@
         integer ::
      &     nsym, ngas, nspin
         integer ::
-     &      ntoob,caborb,nbast,nxbast,nactel,nactorb,lsym,imult,ims
+     &      ntoob,caborb,nbast,nxbast,nactel,nactorb,lsym,imult,ims,
+     &      ncore_mpro
+        character(len=256) ::
+     &      name_intfile_mpro
         integer, pointer ::
      &     igassh(:,:),
      &     nbas(:), ntoobs(:), ireots(:), ireost(:),

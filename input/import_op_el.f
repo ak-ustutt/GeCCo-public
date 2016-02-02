@@ -260,8 +260,16 @@ c     &                                str_info,orb_info)
      &         'MOLPRO_DUMP: cannot handle list_type "'
      &         //trim(list_type)//'"')
         end select
-      case ('molpro','MOLPRO')
-        call quit(1,'import_op_el','type MOLPRO not implemented')
+      case ('molpro_ifc','MOLPRO_IFC')
+        ! what to import?
+        select case(trim(list_type))
+        case ('H_INT')
+          call import_hamint_molpro(mel_target,str_info,orb_info)
+        case default
+          call quit(1,'import_op_el',
+     &         'MOLPRO_IFC: cannot handle list_type "'
+     &         //trim(list_type)//'"')
+        end select
       case ('intern','INTERN')
         call quit(1,'import_op_el','type INTERN not implemented')
       case ('aces2','ACES2')

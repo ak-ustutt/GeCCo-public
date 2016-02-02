@@ -11,7 +11,7 @@
       include 'ioparam.h'
 
       integer, external ::
-     &     iopen_nud, iopen_nus, iopen_nfs
+     &     iopen_nud, iopen_nus, iopen_nfs, iopen_nustr
 
       type(filinf), intent(inout) ::
      &     fhand
@@ -29,6 +29,8 @@
         fhand%unit = iopen_nus(fhand%name)
       else if (fhand%type.eq.ftyp_sq_frm) then
         fhand%unit = iopen_nfs(fhand%name)
+      else if (fhand%type.eq.ftyp_st_unf) then
+        fhand%unit = iopen_nustr(fhand%name)
       else
         call quit(1,'file_open','illegal file type')
       end if

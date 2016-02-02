@@ -23,7 +23,7 @@
       len = len_trim(name)
       if (len.gt.maxfilnam)
      &     call quit(1,'file_init','filename too long')
-      if (type.lt.1.or.type.gt.3)
+      if (type.lt.1.or.type.gt.4)
      &     call quit(1,'file_init','illegal file type')
       if (type.eq.1.and.reclen.le.0)
      &     call quit(1,'file_init','zero or negative record length')

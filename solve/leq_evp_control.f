@@ -331,7 +331,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
       if (lconv)
      &       write(lulog,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
-      if (lconv.and.luout.ne.lulog)
+      if (lconv.and.luout.ne.lulog.and.iprlvl.ge.5)
      &       write(luout,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
       if (lconv) conv = .true.

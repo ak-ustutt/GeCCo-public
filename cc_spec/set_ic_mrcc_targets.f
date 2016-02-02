@@ -3107,9 +3107,9 @@ c     &             val_int=(/2,3/))
      &                                 'INT_D','C0   ','INT_D'/))
       call set_arg('F_INT_D',EXPAND_OP_PRODUCT,'IDX_SV',6,tgt_info,
      &             val_int=(/1,2,1,1,3,1/))
-      call set_rule2('F_INT_D',PRINT_FORMULA,tgt_info)
-      call set_arg('F_INT_D',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &             val_label=(/'F_INT_D'/))
+c      call set_rule2('F_INT_D',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_INT_D',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &             val_label=(/'F_INT_D'/))
 
       ! "Redundant" part of T operator
       call add_target2('F_T(2)red',.false.,tgt_info)
@@ -3712,7 +3712,6 @@ c_T_proj_3_fix end of change
       call set_dependency('MRCC_PT_LAG','DYALL_HAM',tgt_info)
       ! (a) ic-MRCCSD energy (only if not just a corr. to ic-MRCCSD-F12)
       ! for pure_vv, one should also include terms with Tfix on the left
-      print*,'debugging set_ic_mrcc_target', orb_info%norb_hpv(IEXTR,1)
       if (orb_info%norb_hpv(IEXTR,1).eq.0.and.densmix.eq.0d0) then
         call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
@@ -4363,12 +4362,12 @@ c dbg
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_HT2',tgt_info)
 !        call set_dependency('FOPT_OMG','F_INT_T2H',tgt_info)
 !        call set_dependency('FOPT_OMG','DEF_ME_INT_T2H',tgt_info)
-!        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
-!        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','F_INT_D',tgt_info)
+        call set_dependency('FOPT_OMG','DEF_ME_INT_D',tgt_info)
 c        labels(ndef+1) = 'F_INT_HT2'
 c        labels(ndef+2) = 'F_INT_T2H' 
-!        labels(ndef+1) = 'F_INT_D'
-!        ndef = ndef + 1!3
+        labels(ndef+1) = 'F_INT_D'
+        ndef = ndef + 1!3
 c dbg
       end if
 

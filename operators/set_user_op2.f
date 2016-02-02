@@ -26,8 +26,8 @@
 
       type(operator), intent(inout) ::
      &     op
-      character, intent(in) ::
-     &     name*(*)
+      character(len=*), intent(in) ::
+     &     name
       integer, intent(in) ::
      &     type, nblk, njoined, min_formal
       type(orbinf), intent(in), target ::
@@ -55,6 +55,7 @@ c     &     freeze(2)
 
       if (iprint.ge.100) then
         call write_title(lulog,wst_dbg_subr,'set_user_op')
+        write(lulog,*) 'nblk,njoined: ',nblk,njoined
         call wrt_occ_n(lulog,occ_def,nblk*njoined)
         call wrt_rstr(lulog,irestr,orb_info%ngas)
       end if
@@ -70,6 +71,12 @@ c     &     freeze(2)
           write(lulog,*) 'type: ',type,' ?'
         end if
         call quit(1,'set_user_op','illegal type specification')
+      end if
+
+      if (nblk.le.0) then
+        write(lulog,*) 'nblk = ',nblk,' ???'
+        call quit(1,'set_user_op2',
+     &    'Must at least define one block for "'//trim(name)//'"')
       end if
 
       nspin => orb_info%nspin

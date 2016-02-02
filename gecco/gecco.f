@@ -18,7 +18,7 @@
       include 'ifc_input.h'
 
       logical ::
-     &     l_infile,l_logfile,l_exit,one_more, do_stat
+     &     l_infile,l_logfile,l_exit,l_molpro,one_more, do_stat
       character(256) ::
      &     name_infile, name_logfile, host
       character(32) ::
@@ -45,9 +45,11 @@ c      iprlvl = 3     ! print level
       call datum(date)
 
       ! process arguments to GeCCo
-      call arg_inp(l_exit,l_infile,l_logfile,
+      call arg_inp(l_exit,l_infile,l_logfile,l_molpro,
      &             name_infile,name_logfile)
       if (l_exit) goto 2308
+
+      if (l_molpro) iprlvl = 0
 
       ! init the file-handler
       call fh_init(iprlvl)
@@ -61,12 +63,12 @@ c      iprlvl = 3     ! print level
 
       write(lulog,'(x,"run starts at ",a,"   host: ",a)')
      &     trim(date),trim(host)
-      if (lulog.ne.luout)
+      if (lulog.ne.luout.and..not.l_molpro) ! a bit less verbose inside molpro
      &  write(luout,'(x,"run starts at ",a,"   host: ",a)')
      &     trim(date),trim(host)
       
       ! give information about compilation date etc.
-      call printversion(lulog)
+      if (.not.l_molpro) call printversion(lulog)
 
       ! set internal counter to 0
       event_time = 0
@@ -75,7 +77,7 @@ c      iprlvl = 3     ! print level
       call atim_csw(cpu0,sys0,wall0)
 
       call printheader(lulog)
-      if (luout.ne.lulog) call printheader(luout)
+      if (luout.ne.lulog.and..not.l_molpro) call printheader(luout)
 
       ! warnings
       nwarn = 0
@@ -149,20 +151,20 @@ c      iprlvl = 3     ! print level
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
-      if (lulog.ne.luout)
+      if (lulog.ne.luout.and..not.l_molpro)
      &   call prtim(luout,'total time in GeCCo run',
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
  2308 call datum(date)
       write(lulog,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
-      if (lulog.ne.luout)
+      if (lulog.ne.luout.and..not.l_molpro)
      &   write(luout,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
 
       if (l_logfile) call file_close_keep(fflog)
 
-      stop '+++ GeCCo run finished +++'
+      if (.not.l_molpro) stop '+++ GeCCo run finished +++'
       end
 
 

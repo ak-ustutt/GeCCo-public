@@ -480,11 +480,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
       case(TRANSPS_FORMULA)
 *----------------------------------------------------------------------*
-        call get_arg('LABEL',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),OLD)
-        call read_form_list(form_pnt%fhand,flist,.true.)
-        call transpose_formula(flist,
-     &       op_info)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label_list(1))
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label2)
+        call get_arg('INIT',rule,tgt_info,val_log=init)
+        call transpose_formula_wrap(label,label2,label_list(1),init,
+     &       op_info,form_info)
 *----------------------------------------------------------------------*
       case(EXPAND_OP_PRODUCT)
 *----------------------------------------------------------------------*

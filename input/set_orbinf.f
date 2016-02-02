@@ -30,7 +30,7 @@
 
       integer ::
      &     ngas, nsym, ntoob, nspin,
-     &     iprint, idx, jdx, kdx, isym, igas, igastp, ispin,
+     &     iprint, idx, jdx, kdx, isym, igas, igastp, ispin, ipass,
      &     idxst, idxnd, ist, ind, inc, igasr, j, caborb, iloop, loop
       integer ::
      &     icount(ngastp)
@@ -225,6 +225,34 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
             do idx = ist, ind, inc
               jdx = jdx+1
               orb_info%ireost(jdx) = idx
+            end do
+          end do
+        end do
+
+        ! append CABS orbitals (no reordering)
+        do idx = ntoob+1, ntoob+caborb
+          orb_info%ireost(idx) = idx
+        end do
+      case ('molpro_ifc','MOLPRO_IFC')
+        ! the interface removes the core orbitals and shifts the numbering
+        ! we just pretend that the symmetry ordering is done for core and other
+        ! orbitals separately
+        if (hole_rv) call quit(1,'set_orbinf','who needs hole_rv??')
+        jdx = 0
+        do ipass = 1,2 ! two passes: 1-deleted core, 2-others
+          do isym = 1, nsym
+            do igas = 1, ngas
+              if (ipass.eq.1.and.orb_info%iad_gas(igas).ne.1) cycle
+              if (ipass.eq.2.and.orb_info%iad_gas(igas).eq.1) cycle
+              ! ignore cabs orbitals
+              if(caborb.gt.0.and.igas.eq.ngas)cycle
+              ist = orb_info%mostnd(1,isym,igas)
+              ind = orb_info%mostnd(2,isym,igas)
+              inc = +1
+              do idx = ist, ind, inc
+                jdx = jdx+1
+                orb_info%ireost(jdx) = idx
+              end do
             end do
           end do
         end do
