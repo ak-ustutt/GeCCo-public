@@ -33,7 +33,7 @@ depend('DEF_LAM1')
 depend('DEF_O2g')
 depend('DEF_O1')
 
-
+depend('GAM0_CALC')
 depend('MakeRefState')
 
 depend('H0')
