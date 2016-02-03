@@ -68,7 +68,7 @@ comment("defining effective fock operator and building formula")
 
 DEF_HAMILTONIAN({
         LABEL:'FOCK_EFF',
-        MIN_RANK:1,
+        MIN_RANK:0,
         MAX_RANK:1})
 
 DEF_ME_LIST({
@@ -121,7 +121,7 @@ comment("defining effective Fock operator without V,V part and defining Fomula f
 DEF_OP_FROM_OCC({
         LABEL:'FOCK_EFF_INACT',
         JOIN:1,
-        DESCR:'H,H|P,P'})
+        DESCR:',|H,H|P,P'})
 DEF_ME_LIST({
         LIST:'FOCK_EFF_INACT_LST',
         OPERATOR:'FOCK_EFF_INACT',
@@ -165,7 +165,7 @@ depend('H0')
 
 DEF_OP_FROM_OCC({
         LABEL:'HAM_D',
-        DESCR:'H,H|P,P|V,V|VV,VV'})
+        DESCR:',|H,H|P,P|V,V|VV,VV'})
 
 DEF_ME_LIST({
         LIST:'HAM_D_LIST',
