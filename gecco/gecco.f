@@ -93,6 +93,8 @@ c      iprlvl = 3     ! print level
       call file_init(ffinput,name_infile,ftyp_sq_frm,idum)
       ! get all possible information from environment:
       !  number of orbitals, symmetry etc.
+      ! for savety:
+      if (l_molpro) orb_info%mem_mpro = -1    
       call read_env(env_type,orb_info)
 
       ! read and parse input file
@@ -106,12 +108,16 @@ c      iprlvl = 3     ! print level
       ! specified
 
       call get_argument_value('general','memmax',ival=memmax)
+      if (l_molpro) then
+        if (orb_info%mem_mpro.gt.0) memmax=orb_info%mem_mpro
+      end if
       call mem_init(memmax)
 
       ifree = mem_register(4000,'input')
 
       ! open statistics file, if requested
       call get_argument_value('general','statistics',lval=do_stat)
+      if (l_molpro) do_stat=.false. ! disable this when called by molpro      
       if (do_stat) then
         call file_init(ffstat,'STATISTICS',ftyp_sq_frm,idum)
         call file_open(ffstat)

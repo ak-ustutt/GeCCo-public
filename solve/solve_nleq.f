@@ -398,7 +398,7 @@ c     &       ff_trv,ff_h_trv,
         if (conv) it_print = imacit
         if (luout.ne.lulog) then
          write(out_format,fmt='(A,i0,A,i0,A)')
-     &        '(3x,i3,',n_states,'(f24.12,',nopt_state,
+     &        '(1x,i3,',n_states,'(f24.12,',nopt_state,
      &        '(x,g10.4)))'
          if (imacit.gt.1) then
           if(multistate)then
