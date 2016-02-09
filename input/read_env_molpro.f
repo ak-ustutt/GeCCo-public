@@ -12,7 +12,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=20), parameter ::
      &     i_am = 'read_env_molpro'
 
@@ -31,7 +31,8 @@
       real(8) ::
      &     ecore
       integer :: 
-     &     nirr, nel, isym, mult, norbs(8), nocc(8), ncore(8),
+     &     nirr, nel, isym, mult, mem_mpro,
+     &     norbs(8), nocc(8), ncore(8),
      &     nclosed(8)
       integer ::
      &     ninact(8), nact(8), nvirt(8)
@@ -55,6 +56,19 @@
         call quit(0,i_am,'wrong format of interface file?')
       end if
 
+      ! set defaults
+      mem_mpro = -1 ! use defined memory of GeCCo
+      rd_intfile = .false.
+      rd_nirr = .false.
+      rd_nel = .false.
+      rd_sym = .false.
+      rd_mult = .false.
+      rd_norbs = .false.
+      rd_nocc = .false.
+      rd_ncore = .false.
+      rd_closed = .false.
+      rd_ecore = .false.
+
       ! loop over file and read info
       
       do
@@ -65,6 +79,8 @@
         case('dumpfile') 
           read (line(idelim+1:),'(a)') intfile
           rd_intfile = .true.
+        case('memory')
+          read (line(idelim+1:),*) mem_mpro
         case('nirrep')
           read (line(idelim+1:),*) nirr
           rd_nirr = .true.
@@ -165,12 +181,13 @@
       nact(1:nirr)   = nocc(1:nirr)-nclosed(1:nirr)
       nvirt(1:nirr)  = norbs(1:nirr)-nocc(1:nirr)
 
-      if (iprint.ge.1) then
-        write(luout,'(1x,"core      ",8i4)') ncore(1:nirr) 
-        write(luout,'(1x,"inactive  ",8i4)') ninact(1:nirr) 
-        write(luout,'(1x,"active    ",8i4)') nact(1:nirr) 
-        write(luout,'(1x,"virtual   ",8i4)') nvirt(1:nirr) 
-      end if
+      !if (iprint.ge.1) then
+        write(luout,'(1x,"GeCCo will use these orbital spaces:")') 
+        write(luout,'(1x," core      ",8i4)') ncore(1:nirr) 
+        write(luout,'(1x," inactive  ",8i4)') ninact(1:nirr) 
+        write(luout,'(1x," active    ",8i4)') nact(1:nirr) 
+        write(luout,'(1x," virtual   ",8i4)') nvirt(1:nirr) 
+      !end if
 
       ngas=1
       if (sum(ncore(1:nirr)).gt.0)  ngas = ngas+1 
@@ -232,6 +249,8 @@
       orb_info%ntoobs(1:nirr) = norbs(1:nirr)
       orb_info%cab_orb(1:nirr)=0
       orb_info%nxbas(1:nirr)=0
+
+      orb_info%mem_mpro = mem_mpro
 
       if (ntest.ge.100) then
         write(lulog,*) 'Have set:'

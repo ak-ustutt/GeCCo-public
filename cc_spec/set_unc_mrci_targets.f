@@ -1198,7 +1198,7 @@ c dbgend
        call set_arg('SOLVE_REF',SPREAD_MEL,'LIST_OUT',n_states,
      &      tgt_info,val_label=labels)
       endif
-      if (cmaxexc.eq.0) then
+      if (.false..and.cmaxexc.eq.0) then ! false: no long output
        do i_state=1,n_states,1
         if (.NOT.multistate) then
          call form_parameters(-1,parameters,2,
@@ -1215,11 +1215,11 @@ c dbgend
      &       parameters,2,tgt_info)
        enddo
       else
-        call set_rule2('SOLVE_REF',ANALYZE_MEL,tgt_info)
-        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS',1,tgt_info,
-     &               val_label=(/'ME_C0'/))
-        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS_CV',1,tgt_info,
-     &               val_label=(/'ME_C0'/))
+!        call set_rule2('SOLVE_REF',ANALYZE_MEL,tgt_info)
+!        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS',1,tgt_info,
+!     &               val_label=(/'ME_C0'/))
+!        call set_arg('SOLVE_REF',ANALYZE_MEL,'LISTS_CV',1,tgt_info,
+!     &               val_label=(/'ME_C0'/))
       end if
 
       ! Evaluate reference energy

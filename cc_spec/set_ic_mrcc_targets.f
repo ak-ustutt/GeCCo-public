@@ -6070,11 +6070,11 @@ c dbgend
       if (optref.ne.0) then
        do i_state = 1,n_states
         c_st = state_label(i_state,.false.)
-        call form_parameters(-1,parameters,2,
-     &       'final CI coefficients :',0,'LIST')
-        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
-     &       'ME_C0',1,0,
-     &       parameters,2,tgt_info)
+!        call form_parameters(-1,parameters,2,
+!     &       'final CI coefficients :',0,'LIST')
+!        call set_rule('SOLVE_MRCC',ttype_opme,PRINT_MEL,
+!     &       'ME_C0',1,0,
+!     &       parameters,2,tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_REF_S(S+1)',1,0,
      &       parameters,0,tgt_info)
