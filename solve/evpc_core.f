@@ -2,7 +2,7 @@
       subroutine evpc_core(iter,
      &       task,iroute,xrsnrm,xeig,
      &       use_s,
-     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,
+     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
      &       me_special,nspecial,
 c     &       ffopt,fftrv,ffmvp,ffdia,
      &       nincore,lenbuf,
@@ -46,7 +46,7 @@ c      include 'def_filinf.h'
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*),
-     &     me_mvp(*), me_special(*), me_scr(*)
+     &     me_mvp(*), me_special(*), me_scr(*),me_ext(*)
       type(me_list_array), intent(inout) ::
      &     me_met(*), me_trv(*)
 c      type(file_array), intent(in) ::
@@ -99,7 +99,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     nwfpar(:), idxselect(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(file_array), pointer ::
-     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
+     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:),
+     &     ffext(:)
       type(filinf) ::
      &     fdum
       type(filinf), pointer ::
@@ -129,6 +130,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
       ffscr => opti_stat%ffscr
+      ffext => opti_stat%ffext
       ffrsbsp => opti_stat%ffrsbsp
       ffvsbsp => opti_stat%ffvsbsp
       ffssbsp => opti_stat%ffssbsp
@@ -354,7 +356,7 @@ c dbgend
      &           iord_rsbsp,ffrsbsp,
      &           iord_ssbsp,ffssbsp,use_s,
      &           vred,xdum,mred,sred,nred,nroot,0,mxsub,nopt,
-     &           ffscr(1)%fhand,nnew,  ! only scratch
+     &           ffext,0,  ! only scratch
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred

@@ -95,9 +95,9 @@
      &     energy, xresnrm(nroots,nopt), xdum, xresmax
       type(me_list_array), pointer ::
      &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:), me_dia(:),
-     &     me_met(:), me_special(:), me_scr(:)
+     &     me_met(:), me_special(:), me_scr(:), me_ext(:)
       type(file_array), pointer ::
-     &     ffdia(:), ff_rhs(:), ff_trv(:),
+     &     ffdia(:), ff_rhs(:), ff_trv(:),ff_ext(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
       type(me_list), pointer ::
      &     me_pnt
@@ -146,9 +146,9 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
 
       allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt),
      &     me_dia(nopt),me_met(nopt),me_special(nspecial),
-     &     me_scr(nopt))
+     &     me_scr(nopt),me_ext(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
-     &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt),
+     &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt),ff_ext(nopt),
      &     ff_met(nopt),ffspecial(nspecial),ff_scr(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
@@ -241,6 +241,20 @@ c dbg
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
+        ! Here is a new ME-list that will be fed in the 
+        ! routine 'optc_minspace'. Previously ff_scr was
+        ! used there but the use was erroneous
+        write(fname,'("ext_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
+     &       -1,1,nvectors,0,0,0,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_ext(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_ext(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
         ! get a ME-list for trial-vectors
         write(fname,'("trv_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
@@ -324,6 +338,7 @@ c dbg
         ! open result vector file(s)
         call file_open(ffopt(iopt)%fhand)
         call file_open(ff_scr(iopt)%fhand)
+        call file_open(ff_ext(iopt)%fhand)
         call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
         call file_open(ff_mvp(iopt)%fhand)
@@ -391,7 +406,8 @@ c dbg
      &       task,conv,xresnrm,xdum,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet, 
-     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,me_dia, 
+     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,me_dia,
+     &       me_ext,
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       fl_rhs_mvp,depend,
@@ -486,6 +502,7 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
 
         ! remove the temporary lists
         call del_me_list(me_scr(iopt)%mel%label,op_info)
+        call del_me_list(me_ext(iopt)%mel%label,op_info)
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
         call del_me_list(me_rhs(iopt)%mel%label,op_info)
@@ -523,9 +540,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_trv,me_rhs,me_mvp,me_dia,me_met,me_special,
-     &           me_scr)
+     &           me_scr,me_ext)
       deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,ff_met,ffspecial,
-     &     xret,idxselect,ff_scr)
+     &     xret,idxselect,ff_scr,ff_ext)
       call dealloc_formula_list(fl_rhs_mvp)
       do jdx = 1, nspcfrm
         call dealloc_formula_list(fl_spc(jdx))

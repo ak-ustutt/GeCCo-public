@@ -1,6 +1,6 @@
       type optimize_status
         type(file_array), pointer ::
-     &       ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:)
+     &       ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffext(:)
         integer ::
      &       ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &       mxdim_sbsp, nadd, ndel, mode_2nd

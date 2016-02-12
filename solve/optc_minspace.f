@@ -25,9 +25,8 @@
       logical, intent(in) ::
      &     use_s(nopt)
       type(file_array), intent(inout) ::
-     &     ffvsbsp(nopt), ffrsbsp(nopt), ffssbsp(nopt)
-      type(filinf), intent(inout) ::
-     &     ffscr
+     &     ffvsbsp(nopt), ffrsbsp(nopt), ffssbsp(nopt),
+     &     ffscr(nopt)
       integer, intent(in) ::
      &     nroot, nincore, nwfpar(nopt), lenbuf, ioffscr
       real(8), intent(inout) ::
@@ -185,14 +184,15 @@ c dbg
       idxvec = 1
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffvsbsp(iopt)%fhand,iord_vsbsp,
+     &       ffscr(iopt)%fhand,ioffscr+iroot,0d0,
+     &       ffvsbsp(iopt)%fhand,iord_vsbsp,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
       ! copy to ffvsbsp and reset iord_vsbsp:
       do iroot = 1, nroot
         iord_vsbsp(iroot) = iroot
-        call da_sccpvec(ffscr,ioffscr+iroot,
+        call da_sccpvec(ffscr(iopt)%fhand,ioffscr+iroot,
      &                  ffvsbsp(iopt)%fhand,iroot,
      &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
       end do
@@ -209,14 +209,15 @@ c dbg
       idxvec = 1
       do iroot = 1, nroot
         call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffrsbsp(iopt)%fhand,iord_rsbsp,
+     &       ffscr(iopt)%fhand,ioffscr+iroot,0d0,
+     &       ffrsbsp(iopt)%fhand,iord_rsbsp,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
         idxvec = idxvec+nred
       end do
       ! copy to ffrsbsp and reset iord_rsbsp:
       do iroot = 1, nroot
         iord_rsbsp(iroot) = iroot
-        call da_sccpvec(ffscr,ioffscr+iroot,
+        call da_sccpvec(ffscr(iopt)%fhand,ioffscr+iroot,
      &                  ffrsbsp(iopt)%fhand,iroot,
      &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
       end do
@@ -230,16 +231,17 @@ c dbg
         idxvec = 1
         do iroot = 1, nroot
           call optc_expand_vec(vorth(idxvec),nred,xnrm,.false.,
-     &       ffscr,ioffscr+iroot,0d0,ffssbsp(iopt)%fhand,iord_ssbsp,
+     &       ffscr(iopt)%fhand,ioffscr+iroot,0d0,
+     &       ffssbsp(iopt)%fhand,iord_ssbsp,
      &       nincore,nwfpar(iopt),lenbuf,xbuf1,xbuf2)
           idxvec = idxvec+nred
         end do
         ! copy to ffssbsp and reset iord_ssbsp:
         do iroot = 1, nroot
           iord_ssbsp(iroot) = iroot
-          call da_sccpvec(ffscr,ioffscr+iroot,
-     &                  ffssbsp(iopt)%fhand,iroot,
-     &                  1d0,nwfpar(iopt),xbuf1,lenbuf)
+          call da_sccpvec(ffscr(iopt)%fhand,ioffscr+iroot,
+     &                    ffssbsp(iopt)%fhand,iroot,
+     &                    1d0,nwfpar(iopt),xbuf1,lenbuf)
         end do
 c dbg
 c        print *,'contents on new ffssbsp file:'

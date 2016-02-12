@@ -94,11 +94,11 @@
      &     xeig(nroots,2), xresnrm(nroots*nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
-     &     me_special(:), me_scr(:), me_home(:)
+     &     me_special(:), me_scr(:), me_home(:), me_ext(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:),
-     &     ffhome(:)
+     &     ffhome(:), ff_ext(:)
       type(me_list), pointer ::
      &     me_pnt
       type(dependency_info) ::
@@ -143,10 +143,10 @@
       form_mvp => form_info%form_arr(idx)%form
 
       allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt),
-     &         me_met(nopt),me_special(nspecial),me_scr(nopt))
+     &      me_met(nopt),me_special(nspecial),me_scr(nopt),me_ext(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
-     &     ff_scr(nopt))
+     &     ff_scr(nopt),ff_ext(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
         ierr = 1
@@ -234,6 +234,20 @@
         idxmel = idx_mel_list(fname,op_info)
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
+        ! Here is a new ME-list that will be fed in the 
+        ! routine 'optc_minspace'. Previously ff_scr was
+        ! used there but the use was erroneous
+        write(fname,'("ext_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
+     &       -1,1,nvectors,0,0,0,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_ext(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_ext(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
         ! get a ME-list for trial-vectors
         write(fname,'("trv_",i3.3)') iopt
@@ -388,7 +402,7 @@ c dbgend
      &       task,conv,xresnrm,xeig,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet,
-     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,
+     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,me_ext,
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
      &       fl_mvp,depend,
@@ -547,6 +561,7 @@ c dbg
 
         ! remove the temporary lists
         call del_me_list(me_scr(iopt)%mel%label,op_info)
+        call del_me_list(me_ext(iopt)%mel%label,op_info)
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
         if (use_s(iopt))
@@ -628,8 +643,10 @@ c dbgend
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr)
-      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,ff_scr)
+      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr,
+     &           me_ext)
+      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,
+     &           ff_scr,ff_ext)
       call dealloc_formula_list(fl_mvp)
       do jdx = 1, nspcfrm
         call dealloc_formula_list(fl_spc(jdx))
