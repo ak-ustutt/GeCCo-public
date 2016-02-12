@@ -1036,6 +1036,20 @@ c dbg
      &                  orb_info,str_info)
 
 *----------------------------------------------------------------------*
+      case(PUSH_RESULT)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('COMMENT',rule,tgt_info,val_str=title)
+        call get_arg('FORMAT',rule,tgt_info,val_str=mode)
+
+        if (form_test) return
+
+        call get_mel(mel_pnt,label,OLD)
+        call push_result_to_file(title,mel_pnt,mode,
+     &                  orb_info,str_info)
+
+*----------------------------------------------------------------------*
       case(ANALYZE_MEL)
 *----------------------------------------------------------------------*
 

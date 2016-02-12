@@ -30,7 +30,7 @@
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(filinf) ::
-     &     ffinput, fflog, ffwarn, ffstat
+     &     ffinput, fflog, ffwarn, ffres, ffstat
       type(orbinf) ::
      &     orb_info
 
@@ -84,6 +84,11 @@ c      iprlvl = 3     ! print level
       call file_init(ffwarn,'WARNINGS',ftyp_sq_frm,idum)
       call file_open(ffwarn)
       luwarn = ffwarn%unit
+
+      ! result file
+      call file_init(ffres,'RESULTS',ftyp_sq_frm,idum)
+      call file_open(ffres)
+      lures = ffres%unit
 
       ! find out, which environment we are using, and where
       ! to get our input data from
@@ -151,6 +156,8 @@ c      iprlvl = 3     ! print level
       else
         call file_close_delete(ffwarn)
       end if
+      
+      call file_close_keep(ffres)
 
       if (lustat.gt.0) call file_close_keep(ffstat)
 

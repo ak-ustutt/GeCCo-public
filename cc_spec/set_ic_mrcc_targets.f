@@ -6140,6 +6140,23 @@ c dbgend
      &       'ME_S(S+1)',1,0,
      &       parameters,2,tgt_info)
       end if
+      if (n_states.eq.1) then ! how to do that for MULTISTATE?
+        call set_rule2('SOLVE_MRCC',PRINT_MEL,tgt_info)
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'LIST',1,tgt_info,
+     &       val_label=(/'ME_E(MR)'/))
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'COMMENT',1,tgt_info,
+     &       val_str='Final icMRCC energy:')
+        call set_arg('SOLVE_MRCC',PRINT_MEL,'FORMAT',1,tgt_info,
+     &       val_str='SCAL F20.12')
+        call set_rule2('SOLVE_MRCC',PUSH_RESULT,tgt_info)
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'LIST',1,tgt_info,
+     &       val_label=(/'ME_E(MR)'/))
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'COMMENT',1,tgt_info,
+     &       val_str='icMRCC')
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'FORMAT',1,tgt_info,
+     &       val_str='SCAL F24.14')
+      end if
+
 c dbg
 c      do i_state = 1,n_states
 c       c_st = state_label(i_state,.false.)
@@ -6421,6 +6438,14 @@ c     &               tgt_info,val_label=(/'ME_OMG'/))
       call set_rule('EVAL_PERT_CORR',ttype_opme,PRINT_MEL,
      &     'ME_E(MR)',1,0,
      &     parameters,2,tgt_info)
+      call set_rule2('EVAL_PERT_CORR',PUSH_RESULT,tgt_info)
+      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'LIST',1,tgt_info,
+     &     val_label=(/'ME_E(MR)'/))
+      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'COMMENT',1,tgt_info,
+     &     val_str='icMRCC+PT')
+      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'FORMAT',1,tgt_info,
+     &     val_str='SCAL F24.14')
+
 c dbg
 c        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
 c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
