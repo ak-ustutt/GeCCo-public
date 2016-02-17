@@ -771,6 +771,14 @@
       call set_arg('_PROTO_',PRINT_,'STRING',0,tgt_info,
      &     val_str=' ',req=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(PUSH_RESULT,tgt_info)
+      call set_arg('_PROTO_',PUSH_RESULT,'LIST',0,tgt_info,
+     &     val_label=[' '],req=.true.)
+      call set_arg('_PROTO_',PUSH_RESULT,'COMMENT',0,tgt_info,
+     &     val_str='GECCO',def=.true.)
+      call set_arg('_PROTO_',PUSH_RESULT,'FORMAT',0,tgt_info,
+     &     val_str='NORM',req=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SET_MEL,tgt_info)
       call set_arg('_PROTO_',SET_MEL,'LIST',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
