@@ -113,7 +113,7 @@ OPTIMIZE({
 EVALUATE({
         FORM:'FOPT_A_TRF_FINAL'})
 
-debug_MEL('A_TRF_LST',only_this=True)
+debug_MEL('A_TRF_LST')
 
 
 

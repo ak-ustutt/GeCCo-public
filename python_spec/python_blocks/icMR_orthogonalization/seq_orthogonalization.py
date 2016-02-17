@@ -172,7 +172,7 @@ INVERT({
         LIST:'ME_GAM_S_ISQ',
         MODE:'invsqrt'})
 
-debug_MEL('ME_GAM_S_ISQ',only_this=True)
+debug_MEL('ME_GAM_S_ISQ')
 
 
 
