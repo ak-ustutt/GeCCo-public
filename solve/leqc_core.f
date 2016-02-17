@@ -2,7 +2,7 @@
       subroutine leqc_core(iter,
      &       task,iroute,xrsnrm,
      &       use_s,
-     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
+     &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,me_ext,
      &       me_special,nspecial,
 c     &       ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &       nincore,lenbuf,
@@ -47,7 +47,7 @@ c      include 'def_filinf.h'
       type(me_list_array), intent(inout) ::
      &     me_opt(*), me_trv(*), me_dia(*),
      &     me_mvp(*), me_rhs(*), me_scr(*),
-     &     me_special(nspecial)
+     &     me_special(nspecial), me_ext(*)
       type(me_list_array), intent(inout) ::
      &     me_met(*)
 c      type(file_array), intent(in) ::
@@ -98,7 +98,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
      &     nwfpar(:),
      &     ipiv(:), iconv(:), idxroot(:), idxselect(:)
       type(file_array), pointer ::
-     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
+     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:),
+     &     ffext(:)
       type(filinf), pointer ::
      &     ffspc
       type(filinf), target ::
@@ -126,6 +127,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
       ffscr => opti_stat%ffscr
+      ffext => opti_stat%ffext
       ! take care: there is currently some mess with 
       ! the definition of the below variables 
       ! (types filinf and file_array)
@@ -349,7 +351,7 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
      &           iord_rsbsp,ffrsbsp,
      &           iord_ssbsp,ffssbsp,use_s,
      &           vred,gred,mred,sred,nred,nroot,nroot,mxsub,nopt,
-     &           ffscr(1)%fhand,nnew,  ! only scratch
+     &           ffext,0,  ! only scratch
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred

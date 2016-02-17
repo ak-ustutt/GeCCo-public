@@ -4,7 +4,7 @@
      &                   use_s,
      &                   nrequest,irectrv,irecmvp,irecmet,
      &                   me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,
-     &                   me_dia,
+     &                   me_dia,me_ext,
      &                   me_special,nspecial,
 c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &                   flist,depend,
@@ -92,7 +92,7 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*), me_special(nspecial),
-     &     me_mvp(*), me_rhs(*), me_scr(*)
+     &     me_mvp(*), me_rhs(*), me_scr(*), me_ext(*)
       type(me_list_array), intent(inout) ::
      &     me_met(*), me_trv(*)
 c      type(file_array), intent(in) ::
@@ -200,6 +200,7 @@ c        if (nincore.le.1) then
         if (iter.ne.0) then
           do iopt = 1, opti_info%nopt
             call file_open(opti_stat%ffscr(iopt)%fhand)
+            call file_open(opti_stat%ffext(iopt)%fhand)
           end do
         end if
 c        end if
@@ -250,6 +251,8 @@ c        end if
         do iopt = 1, opti_info%nopt
           if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
      &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
+          if (opti_stat%ffext(iopt)%fhand%unit.gt.0)
+     &             call file_close_delete(opti_stat%ffext(iopt)%fhand)
         end do          
 
         iter = 1
@@ -271,7 +274,7 @@ c        end if
           call leqc_core(iter,
      &         task,iroute,xrsnrm,
      &         use_s,
-     &         me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
+     &         me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,me_ext,
      &         me_special,nspecial,
 c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &         nincore,lenbuf,
@@ -284,7 +287,7 @@ c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
           call evpc_core(iter,
      &         task,iroute,xrsnrm,xeig,
      &         use_s,
-     &         me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,
+     &         me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
      &         me_special,nspecial,
 c     &         ffopt,fftrv,ffmvp,ffdia,
      &         nincore,lenbuf,
@@ -353,6 +356,8 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
         do iopt = 1, opti_info%nopt
           if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
      &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
+          if (opti_stat%ffext(iopt)%fhand%unit.gt.0)
+     &             call file_close_delete(opti_stat%ffext(iopt)%fhand)
         end do
 
         ! release all temporary memory
@@ -381,6 +386,8 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
         do iopt = 1, opti_info%nopt
           if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
      &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
+          if (opti_stat%ffext(iopt)%fhand%unit.gt.0)
+     &             call file_close_delete(opti_stat%ffext(iopt)%fhand)
         end do
 
         call leqevpc_cleanup()
@@ -511,11 +518,13 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
         allocate(opti_stat%ffrsbsp(opti_info%nopt),
      &       opti_stat%ffvsbsp(opti_info%nopt),
      &       opti_stat%ffssbsp(opti_info%nopt),
-     &       opti_stat%ffscr(opti_info%nopt))
+     &       opti_stat%ffscr(opti_info%nopt),
+     &       opti_stat%ffext(opti_info%nopt))
         do iopt = 1, opti_info%nopt
           opti_stat%ffrsbsp(iopt)%fhand => me_mvp(iopt)%mel%fhand
           opti_stat%ffvsbsp(iopt)%fhand => me_trv(iopt)%mel%fhand
           opti_stat%ffscr(iopt)%fhand => me_scr(iopt)%mel%fhand
+          opti_stat%ffext(iopt)%fhand => me_ext(iopt)%mel%fhand
           if (use_s(iopt))
      &         opti_stat%ffssbsp(iopt)%fhand => me_met(iopt)%mel%fhand
         end do
@@ -570,7 +579,8 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
 
       if (iroute.ge.1) then
         deallocate(opti_stat%ffrsbsp,opti_stat%ffvsbsp,
-     &             opti_stat%ffssbsp,opti_stat%ffscr)
+     &             opti_stat%ffssbsp,opti_stat%ffscr,
+     &             opti_stat%ffext)
       end if
 
       return
