@@ -194,9 +194,9 @@ c dbgend
       if (ierr.eq.0) then
         do idx = 1, nspecial
 c dbg
-      write(lulog,*),"form energy: ", trim(label_form)
-      write(lulog,*),"solve_nleq: label_special: ",
-     &        trim(label_special(idx))
+c      write(lulog,*),"form energy: ", trim(label_form)
+c      write(lulog,*),"solve_nleq: label_special: ",
+c     &        trim(label_special(idx))
 c dbgend
           jopt = idx
           idxmel = idx_mel_list(label_special(idx),op_info)
@@ -228,8 +228,8 @@ c dbgend
       ! special formulae
       do jdx = 1, nspcfrm
 c dbg
-       write(lulog,*),"solve_nleq: label_spcfrm: ",
-     &      trim(label_spcfrm(jdx))
+c       write(lulog,*),"solve_nleq: label_spcfrm: ",
+c     &      trim(label_spcfrm(jdx))
 c dbg end
         idx = idx_formlist(label_spcfrm(jdx),form_info)
         if (idx.le.0)
@@ -245,13 +245,15 @@ c dbg end
       call get_argument_value('calculate.solve.non_linear',
      &                        'restart',lval=restart)
 
+      ! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
       do iopt = 1, nopt
+       
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
-          write(lulog,'(x,a,i1,a)')
+          write(lulog,'(x,a,i1,3a)')
      &         'Using existing amplitudes as initial guess for vector ',
-     &         iopt,'!'
+     &         iopt,'! (',trim(me_opt(iopt)%mel%label),')'
         else
           call file_open(ffopt(iopt)%fhand)
           ! hard restart? (just use old amplitude file as initial guess)
