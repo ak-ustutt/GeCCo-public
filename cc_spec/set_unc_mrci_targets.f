@@ -1360,5 +1360,25 @@ c dbgend
       call set_arg('C0guess',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_C0guess'/))
 
+      ! another target for restart purposes
+      call add_target2('DEF_ME_C0rst',.false.,tgt_info)
+      call set_dependency('DEF_ME_C0rst','DEF_ME_C0',tgt_info)
+      call set_rule2('DEF_ME_C0rst',CLONE_OP,tgt_info)
+      call set_arg('DEF_ME_C0rst',CLONE_OP,'LABEL',1,tgt_info,
+     &       val_label=(/'C0rst'/))
+      call set_arg('DEF_ME_C0rst',CLONE_OP,'TEMPLATE',1,tgt_info,
+     &     val_label=(/'C0'/))
+      call set_rule2('DEF_ME_C0rst',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_C0rst'/))
+      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'C0rst'/))
+      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/ims/))
+      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/orb_info%lsym/))
+      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &     val_int=(/msc/))
+      
       return
       end

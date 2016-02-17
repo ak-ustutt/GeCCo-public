@@ -46,6 +46,12 @@
         write(lulog,*) '************'
         write(lulog,*) ' set_orbinf'
         write(lulog,*) '************'
+        write(lulog,*) ' hole_rv: ',hole_rv
+        write(lulog,*) ' nspin  = ',orb_info%nspin
+        write(lulog,*) ' ngas   = ',orb_info%ngas
+        write(lulog,*) ' nsym   = ',orb_info%nsym
+        write(lulog,*) ' ntoob  = ',orb_info%ntoob
+        write(lulog,*) ' caborb = ',orb_info%caborb
       end if
 
       ! for convenience
@@ -134,6 +140,10 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         write(lulog,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
         write(lulog,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)
         write(lulog,*) 'idx_gas:   ',orb_info%idx_gas(1:ngastp)
+        write(lulog,*) 'igassh:'
+        do igas = 1, ngas
+          write(lulog,'(3x,8i4)') orb_info%igassh(1:nsym,igas)
+        end do
       end if
 
       do igas = 1, ngas
@@ -291,7 +301,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       case default
         call quit(1,'set_orbinf','unknown type '//trim(env_type))
       end select
-
+      
         ! generate reverse mapping
         do idx = 1, ntoob+caborb
           orb_info%ireots(orb_info%ireost(idx)) = idx 

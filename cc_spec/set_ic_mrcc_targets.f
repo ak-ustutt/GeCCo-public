@@ -4660,6 +4660,14 @@ c dbgend
       call set_rule2('FOPT_Ecorrected',OPTIMIZE,tgt_info)
       call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'FOPT_Ecorrected'/))
+      ! factor out density intermediate
+      ! a note on densmix: We only use densmix for residual equations,
+      ! but not for the energy.
+      call set_dependency('FOPT_Ecorrected','F_INT_D',tgt_info)
+      call set_dependency('FOPT_Ecorrected','DEF_ME_INT_D',tgt_info)
+      call set_arg('FOPT_Ecorrected',OPTIMIZE,'INTERM',1,tgt_info,
+     &               val_label=(/'F_INT_D'/))
+      !
       if (gno.eq.0.and.project.lt.3) then
         call set_dependency('FOPT_Ecorrected','F_Ecorrected',tgt_info)
         call set_arg('FOPT_Ecorrected',OPTIMIZE,'LABELS_IN',1,tgt_info,
@@ -4740,9 +4748,18 @@ c dbgend
         labels(ndef+1) = 'F_OMG_PT'
         ndef = ndef + 1
       end if
+      
       call set_arg('MRCC_PT_OPT',OPTIMIZE,'LABELS_IN',ndef,tgt_info,
      &             val_label=labels(1:ndef))
 
+      if (densmix.le.0d0) then
+        ! if not densmix, be sure to factor out density intermediate
+        call set_dependency('MRCC_PT_OPT','F_INT_D',tgt_info)
+        call set_dependency('MRCC_PT_OPT','DEF_ME_INT_D',tgt_info)
+        call set_arg('MRCC_PT_OPT',OPTIMIZE,'INTERM',1,tgt_info,
+     &             val_label=(/'F_INT_D'/))
+      end if
+      
       ! kill singles and doubles transformation for (T)
       call add_target2('FOPT_T_PT',.false.,tgt_info)
       call set_dependency('FOPT_T_PT','F_T',tgt_info)
