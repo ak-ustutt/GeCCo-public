@@ -21,6 +21,7 @@
 *----------------------------------------------------------------------*
       implicit none
 
+      include "stdunit.h"
       include "multd2h.h"
 
       integer, parameter ::
@@ -40,7 +41,7 @@
       idx = idx_in
       nn = 0
 c dbg
-c      print *,'top: idx = ',idx
+c      write(lulog, *),'top: idx = ',idx
 c dbg
 
       i = 0
@@ -50,9 +51,9 @@ c dbg
         ia = ianum(ispni)
         idx = idx + iy4sg(ia,nn,nm,ig,idorb(i)-iorboff)
 c dbg
-c        print *,'ia,nn,nm,ig,idorb(i),iorboff: ',
+c        write(lulog, *)'ia,nn,nm,ig,idorb(i),iorboff: ',
 c     &           ia,nn,nm,ig,idorb(i),iorboff
-c        print *,'idx = ',idx
+c        write(lulog, *)'idx = ',idx
 c dbg
         nn = nn + (iabs(ispni))
         if ((iabs(ispni)).eq.1) nm = nm + ispni
