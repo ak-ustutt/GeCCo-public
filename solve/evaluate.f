@@ -88,9 +88,11 @@
       nout = depend%ntargets
       allocate(xret(nout))
 
-      ! call the scheduler
+      ! call the scheduler - I have now set NO_SKIP to true, as skipping of targets is
+      ! nearly always an unwanted effect for the EVALUATE statement
       call frm_sched(xret,fl_eval,depend,0,0,
-     &               init,.false.,op_info,str_info,strmap_info,orb_info)
+c     &               init,.false.,op_info,str_info,strmap_info,orb_info)
+     &               init,.true.,op_info,str_info,strmap_info,orb_info)
 
       if (iprlvl.ge.1) then
         call write_title(lulog,wst_title,

@@ -123,7 +123,7 @@ c      end if
           end if
 
           if (nfreeze.gt.0) 
-     &         call add_frozen_shell(iscr,len,'frz',orb_info)      
+     &         call add_frozen_shell(iscr,len,'frz',orb_info)
           deallocate(iscr)
 
         case('occ')

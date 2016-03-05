@@ -56,7 +56,7 @@
      &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart, eval_dens3, prc_traf,
-     &     pure_vv, multistate, MS_coupled
+     &     pure_vv, multistate, MS_coupled, C0rst_there
       character(len_target_name) ::
      &     dia_label, dia_label2, dia_label_2,
      &     labels(20), c_st, c_st_2
@@ -296,6 +296,8 @@ c_T_proj_3_fix
         if (.not.l_exist) call quit(1,'set_ic_mrcc_targets',
      &           'Restart: File for T amplitudes not found!')
        end do
+       inquire(file='ME_C0rst_list.da',exist=C0rst_there)
+       if (C0rst_there) write(lulog,*) 'ME_C0rst_list.da found!'
       ! if jac_thresh>0, projector won't be sufficient for restart
       if (prc_traf.and.restart.and.jac_thresh.ge.0)
      &    call quit(1,'set_ic_mrcc_targets',
@@ -5656,6 +5658,8 @@ c dbgend
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
       dia_label = trim(dia_label)//'_T'
       call set_dependency('SOLVE_MRCC',trim(dia_label),tgt_info)
+      if (restart.and.C0rst_there)
+     &     call set_dependency('SOLVE_MRCC','C0rst',tgt_info)
       call set_dependency('SOLVE_MRCC','EVAL_D',tgt_info)
       call set_dependency('SOLVE_MRCC','DEF_ME_Dtrdag',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_T',tgt_info)
