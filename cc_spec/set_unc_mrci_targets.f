@@ -140,9 +140,9 @@
      &           'option guess only available for ciroot=1/maxroot=1')
       end if
       if (refproj.gt.0) then
-        if (refproj.gt.9.or.spinadapt.gt.0)
-     &     call quit(1,'set_unc_mrci_targets',
-     &          'refproj>9 or with spinadapt>0 not available yet')
+!       if (refproj.gt.9.or.spinadapt.gt.0)
+!    &     call quit(1,'set_unc_mrci_targets',
+!    &          'refproj>9 or with spinadapt>0 not available yet')
         filestr='ME_C0_x_list.da'
         do ip = 1, refproj
           write(filestr(7:7),'(i1)') ip
@@ -1124,14 +1124,21 @@ c dbgend
         if (spinadapt.eq.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
-        else if (spinadapt.ne.0) then
+        else if (spinadapt.ne.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='SPP')
           call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
      &         val_label=(/'ME_C0_sp'/))
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
      &         val_label=(/'FOPT_C0_sp'/))
-        else ! refproj.ne.0
+        else if (spinadapt.ne.0.and.refproj.ne.0) then
+          call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
+     &         val_str='SRP')
+          call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
+     &         val_label=(/'ME_C0_sp'/))
+          call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',2,tgt_info,
+     &         val_label=(/'FOPT_C0_prj','FOPT_C0_sp '/))
+        else ! refproj.ne.0.and.spinadapt.eq.0
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='PRJ')
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
@@ -1405,6 +1412,6 @@ c dbgend
       call set_rule2('C0rst',EVAL,tgt_info)
       call set_arg('C0rst',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_C0rst'/))
-      
+
       return
       end

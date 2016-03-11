@@ -417,9 +417,9 @@ c     &     val_label=(/'F_DENS'/))
 c      call set_arg('F_DENS',KEEP_TERMS,'TERMS',1,tgt_info,
 c     &     val_int=(/12/))
 c dbgend
-      call set_rule2('F_DENS',PRINT_FORMULA,tgt_info)
-      call set_arg('F_DENS',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_DENS'/))
+c     call set_rule2('F_DENS',PRINT_FORMULA,tgt_info)
+c     call set_arg('F_DENS',PRINT_FORMULA,'LABEL',1,tgt_info,
+c    &     val_label=(/'F_DENS'/))
 
       ! precursor for cumulant expression in terms of densities
       call add_target2('F_preCUM',.false.,tgt_info)
@@ -477,9 +477,9 @@ c dbgend
      &     val_label=(/'CUM'/))
       call set_arg('F_CUM',DERIVATIVE,'OP_DERIV',1,tgt_info,
      &     val_label=(/'DENS_dag'/))
-      call set_rule2('F_CUM',PRINT_FORMULA,tgt_info)
-      call set_arg('F_CUM',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_CUM'/))
+c     call set_rule2('F_CUM',PRINT_FORMULA,tgt_info)
+c     call set_arg('F_CUM',PRINT_FORMULA,'LABEL',1,tgt_info,
+c    &     val_label=(/'F_CUM'/))
 
 c      ! define one-particle hole density
 c      call add_target2('F_HOLE_1',.false.,tgt_info)
@@ -923,9 +923,9 @@ c dbgend
       call set_arg('F_DENSmix',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &     val_log=(/.false./))
 c dbg
-      call set_rule2('F_DENSmix',PRINT_FORMULA,tgt_info)
-      call set_arg('F_DENSmix',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_DENSmix'/))
+c     call set_rule2('F_DENSmix',PRINT_FORMULA,tgt_info)
+c     call set_arg('F_DENSmix',PRINT_FORMULA,'LABEL',1,tgt_info,
+c    &     val_label=(/'F_DENSmix'/))
 c dbgend
 
 *----------------------------------------------------------------------*

@@ -514,7 +514,8 @@ c dbg
 
               ! project out spin contaminations?
               if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &            opti_info%typ_prc(iopt).eq.optinf_prc_prj) then
+     &            opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &            opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
                 ifree = mem_setmark('solve_evp.spin_proj_res')
                 ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &                                 'xbuf1')
@@ -529,6 +530,18 @@ c dbg
      &                             xbuf1,xbuf2,.false.,xnrm,
      &                             opti_info,orb_info,
      &                             op_info,str_info,strmap_info)
+                elseif (opti_info%typ_prc(iopt).eq.
+     &                  optinf_prc_spinrefp) then
+                  call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+     &                             fl_spc(2),opti_info%nwfpar(iopt),
+     &                             xbuf1,xbuf2,.false.,xnrm,
+     &                             opti_info,orb_info,
+     &                             op_info,str_info,strmap_info)
+
+                  call evaluate2(fl_spc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+
                 else
                   call evaluate2(fl_spc(1),.false.,.false.,
      &                           op_info,str_info,strmap_info,orb_info,
@@ -546,7 +559,8 @@ c dbg
             ! normalize initial trial vector?
             if (iter.eq.1.and.init(1).and.
      &          (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
-     &           opti_info%typ_prc(1).eq.optinf_prc_prj))
+     &           opti_info%typ_prc(1).eq.optinf_prc_prj.or.
+     &           opti_info%typ_prc(1).eq.optinf_prc_spinrefp))
      &          call normalize_guess(ff_trv(1)%fhand,irectrv(irequest),
      &                          ff_mvp,irecmvp(irequest),
      &                          ff_met,irecmet(irequest),

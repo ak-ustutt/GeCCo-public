@@ -181,7 +181,8 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
 
           ! project out spin contaminations or other components?
           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &        opti_info%typ_prc(iopt).eq.optinf_prc_prj) then
+     &        opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &        opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
             ifree = mem_setmark('init_guess.spin_proj')
             ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
             ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
@@ -191,6 +192,18 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
      &                          xbuf1,xbuf2,.true.,xnrm,
      &                          opti_info,orb_info,
      &                          op_info,str_info,strmap_info)
+            elseif (opti_info%typ_prc(iopt).eq.
+     &              optinf_prc_spinrefp) then
+              call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
+     &                          fl_spc(2),opti_info%nwfpar(iopt),
+     &                          xbuf1,xbuf2,.true.,xnrm,
+     &                          opti_info,orb_info,
+     &                          op_info,str_info,strmap_info)
+
+              call evaluate2(fl_spc(1),.false.,.false.,
+     &                       op_info,str_info,strmap_info,orb_info,
+     &                       xnrm,.true.)
+
             else
               call evaluate2(fl_spc(1),.false.,.false.,
      &                       op_info,str_info,strmap_info,orb_info,
