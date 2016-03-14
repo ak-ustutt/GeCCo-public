@@ -56,6 +56,11 @@
         call quit(0,i_am,'wrong format of interface file?')
       end if
 
+      ! initialize to zero
+      ! (saveguard for ill-defined nirr)
+      norbs(1:8)=0; nocc(1:8)=0; ncore(1:8)=0; nclosed(1:8)=0;
+      ninact(1:8)=0; nact(1:8)=0; nvirt(1:8)=0
+
       ! set defaults
       mem_mpro = -1 ! use defined memory of GeCCo
       rd_intfile = .false.
@@ -180,6 +185,13 @@
       ninact(1:nirr) = nclosed(1:nirr)-ncore(1:nirr)
       nact(1:nirr)   = nocc(1:nirr)-nclosed(1:nirr)
       nvirt(1:nirr)  = norbs(1:nirr)-nocc(1:nirr)
+
+      if (nirr.gt.2.and.nirr.ne.4.and.nirr.ne.8) then
+        call warn(i_am,'Molpro''s NSK (nirrep) is strange, trying to '
+     &                  //'recover')
+        if (nirr.eq.3) nirr=4
+        if (nirr.gt.4) nirr=8
+      end if
 
       !if (iprint.ge.1) then
         write(luout,'(1x,"GeCCo will use these orbital spaces:")') 

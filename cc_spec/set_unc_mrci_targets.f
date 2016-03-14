@@ -140,9 +140,9 @@
      &           'option guess only available for ciroot=1/maxroot=1')
       end if
       if (refproj.gt.0) then
-        if (refproj.gt.9.or.spinadapt.gt.0)
-     &     call quit(1,'set_unc_mrci_targets',
-     &          'refproj>9 or with spinadapt>0 not available yet')
+!       if (refproj.gt.9.or.spinadapt.gt.0)
+!    &     call quit(1,'set_unc_mrci_targets',
+!    &          'refproj>9 or with spinadapt>0 not available yet')
         filestr='ME_C0_x_list.da'
         do ip = 1, refproj
           write(filestr(7:7),'(i1)') ip
@@ -1124,14 +1124,21 @@ c dbgend
         if (spinadapt.eq.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='DIA')
-        else if (spinadapt.ne.0) then
+        else if (spinadapt.ne.0.and.refproj.eq.0) then
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='SPP')
           call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
      &         val_label=(/'ME_C0_sp'/))
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
      &         val_label=(/'FOPT_C0_sp'/))
-        else ! refproj.ne.0
+        else if (spinadapt.ne.0.and.refproj.ne.0) then
+          call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
+     &         val_str='SRP')
+          call set_arg('SOLVE_REF',SOLVEEVP,'LIST_SPC',1,tgt_info,
+     &         val_label=(/'ME_C0_sp'/))
+          call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',2,tgt_info,
+     &         val_label=(/'FOPT_C0_prj','FOPT_C0_sp '/))
+        else ! refproj.ne.0.and.spinadapt.eq.0
           call set_arg('SOLVE_REF',SOLVEEVP,'MODE',1,tgt_info,
      &         val_str='PRJ')
           call set_arg('SOLVE_REF',SOLVEEVP,'FORM_SPC',1,tgt_info,
@@ -1360,25 +1367,51 @@ c dbgend
       call set_arg('C0guess',EVAL,'FORM',1,tgt_info,
      &             val_label=(/'FOPT_C0guess'/))
 
-      ! another target for restart purposes
-      call add_target2('DEF_ME_C0rst',.false.,tgt_info)
-      call set_dependency('DEF_ME_C0rst','DEF_ME_C0',tgt_info)
-      call set_rule2('DEF_ME_C0rst',CLONE_OP,tgt_info)
-      call set_arg('DEF_ME_C0rst',CLONE_OP,'LABEL',1,tgt_info,
-     &       val_label=(/'C0rst'/))
-      call set_arg('DEF_ME_C0rst',CLONE_OP,'TEMPLATE',1,tgt_info,
-     &     val_label=(/'C0'/))
-      call set_rule2('DEF_ME_C0rst',DEF_ME_LIST,tgt_info)
-      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'LIST',1,tgt_info,
-     &     val_label=(/'ME_C0rst'/))
-      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+      ! another target for restart purposes (of non-linear equations)
+      call add_target2('C0rst',.false.,tgt_info)
+      call set_dependency('C0rst','DEF_ME_C0',tgt_info)
+      call set_dependency('C0rst','DEF_ME_C00',tgt_info) ! save C0 from prev. run
+      ! (a) define operator and ME list for old CAS-CI coefficients
+      occ_def = 0
+      occ_def(IVALE,1,1) = orb_info%nactel
+      call set_rule2('C0rst',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('C0rst',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
      &     val_label=(/'C0rst'/))
-      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'2MS',1,tgt_info,
-     &     val_int=(/ims/))
-      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'IRREP',1,tgt_info,
-     &     val_int=(/orb_info%lsym/))
-      call set_arg('DEF_ME_C0rst',DEF_ME_LIST,'AB_SYM',1,tgt_info,
-     &     val_int=(/msc/))
-      
+      call set_arg('C0rst',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('C0rst',DEF_OP_FROM_OCC,'OCC',1,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1))
+      call set_rule2('C0rst',DEF_ME_LIST,tgt_info)
+      call set_arg('C0rst',DEF_ME_LIST,'LIST',1,tgt_info,
+     &             val_label=(/'ME_C0rst'/))
+      call set_arg('C0rst',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &             val_label=(/'C0rst'/))
+      call set_arg('C0rst',DEF_ME_LIST,'2MS',1,tgt_info,
+     &             val_int=(/ims/))
+      call set_arg('C0rst',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &             val_int=(/orb_info%lsym/))
+      call set_arg('C0rst',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &             val_int=(/msc/))
+      call set_arg('C0rst',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('C0rst',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('C0rst',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/1/))
+      ! (b) define, optimize and evaluate formula C0 = C0rst
+      call set_rule2('C0rst',DEF_FORMULA,tgt_info)
+      call set_arg('C0rst',DEF_FORMULA,'LABEL',1,tgt_info,
+     &             val_label=(/'F_C0rst'/))
+      call set_arg('C0rst',DEF_FORMULA,'FORMULA',1,tgt_info,
+     &             val_str='C0=C0rst')
+      call set_rule2('C0rst',OPTIMIZE,tgt_info)
+      call set_arg('C0rst',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &             val_label=(/'FOPT_C0rst'/))
+      call set_arg('C0rst',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &             val_label=(/'F_C0rst'/))
+      call set_rule2('C0rst',EVAL,tgt_info)
+      call set_arg('C0rst',EVAL,'FORM',1,tgt_info,
+     &             val_label=(/'FOPT_C0rst'/))
+
       return
       end

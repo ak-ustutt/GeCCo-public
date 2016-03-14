@@ -10,6 +10,8 @@
 
       implicit none
 
+      include "stdunit.h"
+
       integer, intent(in) ::
      &     nel, idspc(nel), idorb(nel), idspn(nel), idgam(nel),
      &     ngam, nspc, nelmax,ndis,
@@ -57,8 +59,8 @@ c dbg
      &       idorb(nn+1),idspn(nn+1),idgam(nn+1),iy4sg(ioff),
      &       iooff,nelmax_sg,msmax_sg,ngam)
 c dbg
-c        print *,'ispc = ',ispc
-c        print *,'ioff,nelmax_sg,msmax_sg,len,iooff,idx = ',
+c        write(lulog, *)'ispc = ',ispc
+c        write(lulog, *)'ioff,nelmax_sg,msmax_sg,len,iooff,idx = ',
 c     &           ioff,nelmax_sg,msmax_sg,len,iooff,idx
 c dbg
         nn = nn+len
@@ -69,8 +71,11 @@ c dbg
       idx_sg = idxssd(idspc,iyssg,nel,nspc)
       idx4sg = idx + ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
 c dbg
-c      print *,'idx_sg = ',idx_sg
-c      print *,'ioff2 = ',ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
+c      write(lulog, *)'idx    = ',idx
+c      write(lulog, *)'idx_sg = ',idx_sg
+c      write(lulog, *)'ioff2 = ',ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
+c      write(lulog, *)' --> idx4sg=',
+c     &         idx + ioff_dgm(idx_sg,ig,(nelmax-nm)/2+1)
 c dbg
 
       return
