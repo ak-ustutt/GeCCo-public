@@ -372,7 +372,7 @@ c dbgend
 
           select case(opti_info%typ_prc(iopt))
           case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp,
-     &         optinf_prc_prj)
+     &         optinf_prc_prj,optinf_prc_spinrefp)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
@@ -423,7 +423,8 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
             ! project out spin contaminations or other components?
             if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj) then      
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
               ! assign op. with list containing the scratch trial vector
               call assign_me_list(me_scr(iopt)%mel%label,
      &                            me_opt(iopt)%mel%op%name,op_info)
@@ -435,6 +436,18 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
      &                              xbuf1,xbuf2,.true.,xnrm,
      &                              opti_info,orb_info,
      &                              op_info,str_info,strmap_info)
+                elseif (opti_info%typ_prc(iopt).eq.
+     &                  optinf_prc_spinrefp)then
+                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                              fspc(2),opti_info%nwfpar(iopt),
+     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              opti_info,orb_info,
+     &                              op_info,str_info,strmap_info)
+
+                  call evaluate2(fspc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+
                 else
                   call evaluate2(fspc(1),.false.,.false.,
      &                           op_info,str_info,strmap_info,orb_info,

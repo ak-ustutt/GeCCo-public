@@ -389,6 +389,9 @@ c dbg
         do iopt = 1, nopt
           write(lulog,*) 'dump of '//trim(me_rhs(iopt)%mel%label)
           write(lulog,*) 'iopt = ',iopt
+          call analyze_list_core(
+     &         me_rhs(iopt),me_rhs(iopt),1,1,'norm',
+     &         orb_info,str_info)
           call wrt_mel_file(lulog,5,
      &         me_rhs(iopt)%mel,
      &         1,me_rhs(iopt)%mel%op%n_occ_cls,
@@ -450,6 +453,9 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
               do iopt = 1, nopt
                 write(lulog,*) 'dump of '//trim(me_trv(iopt)%mel%label)
                 write(lulog,*) 'iopt = ',iopt
+                call analyze_list_core(
+     &            me_trv(iopt),me_trv(iopt),1,1,'norm',
+     &                orb_info,str_info)
                 call wrt_mel_file(lulog,5,
      &               me_trv(iopt)%mel,
      &               1,me_trv(iopt)%mel%op%n_occ_cls,
@@ -486,6 +492,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               do iopt = 1, nopt
                 write(lulog,*) 'dump of '//
      &               trim(me_mvp(iopt)%mel%label)
+               call analyze_list_core(
+     &            me_mvp(iopt),me_mvp(iopt),1,1,'norm',
+     &                orb_info,str_info)
                 call wrt_mel_file(lulog,5,
      &               me_mvp(iopt)%mel,
      &               1,me_mvp(iopt)%mel%op%n_occ_cls,
@@ -528,6 +537,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
         do iopt = 1, nopt
           write(lulog,*) 'dump of final '//trim(me_opt(iopt)%mel%label)
           write(lulog,*) 'iopt = ',iopt
+          call analyze_list_core(
+     &            me_opt(iopt),me_opt(iopt),1,1,'norm',
+     &            orb_info,str_info)
           call wrt_mel_file(lulog,5,
      &         me_opt(iopt)%mel,
      &         1,me_opt(iopt)%mel%op%n_occ_cls,

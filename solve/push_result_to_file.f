@@ -54,7 +54,7 @@
           value = xnormop(mel)
         end if
 
-        write(lures,'(a,'//trim(mode(5:))//')')
+        write(lures,'(a,X,'//trim(mode(5:))//')')
      &       trim(message),value
 
       case('LIST')
