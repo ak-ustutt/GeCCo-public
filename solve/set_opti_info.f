@@ -241,6 +241,8 @@
           opti_info%typ_prc(iopt) = optinf_prc_spinp
         case('PRJ')
           opti_info%typ_prc(iopt) = optinf_prc_prj
+        case('SRP')
+          opti_info%typ_prc(iopt) = optinf_prc_spinrefp
         case default
           call quit(1,'set_opti_info','cannot interpret string: '//
      &         trim(prc_str))

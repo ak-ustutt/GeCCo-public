@@ -56,7 +56,7 @@ DERIVATIVE({LABEL_RES:'F_ST',
             LABEL_IN:'F_LST',
             OP_RES:'OMG',
             OP_DERIV:'L'})
-PRINT_FORMULA({LABEL:'F_ST'})
+#PRINT_FORMULA({LABEL:'F_ST'})
 OPTIMIZE({LABEL_OPT:'FOPT_ST',
           LABELS_IN:'F_ST'})
 
@@ -69,7 +69,7 @@ SELECT_SPECIAL({LABEL_RES:'F_T_extract',
                 TYPE:'rank',
                 MODE:'22',
                 OPERATORS:['T','Ttr']})
-PRINT_FORMULA({LABEL:'F_T_extract'})
+#PRINT_FORMULA({LABEL:'F_T_extract'})
 OPTIMIZE({LABEL_OPT:'FOPT_T_extract',
           LABELS_IN:'F_T_extract'})
 

@@ -80,6 +80,7 @@
       mult = orb_info%imult
       ssp1 = dble(mult**2-1)/4d0
       mult_min = 2 - mod(mult,2) !1 for odd and 2 for even multipl.
+      mult_min = max(mult_min,orb_info%ims+1)
       mult_max = 1
       do iblk = 1, me_amp%op%n_occ_cls
         mult_max = max(mult_max,me_amp%op%ica_occ(1,iblk)+

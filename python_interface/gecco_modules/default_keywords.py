@@ -145,7 +145,7 @@ def _read_keyword_file(keyword_file):
 def _find_parent_core(context,root):
     """gets the parent Element for a  keyword or argument from context
     """
-    for item in root.iterfind("./"):
+    for item in root.findall("./"):
         #iterates through all children of root.
         regexp_context_extr=re.compile("^"+item.get("name")+"(?:\.|$)"+"(?P<rest>.+)?")
         match=regexp_context_extr.match(context)
