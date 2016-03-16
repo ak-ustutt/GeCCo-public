@@ -39,7 +39,7 @@
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
      &     guess, refproj, spinexpec, n_states, i_state, optref,
-     &     ncnt, ncnt2, icnt, arglen, i
+     &     ncnt, ncnt2, icnt, arglen, i, nnn
       logical ::
      &     oldref, l_exist, writeF, multistate
       character(len_target_name) ::
@@ -240,6 +240,17 @@ c     &              1,1,parameters,1,tgt_info)
      &       val_int=(/IVALE,IEXTR/))
       end if
 
+c add special FREF0
+      call add_target2('FREF0',.false.,tgt_info)
+      call set_rule2('FREF0',DEF_HAMILTONIAN,tgt_info)
+      call set_arg('FREF0',DEF_HAMILTONIAN,'LABEL',1,tgt_info,
+     &     val_label=(/'FREF0'/))
+      call set_arg('FREF0',DEF_HAMILTONIAN,'MAX_RANK',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('FREF0',DEF_HAMILTONIAN,'X_SPCS',2,tgt_info,
+     &       val_int=(/IVALE,IEXTR/))
+
+
       ! Spin operators
       ! S+
       call add_target('S+',ttype_op,.false.,tgt_info)
@@ -359,6 +370,32 @@ c dbg end
 c      call form_parameters(-1,parameters,2,'stdout',1,'stdout')
 c      call set_rule('F_FREF',ttype_frm,PRINT_FORMULA,
 c     &                labels,2,1,parameters,2,tgt_info)
+
+      ! The same but for C00
+      labels(1:20)(1:len_target_name) = ' '
+      labels(1) = 'F_FREF0'
+      labels(2) = 'FREF0'
+      labels(3) = 'FREF0'
+      labels(4) = 'C00^+'
+      labels(5) = op_ham
+      labels(6) = 'C00'
+      labels(7) = 'FREF0'
+      call add_target('F_FREF0',ttype_frm,.false.,tgt_info)
+      call set_dependency('F_FREF0','FREF0',tgt_info)
+      call set_dependency('F_FREF0',op_ham,tgt_info)
+      call set_dependency('F_FREF0','C00',tgt_info)
+      call expand_parameters(-1,
+     &     parameters,3,
+     &     'reference energy expression',5,
+     &     (/1,2,3,4,1/),
+     &     (/-1,-1,-1,-1,-1/),
+     &     (/-1,-1,-1,-1,-1/),
+     &     0,0,
+     &     (/1,4,2,5/),2,
+     &     0,0)
+      call set_rule('F_FREF0',ttype_frm,EXPAND_OP_PRODUCT,
+     &              labels,7,1,
+     &              parameters,3,tgt_info)
 
       ! expectation value of S^2
       call add_target2('F_REF_S(S+1)',.false.,tgt_info)
@@ -650,6 +687,20 @@ c dbgend
      &              labels,2,1,
      &              parameters,1,tgt_info)
 
+      ! Fock operator wrt zeroth-order reference function
+      labels(1:20)(1:len_target_name)= ' '
+      labels(1) = 'FOPT_FREF0'
+      labels(2) = 'F_FREF0'
+      call add_target('FOPT_FREF0',ttype_frm,.false.,tgt_info)
+      call set_dependency('FOPT_FREF0','F_FREF0',tgt_info)
+      call set_dependency('FOPT_FREF0',mel_ham,tgt_info)
+      call set_dependency('FOPT_FREF0','DEF_ME_C00',tgt_info)
+      call set_dependency('FOPT_FREF0','DEF_ME_FREF0',tgt_info)
+      call opt_parameters(-1,parameters,1,0)
+      call set_rule('FOPT_FREF0',ttype_frm,OPTIMIZE,
+     &              labels,2,1,
+     &              parameters,1,tgt_info)
+
       ! spin expectation value expression
       labels(1:20)(1:len_target_name)= ' '
       labels(1) = 'FOPT_REF_S(S+1)'
@@ -778,7 +829,9 @@ c dbgend
        call set_arg('DEF_ME_C00',DEF_ME_LIST,'REC',1,tgt_info,
      &              val_int=(/1/))
       end if
-      do i_state = 1,n_states
+      nnn = n_states
+      if (oldref) nnn = 0  ! no copying for oldref==T
+      do i_state = 1, nnn
         c_st = state_label(i_state,.false.)
         call set_rule2('DEF_ME_C00',SCALE_COPY,tgt_info)
         call set_arg('DEF_ME_C00',SCALE_COPY,'LIST_RES',1,tgt_info,
@@ -944,6 +997,32 @@ c dbgend
      &             val_int=(/n_states/))
       call set_arg('DEF_ME_FREF',DEF_ME_LIST,'REC',1,tgt_info,
      &             val_int=(/1/))
+
+      ! ME_FREF0
+      call add_target2('DEF_ME_FREF0',.false.,tgt_info)
+      call set_dependency('DEF_ME_FREF0','FREF0',tgt_info)
+      call set_rule2('DEF_ME_FREF0',DEF_ME_LIST,tgt_info)
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'ME_FREF0'/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'FREF0'/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'2MS',1,tgt_info,
+     &     val_int=(/0/))
+      if (ims.eq.0)
+     &   call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'AB_SYM',1,tgt_info,
+     &        val_int=(/1/))
+      if (spinadapt.ge.2)
+     &   call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'S2',1,tgt_info,
+     &        val_int=(/0/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'MIN_REC',1,tgt_info,
+     &             val_int=(/1/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'MAX_REC',1,tgt_info,
+     &             val_int=(/n_states/))
+      call set_arg('DEF_ME_FREF0',DEF_ME_LIST,'REC',1,tgt_info,
+     &             val_int=(/1/))
+
 
       ! ME_S+
       call add_target2('DEF_ME_S+',.false.,tgt_info)
@@ -1281,6 +1360,43 @@ c dbgend
      &      val_label=['ME_C0  ',
      &                 'ME_FREF'])
        call set_arg('EVAL_FREF',ADV_STATE,'N_ROOTS',1,tgt_info,
+     &      val_int=[n_states])
+      end if
+      end do
+
+      ! Evaluate Fock operator wrt zeroth order reference function
+      call add_target('EVAL_FREF0',ttype_gen,writeF,tgt_info)
+      call set_dependency('EVAL_FREF0','FOPT_FREF0',tgt_info)
+C      if (spinexpec.gt.0.or.cmaxexc.eq.0) then
+C        call set_dependency('EVAL_FREF0','EVAL_REF_S(S+1)',tgt_info)
+C      else
+C        call set_dependency('EVAL_FREF0','SOLVE_REF',tgt_info)
+C      end if
+      do i_state = 1,n_states
+      c_st = state_label(i_state,.false.)
+      call set_rule('EVAL_FREF0',ttype_opme,EVAL,
+     &     'FOPT_FREF0',1,0,
+     &     parameters,0,tgt_info)
+      if (writeF) then ! write to file 'FEFF'
+        call form_parameters(-1,parameters,2,
+     &       'effective Fock operator:',0,'FEFF0')
+        call set_rule('EVAL_FREF0',ttype_opme,PRINT_MEL,
+     &       'ME_FREF0',1,0,
+     &       parameters,2,tgt_info)
+      end if
+c dbg
+c      call form_parameters(-1,parameters,2,
+c     &     'effective Fock operator:',0,'LIST')
+c      call set_rule('EVAL_FREF0',ttype_opme,PRINT_MEL,
+c     &     'ME_FREF0',1,0,
+c     &     parameters,2,tgt_info)
+c dbgend
+      if(multistate)then
+       call set_rule2('EVAL_FREF0',ADV_STATE,tgt_info)
+       call set_arg('EVAL_FREF0',ADV_STATE,'LISTS',2,tgt_info,
+     &      val_label=['ME_C0  ',
+     &                 'ME_FREF0'])
+       call set_arg('EVAL_FREF0',ADV_STATE,'N_ROOTS',1,tgt_info,
      &      val_int=[n_states])
       end if
       end do
