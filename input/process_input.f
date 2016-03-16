@@ -254,6 +254,8 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &     lval=use_tr)
       call get_argument_value('calculate.routes','sv_fix',
      &     lval=sv_fix)
+      call get_argument_value('calculate.routes','sv_old',
+     &     lval=sv_old)
       call get_argument_value('calculate.routes','sv_thresh',
      &     xval=sv_thresh)
       call get_argument_value('calculate.routes','jac_fix',

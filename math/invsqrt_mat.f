@@ -52,8 +52,8 @@
         call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)
         call file_open(ffsv)
         luinp = ffsv%unit
-        read_file = l_exist
-        if (l_exist) then
+        read_file = l_exist.and.sv_old
+        if (read_file) then
           do idx = 1, icnt_sv + 1
             read(luinp,*,iostat=iostatus) idx2, sv_above
           end do
