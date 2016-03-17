@@ -30,6 +30,8 @@ c     even with -finit-local-zero flag!
         call read_env_molpro(orb_info)
       case ('molpro_dump','MOLPRO_DUMP')
         call read_env_molpro_dump(orb_info)
+      case ('cfour','CFOUR')
+        call read_env_cfour(orb_info)
       case ('intern','INTERN')
         call quit(1,'read_env','type INTERN not implemented')
       case ('aces2','ACES2')

@@ -271,6 +271,11 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         do idx = ntoob+1, ntoob+caborb
           orb_info%ireost(idx) = idx
         end do
+      case ('cfour','CFOUR')
+        ! actually: symmetry ordering means "the way the external program 
+        !   has ordered the orbitals"; cfour orders kind-of-type-ordering like
+        !   we try to get this info by interpreting the ext_gamorb array
+        call make_ext2typ_reo(orb_info)
       case ('gamess','GAMESS')
         ! (We loop over all orbitals to avoid errors when the active
         !  space is modified such that orbitals must be reordered.
