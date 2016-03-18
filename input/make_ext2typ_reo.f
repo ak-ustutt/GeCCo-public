@@ -14,17 +14,16 @@
      &     orb_info
 
       integer ::
-     &     ngam, ntoob, igam, ii, jj, idx_gam(8)
+     &     ngam, ntoob, nact, igam, ii, jj, idx_gam(8)
       integer, pointer ::
      &     ext_gamorb(:), int_gamorb(:), ireost(:)
 
-      if (orb_info%ncore_mpro.gt.0) 
-     &    call quit(1,i_am,'ncore>0 not yet done')
 
       if (ntest.ge.100) call write_title(lulog,wst_dbg_subr,i_am)
 
       ngam = orb_info%nsym
       ntoob = orb_info%ntoob
+      nact  = ntoob-orb_info%ncore_ext
       ext_gamorb => orb_info%ext_gamorb
       int_gamorb => orb_info%igamorb
       ireost => orb_info%ireost
@@ -34,6 +33,10 @@
         write(lulog,'(x,5i4,x,5i4)') ext_gamorb(1:ntoob)
         write(lulog,'(x,"internal ordering:")')
         write(lulog,'(x,5i4,x,5i4)') int_gamorb(1:ntoob)
+        if (orb_info%ncore_ext.gt.0) then
+          write(lulog,'(x,"reordering fc -> ae")')
+          write(lulog,'(x,5i4,x,5i4)') orb_info%ext_fcreo(1:nact)
+        end if
       end if
 
       ! run over the ext_gamorb array

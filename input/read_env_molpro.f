@@ -31,7 +31,7 @@
       real(8) ::
      &     ecore
       integer :: 
-     &     nirr, nel, isym, mult, mem_mpro,
+     &     nirr, nel, isym, mult, mem_ext,
      &     norbs(8), nocc(8), ncore(8),
      &     nclosed(8)
       integer ::
@@ -62,7 +62,7 @@
       ninact(1:8)=0; nact(1:8)=0; nvirt(1:8)=0
 
       ! set defaults
-      mem_mpro = -1 ! use defined memory of GeCCo
+      mem_ext = -1 ! use defined memory of GeCCo
       rd_intfile = .false.
       rd_nirr = .false.
       rd_nel = .false.
@@ -85,7 +85,7 @@
           read (line(idelim+1:),'(a)') intfile
           rd_intfile = .true.
         case('memory')
-          read (line(idelim+1:),*) mem_mpro
+          read (line(idelim+1:),*) mem_ext
         case('nirrep')
           read (line(idelim+1:),*) nirr
           rd_nirr = .true.
@@ -224,8 +224,8 @@
       orb_info%nactel = nel - 2*sum(nclosed(1:nirr))
       orb_info%nactorb = sum(nact(1:nirr))
 
-      orb_info%ncore_mpro = sum(ncore(1:nirr))
-      orb_info%name_intfile_mpro = intfile
+      orb_info%ncore_ext = sum(ncore(1:nirr))
+      orb_info%name_intfile_ext = intfile
 
       allocate(orb_info%igassh(nirr,ngas),orb_info%iad_gas(ngas),
      &         orb_info%ihpvgas(ngas,1),orb_info%nbas(nirr),
@@ -262,7 +262,7 @@
       orb_info%cab_orb(1:nirr)=0
       orb_info%nxbas(1:nirr)=0
 
-      orb_info%mem_mpro = mem_mpro
+      orb_info%mem_ext = mem_ext
 
       if (ntest.ge.100) then
         write(lulog,*) 'Have set:'

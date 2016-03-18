@@ -99,7 +99,7 @@ c      iprlvl = 3     ! print level
       ! get all possible information from environment:
       !  number of orbitals, symmetry etc.
       ! for savety:
-      if (l_molpro) orb_info%mem_mpro = -1    
+      if (l_molpro) orb_info%mem_ext = -1    
       call read_env(env_type,orb_info)
 
       ! read and parse input file
@@ -114,7 +114,7 @@ c      iprlvl = 3     ! print level
 
       call get_argument_value('general','memmax',ival=memmax)
       if (l_molpro) then
-        if (orb_info%mem_mpro.gt.0) memmax=orb_info%mem_mpro
+        if (orb_info%mem_ext.gt.0) memmax=orb_info%mem_ext
       end if
       call mem_init(memmax)
 

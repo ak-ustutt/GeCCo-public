@@ -31,7 +31,7 @@
       real(8) ::
      &     ecore
       integer :: 
-     &     nirr, nel, isym, mult, mem_mpro, lbuf, libuf, nn,
+     &     nirr, nel, isym, mult, mem_ext, lbuf, libuf, nn,
      &     norbs(8), nocc(8), ncore(8),
      &     nclosed(8)
       integer ::
@@ -39,9 +39,9 @@
       logical ::
      &     error, rd_intfile, rd_nirr, rd_nel, rd_sym, rd_mult,
      &     rd_norbs, rd_nocc, rd_ncore, rd_closed, rd_irrtyp,
-     &     rd_ecore
+     &     rd_ecore, rd_fcreo
       integer, allocatable ::
-     &     irrtyp(:)
+     &     irrtyp(:), fcreo(:)
 
 
       iprint = max(iprlvl,ntest)
@@ -64,7 +64,7 @@
       ninact(1:8)=0; nact(1:8)=0; nvirt(1:8)=0
 
       ! set defaults
-      mem_mpro = -1 ! use defined memory of GeCCo
+      mem_ext = -1 ! use defined memory of GeCCo
       rd_intfile = .false.
       rd_nirr = .false.
       rd_nel = .false.
@@ -75,6 +75,8 @@
       rd_ncore = .false.
       rd_closed = .false.
       rd_ecore = .false.
+      rd_irrtyp = .false.
+      rd_fcreo = .false.
 
       ! loop over file and read info
       
@@ -82,6 +84,7 @@
         read(luintf,'(a)',end=99) line
 
         idelim = min(len_trim(line)+1,index(line,' '))-1
+        if (ntest.ge.100) write(lulog,'(1x,"Key:",a)') line(1:idelim)
         select case(line(1:idelim))
         case('dumpfile') 
           read (line(idelim+1:),'(a)') intfile
@@ -89,7 +92,7 @@
         case('buffer')
           read (line(idelim+1:),*) lbuf,libuf
         case('memory')
-          read (line(idelim+1:),*) mem_mpro
+          read (line(idelim+1:),*) mem_ext
         case('nirrep')
           read (line(idelim+1:),*) nirr
           rd_nirr = .true.
@@ -126,11 +129,18 @@
             rd_closed = .true.
           end if
         case('itype-array')
-          if (rd_norbs.and.rd_ncore) then
-            nn = sum(norbs(1:nirr))-sum(ncore(1:nirr))
+          if (rd_norbs) then
+            nn = sum(norbs(1:nirr))
             allocate(irrtyp(nn))
             read(luintf,*,end=92) irrtyp(1:nn)
  92         rd_irrtyp = .true.
+          end if
+        case('translation')
+          if (rd_norbs.and.rd_ncore) then
+            nn = sum(norbs(1:nirr))-sum(ncore(1:nirr))
+            allocate(fcreo(nn))
+            read(luintf,*,end=93) fcreo(1:nn)
+ 93         rd_fcreo = .true.
           end if
         end select
 
@@ -180,10 +190,16 @@
         write(lulog,*)'Could not read number of occupied orbitals/IRREP'
         error = .true.
       end if
-!      if (.not.rd_irrtyp) then
-!        write(lulog,*) 'Could not read array with IRREPs of orbitals'
-!        error = .true.
-!      end if
+      if (.not.rd_irrtyp) then
+        write(lulog,*) 'Could not read array with IRREPs of orbitals'
+        error = .true.
+      end if
+      if (.not.rd_fcreo.and.rd_ncore) then
+        if (sum(ncore(1:8)).gt.0) then
+          write(lulog,*) 'Could not read frozen-core reorder array'
+          error = .true.
+        end if
+      end if
 
       if (error) call quit(1,i_am,'Error(s) reading interface file!')
 
@@ -230,8 +246,8 @@
       orb_info%nactel = nel - 2*sum(nclosed(1:nirr))
       orb_info%nactorb = sum(nact(1:nirr))
 
-      orb_info%ncore_mpro = sum(ncore(1:nirr))
-      orb_info%name_intfile_mpro = intfile
+      orb_info%ncore_ext = sum(ncore(1:nirr))
+      orb_info%name_intfile_ext = intfile
 
       allocate(orb_info%igassh(nirr,ngas),orb_info%iad_gas(ngas),
      &         orb_info%ihpvgas(ngas,1),orb_info%nbas(nirr),
@@ -268,13 +284,18 @@
       orb_info%cab_orb(1:nirr)=0
       orb_info%nxbas(1:nirr)=0
 
-      orb_info%mem_mpro = mem_mpro   ! well, mem_mpro is also mem_cfour :)
+      orb_info%mem_ext = mem_ext   
       orb_info%bufflen = lbuf
       orb_info%ibufflen = libuf
 
-      nn = sum(norbs(1:nirr))-sum(ncore(1:nirr))
+      nn = sum(norbs(1:nirr))
       allocate(orb_info%ext_gamorb(nn))
       orb_info%ext_gamorb(1:nn) = irrtyp(1:nn)
+      if (sum(ncore(1:nirr)).gt.0) then
+        nn = sum(norbs(1:nirr))-sum(ncore(1:nirr))
+        allocate(orb_info%ext_fcreo(nn))
+        orb_info%ext_fcreo(1:nn) = fcreo(1:nn)
+      end if
 
       if (ntest.ge.100) then
         write(lulog,*) 'Have set:'
@@ -287,6 +308,7 @@
       call file_close_keep(ffintf)
 
       if (allocated(irrtyp)) deallocate(irrtyp)
+      if (allocated(fcreo)) deallocate(fcreo)
 
       return
       end

@@ -116,7 +116,7 @@
       end do
 
       call read_fock_from_molpro_ifc(lumoint,ifpos,ecore,fock,nfock,
-     &                               orb_info%ncore_mpro)
+     &                               orb_info%ncore_ext)
 
       ! get HOLE shell contributions to core energy
       ! CANONICAL ORBITALS ASSUMED (CAVEAT!!)

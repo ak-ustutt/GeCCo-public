@@ -25,7 +25,7 @@
       include 'par_dalton.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer(8), parameter ::
      &     imsk16 = 65535,
@@ -74,7 +74,7 @@ c     &     hop
 
       integer, pointer ::
      &     ireost(:), ihpvgas(:,:), igamorb(:),
-     &     igasorb(:), idx_gas(:), iad_gas(:)
+     &     igasorb(:), idx_gas(:), iad_gas(:), ireost_loc(:)
 
       real(8) ::
      &     cpu0, sys0, wall0, cpu, sys, wall
@@ -83,7 +83,7 @@ c     &     hop
 
       call atim_csw(cpu0,sys0,wall0)
 
-      call file_init(ffmo2,trim(orb_info%name_intfile_mpro),
+      call file_init(ffmo2,trim(orb_info%name_intfile_ext),
      &               ftyp_sq_unf,0)
       call file_open(ffmo2)
 
@@ -140,6 +140,20 @@ cmh   determine number of first 2-el. block
 
       ! dereference structure components for efficiency
       ireost => orb_info%ireost
+      if (orb_info%ncore_ext.gt.0) then
+        ! we have to modify ireost a bit
+        ifree = mem_alloc_int(ireost_loc,orb_info%ntoob,'ireost_loc')
+        ireost_loc = 0
+        do ii = 1, orb_info%ntoob-orb_info%ncore_ext
+          ireost_loc(ii)=ireost(orb_info%ext_fcreo(ii))
+        end do
+        ireost => ireost_loc
+        if (ntest.ge.100) then
+          write(lulog,'(x,"modified reorder array:")')
+          write(lulog,'(x,5i5,x,5i5)') 
+     &       ireost(1:orb_info%ntoob-orb_info%ncore_ext)
+        end if
+      end if
       ihpvgas => orb_info%ihpvgas
       igamorb => orb_info%igamorb
       igasorb => orb_info%igasorb
@@ -196,12 +210,12 @@ cmh   determine number of first 2-el. block
             igtp(2) = ihpvgas(idss(2),1)
             igtp(3) = ihpvgas(idss(3),1)
             igtp(4) = ihpvgas(idss(4),1)
+            if (iad_gas(idss(2)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
+            if (iad_gas(idss(1)).ne.2.or.iad_gas(idss(3)).ne.2) cycle
             idss(1) = idss(1)-idx_gas(igtp(1))+1
             idss(2) = idss(2)-idx_gas(igtp(2))+1
             idss(4) = idss(4)-idx_gas(igtp(4))+1
             idss(3) = idss(3)-idx_gas(igtp(3))+1
-            if (iad_gas(idss(2)).ne.2.or.iad_gas(idss(4)).ne.2) cycle
-            if (iad_gas(idss(1)).ne.2.or.iad_gas(idss(3)).ne.2) cycle
 
             ! generate string addresses of integrals 
             ! spin-orbital basis (w/o PH-symmetry) to which
@@ -284,9 +298,7 @@ cmh   determine number of first 2-el. block
      &     call file_close_keep(ffham)
       call file_close_keep(ffmo2)
 
-      ! deallocation by hand
-      ifree = mem_dealloc('mo2_ibuff')
-      ! automatic deallocation of rest:
+      ! automatic deallocation:
       ifree = mem_flushmark('import_h2')
 
       call atim_csw(cpu,sys,wall)

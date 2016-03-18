@@ -107,7 +107,7 @@ c     &     hop
       int_ordr = 0
 
       ! note that the first ncore orbitals have been deleted
-      ioff_core = orb_info%ncore_mpro
+      ioff_core = orb_info%ncore_ext
 
       ! dereference structure components for efficiency
       ireost => orb_info%ireost
