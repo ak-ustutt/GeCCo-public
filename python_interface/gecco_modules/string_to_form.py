@@ -536,7 +536,7 @@ class Formula(_Formula):
         Puts input in self.string (as _InputString)
         """
         #remove all (Unicode) white space characters
-        string= re.sub("\s", "",string,flags=re.U)
+        string= re.sub("\s", "",string)
         #set string as _InputString
         self.string=InputString(string)
         self.extract_label()

@@ -9,7 +9,7 @@ if keywords.is_keyword_set('method.MRCC2.lagrangian'):
     lag_type=int(keywords.get('method.MRCC2.lagrangian'))
 print("lagrangian:",lag_type,type(lag_type))
 
-known_hamiltonians={"DYALL","REPT","F_EFF"}
+known_hamiltonians=["DYALL","REPT","F_EFF"]
 hamiltonian="DYALL"
 if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCC2.hamiltonian')).strip()

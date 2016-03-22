@@ -28,7 +28,7 @@ print("3rd_E ", third_ord_energy, type(third_ord_energy))
 #------------------------------------------------------------------------------#
 
 new_target('DEF_FORM_PT_LAG')
-
+depend('CALC_GAM0')
 
 depend('DEF_T2g')
 depend('DEF_T1')
