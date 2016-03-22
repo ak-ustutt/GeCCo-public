@@ -2,7 +2,7 @@
       subroutine evpc_core(iter,
      &       task,iroute,xrsnrm,xeig,
      &       use_s,
-     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,
+     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
      &       me_special,nspecial,
 c     &       ffopt,fftrv,ffmvp,ffdia,
      &       nincore,lenbuf,
@@ -46,7 +46,7 @@ c      include 'def_filinf.h'
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*),
-     &     me_mvp(*), me_special(*), me_scr(*)
+     &     me_mvp(*), me_special(*), me_scr(*),me_ext(*)
       type(me_list_array), intent(inout) ::
      &     me_met(*), me_trv(*)
 c      type(file_array), intent(in) ::
@@ -99,7 +99,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     nwfpar(:), idxselect(:),
      &     ipiv(:), iconv(:), idxroot(:)
       type(file_array), pointer ::
-     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:)
+     &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:),
+     &     ffext(:)
       type(filinf) ::
      &     fdum
       type(filinf), pointer ::
@@ -129,6 +130,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       iord_vsbsp => opti_stat%iord_vsbsp
       iord_ssbsp => opti_stat%iord_ssbsp
       ffscr => opti_stat%ffscr
+      ffext => opti_stat%ffext
       ffrsbsp => opti_stat%ffrsbsp
       ffvsbsp => opti_stat%ffvsbsp
       ffssbsp => opti_stat%ffssbsp
@@ -354,7 +356,7 @@ c dbgend
      &           iord_rsbsp,ffrsbsp,
      &           iord_ssbsp,ffssbsp,use_s,
      &           vred,xdum,mred,sred,nred,nroot,0,mxsub,nopt,
-     &           ffscr(1)%fhand,nnew,  ! only scratch
+     &           ffext,0,  ! only scratch
      &           nincore,nwfpar,lenbuf,xbuf1,xbuf2,xbuf3)
             ndim_vsbsp = nred
             ndim_rsbsp = nred
@@ -370,7 +372,7 @@ c dbgend
 
           select case(opti_info%typ_prc(iopt))
           case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp,
-     &         optinf_prc_prj)
+     &         optinf_prc_prj,optinf_prc_spinrefp)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
@@ -421,7 +423,8 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
             ! project out spin contaminations or other components?
             if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj) then      
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
               ! assign op. with list containing the scratch trial vector
               call assign_me_list(me_scr(iopt)%mel%label,
      &                            me_opt(iopt)%mel%op%name,op_info)
@@ -433,6 +436,18 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
      &                              xbuf1,xbuf2,.true.,xnrm,
      &                              opti_info,orb_info,
      &                              op_info,str_info,strmap_info)
+                elseif (opti_info%typ_prc(iopt).eq.
+     &                  optinf_prc_spinrefp)then
+                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                              fspc(2),opti_info%nwfpar(iopt),
+     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              opti_info,orb_info,
+     &                              op_info,str_info,strmap_info)
+
+                  call evaluate2(fspc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+
                 else
                   call evaluate2(fspc(1),.false.,.false.,
      &                           op_info,str_info,strmap_info,orb_info,

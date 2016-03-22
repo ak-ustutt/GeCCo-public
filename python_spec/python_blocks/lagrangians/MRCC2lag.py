@@ -1,4 +1,4 @@
-from gecco_interface import *
+
 from gecco_modules.NoticeUtil import *
 import gecco_modules.string_to_form as stf
 
@@ -33,7 +33,7 @@ depend('DEF_LAM1')
 depend('DEF_O2g')
 depend('DEF_O1')
 
-
+depend('GAM0_CALC')
 depend('MakeRefState')
 
 depend('H0')
@@ -191,20 +191,23 @@ if not 0<lag_type<5 :
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
 
 
+#dbg
+#for item in LAG_E.show():
+#    print item
+#print "LAG_E finished"
 
-for item in LAG_E.show():
-    print item
-print "LAG_E finished"
 LAG_E.set_rule()
 
-for item in LAG_A1.show():
-    print item
-print "LAG_A1 finished"
+#dbg
+#for item in LAG_A1.show():
+#    print item
+#print "LAG_A1 finished"
 LAG_A1.set_rule()
 
-for item in LAG_A2.show():
-    print item
-print "LAG_A2 finished"
+#dbg
+#for item in LAG_A2.show():
+#    print item
+#print "LAG_A2 finished"
 LAG_A2.set_rule()
 
 

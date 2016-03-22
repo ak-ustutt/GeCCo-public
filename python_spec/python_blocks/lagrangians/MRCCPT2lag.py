@@ -40,7 +40,7 @@ depend('DEF_O2g')
 depend('DEF_O1')
 
 depend('MakeRefState')
-
+depend('GAM0_CALC')
 depend('H0')
 
 
@@ -94,19 +94,19 @@ if (third_ord_energy):
 
 
 
-
-for item in LAG_E.show():
-    print item
+#dbg
+#for item in LAG_E.show():
+#    print item
 LAG_E.set_rule()
 
-print("LAG_E finished")
+#print("LAG_E finished")
 
-
-for item in LAG_A.show():
-    print item
+#dbg
+#for item in LAG_A.show():
+#    print item
 LAG_A.set_rule()
 
-print("LAG_A finished")
+#print("LAG_A finished")
 
 
 FACTOR_OUT({

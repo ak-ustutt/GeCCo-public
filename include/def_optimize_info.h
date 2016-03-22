@@ -8,7 +8,8 @@
      &       optinf_prc_norm = 6,   ! like usual, but normal. to 1
      &       optinf_prc_spinp = 7,  ! like 1, but with spin projection
      &       optinf_prc_invH0 = 8,  ! invert non-diagonal H0
-     &       optinf_prc_prj = 9     ! apply (projection) formula
+     &       optinf_prc_prj = 9,    ! apply (projection) formula
+     &       optinf_prc_spinrefp = 10! apply both spin and reference projection
 
       ! input variables to control optimization
       type optimize_info

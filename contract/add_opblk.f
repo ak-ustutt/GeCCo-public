@@ -195,6 +195,8 @@ c      end if
       if (len_op.ne.mel_out%len_op_occ(iblkout))then
         write(lulog,*)'len_op = ',len_op
         write(lulog,*)'mel len = ',mel_out%len_op_occ(iblkout)
+        write(lulog,*)'mel_in: ',trim(mel_in%label),iblkin
+        write(lulog,*)'mel_out: ',trim(mel_out%label),iblkout
         call wrt_occ_n(lulog,opin%ihpvca_occ(1,1,idx_in),njoined_in)
         call wrt_occ_n(lulog,opout%ihpvca_occ(1,1,idx_out),njoined_out)
         write(lulog,*)'formal? ',mel_in%op%formal_blk(iblkin)

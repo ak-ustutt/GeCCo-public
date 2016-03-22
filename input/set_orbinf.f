@@ -30,7 +30,7 @@
 
       integer ::
      &     ngas, nsym, ntoob, nspin,
-     &     iprint, idx, jdx, kdx, isym, igas, igastp, ispin,
+     &     iprint, idx, jdx, kdx, isym, igas, igastp, ispin, ipass,
      &     idxst, idxnd, ist, ind, inc, igasr, j, caborb, iloop, loop
       integer ::
      &     icount(ngastp)
@@ -46,6 +46,12 @@
         write(lulog,*) '************'
         write(lulog,*) ' set_orbinf'
         write(lulog,*) '************'
+        write(lulog,*) ' hole_rv: ',hole_rv
+        write(lulog,*) ' nspin  = ',orb_info%nspin
+        write(lulog,*) ' ngas   = ',orb_info%ngas
+        write(lulog,*) ' nsym   = ',orb_info%nsym
+        write(lulog,*) ' ntoob  = ',orb_info%ntoob
+        write(lulog,*) ' caborb = ',orb_info%caborb
       end if
 
       ! for convenience
@@ -134,6 +140,10 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         write(lulog,*) 'nactt_hpv: ',orb_info%nactt_hpv(1:ngastp)
         write(lulog,*) 'ioff_gas:  ',orb_info%ioff_gas(1:ngastp)
         write(lulog,*) 'idx_gas:   ',orb_info%idx_gas(1:ngastp)
+        write(lulog,*) 'igassh:'
+        do igas = 1, ngas
+          write(lulog,'(3x,8i4)') orb_info%igassh(1:nsym,igas)
+        end do
       end if
 
       do igas = 1, ngas
@@ -233,6 +243,39 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         do idx = ntoob+1, ntoob+caborb
           orb_info%ireost(idx) = idx
         end do
+      case ('molpro_ifc','MOLPRO_IFC')
+        ! the interface removes the core orbitals and shifts the numbering
+        ! we just pretend that the symmetry ordering is done for core and other
+        ! orbitals separately
+        if (hole_rv) call quit(1,'set_orbinf','who needs hole_rv??')
+        jdx = 0
+        do ipass = 1,2 ! two passes: 1-deleted core, 2-others
+          do isym = 1, nsym
+            do igas = 1, ngas
+              if (ipass.eq.1.and.orb_info%iad_gas(igas).ne.1) cycle
+              if (ipass.eq.2.and.orb_info%iad_gas(igas).eq.1) cycle
+              ! ignore cabs orbitals
+              if(caborb.gt.0.and.igas.eq.ngas)cycle
+              ist = orb_info%mostnd(1,isym,igas)
+              ind = orb_info%mostnd(2,isym,igas)
+              inc = +1
+              do idx = ist, ind, inc
+                jdx = jdx+1
+                orb_info%ireost(jdx) = idx
+              end do
+            end do
+          end do
+        end do
+
+        ! append CABS orbitals (no reordering)
+        do idx = ntoob+1, ntoob+caborb
+          orb_info%ireost(idx) = idx
+        end do
+      case ('cfour','CFOUR')
+        ! actually: symmetry ordering means "the way the external program 
+        !   has ordered the orbitals"; cfour orders kind-of-type-ordering like
+        !   we try to get this info by interpreting the ext_gamorb array
+        call make_ext2typ_reo(orb_info)
       case ('gamess','GAMESS')
         ! (We loop over all orbitals to avoid errors when the active
         !  space is modified such that orbitals must be reordered.
@@ -263,7 +306,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       case default
         call quit(1,'set_orbinf','unknown type '//trim(env_type))
       end select
-
+      
         ! generate reverse mapping
         do idx = 1, ntoob+caborb
           orb_info%ireots(orb_info%ireost(idx)) = idx 

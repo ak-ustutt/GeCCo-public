@@ -60,6 +60,11 @@
      &                 orb_info%nspin)
       end if
 
+      ! message on statistics file
+      if (lustat.gt.0) 
+     &write(lustat,'(">new map in space ",i1,": ",i2,",",i2," -> ",i2)')
+     &       ityp1, iocc1, iocc2, iocc12
+
       ifree = mem_setmark('set_strmap')
 
       nsym = orb_info%nsym

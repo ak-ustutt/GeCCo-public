@@ -16,11 +16,6 @@ check
   find wrote
   compare int 2
 check
-  label Optimized formula for total energy
-  find FOPT_Ecorrected
-  find wrote
-  compare int 2
-check
   rewind
   label Number of singular values
   find INVERT

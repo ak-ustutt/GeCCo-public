@@ -63,9 +63,6 @@ c        hpvx = hpvx_idx
           ioff = ioff + offsets(idxgrgr)%msms(idxmsms)
           ! plus offset of gam/gam block
           ioff = ioff + offsets(idxgrgr)%msmsgmgm(idxgmgm)
-c dbg
-          print *,'call to mem_iget in get_strmap_blk ',ioff,ioff+ilen
-c dbg
           call mem_iget(strmap_info%ffstrmap,
      &                  strmap(ioffmap+1),ioff+1,ioff+ilen)          
 

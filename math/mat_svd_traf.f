@@ -33,7 +33,7 @@
       integer ::
      &     idx, info, idx2, luinp, iostatus, lwrk
       logical ::
-     &     l_exist, sv_above, read_file
+     &     l_exist, sv_above, read_file, symmetrize
 
       if (ndim.eq.0) return
 
@@ -64,6 +64,24 @@
         write(lulog,'(x,a)') '--------------------'
         write(lulog,*) 'input matrix:'
         call wrtmat2(mat,ndim,ndim,ndim,ndim)
+      end if
+
+      ! for testing: but as already noted by MH, this does not
+      !   lead to improvements, on the contrary actually ...  AK
+      symmetrize = .false.  ! so leave .false.
+      if (symmetrize) then
+        ! symmetrize
+        do idx = 1, ndim
+          do idx2 = 1,idx-1
+            mat(idx2,idx) = 0.5d0 *
+     &                     (mat(idx2,idx) + mat(idx,idx2))
+            mat(idx,idx2) = mat(idx2,idx)
+          end do
+        end do
+        if (ntest.ge.100) then
+          write(lulog,*) 'symmetrized matrix:'
+          call wrtmat2(mat,ndim,ndim,ndim,ndim)
+        end if
       end if
 
       ! copy matrix and perform SVD

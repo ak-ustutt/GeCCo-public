@@ -308,7 +308,7 @@ c      ! vector could be put back to list here:
 c      call vec_to_da(ffamp,1,xbuf2,nwfpar)
 c dbgend
 
-cdbg
+cdbg - the following lines do not give any sensible output:
 c      if (lzero_flag)then
 c       call print_list('before zeroing',me_special(4)%mel,"NORM",
 c     &                  -1d0,0d0,

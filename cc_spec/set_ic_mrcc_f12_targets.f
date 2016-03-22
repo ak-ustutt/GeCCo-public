@@ -819,11 +819,11 @@ c        ndef = ndef + 1
       call set_arg('SOLVE_MRCC_F12',SOLVENLEQ,'FORM',1,tgt_info,
      &     val_label=(/'FOPT_OMG_F12'/))
       if (optref.ne.0) then
-        call form_parameters(-1,parameters,2,
-     &       'final CI coefficients :',0,'LIST')
-        call set_rule('SOLVE_MRCC_F12',ttype_opme,PRINT_MEL,
-     &       'ME_C0',1,0,
-     &       parameters,2,tgt_info)
+!        call form_parameters(-1,parameters,2,
+!     &       'final CI coefficients :',0,'LIST')
+!        call set_rule('SOLVE_MRCC_F12',ttype_opme,PRINT_MEL,
+!     &       'ME_C0',1,0,
+!     &       parameters,2,tgt_info)
         call set_rule('SOLVE_MRCC',ttype_opme,EVAL,
      &       'FOPT_REF_S(S+1)',1,0,
      &       parameters,0,tgt_info)

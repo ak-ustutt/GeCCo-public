@@ -81,6 +81,7 @@
      &     SET_FREQ*8         = 'SET_FREQ',
      &     PRINT_RES*9        = 'PRINT_RES',
      &     PRINT_MEL*9        = 'PRINT_MEL',
+     &     PUSH_RESULT*11     = 'PUSH_RESULT',
      &     PRINT_MEL_INFO_*14 = 'PRINT_MEL_INFO',
      &     ANALYZE_MEL*11     = 'ANALYZE_MEL',
      &     PRINT_*5           = 'PRINT',

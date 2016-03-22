@@ -95,9 +95,9 @@
      &     energy, xresnrm(nroots,nopt), xdum, xresmax
       type(me_list_array), pointer ::
      &     me_opt(:), me_trv(:), me_mvp(:), me_rhs(:), me_dia(:),
-     &     me_met(:), me_special(:), me_scr(:)
+     &     me_met(:), me_special(:), me_scr(:), me_ext(:)
       type(file_array), pointer ::
-     &     ffdia(:), ff_rhs(:), ff_trv(:),
+     &     ffdia(:), ff_rhs(:), ff_trv(:),ff_ext(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:)
       type(me_list), pointer ::
      &     me_pnt
@@ -146,9 +146,9 @@ c     &     call quit(1,'solve_leq','did not yet consider coupled LEQs')
 
       allocate(me_opt(nopt),me_rhs(nopt),me_trv(nopt),me_mvp(nopt),
      &     me_dia(nopt),me_met(nopt),me_special(nspecial),
-     &     me_scr(nopt))
+     &     me_scr(nopt),me_ext(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
-     &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt),
+     &     ff_trv(nopt),ff_mvp(nopt),ff_rhs(nopt),ff_ext(nopt),
      &     ff_met(nopt),ffspecial(nspecial),ff_scr(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
@@ -241,6 +241,20 @@ c dbg
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
+        ! Here is a new ME-list that will be fed in the 
+        ! routine 'optc_minspace'. Previously ff_scr was
+        ! used there but the use was erroneous
+        write(fname,'("ext_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
+     &       -1,1,nvectors,0,0,0,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_ext(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_ext(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
         ! get a ME-list for trial-vectors
         write(fname,'("trv_",i3.3)') iopt
         call define_me_list(fname,me_opt(iopt)%mel%op%name,
@@ -324,6 +338,7 @@ c dbg
         ! open result vector file(s)
         call file_open(ffopt(iopt)%fhand)
         call file_open(ff_scr(iopt)%fhand)
+        call file_open(ff_ext(iopt)%fhand)
         call file_open(ff_trv(iopt)%fhand)
         ! open corresponding matrix vector products ...
         call file_open(ff_mvp(iopt)%fhand)
@@ -374,6 +389,9 @@ c dbg
         do iopt = 1, nopt
           write(lulog,*) 'dump of '//trim(me_rhs(iopt)%mel%label)
           write(lulog,*) 'iopt = ',iopt
+          call analyze_list_core(
+     &         me_rhs(iopt),me_rhs(iopt),1,1,'norm',
+     &         orb_info,str_info)
           call wrt_mel_file(lulog,5,
      &         me_rhs(iopt)%mel,
      &         1,me_rhs(iopt)%mel%op%n_occ_cls,
@@ -391,7 +409,8 @@ c dbg
      &       task,conv,xresnrm,xdum,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet, 
-     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,me_dia, 
+     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,me_dia,
+     &       me_ext,
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       fl_rhs_mvp,depend,
@@ -404,16 +423,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
           if (conv) then
             write(lulog,'("L>> conv.",21x,x,g10.4)') xresmax
             if (lulog.ne.luout)
-     &         write(luout,'("L>> conv.",21x,x,g10.4)') xresmax
+     &         write(luout,'("    conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
             write(lulog,'("L>> |rhs|",21x,x,g10.4)') xresmax
             if (lulog.ne.luout)   
-     &        write(luout,'("L>> |rhs|",21x,x,g10.4)') xresmax
+     &        write(luout,'("    |rhs|",21x,x,g10.4)') xresmax
             xrhsnorm = xresmax
           else
             write(lulog,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
             if (lulog.ne.luout) 
-     &         write(luout,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
+     &         write(luout,'("   ",i3,24x,x,g10.4)')iter-1,xresmax
           end if
         end do
 
@@ -434,6 +453,9 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
               do iopt = 1, nopt
                 write(lulog,*) 'dump of '//trim(me_trv(iopt)%mel%label)
                 write(lulog,*) 'iopt = ',iopt
+                call analyze_list_core(
+     &            me_trv(iopt),me_trv(iopt),1,1,'norm',
+     &                orb_info,str_info)
                 call wrt_mel_file(lulog,5,
      &               me_trv(iopt)%mel,
      &               1,me_trv(iopt)%mel%op%n_occ_cls,
@@ -470,6 +492,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               do iopt = 1, nopt
                 write(lulog,*) 'dump of '//
      &               trim(me_mvp(iopt)%mel%label)
+               call analyze_list_core(
+     &            me_mvp(iopt),me_mvp(iopt),1,1,'norm',
+     &                orb_info,str_info)
                 call wrt_mel_file(lulog,5,
      &               me_mvp(iopt)%mel,
      &               1,me_mvp(iopt)%mel%op%n_occ_cls,
@@ -486,6 +511,7 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
 
         ! remove the temporary lists
         call del_me_list(me_scr(iopt)%mel%label,op_info)
+        call del_me_list(me_ext(iopt)%mel%label,op_info)
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
         call del_me_list(me_rhs(iopt)%mel%label,op_info)
@@ -511,6 +537,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
         do iopt = 1, nopt
           write(lulog,*) 'dump of final '//trim(me_opt(iopt)%mel%label)
           write(lulog,*) 'iopt = ',iopt
+          call analyze_list_core(
+     &            me_opt(iopt),me_opt(iopt),1,1,'norm',
+     &            orb_info,str_info)
           call wrt_mel_file(lulog,5,
      &         me_opt(iopt)%mel,
      &         1,me_opt(iopt)%mel%op%n_occ_cls,
@@ -523,9 +552,9 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_trv,me_rhs,me_mvp,me_dia,me_met,me_special,
-     &           me_scr)
+     &           me_scr,me_ext)
       deallocate(ff_trv,ff_rhs,ff_mvp,ffdia,ffopt,ff_met,ffspecial,
-     &     xret,idxselect,ff_scr)
+     &     xret,idxselect,ff_scr,ff_ext)
       call dealloc_formula_list(fl_rhs_mvp)
       do jdx = 1, nspcfrm
         call dealloc_formula_list(fl_spc(jdx))

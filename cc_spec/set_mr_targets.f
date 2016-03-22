@@ -36,6 +36,8 @@
      &     set_up_T_corr,skip
       integer, allocatable ::
      &     excrestr(:,:,:)
+      real(8) ::
+     &     densmix
 
       integer ::
      &     stndD(2,60), nsupD, nremblk, remblk(60), len
@@ -51,6 +53,8 @@
      &     ival=ms)
       call get_argument_value('method.MR','sym',
      &     ival=sym)
+      call get_argument_value('method.MR','densmix',
+     &     xval=densmix)
       if (mult.gt.0.and.mult.ne.orb_info%imult) then
         orb_info%imult = mult
         if (ntest.ge.100) write(lulog,*) 'spin mult. = ', mult
@@ -188,6 +192,11 @@ c dbgend
 
       if (multistate) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/python_spec/multistate_eff_ham.py",
+     &     name_infile,fforbinf%name)
+
+      if (densmix.gt.0d0.and.maxexc.lt.3) 
+     &     call set_python_targets(tgt_info,
+     &     trim(gecco_path)//"/python_spec/printe.py",
      &     name_infile,fforbinf%name)
 
       if (set_up_T_corr) call set_python_targets(tgt_info,

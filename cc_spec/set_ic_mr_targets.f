@@ -130,6 +130,7 @@ c     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
         print *,'sv_thr. = ',sv_thresh
         print *,'Tikhonov= ',tikhonov
         print *,'sv_fix  = ',sv_fix
+        print *,'sv_old  = ',sv_old
         print *,'project = ',project
         print *,'prc_type= ',prc_type
         print *,'prc_shift=',prc_shift
@@ -137,7 +138,7 @@ c     &  call quit(1,'set_ic_mr_targets','prc_traf only for MRCC yet')
 
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
-        if (l_exist) write(lulog,*)
+        if (l_exist.and.sv_old) write(lulog,*)
      &     'Using existing SINGVALS file for singular value selection!'
       end if
       if (l_iccc.and.prc_traf.and.jac_fix) then

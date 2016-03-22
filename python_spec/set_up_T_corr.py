@@ -22,6 +22,8 @@ solve_mrcc = 'SOLVE_MRCC'
 if (inp.is_keyword_set('method.R12')):
     solve_mrcc += '_F12' 
 
+densmix = inp.get('method.MR.densmix')
+
 # create the Tfix list, to be used by the (T) correction
 new_target('save_Tfix')
 depend(solve_mrcc)
@@ -42,11 +44,19 @@ EXPAND_OP_PRODUCT({LABEL:'F_LST',
                    OP_RES:'NORM',
                    OPERATORS:['C0^+','L','T','C0'],
                    IDX_SV:   [     1,  2,  3,   4]})
+
+# Make sure to use the proper (averaged) density
+if (densmix>0):
+    depend('F_DENS0')
+    FACTOR_OUT({LABEL_RES:'F_LST',
+                LABEL_IN:'F_LST',
+                INTERM:'F_DENS0'})
+
 DERIVATIVE({LABEL_RES:'F_ST',
             LABEL_IN:'F_LST',
             OP_RES:'OMG',
             OP_DERIV:'L'})
-PRINT_FORMULA({LABEL:'F_ST'})
+#PRINT_FORMULA({LABEL:'F_ST'})
 OPTIMIZE({LABEL_OPT:'FOPT_ST',
           LABELS_IN:'F_ST'})
 
@@ -59,7 +69,7 @@ SELECT_SPECIAL({LABEL_RES:'F_T_extract',
                 TYPE:'rank',
                 MODE:'22',
                 OPERATORS:['T','Ttr']})
-PRINT_FORMULA({LABEL:'F_T_extract'})
+#PRINT_FORMULA({LABEL:'F_T_extract'})
 OPTIMIZE({LABEL_OPT:'FOPT_T_extract',
           LABELS_IN:'F_T_extract'})
 

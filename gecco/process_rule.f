@@ -480,11 +480,12 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
       case(TRANSPS_FORMULA)
 *----------------------------------------------------------------------*
-        call get_arg('LABEL',rule,tgt_info,val_label=label)
-        call get_form(form_pnt,trim(label),OLD)
-        call read_form_list(form_pnt%fhand,flist,.true.)
-        call transpose_formula(flist,
-     &       op_info)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_arg('OP_RES',rule,tgt_info,val_label=label_list(1))
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label2)
+        call get_arg('INIT',rule,tgt_info,val_log=init)
+        call transpose_formula_wrap(label,label2,label_list(1),init,
+     &       op_info,form_info)
 *----------------------------------------------------------------------*
       case(EXPAND_OP_PRODUCT)
 *----------------------------------------------------------------------*
@@ -1032,6 +1033,20 @@ c dbg
 
         call get_mel(mel_pnt,label,OLD)
         call print_list(title,mel_pnt,mode,fac(1),fac(2),
+     &                  orb_info,str_info)
+
+*----------------------------------------------------------------------*
+      case(PUSH_RESULT)
+*----------------------------------------------------------------------*
+
+        call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('COMMENT',rule,tgt_info,val_str=title)
+        call get_arg('FORMAT',rule,tgt_info,val_str=mode)
+
+        if (form_test) return
+
+        call get_mel(mel_pnt,label,OLD)
+        call push_result_to_file(title,mel_pnt,mode,
      &                  orb_info,str_info)
 
 *----------------------------------------------------------------------*

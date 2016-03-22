@@ -165,6 +165,9 @@ cdbg end
             call atim_csw(cpu,sys,wall)
             call prtim(lulog,'time for target '//trim(opres%name),
      &           cpu-cpu0,sys-sys0,wall-wall0)
+            if (luout.ne.lulog)
+     &      call prtim(luout,'time for target '//trim(opres%name),
+     &           cpu-cpu0,sys-sys0,wall-wall0)
 
           end if
 

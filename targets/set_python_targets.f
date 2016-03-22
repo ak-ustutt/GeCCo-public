@@ -38,6 +38,9 @@
 
       call system("python "//trim(python_file)//" "//
      &     trim(name_infile)//" "//trim(name_orbinfo))
+c dbg
+c       write(lulog,*) 'called python to process: ',trim(python_file)
+c dbg
      
       inquire(file=trim(python_file(pos:))//trim(tgt_sufix),
      &     exist=file_exists)

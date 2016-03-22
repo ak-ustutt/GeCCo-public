@@ -94,11 +94,11 @@
      &     xeig(nroots,2), xresnrm(nroots*nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
-     &     me_special(:), me_scr(:), me_home(:)
+     &     me_special(:), me_scr(:), me_home(:), me_ext(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:),
-     &     ffhome(:)
+     &     ffhome(:), ff_ext(:)
       type(me_list), pointer ::
      &     me_pnt
       type(dependency_info) ::
@@ -143,10 +143,10 @@
       form_mvp => form_info%form_arr(idx)%form
 
       allocate(me_opt(nopt),me_dia(nopt),me_trv(nopt),me_mvp(nopt),
-     &         me_met(nopt),me_special(nspecial),me_scr(nopt))
+     &      me_met(nopt),me_special(nspecial),me_scr(nopt),me_ext(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
-     &     ff_scr(nopt))
+     &     ff_scr(nopt),ff_ext(nopt))
       do iopt = 1, nopt
         ! pointer array for operators:
         ierr = 1
@@ -234,6 +234,20 @@
         idxmel = idx_mel_list(fname,op_info)
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+
+        ! Here is a new ME-list that will be fed in the 
+        ! routine 'optc_minspace'. Previously ff_scr was
+        ! used there but the use was erroneous
+        write(fname,'("ext_",i3.3)') iopt
+        call define_me_list(fname,me_opt(iopt)%mel%op%name,
+     &       me_pnt%absym,me_pnt%casym,
+     &       me_pnt%gamt,me_pnt%s2,
+     &       me_pnt%mst,.false.,
+     &       -1,1,nvectors,0,0,0,
+     &       op_info,orb_info,str_info,strmap_info)
+        idxmel = idx_mel_list(fname,op_info)
+        me_ext(iopt)%mel   => op_info%mel_arr(idxmel)%mel
+        ff_ext(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
         ! get a ME-list for trial-vectors
         write(fname,'("trv_",i3.3)') iopt
@@ -388,7 +402,7 @@ c dbgend
      &       task,conv,xresnrm,xeig,
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet,
-     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,
+     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,me_ext,
      &       me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
      &       fl_mvp,depend,
@@ -400,24 +414,24 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
           if (lulog.ne.luout) 
-     &      write(luout,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
+     &      write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
           if (iprlvl.gt.0) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
-                if (lulog.ne.luout)
-     &           write(luout,'(" E>",3x,f24.12,x,3g10.4)')
+                if (lulog.ne.luout.and.iprlvl.ge.5)
+     &           write(luout,'("   ",3x,f24.12,x,3g10.4)')
      &               xeig(iroot,1),(xresnrm(iroot+idx*nroots),
      &                              idx = 0, nopt-1)
               else
                 write(lulog,
      &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
-                if (lulog.ne.luout)
-     &            write(lulog,
-     &               '(" E>",3x,f24.12,x,g10.4," (img=",g24.12,")")')
+                if (lulog.ne.luout.and.iprlvl.ge.5)
+     &            write(luout,
+     &               '("   ",3x,f24.12,x,g10.4," (img=",g24.12,")")')
      &               xeig(iroot,1),xresnrm(iroot),xeig(iroot,2)
               end if
             end do
@@ -500,7 +514,8 @@ c dbg
 
               ! project out spin contaminations?
               if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &            opti_info%typ_prc(iopt).eq.optinf_prc_prj) then
+     &            opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &            opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
                 ifree = mem_setmark('solve_evp.spin_proj_res')
                 ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &                                 'xbuf1')
@@ -515,6 +530,18 @@ c dbg
      &                             xbuf1,xbuf2,.false.,xnrm,
      &                             opti_info,orb_info,
      &                             op_info,str_info,strmap_info)
+                elseif (opti_info%typ_prc(iopt).eq.
+     &                  optinf_prc_spinrefp) then
+                  call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+     &                             fl_spc(2),opti_info%nwfpar(iopt),
+     &                             xbuf1,xbuf2,.false.,xnrm,
+     &                             opti_info,orb_info,
+     &                             op_info,str_info,strmap_info)
+
+                  call evaluate2(fl_spc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+
                 else
                   call evaluate2(fl_spc(1),.false.,.false.,
      &                           op_info,str_info,strmap_info,orb_info,
@@ -532,7 +559,8 @@ c dbg
             ! normalize initial trial vector?
             if (iter.eq.1.and.init(1).and.
      &          (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
-     &           opti_info%typ_prc(1).eq.optinf_prc_prj))
+     &           opti_info%typ_prc(1).eq.optinf_prc_prj.or.
+     &           opti_info%typ_prc(1).eq.optinf_prc_spinrefp))
      &          call normalize_guess(ff_trv(1)%fhand,irectrv(irequest),
      &                          ff_mvp,irecmvp(irequest),
      &                          ff_met,irecmet(irequest),
@@ -547,6 +575,7 @@ c dbg
 
         ! remove the temporary lists
         call del_me_list(me_scr(iopt)%mel%label,op_info)
+        call del_me_list(me_ext(iopt)%mel%label,op_info)
         call del_me_list(me_trv(iopt)%mel%label,op_info)
         call del_me_list(me_mvp(iopt)%mel%label,op_info)
         if (use_s(iopt))
@@ -611,7 +640,7 @@ c dbgend
 
       ! print results
       call print_roots(lulog)
-      if (lulog.ne.luout) call print_roots(luout)
+      if (lulog.ne.luout.and.iprlvl.ge.10) call print_roots(luout)
 
       ! switch to target root if possible
 !      ! (we assume that nroots has been chosen for this reason,
@@ -628,8 +657,10 @@ c dbgend
 
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
-      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr)
-      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,ff_scr)
+      deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr,
+     &           me_ext)
+      deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,
+     &           ff_scr,ff_ext)
       call dealloc_formula_list(fl_mvp)
       do jdx = 1, nspcfrm
         call dealloc_formula_list(fl_spc(jdx))

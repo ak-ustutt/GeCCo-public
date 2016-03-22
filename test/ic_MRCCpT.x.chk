@@ -13,20 +13,9 @@ check
   find wrote
   compare int 2
 check
-  label Optimized Residual formula
-  find MRCC_PT_OPT
-  find wrote
-  compare int 2
-check
   rewind
   label Optimized orthogonalized Jacobian formula
   find FOPT_Atr
-  find wrote
-  compare int 2
-check
-  rewind
-  label Optimized formula for total energy
-  find FOPT_Ecorrected
   find wrote
   compare int 2
 check

@@ -59,22 +59,22 @@ c            xnrm2 = xnrm2 +
      &           ffop%buffer(mel%off_op_occ(iblk)+1),1)
             xnrm2 = xnrm2 + xnrm_cur
 c dbg
-            print *,'norm of block ','iblk',': ',sqrt(xnrm_cur)
-            jblk = iblk + 1
+c            print *,'norm of block ','iblk',': ',sqrt(xnrm_cur)
+c            jblk = iblk + 1
 c dbgend
           else
             ! start reading file from here
             idxst = mel%off_op_occ(iblk)+1
 c dbg
-            print *,'starting to read file from ',idxst
-            jblk = iblk - 1
+c            print *,'starting to read file from ',idxst
+c            jblk = iblk - 1
 c dbgend
             exit
           end if
         end do
 c dbg
-      else
-        print *,'ME list not buffered!'
+c      else
+c        print *,'ME list not buffered!'
 c dbgend
       end if
 

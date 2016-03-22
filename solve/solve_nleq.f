@@ -79,7 +79,7 @@ c dbgend
       integer ::
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout,
-     &     ndx, idx_res_xret(nopt), jdx, it_print,
+     &     ndx, idx_res_xret(nopt), jdx, it_print,refproj,
      &     i_state, i_state2, ndx_eff, idx_eff, n_energies, nopt_state
       integer, allocatable ::
      &     idx_en_xret(:)
@@ -124,10 +124,6 @@ c dbgend
      &     out_format
       character(5) ::
      &     evp_mode
-      character(len_target_name) ::
-     &     evp_spc_me, evp_spc_form
-      integer ::
-     &     evp_n_spc_me, evp_n_spc_form
       character(2) ::
      &     MRCC_type
 
@@ -194,9 +190,9 @@ c dbgend
       if (ierr.eq.0) then
         do idx = 1, nspecial
 c dbg
-      write(lulog,*),"form energy: ", trim(label_form)
-      write(lulog,*),"solve_nleq: label_special: ",
-     &        trim(label_special(idx))
+c      write(lulog,*),"form energy: ", trim(label_form)
+c      write(lulog,*),"solve_nleq: label_special: ",
+c     &        trim(label_special(idx))
 c dbgend
           jopt = idx
           idxmel = idx_mel_list(label_special(idx),op_info)
@@ -228,8 +224,8 @@ c dbgend
       ! special formulae
       do jdx = 1, nspcfrm
 c dbg
-       write(lulog,*),"solve_nleq: label_spcfrm: ",
-     &      trim(label_spcfrm(jdx))
+c       write(lulog,*),"solve_nleq: label_spcfrm: ",
+c     &      trim(label_spcfrm(jdx))
 c dbg end
         idx = idx_formlist(label_spcfrm(jdx),form_info)
         if (idx.le.0)
@@ -245,13 +241,15 @@ c dbg end
       call get_argument_value('calculate.solve.non_linear',
      &                        'restart',lval=restart)
 
+      ! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
       do iopt = 1, nopt
+       
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
-          write(lulog,'(x,a,i1,a)')
+          write(lulog,'(x,a,i1,3a)')
      &         'Using existing amplitudes as initial guess for vector ',
-     &         iopt,'!'
+     &         iopt,'! (',trim(me_opt(iopt)%mel%label),')'
         else
           call file_open(ffopt(iopt)%fhand)
           ! hard restart? (just use old amplitude file as initial guess)
@@ -398,7 +396,7 @@ c     &       ff_trv,ff_h_trv,
         if (conv) it_print = imacit
         if (luout.ne.lulog) then
          write(out_format,fmt='(A,i0,A,i0,A)')
-     &        '(3x,i3,',n_states,'(f24.12,',nopt_state,
+     &        '(1x,i3,',n_states,'(f24.12,',nopt_state,
      &        '(x,g10.4)))'
          if (imacit.gt.1) then
           if(multistate)then
@@ -463,6 +461,9 @@ c     &       ff_trv,ff_h_trv,
      &       ival=idx)
           call get_argument_value('method.MR','maxroot',
      &       ival=ndx)
+          call get_argument_value('method.MR','refproj',
+     &       ival=refproj)
+
           if(ndx.le.0) ndx=idx
           call me_list_label(dia_label,'DIA',orb_info%lsym,
      &                       0,0,0,.false.)
@@ -470,7 +471,7 @@ c     &       ff_trv,ff_h_trv,
           ! use weaker convergence threshold for micro-iterations
           do i_state=1,n_states
            thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt_state+1)*
-     &          opti_info%mic_ahead,1d-5)
+     &          opti_info%mic_ahead,1d-3)
           end do
 
           do i_state=1,n_states
@@ -485,29 +486,43 @@ c     &       ff_trv,ff_h_trv,
             idx_eff = idx
            end if
 
-           if (spinadapt.gt.0) then
-            evp_mode = 'SPP'
-            evp_spc_me = 'ME_C0_sp'
-            evp_n_spc_me = 1
-            evp_spc_form = 'FOPT_C0_sp'
-            evp_n_spc_form = 1
-
-           else
-            evp_mode = 'DIA'
-            evp_spc_me = '-'
-            evp_n_spc_me = 0
-            evp_spc_form = '-'
-            evp_n_spc_form = 0
-
-           end if
-
-           call solve_evp(evp_mode,1,ndx_eff,idx_eff,
+           if (spinadapt.gt.0.and.refproj.eq.0) then
+           call solve_evp('SPP',1,ndx_eff,idx_eff,
      &          'ME_C0',trim(dia_label),'A_C0',
      &          'C0','FOPT_OMG_C0'//trim(c_st),
-     &          evp_spc_me,  evp_n_spc_me,
-     &          evp_spc_form,evp_n_spc_form,
+     &          'ME_C0_sp',1,
+     &          'FOPT_C0_sp',1,
      &          thr_suggest(i_state),0,
      &          op_info,form_info,str_info,strmap_info,orb_info)
+
+           else if (spinadapt.gt.0.and.refproj.gt.0) then
+           call solve_evp('SRP',1,ndx_eff,idx_eff,
+     &          'ME_C0',trim(dia_label),'A_C0',
+     &          'C0','FOPT_OMG_C0'//trim(c_st),
+     &          'ME_C0_sp',1,
+     &          (/'FOPT_C0_prj','FOPT_C0_sp'/),2,
+     &          thr_suggest(i_state),0,
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+
+           else if (spinadapt.eq.0.and.refproj.gt.0) then
+           call solve_evp('PRJ',1,ndx_eff,idx_eff,
+     &          'ME_C0',trim(dia_label),'A_C0',
+     &          'C0','FOPT_OMG_C0'//trim(c_st),
+     &          '-',0,
+     &          'FOPT_C0_prj',1,
+     &          thr_suggest(i_state),0,
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+
+           else
+           call solve_evp('DIA',1,ndx_eff,idx_eff,
+     &          'ME_C0',trim(dia_label),'A_C0',
+     &          'C0','FOPT_OMG_C0'//trim(c_st),
+     &          '-',0,
+     &          '-',0,
+     &          thr_suggest(i_state),0,
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+
+           end if
 
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
             idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)

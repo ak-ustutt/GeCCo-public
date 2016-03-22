@@ -816,6 +816,8 @@ c dbg
             else if (label_op(1:2).eq.'_L') then
               ! _LTI: find definition and add, make sure that defined before (relink)
                call warn(i_am,'avoiding LTINs presently ...')
+               call quit(1,i_am,'There is a bug here ... try '//
+     &                          '"routes auto_opt=F"')
                cycle list_loop
             else
                call quit(1,i_am,'illegal operator name: '//

@@ -47,6 +47,11 @@
         write(lulog,*) 'ityp, iocc: ',ityp, iocc
       end if
 
+      ! message on statistics file
+      if (lustat.gt.0)
+     &   write(lustat,'(">new flip map in space ",i1,", occ: ",i2)')
+     &       ityp, iocc
+
       ifree = mem_setmark('set_flipmap')
 
       nsym = orb_info%nsym
