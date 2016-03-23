@@ -4,7 +4,7 @@ import gecco_modules.string_to_form as stf
 
 i_am="MRCCPT2lag.py"
 
-known_hamiltonians={"DYALL","REPT","F_EFF"}
+known_hamiltonians=["DYALL","REPT","F_EFF"]
 hamiltonian="DYALL"
 if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
