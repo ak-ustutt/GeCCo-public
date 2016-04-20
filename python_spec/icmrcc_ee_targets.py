@@ -6,14 +6,20 @@ import sys,os
 sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 
 from gecco_interface import *
-import numpy as np
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
 
 # _multd2h will be required later to find out the spatial symmetry of what will be called 'R_q' ####
 
-_multd2h = np.matrix('1 2 3 4 5 6 7 8;2 1 4 3 6 5 8 7;3 4 1 2 7 8 5 6;4 3 2 1 8 7 6 5;5 6 7 8 1 2 3 4;6 5 8 7 2 1 4 3;7 8 5 6 3 4 1 2;8 7 6 5 4 3 2 1')
+_multd2h = [[1,2,3,4,5,6,7,8],
+[2,1,4,3,6,5,8,7],
+[3,4,1,2,7,8,5,6],
+[4,3,2,1,8,7,6,5],
+[5,6,7,8,1,2,3,4],
+[6,5,8,7,2,1,4,3],
+[7,8,5,6,3,4,1,2],
+[8,7,6,5,4,3,2,1]]
 
 ########### constructed _multd2h ############
 
@@ -497,8 +503,8 @@ for _icnt in range (0,_ncnt):
 
         if( _no_root == 0):
             continue
-
-        _isym_r = _multd2h[_isym,_isym_0-1]
+        
+        _isym_r = _multd2h[_isym][_isym_0-1]
        
         if (_s2 == _s2_0):
             s2_r = 1
