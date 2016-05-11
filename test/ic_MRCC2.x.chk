@@ -3,7 +3,7 @@ title
 molecule
   B-MRCC2-MOLPRO
 input
-  ic-MRCC2.inp
+  ic_MRCC2.inp
 check
   label CASSCF energy
   find CONVERGED
