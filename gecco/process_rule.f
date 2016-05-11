@@ -1082,8 +1082,9 @@ c dbg
 *----------------------------------------------------------------------*
 
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
-
-        write(luout,*) trim(strscr)
+        call get_arg('OUTPUT',rule,tgt_info,val_str=title)
+        
+        call print_out(strscr,title)
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
