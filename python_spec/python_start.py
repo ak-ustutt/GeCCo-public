@@ -21,8 +21,10 @@ if ( keywords.is_keyword_set("method.MRCCPT2") ):
     print "begin setting MRCCPT2 targets"
     import python_blocks.MRCCPT2
 
-
-
+if ( keywords.is_keyword_set("method.unit_test") ):
+    print "begin setting unit-test targets"
+    import python_blocks.unit_test
+    
 export_targets();
 
 print "python target_setting ends"+"-"*50 

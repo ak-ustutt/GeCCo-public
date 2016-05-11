@@ -4,11 +4,12 @@
 !!    
 !!    @param[inout] mel matrix element list to be worked on
 !!    @param[in] occ_descr string which defines the blocks to be set to val from
-!!    @param[in] val set the 
-      subroutine set_blks(mel,occ_descr,val)
-*------------------------------------------------------------------------*
-*     initialize ME-list with zero and set the elements given
-*     in idxset(1:nset) to the values valset(1:nset)
+!!    @param[in] val  use is dependend on mode
+!!    @param[in] mode string that defines the action
+!!                 "SET" 
+!!                 "SCALE"
+!!                 ""
+      subroutine modify_blks(mel,occ_descr,val,mode)
 *------------------------------------------------------------------------*
       implicit none
 
@@ -25,21 +26,22 @@
       integer ::
      &     iprint
 
-      character(len=10) ::
-     &     i_am = 'set_block'
+      character(len=11) ::
+     &     i_am = 'modify_blks'
       
       type(me_list), intent(inout) ::
      &     mel
       real(8),intent(in) ::
      &     val
+      character(len=*), intent(in) ::
+     &     occ_descr,mode
+
       real(8),pointer::
      &     buffer(:)
       logical ::
      &     closeit
       integer ::
      &     ifree
-      character(len=*), intent(in) ::
-     &     occ_descr
       integer ::
      &     nblkmax,idisc_off,idxst,nbuff,idxnd,nblk
       integer ::
@@ -54,14 +56,13 @@
 
 !     variables for process_occ_descr
 !     maxdef: maximum number of possible occupation classes
-!     maxlist: same in number of blocks
+!     maxlist:  number of blocks
 !     nocc_cmp: number of created blocks(blocks or occ_cls?)
 !     occ_def_cmp: the ca_strings in touple form
         integer, parameter ::
      &     maxdef = 512
         integer ::
      &       maxlist,nocc_cmp,iocc_cmp
-!     &       blk_cmp
         integer ::
      &     occ_def_cmp(ngastp,2,maxdef)
 
@@ -75,7 +76,7 @@
 !     blk_* are starting and ending index of the relevant occupaiton classes
 !     blk_no is the number current block; nblk ist the total number of blocks
         integer::
-     &       idx_blk_nd,idx_blk_st,
+     &       idx_blk_nd,idx_blk_st,idx,
      &       blk_nd,blk_st,blk_no,occ 
 
 
@@ -95,13 +96,13 @@
       iprint=max(iprlvl,ntest)
 
       if (iprint.ge.100) then
-        call write_title(lulog,wst_dbg_subr,'set_blocks')
+        call write_title(lulog,wst_dbg_subr,'modify_blocks')
         write(lulog,*) 'occ_descr:',occ_descr
         write(lulog,*) 'val :',val
       end if
 
 
-      ifree = mem_setmark('set_blocks')
+      ifree = mem_setmark('modify_blocks')
 
       ffop => mel%fhand
       op => mel%op
@@ -146,9 +147,10 @@
 
 
         maxlist = maxdef/njoined
-!     maximal number of 
+
+!     Convert the string of occupation classes into an array 
         call process_occ_descr(occ_def_cmp,nocc_cmp,
-     &                       occ_descr,njoined,maxlist)
+     &       occ_descr,njoined,maxlist)
 
  
 
@@ -162,6 +164,8 @@
 !      records fitting into the free space
         nbuff = min(len_op,nblk*ffop%reclen)
 
+        if (nbuff .lt. len_op) 
+     &       call quit(1,i_am,"not prepared ")
 
         ifree = mem_alloc_real(buffer,nbuff,'buffer')
         
@@ -206,13 +210,28 @@
      &             then
                 idx_blk_st=mel%off_op_occ(iocc)+1
                 idx_blk_nd=idx_blk_st+mel%len_op_occ(iocc)-1
+
                 if (iprint.ge.100) then
                    write(lulog,*) "setting the following block to val"                   
                    write(lulog,*) 'idx_blk_st:  ',idx_blk_st
                    write(lulog,*) 'idx_blk_nd:  ',idx_blk_nd
+                   write(lulog,*) 'MODE:',mode
                 end if
-                buffer(idx_blk_st:idx_blk_nd)=val
-                exit cmp_loop
+
+                select case(trim(mode))
+                case("SET")
+                   buffer(idx_blk_st:idx_blk_nd)=val
+                case("SHIFT")
+                   buffer=buffer+val
+                case("SCALE")
+                   buffer=buffer*val
+                case default
+                   call quit(1,i_am,'unknown mode')
+                end select
+                
+                exit cmp_loop ! assumes any occupation only occurs once in the 
+                              ! comparison loop
+                              ! so after match we can search for the next occupation
               end if
            end do cmp_loop
         end do
@@ -228,4 +247,27 @@
 
       ifree = mem_flushmark()
       return
+
       end
+
+
+
+
+!-----------------------------------------------------------------
+!> Depreciated, retained for backward-compatibility
+!
+      subroutine set_blks(mel,occ_descr,val)
+!-----------------------------------------------------------------
+      include 'def_filinf.h'
+      include 'def_operator.h'
+      include 'def_me_list.h'
+
+      type(me_list), intent(inout) ::
+     &     mel
+      real(8),intent(in) ::
+     &     val
+      character(len=*), intent(in) ::
+     &     occ_descr
+      call modify_blks(mel,occ_descr,val,"SET")
+
+      end 

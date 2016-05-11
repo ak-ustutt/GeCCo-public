@@ -604,6 +604,12 @@ c     &     idef=(/0/))
       call argument_add('restart','method.response',
      &     type=vtyp_int,idef=(/0/)) ! restart calc. at given prop. order
 
+
+      ! keyword for testing subroutines that correspond to rules
+      call keyword_add('unit_test',context='method')
+      call argument_add('tests',context='method.unit_test',
+     &     type=vtyp_str,len=256)
+
       call keyword_add('experimental',context='calculate')
       call argument_add('file','calculate.experimental',
      &     type=vtyp_str,len=256)
