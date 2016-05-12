@@ -3,7 +3,7 @@ title
 molecule
   LiF_SA_CAS_MOLPRO
 input
-  unc_MS_icMRCCSD.inp
+  unc_MS_ic_MRCCSD.inp
 check
   label verify multistate
   find multistate =
