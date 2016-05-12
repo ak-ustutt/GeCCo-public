@@ -2,7 +2,8 @@ from gecco_interface import *
 
 
 
-new_target("PrepareDiag")
+
+new_target('TEST_SET_BLOCKS')
 
 DEF_OP_FROM_OCC({
         LABEL:"DUMMY_1",
@@ -31,13 +32,28 @@ ADD_UNITY({
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})
 
-new_target('TEST_SET_BLOCKS',True)
-depend("PrepareDiag")
-
-SET_BLOCKS({
+MODIFY_BLOCKS({
         LIST:'ME_DUMMY_1',
         FAC:2.0,
         DESCR:"V,V|VV,VV",
+        MODE:"SET",
 })
+
+MODIFY_BLOCKS({
+        LIST:'ME_DUMMY_1',
+        FAC:3.0,
+        DESCR:"V,V|VV,VV",
+        MODE:"SCALE",
+})
+
+
+MODIFY_BLOCKS({
+        LIST:'ME_DUMMY_1',
+        FAC:0.5,
+        DESCR:"V,V|VV,VV",
+        MODE:"SHIFT",
+})
+
+
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})

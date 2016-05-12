@@ -222,9 +222,11 @@
                 case("SET")
                    buffer(idx_blk_st:idx_blk_nd)=val
                 case("SHIFT")
-                   buffer=buffer+val
+                   buffer(idx_blk_st:idx_blk_nd)=
+     &                  buffer(idx_blk_st:idx_blk_nd)+val
                 case("SCALE")
-                   buffer=buffer*val
+                   buffer(idx_blk_st:idx_blk_nd)=
+     &                  buffer(idx_blk_st:idx_blk_nd)*val
                 case default
                    call quit(1,i_am,'unknown mode')
                 end select
