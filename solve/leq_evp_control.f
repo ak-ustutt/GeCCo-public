@@ -513,6 +513,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
      &     lenord, lenmat
 
 * allocate some memory for subspace matrices
+      print *, "debug: iroute",iroute
       if (iroute.eq.1) then
 
         allocate(opti_stat%ffrsbsp(opti_info%nopt),
@@ -521,12 +522,21 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
      &       opti_stat%ffscr(opti_info%nopt),
      &       opti_stat%ffext(opti_info%nopt))
         do iopt = 1, opti_info%nopt
+c dbg
+           print *,"debug: subspaces",iopt
+           print *, "assign: ",me_mvp(iopt)%mel%label,"to ffrsbsp"
+           print *, "assign: ",me_trv(iopt)%mel%label,"to ffvsbsp"
+c dbgend
           opti_stat%ffrsbsp(iopt)%fhand => me_mvp(iopt)%mel%fhand
           opti_stat%ffvsbsp(iopt)%fhand => me_trv(iopt)%mel%fhand
           opti_stat%ffscr(iopt)%fhand => me_scr(iopt)%mel%fhand
           opti_stat%ffext(iopt)%fhand => me_ext(iopt)%mel%fhand
-          if (use_s(iopt))
-     &         opti_stat%ffssbsp(iopt)%fhand => me_met(iopt)%mel%fhand
+          if (use_s(iopt))then
+c dbg
+           print *, "assign: ",me_met(iopt)%mel%label,"to ffssbsp"
+c dbgend
+           opti_stat%ffssbsp(iopt)%fhand => me_met(iopt)%mel%fhand
+           end if
         end do
 
         ! space for Mred, and for each root: xred, RHSred, Sred

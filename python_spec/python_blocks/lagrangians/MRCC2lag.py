@@ -66,7 +66,7 @@ DEF_SCALAR({
 #linear lagrangian
 if lag_type >= 1 :
     #energy expression 
-    LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+    LAG_E=stf.Formula("FORM_PT_LAG_E:PT_LAG="\
                 "<C0^+*("\
                     "H"\
                     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
@@ -76,7 +76,7 @@ if lag_type >= 1 :
     )
 
     #T1 amplitudes
-    LAG_A1=stf.Formula("FORM_PT_LAG_A1:PT_LAG_A1="\
+    LAG_A1=stf.Formula("FORM_PT_LAG_A1_RAW:PT_LAG_A1="\
         "<C0^+*(LAM1)*("\
             "H"\
             "+[H,T1]"\
@@ -84,7 +84,7 @@ if lag_type >= 1 :
         ")*C0>"
     )
     #T2 amplitudes
-    LAG_A2=stf.Formula("FORM_PT_LAG_A2:PT_LAG_A2="\
+    LAG_A2=stf.Formula("FORM_PT_LAG_A2_RAW:PT_LAG_A2="\
         "<C0^+*(LAM2g)*("\
             "H"\
             "+[H,T1]"\
@@ -213,18 +213,21 @@ LAG_A2.set_rule()
 
 
 
+debug_FORM('FORM_PT_LAG_E')
 
 
 
 FACTOR_OUT({
-        LABEL_RES:'FORM_PT_LAG',
-        LABEL_IN:'FORM_PT_LAG',
+        LABEL_RES:'FORM_PT_LAG_INT',
+        LABEL_IN:'FORM_PT_LAG_E',
         INTERM:'FORM_GAM0'})
+
+
 
 mark("PT-LAGRANGIAN")
 
 SUM_TERMS({
-        LABEL_IN:'FORM_PT_LAG',
+        LABEL_IN:'FORM_PT_LAG_INT',
         LABEL_RES:'FORM_PT_LAG'})
 
 debug_FORM('FORM_PT_LAG')
@@ -232,24 +235,24 @@ debug_FORM('FORM_PT_LAG')
 
 
 FACTOR_OUT({
-        LABEL_RES:'FORM_PT_LAG_A1',
-        LABEL_IN:'FORM_PT_LAG_A1',
+        LABEL_IN:'FORM_PT_LAG_A1_RAW',
+        LABEL_RES:'FORM_PT_LAG_A1_INT',
         INTERM:'FORM_GAM0'})
 
 SUM_TERMS({
-        LABEL_IN:'FORM_PT_LAG_A1',
+        LABEL_IN:'FORM_PT_LAG_A1_INT',
         LABEL_RES:'FORM_PT_LAG_A1'})
 
 debug_FORM('FORM_PT_LAG_A1')
 
 
 FACTOR_OUT({
-        LABEL_RES:'FORM_PT_LAG_A2',
-        LABEL_IN:'FORM_PT_LAG_A2',
+        LABEL_IN:'FORM_PT_LAG_A2_RAW',
+        LABEL_RES:'FORM_PT_LAG_A2_INT',
         INTERM:'FORM_GAM0'})
 
 SUM_TERMS({
-        LABEL_IN:'FORM_PT_LAG_A2',
+        LABEL_IN:'FORM_PT_LAG_A2_INT',
         LABEL_RES:'FORM_PT_LAG_A2'})
 
 debug_FORM('FORM_PT_LAG_A2')

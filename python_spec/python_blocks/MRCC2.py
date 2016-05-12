@@ -63,7 +63,7 @@ import solve.MRCC2solve
 #-----------------------------------------------------------------#
 # ... do it ...
 #-----------------------------------------------------------------#
-
-modify_target('do all')
-depend('SOLVE_MRCCPT2')
+if (not keywords.is_keyword_set("method.MRCC2.excite")):
+    modify_target('do all')
+    depend('SOLVE_MRCCPT2')
 

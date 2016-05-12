@@ -27,7 +27,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       logical ::
      &     init
@@ -41,7 +41,8 @@
      &     xvec(mxdim,*), xbuf1(*), xbuf2(*), xbuf3(*)
       
       integer ::
-     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last
+     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last,
+     &     idxdbg
 
       real(8), external ::
      &     ddot, da_ddot
@@ -118,11 +119,17 @@
       do irec = 1, ndim
 
         ii = iordv(irec)
-        
+        print *, "debug: nincore",nincore
         ! if we can hold the vector in core, load it
         if (nincore.ge.2)
      &       call vec_from_da(ff_vsbsp,irec,xbuf1,nwfpar)
-        
+c dbg
+        print *,"debug: i",ii,irec
+        print *,"debug: list in update_redsp4"
+        do idxdbg=1,nwfpar
+           print *,idxdbg,xbuf1(idxdbg)
+        end do
+c dbgend
         ! loop over records of |w>-file
         do jrec = 1, ndim
           
@@ -137,6 +144,13 @@ c              ! avoid loading if record is in core
 c              if (jrec_last.ne.jrec) then
                 jrec_last = jrec
                 call vec_from_da(ff_wsbsp,jrec,xbuf2,nwfpar)
+c dbg
+                print *,"debug: j",jj,jrec
+                print *,"debug: list2 in update_redsp4"
+                do idxdbg=1,nwfpar
+                   print *,idxdbg,xbuf2(idxdbg)
+                end do
+c dbgend
 c              end if
 c dbg
 c              if (ii.eq.jj) print *,'cartesian scalar product: ',

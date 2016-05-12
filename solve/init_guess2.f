@@ -37,7 +37,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
       character(len=12), parameter ::
      &     i_am = 'init_guess2 '
 
@@ -96,7 +96,6 @@
       allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
      &     idxlist_ba(maxtrials))
       allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
-
       xlow = huge(xlow)
       do iopt = 1, nopt
         call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
@@ -110,7 +109,6 @@ c        write(*,*) 'xlist ',iopt
 c        write(*,'(5f12.6)') xlist(1:ntrials(iopt),iopt)
 c dbg
       end do
-
       call merge_min_lists(xlist_all,idxlist_all,ntrials_all,
      &     xlist,idxlist,
      &     nopt,maxtrials,ntrials,choice)
@@ -126,12 +124,16 @@ c dbg
         do iopt = 1, nopt
           if (.not.init(iopt)) then
             do iroot = 1, nroots
+              write(*,*) "debug: init_guess2calls switch mel_record 1st"
               call switch_mel_record(me_trv(iopt)%mel,iroot)
+              write(*,*) "debug: init_guess2calls switch mel_record 2nd"
               call switch_mel_record(me_opt(iopt)%mel,iroot)
               call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
             end do
           else
             do iroot = 1, nroots
+               write(*,*)"debug: init_guess2 cals switch mel_record 3rd"
+     &              ,iroot,"out of",nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
               call zeroop(me_trv(iopt)%mel)
             end do
@@ -179,7 +181,6 @@ c dbg
         end if
 
         do iguess = 1, ntrials_all
-          
           iopt = idxlist_all(1,iguess)
 
          ! transformed preconditioner => transformed initial guess vector
@@ -243,7 +244,7 @@ c dbg
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
             ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
             ! do the transformation

@@ -131,7 +131,9 @@ DERIVATIVE({
         LABEL_IN:'FORM_SMAT',
         OP_RES:'Ov',
         OP_DERIV:'Tv^+'})
+
 comment('Derivative 2')
+
 DERIVATIVE({
         LABEL_RES:'FORM_GAM_S',
         LABEL_IN:'FORM_TGAM0',

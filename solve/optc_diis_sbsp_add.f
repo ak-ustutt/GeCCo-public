@@ -34,7 +34,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       integer, intent(in) ::
      &     nspecial, iopt, nspcfrm, imacit,i_state

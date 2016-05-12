@@ -91,7 +91,9 @@
 
         if (.not.init(iopt)) then
           do iroot = 1, nroots
+              write(*,*) "debug: init_guess calls switch mel_record 1st"
             call switch_mel_record(me_trv(iopt)%mel,iroot)
+              write(*,*) "debug: init_guess calls switch mel_record 2nd"
             call switch_mel_record(me_opt(iopt)%mel,iroot)
             call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
           end do
@@ -101,6 +103,9 @@
 !        if (iopt.gt.1) then
         if (iopt.ne.jopt) then
           do iroot = 1, nroots
+              write(*,*) "debug: init_guess calls switch mel_record 3rd"
+     &            ,iroot,"out of",nroots
+
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call zeroop(me_trv(iopt)%mel)
           end do
@@ -118,7 +123,7 @@
         iroot = 0
         do iguess = 1, ntrials
           iroot = iroot + 1    
-
+          write(*,*) "debug: init_guess calls switch mel_record 4th"
           call switch_mel_record(me_pnt,iroot)
           call diag_guess(me_pnt,
      &         xlist,idxlist,ntrials,iguess,me_pnt%absym,
@@ -127,7 +132,7 @@
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
             ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
             ! do the transformation
@@ -135,6 +140,7 @@
             nselect = 0
             call select_formula_target(idxselect,nselect,
      &                  me_trv(iopt)%mel%label,depend,op_info)
+            write(*,*) "debug: init_guess calls switch mel_record 5th"
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
