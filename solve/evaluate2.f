@@ -1,17 +1,20 @@
 *----------------------------------------------------------------------*
+*
+!>     just evaluate given formula (must be factorized)
+!!
+!!     difference to evaluate(): formula head passed, not formula label
+!!     @param fl_eval Head of the formula
+!!     @param init  if the result operator should be set to zero before evaluation
+!!     @param force if evaluation should occur even if the result op seems up to date.
+!!     @param op_info  operator definitions and files
+!!     @param str_info string information (to be passed to subroutines)
+!!     @param orb_info orbital space information (to be passed)
+*     andreas, Aug. 2007, matthias, Nov. 2010
+**----------------------------------------------------------------------*
       subroutine evaluate2(fl_eval,init,force,
      &                     op_info,str_info,strmap_info,orb_info,
      &                     xret_out,get_xret)
-*----------------------------------------------------------------------*
-*
-*     just evaluate given formula (must be factorized)
-*
-*     difference to evaluate(): formula head passed, not formula label
-*
-*     andreas, Aug. 2007, matthias, Nov. 2010
-*
-*----------------------------------------------------------------------*
-      implicit none
+*----------------------------------------------------------------------*      implicit none
 
       include 'opdim.h'
       include 'stdunit.h'
