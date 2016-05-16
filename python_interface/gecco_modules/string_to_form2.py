@@ -1,4 +1,4 @@
-#from gecco_interface import * # This is an extension to the gecco interface. 
+from gecco_interface import * # This is an extension to the gecco interface. 
                               # it relies on the functions provided there 
 import copy # to produce deepcopys of objects
 import re #support for Regular expressions
@@ -308,15 +308,17 @@ class _Bracket(_NumberCollectUtil):
         self.content=""
 
     def __init__(self, string):
-        print(string.display_error)
+#        print(string.display_error)
         self.set_members()
+        print "debug: "+string.display_error
+        print "debug: Bracket entered"
         self.process_string(string)
+        print "debug: Bracket entered"
         self.extract()
 
     #Functions of the process - extract mechanic
     # see stf_string_expansion for details
     def process_string(self, string):
-        print(string.this_char)
         string.set_start()
         try:
             string.goto("<")
@@ -447,7 +449,8 @@ class _Formula( _FormulaStringRepUtil):
         @return None 
         """
         while True:
-            self._content.append(_Bracket(self._string))
+            self._content.append(_Bracket(string))
+            print "debug: nth bracket used"
             try:
                 string.goto("+")
                 string.next()
@@ -491,16 +494,23 @@ class _Formula( _FormulaStringRepUtil):
         """Appends another formula body either from _Formula or from a string.
         """
         if isinstance(other, _Formula):
-            self._content=self._content+other.content
-            self._string.extend(str(other.string))
+            print "it's a formular'"
+            self._content+=other._content
+            self._string.extend(str(other._string))
         elif isinstance(other, basestring):
+            print "debug: it's a string'"
             interm=_Formula()
+            print "debug: formula build"
             #relying on the parent class, not GenFormula, 
             #  to make Formula independent from other interface classes 
-            interm.preprocess_string(other)
-            interm.process_string(interm._string)
+            string=interm.preprocess_string(other)
+            print "preprocessed"
+            print string.display_error
+            interm.process_string(string)
+            print "processed"
             interm.extract()
             self._append(interm)
+            print "debug: formula build"
         elif isinstance(other,list):
             for member in other:
                 self._append(member)
@@ -512,6 +522,7 @@ class _Formula( _FormulaStringRepUtil):
 
         @parameter other either a formula (only the body is appended) 
         or a  string representing a formula body """
+        print "starting to append"
         try:
             self._append(other)
         except ExpFormError as ex:
@@ -586,6 +597,7 @@ class Formula(_Formula):
 #        except Exception as ex:
 #            quit_error("string_to_form.py:"+ex.msg)
 #            raise ex
+        
     def _extract_label(self,string):
         """Extracts the formula label from the input string"""
         string.set_start()
@@ -648,7 +660,7 @@ class Test(object):
         try:
             i=_OPProduct(["C0","H0","T1"])
         except( Exception):
-            print("There was an error at creation of _OPProduct")
+            print "There was an error at creation of _OPProduct" 
             tb.print_exc()
             raise
         inp={LABEL:"LAG", 
@@ -663,10 +675,10 @@ class Test(object):
                   'FAC': 1, 
                   'IDX_SV': [1, 2, 3]}
         if ( i._show(inp)!=  exp_res ):
-            print("there was a problem with _OPProduct._show()"
-                  +"\nprobably a problem in the dictionary generation"
-                  +"\nresult: " +str(i.show(inp))
-                  +"\n expected res:" +str(exp_res))
+            print "there was a problem with _OPProduct._show()"\
+                  "\nprobably a problem in the dictionary generation"\
+                  "\n result: " +str(i.show(inp))+\
+                  "\n expected res:" +str(exp_res)
             raise Exception
 
         inp={LABEL:"LAG", 
