@@ -111,7 +111,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       integer, external ::
      &     ioptc_get_sbsp_rec
       real(8), external ::
-     &     dnrm2, ddot
+     &     dnrm2, ddot, xnormop
 
       if (ntest.ge.100)
      &     call write_title(lulog,wst_dbg_subr,'evpc_core entered')
@@ -329,29 +329,24 @@ c dbgend
 !     after long deliberation, I decided to also include V,V so one can be sure to include
 !     **all** singular excitations even if T1 changes
 
-!            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-!               call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-!            endif
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
+            endif
 
 c dbg
-            if (iopt .ne. 2) then
-            print *,'residual vector before transformation:'
-            call vec_from_da(ffspc,
-     &        irecscr,xbuf1,nwfpar(iopt))
-            do idx = 1, nwfpar(iopt)
-              print *,idx,xbuf1(idx)
-            end do
+C            if (iopt .ne. 2) then
+c            print *,'residual vector before transformation:'
+c            call vec_from_da(ffspc,
+c     &        irecscr,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
             call print_list('transformed residual vector:',
-     &           me_scr(iopt)%mel,"NORM",
+     &           me_scr(iopt)%mel,"LIST",
      &           -1d0,0d0,
      &           orb_info,str_info)
-            print *,'transformed residual vector:'
-           call vec_from_da(me_scr(iopt)%mel%fhand,
-     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
-            do idx = 1, nwfpar(iopt)
-              print *,idx,xbuf1(idx)
-            end do
-            endif
+c            endif
 c dbgend
 
           end if
