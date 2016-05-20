@@ -86,7 +86,7 @@
      &      xret(:), xbuf1(:), xbuf2(:), xlist_all(:), xlist(:,:)
 
       real(8), external ::
-     &     da_ddot
+     &     da_ddot,xnormop
 
       if (ntest.gt.100) call write_title(luout,wst_dbg_subr,i_am)
 
@@ -185,11 +185,14 @@ c dbg
 
          ! transformed preconditioner => transformed initial guess vector
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-            me_pnt => me_special(1)%mel
-            trafo = .true.
+             me_pnt => me_special(1)%mel
+             trafo = .true.
+          else if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+             me_pnt => me_special(4)%mel
+             trafo = .true.
           else
-            me_pnt => me_trv(iopt)%mel
-            trafo = .false.
+             me_pnt => me_trv(iopt)%mel
+             trafo = .false.
           end if
 
           nset = 0
@@ -256,6 +259,12 @@ c dbg
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
+
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call set_blks(me_trv(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               xret(idxselect(1))=xnormop(me_trv(iopt)%mel)
+               write(*,*) "debug:  new norm",xret(idxselect(1))
+            endif
 
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)

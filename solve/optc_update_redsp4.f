@@ -126,9 +126,9 @@
 c dbg
         print *,"debug: i",ii,irec
         print *,"debug: list in update_redsp4"
-        do idxdbg=1,nwfpar
-           print *,idxdbg,xbuf1(idxdbg)
-        end do
+c        do idxdbg=1,nwfpar
+c           print *,idxdbg,xbuf1(idxdbg)
+c        end do
 c dbgend
         ! loop over records of |w>-file
         do jrec = 1, ndim
@@ -147,9 +147,9 @@ c              if (jrec_last.ne.jrec) then
 c dbg
                 print *,"debug: j",jj,jrec
                 print *,"debug: list2 in update_redsp4"
-                do idxdbg=1,nwfpar
-                   print *,idxdbg,xbuf2(idxdbg)
-                end do
+c                do idxdbg=1,nwfpar
+c                   print *,idxdbg,xbuf2(idxdbg)
+c                end do
 c dbgend
 c              end if
 c dbg

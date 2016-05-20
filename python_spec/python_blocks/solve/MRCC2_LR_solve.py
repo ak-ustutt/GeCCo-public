@@ -199,19 +199,25 @@ for _icnt in range (0,_ncnt):
         
         depend(_list_rspns)
         depend('MAKE_FOCK_REF','MAKE_A_TRF',"EVAL_E0")
+
         debug_FORM('FORM_FOCK_REF', only_this=True)
+
         debug_MEL("ME_FOCK_REF",only_this=True)
         
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t1'+_extnsn,
                         LIST_INP:'ME_FOCK_REF'})
         
 
-        ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
+        ASSIGN_ME2OP({LIST:'ME_X_TRM',
                      OPERATOR:'X_TRM'})
-       
+
+        debug_MEL("ME_X_TRM",only_this=True)
+
         EVALUATE({
                 FORM:'FOPT_A_TRF_FINAL'
                 })
+
+        debug_MEL('A_TRF_LST', only_this=True)
         
         EXTRACT_DIAG({
                 LIST_RES:'ME_DIAG_t1'+_extnsn,
@@ -219,24 +225,17 @@ for _icnt in range (0,_ncnt):
                 MODE:'extend'})
 
         debug_MEL("ME_DIAG_t1"+_extnsn, only_this=True)
-
         # preconditioner for T2g
 
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t2g'+_extnsn,
                         LIST_INP:'ME_FOCK_REF'})
         
-       
+        debug_MEL("ME_DIAG_t2g"+_extnsn)
         
         EXTRACT_DIAG({LIST_RES:'ME_DIAG_t2g'+_extnsn,
                       LIST_IN:'A_TRF_LST',
                       MODE:'extend'})
 
-        MODIFY_BLOCKS({
-            LIST:'ME_DIAG_t2g'+_extnsn,
-            DESCR:'PV,VV',
-            MODE:"SHIFT",
-            FAC:0.5
-        })
 
         debug_MEL("ME_DIAG_t2g"+_extnsn, only_this=True)
         

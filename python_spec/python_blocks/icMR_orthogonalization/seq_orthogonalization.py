@@ -8,6 +8,16 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 ntest=100
 
+_s2 = orbitals.get('imult')
+
+_ms = orbitals.get('ims')
+
+if ((_ms == 0) and ((_s2-1 % 4) == 0)):
+    _msc = 1
+elif ((_ms == 0) and ((_s2+1 % 4) == 0)):
+    _msc = -1
+else:
+    _msc = 0
 ###################################################################
 ###################################################################
 # ... set up transformation matrices for orthog. basis
@@ -72,7 +82,7 @@ DEF_ME_LIST({
         OPERATOR:'GAM_S',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1,
+        AB_SYM:_msc,
         S2:S2_val})
 
 CLONE_OPERATOR({
@@ -85,7 +95,8 @@ DEF_ME_LIST({
         IRREP:1,
         '2MS':0,
         'S2':0,
-        AB_SYM:0})
+        AB_SYM:0,
+        CA_SYM:0})
 
 
 
@@ -174,7 +185,7 @@ INVERT({
         LIST:'ME_GAM_S_ISQ',
         MODE:'invsqrt'})
 
-debug_MEL('ME_GAM_S_ISQ')
+debug_MEL('ME_GAM_S_ISQ',only_this=True)
 
 
 
@@ -184,7 +195,7 @@ debug_MEL('ME_GAM_S_ISQ')
 DEF_OP_FROM_OCC({
         LABEL:'X_TRM',
         JOIN:2,
-        DESCR:'VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'})
+
 CLONE_OPERATOR({
         LABEL:'X_TRM_DAG',
         TEMPLATE:'X_TRM'})
@@ -193,7 +204,9 @@ DEF_ME_LIST({
         OPERATOR:'X_TRM',
         IRREP:1,
         '2MS':0,
-        AB_SYM:0})
+        S2:0,
+        AB_SYM:0,
+        CA_SYM:0})
 
 #SET_MEL({LIST:'X_TRM_LIST',IDX_LIST:1,VAL_LIST:0.0})
 
@@ -216,7 +229,7 @@ REORDER_MEL({
         ADJOINT:True})
 
 
-debug_MEL('ME_X_TRM')
+debug_MEL('ME_X_TRM',only_this=True)
 
 
 
@@ -305,7 +318,6 @@ EXPAND_OP_PRODUCT({
         })
 
 #delete all terms where T1_orth has active external lines. external lines should be modified by X_trm
-
 SELECT_LINE({
         LABEL_IN:'FORM_T1_orth',
         LABEL_RES:'FORM_T1_orth',
