@@ -27,7 +27,7 @@
       include 'def_filinf.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       logical ::
      &     init
@@ -39,10 +39,9 @@
       real(8), intent(inout) ::
      &     xmat(mxdim,*), smat(mxdim,*),
      &     xvec(mxdim,*), xbuf1(*), xbuf2(*), xbuf3(*)
-      
+
       integer ::
-     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last,
-     &     idxdbg
+     &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last
 
       real(8), external ::
      &     ddot, da_ddot
@@ -119,20 +118,14 @@
       do irec = 1, ndim
 
         ii = iordv(irec)
-        print *, "debug: nincore",nincore
+
         ! if we can hold the vector in core, load it
         if (nincore.ge.2)
      &       call vec_from_da(ff_vsbsp,irec,xbuf1,nwfpar)
-c dbg
-        print *,"debug: i",ii,irec
-        print *,"debug: list in update_redsp4"
-c        do idxdbg=1,nwfpar
-c           print *,idxdbg,xbuf1(idxdbg)
-c        end do
-c dbgend
+
         ! loop over records of |w>-file
         do jrec = 1, ndim
-          
+
           jj = iordw(jrec)
 
           ! is this a block of xmat to be updated?
@@ -144,13 +137,6 @@ c              ! avoid loading if record is in core
 c              if (jrec_last.ne.jrec) then
                 jrec_last = jrec
                 call vec_from_da(ff_wsbsp,jrec,xbuf2,nwfpar)
-c dbg
-                print *,"debug: j",jj,jrec
-                print *,"debug: list2 in update_redsp4"
-c                do idxdbg=1,nwfpar
-c                   print *,idxdbg,xbuf2(idxdbg)
-c                end do
-c dbgend
 c              end if
 c dbg
 c              if (ii.eq.jj) print *,'cartesian scalar product: ',
@@ -171,7 +157,7 @@ c dbgend
 
         ! loop over records of |x>-file
         do jrec = 1, ndim
-          
+
           jj = iordx(jrec)
 
           ! is this a block of xmat to be updated?
@@ -203,7 +189,7 @@ c              end if
               ! avoid loading if record is in core
               if (rhsrec_last.ne.rhsrec) then
                 rhsrec_last = rhsrec
-                call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)                
+                call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)
               end if
                 xvec(ii,rhsrec) = xvec(ii,rhsrec)
      &                  + ddot(nwfpar,xbuf1,1,xbuf3,1)

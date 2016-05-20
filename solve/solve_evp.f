@@ -470,12 +470,8 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           !   outside loop over requested Mv-products
           do irequest = 1, nrequest
             do iopt = 1, nopt
-               write(*,*) "debug: solve_evp calls switch mel_record 1st"
               call switch_mel_record(me_trv(iopt)%mel,irectrv(irequest))
-              write(*,*) "debug: solve_evp calls switch mel_record 2nd"
               call switch_mel_record(me_mvp(iopt)%mel,irecmvp(irequest))
-              write(*,*) "debug: solve_evp calls switch mel_record 3dr"
-     &             ,"maybe"
               if (use_s(iopt))
      &             call switch_mel_record(me_met(iopt)%mel,
      &                                                irecmet(irequest))

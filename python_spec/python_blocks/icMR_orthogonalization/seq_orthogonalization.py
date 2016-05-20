@@ -185,7 +185,7 @@ INVERT({
         LIST:'ME_GAM_S_ISQ',
         MODE:'invsqrt'})
 
-debug_MEL('ME_GAM_S_ISQ',only_this=True)
+debug_MEL('ME_GAM_S_ISQ')
 
 
 
@@ -195,6 +195,7 @@ debug_MEL('ME_GAM_S_ISQ',only_this=True)
 DEF_OP_FROM_OCC({
         LABEL:'X_TRM',
         JOIN:2,
+        DESCR:'VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'})
 
 CLONE_OPERATOR({
         LABEL:'X_TRM_DAG',
@@ -229,7 +230,7 @@ REORDER_MEL({
         ADJOINT:True})
 
 
-debug_MEL('ME_X_TRM',only_this=True)
+debug_MEL('ME_X_TRM')
 
 
 

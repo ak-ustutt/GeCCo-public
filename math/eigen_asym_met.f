@@ -37,11 +37,11 @@
       call rgg(ndim,ndim,xmat,smat,eigr,eigi,xvec,irg,vecs,ierr)
       if (ierr.ne.0) return
 c dbg
-      DO idx=1,ndim
-!         print *,xvec(idx)
-        print *,xmat(idx,:) 
-      end do
-
+c      DO idx=1,ndim
+c        print *,xvec(idx)
+c        print *,xmat(idx,:) 
+c      end do
+c
 c dbg end
 
       ! normalize and re-orthogonalize degenerate pairs

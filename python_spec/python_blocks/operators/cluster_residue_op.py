@@ -41,7 +41,7 @@ DEF_ME_LIST(ME_param)
 
 
 
-debug_MEL('ME_T2g',info_only=True,only_this=True)
+debug_MEL('ME_T2g',info_only=True)
 
 
 
@@ -66,7 +66,7 @@ DEF_ME_LIST(ME_param)
 
 
 
-debug_MEL('ME_T1',info_only=True,only_this=True)
+debug_MEL('ME_T1',info_only=True)
 
 
 

@@ -15,7 +15,7 @@
       include 'def_file_array.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       integer, intent(out) ::
      &     nadd
@@ -36,7 +36,7 @@
 
       integer ::
      &     nold, inew, jnew, iold, ii, jj, idx, ivec, irec, iopt,
-     &     jold,idxdbg
+     &     jold
       real(8) ::
      &     xdum, xnorm, xnorm_
       logical ::
@@ -56,8 +56,6 @@
         call write_title(lulog,wst_dbg_subr,'optc_orthvec')
         write(lulog,*) 'ndim, nnew, nopt: ',ndim_sbsp, nnew, nopt
       end if
-
-      write(*,*) "debug:nincore",nincore
 
       ! look for zero-vectors (in initial iteration); they should
       ! reside at the end of the initial subspace
@@ -133,12 +131,6 @@ c dbgend
           else if (nincore.ge.2) then
             call vec_from_da(ffnew(iopt)%fhand,inew,xbuf1,nwfpar(iopt))
           end if
-c dbg
-          print *,"new_vector no",inew
-          do idxdbg = 1, nwfpar(iopt)
-             print *,idxdbg,xbuf1(idxdbg)
-          end do
-c dbgend
 
           do iold = 1, nold
             
@@ -168,12 +160,7 @@ c              smat(ii,jj) = smat(jj,ii)
      &                    nwfpar(iopt),xbuf1,xbuf2,lenbuf)
               smat(ii,jj) = smat(jj,ii)
             end if
-c dbg
-          print *,"old_vector no",iold
-          do idxdbg = 1, nwfpar(iopt)
-             print *,idxdbg,xbuf2(idxdbg)
-          end do
-c dbgend 
+            
           end do
 
         end do

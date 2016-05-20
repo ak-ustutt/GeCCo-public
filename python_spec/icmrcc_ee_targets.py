@@ -5,7 +5,6 @@
 import sys,os
 sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 
-from gecco_modules.NoticeUtil import *
 from gecco_interface import *
 
 _inp = GeCCo_Input()
@@ -347,7 +346,6 @@ EXPAND_OP_PRODUCT({LABEL:'F_AR_rspns_mu',
                   OPERATORS:['AR_rspns_mu','E(MR)','R_mu','AR_rspns_mu'],
                   IDX_SV:[1,2,3,1],
                   FAC:-1.0})
-debug_FORM('F_AR_rspns_mu', only_this=True)
 
 ##################################
 #Setting up the formula for the metric vector products 'SR_rspns_q' and 'SR_rspns_mu' respectively
@@ -465,7 +463,6 @@ _expand_product_basis={LABEL:'F_SR_rspns_mu',
 _ops_contract={OPERATORS:['SR_rspns_mu','R_mu','SR_rspns_mu'],
                IDX_SV:[1,2,1]}
 
-
 EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
 
 INVARIANT({LABEL_RES:'F_R_q',
@@ -581,8 +578,7 @@ for _icnt in range (0,_ncnt):
         
         depend(_list_rspns)
         depend('EVAL_FREF','FOPT_Atr')
-        debug_FORM("F_FREF",only_this=True)
-        debug_MEL("ME_FREF",only_this=True)
+        
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t'+_extnsn,
                         LIST_INP:'ME_FREF'})
         
@@ -626,8 +622,6 @@ for _icnt in range (0,_ncnt):
         
         depend('RSPNS_FORM ',_list_rspns,'FORM_AR_RSPNS_Q','FORM_AR_RSPNS_MU',
                'DEF_ME_E(MR)','F_PPrint')
-        
-        debug_FORM("F_SR_rspns_mu")
         
         OPTIMIZE({LABEL_OPT:'RSPNS_OPT'+_extnsn,
                   LABELS_IN:['F_AR_rspns_q','F_AR_rspns_mu','F_SR_rspns_q','F_SR_rspns_mu','F_R_q'],

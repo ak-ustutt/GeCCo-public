@@ -37,7 +37,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
       character(len=12), parameter ::
      &     i_am = 'init_guess2 '
 
@@ -124,16 +124,12 @@ c dbg
         do iopt = 1, nopt
           if (.not.init(iopt)) then
             do iroot = 1, nroots
-              write(*,*) "debug: init_guess2calls switch mel_record 1st"
               call switch_mel_record(me_trv(iopt)%mel,iroot)
-              write(*,*) "debug: init_guess2calls switch mel_record 2nd"
               call switch_mel_record(me_opt(iopt)%mel,iroot)
               call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
             end do
           else
             do iroot = 1, nroots
-               write(*,*)"debug: init_guess2 cals switch mel_record 3rd"
-     &              ,iroot,"out of",nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
               call zeroop(me_trv(iopt)%mel)
             end do
