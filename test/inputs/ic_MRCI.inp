@@ -1,5 +1,6 @@
 general
  memmax=30000000
+ print=10
 method
  MR maxexc=2,pure_vv=T,prc_type=0,project=1
  MRCI
