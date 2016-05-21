@@ -430,10 +430,6 @@ c                   print *,idxdbg,xbuf1(idxdbg)
 c                end do
 c dbgend
                 xshf = -xeig(idxroot(iroot),1) 
-                ! decrease xshf in first iteration 
-                ! otherwise its probable that the preconditioner
-                ! might coincide with the shift.
-                if (iter .eq. 1) xshf=0.8d0*xshf
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
 c dbg
 c                print *,"debug shift:",xshf
