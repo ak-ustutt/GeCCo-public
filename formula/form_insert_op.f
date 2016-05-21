@@ -1,12 +1,23 @@
 *----------------------------------------------------------------------*
+!>    inserts an operator into a formula 
+!!
+!!    
+!!    @param f_output  input formula
+!!    @param f_input   output formula
+!!    @param title title to be printed
+!!    @param label_opres new result operator
+!!    @param label_opins ncmpnd operator label between which the new 
+!!                       operator will be inserted 
+!!    @param label_op the operator to be inserted
+!!    @param op_info context object
+*     matthias, may 10
+*----------------------------------------------------------------------*
       subroutine form_insert_op(f_output,f_input,
      &                      title,label_opres,label_opins,
      &                      ncmpnd,label_op,
      &                      op_info)
 *----------------------------------------------------------------------*
-*
-*     matthias, may 10
-*----------------------------------------------------------------------*
+
       implicit none
 
       include 'stdunit.h'

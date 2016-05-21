@@ -96,13 +96,12 @@ def _find_continuation(f,line):
         next_line=f.readline()
     return re.sub("\n","",line),next_line
 
-def _extract_parameters(line):
+def _extract_parameters(line,arguments,keywords):
     """extracts keywords and arguments to the global arrays"""
     match_key=regexp_keyword_extr.match(line)
     match_arg=regexp_argument_extr.match(line)
-    
     if match_arg:
-        _g_arguments.append(match_arg)
+        arguments.append(match_arg)
 #dbg
 #            print match_arg.group("argument")
 #            print match_arg.group("type") 
@@ -110,19 +109,21 @@ def _extract_parameters(line):
 #            print "contest",match_arg.group("context")
 #dbg
     elif match_key:
-        _g_keywords.append(match_key)
+        keywords.append(match_key)
 #dbg
 #            print match_key.group("keyword")
 #            print "context", match_key.group("context")
 #dbg
     else:
         raise Exception("line could not be extracted:\n"+line)
-
+    return arguments,keywords
+        
 def _read_keyword_file(keyword_file):
     with open(keyword_file,'r') as f:
         line="\n"
         next_line="\n"
         i=0
+        arguments,keywords=[],[]
         while line != "":
             i+=1
             # Readline returns "" after EOF
@@ -130,9 +131,9 @@ def _read_keyword_file(keyword_file):
             if line=="":
                 break
             line,next_line=_find_continuation(f,line)
-            match=_extract_parameters(line)
+            arguments,keywords=_extract_parameters(line,arguments,keywords)
             line=next_line
-
+    return arguments,keywords
 
 
 
@@ -215,11 +216,11 @@ def _append_keyword(match_key,root):
     """ appends a keyword to the xml tree as an element"""
     new_elem=ET.Element(_find_tag(match_key))
     new_elem.set("name",str(match_key.group("keyword")))
-    if (new_elem.tag=="method"):
-        new_elem.set("file","none")
-        #file that defines the method(relative to GECCO_DIR)
-        new_elem.set("lang","none")
-        #language of the file (python or fortran)
+#    if (new_elem.tag=="method"):
+#        new_elem.set("file","none")
+#        #file that defines the method(relative to GECCO_DIR)
+#        new_elem.set("lang","none")
+#        #language of the file (python or fortran)
     assert match_key!=None
     parent=_find_parent_wrap(match_key,root)
     parent.append(new_elem)
@@ -229,8 +230,9 @@ def _append_argument(match_arg,root):
     """ appends an argument to the xml tree as an element"""
     new_elem=ET.Element("argument")
     new_elem.set("name",str(match_arg.group("argument")))
-    new_elem.set("type",str(match_arg.group("type")))    
-    new_elem.set("length",str(max(match_arg.group("len"),1)))
+    new_elem.set("type",str(match_arg.group("type")))
+    if match_arg.group("len") is not None:
+        new_elem.set("length",str(match_arg.group("len")))
     new_elem.text=str(match_arg.group("value"))
 #    new_elem.set("name",match_key.group("argument"))
     parent=_find_parent_wrap(match_arg,root)
@@ -239,16 +241,16 @@ def _append_argument(match_arg,root):
         new_elem.append(ET.Comment(str(match_arg.group("comment"))))
         
 
-def _construct_xml_tree(tree):
+def _construct_xml_tree(tree, arguments, keywords):
     root=tree.getroot()
-    for match_item in _g_keywords:
+    for match_item in keywords:
 #dbg
 #        for item in root.iter():
 #            print item.get("name")
 #dbg
         assert match_item !=None
         _append_keyword(match_item,root)
-    for match_item in _g_arguments:
+    for match_item in arguments:
         _append_argument(match_item,root)
     return tree
 
@@ -349,8 +351,12 @@ def restructure_xml(file):
 
 
 
-_read_keyword_file(keyword_file)#writes to the global arrays
-default_keys=_construct_xml_tree(tree)
+
+default_keys=_construct_xml_tree(
+    tree,*_read_keyword_file(keyword_file))
+
+
+
 
 def find_by_context(context,name,tree=default_keys):
     full_context=context+"."+name
