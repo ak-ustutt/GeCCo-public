@@ -12,8 +12,11 @@ def combine_dicts(first,second):
 
 
 def ggT(a,b):
-    """ calculates the largest common denominator"""
+    """ calculates the largest common denominator
+
+    uses Euclids (?) Algorithm
+    """
     if b == 0 :
         return a
     else:
-        return (b,a%b)
+        return ggT(b,a%b)

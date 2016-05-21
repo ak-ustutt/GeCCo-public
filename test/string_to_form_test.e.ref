@@ -1,0 +1,105 @@
+ run starts at 2016-05-17 15:43:49.748   host: linuxm5.theochem.uni-stuttgart.de
+
+ Version compiled 13 May 2016 at 14:16:39 on linuxm5.theochem.uni-stuttgart.de   
+
+ compiled with: ifort
+ level 1 optimization: -O2 -axAVX -warn nousage -fpp -assume byterecl -i8 -tracebac
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal authors:                                      |
+        |       andreas koehn (university of mainz, germany)        |
+        |       matthias hanauer (university of mainz, germany)     |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       wenlan liu (university of mainz, germany)           |
+        |       gareth richings (university of mainz, germany)      |
+        |       pradipta k samanta (IACS kolkata, india)            |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: MOLPRO_DUMP
+ Reading input file ....
+ Input file: test.inp
+ +-----------------------------------------------------------------------------+
+  general
+    print=10
+    memmax=10000000
+    print_tgt_graph=T
+  orb_space
+    shell type=occ,def=(4,2,2,0)
+    shell type=closed,def=(3,1,2,0)
+   method
+    unit_test tests=string_to_form
+ +-----------------------------------------------------------------------------+
+I keyword hist
+I   general
+       print 2  1
+  >                     10
+       memmax 2  1
+  >               10000000
+       print_tgt_graph 1  1
+  >  T
+I   orb_space
+I     shell
+         type 8  3
+  > occ
+         def 2  4
+  >                      4                     2                     2
+                     0
+I     shell
+         type 8  6
+  > closed
+         def 2  4
+  >                      3                     1                     2
+                     0
+I   method
+I     unit_test
+         tests 8 14
+  > string_to_form
+I keyword hist
+A   general
+A   orb_space
+A     shell
+A     shell
+A   method
+A     unit_test
+ printlevel is set to                     10
+ Memory set to     10000000 r8-words = (   76.29 Mb)
+ real-word/integer-word ratio =                      1
+warning gecco_interface could not be imported from $PYTHONPATH
+The following error message was recieved
+No module named gecco_interface
+using python version 2.7.6 (default, Nov 21 2013, 15:55:38) [GCC]
+/home/bargholz/Programme/GeCCo /home/bargholz/Programme/GeCCo/python_spec/setting_up_python_interface.py
+ Warning from setting_up_python_interface.py: "2MS" is not a valid name for a Python variable. Use quotes for this keyword.
+ Warning from setting_up_python_interface.py: "REPLACE" is an argument and a rule. Use quotes for this keyword.
+
+ Reading target file setting_up_python_interface.py.tgt_list: Python Interface (setting_up_python_interface.py)
+ setting general targets ...
+/home/bargholz/Programme/GeCCo /home/bargholz/Programme/GeCCo/python_spec/python_start.py
+python start--------------------------------------------------
+begin setting unit-test targets
+....................
+----------------------------------------------------------------------
+Ran 20 tests in 0.001s
+
+OK
+python target_setting ends--------------------------------------------------
+ Reading target file python_start.py.tgt_list: Python Interface (python_start.py)
+ My next target: do
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:         272452 real(8)-words (      2.08 Mb)
+   Largest memory block:             195232 real(8)-words (      1.49 Mb)
+   Name of largest block:    bfstrmap.slots
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      0.00 /     0.00 /     0.06 s
+ run ends at 2016-05-17 15:43:49.813   host: linuxm5.theochem.uni-stuttgart.de
