@@ -120,8 +120,8 @@ except NameError:
     logger=_Logger()
     for name in _g_required_functions:
         exec("def {name}(dictionary):\n"\
-             "    logger.log('{name}', dictionary)".\
-             format(name=name))
+             "    logger.log('{name}', dictionary)"\
+             .format(name=name))
 
 try:
     keywords #keywords is defined in gecco_interface
@@ -139,10 +139,12 @@ except NameError:
              format(name=name))
 else:
     if( keywords.is_keyword_set("method.unit_test") ):
+        logger=_Logger()
         #gecco_interface loaded but test mode
-        exec("def {name}(dictionary):\n"\
-             "    logger.log('{name}', dictionary)".\
-             format(name=name))
+        for name in _g_required_functions:
+             exec("def {name}(dictionary):\n"\
+                 "    logger.log('{name}', dictionary)".\
+                 format(name=name))
 
         
 _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
