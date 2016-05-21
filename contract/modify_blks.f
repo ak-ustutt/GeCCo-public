@@ -161,7 +161,7 @@
         ! cycling over all occ_cls of MEL
         do iocc=1,nocc
            !cycling over all occ_cls of description
-           cmp_loop do iocc_cmp=1,nocc_cmp
+             cmp_loop: do iocc_cmp=1,nocc_cmp
               ! if both blocks match:
               if (iocc_equal_n(
      &          occ_def_cmp(1,1,(iocc_cmp-1)*njoined+1),.false.,
@@ -217,11 +217,11 @@
      &     i_am="modify_blks:l_modify_buf"
       character(len=*), intent(in) ::
      &     mode
-      real(8),pointer, intent(inout):
-     &     buffer(*)
-      real(8), intent(in):
+      real(8),pointer, intent(inout)::
+     &     buffer(:)
+      real(8), intent(in)::
      &     val
-      integer(8),intent(in):
+      integer(8),intent(in)::
      &     idxnd
 
       select case(trim(mode))
@@ -249,7 +249,7 @@
 !!    @param[in] reclen length of a record
 !!    @return optimal length of the buffer
 !-----------------------------------------------------------------------  
-      function lget_buf_len(ifree,len_op,reclen) return(nbuff)
+      function lget_buf_len(ifree,len_op,reclen) result(nbuff)
 !-----------------------------------------------------------------------
       implicit none
       include 'stdunit.h'
@@ -258,7 +258,7 @@
       integer,intent(in):: 
      &     ifree,len_op,reclen
       integer::
-     &     nblkmax,nblk
+     &     nblkmax,nblk,nbuff
       nblkmax = ifree/reclen
       
       if (nblkmax.le.0) then
