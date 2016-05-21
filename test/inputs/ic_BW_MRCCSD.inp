@@ -1,6 +1,6 @@
 general
  memmax=10000000
- print=5
+ print=10
 orb_space
  shell type=occ,def=(3,0,1,0)
  shell type=closed,def=(2,0,0,0)

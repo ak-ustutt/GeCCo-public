@@ -1,5 +1,6 @@
 general
  memmax=30000000
+ print=20
 method
  CC maxexc=1,T1ext=1
  R12 ansatz=3,approx=C,fixed=F,r12op=1,screen=T
