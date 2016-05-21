@@ -24,7 +24,7 @@ DEF_ME_LIST({
         OPERATOR:'REPT_HAM',
         IRREP:1,
         '2MS':0,
-	AB_SYM:1})
+        AB_SYM:1})
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_REPT_HAM',
@@ -51,9 +51,42 @@ EVALUATE({
 
 debug_MEL('REPT_HAM_LST')
 
+#---------------------------------------------------------------------------------
+# Simple Fock operator 
+#---------------------------------------------------------------------------------
+new_target('MAKE_FOCK_REF')
 
+heading('===Building of simple fock matrix===')
+depend('H0')
+depend('MakeRefState')
+depend('GAM0_CALC')
 
+DEF_OP_FROM_OCC({
+        LABEL:'FOCK_REF',
+        JOIN:1,
+        DESCR:',|H,H|P,P|H,P|P,H'})
 
+DEF_ME_LIST({
+        LIST:'ME_FOCK_REF',
+        OPERATOR:'FOCK_REF',
+        IRREP:1,
+        '2MS':0,
+	    AB_SYM:1})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_FOCK_REF',
+        NEW:True,
+        OP_RES:'FOCK_REF',
+        OPERATORS:['FOCK_REF','GAM0','H','GAM0','FOCK_REF'],
+        AVOID:[1,5,2,4],
+        IDX_SV:[1,2,3,2,1]
+        })
+OPTIMIZE({
+        LABEL_OPT:"FOPT_FOCK_REF",
+        LABELS_IN:"FORM_FOCK_REF"})
+
+EVALUATE({
+        FORM:"FOPT_FOCK_REF"})
 
 #---------------------------------------------------------------------------------
 # Effective Fock operator
@@ -63,6 +96,8 @@ heading('===Building of effective fock matrix===')
 depend('H0')
 depend('MakeRefState')
 depend('GAM0_CALC')
+
+
 
 comment("defining effective fock operator and building formula")
 

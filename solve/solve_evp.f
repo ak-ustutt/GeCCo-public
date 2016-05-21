@@ -136,6 +136,8 @@
         write(lulog,*) 'targ_root = ',targ_root
       end if
 
+
+
       idx = idx_formlist(label_form,form_info)
       if (idx.le.0)
      &     call quit(1,'solve_evp',
@@ -219,8 +221,10 @@
         ! get a ME-list for scratch trial-vectors
         ! in case of ab-sym braking trafo, get sym props from special list
         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &      .and.nspecial.eq.3) then
+     &      .and.nspecial.ge.3) then
           me_pnt => me_special(1)%mel
+        elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+           me_pnt => me_special(4)%mel
         else
           me_pnt => me_opt(iopt)%mel
         end if
@@ -295,6 +299,17 @@
 
       end do
 
+c dbg
+      do iopt = 1,nopt
+         write(lulog,*) 'preconditioner: iopt = ',iopt
+         call wrt_mel_file(lulog,5,
+     &        me_dia(iopt)%mel,
+     &        1,me_dia(iopt)%mel%op%n_occ_cls,
+     &        str_info,orb_info)
+      enddo
+
+c dbgend
+
       ! write information to opti_info about signs which occur
       ! in trv*mvp or trv*met  multiplication
       ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
@@ -306,7 +321,6 @@
 
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_mvp,op_info)
-
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
@@ -335,11 +349,15 @@
           home_in = .true.
           allocate(me_home(1),ffhome(1))
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.eq.3) then
-            me_pnt => me_special(1)%mel
+     &         .and.nspecial.ge.3) then
+             me_pnt => me_special(1)%mel
+          elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+             me_pnt => me_special(4)%mel
           else
-            me_pnt => me_opt(iopt)%mel
+             me_pnt => me_opt(iopt)%mel
           end if
+
+
           call define_me_list('home',me_opt(iopt)%mel%op%name,
      &         me_pnt%absym,me_pnt%casym,
      &         me_pnt%gamt,me_pnt%s2,
@@ -378,7 +396,6 @@ c dbgend
         if (ffspecial(idx)%fhand%unit.le.0)
      &       call file_open(ffspecial(idx)%fhand)
       end do
-
       ! get initial amplitudes
       if (nopt.eq.1) then
       call init_guess(nopt,init,nroots,
@@ -392,11 +409,20 @@ c dbgend
      &                opti_info,orb_info,op_info,str_info,strmap_info)
       end if
 
+c dbg
+      do iopt = 1,nopt
+         write(lulog,*) 'starting trial vector (before): iopt = ',iopt
+         call wrt_mel_file(lulog,5,
+     &        me_trv(iopt)%mel,
+     &        1,me_trv(iopt)%mel%op%n_occ_cls,
+     &        str_info,orb_info)
+      enddo
+
+c dbgend
       ! start optimization loop
       iter = 0
       task = 0
       opt_loop: do while(task.lt.8)
-
         call leq_evp_control
      &       ('EVP',iter,
      &       task,conv,xresnrm,xeig,
@@ -409,7 +435,6 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
      &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
-
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
@@ -437,6 +462,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
             end do
           end if
         end if
+
 
         ! 4 - get residual
         if (iand(task,4).eq.4) then

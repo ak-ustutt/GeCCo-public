@@ -116,8 +116,13 @@ EVALUATE({
 
 
 
+new_target("EVAL_E0")
+depend("MakeRefState")
+OPTIMIZE({
+        LABEL_OPT:'FOPT_EREF',
+        LABELS_IN:'FORM_EREF'})
 
-
-
+EVALUATE({
+        FORM:'FOPT_EREF'})
 
 

@@ -405,6 +405,10 @@ c     &     cdef=(/'J','1','K','1',' ',' ',' ',' '/))
       call argument_add('hamiltonian','method.MRCC2',
      &     type=vtyp_str,len=4,
      &     cdef=(/'D','Y','A','L','L'/)) ! the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) 
+      call keyword_add('excite',context='method.MRCC2')
+      call argument_add('method','method.MRCC2.excite',
+     &     type=vtyp_str,len=8,
+     &     cdef=(/'L','R',' ',' ',' ',' ',' ',' '/))
 
       call keyword_add('MRCCPT2',context='method')
       call argument_add('3rd_E','method.MRCCPT2',
