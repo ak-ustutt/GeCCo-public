@@ -1,39 +1,38 @@
 *----------------------------------------------------------------------*
+!>     solve eigenvalue problem  Mx = lambda x
+!!
+!!     the formula with label "label_form" describes how to calculate 
+!!     the matrix trial-vector products and the r.h.s.
+!!
+!!     @para nopt                  number of x operators to be solved for
+!!                           in case of coupled equations
+!!     @param nroots                number of roots per x operator
+!!     @param targ_root             the target root per x operator
+!!
+!!     @param label_opt(nopt)       label of solution vectors
+!!     @param label_prc(nopt)       label of preconditioners
+!!     @param label_op_mvp(nopt)    label operators describing Mx-products
+!!     @param label_op_met(nopt)    label operators describing Sx-products
+!!                                  if S is unity, pass label of operator
+!!                                   associated with ME-list label_opt
+!!
+!!     the latter two are used to initilize temporary ME-lists
+!!
+!!     @param op_info:   operator/ME-list definitions
+!!     @param form_info: formula definitions
+!!     @param str_info: string information (to be passed to subroutines)
+!!     @param strmap_info: string mappings (to be passed to subroutines)
+!!     @param orb_info: orbital space information (to be passed)
+!!
+!!     @param thr_suggest: allows weaker convergence threshold
+!!
+*----------------------------------------------------------------------*
       subroutine solve_evp(mode_str,
      &     nopt,nroots,targ_root,label_opt,label_prc,label_op_mvp,
      &     label_op_met,label_form,
      &     label_special,nspecial,label_spcfrm,nspcfrm,thr_suggest,
      &     choice_opt,
      &     op_info,form_info,str_info,strmap_info,orb_info)
-*----------------------------------------------------------------------*
-*
-*     solve eigenvalue problem  Mx = lambda x
-*
-*     the formula with label "label_form" describes how to calculate 
-*     the matrix trial-vector products and the r.h.s.
-*
-*     nopt                  number of x operators to be solved for
-*                           in case of coupled equations
-*     nroots                number of roots per x operator
-*     targ_root             the target root per x operator
-*
-*     label_opt(nopt)       label of solution vectors
-*     label_prc(nopt)       label of preconditioners
-*     label_op_mvp(nopt)    label operators describing Mx-products
-*     label_op_met(nopt)    label operators describing Sx-products
-*                           if S is unity, pass label of operator
-*                           associated with ME-list label_opt
-*
-*     the latter two are used to initilize temporary ME-lists
-*
-*     op_info:   operator/ME-list definitions
-*     form_info: formula definitions
-*     str_info: string information (to be passed to subroutines)
-*     strmap_info: string mappings (to be passed to subroutines)
-*     orb_info: orbital space information (to be passed)
-*
-*     thr_suggest: allows weaker convergence threshold
-*
 *----------------------------------------------------------------------*
       implicit none             ! for sure
 

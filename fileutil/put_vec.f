@@ -1,7 +1,12 @@
-*----------------------------------------------------------------------*
+!----------------------------------------------------------------------*
+!>     write vector elements idxst to idxnd (in buf) to file fhand
+!!
+!!     @param[in] fhand filehandle
+!!     @param[in] buf buffer the elements reside in 
+!!     @param[in] idxst starting index on file
+!!     @param[in] idxnd ending index on file
+!----------------------------------------------------------------------*
       subroutine put_vec(fhand,buf,idxst,idxnd)
-*----------------------------------------------------------------------*
-*     write vector elements idxst to idxnd (in buf) to file fhand
 *----------------------------------------------------------------------*
       implicit none
 
