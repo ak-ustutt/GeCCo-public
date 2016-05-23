@@ -3,7 +3,7 @@ from gecco_interface import *
 
 
 
-new_target('TEST_SET_BLOCKS')
+new_target('TEST_MODIFY_BLOCKS',True)
 
 DEF_OP_FROM_OCC({
         LABEL:"DUMMY_1",
@@ -32,28 +32,35 @@ ADD_UNITY({
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})
 
-MODIFY_BLOCKS({
-        LIST:'ME_DUMMY_1',
-        FAC:2.0,
-        DESCR:"V,V|VV,VV",
-        MODE:"SET",
-})
 
-MODIFY_BLOCKS({
-        LIST:'ME_DUMMY_1',
-        FAC:3.0,
-        DESCR:"V,V|VV,VV",
-        MODE:"SCALE",
-})
-
-
+PRINT({STRING:"Shifting by 0.5"})
 MODIFY_BLOCKS({
         LIST:'ME_DUMMY_1',
         FAC:0.5,
-        DESCR:"V,V|VV,VV",
+        DESCR:"P,P|VV,VV|HH,HH",
         MODE:"SHIFT",
 })
 
 
+
+PRINT_MEL({LIST:'ME_DUMMY_1'})
+
+PRINT({STRING:"Setting to 2.5"})
+
+MODIFY_BLOCKS({
+        LIST:'ME_DUMMY_1',
+        FAC:2.5,
+        DESCR:"PP,PP|VV,VV|H,H",
+        MODE:"SET",
+})
+PRINT_MEL({LIST:'ME_DUMMY_1'})
+PRINT({STRING:"Scaling by 4"})
+
+MODIFY_BLOCKS({
+        LIST:'ME_DUMMY_1',
+        FAC:4.0,
+        DESCR:"P,P|V,V|VV,VV",
+        MODE:"SCALE",
+})
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})
