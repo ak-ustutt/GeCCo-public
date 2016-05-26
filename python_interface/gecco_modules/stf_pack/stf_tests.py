@@ -1,6 +1,7 @@
 import unittest as ut
 from stf_top import *
 from stf_top import _OPProduct,_Bracket
+from gecco_modules.stf_pack.operators import Vertex
 
 
 #NOTE: For manual testing you have to comment out the import of  gecco_interface in string_to_form2.py as gecco_interface exits if the correct environment is not found
@@ -17,7 +18,7 @@ class Test_OPProduct(ut.TestCase):
         
     def test_creation(self):
         """ test a simple creation and set_rule functionality"""
-        i=_OPProduct(["C0","H0","T1"])
+        op_list=["C0","H0","T1"]
         inp={LABEL:"LAG", 
              IDX_SV:[1,2,3], 
              OP_RES:"L", 
@@ -29,7 +30,7 @@ class Test_OPProduct(ut.TestCase):
                   'FAC_INV': 1, 
                   'FAC': 1, 
                   'IDX_SV': [1, 2, 3]}
-        i.set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -37,7 +38,7 @@ class Test_OPProduct(ut.TestCase):
 
     def test_idx_sv_creation(self):
         """tests the creation of a vertex index list"""
-        i=_OPProduct(["C0","H0","T1"])
+        op_list=["C0","H0","T1"]
         inp={LABEL:"LAG", 
              OP_RES:"L", 
              FAC:1, 
@@ -48,7 +49,7 @@ class Test_OPProduct(ut.TestCase):
                   'FAC_INV': 1, 
                   'FAC': 1, 
                   'IDX_SV': [1, 2, 3]}
-        i.set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -68,7 +69,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC': 4.0, 
                  'IDX_SV': [1,2]}
         
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -85,7 +86,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': 4.8, 
                  'IDX_SV': [1,2]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -103,7 +104,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': -2.4, 
                  'IDX_SV': [1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -120,7 +121,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': -0.4, 
                  'IDX_SV': [1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -137,7 +138,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': 4.0, 
                  'IDX_SV': [1,2]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -155,7 +156,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': -0.4, 
                  'IDX_SV': [1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -172,7 +173,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 24.0, 
                  'FAC': 1, 
                  'IDX_SV': [1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -189,7 +190,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': -1.0, 
                  'IDX_SV': [1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -207,7 +208,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 24.0, 
                  'FAC': -10.543, 
                  'IDX_SV': [1,2,3]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -224,7 +225,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': 1, 
                  'IDX_SV': [1,2,1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -243,7 +244,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': 1, 
                  'IDX_SV': [1,2,3]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -261,7 +262,7 @@ class Test_OPProduct(ut.TestCase):
                  'FAC_INV': 1, 
                  'FAC': 1, 
                  'IDX_SV': [1,2,1]}
-        _OPProduct(op_list).set_rule(inp)
+        _OPProduct([Vertex(x)for x in op_list]).set_rule(inp)
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
@@ -269,14 +270,14 @@ class Test_OPProduct(ut.TestCase):
     def test_string_representation(self):
         """tests the string representation (including primed vertices)"""
         op_list=["GAM'","H","GA'M"]       
-        i=_OPProduct(op_list)
+        i=_OPProduct([Vertex(x)for x in op_list])
         self.assertEqual(str(i),'GAM*H*GAM')
 
     @ut.skipUnless(non_essential,"not essential")
     def test_string_representation2(self):
         """tests the string representation (including primed vertices and prefactors)"""
         op_list=["1/2GAM'","H","3GA'M"]       
-        i=_OPProduct(op_list)
+        i=_OPProduct([Vertex(x)for x in op_list])
         self.assertEqual(str(i),'3.0/2.0*GAM*H*GAM')
 
 
