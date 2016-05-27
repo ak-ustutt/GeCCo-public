@@ -156,6 +156,11 @@ _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 #Classes
 #----------------------------------------------------------------------------------------
 
+
+
+
+
+
 #----------------------------------------------------------------------------------------
 #
 #----------------------------------------------------------------------------------------
@@ -166,7 +171,7 @@ _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 
 
 class _OPProduct(object):
-    """Handles a sequence of multiplicatively joined operators"""
+    """Handles a sequence of multiplicatively joined Vertices"""
 
     def _set_members(self):
         #self.arguments[OPERATORS] contains the OPs as they appear 
@@ -309,6 +314,7 @@ class _OPProduct(object):
 
 #****************************************************************************#
 #A Bracket is a collection of operator products
+
 #declaring them
 
         ##\TODO move all possible code from _Bracket to _AbstractBracket
@@ -341,6 +347,20 @@ class _Bracket(_AbstractBracket):
     #Functions of the process - extract mechanic
     # see stf_string_expansion for details
     def process_string(self, string):
+        string,\
+            self.arguments[FAC],\
+            self.arguments[FAC_INV]=self._process_prelude(string)
+        string=self._process_bra(string)
+        string, self.content=self._process_operators(string)
+        string=self._process_ket(string)
+
+    def extract(self):
+        self.OP_products= [_OPProduct(x) for x in  self.content.extract()]
+
+    ##@param string an _InputString pointing to the start of the numerical
+    #prefactor or start of the bracket
+    def _process_prelude(self,string):
+        """processes everything that is before the actual start of a string"""
         string.set_start()
         try:
             string.goto("<")
@@ -351,8 +371,10 @@ class _Bracket(_AbstractBracket):
             if residue not in ("",None,"*"):
                 raise UnknownEntity("there is something non numerical"\
                                    "before this bracket"+string.display_error)
-            self.arguments[FAC]=nominator
-            self.arguments[FAC_INV]=denominator
+        return string,nominator,denominator
+
+    ##@param string an _InputString pointing to the start of the numerical        
+    def _process_bra(self,string):
         #If bracket has "|" as delimiters, ignore everything before "|"
         which,where=string.find_first( ("|",">") )
         if which == 0 :
@@ -360,15 +382,18 @@ class _Bracket(_AbstractBracket):
                 string.goto("|")            
             except ValueError:
                 raise UnexpectedEndOfStringError(string.display_error)
-        self.content=BracketRep(string)        
+        return string
+
+    def _process_operators(self, string):
+        return string,BracketRep(string)
+
+    def _process_ket(self, string):
         try:
             string.goto(">")
         except ValueError:
             raise UnexpectedEndOfStringError(string.display_error)
+        return string
 
-
-    def extract(self):
-        self.OP_products=map( _OPProduct, self.content.extract())
 
     #other functions
     def set_rule(self,form_dic={},settle=True):
@@ -399,7 +424,7 @@ class _Bracket(_AbstractBracket):
             ret=str(self.arguments[FAC])+"*"
         return ret + "<\n" + "\n+".join(map(str, self.OP_products))+"\n>"
 
-        
+    ##@param OPProd_list List of OPProducts
     def _sum_prod_list(self, OPProd_list):
         """sums the OPProducts of a list
         """
@@ -498,13 +523,13 @@ class _Formula( _FormulaStringRepUtil):
 
     #
     #Methods to invoke EXPAND_OP_PRODUCT
+    ##@param special_dic dictionary of touples that may overwrite the self.arguments of this instance (default: empty)
+    #@param settle for internal use only
+    #@param cleanup 
+    #@return None (the dictionaries fed to EXPORT_OP_PRODUCT if settle is False)
     def set_rule(self,special_dic={},settle=True,flags=None):
         """Invokes set_rule of the brackets
         
-        @param special_dic dictionary of touples that may overwrite the self.arguments of this instance (default: empty)
-        @param settle for internal use only
-        @param cleanup 
-        @return None (the dictionaries fed to EXPORT_OP_PRODUCT if settle is False)
         """
         ges_dic=self._combine_dicts(special_dic)
         ret_list=[]
@@ -649,7 +674,9 @@ class Formula(_Formula):
             raise MissingOP_ResError("This result Operator is empty")
         string.next()
         return string
-        
+
+        ##@param string string to be preprocessed
+        #@return preprocessed string
     def _preprocess_string(self,string):
         """Preprocesses the input
         
@@ -662,10 +689,5 @@ class Formula(_Formula):
         string=remove_whites(string) 
         return self._extract_OP_res(self._extract_label(InputString(string)))
         
-        
-
-
-
-
 def make_formula(string):
     Formula(string).set_rule()
