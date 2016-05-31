@@ -23,7 +23,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest =   00
 
       real(8), intent(in)::
      &     fac
@@ -41,7 +41,8 @@
       integer ::
      &     ifree, nbuff, njoined, join_off, iblk,
      &     idxmsa, msmax, msa, msc, igama, igamc,
-     &     idxc, ngam, len_blk, ioff_blk, lenc, lena, icmp,
+     &     idxc, ngam, len_blk, ioff_blk, idisc_off,
+     &     lenc, lena, icmp,
      &     ihpv, ica, ncblk, nablk, ioff_1, idx1, istr, idxdis_1,
      &     iocc(ngastp,2), idx_graph(ngastp,2), ms_sym_sign
       integer, pointer ::
@@ -130,14 +131,18 @@
 
       ngam = orb_info%nsym
 
+
       ! Find total block length.
-      ioff_blk = mel_out%off_op_occ(iblkout) !YAA: offset for records?
+      idisc_off = ffout%length_of_record*(ffout%current_record-1)
+      ioff_blk = mel_out%off_op_occ(iblkout) 
       len_blk  = mel_out%len_op_occ(iblkout)
+
 
       if(len_blk.gt.ifree)
      &     call quit(1,'add_unity','insufficient space')
       
       ! Allocations made to maximum block length to save time.
+      ! \TODO check if the buffered version works if there are different records
       if(.not.bufout)then
         nbuff=len_blk
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
@@ -152,7 +157,8 @@
           call file_open(ffout)
           closeit = .true.
         endif
-        call get_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
+        call get_vec(ffout,buffer_out,ioff_blk+1+idisc_off,
+     &       ioff_blk+len_blk+idisc_off)
       endif  
 
       ! due to normal ordering, hole lines introduce sign flips:
@@ -304,7 +310,6 @@ c dbgend
      &             ncblk,nablk)
 
               buffer_out(idx1)=totsign*fac + buffer_out(idx1)
-
             end do idxc_loop
 
           end do distr_loop
@@ -325,7 +330,8 @@ c dbgend
      &         ldim_op_c,ldim_op_a)
 
       if(.not.bufout)then
-        call put_vec(ffout,buffer_out,ioff_blk+1,ioff_blk+len_blk)
+        call put_vec(ffout,buffer_out,ioff_blk+1+idisc_off,
+     &        ioff_blk+len_blk+idisc_off)
       endif  
 
       call touch_file_rec(ffout)
