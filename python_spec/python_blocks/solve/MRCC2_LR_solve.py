@@ -200,9 +200,9 @@ for _icnt in range (0,_ncnt):
         depend(_list_rspns)
         depend('MAKE_FOCK_REF','MAKE_A_TRF',"EVAL_E0")
 
-        debug_FORM('FORM_FOCK_REF', only_this=True)
+        debug_FORM('FORM_FOCK_REF')
 
-        debug_MEL("ME_FOCK_REF",only_this=True)
+        debug_MEL("ME_FOCK_REF")
         
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t1'+_extnsn,
                         LIST_INP:'ME_FOCK_REF'})
@@ -211,20 +211,20 @@ for _icnt in range (0,_ncnt):
         ASSIGN_ME2OP({LIST:'ME_X_TRM',
                      OPERATOR:'X_TRM'})
 
-        debug_MEL("ME_X_TRM",only_this=True)
+        debug_MEL("ME_X_TRM")
 
         EVALUATE({
                 FORM:'FOPT_A_TRF_FINAL'
                 })
 
-        debug_MEL('A_TRF_LST', only_this=True)
+        debug_MEL('A_TRF_LST')
         
         EXTRACT_DIAG({
                 LIST_RES:'ME_DIAG_t1'+_extnsn,
                 LIST_IN:'A_TRF_LST',
                 MODE:'extend'})
 
-        debug_MEL("ME_DIAG_t1"+_extnsn, only_this=True)
+        debug_MEL("ME_DIAG_t1"+_extnsn)
         # preconditioner for T2g
 
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t2g'+_extnsn,
@@ -237,7 +237,7 @@ for _icnt in range (0,_ncnt):
                       MODE:'extend'})
 
 
-        debug_MEL("ME_DIAG_t2g"+_extnsn, only_this=True)
+        debug_MEL("ME_DIAG_t2g"+_extnsn)
         
         _diag_cal_mu = 'DIAG_CAL_mu_' + _extnsn
 
@@ -259,7 +259,7 @@ for _icnt in range (0,_ncnt):
                      LIST_IN:'ME_MINEN'+_extnsn,
                      MODE:'ext_act'})
         
-        debug_MEL("ME_DIAG_c"+_extnsn, only_this=True )
+        debug_MEL("ME_DIAG_c"+_extnsn)
         _rspns_opt = 'RSPNS_OPT_' + _extnsn
 
 
@@ -291,7 +291,7 @@ for _icnt in range (0,_ncnt):
                                AVOID:[1,4,3,5],
                                FAC:-1.0})
 
-            debug_FORM("F_prj", only_this=True)
+            debug_FORM("F_prj" )
             
             OPTIMIZE({LABEL_OPT:'FOPT_prj',
                       LABELS_IN:'F_prj'})

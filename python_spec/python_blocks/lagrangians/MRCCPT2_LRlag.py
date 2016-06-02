@@ -35,7 +35,7 @@ SUM_TERMS({
         LABEL_RES:"FORM_AR1_RSPNS_q",
        })
 
-debug_FORM("FORM_AR1_RSPNS_q", only_this=True)
+debug_FORM("FORM_AR1_RSPNS_q")
 
 DERIVATIVE({
         LABEL_IN:'FORM_PT_LAG_A2_RAW',
@@ -58,7 +58,7 @@ SUM_TERMS({
        })
 
 
-debug_FORM("FORM_AR2g_RSPNS_q", only_this=True)
+debug_FORM("FORM_AR2g_RSPNS_q")
 
 
 new_target("DEF_FORM_AR_RSPNS_mu")
@@ -86,7 +86,7 @@ EXPAND_OP_PRODUCT({
             IDX_SV:[1,2,3,1],
             FAC:-1.0})
 
-debug_FORM("FORM_AR_RSPNS_mu", only_this=True)
+debug_FORM("FORM_AR_RSPNS_mu")
 
 
 new_target("DEF_FORMS_METRIC")
@@ -186,7 +186,7 @@ DERIVATIVE({LABEL_RES:'FORM_S2g',
 
 
 
-debug_FORM("FORM_S2g",only_this=True)
+debug_FORM("FORM_S2g")
 
 
 
