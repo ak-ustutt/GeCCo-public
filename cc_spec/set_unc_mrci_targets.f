@@ -1401,7 +1401,7 @@ c dbgend
       if(multistate)then
        call set_rule2('EVAL_FREF0',ADV_STATE,tgt_info)
        call set_arg('EVAL_FREF0',ADV_STATE,'LISTS',2,tgt_info,
-     &      val_label=['ME_C0  ',
+     &      val_label=['ME_C0   ',
      &                 'ME_FREF0'])
        call set_arg('EVAL_FREF0',ADV_STATE,'N_ROOTS',1,tgt_info,
      &      val_int=[n_states])

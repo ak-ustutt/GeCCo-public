@@ -65,7 +65,7 @@
       call clone_operator(op_new,newint_info,.false.,orb_info)
 
       call add_me_list(trim(newint_info%name)//'LIST',op_info)
-      idx = idx_mel_list(trim(newint_info%name)//'LIST',op_info)
+      idx = idx_mel_list(trim(newint_info%name)//'LIST ',op_info)
 
       me_new => op_info%mel_arr(idx)%mel
 
@@ -135,6 +135,9 @@ c     &       'S2 handling is not implemented!!!!')
       call update_strmap(str_info,strmap_info)
 
       ! set dimensions
+      ! FIXME: this call takes a lot of time i.pt. for icMRCC:
+      !        replace calls to set_op_dim2
+      !        e.g. by storing info beforehand
       call set_op_dim2(1,me_new,str_info,orb_info%nsym)
 
       call init_me_list(2,me_new,orb_info)

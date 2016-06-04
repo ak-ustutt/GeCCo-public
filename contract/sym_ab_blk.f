@@ -53,7 +53,7 @@
      &     msa2, msc2,  idxmsa2, idxmsc2,
      &     iblkoff, ncblk, nablk, msc_max, msa_max,
      &     istr, idx1, idx2, icmp, ngraph, maxbuf,
-     &     asign, csign, gsign, imap
+     &     asign, csign, gsign, imap, ii
       real(8) ::
      &     fac_off, fac_dia, value, relfac2
 
@@ -227,15 +227,25 @@ cmh        idxmsa2 = (msa_max-msa2)/2 + 1
             msdis_c2(1:ncblk) = -msdis_c(1:ncblk)
             msdis_a2(1:nablk) = -msdis_a(1:nablk)
 
+            ! FIXME: this call to std_spsign_msdis seem inefficient (for
+            ! gfortran at least ...)
             gsign =       std_spsign_msdis(msdis_c,occ_csub,ncblk)
             gsign = gsign*std_spsign_msdis(msdis_a,occ_asub,nablk)
             gsign = gsign*std_spsign_msdis(msdis_c2,occ_csub,ncblk)
             gsign = gsign*std_spsign_msdis(msdis_a2,occ_asub,nablk)
 
-            call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
-            call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
-            call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub,ncblk)
-            call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub,nablk)
+            !call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk)
+            !call ms2idxms(idxmsdis_c2,msdis_c2,occ_csub,ncblk)
+            do ii = 1, ncblk
+              idxmsdis_c(ii)=ishft(occ_csub(ii)-msdis_c(ii),-1)+1
+              idxmsdis_c2(ii)=ishft(occ_csub(ii)-msdis_c2(ii),-1)+1
+            end do
+            !call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
+            !call ms2idxms(idxmsdis_a2,msdis_a2,occ_asub,nablk)
+            do ii = 1, nablk
+              idxmsdis_a(ii)=ishft(occ_asub(ii)-msdis_a(ii),-1)+1
+              idxmsdis_a2(ii)=ishft(occ_asub(ii)-msdis_a2(ii),-1)+1
+            end do
 
             ! note: len_str is valid for flipped string, too
             !   this is because string length does not change

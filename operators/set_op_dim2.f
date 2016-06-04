@@ -67,7 +67,7 @@
      &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
      &     did, iexc, igam, len_blk, ld_blk, idx, jdx, tot_c, tot_a,
-     &     idx_hpvx, hpvx
+     &     idx_hpvx, hpvx, ii
 
       integer, pointer ::
      &     hpvx_csub(:), hpvx_asub(:),
@@ -265,8 +265,15 @@ c              print *,'top of dist_loop'
 c dbg
               first = .false.
 
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
-              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
+              ! avoid call
+c              call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncsub)
+              do ii = 1, ncsub
+                idxmsdis_c(ii) = ishft(occ_csub(ii)-msdis_c(ii),-1)+1
+              end do
+c              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
+              do ii = 1, nasub
+                idxmsdis_a(ii) = ishft(occ_asub(ii)-msdis_a(ii),-1)+1
+              end do
 
               if (mel%diag_type.ne.0) then
                 ! skip non-diagonal distributions and those in which

@@ -19,7 +19,7 @@
      &     op_info
 
       integer ::
-     &     imel
+     &     imel, llabel, llabel2
 
       if (ntest.ge.100) then
         write(lulog,*) '--------------------'
@@ -28,12 +28,19 @@
         write(lulog,*) ' looking for: "',trim(mel_label),'"'
       end if
 
+      ! note: currently this routine is called quite often
+      ! via update_op_arr ... try to be more efficient and avoid trim
       idx_mel_list = -1
+      llabel = len_trim(mel_label)
+      if (llabel.eq.0) return
       do imel = 1, op_info%nmels
-        if (trim(mel_label).eq.
-     &      trim(op_info%mel_arr(imel)%mel%label)) then
-          idx_mel_list = imel
-          exit
+        if (mel_label(1:llabel).eq.
+     &      op_info%mel_arr(imel)%mel%label(1:llabel)) then
+          if (op_info%mel_arr(imel)%mel%label(llabel+1:llabel+1).eq.' ')
+     &    then
+            idx_mel_list = imel
+            exit
+          end if
         end if
       end do
 

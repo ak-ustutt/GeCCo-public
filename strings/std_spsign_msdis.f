@@ -35,8 +35,9 @@
       do iblk = 1, nblk
         nidx = nidx+occ(iblk)
       end do
-      allocate(scr(nidx))
-
+      allocate(scr(nidx)) ! FIXME: This allocate is probably expensive
+                          !        as routine is called many times
+                          !        see also annotation on sym_ab_blk
       idx = 0
       do iblk = 1, nblk
         do isp = 1, (occ(iblk)+msdis(iblk))/2

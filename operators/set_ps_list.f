@@ -37,7 +37,7 @@
       list%label(1:len_opname) = ' '
       list%label = trim(label)
       ! set associated list on operator:
-      list%op%assoc_list(1:len_opname) = ' '
+      list%op%assoc_list(1:2*len_opname+2) = ' '
       list%op%assoc_list(1:len_opname) = trim(label)
       call init_me_list(1,list,orb_info)
 

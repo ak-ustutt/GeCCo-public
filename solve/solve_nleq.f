@@ -500,7 +500,7 @@ c     &       ff_trv,ff_h_trv,
      &          'ME_C0',trim(dia_label),'A_C0',
      &          'C0','FOPT_OMG_C0'//trim(c_st),
      &          'ME_C0_sp',1,
-     &          (/'FOPT_C0_prj','FOPT_C0_sp'/),2,
+     &          (/'FOPT_C0_prj','FOPT_C0_sp '/),2,
      &          thr_suggest(i_state),0,
      &          op_info,form_info,str_info,strmap_info,orb_info)
 

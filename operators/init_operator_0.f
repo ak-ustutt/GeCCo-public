@@ -21,8 +21,8 @@
       op%ngas = 0
       op%nspin = 0
 
-      op%name(1:len(op%name)) = ' '
-      op%assoc_list(1:len(op%assoc_list)) = ' '
+      op%name(1:len_opname) = ' '
+      op%assoc_list(1:2*len_opname+2) = ' '
 
       op%order = -1
       op%species = -1

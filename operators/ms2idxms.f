@@ -15,7 +15,8 @@
      &     i
 
       do i = 1, n
-        idxms(i) = (occ(i) - ms(i))/2 + 1
+c        idxms(i) = (occ(i) - ms(i))/2 + 1
+        idxms(i) = ishft(occ(i) - ms(i),-1) + 1
       end do
 
       return

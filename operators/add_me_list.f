@@ -35,8 +35,8 @@
       end if
       allocate (list_pnt%mel)
 
-      ! add user-supplied label
-      if (len_trim(label).gt.mxlen_melabel)
+      ! add user-supplied label (one free space needed)
+      if (len_trim(label).ge.mxlen_melabel)
      &   call quit(1,'add_me_list','name too long: "'
      &     //trim(label)//'"')
       list_pnt%mel%label(1:mxlen_melabel) = ' '

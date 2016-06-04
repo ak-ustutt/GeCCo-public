@@ -86,7 +86,7 @@ c stat
       end select
 
       call atim_csw(cpu,sys,wall)
-      if (iprlvl.ge.10) then
+      if (.false..and.iprlvl.ge.10) then
         call prtim(lulog,'contraction kernel',
      &       cnt_kernel(1),cnt_kernel(2),-1d0)
 c dbg

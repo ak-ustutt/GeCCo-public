@@ -96,7 +96,7 @@
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
      &     idxms, idxdis, lenmap, lbuf_op1op2, lblk_op1op2tmp,
-     &     idxdis_op1op2, idx
+     &     idxdis_op1op2, idx, ii
       integer ::
      &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
      &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2, 
@@ -486,7 +486,7 @@ c      end if
 
       ifree = mem_setmark('contr1')
 
-      call atim_cs(cpu0,sys0)
+c      call atim_cs(cpu0,sys0)
 
       ! average scratch for each operator:
       !    about 1/6th of the available remaining core
@@ -621,9 +621,9 @@ c          end if
      &       call quit(1,'contr_op1op2_wmaps_c','non-diagonal block!')
       end if
 
-      call atim_cs(cpu,sys)
-      cnt_rd(1) = cnt_rd(1) + cpu-cpu0
-      cnt_rd(2) = cnt_rd(2) + sys-sys0
+c      call atim_cs(cpu,sys)
+c      cnt_rd(1) = cnt_rd(1) + cpu-cpu0
+c      cnt_rd(2) = cnt_rd(2) + sys-sys0
 
       if (ntest.ge.1000) then
         ! this will work if all blocks incore, only:
@@ -1142,7 +1142,7 @@ c     &                - idxst_op1op2+1
               if (ncblk_ex2.eq.0.and.igamex2_c.gt.1) cycle gamc_loop
               if (nablk_ex2.eq.0.and.igamex2_a.gt.1) cycle gamc_loop
 
-              call atim_cs(cpu00,sys00)
+c              call atim_cs(cpu00,sys00)
 
               ! loop over distributions of current Ms and IRREP 
               ! of Aex1 and Cex1 over ngastypes
@@ -1163,10 +1163,18 @@ c dbg
 c                  cycle caex1_loop
                 endif
 
-                call ms2idxms(idxmsex1dis_c,msex1dis_c,
-     &               cinfo_ex1c,ncblk_ex1)
-                call ms2idxms(idxmsex1dis_a,msex1dis_a,
-     &               cinfo_ex1a,nablk_ex1)
+c                call ms2idxms(idxmsex1dis_c,msex1dis_c,
+c     &               cinfo_ex1c,ncblk_ex1)
+                 do ii = 1, ncblk_ex1
+                   idxmsex1dis_c(ii)
+     &             =ishft(cinfo_ex1c(ii,1)-msex1dis_c(ii),-1)+1
+                 end do
+c                call ms2idxms(idxmsex1dis_a,msex1dis_a,
+c     &               cinfo_ex1a,nablk_ex1)
+                 do ii = 1, nablk_ex1
+                   idxmsex1dis_a(ii)
+     &             =ishft(cinfo_ex1a(ii,1)-msex1dis_a(ii),-1)+1
+                 end do
 
                 call set_len_str(lstrex1,ncblk_ex1,nablk_ex1,
      &                  graphs,
@@ -1201,10 +1209,18 @@ c dbg
 c                    cycle caex2_loop
                   endif
 
-                  call ms2idxms(idxmsex2dis_c,msex2dis_c,
-     &                 cinfo_ex2c,ncblk_ex2)
-                  call ms2idxms(idxmsex2dis_a,msex2dis_a,
-     &                 cinfo_ex2a,nablk_ex2)
+c                  call ms2idxms(idxmsex2dis_c,msex2dis_c,
+c     &                 cinfo_ex2c,ncblk_ex2)
+                  do ii = 1, ncblk_ex2
+                     idxmsex2dis_c(ii)
+     &               =ishft(cinfo_ex2c(ii,1)-msex2dis_c(ii),-1)+1
+                  end do
+c                  call ms2idxms(idxmsex2dis_a,msex2dis_a,
+c     &                 cinfo_ex2a,nablk_ex2)
+                  do ii = 1, nablk_ex2
+                     idxmsex2dis_a(ii)
+     &               =ishft(cinfo_ex2a(ii,1)-msex2dis_a(ii),-1)+1
+                  end do
 
                   call set_len_str(lstrex2,ncblk_ex2,nablk_ex2,
      &                 graphs,
@@ -1231,10 +1247,18 @@ c                    cycle caex2_loop
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_12a)
 
-                  call ms2idxms(idxmsi_dis_c,msi_dis_c,
-     &                   cinfo_op1op2tmpc,ncblk_op1op2tmp)
-                  call ms2idxms(idxmsi_dis_a,msi_dis_a,
-     &                   cinfo_op1op2tmpa,nablk_op1op2tmp)
+c                  call ms2idxms(idxmsi_dis_c,msi_dis_c,
+c     &                   cinfo_op1op2tmpc,ncblk_op1op2tmp)
+                  do ii = 1, ncblk_op1op2tmp
+                     idxmsi_dis_c(ii)
+     &               =ishft(cinfo_op1op2tmpc(ii,1)-msi_dis_c(ii),-1)+1
+                  end do
+c                  call ms2idxms(idxmsi_dis_a,msi_dis_a,
+c     &                   cinfo_op1op2tmpa,nablk_op1op2tmp)
+                  do ii = 1, nablk_op1op2tmp
+                     idxmsi_dis_a(ii)
+     &               =ishft(cinfo_op1op2tmpa(ii,1)-msi_dis_a(ii),-1)+1
+                  end do
 
                   call set_len_str(
      &                   lstrop1op2tmp,ncblk_op1op2tmp,nablk_op1op2tmp,
@@ -1382,10 +1406,18 @@ c                      cycle cac_loop
 c                    endif
 
                     ! length of contraction
-                    call ms2idxms(idxmsc_dis_c,msc_dis_c,
-     &                   cinfo_cntc,ncblk_cnt)
-                    call ms2idxms(idxmsc_dis_a,msc_dis_a,
-     &                   cinfo_cnta,nablk_cnt)
+c                    call ms2idxms(idxmsc_dis_c,msc_dis_c,
+c     &                   cinfo_cntc,ncblk_cnt)
+                    do ii = 1, ncblk_cnt
+                      idxmsc_dis_c(ii)
+     &                =ishft(cinfo_cntc(ii,1)-msc_dis_c(ii),-1)+1
+                    end do
+c                    call ms2idxms(idxmsc_dis_a,msc_dis_a,
+c     &                   cinfo_cnta,nablk_cnt)
+                    do ii = 1, nablk_cnt
+                      idxmsc_dis_a(ii)
+     &                =ishft(cinfo_cnta(ii,1)-msc_dis_a(ii),-1)+1
+                    end do
 
                     ! length of contraction
                     call set_len_str(lstrcnt,ncblk_cnt,nablk_cnt,
@@ -1413,10 +1445,18 @@ c                    endif
      &                                 msex1dis_a,gmex1dis_a,
      &                                 map_info_1a)
 
-                    call ms2idxms(idxmsop1dis_c,msop1dis_c,
-     &                   cinfo_op1c,ncblk_op1)
-                    call ms2idxms(idxmsop1dis_a,msop1dis_a,
-     &                   cinfo_op1a,nablk_op1)
+c                    call ms2idxms(idxmsop1dis_c,msop1dis_c,
+c     &                   cinfo_op1c,ncblk_op1)
+                    do ii = 1, ncblk_op1
+                      idxmsop1dis_c(ii)
+     &                =ishft(cinfo_op1c(ii,1)-msop1dis_c(ii),-1)+1
+                    end do
+c                    call ms2idxms(idxmsop1dis_a,msop1dis_a,
+c     &                   cinfo_op1a,nablk_op1)
+                    do ii = 1, nablk_op1
+                      idxmsop1dis_a(ii)
+     &                =ishft(cinfo_op1a(ii,1)-msop1dis_a(ii),-1)+1
+                    end do
 
                     call set_len_str(
      &                   lstrop1,ncblk_op1,nablk_op1,
@@ -1522,10 +1562,18 @@ c     &                     - idxst_op1+1-ioff_op1
      &                                 msex2dis_a,gmex2dis_a,
      &                                 map_info_2a)
 
-                    call ms2idxms(idxmsop2dis_c,msop2dis_c,
-     &                   cinfo_op2c,ncblk_op2)
-                    call ms2idxms(idxmsop2dis_a,msop2dis_a,
-     &                   cinfo_op2a,nablk_op2)
+c                    call ms2idxms(idxmsop2dis_c,msop2dis_c,
+c     &                   cinfo_op2c,ncblk_op2)
+                    do ii = 1, ncblk_op2
+                      idxmsop2dis_c(ii)
+     &                =ishft(cinfo_op2c(ii,1)-msop2dis_c(ii),-1)+1
+                    end do
+c                    call ms2idxms(idxmsop2dis_a,msop2dis_a,
+c     &                   cinfo_op2a,nablk_op2)
+                    do ii = 1, nablk_op2
+                      idxmsop2dis_a(ii)
+     &                =ishft(cinfo_op2a(ii,1)-msop2dis_a(ii),-1)+1
+                    end do
 
                     call set_len_str(
      &                   lstrop2,ncblk_op2,nablk_op2,
@@ -1679,7 +1727,7 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
      &                   strmap_info,nsym,str_info%ngraph)                    
 
-                    call atim_cs(cpu0,sys0)                    
+c                    call atim_cs(cpu0,sys0)                    
 
                     ! make the contraction for this block
                     if (ntest.ge.100)
@@ -1800,7 +1848,7 @@ c dbg
 c                    call mem_check('after kernel')
 c dbg
 
-                    call atim_cs(cpu,sys)
+c                    call atim_cs(cpu,sys)
                     cnt_kernel(1) = cnt_kernel(1)+cpu-cpu0
                     cnt_kernel(2) = cnt_kernel(2)+sys-sys0
 
@@ -1823,7 +1871,7 @@ cc     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c          call wrt_mel_buf(lulog,5,xop1op2blk,me_op1op2tmp,
 c     &         1,1,str_info,orb_info)
 c dbg
-                    call atim_cs(cpu0,sys0)
+c                    call atim_cs(cpu0,sys0)
                     cnt_used_reo = .true.
                     if (igam12i_a(3).ne.igam12i_raw(3))
      &                 call quit(1,'contr_op1op2_wmaps_c',
@@ -1856,7 +1904,7 @@ c          write(lulog,*) 'reordered operator (',trim(op1op2%name),')'
 c          call wrt_mel_buf(lulog,5,xop1op2,me_op1op2,
 c     &         iblkop1op2,iblkop1op2,str_info,orb_info)
 c dbg
-                    call atim_cs(cpu,sys)
+c                    call atim_cs(cpu,sys)
                     cnt_reo(1) = cnt_reo(1)+cpu-cpu0
                     cnt_reo(2) = cnt_reo(2)+sys-sys0
                   end if
@@ -1864,7 +1912,7 @@ c dbg
                 end do caex2_loop
               end do caex1_loop
 
-              call atim_cs(cpu,sys)
+c              call atim_cs(cpu,sys)
               cnt_dloop(1) = cnt_dloop(1)+cpu-cpu00
               cnt_dloop(2) = cnt_dloop(2)+sys-sys00
 
@@ -1965,13 +2013,13 @@ c      if (op1op2%name(1:3).eq.'_LT') then
         xret(1) = ddot(lenop1op2,xop1op2,1,xop1op2,1)
       end if
 
-      call atim_cs(cpu0,sys0)
+c      call atim_cs(cpu0,sys0)
       ! put result to disc
       if (.not.bufop1op2.and.buftyp12.eq.0) then
         call put_vec(ffop1op2,xop1op2,idoffop1op2+idxst_op1op2,
      &                    idoffop1op2+idxst_op1op2-1+lenop1op2)
       end if
-      call atim_cs(cpu,sys)
+c      call atim_cs(cpu,sys)
       cnt_wr(1) = cnt_wr(1)+cpu-cpu0
       cnt_wr(2) = cnt_wr(2)+sys-sys0
 

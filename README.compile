@@ -18,6 +18,8 @@ that we are using)
 
 or whatever is appropriate on your machine.
 (gfortran is unfortunately not running yet. I work on this.)
+Try
+FC=gfortran CC=gcc ./configure --with-blas='-lmkl_gf_lp64 -lmkl_core -lmkl_sequential -lpthread -lm'
 
 
 Step III - compile

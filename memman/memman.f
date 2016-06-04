@@ -118,7 +118,7 @@
 
       ! should be made private
       integer, parameter ::
-     &     npad = 1,
+     &     npad = 0,
      &     ipad = 1234567890
       real(8), parameter ::
      &     xpad = 1234567890.0d0
@@ -893,7 +893,8 @@ c     &     'range errors detected (see above)')
      &     lulog
 
       write(lulog,'(x,"+",76("-"),"+")')
-      if (max_mem.lt.1024*1024*1024*64) then
+      !if (max_mem.lt.1024*1024*1024*64) then
+      if (max_mem.lt.68719476736) then
       write(lulog,'(3x,a,i14,a,f10.2,a)')
      &     'Maximum allocated memory: ',max_mem,
      &     ' real(8)-words (',dble(max_mem)/1024d0/128d0,' Mb)'

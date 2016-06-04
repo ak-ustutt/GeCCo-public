@@ -91,7 +91,7 @@ c dbg
      &     call quit(1,'contr_op1op2',
      &     'illegal value for mode_rst (must be 0 or 2)')
 
-      call atim_cs(cpu0,sys0)
+c      call atim_cs(cpu0,sys0)
       select case (irt_contr)
       case(0)
         call quit(1,'contr_op1op2','route 0 is obsolete')
@@ -163,9 +163,9 @@ c dbg
         write(lulog,*) 'contr_op1op2: route = ',irt_contr
         call quit(1,'contr_op1op2','route not implemented')
       end select
-      call atim_cs(cpu,sys)
-      cnt_op1op2(1) = cnt_op1op2(1)+cpu-cpu0
-      cnt_op1op2(2) = cnt_op1op2(2)+sys-sys0
+c      call atim_cs(cpu,sys)
+c      cnt_op1op2(1) = cnt_op1op2(1)+cpu-cpu0
+c      cnt_op1op2(2) = cnt_op1op2(2)+sys-sys0
 
       return
       end

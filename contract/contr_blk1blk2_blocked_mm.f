@@ -115,12 +115,12 @@ c     &     lenblock = 200
       real(8) ::
      &     cpu, sys, cpu0, sys0
 c dbg
-     &     , cpu00, sys00, cpu1, sys1, cpu2, sys2, cpu3, sys3, cpu4,sys4
+c     &     , cpu00, sys00, cpu1, sys1, cpu2, sys2, cpu3, sys3, cpu4,sys4
 c dbg
       integer, external ::
      &     ielprd
 c dbg
-      call atim_cs(cpu00,sys00)
+c      call atim_cs(cpu00,sys00)
 c dbg
 
       lenop1  = ielprd(lstrop1,ncblk_op1+nablk_op1)
@@ -255,13 +255,13 @@ c dbg
         write(lulog,*) 'idxscr = ',idxopsscr, idxoplscr, idxop1op2scr
       end if
 c dbg
-      call atim_cs(cpu,sys)
-      cnt_test(3) = cnt_test(3)+cpu-cpu00
-      cnt_test(4) = cnt_test(4)+sys-sys00
+c      call atim_cs(cpu,sys)
+c     cnt_test(3) = cnt_test(3)+cpu-cpu00
+c     cnt_test(4) = cnt_test(4)+sys-sys00
 c dbg
 
 c dbg
-      call atim_cs(cpu1,sys1)
+c     call atim_cs(cpu1,sys1)
 c dbg
       ! loop over CNT blocks
       do cnt_batch = 1, n_cnt_batch
@@ -282,7 +282,7 @@ c dbg
      &                            ' to ',istr_cnta_bnd
         end if
 
-        call atim_cs(cpu0,sys0)
+c        call atim_cs(cpu0,sys0)
 
         ! resort OpSHORT
         if (op1shorter) then
@@ -327,7 +327,7 @@ c dbg
      &         ireo_ex2c2,ireo_ex2a2)
         end if
 
-        call atim_cs(cpu,sys)
+c        call atim_cs(cpu,sys)
         cnt_coll1(1) = cnt_coll1(1)+cpu-cpu0
         cnt_coll1(2) = cnt_coll1(2)+sys-sys0
 
@@ -340,7 +340,7 @@ c dbg
         end if
 
 c dbg
-        call atim_cs(cpu2,sys2)
+c        call atim_cs(cpu2,sys2)
 c dbg
         ! OMP: parallelize over this loop
         ! loop over blocks of EX_LONG
@@ -362,7 +362,7 @@ c dbg
      &           istr_exlc_bnd,istr_exla_bnd
           end if
 
-          call atim_cs(cpu0,sys0)
+c          call atim_cs(cpu0,sys0)
 
           ! resort OpLONG -> (CNT,EX_LONG) for current block
           if (op1shorter) then
@@ -410,13 +410,13 @@ c dbg
             call wrtmat2(xscr(idxoplscr),ncnt,nexl,ncnt,nexl)
           end if
           
-          call atim_cs(cpu,sys)
-          cnt_coll2(1) = cnt_coll2(1)+cpu-cpu0
-          cnt_coll2(2) = cnt_coll2(2)+sys-sys0
+c          call atim_cs(cpu,sys)
+c          cnt_coll2(1) = cnt_coll2(1)+cpu-cpu0
+c          cnt_coll2(2) = cnt_coll2(2)+sys-sys0
 
           ! loop over blocks of EX_SHORT
 c dbg
-          call atim_cs(cpu3,sys3)
+c          call atim_cs(cpu3,sys3)
 c dbg
           do exs_batch = 1, n_exs_batch
 
@@ -437,11 +437,11 @@ c dbg
             end if
 
 c dbg
-            call atim_cs(cpu4,sys4)
+c            call atim_cs(cpu4,sys4)
 c dbg
             if (op1shorter) then
 
-              call atim_cs(cpu0,sys0)
+c              call atim_cs(cpu0,sys0)
 c stat
               mm_call = mm_call+1
               mm_dim1   = mm_dim1  +nexs
@@ -459,16 +459,16 @@ c stat
      &                  xscr(idxoplscr),ncnt,
      &              0d0,xscr(idxop1op2scr),nexs)
 
-              call atim_cs(cpu,sys)
-              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
-              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
+c              call atim_cs(cpu,sys)
+c              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
+c              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
 
               if (ntest.ge.1000) then
                 write(lulog,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexs,nexl,nexs,nexl)
               end if
 
-              call atim_cs(cpu0,sys0)
+c              call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
               ! OMP: must first collect lists, scatter to xop1op2 later
@@ -493,13 +493,13 @@ c stat
      &             istrscr1_c,istrscr1_a,
      &             istrscr2_c,istrscr2_a)
 
-              call atim_cs(cpu,sys)
+c              call atim_cs(cpu,sys)
               cnt_dgemm(1) = cnt_scatt(1)+cpu-cpu0
               cnt_dgemm(2) = cnt_scatt(2)+sys-sys0
 
             else
 
-              call atim_cs(cpu0,sys0)
+c              call atim_cs(cpu0,sys0)
 c stat
               mm_call = mm_call+1
               mm_dim1   = mm_dim1  +nexl
@@ -517,16 +517,16 @@ c stat
      &                  xscr(idx),ncnt,
      &              0d0,xscr(idxop1op2scr),nexl)
 
-              call atim_cs(cpu,sys)
-              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
-              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
+c              call atim_cs(cpu,sys)
+c              cnt_dgemm(1) = cnt_dgemm(1)+cpu-cpu0
+c              cnt_dgemm(2) = cnt_dgemm(2)+sys-sys0
 
               if (ntest.ge.1000) then
                 write(lulog,*) 'result (fac was ',xfac,')'
                 call wrtmat2(xscr(idxop1op2scr),nexl,nexs,nexl,nexs)
               end if
 
-              call atim_cs(cpu0,sys0)
+c              call atim_cs(cpu0,sys0)
 
               ! resort Op1Op2
               ! OMP: see above
@@ -551,9 +551,9 @@ c stat
      &             istrscr1_c,istrscr1_a,
      &             istrscr2_c,istrscr2_a)
 
-              call atim_cs(cpu,sys)
-              cnt_scatt(1) = cnt_scatt(1)+cpu-cpu0
-              cnt_scatt(2) = cnt_scatt(2)+sys-sys0
+c              call atim_cs(cpu,sys)
+c              cnt_scatt(1) = cnt_scatt(1)+cpu-cpu0
+c              cnt_scatt(2) = cnt_scatt(2)+sys-sys0
               
             end if
 
@@ -562,16 +562,16 @@ c stat
      &             xop1op2(1)
             end if
 c dbg
-            call atim_cs(cpu,sys)
-            cnt_test(11) = cnt_test(11)+cpu-cpu4
-            cnt_test(12) = cnt_test(12)+sys-sys4
+c            call atim_cs(cpu,sys)
+c            cnt_test(11) = cnt_test(11)+cpu-cpu4
+c            cnt_test(12) = cnt_test(12)+sys-sys4
 c dbg
 
           end do
 c dbg
-          call atim_cs(cpu,sys)
-          cnt_test(9)  = cnt_test(9)+cpu-cpu3
-          cnt_test(10) = cnt_test(10)+sys-sys3
+c          call atim_cs(cpu,sys)
+c          cnt_test(9)  = cnt_test(9)+cpu-cpu3
+c          cnt_test(10) = cnt_test(10)+sys-sys3
 c dbg
 
 
@@ -579,19 +579,19 @@ c dbg
 
         ! OMP: final scattering to xop1op2: here
 c dbg
-        call atim_cs(cpu,sys)
-        cnt_test(7) = cnt_test(7)+cpu-cpu2
-        cnt_test(8) = cnt_test(8)+sys-sys2
+c        call atim_cs(cpu,sys)
+c        cnt_test(7) = cnt_test(7)+cpu-cpu2
+c        cnt_test(8) = cnt_test(8)+sys-sys2
 c dbg
 
       end do
 
 c dbg
-      call atim_cs(cpu,sys)
-      cnt_test(5) = cnt_test(5)+cpu-cpu1
-      cnt_test(6) = cnt_test(6)+sys-sys1
-      cnt_test(1) = cnt_test(1)+cpu-cpu00
-      cnt_test(2) = cnt_test(2)+sys-sys00
+c      call atim_cs(cpu,sys)
+c      cnt_test(5) = cnt_test(5)+cpu-cpu1
+c      cnt_test(6) = cnt_test(6)+sys-sys1
+c      cnt_test(1) = cnt_test(1)+cpu-cpu00
+c      cnt_test(2) = cnt_test(2)+sys-sys00
 c dbg
       return
       end

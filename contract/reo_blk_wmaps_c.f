@@ -109,7 +109,7 @@
      &     idxms_op_a, idxdis,
      &     idx00opreo, idxst_opreo,
      &     idx0opreo, idx_opreo, ioff, istr1, istr2, idiv1, idiv2,
-     &     isgnt, isgna,
+     &     isgnt, isgna, ii,
      &     idx0opori, idx_opori, icmp, ielmap, idx, idx1, idx2
 
       integer ::
@@ -350,15 +350,31 @@ c
 c dbg
 
                 ! reform MS-(times two)-values to idxms
-                call ms2idxms(idxms_k_dis_c,ms_k_dis_c,
-     &               cinfo_k_c,ncblk_k)
-                call ms2idxms(idxms_k_dis_a,ms_k_dis_a,
-     &               cinfo_k_a,nablk_k)
+c                call ms2idxms(idxms_k_dis_c,ms_k_dis_c,
+c     &               cinfo_k_c,ncblk_k)
+                do ii = 1, ncblk_k
+                  idxms_k_dis_c(ii)=
+     &            ishft(cinfo_k_c(ii,1)-ms_k_dis_c(ii),-1)+1
+                end do
+c                call ms2idxms(idxms_k_dis_a,ms_k_dis_a,
+c     &               cinfo_k_a,nablk_k)
+                do ii = 1, nablk_k
+                  idxms_k_dis_a(ii)=
+     &            ishft(cinfo_k_a(ii,1)-ms_k_dis_a(ii),-1)+1
+                end do
 
-                call ms2idxms(idxms_i0_dis_c,ms_i0_dis_c,
-     &               cinfo_i0_c,ncblk_i0)
-                call ms2idxms(idxms_i0_dis_a,ms_i0_dis_a,
-     &               cinfo_i0_a,nablk_i0)
+c                call ms2idxms(idxms_i0_dis_c,ms_i0_dis_c,
+c     &               cinfo_i0_c,ncblk_i0)
+                do ii = 1, ncblk_i0
+                  idxms_i0_dis_c(ii)=
+     &            ishft(cinfo_i0_c(ii,1)-ms_i0_dis_c(ii),-1)+1
+                end do
+c                call ms2idxms(idxms_i0_dis_a,ms_i0_dis_a,
+c     &               cinfo_i0_a,nablk_i0)
+                do ii = 1, nablk_i0
+                  idxms_i0_dis_a(ii)=
+     &            ishft(cinfo_i0_a(ii,1)-ms_i0_dis_a(ii),-1)+1
+                end do
 
 c dbg
 c                print *,'cinfo_opreo_c: ',
@@ -372,10 +388,18 @@ c                print *,'gm_i0_dis_a: ',gm_i0_dis_a(1:nablk_i0)
 c                print *,'gm_k_dis_c:  ',gm_k_dis_c(1:ncblk_k)
 c                print *,'gm_k_dis_a:  ',gm_k_dis_a(1:nablk_k)
 c dbg
-                call ms2idxms(idxms_ip_dis_c,ms_ip_dis_c,
-     &               cinfo_opreo_c,ncblk_opreo)
-                call ms2idxms(idxms_ip_dis_a,ms_ip_dis_a,
-     &               cinfo_opreo_a,nablk_opreo)
+c                call ms2idxms(idxms_ip_dis_c,ms_ip_dis_c,
+c     &               cinfo_opreo_c,ncblk_opreo)
+                do ii = 1, ncblk_opreo
+                  idxms_ip_dis_c(ii)=
+     &            ishft(cinfo_opreo_c(ii,1)-ms_ip_dis_c(ii),-1)+1
+                end do
+c                call ms2idxms(idxms_ip_dis_a,ms_ip_dis_a,
+c     &               cinfo_opreo_a,nablk_opreo)
+                do ii = 1, nablk_opreo
+                  idxms_ip_dis_a(ii)=
+     &            ishft(cinfo_opreo_a(ii,1)-ms_ip_dis_a(ii),-1)+1
+                end do
 
                 call set_len_str(lstr_k,ncblk_k,nablk_k,
      &               graphs,

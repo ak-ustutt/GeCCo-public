@@ -28,7 +28,9 @@
       allocate(op_info%op2list(op_info%nops))
       do iop = 1, op_info%nops
         idx =
-     &     idx_mel_list(trim(op_info%op_arr(iop)%op%assoc_list),op_info)
+!     &     idx_mel_list(trim(op_info%op_arr(iop)%op%assoc_list),op_info)
+     &     idx_mel_list(op_info%op_arr(iop)%op%assoc_list,op_info)
+! note for the above: trim is used inside the routine anyway
         op_info%op2list(iop) = idx
       end do
 
