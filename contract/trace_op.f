@@ -212,7 +212,7 @@ c dbg
 
       reo_trop = reo_info%n_op_reo.gt.0
       if (reo_trop.and..not.associated(reo_info%map_reo1c))
-     &     call quit(1,'contr_trop_wmaps_c',
+     &     call quit(1,'trace_op',
      &     'reo_info is not consistent')
       if (ntest.ge.10) write(lulog,*) 'reo_trop: ',reo_trop
       if (ntest.ge.10 .and. reo_trop) then
@@ -386,13 +386,13 @@ ctest        call warn('trace_op','zero length for operator?')
       call sum_occ(na_troptmp,cinfo_troptmpa,nablk_troptmp)
 c dbg
       if (na_trop.ne.na_troptmp)
-     &     call quit(1,'contr_trop_wmaps_c','unexpected 1a')
+     &     call quit(1,'trace_op','unexpected 1a')
       if (nc_trop.ne.nc_troptmp) then
         write(lulog,*) 'TROP (C)   : ',nc_trop,
      &       ' <- ',cinfo_tropc(1:ncblk_trop,1)
         write(lulog,*) 'TROPTMP (C): ',nc_troptmp,
      &       ' <- ',cinfo_troptmpc(1:ncblk_troptmp,1)
-        call quit(1,'contr_trop_wmaps_c','unexpected 1b')
+        call quit(1,'trace_op','unexpected 1b')
       end if
 c dbg
       call sum_occ(nc_cnt,cinfo_cntc,ncblk_cnt)

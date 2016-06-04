@@ -52,7 +52,7 @@
       if (idx_op(irdag).le.0.or.
      &    idx_op(irbreve).le.0) then
         write(lulog,*) 'idx: ',idx_op(irdag),idx_op(irbreve)
-        call quit(1,'set_Ycontrib',
+        call quit(1,'set_Zcontrib',
      &         'operator(s) not on input list')
       end if
 

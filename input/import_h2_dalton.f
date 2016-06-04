@@ -119,7 +119,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       if (nblkmax.le.0) then
         write(lulog,*) 'free memory (words):  ',ifree
         write(lulog,*) 'block length (words): ',ffham%reclen
-        call quit(1,'get_h2','not even 1 record fits into memory?')
+        call quit(1,'input/import_h2_dalton.f'
+     &             ,'not even 1 record fits into memory?')
       end if
 
 cmh   determine number of first 2-el. block

@@ -105,7 +105,7 @@
       ! Point to the relevant operators and their associated files.
       me_res => op_info%mel_arr(idx_res)%mel
       if (.not.associated(me_res%fhand))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,'scale_op','no file handle defined for '//
      &                  trim(me_res%label))
       open_close_res = me_res%fhand%unit.le.0
 
@@ -116,7 +116,7 @@
       me_inp => op_info%mel_arr(idx_inp)%mel
       if (.not.same) then
         if (.not.associated(me_inp%fhand))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,'scale_op','no file handle defined for '//
      &                  trim(me_inp%label))
         open_close_inp = me_inp%fhand%unit.le.0
         if (open_close_inp) then

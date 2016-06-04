@@ -95,25 +95,25 @@
       end if
 
       if (nop.lt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal4',
      &                 'nop < 2 ?? too few! phew!')
       len = len_trim(typ_str)
 
       ! get indices of operators on label_list
       idx_intm = idx_oplist2(label_int,op_info)
       if (idx_intm.lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal4',
      &     'label not on list (1): '//label_int)
 
       idx_r = idx_oplist2(label_op(1),op_info)
       if (idx_r.lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal4',
      &     'label not on list (2): '//label_op(1))
 
       if (trim(typ_str).ne.'X') then
         idx_h = idx_oplist2(label_op(2),op_info)
         if (idx_h.lt.0)
-     &       call quit(1,'set_r12intm_formal',
+     &       call quit(1,'set_r12intm_formal4',
      &       'label not on list (3): '//label_op(2))
       end if
 

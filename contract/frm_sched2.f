@@ -329,7 +329,7 @@ c          call inv_op()
 
         case default
           write(lulog,*) 'command = ',cur_form%command
-          call quit(1,'frm_sched','command not defined/implemented')
+          call quit(1,'frm_sched2','command not defined/implemented')
         end select
 
         ! remove short-term intermediates

@@ -118,7 +118,6 @@
         iroot = 0
         do iguess = 1, ntrials
           iroot = iroot + 1    
-
           call switch_mel_record(me_pnt,iroot)
           call diag_guess(me_pnt,
      &         xlist,idxlist,ntrials,iguess,me_pnt%absym,
@@ -127,7 +126,7 @@
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
             ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
             ! do the transformation

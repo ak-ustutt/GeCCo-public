@@ -11,7 +11,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
       real(8), parameter ::
      &     thr_auto_freeze = -2.5d0
 

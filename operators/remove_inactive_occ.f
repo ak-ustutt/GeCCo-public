@@ -1,12 +1,18 @@
+*---------------------------------------------------------------------*
+!>     eliminates inactive blocks at operator creation
+!>
+!>
+!>     @param[inout] occ   input: defined occ.s    
+!>                         output: dto. with unneccessary ones rem.
+!>     @param[inout] ndef  input: number of occ.s
+!>                         output: dto. minus removed ones
+!>     @param[in] freeze number of electrons allowed in frozen shell
+!>                       (for F12 and gradient stuff)
+!>     @param[in] njoined number of joined vertices
+!>     @param[in] orb_info  orbital information
+*---------------------------------------------------------------------*
       subroutine remove_inactive_occ(occ,ndef,freeze,njoined,orb_info)
-*
-*     occ   input: defined occ.s    
-*           output: dto. with unneccessary ones rem.
-*     ndef  input: number of occ.s
-*           output: dto. minus removed ones
-*
-*     freeze: number of electrons allowed in frozen shell
-*             (for F12 and gradient stuff)
+*---------------------------------------------------------------------*
 *
 
       implicit none

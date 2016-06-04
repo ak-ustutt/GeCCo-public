@@ -85,14 +85,14 @@
       end if
 
       if (nop.lt.2)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &                 'nop < 2 ?? too few! phew!')
       len = len_trim(typ_str)
 
       ! get indices of operators on label_list
       idx_intm = idx_oplist2(label_int,op_info)
       if (idx_intm.lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &     'label not on list (1): '//label_int)
 
       allocate(idx_op(len))
@@ -109,7 +109,7 @@
         iop = iop+1
         idx_op(idx) = idx_oplist2(label_op(iop),op_info)
         if (idx_op(idx).lt.0)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &     'label not on list (2): '//label_op(iop))
       end do
 
@@ -129,13 +129,13 @@
       end do
 
       if (2*n_x+n_f+n_g+n_r+2.ne.nvtx)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &     'unknown identifier in typ_str: '//trim(typ_str))
       if (n_f.gt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &     'more than one f in typ_str: '//trim(typ_str))
       if (n_g.gt.1)
-     &     call quit(1,'set_r12intm_formal',
+     &     call quit(1,'set_r12intm_formal3',
      &     'more than one g in typ_str: '//trim(typ_str))
 
       nfact = n_f+n_g+n_r
@@ -182,7 +182,7 @@ c dbg
             occ_def(IHOLE,1,1) = 1
             occ_def(IHOLE,2,1) = 1
           else
-            call quit(1,'set_r12intm_formal','???')
+            call quit(1,'set_r12intm_formal3','???')
           end if
           call set_uop2(op_f,opdum_f,
      &         occ_def,ndef,1,(/0,0/),-1,orb_info)
@@ -201,7 +201,7 @@ c dbg
 c          call set_hop(op_f,opdum_f,.false.,
 c     &         1,1,0,.true.,orb_info)
         else
-          call quit(1,'set_r12intm_formal','Too many X with F')
+          call quit(1,'set_r12intm_formal3','Too many X with F')
         endif
       end if
 

@@ -1,5 +1,6 @@
 general
- memmax=1000000000
+ memmax=10000000
+ print=5
 orb_space
  shell type=frozen,def=(1,0,0,0)
 method

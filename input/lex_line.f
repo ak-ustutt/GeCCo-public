@@ -1,4 +1,19 @@
+*----------------------------------------------------------------------------*
+!>  Cut string into words
+!>
+!>  Cuts a string into smaller strings, separated by separators. 
+!>  Also removes whitespaces and quotes.
+!>  Note: if whitespacees are also separators they are only removed at the beginning.
+!>  Otherwise the separator function takes precedence.
+!>  @param wlist[out] wordlist: contains the separated words
+!>  @param line[in] line (input string)
+!>  @param lcnt[in] lcnt line number (for bookkeping in wlist)
+!>  @param sep_list[in] list (string) of separators
+!>  @param ws_list[in] list (string) of whitespace 
+!>  @param qu_list[in] list (string) of quote markers
+*----------------------------------------------------------------------------*
       subroutine lex_line(wlist,line,lcnt,sep_list,ws_list,qu_list)
+*----------------------------------------------------------------------------*
       !
       ! cut line into words (stored on wlist), where the
       ! separators are on sep_list and the whitespace (to be

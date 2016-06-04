@@ -33,7 +33,7 @@ c      include 'def_filinf.h'
       include 'def_dependency_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       integer, intent(inout) ::
      &     task
@@ -84,7 +84,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       logical ::
      &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo, getnewrec
       integer ::
-     &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,
+     &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,idxdbg,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, jopt, lenscr, ioff,
      &     ifree, restart_mode, ierr, nselect, irec, ioff_s
@@ -111,11 +111,11 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       integer, external ::
      &     ioptc_get_sbsp_rec
       real(8), external ::
-     &     dnrm2, ddot
+     &     dnrm2, ddot, xnormop
 
       if (ntest.ge.100)
      &     call write_title(lulog,wst_dbg_subr,'evpc_core entered')
-
+      if (ntest.ge.100) write (lulog,*) "iteration ",iter
       zero_vec(1:opti_stat%ndim_vsbsp) = .false.
       nopt = opti_info%nopt
       nroot = opti_info%nroot
@@ -221,6 +221,10 @@ c dbg
       if (.not.use_s(1)) then
         call eigen_asym(nred,xmat1,eigr,eigi,xmat2,xmat3,ierr)
       else
+c dbg
+c         print *,"debug: input to eigen_asym_met",
+c         print *,
+c dbgend
         call eigen_asym_met(nred,xmat1,xmat3,eigr,eigi,xmat2,xmat3,ierr)
       end if
 
@@ -256,6 +260,11 @@ c dbg
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
             ffspc => me_special(1)%mel%fhand
             trafo = .true.
+          elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+             if (nspecial .lt. 4) call quit(1,'evpc_core',
+     &            'TR0 with <4 me_lists')
+             ffspc => me_special(4)%mel%fhand
+             trafo = .true.
           else
             ffspc => ffscr(iopt)%fhand
             trafo = .false.
@@ -292,16 +301,20 @@ c dbg
             call assign_me_list(me_scr(iopt)%mel%label,
      &                          me_opt(iopt)%mel%op%name,op_info)
             ! use daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(3)%mel%label,
      &                             me_special(3)%mel%op%name,op_info)
-
             ! calculate transformed residual
             allocate(xret(depend%ntargets),idxselect(depend%ntargets))
             nselect = 0
             call select_formula_target(idxselect,nselect,
      &                  me_trv(iopt)%mel%label,depend,op_info)
-            call switch_mel_record(me_special(1)%mel,irecscr)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call  switch_mel_record(me_special(4)%mel,irecscr)
+            else
+               call switch_mel_record(me_special(1)%mel,irecscr)
+            endif
+
             call switch_mel_record(me_scr(iopt)%mel,irecscr)
             ! pretend that me_trv is not up to date
             call reset_file_rec(me_trv(iopt)%mel%fhand)
@@ -310,19 +323,29 @@ c dbg
             ! residual norm (nselect should be 1):
             xrsnrm(iroot,iopt) = xret(idxselect(1))
             deallocate(xret,idxselect)
+
+!     set all single excitations to zero if requestes
+!     after long deliberation, I decided to also include V,V so one can be sure to include
+!     **all** singular excitations even if T1 changes
+
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
+            endif
+
 c dbg
+C            if (iopt .ne. 2) then
 c            print *,'residual vector before transformation:'
 c            call vec_from_da(ffspc,
 c     &        irecscr,xbuf1,nwfpar(iopt))
 c            do idx = 1, nwfpar(iopt)
 c              print *,idx,xbuf1(idx)
 c            end do
-c            print *,'transformed residual vector:'
-c            call vec_from_da(me_scr(iopt)%mel%fhand,
-c     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
-c            do idx = 1, nwfpar(iopt)
-c              print *,idx,xbuf1(idx)
-c            end do
+c            call print_list('transformed residual vector:',
+c     &           me_scr(iopt)%mel,"LIST",
+c     &           -1d0,0d0,
+c     &           orb_info,str_info)
+c            endif
 c dbgend
 
           end if
@@ -339,7 +362,7 @@ c dbgend
         end if
 
       end do
-      
+
       ! number of new directions
       nnew = irecscr-1
       if (nnew.gt.0) then
@@ -362,6 +385,7 @@ c dbgend
             ndim_rsbsp = nred
             ndim_ssbsp = nred
           else
+!> @TODO implement evpc_core with restart possibility.
             call quit(1,'evpc_core','baustelle')
           end if
 
@@ -369,13 +393,15 @@ c dbgend
 
         ! divide new directions by preconditioner
         do iopt = 1, nopt
-
           select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf,optinf_prc_spinp,
-     &         optinf_prc_prj,optinf_prc_spinrefp)
+          case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
+     &         ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
               ffspc => me_special(1)%mel%fhand
               trafo = .true.
+            elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               ffspc => me_special(4)%mel%fhand
+               trafo = .true. 
             else
               ffspc => ffscr(iopt)%fhand
               trafo = .false.
@@ -387,14 +413,31 @@ c dbgend
                 call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                           nwfpar(iopt))
                 ! scale residual for numerical stability:
+
                 xnrm = 0d0
                 do jopt = 1, nopt
                   xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
                 end do
                 xnrm = sqrt(xnrm)
+c dbg
+c                print *,"xnorm:",xnrm
+c dbgend                
 c                xnrm = 1d0
-                xshf = -xeig(idxroot(iroot),1)
+c dbg
+c                print *,"precon not yet applied. "
+c                do idxdbg = 1, nwfpar(iopt)
+c                   print *,idxdbg,xbuf1(idxdbg)
+c                end do
+c dbgend
+                xshf = -xeig(idxroot(iroot),1) 
                 call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
+c dbg
+c                print *,"debug shift:",xshf
+c                print *,"precon applied. ",nwfpar(iopt),"entries"
+c                do idxdbg = 1, nwfpar(iopt)
+c                   print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
+c                end do
+c dbgend
                 if (nopt.eq.1) then
                   xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
                   call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
@@ -413,6 +456,8 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
                 end do
                 xnrm = sqrt(xnrm)
                 xshf = -xeig(idxroot(iroot),1)
+                ! decrease xshf in first iteration
+                if (iter .eq. 1) xshf=0.8d0*xshf
                 call da_diavec(ffspc,iroot,0d0,
      &                   ffscr(iopt)%fhand,iroot,
      &                   1d0/xnrm,me_dia(iopt)%mel%fhand,
@@ -426,6 +471,10 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
      &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
      &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
               ! assign op. with list containing the scratch trial vector
+c dbg
+c               print *, "assign ",me_scr(iopt)%mel%label," to ",
+c     &              me_opt(iopt)%mel%op%name
+c dbgend
               call assign_me_list(me_scr(iopt)%mel%label,
      &                            me_opt(iopt)%mel%op%name,op_info)
               do iroot = 1, nnew
@@ -449,9 +498,22 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
      &                           xnrm,.false.)
 
                 else
+c dbg
+c                  print *,"iopt=",iopt
+c                  call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c dbgend
                   call evaluate2(fspc(1),.false.,.false.,
-     &                           op_info,str_info,strmap_info,orb_info,
-     &                           xnrm,.false.)
+     &                 op_info,str_info,strmap_info,orb_info,
+     &                 xnrm,.false.)
+c dbg
+c                  call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c dbgend
                 end if
                 if (xnrm.lt.1d-12) call warn('evpc_core',
      &               'Nothing left after projection!')
@@ -490,7 +552,7 @@ c              xnrm = 1d0
           ! if requested, transform new subspace vectors
           if (trafo) then
             ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
             ! assign op. with original list 
@@ -504,8 +566,13 @@ c              xnrm = 1d0
             call select_formula_target(idxselect,nselect,
      &                  me_trv(iopt)%mel%label,depend,op_info)
             do iroot = 1, nnew
-              call switch_mel_record(me_special(1)%mel,iroot)
-              call switch_mel_record(me_opt(iopt)%mel,iroot)
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                  call  switch_mel_record(me_special(4)%mel,iroot)
+               else
+                  call switch_mel_record(me_special(1)%mel,iroot)
+               endif
+
+               call switch_mel_record(me_opt(iopt)%mel,iroot)
               ! pretend that me_trv is not up to date
               call reset_file_rec(me_trv(iopt)%mel%fhand)
               call frm_sched(xret,flist,depend,idxselect,nselect,
@@ -548,6 +615,7 @@ c dbgend
 
         end do ! iopt
 
+
         do iroot = 1, nnew
           getnewrec = .true.
           do iopt = 1, nopt
@@ -557,6 +625,10 @@ c dbgend
               call assign_me_list(me_scr(iopt)%mel%label,
      &                          me_opt(iopt)%mel%op%name,op_info)
 
+c dbg 
+c              call print_list("scratch trial vec", me_scr(iopt)%mel,
+c     &             "NORM",0,0,orb_info,str_info)
+c dbgend
               ! calculate metric * scratch trial vector
               allocate(xret(depend%ntargets),idxselect(depend%ntargets))
               nselect = 0
@@ -567,6 +639,7 @@ c dbgend
                 if (iroot.eq.1) ioff_s = irec-1
                 getnewrec = .false.
               end if
+
               call switch_mel_record(me_met(iopt)%mel,irec)
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call frm_sched(xret,flist,depend,idxselect,nselect,

@@ -100,4 +100,5 @@
      &     ABORT*5            = 'ABORT',
      &     EVP_PACKED_OP*13   = 'EVP_PACKED_OP',
      &     INV_PACKED_OP*13   = 'INV_PACKED_OP',
-     &     MULT_PACKED_OP*14  = 'MULT_PACKED_OP'
+     &     MULT_PACKED_OP*14  = 'MULT_PACKED_OP',
+     &     MODIFY_BLOCKS*13   = 'MODIFY_BLOCKS'

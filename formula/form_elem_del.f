@@ -142,7 +142,7 @@ c          endif
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'delete_non_fact','command undefined here')
+          call quit(1,'form_elem_del','command undefined here')
         end select
 
         ! Exit or move to the next item.

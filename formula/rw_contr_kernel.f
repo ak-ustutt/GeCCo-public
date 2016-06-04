@@ -31,7 +31,7 @@
         read(lu,end=100) contr%fac,idx,buffer(1:idx)
         ! if we make it up to here in this case:
         if (idx.gt.lbuf)
-     &     call quit(0,'rd_contr','too long record')
+     &     call quit(0,'rw_contr_kernel','too long record')
 
         contr%iblk_res = abs(buffer(1))
         contr%dagger = buffer(1).lt.0
@@ -197,6 +197,6 @@
       goto 200
  103  write(lulog,*) 'insufficient buffer size'
 
- 200  call quit(1,'wrt_contr','error writing contraction')
+ 200  call quit(1,'rw_contr_kernel','error writing contraction')
 
       end

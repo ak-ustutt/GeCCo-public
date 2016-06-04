@@ -109,7 +109,8 @@ c            xnrm2 = xnrm2 +
       if (nblkmax.le.0) then
         write(lulog,*) 'free memory (words):  ',ifree
         write(lulog,*) 'block length (words): ',ffopa%reclen
-        call quit(1,'xnormop','not even 1 record fits into memory?')
+        call quit(1,'blk_norm_for_list',
+     &              'not even 1 record fits into memory?')
       end if
 
       do while(jblk.le.opa%n_occ_cls-1)

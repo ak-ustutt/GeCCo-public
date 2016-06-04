@@ -72,11 +72,11 @@
       icycle = icycle+1
       level  = level+1
       if (level.gt.maxlevel)
-     &     call quit(1,'idx_next_target',
+     &     call quit(1,'next_target_rec',
      &          'Too many nested dependencies ... '//
      &          'I suspect a circular dependency ... quitting')
       if (icycle.gt.maxcycles)
-     &     call quit(1,'idx_next_target','infinite loop?')
+     &     call quit(1,'next_target_c','infinite loop?')
 
       ! any dependencies?
       if (tgt_in%n_depends_on.gt.0) then

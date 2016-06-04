@@ -84,7 +84,7 @@ c     &     hop
 
       if (orb_info%ntoob.gt.255) then
         write(lulog,*) 'number of orbitals: ',orb_info%ntoob
-        call quit(0,'import_h2_dalton',
+        call quit(0,'import_h2_dalton64',
      &       'not yet prepared for >255 orbitals')
       end if
 
@@ -99,7 +99,7 @@ c     &     hop
       read(lumo2)
       read(lumo2) lbuf_, itrlevel
       if (itrlevel.lt.10)
-     &     call quit(0,'import_h2_dalton',
+     &     call quit(0,'import_h2_dalton64',
      &     'you must set DALTON transformation level to 10!')
       
       ifree = mem_setmark('import_h2')
@@ -126,7 +126,8 @@ c      ifree = mem_alloc_int(ibuf,lbuf,'mo2_ibuff')
       if (nblkmax.le.0) then
         write(lulog,*) 'free memory (words):  ',ifree
         write(lulog,*) 'block length (words): ',ffham%reclen
-        call quit(1,'get_h2','not even 1 record fits into memory?')
+        call quit(1,'import_h2_dalton64',
+     &               'not even 1 record fits into memory?')
       end if
 
 cmh   determine number of first 2-el. block

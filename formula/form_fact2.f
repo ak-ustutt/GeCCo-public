@@ -162,7 +162,7 @@ c dbg
 
       if (.not.found) then
         call prt_contr2(lulog,contr,op_info)
-        call quit(1,'form_fact','Did not find any factorization!')
+        call quit(1,'form_fact2','Did not find any factorization!')
       end if
 
       call resize_contr(contr,contr%nvtx,contr%narc,0,nlevel_best)
@@ -242,7 +242,7 @@ c dbg
       integer, external ::
      &     joint_idx
      
-      if (orb_info%nsym.eq.0) call quit(1,'form_fact2_r1','buggy nsym!')
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact_rec','buggy nsym!')
       if (ntest.ge.1000) then
         call write_title(lulog,wst_dbg_subr,
      &       'form_fact_rec(ursively) at work')
@@ -269,7 +269,7 @@ c dbg
 
       ! get list of (non-redundant) arcs, ordered according to
       ! contractraction strength (descending)
-      if (orb_info%nsym.eq.0) call quit(1,'form_fact2_rc','buggy nsym!')
+      if (orb_info%nsym.eq.0) call quit(1,'form_fact_rec','buggy nsym!')
       call get_arc_list(arc_list,len_list,contr,orb_info)
 
       do ilist = 1, len_list

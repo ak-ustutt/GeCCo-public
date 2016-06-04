@@ -56,12 +56,12 @@
 
       ngraph = strmap_info%mxgraph
       if (ngraph.lt.str_info%ngraph)
-     &     call quit(1,'strmap_man_c',
+     &     call quit(1,'strmap_man_spprj',
      &     'you forgot to update the maps after adding a new graph')
       idx_spprjmap => strmap_info%idx_spprjmap
 
       if (strmap_info%ffstrmap%unit.le.0)
-     &     call quit(1,'strmap_man',
+     &     call quit(1,'strmap_man_spprj',
      &     'ffstrmap must be open when calling strmap_man')
 
       blk_loop: do idx = 1, nblk

@@ -35,7 +35,7 @@
         occ_scr = 0
         nidx = int8_expand(topo(irow,kvtx),base,occ_scr)
         if (nidx.gt.ngastp*2)
-     &       call quit(1,'topo_get_cnt_j0','range 2')
+     &       call quit(1,'topo_occ_from_row','range 2')
         occ = occ + occ_scr
       end do
       do kvtx = 1, nj_res
@@ -43,7 +43,7 @@
         occ_scr = 0
         nidx = int8_expand(xlines(irow,kvtx),base,occ_scr)
         if (nidx.gt.ngastp*2)
-     &       call quit(1,'topo_get_cnt_j0','range 3')
+     &       call quit(1,'topo_occ_from_row','range 3')
         occ = occ + occ_scr
       end do
 

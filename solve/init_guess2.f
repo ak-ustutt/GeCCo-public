@@ -37,7 +37,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=12), parameter ::
      &     i_am = 'init_guess2 '
 
@@ -86,7 +86,7 @@
      &      xret(:), xbuf1(:), xbuf2(:), xlist_all(:), xlist(:,:)
 
       real(8), external ::
-     &     da_ddot
+     &     da_ddot,xnormop
 
       if (ntest.gt.100) call write_title(luout,wst_dbg_subr,i_am)
 
@@ -96,7 +96,6 @@
       allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
      &     idxlist_ba(maxtrials))
       allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
-
       xlow = huge(xlow)
       do iopt = 1, nopt
         call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
@@ -110,7 +109,6 @@ c        write(*,*) 'xlist ',iopt
 c        write(*,'(5f12.6)') xlist(1:ntrials(iopt),iopt)
 c dbg
       end do
-
       call merge_min_lists(xlist_all,idxlist_all,ntrials_all,
      &     xlist,idxlist,
      &     nopt,maxtrials,ntrials,choice)
@@ -179,16 +177,18 @@ c dbg
         end if
 
         do iguess = 1, ntrials_all
-          
           iopt = idxlist_all(1,iguess)
 
          ! transformed preconditioner => transformed initial guess vector
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-            me_pnt => me_special(1)%mel
-            trafo = .true.
+             me_pnt => me_special(1)%mel
+             trafo = .true.
+          else if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+             me_pnt => me_special(4)%mel
+             trafo = .true.
           else
-            me_pnt => me_trv(iopt)%mel
-            trafo = .false.
+             me_pnt => me_trv(iopt)%mel
+             trafo = .false.
           end if
 
           nset = 0
@@ -243,7 +243,7 @@ c dbg
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
             ! use non-daggered transformation matrix if requested
-            if (nspecial.eq.3)
+            if (nspecial.ge.3)
      &         call assign_me_list(me_special(2)%mel%label,
      &                             me_special(2)%mel%op%name,op_info)
             ! do the transformation
@@ -255,6 +255,12 @@ c dbg
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
+
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call set_blks(me_trv(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               xret(idxselect(1))=xnormop(me_trv(iopt)%mel)
+               write(*,*) "debug:  new norm",xret(idxselect(1))
+            endif
 
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)

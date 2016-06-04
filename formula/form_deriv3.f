@@ -56,7 +56,7 @@
       call quit(1,'form_deriv3','call to obsolete routine')
 
       if (fl_input%command.ne.command_set_target_init)
-     &       call quit(1,'form_deriv',
+     &       call quit(1,'form_deriv3',
      &       'input formula definition must start with [INIT]')
       
       if (init) then
@@ -116,7 +116,7 @@
         end do
 
         if (.not.associated(fl_input_pnt%next))
-     &       call quit(1,'form_deriv',
+     &       call quit(1,'form_deriv3',
      &       'unexpected end of list (input)')
         fl_input_pnt => fl_input_pnt%next
 

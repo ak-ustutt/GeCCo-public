@@ -2,7 +2,9 @@
       subroutine frm_sched(xret,flist,depend_info,idxselect,nselect,
      &         init,no_skip,op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
-*     wrapper for actual scheduler routines
+!>     wrapper for actual scheduler routines
+!!
+!!     default scheduler is frm_sched2
 *----------------------------------------------------------------------*
       implicit none
 
@@ -73,12 +75,12 @@ c stat
 c stat
 
       select case (irt_sched)
-      case (0)
+      case (0) !only 0 if requested by the schedule argument
         if (.not.init) call quit(1,'frm_sched',
      &                      'init option not (yet) for this scheduler')
         call frm_sched1(xret,flist,depend_info,idxselect,nselect,
      &         op_info,str_info,strmap_info,orb_info)
-      case (1)
+      case (1) ! default
         call frm_sched2(xret,flist,depend_info,idxselect,nselect,
      &         init,no_skip,op_info,str_info,strmap_info,orb_info)
       case default

@@ -770,6 +770,8 @@
       call add_command_proto(PRINT_,tgt_info)
       call set_arg('_PROTO_',PRINT_,'STRING',0,tgt_info,
      &     val_str=' ',req=.true.)
+      call set_arg('_PROTO_',PRINT_,'OUTPUT',0,tgt_info,
+     &     val_str='UOUT',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PUSH_RESULT,tgt_info)
       call set_arg('_PROTO_',PUSH_RESULT,'LIST',0,tgt_info,

@@ -37,7 +37,7 @@
 
       idx = idx_mel_list(label,op_info)
       if (idx.lt.0)
-     &       call quit(1,'process_me_lists','Label not on list: "'//
+     &       call quit(1,'add_unity_drv','Label not on list: "'//
      &       trim(label)//'"')
 
       mel_pnt => op_info%mel_arr(idx)%mel

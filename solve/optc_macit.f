@@ -569,7 +569,7 @@ c dbg
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
 
             if (nincore.lt.2) 
-     &              call quit(1,'opti_macit','need more memory')
+     &              call quit(1,'optc_macit','need more memory')
 
             call optc_prc_traf(
      &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,

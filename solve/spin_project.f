@@ -25,7 +25,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       integer, intent(in) ::
      &     nwfpar

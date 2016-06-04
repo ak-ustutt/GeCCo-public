@@ -107,7 +107,7 @@
           end do
         end do
       case default
-        call quit(1,'rank_occ','unknown mode_str: ',trim(mode_str))
+        call quit(1,'max_rank_op','unknown mode_str: ',trim(mode_str))
       end select
 
       return

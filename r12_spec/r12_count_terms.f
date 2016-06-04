@@ -69,7 +69,7 @@
      &         nfound_c12 = nfound_c12+1
         end do
         if (nfound_top.gt.4.or.nfound_c12.gt.4)
-     &       call quit(1,'cc_count_terms','> 4-fold commutator?')
+     &       call quit(1,'r12_count_terms','> 4-fold commutator?')
         icls = (nfound_top+nfound_c12)*(nfound_top+nfound_c12+1)/2
      &         + nfound_c12 + 1
         n_per_class(icls) = n_per_class(icls)+1 

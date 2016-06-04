@@ -387,7 +387,8 @@ c      end function
       if (present(context)) then
         call find_node(keyword_root,current_up,context)
         if (.not.associated(current_up))
-     &      call quit(1,'keyword_add','unknown context "'//context//'"')
+     &      call quit(1,'keyword_add_'
+     &                 ,'unknown context "'//context//'"')
       end if
 
       ! add new keyword at tail of list
@@ -1175,11 +1176,12 @@ c        ipst = first_nonblank(line)
      &    call keyword_list(lulog,keyword_history,show_args=.true.)
 
       if (ierr.gt.0)
-     &     call quit(0,'parse_input','input errors detected, see above')
+     &     call quit(0,'keyword_parse'
+     &                ,'input errors detected, see above')
 
       return
 
- 200  call quit(0,'parse_input','I/O error on reading input file')
+ 200  call quit(0,'keyword_parse','0/O error on reading input file')
       
       return
       

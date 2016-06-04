@@ -110,7 +110,7 @@ c     &     idx_oplist2
           end do
 
           if (nham.ne.1)
-     &         call quit(1,'r12_truncation','strange: nham.ne.1')
+     &         call quit(1,'r12_truncation2','strange: nham.ne.1')
 
           ! well, old behaviour only for trunc_t1x.eq.-1
           ! else, we forget about these operators and treat them later:
@@ -170,7 +170,7 @@ c     &     idx_oplist2
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'r12_truncation','command undefined here')
+          call quit(1,'r12_truncation2','command undefined here')
         end select
 
         ! Exit or move to the next item.

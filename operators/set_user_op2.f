@@ -1,17 +1,18 @@
 *----------------------------------------------------------------------*
+!>     set up occupations for a general operator described by
+!>     occ_def:   user provided occupations
+!>     irestr:    restriction on subspaces 
+!>                min, max. number of operators after completion of
+!>                subspace within H/P/V/X, for C/A
+!>       new: the array freeze(1:2,1:njoined) contains the max number
+!>            of active electrons in frozen shells (0 = all frozen)
+!>            per vertex -> allow for semi-frozen cores
+!     old freeze syntax
+!     freeze(1): use settings on iadgas to enforce frozen C occupations
+!     freeze(2): use settings on iadgas to enforce frozen A occupations
+*----------------------------------------------------------------------*
       subroutine set_user_op2(op,name,type,
      &     occ_def,nblk,njoined,irestr,freeze,min_formal,orb_info)
-*----------------------------------------------------------------------*
-*     set up occupations for a general operator described by
-*     occ_def:   user provided occupations
-*     irestr:    restriction on subspaces 
-*                min, max. number of operators after completion of
-*                subspace within H/P/V/X, for C/A
-*     freeze(1): use settings on iadgas to enforce frozen C occupations
-*     freeze(2): use settings on iadgas to enforce frozen A occupations
-*       new: the array freeze(1:2,1:njoined) contains the max number
-*            of active electrons in frozen shells (0 = all frozen)
-*            per vertex -> allow for semi-frozen cores
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -61,7 +62,8 @@ c     &     freeze(2)
       end if
 
       if (len_trim(name).gt.len_opname)
-     &    call quit(1,'set_user_op','name too long: "'//trim(name)//'"')
+     &    call quit(1,'set_user_op2','name too long: "'//
+     &                                trim(name)//'"')
 
       if (type.ne.optyp_operator.and.type.ne.optyp_density) then
         if (type.eq.optyp_intermediate) then
@@ -70,7 +72,7 @@ c     &     freeze(2)
         else
           write(lulog,*) 'type: ',type,' ?'
         end if
-        call quit(1,'set_user_op','illegal type specification')
+        call quit(1,'set_user_op2','illegal type specification')
       end if
 
       if (nblk.le.0) then

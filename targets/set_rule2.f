@@ -26,10 +26,10 @@
       idx_tgt = idx_target(name_target,tgt_info)
 
       if (idx_tgt.le.0)
-     &     call quit(1,'set_rule',
+     &     call quit(1,'set_rule2',
      &     'target not (yet) defined: '//trim(name_target))
       if (len_trim(command).gt.len_command_name)
-     &     call quit(1,'set_rule',
+     &     call quit(1,'set_rule2',
      &     'name of rule too long: '//trim(command))
 
       tgt => tgt_info%array(idx_tgt)%tgt

@@ -138,7 +138,7 @@ c      end if
       do ilabel = 1, nlabels
         idx = idx_oplist2(label(ilabel),op_info)
         if (idx.le.0)
-     &       call quit(1,'set_mp2_r12_lagrangian',
+     &       call quit(1,'set_r12_lagrangian',
      &       'label not on list: '//trim(label(ilabel)))
         if (ilabel.eq.1) idxlcc = idx
         if (ilabel.eq.2) idxham = idx

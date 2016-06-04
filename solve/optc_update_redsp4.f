@@ -39,7 +39,7 @@
       real(8), intent(inout) ::
      &     xmat(mxdim,*), smat(mxdim,*),
      &     xvec(mxdim,*), xbuf1(*), xbuf2(*), xbuf3(*)
-      
+
       integer ::
      &     ii, jj, irec, jrec, jrec_last, rhsrec, rhsrec_last
 
@@ -118,14 +118,14 @@
       do irec = 1, ndim
 
         ii = iordv(irec)
-        
+
         ! if we can hold the vector in core, load it
         if (nincore.ge.2)
      &       call vec_from_da(ff_vsbsp,irec,xbuf1,nwfpar)
-        
+
         ! loop over records of |w>-file
         do jrec = 1, ndim
-          
+
           jj = iordw(jrec)
 
           ! is this a block of xmat to be updated?
@@ -157,7 +157,7 @@ c dbgend
 
         ! loop over records of |x>-file
         do jrec = 1, ndim
-          
+
           jj = iordx(jrec)
 
           ! is this a block of xmat to be updated?
@@ -189,7 +189,7 @@ c              end if
               ! avoid loading if record is in core
               if (rhsrec_last.ne.rhsrec) then
                 rhsrec_last = rhsrec
-                call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)                
+                call vec_from_da(ff_rhs,rhsrec,xbuf3,nwfpar)
               end if
                 xvec(ii,rhsrec) = xvec(ii,rhsrec)
      &                  + ddot(nwfpar,xbuf1,1,xbuf3,1)

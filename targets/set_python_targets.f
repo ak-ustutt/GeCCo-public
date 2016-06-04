@@ -100,7 +100,7 @@ c dbg
       end if
 
       if (.not.file_exists)
-     &     call quit(1,'set_interface_targets',
+     &     call quit(1,'verify_python_module',
      &     "It seems that the module for Python interface is "//
      &     "not acessible. Add the proper directory to the "//
      &     "PYTHONPATH environment variable.")

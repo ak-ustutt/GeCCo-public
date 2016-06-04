@@ -1,16 +1,20 @@
 *----------------------------------------------------------------------*
+!>     initialize file containing ME-list mel
+!>
+!>    @param mel ME-List whose file will be initialized
+!>    @param rec currently active record
+!>    @param rec_lo lower bound for rec
+!>    @param rec_hi higher bound for rec
+!>    @param incore parameter to control the use of incore buffers
+*----------------------------------------------------------------------*
       subroutine init_mel_file(mel,rec,rec_lo,rec_hi,incore)
 *----------------------------------------------------------------------*
-*     initialize file containing ME-list mel
-*     rec is the current active record (set to 1 if rec<=0 on input)
-*     rec_lo, rec_hi are the bounds for rec (for later calls to
-*     switch_mel_record(); both set to value of rec if <=0 on input)
-*     incore==0, no incore buffers
-*     incore==1, incore buffers for rank one operators
-*     incore>1 not supported (I suggest to handle the incore stuff
-*         in frm_schedX() when we know how much core memory can be
-*         spent for this purpose)
-*----------------------------------------------------------------------*
+!     switch_mel_record(); both set to value of rec if <=0 on input)
+!     incore==0, no incore buffers
+!     incore==1, incore buffers for rank one operators
+!     incore>1 not supported (I suggest to handle the incore stuff
+!         in frm_schedX() when we know how much core memory can be
+!         spent for this purpose)
       implicit none
 
       include 'stdunit.h'

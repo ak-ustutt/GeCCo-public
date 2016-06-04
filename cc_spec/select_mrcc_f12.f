@@ -180,7 +180,7 @@
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'select_f12x','command undefined here')
+          call quit(1,'select_mrcc_f12','command undefined here')
         end select
 
         ! Exit or move to the next item.
@@ -341,7 +341,7 @@
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'select_f12x','command undefined here')
+          call quit(1,'select_mrcc_f12','command undefined here')
         end select
 
         ! Exit or move to the next item.
@@ -350,7 +350,7 @@
 
       enddo
       case default
-        call quit(1,'select_f12x','mode?? "'//trim(mode)//'"')
+        call quit(1,'select_mrcc_f12','mode?? "'//trim(mode)//'"')
       end select
 
       return

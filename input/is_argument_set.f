@@ -26,7 +26,7 @@
      &     iargcount, icount_target
 
       if (.not.associated(keyword_history%down_h))
-     &     call quit(1,'is_keyword_set','invalid keyword history')
+     &     call quit(1,'is_argument_set','invalid keyword history')
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount

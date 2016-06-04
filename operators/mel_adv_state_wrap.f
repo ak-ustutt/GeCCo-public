@@ -29,7 +29,7 @@
       end interface
 
       integer, parameter ::
-     &     ntest = 2
+     &     ntest = 00
 
       integer, intent(in) ::
      &     max_state, nmel

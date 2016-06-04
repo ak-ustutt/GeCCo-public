@@ -3,8 +3,10 @@ import xml.etree.ElementTree as ET #xml and DOM functionality
 import os # to find the set_keywords file
 
 
-path = os.path.dirname(__file__)
-keyword_file=path+'/../../input/set_keywords.f'
+
+
+keyword_file=os.getenv("GECCO_DIR")+"/input/set_keywords.f"
+
 
 output_file='./config_xml' # not used here , module originated from a trial to create a config file
 
@@ -30,11 +32,10 @@ regexp_argument_extr = re.compile("^ +call +argument_add *\( *"+
      # a string in single quotes ''
 #the next terms should be clear.
 # the construction (?: )? means zero or one of the matches in the the parenthesis
-# <rest> is expected to be ")" or , it wil be printed for debugging
 
-regexp_empty=re.compile("^ *\n")
 #matches an empty line, 
-# important, may not match an empty string
+# important, does (maybe) not match an empty string
+regexp_empty=re.compile("^ *\n")
 
 regexp_comment_line=re.compile("^C|^ +!",flags=re.I)
 #matches commented out lines
@@ -68,10 +69,11 @@ class UnknownContextError(Exception):
 
 _g_arguments=[]
 _g_keywords=[]
-
 #yeah, global variables are bad
-root=ET.Element("config")
+
+root=ET.Element("config", attrib={"name":"root"})
 tree=ET.ElementTree(element=root)
+
 
 def _read_firstline(f,line):
     """ finds the next line that is the beginning of a desired subroutine call"""
@@ -94,32 +96,34 @@ def _find_continuation(f,line):
         next_line=f.readline()
     return re.sub("\n","",line),next_line
 
-def _extract_parameters(line):
-        match_key=regexp_keyword_extr.match(line)
-        match_arg=regexp_argument_extr.match(line)
-
-        if match_arg:
-            _g_arguments.append(match_arg)
+def _extract_parameters(line,arguments,keywords):
+    """extracts keywords and arguments to the global arrays"""
+    match_key=regexp_keyword_extr.match(line)
+    match_arg=regexp_argument_extr.match(line)
+    if match_arg:
+        arguments.append(match_arg)
 #dbg
 #            print match_arg.group("argument")
 #            print match_arg.group("type") 
 #            print match_arg.group("len")
 #            print "contest",match_arg.group("context")
 #dbg
-        elif match_key:
-            _g_keywords.append(match_key)
+    elif match_key:
+        keywords.append(match_key)
 #dbg
 #            print match_key.group("keyword")
 #            print "context", match_key.group("context")
 #dbg
-        else:
-            raise Exception("line could not be extracted:\n"+line)
-
+    else:
+        raise Exception("line could not be extracted:\n"+line)
+    return arguments,keywords
+        
 def _read_keyword_file(keyword_file):
     with open(keyword_file,'r') as f:
         line="\n"
         next_line="\n"
         i=0
+        arguments,keywords=[],[]
         while line != "":
             i+=1
             # Readline returns "" after EOF
@@ -127,9 +131,9 @@ def _read_keyword_file(keyword_file):
             if line=="":
                 break
             line,next_line=_find_continuation(f,line)
-            match=_extract_parameters(line)
+            arguments,keywords=_extract_parameters(line,arguments,keywords)
             line=next_line
-
+    return arguments,keywords
 
 
 
@@ -145,7 +149,7 @@ def _read_keyword_file(keyword_file):
 def _find_parent_core(context,root):
     """gets the parent Element for a  keyword or argument from context
     """
-    for item in root.findall("./"):
+    for item in root.getchildren():
         #iterates through all children of root.
         regexp_context_extr=re.compile("^"+item.get("name")+"(?:\.|$)"+"(?P<rest>.+)?")
         match=regexp_context_extr.match(context)
@@ -158,17 +162,8 @@ def _find_parent_core(context,root):
         elif match:
             #there was a match but all context is resolved
             return item
+
     raise UnknownContextError(context) 
-
-
-
-def _find_parent_wrap(match,root):
-    """A wrapper for the wrapper so I can reuse the internal wrapper
-
-    """
-    if match.group("context")==None:
-        return root  
-    return _find_parent(match.group("context"),root)
 
 
 def _find_parent  (context,root):   
@@ -177,10 +172,28 @@ def _find_parent  (context,root):
     try:
         return _find_parent_core(context,root)
     except UnknownContextError as ex :
-        print "default_keywords:"
+        print "default_keywords.py"
         print "no context found for: " ,match.group("keyword")
         print match.group("context")+"\n at level:"+ex.context
 #        raise UnknownContextError(match.group("context")+"\n at level:"+ex.context)
+
+
+
+def _find_parent_wrap(match,root):
+    """A wrapper for the wrapper so I can reuse the internal wrapper
+
+    """
+#dbg
+#    try:
+#        print "name of keyword",match.group("keyword")
+#    except:
+#        print "name of argument",match.group("argument")
+#dbg
+    if match.group("context")==None:
+        return root  
+    return _find_parent(match.group("context"),root)
+
+
 
 
 
@@ -190,15 +203,12 @@ def _find_tag(match_key):
 
     this implements my naming conventions
     """
-    assert match_key.group("keyword") != None
-    #checks if this is a keyword and has a name
-
+    #top level keywords are general contexts
     if match_key.group("context")==None:
         return "context"
-        #top level keywords are general contexts
+    #subkeywords of method are methods
     elif match_key.group("context") =="method" and match_key.group("keyword")!="truncate" :
         return "method"
-        #subkeywords of method are methods
     else:
         return "keyword"
 
@@ -206,22 +216,23 @@ def _append_keyword(match_key,root):
     """ appends a keyword to the xml tree as an element"""
     new_elem=ET.Element(_find_tag(match_key))
     new_elem.set("name",str(match_key.group("keyword")))
-    if (new_elem.tag=="method"):
-        new_elem.set("file","none")
-        #file that defines the method(relative to GECCO_DIR)
-        new_elem.set("lang","none")
-        #language of the file (python or fortran)
+#    if (new_elem.tag=="method"):
+#        new_elem.set("file","none")
+#        #file that defines the method(relative to GECCO_DIR)
+#        new_elem.set("lang","none")
+#        #language of the file (python or fortran)
     assert match_key!=None
     parent=_find_parent_wrap(match_key,root)
     parent.append(new_elem)
-
+    
 
 def _append_argument(match_arg,root):
     """ appends an argument to the xml tree as an element"""
     new_elem=ET.Element("argument")
     new_elem.set("name",str(match_arg.group("argument")))
-    new_elem.set("type",str(match_arg.group("type")))    
-    new_elem.set("length",str(max(match_arg.group("len"),1)))
+    new_elem.set("type",str(match_arg.group("type")))
+    if match_arg.group("len") is not None:
+        new_elem.set("length",str(match_arg.group("len")))
     new_elem.text=str(match_arg.group("value"))
 #    new_elem.set("name",match_key.group("argument"))
     parent=_find_parent_wrap(match_arg,root)
@@ -230,16 +241,16 @@ def _append_argument(match_arg,root):
         new_elem.append(ET.Comment(str(match_arg.group("comment"))))
         
 
-def _construct_xml_tree(tree):
+def _construct_xml_tree(tree, arguments, keywords):
     root=tree.getroot()
-    for match_item in _g_keywords:
+    for match_item in keywords:
 #dbg
 #        for item in root.iter():
 #            print item.get("name")
 #dbg
         assert match_item !=None
         _append_keyword(match_item,root)
-    for match_item in _g_arguments:
+    for match_item in arguments:
         _append_argument(match_item,root)
     return tree
 
@@ -340,8 +351,12 @@ def restructure_xml(file):
 
 
 
-_read_keyword_file(keyword_file)#writes to the global arrays
-default_keys=_construct_xml_tree(tree)
+
+default_keys=_construct_xml_tree(
+    tree,*_read_keyword_file(keyword_file))
+
+
+
 
 def find_by_context(context,name,tree=default_keys):
     full_context=context+"."+name

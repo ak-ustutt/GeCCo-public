@@ -31,7 +31,7 @@
      &     env_type
 
       integer, parameter ::
-     &     ntest = 100,
+     &     ntest =  00,
      &     len_short = 32, len_long = 256, maxsym = 8
 
       integer ::

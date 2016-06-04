@@ -1,8 +1,12 @@
 *----------------------------------------------------------------------*
-      subroutine assign_me_list(label_mel,label_op,op_info)
+!>     assign a ME-List to an operator
+!>
+!>     assign an existing ME-list with label "label_mel"
+!>     to operator "label_op" (must exist as well)
+!>     @param label_mel Label of the ME-LIST 
+!>     @param label_op Label of the operator
 *----------------------------------------------------------------------*
-*     assign an existing ME-list with label "label_mel"
-*     to operator "label_op" (must exist as well)
+      subroutine assign_me_list(label_mel,label_op,op_info)
 *----------------------------------------------------------------------*
       implicit none
 

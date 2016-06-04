@@ -181,7 +181,8 @@ c
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'delete_non_fact','command undefined here')
+          call quit(1,'freq_pattern_truncation',
+     &                'command undefined here')
         end select
 
         ! Exit or move to the next item.

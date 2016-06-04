@@ -49,7 +49,7 @@
         allocate(form_pnt%bcontr)
         call init_bcontr(form_pnt%bcontr)
       case default
-        call quit(1,'new_formula_item','unknown mode')
+        call quit(1,'init_fl_item','unknown mode')
       end select
 
       form_pnt%command = command

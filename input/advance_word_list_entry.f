@@ -39,7 +39,7 @@
           advance_word_list_entry = .true.
         end if   
       case default
-         call quit(1,'advance_word_list','illegal direction "'//
+         call quit(1,'advance_word_list_entry','illegal direction "'//
      &               direction//'"')
       end select
 

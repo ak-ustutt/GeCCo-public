@@ -76,7 +76,7 @@ c     &     occ_ol_vtx(:,:,:)
       end if
 
       if (abs(proto_main%fac).lt.1d-20) then
-        call quit(1,'gen_contr',
+        call quit(1,'gen_contr3',
      &       'called with zero or near-zero prefactor')
       end if
 

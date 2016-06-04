@@ -4,7 +4,7 @@ import gecco_modules.string_to_form as stf
 
 i_am="MRCCPT2lag.py"
 
-known_hamiltonians={"DYALL","REPT","F_EFF"}
+known_hamiltonians=["DYALL","REPT","F_EFF"]
 hamiltonian="DYALL"
 if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
@@ -28,7 +28,6 @@ print("3rd_E ", third_ord_energy, type(third_ord_energy))
 #------------------------------------------------------------------------------#
 
 new_target('DEF_FORM_PT_LAG')
-
 
 depend('DEF_T2g')
 depend('DEF_T1')

@@ -101,7 +101,7 @@ c      include 'def_filinf.h'
       end do
       if (len_trim(label_opmlt(1)).eq.0) then
         if (ncmpnd.gt.1)
-     &       call quit(1,'form_deriv',
+     &       call quit(1,'form_deriv2',
      &       'no multi-compound derivative without multiplication')
         idxmlt(1) = 0
       else

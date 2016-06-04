@@ -28,7 +28,7 @@
 
       idx = idx_target(name,tgt_info)
       if (idx.gt.0)
-     &     call quit(1,'add_target',
+     &     call quit(1,'add_target2',
      &     'target already exists: '//trim(name) )
 
       list_pnt => tgt_info%list
@@ -47,7 +47,7 @@
 
       ! add user-supplied label
       if (len_trim(name).gt.len_target_name)
-     &   call quit(1,'add_target','name too long: "'
+     &   call quit(1,'add_target2','name too long: "'
      &     //trim(name)//'"')
       list_pnt%tgt%name(1:len_target_name) = ' '
       list_pnt%tgt%type = ttype_gen ! now always generic

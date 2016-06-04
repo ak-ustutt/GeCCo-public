@@ -168,7 +168,7 @@ c        end if
         write(lulog,*) 'ivtx1 = ',ivtx1
         write(lulog,*) 'nvtx = ',nvtx
         call prt_contr3(lulog,contr_in,-1)        
-        call quit(1,'get_bc_info','ivtx1>nvtx?')
+        call quit(1,'get_bc_info3','ivtx1>nvtx?')
       end if
 
       isvtx2 = contr%svertex(ivtx2)
@@ -186,7 +186,7 @@ c        end if
           write(lulog,*) 'ivtx2 = ',ivtx2
           write(lulog,*) 'nvtx = ',nvtx
           call prt_contr3(lulog,contr_in,-1)        
-          call quit(1,'get_bc_info','ivtx2>nvtx?')
+          call quit(1,'get_bc_info3','ivtx2>nvtx?')
         end if
       else
         njoined_op(2) = 0

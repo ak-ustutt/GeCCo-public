@@ -49,7 +49,7 @@
 c      if (nmvleft.gt.0) call quit(1,'update_reo','mvleft needed?')
 
       if (idx2.le.idx1 .or. idx_merge.lt.idx1 .or. idx_merge.gt.idx2)
-     &     call quit(1,'update_reo','error 1')
+     &     call quit(1,'update_reo2','error 1')
 
       ! -------------------------------
       !  set up new permutation vector
@@ -71,7 +71,7 @@ c      idxmm = idxlist(idxmm,ireo,nel,1)
       idx2m = ireo(idx2m)
       idxmm = ireo(idxmm)
       if (idx1m.le.0.or.idx2m.le.0.or.idxmm.le.0)
-     &     call quit(1,'update_reo','inconsistent ireo (input)')
+     &     call quit(1,'update_reo2','inconsistent ireo (input)')
 
       ! FIX: exception:
       if (idxmm.lt.idx1m.and.idxmm.eq.1) then

@@ -1,5 +1,5 @@
 general
-  print=0
+  print=10
 orb_space
   shell type=occ,def=(3,1,1,0)
   shell type=closed,def=(1,0,0,0)

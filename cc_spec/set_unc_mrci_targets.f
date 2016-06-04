@@ -23,7 +23,7 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -39,7 +39,7 @@
      &     isym, msc, ims, ip, ih, cminexc, 
      &     cminh, cmaxh, cminp, cmaxp, cmaxexc, ciroot, maxroot, cmaxv,
      &     guess, refproj, spinexpec, n_states, i_state, optref,
-     &     ncnt, ncnt2, icnt, arglen, i, nnn
+     &     ncnt, ncnt2, icnt, arglen, i, nnn, iprint
       logical ::
      &     oldref, l_exist, writeF, multistate
       character(len_target_name) ::
@@ -68,6 +68,8 @@
       else
         msc = 0
       end if
+
+      iprint =max(iprlvl,ntest)
 
       ! get minimum and maximum numbers of excitations, holes, particles,
       ! valence-valence excitations
@@ -114,7 +116,7 @@
       call get_argument_value('calculate.solve.non_linear','optref',
      &     ival=optref)
 
-      if (ntest.ge.100) then
+      if (iprint.ge.5) then
         write(lulog,*) 'cminh      = ',cminh
         write(lulog,*) 'cmaxh      = ',cmaxh
         write(lulog,*) 'cminp      = ',cminp

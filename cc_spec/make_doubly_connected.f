@@ -108,7 +108,7 @@ c            iblk_op = vertex(ivtx)%iblk_op
 
         case default
           write(lulog,*)'command = ',form_pnt%command
-          call quit(1,'delete_non_fact','command undefined here')
+          call quit(1,'make_doubly_connected','command undefined here')
         end select
 
         ! Exit or move to the next item.

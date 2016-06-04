@@ -2,13 +2,13 @@
 !!
 !!This suroutine has mutiple uses depending on mode. 
 !!+ "":  scales all matrix elements by fac.
-!!+ mult: multiplies the MELs elementwise and ap
-!!+ square: squares all matrix elements and multiplies them by fac.
-!!+ precond: divides label_res elementwise by label_inp and applies fac(1).
-!!+ prc_thresh: sets all elements to at least fac.
+!!+ "mult": multiplies the MELs elementwise and ap
+!!+ "square": squares all matrix elements and multiplies them by fac.
+!!+ "precond"": divides label_res elementwise by label_inp and applies fac(1).
+!!+ "prc_thresh": sets all elements to at least fac.
+!!+ any other:  scales all matrix elements by fac.
 !!
-!!
-!!\param[in] mode one of: "square", "mult", "precond", "prc_thresh",
+!!\param[in] mode one of: "square", "mult", "precond", "prc_thresh" or empty
 !!\param[in] fac list of factors which are applied (repeatedly)
 !!\param[in] op_info
 !!\param[out] label_res
@@ -21,7 +21,8 @@
 
       integer, parameter ::
      &     ntest = 00
-      
+      character(len=13), parameter ::
+     &     i_am = 'scale_copy_op'
       include 'stdunit.h'
       include 'opdim.h'
       include 'def_orbinf.h'
@@ -95,6 +96,7 @@
      &    call quit(1,'scale_copy_op',
      &    'for mode precond, only a single factor must be given')
 
+
       idx_res = idx_mel_list(label_res,op_info)
       idx_inp = idx_mel_list(label_inp(1),op_info)
       idx_shape = -1
@@ -103,35 +105,38 @@
       if (idx_res.lt.0) then
         write(lulog,*) '"',trim(label_res),'"'
         write(lulog,*) idx_res
-        call quit(1,'scale_copy_op','label not on list (1)')
+        call quit(1,i_am,'result label not on list (1)')
       end if
       if (idx_inp.lt.0) then
         write(lulog,*) '"',trim(label_inp(1)),'"'
         write(lulog,*) idx_inp
-        call quit(1,'scale_copy_op','label not on list (2)')
+        call quit(1,i_am,'input label not on list')
       end if
 
-      same = idx_res.eq.idx_inp
-c      if (same) call quit(1,'scale_copy_op',
-c     &       'copy means to have a second list...')
+
+
 
       ! Point to the relevant operators and their associated files.
+      same = idx_res.eq.idx_inp
+      ! result List
       me_res => op_info%mel_arr(idx_res)%mel
       ffop_tgt => me_res%fhand
       if (.not.associated(ffop_tgt))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,i_am,'no file handle defined for '//
      &                  trim(me_res%label))
+
       open_close_res = ffop_tgt%unit.le.0
 
       if(open_close_res)then
         call file_open(ffop_tgt)
       endif
 
+      ! input List
       me_inp => op_info%mel_arr(idx_inp)%mel
       ffop_src => me_inp%fhand
       if (.not.same) then
         if (.not.associated(ffop_src))
-     &     call quit(1,'add_op','no file handle defined for '//
+     &     call quit(1,'scale_copy_op','no file handle defined for '//
      &                  trim(me_inp%label))
         open_close_inp = ffop_src%unit.le.0
         if (open_close_inp) then
@@ -177,7 +182,7 @@ c     &       'copy means to have a second list...')
 
       ! record length hopefully the same
       if (ffop_tgt%reclen.ne.ffop_src%reclen)
-     &   call quit(1,'scale_copy_op',
+     &   call quit(1,i_am,
      &             'not prepared for different reclen''s')
       nblkmax = ifree/ffop_src%reclen
       if (trim(mode).eq.'mult'.or.trim(mode).eq.'precond')
@@ -185,7 +190,7 @@ c     &       'copy means to have a second list...')
       if (nblkmax.le.0) then
         write(lulog,*) 'free memory (words):  ',ifree
         write(lulog,*) 'block length (words): ',ffop_src%reclen
-        call quit(1,'scale_copy_op',
+        call quit(1,i_am,
      &            'not even 1 record fits into memory?')
       end if
 

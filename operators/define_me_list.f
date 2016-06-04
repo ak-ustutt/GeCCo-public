@@ -1,13 +1,31 @@
 *----------------------------------------------------------------------*
+!>     define a new ME-list
+!>     @param[in] label_mel label of the new ME-List
+!>     @param[in] label_op label of the operator now assigned to (must exist)
+!>     @param[in] absym symmetry property
+!>     @param[in] casym symmetry property
+!>     @param[in] gamma symmetry property
+!>     @param[in] s2 symmetry property
+!>     @param[in] ms symmetry property
+!>     @param[in] ms_fix
+!>     @param[in] rec 
+!>     @param[in] rec_lo
+!>     @param[in] rec_hi
+!>     @param[in] diag_type
+!>     @param[in] gamdiag
+!>     @param[in] msdiag
+!>     @param[inout] op_info
+!>     @param[in] orb_info
+!>     @param[inout] str_info
+!>     @param[inout] strmap_info
+!>     it is assigned to operator "label_op" (must exist)
+!>     and has the symmetry properties as given in line 2 above
+!>     the range of active records is given in line 3 
+*----------------------------------------------------------------------*
       subroutine define_me_list(label_mel,label_op,
      &     absym,casym,gamma,s2,ms,ms_fix,
      &     rec,rec_lo,rec_hi,diag_type,gamdiag,msdiag,
      &     op_info,orb_info,str_info,strmap_info)
-*----------------------------------------------------------------------*
-*     define a new ME-list with label "label_mel"
-*     it is assigned to operator "label_op" (must exist)
-*     and has the symmetry properties as given in line 2 above
-*     the range of active records is given in line 3 
 *----------------------------------------------------------------------*
       implicit none
 
@@ -45,7 +63,7 @@
 
       ! the label should not exist previously ...
       if (idx_mel_list(label_mel,op_info).gt.0)
-     &     call quit(1,'def_me_list',
+     &     call quit(1,'define_me_list',
      &     'list exists already: "'//trim(label_mel)//'"')
       call add_me_list(label_mel,op_info)
       idx = idx_mel_list(label_mel,op_info)
@@ -54,7 +72,7 @@
       ! ... but the operator-label must be defined
       idx = idx_oplist2(label_op,op_info)
       if (idx.le.0)
-     &       call quit(1,'def_me_list',
+     &       call quit(1,'define_me_list',
      &     'operator not found: "'//trim(label_op)//'"')
       mel%op => op_info%op_arr(idx)%op
       ! set associated list on operator:

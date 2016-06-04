@@ -10,7 +10,7 @@
       include 'def_orbinf.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest =  00
 
       integer, intent(in) ::
      &     len, ishell(len)

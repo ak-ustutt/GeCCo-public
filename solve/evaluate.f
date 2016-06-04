@@ -1,18 +1,23 @@
-*----------------------------------------------------------------------*
-      subroutine evaluate(
-     &     label_form,init,
-     &     op_info,form_info,str_info,strmap_info,orb_info)
-*----------------------------------------------------------------------*
-*
-*     just evaluate given formula (must be factorized)
-*
-*     op_info:  operator definitions and files
-*     str_info: string information (to be passed to subroutines)
-*     orb_info: orbital space information (to be passed)
+
+*----------------------------------------------------*
+!>     just evaluate given formula (must be factorized)
+!!
+!!     this subroutine is to be called from userspace
+!!     @param label_form label of the formula
+!!     @param init  if the result operator should be set to zero before evaluation
+!!     @param op_info  operator definitions and files
+!!     @param str_info string information (to be passed to subroutines)
+!!     @param orb_info orbital space information (to be passed)
 *
 *     andreas, Aug. 2007
 *
 *----------------------------------------------------------------------*
+      subroutine evaluate(
+     &     label_form,init,
+     &     op_info,form_info,str_info,strmap_info,orb_info)
+
+*----------------------------------------------------------------------*
+
       implicit none
 
       include 'opdim.h'
@@ -50,7 +55,7 @@
      &     orb_info
 
       integer ::
-     &     ifree, nout, iout, idx
+     &     ifree, nout, iout, idx, iprint
       logical ::
      &     pz_eval
 
@@ -66,6 +71,8 @@
 
       integer, external ::
      &     idx_formlist
+
+      iprint=max(iprlvl,ntest)
 
       ifree = mem_setmark('evaluate')
 
@@ -91,10 +98,9 @@
       ! call the scheduler - I have now set NO_SKIP to true, as skipping of targets is
       ! nearly always an unwanted effect for the EVALUATE statement
       call frm_sched(xret,fl_eval,depend,0,0,
-c     &               init,.false.,op_info,str_info,strmap_info,orb_info)
      &               init,.true.,op_info,str_info,strmap_info,orb_info)
 
-      if (iprlvl.ge.1) then
+      if (iprint.ge.10) then
         call write_title(lulog,wst_title,
      &       'norms/values of output operators')
         do iout = 1, nout
@@ -104,7 +110,7 @@ c     &               init,.false.,op_info,str_info,strmap_info,orb_info)
         end do
       end if
 
-      if (ntest.ge.1000) then
+      if (iprint.ge.20) then
         do iout = 1, nout
           idx = depend%idxlist(iout)
           write(lulog,*) 'dump of result for ',

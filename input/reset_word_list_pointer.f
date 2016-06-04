@@ -16,7 +16,7 @@
      &     len_word
 
       if (.not.associated(wlist%head)) 
-     &     call quit(1,'reset_word_list_entry','wlist is undefined')
+     &     call quit(1,'reset_word_list_pointer','wlist is undefined')
 
       wlist%current => wlist%head
 

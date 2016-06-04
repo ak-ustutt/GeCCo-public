@@ -280,7 +280,7 @@ c            xrsnrm(iroot,iopt) = xnrm
 
       ! set nadd
       if (nadd.eq.0)
-     &       call quit(0,'leqc_core',
+     &       call quit(0,'leqc_init',
      &       'solver in problems: only linear dependent '//
      &       'new directions?')
       opti_stat%nadd = nadd

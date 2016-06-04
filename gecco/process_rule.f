@@ -1082,8 +1082,9 @@ c dbg
 *----------------------------------------------------------------------*
 
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
-
-        write(luout,*) trim(strscr)
+        call get_arg('OUTPUT',rule,tgt_info,val_str=title)
+        
+        call print_out(strscr,title)
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
@@ -1259,6 +1260,33 @@ c dbgend
        call get_mel(mel_pnt3,label,OLD)
        call get_arg('N_ROOTS',rule,tgt_info,val_int=nroots)
        call prod_pack_op(mel_pnt,mel_pnt2,mel_pnt3,nroots)
+*---------------------------------------------------------------------*
+      case(SET_BLOCKS)
+*---------------------------------------------------------------------*
+         call get_arg('LIST',rule,tgt_info,val_label=label_list(1))
+
+         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+         call get_arg('DESCR', rule,tgt_info,val_str=strscr)
+         call get_mel(mel_pnt,label_list(1),OLD)
+
+         if (form_test) return
+
+         call  set_blks(mel_pnt,strscr,fac)
+*---------------------------------------------------------------------*
+      case(MODIFY_BLOCKS)
+*---------------------------------------------------------------------*
+         call get_arg('LIST',rule,tgt_info,val_label=label_list(1))
+
+         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+         call get_arg('DESCR', rule,tgt_info,val_str=strscr)
+         call get_arg('MODE', rule,tgt_info,val_str=mode)
+         call get_mel(mel_pnt,label_list(1),OLD)
+
+         if (form_test) return
+
+         call  modify_blks(mel_pnt,strscr,fac,mode)
+
+
 
 *----------------------------------------------------------------------*
 *     subsection EVALUATE
@@ -1388,18 +1416,6 @@ c          mode = 'dia-R12'
 
         call scale_copy_op(label,label_list,fac,nfac,mode,nspcfrm,
      &       op_info,orb_info,str_info)
-*---------------------------------------------------------------------*
-      case(SET_BLOCKS)
-*---------------------------------------------------------------------*
-         call get_arg('LIST',rule,tgt_info,val_label=label_list(1))
-
-         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
-         call get_arg('DESCR', rule,tgt_info,val_str=strscr)
-         call get_mel(mel_pnt,label_list(1),OLD)
-
-         if (form_test) return
-
-         call  set_blks(mel_pnt,strscr,fac)
 
 *----------------------------------------------------------------------*
       case(COPY_LIST)
@@ -1612,13 +1628,13 @@ c          mode = 'dia-R12'
       select case(status)
       case(NEW)
         if (idx.gt.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_op',
      &       'operator does already exist: '//trim(label))
         call add_operator(trim(label),op_info)
         idx = idx_oplist2(trim(label),op_info)
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_op',
      &       'operator does not exist: '//trim(label))
       case(ANY)
         if (idx.le.0) then
@@ -1653,14 +1669,14 @@ c          mode = 'dia-R12'
 
       select case(status)
       case(NEW)
-        call quit(0,'process_rule',
+        call quit(0,'get_mel',
      &       'get_mel(NEW) '//trim(label)//': use DEF_ME_LIST')
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_mel',
      &       'ME list does not exist: '//trim(label))
       case(ANY)
-        call quit(0,'process_rule',
+        call quit(0,'get_mel',
      &       'get_mel(ANY) '//trim(label)//': use DEF_ME_LIST')
       end select
 
@@ -1691,13 +1707,13 @@ c          mode = 'dia-R12'
       select case(status)
       case(NEW)
         if (idx.gt.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_form',
      &       'formula does already exist: '//trim(label))
         call add_formula(form_info,trim(label))
         idx = idx_formlist(trim(label),form_info)
       case(OLD)
         if (idx.le.0)
-     &       call quit(0,'process_rule',
+     &       call quit(0,'get_form',
      &       'formula does not exist: '//trim(label))
       case(ANY)
         if (idx.le.0) then

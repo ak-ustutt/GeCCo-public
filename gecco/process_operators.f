@@ -159,7 +159,7 @@ c     &     ndef_max = 52, maximum_order = 10, nj_max = 10
         call cloneop_parameters(+1,rule%parameters,name_template,dagger)
         idx_t = idx_oplist2(name_template,op_info)
         if (idx_t.le.0) then
-          call quit(0,CLONE_OP,
+          call quit(0,'process_operators',
      &         'template not defined: '//name_template)
         end if
         call clone_operator(op_pnt,op_info%op_arr(idx_t)%op,

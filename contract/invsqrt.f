@@ -43,7 +43,7 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest = 5
+     &     ntest = 00
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -93,7 +93,8 @@ c dbgend
      &     rankdim(maxrank), rankoff(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
-     &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec
+     &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec,
+     &     iprint
       real(8) ::
      &     fac, xmax, xmin, xdum, omega2
       real(8), pointer ::
@@ -144,7 +145,9 @@ c dbgend
       logical, external ::
      &     next_tupel_ca, occ_is_diag_blk
 
-      if (ntest.ge.100) write(lulog,*) 'entered invsqrt'
+      iprint=max(iprlvl,ntest)
+
+      if (iprint.ge.100) write(lulog,*) 'entered invsqrt'
 c dbg
 c      ipass = 0
 c dbgend
@@ -208,7 +211,7 @@ c dbgend
         call get_vec(ffinp,buffer_in,(curr_rec-1)*len_rec+1,
      &       (curr_rec-1)*len_rec+nbuff)
       else
-        if(ntest.ge.100)
+        if(iprint.ge.100)
      &       write(lulog,*)'Invert: input not incore'
         buffer_in => ffinp%buffer(1:)
       endif
@@ -221,7 +224,7 @@ c dbgend
         ifree= mem_alloc_real(buffer_out,nbuff,'buffer_out')
         buffer_out(1:nbuff) = 0d0
       else
-        if(ntest.ge.100)
+        if(iprint.ge.100)
      &       write(lulog,*)'Invert: output not incore'
         buffer_out => ffinv%buffer(1:)
       endif
@@ -234,7 +237,7 @@ c dbgend
         ifree= mem_alloc_real(buffer_u,nbuff,'buffer_u')
         buffer_u(1:nbuff) = 0d0
       else if (get_u) then
-        if(ntest.ge.100)
+        if(iprint.ge.100)
      &       write(lulog,*)'Invert: output (2) not incore'
         buffer_u => ffu%buffer(1:)
       endif
@@ -260,7 +263,7 @@ c dbgend
       if (idxt.gt.0) 
      &   op_t => op_info%op_arr(idxt)%op
 
-      if (.not.half.and.max(iprlvl,ntest).ge.3) write(lulog,*)
+      if (.not.half.and. (iprint.ge.3) ) write(lulog,*)
      &         'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
@@ -280,7 +283,7 @@ c dbgend
         iexc_cls = iexc_cls + 1
         ex2occ_cls(iexc_cls) = tocc_cls
 
-        if (ntest.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
+        if (iprint.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
@@ -389,7 +392,7 @@ c dbgend
               exit
             end if
           end do
-          if (transp.and.ntest.ge.100) then
+          if (transp.and.iprint.ge.100) then
             write(lulog,*) 'Using transposed scratch matrix!'
           end if
 
@@ -417,11 +420,11 @@ c dbgend
      &                call quit(1,'invsqrt','cannot handle this')
               if (ndim.eq.0) cycle igama_loop
 
-              if (ntest.ge.10)
+              if (iprint.ge.10)
      &           write(lulog,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
      &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
      &                         gam_ms(igama,idxmsa))))
-              if (ntest.ge.100)
+              if (iprint.ge.100)
      &           write(lulog,*) ' len = ',
      &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
      &             ' ndis = ',ndis
@@ -496,11 +499,11 @@ c dbgend
      &                            sing,trip,.false.)
 
                 ! calculate T^(-0.5) for both blocks
-                if (ntest.ge.100) write(lulog,*) '+ case, nsing=',nsing
+                if (iprint.ge.100) write(lulog,*) '+ case, nsing=',nsing
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
      &                           svs,icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins(1,iexc_cls))
-                if (ntest.ge.100) write(lulog,*) '- case, ntrip=',ntrip
+                if (iprint.ge.100) write(lulog,*) '- case, ntrip=',ntrip
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
      &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,
@@ -814,9 +817,9 @@ c           ndim = 0
             call quit(1,'invsqrt','dimensions don''t add up!')
           end if
 
-          if (ntest.ge.10)
+          if (iprint.ge.10)
      &       write(lulog,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
-          if (ntest.ge.100)
+          if (iprint.ge.100)
      &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
@@ -1175,7 +1178,7 @@ c dbgend
            off_line2 = off_linmax
           end do
 c dbg
-c            if (ntest.ge.100) then
+c            if (iprint.ge.100) then
 c              write(lulog,*) 'initial overlap matrix:'
 c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
@@ -1197,7 +1200,7 @@ c dbgend
 
            ! build projector and apply to current block
            if (irank.ge.2) then
-            if (ntest.ge.10)
+            if (iprint.ge.10)
      &        write(lulog,'(x,a,i8)') 'next rank:',irank
             select case(project)
             case (1,2)
@@ -1261,7 +1264,7 @@ c dbgend
              do idx = 1, rdim
                proj(idx,idx) = proj(idx,idx) + 1d0
              end do
-             if (ntest.ge.100) then
+             if (iprint.ge.100) then
                write(lulog,*) 'Projector for removing lower-rank exc.:'
                call wrtmat3(proj,rdim,rdim,rdim,rdim)
              end if
@@ -1286,7 +1289,7 @@ c dbg
      &                    1d0,proj,rdim,
      &                    scratch(idxnd+1:ndim,idxst:idxnd),ndim-idxnd,
      &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
-               if (ntest.ge.100) then
+               if (iprint.ge.100) then
                  write(lulog,*) 'Projected off-diagonal block:'
                  call wrtmat3(scratch(idxst:idxnd,idxnd+1:ndim),
      &                        rdim,ndim-idxnd,rdim,ndim-idxnd)
@@ -1467,7 +1470,7 @@ c dbgend
      &                   scratch(idxst:idxnd,idxst:idxnd),rdim,
      &                   0d0,scratch4,rdim)
               scratch(idxst:idxnd,idxst:idxnd) = scratch4
-              if (ntest.ge.100) then
+              if (iprint.ge.100) then
                 write(lulog,*) 'Trafo matrix:'
                 call wrtmat3(scratch(idxst:idxnd,idxst:idxnd),
      &                       rdim,rdim,rdim,rdim)
@@ -1478,7 +1481,7 @@ c dbgend
      &                     scratch2(idxst:idxnd,idxst:idxnd),rdim,
      &                     0d0,scratch4,rdim)
                 scratch2(idxst:idxnd,idxst:idxnd) = scratch4
-                if (ntest.ge.100) then
+                if (iprint.ge.100) then
                   write(lulog,*) 'Projector matrix:'
                   call wrtmat3(scratch2(idxst:idxnd,idxst:idxnd),
      &                         rdim,rdim,rdim,rdim)
@@ -1524,7 +1527,7 @@ c     &        blk_redundant(iocc_cls+irank-1)
      &       call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
 c dbg
-c            if (ntest.ge.100) then
+c            if (iprint.ge.100) then
 c              write(lulog,*) 'final transformation matrix:'
 c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
 c            end if
@@ -1754,7 +1757,7 @@ c dbgend
       enddo iocc_loop
       deallocate(blk_used)
 
-      if (ntest.ge.5) then
+      if (iprint.ge.5) then
         write(lulog,'(x,77("="))')
         write(lulog,'(x,a)')
      &       'Singular value histogram (by excitation classes)'

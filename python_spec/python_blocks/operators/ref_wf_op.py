@@ -36,6 +36,13 @@ comment('Reference energy')
 DEF_SCALAR({
         LABEL:'E0'})
 
+DEF_ME_LIST({
+        LIST:'ME_E0',
+        OPERATOR:'E0',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:0
+        })
 
 new_target('Make_C0')
 comment('Reference coefficients')

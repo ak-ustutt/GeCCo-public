@@ -1,8 +1,11 @@
 *----------------------------------------------------------------------*
-      subroutine init_operator(op,orb_info)
+!>     allocate operator sub-arrays
+!>
+!>    on entry, at least op%n_occ_cls must be set
+!>    @param[inout] op operator struct
+!>    @param[in] orb_info orbital info
 *----------------------------------------------------------------------*
-*     allocate operator sub-arrays
-*      on entry, at least op%n_occ_cls must be set
+      subroutine init_operator(op,orb_info)
 *----------------------------------------------------------------------*
       implicit none
 

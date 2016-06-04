@@ -126,7 +126,7 @@
   1   call file_close_keep(ffmok)
 
       if (dnrm2(nexch,kexch,1).lt.1d-12)
-     &   call quit(0,'import_fock_dalton',
+     &   call quit(0,'import_exchange_dalton',
      &               'No sensible fock matrix found!')
 
       ! and reorder

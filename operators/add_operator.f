@@ -1,8 +1,10 @@
 *----------------------------------------------------------------------*
-      subroutine add_operator(label,op_info)
+!>     allocate a new slot for an operator structure in op_info
+!>     the list is extended and the array is updated
+!>     @param[in] label name of the new operator
+!>     @param[inout] op_info information struct for all operators
 *----------------------------------------------------------------------*
-*     allocate a new slot for an operator structure in op_info
-*     the list is extended and the array is updated
+      subroutine add_operator(label,op_info)
 *----------------------------------------------------------------------*
 
       implicit none

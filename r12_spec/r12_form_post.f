@@ -44,12 +44,12 @@
       fpl_pnt => fpl_reo
       ! point to "initialize" item
       if (form%command.ne.command_set_target_init)
-     &     call quit(1,'cc_form_post','wrong assumptions? (1)')
+     &     call quit(1,'r12_form_post','wrong assumptions? (1)')
       fpl_pnt%item => form
       ! and advance to first "add"
       form_pnt => form%next
       if (form_pnt%command.ne.command_add_contribution)
-     &     call quit(1,'cc_form_post','wrong assumptions? (2)')
+     &     call quit(1,'r12_form_post','wrong assumptions? (2)')
 
       op_tbar => op_info%op_arr(abs(idxtbar))%op
       nblk_tbar = op_tbar%n_occ_cls

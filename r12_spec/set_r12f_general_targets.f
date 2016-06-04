@@ -224,9 +224,9 @@
      &  'suitable integrals. Make that sure and restart w/o'
         write(lulog,*)
      &  'GBC/EBC flag'
-        call quit(0,'set_r12_general_targets','GBC/EBC?')
+        call quit(0,'set_r12f_general_targets','GBC/EBC?')
       case default
-        call quit(0,'set_r12_general_targets',
+        call quit(0,'set_r12f_general_targets',
      &       'F_appr unknown: "'//trim(F_appr)//'"')
       end select
 
@@ -240,7 +240,7 @@
         write(lulog,*) 'Y contribution approx with 1 CABS index'
         approx(8:10) = 'HY2'
       case default
-        call quit(0,'set_r12_general_targets',
+        call quit(0,'set_r12f_general_targets',
      &       'K_appr unknown: "'//trim(K_appr)//'"')
       end select
 
@@ -260,7 +260,7 @@
      &       Z_appr(4:4).ne.'1'.and.
      &       Z_appr(4:4).ne.'2'.and.
      &       Z_appr(4:4).ne.'3')) then
-          call quit(0,'set_r12_general_targets',
+          call quit(0,'set_r12f_general_targets',
      &       'Z_appr unknown: "'//trim(Z_appr)//'"')
         end if
         write(lulog,*) 'approximation to Z intermediate: ',trim(Z_appr)
@@ -286,7 +286,7 @@
      &       Z2_appr(4:4).ne.'1'.and.
      &       Z2_appr(4:4).ne.'2'.and.
      &       Z2_appr(4:4).ne.'3')) then
-          call quit(0,'set_r12_general_targets',
+          call quit(0,'set_r12f_general_targets',
      &       'Z2_appr unknown: "'//trim(Z2_appr)//'"')
         end if
         write(lulog,*) 'approximation to Z2 intermediate: ',

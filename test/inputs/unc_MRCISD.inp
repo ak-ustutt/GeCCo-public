@@ -1,5 +1,6 @@
 general
  memmax=30000000
+ print=10
 method
  MR cmaxexc=2,spinexpec=1
 calculate
