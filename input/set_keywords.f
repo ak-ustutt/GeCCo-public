@@ -26,7 +26,7 @@ c      use parse_input
       call argument_add('form_test','general',type=vtyp_log,
      &     ldef=(/.false./))
       call argument_add('statistics','general',type=vtyp_log,
-     &     ldef=(/.true./))
+     &     ldef=(/.false./))
       call argument_add('da_block',context='general',type=vtyp_int,
      &     len=1,idef=(/32/))
       call argument_add('print_tgt_graph',context='general',
