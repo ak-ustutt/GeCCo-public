@@ -68,7 +68,19 @@ all_objs:=$(addsuffix .o, $(basename $(all_src)))
 tag_src:=$(filter-out lex.yy.c, $(all_src))
 tag_src:=$(filter-out y.tab.c, $(tag_src))
 
+#FoX (Fortran Xml parser dom module) variables
+space:= $(empty) $(empty)
+dir_sep:=:
+
+foxdir:=@foxdir@
+fox_lib_finder:=@foxdir@/FoX-config 
+fox_lib_flags:= --libs --dom
+fox_libs:=$(shell $(fox_lib_finder) $(fox_lib_flags))   #space separated
+fox_inc_flags:=--fcflags
+fox_FC_flags:=$(shell $(fox_lib_finder) $(fox_inc_flags))
+
 # search path used by make to find dependencies
+#Note: dependencies on FoX can currently not be resolved instead FoX is always made first
 VPATH=$(includedir):$(libdir):$(bindir)
 
 BLAS_LIBS=@BLAS_LIBS@ 
@@ -102,7 +114,7 @@ ifdef DEBUG
   cflags+=$(cdebug) 
 endif
 
-fcflags+=-I$(includedir) $(fmodule) $(ARCH) 
+fcflags+=-I$(includedir) $(fox_FC_flags)  $(fmodule) $(ARCH) 
 cflags+=-I$(includedir) 
 
 ifdef PROF
@@ -117,7 +129,7 @@ ifdef RANGE
   cflags+=$(crange)
 endif
 
-fldflags:=$(fldflags) -L. -L$(libdir) $(LDFLAGS)
+fldflags:=$(fldflags) -L. -L$(libdir) $(fox_libs) $(LDFLAGS)
 cldflags:=$(cldflags) -L. -L$(libdir) $(LDFLAGS)
 
 # remove extra whitespace

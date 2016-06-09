@@ -26,7 +26,7 @@ spc_obj_list:=printversion.o
 
 include $(topdir)/make.rules
 
-libs:=-lexperimental -lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+libs:=-lexperimental -lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout $(fox_libs)
 
 
 #all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
