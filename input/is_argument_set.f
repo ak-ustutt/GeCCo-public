@@ -8,49 +8,57 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use parse_input
+      use parse_input2, only:find_node,input_doc,atr_name,NodeList,
+     &     Node,hasChildNodes,getFirstChild,arg_tag,getChildNodes,
+     &     getLength,getNodeName,item,getAttribute
       implicit none
+
+      integer,parameter::
+     &     ntest= 00
+      character(len=15),parameter ::
+     &     i_am="is_argument_set"
 
       character, intent(in) ::
      &     context*(*), argkey*(*)
       integer, intent(in), optional ::
      &     keycount
 
-      type(keyword), pointer ::
-     &     curkey
-      type(argument), pointer ::
+      type(Node), pointer ::
+     &     curkey,input_root
+      type(Node), pointer ::
      &     curarg
+      type(NodeList),pointer::
+     &     nodes_list
+
       character ::
      &     curcontext*1024
       integer ::
-     &     iargcount, icount_target
-
-      if (.not.associated(keyword_history%down_h))
-     &     call quit(1,'is_argument_set','invalid keyword history')
+     &     iargcount, icount_target,ii
+      
+      input_root=getFirstChild(input_doc)
+      if (.not.hasChildNodes(input_root))
+     &     call quit(1,i_am,'invalid keyword history')
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
 
-      call find_active_node(keyword_history,curkey,
-     &     context,icount_target)
+      call find_node(input_root,curkey,
+     &     context)
 
       iargcount = 0
+      if ( associated(curkey))then
+         if ( hasChildNodes(curkey)) then
+            nodes_list => getChildNodes(curkey) 
 
-      if (associated(curkey).and.associated(curkey%arg_h)) then
-        curarg => curkey%arg_h
+            arg_loop: do ii=1,getLength(nodes_list)  
 
-        arg_loop: do 
+               if (getNodeName(item(nodes_list,ii)) 
+     &           .eq. arg_tag .and.
+     &           getAttribute(item(nodes_list,ii),atr_name)
+     &           .eq. trim(argkey) ) iargcount = iargcount+1
 
-          if (trim(curarg%key).eq.trim(argkey)) iargcount = iargcount+1
-
-          if (associated(curarg%next)) then
-            curarg => curarg%next
-          else
-            exit arg_loop
-          end if        
-          
-        end do arg_loop
-
+            end do arg_loop
+         end if 
       end if
 
       is_argument_set = iargcount
