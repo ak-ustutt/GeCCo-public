@@ -10,7 +10,7 @@
       integer, intent(in) ::
      &     lulog
 
-      call keyword_list(lulog,keyword_history,show_args=.false.)
+!     call keyword_list(lulog,keyword_history,show_args=.false.)
 
       return
       end

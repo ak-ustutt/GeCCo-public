@@ -3,7 +3,8 @@
      &     parseFile,parseString,getExceptionCode,getElementsByTagName,
      &     hasChildNodes,getChildNodes,getParentNode,getFirstChild,
      &     getLength,getNodeName,getAttribute,importNode,item,
-     &     appendChild,setAttribute
+     &     appendChild,setAttribute,getNextSibling,getPreviousSibling
+      use FoX_common, only:str,rts
       implicit none
       include 'write_styles.h'
 
@@ -16,8 +17,11 @@
      &     atr_name*3="key",
      &     atr_kind*4="kind",
      &     atr_len*3="len",
-     &     atr_val*3="val"
-
+     &     atr_val*3="val",
+     &     atr_stat*6="status"
+      
+      integer,parameter::
+     &     name_len=16
       
 
       character,parameter::      !tags 
@@ -28,14 +32,180 @@
 
 
       type(Node), pointer :: 
-     &     preset_doc,         !root of the tree that represents the keyword registry
+     &     registry_doc,         !root of the tree that represents the keyword registry
      &     key_root,            !root element for keywords in registry
-     &     input_doc           !root element of input; corresponds to key_root
+     &     input_doc,           !document element of input
+     &     input_root,          !root element of input; corresponds to key_root
+     &     history_pointer      ! to  this "calculate" block the calculation has advanced
+
       
 
-
-
       contains 
+
+*----------------------------------------------------------------------*
+
+*----------------------------------------------------------------------*
+      subroutine process_input_(one_more)
+*----------------------------------------------------------------------*
+      implicit none
+      logical, intent(inout)::
+     &     one_more
+
+      call set_input_status_(input_root, history_pointer,one_more)
+      
+      end subroutine 
+*----------------------------------------------------------------------*
+*     set all previous keywords with same key as present keyword to
+*     inactive (+ all sub-levels)
+*----------------------------------------------------------------------*
+      subroutine unset_previous_keywords(keywd)
+*----------------------------------------------------------------------*
+      implicit none
+      type(Node), pointer,intent(in) ::
+     &     keywd     
+      type(Node), pointer ::
+     &     current
+      character(len=name_len) ::
+     &     name
+
+      if(.not.associated(getPreviousSibling(keywd))) return
+      current =>getPreviousSibling(keywd)
+      name = getAttribute(keywd,atr_name)
+
+      do 
+        if (trim(getAttribute(current,atr_name)).eq.trim(name))
+     &     call set_keyword_status(current,-1)
+        if (associated(getPreviousSibling(keywd))) then
+           current =>getPreviousSibling(keywd)
+        else
+          exit 
+        end if
+      end do 
+      end subroutine
+*----------------------------------------------------------------------*
+!>    toggles the status of all keywords set in the input:
+!!
+!!    advances to next 'calculate' Block 
+!!   for any given toplevel context only the last block is set active
+!!   all other keywords are set inactive.
+*----------------------------------------------------------------------*
+      subroutine set_input_status_(input_root, history_pointer,one_more)
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ntest= 00
+      character(len=16),parameter ::
+     &     i_am="set_input_status"
+      type(Node),pointer,intent(in)::
+     &     input_root
+      type(Node),pointer,intent(inout)::
+     &     history_pointer
+      logical, intent(inout)::
+     &     one_more
+      type(Node),pointer::
+     &     current
+
+      if (.not.associated(history_pointer)) then
+         history_pointer => input_root
+         if (.not.associated( getFirstChild( history_pointer))) then
+            call quit(0,i_am,'not a single keyword given?')
+         end if
+         history_pointer =>getFirstChild( history_pointer)
+      else if (associated( getNextSibling( history_pointer) ) ) then
+         history_pointer =>getNextSibling( history_pointer)
+      else
+        one_more = .false.
+        return
+      end if
+      one_more=.true.
+
+      current => history_pointer
+      do
+        call set_keyword_status(current,+1)
+        call unset_previous_keywords(current)
+
+        if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
+
+        if (associated( getNextSibling( current) ) ) then
+         history_pointer =>getNextSibling( current)
+        else
+          exit
+        end if
+
+      end do
+      history_pointer => current
+      end subroutine 
+*----------------------------------------------------------------------*
+!>    sets the given keyword and all subkeywords to a given status
+!!
+!!   @param keywd pointer to a keyword
+!!   @param status integer with the status we set it to 
+*----------------------------------------------------------------------*
+      subroutine set_keyword_status(keywd,status)
+*----------------------------------------------------------------------*
+      implicit none
+      type(Node), pointer, intent(in)::
+     &     keywd
+      integer,intent(in)::
+     &     status
+      type(Node),pointer::
+     &     current 
+      current => keywd
+      
+      do while(associated(current))
+         call setAttribute(current,atr_stat,str(status))
+         call dsearch_next_key(current,key_tag)
+      end do
+      end subroutine
+*----------------------------------------------------------------------*
+!>    delivers the next keyword in a depth first search
+!!
+!!    prefilters with a specific tag.
+!!    @param[inout] nxtnode on entry: node where the search is continued
+!!                          on exit : nextnode  
+!!    @param[in] key string that contains the tag we filter for.
+*----------------------------------------------------------------------*
+      subroutine dsearch_next_key(nxtnode, tag)
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ntest= 00
+      character(len=16),parameter ::
+     &     i_am="key_depth_search"
+
+      character,intent(in) ::
+     &     tag*(*)
+
+      type(Node), pointer, intent(inout)::
+     &     nxtnode
+      type(Node), pointer::
+     &     current
+
+      current => nxtnode
+
+      main_loop: do 
+         if (hasChildNodes(current))then
+            current=> getFirstChild(current)
+         else if (associated(getNextSibling(current)))then
+            current=> getNextSibling(current)
+         else 
+            up_loop: do while(getNodeName(current).ne.key_root_tag)
+               current => getParentNode(current)
+               if (associated(getNextSibling(current)))then 
+                  current=> getNextSibling(current)
+                  exit up_loop
+               end if 
+            end do up_loop
+            if (getNodeName(current).eq. trim(tag))then
+               nxtnode=>current
+               exit main_loop
+            else if (getNodeName(current).eq.key_root_tag) then
+               nxtnode=>null()
+               exit main_loop
+            end if
+         end if 
+      end do main_loop
+      end subroutine 
 *----------------------------------------------------------------------*
 !>    returns name of the keyword_file
 *----------------------------------------------------------------------*
@@ -81,26 +251,30 @@
       integer ::
      &     i
       
-      preset_doc => parseFile(trim(get_keyword_file()), ex=ex)
+      registry_doc => parseFile(trim(get_keyword_file()), ex=ex)
       !> @TODO more special error handling 
       if (getExceptionCode(ex) .ne. 0)
      &     call quit(1,i_am,"could not read keyword registry")
-      nodes_list=>getElementsByTagName(preset_doc, key_root_tag)
+      nodes_list=>getElementsByTagName(registry_doc, key_root_tag)
       i=1
-      tmpnode=> item(nodes_list, i)!  assumes there is only on of these elements
+      !  assumes there is only on of these elements
+      key_root=> item(nodes_list, i)
+      !easiest way to create an empty document
       input_doc=> parseString(
      &     "<"//key_root_tag//"></"//key_root_tag//">")
+      input_root=> getFirstChild(input_doc)
+      history_pointer=> null()
       end subroutine 
 
 
 *----------------------------------------------------------------------*
-      subroutine find_active_node(tree,finnode,context,icount)
+      subroutine find_active_node(tree_root,finnode,context,icount)
 *----------------------------------------------------------------------*
-
       implicit none
-
+      character(len=16)::
+     &     i_am="find_active_node"
       type(Node), pointer ::
-     &     tree
+     &     tree_root
       type(Node), pointer ::
      &     finnode
       character ::
@@ -115,10 +289,10 @@
       integer ::
      &     jcount, status
 
-      if (.not.associated(tree%down_h))
-     &     call quit(1,'find_active_node','invalid keyword tree')
+      if (.not.hasChildNodes(tree_root))
+     &     call quit(1,i_am,'invalid keyword tree')
 
-      current => tree%down_h
+      current => getFirstChild(tree_root)
 
       finnode => null()
 
@@ -403,16 +577,6 @@
       end subroutine next_node
 
 
-
-
-
-
-
-
-
-
-
-
 *----------------------------------------------------------------------*
 !>   creates a node (keyword or argument)
 !!
@@ -465,7 +629,7 @@
       new_elem=>appendChild(new_parent, new_elem)
       if (getNodeName(new_elem) .eq. arg_tag) 
      &     call setAttribute(new_elem,atr_val, value)
-         
+      call setAttribute(new_elem,atr_stat,str(-1))
 
       end subroutine
 
@@ -473,6 +637,7 @@
 *----------------------------------------------------------------------*
       subroutine keyword_get_context(curcontext,current)
 *----------------------------------------------------------------------*
+      implicit none
       character(len=19),parameter::
      &     i_am="keyword_get_context"
       integer,parameter::
@@ -700,7 +865,7 @@
 *----------------------------------------------------------------------*
 !>     find next delimiter
 !!    
-!!    accesses global var delimiter and n_delim
+!!    accesses global par delimiter and n_delim
 !!    @param str string to be searched
 !!    @param delim(n_delim) array of allowed delimiters
 !!    @param n_delim
@@ -905,7 +1070,6 @@
   
       return
       end subroutine
-
 
       end subroutine keyword_parse
 
