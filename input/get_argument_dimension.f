@@ -13,7 +13,7 @@
      &     input_doc, arg_tag,atr_name,atr_len,atr_kind,
      &     getFirstChild, hasChildNodes, getChildNodes, getLength,
      &     getNodeName, getAttribute, item, 
-     &     find_node
+     &     find_node,find_active_node
       use FoX_common, only : rts
       implicit none
 
@@ -52,8 +52,8 @@
       icount_target = 1
       if (present(keycount)) icount_target = keycount
 
-      call find_node(input_root,curkey,
-     &     context)
+      call find_active_node(input_root,curkey,
+     &     context,icount_target)
 
       dim = -1
       if (present(type)) type = -1

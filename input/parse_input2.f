@@ -94,6 +94,73 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine find_active_node(tree,finnode,context,icount)
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      type(Node), pointer ::
+     &     tree
+      type(Node), pointer ::
+     &     finnode
+      character ::
+     &     context*(*)
+      integer ::
+     &     icount
+
+      character ::
+     &     curcontext*1024     
+      type(Node), pointer ::
+     &     current
+      integer ::
+     &     jcount, status
+
+      if (.not.associated(tree%down_h))
+     &     call quit(1,'find_active_node','invalid keyword tree')
+
+      current => tree%down_h
+
+      finnode => null()
+
+      jcount = 0
+      key_loop: do 
+        call rts(getAttribute(current,atr_stat),status)
+        if (status.gt.0) then
+          call keyword_get_context(curcontext,current)
+          if (trim(context).eq.trim(curcontext)) jcount = jcount+1 
+          if (icount.eq.jcount) then
+            finnode => current
+            exit key_loop
+         end if
+        end if
+
+        if (status.gt.0.and.hasChildNodes(current)) then
+          ! go down
+          current => getFirstChild(current)
+        else if (associated(getNextSibling(current))) then
+          ! else stay within level
+          current => getNextSibling(current)
+        else
+          ! else find an upper level, where a next
+          ! node exists:
+          up_loop: do
+             if (getNodeName(getParentNode(current))
+     &         .ne. key_root_tag) then
+                current => getParentNode(current)
+                if (associated(getNextSibling(current))) then
+                   current => getNextSibling(current)
+                   exit up_loop
+                end if
+             else
+                exit key_loop
+             end if
+          end do up_loop
+       end if        
+      end do key_loop
+
+      return
+      end subroutine
+*----------------------------------------------------------------------*
 !>     navigates to a specific keyword
 !!
 !!     @param[in] tree_root root element from which the search starts, must be associated.
