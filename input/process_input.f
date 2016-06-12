@@ -30,7 +30,6 @@
       one_more=.false.
 
       call process_input_(one_more)
-      call abort
 !      if (iprlvl.ge.10)
 !     &   call keyword_list(lulog,keyword_history)
 
@@ -41,6 +40,7 @@ c      if (icnt.le.0) then
 c        call quit(0,'process_input','no "method" block specified')
 c      end if
       call get_argument_value('general','print',ival=iprlvl)
+
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       ! set file block-length

@@ -8,13 +8,14 @@
 *----------------------------------------------------------------------*
 
       use parse_input2, only : input_doc,getFirstChild,hasChildNodes,
-     &     Node,getNodeName,key_tag, getParentNode,key_root_tag,
-     &     keyword_get_context
+     &     Node,getNodeName,key_tag,getParentNode,key_root_tag,atr_name,
+     &     keyword_get_context,getAttribute,dsearch_next_key
       use FoX_dom, only : getNextSibling
       implicit none
+      include 'stdunit.h'
 
       integer,parameter::
-     &     ntest= 00
+     &     ntest=00
       character(len=14),parameter ::
      &     i_am="is_keyword_set"
 
@@ -31,8 +32,18 @@
       integer ::
      &     icount
 
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+      end if
+      if (ntest.ge.100)
+     &     write (lulog,*) " association, input_doc",
+     &     associated(input_doc)
+      
+      input_root=>getFirstChild(input_doc)
+      if (ntest.ge.100)
+     &     write (lulog,*) " association, input_root",
+     &     associated(input_root)
 
-      input_root=getFirstChild(input_doc)
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
 
@@ -40,31 +51,27 @@
 
       icount = 0
       key_loop: do 
-         if (getNodeName(current).eq. key_tag)then 
-            call keyword_get_context(curcontext,current)
-            if (trim(context).eq.trim(curcontext)) icount = icount+1 
+         curcontext=" "
+         call keyword_get_context(curcontext,current)
+! keyword_get_context only gets the context of the current keyword
+         if (len_trim(curcontext).eq.0)then
+            curcontext=getAttribute(current,atr_name)
+         else
+            curcontext=trim(curcontext)//"."//
+     &           getAttribute(current,atr_name)
          end if 
          
+         if (trim(context).eq.trim(curcontext)) icount = icount+1 
+         
+                  
          ! 
-         if (hasChildNodes(current)) then
-            current => getFirstChild(current)
-         else if (associated(getNextSibling(current))) then
-            current => getNextSibling(current)
-         else
-            do while(getNodeName(getParentNode(current))
-     &           .ne. key_root_tag .and. 
-     &           .not. associated(getNextSibling(current)))
-               current => getParentNode(current)
-            end do 
-            if (associated(getNextSibling(current))) then
-               current => getNextSibling(current)
-            else
-               exit key_loop
-            end if
-         end if 
+         call dsearch_next_key(current,key_tag)
+         if (.not.associated(current)) exit key_loop
       end do key_loop
 
       is_keyword_set = icount
-
+      if (ntest.ge.100)
+     &     write (lulog,*) i_am," has found",icount,
+     &     "occurences of ",trim(context)
       return
       end
