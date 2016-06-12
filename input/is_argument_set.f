@@ -12,9 +12,10 @@
      &     Node,hasChildNodes,getFirstChild,arg_tag,getChildNodes,
      &     getLength,getNodeName,item,getAttribute
       implicit none
+      include "stdunit.h"
 
       integer,parameter::
-     &     ntest= 00
+     &     ntest= 1000
       character(len=15),parameter ::
      &     i_am="is_argument_set"
 
@@ -34,14 +35,17 @@
      &     curcontext*1024
       integer ::
      &     iargcount, icount_target,ii
+
+      print *,"is_argument set entered"
       
-      input_root=getFirstChild(input_doc)
+      input_root=>getFirstChild(input_doc)
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
-
+      
+      print *,"looking for the ",icount_target,"th attribute"
       call find_node(input_root,curkey,
      &     context)
 
@@ -50,17 +54,20 @@
          if ( hasChildNodes(curkey)) then
             nodes_list => getChildNodes(curkey) 
 
-            arg_loop: do ii=1,getLength(nodes_list)  
-
-               if (getNodeName(item(nodes_list,ii)) 
+            arg_loop: do ii=0,getLength(nodes_list)-1
+               curarg=> item(nodes_list,ii)
+               if (getNodeName(curarg) 
      &           .eq. arg_tag .and.
-     &           getAttribute(item(nodes_list,ii),atr_name)
+     &           getAttribute(curarg,atr_name)
      &           .eq. trim(argkey) ) iargcount = iargcount+1
 
             end do arg_loop
          end if 
       end if
-
+      if (ntest.ge.100)then 
+         write (lulog,'("found ",i3," occurences")') iargcount
+         write (lulog,*) "of ",argkey," under ",context
+      end if
       is_argument_set = iargcount
 
       return

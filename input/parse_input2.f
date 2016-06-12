@@ -27,8 +27,8 @@
       !! @TODO maybe make this configurable in the installation process
       character,parameter::     !attribute names
      &     atr_name*4="name",
-     &     atr_kind*4="kind",
-     &     atr_len*3="len",
+     &     atr_kind*4="type",
+     &     atr_len*6="length",
      &     atr_val*3="val",
      &     atr_stat*6="status"
       
@@ -382,6 +382,7 @@
 
 *----------------------------------------------------------------------*
 !>   finds the icount node of a given context that is active.
+!!    for keywords only
 !!    
 !!   @param[in] tree_root root element of the input_tree 
 !!   @param[out] finnode found node (null() if no such node exists)
@@ -391,6 +392,9 @@
       subroutine find_active_node(tree_root,finnode,context,icount)
 *----------------------------------------------------------------------*
       implicit none
+      include "stdunit.h"
+      integer,parameter ::
+     &     ntest=00
       character(len=16)::
      &     i_am="find_active_node"
       type(Node), pointer ,intent(in)::
@@ -408,6 +412,10 @@
      &     current
       integer ::
      &     jcount, status
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "looking for",icount,"th",trim(context) 
+      end if
 
       if (.not.hasChildNodes(tree_root))
      &     call quit(1,i_am,'invalid keyword tree')
@@ -419,39 +427,35 @@
       jcount = 0
       key_loop: do 
         call rts(getAttribute(current,atr_stat),status)
+        if (ntest.ge.100)then 
+           write (lulog,*) "keyword:",getAttribute(current,atr_name)
+           write (lulog,*) "status:",status
+        end if
+
         if (status.gt.0) then
           call keyword_get_context(curcontext,current)
+! keyword_get_context only gets the context of the current keyword
+          if (len_trim(curcontext).eq.0)then
+             curcontext=getAttribute(current,atr_name)
+          else
+             curcontext=trim(curcontext)//"."//
+     &            getAttribute(current,atr_name)
+          end if 
+          
+          print *, trim(context),trim(curcontext)
           if (trim(context).eq.trim(curcontext)) jcount = jcount+1 
           if (icount.eq.jcount) then
             finnode => current
             exit key_loop
          end if
         end if
-!>  @TODO implement this with the dsearch
-        if (status.gt.0.and.hasChildNodes(current)) then
-          ! go down
-          current => getFirstChild(current)
-        else if (associated(getNextSibling(current))) then
-          ! else stay within level
-          current => getNextSibling(current)
-        else
-          ! else find an upper level, where a next
-          ! node exists:
-          up_loop: do
-             if (getNodeName(getParentNode(current))
-     &         .ne. key_root_tag) then
-                current => getParentNode(current)
-                if (associated(getNextSibling(current))) then
-                   current => getNextSibling(current)
-                   exit up_loop
-                end if
-             else
-                exit key_loop
-             end if
-          end do up_loop
-       end if        
+        call dsearch_next_key(current, key_tag)
+        if (.not.associated(current)) exit key_loop
       end do key_loop
-
+            if (ntest.ge.100)
+     &     write (lulog,*) i_am," has found",jcount,
+     &     "occurences of ",trim(context),"and returning:",
+     &     associated(finnode)
       return
       end subroutine
 
@@ -597,7 +601,7 @@
       call find_node(getFirstChild(doc),new_parent,trim(context))
       new_elem=>appendChild(new_parent, new_elem)
       if (getNodeName(new_elem) .eq. arg_tag) 
-     &     call setAttribute(new_elem,atr_val, value)
+     &     call setTextContent(new_elem, value)
       call setAttribute(new_elem,atr_stat,str(-1))
 
 
@@ -1079,7 +1083,7 @@ c dbgend
      &     ntest=00
       integer, parameter ::
      &     maxlen  = 256
-      character(len=maxlen),intent(inout) ::
+      character(len=*),intent(inout) ::
      &     curcontext
       character(len=name_len)::
      &     curname
@@ -1089,14 +1093,13 @@ c dbgend
       type(node), pointer ::
      &     internal
       curcontext=" "
-
       internal=> getParentNode(current)
       do while (getNodeName(internal) .ne. key_root_tag)
          curcontext=getAttribute(internal,atr_name)//
      &   "."//trim(curcontext)
          internal=> getParentNode(internal)
       end do
-      curcontext=curcontext(:len_trim(curcontext)-1)
+      curcontext(len_trim(curcontext):len_trim(curcontext))=" "
       end subroutine
 
 *----------------------------------------------------------------------*

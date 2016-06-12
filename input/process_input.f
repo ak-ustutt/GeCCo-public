@@ -43,21 +43,27 @@ c      end if
 
       write(lulog,*) 'printlevel is set to ',iprlvl
 
+
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
-      lblk_da = iread*1024/nrecfc
 
+
+      lblk_da = iread*1024/nrecfc
       ncnt = is_keyword_set('orb_space.shell')
+        print *, "found that ",ncnt,"shells are set" 
+
 
       allowed(1:6) = .true.
       do icnt = 1, ncnt
         ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
      &       call quit(0,'process_input','single shell? frozen?')
+        print *, "found that ",ncnt,"shells are set" 
         str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
 
+        call abort
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle

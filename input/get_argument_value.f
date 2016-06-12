@@ -15,12 +15,13 @@
      &     input_root,input_doc,key_root
       use FoX_dom,only:Node,Nodelist,DOMException,
      &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
-     &     getNodeName,getAttribute
+     &     getNodeName,getAttribute,getTextContent
       use FoX_common,only:rts
       implicit none
       include 'par_vtypes.h'
+      include 'stdunit.h'
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
       character(len=18),parameter ::
      &     i_am="get_argument_value"
 
@@ -53,10 +54,21 @@
       integer ::
      &     ii, num
 
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         if (present(keycount)) write (lulog,*) "keycount:",keycount
+         if (present(argcount)) write (lulog,*) "argcount:",argcount
+      end if
+
+
       input_root=getFirstChild(input_doc)
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
-
+      
+      if (ntest.ge.100) then
+         write(lulog,*) "assoc. status of input_root",
+     &        associated(input_root)
+      end if
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
@@ -64,7 +76,7 @@
       try_default = .false.
       call find_active_node(input_root,curkey,
      &     context,icount_target)
-
+      print *, "active node found"
       iargcount = 0
       iargcount_target = 1
       if (present(argcount)) iargcount_target = argcount
@@ -73,18 +85,22 @@
       ! either get 
       repetition_loop: do 
 ! try default instead
-         if ((.not.associated(curkey).or.
-     &     .not.hasChildNodes(curkey)) !careful, attributes are child nodes
-     &     .and.iargcount_target.eq.1) then
-            try_default = .true.
-            call find_node(key_root,curkey,context)
+         print *, "debug: entered loop"
+         if (.not.associated(curkey))then 
+            print *, "curkey is not associated"
+            if (.not.hasChildNodes(curkey) !careful, attributes are child nodes
+     &           .and.iargcount_target.eq.1) then
+               try_default = .true.
+               print *, "debug: trying default"
+               call find_node(key_root,curkey,context)
+            end if
          end if 
-
+         print *, "looking in input"
          if (associated(curkey).and.hasChildNodes(curkey)) then
             child_list=> getChildNodes(curkey)
-            arg_loop: do ii=1,getLength(child_list) 
+            arg_loop: do ii=0,getLength(child_list)-1 ! MY LISTS START AT 1!!!!
                curarg=>item(child_list,ii)
-
+               print *, "looking at",getAttribute(curarg,atr_name)
                if (getNodeName(curarg) .ne. arg_tag) cycle arg_loop
                
                if (getAttribute(curarg,atr_name).eq.trim(argkey)) 
@@ -92,8 +108,14 @@
                
                if (getAttribute(curarg,atr_name).eq.trim(argkey).and.
      &              iargcount.eq.iargcount_target) then
+                  print *, "got to dimension request"
                   call rts(getAttribute(curarg,atr_len),dim)
+                  print *, "got to type request"
                   call rts(getAttribute(curarg,atr_kind),type)
+                  if (ntest.ge.100) then 
+                     write(lulog,'("dim:",i3)')dim 
+                     write(lulog,'("type:",i3)')type
+                  end if 
                   select case(type)
                case (vtyp_log)
                   if (.not.(present(lval).or.present(larr)))
@@ -101,10 +123,10 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no l-value array present')
                   if (present(lval)) 
-     &                 call rts(getAttribute(curarg,atr_val),lval,
+     &                 call rts(getTextContent(curarg),lval,
      &                 iostat=ex)
                   if (present(larr))  
-     &                 call rts(getAttribute(curarg,atr_val),larr(1:dim)
+     &                 call rts(getTextContent(curarg),larr(1:dim)
      &                 ,iostat=ex) 
                   if (ex.gt. 0) succ = .true.
                case (vtyp_int)
@@ -113,10 +135,10 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no i-value array present')
                   if (present(lval)) 
-     &                 call rts(getAttribute(curarg,atr_val),ival
+     &                 call rts(getTextContent(curarg),ival
      &                 ,iostat=ex)
                   if (present(larr)) 
-     &                 call rts(getAttribute(curarg,atr_val),iarr(1:dim)
+     &                 call rts(getTextContent(curarg),iarr(1:dim)
      &                 ,iostat=ex) 
                   if (ex.gt. 0) succ = .true.
             
@@ -126,10 +148,10 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no r-value array present')
                   if (present(lval)) 
-     &                 call rts(getAttribute(curarg,atr_val),xval
+     &                 call rts(getTextContent(curarg),xval
      &                 ,iostat=ex)
                   if (present(larr)) 
-     &                 call rts(getAttribute(curarg,atr_val),xarr(1:dim)
+     &                 call rts(getTextContent(curarg),xarr(1:dim)
      &                 ,iostat=ex) 
                   if (ex.gt. 0) succ = .true.
                case (vtyp_str)
@@ -138,7 +160,7 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no r-value array present')
                   do idx = 1, dim
-                     str = trim(getAttribute(curarg,atr_val))
+                     str = trim(getTextContent(curarg))
                   end do
                   succ = .true.
                   end select
