@@ -1,20 +1,25 @@
+!> This module works mostly on the following two objects:
+!! The keyword DOM-tree  and the input DOM-tree
+!! both have the following  general structure 
+!!   * A document: (According to W3C specification every xml tree lives upon a document)
+!!   * An element with the key_root_tag as tag;
+!!                in the input tree this is the only child of the document node
+
+
       module parse_input2
-      use FoX_dom,only: Node,Nodelist,DOMException,
-     &     parseFile,parseString,getExceptionCode,getElementsByTagName,
-     &     hasChildNodes,getChildNodes,getParentNode,getFirstChild,
-     &     getLength,getNodeName,getAttribute,importNode,item,
-     &     appendChild,setAttribute,getNextSibling,getPreviousSibling
+      use FoX_dom
       use FoX_common, only:str,rts
       implicit none
       include 'write_styles.h'
 
       integer,parameter::
-     &     file_loc_len=16
+     &     file_loc_len=22
       character(len=file_loc_len),parameter ::
-     &     rel_file_loc="/keyword_registry"
-      !> @TODO make this usable on systems where / is not directory separator
+     &     rel_file_loc="/data/keyword_registry"
+      !! @TODO make this usable on systems where / is not directory separator
+      !! @TODO maybe make this configurable in the installation process
       character,parameter::     !attribute names
-     &     atr_name*3="key",
+     &     atr_name*4="name",
      &     atr_kind*4="kind",
      &     atr_len*3="len",
      &     atr_val*3="val",
@@ -43,7 +48,16 @@
       contains 
 
 *----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+! Subroutines coupled to the module variables
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
 
+*----------------------------------------------------------------------*
+!>   wrapper to uncouple set_input_status_ from module variables
+!!
+!!  @param  one_more logical to show if there are unprocessed blocks remaining.
+!!          input status not used
 *----------------------------------------------------------------------*
       subroutine process_input_(one_more)
 *----------------------------------------------------------------------*
@@ -54,6 +68,155 @@
       call set_input_status_(input_root, history_pointer,one_more)
       
       end subroutine 
+
+
+
+
+
+*----------------------------------------------------------------------*
+!!    initializes the module variables relating to the registry
+*----------------------------------------------------------------------*
+      subroutine keyword_init_()
+*----------------------------------------------------------------------*
+      implicit none
+      registry_doc =>null()
+      key_root=> null()
+      end subroutine
+
+*----------------------------------------------------------------------*
+!!    initializes the module variables relating to the input
+*----------------------------------------------------------------------*
+      subroutine input_init_()
+*----------------------------------------------------------------------*
+      implicit none
+      input_doc=> null()
+      input_root=>null()
+      history_pointer=> null()
+      end subroutine
+
+*----------------------------------------------------------------------*
+!!    creates the document to hold the input variables
+*----------------------------------------------------------------------*
+
+      subroutine input_start_()
+      call input_init_()
+
+      !easiest way to create a document
+      input_doc=> parseString(
+     &     "<"//key_root_tag//"></"//key_root_tag//">")
+      input_root=> getFirstChild(input_doc)
+
+      end subroutine input_start_
+
+*----------------------------------------------------------------------*
+!!    parses the keyword_file and initializes the input
+!!  
+*----------------------------------------------------------------------*
+      subroutine set_keywords()
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      character(len=13),parameter ::
+     &     i_am="set_keywords"
+      integer, parameter ::
+     &     ntest=00
+      type(DOMException)::
+     &     ex
+      type(Node),pointer ::
+     &     tmpnode
+      type(NodeList),pointer::
+     &     nodes_list
+
+      call keyword_init_()
+      call input_start_()
+
+
+      registry_doc => parseFile(trim(get_keyword_file()), ex=ex)
+      !! @TODO more special error handling 
+      
+
+      if (getExceptionCode(ex) .ne. 0)
+     &     call quit(0,i_am,"could not read keyword registry")
+
+      if (ntest .ge. 100) write (lulog,*) "file parsed"
+      nodes_list=>getElementsByTagName(registry_doc, key_root_tag)    
+      !  assumes there is only on of these elements
+      if (getLength(nodes_list) .ne. 1)
+     &     call quit(0,i_am,"more than one key_root element")
+
+      if (ntest .ge. 100) then
+         write (lulog,'("expected: 1 element")') 
+         write (lulog,'("found: ",i2,"element")')getLength(nodes_list)
+      end if
+      key_root=> item(nodes_list, 0) ! 0-indexed ... that's no true Fortran
+      
+      contains
+
+*----------------------------------------------------------------------*
+!!    returns name of the keyword_file
+*----------------------------------------------------------------------*
+      function get_keyword_file() result(file_name)
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ntest= 00
+      character(len=16),parameter ::
+     &     i_am="get_keyword_file"
+      character(len=256)::
+     &     path_name,file_name
+      integer ::
+     &     len
+
+
+      call get_environment_variable( "GECCO_DIR", value=path_name,
+     &     length = len)
+
+      if (len.EQ.0)
+     &     call quit(0,i_am,
+     &     "Please, set the GECCO_DIR environment variable.")
+      if (len .gt.(256-file_loc_len)  )
+     &     call quit(0,i_am,
+     &     "GECCO_DIR to long, cannot set keyword_registry")
+      file_name=trim(path_name)//rel_file_loc
+      end function
+
+      end subroutine 
+
+*----------------------------------------------------------------------*
+!!   wrapper to uncouple keyword_parse_ from module variables
+!!
+!!  @param  luin 
+*----------------------------------------------------------------------*
+      subroutine keyword_parse(luin)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, intent(in) ::
+     &     luin
+
+      call keyword_parse_(luin,input_doc,key_root)
+      call abort 
+      end subroutine keyword_parse
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+! self contained subroutines
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+
 *----------------------------------------------------------------------*
 *     set all previous keywords with same key as present keyword to
 *     inactive (+ all sub-levels)
@@ -82,14 +245,18 @@
         end if
       end do 
       end subroutine
+
 *----------------------------------------------------------------------*
-!>    toggles the status of all keywords set in the input:
+!!    toggles the status of all keywords set in the input:
 !!
 !!    advances to next 'calculate' Block 
 !!   for any given toplevel context only the last block is set active
 !!   all other keywords are set inactive.
+!!   @param in_root root element of the input DOM-tree
+!!   @param history pointer to the last active history file (may be null())
+!!   @param one_more logical if unprocessed blocks remain
 *----------------------------------------------------------------------*
-      subroutine set_input_status_(input_root, history_pointer,one_more)
+      subroutine set_input_status_(in_root, history,one_more)
 *----------------------------------------------------------------------*
       implicit none
       integer,parameter::
@@ -97,29 +264,29 @@
       character(len=16),parameter ::
      &     i_am="set_input_status"
       type(Node),pointer,intent(in)::
-     &     input_root
+     &     in_root
       type(Node),pointer,intent(inout)::
-     &     history_pointer
+     &     history
       logical, intent(inout)::
      &     one_more
       type(Node),pointer::
      &     current
 
-      if (.not.associated(history_pointer)) then
-         history_pointer => input_root
-         if (.not.associated( getFirstChild( history_pointer))) then
+      if (.not.associated(history)) then
+         history => in_root
+         if (.not.associated( getFirstChild( history))) then
             call quit(0,i_am,'not a single keyword given?')
          end if
-         history_pointer =>getFirstChild( history_pointer)
-      else if (associated( getNextSibling( history_pointer) ) ) then
-         history_pointer =>getNextSibling( history_pointer)
+         history =>getFirstChild( history)
+      else if (associated( getNextSibling( history) ) ) then
+         history =>getNextSibling( history)
       else
         one_more = .false.
         return
       end if
       one_more=.true.
 
-      current => history_pointer
+      current => history
       do
         call set_keyword_status(current,+1)
         call unset_previous_keywords(current)
@@ -127,14 +294,15 @@
         if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
 
         if (associated( getNextSibling( current) ) ) then
-         history_pointer =>getNextSibling( current)
+         history =>getNextSibling( current)
         else
           exit
         end if
 
       end do
-      history_pointer => current
+      history => current
       end subroutine 
+
 *----------------------------------------------------------------------*
 !>    sets the given keyword and all subkeywords to a given status
 !!
@@ -157,129 +325,31 @@
          call dsearch_next_key(current,key_tag)
       end do
       end subroutine
-*----------------------------------------------------------------------*
-!>    delivers the next keyword in a depth first search
-!!
-!!    prefilters with a specific tag.
-!!    @param[inout] nxtnode on entry: node where the search is continued
-!!                          on exit : nextnode  
-!!    @param[in] key string that contains the tag we filter for.
-*----------------------------------------------------------------------*
-      subroutine dsearch_next_key(nxtnode, tag)
-*----------------------------------------------------------------------*
-      implicit none
-      integer,parameter::
-     &     ntest= 00
-      character(len=16),parameter ::
-     &     i_am="key_depth_search"
-
-      character,intent(in) ::
-     &     tag*(*)
-
-      type(Node), pointer, intent(inout)::
-     &     nxtnode
-      type(Node), pointer::
-     &     current
-
-      current => nxtnode
-
-      main_loop: do 
-         if (hasChildNodes(current))then
-            current=> getFirstChild(current)
-         else if (associated(getNextSibling(current)))then
-            current=> getNextSibling(current)
-         else 
-            up_loop: do while(getNodeName(current).ne.key_root_tag)
-               current => getParentNode(current)
-               if (associated(getNextSibling(current)))then 
-                  current=> getNextSibling(current)
-                  exit up_loop
-               end if 
-            end do up_loop
-            if (getNodeName(current).eq. trim(tag))then
-               nxtnode=>current
-               exit main_loop
-            else if (getNodeName(current).eq.key_root_tag) then
-               nxtnode=>null()
-               exit main_loop
-            end if
-         end if 
-      end do main_loop
-      end subroutine 
-*----------------------------------------------------------------------*
-!>    returns name of the keyword_file
-*----------------------------------------------------------------------*
-      function get_keyword_file() result(file_name)
-*----------------------------------------------------------------------*
-      implicit none
-      integer,parameter::
-     &     ntest= 00
-      character(len=16),parameter ::
-     &     i_am="get_keyword_file"
-      character(len=256)::
-     &     path_name,file_name
-      integer ::
-     &     len
 
 
-      call get_environment_variable( "GECCO_DIR", value=path_name,
-     &     length = len)
 
-      if (len.EQ.0)
-     &     call quit(0,i_am,
-     &     "Please, set the GECCO_DIR environment variable.")
-      if (len .gt.(256-file_loc_len)  )
-     &     call quit(0,i_am,
-     &     "GECCO_DIR to long, cannot set keyword_registry")
-      file_name=trim(path_name)//rel_file_loc
-      end function
+
 
 *----------------------------------------------------------------------*
-!>    parses the keyword_file 
-!!    @TODO think if that should be done here or in set_keywords
-*----------------------------------------------------------------------*
-      subroutine keyword_init_()
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=13),parameter ::
-     &     i_am="keyword_init_"
-      type(DOMException)::
-     &     ex
-      type(Node),pointer::     tmpnode
-      type(NodeList),pointer::
-     &     nodes_list
-      integer ::
-     &     i
-      
-      registry_doc => parseFile(trim(get_keyword_file()), ex=ex)
-      !> @TODO more special error handling 
-      if (getExceptionCode(ex) .ne. 0)
-     &     call quit(1,i_am,"could not read keyword registry")
-      nodes_list=>getElementsByTagName(registry_doc, key_root_tag)
-      i=1
-      !  assumes there is only on of these elements
-      key_root=> item(nodes_list, i)
-      !easiest way to create an empty document
-      input_doc=> parseString(
-     &     "<"//key_root_tag//"></"//key_root_tag//">")
-      input_root=> getFirstChild(input_doc)
-      history_pointer=> null()
-      end subroutine 
-
-
+!>   finds the icount node of a given context that is active.
+!!    
+!!   @param[in] tree_root root element of the input_tree 
+!!   @param[out] finnode found node (null() if no such node exists)
+!!   @param[in] context context of the searched node
+!!   @param[in] icount
 *----------------------------------------------------------------------*
       subroutine find_active_node(tree_root,finnode,context,icount)
 *----------------------------------------------------------------------*
       implicit none
       character(len=16)::
      &     i_am="find_active_node"
-      type(Node), pointer ::
+      type(Node), pointer ,intent(in)::
      &     tree_root
-      type(Node), pointer ::
+      type(Node), pointer ,intent(out)::
      &     finnode
-      character ::
+      character ,intent(in)::
      &     context*(*)
-      integer ::
+      integer,intent(in)::
      &     icount
 
       character ::
@@ -307,7 +377,7 @@
             exit key_loop
          end if
         end if
-
+!>  @TODO implement this with the dsearch
         if (status.gt.0.and.hasChildNodes(current)) then
           ! go down
           current => getFirstChild(current)
@@ -334,168 +404,7 @@
 
       return
       end subroutine
-*----------------------------------------------------------------------*
-!>     navigates to a specific keyword
-!!
-!!     @param[in] tree_root root element from which the search starts, must be associated.
-!!     @param[out] finnode either pointing to the node given by context or not associated if no keyword given by context exists.
-!!     @param[in] context is a string as e.g. "key.subkey.subsubkey"
-!!     @param[in] latest optional parameter if .True. subkeys on the same level are searched in reverse order
-*----------------------------------------------------------------------*
-      subroutine find_node(tree_root,finnode,context,latest)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-      character(len=9),parameter ::
-     &     i_am="find_node"
-      integer, parameter ::
-     &     ntest = 00
 
-      type(node), pointer ::
-     &     tree_root
-      type(node), pointer ::
-     &     finnode
-      character, intent(in) ::
-     &     context*(*)
-      logical, intent(in), optional ::
-     &     latest
-
-      logical ::
-     &     forward
-      integer ::
-     &     ipst, ipnd, len, ii
-
-      type(NodeList), pointer ::
-     &     nodes_list
-      type(node), pointer ::
-     &     current,tmpnode
-      logical ::
-     &     found
-
-      
-      if (ntest .gt. 100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' context = "',trim(context),'"'
-        if (forward) write(lulog,*) 'forward search'
-        if (.not.forward) write(lulog,*) 'backward search'
-      end if 
-      forward = .true.
-      if (present(latest)) forward = .not.latest
-
-      finnode => null()
-      current => tree_root
-
-      ipst = 1
-      len = len_trim(context)
-      if (len.eq.0) finnode => current
-
-      subk_loop: do while(ipst.le.len)
-
-        found=.False.
-        ipnd = index(context(ipst:),".")+ipst-2
-        if (ipnd.lt.ipst) ipnd = len
-
-        if (ntest.ge.100) then
-          write(lulog,*) ' current subkeyword: "',context(ipst:ipnd),'"'
-        end if
-
-
-        ! get all keywords one level down
-        if (.not. hasChildNodes(current)) exit subk_loop
-        nodes_list=>getChildNodes(current)
-        if (forward)then
-           node_loop: do ii=1,getLength(nodes_list) 
-
-           ! compare tags to filter keywords and name for specific keyword
-
-           if (getNodeName(item(nodes_list,ii)) 
-     &          .eq. key_tag .and. 
-     &          getAttribute(item(nodes_list,ii), atr_name)
-     &          .eq. context(ipst:ipnd)) then 
-              current=>item(nodes_list,ii)
-              found=.True.
-              exit node_loop
-           end if
-           
-           end do node_loop
-        else
-           nodes_loop: do ii=getLength(nodes_list),1,-1
-
-           if (getNodeName(item(nodes_list,ii)) 
-     &          .eq. key_tag .and. 
-     &          getAttribute(item(nodes_list,ii), atr_name)
-     &          .eq. context(ipst:ipnd)) then 
-              current=>item(nodes_list,ii)
-              found=.True.
-              exit nodes_loop
-           end if
-
-           end do nodes_loop
-        end if
-
-        if (.not.found) then
-           exit subk_loop
-        else if (found .and. ipnd.eq.len )then
-           finnode => current
-           exit subk_loop
-        end if
-
-        ipst=ipnd+2
-      end do subk_loop
-
-      if (ntest.ge.100) then
-        if (associated(finnode)) write(lulog,*) 'success'
-        if (.not.associated(finnode)) write(lulog,*) 'no success'
-      end if
-      end subroutine
-
-*----------------------------------------------------------------------*
-!>    
-*----------------------------------------------------------------------*
-*     look whether keyword cur_key hosts an argument with key "key"
-*     and return the corresponding node
-*----------------------------------------------------------------------*
-      subroutine arg_node(arg,cur_key,key)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-
-      character(len=9),parameter::
-     &     i_am="next_node"
-      integer, parameter ::
-     &     ntest = 00
-
-      type(Node), pointer ::
-     &     cur_key
-      character, intent(in) ::
-     &     key*(*)
-      type(Node), pointer ::
-     &     arg
-      type(NodeList),pointer ::
-     &     nodes_list
-      integer ::
-     &     ii
-
-      arg => null()
-      if (hasChildNodes(cur_key))then
-         nodes_list=> getChildNodes(cur_key)
-         do ii=1,getLength(nodes_list)
-            if (getNodeName(item(nodes_list,ii))
-     &           .eq. arg_tag .and. 
-     &           getAttribute(item(nodes_list,ii), atr_name)
-     &           .eq. key ) then
-               arg => item(nodes_list,ii)
-               exit
-            end if 
-         end do 
-      end if 
-
-
-      if (ntest.ge.100) then
-        if (associated(arg)) write(lulog,*) 'success'
-        if (.not.associated(arg)) write(lulog,*) 'no success'
-      end if
-      end subroutine
 
 
 *----------------------------------------------------------------------*
@@ -513,7 +422,7 @@
       character(len=9),parameter::
      &     i_am="next_node"
       integer, parameter ::
-     &     ntest = 00
+     &     ntest =00
 
       type(node), pointer ::
      &     cur_node
@@ -523,7 +432,7 @@
      &     key*(*)
 
       type(node), pointer ::
-     &     current
+     &     current,listnode
       type(NodeList), pointer ::
      &     keylist
       integer ::
@@ -531,8 +440,8 @@
       
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-!         write(lulog,*) ' start = "',trim(get),'"'
-!         write(lulog,*) ' search for "',trim(key),'"'
+         write(lulog,*) ' start = "',getAttribute(cur_node,atr_name),'"'
+         write(lulog,*) ' search for "',trim(key),'"'
       end if
 
       nxt_node=>null()
@@ -548,20 +457,19 @@
       end if 
    
       node_loop: do
-         do ii=1,getLength(keylist)
-
-            if (getNodeName(item(keylist,ii)) 
+         do ii=0,getLength(keylist)-1      ! No,No,No
+            listnode=>item(keylist,ii)
+            if (getNodeName(listnode) 
      &           .eq. key_tag .and. 
-     &           getAttribute(item(keylist,ii), atr_name)
+     &           getAttribute(listnode, atr_name)
      &           .eq. key ) then 
-               current=>item(keylist,ii)
-               nxt_node=> item(keylist,ii)
+               nxt_node=> listnode
                exit node_loop
             end if
 
          end do
 
-         if (getNodeName(current).ne. getNodeName(key_root))then
+         if (getNodeName(current).ne. key_root_tag)then
             current=>getParentNode(current)
             keylist=>getChildNodes(current)
          else
@@ -583,6 +491,7 @@
 !!   copies all attributes from template but does not copy child nodes and 
 !!     inserts the new node in document doc with the context of the original node.
 !!     context must already exist in doc.
+!!     the node is set inactive
 !!   overrides the argument value with value. for keywords value is irrelevant
 !!   @param[inout] doc document that will own the newly created node. 
 !!   @param[in] template template for the newly created node
@@ -592,6 +501,7 @@
       subroutine create_node(doc,template,value)
 *----------------------------------------------------------------------*
       implicit none 
+      include "stdunit.h"
       character(len=11),parameter::
      &     i_am="create_node"
       integer,parameter ::
@@ -604,13 +514,18 @@
      &     doc,template
       character(len=*),intent(in)::
      &     value
-
-
-
       type(node),pointer ::
      &     new_elem,new_parent
       character(len=maxlen) ::
      &     context
+
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of doc:"
+     &        ,associated(doc)
+         write (lulog,*) "testing association of template:"
+     &        ,associated(template)
+      end if
 
       if (.not. associated(doc)) 
      &     call quit(1,i_am,"doc not set")
@@ -620,43 +535,22 @@
       
       new_elem=>importNode(doc, template, .False.)
 
-
+      context=" "
       call  keyword_get_context(context,template)
+      if (ntest.ge.100) then
+         write (lulog,*) "creating a new keyword/argument on context:",
+     &   context        
+      end if
+
 
 !> @TODO this assumes that key_root is the first child of doc      
-      call find_node(getFirstChild(doc),new_parent,context)
-
+      call find_node(getFirstChild(doc),new_parent,trim(context))
       new_elem=>appendChild(new_parent, new_elem)
       if (getNodeName(new_elem) .eq. arg_tag) 
      &     call setAttribute(new_elem,atr_val, value)
       call setAttribute(new_elem,atr_stat,str(-1))
 
-      end subroutine
 
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-      subroutine keyword_get_context(curcontext,current)
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=19),parameter::
-     &     i_am="keyword_get_context"
-      integer,parameter::
-     &     ntest=00
-      character ::
-     &     curcontext*(*)
-      type(node), pointer ::
-     &     current 
-      
-      type(node), pointer ::
-     &     internal
- 
-      
-      internal=> getParentNode(current)
-      do while (getNodeName(internal).ne. key_root_tag)
-         curcontext=getAttribute(internal,atr_name)//
-     &   "."//trim(curcontext)
-         internal=> getParentNode(internal)
-      end do
 
       end subroutine
 
@@ -667,12 +561,13 @@
 !     &     context,n_descent,show_args)
 
 
+
 *----------------------------------------------------------------------*
 *     parse the keywords on unit luin
 *     the unit should be a formatted, sequential file, positioned
 *     at the place where the parser should start
 *----------------------------------------------------------------------*
-      subroutine keyword_parse(luin)
+      subroutine keyword_parse_(luin,in_doc,k_root)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -687,7 +582,9 @@
       integer, intent(in) ::
      &     luin
 
-
+      type(Node), pointer ::
+     &     in_doc,               ! document element of the input
+     &     k_root                ! root element of the preset keyword tree
       integer, parameter ::
      &     maxlen  = 256,
      &     n_delim = 8
@@ -733,20 +630,26 @@
       integer ::
      &     ipst, ipnd, itest, lenline, ierr
 
-
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of key_root:"
+     &        ,associated(k_root)
+      end if
 
       context = " "
-      curkey => key_root
+      curkey => k_root
 
       allowed_delim(1:n_allowed_start)=allowed_start(1:n_allowed_start)
       n_allowed_delim = n_allowed_start
-
 
       ierr = 0
       file_loop: do
          read(luin, '(a)', end=100, err=200) line
          ipst = 1
-         
+         if (ntest .ge. 100)then 
+            write (lulog,*) "reading line"
+            write (lulog,*) "'",line,"'"
+         end if 
          call clean_line(line,delimiter,n_delim)
          
          lenline=len_trim(line)
@@ -755,6 +658,7 @@
 
          if (lenline.le.0) cycle file_loop 
 
+         !ensure that the line does not begin with a delimiter
          itest = next_delim(line(ipst:ipst),
      &        allowed_delim,n_allowed_delim)
 
@@ -774,10 +678,15 @@
 
 
          line_loop: do while(ipst.le.lenline)
-            itest = next_delim(line(ipst:ipst),
+            itest = next_delim(line(ipst:),
      &           allowed_delim,n_allowed_delim)
             
             ipnd = abs(itest)+ipst-2
+            if (ntest .gt. 100)then 
+               write (lulog, *) "disassembling line"
+               write (lulog, *) "start_index:",ipst
+               write (lulog, *) "current word",line(ipst:ipnd)
+            end if 
             
             if (itest.le.0) then
                ierr = ierr+1
@@ -786,7 +695,9 @@
             
 ! is it an argument key?
             call arg_node(curarg,curkey,line(ipst:ipnd))
-            
+            if (ntest.ge.100) 
+     &           write (lulog,*) "This is an argument?",
+     &           associated(curarg)
             if (associated(curarg)) then 
 !     check that a value is assigned
                if(  next_delim(line(ipnd+1:ipnd+1),
@@ -795,6 +706,7 @@
                   ierr = ierr+1
                   call error_misseq(line,ipnd+1)
                end if
+
                
                ipst = ipnd+2
                if (ipst.le.lenline) then
@@ -822,7 +734,8 @@
                      end if
                      ipnd = ipnd-1
                   end if 
-                  call create_node(input_doc,curarg,line(ipst:ipnd))
+                  call create_node(in_doc,curarg,line(ipst:ipnd))
+                 
                else
                   ierr = ierr+1
                   call error_eol(line,ipst)
@@ -833,16 +746,21 @@
                end if
             else                ! keyword
                call next_node(curkey,nxtkey,line(ipst:ipnd))
+               if (ntest.ge.100) 
+     &              write (lulog,*) "Is it a keyword?",
+     &              associated(nxtkey)
                if (.not.associated(nxtkey)) then
                   ierr = ierr+1
                   call error_keywd(line,ipst,curkey)
                else
                   curkey => nxtkey
-                   call create_node(input_doc,curkey," ")
+                  call create_node(in_doc,curkey," ")
+                  
 !     add node to keyword history
                end if
             end if
-            
+
+            ipst = ipnd+2
          end do line_loop
       end do file_loop
 
@@ -875,24 +793,28 @@
 !!      negative value, if delimiter is not allowed in context
 !!    
 *----------------------------------------------------------------------*
-      integer function next_delim(str,delim,n_delim)
+      pure integer function next_delim(str,delim,nrdelim)
 *----------------------------------------------------------------------*
       implicit none
-
       character, intent(in) ::
      &     str*(*)
       integer,intent(in)::
-     &     n_delim
-      integer,dimension(n_allowed_delim),intent(in)::
+     &     nrdelim
+      integer,dimension(nrdelim),intent(in)::
      &     delim
 
       logical ::
      &     ok
       integer ::
      &     ipos, jpos, len, idelim, jdelim
-
+c dbg
+CC remove the pure keyword if you use this
+c       write (lulog,*)"debug: next_delim"
+c       write (lulog,*) "called with: str='",trim(str),"'"
+c       write (lulog,*) "called with: n_delim=",nrdelim,"'"
+c       write (lulog,*) "delim:",delim(1)
+c dbgend 
       len = len_trim(str)
-
       if (len.eq.0) then
         next_delim = 0
         return
@@ -901,19 +823,27 @@
       ipos = len+1
       idelim = 0
       do jdelim = 1, n_delim
-        jpos = index(str,delimiter(jdelim))
+         
+        jpos = index(trim(str),delimiter(jdelim))
         if (jpos.gt.0.and.jpos.lt.ipos) then
           ipos = jpos
           idelim = jdelim
         end if
         if (ipos.eq.1) exit
       end do
-
+c dbg
+CC remove the pure keyword if you use this
+c       write (lulog,*)"length:",len
+c       write (lulog,*) "found delimiter at",ipos,"'"
+c       if (idelim.gt.0)
+c     &      write (lulog,*) "found  delimiter='",
+c     &      delimiter(idelim),"'"
+c dbgend 
       ok = .true.
       if (idelim.gt.0) then
         ok = .false.
-        do jdelim = 1, n_allowed_delim
-          if (idelim.eq.allowed_delim(jdelim)) then
+        do jdelim = 1, nrdelim
+          if (idelim.eq.delim(jdelim)) then
             ok = .true.
             exit
           end if
@@ -1071,8 +1001,284 @@
       return
       end subroutine
 
-      end subroutine keyword_parse
+      end subroutine 
 
+
+
+
+
+
+
+
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+!     Some general use subroutines
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+
+*----------------------------------------------------------------------*
+!>    returns the context of a given keyword
+*----------------------------------------------------------------------*
+      subroutine keyword_get_context(curcontext,current)
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=19),parameter::
+     &     i_am="keyword_get_context"
+      integer,parameter::
+     &     ntest=00
+      integer, parameter ::
+     &     maxlen  = 256
+      character(len=maxlen),intent(inout) ::
+     &     curcontext
+      character(len=name_len)::
+     &     curname
+      type(node), pointer ::
+     &     current 
+      
+      type(node), pointer ::
+     &     internal
+      curcontext=" "
+
+      internal=> getParentNode(current)
+      do while (getNodeName(internal) .ne. key_root_tag)
+         curcontext=getAttribute(internal,atr_name)//
+     &   "."//trim(curcontext)
+         internal=> getParentNode(internal)
+      end do
+      curcontext=curcontext(:len_trim(curcontext)-1)
+      end subroutine
+
+*----------------------------------------------------------------------*
+!>     look whether keyword cur_key hosts an argument with key "key"
+!!     and return the corresponding node
+!!    @param[out] arg found argument node (null if no node was found)
+!!    @param[in] cur_key current keyword, where children are searched
+!!    @param[in] key name of the argument
+*----------------------------------------------------------------------*
+      subroutine arg_node(arg,cur_key,key)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+
+      character(len=9),parameter::
+     &     i_am="arg_node"
+      integer, parameter ::
+     &     ntest =00
+
+      type(Node), pointer ::
+     &     cur_key
+      character, intent(in) ::
+     &     key*(*)
+      type(Node), pointer, intent(out) ::
+     &     arg
+      type(NodeList),pointer ::
+     &     nodes_list
+      type(Node), pointer ::
+     &     curnode
+      integer ::
+     &     ii
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' looking for key "',key,'"'
+         write(lulog,*) ' association status:',associated(cur_key)
+         write(lulog,*) ' current_keyword "',
+     &        getAttribute(cur_key,atr_name),'"'
+      end if
+
+      arg => null()
+      if (hasChildNodes(cur_key))then
+         nodes_list=> getChildNodes(cur_key)
+         do ii=0,getLength(nodes_list)-1 ! this ain't no true Fortran
+            curnode=>item(nodes_list,ii)
+            if (ntest.ge.100) then
+               write(lulog,*) ' looking at "',
+     &              getAttribute(curnode,atr_name),'"'
+               write(lulog,*) ' of type:',getNodeName(cur_key)
+            end if 
+            if (getNodeName(curnode)
+     &           .eq. arg_tag .and. 
+     &           getAttribute(curnode, atr_name)
+     &           .eq. key ) then
+               arg => curnode
+               exit
+            end if 
+         end do 
+      end if 
+
+
+      if (ntest.ge.100) then
+        if (associated(arg)) write(lulog,*) 'success'
+        if (.not.associated(arg)) write(lulog,*) 'no success'
+      end if
+      end subroutine
+
+
+*----------------------------------------------------------------------*
+!>     navigates to a specific keyword
+!!
+!!     @param[in] tree_root root element from which the search starts, must be associated.
+!!     @param[out] finnode either pointing to the node given by context or not associated if no keyword given by context exists.
+!!     @param[in] context is a string as e.g. "key.subkey.subsubkey"
+!!     @param[in] latest optional parameter if .True. subkeys on the same level are searched in reverse order
+*----------------------------------------------------------------------*
+      subroutine find_node(tree_root,finnode,context,latest)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+      character(len=9),parameter ::
+     &     i_am="find_node"
+      integer, parameter ::
+     &     ntest = 00
+
+      type(node), pointer ::
+     &     tree_root
+      type(node), pointer ::
+     &     finnode
+      character, intent(in) ::
+     &     context*(*)
+      logical, intent(in), optional ::
+     &     latest
+
+      logical :: 
+     &     forward
+      integer ::
+     &     ipst, ipnd, len, ii
+
+      type(NodeList), pointer ::
+     &     nodes_list
+      type(node), pointer ::
+     &     current,tmpnode
+      logical ::
+     &     found
+
+      forward = .true.
+      if (present(latest)) forward = .not.latest
+      
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' context = "',trim(context),'"'
+        if (forward) write(lulog,*) ' forward search'
+        if (.not.forward) write(lulog,*) ' backward search'
+      end if 
+
+      finnode => null()
+      current => tree_root
+
+      ipst = 1
+      len = len_trim(context)
+      if (len.eq.0) finnode => current
+
+      subk_loop: do while(ipst.le.len)
+
+        found=.False.
+        ipnd = index(context(ipst:),".")+ipst-2
+        if (ipnd.lt.ipst) ipnd = len
+
+        if (ntest.ge.100) then
+          write(lulog,*) ' current subkeyword: "',context(ipst:ipnd),'"'
+        end if
+
+
+        ! get all keywords one level down
+        if (.not. hasChildNodes(current)) exit subk_loop
+        nodes_list=>getChildNodes(current)
+        if (forward)then
+           node_loop: do ii=0,getLength(nodes_list)-1 !DAMN YOU C!!!
+           current=> item(nodes_list,ii)
+           ! compare tags to filter keywords and name for specific keyword
+
+           if (getNodeName(current) 
+     &          .eq. key_tag .and. 
+     &          getAttribute(current, atr_name)
+     &          .eq. context(ipst:ipnd)) then 
+              current=>item(nodes_list,ii)
+              found=.True.
+              exit node_loop
+           end if
+           
+           end do node_loop
+        else
+           nodes_loop: do ii=getLength(nodes_list)-1,0,-1
+           current=> item(nodes_list,ii)
+           if (getNodeName(current) 
+     &          .eq. key_tag .and. 
+     &          getAttribute(current, atr_name)
+     &          .eq. context(ipst:ipnd)) then 
+              current=>item(nodes_list,ii)
+              found=.True.
+              exit nodes_loop
+           end if
+
+           end do nodes_loop
+        end if
+
+        if (.not.found) then
+           exit subk_loop
+        else if (found .and. ipnd.eq.len )then
+           finnode => current
+           exit subk_loop
+        end if
+
+        ipst=ipnd+2
+      end do subk_loop
+
+      if (ntest.ge.100) then
+        if (associated(finnode)) write(lulog,*) 'success'
+        if (.not.associated(finnode)) write(lulog,*) 'no success'
+      end if
+      end subroutine
+
+*----------------------------------------------------------------------*
+!>    delivers the next keyword in a depth first search
+!!
+!!    prefilters with a specific tag.
+!!    @param[inout] nxtnode on entry: node where the search is continued
+!!                          on exit : nextnode  (or null if key_root would be next node)
+!!    @param[in] key string that contains the tag we filter for.
+*----------------------------------------------------------------------*
+      subroutine dsearch_next_key(nxtnode, tag)
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ntest= 00
+      character(len=16),parameter ::
+     &     i_am="key_depth_search"
+
+      character,intent(in) ::
+     &     tag*(*)
+
+      type(Node), pointer, intent(inout)::
+     &     nxtnode
+      type(Node), pointer::
+     &     current
+
+      current => nxtnode
+
+      main_loop: do 
+         if (hasChildNodes(current))then
+            current=> getFirstChild(current)
+         else if (associated(getNextSibling(current)))then
+            current=> getNextSibling(current)
+         else 
+            up_loop: do while(getNodeName(current).ne.key_root_tag)
+               current => getParentNode(current)
+               if (associated(getNextSibling(current)))then 
+                  current=> getNextSibling(current)
+                  exit up_loop
+               end if 
+            end do up_loop
+            if (getNodeName(current).eq. trim(tag))then
+               nxtnode=>current
+               exit main_loop
+            else if (getNodeName(current).eq.key_root_tag) then
+               nxtnode=>null()
+               exit main_loop
+            end if
+         end if 
+      end do main_loop
+      end subroutine 
 
 
       end module
