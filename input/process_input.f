@@ -30,7 +30,7 @@
       one_more=.false.
 
       call process_input_(one_more)
-
+      call abort
 !      if (iprlvl.ge.10)
 !     &   call keyword_list(lulog,keyword_history)
 

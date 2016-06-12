@@ -3,8 +3,15 @@
 !! both have the following  general structure 
 !!   * A document: (According to W3C specification every xml tree lives upon a document)
 !!   * An element with the key_root_tag as tag;
-!!                in the input tree this is the only child of the document node
-
+!!               -# in the input tree this is the only child of the document node
+!!               -# in the registry tree it can be a lower child. it has to be unique
+!!   * Elements with the key or argument tag which are  Subnodes to the key_root element
+!!   * Keywords have a name attribute and possibly keywords and /or arguments as children
+!!   * Arguments have the following attributes name, len, kind
+!!          -# name contains the name
+!!          -# len contains the length
+!!          -# kind contains the number of the kind of argument(see 'par_vtypes.h')
+!!          -# note that all attributes are saved as strings. they can be converted via rts
 
       module parse_input2
       use FoX_dom
@@ -65,6 +72,7 @@
       logical, intent(inout)::
      &     one_more
 
+    
       call set_input_status_(input_root, history_pointer,one_more)
       
       end subroutine 
@@ -194,7 +202,6 @@
      &     luin
 
       call keyword_parse_(luin,input_doc,key_root)
-      call abort 
       end subroutine keyword_parse
 
 
@@ -224,22 +231,46 @@
       subroutine unset_previous_keywords(keywd)
 *----------------------------------------------------------------------*
       implicit none
+      include "stdunit.h"
+      character(len=23),parameter ::
+     &     i_am="unset_previous_keywords"
+      integer, parameter ::
+     &     ntest=00
       type(Node), pointer,intent(in) ::
      &     keywd     
       type(Node), pointer ::
      &     current
       character(len=name_len) ::
      &     name
+      integer :: i
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of keyword:"
+     &        ,associated(keywd)
+      end if 
 
-      if(.not.associated(getPreviousSibling(keywd))) return
-      current =>getPreviousSibling(keywd)
-      name = getAttribute(keywd,atr_name)
+      current=>getPreviousSibling(keywd)
+      if(.not.associated(current)) return 
+      name= trim(getAttribute(keywd,atr_name))
 
-      do 
+      if (ntest.ge.100) then
+         write (lulog,*) "saved name:",trim(name).eq.  
+     &        trim(getAttribute(keywd,atr_name))
+      end if 
+
+
+
+      do i=1,2
+         if (ntest.ge.100) then
+            write (lulog,*) "current name:"
+     &           ,getAttribute(current,atr_name)
+         end if 
+         
         if (trim(getAttribute(current,atr_name)).eq.trim(name))
      &     call set_keyword_status(current,-1)
-        if (associated(getPreviousSibling(keywd))) then
-           current =>getPreviousSibling(keywd)
+        current =>getPreviousSibling(current)
+        if (associated(current) )then
+           continue
         else
           exit 
         end if
@@ -259,6 +290,7 @@
       subroutine set_input_status_(in_root, history,one_more)
 *----------------------------------------------------------------------*
       implicit none
+      include 'stdunit.h'
       integer,parameter::
      &     ntest= 00
       character(len=16),parameter ::
@@ -271,36 +303,54 @@
      &     one_more
       type(Node),pointer::
      &     current
-
+      integer::
+     &     i
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of history:"
+     &        ,associated(history)
+         write (lulog,*) "testing association of root:"
+     &        ,associated(in_root)
+      end if 
       if (.not.associated(history)) then
          history => in_root
-         if (.not.associated( getFirstChild( history))) then
+         history =>getFirstChild( history)
+         if (.not.associated(  history)) then
             call quit(0,i_am,'not a single keyword given?')
          end if
-         history =>getFirstChild( history)
-      else if (associated( getNextSibling( history) ) ) then
-         history =>getNextSibling( history)
-      else
-        one_more = .false.
-        return
-      end if
+      else 
+         current=> getNextSibling(history)
+         if (associated( current ) )then
+            history =>current
+         else
+            one_more = .false.
+            return
+         end if
+      end if 
+      current => null()
+
       one_more=.true.
 
       current => history
-      do
-        call set_keyword_status(current,+1)
-        call unset_previous_keywords(current)
+      do 
+         call set_keyword_status(current,+1)
+         call unset_previous_keywords(current)
+
+
 
         if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
 
-        if (associated( getNextSibling( current) ) ) then
-         history =>getNextSibling( current)
+
+        current=> getNextSibling( current)
+        if (associated(  current ) ) then
+         history => current
         else
           exit
         end if
 
       end do
-      history => current
+      history=>current
+
       end subroutine 
 
 *----------------------------------------------------------------------*
@@ -1241,10 +1291,11 @@ c dbgend
       subroutine dsearch_next_key(nxtnode, tag)
 *----------------------------------------------------------------------*
       implicit none
+      include "stdunit.h"
       integer,parameter::
      &     ntest= 00
       character(len=16),parameter ::
-     &     i_am="key_depth_search"
+     &     i_am="dsearch_next_key"
 
       character,intent(in) ::
      &     tag*(*)
@@ -1252,23 +1303,38 @@ c dbgend
       type(Node), pointer, intent(inout)::
      &     nxtnode
       type(Node), pointer::
-     &     current
+     &     current,siblnode
 
       current => nxtnode
 
-      main_loop: do 
+      if (ntest .ge. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' looking for tag = "',trim(tag),'"'
+         write(lulog,*) ' association status of nxtnode:',
+     &        associated(nxtnode)
+      end if 
+
+      main_loop: do
+         siblnode=>getNextSibling(current)
+
+
+
          if (hasChildNodes(current))then
             current=> getFirstChild(current)
-         else if (associated(getNextSibling(current)))then
-            current=> getNextSibling(current)
-         else 
+
+         else if (associated(siblnode))then
+            current=> siblnode
+         else
+ 
             up_loop: do while(getNodeName(current).ne.key_root_tag)
                current => getParentNode(current)
-               if (associated(getNextSibling(current)))then 
-                  current=> getNextSibling(current)
+               siblnode=>getNextSibling(current)
+               if (associated(siblnode))then 
+                  current=> siblnode
                   exit up_loop
                end if 
             end do up_loop
+
             if (getNodeName(current).eq. trim(tag))then
                nxtnode=>current
                exit main_loop
