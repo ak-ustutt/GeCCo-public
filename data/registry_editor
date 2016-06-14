@@ -1,0 +1,21 @@
+#!\bin\python
+import xml.Etree
+
+_registry_file="./keyword_registry"
+
+_
+_g_current_keyword=None
+
+
+def _change_prompt(level,new_key):
+    pass
+
+def _set_promt():
+    
+
+    
+def pwd():
+    print
+
+def ls():
+    
