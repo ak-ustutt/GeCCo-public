@@ -16,7 +16,7 @@ import itertools as it # some iterators
 from stf_exceptions import * #custom made exceptions for this package
 from stf_regexp import * # The regular expressions for numbers ... 
 from stf_string_expansion import InputString,BracketRep  # what I actually need to expand the string 
-
+import Flags
 
 from Util import combine_dicts,_IDXUtil,_NumberCollectUtil,remove_whites
 
@@ -148,7 +148,12 @@ else:
         
 _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 
+#----------------------------------------------------------------------------------------
+#Flags
+#----------------------------------------------------------------------------------------
 
+CLEANUP=Flags.Flag()
+NO_CLEANUP=Flags.Flag()
 
 
 
@@ -536,6 +541,10 @@ class _Formula( _FormulaStringRepUtil):
         for bracket in self._content:
             ret_list+=bracket.set_rule(ges_dic,settle=settle)
             ges_dic[NEW]=False
+            if (flags is None) or (CLEANUP in flags):
+                SUM_TERMS({
+                    LABEL_IN:self.arguments[LABEL],
+                    LABEL_RES:self.arguments[LABEL]})
         if settle:
             return None
         else:
