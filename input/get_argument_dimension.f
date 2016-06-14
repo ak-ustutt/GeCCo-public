@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*
 
       use parse_input2, only : Node,NodeList,
-     &     input_doc, arg_tag,atr_name,atr_len,atr_kind,
+     &     input_root, arg_tag,atr_name,atr_len,atr_kind,
      &     getFirstChild, hasChildNodes, getChildNodes, getLength,
      &     getNodeName, getAttribute, item, 
      &     find_node,find_active_node
@@ -32,7 +32,7 @@
      &     type
 
       type(Node), pointer ::
-     &     curkey,input_root
+     &     curkey
       type(Node), pointer ::
      &     curarg
 
@@ -44,17 +44,18 @@
       integer ::
      &     iargcount, icount_target, iargcount_target, ii 
 
+      print *, "ntered get_argument_dimension" 
 
-      input_root=getFirstChild(input_doc)
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
 
+      print *, "active node finding"
       call find_active_node(input_root,curkey,
      &     context,icount_target)
-
+      print *, "active node found"
       dim = -1
       if (present(type)) type = -1
       iargcount = 0
@@ -64,14 +65,15 @@
       if (associated(curkey).and.hasChildNodes(curkey)) then
         curargs => getChildNodes(curkey)
         arg_loop: do ii=1,getLength(curargs)
-          if (getNodeName(item(curargs, ii)) .eq. arg_tag) then 
-             if (trim(getAttribute(item(curargs,ii),atr_name))
+        curarg=>item(curargs, ii)
+          if (getNodeName(curarg) .eq. arg_tag) then 
+             if (trim(getAttribute(curarg,atr_name))
      &            .eq. trim(argkey) ) iargcount = iargcount+1
 
              if (iargcount.eq.iargcount_target) then
-                call rts(getAttribute(item(curargs,ii), atr_len), dim)
+                call rts(getAttribute(curarg, atr_len), dim)
                 if (present(type)) 
-     &               call rts( getAttribute(item(curargs,ii),atr_kind),
+     &               call rts( getAttribute(curarg,atr_kind),
      &               type)
                 exit arg_loop
              end if

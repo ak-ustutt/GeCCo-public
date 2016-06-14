@@ -113,7 +113,7 @@
       input_doc=> parseString(
      &     "<"//key_root_tag//"></"//key_root_tag//">")
       input_root=> getFirstChild(input_doc)
-
+      call setAttribute(input_root,atr_name,"input")
       end subroutine input_start_
 
 *----------------------------------------------------------------------*
@@ -158,6 +158,7 @@
       end if
       key_root=> item(nodes_list, 0) ! 0-indexed ... that's no true Fortran
       
+      call setAttribute(key_root,atr_name,"registry")
       contains
 
 *----------------------------------------------------------------------*
@@ -204,8 +205,17 @@
       call keyword_parse_(luin,input_doc,key_root)
       end subroutine keyword_parse
 
+      subroutine show_input()
+      include "stdunit.h"
+      call keyword_list(lulog,input_root," ",show_args=.True.)
+      end subroutine
 
 
+      subroutine show_registry()
+      include "stdunit.h"
+      call keyword_list(lulog,key_root," ",show_args=.True., 
+     &     show_status=.False.)
+      end subroutine
 
 
 
@@ -559,7 +569,7 @@
       character(len=11),parameter::
      &     i_am="create_node"
       integer,parameter ::
-     &     ntest=00
+     &     ntest=1000
 
       integer, parameter ::
      &     maxlen  = 256
@@ -569,9 +579,11 @@
       character(len=*),intent(in)::
      &     value
       type(node),pointer ::
-     &     new_elem,new_parent
+     &     new_elem,new_parent,root
       character(len=maxlen) ::
      &     context
+      logical::
+     &     full_context
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -579,6 +591,8 @@
      &        ,associated(doc)
          write (lulog,*) "testing association of template:"
      &        ,associated(template)
+         write (lulog,*) "tag, name of template:",
+     &        getNodeName(template),getAttribute(template,atr_name)
       end if
 
       if (.not. associated(doc)) 
@@ -587,21 +601,57 @@
       if (.not. associated(template)) 
      &     call quit(1,i_am,"template not set")
       
-      new_elem=>importNode(doc, template, .False.)
 
+      new_elem=>createElement(doc,getNodeName(template))
+
+      if (ntest.ge.100) then
+         write (lulog,*) "tag of new element:",
+     &        getNodeName(new_elem)
+      end if 
       context=" "
       call  keyword_get_context(context,template)
       if (ntest.ge.100) then
          write (lulog,*) "creating a new keyword/argument on context:",
-     &   context        
+     &   trim(context)
       end if
 
 
-!> @TODO this assumes that key_root is the first child of doc      
-      call find_node(getFirstChild(doc),new_parent,trim(context))
+!> @TODO this assumes that key_root is the first child of doc
+      root => getFirstChild(doc)
+      print *,"finding node"
+      call find_node(root,new_parent,trim(context),latest=.True.)
+      if (ntest.ge.100) then
+         write (lulog,*) "tag, name of parent:",
+     &        getNodeName(new_parent),getAttribute(new_parent,atr_name)
+      end if
+
       new_elem=>appendChild(new_parent, new_elem)
-      if (getNodeName(new_elem) .eq. arg_tag) 
-     &     call setTextContent(new_elem, value)
+      if(associated(new_elem) ) print *, "new_elem associated"
+      new_parent=> getParentNode(new_elem)
+      print *,"has children",hasChildNodes(new_parent)
+      print *, "Tag, type of parent:",getNodeName(new_parent),
+     &     getNodeType(new_parent), getAttribute(new_parent,atr_name)
+      print *, "Type of elem:",getNodeName(new_elem),
+     &     getNodeType(new_elem) 
+      call setAttribute(new_elem,atr_name,
+     &     getAttribute(template,atr_name))
+
+      if (hasChildNodes(new_parent))then 
+         root=> getFirstChild(new_parent)
+         do while(associated (root))
+            print *, getAttribute(root, atr_name),getNodeName(root)
+            root => getNextSibling(root)
+         end do 
+      end if 
+      print *, "Name of elem:",getAttribute(new_elem,atr_name)
+      if (getNodeName(new_elem) .eq. arg_tag)then 
+         call setTextContent(new_elem, value)
+         call setAttribute(new_elem,atr_len
+     &        ,getAttribute(template,atr_len))
+         call setAttribute(new_elem,atr_kind,
+     &        getAttribute(template,atr_kind))
+      end if
+      print *, "now setting status"
       call setAttribute(new_elem,atr_stat,str(-1))
 
 
@@ -611,11 +661,107 @@
 *----------------------------------------------------------------------*
 !Output subroutine; to be implemented later
 *----------------------------------------------------------------------*
-!      subroutine keyword_list(lulog,tree_root,
-!     &     context,n_descent,show_args)
+      subroutine keyword_list(luwrt,tree_root,
+     &     context,n_descent,show_args,show_status)
+*----------------------------------------------------------------------*
+      include 'stdunit.h'
+      character(len=7),dimension(8),parameter::
+     &     type_array=(/"logical","integer","unknown","real",
+     &     "unknown","unknown","unknown","string"/)
+      integer, parameter ::
+     &     ntest=00
+      character(len=17),parameter ::
+     &     i_am="keyword_list"
 
+      integer, intent(in)::
+     &     luwrt
+      type(Node),pointer, intent(in)::
+     &     tree_root
+      character(len=*),intent(in)::
+     &     context
+      integer,optional,intent(in)::
+     &     n_descent
+      logical, optional, intent(in)::
+     &     show_args,show_status
 
+      character(len=64)::
+     &     fmtstr
+      logical:: 
+     &     args_vis,status_vis
+      integer::
+     &     level, 
+     &     status, type, dim,
+     &     ii
 
+      type(Node),pointer::
+     &     curkey,curarg
+      type(Nodelist),pointer::
+     &     child_list
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of key_root:"
+     &        ,associated(tree_root)
+      end if
+
+      args_vis=.false.
+      if (present(show_args)) args_vis=show_args
+      status_vis=.True.
+      if (present(show_status)) status_vis=show_status
+
+!      if (present(n_descent)) levels=n_descent
+
+      curkey=>null()
+      curarg=>null()
+      if (len_trim(context).eq.0)then 
+         curkey=> getFirstChild(tree_root)
+         if (.not. associated(curkey))then
+            write(luwrt,*) "no keywords_set"
+            return 
+         end if
+         level=level+1
+      else
+         call find_node(tree_root,curkey,context)
+         if (.not. associated(curkey)) call quit(1,i_am,
+     &        "starting node not found")
+      end if 
+
+      level=0
+      key_loop: do 
+         if (status_vis)then 
+            call rts(getAttribute(curkey,atr_stat),status)
+            if (status.gt.0) then
+               write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
+            else
+               write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
+            end if
+         else 
+             write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
+         end if
+            
+         write(luwrt,fmtstr) getAttribute(curkey,atr_name)
+         
+         if (hasChildNodes(curkey) .and. args_vis)then 
+            child_list=>getChildNodes(curkey)
+            arg_loop :do ii=0,getLength(child_list)-1
+               curarg=> item(child_list,ii)
+               if (.not. getNodeName(curarg).eq. arg_tag )cycle arg_loop
+               call rts(getAttribute(curarg,atr_kind),type)
+               call rts(getAttribute(curarg,atr_len),dim)
+               write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
+               write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
+     &              //trim(type_array(type))//" of len",dim,": "// 
+     &              getTextContent(curarg)
+            end do arg_loop 
+         end if
+         call dsearch_next_key(curkey,key_tag,level)
+         if (.not.associated(curkey)) exit key_loop
+         if (present(n_descent))then
+            if (level.gt.n_descent) exit key_loop
+         end if
+         
+      end do key_loop
+      end subroutine
 *----------------------------------------------------------------------*
 *     parse the keywords on unit luin
 *     the unit should be a formatted, sequential file, positioned
@@ -628,7 +774,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest=00
+     &     ntest=1000
       character(len=17),parameter ::
      &     i_am="keyword_parse"
 
@@ -738,8 +884,8 @@
             ipnd = abs(itest)+ipst-2
             if (ntest .gt. 100)then 
                write (lulog, *) "disassembling line"
-               write (lulog, *) "start_index:",ipst
-               write (lulog, *) "current word",line(ipst:ipnd)
+               write (lulog, *) "start_index: ",ipst
+               write (lulog, *) "current word: ",line(ipst:ipnd)
             end if 
             
             if (itest.le.0) then
@@ -775,6 +921,7 @@
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
                      n_allowed_delim = n_allowed_after_arg
+                     call create_node(in_doc,curarg,line(ipst+1:ipnd-1))
                   else
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
@@ -787,9 +934,10 @@
                         call error_delim(line,ipnd)
                      end if
                      ipnd = ipnd-1
+                     call create_node(in_doc,curarg,line(ipst:ipnd))
                   end if 
-                  call create_node(in_doc,curarg,line(ipst:ipnd))
-                 
+
+                  call show_input()
                else
                   ierr = ierr+1
                   call error_eol(line,ipst)
@@ -808,7 +956,9 @@
                   call error_keywd(line,ipst,curkey)
                else
                   curkey => nxtkey
+                  call show_input()
                   call create_node(in_doc,curkey," ")
+                  call show_input()
                   
 !     add node to keyword history
                end if
@@ -1074,7 +1224,7 @@ c dbgend
 *----------------------------------------------------------------------*
 !>    returns the context of a given keyword
 *----------------------------------------------------------------------*
-      subroutine keyword_get_context(curcontext,current)
+      subroutine keyword_get_context(curcontext,current,full)
 *----------------------------------------------------------------------*
       implicit none
       character(len=19),parameter::
@@ -1085,14 +1235,22 @@ c dbgend
      &     maxlen  = 256
       character(len=*),intent(inout) ::
      &     curcontext
+      type(node), pointer,intent(in)::
+     &     current 
+      logical,intent(in),optional::
+     &     full
+
       character(len=name_len)::
      &     curname
-      type(node), pointer ::
-     &     current 
       
       type(node), pointer ::
      &     internal
+
       curcontext=" "
+      if (present(full))then
+         if (full) curcontext=getAttribute(current,atr_name)//"."
+         print *, "full context requested"
+      end if 
       internal=> getParentNode(current)
       do while (getNodeName(internal) .ne. key_root_tag)
          curcontext=getAttribute(internal,atr_name)//
@@ -1183,7 +1341,7 @@ c dbgend
       character(len=9),parameter ::
      &     i_am="find_node"
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       type(node), pointer ::
      &     tree_root
@@ -1291,7 +1449,7 @@ c dbgend
 !!                          on exit : nextnode  (or null if key_root would be next node)
 !!    @param[in] key string that contains the tag we filter for.
 *----------------------------------------------------------------------*
-      subroutine dsearch_next_key(nxtnode, tag)
+      subroutine dsearch_next_key(nxtnode, tag,level)
 *----------------------------------------------------------------------*
       implicit none
       include "stdunit.h"
@@ -1302,11 +1460,16 @@ c dbgend
 
       character,intent(in) ::
      &     tag*(*)
+      integer,intent(inout),optional ::
+     &     level
 
+      integer::
+     &     dlevel !levelchange
       type(Node), pointer, intent(inout)::
      &     nxtnode
       type(Node), pointer::
      &     current,siblnode
+      
 
       current => nxtnode
 
@@ -1317,13 +1480,14 @@ c dbgend
      &        associated(nxtnode)
       end if 
 
+      dlevel=0
+      
       main_loop: do
          siblnode=>getNextSibling(current)
 
-
-
          if (hasChildNodes(current))then
             current=> getFirstChild(current)
+            dlevel=dlevel+1
 
          else if (associated(siblnode))then
             current=> siblnode
@@ -1331,22 +1495,25 @@ c dbgend
  
             up_loop: do while(getNodeName(current).ne.key_root_tag)
                current => getParentNode(current)
+               dlevel=dlevel-1
+
                siblnode=>getNextSibling(current)
                if (associated(siblnode))then 
                   current=> siblnode
                   exit up_loop
                end if 
             end do up_loop
-
-            if (getNodeName(current).eq. trim(tag))then
-               nxtnode=>current
-               exit main_loop
-            else if (getNodeName(current).eq.key_root_tag) then
-               nxtnode=>null()
-               exit main_loop
-            end if
          end if 
+
+         if (getNodeName(current).eq. trim(tag))then
+            nxtnode=>current
+            exit main_loop
+         else if (getNodeName(current).eq.key_root_tag) then
+            nxtnode=>null()
+            exit main_loop
+         end if
       end do main_loop
+      if (present(level))level=level+dlevel
       end subroutine 
 
 
