@@ -443,9 +443,9 @@ class _OPRep(_InitOperation,_SinglePartOperation):
 
     
     def extract(self):
-        return [map(str,self.content)]
+        return [self.content]
         #Since self.content is also a list (of one object)
-        # this returns a list of lists like any other Rep object, allowing recursion.
+        # this returns a list of lists like any other Rep object
 
 
 class _OPRepAlt(_OPRep):
@@ -456,7 +456,7 @@ class _OPRepAlt(_OPRep):
 
     def __init__(self,str_):
         self.set_members()
-        self.content=[str(str_)]
+        self.content=[Vertex(str_)]
 
 
 class _AddRep(_UInitOperation,_MultiPartOperation):
