@@ -20,14 +20,21 @@ DEF_ME_LIST({
         IRREP:1,
         '2MS':0,
         AB_SYM:+1,
-        DIAG_TYPE:1
+        DIAG_TYPE:1,
+        MAX_REC:3,
+        MIN_REC:1,
+        REC:2
 })
+
+
 
 ADD_UNITY({
         LIST:'ME_DUMMY_1',
         FAC:1.0,
         INIT:True,
 })
+
+
 
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})
@@ -40,6 +47,7 @@ MODIFY_BLOCKS({
         DESCR:"P,P|VV,VV|HH,HH",
         MODE:"SHIFT",
 })
+
 
 
 

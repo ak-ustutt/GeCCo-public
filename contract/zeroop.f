@@ -1,7 +1,11 @@
 *------------------------------------------------------------------------*
-      subroutine zeroop(mel)
+!>     set ME-list to zero 
+!!
+!!     @param mel ME-List to be zeroed
+!!
+!!     prepared for buffered
 *------------------------------------------------------------------------*
-*     set ME-list to zero, initialize with zero
+      subroutine zeroop(mel)
 *------------------------------------------------------------------------*
       implicit none
 

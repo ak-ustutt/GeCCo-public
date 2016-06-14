@@ -6,4 +6,4 @@ orb_space
   shell type=closed,def=(1,0,0,0,0,0,0,0)
   shell type=frozen,def=(0,0,0,0,0,0,0,0)
 method
-  unit_test tests=MODIFY_BLOCKS
+  unit_test tests=ADD_UNITY
