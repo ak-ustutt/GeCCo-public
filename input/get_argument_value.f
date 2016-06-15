@@ -12,7 +12,7 @@
 
       use parse_input2,only : find_active_node,find_node,
      &     arg_tag,atr_name,atr_len,atr_kind,atr_val,
-     &     input_root,input_doc,key_root
+     &     input_root,input_doc,key_root,hasAttribute
       use FoX_dom,only:Node,Nodelist,DOMException,
      &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
      &     getNodeName,getAttribute,getTextContent
@@ -109,18 +109,23 @@
                if (getNodeName(curarg) .ne. arg_tag) cycle arg_loop
                if (getAttribute(curarg,atr_name).eq.trim(argkey)) 
      &              iargcount = iargcount+1
-               
+
                if (getAttribute(curarg,atr_name).eq.trim(argkey).and.
      &              iargcount.eq.iargcount_target) then
- 
+
                   call rts(getAttribute(curarg,atr_len),dim)
                   call rts(getAttribute(curarg,atr_kind),type)
+
                   if (ntest.ge.100) then 
                      write(lulog,'(" dim:",i3)')dim 
                      write(lulog,'(" type:",i3)')type
                      write(lulog,'("unconverted input:",a,":")')
-     &                    getTextContent(curarg)
+     &                    getAttribute(curarg,atr_val)
                   end if 
+
+                  if(.not.hasAttribute(curarg,atr_val))
+     &                 exit arg_loop
+
                   select case(type)
                case (vtyp_log)
                   if (.not.(present(lval).or.present(larr)))
@@ -128,10 +133,10 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no l-value array present')
                   if (present(lval)) 
-     &                 call rts(getTextContent(curarg),lval,
+     &                 call rts(getAttribute(curarg,atr_val),lval,
      &                 iostat=ex)
                   if (present(larr))  
-     &                 call rts(getTextContent(curarg),larr(1:dim)
+     &                 call rts(getAttribute(curarg,atr_val),larr(1:dim)
      &                 ,iostat=ex) 
                   if (ex.eq. 0) succ = .true.
                case (vtyp_int)
@@ -140,16 +145,12 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no i-value array present')
                   if (present(ival)) then
-                     ival=11
-                     print *, ival
-                     call rts(getTextContent(curarg),ival
+                     call rts(getAttribute(curarg,atr_val),ival
      &                 ,iostat=ex,num=num)
-                     print *, ival
                   end if 
                   if (present(iarr)) 
-     &                 call rts(trim(getTextContent(curarg)),iarr(1:dim)
-     &                 ,iostat=ex,num=num)
-                  print *, num,ex
+     &                 call rts(trim(getAttribute(curarg,atr_val)),
+     &                 iarr(1:dim),iostat=ex,num=num)
                   if (ex.eq. 0) succ = .true.
             
                case (vtyp_rl8)
@@ -158,10 +159,10 @@
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no r-value array present')
                   if (present(xval)) 
-     &                 call rts(getTextContent(curarg),xval
+     &                 call rts(getAttribute(curarg,atr_val),xval
      &                 ,iostat=ex)
                   if (present(xarr)) 
-     &                 call rts(getTextContent(curarg),xarr(1:dim)
+     &                 call rts(getAttribute(curarg,atr_val),xarr(1:dim)
      &                 ,iostat=ex) 
                   if (ex.eq. 0) succ = .true.
                case (vtyp_str)
@@ -169,9 +170,9 @@
      &                 call quit(1,'get_argument_value',
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no r-value array present')
-                  str = trim(getTextContent(curarg))
+                  str = trim(getAttribute(curarg,atr_val))
                   succ = .true.
-                  end select
+               end select
                end if
                
                if (succ) exit repetition_loop

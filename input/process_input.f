@@ -30,8 +30,8 @@
       one_more=.false.
 
       call process_input_(one_more)
-!      if (iprlvl.ge.10)
-!     &   call keyword_list(lulog,keyword_history)
+      if (iprlvl.ge.10)
+     &   call show_input()
 
       ! check input -- start version
       icnt = is_keyword_set('method')
@@ -39,48 +39,35 @@
 c      if (icnt.le.0) then
 c        call quit(0,'process_input','no "method" block specified')
 c      end if
-      call show_input()
       call get_argument_value('general','print',ival=iprlvl)
-
       write(lulog,*) 'printlevel is set to ',iprlvl
 
-      
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
-
-
       lblk_da = iread*1024/nrecfc
-      ncnt = is_keyword_set('orb_space.shell')
-        print *, "found that ",ncnt,"shells are set" 
 
+      ncnt = is_keyword_set('orb_space.shell')
 
       allowed(1:6) = .true.
       do icnt = 1, ncnt
-        ncnt2 = is_argument_set('orb_space.shell','type',keycount=2   ) !<<< Problem here
+        ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
      &       call quit(0,'process_input','single shell? frozen?')
-        print *, "found that ",ncnt,"shells are set" 
         str(1:256) = ' '
-        call get_argument_value('orb_space.shell','type',keycount=3,
+        call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
-
-        print*, "in iteration",icnt,"got",str
 
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle
           allowed(1) = .false.
-             print *, "entered frozen case"
           if (is_argument_set('orb_space.shell','def',
      &                        keycount=icnt).gt.0) then
-             print *, "def is set"
             call get_argument_dimension(len,'orb_space.shell','def',
      &                                  keycount=icnt)
-            print *, "def is is",len,"long"
             allocate(iscr(len))
             call get_argument_value('orb_space.shell','def',
      &                              keycount=icnt,iarr=iscr)
-            print *, "def successfully querried",len,"long"
             nfreeze = sum(iscr(1:len))
           else if (is_argument_set('orb_space.shell',
      &                             'nfreeze',keycount=icnt).gt.0) then
@@ -109,7 +96,6 @@ c      end if
 
           if (is_argument_set('orb_space.shell','def',
      &                        keycount=icnt).gt.0) then
-
             call get_argument_dimension(len,'orb_space.shell','def',
      &                                  keycount=icnt)
             allocate(iscr(len))
@@ -202,8 +188,7 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
      &         trim(str)//'"')
         end select
       end do
-      print *, "left loop"
-      call show_registry()
+
       ! set routes for core routines
       call get_argument_value('calculate.routes','schedule',
      &     ival=irt_sched)
@@ -250,7 +235,7 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
         if (is_keyword_set('method.MRCC').gt.0.and.orb_info%imult.ne.1)
      &     spinadapt = 3
       end if
-
+      print *,"leaving process_input",one_more
       return
 
       end subroutine process_input

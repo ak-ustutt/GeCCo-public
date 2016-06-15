@@ -20,18 +20,18 @@
       include 'write_styles.h'
 
       integer,parameter::
-     &     file_loc_len=22
+     &     file_loc_len=23
       character(len=file_loc_len),parameter ::
-     &     rel_file_loc="/data/keyword_registry"
+     &     rel_file_loc="/data/keyword_registry2"
       !! @TODO make this usable on systems where / is not directory separator
       !! @TODO maybe make this configurable in the installation process
       character,parameter::     !attribute names
      &     atr_name*4="name",
      &     atr_kind*4="type",
      &     atr_len*6="length",
-     &     atr_val*3="val",
+     &     atr_val*5="value",
      &     atr_stat*6="status"
-      
+ 
       integer,parameter::
      &     name_len=16
       
@@ -645,7 +645,7 @@
       end if 
       print *, "Name of elem:",getAttribute(new_elem,atr_name)
       if (getNodeName(new_elem) .eq. arg_tag)then 
-         call setTextContent(new_elem, value)
+         call setAttribute(new_elem, atr_val,value)
          call setAttribute(new_elem,atr_len
      &        ,getAttribute(template,atr_len))
          call setAttribute(new_elem,atr_kind,
