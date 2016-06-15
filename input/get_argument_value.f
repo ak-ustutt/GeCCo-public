@@ -12,7 +12,8 @@
 
       use parse_input2,only : find_active_node,find_node,
      &     arg_tag,atr_name,atr_len,atr_kind,atr_val,
-     &     input_root,input_doc,key_root,hasAttribute
+     &     input_root,input_doc,key_root,hasAttribute,
+     &     get_argument_dimension_core
       use FoX_dom,only:Node,Nodelist,DOMException,
      &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
      &     getNodeName,getAttribute,getTextContent
@@ -37,8 +38,6 @@
      &     xval, xarr(*)
       character, intent(out), optional ::
      &     str*(*)
-      integer::
-     &     ex
       type(Node), pointer ::
      &     curkey,nxtkey
       type(Node), pointer ::
@@ -50,9 +49,9 @@
       integer ::
      &     iargcount, icount_target, iargcount_target, type, dim, idx
       logical ::
-     &     try_default, succ
+     &     try_default, succ ,dummy
       integer ::
-     &     ii, num
+     &     ii, num,len,ex
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -60,7 +59,6 @@
          if (present(argcount)) write (lulog,*) "argcount:",argcount
          write (lulog,*) "looking for ",argkey," in context:",context
       end if
-
 
       input_root=getFirstChild(input_doc)
       if (.not.hasChildNodes(input_root))
@@ -100,22 +98,25 @@
          if (try_default)
      &        call find_node(key_root,curkey,context)
 
-
+         if (associated(curkey)) print *, "curkey associated"
          if (associated(curkey).and.hasChildNodes(curkey)) then
             child_list=> getChildNodes(curkey)
             arg_loop: do ii=0,getLength(child_list)-1 ! MY LISTS START AT 1!!!!
                curarg=>item(child_list,ii)
-               
+               print *, "looking at",getAttribute(curarg,atr_name)
                if (getNodeName(curarg) .ne. arg_tag) cycle arg_loop
                if (getAttribute(curarg,atr_name).eq.trim(argkey)) 
      &              iargcount = iargcount+1
 
                if (getAttribute(curarg,atr_name).eq.trim(argkey).and.
      &              iargcount.eq.iargcount_target) then
+                  
+                  call get_argument_dimension_core(curarg,len,type,
+     &                 dummy)
 
                   call rts(getAttribute(curarg,atr_len),dim)
-                  call rts(getAttribute(curarg,atr_kind),type)
-
+                  print *,"found dimension"
+                  
                   if (ntest.ge.100) then 
                      write(lulog,'(" dim:",i3)')dim 
                      write(lulog,'(" type:",i3)')type
@@ -123,9 +124,12 @@
      &                    getAttribute(curarg,atr_val)
                   end if 
 
-                  if(.not.hasAttribute(curarg,atr_val))
-     &                 exit arg_loop
-
+                  if(.not.hasAttribute(curarg,atr_val))then
+                     num=0
+                     exit arg_loop
+                  else
+                     num=1
+                  end if
                   select case(type)
                case (vtyp_log)
                   if (.not.(present(lval).or.present(larr)))
@@ -136,22 +140,22 @@
      &                 call rts(getAttribute(curarg,atr_val),lval,
      &                 iostat=ex)
                   if (present(larr))  
-     &                 call rts(getAttribute(curarg,atr_val),larr(1:dim)
-     &                 ,iostat=ex) 
-                  if (ex.eq. 0) succ = .true.
+     &                 call rts(getAttribute(curarg,atr_val),
+     &                 larr(1:len),iostat=ex,num=num) 
+                  if (ex.le. 0) succ = .true.
                case (vtyp_int)
                   if (.not.(present(ival).or.present(iarr)))
      &                 call quit(1,i_am,
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no i-value array present')
                   if (present(ival)) then
-                     call rts(getAttribute(curarg,atr_val),ival
-     &                 ,iostat=ex,num=num)
+                     call rts(getAttribute(curarg,atr_val),
+     &                 ival,iostat=ex,num=num)
                   end if 
                   if (present(iarr)) 
      &                 call rts(trim(getAttribute(curarg,atr_val)),
-     &                 iarr(1:dim),iostat=ex,num=num)
-                  if (ex.eq. 0) succ = .true.
+     &                 iarr(1:len),iostat=ex,num=num)
+                  if (ex.le. 0) succ = .true.
             
                case (vtyp_rl8)
                   if (.not.(present(xval).or.present(xarr)))
@@ -162,9 +166,9 @@
      &                 call rts(getAttribute(curarg,atr_val),xval
      &                 ,iostat=ex)
                   if (present(xarr)) 
-     &                 call rts(getAttribute(curarg,atr_val),xarr(1:dim)
-     &                 ,iostat=ex) 
-                  if (ex.eq. 0) succ = .true.
+     &                 call rts(getAttribute(curarg,atr_val),
+     &                 xarr(1:len),iostat=ex,num=num) 
+                  if (ex.le. 0) succ = .true.
                case (vtyp_str)
                   if (.not.(present(str)))
      &                 call quit(1,'get_argument_value',
@@ -173,8 +177,10 @@
                   str = trim(getAttribute(curarg,atr_val))
                   succ = .true.
                end select
+               if (ntest.ge.100) then 
+                  write(lulog,'(" transferred ",i3," elements")') num 
                end if
-               
+               end if
                if (succ) exit repetition_loop
             end do arg_loop
          end if 

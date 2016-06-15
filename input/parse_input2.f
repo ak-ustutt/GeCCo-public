@@ -751,7 +751,7 @@
                write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
                write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
      &              //trim(type_array(type))//" of len",dim,": "// 
-     &              getTextContent(curarg)
+     &              getAttribute(curarg,atr_val)
             end do arg_loop 
          end if
          call dsearch_next_key(curkey,key_tag,level)
@@ -1515,6 +1515,85 @@ c dbgend
       end do main_loop
       if (present(level))level=level+dlevel
       end subroutine 
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      subroutine get_argument_dimension_core(curarg,num,type,succ)
+*----------------------------------------------------------------------*
+      use Fox_common, only: rts
+      include 'par_vtypes.h'
+      include 'stdunit.h'
+      integer,parameter::
+     &     ntest=1000
+      character(len=27),parameter ::
+     &     i_am="get_argument_dimension_core"
+
+      type(Node), pointer,intent(inout) ::
+     &     curarg
+      integer , intent(out)::
+     &     num,type
+      logical , intent(out)::
+     &     succ
+     
+      logical ::
+     &     lval 
+      logical,allocatable::
+     &     larr(:)
+      integer::
+     &     ival
+      integer,allocatable::
+     &     iarr(:)
+      real(8)::
+     &     xval
+      real(8),allocatable::
+     &     xarr(:)
+      integer ::
+     &     dim_tot,ex
+
+      print *, "entered ",i_am
+      print *, associated(curarg)
+      print *, getAttribute(curarg,atr_len)
+      call rts(getAttribute(curarg,atr_len),dim_tot)
+      print *, "found_total dimension"
+      call rts(getAttribute(curarg,atr_kind),type)
+      print *, "found_total dimension"
+      if (ntest.ge.100) then 
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,'(" dim_tot:",i3)')dim_tot 
+         write(lulog,'(" type:",i3)')type
+         write(lulog,'("unconverted input:",a,":")')
+     &        getAttribute(curarg,atr_val)
+      end if 
+
+         succ=.false.
+      if(.not.hasAttribute(curarg,atr_val))then 
+         num=0
+         return
+      else
+         num=1
+      end if 
+
+      select case(type)
+      case (vtyp_log)
+         allocate(larr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),larr
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_int)
+         allocate(iarr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),iarr(1:dim_tot)
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_rl8)
+         allocate(xarr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),xarr
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_str)
+         num=dim_tot
+         succ = .true.
+      end select
+      return 
+      end subroutine
 
 
       end module

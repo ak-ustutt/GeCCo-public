@@ -4,7 +4,7 @@
 *     wrapper routine
 *----------------------------------------------------------------------*
 
-      use parse_input
+      use parse_input2
       implicit none
 
       integer, intent(in) ::

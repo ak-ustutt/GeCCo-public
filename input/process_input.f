@@ -49,6 +49,7 @@ c      end if
       ncnt = is_keyword_set('orb_space.shell')
 
       allowed(1:6) = .true.
+      call show_input()
       do icnt = 1, ncnt
         ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
@@ -56,7 +57,7 @@ c      end if
         str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
-
+        print *, "setting space ",trim(str)
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle
@@ -83,8 +84,11 @@ c      end if
             call auto_freeze(iscr,nfreeze,orb_info)
           end if
 
-          if (nfreeze.gt.0) 
-     &         call add_frozen_shell(iscr,len,'frz',orb_info)
+
+          if (nfreeze.gt.0) then 
+             print *,"debug add_forzen_shell",nfreeze
+             call add_frozen_shell(iscr,len,'frz',orb_info)
+          end if 
           deallocate(iscr)
 
         case('occ')
