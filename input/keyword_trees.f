@@ -17,7 +17,7 @@
       use FoX_dom
       use FoX_common, only:str,rts
       implicit none
-      include 'write_styles.h'
+      include 'stdunit.h'
       include 'par_vtypes.h'
       integer,parameter::
      &     file_loc_len=23
@@ -45,9 +45,7 @@
 
       type(Node), pointer :: 
      &     registry_doc,         !root of the tree that represents the keyword registry
-     &     key_root,            !root element for keywords in registry
      &     input_doc,           !document element of input
-     &     input_root,          !root element of input; corresponds to key_root
      &     history_pointer      ! to  this "calculate" block the calculation has advanced
 
       
@@ -59,6 +57,57 @@
 ! Subroutines coupled to the module variables
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+!>    returns the keyword_root element of the registry
+!!
+*----------------------------------------------------------------------*
+      function reg_fetch_root() result(root)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=14),parameter ::
+     &     i_am="reg_fetch_root"
+      integer, parameter ::
+     &     ntest=00
+      type(Node),pointer::
+     &     root
+      type(NodeList),pointer::
+     &     root_list
+      
+      if (.not. associated(registry_doc)) call quit(1,i_am,
+     &     "no registry tree found")
+      root_list => getElementsByTagName(registry_doc, key_root_tag)
+
+      if(getLength(root_list).ne.1)call quit(1,i_am,
+     &     "found more/less than one root element")
+
+      root=> item(root_list, 0) ! 0-indexed ... that's no true Fortran
+
+      end function
+
+
+*----------------------------------------------------------------------*
+!>    returns the keyword_root element of the input
+!!
+*----------------------------------------------------------------------*
+      function inp_fetch_root() result(root)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=14),parameter ::
+     &     i_am="reg_fetch_root"
+      integer, parameter ::
+     &     ntest=00
+      type(Node),pointer::
+     &     root
+
+      if (.not. associated(input_doc)) call quit(1,i_am,
+     &     "input tree found")
+      root=> getFirstChild(input_doc)
+      
+      if (.not. associated(root)) call quit(1,i_am,
+     &     "no root element found for input")
+
+      end function
+
 
 *----------------------------------------------------------------------*
 !>   wrapper to uncouple set_input_status_ from module variables
@@ -66,15 +115,15 @@
 !!  @param  one_more logical to show if there are unprocessed blocks remaining.
 !!          input status not used
 *----------------------------------------------------------------------*
-      subroutine process_input_(one_more)
+      subroutine inp_postprocess(one_more)
 *----------------------------------------------------------------------*
       implicit none
       logical, intent(inout)::
      &     one_more
       type(Node),pointer::
-     &     history
-
-      call set_input_status_(input_root, history_pointer,one_more)
+     &     input_root
+      input_root=>  inp_fetch_root()
+      call tree_set_input_status_(input_root, history_pointer,one_more)
       end subroutine 
 
 
@@ -84,82 +133,80 @@
 *----------------------------------------------------------------------*
 !!    initializes the module variables relating to the registry
 *----------------------------------------------------------------------*
-      subroutine keyword_init_()
+      subroutine reg_init_()
 *----------------------------------------------------------------------*
       implicit none
       registry_doc =>null()
-      key_root=> null()
       end subroutine
 
 *----------------------------------------------------------------------*
 !!    initializes the module variables relating to the input
 *----------------------------------------------------------------------*
-      subroutine input_init_()
+      subroutine inp_init_()
 *----------------------------------------------------------------------*
       implicit none
       input_doc=> null()
-      input_root=>null()
       history_pointer=> null()
       end subroutine
 
 *----------------------------------------------------------------------*
 !!    creates the document to hold the input variables
 *----------------------------------------------------------------------*
-
-      subroutine input_start_()
-      call input_init_()
-
+      subroutine inp_start_()
+*----------------------------------------------------------------------*
+      implicit none
+      type(Node),pointer::
+     &     input_root
+      call inp_init_()
+      
       !easiest way to create a document
       input_doc=> parseString(
      &     "<"//key_root_tag//"></"//key_root_tag//">")
-      input_root=> getFirstChild(input_doc)
+      input_root=> inp_fetch_root()
       call setAttribute(input_root,atr_name,"input")
-      end subroutine input_start_
+      end subroutine inp_start_
 
 *----------------------------------------------------------------------*
 !!    parses the keyword_file and initializes the input
 !!  
+!!    @param file name of the input file
 *----------------------------------------------------------------------*
-      subroutine set_keywords()
+      subroutine reg_import(file)
 *----------------------------------------------------------------------*
       implicit none
       include "stdunit.h"
+      character(len=*),intent(in)::
+     &     file
       character(len=13),parameter ::
-     &     i_am="set_keywords"
+     &     i_am="reg_import"
       integer, parameter ::
      &     ntest=00
       type(DOMException)::
      &     ex
       type(Node),pointer ::
-     &     tmpnode
-      type(NodeList),pointer::
-     &     nodes_list
+     &     reg_root
+      if (ntest.gt.100)then 
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "reading file:",trim(file)
+      end if 
 
-      call keyword_init_()
-      call input_start_()
+      call reg_init_()
+      call inp_start_()
 
+      
+      registry_doc => parseFile(trim(file), ex=ex)
 
-      registry_doc => parseFile(trim(get_keyword_file()), ex=ex)
       !! @TODO more special error handling 
-      
-
       if (getExceptionCode(ex) .ne. 0)
-     &     call quit(0,i_am,"could not read keyword registry")
+     &     call quit(1,i_am,"could not read keyword registry")
 
-      if (ntest .ge. 100) write (lulog,*) "file parsed"
-      nodes_list=>getElementsByTagName(registry_doc, key_root_tag)    
-      !  assumes there is only on of these elements
-      if (getLength(nodes_list) .ne. 1)
-     &     call quit(0,i_am,"more than one key_root element")
 
-      if (ntest .ge. 100) then
-         write (lulog,'("expected: 1 element")') 
-         write (lulog,'("found: ",i2,"element")')getLength(nodes_list)
-      end if
-      key_root=> item(nodes_list, 0) ! 0-indexed ... that's no true Fortran
+      reg_root=> reg_fetch_root() 
       
-      call setAttribute(key_root,atr_name,"registry")
-      contains
+      call setAttribute(reg_root,atr_name,"registry")
+      end subroutine
+
+
 
 *----------------------------------------------------------------------*
 !!    returns name of the keyword_file
@@ -189,31 +236,50 @@
       file_name=trim(path_name)//rel_file_loc
       end function
 
-      end subroutine 
 
 *----------------------------------------------------------------------*
 !!   wrapper to uncouple keyword_parse_ from module variables
 !!
-!!  @param  luin 
+!!  @param  luin input unit
 *----------------------------------------------------------------------*
-      subroutine keyword_parse(luin)
+      subroutine inp_parse(luin)
 *----------------------------------------------------------------------*
       implicit none
       integer, intent(in) ::
      &     luin
+      type(Node),pointer::
+     &     key_root
+
+      key_root=> reg_fetch_root()
 
       call keyword_parse_(luin,input_doc,key_root)
-      end subroutine keyword_parse
+      end subroutine inp_parse
 
-      subroutine show_input()
-      include "stdunit.h"
-      call keyword_list(lulog,input_root," ",show_args=.True.)
+*----------------------------------------------------------------------*
+!>    wrapper for keyword_list for the input
+*----------------------------------------------------------------------*
+      subroutine inp_show(unit)
+*----------------------------------------------------------------------*
+      integer,intent(in)::
+     &     unit
+
+      type(Node),pointer::
+     &     input_root
+      input_root => inp_fetch_root()
+      call keyword_list(unit,input_root," ",show_args=.True.)
       end subroutine
 
-
-      subroutine show_registry()
-      include "stdunit.h"
-      call keyword_list(lulog,key_root," ",show_args=.True., 
+*----------------------------------------------------------------------*
+!>    wrapper for keyword_list for the input
+*----------------------------------------------------------------------*
+      subroutine reg_show(unit)
+*----------------------------------------------------------------------*
+      integer,intent(in)::
+     &     unit
+      type(Node),pointer::
+     &     key_root
+      key_root => reg_fetch_root()
+      call keyword_list(unit,key_root," ",show_args=.True., 
      &     show_status=.False.)
       end subroutine
 
@@ -235,10 +301,10 @@
 *----------------------------------------------------------------------*
 
 *----------------------------------------------------------------------*
-*     set all previous keywords with same key as present keyword to
-*     inactive (+ all sub-levels)
+!>     set all previous keywords with same key as present keyword to
+!!     inactive (+ all sub-levels)
 *----------------------------------------------------------------------*
-      subroutine unset_previous_keywords(keywd)
+      subroutine key_unset_previous_keywords(keywd)
 *----------------------------------------------------------------------*
       implicit none
       include "stdunit.h"
@@ -277,7 +343,7 @@
          end if 
          
         if (trim(getAttribute(current,atr_name)).eq.trim(name))
-     &     call set_keyword_status(current,-1)
+     &     call tree_set_status(current,-1)
         current =>getPreviousSibling(current)
         if (associated(current) )then
            continue
@@ -295,9 +361,9 @@
 !!   all other keywords are set inactive.
 !!   @param in_root root element of the input DOM-tree
 !!   @param history pointer to the last active history file (may be null())
-!!   @param one_more logical if unprocessed blocks remain
+!!   @param one_more true if active blocks were found
 *----------------------------------------------------------------------*
-      subroutine set_input_status_(in_root, history,one_more)
+      subroutine tree_set_input_status_(in_root, history,one_more)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -349,13 +415,10 @@
       current => history
 
       do 
-         call set_keyword_status(current,+1)
-         call unset_previous_keywords(current)
-
-
+         call tree_set_status(current,+1)
+         call key_unset_previous_keywords(current)
 
          if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
-        
 
          current=> getNextSibling( current)
          if (associated(  current ) ) then
@@ -376,7 +439,7 @@
 !!   @param keywd pointer to a keyword
 !!   @param status integer with the status we set it to 
 *----------------------------------------------------------------------*
-      subroutine set_keyword_status(keywd,status)
+      subroutine tree_set_status(keywd,status)
 *----------------------------------------------------------------------*
       implicit none
       type(Node), pointer, intent(in)::
@@ -782,10 +845,11 @@
          
       end do key_loop
       end subroutine
+
 *----------------------------------------------------------------------*
-*     parse the keywords on unit luin
-*     the unit should be a formatted, sequential file, positioned
-*     at the place where the parser should start
+!>     parse the keywords on unit luin
+!!     the unit should be a formatted, sequential file, positioned
+!!     at the place where the parser should start
 *----------------------------------------------------------------------*
       subroutine keyword_parse_(luin,in_doc,k_root)
 *----------------------------------------------------------------------*
@@ -871,7 +935,7 @@
             write (lulog,*) "'",line,"'"
          end if 
          call clean_line(line,delimiter,n_delim)
-         
+
          lenline=len_trim(line)
 
          !empty line?
@@ -916,7 +980,7 @@
 ! is it an argument key?
             call arg_node(curarg,curkey,line(ipst:ipnd))
             if (ntest.ge.100) 
-     &           write (lulog,*) "This is an argument?",
+     &           write (lulog,*) "Is this an argument?",
      &           associated(curarg)
             if (associated(curarg)) then 
 !     check that a value is assigned
@@ -1083,6 +1147,33 @@ c dbgend
 *----------------------------------------------------------------------*
 
 *----------------------------------------------------------------------*
+!>    writes the line and generates pointer to the position of the error
+*----------------------------------------------------------------------*
+
+      subroutine error_pointer(ipos,line,msg)
+      character(len=*),parameter::
+     &     unit="UOUT"
+
+      character(len=*), intent(in) ::
+     &     line,msg
+      integer, intent(in) ::
+     &     ipos
+
+      character(len=80) ::
+     &     fmtstr, outstr
+
+      call print_out(' ',unit)
+      write(outstr,'(x,a)') line
+      call print_out(outstr,unit)
+      write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
+      write(outstr,fmtstr)
+      call print_out(outstr,unit)
+      write(outstr,'(x,"INPUT ERROR: ",a)') msg
+      call print_out(outstr,unit)
+      end subroutine
+
+
+*----------------------------------------------------------------------*
       subroutine error_delim(str,ipos)
 *----------------------------------------------------------------------*
       implicit none
@@ -1092,23 +1183,15 @@ c dbgend
       integer, intent(in) ::
      &     ipos
       character(len=80) ::
-     &     fmtstr, fmtstr2
+     &     fmtstr, msg_str
 
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      write(fmtstr2,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
- 
-      write(lulog,'(x,a)') trim(line)
-      write(lulog,fmtstr) 
-      write(lulog,fmtstr2) 'INPUT ERROR: unexpected delimiter, '//
+      write(fmtstr,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
+
+      write(msg_str,fmtstr) 'unexpected delimiter, '//
      &     'expected one of ',
      &     delimiter(allowed_delim(1:n_allowed_delim))
-      if (lulog.ne.luout) then
-        write(luout,'(x,a)') trim(line)
-        write(luout,fmtstr) 
-        write(luout,fmtstr2) 'INPUT ERROR: unexpected delimiter, '//
-     &     'expected one of ',
-     &     delimiter(allowed_delim(1:n_allowed_delim))
-      end if
+
+      call error_pointer(ipos,trim(line), trim(msg_str))
 
       return
       end subroutine
@@ -1121,19 +1204,9 @@ c dbgend
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character(len=80) ::
-     &     fmtstr
 
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-
-      write(lulog,'(x,a)') trim(line)
-      write(lulog,fmtstr) 
-      write(lulog,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
-      if (lulog.ne.luout) then
-        write(luout,'(x,a)') trim(line)
-        write(luout,fmtstr) 
-        write(luout,'(x,a)') 'INPUT ERROR: unexpected end-of-line'
-      end if
+      call error_pointer(ipos,trim(line), 'unexpected EOL')
+      
 
       return
       end subroutine
@@ -1147,19 +1220,8 @@ c dbgend
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character(len=80) ::
-     &     fmtstr
 
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-
-      write(lulog,'(x,a)') trim(line)
-      write(lulog,fmtstr) 
-      write(lulog,'(x,a)') 'INPUT ERROR: missing )'
-      if (lulog.ne.luout) then
-        write(luout,'(x,a)') trim(line)
-        write(luout,fmtstr) 
-        write(luout,'(x,a)') 'INPUT ERROR: missing )'
-      end if
+      call error_pointer(ipos,trim(line), 'missing )')
 
       return
       end subroutine
@@ -1173,20 +1235,8 @@ c dbgend
      &     str*(*)
       integer, intent(in) ::
      &     ipos
-      character(len=80) ::
-     &     fmtstr
 
-      write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-
-      write(lulog,'(x,a)') trim(line)
-      write(lulog,fmtstr) 
-      write(lulog,'(x,a)') 'INPUT ERROR: missing ='
-      if (lulog.ne.luout) then
-        write(luout,'(x,a)') trim(line)
-        write(luout,fmtstr) 
-        write(luout,'(x,a)') 'INPUT ERROR: missing ='
-      end if
-
+      call error_pointer(ipos,trim(line),'missing =')
       return
       end subroutine
 
@@ -1202,22 +1252,8 @@ c dbgend
      &     ipos
       type(Node), intent(in) ::
      &     curkey
-      character(len=80) ::
-     &     fmtstr
 
-      if(abs(ipos).EQ.1) then
-       write(fmtstr,'("(x,""^"")")')
-      else
-       write(fmtstr,'("(x,",i3,"x,""^"")")') abs(ipos)-1
-      end if
-      write(lulog,'(x,a)') trim(line)
-      write(lulog,fmtstr) 
-      write(lulog,'(x,a)') 'INPUT ERROR: unexpected keyword '
-      if (lulog.ne.luout) then
-        write(luout,'(x,a)') trim(line)
-        write(luout,fmtstr) 
-        write(luout,'(x,a)') 'INPUT ERROR: unexpected keyword '
-      end if
+      call error_pointer(ipos,trim(line), 'unexpected keyword')
   
       return
       end subroutine

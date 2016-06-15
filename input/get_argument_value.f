@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine get_argument_value(
      &     context,argkey,keycount,argcount,
-     &     ival,iarr,lval,larr,xval,xarr,str)
+     &     ival,iarr,lval,larr,xval,xarr,string)
 *----------------------------------------------------------------------*
 *     return dimension (and type) of argument for keyword given 
 *     the keyword is given as "context" i.e. as string including all
@@ -10,17 +10,12 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use parse_input2,only : find_active_node,find_node,
-     &     arg_tag,atr_name,atr_len,atr_kind,atr_val,
-     &     input_root,input_doc,key_root,hasAttribute,
-     &     get_argument_dimension_core
+      use parse_input2
       use FoX_dom,only:Node,Nodelist,DOMException,
      &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
      &     getNodeName,getAttribute,getTextContent
       use FoX_common,only:rts
       implicit none
-      include 'par_vtypes.h'
-      include 'stdunit.h'
       integer,parameter::
      &     ntest=1000
       character(len=18),parameter ::
@@ -37,11 +32,11 @@
       real(8), intent(out), optional ::
      &     xval, xarr(*)
       character, intent(out), optional ::
-     &     str*(*)
+     &     string*(*)
       type(Node), pointer ::
      &     curkey,nxtkey
       type(Node), pointer ::
-     &     curarg
+     &     curarg,input_root,key_root
       type(NodeList),pointer::
      &     child_list
       character ::
@@ -60,14 +55,12 @@
          write (lulog,*) "looking for ",argkey," in context:",context
       end if
 
-      input_root=getFirstChild(input_doc)
+      input_root=>inp_fetch_root()
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
       
-      if (ntest.ge.100) then
-         write(lulog,*) "assoc. status of input_root",
-     &        associated(input_root)
-      end if
+      key_root=>reg_fetch_root()
+
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
@@ -166,15 +159,16 @@
      &                 xarr(1:len),iostat=ex,num=num) 
                   if (ex.le. 0) succ = .true.
                case (vtyp_str)
-                  if (.not.(present(str)))
+                  if (.not.(present(string)))
      &                 call quit(1,'get_argument_value',
      &                 trim(context)//'->'//trim(argkey)//
      &                 'no r-value array present')
-                  str = trim(getAttribute(curarg,atr_val))
+                  string = trim(getAttribute(curarg,atr_val))
                   succ = .true.
                end select
                if (ntest.ge.100) then 
-                  write(lulog,'(" transferred ",i3," elements")') num 
+                  write(lulog,'(" transferred ",i3," elements")') num
+                  write(lulog,*) succ 
                end if
                end if
                if (succ) exit repetition_loop

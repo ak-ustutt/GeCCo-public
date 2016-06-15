@@ -14,7 +14,7 @@
 
       use parse_input2,only : find_active_node,find_node,
      &     arg_tag,atr_name,atr_len,atr_kind,atr_val,
-     &     input_root,input_doc,key_root,hasAttribute,
+     &     hasAttribute,inp_fetch_root,
      &     get_argument_dimension_core
       use FoX_dom,only:Node,Nodelist,DOMException,
      &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
@@ -39,7 +39,7 @@
 
 
       type(Node), pointer ::
-     &     curkey,nxtkey
+     &     curkey,nxtkey,input_root,key_root
       type(Node), pointer ::
      &     curarg
       type(NodeList),pointer::
@@ -62,14 +62,10 @@
       end if
 
 
-      input_root=getFirstChild(input_doc)
+      input_root=>inp_fetch_root()
       if (.not.hasChildNodes(input_root))
      &     call quit(1,i_am,'invalid keyword history')
       
-      if (ntest.ge.100) then
-         write(lulog,*) "assoc. status of input_root",
-     &        associated(input_root)
-      end if
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
@@ -77,6 +73,12 @@
       try_default = .false.
       call find_active_node(input_root,curkey,
      &     context,icount_target)
+      if (ntest.ge.100) then
+         if (associated(curkey))
+     &       write (lulog,*)  "active_node immideatly found"
+         if (.not.associated(curkey)) 
+     &        write (lulog,*) "active_node not instantly found"
+      end if
       iargcount = 0
       iargcount_target = 1
       if (present(argcount)) iargcount_target = argcount

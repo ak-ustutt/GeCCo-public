@@ -1,6 +1,7 @@
       subroutine read_input(ffinput)
 
-      use parse_input2, only:keyword_parse,set_keywords
+      use parse_input2, only:inp_parse,reg_import,
+     &     get_keyword_file
       implicit none
       include 'stdunit.h'
       include 'def_filinf.h'
@@ -20,7 +21,7 @@ c work around for problem with interface file
      &     write(luout,*) 'Input file: ',
      &     trim(ffinput%name)
 
-      call set_keywords()
+      call reg_import(get_keyword_file())
 
       if (.not.file_exists(ffinput))
      &     call quit(0,'read_input','file does not exist - "'//
@@ -31,7 +32,7 @@ c work around for problem with interface file
       call list_file(lulog,ffinput%unit)
       if (luout.ne.lulog) call list_file(luout,ffinput%unit)
 
-      call keyword_parse(ffinput%unit)
+      call inp_parse(ffinput%unit)
 
       call file_close_keep(ffinput)
 

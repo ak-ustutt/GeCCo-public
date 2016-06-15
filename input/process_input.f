@@ -1,10 +1,12 @@
+
+*---------------------------------------------------------------------*
+!>     processes the input up to the next calculate block 
+!!     sets several common blocks 
 *----------------------------------------------------------------------*
       subroutine process_input(one_more,orb_info)
 *----------------------------------------------------------------------*
-*     post-process input up to next "calculate" block
-*----------------------------------------------------------------------*
 
-      use parse_input2, only:process_input_,show_input,show_registry
+      use parse_input2, only:inp_postprocess,inp_show
 
       implicit none
       include 'stdunit.h'
@@ -29,7 +31,7 @@
 
       one_more=.false.
 
-      call process_input_(one_more)
+      call inp_postprocess(one_more)
       if (.not. one_more) return
 
 
@@ -43,7 +45,7 @@ c      end if
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       if (iprlvl.ge.10)
-     &   call show_input()
+     &   call inp_show(lulog)
 
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
@@ -59,12 +61,14 @@ c      end if
         str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
+        print *, "found",str
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle
           allowed(1) = .false.
           if (is_argument_set('orb_space.shell','def',
      &                        keycount=icnt).gt.0) then
+             print *,'argument is set'
             call get_argument_dimension(len,'orb_space.shell','def',
      &                                  keycount=icnt)
             allocate(iscr(len))
