@@ -654,7 +654,6 @@
      &        getAttribute(template,atr_kind))
          call rts(getAttribute(template,atr_kind),kind)
          call rts(getAttribute(template,atr_len),dim)
-         print *,"create_elem val:",value
          if (kind.eq.vtyp_log)then
             call setAttribute(new_elem, atr_val,
      &           trim(conv_logical_inp(value,dim,ierr)))
@@ -1611,9 +1610,10 @@ c dbgend
 *----------------------------------------------------------------------*
 !>    function to convert any input for a logical argument to a format readable by rts     
 !!    
-!!    
-!!
-!!     
+!!    it converts the string to logical(s) and back
+!!    @param valstr string to be converted
+!!    @param dim maximum dimension of the input
+!!    @param[out] ierr error code
 *----------------------------------------------------------------------*
       function conv_logical_inp(valstr,dim,ierr) 
 *----------------------------------------------------------------------*
