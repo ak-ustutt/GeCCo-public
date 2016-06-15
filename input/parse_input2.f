@@ -18,7 +18,7 @@
       use FoX_common, only:str,rts
       implicit none
       include 'write_styles.h'
-
+      include 'par_vtypes.h'
       integer,parameter::
      &     file_loc_len=23
       character(len=file_loc_len),parameter ::
@@ -71,10 +71,10 @@
       implicit none
       logical, intent(inout)::
      &     one_more
+      type(Node),pointer::
+     &     history
 
-    
       call set_input_status_(input_root, history_pointer,one_more)
-      
       end subroutine 
 
 
@@ -312,55 +312,62 @@
       logical, intent(inout)::
      &     one_more
       type(Node),pointer::
-     &     current
+     &     current,nxtkey
       integer::
      &     i
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of history:"
-     &        ,associated(history)
-         write (lulog,*) "testing association of root:"
-     &        ,associated(in_root)
+         if (associated(history))
+     &        write (lulog,*) " starting at block: ",
+     &        getAttribute(history,atr_name)
       end if 
+      one_more=.true.
       if (.not.associated(history)) then
-         history => in_root
-         history =>getFirstChild( history)
+         history =>getFirstChild( in_root)
+         
          if (.not.associated(  history)) then
             call quit(0,i_am,'not a single keyword given?')
          end if
+         if(ntest.ge.100)
+     &        write (lulog,*) "history_pointer initiated"
       else 
          current=> getNextSibling(history)
          if (associated( current ) )then
             history =>current
+            if (associated(history).and. ntest.ge.100)
+     &           write (lulog,*) " advancing history to block: ",
+     &           getAttribute(history,atr_name)
+            
          else
+            if(ntest.ge.100)
+     &           write (lulog,*) " no more history: "
             one_more = .false.
             return
          end if
       end if 
-      current => null()
-
-      one_more=.true.
 
       current => history
+
       do 
          call set_keyword_status(current,+1)
          call unset_previous_keywords(current)
 
 
 
-        if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
+         if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
+        
 
-
-        current=> getNextSibling( current)
-        if (associated(  current ) ) then
-         history => current
-        else
-          exit
-        end if
-
+         current=> getNextSibling( current)
+         if (associated(  current ) ) then
+            history => current
+            if (ntest.ge.100)
+     &           write (lulog,*) " advancing to block: ",
+     &           getAttribute(history,atr_name)
+         else
+            exit
+         end if
       end do
-      history=>current
-
+      
       end subroutine 
 
 *----------------------------------------------------------------------*
@@ -452,7 +459,6 @@
      &            getAttribute(current,atr_name)
           end if 
           
-          print *, trim(context),trim(curcontext)
           if (trim(context).eq.trim(curcontext)) jcount = jcount+1 
           if (icount.eq.jcount) then
             finnode => current
@@ -569,7 +575,10 @@
       character(len=11),parameter::
      &     i_am="create_node"
       integer,parameter ::
-     &     ntest=1000
+     &     ntest=00
+      integer,parameter::
+     &     ERR_TO_MANY_ELEMENTS=1,
+     &     ERR_UNCONVERTIBLE=2
 
       integer, parameter ::
      &     maxlen  = 256
@@ -584,6 +593,8 @@
      &     context
       logical::
      &     full_context
+      integer::
+     &     kind,dim,ierr 
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -618,7 +629,6 @@
 
 !> @TODO this assumes that key_root is the first child of doc
       root => getFirstChild(doc)
-      print *,"finding node"
       call find_node(root,new_parent,trim(context),latest=.True.)
       if (ntest.ge.100) then
          write (lulog,*) "tag, name of parent:",
@@ -626,32 +636,43 @@
       end if
 
       new_elem=>appendChild(new_parent, new_elem)
-      if(associated(new_elem) ) print *, "new_elem associated"
       new_parent=> getParentNode(new_elem)
-      print *,"has children",hasChildNodes(new_parent)
-      print *, "Tag, type of parent:",getNodeName(new_parent),
-     &     getNodeType(new_parent), getAttribute(new_parent,atr_name)
-      print *, "Type of elem:",getNodeName(new_elem),
-     &     getNodeType(new_elem) 
       call setAttribute(new_elem,atr_name,
      &     getAttribute(template,atr_name))
 
       if (hasChildNodes(new_parent))then 
          root=> getFirstChild(new_parent)
          do while(associated (root))
-            print *, getAttribute(root, atr_name),getNodeName(root)
             root => getNextSibling(root)
          end do 
       end if 
-      print *, "Name of elem:",getAttribute(new_elem,atr_name)
       if (getNodeName(new_elem) .eq. arg_tag)then 
-         call setAttribute(new_elem, atr_val,value)
+
          call setAttribute(new_elem,atr_len
      &        ,getAttribute(template,atr_len))
          call setAttribute(new_elem,atr_kind,
      &        getAttribute(template,atr_kind))
+         call rts(getAttribute(template,atr_kind),kind)
+         call rts(getAttribute(template,atr_len),dim)
+         print *,"create_elem val:",value
+         if (kind.eq.vtyp_log)then
+            call setAttribute(new_elem, atr_val,
+     &           trim(conv_logical_inp(value,dim,ierr)))
+         else 
+            call setAttribute(new_elem, atr_val,value)
+         end if 
+         select case (ierr)
+            case (ERR_TO_MANY_ELEMENTS)
+               call quit(0,i_am,
+     &              "trying to set to many elements for:"//
+     &              getAttribute(new_elem,atr_name)//" "//
+     &              value)
+            case (ERR_UNCONVERTIBLE)
+               call quit(0,i_am,
+     &              "value for "//getAttribute(new_elem,atr_name)//
+     &              " not convertible:"//value)
+         end select
       end if
-      print *, "now setting status"
       call setAttribute(new_elem,atr_stat,str(-1))
 
 
@@ -774,7 +795,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest=1000
+     &     ntest=00
       character(len=17),parameter ::
      &     i_am="keyword_parse"
 
@@ -937,7 +958,6 @@
                      call create_node(in_doc,curarg,line(ipst:ipnd))
                   end if 
 
-                  call show_input()
                else
                   ierr = ierr+1
                   call error_eol(line,ipst)
@@ -956,9 +976,7 @@
                   call error_keywd(line,ipst,curkey)
                else
                   curkey => nxtkey
-                  call show_input()
                   call create_node(in_doc,curkey," ")
-                  call show_input()
                   
 !     add node to keyword history
                end if
@@ -1249,7 +1267,6 @@ c dbgend
       curcontext=" "
       if (present(full))then
          if (full) curcontext=getAttribute(current,atr_name)//"."
-         print *, "full context requested"
       end if 
       internal=> getParentNode(current)
       do while (getNodeName(internal) .ne. key_root_tag)
@@ -1341,7 +1358,7 @@ c dbgend
       character(len=9),parameter ::
      &     i_am="find_node"
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       type(node), pointer ::
      &     tree_root
@@ -1523,7 +1540,7 @@ c dbgend
       include 'par_vtypes.h'
       include 'stdunit.h'
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       character(len=27),parameter ::
      &     i_am="get_argument_dimension_core"
 
@@ -1549,13 +1566,8 @@ c dbgend
       integer ::
      &     dim_tot,ex
 
-      print *, "entered ",i_am
-      print *, associated(curarg)
-      print *, getAttribute(curarg,atr_len)
       call rts(getAttribute(curarg,atr_len),dim_tot)
-      print *, "found_total dimension"
       call rts(getAttribute(curarg,atr_kind),type)
-      print *, "found_total dimension"
       if (ntest.ge.100) then 
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,'(" dim_tot:",i3)')dim_tot 
@@ -1596,4 +1608,90 @@ c dbgend
       end subroutine
 
 
+*----------------------------------------------------------------------*
+!>    function to convert any input for a logical argument to a format readable by rts     
+!!    
+!!    
+!!
+!!     
+*----------------------------------------------------------------------*
+      function conv_logical_inp(valstr,dim,ierr) 
+*----------------------------------------------------------------------*
+      implicit none
+      integer,intent(in)::
+     &     dim
+      character(len=dim*6):: ! worst case dim*'false,' (=dim*6-1) 
+     &     conv_logical_inp
+      character(len=16),parameter::
+     &     i_am="input_to_logical"
+      integer,parameter ::
+     &     ntest=00
+      integer,parameter::
+     &     ERR_TO_MANY_ELEMENTS=1,
+     &     ERR_UNCONVERTIBLE=2
+
+      character(len=*),intent(in)::
+     &     valstr
+      integer,intent(out)::
+     &     ierr
+
+      logical,Dimension(dim)::
+     &     larr
+      
+      integer ::
+     &     ii, 
+     &     ipst, ipnd
+      
+      ierr=0
+      conv_logical_inp=" "
+      ipst=1
+      ipnd=index(valstr(ipst:),",")+ipst-1
+
+      if (ipnd.gt.ipst)then
+         ii=0
+         do while (ipnd.gt.ipst)
+            ii=ii+1
+            if (ii.gt.dim)then 
+               ierr=ERR_TO_MANY_ELEMENTS
+               return
+            end if 
+
+            larr(ii)=str_to_logical(valstr(ipst:ipnd),ierr)
+
+            if (ierr.gt.0) return 
+
+            ipst=ipnd+2
+            ipnd=index(valstr(ipst:),",")+ipst-1
+         end do
+         conv_logical_inp=str(larr(1:ii))
+      else
+         conv_logical_inp=str(str_to_logical(valstr,ierr))
+      end if
+      end function
+
+*----------------------------------------------------------------------*
+!> converts a single element of user input to a logical      
+*----------------------------------------------------------------------*
+      logical function str_to_logical(instr,ierr) 
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ERR_UNCONVERTIBLE=2
+
+      character,intent(in)::
+     &     instr*(*)
+      integer,intent(out)::
+     &     ierr
+      ierr=0
+
+      select case (trim(instr))
+         case("T","t")
+            str_to_logical=.true.
+         case("F","f")
+            str_to_logical=.false.
+         case default
+            str_to_logical=.false.
+            ierr=ERR_UNCONVERTIBLE
+      end select
+      end function 
       end module

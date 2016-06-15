@@ -30,8 +30,8 @@
       one_more=.false.
 
       call process_input_(one_more)
-      if (iprlvl.ge.10)
-     &   call show_input()
+      if (.not. one_more) return
+
 
       ! check input -- start version
       icnt = is_keyword_set('method')
@@ -42,6 +42,9 @@ c      end if
       call get_argument_value('general','print',ival=iprlvl)
       write(lulog,*) 'printlevel is set to ',iprlvl
 
+      if (iprlvl.ge.10)
+     &   call show_input()
+
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
       lblk_da = iread*1024/nrecfc
@@ -49,7 +52,6 @@ c      end if
       ncnt = is_keyword_set('orb_space.shell')
 
       allowed(1:6) = .true.
-      call show_input()
       do icnt = 1, ncnt
         ncnt2 = is_argument_set('orb_space.shell','type',keycount=icnt)
         if (ncnt2.ne.1)
@@ -57,7 +59,6 @@ c      end if
         str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
-        print *, "setting space ",trim(str)
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle

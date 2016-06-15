@@ -25,7 +25,7 @@
       include 'stdunit.h'
 
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       character(len=22),parameter ::
      &     i_am="get_argument_dimension"
       character, intent(in) ::
@@ -77,7 +77,6 @@
       try_default = .false.
       call find_active_node(input_root,curkey,
      &     context,icount_target)
-      print *, "active node found"
       iargcount = 0
       iargcount_target = 1
       if (present(argcount)) iargcount_target = argcount

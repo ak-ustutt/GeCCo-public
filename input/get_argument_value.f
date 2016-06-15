@@ -75,7 +75,6 @@
       try_default = .false.
       call find_active_node(input_root,curkey,
      &     context,icount_target)
-      print *, "active node found"
       iargcount = 0
       iargcount_target = 1
       if (present(argcount)) iargcount_target = argcount
@@ -84,7 +83,6 @@
       ! either get 
       repetition_loop: do 
 ! try default instead
-         print *, "debug: entered loop"
 
          if (associated(curkey))then
             if (.not.hasChildNodes(curkey)
@@ -98,12 +96,11 @@
          if (try_default)
      &        call find_node(key_root,curkey,context)
 
-         if (associated(curkey)) print *, "curkey associated"
+
          if (associated(curkey).and.hasChildNodes(curkey)) then
             child_list=> getChildNodes(curkey)
             arg_loop: do ii=0,getLength(child_list)-1 ! MY LISTS START AT 1!!!!
                curarg=>item(child_list,ii)
-               print *, "looking at",getAttribute(curarg,atr_name)
                if (getNodeName(curarg) .ne. arg_tag) cycle arg_loop
                if (getAttribute(curarg,atr_name).eq.trim(argkey)) 
      &              iargcount = iargcount+1
@@ -115,7 +112,6 @@
      &                 dummy)
 
                   call rts(getAttribute(curarg,atr_len),dim)
-                  print *,"found dimension"
                   
                   if (ntest.ge.100) then 
                      write(lulog,'(" dim:",i3)')dim 
