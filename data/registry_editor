@@ -1,21 +1,5 @@
-#!\bin\python
-import xml.Etree
+#!\bin\python -i
+from registry_editor import *
 
-_registry_file="./keyword_registry"
-
-_
-_g_current_keyword=None
-
-
-def _change_prompt(level,new_key):
-    pass
-
-def _set_promt():
-    
-
-    
-def pwd():
-    print
-
-def ls():
-    
+if __name__ == "__main__":
+    main()
