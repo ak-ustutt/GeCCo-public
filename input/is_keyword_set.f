@@ -9,7 +9,7 @@
 
       use parse_input2, only : input_doc,getFirstChild,hasChildNodes,
      &     Node,getNodeName,key_tag,getParentNode,key_root_tag,atr_name,
-     &     keyword_get_context,getAttribute,dsearch_next_key
+     &     keyword_get_context,getAttribute,key_dsearch
       use FoX_dom, only : getNextSibling
       implicit none
       include 'stdunit.h'
@@ -65,7 +65,7 @@
          
                   
          ! 
-         call dsearch_next_key(current,key_tag)
+         current=>key_dsearch(current)
          if (.not.associated(current)) exit key_loop
       end do key_loop
 

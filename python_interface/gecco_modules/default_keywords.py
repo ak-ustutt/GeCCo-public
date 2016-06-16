@@ -46,19 +46,27 @@ regexp_continuation=re.compile(r" {5}& *")
 
 
 
-#dictionary to transform the types back
-#currently not used
-_type_dict={"str":("vtyp_str","cdef"),
-            "int":("vtyp_int","idef"),
-            "log":("vtyp_log","ldef"),
-            "rl8":("vtyp_rl8","xdef"),}
+_type_dict={"str":8,
+            "int":2,
+            "log":1,
+            "rl8":4,}
 
 
 
-
-
-
-
+def string_frmt(string,typ):
+    if typ == "8":
+        string=re.sub(r"','","",string)
+        string=re.sub(r"^'","",string)
+        string=re.sub(r"'$","",string)
+    if typ == "1":
+        if re.match(".true.",string, flags=re.I):
+            return "true"
+        elif re.match(".false.",string, flags=re.I):
+            return "false"
+        else:
+            raise Exception("unknown truth value:"+string)
+    return string
+        
 
 class UnknownContextError(Exception):
     def __init__(self,something):
@@ -66,12 +74,7 @@ class UnknownContextError(Exception):
     
 
 
-
-_g_arguments=[]
-_g_keywords=[]
-#yeah, global variables are bad
-
-root=ET.Element("config", attrib={"name":"root"})
+root=ET.Element("key_root", attrib={"name":"registry"})
 tree=ET.ElementTree(element=root)
 
 
@@ -203,19 +206,13 @@ def _find_tag(match_key):
 
     this implements my naming conventions
     """
-    #top level keywords are general contexts
-    if match_key.group("context")==None:
-        return "context"
-    #subkeywords of method are methods
-    elif match_key.group("context") =="method" and match_key.group("keyword")!="truncate" :
-        return "method"
-    else:
-        return "keyword"
+    return "keyword"
 
 def _append_keyword(match_key,root):
     """ appends a keyword to the xml tree as an element"""
     new_elem=ET.Element(_find_tag(match_key))
     new_elem.set("name",str(match_key.group("keyword")))
+    new_elem.set("status","A")
 #    if (new_elem.tag=="method"):
 #        new_elem.set("file","none")
 #        #file that defines the method(relative to GECCO_DIR)
@@ -230,11 +227,16 @@ def _append_argument(match_arg,root):
     """ appends an argument to the xml tree as an element"""
     new_elem=ET.Element("argument")
     new_elem.set("name",str(match_arg.group("argument")))
-    new_elem.set("type",str(match_arg.group("type")))
+    new_elem.set("type",str(_type_dict[str(match_arg.group("type"))]))
     if match_arg.group("len") is not None:
         new_elem.set("length",str(match_arg.group("len")))
-    new_elem.text=str(match_arg.group("value"))
-#    new_elem.set("name",match_key.group("argument"))
+    else:
+        new_elem.set("length",str(1))
+    if match_arg.group("value") is not None:
+        new_elem.set("value",string_frmt(str(match_arg.group("value")),
+                                         new_elem.get("type")))
+    new_elem.set("status","A")
+#    print str(match_arg.group("argument"))," ",new_elem.get("value"), new_elem.get("type")
     parent=_find_parent_wrap(match_arg,root)
     parent.append(new_elem)
     if match_arg.group("comment"):
@@ -400,7 +402,6 @@ def get_value_by_context(context,name,tree=default_keys):
         return convert_to_float(elem.text)
     else:
         raise Exception("Unknown type: "+type_)
-
 
 
 

@@ -20,9 +20,9 @@
       include 'stdunit.h'
       include 'par_vtypes.h'
       integer,parameter::
-     &     file_loc_len=23
+     &     file_loc_len=28
       character(len=file_loc_len),parameter ::
-     &     rel_file_loc="/data/keyword_registry2"
+     &     rel_file_loc="/data/keyword_registry3.xml"
       !! @TODO make this usable on systems where / is not directory separator
       !! @TODO maybe make this configurable in the installation process
       character,parameter::     !attribute names
@@ -31,10 +31,17 @@
      &     atr_len*6="length",
      &     atr_val*5="value",
      &     atr_stat*6="status"
- 
+
       integer,parameter::
      &     name_len=16
-      
+      integer,parameter::
+     &     DOCUMENT_TYPE=9
+      character,parameter::
+     &     status_active="A",
+     &     status_inactive="I"
+
+      character,parameter::
+     &     context_sep="."
 
       character,parameter::      !tags 
      &     key_root_tag*8="key_root",
@@ -237,23 +244,6 @@
       end function
 
 
-*----------------------------------------------------------------------*
-!!   wrapper to uncouple keyword_parse_ from module variables
-!!
-!!  @param  luin input unit
-*----------------------------------------------------------------------*
-      subroutine inp_parse(luin)
-*----------------------------------------------------------------------*
-      implicit none
-      integer, intent(in) ::
-     &     luin
-      type(Node),pointer::
-     &     key_root
-
-      key_root=> reg_fetch_root()
-
-      call keyword_parse_(luin,input_doc,key_root)
-      end subroutine inp_parse
 
 *----------------------------------------------------------------------*
 !>    wrapper for keyword_list for the input
@@ -343,7 +333,7 @@
          end if 
          
         if (trim(getAttribute(current,atr_name)).eq.trim(name))
-     &     call tree_set_status(current,-1)
+     &        call tree_set_status(current,status_inactive)
         current =>getPreviousSibling(current)
         if (associated(current) )then
            continue
@@ -386,7 +376,10 @@
          if (associated(history))
      &        write (lulog,*) " starting at block: ",
      &        getAttribute(history,atr_name)
+              write (lulog,*) " root: ",getAttribute(in_root,atr_name)
+         call inp_show(lulog)
       end if 
+      call tree_set_status(in_root,status_inactive)
       one_more=.true.
       if (.not.associated(history)) then
          history =>getFirstChild( in_root)
@@ -415,7 +408,7 @@
       current => history
 
       do 
-         call tree_set_status(current,+1)
+         call tree_set_status(current,status_active)
          call key_unset_previous_keywords(current)
 
          if (trim(getAttribute(current,atr_name)).eq.'calculate') exit
@@ -430,7 +423,9 @@
             exit
          end if
       end do
-      
+      if (ntest.ge.100) then
+         call inp_show(lulog)
+      end if 
       end subroutine 
 
 *----------------------------------------------------------------------*
@@ -444,15 +439,15 @@
       implicit none
       type(Node), pointer, intent(in)::
      &     keywd
-      integer,intent(in)::
+      character,intent(in)::
      &     status
       type(Node),pointer::
      &     current 
       current => keywd
       
       do while(associated(current))
-         call setAttribute(current,atr_stat,str(status))
-         call dsearch_next_key(current,key_tag)
+         call setAttribute(current,atr_stat,status)
+         current=> key_dsearch(current)
       end do
       end subroutine
 
@@ -491,7 +486,9 @@
       type(Node), pointer ::
      &     current
       integer ::
-     &     jcount, status
+     &     jcount
+      character::
+     &     status
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write (lulog,*) "looking for",icount,"th",trim(context) 
@@ -512,7 +509,7 @@
            write (lulog,*) "status:",status
         end if
 
-        if (status.gt.0) then
+        if (status.eq.status_active) then
           call keyword_get_context(curcontext,current)
 ! keyword_get_context only gets the context of the current keyword
           if (len_trim(curcontext).eq.0)then
@@ -528,7 +525,7 @@
             exit key_loop
          end if
         end if
-        call dsearch_next_key(current, key_tag)
+        current => key_dsearch(current)
         if (.not.associated(current)) exit key_loop
       end do key_loop
             if (ntest.ge.100)
@@ -618,128 +615,6 @@
       end subroutine next_node
 
 
-*----------------------------------------------------------------------*
-!>   creates a node (keyword or argument)
-!!
-!!   copies all attributes from template but does not copy child nodes and 
-!!     inserts the new node in document doc with the context of the original node.
-!!     context must already exist in doc.
-!!     the node is set inactive
-!!   overrides the argument value with value. for keywords value is irrelevant
-!!   @param[inout] doc document that will own the newly created node. 
-!!   @param[in] template template for the newly created node
-!!   @param[in] value string which can be converted to input
-!!   @TODO error checking
-*----------------------------------------------------------------------*
-      subroutine create_node(doc,template,value)
-*----------------------------------------------------------------------*
-      implicit none 
-      include "stdunit.h"
-      character(len=11),parameter::
-     &     i_am="create_node"
-      integer,parameter ::
-     &     ntest=00
-      integer,parameter::
-     &     ERR_TO_MANY_ELEMENTS=1,
-     &     ERR_UNCONVERTIBLE=2
-
-      integer, parameter ::
-     &     maxlen  = 256
-
-      type(node), pointer ::
-     &     doc,template
-      character(len=*),intent(in)::
-     &     value
-      type(node),pointer ::
-     &     new_elem,new_parent,root
-      character(len=maxlen) ::
-     &     context
-      logical::
-     &     full_context
-      integer::
-     &     kind,dim,ierr 
-
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of doc:"
-     &        ,associated(doc)
-         write (lulog,*) "testing association of template:"
-     &        ,associated(template)
-         write (lulog,*) "tag, name of template:",
-     &        getNodeName(template),getAttribute(template,atr_name)
-      end if
-
-      if (.not. associated(doc)) 
-     &     call quit(1,i_am,"doc not set")
-      
-      if (.not. associated(template)) 
-     &     call quit(1,i_am,"template not set")
-      
-
-      new_elem=>createElement(doc,getNodeName(template))
-
-      if (ntest.ge.100) then
-         write (lulog,*) "tag of new element:",
-     &        getNodeName(new_elem)
-      end if 
-      context=" "
-      call  keyword_get_context(context,template)
-      if (ntest.ge.100) then
-         write (lulog,*) "creating a new keyword/argument on context:",
-     &   trim(context)
-      end if
-
-
-!> @TODO this assumes that key_root is the first child of doc
-      root => getFirstChild(doc)
-      call find_node(root,new_parent,trim(context),latest=.True.)
-      if (ntest.ge.100) then
-         write (lulog,*) "tag, name of parent:",
-     &        getNodeName(new_parent),getAttribute(new_parent,atr_name)
-      end if
-
-      new_elem=>appendChild(new_parent, new_elem)
-      new_parent=> getParentNode(new_elem)
-      call setAttribute(new_elem,atr_name,
-     &     getAttribute(template,atr_name))
-
-      if (hasChildNodes(new_parent))then 
-         root=> getFirstChild(new_parent)
-         do while(associated (root))
-            root => getNextSibling(root)
-         end do 
-      end if 
-      if (getNodeName(new_elem) .eq. arg_tag)then 
-
-         call setAttribute(new_elem,atr_len
-     &        ,getAttribute(template,atr_len))
-         call setAttribute(new_elem,atr_kind,
-     &        getAttribute(template,atr_kind))
-         call rts(getAttribute(template,atr_kind),kind)
-         call rts(getAttribute(template,atr_len),dim)
-         if (kind.eq.vtyp_log)then
-            call setAttribute(new_elem, atr_val,
-     &           trim(conv_logical_inp(value,dim,ierr)))
-         else 
-            call setAttribute(new_elem, atr_val,value)
-         end if 
-         select case (ierr)
-            case (ERR_TO_MANY_ELEMENTS)
-               call quit(0,i_am,
-     &              "trying to set to many elements for:"//
-     &              getAttribute(new_elem,atr_name)//" "//
-     &              value)
-            case (ERR_UNCONVERTIBLE)
-               call quit(0,i_am,
-     &              "value for "//getAttribute(new_elem,atr_name)//
-     &              " not convertible:"//value)
-         end select
-      end if
-      call setAttribute(new_elem,atr_stat,str(-1))
-
-
-
-      end subroutine
 
 *----------------------------------------------------------------------*
 !Output subroutine; to be implemented later
@@ -773,8 +648,10 @@
      &     args_vis,status_vis
       integer::
      &     level, 
-     &     status, type, dim,
+     &      type, dim,
      &     ii
+      character::
+     &     status
 
       type(Node),pointer::
      &     curkey,curarg
@@ -785,6 +662,7 @@
          call write_title(lulog,wst_dbg_subr,i_am)
          write (lulog,*) "testing association of key_root:"
      &        ,associated(tree_root)
+
       end if
 
       args_vis=.false.
@@ -792,6 +670,10 @@
       status_vis=.True.
       if (present(show_status)) status_vis=show_status
 
+      if (ntest.ge.100) then
+         write (lulog,*) "show_status?",status_vis
+         write (lulog,*) "show_arguments?",args_vis
+      end if
 !      if (present(n_descent)) levels=n_descent
 
       curkey=>null()
@@ -812,8 +694,11 @@
       level=0
       key_loop: do 
          if (status_vis)then 
-            call rts(getAttribute(curkey,atr_stat),status)
-            if (status.gt.0) then
+            status=getAttribute(curkey,atr_stat)
+            if (ntest.ge.100)then 
+               write (lulog,*) "status:",getAttribute(curkey,atr_stat)
+            end if 
+            if (status.eq.status_active) then
                write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
             else
                write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
@@ -821,7 +706,7 @@
          else 
              write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
          end if
-            
+!!       @TODO print comments out
          write(luwrt,fmtstr) getAttribute(curkey,atr_name)
          
          if (hasChildNodes(curkey) .and. args_vis)then 
@@ -837,7 +722,7 @@
      &              getAttribute(curarg,atr_val)
             end do arg_loop 
          end if
-         call dsearch_next_key(curkey,key_tag,level)
+         curkey=> key_dsearch(curkey,level)
          if (.not.associated(curkey)) exit key_loop
          if (present(n_descent))then
             if (level.gt.n_descent) exit key_loop
@@ -846,419 +731,7 @@
       end do key_loop
       end subroutine
 
-*----------------------------------------------------------------------*
-!>     parse the keywords on unit luin
-!!     the unit should be a formatted, sequential file, positioned
-!!     at the place where the parser should start
-*----------------------------------------------------------------------*
-      subroutine keyword_parse_(luin,in_doc,k_root)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-      include 'ifc_baserout.h'
 
-      integer, parameter ::
-     &     ntest=00
-      character(len=17),parameter ::
-     &     i_am="keyword_parse"
-
-
-      integer, intent(in) ::
-     &     luin
-
-      type(Node), pointer ::
-     &     in_doc,               ! document element of the input
-     &     k_root                ! root element of the preset keyword tree
-      integer, parameter ::
-     &     maxlen  = 256,
-     &     n_delim = 8
-      logical, parameter ::
-     &     new_line_is_delim = .true.
-      character, parameter ::
-     &     delimiter(n_delim) = 
-     &     (/' ', ';', ',', '(', ')', '"', '!', '=' /)
-
-      integer, parameter ::
-     &     ispace =   1,
-     &     isemicolon = 2,
-     &     icomma =   3,
-     &     iparen_o = 4,
-     &     iparen_c = 5,
-     &     iquote   = 6,
-     &     icomment = 7,
-     &     iequal   = 8
-
-      integer, parameter ::
-     &     n_allowed_start = 1,
-     &     allowed_start(n_allowed_start) = (/icomment/),
-     &     n_allowed_after_key = 6,
-     &     allowed_after_key(n_allowed_after_key) = 
-     &     (/ispace,iequal,isemicolon,
-     &     iparen_o,iquote,icomment/),
-     &     n_allowed_after_arg = 4,
-     &     allowed_after_arg(n_allowed_after_arg) = 
-     &     (/isemicolon,iequal,icomma,icomment/)
-
-      character ::
-     &     line*(maxlen)
-
-
-      type(Node), pointer ::
-     &     curkey,nxtkey
-      type(Node), pointer ::
-     &     curarg
-      character(len=maxlen) ::
-     &     context
-      integer ::
-     &     allowed_delim(n_delim), n_allowed_delim
-      integer ::
-     &     ipst, ipnd, itest, lenline, ierr
-
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(k_root)
-      end if
-
-      context = " "
-      curkey => k_root
-
-      allowed_delim(1:n_allowed_start)=allowed_start(1:n_allowed_start)
-      n_allowed_delim = n_allowed_start
-
-      ierr = 0
-      file_loop: do
-         read(luin, '(a)', end=100, err=200) line
-         ipst = 1
-         if (ntest .ge. 100)then 
-            write (lulog,*) "reading line"
-            write (lulog,*) "'",line,"'"
-         end if 
-         call clean_line(line,delimiter,n_delim)
-
-         lenline=len_trim(line)
-
-         !empty line?
-
-         if (lenline.le.0) cycle file_loop 
-
-         !ensure that the line does not begin with a delimiter
-         itest = next_delim(line(ipst:ipst),
-     &        allowed_delim,n_allowed_delim)
-
-         if (itest.le.0)then
-            ierr = ierr+1
-            call error_delim(line,ipst)
-            ipst = ipst+1
-         end if
-
-         ! comment?       
-         if (line(ipst:ipst).eq.delimiter(icomment)) cycle file_loop 
-         
-         ! any delim that can end an argument or keyword name
-         allowed_delim(1:n_allowed_after_key) =
-     &        allowed_after_key(1:n_allowed_after_key)
-         n_allowed_delim = n_allowed_after_key        
-
-
-         line_loop: do while(ipst.le.lenline)
-            itest = next_delim(line(ipst:),
-     &           allowed_delim,n_allowed_delim)
-            
-            ipnd = abs(itest)+ipst-2
-            if (ntest .gt. 100)then 
-               write (lulog, *) "disassembling line"
-               write (lulog, *) "start_index: ",ipst
-               write (lulog, *) "current word: ",line(ipst:ipnd)
-            end if 
-            
-            if (itest.le.0) then
-               ierr = ierr+1
-               call error_delim(line,ipnd+1)
-            end if
-            
-! is it an argument key?
-            call arg_node(curarg,curkey,line(ipst:ipnd))
-            if (ntest.ge.100) 
-     &           write (lulog,*) "Is this an argument?",
-     &           associated(curarg)
-            if (associated(curarg)) then 
-!     check that a value is assigned
-               if(  next_delim(line(ipnd+1:ipnd+1),
-     &              [iequal],1)
-     &              .le. 0 ) then 
-                  ierr = ierr+1
-                  call error_misseq(line,ipnd+1)
-               end if
-
-               
-               ipst = ipnd+2
-               if (ipst.le.lenline) then
-                  if (line(ipst:ipst).eq.delimiter(iparen_o)) then
-                     ipnd=index(line(ipst:),delimiter(iparen_c))+ipst-1
-                     if (itest.le.0) then
-                        ierr = ierr + 1
-                        call error_misspc(line,ipnd)
-                        exit line_loop
-                     end if
-                     
-                     allowed_delim(1:n_allowed_after_arg) =
-     &                    allowed_after_arg(1:n_allowed_after_arg)
-                     n_allowed_delim = n_allowed_after_arg
-                     call create_node(in_doc,curarg,line(ipst+1:ipnd-1))
-                  else
-                     allowed_delim(1:n_allowed_after_arg) =
-     &                    allowed_after_arg(1:n_allowed_after_arg)
-                     n_allowed_delim = n_allowed_after_arg
-                     itest = next_delim(line(ipst:),
-     &                    allowed_delim,n_allowed_delim)
-                     ipnd = abs(itest)+ipst-1
-                     if (itest.le.0) then
-                        ierr = ierr+1
-                        call error_delim(line,ipnd)
-                     end if
-                     ipnd = ipnd-1
-                     call create_node(in_doc,curarg,line(ipst:ipnd))
-                  end if 
-
-               else
-                  ierr = ierr+1
-                  call error_eol(line,ipst)
-                  allowed_delim(1:n_allowed_after_key) =
-     &                 allowed_after_key(1:n_allowed_after_key)
-                  n_allowed_delim = n_allowed_after_key
-                  exit line_loop
-               end if
-            else                ! keyword
-               call next_node(curkey,nxtkey,line(ipst:ipnd))
-               if (ntest.ge.100) 
-     &              write (lulog,*) "Is it a keyword?",
-     &              associated(nxtkey)
-               if (.not.associated(nxtkey)) then
-                  ierr = ierr+1
-                  call error_keywd(line,ipst,curkey)
-               else
-                  curkey => nxtkey
-                  call create_node(in_doc,curkey," ")
-                  
-!     add node to keyword history
-               end if
-            end if
-
-            ipst = ipnd+2
-         end do line_loop
-      end do file_loop
-
- 100  continue                  ! read EOF reached
-      if (ierr.gt.0)
-     &     call quit(0,i_am
-     &                ,'input errors detected, see above')
-      return 
-
- 200  continue                  !  read err
-      call quit(0,i_am,'I/O error on reading input file')
-      return
-*----------------------------------------------------------------------*
-      contains
-*----------------------------------------------------------------------*
-*     local functions
-*     variables of main function can be accessed 
-*----------------------------------------------------------------------*
-
-*----------------------------------------------------------------------*
-!>     find next delimiter
-!!    
-!!    accesses global par delimiter and n_delim
-!!    @param str string to be searched
-!!    @param delim(n_delim) array of allowed delimiters
-!!    @param n_delim
-!!    return value:
-!!      position of next delimiter
-!!      len+1 if line end is delimiter
-!!      negative value, if delimiter is not allowed in context
-!!    
-*----------------------------------------------------------------------*
-      pure integer function next_delim(str,delim,nrdelim)
-*----------------------------------------------------------------------*
-      implicit none
-      character, intent(in) ::
-     &     str*(*)
-      integer,intent(in)::
-     &     nrdelim
-      integer,dimension(nrdelim),intent(in)::
-     &     delim
-
-      logical ::
-     &     ok
-      integer ::
-     &     ipos, jpos, len, idelim, jdelim
-c dbg
-CC remove the pure keyword if you use this
-c       write (lulog,*)"debug: next_delim"
-c       write (lulog,*) "called with: str='",trim(str),"'"
-c       write (lulog,*) "called with: n_delim=",nrdelim,"'"
-c       write (lulog,*) "delim:",delim(1)
-c dbgend 
-      len = len_trim(str)
-      if (len.eq.0) then
-        next_delim = 0
-        return
-      end if
-
-      ipos = len+1
-      idelim = 0
-      do jdelim = 1, n_delim
-         
-        jpos = index(trim(str),delimiter(jdelim))
-        if (jpos.gt.0.and.jpos.lt.ipos) then
-          ipos = jpos
-          idelim = jdelim
-        end if
-        if (ipos.eq.1) exit
-      end do
-c dbg
-CC remove the pure keyword if you use this
-c       write (lulog,*)"length:",len
-c       write (lulog,*) "found delimiter at",ipos,"'"
-c       if (idelim.gt.0)
-c     &      write (lulog,*) "found  delimiter='",
-c     &      delimiter(idelim),"'"
-c dbgend 
-      ok = .true.
-      if (idelim.gt.0) then
-        ok = .false.
-        do jdelim = 1, nrdelim
-          if (idelim.eq.delim(jdelim)) then
-            ok = .true.
-            exit
-          end if
-        end do
-      end if
-
-      if (ok) next_delim = ipos
-      if (.not.ok) next_delim = -ipos
-
-      return
-      end function
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-!     Error notifier
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-
-*----------------------------------------------------------------------*
-!>    writes the line and generates pointer to the position of the error
-*----------------------------------------------------------------------*
-
-      subroutine error_pointer(ipos,line,msg)
-      character(len=*),parameter::
-     &     unit="UOUT"
-
-      character(len=*), intent(in) ::
-     &     line,msg
-      integer, intent(in) ::
-     &     ipos
-
-      character(len=80) ::
-     &     fmtstr, outstr
-
-      call print_out(' ',unit)
-      write(outstr,'(x,a)') line
-      call print_out(outstr,unit)
-      write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
-      write(outstr,fmtstr)
-      call print_out(outstr,unit)
-      write(outstr,'(x,"INPUT ERROR: ",a)') msg
-      call print_out(outstr,unit)
-      end subroutine
-
-
-*----------------------------------------------------------------------*
-      subroutine error_delim(str,ipos)
-*----------------------------------------------------------------------*
-      implicit none
-      
-      character, intent(in) ::
-     &     str*(*)
-      integer, intent(in) ::
-     &     ipos
-      character(len=80) ::
-     &     fmtstr, msg_str
-
-      write(fmtstr,'("(x,a,",i3,"(a1,x))")') n_allowed_delim
-
-      write(msg_str,fmtstr) 'unexpected delimiter, '//
-     &     'expected one of ',
-     &     delimiter(allowed_delim(1:n_allowed_delim))
-
-      call error_pointer(ipos,trim(line), trim(msg_str))
-
-      return
-      end subroutine
-*----------------------------------------------------------------------*
-      subroutine error_eol(str,ipos)
-*----------------------------------------------------------------------*
-      implicit none
-      
-      character, intent(in) ::
-     &     str*(*)
-      integer, intent(in) ::
-     &     ipos
-
-      call error_pointer(ipos,trim(line), 'unexpected EOL')
-      
-
-      return
-      end subroutine
-
-*----------------------------------------------------------------------*
-      subroutine error_misspc(str,ipos)
-*----------------------------------------------------------------------*
-      implicit none
-      
-      character, intent(in) ::
-     &     str*(*)
-      integer, intent(in) ::
-     &     ipos
-
-      call error_pointer(ipos,trim(line), 'missing )')
-
-      return
-      end subroutine
-
-*----------------------------------------------------------------------*
-      subroutine error_misseq(str,ipos)
-*----------------------------------------------------------------------*
-      implicit none
-      
-      character, intent(in) ::
-     &     str*(*)
-      integer, intent(in) ::
-     &     ipos
-
-      call error_pointer(ipos,trim(line),'missing =')
-      return
-      end subroutine
-
-
-*----------------------------------------------------------------------*
-      subroutine error_keywd(str,ipos,curkey)
-*----------------------------------------------------------------------*
-      implicit none
-      
-      character, intent(in) ::
-     &     str*(*)
-      integer, intent(in) ::
-     &     ipos
-      type(Node), intent(in) ::
-     &     curkey
-
-      call error_pointer(ipos,trim(line), 'unexpected keyword')
-  
-      return
-      end subroutine
-
-      end subroutine 
 
 
 
@@ -1378,6 +851,7 @@ c dbgend
       end subroutine
 
 
+
 *----------------------------------------------------------------------*
 !>     navigates to a specific keyword
 !!
@@ -1415,77 +889,21 @@ c dbgend
      &     current,tmpnode
       logical ::
      &     found
-
+      
       forward = .true.
       if (present(latest)) forward = .not.latest
-      
+      print *, "find_node called on", getAttribute(tree_root,atr_name)
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' context = "',trim(context),'"'
         if (forward) write(lulog,*) ' forward search'
         if (.not.forward) write(lulog,*) ' backward search'
       end if 
-
+      ii=1
       finnode => null()
       current => tree_root
-
-      ipst = 1
-      len = len_trim(context)
-      if (len.eq.0) finnode => current
-
-      subk_loop: do while(ipst.le.len)
-
-        found=.False.
-        ipnd = index(context(ipst:),".")+ipst-2
-        if (ipnd.lt.ipst) ipnd = len
-
-        if (ntest.ge.100) then
-          write(lulog,*) ' current subkeyword: "',context(ipst:ipnd),'"'
-        end if
-
-
-        ! get all keywords one level down
-        if (.not. hasChildNodes(current)) exit subk_loop
-        nodes_list=>getChildNodes(current)
-        if (forward)then
-           node_loop: do ii=0,getLength(nodes_list)-1 !DAMN YOU C!!!
-           current=> item(nodes_list,ii)
-           ! compare tags to filter keywords and name for specific keyword
-
-           if (getNodeName(current) 
-     &          .eq. key_tag .and. 
-     &          getAttribute(current, atr_name)
-     &          .eq. context(ipst:ipnd)) then 
-              current=>item(nodes_list,ii)
-              found=.True.
-              exit node_loop
-           end if
-           
-           end do node_loop
-        else
-           nodes_loop: do ii=getLength(nodes_list)-1,0,-1
-           current=> item(nodes_list,ii)
-           if (getNodeName(current) 
-     &          .eq. key_tag .and. 
-     &          getAttribute(current, atr_name)
-     &          .eq. context(ipst:ipnd)) then 
-              current=>item(nodes_list,ii)
-              found=.True.
-              exit nodes_loop
-           end if
-
-           end do nodes_loop
-        end if
-
-        if (.not.found) then
-           exit subk_loop
-        else if (found .and. ipnd.eq.len )then
-           finnode => current
-           exit subk_loop
-        end if
-
-        ipst=ipnd+2
-      end do subk_loop
+      finnode =>  key_from_context(context,tree_root,.not.forward,
+     &     ii)
 
       if (ntest.ge.100) then
         if (associated(finnode)) write(lulog,*) 'success'
@@ -1493,81 +911,14 @@ c dbgend
       end if
       end subroutine
 
-*----------------------------------------------------------------------*
-!>    delivers the next keyword in a depth first search
-!!
-!!    prefilters with a specific tag.
-!!    @param[inout] nxtnode on entry: node where the search is continued
-!!                          on exit : nextnode  (or null if key_root would be next node)
-!!    @param[in] key string that contains the tag we filter for.
-*----------------------------------------------------------------------*
-      subroutine dsearch_next_key(nxtnode, tag,level)
-*----------------------------------------------------------------------*
-      implicit none
-      include "stdunit.h"
-      integer,parameter::
-     &     ntest= 00
-      character(len=16),parameter ::
-     &     i_am="dsearch_next_key"
 
-      character,intent(in) ::
-     &     tag*(*)
-      integer,intent(inout),optional ::
-     &     level
 
-      integer::
-     &     dlevel !levelchange
-      type(Node), pointer, intent(inout)::
-     &     nxtnode
-      type(Node), pointer::
-     &     current,siblnode
-      
 
-      current => nxtnode
 
-      if (ntest .ge. 100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' looking for tag = "',trim(tag),'"'
-         write(lulog,*) ' association status of nxtnode:',
-     &        associated(nxtnode)
-      end if 
 
-      dlevel=0
-      
-      main_loop: do
-         siblnode=>getNextSibling(current)
 
-         if (hasChildNodes(current))then
-            current=> getFirstChild(current)
-            dlevel=dlevel+1
 
-         else if (associated(siblnode))then
-            current=> siblnode
-         else
- 
-            up_loop: do while(getNodeName(current).ne.key_root_tag)
-               current => getParentNode(current)
-               dlevel=dlevel-1
 
-               siblnode=>getNextSibling(current)
-               if (associated(siblnode))then 
-                  current=> siblnode
-                  exit up_loop
-               end if 
-            end do up_loop
-         end if 
-
-         if (getNodeName(current).eq. trim(tag))then
-            nxtnode=>current
-            exit main_loop
-         else if (getNodeName(current).eq.key_root_tag) then
-            nxtnode=>null()
-            exit main_loop
-         end if
-      end do main_loop
-      if (present(level))level=level+dlevel
-      end subroutine 
-*----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
       subroutine get_argument_dimension_core(curarg,num,type,succ)
 *----------------------------------------------------------------------*
@@ -1640,94 +991,758 @@ c dbgend
          succ = .true.
       end select
       return 
-      end subroutine
+      end subroutine 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+!     Iterating search functions
+!     if called repeatedly these functions will iterate over the remaining tree in a depths first search
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+
 
 
 *----------------------------------------------------------------------*
-!>    function to convert any input for a logical argument to a format readable by rts     
-!!    
-!!    it converts the string to logical(s) and back
-!!    @param valstr string to be converted
-!!    @param dim maximum dimension of the input
-!!    @param[out] ierr error code
+!>    keyword_specific version of the dsearch function
+!!
+!!
+!!    @param curkey pointer to current keyword
+!!    @param[inout] level on in old level on out new level
 *----------------------------------------------------------------------*
-      function conv_logical_inp(valstr,dim,ierr) 
+      function key_dsearch(curkey, level) result(nxtkey) 
 *----------------------------------------------------------------------*
       implicit none
-      integer,intent(in)::
-     &     dim
-      character(len=dim*6):: ! worst case dim*'false,' (=dim*6-1) 
-     &     conv_logical_inp
-      character(len=16),parameter::
-     &     i_am="input_to_logical"
-      integer,parameter ::
-     &     ntest=00
+      include "stdunit.h"
       integer,parameter::
-     &     ERR_TO_MANY_ELEMENTS=1,
-     &     ERR_UNCONVERTIBLE=2
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="key_dsearch"
 
-      character(len=*),intent(in)::
-     &     valstr
-      integer,intent(out)::
-     &     ierr
+      type(Node), pointer::
+     &     nxtkey
 
-      logical,Dimension(dim)::
-     &     larr
+      type(Node), pointer,intent(in)::
+     &     curkey
+
+      integer,intent(inout),optional ::
+     &     level
+
+      integer::
+     &     dlevel !levelchange
       
-      integer ::
-     &     ii, 
-     &     ipst, ipnd
-      
-      ierr=0
-      conv_logical_inp=" "
-      ipst=1
-      ipnd=index(valstr(ipst:),",")+ipst-1
+      nxtkey=>curkey
 
-      if (ipnd.gt.ipst)then
-         ii=0
-         do while (ipnd.gt.ipst)
-            ii=ii+1
-            if (ii.gt.dim)then 
-               ierr=ERR_TO_MANY_ELEMENTS
+      if (ntest .ge. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) "starting at:",
+     &        getAttribute(nxtkey,atr_name)
+      end if 
+
+      dlevel=0
+      main_loop: do
+         nxtkey=>elem_dsearch(nxtkey,dlevel)
+
+         if(associated(nxtkey).and. ntest .ge.100) then 
+            write(lulog,*) "looking at:",
+     &           getAttribute(nxtkey,atr_name)
+            write(lulog,*) " "
+         else if (ntest.ge.100) then
+            write(lulog,*) "not associated"
+         end if
+
+         if (.not.associated(nxtkey))exit main_loop
+
+         if (getNodeName(nxtkey).eq. trim(key_tag))then
+            exit main_loop
+         else if (getNodeName(nxtkey).eq.key_root_tag) then
+            nxtkey=>null()
+            exit main_loop
+         end if
+      end do main_loop
+
+      if (present(level))level=level+dlevel
+      end function
+
+
+*----------------------------------------------------------------------*
+!>    general iterative depth first walk
+!!
+!!    @param[in] curkey pointer to parent keyword
+!!    @param[inout] level 
+!!    @return next element
+*----------------------------------------------------------------------*
+      function elem_dsearch(curkey,level) result(nxtkey)
+*----------------------------------------------------------------------*
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="elem_dsearch"
+      type(Node),pointer::
+     &     nxtkey
+
+      type(Node),pointer,intent(in)::
+     &     curkey
+      integer, intent(inout)::
+     &     level
+      
+      type(Node),pointer::
+     &     sibling
+
+
+      sibling=>getNextSibling(curkey)
+      nxtkey=>curkey
+
+      if (ntest .ge. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+      end if 
+
+      if (hasChildNodes(nxtkey))then
+         nxtkey=> getFirstChild(nxtkey)
+         level=level+1
+      else if (associated(sibling))then
+         nxtkey => sibling
+      else
+         up_loop: do 
+            nxtkey => getParentNode(nxtkey)
+            level=level-1
+
+            if (.not.associated(nxtkey)) then !  
                return
             end if 
-
-            larr(ii)=str_to_logical(valstr(ipst:ipnd),ierr)
-
-            if (ierr.gt.0) return 
-
-            ipst=ipnd+2
-            ipnd=index(valstr(ipst:),",")+ipst-1
-         end do
-         conv_logical_inp=str(larr(1:ii))
-      else
-         conv_logical_inp=str(str_to_logical(valstr,ierr))
+                  
+            sibling=>getNextSibling(nxtkey)
+            if (associated(sibling))then 
+               nxtkey=> sibling
+               exit up_loop
+            end if 
+         end do up_loop
       end if
+      if (ntest .ge. 100 .and. associated(nxtkey)) then
+         write (lulog,*) " found node"
+      else if (ntest.ge.100)then
+         write (lulog,*) " no node found"
+      end if 
+      end function
+
+
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+!     guided search functions 
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+! external subroutines should only be concerned with 
+!     reg_key_from_context(context,latest,keycount)
+!     inp_key_from_context(context,latest,keycount)
+!     reg_arg_from_context(context,name,latest,keycount,argcount)
+!     inp_arg_from_context(context,name,latest,keycount,argcount)
+! These functions only see active keywords
+
+
+*----------------------------------------------------------------------*
+!>    resolves an argument(context and name) in the registry
+!!    
+!!    @param context string of the form <key>.<key>.<key>
+!!    @param name name of the argument
+!!    @param latest optional if true the tree is searched in reverse order
+!!    @param keycount looking under the keycount'th appearance of the keyword !active only 
+!!    @param argcount looking for the argcount'th appearance under the specified keyword
+!!    @return pointer to the argument node or null() if no node was found
+!!    NOTE, if keycount or argcount are set to an negative value, 
+!!    the return will be null() and the attribute will be reduced by the number of found nodes
+*----------------------------------------------------------------------*
+      function reg_arg_from_context(context,name,latest,keycount,
+     &     argcount)
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="reg_key_from_context"
+      integer, parameter ::
+     &     ntest = 00
+
+      
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context,name
+      logical,intent(in),optional::
+     &     latest
+      integer,intent(in),optional::
+     &     argcount,keycount
+
+      logical::
+     &     reversed
+      integer::
+     &     iargcount,ikeycount
+
+      iargcount=1
+      if(present(argcount)) iargcount=argcount
+
+      ikeycount=1
+      if(present(keycount)) ikeycount=keycount
+
+      reversed=.false.
+      if (present(latest)) reversed = latest
+      
+      finnode=>reg_fetch_root()
+      finnode=> arg_from_context(context,name,finnode,reversed,
+     &     ikeycount,iargcount)
+
       end function
 
 *----------------------------------------------------------------------*
-!> converts a single element of user input to a logical      
+!>    resolves an argument (context and name) in the input
+!! 
+!!    see reg_arg_from_context   
 *----------------------------------------------------------------------*
-      logical function str_to_logical(instr,ierr) 
+      function inp_arg_from_context(context,name,latest,keycount,
+     &     argcount)
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="inp_key_from_context"
+      integer, parameter ::
+     &     ntest = 00
+
+      
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context,name
+      logical,intent(in),optional::
+     &     latest
+      integer,intent(in),optional::
+     &     argcount,keycount
+      logical::
+     &     reversed
+      integer::
+     &     iargcount,ikeycount
+
+      reversed=.false.
+      if (present(latest)) reversed = latest
+      
+      finnode=> inp_fetch_root()
+      finnode=> arg_from_context(context,name,finnode,reversed,
+     &     ikeycount,iargcount)
+
+      end function
+
+
+
+
+
+*----------------------------------------------------------------------*
+!>    resolves a context string in the registry
+!! 
+!!    see reg_arg_from_context
+*----------------------------------------------------------------------*
+      function reg_key_from_context(context,latest,keycount)
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="reg_key_from_context"
+      integer, parameter ::
+     &     ntest = 00
+
+      
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context
+      logical,intent(in),optional::
+     &     latest
+      integer,intent(in),optional::
+     &     keycount
+      logical::
+     &     reversed
+      integer::
+     &     ikeycount
+
+      reversed=.false.
+      if (present(latest)) reversed = latest
+      ikeycount=1
+      if (present(latest))ikeycount=keycount
+
+
+      finnode=>reg_fetch_root()
+      finnode=> key_from_context(context,finnode,reversed,ikeycount)
+
+      end function
+
+*----------------------------------------------------------------------*
+!>    resolves a context string in the input
+!! 
+!!    see reg_arg_from_context
+*----------------------------------------------------------------------*
+      function inp_key_from_context(context,latest,keycount)
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="inp_key_from_context"
+      integer, parameter ::
+     &     ntest = 00
+
+      
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context
+      logical,intent(in),optional::
+     &     latest
+      integer,intent(in),optional::
+     &     keycount
+      logical::
+     &     reversed
+      integer::
+     &     ikeycount
+
+      reversed=.false.
+      if (present(latest)) reversed = latest
+      ikeycount=1
+      if (present(latest))ikeycount=keycount
+
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         if (latest) write (lulog,*) "reverse search"
+         if (.not.latest) write (lulog,*) "normal search"
+         write (lulog,'(x,i3,"th occurrence requested")') 
+      end if
+
+      finnode=> inp_fetch_root()
+      finnode=> key_from_context(context,finnode,reversed,ikeycount)
+
+      if (ntest.gt.100.and. associated(finnode))
+     &     write (lulog,*)"success"
+      if (ntest.gt.100.and. .not. associated(finnode))
+     &     write (lulog,*)"no success"
+      end function
+
+*----------------------------------------------------------------------*
+!>    resolves a context and name to a keyword
+!!    @param curkey pointer to current keyword
+!!    @param[inout] level on in old level on out new level
+*----------------------------------------------------------------------*
+      function arg_from_context(context,name,tree_root,latest,keycount,
+     &     argcount)
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="arg_from_context"
+      integer, parameter ::
+     &     ntest = 00
+
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context,name
+      type(node), pointer,intent(in) ::
+     &     tree_root
+      logical,intent(in)::
+     &     latest
+      integer,intent(inout)::
+     &     keycount,argcount
+
+      type(node), pointer::
+     &     curkey
+
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' argument = "',name,'"'
+         write(lulog,*) ' context = "',trim(context),'"'
+        if (.not.latest) write(lulog,*) ' forward search'
+        if (latest) write(lulog,*) ' backward search'
+      end if 
+      finnode=>null()
+      curkey=>key_from_context(context,tree_root,latest,keycount)
+      
+      if (associated(curkey))then 
+         finnode=>key_getArgument(curkey,name,latest,argcount)
+      end if
+
+      if(ntest.ge.100.and. associated(finnode))
+     &     write (lulog,*) "success"
+      if(ntest.ge.100.and. .not. associated(finnode))
+     &     write (lulog,*) "No success"
+
+      end function
+
+*----------------------------------------------------------------------*
+!>    resolves a context to a keyword
+!!
+!!    traverses the tree with a stack reliant depth first search
+!!    @param context of the keyword including that keywords name
+!!    @param[in] tree_root starting point of search
+!!    @param[in] latest for reversed search direction
+
+*----------------------------------------------------------------------*
+      function key_from_context(context,tree_root,latest,keycount) 
+     &     result(finnode)
+*----------------------------------------------------------------------*
+      implicit none 
+      character(len=*),parameter ::
+     &     i_am="key_from_context"
+
+      integer, parameter ::
+     &     ntest = 00
+      integer,parameter ::
+     &     max_stack=16             ! 
+      
+      type(node), pointer ::
+     &     finnode
+      character(len=*),intent(in) ::
+     &     context
+      type(node), pointer,intent(in) ::
+     &     tree_root
+      logical,intent(in)::
+     &     latest
+      integer,intent(inout)::
+     &     keycount
+      type(node), pointer ::
+     &     curnode
+
+      integer::
+     &     ipst, ipnd, len,
+     &     ikeycount, sikeycount            !keycount in this sublevel and saved keycount
+      integer ::
+     &     st_stack(max_stack), ist_stack,   !stack for starting indices 
+     &     keyc_stack(max_stack), ikeyc_stack,
+     &     ierr
+      logical ::
+     &     ctxt_end
+      
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' context = "',trim(context),'"'
+        if (.not.latest) write(lulog,*) ' forward search'
+        if (latest) write(lulog,*) ' backward search'
+      end if 
+      
+      call stack_init(st_stack,ist_stack)
+      call stack_init(keyc_stack,ikeyc_stack)
+    
+      curnode=>null()
+      finnode => tree_root
+      len = len_trim(context)
+      if (len.eq.0) return !nothing to do
+
+      ipst = 1
+      ctxt_end=.False.
+      sikeycount=1
+
+      call stack_push(st_stack,ist_stack,0,ierr)
+      call stack_push(keyc_stack,ikeyc_stack,0,ierr)
+      if (ierr.gt.0) call quit(1,i_am,"no stack?")
+      do
+         ipnd = index(context(ipst:),context_sep)+ipst-2
+         if (ipnd.lt.ipst) ctxt_end=.True.
+         if(ctxt_end) ipnd=len
+
+
+
+         if (ntest.ge.100) then
+            write(lulog,*) ' current subkeyword: "',
+     &           context(ipst:ipnd),'"'
+            write(lulog,*) ' in final level',ctxt_end
+            write(lulog,*) ' keys to be found:',keycount
+         end if
+        
+         if (ctxt_end)then
+            ! 
+            ! key_getSubkey looks for the keycount'th subnode
+            !  AND reduces keycount by the amount of found nodes!!!
+            curnode=>key_getSubkey(finnode,context(ipst:ipnd),latest,
+     &           keycount)
+            if (ntest.ge.100) then
+               write(lulog,*) ' currently below: "',
+     &              getAttribute(finnode,atr_name),'"'
+               write(lulog,*) ' in final level',ctxt_end
+               write(lulog,*) ' keys to be found:',keycount
+            end if
+            if (keycount.eq.0)then
+               finnode=>curnode
+               exit
+            end if
+         else            
+            ikeycount=sikeycount
+            curnode=>key_getSubkey(finnode,context(ipst:ipnd),latest,
+     &           ikeycount)
+         end if
+
+
+
+         ! which direction to go
+         if (associated(curnode))then 
+            ! go one level down
+            if (ntest .gt. 100) then
+               write(lulog,*) "found",getAttribute(curnode,atr_name)
+               write(lulog,*) "going one level up"
+            end if 
+
+            call stack_push(st_stack,ist_stack,ipst,ierr)
+            call stack_push(keyc_stack,ikeyc_stack,sikeycount,ierr)
+            if (ierr.gt.0) call quit (1,i_am,"stack exceeded:")
+      
+            finnode=>curnode
+            ipst=ipnd+2
+            sikeycount=1
+         else if(ipst.eq.1)then
+            ! go one level up: can't
+            finnode=> null()
+            exit
+         else
+            ! go one level up
+            call stack_pop(st_stack,ist_stack,ipst,ierr)
+            call stack_pop(keyc_stack,ikeyc_stack,sikeycount,ierr)
+            if (ierr.gt.0) call quit(1,i_am,
+     &           "OK, WTF?? trying to access negative stack")
+            finnode=> getParentNode(finnode)
+            sikeycount=sikeycount+1
+         end if 
+      end do
+
+      call stack_del(st_stack,ist_stack)
+      call stack_del(keyc_stack,ikeyc_stack)
+      
+      if(ntest.ge.100.and. associated(finnode))
+     &     write (lulog,*) "success"
+      if(ntest.ge.100.and. .not. associated(finnode))
+     &     write (lulog,*) "No success"
+      return 
+
+      contains
+*----------------------------------------------------------------------*
+!>    implementing a simple stack for our starting indices
+!!
+!!    need the external parameter max_stack
+!!    @param curkey pointer to current keyword
+!!    @param[inout] level on in old level on out new level
+*----------------------------------------------------------------------*
+      subroutine stack_init(stack,stack_pointer)
+      implicit none
+      integer,intent(inout)::
+     &     stack(max_stack),stack_pointer
+      stack_pointer=0
+!     stack =0 not neccessary
+      end subroutine 
+
+      subroutine stack_push(stack,stack_pointer,i,ierr)
+      implicit none
+      integer,intent(inout)::
+     &     stack(max_stack),stack_pointer
+      integer,intent(in)::
+     &     i
+      integer, intent(inout)::
+     &     ierr
+  
+      stack_pointer=stack_pointer+1
+      if (stack_pointer.gt.max_stack) then 
+         ierr=ierr+1
+         return
+      end if 
+      stack(stack_pointer)=i
+      end subroutine
+
+      subroutine stack_pop(stack,stack_pointer,i,ierr)
+      implicit none
+      integer,intent(inout)::
+     &     stack(max_stack),stack_pointer
+      integer,intent(out)::
+     &     i
+      integer, intent(out)::
+     &     ierr
+  
+      stack_pointer=stack_pointer-1
+      if (stack_pointer.le.0) then 
+         ierr=ierr+1
+         return
+      end if 
+      i=stack(stack_pointer)
+      end subroutine
+
+      subroutine stack_del(stack,stack_pointer)
+      integer,intent(inout)::
+     &     stack(max_stack),stack_pointer
+      continue
+      return
+      end subroutine 
+      end function
+
+
+
+*----------------------------------------------------------------------*
+!>    retrieves the subkeyword below curkey
+!!
+!!    @param curkey pointer to parent keyword
+!!    @param name name of the subkeyword
+!!    @param latest if ocurrences should be counted backwards
+!!    @param icount the icountth occurrence is retrieved
+*----------------------------------------------------------------------*
+      function key_getSubkey(curkey,name,latest,icount) result(nextkey)
 *----------------------------------------------------------------------*
       implicit none
+      character(len=*),parameter::
+     &     i_am="key_getSubkey"
       integer,parameter::
-     &     ERR_UNCONVERTIBLE=2
+     &     ntest=00
 
-      character,intent(in)::
-     &     instr*(*)
-      integer,intent(out)::
-     &     ierr
-      ierr=0
+      type(Node),pointer::
+     &     nextkey
 
-      select case (trim(instr))
-         case("T","t")
-            str_to_logical=.true.
-         case("F","f")
-            str_to_logical=.false.
-         case default
-            str_to_logical=.false.
-            ierr=ERR_UNCONVERTIBLE
-      end select
-      end function 
+      type(Node),pointer,intent(in)::
+     &     curkey
+      character(len=*),intent(in)::
+     &     name 
+      logical,intent(in)::
+     &     latest
+      integer,intent(inout)::
+     &     icount 
+
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) " looking for:",trim(name)
+         write(lulog,*)  " number to be found:",icount
+         if (latest)write(lulog,*) " reversed order"
+      end if
+      nextkey=> key_getSubnode(curkey,name,key_tag,latest,icount)
+      end function
+
+
+
+
+
+
+
+
+*----------------------------------------------------------------------*
+!>    retrieves an argument below curkey
+!!
+!!    @param curkey pointer to parent keyword
+!!    @param name name of the argument
+!!    @param latest if ocurrences should be counted backwards
+!!    @param icount the icountth occurrence is retrieved
+*----------------------------------------------------------------------*
+      function key_getArgument(curkey,name,latest,icount)result(nextarg)
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=*),parameter::
+     &     i_am="key_getArgument"
+      integer,parameter::
+     &     ntest=00
+
+      type(Node),pointer::
+     &     nextarg
+
+      type(Node),pointer,intent(in)::
+     &     curkey
+      character(len=*),intent(in)::
+     &     name 
+      logical,intent(in)::
+     &     latest
+      integer,intent(inout)::
+     &     icount 
+
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) " looking for:",trim(name)
+         write(lulog,*)  " number to be found:",icount
+         if (latest)write(lulog,*) " reversed order"
+      end if
+      nextarg=> key_getSubnode(curkey,name,arg_tag,latest,icount)
+      
+      end function
+*----------------------------------------------------------------------*
+!>    retrieves an element below curkey
+!!
+!!    @param curkey pointer to parent keyword
+!!    @param name name of the argument
+!!    @param tag tag of the element
+!!    @param latest if ocurrences should be counted backwards
+!!    @param icount the icountth occurrence is retrieved
+*----------------------------------------------------------------------*
+      function key_getSubNode(curkey,name,tag,latest,icount)
+     &     result(nextnode)
+      implicit none
+      character(len=*),parameter::
+     &     i_am="key_getSubNode"
+      integer,parameter::
+     &     ntest=00
+
+      type(Node),pointer::
+     &     nextnode
+
+      type(Node),pointer,intent(in)::
+     &     curkey
+      character(len=*),intent(in)::
+     &     name ,tag
+      logical,intent(in)::
+     &     latest
+      integer,intent(inout)::
+     &     icount
+   
+
+      if (latest)then
+         nextnode=>getLastChild(curkey)
+      else 
+         nextnode=>getFirstChild(curkey)
+      end if 
+
+      if (ntest .gt. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) " looking for:",trim(name)
+         write(lulog,*) " of type:",trim(tag)
+         if (latest)write(lulog,*) " reversed order"
+         write(lulog,*)  " number to be found:",icount
+      end if 
+
+      do 
+         if (.not. associated(nextnode)) exit
+      if (ntest .gt. 100) then
+         write(lulog,*)  " next node:",getAttribute(nextnode,atr_name)
+         write(lulog,*)  " type:",getNodeName(nextnode)
+         write(lulog,*)  " status:",getAttribute(nextnode,atr_stat)
+         write(lulog,*)  " number to be found:",icount
+      end if 
+
+         if ( (getNodeName(nextnode).eq.trim(tag) ) .and.
+     &        ( getAttribute(nextnode,atr_name) .eq. trim(name) ).and.
+     &        (getAttribute(nextnode,atr_stat).eq. status_active))
+     &        then
+               icount=icount-1
+            if (icount.eq.0) then
+!     nextnode points correctly
+               return
+            end if
+         end if 
+         if (latest)then
+            nextnode=>getPreviousSibling(nextnode)
+         else 
+            nextnode=>getNextSibling(nextnode)
+         end if
+      end do 
+      return 
+      end function
+
       end module

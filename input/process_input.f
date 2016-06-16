@@ -15,6 +15,7 @@
       include 'def_orbinf.h'
       include 'routes.h'
 
+      
       logical, intent(out) ::
      &     one_more
       type(orbinf), intent(inout) ::
@@ -30,7 +31,7 @@
      &     allowed(6)
 
       one_more=.false.
-
+      print *, "beginn postprocessing input"
       call inp_postprocess(one_more)
       if (.not. one_more) return
 

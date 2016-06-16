@@ -17,7 +17,7 @@
       use FoX_common,only:rts
       implicit none
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       character(len=18),parameter ::
      &     i_am="get_argument_value"
 

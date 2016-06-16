@@ -1,7 +1,8 @@
       subroutine read_input(ffinput)
 
-      use parse_input2, only:inp_parse,reg_import,
+      use parse_input2, only:reg_import,
      &     get_keyword_file
+      use parse_input,only : inp_parse
       implicit none
       include 'stdunit.h'
       include 'def_filinf.h'
