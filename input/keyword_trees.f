@@ -324,9 +324,7 @@
      &        trim(getAttribute(keywd,atr_name))
       end if 
 
-
-
-      do i=1,2
+      do 
          if (ntest.ge.100) then
             write (lulog,*) "current name:"
      &           ,getAttribute(current,atr_name)
@@ -379,11 +377,13 @@
               write (lulog,*) " root: ",getAttribute(in_root,atr_name)
          call inp_show(lulog)
       end if 
-      call tree_set_status(in_root,status_inactive)
       one_more=.true.
       if (.not.associated(history)) then
+! as the relevant subroutines only work on active elements, all elements were by default active
+! in the input creation
+         call tree_set_status(in_root,status_inactive)
+
          history =>getFirstChild( in_root)
-         
          if (.not.associated(  history)) then
             call quit(0,i_am,'not a single keyword given?')
          end if
@@ -498,38 +498,12 @@
      &     call quit(1,i_am,'invalid keyword tree')
 
       current => getFirstChild(tree_root)
-
-      finnode => null()
-
-      jcount = 0
-      key_loop: do 
-        call rts(getAttribute(current,atr_stat),status)
-        if (ntest.ge.100)then 
-           write (lulog,*) "keyword:",getAttribute(current,atr_name)
-           write (lulog,*) "status:",status
-        end if
-
-        if (status.eq.status_active) then
-          call keyword_get_context(curcontext,current)
-! keyword_get_context only gets the context of the current keyword
-          if (len_trim(curcontext).eq.0)then
-             curcontext=getAttribute(current,atr_name)
-          else
-             curcontext=trim(curcontext)//"."//
-     &            getAttribute(current,atr_name)
-          end if 
-          
-          if (trim(context).eq.trim(curcontext)) jcount = jcount+1 
-          if (icount.eq.jcount) then
-            finnode => current
-            exit key_loop
-         end if
-        end if
-        current => key_dsearch(current)
-        if (.not.associated(current)) exit key_loop
-      end do key_loop
-            if (ntest.ge.100)
-     &     write (lulog,*) i_am," has found",jcount,
+      jcount=icount
+      finnode => key_from_context(context,tree_root,latest=.false.,
+     &     keycount=jcount) 
+      
+      if (ntest.ge.100)
+     &     write (lulog,*) i_am," has found",icount-jcount,
      &     "occurences of ",trim(context),"and returning:",
      &     associated(finnode)
       return
@@ -543,6 +517,7 @@
 !!
 !!    @param cur_node pointer to current node
 !!    @param[out] nxt_node found node or unassociated
+!!    @param[in] key name of the next keyword
 *----------------------------------------------------------------------*
       subroutine next_node(cur_node,nxt_node,key)
 *----------------------------------------------------------------------*
@@ -579,25 +554,16 @@
 
 
 
-      if (hasChildNodes(current))then
-         keylist=>getChildNodes(current)
-      else
+      if (.not.hasChildNodes(current))then
          current=>getParentNode(current)
-         keylist=>getChildNodes(current)
       end if 
    
       node_loop: do
-         do ii=0,getLength(keylist)-1      ! No,No,No
-            listnode=>item(keylist,ii)
-            if (getNodeName(listnode) 
-     &           .eq. key_tag .and. 
-     &           getAttribute(listnode, atr_name)
-     &           .eq. key ) then 
-               nxt_node=> listnode
-               exit node_loop
-            end if
+         ii=1
+         nxt_node=>key_getSubkey(current,key,latest=.false.,icount=ii)
 
-         end do
+         if (associated(nxt_node)) exit node_loop
+
 
          if (getNodeName(current).ne. key_root_tag)then
             current=>getParentNode(current)
@@ -822,26 +788,8 @@
          write(lulog,*) ' current_keyword "',
      &        getAttribute(cur_key,atr_name),'"'
       end if
-
-      arg => null()
-      if (hasChildNodes(cur_key))then
-         nodes_list=> getChildNodes(cur_key)
-         do ii=0,getLength(nodes_list)-1 ! this ain't no true Fortran
-            curnode=>item(nodes_list,ii)
-            if (ntest.ge.100) then
-               write(lulog,*) ' looking at "',
-     &              getAttribute(curnode,atr_name),'"'
-               write(lulog,*) ' of type:',getNodeName(cur_key)
-            end if 
-            if (getNodeName(curnode)
-     &           .eq. arg_tag .and. 
-     &           getAttribute(curnode, atr_name)
-     &           .eq. key ) then
-               arg => curnode
-               exit
-            end if 
-         end do 
-      end if 
+      ii=1
+      arg=>key_getArgument(cur_key,key,latest=.false.,icount=ii) 
 
 
       if (ntest.ge.100) then
@@ -892,7 +840,7 @@
       
       forward = .true.
       if (present(latest)) forward = .not.latest
-      print *, "find_node called on", getAttribute(tree_root,atr_name)
+
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' context = "',trim(context),'"'
@@ -917,8 +865,10 @@
 
 
 
-
-
+*----------------------------------------------------------------------*
+!>    for a given argument determines the actual length (and type)
+!!    
+!!    @TODO improve string handling
 *----------------------------------------------------------------------*
       subroutine get_argument_dimension_core(curarg,num,type,succ)
 *----------------------------------------------------------------------*
@@ -927,7 +877,7 @@
       include 'stdunit.h'
       integer,parameter::
      &     ntest=00
-      character(len=27),parameter ::
+      character(len=*),parameter ::
      &     i_am="get_argument_dimension_core"
 
       type(Node), pointer,intent(inout) ::
@@ -937,16 +887,10 @@
       logical , intent(out)::
      &     succ
      
-      logical ::
-     &     lval 
       logical,allocatable::
      &     larr(:)
-      integer::
-     &     ival
       integer,allocatable::
      &     iarr(:)
-      real(8)::
-     &     xval
       real(8),allocatable::
      &     xarr(:)
       integer ::
@@ -978,7 +922,7 @@
          if (ex.le. 0) succ = .true.
       case (vtyp_int)
          allocate(iarr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),iarr(1:dim_tot)
+         call rts(getAttribute(curarg,atr_val),iarr
      &        ,iostat=ex,num=num) 
          if (ex.le. 0) succ = .true.
       case (vtyp_rl8)
@@ -990,6 +934,10 @@
          num=dim_tot
          succ = .true.
       end select
+
+      if (ntest.ge.100) then 
+        write(lulog,'("length:",i3)')num 
+      end if
       return 
       end subroutine 
 
@@ -1220,9 +1168,9 @@
 *----------------------------------------------------------------------*
       implicit none 
       character(len=*),parameter ::
-     &     i_am="inp_key_from_context"
+     &     i_am="inp_arg_from_context"
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       
       type(node), pointer ::
@@ -1240,7 +1188,13 @@
 
       reversed=.false.
       if (present(latest)) reversed = latest
-      
+
+      iargcount=1
+      if (present(argcount)) iargcount = argcount
+
+      ikeycount=1
+      if (present(keycount)) ikeycount = keycount
+
       finnode=> inp_fetch_root()
       finnode=> arg_from_context(context,name,finnode,reversed,
      &     ikeycount,iargcount)
@@ -1281,6 +1235,7 @@
 
       reversed=.false.
       if (present(latest)) reversed = latest
+
       ikeycount=1
       if (present(latest))ikeycount=keycount
 
@@ -1302,7 +1257,7 @@
       character(len=*),parameter ::
      &     i_am="inp_key_from_context"
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       
       type(node), pointer ::
@@ -1406,9 +1361,9 @@
      &     i_am="key_from_context"
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
       integer,parameter ::
-     &     max_stack=16             ! 
+     &     max_stack=16             ! 15 level deep should be enough
       
       type(node), pointer ::
      &     finnode
@@ -1433,6 +1388,8 @@
       logical ::
      &     ctxt_end
       
+      ierr=0
+
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' context = "',trim(context),'"'
@@ -1452,35 +1409,35 @@
       ctxt_end=.False.
       sikeycount=1
 
-      call stack_push(st_stack,ist_stack,0,ierr)
-      call stack_push(keyc_stack,ikeyc_stack,0,ierr)
-      if (ierr.gt.0) call quit(1,i_am,"no stack?")
+
       do
+         ! finding next slice in context
          ipnd = index(context(ipst:),context_sep)+ipst-2
          if (ipnd.lt.ipst) ctxt_end=.True.
          if(ctxt_end) ipnd=len
 
 
-
          if (ntest.ge.100) then
             write(lulog,*) ' current subkeyword: "',
-     &           context(ipst:ipnd),'"'
+     &           context(ipst:ipnd),'" idx:',ipst,ipnd
             write(lulog,*) ' in final level',ctxt_end
             write(lulog,*) ' keys to be found:',keycount
          end if
-        
+ 
+         ! comparing to Nodes
          if (ctxt_end)then
-            ! 
             ! key_getSubkey looks for the keycount'th subnode
             !  AND reduces keycount by the amount of found nodes!!!
-            curnode=>key_getSubkey(finnode,context(ipst:ipnd),latest,
+            curnode=> key_getSubkey(finnode,context(ipst:ipnd),latest,
      &           keycount)
+
             if (ntest.ge.100) then
-               write(lulog,*) ' currently below: "',
-     &              getAttribute(finnode,atr_name),'"'
+               if (associated(curnode))write(lulog,*) 
+     &              ' looking at "',getAttribute(curnode,atr_name),'"'
                write(lulog,*) ' in final level',ctxt_end
                write(lulog,*) ' keys to be found:',keycount
             end if
+
             if (keycount.eq.0)then
                finnode=>curnode
                exit
@@ -1492,18 +1449,20 @@
          end if
 
 
-
-         ! which direction to go
+         
+         ! traversing tree
          if (associated(curnode))then 
             ! go one level down
             if (ntest .gt. 100) then
                write(lulog,*) "found",getAttribute(curnode,atr_name)
-               write(lulog,*) "going one level up"
+               write(lulog,*) "going one level down"
+               write(lulog,*) "saving:",ipst,sikeycount
             end if 
 
             call stack_push(st_stack,ist_stack,ipst,ierr)
             call stack_push(keyc_stack,ikeyc_stack,sikeycount,ierr)
-            if (ierr.gt.0) call quit (1,i_am,"stack exceeded:")
+            if (ierr.gt.0) call quit (1,i_am,"stack exceeded:"//
+     &           str(ist_stack))
       
             finnode=>curnode
             ipst=ipnd+2
@@ -1518,8 +1477,14 @@
             call stack_pop(keyc_stack,ikeyc_stack,sikeycount,ierr)
             if (ierr.gt.0) call quit(1,i_am,
      &           "OK, WTF?? trying to access negative stack")
+            ctxt_end=.False.
             finnode=> getParentNode(finnode)
             sikeycount=sikeycount+1
+
+            if (ntest .gt. 100) then
+               write(lulog,*) "going one level up"
+               write(lulog,*) "starting at:",ipst,sikeycount
+            end if 
          end if 
       end do
 
@@ -1548,6 +1513,7 @@
 !     stack =0 not neccessary
       end subroutine 
 
+*----------------------------------------------------------------------*
       subroutine stack_push(stack,stack_pointer,i,ierr)
       implicit none
       integer,intent(inout)::
@@ -1565,6 +1531,7 @@
       stack(stack_pointer)=i
       end subroutine
 
+*----------------------------------------------------------------------*
       subroutine stack_pop(stack,stack_pointer,i,ierr)
       implicit none
       integer,intent(inout)::
@@ -1574,14 +1541,15 @@
       integer, intent(out)::
      &     ierr
   
-      stack_pointer=stack_pointer-1
       if (stack_pointer.le.0) then 
          ierr=ierr+1
          return
       end if 
       i=stack(stack_pointer)
+      stack_pointer=stack_pointer-1
       end subroutine
 
+*----------------------------------------------------------------------*
       subroutine stack_del(stack,stack_pointer)
       integer,intent(inout)::
      &     stack(max_stack),stack_pointer
@@ -1606,7 +1574,7 @@
       character(len=*),parameter::
      &     i_am="key_getSubkey"
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
 
       type(Node),pointer::
      &     nextkey

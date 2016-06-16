@@ -10,12 +10,17 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use parse_input2
-      use FoX_dom,only:Node,Nodelist,DOMException,
-     &     getFirstChild,hasChildNodes,getChildNodes,getLength,item,
-     &     getNodeName,getAttribute,getTextContent
-      use FoX_common,only:rts
+      use parse_input2,only : inp_arg_from_context,reg_arg_from_context,
+     &     Node,
+     &     atr_val,atr_name,atr_len,
+     &     get_argument_dimension_core,
+     &     getAttribute
+      use FoX_common, only : rts
+
       implicit none
+      include 'par_vtypes.h'
+      include 'stdunit.h'
+
       integer,parameter::
      &     ntest=00
       character(len=18),parameter ::
@@ -33,20 +38,16 @@
      &     xval, xarr(*)
       character, intent(out), optional ::
      &     string*(*)
-      type(Node), pointer ::
-     &     curkey,nxtkey
-      type(Node), pointer ::
-     &     curarg,input_root,key_root
-      type(NodeList),pointer::
-     &     child_list
-      character ::
-     &     curcontext*1024
+
+      type(Node),pointer::
+     &     curarg
+
       integer ::
-     &     iargcount, icount_target, iargcount_target, type, dim, idx
+     &     iargcount, iargcount_target,
+     &     ikeycount, ikeycount_target,
+     &     idx, itype, dim, ex, num
       logical ::
-     &     try_default, succ ,dummy
-      integer ::
-     &     ii, num,len,ex
+     &     succ, dummy
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -55,138 +56,95 @@
          write (lulog,*) "looking for ",argkey," in context:",context
       end if
 
-      input_root=>inp_fetch_root()
-      if (.not.hasChildNodes(input_root))
-     &     call quit(1,i_am,'invalid keyword history')
+      succ=.false.
+
+      ikeycount = 1
+      if (present(keycount)) ikeycount = keycount
+      ikeycount_target=ikeycount
       
-      key_root=>reg_fetch_root()
+      iargcount = 1
+      if (present(argcount)) iargcount = argcount
+      iargcount_target=iargcount
 
 
-      icount_target = 1
-      if (present(keycount)) icount_target = keycount
-      
-      try_default = .false.
-      call find_active_node(input_root,curkey,
-     &     context,icount_target)
-      iargcount = 0
-      iargcount_target = 1
-      if (present(argcount)) iargcount_target = argcount
+      curarg=>inp_arg_from_context(context,argkey,.false.,
+     &     ikeycount_target,iargcount_target)
 
-      succ = .false.
-      ! either get 
-      repetition_loop: do 
-! try default instead
+      if (ntest.ge.100) then
+         if (associated(curarg))
+     &       write (lulog,*)  "active_node in input found"
+         if (.not.associated(curarg)) 
+     &        write (lulog,*) "active_node not in input found"
+      end if
 
-         if (associated(curkey))then
-            if (.not.hasChildNodes(curkey)
-     &           .and.iargcount_target.eq.1) then
-               try_default = .true.
-            end if
-         else if(.not. associated(curkey))then
-            try_default = .true.
+      ikeycount_target=ikeycount
+      iargcount_target=iargcount
+      if(.not.associated(curarg))
+     &     curarg=>reg_arg_from_context(context,argkey,.false.,
+     &     ikeycount_target,iargcount_target)
+
+
+      if (associated(curarg))then
+         call get_argument_dimension_core(curarg,dim,
+     &        itype,dummy)
+         if (ntest.ge.100) then 
+            write(lulog,'(" argument has ",i3," elements")') dim 
          end if
-
-         if (try_default)
-     &        call find_node(key_root,curkey,context)
-
-
-         if (associated(curkey).and.hasChildNodes(curkey)) then
-            child_list=> getChildNodes(curkey)
-            arg_loop: do ii=0,getLength(child_list)-1 ! MY LISTS START AT 1!!!!
-               curarg=>item(child_list,ii)
-               if (getNodeName(curarg) .ne. arg_tag) cycle arg_loop
-               if (getAttribute(curarg,atr_name).eq.trim(argkey)) 
-     &              iargcount = iargcount+1
-
-               if (getAttribute(curarg,atr_name).eq.trim(argkey).and.
-     &              iargcount.eq.iargcount_target) then
-                  
-                  call get_argument_dimension_core(curarg,len,type,
-     &                 dummy)
-
-                  call rts(getAttribute(curarg,atr_len),dim)
-                  
-                  if (ntest.ge.100) then 
-                     write(lulog,'(" dim:",i3)')dim 
-                     write(lulog,'(" type:",i3)')type
-                     write(lulog,'("unconverted input:",a,":")')
-     &                    getAttribute(curarg,atr_val)
-                  end if 
-
-                  if(.not.hasAttribute(curarg,atr_val))then
-                     num=0
-                     exit arg_loop
-                  else
-                     num=1
-                  end if
-                  select case(type)
-               case (vtyp_log)
-                  if (.not.(present(lval).or.present(larr)))
-     &                 call quit(1,i_am,
-     &                 trim(context)//'->'//trim(argkey)//
-     &                 'no l-value array present')
-                  if (present(lval)) 
-     &                 call rts(getAttribute(curarg,atr_val),lval,
-     &                 iostat=ex)
-                  if (present(larr))  
-     &                 call rts(getAttribute(curarg,atr_val),
-     &                 larr(1:len),iostat=ex,num=num) 
-                  if (ex.le. 0) succ = .true.
-               case (vtyp_int)
-                  if (.not.(present(ival).or.present(iarr)))
-     &                 call quit(1,i_am,
-     &                 trim(context)//'->'//trim(argkey)//
-     &                 'no i-value array present')
-                  if (present(ival)) then
-                     call rts(getAttribute(curarg,atr_val),
-     &                 ival,iostat=ex,num=num)
-                  end if 
-                  if (present(iarr)) 
-     &                 call rts(trim(getAttribute(curarg,atr_val)),
-     &                 iarr(1:len),iostat=ex,num=num)
-                  if (ex.le. 0) succ = .true.
-            
-               case (vtyp_rl8)
-                  if (.not.(present(xval).or.present(xarr)))
-     &                 call quit(1,i_am,
-     &                 trim(context)//'->'//trim(argkey)//
-     &                 'no r-value array present')
-                  if (present(xval)) 
-     &                 call rts(getAttribute(curarg,atr_val),xval
-     &                 ,iostat=ex)
-                  if (present(xarr)) 
-     &                 call rts(getAttribute(curarg,atr_val),
-     &                 xarr(1:len),iostat=ex,num=num) 
-                  if (ex.le. 0) succ = .true.
-               case (vtyp_str)
-                  if (.not.(present(string)))
-     &                 call quit(1,'get_argument_value',
-     &                 trim(context)//'->'//trim(argkey)//
-     &                 'no r-value array present')
-                  string = trim(getAttribute(curarg,atr_val))
-                  succ = .true.
-               end select
-               if (ntest.ge.100) then 
-                  write(lulog,'(" transferred ",i3," elements")') num
-                  write(lulog,*) succ 
-               end if
-               end if
-               if (succ) exit repetition_loop
-            end do arg_loop
+      end if 
+      select case(itype)
+      case (vtyp_log)
+         if (.not.(present(lval).or.present(larr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no l-value array present')
+         if (present(lval)) 
+     &        call rts(getAttribute(curarg,atr_val),lval,
+     &        iostat=ex)
+         if (present(larr))  
+     &        call rts(getAttribute(curarg,atr_val),
+     &        larr(1:dim),iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_int)
+         if (.not.(present(ival).or.present(iarr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no i-value array present')
+         if (present(ival)) then
+            call rts(getAttribute(curarg,atr_val),
+     &           ival,iostat=ex,num=num)
          end if 
-         if (try_default) exit repetition_loop
-!     else try default (if applicable)
-         try_default = .true.
-         call find_node(key_root,curkey,context)
+         if (present(iarr)) 
+     &        call rts(trim(getAttribute(curarg,atr_val)),
+     &        iarr(1:dim),iostat=ex,num=num)
+         if (ex.le. 0) succ = .true.
          
-         if (.not.associated(curkey).or.
-     &        .not.hasChildNodes(curkey)) exit repetition_loop
-      end do repetition_loop 
-            
+      case (vtyp_rl8)
+         if (.not.(present(xval).or.present(xarr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no r-value array present')
+         if (present(xval)) 
+     &        call rts(getAttribute(curarg,atr_val),xval
+     &        ,iostat=ex)
+         if (present(xarr)) 
+     &        call rts(getAttribute(curarg,atr_val),
+     &        xarr(1:dim),iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_str)
+         if (.not.(present(string)))
+     &        call quit(1,'get_argument_value',
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no r-value array present')
+         string = trim(getAttribute(curarg,atr_val))
+         succ = .true.
+      end select
+     
+
       if (.not.succ)
      &     call quit(1,i_am,
      &     'Could not provide any value for '//trim(context)//
      &     '.'//trim(argkey))
+
 
       return
       end
