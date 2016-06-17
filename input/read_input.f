@@ -44,11 +44,14 @@ c work around for problem with interface file
       contains
 
 *----------------------------------------------------------------------*
-!!    returns name of the keyword_file
+!>    returns name of the keyword_file
+!!    reads an environment variable and appends a specified relative path
+!!    variable and path are named in par_keyreg.h
 *----------------------------------------------------------------------*
       function get_keyword_file() result(file_name)
 *----------------------------------------------------------------------*
       implicit none
+      include "par_keyreg.h"
       integer,parameter::
      &     ntest= 00
       character(len=16),parameter ::
@@ -56,19 +59,23 @@ c work around for problem with interface file
       character(len=256)::
      &     path_name,file_name
       integer ::
-     &     len
+     &     length,file_loc_len
 
+      file_loc_len=len(keyreg_file_loc)
 
-      call get_environment_variable( "GECCO_DIR", value=path_name,
-     &     length = len)
+      call get_environment_variable( keyreg_variable, value=path_name,
+     &     length = length)
 
-      if (len.EQ.0)
+      if (length.EQ.0)
      &     call quit(0,i_am,
-     &     "Please, set the GECCO_DIR environment variable.")
-      if (len .gt.(256-file_loc_len)  )
+     &     "Please, set the "//keyreg_variable
+     &     //" environment variable.")
+
+      if (length .gt.(256-file_loc_len)  )
      &     call quit(0,i_am,
      &     "GECCO_DIR to long, cannot set keyword_registry")
-      file_name=trim(path_name)//rel_file_loc
+
+      file_name=trim(path_name)//keyreg_file_loc
 
       end function
       end
