@@ -1,11 +1,14 @@
       subroutine read_input(ffinput)
 
-      use parse_input2, only:reg_import,
-     &     get_keyword_file
+      use keyword_trees, only:reg_import
       use parse_input,only : inp_parse
       implicit none
       include 'stdunit.h'
       include 'def_filinf.h'
+      integer,parameter::
+     &     file_loc_len=28
+      character(len=file_loc_len),parameter ::
+     &     rel_file_loc="/data/keyword_registry3.xml"
 c does not work, why?
 c      include 'ifc_fileutil.h'
  
@@ -38,5 +41,34 @@ c work around for problem with interface file
       call file_close_keep(ffinput)
 
       return
+      contains
 
+*----------------------------------------------------------------------*
+!!    returns name of the keyword_file
+*----------------------------------------------------------------------*
+      function get_keyword_file() result(file_name)
+*----------------------------------------------------------------------*
+      implicit none
+      integer,parameter::
+     &     ntest= 00
+      character(len=16),parameter ::
+     &     i_am="get_keyword_file"
+      character(len=256)::
+     &     path_name,file_name
+      integer ::
+     &     len
+
+
+      call get_environment_variable( "GECCO_DIR", value=path_name,
+     &     length = len)
+
+      if (len.EQ.0)
+     &     call quit(0,i_am,
+     &     "Please, set the GECCO_DIR environment variable.")
+      if (len .gt.(256-file_loc_len)  )
+     &     call quit(0,i_am,
+     &     "GECCO_DIR to long, cannot set keyword_registry")
+      file_name=trim(path_name)//rel_file_loc
+
+      end function
       end

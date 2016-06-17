@@ -7,12 +7,12 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use parse_input2, only:Node,inp_arg_from_context
+      use keyword_trees, only:Node,inp_arg_from_context
       implicit none
       include "stdunit.h"
 
       integer,parameter::
-     &     ntest= 00
+     &     ntest= 1000
       character(len=15),parameter ::
      &     i_am="is_argument_set"
 

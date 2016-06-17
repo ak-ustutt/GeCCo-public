@@ -4,7 +4,7 @@
       subroutine show_keywords(lulog)
 *----------------------------------------------------------------------*
 
-      use parse_input2,only: reg_show
+      use keyword_trees,only: reg_show
       implicit none
 
       integer, intent(in) ::

@@ -1,7 +1,86 @@
       module parse_input
-      use parse_input2
-      
+      use keyword_trees
+      use FoX_common, only: rts,str
+      include 'par_vtypes.h'
+      integer,parameter::
+     &     maxvalstr_len=256
       contains
+
+*----------------------------------------------------------------------*
+!>    for a given argument determines the actual length (and type)
+!!    
+!!    @TODO improve string handling
+*----------------------------------------------------------------------*
+      subroutine get_argument_dimension_core(curarg,num,type,succ)
+*----------------------------------------------------------------------*
+      use Fox_common, only: rts
+      include 'par_vtypes.h'
+      include 'stdunit.h'
+      integer,parameter::
+     &     ntest=00
+      character(len=*),parameter ::
+     &     i_am="get_argument_dimension_core"
+
+      type(Node), pointer,intent(inout) ::
+     &     curarg
+      integer , intent(out)::
+     &     num,type
+      logical , intent(out)::
+     &     succ
+     
+      logical,allocatable::
+     &     larr(:)
+      integer,allocatable::
+     &     iarr(:)
+      real(8),allocatable::
+     &     xarr(:)
+      integer ::
+     &     dim_tot,ex
+
+      call rts(getAttribute(curarg,atr_len),dim_tot)
+      call rts(getAttribute(curarg,atr_kind),type)
+      if (ntest.ge.100) then 
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,'(" dim_tot:",i3)')dim_tot 
+         write(lulog,'(" type:",i3)')type
+         write(lulog,'("unconverted input:",a,":")')
+     &        getAttribute(curarg,atr_val)
+      end if 
+
+         succ=.false.
+      if(.not.hasAttribute(curarg,atr_val))then 
+         num=0
+         return
+      else
+         num=1
+      end if 
+
+      select case(type)
+      case (vtyp_log)
+         allocate(larr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),larr
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_int)
+         allocate(iarr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),iarr
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_rl8)
+         allocate(xarr(dim_tot))
+         call rts(getAttribute(curarg,atr_val),xarr
+     &        ,iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_str)
+         num=dim_tot
+         succ = .true.
+      end select
+
+      if (ntest.ge.100) then 
+        write(lulog,'("length:",i3)')num 
+      end if
+      return 
+      end subroutine 
 
 
 *----------------------------------------------------------------------*
@@ -329,8 +408,8 @@ c dbgend
 *----------------------------------------------------------------------*
 !>    writes the line and generates pointer to the position of the error
 *----------------------------------------------------------------------*
-
       subroutine error_pointer(ipos,line,msg)
+*----------------------------------------------------------------------*
       character(len=*),parameter::
      &     unit="UOUT"
 
@@ -460,7 +539,7 @@ c dbgend
       character(len=11),parameter::
      &     i_am="create_node"
       integer,parameter ::
-     &     ntest=00
+     &     ntest=1000
       integer,parameter::
      &     ERR_TO_MANY_ELEMENTS=1,
      &     ERR_UNCONVERTIBLE=2
@@ -480,6 +559,8 @@ c dbgend
      &     full_context
       integer::
      &     kind,dim,ierr 
+      character(len=maxvalstr_len)::
+     &     invalue
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -491,46 +572,17 @@ c dbgend
      &        getNodeName(template),getAttribute(template,atr_name)
       end if
 
-      if (.not. associated(doc)) 
-     &     call quit(1,i_am,"doc not set")
       
       if (.not. associated(template)) 
      &     call quit(1,i_am,"template not set")
       
+      print *, "creating new_element"
+      new_elem=>inp_create_new_element( template)
+      print *, "new_element"
 
-      new_elem=>createElement(doc,getNodeName(template))
-
-      if (ntest.ge.100) then
-         write (lulog,*) "tag of new element:",
-     &        getNodeName(new_elem)
-      end if 
-      context=" "
-      call  keyword_get_context(context,template)
-      if (ntest.ge.100) then
-         write (lulog,*) "creating a new keyword/argument on context:",
-     &   trim(context)
-      end if
-
-
-!> @TODO this assumes that key_root is the first child of doc
-      root => getFirstChild(doc)
-      call find_node(root,new_parent,trim(context),latest=.True.)
-      if (ntest.ge.100) then
-         write (lulog,*) "tag, name of parent:",
-     &        getNodeName(new_parent),getAttribute(new_parent,atr_name)
-      end if
-
-      new_elem=>appendChild(new_parent, new_elem)
-      new_parent=> getParentNode(new_elem)
       call setAttribute(new_elem,atr_name,
      &     getAttribute(template,atr_name))
 
-      if (hasChildNodes(new_parent))then 
-         root=> getFirstChild(new_parent)
-         do while(associated (root))
-            root => getNextSibling(root)
-         end do 
-      end if 
       if (getNodeName(new_elem) .eq. arg_tag)then 
 
          call setAttribute(new_elem,atr_len
@@ -539,12 +591,10 @@ c dbgend
      &        getAttribute(template,atr_kind))
          call rts(getAttribute(template,atr_kind),kind)
          call rts(getAttribute(template,atr_len),dim)
-         if (kind.eq.vtyp_log)then
-            call setAttribute(new_elem, atr_val,
-     &           trim(conv_logical_inp(value,dim,ierr)))
-         else 
-            call setAttribute(new_elem, atr_val,value)
-         end if 
+
+         invalue=trf_in_val(value,dim,kind,ierr)
+
+
          select case (ierr)
             case (ERR_TO_MANY_ELEMENTS)
                call quit(0,i_am,
@@ -556,10 +606,29 @@ c dbgend
      &              "value for "//getAttribute(new_elem,atr_name)//
      &              " not convertible:"//value)
          end select
+         call setAttribute(new_elem, atr_val,trim(invalue))
       end if
-      call setAttribute(new_elem,atr_stat,status_active)
       return 
       contains 
+      function trf_in_val(value,dim,kind,ierr) result(ret)
+
+      character(len=maxvalstr_len)::
+     &     ret
+      character(len=*),intent(in)::
+     &     value
+      integer,intent(in)::
+     &     dim, kind
+      integer,intent(out)::
+     &     ierr
+
+      select case(kind)
+      case (vtyp_log)
+         ret=conv_logical_inp(value,dim,ierr)
+      case default
+         ret=value
+      end select
+      return
+      end function
 *----------------------------------------------------------------------*
 !>    function to convert any input for a logical argument to a format readable by rts     
 !!    
@@ -579,9 +648,6 @@ c dbgend
      &     i_am="input_to_logical"
       integer,parameter ::
      &     ntest=00
-      integer,parameter::
-     &     ERR_TO_MANY_ELEMENTS=1,
-     &     ERR_UNCONVERTIBLE=2
 
       character(len=*),intent(in)::
      &     valstr
@@ -628,8 +694,6 @@ c dbgend
       logical function str_to_logical(instr,ierr) 
 *----------------------------------------------------------------------*
       implicit none
-      integer,parameter::
-     &     ERR_UNCONVERTIBLE=2
 
       character,intent(in)::
      &     instr*(*)
@@ -680,7 +744,7 @@ c dbgend
 
       type(node), pointer ::
      &     current,listnode
-      type(NodeList), pointer ::
+      type(Nodelist),pointer::
      &     keylist
       integer ::
      &     dummy

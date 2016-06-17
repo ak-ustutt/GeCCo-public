@@ -12,9 +12,9 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use parse_input2,only : inp_arg_from_context,reg_arg_from_context,
-     &     Node,
-     &     get_argument_dimension_core
+      use keyword_trees,only :inp_arg_from_context,reg_arg_from_context,
+     &     Node
+      use parse_input, only :get_argument_dimension_core
 
       implicit none
       include 'par_vtypes.h'

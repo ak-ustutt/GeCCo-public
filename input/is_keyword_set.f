@@ -7,7 +7,7 @@
       integer function is_keyword_set(context)
 *----------------------------------------------------------------------*
 
-      use parse_input2, only : inp_key_from_context,Node
+      use keyword_trees, only : inp_key_from_context,Node
       use FoX_dom, only : getNextSibling
       implicit none
       include 'stdunit.h'

@@ -9,12 +9,12 @@
 *     the keyword must be active (status > 0)
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
-
-      use parse_input2,only : inp_arg_from_context,reg_arg_from_context,
+      use keyword_trees,only : 
+     &     inp_arg_from_context,reg_arg_from_context,
      &     Node,
      &     atr_val,atr_name,atr_len,
-     &     get_argument_dimension_core,
      &     getAttribute
+      use parse_input, only :get_argument_dimension_core
       use FoX_common, only : rts
 
       implicit none

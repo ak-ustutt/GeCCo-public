@@ -4,7 +4,7 @@
 *     wrapper routine
 *----------------------------------------------------------------------*
 
-      use parse_input2
+      use keyword_trees
       implicit none
 
       call keyword_init_()

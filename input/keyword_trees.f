@@ -13,16 +13,36 @@
 !!          -# kind contains the number of the kind of argument(see 'par_vtypes.h')
 !!          -# note that all attributes are saved as strings. they can be converted via rts
 
-      module parse_input2
+      module keyword_trees
       use FoX_dom
       use FoX_common, only:str,rts
       implicit none
+
+      private
+
+      public :: Node,Nodelist
+      public :: atr_stat
+      public :: reg_show,inp_show
+      public :: arg_tag,key_tag,key_root_tag
+      public :: atr_name,atr_kind,atr_len,atr_val
+      public :: inp_create_new_element
+      public :: getAttribute,hasAttribute,setAttribute,
+     &     getNodeName,createElement,
+     &     appendChild,getParentNode,hasChildNodes,getFirstChild,
+     &     getNextSibling,getChildNodes
+      public :: reg_fetch_root,inp_fetch_root
+      public :: input_doc
+      public :: key_getArgument,key_getSubkey
+      public :: inp_key_from_context,reg_key_from_context
+      public :: inp_arg_from_context,reg_arg_from_context
+      public :: keyword_get_context
+      public :: inp_postprocess,reg_import
+   
+
+
       include 'stdunit.h'
       include 'par_vtypes.h'
-      integer,parameter::
-     &     file_loc_len=28
-      character(len=file_loc_len),parameter ::
-     &     rel_file_loc="/data/keyword_registry3.xml"
+
       !! @TODO make this usable on systems where / is not directory separator
       !! @TODO maybe make this configurable in the installation process
       character,parameter::     !attribute names
@@ -34,12 +54,14 @@
 
       integer,parameter::
      &     name_len=16
-      integer,parameter::
-     &     DOCUMENT_TYPE=9
+
       character,parameter::
      &     status_active="A",
      &     status_inactive="I"
 
+      integer,parameter::
+     &     max_context_lvl=16,    ! 16 level deep keyword history should be enough
+     &     max_context_len=256
       character,parameter::
      &     context_sep="."
 
@@ -47,7 +69,6 @@
      &     key_root_tag*8="key_root",
      &     key_tag*7="keyword",
      &     arg_tag*8="argument"
-
 
 
       type(Node), pointer :: 
@@ -107,7 +128,7 @@
      &     root
 
       if (.not. associated(input_doc)) call quit(1,i_am,
-     &     "input tree found")
+     &     "no input tree found")
       root=> getFirstChild(input_doc)
       
       if (.not. associated(root)) call quit(1,i_am,
@@ -117,21 +138,29 @@
 
 
 *----------------------------------------------------------------------*
-!>   wrapper to uncouple set_input_status_ from module variables
+!>    returns the keyword_root element of the input
 !!
-!!  @param  one_more logical to show if there are unprocessed blocks remaining.
-!!          input status not used
 *----------------------------------------------------------------------*
-      subroutine inp_postprocess(one_more)
+      function inp_fetch_doc() result(ret)
 *----------------------------------------------------------------------*
-      implicit none
-      logical, intent(inout)::
-     &     one_more
+      implicit none 
+      character(len=13),parameter ::
+     &     i_am="reg_fetch_doc"
+      integer, parameter ::
+     &     ntest=00
       type(Node),pointer::
-     &     input_root
-      input_root=>  inp_fetch_root()
-      call tree_set_input_status_(input_root, history_pointer,one_more)
-      end subroutine 
+     &     ret
+      print *, "entered inp_fetch_doc"
+      if (.not. associated(input_doc)) call quit(1,i_am,
+     &     "no input tree found")
+
+      ret=> input_doc
+ 
+      if (.not. associated(ret)) call quit(1,i_am,
+     &     "no root element found for input")
+
+      print *, "left inp_fetch_doc"
+      end function
 
 
 
@@ -200,7 +229,7 @@
       call reg_init_()
       call inp_start_()
 
-      
+      write(lulog,*) "reading keyword_file",file 
       registry_doc => parseFile(trim(file), ex=ex)
 
       !! @TODO more special error handling 
@@ -214,36 +243,9 @@
       end subroutine
 
 
-
-*----------------------------------------------------------------------*
-!!    returns name of the keyword_file
-*----------------------------------------------------------------------*
-      function get_keyword_file() result(file_name)
-*----------------------------------------------------------------------*
-      implicit none
-      integer,parameter::
-     &     ntest= 00
-      character(len=16),parameter ::
-     &     i_am="get_keyword_file"
-      character(len=256)::
-     &     path_name,file_name
-      integer ::
-     &     len
-
-
-      call get_environment_variable( "GECCO_DIR", value=path_name,
-     &     length = len)
-
-      if (len.EQ.0)
-     &     call quit(0,i_am,
-     &     "Please, set the GECCO_DIR environment variable.")
-      if (len .gt.(256-file_loc_len)  )
-     &     call quit(0,i_am,
-     &     "GECCO_DIR to long, cannot set keyword_registry")
-      file_name=trim(path_name)//rel_file_loc
-      end function
-
-
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+!  output subroutinen
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 
 *----------------------------------------------------------------------*
 !>    wrapper for keyword_list for the input
@@ -274,7 +276,86 @@
       end subroutine
 
 
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+!  entrance for input postprocessing
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 
+*----------------------------------------------------------------------*
+!>   wrapper to uncouple set_input_status_ from module variables
+!!
+!!  @param  one_more logical to show if there are unprocessed blocks remaining.
+!!          input status not used
+*----------------------------------------------------------------------*
+      subroutine inp_postprocess(one_more)
+*----------------------------------------------------------------------*
+      implicit none
+      logical, intent(inout)::
+     &     one_more
+      type(Node),pointer::
+     &     input_root, history_pointer
+
+      input_root=>  inp_fetch_root()
+      call tree_set_input_status_(input_root, history_pointer,one_more)
+      end subroutine 
+*----------------------------------------------------------------------*
+!>     creates an element of the same type and at the same position 
+!!     as template on input
+!!     
+!!     @param template registry element that provides the template
+*----------------------------------------------------------------------*
+      function inp_create_new_element(template) result(new_elem)
+*----------------------------------------------------------------------*
+      implicit none
+
+      integer,parameter::
+     &     ntest=1000
+      character(len=*),parameter::
+     &     i_am = "create_empty_element"
+
+      type(Node),pointer::
+     &     new_elem
+      type(Node),pointer,intent(in)::
+     &     template
+      character(len=max_context_len)::
+     &     context
+      
+      type(Node),pointer::
+     &     doc
+      type(Node),pointer::
+     &     new_parent ! not a new parent, but newly a parent
+
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*)" template Name:",getAttribute(template,atr_name)
+      end if 
+      call  keyword_get_context(context,template) !using context to synchronize inp and registry
+
+      if (ntest.ge.100) then
+         write (lulog,*) "creating a new keyword/argument on context:",
+     &   context
+      end if
+
+      doc=> inp_fetch_doc()
+      print *, "doc found", associated(doc)
+      if (associated(doc)) write(lulog,*) "document found"
+      if (.not.associated(doc)) write(lulog,*)"document not found"
+      new_elem=>createElement(doc,getNodeName(template))
+
+      new_parent=> inp_key_from_context(trim(context),latest=.True.)
+      if (ntest.ge.100) then
+         write (lulog,*) "tag, name of parent:",
+     &        getNodeName(new_parent),getAttribute(new_parent,atr_name)
+      end if
+      
+      ! Oh, an adoption so cuuute
+      new_elem=>appendChild(new_parent, new_elem)
+      print *, "child adopted"
+      call setAttribute(new_elem,atr_stat,status_active)
+      print *, "child active, returning"
+
+      return
+      end function
 
 
 
@@ -289,6 +370,11 @@
 ! self contained subroutines
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
+
+
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+!   postprocessing subroutinen
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 
 *----------------------------------------------------------------------*
 !>     set all previous keywords with same key as present keyword to
@@ -456,65 +542,6 @@
 
 
 *----------------------------------------------------------------------*
-!>   finds the icount node of a given context that is active.
-!!    for keywords only
-!!    
-!!   @param[in] tree_root root element of the input_tree 
-!!   @param[out] finnode found node (null() if no such node exists)
-!!   @param[in] context context of the searched node
-!!   @param[in] icount
-*----------------------------------------------------------------------*
-      subroutine find_active_node(tree_root,finnode,context,icount)
-*----------------------------------------------------------------------*
-      implicit none
-      include "stdunit.h"
-      integer,parameter ::
-     &     ntest=00
-      character(len=16)::
-     &     i_am="find_active_node"
-      type(Node), pointer ,intent(in)::
-     &     tree_root
-      type(Node), pointer ,intent(out)::
-     &     finnode
-      character ,intent(in)::
-     &     context*(*)
-      integer,intent(in)::
-     &     icount
-
-      character ::
-     &     curcontext*1024     
-      type(Node), pointer ::
-     &     current
-      integer ::
-     &     jcount
-      character::
-     &     status
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "looking for",icount,"th",trim(context) 
-      end if
-
-      if (.not.hasChildNodes(tree_root))
-     &     call quit(1,i_am,'invalid keyword tree')
-
-      current => getFirstChild(tree_root)
-      jcount=icount
-      finnode => key_from_context(context,tree_root,latest=.false.,
-     &     keycount=jcount) 
-      
-      if (ntest.ge.100)
-     &     write (lulog,*) i_am," has found",icount-jcount,
-     &     "occurences of ",trim(context),"and returning:",
-     &     associated(finnode)
-      return
-      end subroutine
-
-
-
-
-
-
-*----------------------------------------------------------------------*
 !!    Output subroutine
 *----------------------------------------------------------------------*
       subroutine keyword_list(luwrt,tree_root,
@@ -657,7 +684,7 @@
       character(len=19),parameter::
      &     i_am="keyword_get_context"
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
       integer, parameter ::
      &     maxlen  = 256
       character(len=*),intent(inout) ::
@@ -747,99 +774,6 @@
         if (.not.associated(finnode)) write(lulog,*) 'no success'
       end if
       end subroutine
-
-
-
-
-
-
-
-*----------------------------------------------------------------------*
-!>    for a given argument determines the actual length (and type)
-!!    
-!!    @TODO improve string handling
-*----------------------------------------------------------------------*
-      subroutine get_argument_dimension_core(curarg,num,type,succ)
-*----------------------------------------------------------------------*
-      use Fox_common, only: rts
-      include 'par_vtypes.h'
-      include 'stdunit.h'
-      integer,parameter::
-     &     ntest=00
-      character(len=*),parameter ::
-     &     i_am="get_argument_dimension_core"
-
-      type(Node), pointer,intent(inout) ::
-     &     curarg
-      integer , intent(out)::
-     &     num,type
-      logical , intent(out)::
-     &     succ
-     
-      logical,allocatable::
-     &     larr(:)
-      integer,allocatable::
-     &     iarr(:)
-      real(8),allocatable::
-     &     xarr(:)
-      integer ::
-     &     dim_tot,ex
-
-      call rts(getAttribute(curarg,atr_len),dim_tot)
-      call rts(getAttribute(curarg,atr_kind),type)
-      if (ntest.ge.100) then 
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,'(" dim_tot:",i3)')dim_tot 
-         write(lulog,'(" type:",i3)')type
-         write(lulog,'("unconverted input:",a,":")')
-     &        getAttribute(curarg,atr_val)
-      end if 
-
-         succ=.false.
-      if(.not.hasAttribute(curarg,atr_val))then 
-         num=0
-         return
-      else
-         num=1
-      end if 
-
-      select case(type)
-      case (vtyp_log)
-         allocate(larr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),larr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_int)
-         allocate(iarr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),iarr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_rl8)
-         allocate(xarr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),xarr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_str)
-         num=dim_tot
-         succ = .true.
-      end select
-
-      if (ntest.ge.100) then 
-        write(lulog,'("length:",i3)')num 
-      end if
-      return 
-      end subroutine 
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -986,7 +920,7 @@
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 !     guided search functions 
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-! external subroutines should only be concerned with 
+! external subroutines should only be concerned with  (sadly they aren't)
 !     reg_key_from_context(context,latest,keycount)
 !     inp_key_from_context(context,latest,keycount)
 !     reg_arg_from_context(context,name,latest,keycount,argcount)
@@ -1005,6 +939,7 @@
 !!    @return pointer to the argument node or null() if no node was found
 !!    NOTE, if keycount or argcount are set to an negative value, 
 !!    the return will be null() and the attribute will be reduced by the number of found nodes
+!!    its not a bug, it's a feature
 *----------------------------------------------------------------------*
       function reg_arg_from_context(context,name,latest,keycount,
      &     argcount)
@@ -1255,7 +1190,7 @@
       integer, parameter ::
      &     ntest = 1000
       integer,parameter ::
-     &     max_stack=16             ! 15 level deep should be enough
+     &     max_stack=max_context_lvl
       
       type(node), pointer ::
      &     finnode
@@ -1275,7 +1210,7 @@
      &     ikeycount, sikeycount            !keycount in this sublevel and saved keycount
       integer ::
      &     st_stack(max_stack), ist_stack,   !stack for starting indices 
-     &     keyc_stack(max_stack), ikeyc_stack,
+     &     keyc_stack(max_stack), ikeyc_stack,  ! stack for sublevel keycounts
      &     ierr
       logical ::
      &     ctxt_end
@@ -1466,7 +1401,7 @@
       character(len=*),parameter::
      &     i_am="key_getSubkey"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
 
       type(Node),pointer::
      &     nextkey
@@ -1548,7 +1483,7 @@
       character(len=*),parameter::
      &     i_am="key_getSubNode"
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
 
       type(Node),pointer::
      &     nextnode
@@ -1593,6 +1528,7 @@
                icount=icount-1
             if (icount.eq.0) then
 !     nextnode points correctly
+               if (ntest .gt. 100)  write(lulog,*)"success"
                return
             end if
          end if 
