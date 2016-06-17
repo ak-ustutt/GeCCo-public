@@ -511,79 +511,11 @@
 
 
 
-*----------------------------------------------------------------------*
-!>    find keyword in first sublevel or up
-!!
-!!
-!!    @param cur_node pointer to current node
-!!    @param[out] nxt_node found node or unassociated
-!!    @param[in] key name of the next keyword
-*----------------------------------------------------------------------*
-      subroutine next_node(cur_node,nxt_node,key)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-
-      character(len=9),parameter::
-     &     i_am="next_node"
-      integer, parameter ::
-     &     ntest =00
-
-      type(node), pointer ::
-     &     cur_node
-      type(node), pointer ::
-     &     nxt_node
-      character, intent(in) ::
-     &     key*(*)
-
-      type(node), pointer ::
-     &     current,listnode
-      type(NodeList), pointer ::
-     &     keylist
-      integer ::
-     &     ii
-      
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' start = "',getAttribute(cur_node,atr_name),'"'
-         write(lulog,*) ' search for "',trim(key),'"'
-      end if
-
-      nxt_node=>null()
-      current => cur_node
-
-
-
-      if (.not.hasChildNodes(current))then
-         current=>getParentNode(current)
-      end if 
-   
-      node_loop: do
-         ii=1
-         nxt_node=>key_getSubkey(current,key,latest=.false.,icount=ii)
-
-         if (associated(nxt_node)) exit node_loop
-
-
-         if (getNodeName(current).ne. key_root_tag)then
-            current=>getParentNode(current)
-            keylist=>getChildNodes(current)
-         else
-            exit node_loop
-         end if
-      end do node_loop
-
-      if (ntest.ge.100) then
-         if (associated(nxt_node)) write(lulog,*) 'success'
-         if (.not.associated(nxt_node)) write(lulog,*) 'no success'
-      end if
-
-      end subroutine next_node
 
 
 
 *----------------------------------------------------------------------*
-!Output subroutine; to be implemented later
+!!    Output subroutine
 *----------------------------------------------------------------------*
       subroutine keyword_list(luwrt,tree_root,
      &     context,n_descent,show_args,show_status)
@@ -715,8 +647,11 @@
 
 *----------------------------------------------------------------------*
 !>    returns the context of a given keyword
+!!    @param[out] curcontext the returned context
+!!    @param[in] keywd keywd which context is to be described
+!!    @param[in] full optional logical if true, the context includes the keywords name
 *----------------------------------------------------------------------*
-      subroutine keyword_get_context(curcontext,current,full)
+      subroutine keyword_get_context(curcontext,keywd,full)
 *----------------------------------------------------------------------*
       implicit none
       character(len=19),parameter::
@@ -728,7 +663,7 @@
       character(len=*),intent(inout) ::
      &     curcontext
       type(node), pointer,intent(in)::
-     &     current 
+     &     keywd 
       logical,intent(in),optional::
      &     full
 
@@ -740,9 +675,9 @@
 
       curcontext=" "
       if (present(full))then
-         if (full) curcontext=getAttribute(current,atr_name)//"."
+         if (full) curcontext=getAttribute(keywd,atr_name)//"."
       end if 
-      internal=> getParentNode(current)
+      internal=> getParentNode(keywd)
       do while (getNodeName(internal) .ne. key_root_tag)
          curcontext=getAttribute(internal,atr_name)//
      &   "."//trim(curcontext)
@@ -751,52 +686,6 @@
       curcontext(len_trim(curcontext):len_trim(curcontext))=" "
       end subroutine
 
-*----------------------------------------------------------------------*
-!>     look whether keyword cur_key hosts an argument with key "key"
-!!     and return the corresponding node
-!!    @param[out] arg found argument node (null if no node was found)
-!!    @param[in] cur_key current keyword, where children are searched
-!!    @param[in] key name of the argument
-*----------------------------------------------------------------------*
-      subroutine arg_node(arg,cur_key,key)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-
-      character(len=9),parameter::
-     &     i_am="arg_node"
-      integer, parameter ::
-     &     ntest =00
-
-      type(Node), pointer ::
-     &     cur_key
-      character, intent(in) ::
-     &     key*(*)
-      type(Node), pointer, intent(out) ::
-     &     arg
-      type(NodeList),pointer ::
-     &     nodes_list
-      type(Node), pointer ::
-     &     curnode
-      integer ::
-     &     ii
-      
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' looking for key "',key,'"'
-         write(lulog,*) ' association status:',associated(cur_key)
-         write(lulog,*) ' current_keyword "',
-     &        getAttribute(cur_key,atr_name),'"'
-      end if
-      ii=1
-      arg=>key_getArgument(cur_key,key,latest=.false.,icount=ii) 
-
-
-      if (ntest.ge.100) then
-        if (associated(arg)) write(lulog,*) 'success'
-        if (.not.associated(arg)) write(lulog,*) 'no success'
-      end if
-      end subroutine
 
 
 
@@ -1179,7 +1068,7 @@
      &     context,name
       logical,intent(in),optional::
      &     latest
-      integer,intent(in),optional::
+      integer,intent(inout),optional::
      &     argcount,keycount
       logical::
      &     reversed
@@ -1199,6 +1088,8 @@
       finnode=> arg_from_context(context,name,finnode,reversed,
      &     ikeycount,iargcount)
 
+      if (present(argcount)) argcount = iargcount
+      if (present(keycount)) keycount = ikeycount
       end function
 
 
@@ -1261,12 +1152,12 @@
 
       
       type(node), pointer ::
-     &     finnode
+     &     finnode,input_root
       character(len=*),intent(in) ::
      &     context
       logical,intent(in),optional::
      &     latest
-      integer,intent(in),optional::
+      integer,intent(inout),optional::
      &     keycount
       logical::
      &     reversed
@@ -1276,7 +1167,7 @@
       reversed=.false.
       if (present(latest)) reversed = latest
       ikeycount=1
-      if (present(latest))ikeycount=keycount
+      if (present(keycount))ikeycount=keycount
 
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -1285,13 +1176,14 @@
          write (lulog,'(x,i3,"th occurrence requested")') 
       end if
 
-      finnode=> inp_fetch_root()
-      finnode=> key_from_context(context,finnode,reversed,ikeycount)
+      input_root=> inp_fetch_root()
+      finnode=> key_from_context(context,input_root,reversed,ikeycount)
 
       if (ntest.gt.100.and. associated(finnode))
      &     write (lulog,*)"success"
       if (ntest.gt.100.and. .not. associated(finnode))
      &     write (lulog,*)"no success"
+      if (present(keycount))keycount=ikeycount
       end function
 
 *----------------------------------------------------------------------*
@@ -1476,7 +1368,7 @@
             call stack_pop(st_stack,ist_stack,ipst,ierr)
             call stack_pop(keyc_stack,ikeyc_stack,sikeycount,ierr)
             if (ierr.gt.0) call quit(1,i_am,
-     &           "OK, WTF?? trying to access negative stack")
+     &           " trying to access negative stack. Why, just why?")
             ctxt_end=.False.
             finnode=> getParentNode(finnode)
             sikeycount=sikeycount+1

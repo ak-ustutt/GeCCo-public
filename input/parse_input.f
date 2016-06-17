@@ -88,7 +88,7 @@
       integer ::
      &     allowed_delim(n_delim), n_allowed_delim
       integer ::
-     &     ipst, ipnd, itest, lenline, ierr
+     &     ipst, ipnd, itest, lenline, ierr, dummy
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -153,11 +153,15 @@
                call error_delim(line,ipnd+1)
             end if
             
-! is it an argument key?
-            call arg_node(curarg,curkey,line(ipst:ipnd))
+!     is it an argument key?
+            dummy=1
+            curarg=>key_getArgument(curkey,line(ipst:ipnd),
+     &           latest=.false.,icount=dummy)
+
             if (ntest.ge.100) 
      &           write (lulog,*) "Is this an argument?",
      &           associated(curarg)
+
             if (associated(curarg)) then 
 !     check that a value is assigned
                if(  next_delim(line(ipnd+1:ipnd+1),
@@ -642,15 +646,79 @@ c dbgend
             str_to_logical=.false.
             ierr=ERR_UNCONVERTIBLE
       end select
+      return
       end function 
-
-
-
 
       end subroutine
 
 
 
+*----------------------------------------------------------------------*
+!>    find keyword in first sublevel or up
+!!
+!!
+!!    @param cur_node pointer to current node
+!!    @param[out] nxt_node found node or unassociated
+!!    @param[in] key name of the next keyword
+*----------------------------------------------------------------------*
+      subroutine next_node(cur_node,nxt_node,key)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+
+      character(len=9),parameter::
+     &     i_am="next_node"
+      integer, parameter ::
+     &     ntest =00
+
+      type(node), pointer ::
+     &     cur_node
+      type(node), pointer ::
+     &     nxt_node
+      character, intent(in) ::
+     &     key*(*)
+
+      type(node), pointer ::
+     &     current,listnode
+      type(NodeList), pointer ::
+     &     keylist
+      integer ::
+     &     dummy
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) ' start = "',getAttribute(cur_node,atr_name),'"'
+         write(lulog,*) ' search for "',trim(key),'"'
+      end if
+
+      nxt_node=>null()
+      current => cur_node
+
+      if (.not.hasChildNodes(current))then
+         current=>getParentNode(current)
+      end if 
+   
+      node_loop: do
+         dummy=1
+         nxt_node=>key_getSubkey(current,key,latest=.false.,
+     &        icount=dummy)
+         if (associated(nxt_node)) exit node_loop
+
+
+         if (getNodeName(current).ne. key_root_tag)then
+            current=>getParentNode(current)
+            keylist=>getChildNodes(current)
+         else
+            exit node_loop
+         end if
+      end do node_loop
+
+      if (ntest.ge.100) then
+         if (associated(nxt_node)) write(lulog,*) 'success'
+         if (.not.associated(nxt_node)) write(lulog,*) 'no success'
+      end if
+
+      end subroutine next_node
 
 
 
