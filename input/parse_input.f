@@ -28,12 +28,6 @@
       logical , intent(out)::
      &     succ
      
-      logical,allocatable::
-     &     larr(:)
-      integer,allocatable::
-     &     iarr(:)
-      real(8),allocatable::
-     &     xarr(:)
       integer ::
      &     dim_tot,ex
 
@@ -53,36 +47,78 @@
          return
       else
          num=1
+         call test_conv_argument(getAttribute(curarg,atr_val),dim_tot,
+     &       type,succ=succ,dim=num)
       end if 
 
-      select case(type)
-      case (vtyp_log)
-         allocate(larr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),larr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_int)
-         allocate(iarr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),iarr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_rl8)
-         allocate(xarr(dim_tot))
-         call rts(getAttribute(curarg,atr_val),xarr
-     &        ,iostat=ex,num=num) 
-         if (ex.le. 0) succ = .true.
-      case (vtyp_str)
-         num=dim_tot
-         succ = .true.
-      end select
 
       if (ntest.ge.100) then 
         write(lulog,'("length:",i3)')num 
       end if
       return 
       end subroutine 
+*----------------------------------------------------------------------*
+!>    tests if a string can successfully be converted into arguments of a given type
+!!    @param[in] valstr the string to be converted
+!!    @param[in] dim_tot maximal number of elements to convert
+!!    @param[in] type type as vtype 
+!!    @param[out] succ indicates a successful conversion
+!!    @param[out] dim actual number of converted elements
+*----------------------------------------------------------------------*
+      subroutine test_conv_argument(valstr,dim_tot,type,succ,dim)
+*----------------------------------------------------------------------*
+      integer, parameter ::
+     &     ntest=00
+      character(len=17),parameter ::
+     &     i_am="test_argument_conversion"
+
+      character(len=*),intent(in)::
+     &     valstr
+      integer,intent(in)::
+     &     dim_tot,type
+      logical,intent(out),optional::
+     &     succ
+      integer,intent(out),optional::
+     &     dim
+
+      logical::
+     &     insucc
+      integer::
+     &     indim, ex
+
+      logical,allocatable::
+     &     larr(:)
+      integer,allocatable::
+     &     iarr(:)
+      real(8),allocatable::
+     &     xarr(:)
+      
+      insucc=.false.
+      indim=1
 
 
+      select case(type)
+      case (vtyp_log)
+         allocate(larr(dim_tot))
+         call rts(valstr,larr,iostat=ex,num=indim) 
+         if (ex.le. 0) insucc = .true.
+      case (vtyp_int)
+         allocate(iarr(dim_tot))
+         call rts(valstr,iarr
+     &        ,iostat=ex,num=indim) 
+         if (ex.le. 0) insucc = .true.
+      case (vtyp_rl8)
+         allocate(xarr(dim_tot))
+         call rts(valstr,xarr
+     &        ,iostat=ex,num=indim) 
+         if (ex.le. 0) insucc = .true.
+      case (vtyp_str)
+         num=dim_tot
+         insucc = .true.
+      end select
+      if(present(succ)) succ=insucc
+      if(present(dim)) dim=indim
+      end subroutine
 *----------------------------------------------------------------------*
 !!   wrapper to uncouple keyword_parse_ from module variables
 !!
@@ -561,6 +597,8 @@ c dbgend
      &     kind,dim,ierr 
       character(len=maxvalstr_len)::
      &     invalue
+      logical ::
+     &     convertible
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -593,8 +631,12 @@ c dbgend
          call rts(getAttribute(template,atr_len),dim)
 
          invalue=trf_in_val(value,dim,kind,ierr)
-
-
+         call test_conv_argument(invalue,dim,kind,succ=convertible)
+         if (.not. convertible)then 
+            call quit(0,i_am,"cannot convert given values:"//value
+     &           //"for argument"//getAttribute(template,atr_name))
+         end if
+!! @TODO: implement a check for invalid input
          select case (ierr)
             case (ERR_TO_MANY_ELEMENTS)
                call quit(0,i_am,
