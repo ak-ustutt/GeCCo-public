@@ -266,14 +266,12 @@ class Test_OPProduct(ut.TestCase):
         self.assertEqual(self.logger.events[0],
                          ("EXPAND_OP_PRODUCT",exp_res)
         )
-    @ut.skipUnless(non_essential,"not essential")
     def test_string_representation(self):
         """tests the string representation (including primed vertices)"""
         op_list=["GAM'","H","GA'M"]       
         i=_OPProduct([Vertex(x)for x in op_list])
         self.assertEqual(str(i),'GAM*H*GAM')
 
-    @ut.skipUnless(non_essential,"not essential")
     def test_string_representation2(self):
         """tests the string representation (including primed vertices and prefactors)"""
         op_list=["1/2GAM'","H","3GA'M"]       
@@ -346,7 +344,6 @@ class Test_Bracket(ut.TestCase):
                  'FAC': 1, 
                  'IDX_SV': [1]
         }
-    @ut.skipUnless(non_essential,"not essential")
     def test_string_representation(self):
         string="<C0^+*(H+1/2V)C0>"
         self.assertEqual(
