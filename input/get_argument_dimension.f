@@ -21,7 +21,7 @@
       include 'stdunit.h'
 
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       character(len=22),parameter ::
      &     i_am="get_argument_dimension"
       character, intent(in) ::

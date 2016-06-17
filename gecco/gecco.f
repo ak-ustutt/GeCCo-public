@@ -113,7 +113,6 @@ c      iprlvl = 3     ! print level
       ! one_more is ignored, as we might have cases 
       ! (export/import stuff) where no "calculate" block is
       ! specified
-      print *, "requesting memmax"
       call get_argument_value('general','memmax',ival=memmax)
       write(lulog,'("memmax=",i12)') memmax
       if (l_molpro) then

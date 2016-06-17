@@ -31,7 +31,6 @@
      &     allowed(6)
 
       one_more=.false.
-      print *, "beginn postprocessing input"
       call inp_postprocess(one_more)
       if (.not. one_more) return
 
@@ -62,14 +61,12 @@ c      end if
         str(1:256) = ' '
         call get_argument_value('orb_space.shell','type',keycount=icnt,
      &                          str=str)
-        print *, "found",str
         select case(trim(str))
         case('frozen')
           if (.not.allowed(1)) cycle
           allowed(1) = .false.
           if (is_argument_set('orb_space.shell','def',
      &                        keycount=icnt).gt.0) then
-             print *,'argument is set'
             call get_argument_dimension(len,'orb_space.shell','def',
      &                                  keycount=icnt)
             allocate(iscr(len))
@@ -92,7 +89,6 @@ c      end if
 
 
           if (nfreeze.gt.0) then 
-             print *,"debug add_forzen_shell",nfreeze
              call add_frozen_shell(iscr,len,'frz',orb_info)
           end if 
           deallocate(iscr)
@@ -245,7 +241,6 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
         if (is_keyword_set('method.MRCC').gt.0.and.orb_info%imult.ne.1)
      &     spinadapt = 3
       end if
-      print *,"leaving process_input",one_more
       return
 
       end subroutine process_input

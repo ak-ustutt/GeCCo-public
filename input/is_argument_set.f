@@ -12,7 +12,7 @@
       include "stdunit.h"
 
       integer,parameter::
-     &     ntest= 1000
+     &     ntest= 00
       character(len=15),parameter ::
      &     i_am="is_argument_set"
 

@@ -575,7 +575,7 @@ c dbgend
       character(len=11),parameter::
      &     i_am="create_node"
       integer,parameter ::
-     &     ntest=1000
+     &     ntest=00
       integer,parameter::
      &     ERR_TO_MANY_ELEMENTS=1,
      &     ERR_UNCONVERTIBLE=2
@@ -614,9 +614,7 @@ c dbgend
       if (.not. associated(template)) 
      &     call quit(1,i_am,"template not set")
       
-      print *, "creating new_element"
       new_elem=>inp_create_new_element( template)
-      print *, "new_element"
 
       call setAttribute(new_elem,atr_name,
      &     getAttribute(template,atr_name))

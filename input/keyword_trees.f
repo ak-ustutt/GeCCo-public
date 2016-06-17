@@ -15,13 +15,11 @@
 
       module keyword_trees
       use FoX_dom
-      use FoX_common, only:str,rts
       implicit none
 
       private
 
       public :: Node,Nodelist
-      public :: atr_stat
       public :: reg_show,inp_show
       public :: arg_tag,key_tag,key_root_tag
       public :: atr_name,atr_kind,atr_len,atr_val
@@ -35,7 +33,6 @@
       public :: key_getArgument,key_getSubkey
       public :: inp_key_from_context,reg_key_from_context
       public :: inp_arg_from_context,reg_arg_from_context
-      public :: keyword_get_context
       public :: inp_postprocess,reg_import
    
 
@@ -150,7 +147,6 @@
      &     ntest=00
       type(Node),pointer::
      &     ret
-      print *, "entered inp_fetch_doc"
       if (.not. associated(input_doc)) call quit(1,i_am,
      &     "no input tree found")
 
@@ -159,7 +155,6 @@
       if (.not. associated(ret)) call quit(1,i_am,
      &     "no root element found for input")
 
-      print *, "left inp_fetch_doc"
       end function
 
 
@@ -223,13 +218,12 @@
      &     reg_root
       if (ntest.gt.100)then 
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "reading file:",trim(file)
       end if 
 
       call reg_init_()
       call inp_start_()
 
-      write(lulog,*) "reading keyword_file",file 
+      write(lulog,*) "reading keyword_file",trim(file) 
       registry_doc => parseFile(trim(file), ex=ex)
 
       !! @TODO more special error handling 
@@ -308,7 +302,7 @@
       implicit none
 
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       character(len=*),parameter::
      &     i_am = "create_empty_element"
 
@@ -329,7 +323,7 @@
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*)" template Name:",getAttribute(template,atr_name)
       end if 
-      call  keyword_get_context(context,template) !using context to synchronize inp and registry
+      call  key_get_context(template,context) !using context to synchronize inp and registry
 
       if (ntest.ge.100) then
          write (lulog,*) "creating a new keyword/argument on context:",
@@ -337,9 +331,6 @@
       end if
 
       doc=> inp_fetch_doc()
-      print *, "doc found", associated(doc)
-      if (associated(doc)) write(lulog,*) "document found"
-      if (.not.associated(doc)) write(lulog,*)"document not found"
       new_elem=>createElement(doc,getNodeName(template))
 
       new_parent=> inp_key_from_context(trim(context),latest=.True.)
@@ -350,9 +341,7 @@
       
       ! Oh, an adoption so cuuute
       new_elem=>appendChild(new_parent, new_elem)
-      print *, "child adopted"
       call setAttribute(new_elem,atr_stat,status_active)
-      print *, "child active, returning"
 
       return
       end function
@@ -547,6 +536,8 @@
       subroutine keyword_list(luwrt,tree_root,
      &     context,n_descent,show_args,show_status)
 *----------------------------------------------------------------------*
+      use FoX_common, only:str,rts
+      implicit none
       include 'stdunit.h'
       character(len=7),dimension(8),parameter::
      &     type_array=(/"logical","integer","unknown","real",
@@ -678,13 +669,13 @@
 !!    @param[in] keywd keywd which context is to be described
 !!    @param[in] full optional logical if true, the context includes the keywords name
 *----------------------------------------------------------------------*
-      subroutine keyword_get_context(curcontext,keywd,full)
+      subroutine key_get_context(keywd,curcontext,full)
 *----------------------------------------------------------------------*
       implicit none
       character(len=19),parameter::
      &     i_am="keyword_get_context"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       integer, parameter ::
      &     maxlen  = 256
       character(len=*),intent(inout) ::
@@ -702,12 +693,12 @@
 
       curcontext=" "
       if (present(full))then
-         if (full) curcontext=getAttribute(keywd,atr_name)//"."
+         if (full) curcontext=getAttribute(keywd,atr_name)//context_sep
       end if 
       internal=> getParentNode(keywd)
       do while (getNodeName(internal) .ne. key_root_tag)
          curcontext=getAttribute(internal,atr_name)//
-     &   "."//trim(curcontext)
+     &   context_sep//trim(curcontext)
          internal=> getParentNode(internal)
       end do
       curcontext(len_trim(curcontext):len_trim(curcontext))=" "
@@ -994,7 +985,7 @@
       character(len=*),parameter ::
      &     i_am="inp_arg_from_context"
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       
       type(node), pointer ::
@@ -1083,7 +1074,7 @@
       character(len=*),parameter ::
      &     i_am="inp_key_from_context"
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
 
       
       type(node), pointer ::
@@ -1188,7 +1179,7 @@
      &     i_am="key_from_context"
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 00
       integer,parameter ::
      &     max_stack=max_context_lvl
       
@@ -1483,7 +1474,7 @@
       character(len=*),parameter::
      &     i_am="key_getSubNode"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
 
       type(Node),pointer::
      &     nextnode
