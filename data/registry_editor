@@ -1,5 +1,4 @@
-#!\bin\python -i
-from registry_editor import *
+#! /bin/bash 
 
-if __name__ == "__main__":
-    main()
+
+python -i -c "from registry_editor import * ;     main()"
