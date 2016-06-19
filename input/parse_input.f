@@ -144,8 +144,6 @@
 
       type(Node),pointer::
      &     curkey,curarg
-      type(Nodelist),pointer::
-     &     child_list
       
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -987,7 +985,7 @@ c dbgend
       implicit none
       include 'stdunit.h'
 
-      character(len=9),parameter::
+      character(len=*),parameter::
      &     i_am="next_node"
       integer, parameter ::
      &     ntest =00

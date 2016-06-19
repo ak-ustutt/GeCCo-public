@@ -29,7 +29,6 @@
       !Things to export :
       ! information container
       public :: Node
-
       ! some constants (optimally these would not be exported, but this way it is easier)
       public :: arg_tag,key_tag
       ! constants for atr_names (could be used only in parse_input and the get_arg routines)
@@ -432,7 +431,7 @@
       include 'stdunit.h'
       integer,parameter::
      &     ntest= 00
-      character(len=16),parameter ::
+      character(len=*),parameter ::
      &     i_am="set_input_status"
       type(Node),pointer,intent(in)::
      &     in_root
@@ -456,13 +455,17 @@
 ! as the relevant subroutines only work on active elements, all elements were by default active
 ! in the input creation
          call tree_set_status(in_root,status_inactive)
+!      if (ntest.ge.100) then
+!         call show_input(lulog)
+!      end if 
 
          history =>getFirstChild( in_root)
          if (.not.associated(  history)) then
             call quit(0,i_am,'not a single keyword given?')
          end if
          if(ntest.ge.100)
-     &        write (lulog,*) "history_pointer initiated"
+     &        write (lulog,*) "history_pointer initiated:",
+     &           getAttribute(history,atr_name)
       else 
          current=> getNextSibling(history)
          if (associated( current ) )then
@@ -498,7 +501,7 @@
          end if
       end do
       if (ntest.ge.100) then
-         call inp_show(lulog)
+         call show_input(lulog)
       end if 
       end subroutine 
 
@@ -517,11 +520,19 @@
      &     status
       type(Node),pointer::
      &     current 
+      integer::
+     &     level
+      level=0
       current => keywd
-      
-      do while(associated(current))
+
+      call setAttribute(current,atr_stat,status)
+      ! goto sublevel if not going to sublevel, do nothing
+      current=> filtered_dsearch(current,level,only_keys=.True.
+     &        , key_root_stop=.True.)
+
+      do while(associated(current).and.level.gt.0)
          call setAttribute(current,atr_stat,status)
-         current=> filtered_dsearch(current, only_keys=.True.
+         current=> filtered_dsearch(current,level,only_keys=.True.
      &        , key_root_stop=.True.)
       end do
       end subroutine
@@ -804,20 +815,19 @@
       show_args=.not. ionly_keys
 
       
-
       dlevel=0
-
       nxtkey=>curkey
 
       if (ntest .ge. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) "starting at:",
      &        getAttribute(nxtkey,atr_name)
+         if (present(level))write(lulog,*) "level:", level
       end if 
+
 
       main_loop: do
          nxtkey=>elem_dsearch(nxtkey,dlevel)
-         print *, i_am," nextkey "
          if(associated(nxtkey).and. ntest .ge.100) then 
             if (getNodeName(nxtkey) .eq. arg_tag .or. 
      &           getNodeName(nxtkey) .eq. key_tag) then
@@ -844,15 +854,19 @@
             exit main_loop
          end if
       end do main_loop
+      if (present(level))level=level+dlevel
+
+
+
       if(associated(nxtkey).and. ntest .ge.100) then
          if (getNodeName(nxtkey) .eq. arg_tag .or. 
      &        getNodeName(nxtkey) .eq. key_tag) then
          write(lulog,*) " returning:", getAttribute(nxtkey,atr_name)
          else 
             write(lulog,*) " returning:", getNodeName(nxtkey)
-         end if 
+         end if
+         if (present(level))write(lulog,*) "exitlevel:", level
       end if 
-      if (present(level))level=level+dlevel
       end function
 
 

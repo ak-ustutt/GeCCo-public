@@ -45,7 +45,7 @@ c      end if
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       if (iprlvl.ge.10)
-     &   call show_keywords(lulog)
+     &   call show_input(lulog)
 
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
