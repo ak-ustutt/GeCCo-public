@@ -59,11 +59,14 @@
       end subroutine 
 *----------------------------------------------------------------------*
 !>    tests if a string can successfully be converted into arguments of a given type
+!!
+!!    as a side effect the subroutine also determines the number of actually existing elements
 !!    @param[in] valstr the string to be converted
 !!    @param[in] dim_tot maximal number of elements to convert
 !!    @param[in] type type as vtype 
 !!    @param[out] succ indicates a successful conversion
 !!    @param[out] dim actual number of converted elements
+!!    Note: there is a FoXdom utility function, which does about the same
 *----------------------------------------------------------------------*
       subroutine test_conv_argument(valstr,dim_tot,type,succ,dim)
 *----------------------------------------------------------------------*
@@ -133,8 +136,7 @@
      &     key_root
 
       key_root=> reg_fetch_root()
-
-      call keyword_parse_(luin,input_doc,key_root)
+      call keyword_parse_(luin,key_root)
       end subroutine inp_parse
 
 *----------------------------------------------------------------------*
@@ -142,7 +144,7 @@
 !!     the unit should be a formatted, sequential file, positioned
 !!     at the place where the parser should start
 *----------------------------------------------------------------------*
-      subroutine keyword_parse_(luin,in_doc,k_root)
+      subroutine keyword_parse_(luin,k_root)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -158,7 +160,6 @@
      &     luin
 
       type(Node), pointer ::
-     &     in_doc,               ! document element of the input
      &     k_root                ! root element of the preset keyword tree
       integer, parameter ::
      &     maxlen  = 256,
@@ -300,7 +301,7 @@
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
                      n_allowed_delim = n_allowed_after_arg
-                     call create_node(in_doc,curarg,line(ipst+1:ipnd-1))
+                     call create_node(curarg,line(ipst+1:ipnd-1))
                   else
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
@@ -313,7 +314,7 @@
                         call error_delim(line,ipnd)
                      end if
                      ipnd = ipnd-1
-                     call create_node(in_doc,curarg,line(ipst:ipnd))
+                     call create_node(curarg,line(ipst:ipnd))
                   end if 
 
                else
@@ -334,7 +335,7 @@
                   call error_keywd(line,ipst,curkey)
                else
                   curkey => nxtkey
-                  call create_node(in_doc,curkey," ")
+                  call create_node(curkey," ")
                   
 !     add node to keyword history
                end if
@@ -568,7 +569,7 @@ c dbgend
 !!   @param[in] value string which can be converted to input
 !!   @TODO error checking
 *----------------------------------------------------------------------*
-      subroutine create_node(doc,template,value)
+      subroutine create_node(template,value)
 *----------------------------------------------------------------------*
       implicit none 
       include "stdunit.h"
@@ -584,7 +585,7 @@ c dbgend
      &     maxlen  = 256
 
       type(node), pointer ::
-     &     doc,template
+     &     template
       character(len=*),intent(in)::
      &     value
       type(node),pointer ::
@@ -602,8 +603,6 @@ c dbgend
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of doc:"
-     &        ,associated(doc)
          write (lulog,*) "testing association of template:"
      &        ,associated(template)
          write (lulog,*) "tag, name of template:",
@@ -784,8 +783,6 @@ c dbgend
 
       type(node), pointer ::
      &     current,listnode
-      type(Nodelist),pointer::
-     &     keylist
       integer ::
      &     dummy
       
@@ -811,7 +808,6 @@ c dbgend
 
          if (getNodeName(current).ne. key_root_tag)then
             current=>getParentNode(current)
-            keylist=>getChildNodes(current)
          else
             exit node_loop
          end if
@@ -823,8 +819,4 @@ c dbgend
       end if
 
       end subroutine next_node
-
-
-
-
       end module  

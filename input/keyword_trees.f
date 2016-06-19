@@ -19,20 +19,25 @@
 
       private
 
-      public :: Node,Nodelist
-      public :: reg_show,inp_show
+      public :: Node
+
+
       public :: arg_tag,key_tag,key_root_tag
       public :: atr_name,atr_kind,atr_len,atr_val
-      public :: inp_create_new_element
+
+
       public :: getAttribute,hasAttribute,setAttribute,
-     &     getNodeName,createElement,
-     &     appendChild,getParentNode,hasChildNodes,getFirstChild,
-     &     getNextSibling,getChildNodes
+     &     getNodeName,
+     &     getParentNode,hasChildNodes
       public :: reg_fetch_root,inp_fetch_root
-      public :: input_doc
+
       public :: key_getArgument,key_getSubkey
       public :: inp_key_from_context,reg_key_from_context
       public :: inp_arg_from_context,reg_arg_from_context
+
+
+      public :: reg_show,inp_show
+      public :: inp_create_new_element
       public :: inp_postprocess,reg_import
    
 
@@ -236,9 +241,8 @@
       call setAttribute(reg_root,atr_name,"registry")
       end subroutine
 
-
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-!  output subroutinen
+!  output subroutines
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 
 *----------------------------------------------------------------------*
@@ -565,7 +569,7 @@
       integer::
      &     level, 
      &      type, dim,
-     &     ii
+     &     ii, dummy
       character::
      &     status
 
@@ -602,7 +606,9 @@
          end if
          level=level+1
       else
-         call find_node(tree_root,curkey,context)
+         dummy=1
+         curkey =>  key_from_context(context,tree_root,.True.,
+     &     dummy)
          if (.not. associated(curkey)) call quit(1,i_am,
      &        "starting node not found")
       end if 
@@ -707,67 +713,6 @@
 
 
 
-*----------------------------------------------------------------------*
-!>     navigates to a specific keyword
-!!
-!!     @param[in] tree_root root element from which the search starts, must be associated.
-!!     @param[out] finnode either pointing to the node given by context or not associated if no keyword given by context exists.
-!!     @param[in] context is a string as e.g. "key.subkey.subsubkey"
-!!     @param[in] latest optional parameter if .True. subkeys on the same level are searched in reverse order
-*----------------------------------------------------------------------*
-      subroutine find_node(tree_root,finnode,context,latest)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-      character(len=9),parameter ::
-     &     i_am="find_node"
-      integer, parameter ::
-     &     ntest = 00
-
-      type(node), pointer ::
-     &     tree_root
-      type(node), pointer ::
-     &     finnode
-      character, intent(in) ::
-     &     context*(*)
-      logical, intent(in), optional ::
-     &     latest
-
-      logical :: 
-     &     forward
-      integer ::
-     &     ipst, ipnd, len, ii
-
-      type(NodeList), pointer ::
-     &     nodes_list
-      type(node), pointer ::
-     &     current,tmpnode
-      logical ::
-     &     found
-      
-      forward = .true.
-      if (present(latest)) forward = .not.latest
-
-      if (ntest .gt. 100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' context = "',trim(context),'"'
-        if (forward) write(lulog,*) ' forward search'
-        if (.not.forward) write(lulog,*) ' backward search'
-      end if 
-      ii=1
-      finnode => null()
-      current => tree_root
-      finnode =>  key_from_context(context,tree_root,.not.forward,
-     &     ii)
-
-      if (ntest.ge.100) then
-        if (associated(finnode)) write(lulog,*) 'success'
-        if (.not.associated(finnode)) write(lulog,*) 'no success'
-      end if
-      end subroutine
-
-
-
 
 
 
@@ -782,7 +727,7 @@
 !     Iterating search functions
 !     if called repeatedly these functions will iterate over the remaining tree in a depths first search
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-
+*----------------------------------------------------------------------*
 
 
 *----------------------------------------------------------------------*
@@ -1182,7 +1127,7 @@
      &     ntest = 00
       integer,parameter ::
      &     max_stack=max_context_lvl
-      
+
       type(node), pointer ::
      &     finnode
       character(len=*),intent(in) ::
