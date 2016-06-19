@@ -6,8 +6,8 @@
       subroutine process_input(one_more,orb_info)
 *----------------------------------------------------------------------*
 
-      use keyword_trees, only:inp_postprocess,inp_show
-
+      use keyword_trees, only:inp_postprocess
+      use parse_input, only: inp_show,reg_show
       implicit none
       include 'stdunit.h'
       include 'ioparam.h'
@@ -45,7 +45,7 @@ c      end if
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       if (iprlvl.ge.10)
-     &   call inp_show(lulog)
+     &   call show_keywords(lulog)
 
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)

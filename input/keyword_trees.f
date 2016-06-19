@@ -8,35 +8,57 @@
 !!   * Elements with the key or argument tag which are  Subnodes to the key_root element
 !!   * Keywords have a name attribute and possibly keywords and /or arguments as children
 !!   * Arguments have the following attributes name, len, kind
-!!          -# name contains the name
-!!          -# len contains the length
-!!          -# kind contains the number of the kind of argument(see 'par_vtypes.h')
+!!          -# atr_name contains the name
+!!          -# atr_len contains the length
+!!          -# atr_kind contains the number of the kind of argument(see 'par_vtypes.h')
+!!          -# atr_active contains the active/inactive status
 !!          -# note that all attributes are saved as strings. they can be converted via rts
 
+
+!! General Idea is that keyword_trees holds the information storage and parse_input requests containers(Nodes) to stor e informations in it. 
+!! this separation is not ~completely~ implemented
+
+
+!!    
+!!
       module keyword_trees
       use FoX_dom
       implicit none
 
       private
-
+      !Things to export :
+      ! information container
       public :: Node
 
-
-      public :: arg_tag,key_tag,key_root_tag
+      ! some constants (optimally these would not be exported, but this way it is easier)
+      public :: arg_tag,key_tag
+      ! constants for atr_names (could be used only in parse_input and the get_arg routines)
       public :: atr_name,atr_kind,atr_len,atr_val
+      
+      ! printing function needs knowledge of status
+      public :: atr_stat, status_active, status_inactive
+
+      ! attribute accessors
+      public :: getAttribute,hasAttribute,setAttribute
 
 
-      public :: getAttribute,hasAttribute,setAttribute,
-     &     getNodeName,
-     &     getParentNode,hasChildNodes
-      public :: reg_fetch_root,inp_fetch_root
+      !some low level functions for the parse_input search function
+      public :: getNodeName,key_root_tag , getParentNode,getFirstChild
 
+      public :: filtered_dsearch
+
+
+      public :: key_getFirstSubkey,key_getFirstArgument
+     &     ,iterate_siblingargs
       public :: key_getArgument,key_getSubkey
+      ! gives parse_input a start node so every keyword has only to be searched relative to the last.
+      public :: inp_fetch_root,reg_fetch_root
+
+      ! navigation routines for the is_keyword and is_argument set versions
       public :: inp_key_from_context,reg_key_from_context
       public :: inp_arg_from_context,reg_arg_from_context
 
-
-      public :: reg_show,inp_show
+      ! entrance routines for some actions 
       public :: inp_create_new_element
       public :: inp_postprocess,reg_import
    
@@ -245,33 +267,7 @@
 !  output subroutines
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 
-*----------------------------------------------------------------------*
-!>    wrapper for keyword_list for the input
-*----------------------------------------------------------------------*
-      subroutine inp_show(unit)
-*----------------------------------------------------------------------*
-      integer,intent(in)::
-     &     unit
 
-      type(Node),pointer::
-     &     input_root
-      input_root => inp_fetch_root()
-      call keyword_list(unit,input_root," ",show_args=.True.)
-      end subroutine
-
-*----------------------------------------------------------------------*
-!>    wrapper for keyword_list for the input
-*----------------------------------------------------------------------*
-      subroutine reg_show(unit)
-*----------------------------------------------------------------------*
-      integer,intent(in)::
-     &     unit
-      type(Node),pointer::
-     &     key_root
-      key_root => reg_fetch_root()
-      call keyword_list(unit,key_root," ",show_args=.True., 
-     &     show_status=.False.)
-      end subroutine
 
 
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
@@ -454,7 +450,6 @@
      &        write (lulog,*) " starting at block: ",
      &        getAttribute(history,atr_name)
               write (lulog,*) " root: ",getAttribute(in_root,atr_name)
-         call inp_show(lulog)
       end if 
       one_more=.true.
       if (.not.associated(history)) then
@@ -526,131 +521,9 @@
       
       do while(associated(current))
          call setAttribute(current,atr_stat,status)
-         current=> key_dsearch(current)
+         current=> filtered_dsearch(current, only_keys=.True.
+     &        , key_root_stop=.True.)
       end do
-      end subroutine
-
-
-
-
-
-*----------------------------------------------------------------------*
-!!    Output subroutine
-*----------------------------------------------------------------------*
-      subroutine keyword_list(luwrt,tree_root,
-     &     context,n_descent,show_args,show_status)
-*----------------------------------------------------------------------*
-      use FoX_common, only:str,rts
-      implicit none
-      include 'stdunit.h'
-      character(len=7),dimension(8),parameter::
-     &     type_array=(/"logical","integer","unknown","real",
-     &     "unknown","unknown","unknown","string"/)
-      integer, parameter ::
-     &     ntest=00
-      character(len=17),parameter ::
-     &     i_am="keyword_list"
-
-      integer, intent(in)::
-     &     luwrt
-      type(Node),pointer, intent(in)::
-     &     tree_root
-      character(len=*),intent(in)::
-     &     context
-      integer,optional,intent(in)::
-     &     n_descent
-      logical, optional, intent(in)::
-     &     show_args,show_status
-
-      character(len=64)::
-     &     fmtstr
-      logical:: 
-     &     args_vis,status_vis
-      integer::
-     &     level, 
-     &      type, dim,
-     &     ii, dummy
-      character::
-     &     status
-
-      type(Node),pointer::
-     &     curkey,curarg
-      type(Nodelist),pointer::
-     &     child_list
-      
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(tree_root)
-
-      end if
-
-      args_vis=.false.
-      if (present(show_args)) args_vis=show_args
-      status_vis=.True.
-      if (present(show_status)) status_vis=show_status
-
-      if (ntest.ge.100) then
-         write (lulog,*) "show_status?",status_vis
-         write (lulog,*) "show_arguments?",args_vis
-      end if
-!      if (present(n_descent)) levels=n_descent
-
-      curkey=>null()
-      curarg=>null()
-      if (len_trim(context).eq.0)then 
-         curkey=> getFirstChild(tree_root)
-         if (.not. associated(curkey))then
-            write(luwrt,*) "no keywords_set"
-            return 
-         end if
-         level=level+1
-      else
-         dummy=1
-         curkey =>  key_from_context(context,tree_root,.True.,
-     &     dummy)
-         if (.not. associated(curkey)) call quit(1,i_am,
-     &        "starting node not found")
-      end if 
-
-      level=0
-      key_loop: do 
-         if (status_vis)then 
-            status=getAttribute(curkey,atr_stat)
-            if (ntest.ge.100)then 
-               write (lulog,*) "status:",getAttribute(curkey,atr_stat)
-            end if 
-            if (status.eq.status_active) then
-               write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
-            else
-               write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
-            end if
-         else 
-             write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
-         end if
-!!       @TODO print comments out
-         write(luwrt,fmtstr) getAttribute(curkey,atr_name)
-         
-         if (hasChildNodes(curkey) .and. args_vis)then 
-            child_list=>getChildNodes(curkey)
-            arg_loop :do ii=0,getLength(child_list)-1
-               curarg=> item(child_list,ii)
-               if (.not. getNodeName(curarg).eq. arg_tag )cycle arg_loop
-               call rts(getAttribute(curarg,atr_kind),type)
-               call rts(getAttribute(curarg,atr_len),dim)
-               write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
-               write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
-     &              //trim(type_array(type))//" of len",dim,": "// 
-     &              getAttribute(curarg,atr_val)
-            end do arg_loop 
-         end if
-         curkey=> key_dsearch(curkey,level)
-         if (.not.associated(curkey)) exit key_loop
-         if (present(n_descent))then
-            if (level.gt.n_descent) exit key_loop
-         end if
-         
-      end do key_loop
       end subroutine
 
 
@@ -727,9 +600,167 @@
 !     Iterating search functions
 !     if called repeatedly these functions will iterate over the remaining tree in a depths first search
 *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+      function getParentKey(curnode)  result(nxtkey)
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="getParentKey"
+
+      type(Node), pointer::
+     &     nxtkey
+      type(Node), pointer,intent(in)::
+     &     curnode
+      
+      nxtkey=> getParentNode(curnode)
+      if (getNodeName(nxtkey).eq. key_tag) return
+      nxtkey => null()
+
+      end function
+      
 *----------------------------------------------------------------------*
+!>  retrieves first subnode that is a keyword 
+!!  returns null() if no such element exists
+*----------------------------------------------------------------------*
+      function key_getFirstSubkey(curkey)  result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblingkeys"
+
+      type(Node), pointer::
+     &     nxtnode
+      type(Node), pointer,intent(in)::
+     &     curkey
+
+      nxtnode => elem_getFirstSubnode(curkey, key_tag)
+
+      end function
+*----------------------------------------------------------------------*
+!>  retrieves first subnode that is a keyword 
+!!  returns null() if no such element exists
+*----------------------------------------------------------------------*
+      function key_getFirstArgument(curkey)  result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblingkeys"
+
+      type(Node), pointer::
+     &     nxtnode
+      type(Node), pointer,intent(in)::
+     &     curkey
+
+      nxtnode => elem_getFirstSubnode(curkey, arg_tag)
+
+      end function
+
+*----------------------------------------------------------------------*
+!>    retrieves first subnode with specified tag
+!!    returns null() if no such element exists
+*----------------------------------------------------------------------*
+      function elem_getFirstSubnode(curnode,tag)  result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblingkeys"
+
+      type(Node), pointer::
+     &     nxtnode
+      type(Node), pointer,intent(in)::
+     &     curnode
+      character(len=*),intent(in)::
+     &     tag
+
+      nxtnode=> null()
+      if(.not. hasChildNodes(curnode) ) return 
+
+      nxtnode=> getFirstChild(curnode)
+      if (getNodeName(nxtnode).eq. trim(tag)) return
+
+      nxtnode=> iterate_siblings(nxtnode,tag)
+
+      end function
 
 
+*----------------------------------------------------------------------*
+!>    iterates over all siblings that are keys
+!!    returns null() if no such key exists 
+*----------------------------------------------------------------------*
+      function iterate_siblingkeys(curnode)  result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblingkeys"
+
+      type(Node), pointer::
+     &     nxtnode
+      type(Node), pointer,intent(in)::
+     &     curnode
+
+      nxtnode=> iterate_siblings(curnode,key_tag)
+      end function 
+
+*----------------------------------------------------------------------*
+!>    iterates over all siblings that are arguments
+!!    returns null() if no such argument exists 
+*----------------------------------------------------------------------*
+      function iterate_siblingargs(curnode)  result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblingargs"
+
+      type(Node), pointer::
+     &     nxtnode
+      type(Node), pointer,intent(in)::
+     &     curnode
+
+      nxtnode=> iterate_siblings(curnode,arg_tag)
+      end function 
+
+
+*----------------------------------------------------------------------*
+!>    iterates over all siblings, returns only siblings with specified tag
+*----------------------------------------------------------------------*
+      function iterate_siblings(curnode,tag) result(nxtnode)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="iterate_siblings"
+
+      type(Node), pointer::
+     &     nxtnode
+      character(len=*),intent(in)::
+     &     tag
+      type(Node), pointer,intent(in)::
+     &     curnode
+
+      nxtnode=> getNextSibling(curnode)
+      do while (associated(nxtnode))
+         if (getNodeName(nxtnode) .eq. trim(tag)) exit 
+         nxtnode=> getNextSibling(nxtnode)
+      end do 
+      end function
 *----------------------------------------------------------------------*
 !>    keyword_specific version of the dsearch function
 !!
@@ -737,27 +768,45 @@
 !!    @param curkey pointer to current keyword
 !!    @param[inout] level on in old level on out new level
 *----------------------------------------------------------------------*
-      function key_dsearch(curkey, level) result(nxtkey) 
+      function filtered_dsearch(curkey, level, 
+     &     only_keys, key_root_stop) 
+     &     result(nxtkey) 
 *----------------------------------------------------------------------*
       implicit none
       include "stdunit.h"
       integer,parameter::
      &     ntest= 00
       character(len=*),parameter ::
-     &     i_am="key_dsearch"
+     &     i_am="filtered_dsearch"
 
       type(Node), pointer::
      &     nxtkey
 
       type(Node), pointer,intent(in)::
      &     curkey
-
       integer,intent(inout),optional ::
      &     level
+      logical,intent(in),optional ::
+     &     only_keys, key_root_stop
 
       integer::
      &     dlevel !levelchange
+    
+      logical ::
+     &     ionly_keys, ikey_root_stop, show_keys, show_args
       
+      ionly_keys=.True.
+      if(present(only_keys))ionly_keys=only_keys
+      ikey_root_stop=.True.
+      if(present(key_root_stop))ikey_root_stop=key_root_stop
+
+      show_keys=.True.
+      show_args=.not. ionly_keys
+
+      
+
+      dlevel=0
+
       nxtkey=>curkey
 
       if (ntest .ge. 100) then
@@ -766,30 +815,50 @@
      &        getAttribute(nxtkey,atr_name)
       end if 
 
-      dlevel=0
       main_loop: do
          nxtkey=>elem_dsearch(nxtkey,dlevel)
-
+         print *, i_am," nextkey "
          if(associated(nxtkey).and. ntest .ge.100) then 
-            write(lulog,*) "looking at:",
-     &           getAttribute(nxtkey,atr_name)
-            write(lulog,*) " "
+            if (getNodeName(nxtkey) .eq. arg_tag .or. 
+     &           getNodeName(nxtkey) .eq. key_tag) then
+               write(lulog,*)" returning:",getAttribute(nxtkey,atr_name)
+            else 
+               write(lulog,*)" returning:", getNodeName(nxtkey)
+            end if 
          else if (ntest.ge.100) then
             write(lulog,*) "not associated"
          end if
 
+
          if (.not.associated(nxtkey))exit main_loop
 
-         if (getNodeName(nxtkey).eq. trim(key_tag))then
-            exit main_loop
-         else if (getNodeName(nxtkey).eq.key_root_tag) then
+         if ( ikey_root_stop .and.
+     &        getNodeName(nxtkey).eq.trim(key_root_tag) ) then
             nxtkey=>null()
+            exit main_loop
+         else if  (show_keys .and.
+     &           getNodeName(nxtkey).eq. trim(key_tag))then
+            exit main_loop 
+         else  if (show_args .and. 
+     &           getNodeName(nxtkey).eq. trim(key_tag))then
             exit main_loop
          end if
       end do main_loop
-
+      if(associated(nxtkey).and. ntest .ge.100) then
+         if (getNodeName(nxtkey) .eq. arg_tag .or. 
+     &        getNodeName(nxtkey) .eq. key_tag) then
+         write(lulog,*) " returning:", getAttribute(nxtkey,atr_name)
+         else 
+            write(lulog,*) " returning:", getNodeName(nxtkey)
+         end if 
+      end if 
       if (present(level))level=level+dlevel
       end function
+
+
+
+
+
 
 
 *----------------------------------------------------------------------*
@@ -846,7 +915,7 @@
          end do up_loop
       end if
       if (ntest .ge. 100 .and. associated(nxtkey)) then
-         write (lulog,*) " found node"
+         write (lulog,*) " found node",getNodeName(nxtkey)
       else if (ntest.ge.100)then
          write (lulog,*) " no node found"
       end if 

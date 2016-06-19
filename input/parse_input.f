@@ -7,6 +7,46 @@
       contains
 
 *----------------------------------------------------------------------*
+!>    wrapper for keyword_list for the input
+*----------------------------------------------------------------------*
+      subroutine inp_show(unit)
+*----------------------------------------------------------------------*
+      integer,intent(in)::
+     &     unit
+
+      type(Node),pointer::
+     &     input_root
+      input_root => inp_fetch_root()
+      input_root => getFirstChild(input_root)
+      call keyword_list(unit,input_root,show_args=.True.)
+      end subroutine
+
+*----------------------------------------------------------------------*
+!>    wrapper for keyword_list for the input
+*----------------------------------------------------------------------*
+      subroutine reg_show(unit)
+*----------------------------------------------------------------------*
+      integer,intent(in)::
+     &     unit
+      type(Node),pointer::
+     &     key_root
+      key_root => reg_fetch_root()
+      key_root => getFirstChild(key_root)
+      call keyword_list(unit,key_root,show_args=.True., 
+     &     show_status=.False.)
+      end subroutine
+
+
+
+
+
+
+
+
+
+
+
+*----------------------------------------------------------------------*
 !>    for a given argument determines the actual length (and type)
 !!    
 !!    @TODO improve string handling
@@ -57,6 +97,184 @@
       end if
       return 
       end subroutine 
+
+
+*----------------------------------------------------------------------*
+!>    prints the keyword_tree below a certain keyword:
+!!
+!!
+!!    @param luwrt ouput unit
+!!    @param tree_root starting keyword
+!!    @param n_descent maximum number of levels to descent
+!!    @param show_args if arguments should be shown
+!!    @param show_status if status should be shown
+*----------------------------------------------------------------------*
+      subroutine keyword_list(luwrt,tree_root,
+     &     n_descent,show_args,show_status)
+*----------------------------------------------------------------------*
+      use FoX_common, only:str,rts
+      implicit none
+      include 'stdunit.h'
+      character(len=7),dimension(8),parameter::
+     &     type_array=(/"logical","integer","unknown","real",
+     &     "unknown","unknown","unknown","string"/)
+      integer, parameter ::
+     &     ntest=00
+      character(len=17),parameter ::
+     &     i_am="keyword_list"
+
+      integer, intent(in)::
+     &     luwrt
+      type(Node),pointer, intent(in)::
+     &     tree_root
+
+      integer,optional,intent(in)::
+     &     n_descent
+      logical, optional, intent(in)::
+     &     show_args,show_status
+
+      logical:: 
+     &     args_vis,status_vis
+      integer::
+     &     level, 
+     &      type, dim,
+     &     ii, dummy
+      character::
+     &     status
+
+      type(Node),pointer::
+     &     curkey,curarg
+      type(Nodelist),pointer::
+     &     child_list
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of key_root:"
+     &        ,associated(tree_root)
+
+      end if
+
+      args_vis=.false.
+      if (present(show_args)) args_vis=show_args
+      status_vis=.True.
+      if (present(show_status)) status_vis=show_status
+
+      if (ntest.ge.100) then
+         write (lulog,*) "show_status?",status_vis
+         write (lulog,*) "show_arguments?",args_vis
+      end if
+
+
+      curarg=>null()
+      curkey=> tree_root
+      
+      level=0
+      key_loop: do 
+         call print_keyword(luwrt,curkey,status_vis)
+
+         if ( args_vis)then
+            curarg=> key_getFirstArgument(curkey)
+            arg_loop: do while (associated(curarg))
+            call print_argument(luwrt,curarg,status_vis)
+               curarg=> iterate_SiblingArgs(curarg)
+            end do arg_loop 
+         end if
+         curkey=> filtered_dsearch(curkey,level,only_keys=.True.,
+     &        key_root_stop=.True.)
+
+         if (.not.associated(curkey)) exit key_loop
+         if (present(n_descent))then
+            if (level.gt.n_descent .or. 
+     &           level .lt. 0 ) exit key_loop
+         end if
+      end do key_loop
+      return
+      contains
+*----------------------------------------------------------------------*
+!>    prints a keyword 
+!!
+!!   @param luwrt output unit
+!!   @param arg argument node
+!!   @param status_vis if status should be printed as well
+*----------------------------------------------------------------------*
+      subroutine print_keyword(luwrt,keywd,status_vis)
+*----------------------------------------------------------------------*
+      integer, parameter ::
+     &     ntest=00
+      character(len=*),parameter ::
+     &     i_am="print_keyword"
+      integer, intent(in)::
+     &     luwrt
+      type(Node),pointer, intent(in)::
+     &     keywd
+      logical, intent(in)::
+     &     status_vis
+      character(len=64)::
+     &     fmtstr
+
+      if (status_vis)then 
+         status=getAttribute(keywd,atr_stat)
+         if (ntest.ge.100)then 
+            write (lulog,*) "status:",getAttribute(keywd,atr_stat)
+         end if 
+         if (status.eq.status_active) then
+            write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
+         else
+            write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
+         end if
+      else 
+         write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
+      end if
+      write (luwrt,fmtstr)getAttribute(curkey,atr_name)
+      end subroutine print_keyword
+*----------------------------------------------------------------------*
+!>    prints a keyword 
+!!
+!!   @param luwrt output unit
+!!   @param arg argument node
+!!   @param status_vis if status should be printed as well
+*----------------------------------------------------------------------*
+      subroutine print_argument(luwrt,arg,status_vis)
+*----------------------------------------------------------------------*
+      integer, parameter ::
+     &     ntest=00
+      character(len=*),parameter ::
+     &     i_am="print_argument"
+      integer, intent(in)::
+     &     luwrt
+      type(Node),pointer, intent(in)::
+     &     arg
+      logical, intent(in)::
+     &     status_vis
+      character(len=64)::
+     &     fmtstr
+      integer::
+     &     type, dim
+      call rts(getAttribute(arg,atr_kind),type)
+      call rts(getAttribute(arg,atr_len),dim)
+      write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
+      write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
+     &     //trim(type_array(type))//" of len",dim,": "// 
+     &     getAttribute(curarg,atr_val)
+      end subroutine
+      end subroutine
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 *----------------------------------------------------------------------*
 !>    tests if a string can successfully be converted into arguments of a given type
 !!
@@ -728,7 +946,7 @@ c dbgend
       end function
 
 *----------------------------------------------------------------------*
-!> converts a single element of user input to a logical      
+!> converts a single element of user input to a logical
 *----------------------------------------------------------------------*
       logical function str_to_logical(instr,ierr) 
 *----------------------------------------------------------------------*
@@ -795,9 +1013,6 @@ c dbgend
       nxt_node=>null()
       current => cur_node
 
-      if (.not.hasChildNodes(current))then
-         current=>getParentNode(current)
-      end if 
    
       node_loop: do
          dummy=1
