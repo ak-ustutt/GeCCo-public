@@ -100,7 +100,7 @@ def combine_dicts(first,second):
 
 def remove_whites(string):    
     """removes all (Unicode) white space characters"""
-    return re.sub("\s", "",string,flags=re.U)
+    return re.sub("\s", "",string)
 
 
 
