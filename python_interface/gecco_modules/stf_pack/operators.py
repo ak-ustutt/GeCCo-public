@@ -48,7 +48,6 @@ class Vertex(object):
         self.fac,self.fac_inv=helper.pop_numbers(label_list,1,1)
         if len(label_list)>1:
             raise Exception("number extraction split operator in half:"+self._label)
-        print label_list
         self._label=label_list[0] if len(label_list)==1 else ""
         
     def _is_empty(self):
