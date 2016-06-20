@@ -113,8 +113,8 @@ c      iprlvl = 3     ! print level
       ! one_more is ignored, as we might have cases 
       ! (export/import stuff) where no "calculate" block is
       ! specified
-
       call get_argument_value('general','memmax',ival=memmax)
+      write(lulog,'("memmax=",i12)') memmax
       if (l_molpro) then
         if (orb_info%mem_ext.gt.0) memmax=orb_info%mem_ext
       end if

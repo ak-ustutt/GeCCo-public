@@ -1,11 +1,13 @@
+
+*---------------------------------------------------------------------*
+!>     processes the input up to the next calculate block 
+!!     sets several common blocks 
 *----------------------------------------------------------------------*
       subroutine process_input(one_more,orb_info)
 *----------------------------------------------------------------------*
-*     post-process input up to next "calculate" block
-*----------------------------------------------------------------------*
 
-      use parse_input2, only:process_input_,show_input,show_registry
-
+      use keyword_trees, only:inp_postprocess
+      use parse_input, only: inp_show,reg_show
       implicit none
       include 'stdunit.h'
       include 'ioparam.h'
@@ -13,6 +15,7 @@
       include 'def_orbinf.h'
       include 'routes.h'
 
+      
       logical, intent(out) ::
      &     one_more
       type(orbinf), intent(inout) ::
@@ -28,8 +31,7 @@
      &     allowed(6)
 
       one_more=.false.
-
-      call process_input_(one_more)
+      call inp_postprocess(one_more)
       if (.not. one_more) return
 
 
@@ -43,7 +45,7 @@ c      end if
       write(lulog,*) 'printlevel is set to ',iprlvl
 
       if (iprlvl.ge.10)
-     &   call show_input()
+     &   call show_input(lulog)
 
       ! set file block-length
       call get_argument_value('general','da_block',ival=iread)
@@ -87,7 +89,6 @@ c      end if
 
 
           if (nfreeze.gt.0) then 
-             print *,"debug add_forzen_shell",nfreeze
              call add_frozen_shell(iscr,len,'frz',orb_info)
           end if 
           deallocate(iscr)
@@ -240,7 +241,6 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
         if (is_keyword_set('method.MRCC').gt.0.and.orb_info%imult.ne.1)
      &     spinadapt = 3
       end if
-      print *,"leaving process_input",one_more
       return
 
       end subroutine process_input

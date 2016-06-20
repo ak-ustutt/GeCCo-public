@@ -19,11 +19,11 @@
      &     string,out_unit
 
      
-      write (lulog,*) trim(string)
+      write (lulog,'(a)') string
 
       if ( (lulog .ne. luout) .and.
      &     (trim(out_unit) .EQ. "UOUT"))
-     & write (luout,*) trim(string)
+     & write (luout,'(a)') string
 
 
       if ((trim(out_unit) .NE. "UOUT") .and.
