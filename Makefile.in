@@ -8,6 +8,12 @@ top_srcdir:=@top_srcdir@
 
 include $(top_srcdir)/make.config
 
+sublib_make:=
+sublib_clean:=
+sublib_install:=
+sublib_tags:=
+sublib_TAGS:=
+
 libdirs:= crout math baserout memman fileutil input operators targets strings formula solve contract transform r12_spec cc_spec experimental
 progdirs:=gecco
 
@@ -17,7 +23,21 @@ dirs:=$(libdirs) $(progdirs)
 
 all: lib prog
 
-lib:
+#-------------------------------------------
+# targets for the FoX (Fortran XML library)
+fox:
+	@set -e ; $(MAKE) -C $(foxdir)
+sublib_make+=fox
+
+fox_clean:
+	@set -e ; $(MAKE) -C $(foxdir)
+sublib_clean+=fox_clean
+
+#------------------------------------------
+
+
+
+lib:$(sublib_make)
 	@$(mkinstalldirs) $(libdir)
 ifneq ($(libdirs),)
 	@set -e; \
@@ -30,7 +50,7 @@ ifneq ($(libdirs),)
        done; 
 endif
 
-prog:
+prog:$(sublib_make)
 	@$(mkinstalldirs) $(bindir)
 ifneq ($(progdirs),)
 	@set -e; \
@@ -56,7 +76,7 @@ ifneq ($(progdirs),)
    done;
 endif
 
-clean:
+clean:$(sublib_make)
 ifneq ($(dirs),)
 	@set -e; \
 	 for i in $(dirs); do \
@@ -68,7 +88,7 @@ ifneq ($(dirs),)
 	 done; 
 endif
 
-realclean:
+realclean:$(sublib_make)
 ifneq ($(dirs),)
 	@set -e; \
 	for i in $(dirs); do \

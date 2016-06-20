@@ -4,6 +4,7 @@
 *.pyc
 *.mod
 deps.mk
+FoX-4.1.2/arch.make
 autom4te.cache
 bin
 TAGS

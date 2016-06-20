@@ -1,6 +1,6 @@
       subroutine read_input(ffinput)
 
-      use parse_input
+      use parse_input2, only:keyword_parse,set_keywords
       implicit none
       include 'stdunit.h'
       include 'def_filinf.h'

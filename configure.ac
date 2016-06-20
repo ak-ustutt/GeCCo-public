@@ -133,9 +133,15 @@ ACX_SUBST_BUILD_FLAGS
 AC_SUBST(top_bindir,['$(topdir)/bin/$(ARCH)'])
 AC_SUBST(top_includedir,['$(topdir)/include'])
 AC_SUBST(top_libdir,['$(topdir)/lib/$(ARCH)'])
+AC_SUBST(foxdir,['$(topdir)/FoX-4.1.2'])
 
 AC_CONFIG_FILES([Makefile make.config make.rules])
 AC_OUTPUT
+
+# Configure FoX: 
+# Hacky: to be improved TODO improve this
+
+cd ./FoX-4.1.2 ; ./configure FCFLAGS="-g -i8";cd ..
 
 ARCH=$host_cpu-$host_os-$FC
 cp make.config make.config.$ARCH
