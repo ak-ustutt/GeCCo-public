@@ -9,6 +9,10 @@ import gecco_modules.string_to_form as stf
 
 
 
+lag_type=4
+if keywords.is_keyword_set('method.MRCC2.lagrangian'):
+    lag_type=int(keywords.get('method.MRCC2.lagrangian'))
+print("lagrangian:",lag_type,type(lag_type))
 
 
 
@@ -93,46 +97,42 @@ new_target("DEF_FORMS_METRIC")
 depend('DEF_RESPONSE_OPs')
 
 
-stf.Formula("FORM_SR1:Scal_S1="\
-            "<C0^+*(LAM1)*("\
-            "R1_q+R2g_q+"\
-            "[R1_q+R2g_q,T1+T2g]+"\
-            "1/2*[[R1_q+R2g_q,T1+T2g],T1]+1/2*[[R1_q+R2g_q,T1],T2g]+"\
-            "1/2*[[R1_q,T2g],T2g]+"\
-            "1/6*[[[R1_q+R2g_q,T1+T2g],T1],T1]+1/6*[[[R1_q+R2g_q,T1],T2g],T1]+1/6*[[[R1_q+R2g_q,T1],T1],T2g]+"\
-            "1/6*[[[R1_q,T2g],T2g],T1]+1/6*[[[R1_q,T2g],T1],T2g]+1/6*[[[R1_q,T1],T2g],T2g]+"\
-            "1/24*[[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+1/24*[[[[R1_q+R2g_q,T1],T2g],T1],T1]+1/24*[[[[R1_q+R2g_q,T1],T1],T2g],T1]+"\
-            "1/24*[[[[R1_q+R2g_q,T1],T1],T1],T2g]+"
-            "1/24*[[[[R1_q,T2g],T2g],T1],T1]+1/24*[[[[R1_q,T2g],T1],T2g],T1]+1/24*[[[[R1_q,T2g],T1],T1],T2g]+"\
-            "1/24*[[[[R1_q,T1],T2g],T2g],T1]+1/24*[[[[R1_q,T1],T2g],T1],T2g]+1/24*[[[[R1_q,T1],T1],T2g],T2g]"\
-            ")*C0>").set_rule()
 
-#stf.Formula("FORM_SR1:Scal_S1="\
-#            "<C0^+*(LAM1)*("\
-#            "R1_q+"\
-#            "[R1_q,T1+T2g]+"\
-#            "1/2*[[R1_q,T1+T2g],T1]+1/2*[[R1_q,T1],T2g]+"\
-#            "1/2*[[R1_q,T2g],T2g]+"\
-#            "1/6*[[[R1_q,T1+T2g],T1],T1]+1/6*[[[R1_q,T1],T2g],T1]+1/6*[[[R1_q,T1],T1],T2g]+"\
-#            "1/6*[[[R1_q,T2g],T2g],T1]+1/6*[[[R1_q,T2g],T1],T2g]+1/6*[[[R1_q,T1],T2g],T2g]+"\
-#            "1/24*[[[[R1_q,T1+T2g],T1],T1],T1]+1/24*[[[[R1_q,T1],T2g],T1],T1]+1/24*[[[[R1_q,T1],T1],T2g],T1]+"\
-#            "1/24*[[[[R1_q,T1],T1],T1],T2g]+"
-#            "1/24*[[[[R1_q,T2g],T2g],T1],T1]+1/24*[[[[R1_q,T2g],T1],T2g],T1]+1/24*[[[[R1_q,T2g],T1],T1],T2g]+"\
-#            "1/24*[[[[R1_q,T1],T2g],T2g],T1]+1/24*[[[[R1_q,T1],T2g],T1],T2g]+1/24*[[[[R1_q,T1],T1],T2g],T2g]"\
-#            ")*C0>").set_rule()
 
+
+
+
+
+SR1=stf.GenForm("FORM_SR1t","Scal_S1")
+if lag_type <=0:
+    raise Exception("unknown lagrangian")
+
+if lag_type >=1:
+    SR1+="<C0^+*(LAM1)*(R1_q+R2g_q+[R1_q+R2g_q,T1+T2g])*C0>"
+if lag_type >=2:
+    SR1+="1/2<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1]+1/2*[[R1_q+R2g_q,T1],T2g]+[[R1_q,T2g],T2g])*C0>"
+if lag_type >=3:
+    SR1+="1/6<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1],T1]+[[[R1_q+R2g_q,T1],T2g],T1]+[[[R1_q+R2g_q,T1],T1],T2g]+"\
+        "[[[R1_q,T2g],T2g],T1]+[[[R1_q,T2g],T1],T2g]+[[[R1_q,T1],T2g],T2g])*C0>"
+if lag_type >=4:
+    SR1+="1/24<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+[[[[R1_q+R2g_q,T1],T2g],T1],T1]+[[[[R1_q+R2g_q,T1],T1],T2g],T1]+"\
+        "[[[[R1_q+R2g_q,T1],T1],T1],T2g]+"\
+        "[[[[R1_q,T2g],T2g],T1],T1]+[[[[R1_q,T2g],T1],T2g],T1]+[[[[R1_q,T2g],T1],T1],T2g]+"\
+        "[[[[R1_q,T1],T2g],T2g],T1]+[[[[R1_q,T1],T2g],T1],T2g]+[[[[R1_q,T1],T1],T2g],T2g]"\
+        ")*C0>"
+if lag_type >=5:
+    raise Exception("unknown lagrangian")
+
+
+print "\n".join([str(br) for br in SR1.show()])
+
+SR1.set_rule()
 
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS1_q',
-                LABEL_IN:'FORM_SR1',
+                LABEL_IN:'FORM_SR1t',
                 TYPE:'nonzero',         
                 MODE:'sum'})
-
-#EXPAND_OP_PRODUCT({OPERATORS:['LAM1','R1_q'],
-#                   IDX_SV:[1,2,1],
-#                   LABEL:'FORM_DENS1_q',
-#                   NEW:True, 
-#                   OP_RES:'Scal_S1'})
 
 
 
@@ -148,35 +148,30 @@ debug_FORM("FORM_S1")
 
 
 
+if lag_type <=0:
+    raise Exception("unknown lagrangian")
 
-
-
-stf.Formula("FORM_SR2:Scal_S2="\
-            "<C0^+*(LAM2g)*("\
-            "R1_q+R2g_q+"\
-            "[R1_q+R2g_q,T1]+"\
-            "[R1_q,T2g]+"\
-            "1/2*[[R1_q+R2g_q,T1],T1]"\
-            "1/2*[[R1_q,T2g],T1]+1/2*[[R1_q,T1],T2g]+"\
-            "1/6*[[[R1_q+R2g_q,T1],T1],T1]"\
-            "1/6*[[[R1_q,T2g],T1],T1]+1/6*[[[R1_q,T1],T2g],T1]+1/6*[[[R1_q,T1],T1],T2g]+"\
-            "1/24*[[[[R1_q+R2g_q,T1],T1],T1],T1]+"\
-            "1/24*[[[[R1_q,T1+T2g],T1],T1],T1]+1/24*[[[[R1_q,T1],T2g],T1],T1]+1/24*[[[[R1_q,T1],T1],T2g],T1]"\
-            ")*C0>").set_rule()
-
-
+SR2=stf.GenForm("FORM_SR2t","Scal_S2")
+if lag_type >=1:
+    SR2+="<C0^+*(LAM2g)*(R1_q+R2g_q+[R1_q+R2g_q,T1]+[R1_q,T2g])*C0>"
+if lag_type >=2:
+    SR2+="1/2<C0^+*(LAM2g)*([[R1_q+R2g_q,T1],T1]+[[R1_q,T2g],T1]+[[R1_q,T1],T2g])*C0>"
+if lag_type >=3:
+    SR2+="1/6<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1],T1],T1]"\
+        "+[[[R1_q,T2g],T1],T1]+[[[R1_q,T1],T2g],T1]+[[[R1_q,T1],T1],T2g])*C0>"
+if lag_type >=4:
+    SR2+="1/24<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1],T1],T1],T1]"\
+        "[[[[R1_q,T1+T2g],T1],T1],T1]+[[[[R1_q,T1],T2g],T1],T1]+[[[[R1_q,T1],T1],T2g],T1]+[[[[R1_q,T1],T1],T1],T2g])*C0>"
+if lag_type >=5:
+    raise Exception("unknown lagrangian")
+print "\n".join([str(br) for br in SR2.show()])
+    
+SR2.set_rule()
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS2_q',
-                LABEL_IN:'FORM_SR2',
+                LABEL_IN:'FORM_SR2t',
                 TYPE:'nonzero',
                 MODE:'sum'})
-
-#EXPAND_OP_PRODUCT({OPERATORS:['LAM2g','R2g_q'],
-#                   IDX_SV:[1,2,1],
-#                   LABEL:'FORM_DENS2_q',
-#                   NEW:True, 
-#                   OP_RES:'Scal_S2'})
-
 
 DERIVATIVE({LABEL_RES:'FORM_S2g',
             LABEL_IN:'FORM_DENS2_q',
