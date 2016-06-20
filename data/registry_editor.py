@@ -116,7 +116,7 @@ class _Registry(object):
     def save_to_file(self, file):
         file = file  if file is not None else self.file_
         with open(file, "w") as f:
-            self.tree.write(f,indent="",addindent="",newl="")
+            self.tree.writexml(f,indent="",addindent="",newl="")
     
     def get_currentcontext(self):
         """ returns the context of the current keyword (including itself) as list"""
@@ -171,7 +171,7 @@ class _Registry(object):
                 [str(cast(val)) for val in value])
         elif value is not None :
             value=str(cast(value))
-        existing=[key for key in self.get_currentChildren() if key.getAttribute("name") == name ]
+        existing=[key for key in self.get_currentChildren() if key.nodeType == 1 and key.getAttribute("name") == name ]
         if len(existing) > 0:
             raise ExistingElementError("This name already exists")
         new_elem=self.tree.createElement("argument")
@@ -188,7 +188,7 @@ class _Registry(object):
     def append_keyword(self,name,comment):
         """appends a possibly commented keyword to current element"""
         name=str(name)
-        existing=[key for key in self.get_currentChildren() if key.getAttribute("name") == name ]
+        existing=[key for key in self.get_currentChildren() if key.nodeType == 1 and key.getAttribute("name") == name ]
         if len(existing) > 0:
             raise ExistingElementError("This name already exists")
         new_elem=self.tree.createElement("keyword")
@@ -238,7 +238,7 @@ def load(file):
     _update_promt()
     
 def save(file=None):
-    _registry.save_file(file)
+    _registry.save_to_file(file)
     
 def cd(context):
     """cd(context) change current keyword
@@ -332,6 +332,7 @@ def delkey(name):
 __all__=["ls",
          "main",
          "load",
+         "save",
          "cd",
          "ck",
          "mkkey",
