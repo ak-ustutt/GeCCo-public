@@ -1,4 +1,12 @@
+"""  A module to convert string representations of formulas to formula objects
 
+Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT from a string
+
+
+\author Arne Bargholz
+\date 17.06.2015
+\version 1.19 tested,
+"""
 from gecco_interface import * # This is an extension to the gecco interface. 
                               # it relies on the functions provided there 
 import copy # to produce deepcopys of objects
@@ -8,25 +16,17 @@ import itertools as it # some iterators
 from stf_exceptions import * #custom made exceptions for this package
 from stf_regexp import * # The regular expressions for numbers ... 
 from stf_string_expansion import InputString,BracketRep  # what I actually need to expand the string 
+import Flags
+
+from Util import combine_dicts,_IDXUtil,_NumberCollectUtil,remove_whites
 
 
-from Util import combine_dicts  # a function to combine dictionaries 
-
-##@module A module to convert string representations of formulas to formula objects
-#
-#Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT from a string
-#\author Arne Bargholz
-#\date 17.06.2015
-#\version 1.19 tested, but without updated documentation
 
 
 #*********************************************************
 #General idea: 
 #Generation of prefactors
-#    The Bracket object (_ExpBracket) 
-#     (which at this point contains only a list of strings representing OP product)
-#     scans every string with an regular expression(that only fits on leading numbers)
-#     Every found number is combined into a single factor that is later given as FAC argument
+#     The generation of prefactors is now done in operators.py
 #Generation of Idx_SV-lists
 #     The Bracket object (_ExpBracket) walks over all OPs. 
 #     Every OP without a single quote in it is deemed a standalone vertex 
@@ -49,16 +49,15 @@ from Util import combine_dicts  # a function to combine dictionaries
 #    I forgot to make several methods of hidden objects hidden
 #    The Objects involved in the string unpacking are named "_"+ShortenedOperation+"Rep"
 #       Rep for representation
-#    The Util classes collect methods for a certain functionality. 
-#      they should be considered abstract classes
 #    every class has a set_member function that initializes its permanent variables.
 #      Why? Because  like my variables initialized
-#    There is a distinction between quantenmechanical operators (refferered to as OP) 
-#    and the operatrions that connect them (termed operations) 
+#    There is a distinction between quantenmechanical operators(vertices actually)
+#              (refferered to as OP) 
+#    and the operations that connect them (termed operations) 
 
 #What to find where? 
 # everything is found in the following order:
-# environment preparation for unit tests 
+# environment preparation for unit tests
 # global functions  and objects
 # class definitions(each preceeded by base classes and Util classes):
 #    _OPProduct
@@ -149,115 +148,35 @@ else:
         
 _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 
+#----------------------------------------------------------------------------------------
+#Flags
+#----------------------------------------------------------------------------------------
 
+CLEANUP=Flags.Flag()
+NO_CLEANUP=Flags.Flag()
 
-
-def _remove_whites(string):    
-    """removes all (Unicode) white space characters"""
-    return re.sub("\s", "",string,flags=re.U)
 
 
 #----------------------------------------------------------------------------------------
 #Classes
 #----------------------------------------------------------------------------------------
 
+
+
+
+
+
 #----------------------------------------------------------------------------------------
 #
 #----------------------------------------------------------------------------------------
 
     
-class _NumberCollectUtil(object):
-    """Utility class to derive a factor from operator prefactors"""
-
-    ##
-    #@param string str to be matched
-    #@param nominator
-    #@param denominator
-    #@return tuple (x,y,z): x new nominator, y new denominator, 
-    #z nonnumber part of string.
-    def _eval_numbers(self, string, nominator=1, denominator=1):
-        """converts the number matched by the regexps to floats
-
- 
-        """
-        residue=""
-        match_div=stf_div_extract_regexp.match(string)
-        match_num=stf_number_extract_regexp.match(string)
-        match_neg=stf_negative_extract_regexp.match(string)
-        if match_div is not None :
-            nominator=nominator*float(match_div.group("nominator") )
-            denominator=denominator*float(match_div.group("denominator") )
-            residue=match_div.group("operator")
-        elif match_num is not None :
-            nominator=nominator*float(match_num.group("number"))
-            residue=match_num.group("operator")
-        elif match_neg is not None :
-            nominator=-nominator
-            residue=match_neg.group("operator")
-        else:
-            residue=string
-        nominator,denominator=self._normalize(nominator,denominator)
-        return nominator,denominator,residue
-
-    def pop_numbers(self, OP_List, nominator, denominator):
-        """Collects the numbers from operators
-        
-        Find all numerical prefixes,
-        multiply the numbers, eliminate the numbers 
-        from the elements and delete those elements that become empty
-        
-        """
-        #indexing the list from the end to avoid messing with indices during deletion
-        i=-len(OP_List) # 0
-        while i<0:
-            i+=1
-            a,b,c=self._eval_numbers(OP_List[i])
-            nominator*=a
-            denominator*=b
-            OP_List[i]=c
-            if OP_List[i] == '' or OP_List[i] is None :
-                del OP_List[i]
-        return nominator,denominator
-    
-
-    def _normalize(self,nominator,denominator):
-        """function called to normalize nominator and denominator
-
-        Does nothing right now.
-        """
-        return nominator,denominator
 
 
-class _IDXUtil(object):
-    """Collection of methods to create the idx_sv list"""
-    
-    def generate_idx_sv(self, OPs):
-        """function to generate a idx_sv list
-        """
-        #generator that returns a row of increasing numbers
-        counter=it.count(1)
-        #Two lists: 
-        #the first contains the operators with ticks ("'") 
-        #the second one their respective idx_indices.
-        encountered_OPs=[]
-        encountered_OP_numbers=[]
-        idx_sv=[]
-        for OP in OPs:
-            if OP.find("'")>=0:
-                if OP.replace("'","") in encountered_OPs:
-                    index=encountered_OPs.index(OP.replace("'",""))
-                    idx_sv.append(encountered_OP_numbers[index])
-                else:
-                    encountered_OPs.append(OP.replace("'",""))
-                    encountered_OP_numbers.append(counter.next())
-                    idx_sv.append(encountered_OP_numbers[-1])
-            else:
-                idx_sv.append(counter.next())
-        return idx_sv
 
 
 class _OPProduct(object):
-    """Handles a sequence of multiplicatively joined operators"""
+    """Handles a sequence of multiplicatively joined Vertices"""
 
     def _set_members(self):
         #self.arguments[OPERATORS] contains the OPs as they appear 
@@ -266,96 +185,187 @@ class _OPProduct(object):
         self.arguments={OPERATORS:[],FAC:1,FAC_INV:1,IDX_SV:[]}
         self._OPs=[]
 
+#----------------------------------------------------------------------
+#   public methods and hooks 
+    ##@param OPs a list of Vertex objects 
     def __init__(self,OPs):
         self._set_members()
+        self.arguments[FAC],\
+            self.arguments[FAC_INV]=self._extract_prefactors(OPs,(1,1))
+        OPs=self._eliminate_empty_OPs(OPs)
+        self.arguments[IDX_SV]=self._generate_idx_sv(OPs)
         self._OPs=OPs
-        self._extract_prefactors()
-        self._set_idx_sv()
-        self._process_operators()
-        
-    def _set_idx_sv(self):
-        helper=_IDXUtil()
-        self.arguments[IDX_SV]=helper.generate_idx_sv(self._OPs)
 
-        
-    def _extract_prefactors(self):
-        helper=_NumberCollectUtil()
-        fac=self.arguments.get(FAC,1)
-        fac_inv=self.arguments.get(FAC_INV,1)
-        fac,fac_inv=helper.pop_numbers(self._OPs,fac,fac_inv)
-        self.arguments[FAC]=fac
-        self.arguments[FAC_INV]=fac_inv
-        
-    def _strip_ticks_from_OPs(self):
-        """returns the OPs without single quotes"""
-        return  map(lambda x: re.sub("'","",x),self._OPs)
-
-    def _process_operators(self):
-        """Put OPs into the arguments dict 
-
-        Puts strips the single quotes from the OPs and puts them into the arguments
-        dictionary.
-        """
-        self.arguments[OPERATORS]=self._strip_ticks_from_OPs()
-    
-
+    ##@return a string representation of the object
     def __str__(self):
         ret=""
         if self.arguments[FAC_INV]!=1:
             ret=str(self.arguments[FAC])+"/"+str(self.arguments[FAC_INV])+"*"
         elif self.arguments[FAC]!=1:
             ret=str(self.arguments[FAC])+"*"
-        return ret + "*".join(self.arguments[OPERATORS])
+        return ret + "*".join(
+            self._OPs_to_string(
+                self._OPs)
+        )
 
-    def _combine_dicts(self,bracket_dict={},other_dict={}):
-        """Combines the arguments dictionary with another dict
+    ##@param other an _OP_PRODUCT
+    def compare(self,other):
+        """compares if self is a product of the same vertices as other"""
+        #assert isinstance(other,type(self))
+        self._compare_operators(self._OPs,other._OPs)
 
-        The foreign dictionary takes precedence, 
-        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
-        """
-        if other_dict=={}:
-            other_dict=self.arguments
-        nominator=other_dict[FAC]*bracket_dict[FAC]
-        denominator=other_dict[FAC_INV]*bracket_dict[FAC_INV]
-        new_dict=combine_dicts(bracket_dict,other_dict)
-        return combine_dicts({FAC:nominator,FAC_INV:denominator}, new_dict)
 
+    #@raises MissingArgumentError if an argument is missing
+    #@param bracket_dic dic given by _Bracket
+    #@param settle parameter that differentiates show and set modus
     def set_rule(self,bracket_dict={},settle=True):
-        """Invokes EXPAND_OP_PRODUCT"""
-        ges_dic=self._combine_dicts(bracket_dict,self.arguments)
-        for argument in _g_required_args:
-            if argument not in ges_dic:
-                raise MissingArgumentError(argument+\
-                        "is missing for EXPAND_OP_PRODUCT of "+str(self))
+        """Builds argument dict for and invoces EXPAND_OP_PRODUCT
+        """
+        arg_dict=copy.copy(self.arguments)
+        arg_dict[OPERATORS]=self._OPs_to_string(self._OPs)
+        ges_dic=self._combine_dicts(arg_dict,bracket_dict)
+        self._check_required_args(_g_required_args,ges_dic)
         if settle:
             EXPAND_OP_PRODUCT(ges_dic)
             return [None]
         else:
             return ges_dic
 
-    def _show(self,form_dic={}):
-        return self.set_rule(form_dic,settle=False)
+    ##@param args list of arguments, to be checked
+    #@param dic dic to be checked
+    #@raises MissingArgumentError if an argument is missing
+    def _check_required_args(self, args, dic):
+        for argument in args:
+            if argument not in dic:
+                raise MissingArgumentError(argument+\
+                        "is missing for EXPAND_OP_PRODUCT of "+str(self))
+
+    ##@param other a tuple of the form (fac,fac_inv) with the preset factors
+    def add_prefac(self,other):
+        """ adds anothers fac and fac_inv to selfs"""
+        facs=other.arguments[FAC],other.arguments[FAC_INV]
+        facs_own=self.arguments[FAC],self.arguments[FAC_INV]
+        self.arguments[FAC],self.arguments[FAC_INV]=self._add_ratios(facs_own,facs)
+
+#-------------------------------------------------------------------------
+# data transformation methods, independent of self
+        
+    ##@param facs1 a tuple of the form (fac,fac_inv)
+    #@param facs2 a tuple of the form (fac,fac_inv) 
+    def _add_rations(self, facs1, facs2):
+        """adds two ratios """
+        fac1,fac1_inv=facs1
+        fac2,fac2_inv=facs2
+        ##\TODO normalize result of addition
+        return fac1*fac2_inv+fac2*fac1_inv, fac1_inv*fac2_inv
+        
+    ##@param[in] OPs a list of OPs
+    #@return a list of integers denoting the supervertices a vertex at a given index belongs to
+    def _generate_idx_sv(self,OPs):
+        helper=_IDXUtil()
+        return helper.generate_idx_sv(OPs)
+
+
+    ##@param[in] OPs a list of OPs
+    #@return a list of OPs none of which is empty
+    def _eliminate_empty_OPs(self, OPs):
+        """eliminates the empty OPs"""
+        return [OP for OP in OPs if not OP._is_empty()]
+
+        
+    ##@param OPs list of OPs
+    #@param facs a tuple of the form (fac,fac_inv) with the preset factors
+    #@return  a tuple of the form (fac,fac_inv) with the combined factors of all OPs
+    def _extract_prefactors(self,OPs,facs):
+        """extracts the the prefactor and the inverse prefactor from the operator sequence"""
+        return reduce(lambda x,y : (x[0]*y.fac,x[1]*y.fac_inv),
+                      OPs,
+                      facs )
+        
+    ##@param OPs list of OPs
+    ##@return list of OP-names
+    def _OPs_to_string(self, OPs):
+        """converts all OPs to their Name(without primes)"""
+        #removal of primes is done in Vertex
+        return [str(x) for x in OPs]
+
+    ##@param OPs1 list of OPs
+    #@param OPs2 list of OPs
+    #@return True if all OPs in list one test as identical to their
+    # respective counterparts in list two
+    def _compare_operators(self,OPs1,OPs2):
+        """tests if the OPs in two lists are identical"""
+        if len(OPs1)!=len(OPs2):
+            return False
+        else:
+            return reduce(lambda x,y : x and y,
+                          [OPs1[i].identical(OPs2[i]) for i  in xrange(len(OPs1))])
+
+
+    ##@param bracket_dict,other_dict two dictionaries containing entries for FAC and FAC_INV
+    #
+    def _combine_dicts(self,other_dict,bracket_dict={}):
+        """Combines the arguments dictionary with another dict
+
+        The foreign dictionary takes precedence, 
+        except in for the FAC and FAC_INV keys. their arguments are multiplicated 
+        """
+        nominator=other_dict[FAC]*bracket_dict[FAC]
+        denominator=other_dict[FAC_INV]*bracket_dict[FAC_INV]
+        new_dict=combine_dicts(bracket_dict,other_dict)
+        return combine_dicts({FAC:nominator,FAC_INV:denominator}, new_dict)
+
+
 
 #****************************************************************************#
 #A Bracket is a collection of operator products
 
-class _Bracket(_NumberCollectUtil):
-    """Handles information, that are specific to every bracket"""
+#declaring them
 
+        ##\TODO move all possible code from _Bracket to _AbstractBracket
+class _AbstractBracket(_NumberCollectUtil):
     def _set_members(self):
         self.arguments={FAC:1,FAC_INV:1}
         self.OP_products=[]
         #self.content normally is a BracketRep
         self.content=""
+        
+class _AltBracket(_AbstractBracket):
+    def __init__(self):
+        self._set_members()
 
+class _Bracket(_AbstractBracket):
+    """Handles information, that are specific to every bracket"""
+
+
+    ##@param string an _InputString object currently pointing to a bracket opening
     def __init__(self, string):
         self._set_members()
         self.process_string(string)
         self.extract()
+        self.sum_OP_Products()
 
+    def sum_OP_Products(self,other=_AltBracket()):
+        OPProd_list=self.OP_products+other.OP_products
+        self.OP_products=self._sum_prod_list(OPProd_list)
+                
     #Functions of the process - extract mechanic
     # see stf_string_expansion for details
     def process_string(self, string):
+        string,\
+            self.arguments[FAC],\
+            self.arguments[FAC_INV]=self._process_prelude(string)
+        string=self._process_bra(string)
+        string, self.content=self._process_operators(string)
+        string=self._process_ket(string)
+
+    def extract(self):
+        self.OP_products= [_OPProduct(x) for x in  self.content.extract()]
+
+    ##@param string an _InputString pointing to the start of the numerical
+    #prefactor or start of the bracket
+    def _process_prelude(self,string):
+        """processes everything that is before the actual start of a string"""
         string.set_start()
         try:
             string.goto("<")
@@ -366,8 +376,10 @@ class _Bracket(_NumberCollectUtil):
             if residue not in ("",None,"*"):
                 raise UnknownEntity("there is something non numerical"\
                                    "before this bracket"+string.display_error)
-            self.arguments[FAC]=nominator
-            self.arguments[FAC_INV]=denominator
+        return string,nominator,denominator
+
+    ##@param string an _InputString pointing to the start of the numerical        
+    def _process_bra(self,string):
         #If bracket has "|" as delimiters, ignore everything before "|"
         which,where=string.find_first( ("|",">") )
         if which == 0 :
@@ -375,15 +387,18 @@ class _Bracket(_NumberCollectUtil):
                 string.goto("|")            
             except ValueError:
                 raise UnexpectedEndOfStringError(string.display_error)
-        self.content=BracketRep(string)        
+        return string
+
+    def _process_operators(self, string):
+        return string,BracketRep(string)
+
+    def _process_ket(self, string):
         try:
             string.goto(">")
         except ValueError:
             raise UnexpectedEndOfStringError(string.display_error)
+        return string
 
-
-    def extract(self):
-        self.OP_products=map( _OPProduct, self.content.extract())
 
     #other functions
     def set_rule(self,form_dic={},settle=True):
@@ -414,6 +429,20 @@ class _Bracket(_NumberCollectUtil):
             ret=str(self.arguments[FAC])+"*"
         return ret + "<\n" + "\n+".join(map(str, self.OP_products))+"\n>"
 
+    ##@param OPProd_list List of OPProducts
+    def _sum_prod_list(self, OPProd_list):
+        """sums the OPProducts of a list
+        """
+        ran =xrange(-len(OPProd_list),0,1) 
+        for i in ran:
+            for j in xrange(i,0,1):
+                if OPProd_list[i].compare(
+                        OPProd_list[j]):
+                    OPProd_list[j].add_prefac(OPProd_list[i])
+                    del OPProd_list[i]
+                    break
+        return OPProd_list
+
     def _combine_dicts(self,form_dict={}):
         """Combines the arguments dictionary with another dict
 
@@ -422,8 +451,8 @@ class _Bracket(_NumberCollectUtil):
         """
         return combine_dicts(form_dict,self.arguments)
 
-#    def scan 
-    
+
+
 #************************************************************************
 #the surface class Formula for handling formula on the user surface
 
@@ -457,14 +486,12 @@ class _Formula( _FormulaStringRepUtil):
     """Base class for all User interfaces"""
 
     def set_members(self):
-        """initialze 
+        """initialze members
         """
         self._content=[]
         self.arguments={LABEL:None,OP_RES:None,NEW:True, FIX_VTX:True}
         self._string=InputString("")
 
-    def __init__(self):
-        self.set_members()
 
     def preprocess_string(self,string):
         """ prepares the input for processing
@@ -474,7 +501,7 @@ class _Formula( _FormulaStringRepUtil):
         @return preprocessed string 
         """
         #remove all white spaces
-        string=_remove_whites(string)
+        string=remove_whites(string)
         return InputString(string)
 
 
@@ -501,19 +528,24 @@ class _Formula( _FormulaStringRepUtil):
 
     #
     #Methods to invoke EXPAND_OP_PRODUCT
+    ##@param special_dic dictionary of touples that may overwrite the self.arguments of this instance (default: empty)
+    #@param settle for internal use only
+    #@param cleanup 
+    #@return None (the dictionaries fed to EXPORT_OP_PRODUCT if settle is False)
     def set_rule(self,special_dic={},settle=True,flags=None):
         """Invokes set_rule of the brackets
         
-        @param special_dic dictionary of touples that may overwrite the self.arguments of this instance (default: empty)
-        @param settle for internal use only
-        @param cleanup 
-        @return None (the dictionaries fed to EXPORT_OP_PRODUCT if settle is False)
         """
         ges_dic=self._combine_dicts(special_dic)
         ret_list=[]
         for bracket in self._content:
+            print ges_dic
             ret_list+=bracket.set_rule(ges_dic,settle=settle)
             ges_dic[NEW]=False
+            if ((flags is None) or (CLEANUP in flags)) and settle:
+                SUM_TERMS({
+                    LABEL_IN:self.arguments[LABEL],
+                    LABEL_RES:self.arguments[LABEL]})
         if settle:
             return None
         else:
@@ -537,6 +569,7 @@ class _Formula( _FormulaStringRepUtil):
             self._string.extend(str(other._string))
         elif isinstance(other, basestring):
             interm=_Formula()
+            interm.set_members()
             #relying on the parent class, not GenFormula, 
             #  to make Formula independent from other interface classes 
             string=interm.preprocess_string(other)
@@ -590,22 +623,23 @@ class _Formula( _FormulaStringRepUtil):
 #
 class GenForm(_Formula):
     """ Interface for generic formulas"""
-
+    ##@param label LABEL of the formula (can be None)
+    # @param OP_res OP_RES of this formula (can be None)
+    # @param body body of the formula
     def __init__(self,label=None,OP_res=None,body=None):
         """The constructor
 
-        @param label LABEL of the formula (can be None)
-        @param OP_res OP_RES of this formula (can be None)
-        @param body body of the formula"""
+        """
         self.set_members()  
         self._set_values(label,OP_res,body)
 
     def _set_values(self,label,OP_res,body):
         """Deal with the arguments of __init__"""
+        print label,OP_res,body
         if label is not None:
             self.arguments[LABEL]=label
         if OP_res is not None:
-            self.arguments[OP_res]=OP_res
+            self.arguments[OP_RES]=OP_res
         if body is not None:
             self._string=self.preprocess_string(body)
             self.process_string(self._string)
@@ -615,19 +649,15 @@ class GenForm(_Formula):
     
 class Formula(_Formula):
     """Interface for complete formulas """
-
+    ##  @param string string of the form 'LABEL:OP_RES=body'
     def __init__(self,string):
         """The constructor
         
-        @param string string of the form 'LABEL:OP_RES=body' """
-        #        try:
+        """
         self.set_members()     
         self._string=self._preprocess_string(string)
         self.process_string(self._string)
         self.extract()
-#        except Exception as ex:
-#            quit_error("string_to_form.py:"+ex.msg)
-#            raise ex
         
     def _extract_label(self,string):
         """Extracts the formula label from the input string"""
@@ -655,7 +685,9 @@ class Formula(_Formula):
             raise MissingOP_ResError("This result Operator is empty")
         string.next()
         return string
-        
+
+        ##@param string string to be preprocessed
+        #@return preprocessed string
     def _preprocess_string(self,string):
         """Preprocesses the input
         
@@ -665,411 +697,8 @@ class Formula(_Formula):
         @param string string to be preprocessed
         @return preprocessed string
         """
-        string=_remove_whites(string) 
+        string=remove_whites(string) 
         return self._extract_OP_res(self._extract_label(InputString(string)))
         
-        
-
-
-
-
 def make_formula(string):
     Formula(string).set_rule()
-
-
-
-
-
-
-
-
-class Test(object):
-    def test_OP_product(self,verbose=True):
-        if verbose:
-            print("testing _OPProduct")
-        try:
-            i=_OPProduct(["C0","H0","T1"])
-        except( Exception):
-            print "There was an error at creation of _OPProduct" 
-#            tb.print_exc()
-            raise
-        inp={LABEL:"LAG", 
-             IDX_SV:[1,2,3], 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res= {"OP_RES": 'L',
-                  'OPERATORS': ['C0', 'H0', 'T1'], 
-                  'LABEL': 'LAG', 
-                  'FAC_INV': 1, 
-                  'FAC': 1, 
-                  'IDX_SV': [1, 2, 3]}
-        if ( i._show(inp)!=  exp_res ):
-            print "there was a problem with _OPProduct._show()"\
-                  "\nprobably a problem in the dictionary generation"\
-                  "\n result: " +str(i.show(inp))+\
-                  "\n expected res:" +str(exp_res)
-            raise Exception
-
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        if i._show(inp) != exp_res :
-            print("the idx_sv generation does not yield correct results"
-                   +"\nresult:" + str(i.show(inp))
-                   +"\n expected res:" + str(exp_res))
-            raise Exception
-        
-        def try_num(op_list,inp,exp_res):
-            
-            try:
-                i=_OPProduct(op_list)
-            except( Exception):
-                print("There was an error at creation of _OPProduct")
-                tb.print_exc()  
-                raise
-
-            if  i._show(inp) != exp_res :
-                print( "error"
-                       +"\nresult:" + str(i.show(inp))
-                       +"\n expected res:" + str(exp_res))
-                raise Exception
-        op_list=["2C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 2.0, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)        
-
-        op_list=["2.4C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 2.4, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)
-
-        op_list=[".4C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 0.4, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)
-        
-        
-        op_list=["-2.4C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': -2.4, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)
-
-        op_list=["-.4C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': -0.4, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)     
-
-        op_list=["-2C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': -2.0, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)
-
-        op_list=["-4e-001C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': -0.4, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res) 
-
-        op_list=["1/24C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 24.0, 
-                 'FAC': 1, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res) 
-
-
-        op_list=["-C0"]
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': -1.0, 
-                 'IDX_SV': [1]}
-        try_num(op_list,inp,exp_res)
-
-        #There are many more combinations to test for numbers.
-        # I am omitting many of them.
-        #
-
-        
-        op_list=["1/24C0","-H","10.543T1"]              
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['C0','H','T1'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 24.0, 
-                 'FAC': -10.543, 
-                 'IDX_SV': [1,2,3]}
-        try_num(op_list,inp,exp_res)
-
-        if verbose:
-            print("number extraction seems to be working")
-
-        #try_num also works for tests of sv_idx
-        #
-
-        
-        op_list=["GAM'","H","GAM'"]              
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['GAM','H','GAM'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 1, 
-                 'IDX_SV': [1,2,1]}
-        try_num(op_list,inp,exp_res)
-
-        
-        op_list=["GAM1'","H","GAM2'"]              
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['GAM1','H','GAM2'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 1, 
-                 'IDX_SV': [1,2,3]}
-        try_num(op_list,inp,exp_res)
-
-
-
-        op_list=["GAM'","H","GA'M"]              
-        inp={LABEL:"LAG", 
-             OP_RES:"L", 
-             FAC:1, 
-             FAC_INV:1 }
-        exp_res={'OP_RES': 'L', 
-                 'OPERATORS': ['GAM','H','GAM'], 
-                 'LABEL': 'LAG', 
-                 'FAC_INV': 1, 
-                 'FAC': 1, 
-                 'IDX_SV': [1,2,1]}
-        try_num(op_list,inp,exp_res)
-
-
-        if verbose:
-            print("creation of index list seems to be working")
-
-        #testing __str__
-        #
-        #reusing last _OPProduct
-        i=_OPProduct(op_list)
-        try:
-            assert str(i) == '1/1*<GAM*H*GAM>'
-        except Exception:
-            print("Warning _OPProduct.__str__ seems not to be working"
-                  +" according to specifications"
-                  +"\nresult:"+str(i)) 
-        else:
-            if verbose:
-                print("all test of _OPProduct were successful")
-
-
-    def test_Bracket(self,verbose=True):
-        def factory(string):
-            return _Bracket(InputString(string))
-
-        def try_(string,inp,exp_res):
-            try:
-                i=factory(string)
-            except( Exception):
-                print("There was an error at creation of _OPProduct from input"+str(string))
-                tb.print_exc()  
-                raise
-
-            if  i.show(inp) != exp_res :
-                print( "error"
-                       +"\nresult:" + str(i.show(inp))
-                       +"\n expected res:" + str(exp_res))
-                raise Exception
-
-        string="<H>"
-        inp={"LABEL":"L", 
-             "OP_RES":"L", 
-             "NEW":True}
-
-        exp_res=[{'OP_RES': 'L', 'OPERATORS': ['H'], 'LABEL': 'L', 'FAC_INV': 1, 'NEW': True, 'FAC': 1, 'IDX_SV': [1]}]
-        try_(string,inp,exp_res)
-
-
-        string="2.4*<H>"
-        inp={"LABEL":"L", 
-             "OP_RES":"L", 
-             "NEW":True}
-
-        exp_res=[    {'OP_RES': 'L', 
-                      'OPERATORS': ['H'], 
-                      'LABEL': 'L', 
-                      'FAC_INV': 1, 
-                      'NEW': True, 
-                      'FAC': 2.4, 
-                      'IDX_SV': [1]
-                  }
-        ]
-        try_(string,inp,exp_res)
-
-        string="2/7<H>"
-        inp={"LABEL":"L", 
-             "OP_RES":"L", 
-             "NEW":True}
-
-        exp_res=[    {'OP_RES': 'L', 
-                      'OPERATORS': ['H'], 
-                      'LABEL': 'L', 
-                      'FAC_INV': 7.0, 
-                      'NEW': True, 
-                      'FAC': 2.0, 
-                      'IDX_SV': [1]
-                  }
-        ]
-        try_(string,inp,exp_res)
-
-
-        string="2.5<H>"
-        inp={"LABEL":"L", 
-             "OP_RES":"L", 
-             "NEW":True}
-
-        exp_res=[    {'OP_RES': 'L', 
-                      'OPERATORS': ['H'], 
-                      'LABEL': 'L', 
-                      'FAC_INV': 1, 
-                      'NEW': True, 
-                      'FAC': 2.5, 
-                      'IDX_SV': [1]
-                  }
-        ]
-        try_(string,inp,exp_res)
-
-        
-        string="<C0*D|H|C0+-*[[[>"
-        inp={"LABEL":"L", 
-             "OP_RES":"L", 
-             "NEW":True}
-
-        exp_res=[    {'OP_RES': 'L', 
-                      'OPERATORS': ['H'], 
-                      'LABEL': 'L', 
-                      'FAC_INV': 1, 
-                      'NEW': True, 
-                      'FAC': 1, 
-                      'IDX_SV': [1]
-                  }
-        ]
-        try_(string,inp,exp_res)
-        
-
-        string="<C0^+*(H+1/2V)C0>"
-        i=factory(string)
-        try:
-            assert str(i) == '<H>'
-        except Exception:
-            print("Warning _OPProduct.__str__ seems not to be working")
-        else:
-            if verbose:
-                print("all test of _Bracket were successful")
-
-
-    def test_formula(self,verbose=True):
-        inp={"LABEL":"F_LAG","OP_RES":"L"}
-        exp_res=[{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 1, 'NEW': True, 'IDX_SV': [1]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': 0.5, 'NEW': False, 'IDX_SV': [1, 2]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H'], 'LABEL': 'F_LAG', 'FAC_INV': 1, 'FAC': -0.5, 'NEW': False, 'IDX_SV': [1, 2]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['H', 'T1', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': 1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': -1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'H', 'T1'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': -1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]},
-{'OP_RES': 'L', 'FIX_VTX': True, 'OPERATORS': ['T1', 'T1', 'H'], 'LABEL': 'F_LAG', 'FAC_INV': 6.0, 'FAC': 1.0, 'NEW': False, 'IDX_SV': [1, 2, 3]}]
-
-
-        i=_Formula()
-        i._string=i.preprocess_string("<H>+0.5<[H,T1]>+1/6*<[[H,T1],T1]>")
-        i.process_string(i._string)
-        assert i.show(inp) == exp_res
-
-        print("all tests of _Bracket were successful")       
-
-        #currently only one test for _Formula. 
-    
-
-    def test_all(self,verbose=True):
-        #if arguments are not defined as variables, define them
-	self.test_OP_product(verbose)
-        self.test_Bracket(verbose)
-        self.test_formula(verbose)
-        self.test_Formula(verbose)
-

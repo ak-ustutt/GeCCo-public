@@ -1,0 +1,37 @@
+title
+  the rule/command ADD_UNITY
+molecule
+  B-MRCC2-MOLPRO 
+input
+  ADD_UNITY.inp
+check
+  label SymSign 0
+  find Sym_sign 0
+  find PRINT_MEL
+  find ^ +1 
+  compare real 8 1e-5
+  find ^ +93 
+  compare real 8 1e-5
+  find ^ +98
+  compare real 8 1e-5
+  find block no. +2
+  compare int 6
+  find ^ +72684 
+  compare real 8 1e-5
+check
+  rewind
+  label SymSign +1
+  find Sym_sign \+1
+  find PRINT_MEL
+  find ^ +1 
+  compare real 8 1e-5
+  find ^ +93 
+  compare real 8 1e-5
+  find ^ +98
+  compare real 8 1e-5
+  find block no. +2
+  compare int 6
+  find ^ +72684 
+  compare real 8 1e-5
+end 
+
