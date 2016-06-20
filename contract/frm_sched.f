@@ -73,6 +73,18 @@ c stat
       mm_cnt    = 0
       mm_cntsq  = 0
 c stat
+c more stat
+      st_total = 0
+      st_ex1c_z= 0
+      st_ex1a_z= 0
+      st_ex2c_z= 0
+      st_ex2a_z= 0
+      st_cntc_z= 0
+      st_cnta_z= 0
+      st_noop1_reo= 0
+      st_noop2_reo= 0
+      st_noop12_reo= 0
+c more stat
 
       select case (irt_sched)
       case (0) !only 0 if requested by the schedule argument
@@ -152,6 +164,18 @@ c stat
       if (iprlvl.ge.1)
      &     call prtim(lulog,'formula evaluation',
      &     cpu-cpu0,sys-sys0,wall-wall0)
+c more stat
+       write(lulog,*) 'total: ',st_total
+       write(lulog,*) 'EX1 C        ',st_ex1c_z
+       write(lulog,*) 'EX1 A        ',st_ex1a_z
+       write(lulog,*) 'EX2 C        ',st_ex2c_z
+       write(lulog,*) 'EX2 A        ',st_ex2a_z
+       write(lulog,*) 'CNT C        ',st_cntc_z
+       write(lulog,*) 'CNT A        ',st_cnta_z
+       write(lulog,*) 'NO OP1 REO   ',st_noop1_reo
+       write(lulog,*) 'NO OP2 REO   ',st_noop2_reo
+       write(lulog,*) 'NO FINAL REO ',st_noop12_reo
+c more stat
       
       return
       end

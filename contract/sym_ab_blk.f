@@ -274,8 +274,8 @@ c test
      &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
      &                .false.,-1,-1,mel,ngam)
-c            print *,'idxdis_1: ',idxdis_1,idxdis_1_x
-            if (idxdis_1.ne.idxdis_1_x) print *,'!!!OHA!!!'
+cc            print *,'idxdis_1: ',idxdis_1,idxdis_1_x
+c            if (idxdis_1.ne.idxdis_1_x) print *,'!!!OHA!!!'
 c test
 
             if (ntest.ge.1000)

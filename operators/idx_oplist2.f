@@ -19,7 +19,7 @@
      &     op_info
 
       integer ::
-     &     iop
+     &     iop, llabel
 
       if (ntest.ge.100) then
         write(lulog,*) '------------------'
@@ -28,11 +28,23 @@
         write(lulog,*) ' looking for: "',trim(opname),'"'
       end if
 
+C      idx_oplist2 = -1
+C      do iop = 1, op_info%nops
+C        if (trim(opname).eq.trim(op_info%op_arr(iop)%op%name)) then
+C          idx_oplist2 = iop
+C          exit
+C        end if
+C      end do
+
       idx_oplist2 = -1
+      llabel = len_trim(opname)
       do iop = 1, op_info%nops
-        if (trim(opname).eq.trim(op_info%op_arr(iop)%op%name)) then
-          idx_oplist2 = iop
-          exit
+        if (opname(1:llabel).eq.op_info%op_arr(iop)%op%name(1:llabel))
+     &  then
+          if (len_trim(op_info%op_arr(iop)%op%name).eq.llabel) then
+            idx_oplist2 = iop
+            exit
+          end if
         end if
       end do
 

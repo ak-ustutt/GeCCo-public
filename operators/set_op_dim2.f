@@ -67,7 +67,7 @@
      &     msa, msc, idxmsa, idxmsa2, igama, igamc,
      &     nasub, ncsub, icmp,
      &     did, iexc, igam, len_blk, ld_blk, idx, jdx, tot_c, tot_a,
-     &     idx_hpvx, hpvx, ii
+     &     idx_hpvx, hpvx, ii, maxidxms
 
       integer, pointer ::
      &     hpvx_csub(:), hpvx_asub(:),
@@ -76,7 +76,7 @@
      &     msdis_c(:),  msdis_a(:),
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
-     &     len_str(:),
+     &     len_str(:), lenstr_array(:,:,:),
      &     mapca(:), diag_idx(:), diag_ca(:)
       integer, pointer ::
      &     hpvx_occ(:,:,:), idx_graph(:,:,:),
@@ -119,6 +119,10 @@ c     &     msd(ngastp,2), igamd(ngastp,2)
 c dbg
 c      print *,'set dim, fix =',ms_fix
 c dbg
+      maxidxms =  str_info%max_idxms
+      allocate(lenstr_array(ngam,str_info%max_idxms,str_info%ngraph))
+      call set_lenstr_array(lenstr_array,ngam,
+     &                      str_info%max_idxms,str_info)
 
       ! we better initialize some of the key arrays
       if (ipass.eq.1) then
@@ -219,27 +223,27 @@ c dbg
           if (abs(msc).gt.msc_max) cycle msa_loop
           idxmsa = idxmsa+1
 
-          ! test indexing routine
-          idxmsa2 = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
-
-c          if (idxmsa.ne.idxmsa2)
-c     &         call quit(1,'set_op_dim2','bug in msa2idxms4op!')
-          if (idxmsa.ne.idxmsa2) then
-            print *,'msa,mst,msa_max,msa_max: ',
-     &           msa,mel%mst,msa_max,msc_max
-            print *,'idxmsa2, idxmsa: ',idxmsa2, idxmsa
-            call quit(1,'set_op_dim2','bug in msa2idxms4op !')
-          end if
-c dbg
-c          print *,'msa, msc: ',msa,msc
-c dbg
+c         I think this test has been run often enough by now
+c         let's save the time here
+c          ! test indexing routine
+c          idxmsa2 = msa2idxms4op(msa,mel%mst,msa_max,msc_max)
+c
+cc          if (idxmsa.ne.idxmsa2)
+cc     &         call quit(1,'set_op_dim2','bug in msa2idxms4op!')
+c          if (idxmsa.ne.idxmsa2) then
+c            print *,'msa,mst,msa_max,msa_max: ',
+c     &           msa,mel%mst,msa_max,msc_max
+c            print *,'idxmsa2, idxmsa: ',idxmsa2, idxmsa
+c            call quit(1,'set_op_dim2','bug in msa2idxms4op !')
+c          end if
 
           ! loop over IRREP of A-string (fixes IRREP of C-string)
           igama_loop: do igama = 1, ngam
             igamc = multd2h(igama,mel%gamt)
             
             ! store the current position in offset array
-            mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr
+            if (ipass.eq.2)
+     &       mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr
 
             ! now, to be general, we have to loop over all
             ! possible MS and IRREP distributions over X/H/P/V spaces
@@ -284,8 +288,10 @@ c              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
      &                   cycle distr_loop
               end if
 
-              call set_len_str(len_str,ncsub,nasub,
-     &                         graphs,
+              if (ipass.eq.2) then
+
+                call set_len_str2(len_str,ncsub,nasub,
+     &                         lenstr_array,ngam,maxidxms,
      &                         graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &                         graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &                         hpvxseq,.false.)
@@ -300,85 +306,85 @@ c              print *,'graphs c:',graph_csub(1:ncsub)
 c              print *,'graphs a:',graph_asub(1:nasub)
 c              print *,'len_str: ',len_str(1:ncsub+nasub)
 c dbg
-              ld_blk = 1
-              do icmp = 1, ncsub
-                ld_blk = ld_blk*len_str(icmp)
-c dbg
-c                print *,'icmp, len_str: ',icmp,len_str(icmp)
-c dbg
-              end do
-              len_blk = ld_blk
-              do icmp = ncsub+1, ncsub+nasub
-                len_blk = len_blk*len_str(icmp)
-c dbg
-c                print *,'icmp, len_str: ',icmp,len_str(icmp)
-c dbg
-              end do
-
-              ! get actual leading dimension
-              search_loop: do idx_hpvx = 1, ngastp
-                hpvx = hpvxseq(idx_hpvx)
+                ld_blk = 1
                 do icmp = 1, ncsub
-                  if (hpvx_csub(icmp).eq.hpvx) then
-                    ld_blk = len_str(icmp)
-                    exit search_loop
-                  end if
+                  ld_blk = ld_blk*len_str(icmp)
+c dbg
+c                print *,'icmp, len_str: ',icmp,len_str(icmp)
+c dbg
                 end do
-                do icmp = 1, nasub
-                  if (hpvx_asub(icmp).eq.hpvx) then
-                    ld_blk = len_str(ncsub+icmp)
-                    exit search_loop
-                  end if
+                len_blk = ld_blk
+                do icmp = ncsub+1, ncsub+nasub
+                  len_blk = len_blk*len_str(icmp)
+c dbg
+c                print *,'icmp, len_str: ',icmp,len_str(icmp)
+c dbg
                 end do
 
-              end do search_loop
+                ! get actual leading dimension
+                search_loop: do idx_hpvx = 1, ngastp
+                  hpvx = hpvxseq(idx_hpvx)
+                  do icmp = 1, ncsub
+                    if (hpvx_csub(icmp).eq.hpvx) then
+                      ld_blk = len_str(icmp)
+                      exit search_loop
+                    end if
+                  end do
+                  do icmp = 1, nasub
+                    if (hpvx_asub(icmp).eq.hpvx) then
+                      ld_blk = len_str(ncsub+icmp)
+                      exit search_loop
+                    end if
+                  end do
 
-              if (len_blk.le.0) cycle distr_loop
+                end do search_loop
+
+                if (len_blk.le.0) cycle distr_loop
               
-              ! increment distribution index
-              idxdis = idxdis+1
+                ! increment distribution index
+                idxdis = idxdis+1
               
-              if (njoined.eq.1.and.ntest.ge.150.or.
-     &             (ms_fix.and.ipass.eq.2)) then
-                if(.not.ms_fix)
-     &               write(lulog,*) 'current MS and IRREP distr:'
-                call expand_occ(msd,idx_graph(1,1,iblkoff+1),
+                if (njoined.eq.1.and.ntest.ge.150.or.
+     &               (ms_fix.and.ipass.eq.2)) then
+                  if(.not.ms_fix)
+     &                 write(lulog,*) 'current MS and IRREP distr:'
+                  call expand_occ(msd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    msdis_c,msdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                if(.not.ms_fix)
+                  if(.not.ms_fix)
      &               call wrt_occ_n(lulog,msd,njoined)
-                call expand_occ(igamd,idx_graph(1,1,iblkoff+1),
+                  call expand_occ(igamd,idx_graph(1,1,iblkoff+1),
      &                    ncsub,nasub,
      &                    gamdis_c,gamdis_a,
      &                    hpvx_csub,hpvx_asub,
      &                    njoined)
-                if(.not.ms_fix)
+                  if(.not.ms_fix)
      &               call wrt_occ_n(lulog,igamd,njoined)
-                if (njoined.eq.1) then
-                  did = msgmdid(hpvx_occ(1,1,iblkoff+1),
+                  if (njoined.eq.1) then
+                    did = msgmdid(hpvx_occ(1,1,iblkoff+1),
      &                        msd,igamd,ngam)
-                  write(lulog,*) 'DID old: ',did
+                    write(lulog,*) 'DID old: ',did
+                  end if
+                  write(lulog,*) 'current idxdis = ',idxdis
                 end if
-                write(lulog,*) 'current idxdis = ',idxdis
-              end if
 c dbg
-              if(ms_fix)then
-                do idx = 1, njoined
-                  tot_c = 0
-                  tot_a = 0
-                  do jdx = 1, ngastp
-                    tot_c = tot_c + msd(jdx,1,idx)
-                    tot_a = tot_a + msd(jdx,2,idx)
+                if(ms_fix)then
+                  do idx = 1, njoined
+                    tot_c = 0
+                    tot_a = 0
+                    do jdx = 1, ngastp
+                      tot_c = tot_c + msd(jdx,1,idx)
+                      tot_a = tot_a + msd(jdx,2,idx)
+                    enddo
+                    if(tot_c.ne.tot_a) cycle distr_loop
                   enddo
-                  if(tot_c.ne.tot_a) cycle distr_loop
-                enddo
-              endif
+                endif
 c dbg
 
               ! save current offset
-              if (ipass.eq.2) then
+              !if (ipass.eq.2) then
                 mel%off_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa)=idxstr
                 ! get ID of current distr
@@ -399,29 +405,34 @@ c dbg
                   write(lulog,*) idxmsdis_a(1:nasub)
                   write(lulog,*) gamdis_a(1:nasub)
                 end if
-              end if 
+              !end if 
 
-              ! increment string element index
-              idxstr = idxstr+len_blk
-              idxstr_tot = idxstr_tot+len_blk
+                ! increment string element index
+                idxstr = idxstr+len_blk
+                idxstr_tot = idxstr_tot+len_blk
 
-              if (ipass.eq.2) then
+              !if (ipass.eq.2) then
                 mel%len_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa) = len_blk
                 mel%ld_op_gmox(iblk)%
      &               d_gam_ms(idxdis,igama,idxmsa) = ld_blk
-              end if
+              !end if
 
-              if (ntest.ge.150) then
-                write(lulog,*) 'current block length: ',len_blk
-              end if
+                if (ntest.ge.150) then
+                  write(lulog,*) 'current block length: ',len_blk
+                end if
+              else ! ipass == 1
+                idxdis = idxdis+1 ! just increment
+              end if 
               
             end do distr_loop
 
-            mel%len_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr -
+            if (ipass.eq.2)
+     &       mel%len_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr -
      &           mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa)
 
-            mel%off_op_gmox(iblk)%maxd =
+            if (ipass.eq.1) ! note: now maxd > actually needed maxd
+     &       mel%off_op_gmox(iblk)%maxd =
      &           max(mel%off_op_gmox(iblk)%maxd,idxdis)
 
             if (ipass.eq.2) then
@@ -434,7 +445,8 @@ c dbg
 
         if (mel%diag_type.ne.0) deallocate(mapca,diag_idx,diag_ca)
 
-        mel%len_op_occ(iblk) = idxstr - mel%off_op_occ(iblk)
+        if (ipass.eq.2)
+     &    mel%len_op_occ(iblk) = idxstr - mel%off_op_occ(iblk)
 
         deallocate(hpvx_csub,hpvx_asub,
      &           occ_csub, occ_asub,
@@ -446,10 +458,10 @@ c dbg
 
       end do occ_cls
 
-      mel%len_op = idxstr_tot
+      if (ipass.eq.2) mel%len_op = idxstr_tot
 
       if (ntest.ge.100) then
-        if (ipass.eq.1) then
+        if (ipass.eq.2) then
           write(lulog,*) 'total number of operator elements: ',
      &         mel%len_op
           write(lulog,*) 'length per occupation class:'
@@ -469,7 +481,7 @@ c dbg
             call iwrtma(mel%off_op_gmo(iblk)%gam_ms,
      &           ngam,nexc+1,ngam,nexc+1)
           end do
-        else
+        !else
           write(lulog,*) 'info per occupation class, DISTR, IRREP, MS:'
           write(lulog,*) 'offsets:'
           do iblk = 1, nblk

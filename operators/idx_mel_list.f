@@ -19,7 +19,7 @@
      &     op_info
 
       integer ::
-     &     imel, llabel, llabel2
+     &     imel, llabel
 
       if (ntest.ge.100) then
         write(lulog,*) '--------------------'

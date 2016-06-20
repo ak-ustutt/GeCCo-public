@@ -2,9 +2,12 @@
 
       implicit none
 
+      include 'stdunit.h'
       include 'opdim.h'
       include 'def_graph.h'
       include 'def_strinf.h'
+
+      integer, parameter :: ntest = 00
 
       integer, intent(in) ::
      &     nsym, maxidxms
@@ -29,6 +32,17 @@
           end do
         end do
       end do
+
+      if (ntest.ge.100) then
+        write(lulog,*) 'the lenstr array:'
+        do igraph = 1, ngraph
+          write(lulog,*) 'graph ',igraph
+          do idxms = 1, maxidxms
+            write(lulog,'(1x,i4,2x,8i8)') 
+     &           idxms,lenstr(1:nsym,idxms,igraph)
+          end do
+        end do
+      end if
 
       return
       end

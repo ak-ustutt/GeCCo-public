@@ -287,7 +287,9 @@ c        call atim_cs(cpu0,sys0)
         ! resort OpSHORT
         if (op1shorter) then
           ! OMP: make loop over L-string (EX1)
-          call collect_block(xscr(idxopsscr),xop1,
+          !call collect_block(xscr(idxopsscr),xop1,
+          call collect_block_impr(xscr(idxopsscr),xop1,
+          !call collect_block_n(xscr(idxopsscr),xop1,
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot,
      &         ncnt,.false.,
@@ -307,7 +309,9 @@ c        call atim_cs(cpu0,sys0)
      &         ireo_ex1c1,ireo_ex1a1)
         else
           ! OMP: cf. above
-          call collect_block(xscr(idxopsscr),xop2,
+          !call collect_block(xscr(idxopsscr),xop2,
+          call collect_block_impr(xscr(idxopsscr),xop2,
+          !call collect_block_t(xscr(idxopsscr),xop2,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot, ! CA exchanged !
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot, ! CA exchanged !
      &         ncnt,.true.,
@@ -366,7 +370,9 @@ c          call atim_cs(cpu0,sys0)
 
           ! resort OpLONG -> (CNT,EX_LONG) for current block
           if (op1shorter) then
-            call collect_block(xscr(idxoplscr),xop2,
+            !call collect_block(xscr(idxoplscr),xop2,
+            call collect_block_impr(xscr(idxoplscr),xop2,
+            !call collect_block_t_i(xscr(idxoplscr),xop2,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot, ! CA exchanged !
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot, ! CA exchanged !
      &         ncnt,.true.,
@@ -385,7 +391,9 @@ c          call atim_cs(cpu0,sys0)
      &         ireo_cnta2,ireo_cntc2,    ! CA exchanged !
      &         ireo_ex2c2,ireo_ex2a2)
           else
-            call collect_block(xscr(idxoplscr),xop1,
+            !call collect_block(xscr(idxoplscr),xop1,
+            call collect_block_impr(xscr(idxoplscr),xop1,
+            !call collect_block_n_i(xscr(idxoplscr),xop1,
      &         istr_cntc_bst,istr_cntc_bnd,nstr_cntc_tot,
      &         istr_cnta_bst,istr_cnta_bnd,nstr_cnta_tot,
      &         ncnt,.false.,

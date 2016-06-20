@@ -137,6 +137,7 @@ c        call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
 c        call wrt_occ_n(6,iocc_op1op2tmp,njoined_op1op2)
 c dbg
         if (.not.self) then
+!          if (.false.) then
           call contr_op1op2_wmaps_c(xfac,bc_sign,
      &       update,xret,type_xret,
      &       me_op1,me_op2,me_op1op2,me_op1op2tmp,
@@ -145,6 +146,16 @@ c dbg
      &       idoffop1,idoffop2,idoffop1op2,
      &       cnt_info,reo_info,
      &       str_info,strmap_info,orb_info)
+!          else
+!          call contr_op1op2_impr(xfac,bc_sign,
+!     &       update,xret,type_xret,
+!     &       me_op1,me_op2,me_op1op2,me_op1op2tmp,
+!     &       tra_op1, tra_op2, tra_op1op2,
+!     &       iblkop1,iblkop2,iblkop1op2,iblkop1op2tmp,
+!     &       idoffop1,idoffop2,idoffop1op2,
+!     &       cnt_info,reo_info,
+!     &       str_info,strmap_info,orb_info)
+!          end if
         else
           call trace_op(xfac,bc_sign,
      &     update,xret,type_xret,

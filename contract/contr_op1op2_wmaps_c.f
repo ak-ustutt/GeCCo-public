@@ -18,6 +18,11 @@
 *
 *     andreas, feb 2007
 *
+*     further improved version:
+*      trying to reduce overhead due to set_len_str
+*
+*     andreas, june 2016
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -96,7 +101,7 @@
      &     igamc_ac, igamc_a, igamc_c,
      &     igamex1_a, igamex1_c, igamex2_a, igamex2_c,
      &     idxms, idxdis, lenmap, lbuf_op1op2, lblk_op1op2tmp,
-     &     idxdis_op1op2, idx, ii
+     &     idxdis_op1op2, idx, ii, maxidxms
       integer ::
      &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
      &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2, 
@@ -189,7 +194,8 @@
      &     map_info_reo2c(:), map_info_reo2a(:),
      &     mapca12(:), diag_idx12(:), diag_ca12(:),
      &     mapca1(:), diag_idx1(:), diag_ca1(:),
-     &     mapca2(:), diag_idx2(:), diag_ca2(:)
+     &     mapca2(:), diag_idx2(:), diag_ca2(:),
+     &     lenstr_array(:,:,:)
 
 c dbg
       integer, pointer ::
@@ -283,6 +289,30 @@ c dbg
       nablk_op1op2 = cnt_info%nablk_op1op2 ! 2,3
       ncblk_op1op2tmp = cnt_info%ncblk_op1op2tmp ! 1,7
       nablk_op1op2tmp = cnt_info%nablk_op1op2tmp ! 2,7
+c dbg - call statistics
+      st_total = st_total+1
+      if (ncblk_ex1.eq.0) st_ex1c_z = st_ex1c_z+1
+      if (nablk_ex1.eq.0) st_ex1a_z = st_ex1a_z+1
+      if (ncblk_ex2.eq.0) st_ex2c_z = st_ex2c_z+1
+      if (nablk_ex2.eq.0) st_ex2a_z = st_ex2a_z+1
+      if (ncblk_cnt.eq.0) st_cntc_z = st_cntc_z+1
+      if (nablk_cnt.eq.0) st_cnta_z = st_cnta_z+1
+      if (ncblk_ex1.eq.0.and.nablk_ex1.eq.0.or.
+     &    ncblk_ex1.eq.0.and.nablk_cnt.eq.0.or.
+     &    ncblk_cnt.eq.0.and.nablk_ex1.eq.0.or.
+     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0) 
+     &         st_noop1_reo = st_noop1_reo+1
+      if (ncblk_ex2.eq.0.and.nablk_ex2.eq.0.or.
+     &    ncblk_ex2.eq.0.and.ncblk_cnt.eq.0.or.
+     &    nablk_cnt.eq.0.and.nablk_ex2.eq.0.or.
+     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0) 
+     &         st_noop2_reo = st_noop2_reo+1
+      if (ncblk_ex1.eq.0.and.nablk_ex1.eq.0.or.
+     &    ncblk_ex1.eq.0.and.nablk_ex2.eq.0.or.
+     &    ncblk_ex2.eq.0.and.nablk_ex1.eq.0.or.
+     &    ncblk_ex2.eq.0.and.nablk_ex2.eq.0) 
+     &         st_noop12_reo = st_noop12_reo+1
+c dbg
 
       cinfo_op1c => cnt_info%cinfo_op1c
       cinfo_op1a => cnt_info%cinfo_op1a
@@ -683,7 +713,15 @@ c      cnt_rd(2) = cnt_rd(2) + sys-sys0
         end if
       end if
 
-      graphs => str_info%g
+      nsym = orb_info%nsym
+      ! store info on graphs in more conventional array
+      ! to allow calling of set_len_str2
+      maxidxms =  str_info%max_idxms
+      allocate(lenstr_array(nsym,str_info%max_idxms,str_info%ngraph))
+      call set_lenstr_array(lenstr_array,nsym,
+     &                      str_info%max_idxms,str_info)
+
+      ! OLD graphs => str_info%g
 
       ndis_op1 => me_op1%off_op_gmox(iblkop1)%ndis
       gam_ms_op1 => me_op1%off_op_gmo(iblkop1)%gam_ms
@@ -865,7 +903,6 @@ cc dbg
       igambnd(1,2) = 1
       igambnd(1,3) = 1
       ! maximum IRREP
-      nsym = orb_info%nsym
       igambnd(2,1) = nsym
       igambnd(2,2) = nsym
       igambnd(2,3) = nsym
@@ -1176,8 +1213,8 @@ c     &               cinfo_ex1a,nablk_ex1)
      &             =ishft(cinfo_ex1a(ii,1)-msex1dis_a(ii),-1)+1
                  end do
 
-                call set_len_str(lstrex1,ncblk_ex1,nablk_ex1,
-     &                  graphs,
+                call set_len_str2(lstrex1,ncblk_ex1,nablk_ex1,
+     &                  lenstr_array,nsym,maxidxms,
      &                  cinfo_ex1c(1,2),idxmsex1dis_c,
      &                                 gmex1dis_c,cinfo_ex1c(1,3),
      &                  cinfo_ex1a(1,2),idxmsex1dis_a,
@@ -1222,8 +1259,8 @@ c     &                 cinfo_ex2a,nablk_ex2)
      &               =ishft(cinfo_ex2a(ii,1)-msex2dis_a(ii),-1)+1
                   end do
 
-                  call set_len_str(lstrex2,ncblk_ex2,nablk_ex2,
-     &                 graphs,
+                  call set_len_str2(lstrex2,ncblk_ex2,nablk_ex2,
+     &                 lenstr_array,nsym,maxidxms,
      &                 cinfo_ex2c(1,2),idxmsex2dis_c,
      &                                gmex2dis_c,cinfo_ex2c(1,3),
      &                 cinfo_ex2a(1,2),idxmsex2dis_a,
@@ -1260,9 +1297,9 @@ c     &                   cinfo_op1op2tmpa,nablk_op1op2tmp)
      &               =ishft(cinfo_op1op2tmpa(ii,1)-msi_dis_a(ii),-1)+1
                   end do
 
-                  call set_len_str(
+                  call set_len_str2(
      &                   lstrop1op2tmp,ncblk_op1op2tmp,nablk_op1op2tmp,
-     &                 graphs,
+     &                   lenstr_array,nsym,maxidxms,
      &                   cinfo_op1op2tmpc(1,2),idxmsi_dis_c,
      &                                  gmi_dis_c,cinfo_op1op2tmpc(1,3),
      &                   cinfo_op1op2tmpa(1,2),idxmsi_dis_a,
@@ -1420,8 +1457,8 @@ c     &                   cinfo_cnta,nablk_cnt)
                     end do
 
                     ! length of contraction
-                    call set_len_str(lstrcnt,ncblk_cnt,nablk_cnt,
-     &                  graphs,
+                    call set_len_str2(lstrcnt,ncblk_cnt,nablk_cnt,
+     &                  lenstr_array,nsym,maxidxms,
      &                  cinfo_cntc(1,2),idxmsc_dis_c,
      &                                  gmc_dis_c,cinfo_cntc(1,3),
      &                  cinfo_cnta(1,2),idxmsc_dis_a,
@@ -1458,9 +1495,9 @@ c     &                   cinfo_op1a,nablk_op1)
      &                =ishft(cinfo_op1a(ii,1)-msop1dis_a(ii),-1)+1
                     end do
 
-                    call set_len_str(
+                    call set_len_str2(
      &                   lstrop1,ncblk_op1,nablk_op1,
-     &                   graphs,
+     &                   lenstr_array,nsym,maxidxms,
      &                   cinfo_op1c(1,2),idxmsop1dis_c,
      &                                    gmop1dis_c,cinfo_op1c(1,3),
      &                   cinfo_op1a(1,2),idxmsop1dis_a,
@@ -1575,9 +1612,9 @@ c     &                   cinfo_op2a,nablk_op2)
      &                =ishft(cinfo_op2a(ii,1)-msop2dis_a(ii),-1)+1
                     end do
 
-                    call set_len_str(
+                    call set_len_str2(
      &                   lstrop2,ncblk_op2,nablk_op2,
-     &                   graphs,
+     &                   lenstr_array,nsym,maxidxms,
      &                   cinfo_op2c(1,2),idxmsop2dis_c,
      &                                    gmop2dis_c,cinfo_op2c(1,3),
      &                   cinfo_op2a(1,2),idxmsop2dis_a,
@@ -2048,6 +2085,7 @@ c      call atim_cs(cpu,sys)
       deallocate(dmap_op1c,dmap_op1a,
      &           dmap_op2c,dmap_op2a,
      &           dmap_op1op2tmpc,dmap_op1op2tmpa)
+      deallocate(lenstr_array)
 
       ifree = mem_flushmark()
 

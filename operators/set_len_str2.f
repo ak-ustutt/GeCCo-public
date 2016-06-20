@@ -63,6 +63,12 @@ c dbg
         end do
         do idx_a = 1, na
           idx_ca = idx_ca + 1
+c dbg
+c        print *,'ddd ',idx_ca,idx_a,nsym,mxidxms
+c        print *,'ddd ',gam_a(idx_a),idxms_a(idx_a),graph_a(idx_a)
+c        print *,'ddd ',
+c     &   len_str_array(gam_a(idx_a),idxms_a(idx_a),graph_a(idx_a))
+c dbg
           len_str(idx_ca) =
      &         len_str_array(gam_a(idx_a),idxms_a(idx_a),graph_a(idx_a))
         end do
