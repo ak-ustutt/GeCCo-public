@@ -1,0 +1,4 @@
+#! /bin/bash 
+
+
+python -i -c "from registry_editor import * ;     main()"
