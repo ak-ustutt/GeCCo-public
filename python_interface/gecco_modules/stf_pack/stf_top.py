@@ -539,9 +539,10 @@ class _Formula( _FormulaStringRepUtil):
         ges_dic=self._combine_dicts(special_dic)
         ret_list=[]
         for bracket in self._content:
+            print ges_dic
             ret_list+=bracket.set_rule(ges_dic,settle=settle)
             ges_dic[NEW]=False
-            if (flags is None) or (CLEANUP in flags):
+            if ((flags is None) or (CLEANUP in flags)) and settle:
                 SUM_TERMS({
                     LABEL_IN:self.arguments[LABEL],
                     LABEL_RES:self.arguments[LABEL]})
@@ -634,10 +635,11 @@ class GenForm(_Formula):
 
     def _set_values(self,label,OP_res,body):
         """Deal with the arguments of __init__"""
+        print label,OP_res,body
         if label is not None:
             self.arguments[LABEL]=label
         if OP_res is not None:
-            self.arguments[OP_res]=OP_res
+            self.arguments[OP_RES]=OP_res
         if body is not None:
             self._string=self.preprocess_string(body)
             self.process_string(self._string)
