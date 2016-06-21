@@ -23,22 +23,23 @@ _typ_dict={"8":"str",
            "1":"log",
            "4":"rl8",}
 
-_typ_cast_dict={"8":str,
-                "2":int,
-                "1":mybool,
-                "4":myfloat,}
 
 _typ_dict_r={"str":"8",str:"8","character":"8",
              "int":"2",int:"2","integer":"2",
              "log":"1",bool:"1","bool":"1","logical":"1",
              "rl8":"4",float:"4","float":"4","real":"4"}
 
-class NodeNotFoundError(Exception):
+class CustomException(Exception):
+    pass
+class NodeNotFoundError(CustomException):
     pass
 
-class ExistingElementError(Exception):
+class ExistingElementError(CustomException):
     pass
 
+class InconsistentRegistryError(CustomException):
+    pass
+    
 
 def _format_keyword(key):
     status=key.getAttribute("status")
@@ -80,9 +81,45 @@ def _format_comment(self):
 dom.Element.__str__=_format_Node
 dom.Comment.__str__=_format_comment
 
+class Argument(object):
+    cast_dict={"8":str,
+               "2":int,
+               "1":mybool,
+               "4":myfloat,}
+    
+    
+    @staticmethod
+    def det_length(value,typ, length =None):
+        """ returns the length of an argument with or without given length"""
+        if (length is None):
+            if (_typ_dict[typ] == "str" or 
+                isinstance(value,list) or 
+                isinstance(value,tuple) ):
+                length = str(len(value))
+            else: 
+                length="1"
+        else:
+            length=str(int(length))
+        return length
+
+    @classmethod
+    def cast_value(cls,value,typ):
+        """converts the value into a digestible string
+
+        only accepts string-numericals as typ
+        """
+        cast=cls.cast_dict[typ]
+        if ( isinstance(value,list) or 
+             isinstance(value,tuple) ):
+            value=",".join(
+                [str(cast(val)) for val in value])
+        elif value is not None :
+            value=str(cast(value))
 
 
 
+
+    
 class _Registry(object):
     """ class to represent the global state"""
 
@@ -97,11 +134,12 @@ class _Registry(object):
         self.root=None
 
     def get_tree(self):
+        """ returns the registry as DOM-document"""
         return self.tree
 
     def set_root(self,root_tag=None):
         """ sets the keyword root element"""
-        root_tag=root_tag if root_tag is not None else self.key_root_tag
+        root_tag=root_tag if (root_tag is not None) else self.key_root_tag
         if root_tag is not None:
             self.root=self.tree.getElementsByTagName(root_tag)[0]
         else:
@@ -111,70 +149,62 @@ class _Registry(object):
 
     def load_file(self,file=None):
         """loads a (new) xml file, the default file if no file is given"""
-        file = self.file_ if file is None else file 
+        file = file if (file is not None) else self.file_
         self.tree=dom.parse(file)
         self.set_root()
 
-    def save_to_file(self, file):
-        file = file  if file is not None else self.file_
+    def saveto_file(self, file):
+        file = file  if (file is not None) else self.file_
         with open(file, "w") as f:
             self.tree.writexml(f,indent="",addindent="",newl="")
     
-    def get_currentcontext(self):
+    def get_curContext(self):
         """ returns the context of the current keyword (including itself) as list"""
         current=self.current_keyword
         contextlist=[]
-        while  current.tagName not in  [self.key_root_tag, "#document"]:
+        while  current.nodeName not in  [self.key_root_tag, "#document"]:
             contextlist=[current.getAttribute("name")]+contextlist
             current=current.parentNode
         return contextlist
 
-    def get_currentChildren(self):
+
+        
+    def get_curChildren(self,tag=None,name=None):
         """ Returns a list of all child elements of the current node"""
-        return self.current_keyword.childNodes
+        return [ child for child in self.current_keyword.childNodes
+                 if ( tag is None or tag == child.nodeName)
+                 if (name is None or ( child.nodeType==1  and hasAttribute("name") and
+                                       child.getAttribute("name") == name) )]
 
     def moveto_Root(self):
         self.current_keyword=self.root
 
     def moveto_Child(self,name):
         """sets moves the currently active node to a child with name name"""
-        for node in self.current_keyword.childNodes:
-            if (node.getAttribute("name") == name):
-                if (node.nodeName == "keyword"):
-                    self.current_keyword=node
-                    return None
-        raise NodeNotFoundError("No keyword found, named:{name}".format(name=name))
+        nodes=self.get_curChildren(tag="keyword", name=name)
+        if len(nodes) == 0:
+            raise NodeNotFoundError("No keyword found, named:{name}".format(name=name))
+        elif len(nodes) ==1 :
+            self.current_keyword=nodes[0]
+        else:
+            raise InconsistentRegistryError("More than one keyword of name {name} found.".format(name=name))
+
 
     def moveto_Parent(self):
         self.current_keyword=self.current_keyword.parentNode
 
-    def _append_comment_to(self,node,comment):
-        comment=str(comment)
-        if comment is not None:
-            new_comment=self.tree.createComment(comment)
+    def _append_comment(self,node,comment):
+        """appends a comment to the given Node"""
+        if comment is not None and len( str(comment).strip() ) != 0 :
+            new_comment=self.tree.createComment(str(comment).strip() )
             node.appendChild(new_comment)
 
     def append_argument(self,name,value,typ,length,description):
         typ=_typ_dict_r[typ]
         name=str(name)
-        if length is None and \
-           (_typ_dict[typ] == "str" or \
-            isinstance(value,list) or \
-            isinstance(value,tuple) ):
-            length = str(len(value))
-        elif length is None:
-            length="1"
-        else:
-            length=str(int(length)) # make sure, length can be converted to integer
-        cast=_typ_cast_dict[typ]
-        if isinstance(value,list) or \
-           isinstance(value,tuple) :
-            value=",".join(
-                [str(cast(val)) for val in value])
-        elif value is not None :
-            value=str(cast(value))
-        existing=[key for key in self.get_currentChildren() if key.nodeType == 1 and key.getAttribute("name") == name ]
-        if len(existing) > 0:
+        length=Argument.det_length(value,typ,length)
+        value=Argument.cast_value(value,typ)
+        if len(self.get_curChildren( name=name)) > 0:
             raise ExistingElementError("This name already exists")
         new_elem=self.tree.createElement("argument")
         new_elem.setAttribute("name",name)
@@ -184,27 +214,28 @@ class _Registry(object):
         new_elem=self.current_keyword.appendChild(new_elem)
         if value is not None:
             new_elem.setAttribute("value", value)
-        self._append_comment_to(new_elem,description)
+        self._append_comment(new_elem,description)
         return new_elem
 
     def append_keyword(self,name,comment):
         """appends a possibly commented keyword to current element"""
         name=str(name)
-        existing=[key for key in self.get_currentChildren() if key.nodeType == 1 and key.getAttribute("name") == name ]
-        if len(existing) > 0:
+        if len(self.get_curChildren(name=name)) > 0:
             raise ExistingElementError("This name already exists")
         new_elem=self.tree.createElement("keyword")
         new_elem.setAttribute("name",name)
         new_elem.setAttribute("status","A")
         new_elem=self.current_keyword.appendChild(new_elem)
         if comment is not None:
-            self._append_comment_to(new_elem,comment)
+            self._append_comment(new_elem,comment)
         return new_elem
 
-    def delnode(self, name):
-        existing=[key for key in self.get_currentChildren() if key.getAttribute("name") == name ]
+    def delnode(self, name ):
+        existing=self.get_curChildren(name=name)
         if len(existing) == 0:
             raise ExistingElementError("Element doesn't exist")
+        elif (len(existing) > 1  ):
+            raise InconsistentRegistryError("More than one element of name {name} exists.".format(name=name))
         else:
             self.current_keyword.removeChild(existing[0]).unlink()
 
@@ -225,7 +256,7 @@ def _get_comment(node):
 
 
 def _update_promt():
-    _set_promt(_registry.get_currentcontext())
+    _set_promt(_registry.get_curContext())
 
 def _set_promt(context_list):
     sys.ps1=".".join(context_list)+">" if (len(context_list) >0) else ">" 
@@ -244,7 +275,7 @@ def save(file=None):
 
     if no file is given: save to the file last loaded from
     """
-    _registry.save_to_file(file)
+    _registry.saveto_file(file)
     
 def cd(context):
     """cd(context) change current keyword
@@ -254,67 +285,72 @@ def cd(context):
     "~"  -> going back to the root keyword
     a string of type <key>[.<key>[.<key> ...]]
     """
-    if context in ["..","../"] :
-        _registry.moveto_Parent()
-    elif context in ["~","~/"] :
-        _registry.root()
-    else :
-        for key in context.split("."):
-            _registry.moveto_Child(key)
-    _update_promt()
+    try:
+        if context in ["..","../"] :
+            _registry.moveto_Parent()
+        elif context in ["~","~/"] :
+            _registry.moveto_Root()
+        else :
+            for key in context.split("."):
+                _registry.moveto_Child(key)
+        _update_promt()
+    except NodeNotFoundError:
+        print "That keyword doesn't exist'"
+    except InconsistentRegistryError:
+        print "something is wrong with this registry"
 
-ck=cd
-ck.__doc__= """ck(context) change current keyword
+def ck(context):
+    """ck(context) change current keyword
 
     context has to be one of 
     ".." -> going one level up
     "~"  -> going back to the root keyword
     a string of type <key>[.<key>[.<key> ...]]
     """
-
+    cd(context)
 
 
 def ls(flags=""):
     """lists the keywords and arguments of the next sublevel
 
     default format is <status> <kind> <placeholder> <name>[,<type>(<length>):<value>]\n[<comment>] 
-    """ 
-    for node in _registry.get_currentChildren():
-        if node.nodeName == "keyword":
-            print _format_keyword(node)
-            comment=_get_comment(node)
-            if comment is not None:
-                print _format_comment(comment)
-    for node in _registry.get_currentChildren():
-        if node.nodeName == "argument":
-            print _format_argument(node)
-            comment=_get_comment(node)
-            if comment is not None:
-                print _format_comment(comment)
-
+    """
+    for node in _registry.get_curChildren(tag="keyword"):
+        print _format_keyword(node)
+        comment=_get_comment(node)
+        if comment is not None:
+            print _format_comment(comment)
+    for node in _registry.get_curChildren(tag="argument"):
+        print _format_argument(node)
+        comment=_get_comment(node)
+        if comment is not None:
+            print _format_comment(comment)
+            
 def get_tree():
     """ returns the currently loaded registry as a dom.minidom object for direct manipulation
     """
     return _registry.get_tree()
                 
-_main_run=True
 def main(parser=_parser,args=None):
     "function to set inital values not for public use"
-    global _main_run
-    if _main_run:
-        args=parser.parse_args(args)
-        load(args.file)
-    _main_run=False
+    args=parser.parse_args(args)
+    load(args.file)
 
 def mkkey(name,description=None):
     """ mkkey(name,[description])
 
     append a new keyword as subkeyword to the current keyword
     """
-#    if description is None:
-#        description=raw_input("Please give a short description for the use of the keyword")    
-    elem=_registry.append_keyword(name,description)
-    print _format_keyword(elem)
+    try:
+        elem=_registry.append_keyword(name,description)
+    except InconsistentRegistryError as ex:
+        print "something went really wrong:"
+        print ex
+    except ExistingElementError:
+        print "Sorry that name already exists."
+    else:
+        print "New keyword included:"
+        print _format_keyword(elem)
 
 def mkarg(name,value,typ,length=None,description=None):
     """ mkarg(name,value,typ,[length],[description])
@@ -335,16 +371,45 @@ def mkarg(name,value,typ,length=None,description=None):
     if description is None: 
         description=raw_input("Please give a short description for the argument:\n")
     description=None   if (len(description.strip()) == 0) else  description
+    try:
+        elem=_registry.append_argument(name,value,typ,length,description)
+    except InconsistentRegistryError as ex:
+        print "something went really wrong:"
+        print ex
+    except ExistingElementError:
+        print "Sorry that name already exists."
+    else:
+        print "new argument included:"
+        print _format_argument(elem)
 
-    elem=_registry.append_argument(name,value,typ,length,description)
-    print _format_argument(elem)
+
+def delkey(name):
+    """delkey(name) deletes a keyword subelement to the current keyword"""
+    try:
+        _registry.delnode(name)
+    except InconsistentRegistryError as ex:
+        print ex.msg
+        print "Sorry the keyword_editor cannot uniquely identify the element. "
+        print "you will have to remove it by hand."
+    except ExistingElementError as ex:
+        print ex
 
 def delarg(name):
     """delarg(name) deletes an argument subelement to the current keyword"""
-    _registry.delnode(name)
-def delkey(name):
-    """delkey(name) deletes a keyword subelement to the current keyword"""
-    _registry.delnode(name)
+    delkey(name)
+
+
+def describe(func=None):
+    """ describes a function. if no function is given, it lists all functions made available by 
+    registry_editor"""
+    if func is None:
+        print "The following commands are currently available"
+        for cmd in __all__:
+            print cmd
+    else :
+        string=func.__doc__
+        sting=string if ( string != "" ) else "Currently there is no description available for this function"
+        print string
 
 __all__=["ls",
          "load",
@@ -359,14 +424,3 @@ __all__=["ls",
          "describe",
 ]
 
-def describe(func=None):
-    """ describes a function. if no function is given, it lists all functions made available by 
-    registry_editor"""
-    if func is None:
-        print "The following commands are currently available"
-        for cmd in __all__:
-            print cmd
-    else :
-        string=func.__doc__
-        sting=string if ( string != "" ) else "Currently there is no description available for this function"
-        print string
