@@ -1,10 +1,12 @@
 import argparse
-import unittest as ut
 import sys,os
 
 import xml.dom.minidom as dom
 
 import re
+
+
+
 
 def mybool(string):
     if (bool(string)):
@@ -42,9 +44,9 @@ def _format_keyword(key):
     status=key.getAttribute("status")
     name=key.getAttribute("name")
     return "{stat} Keyword {plz}{name}"\
-            .format(stat=status,
-                    plz="-"*max(0,len(sys.ps1)-9),
-                    name=name)
+           .format(stat=status,
+                   plz="-"*max(0,len(sys.ps1)-9),
+                   name=name)
 
 def _format_argument(arg):
     status=arg.getAttribute("status")
@@ -238,6 +240,10 @@ def load(file):
     _update_promt()
     
 def save(file=None):
+    """ save(file) save the registry to the given file
+
+    if no file is given: save to the file last loaded from
+    """
     _registry.save_to_file(file)
     
 def cd(context):
@@ -258,6 +264,14 @@ def cd(context):
     _update_promt()
 
 ck=cd
+ck.__doc__= """ck(context) change current keyword
+
+    context has to be one of 
+    ".." -> going one level up
+    "~"  -> going back to the root keyword
+    a string of type <key>[.<key>[.<key> ...]]
+    """
+
 
 
 def ls(flags=""):
@@ -279,6 +293,8 @@ def ls(flags=""):
                 print _format_comment(comment)
 
 def get_tree():
+    """ returns the currently loaded registry as a dom.minidom object for direct manipulation
+    """
     return _registry.get_tree()
                 
 _main_run=True
@@ -327,10 +343,10 @@ def delarg(name):
     """delarg(name) deletes an argument subelement to the current keyword"""
     _registry.delnode(name)
 def delkey(name):
+    """delkey(name) deletes a keyword subelement to the current keyword"""
     _registry.delnode(name)
 
 __all__=["ls",
-         "main",
          "load",
          "save",
          "cd",
@@ -339,4 +355,18 @@ __all__=["ls",
          "mkarg",
          "delarg",
          "delkey",
-         "get_tree"]
+         "get_tree",
+         "describe",
+]
+
+def describe(func=None):
+    """ describes a function. if no function is given, it lists all functions made available by 
+    registry_editor"""
+    if func is None:
+        print "The following commands are currently available"
+        for cmd in __all__:
+            print cmd
+    else :
+        string=func.__doc__
+        sting=string if ( string != "" ) else "Currently there is no description available for this function"
+        print string

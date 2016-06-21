@@ -1,4 +1,14 @@
-#! /bin/bash 
+#! /usr/bin/env bash
+ 
 
+python -i -c "
+import readline
+import rlcompleter
+import os
+readline.parse_and_bind('tab: complete')
+from registry_editor import main 
+main()
+del main
+from registry_editor import *
+"
 
-python -i -c "from registry_editor import * ;     main()"
