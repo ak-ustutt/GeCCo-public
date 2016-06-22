@@ -1084,7 +1084,7 @@ c dbg
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
         
-        call print_out(strscr,title)
+        call print_out(" "//trim(strscr),trim(title))
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
