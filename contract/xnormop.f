@@ -110,7 +110,7 @@ c dbgend
       end do
       xnrm2 = xnrm2 + xnrm_cur
 c dbg
-      print *,'norm of block ',jblk,': ',sqrt(xnrm_cur)
+c      print *,'norm of block ',jblk,': ',sqrt(xnrm_cur)
 c dbgend
       end do
       

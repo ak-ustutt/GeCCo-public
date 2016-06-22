@@ -299,14 +299,14 @@
       end do
 
 c dbg
-      do iopt = 1,nopt
-         write(lulog,*) 'preconditioner: iopt = ',iopt
-         call wrt_mel_file(lulog,5,
-     &        me_dia(iopt)%mel,
-     &        1,me_dia(iopt)%mel%op%n_occ_cls,
-     &        str_info,orb_info)
-      enddo
-
+c      do iopt = 1,nopt
+c         write(lulog,*) 'preconditioner: iopt = ',iopt
+c         call wrt_mel_file(lulog,5,
+c     &        me_dia(iopt)%mel,
+c     &        1,me_dia(iopt)%mel%op%n_occ_cls,
+c     &        str_info,orb_info)
+c      enddo
+c
 c dbgend
 
       ! write information to opti_info about signs which occur
