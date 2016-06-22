@@ -108,14 +108,14 @@ if lag_type <=0:
     raise Exception("unknown lagrangian")
 
 if lag_type >=1:
-    SR1+="<C0^+*(LAM1)*(R1_q+R2g_q+[R1_q+R2g_q,T1+T2g])*C0>"
+    SR1+="<C0^+*(LAM1)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1+T2g])*C0>"
 if lag_type >=2:
-    SR1+="1/2<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1]+1/2*[[R1_q+R2g_q,T1],T2g]+[[R1_q,T2g],T2g])*C0>"
+    SR1+="1/6<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1]+[[R1_q+R2g_q,T1],T2g]+[[R1_q,T2g],T2g])*C0>"
 if lag_type >=3:
-    SR1+="1/6<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1],T1]+[[[R1_q+R2g_q,T1],T2g],T1]+[[[R1_q+R2g_q,T1],T1],T2g]+"\
+    SR1+="1/24<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1],T1]+[[[R1_q+R2g_q,T1],T2g],T1]+[[[R1_q+R2g_q,T1],T1],T2g]+"\
         "[[[R1_q,T2g],T2g],T1]+[[[R1_q,T2g],T1],T2g]+[[[R1_q,T1],T2g],T2g])*C0>"
 if lag_type >=4:
-    SR1+="1/24<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+[[[[R1_q+R2g_q,T1],T2g],T1],T1]+[[[[R1_q+R2g_q,T1],T1],T2g],T1]+"\
+    SR1+="1/120<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+[[[[R1_q+R2g_q,T1],T2g],T1],T1]+[[[[R1_q+R2g_q,T1],T1],T2g],T1]+"\
         "[[[[R1_q+R2g_q,T1],T1],T1],T2g]+"\
         "[[[[R1_q,T2g],T2g],T1],T1]+[[[[R1_q,T2g],T1],T2g],T1]+[[[[R1_q,T2g],T1],T1],T2g]+"\
         "[[[[R1_q,T1],T2g],T2g],T1]+[[[[R1_q,T1],T2g],T1],T2g]+[[[[R1_q,T1],T1],T2g],T2g]"\
@@ -153,17 +153,18 @@ if lag_type <=0:
 
 SR2=stf.GenForm("FORM_SR2t","Scal_S2")
 if lag_type >=1:
-    SR2+="<C0^+*(LAM2g)*(R1_q+R2g_q+[R1_q+R2g_q,T1]+[R1_q,T2g])*C0>"
+    SR2+="<C0^+*(LAM2g)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1]+1/2[R1_q,T2g])*C0>"
 if lag_type >=2:
-    SR2+="1/2<C0^+*(LAM2g)*([[R1_q+R2g_q,T1],T1]+[[R1_q,T2g],T1]+[[R1_q,T1],T2g])*C0>"
+    SR2+="1/6<C0^+*(LAM2g)*([[R1_q+R2g_q,T1],T1]+[[R1_q,T2g],T1]+[[R1_q,T1],T2g])*C0>"
 if lag_type >=3:
-    SR2+="1/6<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1],T1],T1]"\
+    SR2+="1/24<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1],T1],T1]"\
         "+[[[R1_q,T2g],T1],T1]+[[[R1_q,T1],T2g],T1]+[[[R1_q,T1],T1],T2g])*C0>"
 if lag_type >=4:
-    SR2+="1/24<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1],T1],T1],T1]"\
+    SR2+="1/120<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1],T1],T1],T1]"\
         "[[[[R1_q,T1+T2g],T1],T1],T1]+[[[[R1_q,T1],T2g],T1],T1]+[[[[R1_q,T1],T1],T2g],T1]+[[[[R1_q,T1],T1],T1],T2g])*C0>"
 if lag_type >=5:
     raise Exception("unknown lagrangian")
+
 print "\n".join([str(br) for br in SR2.show()])
     
 SR2.set_rule()
