@@ -565,6 +565,12 @@
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(UPDATE_HAMILTONIAN,tgt_info)
+      call set_arg('_PROTO_',UPDATE_HAMILTONIAN,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',UPDATE_HAMILTONIAN,'FAC',0,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(TRANS_LIST,tgt_info)
       call set_arg('_PROTO_',TRANS_LIST,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

@@ -1363,7 +1363,15 @@ c          mode = 'dia-R12'
         
         call add_op(label,fac,label_list,nfac,
      &       op_info,orb_info,str_info,init)
+*----------------------------------------------------------------------*
+      case(UPDATE_HAMILTONIAN)
+*----------------------------------------------------------------------*
 
+        call get_arg('LABEL_IN',rule,tgt_info,
+     &       val_label_list=label_list,ndim=nfac)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call add_1b_op_ham(label_list,fac,nfac,
+     &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
       case(TRANS_LIST)
 *----------------------------------------------------------------------*
