@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine import_propint_dalton(plist,prop_type,psym,
+      subroutine import_propint_dalton(plist,prop_type,psym,trplt,
      &                                 str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import property integrals from DALTON environment
@@ -27,6 +27,8 @@
      &     str_info
       type(orbinf), intent(in) ::
      &     orb_info
+      logical, intent(in) ::
+     &     trplt
 
       type(filinf) ::
      &     ffcmo, ffao
@@ -44,7 +46,7 @@
       call import_propao_dalton(ffao,prop_type,plist%gamt,psym,orb_info)
 
       ! transfrom to MO basis
-      call tran_one(plist,ffao,ffcmo,orb_info)
+      call tran_one(plist,ffao,ffcmo,trplt,orb_info)
 
 
       call file_delete(ffcmo)

@@ -536,6 +536,8 @@
      &     val_str='-',req=.true.)
       call set_arg('_PROTO_',IMPORT,'ENV',1,tgt_info,
      &     val_str=trim(env_type),def=.true.)
+      call set_arg('_PROTO_',IMPORT,'TRIPLET',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SPIN_PROJECT,tgt_info)
       call set_arg('_PROTO_',SPIN_PROJECT,'LIST',0,tgt_info,
@@ -596,6 +598,8 @@
 !     &     val_int=(/-1/),def=.true.)
       call set_arg('_PROTO_',SCALE,'IDX_LIST',1,tgt_info,
      &     val_int=(/0/),def=.true.)
+      call set_arg('_PROTO_',SCALE,'INV',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SCALE_COPY,tgt_info)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_RES',0,tgt_info,
@@ -658,6 +662,8 @@
      &     val_int=(/1/),req=.true.)
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type,def=.true.)
+      call set_arg('_PROTO_',EVALPROP,'TRIPLET',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(NORM_MEL,tgt_info)
       call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,

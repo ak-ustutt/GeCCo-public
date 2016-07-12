@@ -139,7 +139,7 @@ c dbg
      &       list_type,env_type)
 
         call import_op_el(rule%labels(1),
-     &       list_type,env_type,
+     &       list_type,env_type,.False.,
      &       op_info,str_info,strmap_info,orb_info)
 
       case(PRECONDITIONER)
