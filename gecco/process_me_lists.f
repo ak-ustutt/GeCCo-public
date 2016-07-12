@@ -204,7 +204,7 @@ c dbg
 
         call evalprop_parameters(+1,rule%parameters,ndens,rank,env_type)
 
-        call prop_evaluate(ndens,rank,rule%labels,
+        call prop_evaluate(ndens,rank,rule%labels,.False.,
      &       env_type,op_info,str_info,orb_info)
 
       case(SOLVENLEQ)
