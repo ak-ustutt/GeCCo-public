@@ -52,6 +52,8 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
+      include 'mdef_target_info.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -81,7 +83,8 @@
      &     orb_info
 
       logical ::
-     &     conv, use_s_t, use_s(nopt), trafo, init(nopt), home_in
+     &     conv, use_s_t, use_s(nopt), trafo, init(nopt), home_in,
+     &     restart
       character(len_opname) ::
      &     label
       integer ::
@@ -395,27 +398,62 @@ c dbgend
         if (ffspecial(idx)%fhand%unit.le.0)
      &       call file_open(ffspecial(idx)%fhand)
       end do
-      ! get initial amplitudes
-      if (nopt.eq.1) then
-      call init_guess(nopt,init,nroots,
-     &                me_opt,me_trv,me_dia,me_special,nspecial,
-     &                fl_mvp,depend,fl_spc,nspcfrm,
-     &                opti_info,orb_info,op_info,str_info,strmap_info)
+
+      call get_argument_value('calculate.solve.eigen',
+     &                        'restart',lval=restart)
+
+!     if (restart.and.nroots.eq.1) then
+      if (restart) then
+      ! get the initial amplitudes from files
+        do iopt = 1,nopt
+          if (ffopt(iopt)%fhand%unit.le.0) then
+            call file_open(ffopt(iopt)%fhand)
+          endif
+          inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
+          if (.not.restart) call warn('solve_evp',
+     &         'No amplitude file found for restart! Setting to zero.')
+          if (restart) then 
+            write(lulog,'(x,a,i1,a)')
+     &         'Using old amplitude file for vector ',iopt,'!'
+!           if(iopt.eq.1) call zeroop(me_opt(iopt)%mel) 
+            do iroot = 1, nroots
+              call switch_mel_record(me_trv(iopt)%mel,iroot)
+              call switch_mel_record(me_opt(iopt)%mel,iroot)
+              call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
+            enddo
+          else
+            do iroot = 1, nroots
+              call switch_mel_record(me_trv(iopt)%mel,iroot)
+              call zeroop(me_trv(iopt)%mel) 
+            enddo
+          endif
+        enddo
+
       else
-      call init_guess2(nopt,init,nroots,
-     &                me_opt,me_trv,me_dia,me_special,nspecial,
-     &                fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
-     &                opti_info,orb_info,op_info,str_info,strmap_info)
-      end if
+
+        ! get initial amplitudes
+        if (nopt.eq.1) then
+        call init_guess(nopt,init,nroots,
+     &                  me_opt,me_trv,me_dia,me_special,nspecial,
+     &                  fl_mvp,depend,fl_spc,nspcfrm,
+     &                  opti_info,orb_info,op_info,str_info,strmap_info)
+        else
+        call init_guess2(nopt,init,nroots,
+     &                  me_opt,me_trv,me_dia,me_special,nspecial,
+     &                  fl_mvp,depend,fl_spc,nspcfrm,
+     &                  opti_info,orb_info,op_info,str_info,strmap_info)
+        end if
+      endif
+ 
 
 c dbg
-      do iopt = 1,nopt
-         write(lulog,*) 'starting trial vector (before): iopt = ',iopt
-         call wrt_mel_file(lulog,5,
-     &        me_trv(iopt)%mel,
-     &        1,me_trv(iopt)%mel%op%n_occ_cls,
-     &        str_info,orb_info)
-      enddo
+c     do iopt = 1,nopt
+c        write(lulog,*) 'starting trial vector (before): iopt = ',iopt
+c        call wrt_mel_file(lulog,5,
+c    &        me_trv(iopt)%mel,
+c    &        1,me_trv(iopt)%mel%op%n_occ_cls,
+c    &        str_info,orb_info)
+c     enddo
 
 c dbgend
       ! start optimization loop
