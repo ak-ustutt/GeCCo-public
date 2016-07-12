@@ -173,7 +173,7 @@ class _Registry(object):
         """ Returns a list of all child elements of the current node"""
         return [ child for child in self.current_keyword.childNodes
                  if ( tag is None or tag == child.nodeName)
-                 if (name is None or ( child.nodeType==1  and hasAttribute("name") and
+                 if (name is None or ( child.nodeType==1  and child.hasAttribute("name") and
                                        child.getAttribute("name") == name) )]
 
     def moveto_Root(self):
