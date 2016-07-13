@@ -402,7 +402,6 @@ c dbgend
       call get_argument_value('calculate.solve.eigen',
      &                        'restart',lval=restart)
 
-!     if (restart.and.nroots.eq.1) then
       if (restart) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
@@ -440,7 +439,7 @@ c dbgend
         else
         call init_guess2(nopt,init,nroots,
      &                  me_opt,me_trv,me_dia,me_special,nspecial,
-     &                  fl_mvp,depend,fl_spc,nspcfrm,
+     &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         end if
       endif
