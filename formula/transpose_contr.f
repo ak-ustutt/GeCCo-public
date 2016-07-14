@@ -58,7 +58,8 @@
       xarc => contr%xarc
       
       ! set transposition info for result
-      contr%dagger = .not.contr%dagger
+      if (op_info%op_arr(contr%idx_res)%op%n_occ_cls.gt.1)
+     &     contr%dagger = .not.contr%dagger
 
       ! process vertices
       ! reverse sequence

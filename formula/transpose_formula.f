@@ -21,6 +21,10 @@
 
       type(formula_item), pointer ::
      &     form_ptr
+      type(contraction), pointer ::
+     &     contr
+      logical ::
+     &     scal
 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'transpose_formula')
@@ -28,9 +32,13 @@
         call print_form_list(lulog,form_head,op_info)
       end if
 
+      scal = op_info%op_arr(form_head%target)%op%n_occ_cls.gt.1
+
       form_ptr => form_head
       do
-        form_ptr%target = -form_ptr%target
+        
+        if (scal) form_ptr%target = -form_ptr%target
+
         if (form_ptr%command.eq.command_add_contribution)
      &       call transpose_contr(form_ptr%contr,op_info)
 
