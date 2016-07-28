@@ -9,7 +9,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'ifc_memman.h'
@@ -110,6 +110,10 @@
               nstr2 = graph2%lenstr_gm(igam2,idxms2)
               do igam1 = 1, nsym
                 nstr1 = graph1%lenstr_gm(igam1,idxms1)
+                if (ntest.ge.100.and.ipass.eq.1)
+     &            write(lulog,'(a,2i14,4i4)') ' nstr1,nstr2: ',
+     &                    nstr1,nstr2,
+     &                    igam1,igam2,idxms1,idxms2
                 maxlen_blk = max(maxlen_blk,nstr1*nstr2)
                 if (ipass.eq.2) then
                   strmap_info%offsets(idxgrgr)%
