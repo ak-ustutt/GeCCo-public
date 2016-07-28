@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine import_op_el(label_mel,
-     &     list_type,env_type,
+     &     list_type,env_type,trplt,
      &     op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     import matrix elements from environment for ME-list with 
@@ -35,6 +35,8 @@
      &     strmap_info
       type(orbinf), intent(in) ::
      &     orb_info
+      logical, intent(in) ::
+     &     trplt
 
       integer, parameter ::
      &     use_scaling = 10  ! use 0 to turn off scaling
@@ -193,12 +195,12 @@ c     &                                str_info,orb_info)
      &         str_info,orb_info)
 
         case ('XDIPLEN','YDIPLEN','ZDIPLEN')
-          call import_propint_dalton(mel_target,list_type,1,
+          call import_propint_dalton(mel_target,list_type,1,trplt,
      &         str_info,orb_info)
 
         case ('XDIPVEL','YDIPVEL','ZDIPVEL',
      &        'XANGMOM','YANGMOM','ZANGMOM')
-          call import_propint_dalton(mel_target,list_type,-1,
+          call import_propint_dalton(mel_target,list_type,-1,trplt,
      &         str_info,orb_info)
 
         case default
@@ -213,11 +215,11 @@ c     &                                str_info,orb_info)
         case ('H_INT')
           call import_hamint_dalton(mel_target,str_info,orb_info)
         case ('XDIPLEN','YDIPLEN','ZDIPLEN')
-          call import_propint_dalton(mel_target,list_type,1,
+          call import_propint_dalton(mel_target,list_type,1,trplt,
      &         str_info,orb_info)
         case ('XDIPVEL','YDIPVEL','ZDIPVEL',
      &        'XANGMOM','YANGMOM','ZANGMOM')
-          call import_propint_dalton(mel_target,list_type,-1,
+          call import_propint_dalton(mel_target,list_type,-1,trplt,
      &         str_info,orb_info)
 
         case default
@@ -230,11 +232,11 @@ c     &                                str_info,orb_info)
         case ('H_INT')
           call import_hamint_dalton64(mel_target,str_info,orb_info)
         case ('XDIPLEN','YDIPLEN','ZDIPLEN')
-          call import_propint_dalton(mel_target,list_type,1,
+          call import_propint_dalton(mel_target,list_type,1,trplt,
      &         str_info,orb_info)
         case ('XDIPVEL','YDIPVEL','ZDIPVEL',
      &        'XANGMOM','YANGMOM','ZANGMOM')
-          call import_propint_dalton(mel_target,list_type,-1,
+          call import_propint_dalton(mel_target,list_type,-1,trplt,
      &         str_info,orb_info)
 
         case default
@@ -255,6 +257,9 @@ c     &                                str_info,orb_info)
         select case(trim(list_type))
         case ('H_INT')
           call import_hamint_molpro_dump(mel_target,str_info,orb_info)
+        case ('ZDIPLEN')
+          call import_propint_molpro(mel_target,list_type,1,
+     &         str_info,orb_info)
         case default
           call quit(1,'import_op_el',
      &         'MOLPRO_DUMP: cannot handle list_type "'
@@ -265,6 +270,7 @@ c     &                                str_info,orb_info)
         select case(trim(list_type))
         case ('H_INT')
           call import_hamint_molpro(mel_target,str_info,orb_info)
+!! TODO reading property integrals need to be implemented for molpro_ifc
         case default
           call quit(1,'import_op_el',
      &         'MOLPRO_IFC: cannot handle list_type "'

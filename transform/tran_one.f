@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine tran_one(me_mo,ffao,ffcmo,orb_info)
+      subroutine tran_one(me_mo,ffao,ffcmo,trplt,orb_info)
 *----------------------------------------------------------------------*
 *     transform one-particle quantity on file ffao using CMOs from
 *     file ffcmo and store result on ME-list me_mo
@@ -24,6 +24,8 @@
      &     me_mo
       type(orbinf), intent(in), target ::
      &     orb_info
+      logical, intent(in) ::
+     &     trplt
 
 
       logical ::
@@ -159,9 +161,9 @@
         ! process zero-particle term: <0|V|0>
         if (max(ica_occ(1,iblk),ica_occ(2,iblk)).eq.0 .and.
      &      me_mo%len_op_gmo(iblk)%gam_ms(1,1).gt.0) then
-          call calc_xref(xref,xao,cmo,xhlf,nsym,nbas,nxbas,
-     &                   ngas,hpvx_gas(:,1),idxcmo(:,:,1),
-     &                   mostnd)
+          if (.not.trplt) call calc_xref(xref,xao,cmo,xhlf,nsym,nbas,
+     &         nxbas,ngas,hpvx_gas(:,1),idxcmo(:,:,1),
+     &         mostnd)
           idxst = me_mo%off_op_gmo(iblk)%gam_ms(1,1) + 1
           call put_vec(ffmo,xref,idxst,idxst)
           cycle
@@ -242,7 +244,7 @@
           if (me_mo%len_op_occ(iblk).eq.0) cycle
 
           call tran_one_blk(xop,xao,cmo,xhlf,
-     &         me_sym,idxcmo,ld_blk(1,1,idxms),
+     &         me_sym,idxcmo,ld_blk(1,1,idxms),idxms,trplt,
      &         hpvx_c,hpvx_a,
      &         nbas,nxbas,mostnd,
      &         iad_gasca,hpvx_gas(1,ispin),ngas,nsym)

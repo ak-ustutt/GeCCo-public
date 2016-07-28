@@ -25,6 +25,7 @@
       include 'def_me_list.h'
       include 'def_me_list_array.h'
       include 'hpvxseq.h'
+      include 'ifc_operators.h'
 
       type(optimize_info), intent(inout) ::
      &     opti_info
@@ -38,7 +39,8 @@
       integer ::
      &     ifree, iopt, ioff, nsect, nwfpsec(maxsec), idstsec(maxsec),
      &     sign_cur, sign_old, iblk, ncblk, nablk, ncblk2, nablk2,
-     &     iocc_dag(ngastp,2), iocc0(ngastp,2)
+     &     iocc_dag(ngastp,2), iocc0(ngastp,2),iocc_cntr(ngastp,2),
+     &     i0(ngastp,2),j0(ngastp,2)
       integer(8) ::
      &     base, topo_trv, topo1, topo2
       integer, pointer ::
@@ -53,8 +55,10 @@
 
       integer, external ::
      &     sign_hpvx, sign_contr
-      logical, external ::
-     &     iocc_equal
+!     integer, external :: 
+!    &     iocc_overlap(ngastp,2)
+!     logical, external ::
+!    &     iocc_equal
       integer(8), external ::
      &     int8_pack
 
@@ -186,15 +190,64 @@ c dbgend
 
             ! contraction sign: consider contraction occ1 - occ_trv
             ! the contraction is given by occ1
-            iocc_dag(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc1(1:ngastp,2)
-            iocc_dag(1:ngastp,2)=iocc_dag(1:ngastp,2)-iocc1(1:ngastp,1)
-            iocc0 = 0
-            ! get occ_trv in contraction form: KA^+ J0C J0A KC^+
-            sign_cur = sign_hpvx(1,iocc1,.true.,iocc_dag,.false.)
-            ! now the contraction:
-            sign_cur = sign_cur 
-     &               * sign_contr(iocc1,iocc0,iocc_dag,0,.false.)
+!           iocc_dag(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc1(1:ngastp,2)
+!           iocc_dag(1:ngastp,2)=iocc_dag(1:ngastp,2)-iocc1(1:ngastp,1)
+!           iocc0 = 0
+!           ! get occ_trv in contraction form: KA^+ J0C J0A KC^+
+!           sign_cur = sign_hpvx(1,iocc1,.true.,iocc_dag,.false.)
+!           ! now the contraction:
+!           sign_cur = sign_cur 
+!    &               * sign_contr(iocc1,iocc0,iocc_dag,0,.false.)
 
+!!try to get the sign in a generalised way
+!!          contraction between first two vertices:
+!           print*, 'debugging set_opti_info_sign for', iopt, iblk
+!           call wrt_occ(6,iocc1)
+!           call wrt_occ(6,iocc_dag)
+            iocc_cntr = iocc_overlap(iocc1,.false.,iocc_dag,.true.)
+!           call wrt_occ(6,iocc_cntr)
+
+            i0(1:ngastp,1)=iocc1(1:ngastp,1)-iocc_cntr(1:ngastp,1)
+            i0(1:ngastp,2)=iocc1(1:ngastp,2)-iocc_cntr(1:ngastp,2)
+!           call wrt_occ(6,i0)
+             
+            j0(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc_cntr(1:ngastp,2)
+            j0(1:ngastp,2)=iocc_dag(1:ngastp,2)-iocc_cntr(1:ngastp,1)
+!           call wrt_occ(6,j0)
+      
+            sign_cur = sign_hpvx(1,iocc_cntr,.false.,i0,.false.)
+!           print*, 'sign after first sign_hpvx:',sign_cur
+            sign_cur = sign_cur*sign_hpvx(1,iocc_cntr,.true.,j0,.false.)
+!           print*, 'sign after second sign_hpvx:',sign_cur
+            sign_cur = sign_cur*
+     &           sign_contr(iocc_cntr,i0,j0,0,.false.)
+!           print*, 'sign after first sign_contr:',sign_cur
+           
+!!          contraction between second and third vertices:
+            iocc_dag = j0
+!           call wrt_occ(6,iocc_dag)
+!           call wrt_occ(6,iocc2)
+            iocc_cntr = iocc_overlap(iocc_dag,.false.,iocc2,.true.)
+!           call wrt_occ(6,iocc_cntr)
+
+            i0(1:ngastp,1)=iocc_dag(1:ngastp,1)-iocc_cntr(1:ngastp,1)
+            i0(1:ngastp,2)=iocc_dag(1:ngastp,2)-iocc_cntr(1:ngastp,2)
+!           call wrt_occ(6,i0)
+             
+            j0(1:ngastp,1)=iocc2(1:ngastp,1)-iocc_cntr(1:ngastp,2)
+            j0(1:ngastp,2)=iocc2(1:ngastp,2)-iocc_cntr(1:ngastp,1)
+!           call wrt_occ(6,j0)
+      
+            sign_cur = sign_cur*sign_hpvx(1,iocc_cntr,.false.,
+     &                                    i0,.false.)
+!           print*, 'sign after third sign_hpvx:',sign_cur
+            sign_cur = sign_cur*sign_hpvx(1,iocc_cntr,.true.,j0,.false.)
+!           print*, 'sign after fourth sign_hpvx:',sign_cur
+            sign_cur = sign_cur*
+     &           sign_contr(iocc_cntr,i0,j0,0,.false.)
+!           print*, 'sign after second sign_contr:',sign_cur
+
+!!done
             if (sign_cur.eq.sign_old) then
               ! same section: just add length of current block
               nwfpsec(nsect) = nwfpsec(nsect)

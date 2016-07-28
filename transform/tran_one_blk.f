@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine tran_one_blk(xmo,xao,cmo,xhlf,
-     &     isym,idxcmo,ldim,
+     &     isym,idxcmo,ldim,idxms,trplt,
      &     hpvx_c,hpvx_a,
      &     nbas,nxbas,mostnd,
      &     iad_gasca,hpvx_gas,ngas,nsym)
@@ -19,7 +19,7 @@
      &     ntest = 00
 
       integer, intent(in) ::
-     &     ngas, nsym, isym, hpvx_c, hpvx_a,
+     &     ngas, nsym, isym, hpvx_c, hpvx_a,idxms,
      &     idxcmo(nsym,ngas,2), ldim(nsym),
      &     iad_gasca(ngas,2), hpvx_gas(ngas),
      &     mostnd(2,nsym,ngas), nbas(nsym), nxbas(nsym)
@@ -27,6 +27,8 @@
      &     cmo(*), xmo(*)
       real(8), intent(inout) ::
      &     xao(*), xhlf(*)
+      logical, intent(in) :: 
+     &     trplt
 
       logical ::
      &     transp, xbas_c, xbas_a
@@ -42,6 +44,7 @@
       end if
 
       fac = 1d0
+      if (trplt.and.idxms.eq.2) fac= -1.0*fac
 
       ixao = 1
       ixmo00 = 1

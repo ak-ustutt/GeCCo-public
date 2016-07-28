@@ -875,7 +875,7 @@ c dbgend
      &     dim, kind
       integer,intent(out)::
      &     ierr
-
+      ierr=0
       select case(kind)
       case (vtyp_log)
          ret=conv_logical_inp(value,dim,ierr)

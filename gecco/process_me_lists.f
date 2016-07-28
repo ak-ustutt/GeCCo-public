@@ -139,7 +139,7 @@ c dbg
      &       list_type,env_type)
 
         call import_op_el(rule%labels(1),
-     &       list_type,env_type,
+     &       list_type,env_type,.False.,
      &       op_info,str_info,strmap_info,orb_info)
 
       case(PRECONDITIONER)
@@ -204,7 +204,7 @@ c dbg
 
         call evalprop_parameters(+1,rule%parameters,ndens,rank,env_type)
 
-        call prop_evaluate(ndens,rank,rule%labels,
+        call prop_evaluate(ndens,rank,rule%labels,.False.,
      &       env_type,op_info,str_info,orb_info)
 
       case(SOLVENLEQ)
