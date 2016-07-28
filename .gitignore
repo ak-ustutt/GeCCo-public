@@ -5,6 +5,7 @@
 *.mod
 deps.mk
 FoX-4.1.2/arch.make
+FoX-4.1.2/FoX-config
 autom4te.cache
 bin
 TAGS
@@ -19,3 +20,4 @@ make.config.i386*
 make.config.x86_64*
 make.config.i786*
 make.rules
+
