@@ -12,8 +12,9 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use keyword_trees,only :inp_arg_from_context,reg_arg_from_context,
-     &     Node
+      use keyword_trees,only :tree_get_arg_from_context,
+     &     fetch_input_keyword_tree,fetch_registry_keyword_tree,
+     &     Node,tree_t
       use parse_input, only :get_argument_dimension_core
 
       implicit none
@@ -34,6 +35,8 @@
 
       type(Node), pointer ::
      &     curarg
+      type(tree_t)::
+     &     registry,input
       character ::
      &     curcontext*1024
       integer ::
@@ -42,6 +45,12 @@
      &     idx, itype, dim
       logical ::
      &     succ
+
+
+
+      input=fetch_input_keyword_tree()
+      registry=fetch_registry_keyword_tree()
+
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -61,7 +70,7 @@
       iargcount_target=iargcount
 
 
-      curarg=>inp_arg_from_context(context,argkey,.false.,
+      curarg=>tree_get_arg_from_context(input,context,argkey,.false.,
      &     ikeycount_target,iargcount_target)
 
       if (ntest.ge.100) then
@@ -74,7 +83,8 @@
       ikeycount_target=ikeycount
       iargcount_target=iargcount
       if(.not.associated(curarg))
-     &     curarg=>reg_arg_from_context(context,argkey,.false.,
+     &     curarg=>tree_get_arg_from_context(registry,context,
+     &     argkey,.false.,
      &     ikeycount_target,iargcount_target)
 
       if (associated(curarg))then

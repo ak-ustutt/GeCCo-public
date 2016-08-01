@@ -7,7 +7,8 @@
       integer function is_keyword_set(context)
 *----------------------------------------------------------------------*
 
-      use keyword_trees, only : inp_key_from_context,Node
+      use keyword_trees, only : tree_t,Node,
+     &     fetch_input_keyword_tree,tree_get_key_from_context
       use FoX_dom, only : getNextSibling
       implicit none
       include 'stdunit.h'
@@ -19,7 +20,8 @@
 
       character, intent(in) ::
      &     context*(*)
-
+      type(tree_t)::
+     &     input
 
       type(Node), pointer ::
      &     current
@@ -27,12 +29,12 @@
 
       integer ::
      &     icount
-
+      input=fetch_input_keyword_tree()
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
       end if
       icount=-1
-      current => inp_key_from_context(context,latest=.false.,
+      current => tree_get_key_from_context(input,context,latest=.false.,
      &     keycount=icount)
       
 

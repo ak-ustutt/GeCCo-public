@@ -4,6 +4,10 @@
       include 'par_vtypes.h'
       integer,parameter::
      &     maxvalstr_len=256
+
+
+      character(len=*),parameter::
+     &     calculate_name="calculate"   ! important in input postprocessing
       contains
 
 !=======================================================================
@@ -50,7 +54,7 @@
 !!    @param show_status if status should be shown
 *----------------------------------------------------------------------*
       subroutine keyword_list(luwrt,tree,
-     &     n_descent,show_args,show_status)
+     &     n_descent,show_args)
 *----------------------------------------------------------------------*
       use FoX_common, only:str,rts
       implicit none
@@ -87,8 +91,6 @@
       
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(tree_root)
 
       end if
 
@@ -107,18 +109,17 @@
       key_loop: do 
          call print_keyword(luwrt,curkey)
          if ( args_vis)then
-            curarg=> key_getFirstArgument(curkey)
+            curarg=> elem_getFirstChild(curkey,arg_tag)
             arg_loop: do while (associated(curarg))
-               call print_argument(luwrt,curarg,status_vis)
+               call print_argument(luwrt,curarg)
                curarg=> elem_getNextSibling(curarg, arg_tag)
             end do arg_loop 
          end if
-         curkey=> tree_iterate(curkey)
-         do while (getNodeName(curkey).not. key_tag)
-            curkey=> tree_iterate(curkey)
+         curkey=> tree_iterate(tree)
+         do while (getNodeName(curkey).ne. key_tag)
+            curkey=> tree_iterate(tree)
             if (.not.associated(curkey)) exit key_loop
          end do 
-         end if
       end do key_loop
       return
       contains
@@ -139,8 +140,6 @@
      &     luwrt
       type(Node),pointer, intent(in)::
      &     keywd
-      logical, intent(in)::
-     &     status_vis
       character(len=64)::
      &     fmtstr
 
@@ -176,8 +175,6 @@
      &     luwrt
       type(Node),pointer, intent(in)::
      &     arg
-      logical, intent(in)::
-     &     status_vis
       character(len=64)::
      &     fmtstr
       integer::
@@ -217,11 +214,11 @@
       implicit none
       logical, intent(inout)::
      &     one_more
-      type(Node),pointer::
-     &     input_root, history_pointer
+      type(tree_t)::
+     &     inputtree
 
       inputtree=fetch_input_keyword_tree()
-      call tree_set_input_status_(inputtree, one_more)
+      call tree_toggle_status_(inputtree, one_more)
       end subroutine 
 
 
@@ -259,36 +256,33 @@
      &     current,nxtnode
       integer::
      &     i
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         if (associated(history))
-     &        write (lulog,*) " starting at block: ",
-     &        getAttribute(history,atr_name)
-              write (lulog,*) " root: ",getAttribute(in_root,atr_name)
-      end if 
       one_more=.true.
       current=> getRoot(tree)
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) " root: ",getAttribute(current,atr_name)
+      end if 
       current=> elem_getFirstChild(tree%root)
       
       if (.not.associated(current))
      &     call quit(1,i_am,'not a single keyword given?')
       
-      do while (associated(nxtkey))
-         current=>nxtkey
+      do while (associated(nxtnode))
+         current=>nxtnode
          if ( ( getAttribute(current, atr_name) .eq. calculate_name) 
      &        .and. (.not. hasAttribute(current, atr_stat) ) )
      &        exit
-         nxtkey=> elem_getNextSibling(current)
+         nxtnode=> elem_getNextSibling(current)
       end do
       calculate_ptr=> current !points to a calculate or the last toplevel keyword in input
 
       set_active_loop: do while(associated(current))
-         call set_status(current,active)
+         call set_status(current,status_active)
          call unset_previous_keywords(current)
          current=> elem_getPreviousSibling(current)
          backtrack: do while(associated(current))
             if (hasAttribute(current, atr_stat))then
-               if (getAttribute(current,atr_stat).eq.stat_active)
+               if (getAttribute(current,atr_stat).eq.status_active)
      &              exit set_active_loop
             else
                exit backtrack
@@ -315,7 +309,7 @@
      &     keywd     
       type(Node), pointer ::
      &     current
-      character(len=name_len) ::
+      character(len=max_name_len) ::
      &     name
       integer :: i
       if (ntest.ge.100) then
@@ -324,7 +318,7 @@
      &        ,associated(keywd)
       end if 
 
-      current=>getPreviousSibling(keywd)
+      current=>elem_getPreviousSibling(keywd, key_tag)
       if(.not.associated(current)) return 
       name= trim(getAttribute(keywd,atr_name))
 
@@ -341,7 +335,7 @@
          
          if (trim(getAttribute(current,atr_name)).eq.trim(name))
      &        call set_status(current,status_inactive)
-         current =>getPreviousSibling(current)
+         current =>elem_getPreviousSibling(current,key_tag)
          if (associated(current) )then
             continue
          else
@@ -536,7 +530,7 @@
       integer, intent(in) ::
      &     luin
 
-      type(tree_t),inent(inout)::
+      type(tree_t),intent(inout)::
      &     keytree,input               ! root element of the preset keyword tree
       integer, parameter ::
      &     maxlen  = 256,
@@ -585,8 +579,6 @@
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(k_root)
       end if
 
       context = " "
@@ -649,8 +641,9 @@
 !     is it an argument key?
             dummy=1
             curkey=> getRoot(keytree)
+            dummy=1
             curarg=>getSubNode(curkey,line(ipst:ipnd),
-     &           atr_tag )
+     &           arg_tag,latest=.false.,icount=dummy )
 
 
             if (associated(curarg)) then 
@@ -676,7 +669,7 @@
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
                      n_allowed_delim = n_allowed_after_arg
-                     call create_node(curarg,line(ipst+1:ipnd-1))
+                     call create_node(input,curarg,line(ipst+1:ipnd-1))
                   else
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
@@ -701,7 +694,7 @@
                   exit line_loop
                end if
             else      
-               curkey=> tree_backtrack_search(keytree,line(ipst:ipnd),
+               curkey=> tree_goback_to_element(keytree,line(ipst:ipnd),
      &           key_tag )
 
                if (.not.associated(nxtkey)) then

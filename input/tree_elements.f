@@ -10,19 +10,22 @@
 
       private
       public :: Node
-      public :: elem_getParent,elem_getComment,
+      public :: elem_getParentNode,elem_getComment,
      &     elem_getFirstChild,elem_getLastChild,
      &     elem_getNextSibling,elem_getPreviousSibling
 
-      integer,parameter::
-     &     ELEMENT_NODE=1
+      public :: getParentNode,getFirstChild,getLastChild,getNextSibling,
+     &     getPreviousSibling
+      public :: arg_tag,key_tag,key_root_tag
+!      integer,parameter::
+!     &     ELEMENT_NODE=1
 
       character(len=*),parameter::
      &     key_tag="keyword",
      &     arg_tag="argument",
      &     key_root_tag="key_root",
      &     comment_tag="#comment"
-
+      contains
 *----------------------------------------------------------------------*
 !>     tests if a given node is an element
 !!     a element is either an keyword, an argument or a root element.
@@ -44,12 +47,12 @@
 
       if (associated(curnode))then
          if(getNodeType(curnode).eq.ELEMENT_NODE)then
-            select case(getNodeName)
+            select case(getNodeName(curnode))
             case(key_tag)
                is_element=.True.
             case(arg_tag)
                is_element=.True.
-            case(root)
+            case(key_root_tag)
                is_element=.True.
             case default
                is_element=.False.
@@ -68,7 +71,7 @@
 !!     element with tag tag.
 !!    returns null if no such element exists 
 *----------------------------------------------------------------------*
-      function elem_getParent(curnode, tag)  result(nxtnode)
+      function elem_getParentNode(curnode, tag)  result(nxtnode)
 *----------------------------------------------------------------------*
       implicit none
       include "stdunit.h"
