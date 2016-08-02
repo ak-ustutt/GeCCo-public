@@ -813,6 +813,8 @@ c dbgend
 *----------------------------------------------------------------------*
       subroutine error_pointer(ipos,line,msg)
 *----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
       character(len=*),parameter::
      &     unit="UOUT"
 
@@ -823,11 +825,15 @@ c dbgend
 
       character(len=80) ::
      &     fmtstr, outstr
-
       call print_out(' ',unit)
       write(outstr,'(x,a)') line
       call print_out(outstr,unit)
-      write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
+      if (ipos.gt.1)then
+         write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
+      else
+         write(fmtstr,'("(x,""^"")")')
+      end if
+      write(luout,*)fmtstr
       write(outstr,fmtstr)
       call print_out(outstr,unit)
       write(outstr,'(x,"INPUT ERROR: ",a)') msg
