@@ -22,16 +22,16 @@ GECCOPRG:=$(CURDIR)/$(topdir)/gecco/$(bindir)/gecco.x
 
 #entry targets
 all: all.res $(GECCOPRG)
-	rmdir $(SCRDIR)
+	@rmdir $(SCRDIR) || echo "could not remove scratch directory: "$(SCRDIR)" please remove by hand."
 
 essential: essential.res $(GECCOPRG)
-	rmdir $(SCRDIR)
+	@rmdir $(SCRDIR) || echo "could not remove scratch directory: "$(SCRDIR)" please remove by hand."
 
 extended:  extended.res $(GECCOPRG)
-	rmdir $(SCRDIR)
+	@rmdir $(SCRDIR) || echo "could not remove scratch directory: "$(SCRDIR)" please remove by hand."
 
 special:   special.res $(GECCOPRG)
-	rmdir $(SCRDIR)
+	@rmdir $(SCRDIR) || echo "could not remove scratch directory: "$(SCRDIR)" please remove by hand."
 
 
 #targets to run the test (defined in Makefile.parallel) , print summary and clean up
