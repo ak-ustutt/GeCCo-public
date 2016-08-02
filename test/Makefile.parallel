@@ -2,7 +2,7 @@
 # some new rules (must be defined here BEFORE the objects)
 
 %.res : %.out
-	@set -e ; $(CHECK) $(CHECKFLAGS) $(basename $<) &>> $(basename $<).sum ||echo "test "$(basename $<)" failed. for more information see:"$(basename $<).sum
+	@set -e ; $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1 ||echo "test "$(basename $<)" failed. for more information see:"$(basename $<).sum
 
 %.out : %.chk $(GECCOPRG) |mkscr
 	@set -e ; $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum || echo "running "$(basename $<)" failed. for more information see:"$(basename $<).sum
