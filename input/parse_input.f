@@ -694,12 +694,12 @@
                   exit line_loop
                end if
             else      
-               curkey=> tree_goback_to_element(keytree,line(ipst:ipnd),
+               nxtkey=> tree_goback_to_element(keytree,line(ipst:ipnd),
      &           key_tag )
 
                if (.not.associated(nxtkey)) then
                   ierr = ierr+1
-                  call error_keywd(line,ipst,curkey)
+                  call error_keywd(line,ipst)
                else
                   curkey => nxtkey
                   call create_node(input, curkey," ")
@@ -910,16 +910,14 @@ c dbgend
 
 
 *----------------------------------------------------------------------*
-      subroutine error_keywd(str,ipos,curkey)
+      subroutine error_keywd(line,ipos)
 *----------------------------------------------------------------------*
       implicit none
       
-      character, intent(in) ::
-     &     str*(*)
+      character(len=*), intent(in) ::
+     &     line
       integer, intent(in) ::
      &     ipos
-      type(Node), intent(in) ::
-     &     curkey
 
       call error_pointer(ipos,trim(line), 'unexpected keyword')
   
