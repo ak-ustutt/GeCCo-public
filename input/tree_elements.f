@@ -94,7 +94,7 @@
          if (present(tag) ) then
             !     node name is tag for element, #document for documents, 
             !     #comment for comments #text for text nodes
-            if (getNodeName(nxtnode).eq. tag) return 
+            if (getNodeName(nxtnode).eq. tag ) return 
          else if (is_element(nxtnode))then
             return
          else 
@@ -114,7 +114,7 @@
       implicit none
       include "stdunit.h"
       integer,parameter::
-     &     ntest= 00
+     &     ntest=00
       character(len=*),parameter ::
      &     i_am="elem_getFirstChild"
 
@@ -125,9 +125,13 @@
       character(len=*),intent(in),optional::
      &     tag
 
+      if (ntest .ge. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         if (present(tag)) write(lulog,*) " of type:",trim(tag)
+      end if 
+
       nxtnode=> null()
       if(.not. hasChildNodes(curnode) ) return 
-
       nxtnode=> getFirstChild(curnode)
       if (present(tag))then
          if (getNodeName(nxtnode).eq. trim(tag)) return
@@ -158,9 +162,11 @@
      &     tag
       type(Node), pointer,intent(in)::
      &     curnode
-
+      if (ntest .ge. 100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         if (present(tag)) write(lulog,*) " of type:",trim(tag)
+      end if 
       nxtnode=> getNextSibling(curnode)
-
       do while (associated(nxtnode))
          if (present(tag))then
             if (getNodeName(nxtnode) .eq. trim(tag)) return

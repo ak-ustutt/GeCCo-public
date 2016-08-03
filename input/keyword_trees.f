@@ -1,10 +1,11 @@
       module keyword_trees
-      use FoX_dom,only:DOMException,NodeList,
-     &     getAttribute,hasAttribute,setAttribute,
-     &     getNodeName,
-     &     getElementsByTagName,getLength,item,
-     &     parseString,parseFile,
-     &     getExceptionCode,getOwnerDocument,createElement,appendChild
+      use FoX_dom
+!,only:DOMException,NodeList,
+!     &     getAttribute,hasAttribute,setAttribute,
+!     &     getNodeName,
+!     &     getElementsByTagName,getLength,item,
+!     &     parseString,parseFile,
+!     &     getExceptionCode,getOwnerDocument,createElement,appendChild
       use tree_elements
       implicit none
 
@@ -28,7 +29,7 @@
 
       public :: getNodeName
       public :: tree_t
-      public :: getRoot
+      public :: getRoot,getLevel
       
       public :: create_keyword_trees
 
@@ -165,7 +166,7 @@
       type(tree_t) ::
      &     registry
       type(node),pointer ::
-     &     reg_root
+     &     reg_root,dummy
       if (ntest.gt.100)then 
          call write_title(lulog,wst_dbg_subr,i_am)
       end if 
@@ -175,7 +176,6 @@
 
       write(lulog,*) "reading keyword_file",trim(file) 
       registry_doc => parseFile(trim(file), ex=ex)
-
       !! @TODO more special error handling 
       if (getExceptionCode(ex) .ne. 0)
      &     call quit(1,i_am,"could not read keyword registry")
@@ -347,8 +347,17 @@
 
       getRoot=> tree%root
       end function
+*----------------------------------------------------------------------*
+!>    how far below the root element is the current element?
+*----------------------------------------------------------------------*
+      function getLevel(tree)
+      type(tree_t),intent(in)::
+     &     tree
+      integer::
+     &     getLevel
 
-
+      getLevel= tree%curlevel
+      end function
 
 
 
@@ -526,6 +535,10 @@
 
       finnode=> arg_from_context(context,name,tree%root,latest,
      &     ikeycount,iargcount)
+
+      if(present(argcount))then
+         argcount=iargcount
+      end if
       end function
 
 *----------------------------------------------------------------------*
@@ -571,6 +584,9 @@
 
       finnode=> key_from_context(context,tree%root,latest,
      &     ikeycount)
+
+      if (present(keycount))keycount=ikeycount
+
       end function
 *----------------------------------------------------------------------*
 !>    resolves a context and name to an argument
@@ -665,7 +681,7 @@
      &     i_am="key_from_context"
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       integer,parameter ::
      &     max_stack=max_context_lvl
 
@@ -693,7 +709,7 @@
      &     ctxt_end
       
       ierr=0
-
+      
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' context = "',trim(context),'"'
@@ -782,7 +798,7 @@
             if (ierr.gt.0) call quit(1,i_am,
      &           " trying to access negative stack. Why, just why?")
             ctxt_end=.False.
-            finnode=> elem_getParentNode(finnode, key_tag)
+            finnode=> elem_getParentNode(finnode)
             sikeycount=sikeycount+1
 
             if (ntest .gt. 100) then
@@ -896,12 +912,6 @@
      &     latest
       integer,intent(inout)::
      &     icount
-   
-      if (latest)then
-         nextnode=>elem_getLastChild(curkey, tag=tag)
-      else 
-         nextnode=>elem_getFirstChild(curkey,tag=tag)
-      end if 
 
       if (ntest .gt. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -909,6 +919,12 @@
          write(lulog,*) " of type:",trim(tag)
          if (latest)write(lulog,*) " reversed order"
          write(lulog,*)  " number to be found:",icount
+      end if 
+   
+      if (latest)then
+         nextnode=>elem_getLastChild(curkey, tag=tag)
+      else 
+         nextnode=>elem_getFirstChild(curkey,tag=tag)
       end if 
 
       do 

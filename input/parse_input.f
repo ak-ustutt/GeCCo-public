@@ -107,11 +107,11 @@
       curkey=> tree_iterate(tree)
       
       key_loop: do 
-         call print_keyword(luwrt,curkey)
+         call print_keyword(luwrt,curkey,getLevel(tree))
          if ( args_vis)then
             curarg=> elem_getFirstChild(curkey,arg_tag)
             arg_loop: do while (associated(curarg))
-               call print_argument(luwrt,curarg)
+               call print_argument(luwrt,curarg, getLevel(tree))
                curarg=> elem_getNextSibling(curarg, arg_tag)
             end do arg_loop 
          end if
@@ -130,7 +130,7 @@
 !!   @param arg argument node
 !!   @param status_vis if status should be printed as well
 *----------------------------------------------------------------------*
-      subroutine print_keyword(luwrt,keywd)
+      subroutine print_keyword(luwrt,keywd,level)
 *----------------------------------------------------------------------*
       integer, parameter ::
      &     ntest=00
@@ -142,6 +142,8 @@
      &     keywd
       character(len=64)::
      &     fmtstr
+      integer,intent(in)::
+     &     level
 
       if (hasAttribute(keywd,atr_stat))then 
          status=getAttribute(keywd,atr_stat)
@@ -165,7 +167,7 @@
 !!   @param arg argument node
 !!   @param status_vis if status should be printed as well
 *----------------------------------------------------------------------*
-      subroutine print_argument(luwrt,arg)
+      subroutine print_argument(luwrt,arg,level)
 *----------------------------------------------------------------------*
       integer, parameter ::
      &     ntest=00
@@ -173,6 +175,9 @@
      &     i_am="print_argument"
       integer, intent(in)::
      &     luwrt
+      integer,intent(in)::
+     &     level
+
       type(Node),pointer, intent(in)::
      &     arg
       character(len=64)::
@@ -274,6 +279,13 @@
      &        exit
          nxtnode=> elem_getNextSibling(current)
       end do
+
+      if (.not. associated(nxtnode) .and. 
+     &     hasAttribute(current, atr_stat))then
+         one_more=.false.
+         return
+      end if
+
       calculate_ptr=> current !points to a calculate or the last toplevel keyword in input
 
       set_active_loop: do while(associated(current))
@@ -567,7 +579,7 @@
 
 
       type(Node), pointer ::
-     &     curkey,nxtkey
+     &     curkey,nxtkey,dummykey
       type(Node), pointer ::
      &     curarg
       character(len=maxlen) ::
@@ -639,8 +651,10 @@
             end if
             
 !     is it an argument key?
-            dummy=1
-            curkey=> getRoot(keytree)
+
+            
+            
+
             dummy=1
             curarg=>getSubNode(curkey,line(ipst:ipnd),
      &           arg_tag,latest=.false.,icount=dummy )
