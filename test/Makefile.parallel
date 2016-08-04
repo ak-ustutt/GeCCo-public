@@ -1,13 +1,24 @@
 
 # some new rules (must be defined here BEFORE the objects)
 
-%.res : %.out
-	@set -e ; $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1 \
-	|| echo "!!ERROR!! test "$(basename $<)" failed. Output in "$(basename $<).out" ; error message in "$(basename $<).sum\
-	&& echo $(basename $<)" was successfull."
+%.res : %.out    
+	@if $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1  ;\
+	then \
+	 echo "test "$(basename $<)" was successful." ;\
+	else \
+	 echo "!!ERROR!! test "$(basename $<)" failed.;  Output: "$(basename $<).out";  Error message: "$(basename $<).sum ;\
+	fi
 
-%.out : %.chk $(GECCOPRG) |mkscr
-	@set -e ; $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum || echo "running "$(basename $<)" failed. for more information see:"$(basename $<).sum
+
+#=$?;\
+
+%.out : %.chk $(GECCOPRG) 
+	@ if  $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum ;\
+	then \
+	 echo $(basename $<)" ran successfully";\
+	else\
+	 echo "!!ERROR!! running "$(basename $<)" failed. Output: "$(basename $<).out"  Error message: "$(basename $<).sum ;\
+	fi
 
 
 
@@ -25,28 +36,9 @@ else
 endif
 CHECKFLAGS:=-c
 
-essential_tests:=$(wildcard *.e.chk)
-extended_tests:=$(wildcard *.x.chk)
-special_tests:=$(wildcard *.s.chk)
-essential_outputs:=$(addsuffix .out, $(basename $(essential_tests)))
-extended_outputs:=$(addsuffix .out, $(basename $(extended_tests)))
-special_outputs:=$(addsuffix .out, $(basename $(special_tests)))
-essential_results:=$(addsuffix .res, $(basename $(essential_tests)))
-extended_results:=$(addsuffix .res, $(basename $(extended_tests)))
-special_results:=$(addsuffix .res, $(basename $(special_tests)))
-
-.PHONY: all essential special extended  mkscr
-all: $(special_results)   $(special_outputs) $(extended_results)  $(extended_outputs)  $(essential_results) $(essential_outputs)  # Gnumake generally shedules the targest right to left this way long running tests (special) run first and smaller targets can fill early finished worker threads (parallel mode)
-
-essential:  $(essential_results) $(essential_outputs)
-
-extended: $(extended_results)  $(extended_outputs)
+.PRECIOUS: %.out %.res
 
 
-special:  $(special_results)   $(special_outputs)
 
-mkscr:       # is removed in the toplevel targets in the other Makefile
-	@if [ ! -d $(SCRDIR) ];\
-	then\
-	  mkdir $(SCRDIR);\
-	fi;\
+
+
