@@ -3,7 +3,8 @@
 #This code is originally written as an experimental file by Pradipta Samanta on October, 2012.
 #This particular interface is written on November, 2014 by Pradipta Samanta.
 import sys,os
-sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
+interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
+sys.path=[interface_path]+sys.path
 
 from gecco_interface import *
 

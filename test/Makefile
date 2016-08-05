@@ -9,6 +9,7 @@ srcdir:=.
 
 include $(topdir)/make.config
 
+GECCO_DIR:=$(CURDIR)/$(topdir)
 SCRDIR:=${GECCO_TMP}
 
 #include $(topdir)/make.rules
@@ -24,6 +25,12 @@ GECCOPRG:=$(CURDIR)/$(topdir)/gecco/$(bindir)/gecco.x
 
 
 #entry targets
+
+export SCRDIR 
+export GECCOPRG
+export GECCO_DIR
+
+
 
 %.clean :
 	@ rm -f $(basename $@).err $(basename $@).out $(basename $@).res
@@ -71,9 +78,6 @@ essential_results:=$(addsuffix .res, $(basename $(essential_tests)))
 extended_results:=$(addsuffix .res, $(basename $(extended_tests)))
 special_results:=$(addsuffix .res, $(basename $(special_tests)))
 
-
-export SCRDIR 
-export GECCOPRG
 
 all.res: $(GECCOPRG)
 	@rm -f *.err ;\

@@ -2,7 +2,8 @@
 # some new rules (must be defined here BEFORE the objects)
 
 %.res : %.out    
-	@if $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1  ;\
+	@ GECCO_DIR=$(GECCO_DIR);\
+	if $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1  ;\
 	then \
 	 echo "test "$(basename $<)" was successful." ;\
 	else \
@@ -13,9 +14,9 @@
 #=$?;\
 
 %.out : %.chk $(GECCOPRG) 
-	@ if  $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum ;\
+	@if  $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum ;\
 	then \
-	 echo $(basename $<)" ran successfully";\
+	 echo $(basename $<)" ran successfully.";\
 	else\
 	 echo "!!ERROR!! running "$(basename $<)" failed. Output: "$(basename $<).out"  Error message: "$(basename $<).sum ;\
 	fi

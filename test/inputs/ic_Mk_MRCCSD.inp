@@ -11,4 +11,4 @@ method
 calculate
  solve maxiter=300,conv=1d-8,maxsub=10
  solve non_linear maxsub=10,optref=0,conv=1d-4
- routes maxbranch=4,sv_thresh=1d-6
+ routes maxbranch=4,sv_thresh=1d-6,auto_opt=F
