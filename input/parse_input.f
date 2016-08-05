@@ -4,7 +4,15 @@
       include 'par_vtypes.h'
       integer,parameter::
      &     maxvalstr_len=256
+
+
+      character(len=*),parameter::
+     &     calculate_name="calculate"   ! important in input postprocessing
       contains
+
+!=======================================================================
+! output subroutines
+!=======================================================================
 
 *----------------------------------------------------------------------*
 !>    wrapper for keyword_list for the input
@@ -14,11 +22,10 @@
       integer,intent(in)::
      &     unit
 
-      type(Node),pointer::
-     &     input_root
-      input_root => inp_fetch_root()
-      input_root => getFirstChild(input_root)
-      call keyword_list(unit,input_root,show_args=.True.)
+      type(tree_t)::
+     &     input
+      input = fetch_input_keyword_tree()
+      call keyword_list(unit,input,show_args=.True.)
       end subroutine
 
 *----------------------------------------------------------------------*
@@ -28,12 +35,344 @@
 *----------------------------------------------------------------------*
       integer,intent(in)::
      &     unit
+      type(tree_t),pointer::
+     &     keytree
+      keytree = fetch_input_keyword_tree()
+      call keyword_list(unit,keytree,show_args=.True.)
+      end subroutine
+
+
+
+*----------------------------------------------------------------------*
+!>    prints the keyword_tree below a certain keyword:
+!!
+!!
+!!    @param luwrt ouput unit
+!!    @param tree_root starting keyword
+!!    @param n_descent maximum number of levels to descent
+!!    @param show_args if arguments should be shown
+!!    @param show_status if status should be shown
+*----------------------------------------------------------------------*
+      subroutine keyword_list(luwrt,tree,
+     &     n_descent,show_args)
+*----------------------------------------------------------------------*
+      use FoX_common, only:str,rts
+      implicit none
+      include 'stdunit.h'
+      character(len=7),dimension(8),parameter::
+     &     type_array=(/"logical","integer","unknown","real",
+     &     "unknown","unknown","unknown","string"/)
+      integer, parameter ::
+     &     ntest=00
+      character(len=17),parameter ::
+     &     i_am="keyword_list"
+
+      integer, intent(in)::
+     &     luwrt
+      type(tree_t), intent(inout)::
+     &     tree
+
+      integer,optional,intent(in)::  ! not implemented
+     &     n_descent
+      logical, optional, intent(in):: 
+     &     show_args
+
+      logical:: 
+     &     args_vis,status_vis
+      integer::
+     &     level, 
+     &      type, dim,
+     &     ii, dummy
+      character::
+     &     status
+
       type(Node),pointer::
-     &     key_root
-      key_root => reg_fetch_root()
-      key_root => getFirstChild(key_root)
-      call keyword_list(unit,key_root,show_args=.True., 
-     &     show_status=.False.)
+     &     curkey,curarg
+      
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+
+      end if
+
+      args_vis=.false.
+      if (present(show_args)) args_vis=show_args
+
+      if (ntest.ge.100) then
+         write (lulog,*) "show_status?",status_vis
+         write (lulog,*) "show_arguments?",args_vis
+      end if
+
+
+      curarg=>null()
+      curkey=> tree_iterate(tree)
+      
+      key_loop: do 
+         call print_keyword(luwrt,curkey,getLevel(tree))
+         if ( args_vis)then
+            curarg=> elem_getFirstChild(curkey,arg_tag)
+            arg_loop: do while (associated(curarg))
+               call print_argument(luwrt,curarg, getLevel(tree))
+               curarg=> elem_getNextSibling(curarg, arg_tag)
+            end do arg_loop 
+         end if
+         curkey=> tree_iterate(tree)
+         do while (getNodeName(curkey).ne. key_tag)
+            curkey=> tree_iterate(tree)
+            if (.not.associated(curkey)) exit key_loop
+         end do 
+      end do key_loop
+      return
+      contains
+*----------------------------------------------------------------------*
+!>    prints a keyword 
+!!
+!!   @param luwrt output unit
+!!   @param arg argument node
+!!   @param status_vis if status should be printed as well
+*----------------------------------------------------------------------*
+      subroutine print_keyword(luwrt,keywd,level)
+*----------------------------------------------------------------------*
+      integer, parameter ::
+     &     ntest=00
+      character(len=*),parameter ::
+     &     i_am="print_keyword"
+      integer, intent(in)::
+     &     luwrt
+      type(Node),pointer, intent(in)::
+     &     keywd
+      character(len=64)::
+     &     fmtstr
+      integer,intent(in)::
+     &     level
+
+      if (hasAttribute(keywd,atr_stat))then 
+         status=getAttribute(keywd,atr_stat)
+         if (ntest.ge.100)then 
+            write (lulog,*) "status:",getAttribute(keywd,atr_stat)
+         end if 
+         if (status.eq.status_active) then
+            write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
+         else
+            write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
+         end if
+      else 
+         write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
+      end if
+      write (luwrt,fmtstr)getAttribute(curkey,atr_name)
+      end subroutine print_keyword
+*----------------------------------------------------------------------*
+!>    prints a keyword 
+!!
+!!   @param luwrt output unit
+!!   @param arg argument node
+!!   @param status_vis if status should be printed as well
+*----------------------------------------------------------------------*
+      subroutine print_argument(luwrt,arg,level)
+*----------------------------------------------------------------------*
+      integer, parameter ::
+     &     ntest=00
+      character(len=*),parameter ::
+     &     i_am="print_argument"
+      integer, intent(in)::
+     &     luwrt
+      integer,intent(in)::
+     &     level
+
+      type(Node),pointer, intent(in)::
+     &     arg
+      character(len=64)::
+     &     fmtstr
+      integer::
+     &     type, dim
+      call rts(getAttribute(arg,atr_kind),type)
+      call rts(getAttribute(arg,atr_len),dim)
+      write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
+      write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
+     &     //trim(type_array(type))//" of len",dim,": "// 
+     &     getAttribute(curarg,atr_val)
+      end subroutine
+      end subroutine
+
+
+
+
+
+
+
+
+
+
+!======================================================================!
+!   postprocess routines
+!======================================================================!
+
+
+
+*----------------------------------------------------------------------*
+!>   wrapper to uncouple set_input_status_ from module variables
+!!
+!!  @param  one_more logical to show if there are unprocessed blocks remaining.
+!!          input status not used
+*----------------------------------------------------------------------*
+      subroutine inp_postprocess(one_more)
+*----------------------------------------------------------------------*
+      implicit none
+      logical, intent(inout)::
+     &     one_more
+      type(tree_t)::
+     &     inputtree
+
+      inputtree=fetch_input_keyword_tree()
+      call tree_toggle_status_(inputtree, one_more)
+      end subroutine 
+
+
+
+
+
+
+*----------------------------------------------------------------------*
+!!    toggles the status of the toplevel keywords (keywords below the root of tree) 
+!!
+!!   looks for the first "calculate" block with neither active nor inactive status
+!!    if none is found, advances over all context
+!!   for any given toplevel keyword(including calculate) only the last block 
+!!       before and including this "calculate" is set active
+!!   all other previous contexts are set inactive.
+!!   @param tree the tree object
+!!   @param history pointer to the last active history file (may be null())
+!!   @param one_more true if active blocks were found
+*----------------------------------------------------------------------*
+      subroutine tree_toggle_status_(tree,one_more)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'stdunit.h'
+      integer,parameter::
+     &     ntest= 00
+      character(len=*),parameter ::
+     &     i_am="tree_toggle_status"
+      type(tree_t),intent(in)::
+     &     tree
+      logical, intent(inout)::
+     &     one_more
+      type(Node),pointer::
+     &     calculate_ptr
+      type(Node),pointer::
+     &     current,nxtnode
+      integer::
+     &     i
+      one_more=.true.
+      current=> getRoot(tree)
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) " root: ",getAttribute(current,atr_name)
+      end if 
+      current=> elem_getFirstChild(tree%root)
+      
+      if (.not.associated(current))
+     &     call quit(1,i_am,'not a single keyword given?')
+      
+      do while (associated(nxtnode))
+         current=>nxtnode
+         if ( ( getAttribute(current, atr_name) .eq. calculate_name) 
+     &        .and. (.not. hasAttribute(current, atr_stat) ) )
+     &        exit
+         nxtnode=> elem_getNextSibling(current)
+      end do
+
+      if (.not. associated(nxtnode) .and. 
+     &     hasAttribute(current, atr_stat))then
+         one_more=.false.
+         return
+      end if
+
+      calculate_ptr=> current !points to a calculate or the last toplevel keyword in input
+
+      set_active_loop: do while(associated(current))
+         call set_status(current,status_active)
+         call unset_previous_keywords(current)
+         current=> elem_getPreviousSibling(current)
+         backtrack: do while(associated(current))
+            if (hasAttribute(current, atr_stat))then
+               if (getAttribute(current,atr_stat).eq.status_active)
+     &              exit set_active_loop
+            else
+               exit backtrack
+            end if
+            current=> elem_getPreviousSibling(current)
+         end do backtrack
+      end do set_active_loop
+      
+      end subroutine 
+
+*----------------------------------------------------------------------*
+!>     set all previous keywords with same key as present keyword to
+!!     inactive (+ all sub-levels)
+*----------------------------------------------------------------------*
+      subroutine unset_previous_keywords(keywd)
+*----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
+      character(len=*),parameter ::
+     &     i_am="unset_previous_keywords"
+      integer, parameter ::
+     &     ntest=00
+      type(Node), pointer,intent(in) ::
+     &     keywd     
+      type(Node), pointer ::
+     &     current
+      character(len=max_name_len) ::
+     &     name
+      integer :: i
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write (lulog,*) "testing association of keyword:"
+     &        ,associated(keywd)
+      end if 
+
+      current=>elem_getPreviousSibling(keywd, key_tag)
+      if(.not.associated(current)) return 
+      name= trim(getAttribute(keywd,atr_name))
+
+      if (ntest.ge.100) then
+         write (lulog,*) "saved name:",trim(name).eq.  
+     &        trim(getAttribute(keywd,atr_name))
+      end if 
+
+      do 
+         if (ntest.ge.100) then
+            write (lulog,*) "current name:"
+     &           ,getAttribute(current,atr_name)
+         end if 
+         
+         if (trim(getAttribute(current,atr_name)).eq.trim(name))
+     &        call set_status(current,status_inactive)
+         current =>elem_getPreviousSibling(current,key_tag)
+         if (associated(current) )then
+            continue
+         else
+            exit 
+         end if
+      end do 
+      return 
+      end subroutine
+
+*----------------------------------------------------------------------*
+!>    sets the given keyword  to a given status
+!!
+!!   @param keywd pointer to a keyword
+!!   @param status integer with the status we set it to 
+*----------------------------------------------------------------------*
+      subroutine set_status(keywd,status)
+*----------------------------------------------------------------------*
+      implicit none
+      type(Node), pointer, intent(in)::
+     &     keywd
+      character,intent(in)::
+     &     status
+
+      call setAttribute(keywd,atr_stat,status)
+
       end subroutine
 
 
@@ -97,179 +436,6 @@
       end if
       return 
       end subroutine 
-
-
-*----------------------------------------------------------------------*
-!>    prints the keyword_tree below a certain keyword:
-!!
-!!
-!!    @param luwrt ouput unit
-!!    @param tree_root starting keyword
-!!    @param n_descent maximum number of levels to descent
-!!    @param show_args if arguments should be shown
-!!    @param show_status if status should be shown
-*----------------------------------------------------------------------*
-      subroutine keyword_list(luwrt,tree_root,
-     &     n_descent,show_args,show_status)
-*----------------------------------------------------------------------*
-      use FoX_common, only:str,rts
-      implicit none
-      include 'stdunit.h'
-      character(len=7),dimension(8),parameter::
-     &     type_array=(/"logical","integer","unknown","real",
-     &     "unknown","unknown","unknown","string"/)
-      integer, parameter ::
-     &     ntest=00
-      character(len=17),parameter ::
-     &     i_am="keyword_list"
-
-      integer, intent(in)::
-     &     luwrt
-      type(Node),pointer, intent(in)::
-     &     tree_root
-
-      integer,optional,intent(in)::
-     &     n_descent
-      logical, optional, intent(in)::
-     &     show_args,show_status
-
-      logical:: 
-     &     args_vis,status_vis
-      integer::
-     &     level, 
-     &      type, dim,
-     &     ii, dummy
-      character::
-     &     status
-
-      type(Node),pointer::
-     &     curkey,curarg
-      
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(tree_root)
-
-      end if
-
-      args_vis=.false.
-      if (present(show_args)) args_vis=show_args
-      status_vis=.True.
-      if (present(show_status)) status_vis=show_status
-
-      if (ntest.ge.100) then
-         write (lulog,*) "show_status?",status_vis
-         write (lulog,*) "show_arguments?",args_vis
-      end if
-
-
-      curarg=>null()
-      curkey=> tree_root
-      
-      level=0
-      key_loop: do 
-         call print_keyword(luwrt,curkey,status_vis)
-
-         if ( args_vis)then
-            curarg=> key_getFirstArgument(curkey)
-            arg_loop: do while (associated(curarg))
-            call print_argument(luwrt,curarg,status_vis)
-               curarg=> iterate_SiblingArgs(curarg)
-            end do arg_loop 
-         end if
-         curkey=> filtered_dsearch(curkey,level,only_keys=.True.,
-     &        key_root_stop=.True.)
-
-         if (.not.associated(curkey)) exit key_loop
-         if (present(n_descent))then
-            if (level.gt.n_descent .or. 
-     &           level .lt. 0 ) exit key_loop
-         end if
-      end do key_loop
-      return
-      contains
-*----------------------------------------------------------------------*
-!>    prints a keyword 
-!!
-!!   @param luwrt output unit
-!!   @param arg argument node
-!!   @param status_vis if status should be printed as well
-*----------------------------------------------------------------------*
-      subroutine print_keyword(luwrt,keywd,status_vis)
-*----------------------------------------------------------------------*
-      integer, parameter ::
-     &     ntest=00
-      character(len=*),parameter ::
-     &     i_am="print_keyword"
-      integer, intent(in)::
-     &     luwrt
-      type(Node),pointer, intent(in)::
-     &     keywd
-      logical, intent(in)::
-     &     status_vis
-      character(len=64)::
-     &     fmtstr
-
-      if (status_vis)then 
-         status=getAttribute(keywd,atr_stat)
-         if (ntest.ge.100)then 
-            write (lulog,*) "status:",getAttribute(keywd,atr_stat)
-         end if 
-         if (status.eq.status_active) then
-            write(fmtstr,'("(""A"",",i3,"x,a)")') 2*level+1
-         else
-            write(fmtstr,'("(""I"",",i3,"x,a)")') 2*level+1
-         end if
-      else 
-         write(fmtstr,'("("">"",",i3,"x,a)")') 2*level+1
-      end if
-      write (luwrt,fmtstr)getAttribute(curkey,atr_name)
-      end subroutine print_keyword
-*----------------------------------------------------------------------*
-!>    prints a keyword 
-!!
-!!   @param luwrt output unit
-!!   @param arg argument node
-!!   @param status_vis if status should be printed as well
-*----------------------------------------------------------------------*
-      subroutine print_argument(luwrt,arg,status_vis)
-*----------------------------------------------------------------------*
-      integer, parameter ::
-     &     ntest=00
-      character(len=*),parameter ::
-     &     i_am="print_argument"
-      integer, intent(in)::
-     &     luwrt
-      type(Node),pointer, intent(in)::
-     &     arg
-      logical, intent(in)::
-     &     status_vis
-      character(len=64)::
-     &     fmtstr
-      integer::
-     &     type, dim
-      call rts(getAttribute(arg,atr_kind),type)
-      call rts(getAttribute(arg,atr_len),dim)
-      write(fmtstr,'("(x,",i3,"x,a,x,i2,x,a)")') 2*level+4
-      write(luwrt,fmtstr) getAttribute(curarg,atr_name)//" "
-     &     //trim(type_array(type))//" of len",dim,": "// 
-     &     getAttribute(curarg,atr_val)
-      end subroutine
-      end subroutine
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -348,11 +514,12 @@
       implicit none
       integer, intent(in) ::
      &     luin
-      type(Node),pointer::
-     &     key_root
+      type(tree_t)::
+     &     keytree, input
 
-      key_root=> reg_fetch_root()
-      call keyword_parse_(luin,key_root)
+      keytree= fetch_registry_keyword_tree()
+      input= fetch_input_keyword_tree()
+      call keyword_parse_(luin,keytree,input)
       end subroutine inp_parse
 
 *----------------------------------------------------------------------*
@@ -360,7 +527,7 @@
 !!     the unit should be a formatted, sequential file, positioned
 !!     at the place where the parser should start
 *----------------------------------------------------------------------*
-      subroutine keyword_parse_(luin,k_root)
+      subroutine keyword_parse_(luin,keytree,input)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -375,8 +542,8 @@
       integer, intent(in) ::
      &     luin
 
-      type(Node), pointer ::
-     &     k_root                ! root element of the preset keyword tree
+      type(tree_t),intent(inout)::
+     &     keytree,input               ! root element of the preset keyword tree
       integer, parameter ::
      &     maxlen  = 256,
      &     n_delim = 8
@@ -412,7 +579,7 @@
 
 
       type(Node), pointer ::
-     &     curkey,nxtkey
+     &     curkey,nxtkey,dummykey
       type(Node), pointer ::
      &     curarg
       character(len=maxlen) ::
@@ -424,12 +591,10 @@
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write (lulog,*) "testing association of key_root:"
-     &        ,associated(k_root)
       end if
 
       context = " "
-      curkey => k_root
+      curkey => getRoot(keytree)
 
       allowed_delim(1:n_allowed_start)=allowed_start(1:n_allowed_start)
       n_allowed_delim = n_allowed_start
@@ -486,13 +651,14 @@
             end if
             
 !     is it an argument key?
-            dummy=1
-            curarg=>key_getArgument(curkey,line(ipst:ipnd),
-     &           latest=.false.,icount=dummy)
 
-            if (ntest.ge.100) 
-     &           write (lulog,*) "Is this an argument?",
-     &           associated(curarg)
+            
+            
+
+            dummy=1
+            curarg=>getSubNode(curkey,line(ipst:ipnd),
+     &           arg_tag,latest=.false.,icount=dummy )
+
 
             if (associated(curarg)) then 
 !     check that a value is assigned
@@ -517,7 +683,7 @@
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
                      n_allowed_delim = n_allowed_after_arg
-                     call create_node(curarg,line(ipst+1:ipnd-1))
+                     call create_node(input,curarg,line(ipst+1:ipnd-1))
                   else
                      allowed_delim(1:n_allowed_after_arg) =
      &                    allowed_after_arg(1:n_allowed_after_arg)
@@ -530,7 +696,7 @@
                         call error_delim(line,ipnd)
                      end if
                      ipnd = ipnd-1
-                     call create_node(curarg,line(ipst:ipnd))
+                     call create_node( input, curarg,line(ipst:ipnd))
                   end if 
 
                else
@@ -541,19 +707,17 @@
                   n_allowed_delim = n_allowed_after_key
                   exit line_loop
                end if
-            else                ! keyword
-               call next_node(curkey,nxtkey,line(ipst:ipnd))
-               if (ntest.ge.100) 
-     &              write (lulog,*) "Is it a keyword?",
-     &              associated(nxtkey)
+            else      
+               nxtkey=> tree_goback_to_element(keytree,line(ipst:ipnd),
+     &           key_tag )
+
                if (.not.associated(nxtkey)) then
                   ierr = ierr+1
-                  call error_keywd(line,ipst,curkey)
+                  call error_keywd(line,ipst)
                else
                   curkey => nxtkey
-                  call create_node(curkey," ")
+                  call create_node(input, curkey," ")
                   
-!     add node to keyword history
                end if
             end if
 
@@ -663,6 +827,8 @@ c dbgend
 *----------------------------------------------------------------------*
       subroutine error_pointer(ipos,line,msg)
 *----------------------------------------------------------------------*
+      implicit none
+      include "stdunit.h"
       character(len=*),parameter::
      &     unit="UOUT"
 
@@ -673,11 +839,15 @@ c dbgend
 
       character(len=80) ::
      &     fmtstr, outstr
-
       call print_out(' ',unit)
       write(outstr,'(x,a)') line
       call print_out(outstr,unit)
-      write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
+      if (ipos.gt.1)then
+         write(fmtstr,'("(x,""",a,""",""^"")")') repeat("-",abs(ipos)-1)
+      else
+         write(fmtstr,'("(x,""^"")")')
+      end if
+      write(luout,*)fmtstr
       write(outstr,fmtstr)
       call print_out(outstr,unit)
       write(outstr,'(x,"INPUT ERROR: ",a)') msg
@@ -754,16 +924,14 @@ c dbgend
 
 
 *----------------------------------------------------------------------*
-      subroutine error_keywd(str,ipos,curkey)
+      subroutine error_keywd(line,ipos)
 *----------------------------------------------------------------------*
       implicit none
       
-      character, intent(in) ::
-     &     str*(*)
+      character(len=*), intent(in) ::
+     &     line
       integer, intent(in) ::
      &     ipos
-      type(Node), intent(in) ::
-     &     curkey
 
       call error_pointer(ipos,trim(line), 'unexpected keyword')
   
@@ -785,7 +953,7 @@ c dbgend
 !!   @param[in] value string which can be converted to input
 !!   @TODO error checking
 *----------------------------------------------------------------------*
-      subroutine create_node(template,value)
+      subroutine create_node(input, template,value)
 *----------------------------------------------------------------------*
       implicit none 
       include "stdunit.h"
@@ -799,7 +967,8 @@ c dbgend
 
       integer, parameter ::
      &     maxlen  = 256
-
+      type(tree_t),intent(inout)::
+     &     input
       type(node), pointer ::
      &     template
       character(len=*),intent(in)::
@@ -829,7 +998,7 @@ c dbgend
       if (.not. associated(template)) 
      &     call quit(1,i_am,"template not set")
       
-      new_elem=>inp_create_new_element( template)
+      new_elem=>tree_create_new_element( input, template)
 
       call setAttribute(new_elem,atr_name,
      &     getAttribute(template,atr_name))
@@ -970,66 +1139,4 @@ c dbgend
 
       end subroutine
 
-
-
-*----------------------------------------------------------------------*
-!>    find keyword in first sublevel or up
-!!
-!!
-!!    @param cur_node pointer to current node
-!!    @param[out] nxt_node found node or unassociated
-!!    @param[in] key name of the next keyword
-*----------------------------------------------------------------------*
-      subroutine next_node(cur_node,nxt_node,key)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-
-      character(len=*),parameter::
-     &     i_am="next_node"
-      integer, parameter ::
-     &     ntest =00
-
-      type(node), pointer ::
-     &     cur_node
-      type(node), pointer ::
-     &     nxt_node
-      character, intent(in) ::
-     &     key*(*)
-
-      type(node), pointer ::
-     &     current,listnode
-      integer ::
-     &     dummy
-      
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) ' start = "',getAttribute(cur_node,atr_name),'"'
-         write(lulog,*) ' search for "',trim(key),'"'
-      end if
-
-      nxt_node=>null()
-      current => cur_node
-
-   
-      node_loop: do
-         dummy=1
-         nxt_node=>key_getSubkey(current,key,latest=.false.,
-     &        icount=dummy)
-         if (associated(nxt_node)) exit node_loop
-
-
-         if (getNodeName(current).ne. key_root_tag)then
-            current=>getParentNode(current)
-         else
-            exit node_loop
-         end if
-      end do node_loop
-
-      if (ntest.ge.100) then
-         if (associated(nxt_node)) write(lulog,*) 'success'
-         if (.not.associated(nxt_node)) write(lulog,*) 'no success'
-      end if
-
-      end subroutine next_node
       end module  

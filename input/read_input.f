@@ -1,6 +1,6 @@
       subroutine read_input(ffinput)
 
-      use keyword_trees, only:reg_import
+      use keyword_trees, only:create_keyword_trees
       use parse_input,only : inp_parse
       implicit none
       include 'stdunit.h'
@@ -25,7 +25,7 @@ c work around for problem with interface file
      &     write(luout,*) 'Input file: ',
      &     trim(ffinput%name)
 
-      call reg_import(get_keyword_file())
+      call create_keyword_trees(get_keyword_file())
 
       if (.not.file_exists(ffinput))
      &     call quit(0,'read_input','file does not exist - "'//
