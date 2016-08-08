@@ -1,1 +1,450 @@
-<?xml version="1.0" ?><key_root name="registry"><keyword name="general" status="A"><argument length="256" name="title" status="A" type="8"/><argument length="1" name="memmax" status="A" type="2" value="50000000"/><argument length="1" name="print" status="A" type="2" value="3"/><argument length="1" name="form_test" status="A" type="1" value="false"/><argument length="1" name="statistics" status="A" type="1" value="false"/><argument length="1" name="da_block" status="A" type="2" value="32"/><argument length="1" name="print_tgt_graph" status="A" type="1" value="false"/></keyword><keyword name="orb_space" status="A"><keyword name="shell" status="A"><argument length="8" name="def" status="A" type="2" value="-1,-1,-1,-1,-1,-1,-1,-1"/><argument length="8" name="type" status="A" type="8"/><argument length="1" name="nfreeze" status="A" type="2" value="0"/><argument length="1" name="nactel" status="A" type="2" value="-1"/></keyword><keyword name="open_shells" status="A"><argument length="4" name="treat" status="A" type="8" value="ph  "/></keyword><keyword name="GEtest" status="A"><argument length="20" name="Rsys" status="A" type="2" value="-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1"/><argument length="1" name="case" status="A" type="2" value="1"/><argument length="1" name="caseF" status="A" type="2" value="0"/></keyword></keyword><keyword name="method" status="A"><keyword name="MP" status="A"><argument length="1" name="level" status="A" type="2" value="2"/></keyword><keyword name="CC" status="A"><argument length="1" name="maxexc" status="A" type="2" value="2"/><argument length="1" name="minexc" status="A" type="2" value="1"/><argument length="8" name="truncate" status="A" type="8" value="no      "/><argument length="1" name="T1ext" status="A" type="2" value="0"/><argument length="1" name="H0_T1ext" status="A" type="2" value="0"/><argument length="1" name="H0d" status="A" type="1" value="false"/><argument length="1" name="maxexc_guess" status="A" type="2" value="0"><!--use T op with lower rank as initial guess--></argument></keyword><keyword name="CCPT" status="A"><argument length="1" name="maxexc" status="A" type="2" value="3"/><argument length="1" name="extern" status="A" type="2" value="0"/><argument length="1" name="GBC" status="A" type="1" value="false"/><argument length="1" name="R2_coupling" status="A" type="1" value="true"/><argument length="1" name="R2R2" status="A" type="1" value="false"/><argument length="1" name="RT2T2" status="A" type="1" value="false"/><argument length="1" name="hh_scatter" status="A" type="1" value="false"/><argument length="1" name="screen" status="A" type="1" value="false"/></keyword><keyword name="ECC" status="A"><argument length="1" name="maxexc" status="A" type="2" value="2"/><argument length="1" name="minexc" status="A" type="2" value="1"/><argument length="8" name="truncate" status="A" type="8" value="no      "/><argument length="1" name="T1ext" status="A" type="2" value="0"/><argument length="1" name="H0_T1ext" status="A" type="2" value="0"/><argument length="1" name="H0d" status="A" type="1" value="false"/></keyword><keyword name="R12" status="A"><argument length="1" name="ansatz" status="A" type="2" value="1"/><argument length="1" name="maxexc" status="A" type="2" value="2"/><argument length="1" name="minexc" status="A" type="2" value="2"/><argument length="1" name="min_tp" status="A" type="2" value="1"/><argument length="1" name="min_tpp" status="A" type="2" value="2"/><argument length="1" name="RGRcouple" status="A" type="2" value="0"/><argument length="1" name="T1ext" status="A" type="2" value="0"/><argument length="1" name="H0_T1ext" status="A" type="2" value="-1"/><argument length="1" name="H0d" status="A" type="1" value="false"/><argument length="8" name="approx" status="A" type="8" value="A       "/><argument length="8" name="F_appr" status="A" type="8" value="none    "/><argument length="8" name="K_appr" status="A" type="8" value="none    "/><argument length="8" name="Z_appr" status="A" type="8" value="none    "/><argument length="8" name="Z2_appr" status="A" type="8" value="as-Z    "/><argument length="1" name="fixed" status="A" type="1" value="false"/><argument length="1" name="fix_new" status="A" type="2" value="0"/><argument length="1" name="extend" status="A" type="2" value="0"/><argument length="1" name="r12op" status="A" type="2" value="0"/><argument length="1" name="pz_eval" status="A" type="1" value="false"/><argument length="1" name="trunc" status="A" type="2" value="0"/><argument length="1" name="xsp1" status="A" type="1" value="false"/><argument length="8" name="f12x" status="A" type="8" value="        "/><argument length="1" name="screen" status="A" type="1" value="false"/><argument length="1" name="vring" status="A" type="2" value="0"/><argument length="1" name="use_U3" status="A" type="1" value="false"/><argument length="1" name="use_CS" status="A" type="1" value="false"/><argument length="1" name="pert" status="A" type="1" value="false"/><argument length="1" name="opt" status="A" type="1" value="false"/><argument length="1" name="notrunc" status="A" type="1" value="false"/><argument length="1" name="semi_int" status="A" type="2" value="0"/><argument length="1" name="semi_r12" status="A" type="1" value="false"/></keyword><keyword name="MR" status="A"><argument length="1" name="cminh" status="A" type="2" value="0"><!--min. number of holes for wf--></argument><argument length="1" name="cmaxh" status="A" type="2" value="-1"><!--max. number of holes for wf--></argument><argument length="1" name="cminp" status="A" type="2" value="0"><!--min. number of particles for wf--></argument><argument length="1" name="cmaxp" status="A" type="2" value="-1"><!--max. number of particles for wf--></argument><argument length="1" name="cmaxexc" status="A" type="2" value="0"><!--max. excitation for wf--></argument><argument length="1" name="cminexc" status="A" type="2" value="0"><!--min. excitation for wf--></argument><argument length="1" name="maxroot" status="A" type="2" value="-1"><!--max trial roots for wf--></argument><argument length="1" name="ciroot" status="A" type="2" value="1"><!--root to be taken for wf--></argument><argument length="1" name="multistate" status="A" type="1" value="false"><!--multi state version--></argument><argument length="1" name="minh" status="A" type="2" value="0"><!--min. number of holes--></argument><argument length="1" name="maxh" status="A" type="2" value="-1"><!--max. number of holes--></argument><argument length="1" name="minp" status="A" type="2" value="0"><!--min. number of particles--></argument><argument length="1" name="maxp" status="A" type="2" value="-1"><!--max. number of particles--></argument><argument length="1" name="maxv" status="A" type="2" value="-1"><!--max. number of valence ops--></argument><argument length="1" name="maxvv" status="A" type="2" value="-1"><!--max. number of val-val exc.--></argument><argument length="1" name="maxexc" status="A" type="2" value="2"><!--max. excitation--></argument><argument length="1" name="minexc" status="A" type="2" value="1"><!--min. excitation--></argument><argument length="1" name="pure_vv" status="A" type="1" value="false"><!--pure act.-act. excitations--></argument><argument length="6" name="excrestr" status="A" type="2" value="-1,-1,-1,-1,-1,-1"><!--restr. exc. in T--></argument><argument length="1" name="triples" status="A" type="8" value="b"><!--triples model (F: full)--></argument><argument length="1" name="GNO" status="A" type="2" value="0"><!--1 for generalized normal order--></argument><argument length="1" name="maxcum" status="A" type="2" value="-1"><!--max. cumulant rank--></argument><argument length="1" name="cum_appr_mode" status="A" type="2" value="3"><!--cumulant approximation mode--></argument><argument length="1" name="oldref" status="A" type="1" value="false"><!--use existing CASSCF coeff.--></argument><argument length="1" name="prc_type" status="A" type="2" value="3"><!--type of preconditioner--></argument><argument length="1" name="prc_shift" status="A" type="4" value="0d0"/><argument length="1" name="prc_impfac" status="A" type="4" value="1d0"/><argument length="1" name="prc_iter" status="A" type="2" value="0"><!--#iter for iterative improvement--></argument><argument length="1" name="prc_min" status="A" type="4" value="0.2d0"/><argument length="1" name="project" status="A" type="2" value="3"><!--project out singles from doubles a.s.o.--></argument><argument length="1" name="svdonly" status="A" type="1" value="false"><!--stop after first SVD--></argument><argument length="1" name="mult" status="A" type="2" value="0"><!--spin multiplicity (0: interface)--></argument><argument length="1" name="ms" status="A" type="2" value="123456789"><!--Ms--></argument><argument length="1" name="sym" status="A" type="2" value="0"><!--symmetry (0: read fr. interface)--></argument><argument length="1" name="writeFock" status="A" type="1" value="false"/><argument length="1" name="prc_traf" status="A" type="1" value="true"><!--extra unitary trafo based on prec. matrix--></argument><argument length="1" name="guess" status="A" type="2" value="0"><!--if >0: use previous C0 as guess--></argument><argument length="1" name="densmix" status="A" type="4" value="0d0"/><argument length="1" name="refproj" status="A" type="2" value="0"><!--project out ref. functions--></argument><argument length="1" name="spinexpec" status="A" type="2" value="0"><!--(0=off)--></argument></keyword><keyword name="MR_P" status="A"><argument length="1" name="maxroot" status="A" type="2" value="-1"><!--max trial roots for wf--></argument><argument length="1" name="ciroot" status="A" type="2" value="1"><!--root to be taken for wf--></argument><argument length="1" name="mult" status="A" type="2" value="0"><!--spin multiplicity (0: interface)--></argument><argument length="1" name="ms" status="A" type="2" value="123456789"><!--Ms--></argument><argument length="1" name="sym" status="A" type="2" value="0"><!--symmetry (0: read fr. interface)--></argument><argument length="1" name="spinexpec" status="A" type="2" value="0"><!--(0=off)--></argument></keyword><keyword name="MRCI" status="A"><argument length="1" name="nroots" status="A" type="2" value="1"><!--number of roots (for ic-MRCI)--></argument></keyword><keyword name="MRCC" status="A"><keyword name="excite" status="A"><argument length="8" name="method" status="A" type="8" value="LR      "/></keyword><argument length="1" name="maxcom_res" status="A" type="2" value="2"/><argument length="1" name="maxcom_en" status="A" type="2" value="2"/><argument length="1" name="coupled_states" status="A" type="1" value="true"><!--coupled states--></argument><argument length="1" name="maxcom_res_cpl" status="A" type="2" value="2"/><argument length="1" name="maxcom_en_cpl" status="A" type="2" value="2"/><argument length="2" name="type" status="A" type="8" value="SU"/><argument length="1" name="req_state" status="A" type="2" value="1"><!--desired state for SS-MRCCs--></argument><argument length="1" name="assume_orth" status="A" type="1" value="false"/><argument length="1" name="Heff_symm" status="A" type="1" value="false"/><argument length="1" name="maxtt" status="A" type="2" value="-1"/><argument length="1" name="G_level" status="A" type="2" value="-1"><!--max. power in e^(-T) for sim. trans.--></argument><argument length="1" name="Op_eqs" status="A" type="1" value="false"/><argument length="1" name="H1bar" status="A" type="1" value="false"/><argument length="1" name="HTT" status="A" type="1" value="false"/><argument length="1" name="maxcom_h1bar" status="A" type="2" value="4"/><argument length="1" name="h1bar_maxp" status="A" type="2" value="-1"><!--max. number of particle lines in H1bar--></argument><argument length="1" name="x_ansatz" status="A" type="4" value="0.5d0"/><argument length="1" name="Tred_mode" status="A" type="2" value="0"/><argument length="1" name="trunc_order" status="A" type="2" value="-1"/><argument length="26" name="trunc_top" status="A" type="2" value="-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/><argument length="5" name="trunc_ham" status="A" type="2" value="0,0,1,1,1"/><argument length="1" name="rept_ham" status="A" type="2" value="0"/><argument length="1" name="Tfix" status="A" type="2" value="0"><!--read in fixed T with max. rank Tfix--></argument><argument length="1" name="T1ord" status="A" type="2" value="2"><!--perturbation order of T1--></argument><argument length="1" name="simp" status="A" type="2" value="2"><!--special simplifications for (T)--></argument><argument length="1" name="eval_dens3" status="A" type="1" value="false"><!--evaluate 3-body dens matrix for transforming T3--></argument><argument length="1" name="Dyall0" status="A" type="1" value="false"><!--use C00 to ensure diagonal inact. H0--></argument><argument length="1" name="Favg_fix" status="A" type="1" value="false"/><argument length="1" name="set_up_T_corr" status="A" type="1" value="false"/></keyword><keyword name="MRCC2" status="A"><keyword name="excite" status="A"><argument length="8" name="method" status="A" type="8" value="LR      "/></keyword><argument length="1" name="lagrangian" status="A" type="2" value="0"><!--type of lagrangian--></argument><argument length="4" name="hamiltonian" status="A" type="8" value="DYALL"><!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) --></argument></keyword><keyword name="MRCCPT2" status="A"><argument length="1" name="3rd_E" status="A" type="1"/><argument length="4" name="hamiltonian" status="A" type="8" value="DYALL"><!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) --></argument></keyword><keyword name="truncate" status="A"><argument length="1" name="trunc_type" status="A" type="2" value="0"/></keyword><keyword name="response" status="A"><argument length="1" name="order" status="A" type="2" value="0"><!--perturbation order--></argument><argument length="1" name="pert" status="A" type="8" value="d"><!--pert. op.--></argument><argument length="1" name="comp" status="A" type="8" value="Z"><!--cartesian components--></argument><argument length="1" name="freq" status="A" type="4" value="0d0"><!--frequencies--></argument><argument length="1" name="BX_3C" status="A" type="1" value="true"><!--treat BX intermed. as in approx.3C--></argument><argument length="1" name="rules" status="A" type="1" value="true"><!--use 2n+1 / 2n+2 rules--></argument><argument length="1" name="restart" status="A" type="2" value="0"><!--restart calc. at given prop. order--></argument></keyword><keyword name="unit_test" status="A"><argument length="256" name="tests" status="A" type="8"/></keyword></keyword><keyword name="calculate" status="A"><keyword name="check" status="A"><keyword name="formulae" status="A"/><argument length="1" name="contr_test" status="A" type="2" value="1"/><argument length="1" name="algebra_test" status="A" type="2" value="1"/></keyword><keyword name="solve" status="A"><keyword name="non_linear" status="A"><argument length="1" name="maxiter" status="A" type="2" value="50"/><argument length="1" name="maxmic" status="A" type="2" value="20"/><argument length="1" name="maxsub" status="A" type="2" value="8"/><argument length="1" name="conv" status="A" type="4" value="1d-6"/><argument length="1" name="tr_ini" status="A" type="4" value="1.0d0"/><argument length="8" name="method" status="A" type="8" value="diis    "/><argument length="1" name="optref" status="A" type="2" value="-3"><!--optimize reference fct.--></argument><argument length="1" name="update_prc" status="A" type="2" value="0"><!--update precond. every i-th iteration (<=0: off)--></argument><argument length="1" name="preopt" status="A" type="1" value="false"><!--first one optimization with fixed metric--></argument><argument length="1" name="restart" status="A" type="1" value="false"><!--hard restart (use old amplitude file)--></argument><argument length="1" name="mic_ahead" status="A" type="4" value="1d-2"><!--fac. by which micro it. conv.thr. is "ahead"--></argument></keyword><keyword name="linear" status="A"><argument length="1" name="maxiter" status="A" type="2" value="30"/><argument length="1" name="maxsub" status="A" type="2" value="8"/><argument length="1" name="conv" status="A" type="4" value="1d-6"/><argument length="8" name="method" status="A" type="8" value="subspace"/></keyword><keyword name="eigen" status="A"><argument length="1" name="maxiter" status="A" type="2" value="30"/><argument length="1" name="maxsub" status="A" type="2" value="8"/><argument length="1" name="conv" status="A" type="4" value="1d-6"/><argument length="8" name="method" status="A" type="8" value="davidson"/><argument length="1" name="resume" status="A" type="1" value="true"><!--resume with last vec. as initial guess--></argument><argument length="1" name="guess" status="A" type="2" value="0"/><argument length="1" name="restart" status="A" type="1"><!--need to use a guess from file for solve_evp--></argument></keyword><argument length="1" name="maxiter" status="A" type="2" value="30"/><argument length="1" name="maxmic" status="A" type="2" value="20"/><argument length="1" name="maxsub" status="A" type="2" value="8"/><argument length="1" name="check_incore" status="A" type="2" value="-1"/><argument length="1" name="conv" status="A" type="4" value="1d-6"/></keyword><keyword name="CC_solve_tbar" status="A"/><keyword name="CC_solve_sim" status="A"/><keyword name="properties" status="A"/><keyword name="skip_E" status="A"/><keyword name="check_S" status="A"><argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/><argument length="1" name="msc" status="A" type="2" value="0"/></keyword><keyword name="excitation" status="A"><keyword name="normalize" status="A"/><keyword name="analyze" status="A"/><argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/><argument length="1" name="msc" status="A" type="2" value="0"/><argument length="1" name="mult" status="A" type="2" value="1"/></keyword><keyword name="ionization" status="A"><argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/></keyword><keyword name="routes" status="A"><argument length="1" name="schedule" status="A" type="2" value="1"/><argument length="1" name="contract" status="A" type="2" value="3"/><argument length="1" name="str_block" status="A" type="2" value="200"/><argument length="1" name="cnt_block" status="A" type="2" value="-1"/><argument length="1" name="force_batching" status="A" type="2" value="-1"/><argument length="1" name="force_ooc_sort" status="A" type="2" value="0"/><argument length="1" name="maxbranch" status="A" type="2" value="5"><!--(-1=check all possible contraction sequences)--></argument><argument length="1" name="auto_opt" status="A" type="1" value="true"/><argument length="1" name="reo_factor" status="A" type="4" value="0d0"/><argument length="1" name="use_tr" status="A" type="1" value="true"/><argument length="1" name="simtraf" status="A" type="2" value="0"/><argument length="1" name="sv_thresh" status="A" type="4" value="1d-5"/><argument length="1" name="jac_thresh" status="A" type="4" value="-1d0"/><argument length="1" name="sv_fix" status="A" type="1" value="false"/><argument length="1" name="sv_old" status="A" type="1" value="false"/><argument length="1" name="jac_fix" status="A" type="1" value="false"/><argument length="1" name="Tikhonov" status="A" type="4" value="0d0"/><argument length="1" name="spinadapt" status="A" type="2" value="-1"><!--spin projection (=3 for non-singlet MRCC)--></argument></keyword><keyword name="class" status="A"><argument length="2" name="hpclass" status="A" type="2" value="-1,-1"><!--ih,ip--></argument><argument length="1" name="sv_thr_hp" status="A" type="4" value="1d-5"><!--sv_thr for this particular oih,ip--></argument></keyword><keyword name="experimental" status="A"><argument length="256" name="file" status="A" type="8"/></keyword><keyword name="interfaces" status="A"><argument length="256" name="file" status="A" type="8"/><argument length="256" name="file" status="A" type="8"/></keyword><keyword name="reference" status="A"><argument length="30" name="def" status="A" type="4"/></keyword><keyword name="interfaces" status="A"/></keyword></key_root>
+<?xml version="1.0" ?>
+    <key_root name="registry">
+      <keyword name="general" status="A">
+        <argument length="256" name="title" status="A" type="8"/>
+        <argument length="1" name="memmax" status="A" type="2" value="50000000"/>
+        <argument length="1" name="print" status="A" type="2" value="3"/>
+        <argument length="1" name="form_test" status="A" type="1" value="false"/>
+        <argument length="1" name="statistics" status="A" type="1" value="false"/>
+        <argument length="1" name="da_block" status="A" type="2" value="32"/>
+        <argument length="1" name="print_tgt_graph" status="A" type="1" value="false"/>
+      </keyword>
+      <keyword name="orb_space" status="A">
+        <keyword name="shell" status="A">
+          <argument length="8" name="def" status="A" type="2" value="-1,-1,-1,-1,-1,-1,-1,-1"/>
+          <argument length="8" name="type" status="A" type="8"/>
+          <argument length="1" name="nfreeze" status="A" type="2" value="0"/>
+          <argument length="1" name="nactel" status="A" type="2" value="-1"/>
+        </keyword>
+        <keyword name="open_shells" status="A">
+          <argument length="4" name="treat" status="A" type="8" value="ph  "/>
+        </keyword>
+        <keyword name="GEtest" status="A">
+          <argument length="20" name="Rsys" status="A" type="2" value="-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1"/>
+          <argument length="1" name="case" status="A" type="2" value="1"/>
+          <argument length="1" name="caseF" status="A" type="2" value="0"/>
+        </keyword>
+      </keyword>
+      <keyword name="method" status="A">
+        <keyword name="MP" status="A">
+          <argument length="1" name="level" status="A" type="2" value="2"/>
+        </keyword>
+        <keyword name="CC" status="A">
+          <argument length="1" name="maxexc" status="A" type="2" value="2"/>
+          <argument length="1" name="minexc" status="A" type="2" value="1"/>
+          <argument length="8" name="truncate" status="A" type="8" value="no      "/>
+          <argument length="1" name="T1ext" status="A" type="2" value="0"/>
+          <argument length="1" name="H0_T1ext" status="A" type="2" value="0"/>
+          <argument length="1" name="H0d" status="A" type="1" value="false"/>
+          <argument length="1" name="maxexc_guess" status="A" type="2" value="0">
+            <!--use T op with lower rank as initial guess-->
+          </argument>
+        </keyword>
+        <keyword name="CCPT" status="A">
+          <argument length="1" name="maxexc" status="A" type="2" value="3"/>
+          <argument length="1" name="extern" status="A" type="2" value="0"/>
+          <argument length="1" name="GBC" status="A" type="1" value="false"/>
+          <argument length="1" name="R2_coupling" status="A" type="1" value="true"/>
+          <argument length="1" name="R2R2" status="A" type="1" value="false"/>
+          <argument length="1" name="RT2T2" status="A" type="1" value="false"/>
+          <argument length="1" name="hh_scatter" status="A" type="1" value="false"/>
+          <argument length="1" name="screen" status="A" type="1" value="false"/>
+        </keyword>
+        <keyword name="ECC" status="A">
+          <argument length="1" name="maxexc" status="A" type="2" value="2"/>
+          <argument length="1" name="minexc" status="A" type="2" value="1"/>
+          <argument length="8" name="truncate" status="A" type="8" value="no      "/>
+          <argument length="1" name="T1ext" status="A" type="2" value="0"/>
+          <argument length="1" name="H0_T1ext" status="A" type="2" value="0"/>
+          <argument length="1" name="H0d" status="A" type="1" value="false"/>
+        </keyword>
+        <keyword name="R12" status="A">
+          <argument length="1" name="ansatz" status="A" type="2" value="1"/>
+          <argument length="1" name="maxexc" status="A" type="2" value="2"/>
+          <argument length="1" name="minexc" status="A" type="2" value="2"/>
+          <argument length="1" name="min_tp" status="A" type="2" value="1"/>
+          <argument length="1" name="min_tpp" status="A" type="2" value="2"/>
+          <argument length="1" name="RGRcouple" status="A" type="2" value="0"/>
+          <argument length="1" name="T1ext" status="A" type="2" value="0"/>
+          <argument length="1" name="H0_T1ext" status="A" type="2" value="-1"/>
+          <argument length="1" name="H0d" status="A" type="1" value="false"/>
+          <argument length="8" name="approx" status="A" type="8" value="A       "/>
+          <argument length="8" name="F_appr" status="A" type="8" value="none    "/>
+          <argument length="8" name="K_appr" status="A" type="8" value="none    "/>
+          <argument length="8" name="Z_appr" status="A" type="8" value="none    "/>
+          <argument length="8" name="Z2_appr" status="A" type="8" value="as-Z    "/>
+          <argument length="1" name="fixed" status="A" type="1" value="false"/>
+          <argument length="1" name="fix_new" status="A" type="2" value="0"/>
+          <argument length="1" name="extend" status="A" type="2" value="0"/>
+          <argument length="1" name="r12op" status="A" type="2" value="0"/>
+          <argument length="1" name="pz_eval" status="A" type="1" value="false"/>
+          <argument length="1" name="trunc" status="A" type="2" value="0"/>
+          <argument length="1" name="xsp1" status="A" type="1" value="false"/>
+          <argument length="8" name="f12x" status="A" type="8" value="        "/>
+          <argument length="1" name="screen" status="A" type="1" value="false"/>
+          <argument length="1" name="vring" status="A" type="2" value="0"/>
+          <argument length="1" name="use_U3" status="A" type="1" value="false"/>
+          <argument length="1" name="use_CS" status="A" type="1" value="false"/>
+          <argument length="1" name="pert" status="A" type="1" value="false"/>
+          <argument length="1" name="opt" status="A" type="1" value="false"/>
+          <argument length="1" name="notrunc" status="A" type="1" value="false"/>
+          <argument length="1" name="semi_int" status="A" type="2" value="0"/>
+          <argument length="1" name="semi_r12" status="A" type="1" value="false"/>
+        </keyword>
+        <keyword name="MR" status="A">
+          <argument length="1" name="cminh" status="A" type="2" value="0">
+            <!--min. number of holes for wf-->
+          </argument>
+          <argument length="1" name="cmaxh" status="A" type="2" value="-1">
+            <!--max. number of holes for wf-->
+          </argument>
+          <argument length="1" name="cminp" status="A" type="2" value="0">
+            <!--min. number of particles for wf-->
+          </argument>
+          <argument length="1" name="cmaxp" status="A" type="2" value="-1">
+            <!--max. number of particles for wf-->
+          </argument>
+          <argument length="1" name="cmaxexc" status="A" type="2" value="0">
+            <!--max. excitation for wf-->
+          </argument>
+          <argument length="1" name="cminexc" status="A" type="2" value="0">
+            <!--min. excitation for wf-->
+          </argument>
+          <argument length="1" name="maxroot" status="A" type="2" value="-1">
+            <!--max trial roots for wf-->
+          </argument>
+          <argument length="1" name="ciroot" status="A" type="2" value="1">
+            <!--root to be taken for wf-->
+          </argument>
+          <argument length="1" name="multistate" status="A" type="1" value="false">
+            <!--multi state version-->
+          </argument>
+          <argument length="1" name="minh" status="A" type="2" value="0">
+            <!--min. number of holes-->
+          </argument>
+          <argument length="1" name="maxh" status="A" type="2" value="-1">
+            <!--max. number of holes-->
+          </argument>
+          <argument length="1" name="minp" status="A" type="2" value="0">
+            <!--min. number of particles-->
+          </argument>
+          <argument length="1" name="maxp" status="A" type="2" value="-1">
+            <!--max. number of particles-->
+          </argument>
+          <argument length="1" name="maxv" status="A" type="2" value="-1">
+            <!--max. number of valence ops-->
+          </argument>
+          <argument length="1" name="maxvv" status="A" type="2" value="-1">
+            <!--max. number of val-val exc.-->
+          </argument>
+          <argument length="1" name="maxexc" status="A" type="2" value="2">
+            <!--max. excitation-->
+          </argument>
+          <argument length="1" name="minexc" status="A" type="2" value="1">
+            <!--min. excitation-->
+          </argument>
+          <argument length="1" name="pure_vv" status="A" type="1" value="false">
+            <!--pure act.-act. excitations-->
+          </argument>
+          <argument length="6" name="excrestr" status="A" type="2" value="-1,-1,-1,-1,-1,-1">
+            <!--restr. exc. in T-->
+          </argument>
+          <argument length="1" name="triples" status="A" type="8" value="b">
+            <!--triples model (F: full)-->
+          </argument>
+          <argument length="1" name="GNO" status="A" type="2" value="0">
+            <!--1 for generalized normal order-->
+          </argument>
+          <argument length="1" name="maxcum" status="A" type="2" value="-1">
+            <!--max. cumulant rank-->
+          </argument>
+          <argument length="1" name="cum_appr_mode" status="A" type="2" value="3">
+            <!--cumulant approximation mode-->
+          </argument>
+          <argument length="1" name="oldref" status="A" type="1" value="false">
+            <!--use existing CASSCF coeff.-->
+          </argument>
+          <argument length="1" name="prc_type" status="A" type="2" value="3">
+            <!--type of preconditioner-->
+          </argument>
+          <argument length="1" name="prc_shift" status="A" type="4" value="0d0"/>
+          <argument length="1" name="prc_impfac" status="A" type="4" value="1d0"/>
+          <argument length="1" name="prc_iter" status="A" type="2" value="0">
+            <!--#iter for iterative improvement-->
+          </argument>
+          <argument length="1" name="prc_min" status="A" type="4" value="0.2d0"/>
+          <argument length="1" name="project" status="A" type="2" value="3">
+            <!--project out singles from doubles a.s.o.-->
+          </argument>
+          <argument length="1" name="svdonly" status="A" type="1" value="false">
+            <!--stop after first SVD-->
+          </argument>
+          <argument length="1" name="mult" status="A" type="2" value="0">
+            <!--spin multiplicity (0: interface)-->
+          </argument>
+          <argument length="1" name="ms" status="A" type="2" value="123456789">
+            <!--Ms-->
+          </argument>
+          <argument length="1" name="sym" status="A" type="2" value="0">
+            <!--symmetry (0: read fr. interface)-->
+          </argument>
+          <argument length="1" name="writeFock" status="A" type="1" value="false"/>
+          <argument length="1" name="prc_traf" status="A" type="1" value="true">
+            <!--extra unitary trafo based on prec. matrix-->
+          </argument>
+          <argument length="1" name="guess" status="A" type="2" value="0">
+            <!--if >0: use previous C0 as guess-->
+          </argument>
+          <argument length="1" name="densmix" status="A" type="4" value="0d0"/>
+          <argument length="1" name="refproj" status="A" type="2" value="0">
+            <!--project out ref. functions-->
+          </argument>
+          <argument length="1" name="spinexpec" status="A" type="2" value="0">
+            <!--(0=off)-->
+          </argument>
+        </keyword>
+        <keyword name="MR_P" status="A">
+          <argument length="1" name="maxroot" status="A" type="2" value="-1">
+            <!--max trial roots for wf-->
+          </argument>
+          <argument length="1" name="ciroot" status="A" type="2" value="1">
+            <!--root to be taken for wf-->
+          </argument>
+          <argument length="1" name="mult" status="A" type="2" value="0">
+            <!--spin multiplicity (0: interface)-->
+          </argument>
+          <argument length="1" name="ms" status="A" type="2" value="123456789">
+            <!--Ms-->
+          </argument>
+          <argument length="1" name="sym" status="A" type="2" value="0">
+            <!--symmetry (0: read fr. interface)-->
+          </argument>
+          <argument length="1" name="spinexpec" status="A" type="2" value="0">
+            <!--(0=off)-->
+          </argument>
+        </keyword>
+        <keyword name="MRCI" status="A">
+          <argument length="1" name="nroots" status="A" type="2" value="1">
+            <!--number of roots (for ic-MRCI)-->
+          </argument>
+        </keyword>
+        <keyword name="MRCC" status="A">
+          <keyword name="excite" status="A">
+            <argument length="8" name="method" status="A" type="8" value="LR      "/>
+          </keyword>
+          <argument length="1" name="maxcom_res" status="A" type="2" value="2"/>
+          <argument length="1" name="maxcom_en" status="A" type="2" value="2"/>
+          <argument length="1" name="coupled_states" status="A" type="1" value="true">
+            <!--coupled states-->
+          </argument>
+          <argument length="1" name="maxcom_res_cpl" status="A" type="2" value="2"/>
+          <argument length="1" name="maxcom_en_cpl" status="A" type="2" value="2"/>
+          <argument length="2" name="type" status="A" type="8" value="SU"/>
+          <argument length="1" name="req_state" status="A" type="2" value="1">
+            <!--desired state for SS-MRCCs-->
+          </argument>
+          <argument length="1" name="assume_orth" status="A" type="1" value="false"/>
+          <argument length="1" name="Heff_symm" status="A" type="1" value="false"/>
+          <argument length="1" name="maxtt" status="A" type="2" value="-1"/>
+          <argument length="1" name="G_level" status="A" type="2" value="-1">
+            <!--max. power in e^(-T) for sim. trans.-->
+          </argument>
+          <argument length="1" name="Op_eqs" status="A" type="1" value="false"/>
+          <argument length="1" name="H1bar" status="A" type="1" value="false"/>
+          <argument length="1" name="HTT" status="A" type="1" value="false"/>
+          <argument length="1" name="maxcom_h1bar" status="A" type="2" value="4"/>
+          <argument length="1" name="h1bar_maxp" status="A" type="2" value="-1">
+            <!--max. number of particle lines in H1bar-->
+          </argument>
+          <argument length="1" name="x_ansatz" status="A" type="4" value="0.5d0"/>
+          <argument length="1" name="Tred_mode" status="A" type="2" value="0"/>
+          <argument length="1" name="trunc_order" status="A" type="2" value="-1"/>
+          <argument length="26" name="trunc_top" status="A" type="2" value="-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"/>
+          <argument length="5" name="trunc_ham" status="A" type="2" value="0,0,1,1,1"/>
+          <argument length="1" name="rept_ham" status="A" type="2" value="0"/>
+          <argument length="1" name="Tfix" status="A" type="2" value="0">
+            <!--read in fixed T with max. rank Tfix-->
+          </argument>
+          <argument length="1" name="T1ord" status="A" type="2" value="2">
+            <!--perturbation order of T1-->
+          </argument>
+          <argument length="1" name="simp" status="A" type="2" value="2">
+            <!--special simplifications for (T)-->
+          </argument>
+          <argument length="1" name="eval_dens3" status="A" type="1" value="false">
+            <!--evaluate 3-body dens matrix for transforming T3-->
+          </argument>
+          <argument length="1" name="Dyall0" status="A" type="1" value="false">
+            <!--use C00 to ensure diagonal inact. H0-->
+          </argument>
+          <argument length="1" name="Favg_fix" status="A" type="1" value="false"/>
+          <argument length="1" name="set_up_T_corr" status="A" type="1" value="false"/>
+        </keyword>
+        <keyword name="MRCC2" status="A">
+          <keyword name="excite" status="A">
+            <argument length="8" name="method" status="A" type="8" value="LR      "/>
+          </keyword>
+          <argument length="1" name="lagrangian" status="A" type="2" value="0">
+            <!--type of lagrangian-->
+          </argument>
+          <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
+            <!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) -->
+          </argument>
+        </keyword>
+        <keyword name="MRCCPT2" status="A">
+          <argument length="1" name="3rd_E" status="A" type="1"/>
+          <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
+            <!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) -->
+          </argument>
+          <argument length="1" name="connected" status="A" type="1" value="true">
+            <!--Toggle connected expression for H0 matrix-->
+          </argument>
+        </keyword>
+        <keyword name="truncate" status="A">
+          <argument length="1" name="trunc_type" status="A" type="2" value="0"/>
+        </keyword>
+        <keyword name="response" status="A">
+          <argument length="1" name="order" status="A" type="2" value="0">
+            <!--perturbation order-->
+          </argument>
+          <argument length="1" name="pert" status="A" type="8" value="d">
+            <!--pert. op.-->
+          </argument>
+          <argument length="1" name="comp" status="A" type="8" value="Z">
+            <!--cartesian components-->
+          </argument>
+          <argument length="1" name="freq" status="A" type="4" value="0d0">
+            <!--frequencies-->
+          </argument>
+          <argument length="1" name="BX_3C" status="A" type="1" value="true">
+            <!--treat BX intermed. as in approx.3C-->
+          </argument>
+          <argument length="1" name="rules" status="A" type="1" value="true">
+            <!--use 2n+1 / 2n+2 rules-->
+          </argument>
+          <argument length="1" name="restart" status="A" type="2" value="0">
+            <!--restart calc. at given prop. order-->
+          </argument>
+        </keyword>
+        <keyword name="unit_test" status="A">
+          <argument length="256" name="tests" status="A" type="8"/>
+        </keyword>
+      </keyword>
+      <keyword name="calculate" status="A">
+        <keyword name="check" status="A">
+          <keyword name="formulae" status="A"/>
+          <argument length="1" name="contr_test" status="A" type="2" value="1"/>
+          <argument length="1" name="algebra_test" status="A" type="2" value="1"/>
+        </keyword>
+        <keyword name="solve" status="A">
+          <keyword name="non_linear" status="A">
+            <argument length="1" name="maxiter" status="A" type="2" value="50"/>
+            <argument length="1" name="maxmic" status="A" type="2" value="20"/>
+            <argument length="1" name="maxsub" status="A" type="2" value="8"/>
+            <argument length="1" name="conv" status="A" type="4" value="1d-6"/>
+            <argument length="1" name="tr_ini" status="A" type="4" value="1.0d0"/>
+            <argument length="8" name="method" status="A" type="8" value="diis    "/>
+            <argument length="1" name="optref" status="A" type="2" value="-3">
+              <!--optimize reference fct.-->
+            </argument>
+            <argument length="1" name="update_prc" status="A" type="2" value="0">
+              <!--update precond. every i-th iteration (<=0: off)-->
+            </argument>
+            <argument length="1" name="preopt" status="A" type="1" value="false">
+              <!--first one optimization with fixed metric-->
+            </argument>
+            <argument length="1" name="restart" status="A" type="1" value="false">
+              <!--hard restart (use old amplitude file)-->
+            </argument>
+            <argument length="1" name="mic_ahead" status="A" type="4" value="1d-2">
+              <!--fac. by which micro it. conv.thr. is "ahead"-->
+            </argument>
+          </keyword>
+          <keyword name="linear" status="A">
+            <argument length="1" name="maxiter" status="A" type="2" value="30"/>
+            <argument length="1" name="maxsub" status="A" type="2" value="8"/>
+            <argument length="1" name="conv" status="A" type="4" value="1d-6"/>
+            <argument length="8" name="method" status="A" type="8" value="subspace"/>
+          </keyword>
+          <keyword name="eigen" status="A">
+            <argument length="1" name="maxiter" status="A" type="2" value="30"/>
+            <argument length="1" name="maxsub" status="A" type="2" value="8"/>
+            <argument length="1" name="conv" status="A" type="4" value="1d-6"/>
+            <argument length="8" name="method" status="A" type="8" value="davidson"/>
+            <argument length="1" name="resume" status="A" type="1" value="true">
+              <!--resume with last vec. as initial guess-->
+            </argument>
+            <argument length="1" name="guess" status="A" type="2" value="0"/>
+            <argument length="1" name="restart" status="A" type="1">
+              <!--need to use a guess from file for solve_evp-->
+            </argument>
+          </keyword>
+          <argument length="1" name="maxiter" status="A" type="2" value="30"/>
+          <argument length="1" name="maxmic" status="A" type="2" value="20"/>
+          <argument length="1" name="maxsub" status="A" type="2" value="8"/>
+          <argument length="1" name="check_incore" status="A" type="2" value="-1"/>
+          <argument length="1" name="conv" status="A" type="4" value="1d-6"/>
+        </keyword>
+        <keyword name="CC_solve_tbar" status="A"/>
+        <keyword name="CC_solve_sim" status="A"/>
+        <keyword name="properties" status="A"/>
+        <keyword name="skip_E" status="A"/>
+        <keyword name="check_S" status="A">
+          <argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/>
+          <argument length="1" name="msc" status="A" type="2" value="0"/>
+        </keyword>
+        <keyword name="excitation" status="A">
+          <keyword name="normalize" status="A"/>
+          <keyword name="analyze" status="A"/>
+          <argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/>
+          <argument length="1" name="msc" status="A" type="2" value="0"/>
+          <argument length="1" name="mult" status="A" type="2" value="1"/>
+        </keyword>
+        <keyword name="ionization" status="A">
+          <argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/>
+        </keyword>
+        <keyword name="routes" status="A">
+          <argument length="1" name="schedule" status="A" type="2" value="1"/>
+          <argument length="1" name="contract" status="A" type="2" value="3"/>
+          <argument length="1" name="str_block" status="A" type="2" value="200"/>
+          <argument length="1" name="cnt_block" status="A" type="2" value="-1"/>
+          <argument length="1" name="force_batching" status="A" type="2" value="-1"/>
+          <argument length="1" name="force_ooc_sort" status="A" type="2" value="0"/>
+          <argument length="1" name="maxbranch" status="A" type="2" value="5">
+            <!--(-1=check all possible contraction sequences)-->
+          </argument>
+          <argument length="1" name="auto_opt" status="A" type="1" value="true"/>
+          <argument length="1" name="reo_factor" status="A" type="4" value="0d0"/>
+          <argument length="1" name="use_tr" status="A" type="1" value="true"/>
+          <argument length="1" name="simtraf" status="A" type="2" value="0"/>
+          <argument length="1" name="sv_thresh" status="A" type="4" value="1d-5"/>
+          <argument length="1" name="jac_thresh" status="A" type="4" value="-1d0"/>
+          <argument length="1" name="sv_fix" status="A" type="1" value="false"/>
+          <argument length="1" name="sv_old" status="A" type="1" value="false"/>
+          <argument length="1" name="jac_fix" status="A" type="1" value="false"/>
+          <argument length="1" name="Tikhonov" status="A" type="4" value="0d0"/>
+          <argument length="1" name="spinadapt" status="A" type="2" value="-1">
+            <!--spin projection (=3 for non-singlet MRCC)-->
+          </argument>
+        </keyword>
+        <keyword name="class" status="A">
+          <argument length="2" name="hpclass" status="A" type="2" value="-1,-1">
+            <!--ih,ip-->
+          </argument>
+          <argument length="1" name="sv_thr_hp" status="A" type="4" value="1d-5">
+            <!--sv_thr for this particular oih,ip-->
+          </argument>
+        </keyword>
+        <keyword name="experimental" status="A">
+          <argument length="256" name="file" status="A" type="8"/>
+        </keyword>
+        <keyword name="interfaces" status="A">
+          <argument length="256" name="file" status="A" type="8"/>
+          <argument length="256" name="file" status="A" type="8"/>
+        </keyword>
+        <keyword name="reference" status="A">
+          <argument length="30" name="def" status="A" type="4"/>
+        </keyword>
+        <keyword name="interfaces" status="A"/>
+      </keyword>
+    </key_root>

@@ -152,7 +152,7 @@
      &     connect,nconnect,
      &     avoid,navoid,
      &     descr,ndescr,
-     &     op_info)
+     &     fix_in,op_info)
       end if
 
       if(ntest.ge.10)then

@@ -356,7 +356,7 @@ c dbgend
         do iopt = 1, nopt
           conv = conv.and.xrsnrm(iroot,iopt).lt.opti_info%thrgrd(iopt)
         end do
-        if (.not.conv) then
+        if (.not.conv.and.iter.lt.opti_info%maxmacit) then
           idxroot(irecscr) = iroot
           irecscr = irecscr+1 
         end if
@@ -695,7 +695,7 @@ c dbgend
         iord_ssbsp = iord_vsbsp
 
       else
-        ! if all converged: assemble vectors 
+        ! if all converged or last iteration: assemble vectors 
 
         do iopt = 1, nopt
           do iroot = 1, nroot
