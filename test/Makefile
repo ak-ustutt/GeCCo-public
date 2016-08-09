@@ -42,9 +42,11 @@ export GECCO_DIR
 	@-$(MAKE) -f Makefile --no-print-directory delscr
 	@. ./message.sh ;\
 	print_all $(basename $@).err ;\
-	print_summary $(basename $@).err 
+	print_summary $(basename $@).err
 
-all:  $(GECCOPRG)
+all:essential extended special
+
+full:  $(GECCOPRG)
 	@$(MAKE) -f Makefile --no-print-directory mkscr
 	@-$(MAKE) -f Makefile --no-print-directory all.res
 	@-$(MAKE) -f Makefile --no-print-directory delscr
