@@ -7,7 +7,7 @@
 	then \
 	 echo "test "$(basename $<)" was successful." ;\
 	else \
-	 echo "!!ERROR!! test "$(basename $<)" failed.;  Output: "$(basename $<).out";  Error message: "$(basename $<).sum ;\
+	 echo "!!ERROR!! test "$(basename $<)" failed.;  Output in: "$(basename $<).out";  Error message in: "$(basename $<).sum ;\
 	fi
 
 
@@ -18,7 +18,7 @@
 	then \
 	 echo $(basename $<)" ran successfully.";\
 	else\
-	 echo "!!ERROR!! running "$(basename $<)" failed. Output: "$(basename $<).out"  Error message: "$(basename $<).sum ;\
+	 echo "!!ERROR!! running "$(basename $<)" failed. Output in: "$(basename $<).out"  Error messagein: "$(basename $<).sum ;\
 	fi
 
 
