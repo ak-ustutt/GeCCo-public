@@ -22,16 +22,33 @@ ASSIGN_ME2OP({
 
 debug_FORM('FORM_T2_orth')
 
-
-SOLVE_NLEQ({
+if (False):
+   SOLVE_NLEQ({
+          LIST_OPT:'ME_T2g',
+          LIST_RESID:'ME_O2g',
+          LIST_PRC:'ME_PRECON2g',
+          LIST_E:'PT_LAG_LST',
+          FORM:'FOPT_PT_LAG',
+          MODE:'TRF',
+          FORM_SPC:['FOPT_T2_orth'],
+          LIST_SPC:['ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG']
+          })
+else:
+   SOLVE_LEQ({
         LIST_OPT:'ME_T2g',
-        LIST_RESID:'ME_O2g',
         LIST_PRC:'ME_PRECON2g',
-        LIST_E:'PT_LAG_LST',
-        FORM:'FOPT_PT_LAG',
+        N_ROOTS:1,
+        OP_MVP:'H0xT',
+        OP_SVP:'SxT',
+        #OP_SVP:'T2g',
+        OP_RHS:'H1rhs',
+        FORM:'FOPT_PT_EQ',
         MODE:'TRF',
         FORM_SPC:['FOPT_T2_orth'],
-        LIST_SPC:['ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG']
+        LIST_SPC:['ME_T2g','ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG']
         })
+   EVALUATE({FORM:'FOPT_PT_LAG'})
 
-PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCCPT2", FORMAT:"SCAL F20.14"})
+PRINT_MEL({LIST:'PT_LAG_LST',COMMENT:'MRCCPT2 energy',FORMAT:'SCAL F24.14'})
+
+PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCCPT2", FORMAT:"SCAL F24.14"})

@@ -10,8 +10,9 @@
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
       use keyword_trees,only : 
-     &     inp_arg_from_context,reg_arg_from_context,
-     &     Node,
+     &     fetch_input_keyword_tree,fetch_registry_keyword_tree,
+     &     tree_get_arg_from_context,
+     &     Node,tree_t,
      &     atr_val,atr_name,atr_len,
      &     getAttribute
       use parse_input, only :get_argument_dimension_core
@@ -38,7 +39,8 @@
      &     xval, xarr(*)
       character, intent(out), optional ::
      &     string*(*)
-
+      type(tree_t)::
+     &     input, registry
       type(Node),pointer::
      &     curarg
 
@@ -48,6 +50,10 @@
      &     idx, itype, dim, ex, num
       logical ::
      &     succ, dummy
+
+
+      input=fetch_input_keyword_tree()
+      registry=fetch_registry_keyword_tree()
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
@@ -66,8 +72,9 @@
       if (present(argcount)) iargcount = argcount
       iargcount_target=iargcount
 
-
-      curarg=>inp_arg_from_context(context,argkey,.false.,
+      
+      
+      curarg=> tree_get_arg_from_context(input,context,argkey,.false.,
      &     ikeycount_target,iargcount_target)
 
       if (ntest.ge.100) then
@@ -80,8 +87,8 @@
       ikeycount_target=ikeycount
       iargcount_target=iargcount
       if(.not.associated(curarg))
-     &     curarg=>reg_arg_from_context(context,argkey,.false.,
-     &     ikeycount_target,iargcount_target)
+     &     curarg=>tree_get_arg_from_context(registry,context,argkey,
+     &     .false.,ikeycount_target,iargcount_target)
 
 
       if (associated(curarg))then

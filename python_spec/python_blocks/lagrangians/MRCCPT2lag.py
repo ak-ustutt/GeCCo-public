@@ -33,6 +33,10 @@ if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
         raise Exception(i_am+": unrecognised value for option 3rd_E (must be T or F)")
 print("3rd_E ", third_ord_energy, type(third_ord_energy))
 
+spinadapt=0
+if keywords.is_keyword_set('calculate.routes.spinadapt'):
+    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+
 #------------------------------------------------------------------------------#
 #Define the MRCCPT(2) lagrangian
 #------------------------------------------------------------------------------#
@@ -77,7 +81,23 @@ DEF_ME_LIST({
 #dummy for residue of amplitude equation
 DEF_SCALAR({
         LABEL:'PT_LAG_A'})
+DEF_SCALAR({
+        LABEL:'OVL_A'})
 
+#some auxiliary operators and lists for the solver
+CLONE_OPERATOR({LABEL:'H0xT',TEMPLATE:'O2g'})
+CLONE_OPERATOR({LABEL:'SxT',TEMPLATE:'O2g'})
+CLONE_OPERATOR({LABEL:'H1rhs',TEMPLATE:'O2g'})
+
+
+DEF_ME_LIST({LIST:'H0xT_LST',OPERATOR:'H0xT',
+             IRREP:1,'2MS':0,AB_SYM:+1,'S2':0})
+
+DEF_ME_LIST({LIST:'SxT_LST',OPERATOR:'SxT',
+             IRREP:1,'2MS':0,AB_SYM:+1,'S2':0})
+
+DEF_ME_LIST({LIST:'H1rhs_LST',OPERATOR:'H1rhs',
+             IRREP:1,'2MS':0,AB_SYM:+1,'S2':0})
 
 #Energy equation no 
 LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
@@ -122,7 +142,6 @@ if (third_ord_energy):
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
 
 
-
 #dbg
 #for item in LAG_E.show():
 #    print item
@@ -137,6 +156,10 @@ LAG_A.set_rule()
 
 #print("LAG_A finished")
 
+#we need the overlap terms for the LEQ solver
+OVL=stf.Formula("FORM_OVL:OVL_A=<C0^+*LAM2g*T2g*C0>")
+OVL.set_rule()
+
 
 FACTOR_OUT({
         LABEL_RES:'FORM_PT_LAG',
@@ -148,6 +171,11 @@ FACTOR_OUT({
         LABEL_IN:'FORM_PT_LAG_A',
         INTERM:'FORM_GAM0'})
 
+FACTOR_OUT({
+       LABEL_RES:'FORM_OVL',
+       LABEL_IN:'FORM_OVL',
+       INTERM:'FORM_GAM0'
+       })
 
 
 mark("PT-LAGRANGIAN")
@@ -171,11 +199,36 @@ DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'})
 
+DERIVATIVE({LABEL_IN:'FORM_OVL',
+        LABEL_RES:'FORM_PT_SxT',
+        OP_RES:'SxT',
+        OP_DERIV:'LAM2g'})
+
 debug_FORM('FORM_PT_Amp')
+debug_FORM('FORM_PT_SxT',True)
 
+#devide into RHS and transformation part
+LEQ_SPLIT({LABEL_RAW:'FORM_PT_Amp',
+           LABEL_TRF:'FORM_PT_MVP',
+           LABEL_RHS:'FORM_PT_RHS',
+           OP_TRF:'H0xT',
+           OP_RHS:'H1rhs',
+           OP_X:'T2g'})
 
+debug_FORM('FORM_PT_MVP',True)
+debug_FORM('FORM_PT_RHS',True)
+
+TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG',
         LABELS_IN:['FORM_PT_Amp','FORM_PT_LAG']})
+
+#OPTIMIZE({
+#        LABEL_OPT:'FOPT_PT_LAG',
+#        LABELS_IN:['FORM_PT_LAG']})
+
+OPTIMIZE({
+        LABEL_OPT:'FOPT_PT_EQ',
+        LABELS_IN:['FORM_PT_RHS','FORM_PT_MVP','FORM_PT_SxT']})
 
