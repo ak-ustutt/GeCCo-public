@@ -189,39 +189,18 @@ c dbg
       ifree = mem_alloc_real(xvec,nred,'EVP_vec')
 
       ! get a copy of the subspace matrix
-      kdx = 0
-      do idx = 1, nred
-        do jdx = 1, nred
-          kdx = kdx+1
-          xmat1(kdx) = mred((idx-1)*mxsub+jdx)
-        end do
-      end do
-      kdx = 0
-      do idx = 1, nred
-        do jdx = 1, nred
-          kdx = kdx+1
-          xmat3(kdx) = sred((idx-1)*mxsub+jdx)
-        end do
-      end do
+      call rl8_compress_array(mred, nred, mxsub, xmat1)!mred -> xmat1
+      call rl8_compress_array(sred, nred, mxsub, xmat3)!sred -> xmat3
 
-      if (.not.use_s(1)) then
+      if (.not.use_s(1)) then !! @TODO results should be invariant with respect to exchange of optimized variables
         call eigen_asym(nred,xmat1,eigr,eigi,xmat2,xmat3,ierr)
       else
-c dbg
-c         print *,"debug: input to eigen_asym_met",
-c         print *,
-c dbgend
         call eigen_asym_met(nred,xmat1,xmat3,eigr,eigi,xmat2,xmat3,ierr)
       end if
 
       ! copy back to vred with mxsub as leading dim
-      kdx = 0
-      do idx = 1, nred
-        do jdx = 1, nred
-          kdx = kdx+1
-          vred((idx-1)*mxsub+jdx) = xmat2(kdx) 
-        end do
-      end do
+      call rl8_expand_array(xmat2,vred,nred,mxsub)!xmat2 -> vred
+
 
       if (ntest.ge.50) then
         write(lulog,*) 'Eigenvalues in subspace:'
@@ -700,5 +679,91 @@ c dbgend
       deallocate(ffmet)
 
       return
+
+      contains
+*----------------------------------------------------------------------*
+!>   compresses the the occupied parts of an array into a another array
+!!
+!!   assumes the input array is a transformed matrix where only the upper left
+!!   quadrant is occupied
+!!   nmat gives dimension of the quadrant lmat of the actual matrix
+*----------------------------------------------------------------------*
+      subroutine rl8_compress_array(arr_in, nmat, lmat, arr_out)
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=*),parameter::
+     &     i_am="rl8_copy_matrix_to_array"
+      integer,parameter::
+     &     ntest=00
+
+      real(8),dimension(*),intent(in)::
+     &     arr_in
+      real(8),dimension(*),intent(out)::
+     &     arr_out
+      integer,intent(in)::
+     &     lmat,                !> actual dimension of matrix
+     &     nmat                 !> dimension of filled part
+      
+      integer::
+     &     kdx, idx, jdx
+
+      if (ntest.ge.100)
+     &     call write_title(lulog,wst_dbg_subr,i_am)
+
+      kdx=0
+      do idx = 1, nmat
+         do jdx = 1, nmat
+            kdx=kdx+1
+            arr_out(kdx) = arr_in((idx-1)*lmat+jdx)
+         end do
+      end do
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+!>  expands an array into a another array
+!!
+!!   assumes the output array is a transformed matrix where only the upper left
+!!   quadrant is occupied
+!!   nmat gives dimension of the quadrant lmat of the actual matrix
+!!   note the changed order of arguments as nmat and lmat belong to the matrix
+*----------------------------------------------------------------------*
+      subroutine rl8_expand_array(arr_in, arr_out, nmat, lmat )
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=*),parameter::
+     &     i_am="rl8_copy_matrix_to_array"
+      integer,parameter::
+     &     ntest=00
+
+      real(8),dimension(*),intent(in)::
+     &     arr_in
+      real(8),dimension(*),intent(out)::
+     &     arr_out
+      integer,intent(in)::
+     &     lmat,                !> actual dimension of matrix
+     &     nmat                 !> dimension of filled part
+      
+      integer::
+     &     kdx, idx, jdx
+
+      if (ntest.ge.100)
+     &     call write_title(lulog,wst_dbg_subr,i_am)
+
+      kdx=0
+      do idx = 1, nmat
+         do jdx = 1, nmat
+            kdx=kdx+1
+            arr_out((idx-1)*lmat+jdx) = arr_in(kdx)
+         end do
+      end do
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+!>    subroutine for the transformation into the orthogonal basis
+!!
+!!
+*----------------------------------------------------------------------*
+!      subroutine change_basis(mel_depended
+      
       end
 
