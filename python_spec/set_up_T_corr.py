@@ -7,6 +7,8 @@
 #
 
 import sys,os
+interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
+sys.path=[interface_path]+sys.path
 sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
 
 
