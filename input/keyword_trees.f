@@ -681,7 +681,7 @@
      &     i_am="key_from_context"
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       integer,parameter ::
      &     max_stack=max_context_lvl
 
