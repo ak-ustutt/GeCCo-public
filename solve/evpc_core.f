@@ -262,32 +262,10 @@ c dbg
 
           ! if requested, transform residual
           if (trafo) then
-            ! assign op. with list containing the scratch trial vector
-            call assign_me_list(me_scr(iopt)%mel%label,
-     &                          me_opt(iopt)%mel%op%name,op_info)
-            ! use daggered transformation matrix if requested
-            if (nspecial.ge.3)
-     &         call assign_me_list(me_special(3)%mel%label,
-     &                             me_special(3)%mel%op%name,op_info)
-            ! calculate transformed residual
-            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-            nselect = 0
-            call select_formula_target(idxselect,nselect,
-     &                  me_trv(iopt)%mel%label,depend,op_info)
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-               call  switch_mel_record(me_special(4)%mel,irecscr)
-            else
-               call switch_mel_record(me_special(1)%mel,irecscr)
-            endif
 
             call switch_mel_record(me_scr(iopt)%mel,irecscr)
-            ! pretend that me_trv is not up to date
-            call reset_file_rec(me_trv(iopt)%mel%fhand)
-            call frm_sched(xret,flist,depend,idxselect,nselect,
-     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
-            ! residual norm (nselect should be 1):
-            xrsnrm(iroot,iopt) = xret(idxselect(1))
-            deallocate(xret,idxselect)
+
+            call change_basis_to_wrap()
 
 !     set all single excitations to zero if requestes
 !     after long deliberation, I decided to also include V,V so one can be sure to include
@@ -758,12 +736,142 @@ c dbgend
       end do
       return
       end subroutine
+
+
+*----------------------------------------------------------------------*
+!>    just a collapsed block to encapsulate some stupid decisions
+!!
+!!    basically everything here is a global var.
+
+*----------------------------------------------------------------------*
+      subroutine change_basis_to_wrap()
+*----------------------------------------------------------------------*
+      implicit none
+c      type(me_list_array)::
+c     &     me_special,me_scr
+
+
+
+      type(me_list),pointer::
+     &     me_in,
+     &     me_trf
+      type(operator),pointer::
+     &     op_in,
+     &     op_trf
+      real(8) ::
+     &     xnrm
+
+      if (nspecial.ge.3)then
+         me_trf=> me_special(3)%mel
+         op_trf=> me_special(3)%mel%op
+         call assign_me_list(me_trf%label,
+     &        op_trf%name,op_info)
+      else
+         me_trf=> null()
+         op_trf=> null()
+      end if
+
+      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+         me_in => me_special(4)%mel
+      else
+         me_in => me_special(1)%mel
+      endif
+      call  switch_mel_record(me_in,irecscr)
+      call change_basis_old(flist, depend,
+     &     me_in, me_in%op,
+     &     me_scr(iopt)%mel, me_scr(iopt)%mel%op, xnrm,
+     &     me_trf, op_trf,
+     &     me_trv(iopt)%mel,
+     &     op_info, str_info, strmap_info, orb_info)
+
+      xrsnrm(iroot,iopt) = xnrm
+
+      end subroutine
+
+
+
+
+
 *----------------------------------------------------------------------*
 !>    subroutine for the transformation into the orthogonal basis
 !!
-!!
+!!    uses the old convention where the transformation formula is a subset of the whole formula
+!!    me_tgt and determines the me_list that was bound to the target operator as the dependencies where 
+!!    evaluated
 *----------------------------------------------------------------------*
-!      subroutine change_basis(mel_depended
+      subroutine change_basis_old(flist, depend,
+     &     me_in, op_in, 
+     &     me_out, op_out, outnrm,
+     &     me_trf, op_trf,
+     &     me_tgt,
+     &     op_info, str_info, strmap_info, orb_info)
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=*),parameter::
+     &     i_am="change_basis_old"
+      integer,parameter::
+     &     ntest=100
       
+      type(formula_item)::
+     &     flist
+
+      type(me_list)::
+     &     me_in,              !> list to be transformed 
+     &     me_out,             !> result list
+     &     me_tgt             !>list with the transformation operator
+      type(me_list),pointer::     
+     &     me_trf               !> target list definition to specify which subformula should actually be evaluated (stupid design decision)
+      type(operator)::
+     &     op_in,
+     &     op_out
+      type(operator),pointer::
+     &     op_trf
+      real(8),intent(out)::
+     &     outnrm               !norm of the output list
+      type(dependency_info)::
+     &     depend               !>dependency info for the formula 
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
+
+      integer,dimension(:),allocatable::
+     &     idxselect
+      real(8),dimension(:),allocatable::
+     &     xret
+      integer::
+     &     nselect
+
+      if (ntest.ge.100)then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) "out:",me_out%label,op_out%name
+         end if 
+      call assign_me_list(me_out%label,
+     &     op_out%name, op_info)
+
+      if(associated(me_trf).and. associated(op_trf)) then
+         call assign_me_list(me_trf%label, op_trf%name, op_info)
+      else if(associated(me_trf).or. associated(op_trf))then
+         call quit(1,i_am,
+     &        "please make sure that either both (transformation list"//
+     &        "and operator) or neither is associated") 
+      end if
+      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+      nselect=0
+      call select_formula_target(idxselect,nselect,
+     &     me_tgt%label,depend,op_info)
+! pretend that me_trv is not up to date
+      call reset_file_rec(me_tgt%fhand)
+      call frm_sched(xret,flist,depend,idxselect, nselect,
+     &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
+      outnrm=xret(idxselect(1))
+      deallocate(xret,idxselect)
+      return
+      end subroutine
+*----------------------------------------------------------------------*
       end
 
