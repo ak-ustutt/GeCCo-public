@@ -263,11 +263,11 @@ c dbg
           ! if requested, transform residual
           if (trafo) then
 
-            call trafo_forward_wrap(flist,depend,
+            call transform_forward_wrap(flist,depend,
      &            me_special,me_scr,me_trv,
      &            xrsnrm, nroot, 
      &            iroot, iopt, irecscr,
-     &            op_info, str_info, strmap_info, orb_info)
+     &            op_info, str_info, strmap_info, orb_info, opti_info)
 
 !     set all single excitations to zero if requestes
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
@@ -275,12 +275,7 @@ c dbg
                xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
             endif
 
-c dbg
-c            call print_list('transformed residual vector:',
-c     &           me_scr(iopt)%mel,"LIST",
-c     &           -1d0,0d0,
-c     &           orb_info,str_info)
-c dbgend
+
 
           end if
         end do
@@ -465,7 +460,6 @@ c dbgend
                 xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
               end do
               xnrm = sqrt(xnrm)
-c              xnrm = 1d0
               call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
      &                         nwfpar(iopt))
               call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
@@ -484,62 +478,20 @@ c              xnrm = 1d0
 
           ! if requested, transform new subspace vectors
           if (trafo) then
-            ! use non-daggered transformation matrix if requested
-            if (nspecial.ge.3)
-     &         call assign_me_list(me_special(2)%mel%label,
-     &                             me_special(2)%mel%op%name,op_info)
-            ! assign op. with original list 
-            ! (to ensure proper spin symmetry if needed)
-            call assign_me_list(me_opt(iopt)%mel%label,
-     &                          me_opt(iopt)%mel%op%name,op_info)
+             do iroot=1,nnew
+                call transform_back_wrap(flist,depend,
+     &               me_special,me_opt,me_trv,
+     &               iroot, iopt,
+     &               op_info, str_info, strmap_info, 
+     &               orb_info, opti_info)
 
-            ! calculate transformed vector
-            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-            nselect = 0
-            call select_formula_target(idxselect,nselect,
-     &                  me_trv(iopt)%mel%label,depend,op_info)
-            do iroot = 1, nnew
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                  call  switch_mel_record(me_special(4)%mel,iroot)
-               else
-                  call switch_mel_record(me_special(1)%mel,iroot)
-               endif
+                call switch_mel_record(me_scr(iopt)%mel,iroot)
+                call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,
+     &               .false.)
+             end do
 
-               call switch_mel_record(me_opt(iopt)%mel,iroot)
-              ! pretend that me_trv is not up to date
-              call reset_file_rec(me_trv(iopt)%mel%fhand)
-              call frm_sched(xret,flist,depend,idxselect,nselect,
-     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
-              ! in reality me_trv is still up to date:
-              call touch_file_rec(me_trv(iopt)%mel%fhand)
-              ! copy to scr list and reassign
-              call switch_mel_record(me_scr(iopt)%mel,iroot)
-              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
-            end do
-            call assign_me_list(me_scr(iopt)%mel%label,
-     &                          me_opt(iopt)%mel%op%name,op_info)
-            deallocate(xret,idxselect)
-c dbg
-c            print *,'back-transformed trial vector:'
-c            call vec_from_da(me_scr(iopt)%mel%fhand,
-c     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
-c            do idx = 1, nwfpar(iopt)
-c              print *,idx,xbuf1(idx)
-c            end do
-c            ! symmetrize!
-c            if (nspecial.eq.3) then
-c              call sym_ab_blk(xbuf2(2),xbuf1(2),0.5d0,dble(1),
-c     &                        me_scr(iopt)%mel,2,
-c     &                        str_info,strmap_info,orb_info)
-c              xbuf2(1) = 0d0
-c              print *,'back-transformed trial vector:'
-c              do idx = 1, nwfpar(iopt)
-c                print *,idx,xbuf2(idx)
-c              end do
-c              call vec_to_da(me_scr(iopt)%mel%fhand,
-c     &         me_scr(iopt)%mel%fhand%current_record,xbuf2,nwfpar(iopt))
-c            end if
-c dbgend 
+             call assign_me_list(me_scr(iopt)%mel%label,
+     &            me_opt(iopt)%mel%op%name,op_info)
 
             ! reassign op. with list containing trial vector
             call assign_me_list(me_trv(iopt)%mel%label,
@@ -758,15 +710,15 @@ c dbgend
 ! subroutines for the transformation 
 !######################################################################
 *----------------------------------------------------------------------*
-!>    wrapper to encapsulate some stupid decisions
+!>    wrapper for forward transformation to encapsulate some stupid decisions
 !!
 !!
 *----------------------------------------------------------------------*
-      subroutine trafo_forward_wrap(flist,depend,
+      subroutine transform_forward_wrap(flist,depend,
      &     me_special,me_scr,me_trv,
      &     xrsnrm, 
      &     nroot, iroot, iopt, irecscr,
-     &     op_info, str_info, strmap_info, orb_info)
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
 *----------------------------------------------------------------------*
       implicit none
 
@@ -793,6 +745,8 @@ c dbgend
      &     str_info
       type(strmapinf) ::
      &     strmap_info
+      type(optimize_info)::
+     &     opti_info
 
 
       type(me_list),pointer::
@@ -835,8 +789,102 @@ c dbg end
      &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
      &     me_trv(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
-
+c dbg
+c            call print_list('transformed residual vector:',
+c     &           me_scr(iopt)%mel,"LIST",
+c     &           -1d0,0d0,
+c     &           orb_info,str_info)
+c dbgend
       xrsnrm(iroot,iopt) = xnrm
+      return
+      end subroutine
+*----------------------------------------------------------------------*
+!>    wrapper for back transformateion to encapsulate some stupid decisions
+!!
+!!
+*----------------------------------------------------------------------*
+      subroutine transform_back_wrap(flist,depend,
+     &     me_special, me_opt,me_trv, 
+     &     iroot, iopt,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+
+      type(me_list_array), dimension(*)::
+     &     me_special,me_trv, me_opt
+      type(formula_item),intent(in)::
+     &     flist
+      type(dependency_info),intent(in)::
+     &     depend
+      integer, intent(in)::
+     &     iroot, 
+     &     iopt
+
+
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
+      type(optimize_info)::
+     &     opti_info
+
+
+      type(me_list),pointer::
+     &     me_in,
+     &     me_trf
+      type(operator),pointer::
+     &     op_in,
+     &     op_trf
+      real(8) ::
+     &     xnrm
+
+      if (nspecial.ge.3)then ! who thought it would be good 
+         me_trf=> me_special(2)%mel
+         op_trf=> me_special(2)%mel%op
+      else
+         me_trf=> null() ! leave it associated as it is now
+         op_trf=> null() ! --
+      end if
+
+      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+         me_in => me_special(4)%mel
+      else
+         me_in => me_special(1)%mel
+      endif
+
+
+      call  switch_mel_record(me_in,iroot)
+
+      call switch_mel_record(me_opt(iopt)%mel,iroot)
+c dbg     
+c      call print_list('trial vector before back transformation:',
+c     &     me_in,"LIST",
+c     &     -1d0,0d0,
+c     &     orb_info,str_info)
+c dbg end 
+
+
+
+
+
+      call change_basis_old(flist, depend,
+     &     me_in, me_in%op,
+     &     me_opt(iopt)%mel, me_opt(iopt)%mel%op, xnrm,
+     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
+     &     me_trv(iopt)%mel,
+     &     op_info, str_info, strmap_info, orb_info)
+
+c dbg     
+c      call print_list('trial vector after back transformation:',
+c     &     me_opt(iopt)%mel,"LIST",
+c     &     -1d0,0d0,
+c     &     orb_info,str_info)
+c dbg end 
+
       return
       end subroutine
 
@@ -862,7 +910,7 @@ c dbg end
       character(len=*),parameter::
      &     i_am="change_basis_old"
       integer,parameter::
-     &     ntest=100
+     &     ntest=00
       
       type(formula_item)::
      &     flist
@@ -912,6 +960,7 @@ c dbg end
      &        "please make sure that either both (transformation list"//
      &        "and operator) or neither is associated") 
       end if
+
       allocate(xret(depend%ntargets),idxselect(depend%ntargets))
       nselect=0
       call select_formula_target(idxselect,nselect,
@@ -920,10 +969,18 @@ c dbg end
       call reset_file_rec(me_tgt%fhand)
       call frm_sched(xret,flist,depend,idxselect, nselect,
      &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
+      ! actually it stays up to date
+      call touch_file_rec(me_trv(iopt)%mel%fhand)
       outnrm=xret(idxselect(1))
       deallocate(xret,idxselect)
       return
+
       end subroutine
+
+!#######################################################################
+!   apply the preconditioner
+!######################################################################
 *----------------------------------------------------------------------*
+
       end
 
