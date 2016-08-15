@@ -263,14 +263,17 @@ c dbg
           ! if requested, transform residual
           if (trafo) then
 
-            call switch_mel_record(me_scr(iopt)%mel,irecscr)
 
-            call change_basis_to_wrap()
+            call trafo_forward_wrap(flist,depend,
+     &            me_special,me_scr,me_trv,
+     &            xrsnrm, nroot, 
+     &            iroot, iopt, irecscr,
+     &            op_info, str_info, strmap_info, orb_info)
+
 
 !     set all single excitations to zero if requestes
 !     after long deliberation, I decided to also include V,V so one can be sure to include
 !     **all** singular excitations even if T1 changes
-
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
@@ -739,17 +742,41 @@ c dbgend
 
 
 *----------------------------------------------------------------------*
-!>    just a collapsed block to encapsulate some stupid decisions
+!>    wrapper to encapsulate some stupid decisions
 !!
-!!    basically everything here is a global var.
-
+!!
 *----------------------------------------------------------------------*
-      subroutine change_basis_to_wrap()
+      subroutine trafo_forward_wrap(flist,depend,
+     &     me_special,me_scr,me_trv,
+     &     xrsnrm, 
+     &     nroot, iroot, iopt, irecscr,
+     &     op_info, str_info, strmap_info, orb_info)
 *----------------------------------------------------------------------*
       implicit none
-c      type(me_list_array)::
-c     &     me_special,me_scr
 
+      type(me_list_array), dimension(*)::
+     &     me_special,me_scr,me_trv
+      type(formula_item),intent(in)::
+     &     flist
+      type(dependency_info),intent(in)::
+     &     depend
+      integer, intent(in)::
+     &     nroot,
+     &     iroot, 
+     &     iopt,
+     &     irecscr
+
+      real(8), Dimension(nroot,*), intent(inout)::
+     &     xrsnrm
+
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
 
 
       type(me_list),pointer::
@@ -761,14 +788,12 @@ c     &     me_special,me_scr
       real(8) ::
      &     xnrm
 
-      if (nspecial.ge.3)then
+      if (nspecial.ge.3)then ! who thought it would be good 
          me_trf=> me_special(3)%mel
          op_trf=> me_special(3)%mel%op
-         call assign_me_list(me_trf%label,
-     &        op_trf%name,op_info)
       else
-         me_trf=> null()
-         op_trf=> null()
+         me_trf=> null() ! leave it associated as it is now
+         op_trf=> null() ! --
       end if
 
       if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
@@ -776,16 +801,20 @@ c     &     me_special,me_scr
       else
          me_in => me_special(1)%mel
       endif
+
+
+      call switch_mel_record(me_scr(iopt)%mel,irecscr)
       call  switch_mel_record(me_in,irecscr)
+
       call change_basis_old(flist, depend,
      &     me_in, me_in%op,
      &     me_scr(iopt)%mel, me_scr(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,
+     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
      &     me_trv(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
 
       xrsnrm(iroot,iopt) = xnrm
-
+      return
       end subroutine
 
 
