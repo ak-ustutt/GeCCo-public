@@ -82,7 +82,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo, getnewrec
+     &     zero_vec(opti_stat%ndim_vsbsp), init, trafo, getnewrec
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,idxdbg,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
@@ -263,46 +263,33 @@ c dbg
           ! if requested, transform residual
           if (trafo) then
 
-
             call trafo_forward_wrap(flist,depend,
      &            me_special,me_scr,me_trv,
      &            xrsnrm, nroot, 
      &            iroot, iopt, irecscr,
      &            op_info, str_info, strmap_info, orb_info)
 
-
 !     set all single excitations to zero if requestes
-!     after long deliberation, I decided to also include V,V so one can be sure to include
-!     **all** singular excitations even if T1 changes
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
             endif
 
 c dbg
-C            if (iopt .ne. 2) then
-c            print *,'residual vector before transformation:'
-c            call vec_from_da(ffspc,
-c     &        irecscr,xbuf1,nwfpar(iopt))
-c            do idx = 1, nwfpar(iopt)
-c              print *,idx,xbuf1(idx)
-c            end do
 c            call print_list('transformed residual vector:',
 c     &           me_scr(iopt)%mel,"LIST",
 c     &           -1d0,0d0,
 c     &           orb_info,str_info)
-c            endif
 c dbgend
 
           end if
         end do
 
         ! not yet converged? increase record counter
-        conv = .true.
-        do iopt = 1, nopt
-          conv = conv.and.xrsnrm(iroot,iopt).lt.opti_info%thrgrd(iopt)
-        end do
-        if (.not.conv.and.iter.lt.opti_info%maxmacit) then
+        if (.not.is_converged(xrsnrm, iroot, nroot, nopt, 
+     &       opti_info%thrgrd)
+     &       .and. iter.lt.opti_info%maxmacit ) then
+
           idxroot(irecscr) = iroot
           irecscr = irecscr+1 
         end if
@@ -739,8 +726,37 @@ c dbgend
       end do
       return
       end subroutine
+*----------------------------------------------------------------------
+!>    tests if all operators of the current root are converged 
+*----------------------------------------------------------------------*
+      pure function is_converged(xrsnrm, iroot, nroot , nopt, thrsh)
+*----------------------------------------------------------------------*
+      implicit none
+      logical::
+     &     is_converged
 
+      integer, intent(in) ::
+     &     iroot, nroot, nopt 
 
+      real(8),dimension(nroot,nopt),intent(in)::
+     &     xrsnrm
+
+      real(8),dimension(nopt),intent(in)::
+     &     thrsh
+      integer ::
+     &     iopt
+      is_converged=.true.
+
+      do iopt=1,nopt
+         is_converged = is_converged
+     &        .and. ( xrsnrm(iroot,iopt).lt.thrsh(iopt) )
+      end do
+      return
+      end function
+
+!######################################################################
+! subroutines for the transformation 
+!######################################################################
 *----------------------------------------------------------------------*
 !>    wrapper to encapsulate some stupid decisions
 !!
@@ -805,6 +821,13 @@ c dbgend
 
       call switch_mel_record(me_scr(iopt)%mel,irecscr)
       call  switch_mel_record(me_in,irecscr)
+      
+c dbg     
+c      call print_list('residual vector before transformation:',
+c     &     me_in,"LIST",
+c     &     -1d0,0d0,
+c     &     orb_info,str_info)
+c dbg end 
 
       call change_basis_old(flist, depend,
      &     me_in, me_in%op,
