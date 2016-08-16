@@ -1,6 +1,15 @@
 
+*----------------------------------------------------------------------*
+!>    retrieves the ilist list from ivec vector  from a vectorspace onto a buffer 
+!!
+!!    @param[in] vecsp the vectorspace
+!!    @param[out] listlen  length of the list 
+!!    @param[inout] buf contains the elements of the list on exit
+!!    @param[in] lbuf absolute length of the buffer
+*----------------------------------------------------------------------*
       subroutine vecsp_get_list_buf(vecsp, ivec, ilist, listlen, 
      &     buf, lbuf)
+*----------------------------------------------------------------------*
 
       include 'stdunit.h'
       include 'mdef_me_list.h'

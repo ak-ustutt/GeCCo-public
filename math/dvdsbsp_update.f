@@ -2,9 +2,15 @@
 
 
 *----------------------------------------------------------------------*
-!> adds a new_vector to the subspace and updates the v*Mv matrix
+!> adds a new_vector to the  davidson subspace dvdsbsp and updates the v*Mv matrix
 !!
-!!
+!!   @param dvdsbsp a davidson subspace
+!!   @param vvec a list of me-lists representing the v-vector (currently active record)
+!!   @param mvvec same for the Mv-vector (currently active record)
+!!   @param nlist number of lists
+!!   @param buf1,buf2,buf3 !scratch space buf3 is currently not used no guarantee whats on it on exit
+!!   @param nincore how many buffers are usable
+!!   @param lbuf length of those buffers
 *----------------------------------------------------------------------*
       subroutine dvdsbsp_update(dvdsbsp, vvec, mvvec, nlist, buf1, buf2, 
      &     buf3, nincore,  lbuf)
