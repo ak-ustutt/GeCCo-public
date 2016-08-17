@@ -58,7 +58,7 @@ if options.run and options.program == 'not defined':
 # assign names
 testname = "%s.out" % (basename)
 chk_name = "%s.chk" % (basename)
-
+err_name = "%s.err" % (basename)
 chk_commands = {}
 chk_commands = parse_chk(chk_name)
 
@@ -66,34 +66,26 @@ if DEBUG:
     print "resulting chk_commands structure:"
     print chk_commands
 
+runtoken_dict={OK:"run_OK",
+               FAILED:"run_failed",
+               USAGE_ERROR:"setup_buggy",
+               SETUP_ERROR:"setup_buggy",
+}
 if options.run:
-    code = runtest_kernel(chk_commands,options,testname)
-    if code == OK:
-        err_file = open('run_OK','a')
-    elif code == FAILED :
-        err_file = open('run_failed','a')
-    elif code in (USAGE_ERROR,SETUP_ERROR):
-        err_file = open('setup_buggy','a')
-    else:
-        print 'Internal ERROR: undefined return code: ' + str(code)
-        sys.exit(-1)
+    code = runtest_kernel(chk_commands,options,testname,basename)
+    with open(err_name,"w") as f:
+        f.write(runtoken_dict.get(code, "Internal ERROR: undefined return code"+str(code)))
 
-    err_file.write('  ' + basename + '\n')
-    err_file.close()
 
+checktoken_dict={OK:"check_OK",
+                FAILED:"check_failed",
+                USAGE_ERROR:"check_buggy",
+                SETUP_ERROR:"check_buggy",
+}
 if options.check:
     code = check(chk_commands,options,basename)
-    if code == OK:
-        err_file = open('check_OK','a')
-    elif code == FAILED :
-        err_file = open('check_failed','a')
-    elif code in (USAGE_ERROR,SETUP_ERROR):
-        err_file = open('check_buggy','a')
-    else:
-        print 'Internal ERROR: undefined return code: ' + str(code)
-        sys.exit(-2)
-
-    err_file.write('  ' + basename + '\n')
-    err_file.close()
-
+    with open(err_name,"w") as f:
+        f.write(checktoken_dict.get(code, "Internal ERROR: undefined return code"+str(code)))
+if code != OK:
+	sys.exit(1)
 sys.exit(0)

@@ -6,8 +6,8 @@
       subroutine process_input(one_more,orb_info)
 *----------------------------------------------------------------------*
 
-      use keyword_trees, only:inp_postprocess
-      use parse_input, only: inp_show,reg_show
+      use keyword_trees, only:
+      use parse_input, only: inp_show,reg_show,inp_postprocess
       implicit none
       include 'stdunit.h'
       include 'ioparam.h'

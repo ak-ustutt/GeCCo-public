@@ -19,18 +19,18 @@ progdirs:=gecco
 
 dirs:=$(libdirs) $(progdirs)
 
-.PHONY: all lib prog clean distclean dep deps
+.PHONY: all lib prog clean distclean dep deps $(sublib_make) $(sublib_clean)
 
 all: lib prog
 
 #-------------------------------------------
 # targets for the FoX (Fortran XML library)
 fox:
-	@set -e ; $(MAKE) -C $(foxdir)
+	@set -e ; $(MAKE) -C $(foxdir) default
 sublib_make+=fox
 
 fox_clean:
-	@set -e ; $(MAKE) -C $(foxdir)
+	@set -e ; $(MAKE) -C $(foxdir) clean
 sublib_clean+=fox_clean
 
 #------------------------------------------
@@ -76,7 +76,7 @@ ifneq ($(progdirs),)
    done;
 endif
 
-clean:$(sublib_make)
+clean:$(sublib_clean)
 ifneq ($(dirs),)
 	@set -e; \
 	 for i in $(dirs); do \
@@ -88,7 +88,7 @@ ifneq ($(dirs),)
 	 done; 
 endif
 
-realclean:$(sublib_make)
+realclean:$(sublib_clean)
 ifneq ($(dirs),)
 	@set -e; \
 	for i in $(dirs); do \

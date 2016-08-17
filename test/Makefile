@@ -2,33 +2,73 @@
 # $Id: Makefile.in 1.3 05/05/03 19:18:55+02:00 jonas@radon $
 #
 
+
+
 topdir:=..
 srcdir:=.
 
 include $(topdir)/make.config
 
-# some new rules (must be defined here BEFORE the objects)
-%.res : %.out
-	@set -e ; $(CHECK) $(CHECKFLAGS) $(basename $<)
+GECCO_DIR:=$(CURDIR)/$(topdir)
+SCRDIR:=${GECCO_TMP}
 
-%.out : %.chk $(GECCOPRG)
-	@set -e ; $(RUNTEST) $(RUNFLAGS) $(basename $<)
-
-SCRDIR=
-
+#include $(topdir)/make.rules
 
 GECCOPRG:=$(CURDIR)/$(topdir)/gecco/$(bindir)/gecco.x
 
-RUNTEST:=./runtest.py
-CHECK:=./runtest.py
-ifndef SCRDIR
-  RUNFLAGS:=-r -p $(GECCOPRG)
-else
-  RUNFLAGS:=-r -p $(GECCOPRG) -s $(SCRDIR)
-endif
-CHECKFLAGS:=-c
+.NOTPARALLEL:
 
-#include $(topdir)/make.rules
+.PHONY: all essential special extended res_clean out_clean err_clean clean essential.res special.res extended.res all.res
+.PRECIOUS: all essential extended special delscr 
+
+
+
+
+#entry targets
+
+export SCRDIR 
+export GECCOPRG
+export GECCO_DIR
+
+
+
+%.clean :
+	@ rm -f $(basename $@).err $(basename $@).out $(basename $@).res
+
+%.test: $(GECCOPRG) | %.clean
+	@-rm -f $(basename $@).err
+	@$(MAKE) -f Makefile --no-print-directory mkscr
+	@-$(MAKE) -f Makefile.parallel --no-print-directory $(basename $@).res
+	@-$(MAKE) -f Makefile --no-print-directory delscr
+	@. ./message.sh ;\
+	print_all $(basename $@).err ;\
+	print_summary $(basename $@).err
+
+all:essential extended special
+
+full:  $(GECCOPRG)
+	@$(MAKE) -f Makefile --no-print-directory mkscr
+	@-$(MAKE) -f Makefile --no-print-directory all.res
+	@-$(MAKE) -f Makefile --no-print-directory delscr
+
+essential:  $(GECCOPRG)
+	@$(MAKE) -f Makefile --no-print-directory mkscr
+	@-$(MAKE) -f Makefile --no-print-directory essential.res
+	@-$(MAKE) -f Makefile --no-print-directory delscr
+
+extended:  $(GECCOPRG)
+	@$(MAKE) -f Makefile --no-print-directory mkscr
+	@-$(MAKE) -f Makefile --no-print-directory extended.res
+	@-$(MAKE) -f Makefile --no-print-directory delscr
+
+special:   $(GECCOPRG)
+	@$(MAKE) -f Makefile --no-print-directory mkscr
+	@-$(MAKE) -f Makefile --no-print-directory special.res
+	@-$(MAKE) -f Makefile --no-print-directory delscr
+
+
+#targets to run the test (defined in Makefile.parallel) , print summary and clean up
+
 
 essential_tests:=$(wildcard *.e.chk)
 extended_tests:=$(wildcard *.x.chk)
@@ -41,92 +81,60 @@ extended_results:=$(addsuffix .res, $(basename $(extended_tests)))
 special_results:=$(addsuffix .res, $(basename $(special_tests)))
 
 
-.PHONY: all essential special extended res_clean out_clean err_clean clean message
+all.res: $(GECCOPRG)
+	@rm -f *.err ;\
+	$(MAKE) -f Makefile.parallel $(essential_results) $(extended_results) $(special_results);\
+	echo "Result for whole suite:" ;\
+	. ./message.sh ;\
+	print_all *.err |tee all.res ;\
+	print_summary *.err | tee -a all.res ;\
 
-all: essential extended special $(GECCOPRG)
+essential.res: $(GECCOPRG)
+	@rm -f *.e.err ;\
+	$(MAKE) -f Makefile.parallel $(essential_results);\
+	echo "Result for essential test set:" ;\
+	. ./message.sh ;\
+	print_all *.e.err |tee essential.res ;\
+	print_summary *.e.err | tee -a essential.res ;\
 
-essential: essential.res $(GECCOPRG)
 
-extended:  extended.res $(GECCOPRG)
+extended.res:   $(GECCOPRG)
+	@rm -f *.x.err;\
+	$(MAKE) -f Makefile.parallel $(extended_results);\
+	echo "Result for extended test set:" ;\
+	. ./message.sh ;\
+	print_all *.x.err |tee extended.res ;\
+	print_summary *.x.err | tee -a extended.res ;\
 
-special:   special.res $(GECCOPRG)
 
-essential.res: $(essential_results) $(essential_outputs) $(GECCOPRG)
-	@set -e ; echo "Result for essential test set:" ;\
-	$(MAKE) -s message | tee essential.res
+special.res:  $(GECCOPRG) 
+	@rm -f *.s.err ;\
+	$(MAKE) -f Makefile.parallel $(special_results);\
+	echo "Result for special test set:" ;\
+	. ./message.sh ;\
+	print_all *.s.err |tee special.res ;\
+	print_summary *.s.err | tee -a special.res ;\
 
-extended.res:  $(extended_results)  $(extended_outputs)  $(GECCOPRG)
-	@set -e ; echo "Result for extended test set:" ;\
-	$(MAKE) -s message | tee extended.res
 
-special.res:   $(special_results)   $(special_outputs) 
-	@set -e ; echo "Result for special test set:" ;\
-	$(MAKE) -s message | tee special.res
-
-err_files:=$(wildcard *buggy) $(wildcard *failed)
-
-message:
-	@set -e ; \
-	if [ -f check_OK ] ; then \
-          echo "============================================="; \
-	  echo " Successful tests:" ; \
-          echo "---------------------------------------------"; \
-	  cat check_OK ; \
-          echo "============================================="; \
-	  rm -f check_OK ; \
-	fi
-	@set -e ; \
-	if [ -f check_failed ] ; then \
-          echo "============================================="; \
-	  echo "Failed tests:" ; \
-          echo "---------------------------------------------"; \
-	  cat check_failed ; \
-          echo "============================================="; \
-	  rm -f check_failed ; \
-	fi
-	@set -e ; \
-	if [ -f check_buggy ] ; then \
-          echo "============================================="; \
-	  echo "The following tests have buggy checks:" ; \
-          echo "---------------------------------------------"; \
-	  cat check_buggy ; \
-          echo "============================================="; \
-	  rm -f check_buggy ; \
-	fi
-	@set -e ; \
-	if [ -f run_failed ] ; then \
-          echo "============================================="; \
-	  echo "The following tests did not run properly:" ; \
-          echo "---------------------------------------------"; \
-	  cat run_failed ; \
-          echo "============================================="; \
-	  rm -f run_failed ; \
-	fi
-	@set -e ; \
-	if [ -f setup_buggy ] ; then \
-          echo "============================================="; \
-	  echo "The following tests had buggy inputs:" ; \
-          echo "---------------------------------------------"; \
-	  cat setup_buggy ; \
-          echo "============================================="; \
-	  rm -f setup_buggy ; \
-	fi
-	@set -e ; \
-	if [ -z "$(err_files)" -o "$(err_files)" = " " ] ; then \
-	  echo "A lucky day: all tests seem to run correctly!" ; \
-	else  \
-	  echo "Oh no: some tests give errors, see above!" ; \
-	  echo "!!! ERRORS !!!" ; \
-        fi
+#cleaning targets
 
 err_clean:
-	@set -e ; rm -f check_OK check_failed check_buggy run_OK run_failed setup_buggy
+	@set -e ; rm -f *.err
 
 res_clean:
-	rm -f *.res 
+	rm -f *.res ;  rm -f *.sum
 
 out_clean:
 	rm -f *.out 
 
 clean:	err_clean res_clean out_clean
+
+delscr:
+	@rmdir $(SCRDIR) || echo "could not remove scratch directory: "$(SCRDIR)" please remove by hand."
+
+mkscr:       # is removed in the toplevel targets in the other Makefile
+	@if [ ! -d $(SCRDIR) ];\
+	then\
+	  mkdir $(SCRDIR);\
+	fi;
 
