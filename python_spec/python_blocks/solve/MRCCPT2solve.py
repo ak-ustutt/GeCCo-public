@@ -22,7 +22,8 @@ ASSIGN_ME2OP({
 
 debug_FORM('FORM_T2_orth')
 
-if (False):
+# test-switch between non-linear and linear solver
+if (True):
    SOLVE_NLEQ({
           LIST_OPT:'ME_T2g',
           LIST_RESID:'ME_O2g',
