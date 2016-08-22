@@ -62,7 +62,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps, trplt, inv
+     &     use_1,trnsps, trplt, inv, multi
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -484,8 +484,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('OP_RES',rule,tgt_info,val_label=label_list(1))
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label2)
         call get_arg('INIT',rule,tgt_info,val_log=init)
+        call get_arg('MULTI',rule,tgt_info,val_log=multi)
         call transpose_formula_wrap(label,label2,label_list(1),init,
-     &       op_info,form_info)
+     &       multi,op_info,form_info)
 *----------------------------------------------------------------------*
       case(EXPAND_OP_PRODUCT)
 *----------------------------------------------------------------------*

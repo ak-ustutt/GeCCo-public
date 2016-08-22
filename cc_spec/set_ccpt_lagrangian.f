@@ -24,6 +24,7 @@
       include 'def_formula_item.h'
       include 'def_formula.h'
       include 'ifc_input.h'
+      include 'ifc_formula.h'
 
       type(formula), intent(inout), target ::
      &     form_lag

@@ -205,6 +205,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',TRANSPS_FORMULA,'INIT',1,tgt_info,
      &     val_log=(/.true./),def=.true.)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'MULTI',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine transpose_contr(contr,op_info)
+      subroutine transpose_contr(contr,op_info,multi)
 *----------------------------------------------------------------------*
 *     transpose a contraction
 *----------------------------------------------------------------------*
@@ -18,12 +18,14 @@
      &     contr
       type(operator_info) ::
      &     op_info
+      logical, intent(in), optional ::
+     &     multi
 
       integer ::
      &     nvtx, narc, nxarc, ivtx, jvtx, ihelp, isuper, idx,
      &     idxst, idxnd, njoined, njoined_res, iarc, ifac
       logical ::
-     &     skip, reo
+     &     skip, reo, use_multi, scal
 
       type(operator), pointer ::
      &     op
@@ -49,6 +51,12 @@
         call prt_contr2(lulog,contr,op_info)
       end if
 
+      if (present(multi)) then
+        use_multi = multi
+      else
+        use_multi = .false. 
+      endif
+
       nvtx = contr%nvtx
       vertex => contr%vertex
       svertex => contr%svertex
@@ -57,9 +65,17 @@
       nxarc = contr%nxarc
       xarc => contr%xarc
       
+      ! A new logical 'scal' has been used of dagger is not necessary
+      ! while transposing the formula for operator 
+      ! corresponding to CI coefficients
+      if(use_multi) then 
+        scal = op_info%op_arr(contr%idx_res)%op%n_occ_cls.gt.1
+      else 
+        scal = .true.
+      end if
+
       ! set transposition info for result
-      if (op_info%op_arr(contr%idx_res)%op%n_occ_cls.gt.1)
-     &     contr%dagger = .not.contr%dagger
+      if (scal) contr%dagger = .not.contr%dagger
 
       ! process vertices
       ! reverse sequence

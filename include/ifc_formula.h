@@ -26,5 +26,31 @@ c     &     nform,
 c     &     idx_formula(*)
 c      end subroutine
 
+      subroutine transpose_formula(form_head,op_info,multi)
+      import :: formula_item
+      import :: operator_info
+      implicit none
+
+      type(formula_item), intent(in), target ::
+     &     form_head
+      type(operator_info), intent(in) ::
+     &     op_info
+      logical, intent(in), optional ::
+     &     multi
+
+      end subroutine
+
+      subroutine transpose_contr(contr,op_info,multi)
+      import :: contraction
+      import :: operator_info
+      implicit none
+
+      type(contraction) ::
+     &     contr
+      type(operator_info) ::
+     &     op_info
+      logical, intent(in), optional ::
+     &     multi
+      end subroutine
 
       end interface

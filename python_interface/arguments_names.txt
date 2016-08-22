@@ -84,6 +84,7 @@ MODE str
 MODIFY int
 MS_FIX log
 MS_SYM_SIGN int
+MULTI log
 NEW log
 N_AVOID int
 N_CONNECT int
