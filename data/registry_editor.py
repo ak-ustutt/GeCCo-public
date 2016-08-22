@@ -115,6 +115,7 @@ class Argument(object):
                 [str(cast(val)) for val in value])
         elif value is not None :
             value=str(cast(value))
+        return value
 
 
 

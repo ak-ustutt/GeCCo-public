@@ -1,5 +1,4 @@
-<?xml version="1.0" ?>
-    <key_root name="registry">
+<?xml version="1.0" ?><key_root name="registry">
       <keyword name="general" status="A">
         <argument length="256" name="title" status="A" type="8"/>
         <argument length="1" name="memmax" status="A" type="2" value="50000000"/>
@@ -279,7 +278,7 @@
           </argument>
           <argument length="1" name="Favg_fix" status="A" type="1" value="false"/>
           <argument length="1" name="set_up_T_corr" status="A" type="1" value="false"/>
-        </keyword>
+        <keyword name="response" status="A"><argument length="1" name="order" status="A" type="2" value="1"><!--order of the response properties to be calculated--></argument><argument length="1" name="freq" status="A" type="4" value="0.0"><!--frequency of the perturbation, if any--></argument><argument length="8" name="comp" status="A" type="8" value="Z"><!--cartesian component of the perturbation--></argument><argument length="8" name="pert" status="A" type="8" value="d"><!--type of the perturbation operators--></argument></keyword></keyword>
         <keyword name="MRCC2" status="A">
           <keyword name="excite" status="A">
             <argument length="8" name="method" status="A" type="8" value="LR      "/>
@@ -387,7 +386,7 @@
         </keyword>
         <keyword name="CC_solve_tbar" status="A"/>
         <keyword name="CC_solve_sim" status="A"/>
-        <keyword name="properties" status="A"/>
+        <keyword name="properties" status="A"><argument length="1" name="triplet" status="A" type="1" value="false"><!--whether the perturbation is triplet--></argument></keyword>
         <keyword name="skip_E" status="A"/>
         <keyword name="check_S" status="A">
           <argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/>
