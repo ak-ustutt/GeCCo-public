@@ -321,12 +321,12 @@ c      end if
 cdbg
       if (ntest.ge.100) then
         write(lulog,*) 'gradient vector afterwards:'
-      do iii=1,nwfpar
-        write(lulog,*) xbuf1(iii)
-      end do
-c      call wrt_mel_buf(lulog,5,xbuf1,me_amp,1,
-c     &     me_amp%op%n_occ_cls,
-c     &     str_info,orb_info)
+c      do iii=1,nwfpar
+c        write(lulog,*) xbuf1(iii)
+c      end do
+      call wrt_mel_buf(lulog,5,xbuf1,me_amp,1,
+     &     me_amp%op%n_occ_cls,
+     &     str_info,orb_info)
       end if
 
 

@@ -55,6 +55,7 @@
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'optc_orthvec')
         write(lulog,*) 'ndim, nnew, nopt: ',ndim_sbsp, nnew, nopt
+        write(lulog,*) 'use_s: ',use_s(1:nopt)
       end if
 
       ! look for zero-vectors (in initial iteration); they should

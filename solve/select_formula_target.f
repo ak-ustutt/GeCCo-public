@@ -27,7 +27,9 @@
       integer, parameter ::
      &     ntest = 00
       integer ::
-     &     idxmel, idxres, idxdep, idepend
+     &     idxmel, idxres, idxdep, idepend, itarget
+      integer, pointer ::
+     &     ilist(:), depends_on_idxlist(:,:)
 
       integer, external ::
      &     idxlist, idx_mel_list
@@ -37,6 +39,13 @@
         write(lulog,*) 'label: ',trim(label)
         write(lulog,*) 'nselect on input:   ',nselect
         write(lulog,*) 'idxselect on input: ',idxselect(1:nselect)
+        write(lulog,*) 'targets: dependencies'
+        ilist => depend%idxlist
+        depends_on_idxlist => depend%depends_on_idxlist
+        do itarget = 1, depend%ntargets
+          write(lulog,'(x,i3," :",20i4)') ilist(itarget),
+     &         depends_on_idxlist(1:depend%ndepend,itarget)
+        end do
       end if
 
       idxmel = idx_mel_list(label,op_info)

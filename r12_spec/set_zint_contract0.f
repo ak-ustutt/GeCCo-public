@@ -144,7 +144,7 @@ c dbg
      &       '3,,H,H     ','2,,H,[HPX],',
      &       '4,,H[HPX], ','5,,,HH     ',
      &       '2,4,,[HPX] ','3,4,,H     '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -166,7 +166,7 @@ c  the above gives problems with trace_op, so we use instead:
      &       '3,,H,H     ','2,,H,[HPX],',
      &       '4,,H[HPX], ','5,,,HH     ',
      &       '2,4,,[HPX] ','2,3,H,     '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -189,7 +189,7 @@ c     &       '3,4,,[HPX]','3,5,,H'/),8,
      &       '2,,HH,     ','3,,,H[HPX] ',
      &       '4,,H,H     ','5,,[HPX],H ',
      &       '3,5,,[HPX] ','3,4,,H     '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -209,7 +209,7 @@ c     &       '3,4,,[HPX]','3,5,,H'/),8,
      &       '2,,HH,    ','3,,,H[HPX]',
      &       '4,,H,H    ','5,,[HPX],H',
      &       '3,5,,[HPX]','2,3,H,    '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -240,7 +240,7 @@ c     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
      &       '3,,H,P     ','2,,H,[HPX],',
      &       '4,,H[HPX], ','5,,,HH     ',
      &       '2,4,,[HPX] '/),7,
-     &     op_info)
+     &     .false.,op_info)
       idx = 0
       do while(associated(form_pnt%next))
         idx = idx+1
@@ -261,7 +261,7 @@ c     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
      &       '2,,H[HP],  ','3,,,H[HPX] ',
      &       '4,,H,P     ','5,,[HPX],H ',
      &       '3,5,,[HPX] '/),7,
-     &     op_info)
+     &     .false.,op_info)
       idx = 0
       do while(associated(form_pnt%next))
         idx = idx+1
@@ -285,7 +285,7 @@ c     &       '3,,H,P','2,,H,[HPX],','4,,H[HPX],','5,,,H[HP]',
      &       '2,,H[HP],  ','3,,,H[HPX] ',
      &       '4,,H,P     ','5,,[HPX],H ',
      &       '3,5,,[HPX] ','3,4,,H     '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -315,7 +315,7 @@ c dbg
      &       '3,,H,P     ','2,,H,[HPX],',
      &       '4,,H[HPX], ','5,,,H[HP]  ',
      &       '2,4,,[HPX] '/),7,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -336,7 +336,7 @@ c dbg
      &       '2,,HH,       ','3,,,[HP][HPX]',
      &       '5,,H,P       ','4,,[HPX],[HP]',
      &       '3,4,,[HPX]   '/),7,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -356,7 +356,7 @@ c dbg
      &       '2,,HH,       ','3,,,[HP][HPX]',
      &       '5,,H,P       ','4,,[HPX],[HP]',
      &       '3,4,,[HPX]   ','4,5,,H       '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -376,7 +376,7 @@ c dbg
      &       '2,,HH,     ','3,,,H[HPX] ',
      &       '5,,H,P     ','4,,[HPX],P ',
      &       '3,4,,[HPX] ','3,5,,H     '/),8,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -404,7 +404,7 @@ c dbg
      &     0,0,
      &     (/'1,,,P      ','6,,PP,H    ',
      &       '2,4,,[HPX] ','2,5,H,     '/),4,
-     &     op_info)
+     &     .false.,op_info)
         idx = 0
         do while(associated(form_pnt%next))
           idx = idx+1
@@ -424,7 +424,7 @@ c dbg
 !     &     (/'1,,,P','6,,PP,H',
 !     &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
 !     &       '3,4,,[HPX]'/),7,
-!     &     op_info)
+!     &     .false.,op_info)
 !        idx = 0
 !        do while(associated(form_pnt%next))
 !          idx = idx+1
@@ -443,7 +443,7 @@ c dbg
 !     &     (/'1,,,P','6,,PP,H',
 !     &       '2,,HH,','3,,,[HP][HPX]','5,,H,P','4,,[HPX],[HP]',
 !     &       '3,4,,[HPX]','4,5,,H'/),8,
-!     &     op_info)
+!     &     .false.,op_info)
 !        idx = 0
 !        do while(associated(form_pnt%next))
 !          idx = idx+1
@@ -462,7 +462,7 @@ c dbg
 !     &     (/'1,,,P','6,,PP,H',
 !     &       '2,,HH,','3,,,H[HPX]','5,,H,P','4,,[HPX],P',
 !     &       '3,4,,[HPX]','3,5,,H'/),8,
-!     &     op_info)
+!     &     .false.,op_info)
 !        idx = 0
 !        do while(associated(form_pnt%next))
 !          idx = idx+1

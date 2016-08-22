@@ -6,7 +6,7 @@
      &                             connect,nconnect,
      &                             avoid,navoid,
      &                             descr,ndescr,
-     &                             op_info)
+     &                             fix_in,op_info)
 *----------------------------------------------------------------------*
 *     given a list of operator indices and a result operator generate 
 *     all contractions arising from
@@ -75,7 +75,7 @@
 
       integer, parameter ::
      &     ntest = 00
-      character, parameter ::
+      character(len=18), parameter ::
      &     i_am = 'expand_op_product3'
 
       integer, parameter ::
@@ -85,6 +85,8 @@
      &     form_list
       real(8), intent(in) ::
      &     fac
+      logical, intent(in) ::
+     &     fix_in
       integer, intent(in) ::
      &     nvtx, nops, nconnect, navoid, 
      &     idx_res, idx_op_vtx(nvtx), idx_sv_vtx(nvtx),
@@ -237,7 +239,7 @@ c      ! currently, we expand primitive operators only
       end if
 
       allocate(ol_map(nvtx),idx_op(nops),fix_vtx(nvtx))
-      fix_vtx = .false.
+      fix_vtx = fix_in
 
       ! identify open-line vertices
       nopen = 0
@@ -331,7 +333,7 @@ c      ! currently, we expand primitive operators only
 
       do iop = 1, nops
         do jop = 1, iop-1
-          if (neqv(jop).lt.0) cycle
+          if (fix_in.or.neqv(jop).lt.0) cycle
           if (idx_op_vtx(iop).eq.idx_op_vtx(jop) .and.
      &        iop_typ(iop).eq.iop_typ(jop) .and.
      &       (iop_typ(iop).eq.vtxtyp_ph_ex .or.
