@@ -4,42 +4,21 @@ interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
 sys.path=[interface_path]+sys.path
 
 from gecco_interface import *
+from get_response_data import _response_data
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
 
-# Get the informations about response calculation from the input
-print '--- Starting Response Calculations ---'
 
-_response_data={}
-_order=_inp.get('method.MRCC.response.order')
-if(_order == None):
-    _order=1
-_response_data['order']=int(_order)
+_env = _inp.env
+print 'ENVIRONMENT:', _env
 
-_comp=_inp.get('method.MRCC.response.comp')
-if(_comp == None):
-    _comp='Z'
-_response_data['comp']=_comp
-
-_pert=_inp.get('method.MRCC.response.pert')
-if(_pert == None):
-    _pert='d'
-_response_data['pert']=_pert
-
-_freq=_inp.get('method.MRCC.response.freq')
-if(_freq == None):
-    _freq=0.0
-_response_data['freq']=float(_freq)
-
-_triplet=_inp.get('calculate.properties.triplet')
-if(_triplet == None):
-    _triplet=False
-_response_data['triplet']=bool(_triplet)
-
-print _response_data
+if (_response_data['triplet']):
+    if(not ( _env=='DALTON')):
+        quit_error('Properties for triplet perturbation are possible only using DALTON')
 
 
+#import solve_lambda_0
 
 export_targets();
 

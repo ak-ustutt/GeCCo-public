@@ -123,6 +123,7 @@ class GeCCo_Input:
             quit_error('Getting GeCCo input: too much arguments. Pass, optionally, a boolean for printing.')
 
         self.data = {}
+        self.env = ''
 
         f = open( _gecco_input, 'r')
         input_lines = f.readlines()
@@ -182,6 +183,40 @@ class GeCCo_Input:
                 print "Input information from python interface:"
                 for k in self.data:
                     print k + " -> " + str(self.data[k])
+
+        # Check the package environment that GeCCo is currently using
+        ok=False
+        # start with DATON: It does not distinguish between DALTON_64 and DALTON
+        if(os.path.isfile('SIRIFC')):
+            ok=True
+        if(ok and os.path.isfile('MO_G')):
+            self.env = 'DALTON_SPECIAL'
+        elif(ok and os.path.isfile('MOTWOINT')):
+            self.env = 'DALTON'
+
+        # try GAMESS
+        if(not ok):
+            if(os.path.isfile('DICTNRY')):
+                self.env = 'GAMESS'
+                ok=True
+
+        # try new MOLPRO interface file
+        if(not ok):
+            if(os.path.isfile('mpro_gecco_ifc.dat')):
+                self.env = 'MOLPRO_IFC'
+                ok=True
+
+        # try MOLPRO fci interface
+        if(not ok):
+            if(os.path.isfile('FCIDUMP')):
+                self.env = 'MOLPRO_DUMP'
+                ok=True
+
+        # try CFOUR interface file
+        if(not ok):
+            if(os.path.isfile('cfour_gecco_ifc.dat')):
+                self.env = 'CFOUR'
+                ok=True
 
     def is_keyword_set( self, arg):
         for k in self.data:
