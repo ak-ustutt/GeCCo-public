@@ -374,9 +374,7 @@
               <!--resume with last vec. as initial guess-->
             </argument>
             <argument length="1" name="guess" status="A" type="2" value="0"/>
-            <argument length="1" name="restart" status="A" type="1">
-              <!--need to use a guess from file for solve_evp-->
-            </argument>
+            
           </keyword>
           <argument length="1" name="maxiter" status="A" type="2" value="30"/>
           <argument length="1" name="maxmic" status="A" type="2" value="20"/>

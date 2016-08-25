@@ -369,6 +369,7 @@ _solve_evp_basis[LIST_PRC]=['ME_DIA_L','ME_DIA_C0_bar']
 _solve_evp_basis[OP_MVP]=['OMG_L','OMG_C0_bar']
 _solve_evp_basis[OP_SVP]=['OMG_SL','OMG_SC0']
 _solve_evp_basis[FORM]='LMBD_OPT'
+_solve_evp_basis[INIT]=True
 _solve_evp_basis[LIST_SPC]=['ME_Ltr','ME_Dtr','ME_Dtrdag']
 _solve_evp_basis[N_ROOTS]=_root
 _solve_evp_basis[MODE]='TRF DIA'

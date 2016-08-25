@@ -26,12 +26,20 @@
 !!
 !!     @param thr_suggest: allows weaker convergence threshold
 !!
-*----------------------------------------------------------------------*
+!!     'choice' is used to prefer a particular operator over other for the guess
+!!     choice = 0 (default), consider all the operators involved
+!!     choice = iopt, consider operator iopt, iopt=1,nopt, nopt is the number
+!!              of operators involved
+!!     init: it is used to initialise guesses for each of list_opt(s)
+!!           from existing files instead of going through 'init_guess'.
+!!           The same can also be done using the keyword 'calculate.solve.eigen.resume',
+!!           But that would be imposed to all the calls of this solver during the process. 
+!----------------------------------------------------------------------*
       subroutine solve_evp(mode_str,
      &     nopt,nroots,targ_root,label_opt,label_prc,label_op_mvp,
      &     label_op_met,label_form,
      &     label_special,nspecial,label_spcfrm,nspcfrm,thr_suggest,
-     &     choice_opt,
+     &     choice_opt,init,
      &     op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
       implicit none             ! for sure
@@ -81,10 +89,12 @@
      &     strmap_info
       type(orbinf) ::
      &     orb_info
+      logical, intent(in) :: 
+     &     init
 
       logical ::
-     &     conv, use_s_t, use_s(nopt), trafo, init(nopt), home_in,
-     &     restart
+     &     conv, use_s_t, use_s(nopt), trafo, use_init_guess(nopt),
+     &     home_in, restart
       character(len_opname) ::
      &     label
       integer ::
@@ -332,7 +342,7 @@ c dbgend
       ifree = mem_alloc_int(irecmvp,nroots,'recmvp')
       ifree = mem_alloc_int(irecmet,nroots,'recmet')
 
-      init = .true.
+      use_init_guess = .true.
       home_in = .false.
       do iopt = 1, nopt
         ! open result vector file(s)
@@ -342,7 +352,7 @@ c dbgend
                                    ! problems for nroots>1
           write(lulog,'(a,i4,a)')
      &          'Using last vector as initial guess (iopt =',iopt,')'
-          init(iopt) = .false.
+          use_init_guess(iopt) = .false.
         end if
         if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
           ! copy this root so that we may home in on it later
@@ -399,10 +409,7 @@ c dbgend
      &       call file_open(ffspecial(idx)%fhand)
       end do
 
-      call get_argument_value('calculate.solve.eigen',
-     &                        'restart',lval=restart)
-
-      if (restart) then
+      if (init) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
           if (ffopt(iopt)%fhand%unit.le.0) then
@@ -432,12 +439,12 @@ c dbgend
 
         ! get initial amplitudes
         if (nopt.eq.1) then
-        call init_guess(nopt,init,nroots,
+        call init_guess(nopt,use_init_guess,nroots,
      &                  me_opt,me_trv,me_dia,me_special,nspecial,
      &                  fl_mvp,depend,fl_spc,nspcfrm,
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         else
-        call init_guess2(nopt,init,nroots,
+        call init_guess2(nopt,use_init_guess,nroots,
      &                  me_opt,me_trv,me_dia,me_special,nspecial,
      &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
@@ -619,7 +626,7 @@ c dbg
             end do
 
             ! normalize initial trial vector?
-            if (iter.eq.1.and.init(1).and.
+            if (iter.eq.1.and.use_init_guess(1).and.
      &          (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
      &           opti_info%typ_prc(1).eq.optinf_prc_prj.or.
      &           opti_info%typ_prc(1).eq.optinf_prc_spinrefp))

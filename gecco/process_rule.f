@@ -1571,6 +1571,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(4*nopt+nspecial+1:),ndim=nspcfrm)
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
+        call get_arg('INIT',rule,tgt_info,val_log=init)
 
         if (form_test) return
 
@@ -1584,7 +1585,7 @@ c          mode = 'dia-R12'
      &                   4*nopt+nspecial),nspecial,
      &       label_list(4*nopt+nspecial+1:     ! spec. form.
      &                  4*nopt+nspecial+nspcfrm),
-     &          nspcfrm,0d0,choice,
+     &          nspcfrm,0d0,choice,init,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     subsection: others

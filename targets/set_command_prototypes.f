@@ -736,6 +736,8 @@
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &     val_int=(/-1/),def=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'INIT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
       call set_arg('_PROTO_',UNITY,'LIST',0,tgt_info,
