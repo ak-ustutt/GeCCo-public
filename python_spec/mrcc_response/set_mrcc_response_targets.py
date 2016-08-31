@@ -50,4 +50,12 @@ if (_response_data['order']>=1):
         import solve_lambda_0_restr
         import eval_first_order_prop_restr
 
+if (_response_data['order']>=2):
+    if (relax_ref):
+#       import solve_t_1
+#       import eval_second_order_prop
+    else:
+        import solve_t_1_restr
+        import eval_second_order_prop_restr
+
 export_targets();

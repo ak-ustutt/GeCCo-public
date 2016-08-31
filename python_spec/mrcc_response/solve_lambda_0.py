@@ -33,10 +33,22 @@ elif (int(_root) > 2):
     quit_error('Solution of Lambda equation not possible for ciroot greater than 2')
 _root = int(_root)
 
+#set the '2ms' value for the operators associated with the ci coefficients
+if (_triplet):
+    _ms_c0= -1.0*_ms
+else:
+    _ms_c0 = _ms
+    
 # Get the restart option to skip the calculation of lower order response properties
-_restart=_inp.get('calculate.properties.restart')
-if(_restart == None):
-    _restart=1
+_restart=_response_data['restart']
+
+
+#Defining C0_bar separately from other operators used here. This is done as CO_bar will be needed outside.
+
+new_target('C0_bar')
+depend('C0')
+
+CLONE_OPERATOR({LABEL:'C0_bar',TEMPLATE:'C0',ADJOINT:True})
 
 new_target('LMBD_OP')
 
@@ -52,7 +64,6 @@ DEF_SCALAR({LABEL:'RED_LAG_4'})
 DEF_SCALAR({LABEL:'C_NORM'})
 CLONE_OPERATOR({LABEL:'OMG_L',TEMPLATE:'OMG',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'OMG_SL',TEMPLATE:'OMG',ADJOINT:True})
-CLONE_OPERATOR({LABEL:'C0_bar',TEMPLATE:'C0',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'OMG_C0_bar',TEMPLATE:'C0',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'OMG_SC0',TEMPLATE:'C0',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'DIA_L',TEMPLATE:'L'})
@@ -61,7 +72,7 @@ CLONE_OPERATOR({LABEL:'D_1',TEMPLATE:'D'})
 
 new_target('F_LMBD')
 
-depend('LMBD_OP','F_MRCC_LAG','F_OMG','F_OMG_C0','"E(MR)"','F_D','F_DENS0')
+depend('C0_bar','LMBD_OP','F_MRCC_LAG','F_OMG','F_OMG_C0','"E(MR)"','F_D','F_DENS0')
 
 # first constructing <Psi_0|Lambda \bar{H}|Psi_0> from MRCC_LAG
 
@@ -112,7 +123,6 @@ INVARIANT({LABEL_RES:'F_LAG_3',
 
 TRANSPS_FORMULA({LABEL_IN:'F_LAG_3',LABEL_RES:'F_LAG_3',
                  OP_RES:'RED_LAG_3',INIT:False,MULTI:True})
-#                OP_RES:'RED_LAG_3',INIT:False})
 
 
 ## adding F_LAG_3 to F_LAG for option=1
@@ -218,12 +228,10 @@ DERIVATIVE({LABEL_RES:'F_PPlint',
            OP_DERIV:'H_PP'})
 
 
-# creating ME list for the new operators:
+#creating ME list for L:
 
-new_target('LIST_LMBD')
-
-depend('F_LMBD','F_L','DEF_ME_E(MR)')
-depend('F_PPlint')
+new_target('DEF_ME_L')
+depend('L')
 
 _op_list={'L':'ME_L'}
 
@@ -235,6 +243,27 @@ for _op in _op_list:
                  AB_SYM:1,
                  MIN_REC:1,MAX_REC:_root})
 
+#creating ME list for C0_bar:
+new_target('DEF_ME_C0_bar')
+depend('C0_bar')
+
+_op_list={'C0_bar':'ME_C0_bar'}
+
+for _op in _op_list:
+    DEF_ME_LIST({LIST:_op_list[_op],
+                 OPERATOR:_op,
+                 IRREP:_isym,
+                 '2MS':_ms_c0,
+                 AB_SYM:_msc,
+                 MIN_REC:1,MAX_REC:_root})
+
+# creating ME list for the new operators:
+
+new_target('LIST_LMBD')
+
+depend('F_LMBD','F_L','DEF_ME_E(MR)')
+depend('F_PPlint')
+
 _op_list={'OMG_L':'ME_OMG_L',
           'OMG_SL':'ME_OMG_SL',
           'INT_PPl':'ME_INT_PPl'}
@@ -245,21 +274,6 @@ for _op in _op_list:
                  IRREP:1,
                  '2MS':0,
                  AB_SYM:1})
-
-_op_list={'C0_bar':'ME_C0_bar'}
-
-if (_triplet):
-    _ms_c0= -1.0*_ms
-else:
-    _ms_c0 = _ms
-    
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:_isym,
-                 '2MS':_ms_c0,
-                 AB_SYM:_msc,
-                 MIN_REC:1,MAX_REC:_root})
 
 _op_list={'OMG_C0_bar':'ME_OMG_C0_bar',
           'OMG_SC0':'ME_OMG_SC0'}
@@ -333,6 +347,7 @@ PRINT_MEL({LIST:'ME_E(MR)',COMMENT:'ENERGY ICMRCC:'})
 
 new_target('LMBD_OPT')
 
+depend('DEF_ME_L','DEF_ME_C0_bar')
 depend('LIST_LMBD','DEF_ME_C0','H0','DEF_ME_T','DIAG_L','DIAG_C0_bar','DEF_ME_Ttr','F_L')
 
 OPTIMIZE({LABEL_OPT:'LMBD_OPT',

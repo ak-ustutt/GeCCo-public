@@ -54,12 +54,25 @@ LEQ_SPLIT({LABEL_RAW:'F_lres',
 PRINT_FORMULA({LABEL:'F_lres_rhs'})
 PRINT_FORMULA({LABEL:'F_lres_trf'})
 
+#creating ME list for L:
+
+new_target('DEF_ME_L')
+depend('L')
+
+_op_list={'L':'ME_L'}
+
+for _op in _op_list:
+    DEF_ME_LIST({LIST:_op_list[_op],
+                 OPERATOR:_op,
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:1})
+
 new_target('LIST_LMBD')
 
 depend('F_LMBD','F_L')
 
-_op_list={'L':'ME_L',
-          'L_res_rhs':'ME_Lresr',
+_op_list={'L_res_rhs':'ME_Lresr',
           'L_res_trf':'ME_Lrest'}
 
 for _op in _op_list:
@@ -86,6 +99,7 @@ COPY_LIST({LIST_RES:'ME_DIA_L',LIST_INP:'DIAG1SxxM00_T',ADJOINT:True,FAC:1.0})
 
 new_target('LMBD_OPT')
 
+depend('DEF_ME_L')
 depend('LIST_LMBD','H0','DEF_ME_T','DIAG_L','DEF_ME_Ttr','F_L')
 
 PRINT_FORMULA({LABEL:'F_L'})
