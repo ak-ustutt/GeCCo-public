@@ -56,7 +56,10 @@
       xnrm=vec_calculate_norm(me_lists, nlists, xbuf1,lbuf)
 
       contains
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
       function vec_calculate_norm(mels,nmels, xbuf, lbuf)
+*----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
 
