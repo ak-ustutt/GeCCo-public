@@ -80,7 +80,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       type(strmapinf) ::
      &     strmap_info
 
-* local
+*     local
+      
       logical ::
      &     zero_vec(opti_stat%ndim_vsbsp), init, trafo, getnewrec
       integer ::
@@ -89,7 +90,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     ndim_save, ndel, iopt, jopt, lenscr, ioff,
      &     ifree, restart_mode, ierr, nselect, irec, ioff_s
       real(8) ::
-     &     cond, xdum, xnrm, xshf
+     &     cond, xdum, xnrm
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:), eigr(:), eigi(:),
      &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:)
@@ -105,6 +106,8 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     fdum
       type(filinf), pointer ::
      &     ffspc
+      type(me_list),pointer::
+     &     mespc
       type(filinf), target ::
      &     fdum2
 
@@ -321,160 +324,32 @@ c dbg
 
         ! divide new directions by preconditioner
         do iopt = 1, nopt
-          select case(opti_info%typ_prc(iopt))
-          case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
-     &         ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-              ffspc => me_special(1)%mel%fhand
+           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+              mespc => me_special(1)%mel
               trafo = .true.
-            elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-               ffspc => me_special(4)%mel%fhand
-               trafo = .true. 
-            else
-              ffspc => ffscr(iopt)%fhand
+           else if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+              mespc => me_special(4)%mel
+              trafo = .true. 
+           else
+              mespc => me_scr(iopt)%mel
               trafo = .false.
-            end if
-            if (nincore.ge.2) then
-              call vec_from_da(
-     &             me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
-              do iroot = 1, nnew
-                call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
-     &                           nwfpar(iopt))
-                ! scale residual for numerical stability:
-
-                xnrm = 0d0
-                do jopt = 1, nopt
-                  xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
-                end do
-                xnrm = sqrt(xnrm)
-c dbg
-c                print *,"xnorm:",xnrm
-c dbgend                
-c                xnrm = 1d0
-c dbg
-c                print *,"precon not yet applied. "
-c                do idxdbg = 1, nwfpar(iopt)
-c                   print *,idxdbg,xbuf1(idxdbg)
-c                end do
-c dbgend
-                xshf = -xeig(idxroot(iroot),1) 
-                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
-c dbg
-c                print *,"debug shift:",xshf
-c                print *,"precon applied. ",nwfpar(iopt),"entries"
-c                do idxdbg = 1, nwfpar(iopt)
-c                   print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
-c                end do
-c dbgend
-                if (nopt.eq.1) then
-                  xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
-                  call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
-                end if
-                call vec_to_da(ffspc,iroot,xbuf1,
-     &                         nwfpar(iopt))
-              end do
-            else
-              do iroot = 1, nnew
-c            ! request (nroot-iroot+1)th-last root 
-c            irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
-c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
-                xnrm = 0d0
-                do jopt = 1, nopt
-                  xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
-                end do
-                xnrm = sqrt(xnrm)
-                xshf = -xeig(idxroot(iroot),1)
-                ! decrease xshf in first iteration
-                if (iter .eq. 1) xshf=0.8d0*xshf
-                call da_diavec(ffspc,iroot,0d0,
-     &                   ffscr(iopt)%fhand,iroot,
-     &                   1d0/xnrm,me_dia(iopt)%mel%fhand,
-     &                   1,xshf,-1d0,
-     &                   nwfpar(iopt),xbuf1,xbuf2,lenbuf)
-              end do
-            end if
-
-            ! project out spin contaminations or other components?
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
-     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
-     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
-              ! assign op. with list containing the scratch trial vector
-c dbg
-c               print *, "assign ",me_scr(iopt)%mel%label," to ",
-c     &              me_opt(iopt)%mel%op%name
-c dbgend
-              call assign_me_list(me_scr(iopt)%mel%label,
-     &                            me_opt(iopt)%mel%op%name,op_info)
-              do iroot = 1, nnew
-                call switch_mel_record(me_scr(iopt)%mel,iroot)
-                if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
-     &                              fspc(1),opti_info%nwfpar(iopt),
-     &                              xbuf1,xbuf2,.true.,xnrm,
-     &                              opti_info,orb_info,
-     &                              op_info,str_info,strmap_info)
-                elseif (opti_info%typ_prc(iopt).eq.
-     &                  optinf_prc_spinrefp)then
-                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
-     &                              fspc(2),opti_info%nwfpar(iopt),
-     &                              xbuf1,xbuf2,.true.,xnrm,
-     &                              opti_info,orb_info,
-     &                              op_info,str_info,strmap_info)
-
-                  call evaluate2(fspc(1),.false.,.false.,
-     &                           op_info,str_info,strmap_info,orb_info,
-     &                           xnrm,.false.)
-
-                else
-c dbg
-c                  print *,"iopt=",iopt
-c                  call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c dbgend
-                  call evaluate2(fspc(1),.false.,.false.,
-     &                 op_info,str_info,strmap_info,orb_info,
-     &                 xnrm,.false.)
-c dbg
-c                  call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c dbgend
-                end if
-                if (xnrm.lt.1d-12) call warn('evpc_core',
-     &               'Nothing left after projection!')
-              end do
-              ! reassign op. with list containing trial vector
-              call assign_me_list(me_trv(iopt)%mel%label,
-     &                            me_opt(iopt)%mel%op%name,op_info)
-            end if
-          case(optinf_prc_blocked)
-            if (nincore.lt.3)
-     &           call quit(1,'evpc_core',
-     &           'I need at least 3 incore vectors (prc_special)')
-            do iroot = 1, nnew
-              xnrm = 0d0
+           end if
+           do iroot=1,nnew
+              xnrm=0.0
               do jopt = 1, nopt
-                xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
+                 xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
               end do
-              xnrm = sqrt(xnrm)
-              call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
-     &                         nwfpar(iopt))
-              call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
-              xshf = -xeig(idxroot(iroot),1)
-              call optc_prc_special2(me_mvp(iopt)%mel,me_special,
-     &                                                        nspecial,
-     &                           me_opt(iopt)%mel%op%name,xshf,
-     &                           nincore,xbuf1,xbuf2,xbuf3,lenbuf,
-     &                           orb_info,op_info,str_info,strmap_info)
-              call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
-     &                       nwfpar(iopt))
-            end do
-          case default
-            call quit(1,'evpc_core','unknown preconditioner type')
-          end select
+              xnrm=sqrt(xnrm)
+              call apply_preconditioner(
+     &          me_scr(iopt)%mel, me_dia(iopt)%mel, mespc, nwfpar(iopt),
+     &             opti_info%typ_prc(iopt), 
+     &             xeig(idxroot(iroot),1), xnrm, nnew, iroot,
+     &             me_opt(iopt)%mel%op , me_trv(iopt)%mel,
+     &             me_special, nspecial,
+     &             fspc, nspcfrm,
+     $             xbuf1, xbuf2, xbuf3, lenbuf, nincore,
+     &             nopt.eq.1, op_info, str_info, strmap_info)
+           end do
 
           ! if requested, transform new subspace vectors
           if (trafo) then
@@ -981,6 +856,193 @@ c dbg end
 !   apply the preconditioner
 !######################################################################
 *----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      subroutine apply_preconditioner(
+     &     me_resid, me_diag, me_result, lenme,
+     &     typ_prc, 
+     &     xeig, xnrm, nnew, iroot,
+     &     op_opt, me_opt,      !
+     &     me_special, nspecial,!
+     &     fspc, nfspc,         !head of special formulars 
+     $     xbuf1, xbuf2, xbuf3, lbuf, nincore,
+     &     renormalize, op_info, str_info, strmap_info)
+*----------------------------------------------------------------------*
+      implicit none
+      character(len=*),parameter::
+     &     i_am="apply_preconditioner"
+      integer,parameter::
+     &     ntest=00
+      
 
+      type(me_list), intent(in)::
+     &     me_resid,
+     &     me_diag,
+     &     me_result
+      
+
+      integer,intent(in)::
+     &     lenme,
+     &     nnew,
+     &     nspecial,
+     &     nfspc,
+     &     iroot,
+     &     lbuf, nincore
+
+      integer,intent(in)::
+     &     typ_prc
+      
+      real(8),intent(in)::
+     &     xeig
+      real(8),intent(inout)::
+     &     xbuf1(*), xbuf2(*), xbuf3(*)
+      
+      real(8),intent(inout)::
+     &     xnrm                 !> norm of the associated vectors
+      logical, intent(in)::
+     &     renormalize
+      type(formula_item), intent(in)::
+     &     fspc(*)
+      type(me_list_array)::
+     &     me_special(*)
+      
+      type(operator),intent(inout)::
+     &     op_opt
+      
+      type(me_list),intent(inout)::
+     &     me_opt
+      
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf), intent(in)::
+     &     strmap_info
+      real(8)::
+     &     xshf
+      
+      select case(typ_prc)
+      case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
+     &     ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
+      if (nincore.ge.2) then
+         call vec_from_da(
+     &        me_diag%fhand,1, xbuf2,nwfpar(iopt))
+         call vec_from_da(me_resid%fhand,iroot,xbuf1,
+     &        lenme)
+         
+            
+c     dbg
+c     print *,"xnorm:",xnrm
+c     dbgend                
+c     xnrm = 1d0
+c     dbg
+c     print *,"precon not yet applied. "
+c     do idxdbg = 1, nwfpar(iopt)
+c     print *,idxdbg,xbuf1(idxdbg)
+c     end do
+c     dbgend
+! scale residual for numerical stability:
+         xshf = -xeig 
+         call diavc(xbuf1,xbuf1,1d0/xnrm,
+     &        xbuf2,xshf,lenme)
+c     dbg
+c     print *,"debug shift:",xshf
+c     print *,"precon applied. ",nwfpar(iopt),"entries"
+c     do idxdbg = 1, nwfpar(iopt)
+c     print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
+c     end do
+c     dbgend
+         if (renormalize) then
+            xnrm = dnrm2(lenme,xbuf1,1)
+            call dscal(lenme,1d0/xnrm,xbuf1,1)
+         end if
+         call vec_to_da(me_result%fhand,iroot,xbuf1,
+     &        lenme)
+      else
+c     ! request (nroot-iroot+1)th-last root 
+c     irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
+c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
+         xshf = -xeig
+! decrease xshf in first iteration
+         if (iter .eq. 1) xshf=0.8d0*xshf
+         call da_diavec(me_resid%fhand,iroot,0d0,
+     &        ffscr(iopt)%fhand,iroot,
+     &        1d0/xnrm,me_dia(iopt)%mel%fhand,
+     &        1,xshf,-1d0,
+     &        nwfpar(iopt),xbuf1,xbuf2,lenbuf)
+      end if
+
+      if (typ_prc.eq.optinf_prc_spinp.or.
+     &     typ_prc.eq.optinf_prc_prj.or.
+     &     typ_prc.eq.optinf_prc_spinrefp) then
+! assign op. with list containing the scratch trial vector
+c dbg
+c     print *, "assign ",me_scr(iopt)%mel%label," to ",
+c     &              me_opt(iopt)%mel%op%name
+c     dbgend
+         call assign_me_list(me_resid%label,
+     &        op_opt%name,op_info)
+         call switch_mel_record(me_resid,iroot)
+         if (typ_prc.eq.optinf_prc_spinp) then
+            call spin_project(me_resid,me_special(1)%mel,
+     &              fspc(1),opti_info%nwfpar(iopt),
+     &              xbuf1,xbuf2,.true.,xnrm,
+     &              opti_info,orb_info,
+     &              op_info,str_info,strmap_info)
+            elseif (typ_prc.eq.
+     &              optinf_prc_spinrefp)then
+               call spin_project(me_resid,me_special(1)%mel,
+     &              fspc(2),lenme,
+     &              xbuf1,xbuf2,.true.,xnrm,
+     &              opti_info,orb_info,
+     &              op_info,str_info,strmap_info)
+               
+               call evaluate2(fspc(1),.false.,.false.,
+     &              op_info,str_info,strmap_info,orb_info,
+     &              xnrm,.false.)
+
+            else
+c     dbg
+c     print *,"iopt=",iopt
+c     call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c     dbgend
+               call evaluate2(fspc(1),.false.,.false.,
+     &              op_info,str_info,strmap_info,orb_info,
+     &              xnrm,.false.)
+c     dbg
+c     call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c     dbgend
+            end if
+            if (xnrm.lt.1d-12) call warn('evpc_core',
+     &           'Nothing left after projection!')
+            call assign_me_list(me_opt%label,
+     &           op_opt%name,op_info)
+      end if
+      case(optinf_prc_blocked)
+         if (nincore.lt.3)
+     &        call quit(1,'evpc_core',
+     &        'I need at least 3 incore vectors (prc_special)')
+         call vec_from_da(me_resid%fhand,iroot,xbuf1,
+     &        lenme)
+         call dscal(lenme,1d0/xnrm,xbuf1,1)
+         xshf = -xeig
+         call optc_prc_special2(me_mvp(iopt)%mel,me_special,
+     &        nspecial,
+     &        op_opt%name,xshf,
+     &        nincore,xbuf1,xbuf2,xbuf3,lbuf,
+     &        orb_info,op_info,str_info,strmap_info)
+         call vec_to_da(me_result%fhand,iroot,xbuf1,
+     &        lenme)
+      case default
+         call quit(1,'evpc_core','unknown preconditioner type')
+      end select
+      return
+      end subroutine
+      
       end
 
