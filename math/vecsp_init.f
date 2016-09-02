@@ -21,7 +21,7 @@
      &     i_am="vecsp_init"
 
 
-      character(len=maxfilnam),intent(in)::
+      character(len=*),intent(in)::
      &     name
       
       type(vector_space_t),intent(inout)::
@@ -57,7 +57,8 @@
      &     ((mel%len_op-1)/fhand%reclen+1)*fhand%reclen
          fhand%active_records(1)=1
          fhand%active_records(2)=maxdim
-         fhand%current_record=1 
+         fhand%current_record=1
+         allocate(fhand%last_mod(maxdim))
          fhand%last_mod(1:maxdim) = -1
       end do
       
@@ -94,15 +95,17 @@
 
 
       if (jj.eq.0)then
-         write(dvd_get_filename, fmt='(A,"_",2I,".da")') name,ii !try shortened form with name as unique identifier
+         write(dvd_get_filename, fmt='(A,"_",I2.2,".da")') trim(name),ii !try shortened form with name as unique identifier
       else 
-         write(dvd_get_filename, fmt='(A,2I,"_",2I,".da")') name,jj,ii
+         write(dvd_get_filename,
+     &        fmt='(A,I2.2,"_",I2.2,".da")') trim(name),jj,ii
       end if
 
       inquire(file=trim(dvd_get_filename),exist=file_exists)
       do while (file_exists)
          jj=jj+1
-         write(dvd_get_filename, fmt='(A,2I,"_",2I,".da")') name,jj,ii
+         write(dvd_get_filename,
+     &        fmt='(A,I2.2,"_",I2.2,".da")') trim(name),jj,ii
         if (jj.ge. 100)call quit(1,i_am,
      &        "can only generate up to 100 names"//
      &        " for similar vectorspaces.")

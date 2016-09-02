@@ -62,6 +62,7 @@
       include 'ifc_memman.h'
       include 'mdef_target_info.h'
       include 'ifc_input.h'
+      include 'def_davidson_subspace.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -131,6 +132,8 @@
 
       character ::
      &     fname*256
+      type(davidson_subspace_t)::
+     &     dvdsbsp
 
       logical, external ::
      &     file_exists
@@ -210,6 +213,7 @@
      &       'no file associated with list '//trim(label))
       end if
 
+      call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_opt, nopt)
       ! special formulae
       do jdx = 1, nspcfrm
         idx = idx_formlist(label_spcfrm(jdx),form_info)
@@ -735,6 +739,7 @@ c dbgend
         call dealloc_formula_list(fl_spc(jdx))
       end do
 
+      call dvdsbsp_del(dvdsbsp)
       ifree = mem_flushmark()
 
       return

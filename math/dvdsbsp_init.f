@@ -12,7 +12,22 @@
       include 'mdef_me_list.h'
       include 'def_file_array.h'
       include 'def_davidson_subspace.h'
-      include 'ifc_memman.h'
+
+      interface
+      integer function mem_alloc_real(xarr,nalloc,name) !this interface lies
+      implicit none
+      real(8), pointer ::
+     &     xarr(:,:)
+      integer, intent(in) ::
+     &     nalloc
+      character, intent(in) ::
+     &     name*(*)
+      end function
+      end interface
+
+
+
+      
       integer, parameter::
      &     ntest = 00
       character(len=*),parameter::
@@ -51,13 +66,18 @@
       dvdsbsp%ncursub=0
       dvdsbsp%icursub=0
 
-      ifree=mem_alloc_real(mymat, maxsub*maxsub, 
+      ifree=mem_alloc_real(dvdsbsp%vMv_mat, maxsub*maxsub,
      &     "davidson subspace vMv")
-      do ii=1,maxsub*maxsub
-         mymat(ii)=0
-      end do
-      dvdsbsp%vMv_mat(1:maxsub, 1:maxsub)=> mymat
-      mymat=>null()
+      dvdsbsp%vMv_mat(1:maxsub,1:maxsub) = 0d0
+!!!!!!!!!!!!!!!!
+!!       This is the correct way sadly commonly installed gfortran versions don't support this.
+c$$$      ifree=mem_alloc_real(mymat, maxsub*maxsub, 
+c$$$     &     "davidson subspace vMv")
+c$$$      do ii=1,maxsub*maxsub
+c$$$         mymat(ii)=0
+c$$$      end do
+c$$$      dvdsbsp%vMv_mat(1:maxsub, 1:maxsub)=> mymat
+c$$$      mymat=>null()
 
 
 

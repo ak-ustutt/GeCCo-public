@@ -21,8 +21,8 @@
      &     ifree
 
       ifree=mem_dealloc("davidson subspace vMv")
-      call vecspace_del(dvdsbsp%vspace)
-      call vecspace_del(dvdsbsp%Mvspace)
+      call vecsp_del(dvdsbsp%vspace)
+      call vecsp_del(dvdsbsp%Mvspace)
       dvdsbsp%nmaxsub=0
       dvdsbsp%ncursub=0
       dvdsbsp%icursub=0
