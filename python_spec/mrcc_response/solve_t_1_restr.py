@@ -53,12 +53,23 @@ for i in range(0,n_par):
 
     i_par = str(i+1)
 
+    new_target('T(1)'+i_par)
+    depend('T')
+
+    CLONE_OPERATOR({LABEL:'T(1)'+i_par,
+                    TEMPLATE:'T'})
+
+#Setting the order of the T(1) operator to be first
+
+    SET_ORDER({LABEL:'T(1)'+i_par,
+              ORDER:1,
+              SPECIES:1})
+
     new_target('RSPNS(1)_OP'+i_par)
 
     depend('T','C0','OMG','A_C0')
 
-    _op_list={'T(1)'+i_par:'T',
-              'Ttr(1)'+i_par:'T',
+     _op_list={'Ttr(1)'+i_par:'T',
               'ST(1)'+i_par:'OMG',
               'O(1)_T'+i_par:'OMG',
               'O(1)LT'+i_par:'OMG',
@@ -74,17 +85,13 @@ for i in range(0,n_par):
     DEF_SCALAR({LABEL:'RED_LAG(1)LT'+i_par})
     DEF_SCALAR({LABEL:'den12'+i_par})
 
-#Setting the order of the T operator to be first
-    SET_ORDER({LABEL:'T(1)'+i_par,
-              ORDER:1,
-              SPECIES:1})
-
 #Setting formula corresponding to the left hand side of the equations: 
 #\bra{{\Psi}_0^{(0)}} \boldsymbol{\hat{\tau}^{\prime\dagger}} \frac{\partial \bar{H}_0}
 #{\partial \boldsymbol{t^{\prime0}}} \ket{\Psi_0^{(0)}} \boldsymbol{t^{\prime}}(\omega)
 
     new_target('F_O(1)LT'+i_par)
 
+    depend('T(1)'+i_par)
     depend('RSPNS(1)_OP'+i_par,'F_MRCC_LAG')
 
     DERIVATIVE({LABEL_RES:'F_preRED_LAG(1)LT'+i_par,
@@ -236,8 +243,24 @@ for i in range(0,n_par):
                 OP_RES:'ST(1)'+i_par,
                 OP_DERIV:'L'})
 
-#defining the me-list for the new operators. The '2ms' and 'absym' values have to be made general
 
+#setting frequencies for the first order cluster operators. This feature is still not used later, but can be used later to make life lot simpler
+    _freq_sign = _freq*math.pow(-1,i)
+
+#Defining the me-list for T(1)
+    new_target('DEF_ME_T(1)'+i_par)
+    depend('T(1)'+i_par)
+
+    DEF_ME_LIST({LIST:'ME_T(1)'+i_par,
+                 OPERATOR:'T(1)'+i_par,
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:1})
+
+    SET_FREQ({LIST:'ME_T(1)'+i_par,
+              FREQ:_freq_sign})
+
+#defining the me-list for rest of the new operators.
     new_target('LIST_RSPNS(1)_OP'+i_par)
 
     depend ('F_O(1)RT'+i_par)
@@ -263,18 +286,12 @@ for i in range(0,n_par):
                      IRREP:1,
                      '2MS':0})
 
-#setting frequencies for the first order cluster operators. This feature is still not used later, but can be used later to make life lot simpler
-
-    _freq_sign = _freq*math.pow(-1,i)
-    print 'freq_sign in solve_t_1', _freq_sign
-    SET_FREQ({LIST:'ME_T(1)'+i_par,
-              FREQ:_freq_sign})
-
 #optimizing the formula:
 
     new_target('OPT_RSPNS_T(1)'+i_par)
 
     depend('H0','DEF_ME_T','DEF_ME_E(MR)')
+    depend('DEF_ME_T(1)'+i_par)
     depend('LIST_RSPNS(1)_OP'+i_par)
     depend('F_T(1)'+i_par,'DEF_ME_Dtrdag')
     depend('F_ST(1)'+i_par)
@@ -296,7 +313,10 @@ for i in range(0,n_par):
 
 #Solving the linear equation:
 
-    new_target('SOLVE_T(1)'+i_par,True)
+    if (_restart<3):
+        new_target('SOLVE_T(1)'+i_par,True)
+    else:
+        new_target('SOLVE_T(1)'+i_par)
 
     depend('OPT_RSPNS_T(1)'+i_par)
     depend('DIAG_T(1)'+i_par)

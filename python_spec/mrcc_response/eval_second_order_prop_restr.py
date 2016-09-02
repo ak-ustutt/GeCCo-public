@@ -124,8 +124,12 @@ for _op in _op_list:
 OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(2)',
           LABELS_IN:'F_RSPNS(2)'})
 
-new_target('EVAL_RSPNS(2)',True)
-#new_target('EVAL_RSPNS(2)')
+#evaluating the response function:
+if (_restart<3):
+    new_target('EVAL_RSPNS(2)',True)
+else:
+    new_target('EVAL_RSPNS(2)')
+
 
 depend('OPT_RSPNS(2)')
 
