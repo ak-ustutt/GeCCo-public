@@ -8,7 +8,7 @@ from get_response_data import _response_data
 #Getting the frequency
 _freq=_response_data['freq']
 #Getting the value of the restart option
-_restart=_response_option['restart']
+_restart=_response_data['restart']
 
 #n_par tells how many version of the same operator has to be defined 
 #depending on whether we are doing static or dynamic property calcualtion

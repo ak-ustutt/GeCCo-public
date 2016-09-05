@@ -57,7 +57,7 @@
         ! back-transform densities
         if (rank.eq.1) then
           call file_init(ffdao,'DAO',ftyp_da_unf,lblk_da)
-          call btran_one(ffdao,ffcmo,trplt,  ! attention, true was made false for debugging PRADIPTA
+          call btran_one(ffdao,ffcmo,trplt,
      &         op_info%mel_arr(idxden)%mel,orb_info,str_info)
         else
           call quit(1,'prop_evaluate','only rank==1 supported')

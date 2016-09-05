@@ -51,8 +51,8 @@ LEQ_SPLIT({LABEL_RAW:'F_lres',
             OP_RHS:'L_res_rhs',
             OP_TRF:'L_res_trf'})
 
-PRINT_FORMULA({LABEL:'F_lres_rhs'})
-PRINT_FORMULA({LABEL:'F_lres_trf'})
+#PRINT_FORMULA({LABEL:'F_lres_rhs'})
+#PRINT_FORMULA({LABEL:'F_lres_trf'})
 
 #creating ME list for L:
 
@@ -102,7 +102,7 @@ new_target('LMBD_OPT')
 depend('DEF_ME_L')
 depend('LIST_LMBD','H0','DEF_ME_T','DIAG_L','DEF_ME_Ttr','F_L')
 
-PRINT_FORMULA({LABEL:'F_L'})
+#PRINT_FORMULA({LABEL:'F_L'})
 OPTIMIZE({LABEL_OPT:'LMBD_OPT',
           LABELS_IN:['F_lres_rhs','F_lres_trf']})
 

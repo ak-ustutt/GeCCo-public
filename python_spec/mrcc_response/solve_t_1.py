@@ -3,7 +3,13 @@
 #This particular interface started to be written on September, 2015
 
 from gecco_interface import *
+from get_response_data import _response_data
 import math
+
+_inp = GeCCo_Input()
+
+# Get the name of the package GeCCo uses the integrals from 
+_env = _inp.env
 
 _orb = Orb_Info()
 
@@ -23,7 +29,7 @@ else:
 #Getting the frequency
 _freq=_response_data['freq']
 #Getting the value of the restart option
-_restart=_response_option['restart']
+_restart=_response_data['restart']
 
 #n_par tells how many version of the same operator has to be defined 
 #depending on whether we are doing static or dynamic property calcualtion
@@ -31,8 +37,6 @@ if (_freq == 0.0):
     n_par = 1
 else:
     n_par = 2
-
-_past_param = 2
 
 #Getting the option from response data
 _option=_response_data['option']
@@ -70,7 +74,7 @@ for _op in _op_list:
 #Importing the integrals: It is hard coded to be a dipole operator in z-direction. 
 ##TODO##  ###NEED TO BE GENERALIZED###
 
-IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:'DALTON_SPECIAL'})
+IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:_env})
 
 
 # We define all the parameters from earlier calculation that will be needed here
@@ -535,7 +539,7 @@ for i in range(0,n_par):
     DEF_ME_LIST({LIST:'ME_C0(1)'+i_par,
                  OPERATOR:'C0(1)'+i_par,
                  IRREP:_isym,
-                 '2MS':0,
+                 '2MS':_ms,
                  AB_SYM:_msc})
 
     SET_FREQ({LIST:'ME_C0(1)'+i_par,
@@ -565,13 +569,12 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_ims,
-                     '2MS':0,
+                     IRREP:_isym,
+                     '2MS':_ms,
                      AB_SYM:_msc})
 
     _op_list={'Ttr(1)'+i_par:'ME_Ttr(1)'+i_par,
               'DIAG_T(1)'+i_par:'ME_DIAG_T(1)'+i_par,
-              'DIAG_C0(1)'+i_par:'ME_DIAG_C0(1)'+i_par,
               'FREQ'+i_par:'ME_FREQ'+i_par}
     
     for _op in _op_list:
@@ -586,14 +589,14 @@ for i in range(0,n_par):
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
                      IRREP:_isym,
-                     '2MS':0})
+                     '2MS':_ms})
 
     DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
-                 OPERATOR:'"E(MR)"',
+                 OPERATOR:'E(MR)',
                  IRREP:1,
                  '2MS':0})
 
-    ASSIGN_ME2OP({LIST:'"ME_E(MR)"',OPERATOR:'"E(MR)"'})
+    ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
 
 # Initializing the ME_FREQ for this i_par
     SET_MEL({LIST:'ME_FREQ'+i_par,
@@ -640,7 +643,7 @@ for i in range(0,n_par):
     PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
 
     SCALE_COPY({LIST_RES:'ME_MINEN'+i_par,
-                LIST_INP:'"ME_E(MR)"',
+                LIST_INP:'ME_E(MR)',
                 FAC:-1.0})
  
     EXTRACT_DIAG({LIST_RES:'ME_DIAG_C0(1)'+i_par,

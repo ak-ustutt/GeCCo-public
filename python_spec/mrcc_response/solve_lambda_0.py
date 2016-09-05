@@ -190,13 +190,13 @@ EXPAND_OP_PRODUCT({LABEL:'F_OMG_SC0',NEW:True,
 #                   OPERATORS:['OMG_SC0','C0_bar','"E(MR)"','OMG_SC0'],  ##### CAREFUL !!! Added extra term
 #                   IDX_SV:[1,2,3,1], FAC:-1.0})  ##### CAREFUL !!! Added extra term
 
-PRINT_FORMULA({LABEL:'F_DENS0'})
+#PRINT_FORMULA({LABEL:'F_DENS0'})
 
 REPLACE({LABEL_RES:'F_DENS(1)',
          LABEL_IN:'F_DENS0',
          OP_LIST:['C0^+','C0_bar','C0','C0_bar^+']})
 
-PRINT_FORMULA({LABEL:'F_DENS(1)'})
+#PRINT_FORMULA({LABEL:'F_DENS(1)'})
 
 #some intermediates for fast calculations
 

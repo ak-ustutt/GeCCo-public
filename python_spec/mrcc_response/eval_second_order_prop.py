@@ -7,7 +7,7 @@ from get_response_data import _response_data
 #Getting the frequency
 _freq=_response_data['freq']
 #Getting the value of the restart option
-_restart=_response_option['restart']
+_restart=_response_data['restart']
 
 #n_par tells how many version of the same operator has to be defined 
 #depending on whether we are doing static or dynamic property calcualtion
@@ -16,6 +16,8 @@ if (_freq == 0.0):
 else:
     n_par = 2
 
+#Getting the option from response data
+_option=_response_data['option']
 
 #preprocessing the second order response function. First changing the GeCCo specific Lagrangian 
 #to the actual Lagrangian of ic-MRCC and then replacing the electronic Hamiltonian with the Perturbation

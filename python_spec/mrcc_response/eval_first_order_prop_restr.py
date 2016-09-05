@@ -4,6 +4,9 @@ from get_response_data import _response_data
 _triplet = _response_data['triplet']
 _inp = GeCCo_Input()
 
+# Get the name of the package GeCCo uses the integrals from 
+_env = _inp.env
+
 if (_triplet):
     absym_dens = -1.0
 else:
@@ -23,19 +26,9 @@ DEF_OP_FROM_OCC({LABEL:'DENS_0',JOIN:2,
 ##########
 new_target('DIPM')
 DEF_HAMILTONIAN({LABEL:'DIPM',MAX_RANK:1})
-_op_list={'DIPM':'ME_DIPM'}
-
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:1})
-
-IMPORT({LIST:'ME_DIPM',TYPE:'ZDIPLEN',ENV:'MOLPRO_DUMP'})
 ##########
 
-##########
+########## generating the formula for density
 new_target('F_DENS_0')
 
 depend('DENS_0','DIPM')

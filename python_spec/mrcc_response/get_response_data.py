@@ -29,23 +29,34 @@ if(_freq == None):
 _response_data['freq']=float(_freq)
 
 #Check if the perturation is triplet, that makes the resultant property a spin-dependent one
-_triplet=_inp.get('calculate.properties.triplet')
-if(_triplet == None):
+_triplet_str=_inp.get('calculate.properties.triplet')
+print 'debugging 1:', _triplet_str
+if(_triplet_str=='T'):
+    _triplet=True
+elif(_triplet_str=='F'):
     _triplet=False
+else:
+    _triplet=False
+    
 _response_data['triplet']=bool(_triplet)
+print 'debugging 2:', _response_data['triplet']
 
 #Check if we are going to use the B_{\lambda c} term in to our response equations
-_use_b=_inp.get('method.MRCC.response.use_b')
-if(_use_b == None):
+_use_b_str=_inp.get('method.MRCC.response.use_b')
+if(_use_b_str=='T'):
     _use_b=True
-
+elif(_use_b_str=='F'):
+    _use_b=False
+else:
+    _use_b=True
+    
 #We then change this information to call it as two different 'option'
 if(_use_b):
     option=1
 else:
     option=2
 
-_response_data['option']=bool(option)
+_response_data['option']=option
 
 # Get the restart option to skip the calculation of lower order response properties
 _restart=_inp.get('calculate.properties.restart')

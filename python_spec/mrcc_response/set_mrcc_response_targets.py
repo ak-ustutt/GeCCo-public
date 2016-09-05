@@ -27,12 +27,16 @@ if(_restart == None):
 _pure_vv=_inp.get('method.MR.pure_vv')
 if(_pure_vv==None):
     _pure_vv=False
+_pure_vv=bool(_pure_vv)
 
+print 'pure_vv', _pure_vv
 # b) optref:
-_optref=_inp.get('calculate.solve.optref')
+_optref=_inp.get('calculate.solve.non_linear.optref')
 if(_optref==None):
     _optref=-3
 
+_optref=int(_optref)
+print 'optref', _optref
 # and c) nactel:
 _nactel=_orb.get('nactel')
 
@@ -41,21 +45,30 @@ if(_pure_vv or (_optref==0) or (_nactel==1)):
 else:
     relax_ref=True
 
+print 'relax_ref:', relax_ref
 # first calculate the first order properties, need to solve the zeroeth order lambda parameters for that
 if (_response_data['order']>=1):
     if (relax_ref):
+        print 'importing solve_lambda_0 ...'
         import solve_lambda_0
+        print 'importing eval_first_order_prop ...'
         import eval_first_order_prop
     else:
+        print 'importing solve_lambda_0_restr ...'
         import solve_lambda_0_restr
+        print 'importing eval_first_order_prop_restr ...'
         import eval_first_order_prop_restr
 
 if (_response_data['order']>=2):
     if (relax_ref):
+        print 'importing solve_t_1 ...'
         import solve_t_1
+        print 'importing eval_second_order_prop ...'
         import eval_second_order_prop
     else:
+        print 'importing solve_t_1_restr ...'
         import solve_t_1_restr
+        print 'importing eval_second_order_prop_restr ...'
         import eval_second_order_prop_restr
 
 export_targets();

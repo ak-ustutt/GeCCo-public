@@ -6,10 +6,15 @@ from gecco_interface import *
 from get_response_data import _response_data
 import math
 
+_inp = GeCCo_Input()
+
+# Get the name of the package GeCCo uses the integrals from 
+_env = _inp.env
+
 #Getting the frequency
 _freq=_response_data['freq']
 #Getting the value of the restart option
-_restart=_response_option['restart']
+_restart=_response_data['restart']
 
 #n_par tells how many version of the same operator has to be defined 
 #depending on whether we are doing static or dynamic property calcualtion
@@ -44,7 +49,7 @@ for _op in _op_list:
 #Importing the integrals: It is hard coded to be a dipole operator in z-direction. 
 ##TODO##  ###NEED TO BE GENERALIZED###
 
-IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:'DALTON_SPECIAL'})
+IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:_env})
 
 #Loop over n_par to define operators corresponding to both negative and positive frequencies, if necessary.
 #Operators with structure of the cluster operators are necessary here.
@@ -69,7 +74,7 @@ for i in range(0,n_par):
 
     depend('T','C0','OMG','A_C0')
 
-     _op_list={'Ttr(1)'+i_par:'T',
+    _op_list={'Ttr(1)'+i_par:'T',
               'ST(1)'+i_par:'OMG',
               'O(1)_T'+i_par:'OMG',
               'O(1)LT'+i_par:'OMG',
@@ -265,8 +270,7 @@ for i in range(0,n_par):
 
     depend ('F_O(1)RT'+i_par)
 
-    _op_list={'T(1)'+i_par:'ME_T(1)'+i_par,
-              'ST(1)'+i_par:'ME_ST(1)'+i_par,
+    _op_list={'ST(1)'+i_par:'ME_ST(1)'+i_par,
               'O(1)LT'+i_par:'ME_O(1)LT'+i_par,
               'O(1)RT'+i_par:'ME_O(1)RT'+i_par}
 
