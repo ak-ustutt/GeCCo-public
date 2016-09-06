@@ -30,8 +30,11 @@
       real(8),intent(inout)::
      &     xbuf1(*),xbuf2(*)
       real(8),intent(out)::
-     &     xnrm
- 
+     &     xnrm(nlists)
+      real(8),external::
+     &     me_ddot
+      integer::
+     &     ilist
       type(me_list_array),intent(inout)::
      &     me_lists(*)              ! me-lists the vector should be assembled at
 
@@ -52,54 +55,11 @@
      &     coeff, ncoeff,
      &     -rval,
      &     xbuf1,xbuf2,nincore,lbuf)
-
-      xnrm=vec_calculate_norm(me_lists, nlists, xbuf1,lbuf)
-
-      contains
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-      function vec_calculate_norm(mels,nmels, xbuf, lbuf)
-*----------------------------------------------------------------------*
-      implicit none
-      include 'stdunit.h'
-
-      integer, parameter::
-     &     ntest = 00
-      character(len=*),parameter::
-     &     i_am="vec_calculate_norm"
-      
-      real(8)::
-     &     vec_calculate_norm
-      
-      real(8),intent(inout)::
-     &     xbuf(*)
-
-      
-      type(me_list_array), intent(in)::
-     &     mels(*)
-
-      integer,intent(in)::
-     &     nmels,
-     &     lbuf                 !> length of buffer
-      
-      integer::
-     &     imel, lenmel, irec
-      real(8),external::
-     &     ddot
-     
-      do imel=1,nmels
-         if (lbuf.ge. mels(imel)%mel%len_op)then
-            lenmel= mels(imel)%mel%len_op
-            irec=mels(imel)%mel%fhand%current_record
-            call vec_from_da(mels(imel)%mel%fhand,
-     &           irec,xbuf,lenmel)
-            vec_calculate_norm=vec_calculate_norm+
-     &           ddot(lenmel, xbuf,1, xbuf,1)
-         else
-            call quit(0,i_am, "list to long")
-         end if
+      do ilist=1,nlists
+         xnrm(ilist)=me_ddot(me_lists(ilist)%mel,me_lists(ilist)%mel ,
+     &        xbuf1, xbuf2, nincore, lbuf)
       end do
-      end function
+*----------------------------------------------------------------------*
       end subroutine
 
       

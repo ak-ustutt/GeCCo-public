@@ -470,18 +470,19 @@ c dbgend
       iter = 0
       task = 0
       opt_loop: do while(task.lt.8)
-        call leq_evp_control
-     &       ('EVP',iter,
-     &       task,conv,xresnrm,xeig,
-     &       use_s,
-     &       nrequest,irectrv,irecmvp,irecmet,
-     &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,me_ext,
-     &       me_special,nspecial,
+        call evp_control
+     &     ('EVP',iter,
+     &     task,conv,xresnrm,xeig,
+     &     use_s,
+     &     dvdsbsp,
+     &     nrequest,irectrv,irecmvp,irecmet,
+     &     me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,me_ext,
+     &     me_special,nspecial,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
-     &       fl_mvp,depend,
-     &       fl_spc,nspcfrm,
-     &       opti_info,opti_stat,
-     &       orb_info,op_info,str_info,strmap_info)
+     &     fl_mvp,depend,
+     &     fl_spc,nspcfrm,
+     &     opti_info,opti_stat,
+     &     orb_info,op_info,str_info,strmap_info)
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax

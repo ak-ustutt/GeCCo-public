@@ -45,6 +45,9 @@
       integer::
      &     ierr
 
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+      end if
       if(dvdsbsp%ncursub.ne.ndim) call quit(1,i_am,
      &     "requested dimension inconsistent with subspace.")
 
