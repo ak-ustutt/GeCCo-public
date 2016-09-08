@@ -135,4 +135,6 @@ depend('OPT_RSPNS(2)')
 
 EVALUATE({FORM:'FOPT_RSPNS(2)'})
 
-PRINT_MEL({LIST:'ME_RSPNS(2)'})
+PRINT_MEL({LIST:'ME_RSPNS(2)',
+           FORMAT:'SCAL',
+           COMMENT:'Total value of the second order property: '})

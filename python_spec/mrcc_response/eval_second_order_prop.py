@@ -56,7 +56,6 @@ EXPAND({LABEL_RES:'F_preRSPNS(2)',
         LABEL_IN:'F_preRSPNS(2)',
         INTERM:['F_preRSPNS(2)_1','F_preRSPNS(2)_2']})
 
-
 REPLACE({LABEL_RES:'F_preRSPNS(2)_3',
          LABEL_IN:'F_preRSPNS(2)',
          OP_LIST:['H','V(1)']})
@@ -224,7 +223,7 @@ if _option ==1:
         _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_3'
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_3']
     if n_par == 2:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2+RSPNS(2)_coup_3+RSPNS(2)_coup_4'
+        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2+RSPNS(2)_coup_3+RSPNS(2)_coup_4' #Should have a factor half adjoint
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_2','F_RSPNS(2)_coup_3','F_RSPNS(2)_coup_4']
 if _option ==2:
     if n_par == 1:
@@ -281,10 +280,16 @@ else:
 depend('OPT_RSPNS(2)')
 
 EVALUATE({FORM:'FOPT_RSPNS(2)_1'})
-PRINT_MEL({LIST:'ME_RSPNS(2)_1'})
+PRINT_MEL({LIST:'ME_RSPNS(2)_1',
+           FORMAT:'SCAL',
+           COMMENT:'Asymmetric part of the second order property: '})
 
 EVALUATE({FORM:'FOPT_RSPNS(2)_2'})
-PRINT_MEL({LIST:'ME_RSPNS(2)_2'})
+PRINT_MEL({LIST:'ME_RSPNS(2)_2',
+           FORMAT:'SCAL',
+           COMMENT:'Symmetric part of the second order property: '})
 
 EVALUATE({FORM:'FOPT_RSPNS(2)'})
-PRINT_MEL({LIST:'ME_RSPNS(2)'})
+PRINT_MEL({LIST:'ME_RSPNS(2)',
+           FORMAT:'SCAL',
+           COMMENT:'Total value of the second order property: '})
