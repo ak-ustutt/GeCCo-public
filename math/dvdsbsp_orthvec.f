@@ -2,8 +2,8 @@
 !>    ???????
 !!     
 *----------------------------------------------------------------------*
-      subroutine dvdsbsp_append_direction(dvdsbsp, me_lists, nlists,
-     &     xbuf1, xbuf2, lbuf)
+      subroutine dvdsbsp_project(dvdsbsp, me_lists, nlists,
+     &     xbuf1, xbuf2, nincore, lbuf)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -14,11 +14,12 @@
       integer, parameter::
      &     ntest = 00
       character(len=*),parameter::
-     &     i_am="dvdsbsp_append_direction"
+     &     i_am="dvdsbsp_orthvec"
 
       integer,intent(in)::
      &     nlists,
-     &     lbuf
+     &     lbuf,nincore
+      
 
      
       type(davidson_subspace_t),intent(inout)::
@@ -38,6 +39,7 @@
          write(lulog,*) 'ncursub ',dvdsbsp%ncursub
       end if
       
+      if (nincore .lt.2) call quit(0,i_am, "at least 2 buffer required")
       
       call vecsp_orthvec(dvdsbsp%vspace, me_lists, nlists,
      &     xbuf1, xbuf2, lbuf)
@@ -49,12 +51,6 @@
          dvdsbsp%icursub=dvdsbsp%icursub+1
       end if
 
-      call vec_normalize(me_lists, nlists, xbuf1, lbuf)
-      
-      do ilist=1,nlists
-         call vecsp_set_list_mel(dvdsbsp%vspace, me_lists(ilist)%mel,
-     &        dvdsbsp%icursub, ilist, xbuf1, lbuf)
-      end do
 
       contains
       subroutine vec_normalize(me_lists, nlists, xbuf, lbuf)

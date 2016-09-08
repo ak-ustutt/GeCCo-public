@@ -60,6 +60,7 @@
          fhand%current_record=1
          allocate(fhand%last_mod(maxdim))
          fhand%last_mod(1:maxdim) = -1
+         call file_open(fhand)
       end do
       
       vecsp%maxvec=maxdim

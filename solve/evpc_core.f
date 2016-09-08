@@ -1,16 +1,16 @@
 *----------------------------------------------------------------------*
       subroutine evpc_core(iter,
      &       task,iroute,xrsnrm,xeig,
-     &       use_s,
-     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
-     &       me_special,nspecial,
-c     &       ffopt,fftrv,ffmvp,ffdia,
-     &       nincore,lenbuf,
-     &       xbuf1,xbuf2,xbuf3,
-     &       flist,depend,
-     &       fspc,nspcfrm,
-     &       opti_info,opti_stat,
-     &       orb_info,op_info,str_info,strmap_info)
+     &     use_s,
+     &     dvdsbsp,
+     &     me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
+     &     me_special,nspecial,
+     &     nincore,lenbuf,
+     &     xbuf1,xbuf2,xbuf3,
+     &     flist,depend,
+     &     fspc,nspcfrm,
+     &     opti_info,opti_stat,
+     &     orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     core driver for EVP solver
 *----------------------------------------------------------------------*
@@ -31,6 +31,7 @@ c      include 'def_filinf.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_dependency_info.h'
+      include 'def_davidson_subspace.h'
 
       integer, parameter ::
      &     ntest = 000
@@ -43,6 +44,8 @@ c      include 'def_filinf.h'
      &     iroute, nincore, lenbuf, nspecial, nspcfrm
       logical, intent(in) ::
      &     use_s(*)
+      type(davidson_subspace_t),intent(inout)::
+     &     dvdsbsp
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*),

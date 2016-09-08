@@ -20,7 +20,7 @@
       integer::
      &     ifree
 
-      ifree=mem_dealloc("davidson subspace vMv")
+      
       call vecsp_del(dvdsbsp%vspace)
       call vecsp_del(dvdsbsp%Mvspace)
       dvdsbsp%nmaxsub=0

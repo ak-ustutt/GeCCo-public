@@ -1,5 +1,5 @@
 
-      subroutine davidson_assemble_residuals(dvdsbsp,
+      subroutine davidson_assemble_results(dvdsbsp,
      &     rvals, 
      $     me_res, nlists, nroots, xnrm,
      $     xbuf1, xbuf2, nincore, lbuf)
@@ -14,7 +14,7 @@
       integer, parameter::
      &     ntest = 00
       character(len=*),parameter::
-     &     i_am="davidson_update_residuals"
+     &     i_am="davidson_assemble_results"
       
       type(davidson_subspace_t),intent(inout)::
      &     dvdsbsp
@@ -48,6 +48,8 @@
      &     ilist
       integer,external::
      &     dvdsbsp_get_curlen
+      real(8), external ::
+     &     me_ddot
       
 
 
@@ -62,12 +64,18 @@
      &     nroots, leigenvec)
 
       do iroot=1,nroots
-         call dvdsbsp_assemble_residual(dvdsbsp,
-     &        eigenvecs(1:leigenvec,iroot),
-     &        rvals(iroot), leigenvec, me_res, nlists, lxnrm,
-     &        xbuf1, xbuf2, nincore, lbuf)
          do ilist=1,nlists
-            xnrm(iroot,ilist)=lxnrm(ilist)
+            call switch_mel_record(me_res(ilist)%mel,iroot)
+         end do
+         call vecsp_assemble_vector(dvdsbsp%vspace,
+     &        me_res, nlists,
+     &        eigenvecs(1:leigenvec,iroot) , leigenvec,
+     &        0d0,
+     &        xbuf1,xbuf2,nincore,lbuf)
+         do ilist=1,nlists
+            xnrm(iroot,ilist)=
+     &           me_ddot(me_res(ilist)%mel,me_res(ilist)%mel,
+     &           xbuf1, xbuf2, nincore, lbuf)
          end do
       end do
       deallocate(eigenvecs)

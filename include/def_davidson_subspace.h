@@ -1,5 +1,10 @@
       
-
+      type vector_t
+      integer::
+     &     len=0
+      type(me_list_array),pointer::
+     &     me_lists(:) => null()
+      end type
 
       type vector_space_t
       integer::

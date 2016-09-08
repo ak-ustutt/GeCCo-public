@@ -79,7 +79,11 @@
 
 
       nold=ncursub
-      if (ncursub .eq. nmaxsub) nold=nold-1  !one existing row/column is over written
+      if (ncursub .eq. nmaxsub)then
+         nold=nold-1            !one existing row/column is over written
+      else
+         ncursub=ncursub+1
+      end if
       
       icursub=mod(icursub+1,nmaxsub) !icursub now indexes the to be overwritten vector
 
@@ -96,7 +100,7 @@
 !            call vecsp_get_list_buf(dvdsbsp%mvspace, icursub, ilist, buf1, 
 !     &              lenlist)
             
-            call vecsp_set_list_mel(dvdsbsp%mvspace,mvvec(ilist)%mel,
+            call vecsp_set_list_mel(dvdsbsp%vspace,vvec(ilist)%mel,
      &           icursub, ilist, buf2,lbuf) 
 
             ! update the vMv matrix
@@ -125,6 +129,8 @@
       else
          call quit(1,i_am, "not prepared for nincore <2.")
       end if
+      dvdsbsp%ncursub=ncursub
+      dvdsbsp%icursub=icursub
       return
 
 

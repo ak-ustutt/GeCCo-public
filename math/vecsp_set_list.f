@@ -34,7 +34,7 @@
 
       
       listlen=mel%len_op
-      if (lenlist .gt. lbuf)
+      if (listlen .gt. lbuf)
      &     call quit(1,i_am,"not prepared for operator"//
      &     " longer than buffer.")
 
@@ -43,6 +43,6 @@
       
       call vec_from_da(mel_fhand, mel_fhand%current_record, buf,listlen)
       call vec_to_da(vec_fhand, ivec, buf, listlen)
-
+      vecsp%nvec=max(vecsp%nvec,ivec)
       end subroutine 
 
