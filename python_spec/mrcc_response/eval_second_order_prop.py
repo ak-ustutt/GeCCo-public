@@ -227,12 +227,13 @@ if _option ==1:
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_2','F_RSPNS(2)_coup_3','F_RSPNS(2)_coup_4']
 if _option ==2:
     if n_par == 1:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_1'
+        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1'
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1']
     if n_par == 2:
         _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2'
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_2']
 
+#PRINT_FORMULA({LABEL:'F_RSPNS(2)_2'})
 
 DEF_FORMULA(_def_form_arg)
 

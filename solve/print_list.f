@@ -59,8 +59,10 @@
           value = xnormop(mel)
         end if
 
-        write(luout,'(x,a,'//trim(mode(5:))//'),f20.12)')
+        write(luout,'(x,a,'//trim(mode(5:))//',f20.12)')
      &       trim(message),value
+!       write(luout,*)
+!    &       trim(message),value
 
         ! check result (if requested)
         if (check.gt.0) then
