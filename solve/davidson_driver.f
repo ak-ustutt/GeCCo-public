@@ -156,30 +156,32 @@ c      end do
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                   call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                endif
-               
-               call transform_forward_wrap(flist,depend,
-     &              me_special,me_vort,me_trv, !trv -> vort
-     &              xrsnrm, nroot,
-     &              iroot, iopt, iroot,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
+!               call transform_forward_wrap(flist,depend,
+!     &              me_special,me_vort,me_trv, !trv -> vort
+!     &              xrsnrm, nroot,
+!     &              iroot, iopt, iroot,
+!     &              op_info, str_info, strmap_info, orb_info, opti_info)
 
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                  call set_blks(me_vort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-                  xnrm=xnormop(me_vort(iopt)%mel)
-                  print *,"dbg: backtransformed trial_vector:",xnrm
-               else
-                  print *, "dbg: backtransformed trial_vector:",
-     &                 xrsnrm(iroot,iopt)
-               endif
-!           else vort and mvort already point to trv and mvp
+!               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+!                  call set_blks(me_vort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+!                  xnrm=xnormop(me_vort(iopt)%mel)
+!                  print *,"dbg: backtransformed trial_vector:",xnrm
+!               else
+!                  print *, "dbg: backtransformed trial_vector:",
+!     &                 xrsnrm(iroot,iopt)
+!     endif
+!     else vort and mvort already point to trv and mvp
             end if
-
-            call dvdsbsp_update(dvdsbsp,
-     &           me_vort,
-     &           me_mvort,nopt, !vort,mvort into dvdsbsp
-     &           xbuf1, xbuf2, xbuf3, nincore, lenbuf)
-
+            
+!            call vecs_orthonorm(me_vort,nopt ,nroot,
+!     &           xbuf1,xbuf2,lenbuf) 
          end do
+         
+         call dvdsbsp_update(dvdsbsp,
+     &        me_vort,
+     &        me_mvort,nopt,    !vort,mvort into dvdsbsp
+     &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
+         
       end do
       call davidson_assemble_residuals(dvdsbsp,
      &     leig,
@@ -246,12 +248,11 @@ c      end do
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
      &           nopt.eq.1, op_info, str_info, strmap_info)
          end do
-         call dvdsbsp_project(dvdsbsp, !ortho scratchvec to subspace
+         call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
      &        me_vort,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)
       end do !iroot
       
-      call vecs_orthonorm(me_vort,nnew,nroot, xbuf1,xbuf2,lenbuf) !ortho scratchvec to each other and norm them
       
       do iopt=1,nopt
          do iroot=1,nnew
@@ -613,7 +614,8 @@ c dbg end
      &     xshf
       real(8),external::
      &     dnrm2
-
+      integer::
+     &     idxdbg
 
       
       select case(typ_prc)
@@ -808,7 +810,8 @@ c     dbgend
       subroutine vecs_orthonorm(me_lists,nlists,nroot,
      &     xbuf1,xbuf2,lbuf)
       implicit none
-      
+      integer,parameter::
+     &     ntest=00
       type(me_list_array),intent(in)::
      &     me_lists(*)
 
@@ -875,6 +878,8 @@ c     dbgend
             ffme1 => me_lists(ilist)%mel%fhand
             ffme2 => me_lists(ilist)%mel%fhand
             lenlist= me_lists(ilist)%mel%len_op
+            if(ntest.ge.100)
+     &           write(lulog,*)"normalizing",me_lists(ilist)%mel%label
             call vec_from_da(ffme1,iroot,xbuf1,lenlist)
             do jroot=iroot+1,nroot
                call vec_from_da(ffme2,jroot,xbuf2,lenlist)
@@ -885,10 +890,14 @@ c     dbgend
             xbuf1(1:lenlist)=xbuf1(1:lenlist)/sqrt(orth_norm2(iroot)) !norm
             call vec_to_da(ffme1,jroot,xbuf1,lenlist)
             if(ntest.ge.100)
-     &           dbg_nrm=dbg_nrm+ddot(lenlist,xbuf2,1,xbuf2,1)
+     &           dbg_nrm=dbg_nrm+ddot(lenlist,xbuf1,1,xbuf1,1)
          end do
-         if(ntest.ge.100)
-     &        write(lulog, *) "norm of list: ", iroot,"is",dbg_nrm
+         if(ntest.ge.100)then
+            write(lulog, *) "norm of vector: ", iroot,"is",dbg_nrm
+            do ilist=1,lenlist
+               write(lulog, *) ilist,xbuf1(ilist)
+            end do
+           end if 
       end do                    !iroot
       return
       end subroutine

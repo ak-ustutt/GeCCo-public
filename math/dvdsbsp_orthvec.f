@@ -2,7 +2,7 @@
 !>    ???????
 !!     
 *----------------------------------------------------------------------*
-      subroutine dvdsbsp_project(dvdsbsp, me_lists, nlists,
+      subroutine dvdsbsp_append_vvec(dvdsbsp, me_lists, nlists,
      &     xbuf1, xbuf2, nincore, lbuf)
 *----------------------------------------------------------------------*
       implicit none
@@ -19,8 +19,6 @@
       integer,intent(in)::
      &     nlists,
      &     lbuf,nincore
-      
-
      
       type(davidson_subspace_t),intent(inout)::
      &     dvdsbsp
@@ -31,26 +29,41 @@
       real(8)::
      &     xbuf1(*), xbuf2(*)
       integer::
-     &     nmaxsub,
-     &     ilist
+     &     nmaxsub, ncursub,icursub,
+     &     ilist,
+     &     idxdbg
       
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) 'ncursub ',dvdsbsp%ncursub
       end if
       
-      if (nincore .lt.2) call quit(0,i_am, "at least 2 buffer required")
+      ncursub=dvdsbsp%ncursub
+      icursub=dvdsbsp%icursub
+      nmaxsub=dvdsbsp%nmaxsub
       
+      if (nincore .lt.2) call quit(0,i_am, "at least 2 buffer required")
       call vecsp_orthvec(dvdsbsp%vspace, me_lists, nlists,
      &     xbuf1, xbuf2, lbuf)
+      call vec_normalize(me_lists, nlists, xbuf1, lbuf)
       
-      if (dvdsbsp%nmaxsub.eq.dvdsbsp%ncursub)then
-         dvdsbsp%icursub=mod(dvdsbsp%icursub+1,dvdsbsp%ncursub)
-      else
-         dvdsbsp%ncursub=dvdsbsp%ncursub+1
-         dvdsbsp%icursub=dvdsbsp%icursub+1
+      if (ncursub .ne. nmaxsub)then
+         ncursub=ncursub+1
       end if
-
+      icursub=mod(icursub+1,nmaxsub)
+      
+      do ilist=1,nlists
+         call vecsp_set_list_mel(dvdsbsp%vspace,me_lists(ilist)%mel,
+     &        icursub, ilist, xbuf2,lbuf)
+        if (ntest.ge.100)then 
+           write(lulog, *) "trialvector",me_lists(ilist)%mel%label
+           do idxdbg=1,me_lists(ilist)%mel%len_op
+              write(lulog, *) idxdbg,xbuf2(idxdbg)
+           end do
+        end if
+      end do
+      dvdsbsp%ncursub=ncursub
+      dvdsbsp%icursub=icursub
 
       contains
       subroutine vec_normalize(me_lists, nlists, xbuf, lbuf)
@@ -97,6 +110,7 @@
          lenlist= me_lists(ilist)%mel%len_op
          call vec_from_da(ffme,irec,xbuf1,lenlist)
          xbuf(1:lenlist)=xbuf(1:lenlist)/xnrm
+         call vec_to_da(ffme,irec,xbuf1,lenlist)
       end do
 
 

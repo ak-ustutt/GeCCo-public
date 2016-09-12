@@ -45,7 +45,7 @@
       integer::
      &     leigenvec,
      &     iroot,
-     &     ilist
+     &     ilist, ii
       integer,external::
      &     dvdsbsp_get_curlen
       

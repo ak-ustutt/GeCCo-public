@@ -32,8 +32,8 @@
      &     eigr(nroot), eigi(nroot), vecs(ndim,nroot)
 
       real(8),allocatable::
-     &     xmat(:,:),           !submatrix only
-     &     xscr(:,:),           !scratch
+     &     xmat(:),           !submatrix only
+     &     xscr(:),           !scratch
      &     totvecs(:,:),        ! all eigenvectors
      &     toteigr(:),toteigi(:) ! all eigenvalues
       
@@ -51,7 +51,7 @@
       if(dvdsbsp%ncursub.ne.ndim) call quit(1,i_am,
      &     "requested dimension inconsistent with subspace.")
 
-      allocate(xmat(ndim,ndim),xscr(ndim,ndim),totvecs(ndim,ndim),
+      allocate(xmat(ndim*ndim),xscr(ndim*ndim),totvecs(ndim,ndim),
      &     toteigr(ndim),toteigi(ndim))
       
       maxdim=dvdsbsp%nmaxsub
@@ -99,9 +99,9 @@
      &     nmat_in,                !> actual dimension of matrix
      &     nmat_out                 !> dimension of filled part
 
-      real(8),dimension(nmat_in,nmat_in),intent(in)::
+      real(8),dimension(:),intent(in)::
      &     mat_in
-      real(8),dimension(nmat_out,nmat_out),intent(out)::
+      real(8),dimension(:),intent(out)::
      &     mat_out
       
       integer::
@@ -110,8 +110,11 @@
       if (ntest.ge.100)
      &     call write_title(lulog,wst_dbg_subr,i_am)
 
-      do kdx=1,nmat_out
-         mat_out(:,kdx)=mat_in(1:nmat_out,kdx)
+      do idx=1,nmat_out
+         do jdx=1,nmat_out
+            mat_out(nmat_out*(idx-1) + jdx)
+     &           =mat_in(nmat_in*(idx-1) + jdx)
+         end do 
       end do
       return
       end subroutine

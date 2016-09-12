@@ -30,8 +30,9 @@
       integer::
      &     nmaxsub,             !maximum number of vectors 
      &     ncursub,             ! current number of vectors
-     &     icursub              ! last updated vectors (if new vectors are added after nmaxsub is reached, vectors are overridden)
-      real(8),dimension(:,:),pointer::
+     &     icursub,              ! last updated vectors (if new vectors are added after nmaxsub is reached, vectors are overridden)
+     &     lcursub       !
+      real(8),dimension(:),pointer::
      &     vMv_mat=>null()           ! matrix of all vMv products it is a maxsub x maxsub matrix  with ncursub xncursub  elements !=0 
 ! (vMv_mat)_{i,j} = (v)_i*(Mv)_j
 

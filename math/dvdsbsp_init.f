@@ -12,20 +12,7 @@
       include 'mdef_me_list.h'
       include 'def_file_array.h'
       include 'def_davidson_subspace.h'
-
-      interface
-      integer function mem_alloc_real(xarr,nalloc,name) !this interface lies
-      implicit none
-      real(8), pointer ::
-     &     xarr(:,:)
-      integer, intent(in) ::
-     &     nalloc
-      character, intent(in) ::
-     &     name*(*)
-      end function
-      end interface
-
-
+      include 'ifc_memman.h'
 
       
       integer, parameter::
@@ -44,12 +31,17 @@
       integer::
      &     ii,jj,
      &     ifree
-      intrinsic::
-     &     reshape
-
       type(me_list_array),dimension(nlists), intent(in)::
      &     me_lists
 
+      if (ntest.ge.100)
+     &     call write_title(lulog,wst_dbg_subr,i_am)
+      if (ntest.ge.100)then
+         write (lulog,*)"me_list template:"
+         do ii=1,nlists
+            write (lulog,*)me_lists(ii)%mel%label
+         end do
+      end if
       if(associated(dvdsbsp%vMv_mat))then
          call warn(i_am,
      &        "initiating an already initiated davidson subspace")
@@ -65,10 +57,10 @@
       dvdsbsp%nmaxsub=maxsub
       dvdsbsp%ncursub=0
       dvdsbsp%icursub=0
-
+      dvdsbsp%lcursub=0
       ifree=mem_alloc_real(dvdsbsp%vMv_mat, maxsub*maxsub,
      &     "davidson subspace vMv")
-      dvdsbsp%vMv_mat(1:maxsub,1:maxsub) = 0d0
+      dvdsbsp%vMv_mat(1:maxsub*maxsub) = 0d0
 !!!!!!!!!!!!!!!!
 !!       This is the correct way sadly commonly installed gfortran versions don't support this.
 c$$$      ifree=mem_alloc_real(mymat, maxsub*maxsub, 
@@ -78,7 +70,6 @@ c$$$         mymat(ii)=0
 c$$$      end do
 c$$$      dvdsbsp%vMv_mat(1:maxsub, 1:maxsub)=> mymat
 c$$$      mymat=>null()
-
 
 
       end subroutine

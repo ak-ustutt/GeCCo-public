@@ -518,6 +518,11 @@ c dbgend
       endif
       call init_buffers(opti_info%nwfpar, nopt,
      &     xbuf1,xbuf2,xbuf3,nincore,lenbuf)
+      do iroot=1,nroots
+         call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
+     &        me_trv,nopt, 
+     &        xbuf1, xbuf2, nincore, lenbuf)
+      end do
 
       iter = 0
       task = 4

@@ -41,12 +41,12 @@
       real(8),dimension(*),intent(inout)::
      &     buf1, buf2, buf3
 
-
+      
 !     alialising the davidson subspace fields 
-      real(8),dimension(:,:),pointer::
+      real(8),dimension(:),pointer::
      &     vMv_mat
       integer::
-     &     ncursub,icursub,nmaxsub
+     &     lcursub,ncursub,nmaxsub
 
       type(filinf)::
      &     vfile, mvfile        !handles for the files for the input me-lists
@@ -55,15 +55,16 @@
      &     nold,                !number of vectors the product is to be calculated to
      &     ivvec,imvvec,         !index of the vector and M*v vector
      &     ii,jj,ilist,          !running inices
-     &     lenlist
+     &     lenlist,
+     &     idxdbg
       real(8), external ::
      &     ddot, da_ddot
 
-      ! alialising for shorter names
+! alialising for shorter names
+      lcursub=dvdsbsp%lcursub
       ncursub=dvdsbsp%ncursub
-      icursub=dvdsbsp%icursub
       nmaxsub=dvdsbsp%nmaxsub
-      vMv_mat=> dvdsbsp%vMv_mat(:nmaxsub,:nmaxsub)
+      vMv_mat=>dvdsbsp%vMv_mat
      
 
       if (ntest.ge.10)
@@ -76,17 +77,7 @@
 
 
 
-
-
-      nold=ncursub
-      if (ncursub .eq. nmaxsub)then
-         nold=nold-1            !one existing row/column is over written
-      else
-         ncursub=ncursub+1
-      end if
-      
-      icursub=mod(icursub+1,nmaxsub) !icursub now indexes the to be overwritten vector
-
+      lcursub=mod(lcursub,dvdsbsp%nmaxsub)+1
 
       if (nincore.ge.2)then
          do ilist=1,nlist
@@ -94,43 +85,52 @@
 
             !copy the new lists into the vector spaces
             call vecsp_set_list_mel(dvdsbsp%mvspace,mvvec(ilist)%mel,
-     &           icursub, ilist, buf1,lbuf) 
+     &           lcursub, ilist, buf1,lbuf) 
+            if (ntest.ge.100)then
+               write(lulog, *) "Mv Product",Mvvec(ilist)%mel%label
+               do idxdbg=1,Mvvec(ilist)%mel%len_op
+                  write(lulog, *) idxdbg,buf1(idxdbg)
+               end do
+            end if
+            ! update the vMv matrix
 
 !unneccessary as currently buf1 now holds the mvvec(ilist)%mel elements
 !            call vecsp_get_list_buf(dvdsbsp%mvspace, icursub, ilist, buf1, 
 !     &              lenlist)
-            
-            call vecsp_set_list_mel(dvdsbsp%vspace,vvec(ilist)%mel,
-     &           icursub, ilist, buf2,lbuf) 
-
-            ! update the vMv matrix
             do jj=1,ncursub
                call vecsp_get_list_buf(dvdsbsp%vspace, jj, ilist, 
      &              lenlist, buf2, lbuf)
-               if (ilist.eq.1) vMv_mat(jj,icursub)=0
-               vMv_mat(jj,icursub) = vMv_mat(jj,icursub)
+               if (ilist.eq.1) vMv_mat(nmaxsub*(lcursub-1)+jj)=0 !if there was anything on that vector erase it 
+               vMv_mat(nmaxsub*(lcursub-1)+jj) =
+     &              vMv_mat(nmaxsub*(lcursub-1)+jj)
      &              + ddot(lenlist,buf1,1,buf2,1)
             end do
 
-            call vecsp_get_list_buf(dvdsbsp%vspace, icursub,ilist,
+            call vecsp_get_list_buf(dvdsbsp%vspace, lcursub,ilist,
      &      lenlist, buf2, lbuf) 
 
-            do jj=1,ncursub              
-               call vecsp_get_list_buf(dvdsbsp%vspace, jj, ilist, 
+            do jj=1,dvdsbsp%ncursub
+               if (jj.eq.lcursub) cycle !don't calculated v_icursub * Mv_icursub twice
+
+               call vecsp_get_list_buf(dvdsbsp%mvspace, jj, ilist, 
      &              lenlist, buf1, lbuf)
 
-               if (jj.eq.icursub) cycle !don't calculated v_icursub * Mv_icursub twice
 
-               if (ilist.eq.1) vMv_mat(icursub,jj)=0
-               vMv_mat(icursub,jj) = vMv_mat(icursub,jj)
+               if (ilist.eq.1)  vMv_mat(nmaxsub*(jj-1)+lcursub)=0
+               vMv_mat(nmaxsub*(jj-1)+lcursub) =
+     &              vMv_mat(nmaxsub*(jj-1)+lcursub)
      &              + ddot(lenlist,buf1,1,buf2,1)
             end do
          end do
       else
          call quit(1,i_am, "not prepared for nincore <2.")
       end if
-      dvdsbsp%ncursub=ncursub
-      dvdsbsp%icursub=icursub
+      dvdsbsp%lcursub=lcursub
+      if (ntest.ge.20) then
+         write (lulog,*) 'subspace matrix on output:'
+         call wrtmat2(vMv_mat,lcursub,lcursub,
+     &        nmaxsub,nmaxsub)
+      end if
       return
 
 

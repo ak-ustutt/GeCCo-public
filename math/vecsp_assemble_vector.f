@@ -32,12 +32,12 @@
 
 
       
-      integer,intent(in)::
+      integer,intent(inout)::
      &     nlists,               !> number of me-lists in a vector
      &     lcoeff,                !> length of coeff
      &     nincore, lbuf        !> number of buffers and length of buffers
       
-      type(vector_space_t),intent(in)::
+      type(vector_space_t),intent(inout)::
      &     vecsp                !>
       
       type(me_list_array), intent(in)::

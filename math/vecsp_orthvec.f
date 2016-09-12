@@ -22,7 +22,7 @@
 
       integer,intent(in)::
      &     nlists, lbuf
-      type(vector_space_t)::
+      type(vector_space_t), intent(inout)::
      &     vecsp
       type(me_list_array),intent(in)::
      &     me_lists(*)
