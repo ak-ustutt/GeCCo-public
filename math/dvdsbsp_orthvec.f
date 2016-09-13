@@ -50,7 +50,7 @@
       if (ncursub .ne. nmaxsub)then
          ncursub=ncursub+1
       end if
-      icursub=mod(icursub+1,nmaxsub)
+      icursub=mod(icursub,nmaxsub)+1
       
       do ilist=1,nlists
          call vecsp_set_list_mel(dvdsbsp%vspace,me_lists(ilist)%mel,

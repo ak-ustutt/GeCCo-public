@@ -40,7 +40,7 @@
       
       real(8) ::
      &     eigi(nroots),
-     &     lxnrm(nlists)
+     &     lxnrm2(nlists)
 
       integer::
      &     leigenvec,
@@ -64,10 +64,10 @@
       do iroot=1,nroots
          call dvdsbsp_assemble_residual(dvdsbsp,
      &        eigenvecs(1:leigenvec,iroot),
-     &        rvals(iroot), leigenvec, me_res, nlists, lxnrm,
+     &        rvals(iroot), leigenvec, me_res, nlists, lxnrm2,
      &        xbuf1, xbuf2, nincore, lbuf)
          do ilist=1,nlists
-            xnrm(iroot,ilist)=lxnrm(ilist)
+            xnrm(iroot,ilist)=sqrt(lxnrm2(ilist))
          end do
       end do
       deallocate(eigenvecs)

@@ -174,7 +174,8 @@ c dbg end
      &     lenbuf, nincore
       real(8) ::
      &     xresmax, xdum, xnrm,
-     &     xeig(nroots), xresnrm(nroots*nopt)
+     &     xeig(nroots),reig(nroots),
+     &     xresnrm(nroots,nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
      &     me_trv(:), me_mvp(:), 
@@ -280,6 +281,7 @@ c dbg end
 
       nvectors = opti_info%maxsbsp
       use_s_t = .false.
+      trafo=.false.
       do iopt=1,nopt
         ! weaker convergence threshold requested?
          opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
@@ -531,23 +533,27 @@ c dbgend
       iter = 0
       task = 4
       nrequest=nroots
+      xrsnrm=0d0
+      xeig=0d0
+      reig=0d0
       opt_loop: do while(task.lt.8)
       iter=iter+1
       
         if (iter.gt.1) then
-           xresmax = fndmnx(xresnrm,nroots*nopt,2)
+           xresmax = fndmnx(RESHAPE(xrsnrm, (/nroots*nopt/)),
+     &          nroots*nopt,2)
            write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
            if (lulog.ne.luout) 
      &          write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
            if (iprlvl.gt.0) then
               do iroot = 1, nroots
                  write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
-     &                xeig(iroot),(xresnrm(iroot+idx*nroots),
-     &                idx = 0, nopt-1)
+     &                xeig(iroot),(xrsnrm(iroot,idx),
+     &                idx = 1, nopt)
                  if (lulog.ne.luout.and.iprlvl.ge.5)
      &                write(luout,'("   ",3x,f24.12,x,3g10.4)')
-     &                xeig(iroot),(xresnrm(iroot+idx*nroots),
-     &                idx = 0, nopt-1)
+     &                xeig(iroot),(xrsnrm(iroot,idx),
+     &                idx = 1, nopt)
               end do
            end if
         end if
@@ -686,7 +692,7 @@ c dbg
      &       iter, task, nrequest,
      &       opti_info%nroot, nopt,
      &       trafo, use_s,
-     &       xrsnrm , xeig,
+     &       xrsnrm , xeig, reig,
      &       me_opt,me_dia,
      &       me_met,me_scr,me_res,
      &       me_trv,me_mvp,me_vort,me_mvort,
@@ -697,12 +703,31 @@ c dbg
      &       opti_info, opti_stat,
      &       orb_info, op_info, str_info,strmap_info
      &       )
-      
+        if (iand(task,8).eq.8)then
+           xresmax = fndmnx(RESHAPE(xrsnrm, (/nroots*nopt/)),
+     &          nroots*nopt,2)
+           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
+           if (lulog.ne.luout) 
+     &          write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
+           if (iprlvl.gt.0) then
+              do iroot = 1, nroots
+                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
+     &                xeig(iroot),(xresnrm(iroot,idx),
+     &                idx = 1, nopt)
+                 if (lulog.ne.luout.and.iprlvl.ge.5)
+     &                write(luout,'("   ",3x,f24.12,x,3g10.4)')
+     &                xeig(iroot),(xresnrm(iroot,idx),
+     &                idx = 1, nopt)
+              end do
+           end if
+        end if 
       end do opt_loop
-
+      
       do iopt = 1, nopt
-! remove the temporary lists
+!     remove the temporary lists
          write(fname,'("mvp_",i3.3)') iopt
+         call me_ensure_deleted(fname,op_info)
+         write(fname,'("trv_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
          write(fname,'("svp_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
@@ -799,9 +824,11 @@ c dbgend
       return
 
       contains 
-      
+*----------------------------------------------------------------------*
+!>
+*----------------------------------------------------------------------*
       subroutine print_roots(lu, xresnrm, nroots, nopt, xeig)
-
+*----------------------------------------------------------------------*
       integer, intent(in) :: lu, nroots, nopt
       real(8)::
      &     xresnrm(nroots,nopt),
@@ -811,11 +838,11 @@ c dbgend
      &     'Results for '//trim(label_opt(1)))
       write(lu,'("E>>",66("="))')
       write(lu,'("E>>",2x,'//
-     &     '"root     eigenvalue (real)     '//
+     &     '"root     eigenvalue (real)       eigenvalue (img.)'//
      &     '  |residual|")')
       write(lu,'("E>>",66("-"))') 
       do iroot = 1, nroots
-         write(lu,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
+         write(lu,'("E>>",2x,i3,x,f22.12,20x,"N/A",2x,x,g10.4)')
      &        iroot,xeig(iroot),xresnrm(iroot,1)
          
 c dbg

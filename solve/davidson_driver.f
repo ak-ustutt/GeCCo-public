@@ -9,7 +9,7 @@
      &     iter,  task, nnew,
      &     nroot, nopt,
      &     trafo, use_s,
-     &     xrsnrm , xeig,
+     &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
      &     me_met,me_scr,me_res,
      &     me_trv,me_mvp,me_vort,me_mvort,
@@ -70,8 +70,8 @@
       
       real(8), intent(inout) ::
      &     xrsnrm(nroot,nopt),
-     &     xeig(nroot)
-
+     &     xeig(nroot),reig(nroot)      ! xeig persistent copy of eigenvalues to detect root switching
+                                        ! reig copy for outer routine to commutincate eigevalues (only nnew entries are defined)
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
       type(formula_item), intent(inout) ::
@@ -191,8 +191,8 @@ c      end do
                call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other 
                call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
      &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
-               xrsnrm(irecres,iopt)=xrsnrm(iroot,iopt)
             end do
+            reig(irecres)=leig(iroot)
          end if 
       end do
       xeig=leig
@@ -201,24 +201,40 @@ c      end do
 
       if (nnew .eq. 0
      &     .or. iter .ge. maxiter) then ! check for end condition
-            
-            
+         do iopt=1,nopt
+            if(.not.trafo(iopt))me_vort(iopt)%mel => me_opt(iopt)%mel
+         end do
          call davidson_assemble_results(dvdsbsp,
      &        xeig,
-     &        me_vort, nopt, nroot, xrsnrm, ! results on me_opt
+     &        me_vort, nopt, nroot, lrsnrm, ! results on me_vort
      &        xbuf1, xbuf2, nincore, lenbuf)
          
-         do iroot=1,nnew
-            if (trafo(iopt) ) then
-               call transform_back_wrap(flist,depend,
-     &              me_special,me_vort,me_opt, !vort -> opt !new_trialvector created
-     &              iroot, iopt,
-     &              me_opt,
-     &              op_info, str_info, strmap_info, 
-     &              orb_info, opti_info)
-!     else me_vort => me_trv => me_opt
-            end if 
+         do iroot=1,nroot
+            do iopt=1,nopt
+               call switch_mel_record(me_vort(iopt)%mel,iroot)
+            end do 
+            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
+            do iopt=1,nopt
+               if (trafo(iopt) ) then
+                  call transform_back_wrap(flist,depend,
+     &                 me_special,me_vort,me_opt, !vort -> opt !
+     &                 iroot, iopt,
+     &                 me_opt,
+     &                 op_info, str_info, strmap_info, 
+     &                 orb_info, opti_info)
+               end if
+            end do 
          end do
+         if(nnew.eq.0)then
+            write(lulog,'(x,a,i5,a)')
+     &           'CONVERGED IN ',iter,' ITERATIONS'
+            if (luout.ne.lulog.and.iprlvl.ge.5)
+     &           write(luout,'(x,a,i5,a)')
+     &           'CONVERGED IN ',iter,' ITERATIONS'
+         else
+            write(lulog,'(x,a,i5,a)') "Stopping after ",iter," iterations"
+            call warn('linear solver', 'NO CONVERGENCE OBTAINED')
+         end if
          task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
       else 
@@ -781,22 +797,22 @@ c     dbgend
      &     irec,
      &     ii
       real(8)::
-     &     xnrm
+     &     xnrm2,xnrm
    
       type(filinf),pointer::
      &     ffme
       
-      
+      xnrm2=0
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
          irec=me_lists(ilist)%mel%fhand%current_record
          lenlist= me_lists(ilist)%mel%len_op
          call vec_from_da(ffme,irec,xbuf1,lenlist)
          do ii=1,lenlist
-            xnrm=xnrm+xbuf1(ii)**2
+            xnrm2=xnrm2+xbuf1(ii)**2
          end do
       end do
-      xnrm=sqrt(xnrm)
+      xnrm=sqrt(xnrm2)
       
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
@@ -804,6 +820,7 @@ c     dbgend
          lenlist= me_lists(ilist)%mel%len_op
          call vec_from_da(ffme,irec,xbuf1,lenlist)
          xbuf1(1:lenlist)=xbuf1(1:lenlist)/xnrm
+         call vec_to_da(ffme,irec,xbuf1,lenlist)
       end do
 
 
