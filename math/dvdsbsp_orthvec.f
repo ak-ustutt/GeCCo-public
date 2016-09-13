@@ -14,7 +14,7 @@
       integer, parameter::
      &     ntest = 00
       character(len=*),parameter::
-     &     i_am="dvdsbsp_orthvec"
+     &     i_am="dvdsbsp_append_vvec"
 
       integer,intent(in)::
      &     nlists,

@@ -313,7 +313,7 @@ c dbg end
 !     intermediate lists in normal space
         write(fname,'("mvp_",i3.3)') iopt
         me_mvp(iopt)%mel => me_from_template(
-     &       fname, me_opt(iopt)%mel%op%name, me_opt(iopt)%mel,
+     &       fname, label_op_mvp(iopt), me_opt(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info )
 
@@ -333,7 +333,7 @@ c     &       op_info,  orb_info, str_info, strmap_info
           ! (have same symmtry properties as result!)
           write(fname,'("svp_",i3.3)') iopt !S * vector product -- svp
           me_met(iopt)%mel => me_from_template(
-     &         fname, me_opt(iopt)%mel%op%name , me_vort(iopt)%mel,
+     &         fname, label_op_met(iopt) , me_vort(iopt)%mel,
      &         nvectors,
      &         op_info,  orb_info, str_info, strmap_info)
           ff_met(iopt)%fhand => me_met(iopt)%mel%fhand    
@@ -391,11 +391,15 @@ c dbgend
       ! in trv*mvp or trv*met  multiplication
       ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
       call set_opti_info_signs(opti_info,3,nopt,
-     &                         me_trv,me_mvp,me_met,me_met,use_s)
+     &     me_trv,me_mvp,me_met,me_met,use_s)
 
+      
+      do iopt=1, nopt
+         call assign_me_list(me_opt(iopt)%mel%label,
+     &        me_opt(iopt)%mel%op%name,op_info)
+      end do
       ! read formula
       call read_form_list(form_mvp%fhand,fl_mvp,.true.)
-
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_mvp,op_info)
       ! number of info values returned on xret
@@ -611,12 +615,12 @@ c dbg
             do iopt = 1, nopt
 c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
-     &                            irecmvp(irequest),
+     &                            irequest,
      &                            opti_info,iopt,
      &                            opti_info%nwfpar(iopt),xbuf1)
               if (use_s(iopt))
      &           call optc_fix_signs2(me_met(iopt)%mel%fhand,
-     &                            irecmet(irequest),
+     &                            irequest,
      &                            opti_info,iopt,
      &                            opti_info%nwfpar(iopt),xbuf1)
             end do
@@ -697,7 +701,6 @@ c dbg
       end do opt_loop
 
       do iopt = 1, nopt
-
 ! remove the temporary lists
          write(fname,'("mvp_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
@@ -762,8 +765,8 @@ c dbgend
       end do
 
       do idx = 1, nspecial
-         if (ffspecial(idx)%fhand%unit.gt.0)
-     &        call file_close_keep(ffspecial(idx)%fhand)
+         if (me_special(idx)%mel%fhand%unit.gt.0)
+     &        call file_close_keep(me_special(idx)%mel%fhand)
       end do
 
       call print_roots(lulog, xrsnrm, nroots, nopt, xeig)
@@ -1018,6 +1021,8 @@ c dbg
      &     label
       type(operator_info), intent(inout) ::
      &     op_info
+      type(me_list),pointer::
+     &     me_pnt
       integer,external::
      &     idx_mel_list
       integer::
@@ -1025,9 +1030,32 @@ c dbg
       
       idxmel = idx_mel_list(label,op_info)
       if (idxmel .gt. 0 ) then
+            me_pnt => get_mel(label,op_info)
+         if (has_perm_file(me_pnt, me_special,nspecial) ! Attention these are accessed by host association
+     &        .or. has_perm_file(me_pnt, me_opt, nopt) )then 
+            call detach_mel_file(me_pnt,.false.)
+         end if
          call del_me_list(label,op_info)
       end if 
       end subroutine
+      function has_perm_file(mel, mels, nmels)
+      
+      type(me_list) ,intent(in)::
+     &     mel
+      type(me_list_array),intent(in)::
+     &     mels(*)
+      integer,intent(in)::nmels
+      logical::has_perm_file
+      integer::ii
+      has_perm_file=.false.
+      do ii=1,nmels
+         has_perm_file=has_perm_file
+     &        .and. .not.
+     &        ( mel%fhand%name
+     &          .eq.mels(ii)%mel%fhand%name)
+      end do
+      end function
+
       end
 
 

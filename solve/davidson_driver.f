@@ -149,9 +149,10 @@ c      end do
             if (trafo(iopt)) then
                
                call transform_forward_wrap(flist,depend,
-     &              me_special,me_mvort,me_mvp, !mvp-> mvort
+     &              me_special,me_mvp,me_mvort, !mvp-> mvort
      &              xrsnrm, nroot, 
      &              iroot, iopt, iroot,
+     &              me_opt,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                   call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
@@ -176,10 +177,9 @@ c      end do
 !            call vecs_orthonorm(me_vort,nopt ,nroot,
 !     &           xbuf1,xbuf2,lenbuf) 
          end do
-         
          call dvdsbsp_update(dvdsbsp,
      &        me_vort,
-     &        me_mvort,nopt,    !vort,mvort into dvdsbsp
+     &        me_mvort,nopt,    !mvort into dvdsbsp
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
          
       end do
@@ -224,6 +224,18 @@ c      end do
      &        me_opt, nopt, nroot, xrsnrm,  ! results on me_opt
      &        xbuf1, xbuf2, nincore, lenbuf)
          task=8
+d     o iopt=1,nopt
+         do iroot=1,nnew
+            if (trafo(iopt) ) then
+               call transform_back_wrap(flist,depend,
+     &              me_special,me_vort,me_trv, !scr -> trv !new_trialvector created
+     &              iroot, iopt,
+     &              me_opt,
+     &              op_info, str_info, strmap_info, 
+     &              orb_info, opti_info)
+!     else me_vort => me_trv
+            end if
+         end do             
          return                 !END of method !!!!!!!!!!!!!!!!!!!
       else 
          task=4       ! calculate new mv product when returning
@@ -260,6 +272,7 @@ c      end do
                call transform_back_wrap(flist,depend,
      &              me_special,me_vort,me_trv, !scr -> trv !new_trialvector created
      &              iroot, iopt,
+     &              me_opt,
      &              op_info, str_info, strmap_info, 
      &              orb_info, opti_info)
 !            else me_vort => me_trv
@@ -278,15 +291,16 @@ c      end do
 !!
 *----------------------------------------------------------------------*
       subroutine transform_forward_wrap(flist,depend,
-     &     me_special,me_scr,me_trv,
+     &     me_special,me_in,me_out,
      &     xrsnrm, 
      &     nroot, iroot, iopt, irecscr,
+     &     me_tgt,
      &     op_info, str_info, strmap_info, orb_info, opti_info)
 *----------------------------------------------------------------------*
       implicit none
 
       type(me_list_array), dimension(*)::
-     &     me_special,me_scr,me_trv
+     &     me_special,me_in,me_out, me_tgt
       type(formula_item),intent(in)::
      &     flist
       type(dependency_info),intent(in)::
@@ -313,7 +327,6 @@ c      end do
 
 
       type(me_list),pointer::
-     &     me_in,
      &     me_trf
       type(operator),pointer::
      &     op_in,
@@ -321,7 +334,7 @@ c      end do
       real(8) ::
      &     xnrm
 
-      if (nspecial.ge.3)then ! who thought it would be good 
+      if (nspecial.ge.3)then 
          me_trf=> me_special(3)%mel
          op_trf=> me_special(3)%mel%op
       else
@@ -330,14 +343,15 @@ c      end do
       end if
 
       if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         me_in => me_special(4)%mel
+         op_in => me_special(4)%mel%op
       else
-         me_in => me_special(1)%mel
+         op_in => me_special(1)%mel%op
       endif
 
 
-      call switch_mel_record(me_scr(iopt)%mel,irecscr)
-      call  switch_mel_record(me_in,irecscr)
+
+      call switch_mel_record(me_out(iopt)%mel,irecscr)
+      call  switch_mel_record(me_in(iopt)%mel,irecscr)
       
 c dbg     
 c      call print_list('residual vector before transformation:',
@@ -347,10 +361,10 @@ c     &     orb_info,str_info)
 c dbg end 
 
       call change_basis_old(flist, depend,
-     &     me_in, me_in%op,
-     &     me_scr(iopt)%mel, me_scr(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
-     &     me_trv(iopt)%mel,
+     &     me_in(iopt)%mel, op_in,
+     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
+     &     me_trf, op_trf,                         
+     &     me_tgt(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
 c dbg
 c            call print_list('transformed residual vector:',
@@ -369,12 +383,13 @@ c dbgend
       subroutine transform_back_wrap(flist,depend,
      &     me_special, me_opt,me_trv, 
      &     iroot, iopt,
+     &     me_tgt,
      &     op_info, str_info, strmap_info, orb_info, opti_info)
 *----------------------------------------------------------------------*
       implicit none
 
       type(me_list_array), dimension(*)::
-     &     me_special,me_trv, me_opt
+     &     me_special,me_trv, me_opt, me_tgt
       type(formula_item),intent(in)::
      &     flist
       type(dependency_info),intent(in)::
@@ -438,7 +453,7 @@ c dbg end
      &     me_in, me_in%op,
      &     me_opt(iopt)%mel, me_opt(iopt)%mel%op, xnrm,
      &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
-     &     me_trv(iopt)%mel,
+     &     me_tgt(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
 
 c dbg     
@@ -511,11 +526,18 @@ c dbg end
 
       if (ntest.ge.100)then
          call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) "out:",me_out%label,op_out%name
-         end if 
+         write(lulog,*) "out:",me_out%label,"bound to:",op_out%name
+         write(lulog,*) " in:",me_in%label,"bound to:",op_in%name
+         write(lulog,*) "tgt:",me_tgt%label,"bound to:",me_tgt%op%name
+         if (associated(me_trf))
+     &        write(lulog,*) "trf:",me_trf%label
+         if (associated(op_trf))
+     &        write(lulog,*) "trf bound:",op_trf%name
+      end if 
       call assign_me_list(me_out%label,
      &     op_out%name, op_info)
-
+      call assign_me_list(me_in%label,
+     &     op_in%name,op_info)
       if(associated(me_trf).and. associated(op_trf)) then
          call assign_me_list(me_trf%label, op_trf%name, op_info)
       else if(associated(me_trf).or. associated(op_trf))then
@@ -528,12 +550,12 @@ c dbg end
       nselect=0
       call select_formula_target(idxselect,nselect,
      &     me_tgt%label,depend,op_info)
-! pretend that me_trv is not up to date
+! pretend that me_tgt is not up to date
       call reset_file_rec(me_tgt%fhand)
       call frm_sched(xret,flist,depend,idxselect, nselect,
      &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
       ! actually it stays up to date
-      call touch_file_rec(me_trv(iopt)%mel%fhand)
+      call touch_file_rec(me_tgt%fhand)
       outnrm=xret(idxselect(1))
       deallocate(xret,idxselect)
       return
