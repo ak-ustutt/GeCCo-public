@@ -155,31 +155,13 @@ c      end do
      &              me_opt,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                  call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+                 call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                endif
-!               call transform_forward_wrap(flist,depend,
-!     &              me_special,me_vort,me_trv, !trv -> vort
-!     &              xrsnrm, nroot,
-!     &              iroot, iopt, iroot,
-!     &              op_info, str_info, strmap_info, orb_info, opti_info)
-
-!               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-!                  call set_blks(me_vort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-!                  xnrm=xnormop(me_vort(iopt)%mel)
-!                  print *,"dbg: backtransformed trial_vector:",xnrm
-!               else
-!                  print *, "dbg: backtransformed trial_vector:",
-!     &                 xrsnrm(iroot,iopt)
-!     endif
-!     else vort and mvort already point to trv and mvp
             end if
-            
-!            call vecs_orthonorm(me_vort,nopt ,nroot,
-!     &           xbuf1,xbuf2,lenbuf) 
          end do
          call dvdsbsp_update(dvdsbsp,
      &        me_vort,
-     &        me_mvort,nopt,    !mvort into dvdsbsp
+     &        me_mvort,nopt,    !mvort into dvdsbsp and update the vMv-matrix
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
          
       end do
@@ -218,24 +200,26 @@ c      end do
       
 
       if (nnew .eq. 0
-     &     .or. iter .ge. maxiter) then  ! check for end condition
+     &     .or. iter .ge. maxiter) then ! check for end condition
+            
+            
          call davidson_assemble_results(dvdsbsp,
      &        xeig,
-     &        me_opt, nopt, nroot, xrsnrm,  ! results on me_opt
+     &        me_vort, nopt, nroot, xrsnrm, ! results on me_opt
      &        xbuf1, xbuf2, nincore, lenbuf)
-         task=8
-d     o iopt=1,nopt
+         
          do iroot=1,nnew
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
-     &              me_special,me_vort,me_trv, !scr -> trv !new_trialvector created
+     &              me_special,me_vort,me_opt, !vort -> opt !new_trialvector created
      &              iroot, iopt,
      &              me_opt,
      &              op_info, str_info, strmap_info, 
      &              orb_info, opti_info)
-!     else me_vort => me_trv
-            end if
-         end do             
+!     else me_vort => me_trv => me_opt
+            end if 
+         end do
+         task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
       else 
          task=4       ! calculate new mv product when returning
@@ -381,7 +365,7 @@ c dbgend
 !!
 *----------------------------------------------------------------------*
       subroutine transform_back_wrap(flist,depend,
-     &     me_special, me_opt,me_trv, 
+     &     me_special, me_in,me_out, 
      &     iroot, iopt,
      &     me_tgt,
      &     op_info, str_info, strmap_info, orb_info, opti_info)
@@ -389,7 +373,7 @@ c dbgend
       implicit none
 
       type(me_list_array), dimension(*)::
-     &     me_special,me_trv, me_opt, me_tgt
+     &     me_special,me_in, me_out, me_tgt
       type(formula_item),intent(in)::
      &     flist
       type(dependency_info),intent(in)::
@@ -412,7 +396,6 @@ c dbgend
 
 
       type(me_list),pointer::
-     &     me_in,
      &     me_trf
       type(operator),pointer::
      &     op_in,
@@ -420,7 +403,7 @@ c dbgend
       real(8) ::
      &     xnrm
 
-      if (nspecial.ge.3)then ! who thought it would be good 
+      if (nspecial.ge.3)then ! who thought it would be a good idea to determine the algorithm by the number of arguments? 
          me_trf=> me_special(2)%mel
          op_trf=> me_special(2)%mel%op
       else
@@ -429,15 +412,16 @@ c dbgend
       end if
 
       if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         me_in => me_special(4)%mel
+         op_in => me_special(4)%mel%op
       else
-         me_in => me_special(1)%mel
+         op_in => me_special(1)%mel%op
       endif
 
 
-      call  switch_mel_record(me_in,iroot)
+      call  switch_mel_record(me_in(iopt)%mel,iroot)
 
-      call switch_mel_record(me_opt(iopt)%mel,iroot)
+      call switch_mel_record(me_out(iopt)%mel,iroot)
+      
 c dbg     
 c      call print_list('trial vector before back transformation:',
 c     &     me_in,"LIST",
@@ -450,9 +434,9 @@ c dbg end
 
 
       call change_basis_old(flist, depend,
-     &     me_in, me_in%op,
-     &     me_opt(iopt)%mel, me_opt(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
+     &     me_in(iopt)%mel, op_in,
+     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
+     &     me_trf, op_trf,                         ! 
      &     me_tgt(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
 
