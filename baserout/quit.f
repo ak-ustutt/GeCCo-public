@@ -25,7 +25,8 @@
           write(luout,'(/x,"ERROR IN <",a,">: ",a/)') rout,str
           write(luout,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
-        end if
+       end if
+       call tracebackqq()
         stop 'error exit'
       else
         write(lulog,'(/x,"INTERNAL ERROR IN <",a,">: ",a/)') rout,str
@@ -37,7 +38,7 @@
      &     trim(date),trim(host)
         end if
 c dbg
-c        call tracebackqq()
+        call tracebackqq()
 c dbg
         stop 'internal error exit'
       end if

@@ -12,10 +12,11 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 1000
       character(len=*),parameter::
-     &     i_am="dvdsbsp_orthvec"
-
+     &     i_am="dvdsbsp_append_vvec"
+      real(8),parameter::
+     &     thresh=1e-8
       integer,intent(in)::
      &     nlists,
      &     lbuf,nincore
@@ -28,6 +29,8 @@
 
       real(8)::
      &     xbuf1(*), xbuf2(*)
+      real(8)::
+     &     xnrm
       integer::
      &     nmaxsub, ncursub,icursub,
      &     ilist,
@@ -45,13 +48,23 @@
       if (nincore .lt.2) call quit(0,i_am, "at least 2 buffer required")
       call vecsp_orthvec(dvdsbsp%vspace, me_lists, nlists,
      &     xbuf1, xbuf2, lbuf)
-      call vec_normalize(me_lists, nlists, xbuf1, lbuf)
+      xnrm=vec_get_norm(me_lists,nlists,xbuf1,lbuf)
+      if(ntest.ge.100)
+     &     write(lulog,*)"old norm was",xnrm
+      if(xnrm.lt.thresh)then
+         if (ntest.gt.10)
+     &        call print_out(
+     &        i_am//"linear dependend trialvector rejected",
+     &        "ULOG" )
+         return
+      end if
+      call vec_multiply(me_lists, nlists, 1/xnrm, xbuf1, lbuf)
       
       if (ncursub .ne. nmaxsub)then
          ncursub=ncursub+1
       end if
-      icursub=mod(icursub+1,nmaxsub)
-      
+      icursub=mod(icursub,nmaxsub)+1
+      print *,icursub,ncursub,nmaxsub      
       do ilist=1,nlists
          call vecsp_set_list_mel(dvdsbsp%vspace,me_lists(ilist)%mel,
      &        icursub, ilist, xbuf2,lbuf)
@@ -66,7 +79,49 @@
       dvdsbsp%icursub=icursub
 
       contains
-      subroutine vec_normalize(me_lists, nlists, xbuf, lbuf)
+*----------------------------------------------------------------------*
+      function vec_get_norm(me_lists, nlists, xbuf, lbuf)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, parameter::
+     &     ntest = 00
+      character(len=*),parameter::
+     &     i_am="vec_get_norm"
+      
+      integer,intent(in)::
+     &     nlists,
+     &     lbuf
+      type(me_list_array),intent(in)::
+     &     me_lists(*)
+      real(8),intent(inout)::
+     &     xbuf(*)
+      real(8)::vec_get_norm
+      
+      integer::
+     &     ilist,
+     &     lenlist,
+     &     irec,
+     &     ii
+      real(8)::
+     &     xnrm2
+      type(filinf),pointer::
+     &     ffme
+      xnrm2=0
+      do ilist=1,nlists
+         ffme=> me_lists(ilist)%mel%fhand
+         irec=me_lists(ilist)%mel%fhand%current_record
+         lenlist= me_lists(ilist)%mel%len_op
+         call vec_from_da(ffme,irec,xbuf,lenlist)
+         do ii=1,lenlist
+            xnrm2=xnrm2+xbuf1(ii)**2
+         end do
+      end do
+      vec_get_norm=sqrt(xnrm2)
+      return
+      end function
+*----------------------------------------------------------------------*
+      subroutine vec_multiply(me_lists, nlists,fac,  xbuf, lbuf)
+*----------------------------------------------------------------------*
       implicit none
       integer, parameter::
      &     ntest = 00
@@ -78,6 +133,8 @@
      &     lbuf
       type(me_list_array),intent(in)::
      &     me_lists(*)
+      real(8),intent(in)::
+     &     fac
       real(8),intent(inout)::
      &     xbuf(*)
 
@@ -86,30 +143,16 @@
      &     lenlist,
      &     irec,
      &     ii
-      real(8)::
-     &     xnrm
    
       type(filinf),pointer::
      &     ffme
-      
-      
-      do ilist=1,nlists
-         ffme=> me_lists(ilist)%mel%fhand
-         irec=me_lists(ilist)%mel%fhand%current_record
-         lenlist= me_lists(ilist)%mel%len_op
-         call vec_from_da(ffme,irec,xbuf,lenlist)
-         do ii=1,lenlist
-            xnrm=xnrm+xbuf1(ii)**2
-         end do
-      end do
-      xnrm=sqrt(xnrm)
       
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
          irec=me_lists(ilist)%mel%fhand%current_record
          lenlist= me_lists(ilist)%mel%len_op
          call vec_from_da(ffme,irec,xbuf1,lenlist)
-         xbuf(1:lenlist)=xbuf(1:lenlist)/xnrm
+         xbuf(1:lenlist)=xbuf(1:lenlist)*fac
          call vec_to_da(ffme,irec,xbuf1,lenlist)
       end do
 

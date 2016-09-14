@@ -4,7 +4,7 @@
 *----------------------------------------------------------------------*
       subroutine dvdsbsp_assemble_residual(dvdsbsp,
      &     coeff, rval, ncoeff,
-     $     me_lists, nlists, xnrm,
+     $     me_lists, nlists, xnrm2,
      $     xbuf1, xbuf2, nincore, lbuf)
 *----------------------------------------------------------------------*
       implicit none
@@ -30,7 +30,7 @@
       real(8),intent(inout)::
      &     xbuf1(*),xbuf2(*)
       real(8),intent(out)::
-     &     xnrm(nlists)
+     &     xnrm2(nlists)
       real(8),external::
      &     me_ddot
       integer::
@@ -56,7 +56,7 @@
      &     -rval,
      &     xbuf1,xbuf2,nincore,lbuf)
       do ilist=1,nlists
-         xnrm(ilist)=me_ddot(me_lists(ilist)%mel,me_lists(ilist)%mel ,
+         xnrm2(ilist)=me_ddot(me_lists(ilist)%mel,me_lists(ilist)%mel ,
      &        xbuf1, xbuf2, nincore, lbuf)
       end do
 *----------------------------------------------------------------------*

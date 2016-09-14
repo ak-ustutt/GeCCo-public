@@ -75,7 +75,7 @@
       type(me_list), pointer ::
      &     mel_pnt, mel_pnt2, mel_pnt3, mel_pnt4
       character(len=512) ::
-     &     title, title2, form_str, mode, strscr
+     &     title, title2, form_str, mode, mode2, strscr
       character(len_command_par) ::
      &     env_type, list_type,ctype
       character(len_command_par) ::
@@ -1572,21 +1572,40 @@ c          mode = 'dia-R12'
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
         call get_arg('INIT',rule,tgt_info,val_log=init)
+        call get_arg('SOLVER',rule,tgt_info,val_str=mode2)
 
         if (form_test) return
-
-        call solve_evp(mode,nopt,nroots,targ_root,
-     &       label_list(1:nopt),               ! to be opt.
-     &       label_list(  nopt+1:  nopt+nopt), ! precond.
-     &       label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
-     &       label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
-     &       label,                            ! formula
-     &       label_list(4*nopt+1:
-     &                   4*nopt+nspecial),nspecial,
-     &       label_list(4*nopt+nspecial+1:     ! spec. form.
-     &                  4*nopt+nspecial+nspcfrm),
+        select case(mode2)
+        case("OLD")
+           call solve_evp(mode,nopt,nroots,targ_root,
+     &          label_list(1:nopt), ! to be opt.
+     &          label_list(  nopt+1:  nopt+nopt), ! precond.
+     &          label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
+     &          label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
+     &          label,          ! formula
+     &          label_list(4*nopt+1:
+     &          4*nopt+nspecial),nspecial,
+     &          label_list(4*nopt+nspecial+1: ! spec. form.
+     &          4*nopt+nspecial+nspcfrm),
      &          nspcfrm,0d0,choice,init,
-     &       op_info,form_info,str_info,strmap_info,orb_info)
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+        case("NEW")
+           call solve_evp2(mode,nopt,nroots,targ_root,
+     &          label_list(1:nopt), ! to be opt.
+     &          label_list(  nopt+1:  nopt+nopt), ! precond.
+     &          label_list(2*nopt+1:2*nopt+nopt), ! mvp-labels
+     &          label_list(3*nopt+1:3*nopt+nopt), ! metric-labels
+     &          label,          ! formula
+     &          label_list(4*nopt+1:
+     &          4*nopt+nspecial),nspecial,
+     &          label_list(4*nopt+nspecial+1: ! spec. form.
+     &          4*nopt+nspecial+nspcfrm),
+     &          nspcfrm,0d0,choice,init,
+     &          op_info,form_info,str_info,strmap_info,orb_info)
+        case default
+           call quit(1,'process_rule','unknown solver for evp: '//
+     &          trim(mode2))
+        end select
 *----------------------------------------------------------------------*
 *     subsection: others
 *----------------------------------------------------------------------*
