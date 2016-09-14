@@ -71,4 +71,16 @@ if (_response_data['order']>=2):
         print 'importing eval_second_order_prop_restr ...'
         import eval_second_order_prop_restr
 
+if (_response_data['order']>=3):
+    if (relax_ref):
+        print 'importing solve_lambda_1 ...'
+#       import solve_lambda_1
+#       print 'importing eval_second_order_prop_alt ...'
+#       import eval_second_order_prop_alt
+    else:
+        print 'importing solve_lambda_0_restr ...'
+        import solve_lambda_1_restr
+        print 'importing eval_second_order_prop_alt_restr ...'
+        import eval_second_order_prop_alt_restr
+
 export_targets();

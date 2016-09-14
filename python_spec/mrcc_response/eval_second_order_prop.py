@@ -75,7 +75,6 @@ for i in range(0,n_par):
 
     new_target('F_RSPNS(2)'+i_par)
 
-    depend('SOLVE_T(1)'+i_par)
     depend('F_preRSPNS(2)')
 
     DEF_SCALAR({LABEL:'RSPNS(2)'+i_par})

@@ -37,6 +37,8 @@ DEF_HAMILTONIAN({LABEL:'V(1)',MAX_RANK:1})
 
 new_target('IMPORT_V(1)')
 
+depend('V(1)')
+
 _op_list={'V(1)':'ME_V(1)'}
 
 for _op in _op_list:
