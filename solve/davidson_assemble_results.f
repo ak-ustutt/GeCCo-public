@@ -12,7 +12,7 @@
 
 
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 100
       character(len=*),parameter::
      &     i_am="davidson_assemble_results"
       
@@ -45,7 +45,8 @@
       integer::
      &     leigenvec,
      &     iroot,
-     &     ilist
+     &     ilist,
+     &     maxlist
       integer,external::
      &     dvdsbsp_get_curlen
       real(8), external ::
@@ -62,8 +63,8 @@
       
       call dvdsbsp_get_eigenvec(dvdsbsp, eigenvecs, rvals, eigi,
      &     nroots, leigenvec)
-
-      do iroot=1,nroots
+      maxlist=min(nroots,mel_get_maxrec(me_res(1)%mel)) !TODO remove the hardcoded one
+      do iroot=1,maxlist
          do ilist=1,nlists
             call switch_mel_record(me_res(ilist)%mel,iroot)
          end do
@@ -79,4 +80,12 @@
          end do
       end do
       deallocate(eigenvecs)
+      return
+      contains
+      pure function mel_get_maxrec(mel)
+      integer:: mel_get_maxrec
+      type(me_list),intent(in)::mel
+      mel_get_maxrec=mel%fhand%active_records(2)
+
+      end function
       end subroutine

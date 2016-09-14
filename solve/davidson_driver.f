@@ -97,7 +97,8 @@
  
       integer::
      &     iopt, jopt,
-     &     iroot, 
+     &     iroot,
+     &     maxvec,
      &     irecres,        !record pointer for contracting lists to be updated on me_res, number of new_lists
      &     maxiter              !aliases for opti_info fields
 
@@ -107,7 +108,9 @@
      &     conv
       real(8)::
      &     xnrm                !temporary variable for some norms
-         ! lists for the mv-product and vector in the orthogonal space
+! lists for the mv-product and vector in the orthogonal space
+      integer,external::
+     &     dvdsbsp_get_nnew_vvec
       real(8),external::
      &     xnormop
       real(8)::
@@ -142,7 +145,7 @@ c            me_mvort(iopt)%mel => me_mvp(iopt)%mel
 c         end if
 c      end do
       
-      do iroot=1,nroot
+      do iroot=1,nnew
          do iopt=1,nopt
             
 
@@ -166,12 +169,12 @@ c      end do
          
       end do
       call davidson_assemble_residuals(dvdsbsp,
-     &     leig,
+     &     leig, nnew,
      &     me_scr, nopt, nroot, xrsnrm, !temporary assemble on scr
      &     xbuf1, xbuf2, nincore, lenbuf)
       
       irecres=0
-      do iroot=1,nroot
+      do iroot=1,nnew
          conv=.true.
          if (abs(leig(iroot)-xeig(iroot)).gt.thrgrd_e)then !energy changing?
             conv=.false.
@@ -196,6 +199,7 @@ c      end do
          end if 
       end do
       xeig=leig
+
       nnew=irecres
       
 
@@ -208,8 +212,8 @@ c      end do
      &        xeig,
      &        me_vort, nopt, nroot, lrsnrm, ! results on me_vort
      &        xbuf1, xbuf2, nincore, lenbuf)
-         
-         do iroot=1,nroot
+         maxvec=min(nroot,mel_get_maxrec(me_vort(1)%mel)) 
+         do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
             end do 
@@ -222,6 +226,9 @@ c      end do
      &                 me_opt,
      &                 op_info, str_info, strmap_info, 
      &                 orb_info, opti_info)
+                  
+                  
+!     else me_vort => me_trv => me_opt
                end if
             end do 
          end do
@@ -232,7 +239,7 @@ c      end do
      &           write(luout,'(x,a,i5,a)')
      &           'CONVERGED IN ',iter,' ITERATIONS'
          else
-            write(lulog,'(x,a,i5,a)') "Stopping after ",iter," iterations"
+            write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
             call warn('linear solver', 'NO CONVERGENCE OBTAINED')
          end if
          task=8
@@ -263,8 +270,11 @@ c      end do
          call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
      &        me_vort,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)
-      end do !iroot
-      
+      end do                    !iroot
+      nnew=dvdsbsp_get_nnew_vvec(dvdsbsp)
+      if ( nnew.eq.0)
+     &     call quit(0,i_am,
+     &     "only linear depended new directions generated")
       
       do iopt=1,nopt
          do iroot=1,nnew
@@ -779,7 +789,7 @@ c     dbgend
       subroutine vec_normalize(me_lists, nlists, xbuf1, xbuf2, lbuf)
       implicit none
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 100
       character(len=*),parameter::
      &     i_am="vec_normalize"
 
@@ -813,6 +823,7 @@ c     dbgend
          end do
       end do
       xnrm=sqrt(xnrm2)
+      print *,"old norm was",xnrm
       
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
@@ -924,4 +935,11 @@ c     dbgend
       end do                    !iroot
       return
       end subroutine
+*----------------------------------------------------------------------*
+      pure function mel_get_maxrec(mel)
+      integer:: mel_get_maxrec
+      type(me_list),intent(in)::mel
+      mel_get_maxrec=mel%fhand%active_records(2)
+
+      end function
       end subroutine

@@ -1,6 +1,6 @@
 
       subroutine davidson_assemble_residuals(dvdsbsp,
-     &     rvals, 
+     &     rvals, nnew,
      $     me_res, nlists, nroots, xnrm,
      $     xbuf1, xbuf2, nincore, lbuf)
       implicit none
@@ -24,6 +24,9 @@
      &     nroots,
      &     nlists,
      &     nincore, lbuf
+
+      integer,intent(inout)::
+     &     nnew
       
       type(me_list_array),intent(in):: !lists change, array doesn't
      &     me_res(*)
@@ -56,12 +59,13 @@
          call write_title(lulog,wst_dbg_subr,i_am)
       end if
       leigenvec=dvdsbsp_get_curlen(dvdsbsp)
+      nnew=min(nroots,dvdsbsp_get_curlen(dvdsbsp))
       allocate(eigenvecs(leigenvec,nroots))
       
       call dvdsbsp_get_eigenvec(dvdsbsp, eigenvecs, rvals, eigi,
      &     nroots, leigenvec)
 
-      do iroot=1,nroots
+      do iroot=1,nnew
          call dvdsbsp_assemble_residual(dvdsbsp,
      &        eigenvecs(1:leigenvec,iroot),
      &        rvals(iroot), leigenvec, me_res, nlists, lxnrm2,

@@ -22,7 +22,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 1000
       character(len=*),parameter::
      &     i_am="dvdsbsp_update"
 
@@ -85,7 +85,8 @@
 
             !copy the new lists into the vector spaces
             call vecsp_set_list_mel(dvdsbsp%mvspace,mvvec(ilist)%mel,
-     &           lcursub, ilist, buf1,lbuf) 
+     &           lcursub, ilist, buf1,lbuf)
+            
             if (ntest.ge.100)then
                write(lulog, *) "Mv Product",Mvvec(ilist)%mel%label
                do idxdbg=1,Mvvec(ilist)%mel%len_op
@@ -111,7 +112,8 @@
 
             do jj=1,dvdsbsp%ncursub
                if (jj.eq.lcursub) cycle !don't calculated v_icursub * Mv_icursub twice
-
+               if (jj.gt.lcursub .and. jj.le. dvdsbsp%icursub) cycle
+               ! if in multiple vectors are appended, only one is in this call appended. The other (between lcursub  icursub) will be set in a later call. more importantly they are not yet initiated if the mvspace is not fully filled.
                call vecsp_get_list_buf(dvdsbsp%mvspace, jj, ilist, 
      &              lenlist, buf1, lbuf)
 
@@ -128,7 +130,7 @@
       dvdsbsp%lcursub=lcursub
       if (ntest.ge.20) then
          write (lulog,*) 'subspace matrix on output:'
-         call wrtmat2(vMv_mat,lcursub,lcursub,
+         call wrtmat2(vMv_mat,ncursub,ncursub,
      &        nmaxsub,nmaxsub)
       end if
       return

@@ -1,16 +1,16 @@
 *----------------------------------------------------------------------*
       subroutine evpc_core(iter,
      &       task,iroute,xrsnrm,xeig,
-     &     use_s,
-     &     dvdsbsp,
-     &     me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
-     &     me_special,nspecial,
-     &     nincore,lenbuf,
-     &     xbuf1,xbuf2,xbuf3,
-     &     flist,depend,
-     &     fspc,nspcfrm,
-     &     opti_info,opti_stat,
-     &     orb_info,op_info,str_info,strmap_info)
+     &       use_s,
+     &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
+     &       me_special,nspecial,
+c     &       ffopt,fftrv,ffmvp,ffdia,
+     &       nincore,lenbuf,
+     &       xbuf1,xbuf2,xbuf3,
+     &       flist,depend,
+     &       fspc,nspcfrm,
+     &       opti_info,opti_stat,
+     &       orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     core driver for EVP solver
 *----------------------------------------------------------------------*
@@ -31,7 +31,6 @@ c      include 'def_filinf.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_dependency_info.h'
-      include 'def_davidson_subspace.h'
 
       integer, parameter ::
      &     ntest = 000
@@ -44,8 +43,6 @@ c      include 'def_filinf.h'
      &     iroute, nincore, lenbuf, nspecial, nspcfrm
       logical, intent(in) ::
      &     use_s(*)
-      type(davidson_subspace_t),intent(inout)::
-     &     dvdsbsp
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_dia(*),
@@ -83,17 +80,16 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
       type(strmapinf) ::
      &     strmap_info
 
-*     local
-      
+* local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), init, trafo, getnewrec
+     &     zero_vec(opti_stat%ndim_vsbsp), init, conv, trafo, getnewrec
       integer ::
      &     idx, jdx, kdx, iroot, nred, nadd, nnew, irecscr,idxdbg,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job,
      &     ndim_save, ndel, iopt, jopt, lenscr, ioff,
      &     ifree, restart_mode, ierr, nselect, irec, ioff_s
       real(8) ::
-     &     cond, xdum, xnrm
+     &     cond, xdum, xnrm, xshf
       real(8), pointer ::
      &     gred(:), vred(:), mred(:), sred(:), eigr(:), eigi(:),
      &     xmat1(:), xmat2(:), xmat3(:), xvec(:), xret(:)
@@ -109,8 +105,6 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     fdum
       type(filinf), pointer ::
      &     ffspc
-      type(me_list),pointer::
-     &     mespc
       type(filinf), target ::
      &     fdum2
 
@@ -195,18 +189,39 @@ c dbg
       ifree = mem_alloc_real(xvec,nred,'EVP_vec')
 
       ! get a copy of the subspace matrix
-      call rl8_compress_array(mred, nred, mxsub, xmat1)!mred -> xmat1
-      call rl8_compress_array(sred, nred, mxsub, xmat3)!sred -> xmat3
+      kdx = 0
+      do idx = 1, nred
+        do jdx = 1, nred
+          kdx = kdx+1
+          xmat1(kdx) = mred((idx-1)*mxsub+jdx)
+        end do
+      end do
+      kdx = 0
+      do idx = 1, nred
+        do jdx = 1, nred
+          kdx = kdx+1
+          xmat3(kdx) = sred((idx-1)*mxsub+jdx)
+        end do
+      end do
 
-      if (.not.use_s(1)) then !! @TODO results should be invariant with respect to exchange of optimized variables
+      if (.not.use_s(1)) then
         call eigen_asym(nred,xmat1,eigr,eigi,xmat2,xmat3,ierr)
       else
+c dbg
+c         print *,"debug: input to eigen_asym_met",
+c         print *,
+c dbgend
         call eigen_asym_met(nred,xmat1,xmat3,eigr,eigi,xmat2,xmat3,ierr)
       end if
 
       ! copy back to vred with mxsub as leading dim
-      call rl8_expand_array(xmat2,vred,nred,mxsub)!xmat2 -> vred
-
+      kdx = 0
+      do idx = 1, nred
+        do jdx = 1, nred
+          kdx = kdx+1
+          vred((idx-1)*mxsub+jdx) = xmat2(kdx) 
+        end do
+      end do
 
       if (ntest.ge.50) then
         write(lulog,*) 'Eigenvalues in subspace:'
@@ -268,29 +283,66 @@ c dbg
 
           ! if requested, transform residual
           if (trafo) then
+            ! assign op. with list containing the scratch trial vector
+            call assign_me_list(me_scr(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
+            ! use daggered transformation matrix if requested
+            if (nspecial.ge.3)
+     &         call assign_me_list(me_special(3)%mel%label,
+     &                             me_special(3)%mel%op%name,op_info)
+            ! calculate transformed residual
+            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+            nselect = 0
+            call select_formula_target(idxselect,nselect,
+     &                  me_trv(iopt)%mel%label,depend,op_info)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call  switch_mel_record(me_special(4)%mel,irecscr)
+            else
+               call switch_mel_record(me_special(1)%mel,irecscr)
+            endif
 
-            call transform_forward_wrap(flist,depend,
-     &            me_special,me_scr,me_trv,
-     &            xrsnrm, nroot, 
-     &            iroot, iopt, irecscr,
-     &            op_info, str_info, strmap_info, orb_info, opti_info)
+            call switch_mel_record(me_scr(iopt)%mel,irecscr)
+            ! pretend that me_trv is not up to date
+            call reset_file_rec(me_trv(iopt)%mel%fhand)
+            call frm_sched(xret,flist,depend,idxselect,nselect,
+     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
+            ! residual norm (nselect should be 1):
+            xrsnrm(iroot,iopt) = xret(idxselect(1))
+            deallocate(xret,idxselect)
 
 !     set all single excitations to zero if requestes
+!     after long deliberation, I decided to also include V,V so one can be sure to include
+!     **all** singular excitations even if T1 changes
+
             if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                call set_blks(me_scr(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                xrsnrm(iroot,iopt)=xnormop(me_scr(iopt)%mel) 
             endif
 
-
+c dbg
+C            if (iopt .ne. 2) then
+c            print *,'residual vector before transformation:'
+c            call vec_from_da(ffspc,
+c     &        irecscr,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
+c            call print_list('transformed residual vector:',
+c     &           me_scr(iopt)%mel,"LIST",
+c     &           -1d0,0d0,
+c     &           orb_info,str_info)
+c            endif
+c dbgend
 
           end if
         end do
 
         ! not yet converged? increase record counter
-        if (.not.is_converged(xrsnrm, iroot, nroot, nopt, 
-     &       opti_info%thrgrd)
-     &       .and. iter.lt.opti_info%maxmacit ) then
-
+        conv = .true.
+        do iopt = 1, nopt
+          conv = conv.and.xrsnrm(iroot,iopt).lt.opti_info%thrgrd(iopt)
+        end do
+        if (.not.conv.and.iter.lt.opti_info%maxmacit) then
           idxroot(irecscr) = iroot
           irecscr = irecscr+1 
         end if
@@ -327,49 +379,220 @@ c dbg
 
         ! divide new directions by preconditioner
         do iopt = 1, nopt
-           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-              mespc => me_special(1)%mel
+          select case(opti_info%typ_prc(iopt))
+          case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
+     &         ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+              ffspc => me_special(1)%mel%fhand
               trafo = .true.
-           else if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-              mespc => me_special(4)%mel
-              trafo = .true. 
-           else
-              mespc => me_scr(iopt)%mel
+            elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               ffspc => me_special(4)%mel%fhand
+               trafo = .true. 
+            else
+              ffspc => ffscr(iopt)%fhand
               trafo = .false.
-           end if
-           do iroot=1,nnew
-              xnrm=0.0
-              do jopt = 1, nopt
-                 xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
+            end if
+            if (nincore.ge.2) then
+              call vec_from_da(
+     &             me_dia(iopt)%mel%fhand,1,xbuf2,nwfpar(iopt))
+              do iroot = 1, nnew
+                call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
+     &                           nwfpar(iopt))
+                ! scale residual for numerical stability:
+
+                xnrm = 0d0
+                do jopt = 1, nopt
+                  xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
+                end do
+                xnrm = sqrt(xnrm)
+c dbg
+c                print *,"xnorm:",xnrm
+c dbgend                
+c                xnrm = 1d0
+c dbg
+c                print *,"precon not yet applied. "
+c                do idxdbg = 1, nwfpar(iopt)
+c                   print *,idxdbg,xbuf1(idxdbg)
+c                end do
+c dbgend
+                xshf = -xeig(idxroot(iroot),1) 
+                call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,xshf,nwfpar(iopt))
+c dbg
+c                print *,"debug shift:",xshf
+c                print *,"precon applied. ",nwfpar(iopt),"entries"
+c                do idxdbg = 1, nwfpar(iopt)
+c                   print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
+c                end do
+c dbgend
+                if (nopt.eq.1) then
+                  xnrm = dnrm2(nwfpar(iopt),xbuf1,1)
+                  call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+                end if
+                call vec_to_da(ffspc,iroot,xbuf1,
+     &                         nwfpar(iopt))
               end do
-              xnrm=sqrt(xnrm)
-              call apply_preconditioner(
-     &          me_scr(iopt)%mel, me_dia(iopt)%mel, mespc, nwfpar(iopt),
-     &             opti_info%typ_prc(iopt), 
-     &             xeig(idxroot(iroot),1), xnrm, nnew, iroot,
-     &             me_opt(iopt)%mel%op , me_trv(iopt)%mel,
-     &             me_special, nspecial,
-     &             fspc, nspcfrm,
-     $             xbuf1, xbuf2, xbuf3, lenbuf, nincore,
-     &             nopt.eq.1, op_info, str_info, strmap_info)
-           end do
+            else
+              do iroot = 1, nnew
+c            ! request (nroot-iroot+1)th-last root 
+c            irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
+c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
+                xnrm = 0d0
+                do jopt = 1, nopt
+                  xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
+                end do
+                xnrm = sqrt(xnrm)
+                xshf = -xeig(idxroot(iroot),1)
+                ! decrease xshf in first iteration
+                if (iter .eq. 1) xshf=0.8d0*xshf
+                call da_diavec(ffspc,iroot,0d0,
+     &                   ffscr(iopt)%fhand,iroot,
+     &                   1d0/xnrm,me_dia(iopt)%mel%fhand,
+     &                   1,xshf,-1d0,
+     &                   nwfpar(iopt),xbuf1,xbuf2,lenbuf)
+              end do
+            end if
+
+            ! project out spin contaminations or other components?
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
+              ! assign op. with list containing the scratch trial vector
+c dbg
+c               print *, "assign ",me_scr(iopt)%mel%label," to ",
+c     &              me_opt(iopt)%mel%op%name
+c dbgend
+              call assign_me_list(me_scr(iopt)%mel%label,
+     &                            me_opt(iopt)%mel%op%name,op_info)
+              do iroot = 1, nnew
+                call switch_mel_record(me_scr(iopt)%mel,iroot)
+                if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                              fspc(1),opti_info%nwfpar(iopt),
+     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              opti_info,orb_info,
+     &                              op_info,str_info,strmap_info)
+                elseif (opti_info%typ_prc(iopt).eq.
+     &                  optinf_prc_spinrefp)then
+                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+     &                              fspc(2),opti_info%nwfpar(iopt),
+     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              opti_info,orb_info,
+     &                              op_info,str_info,strmap_info)
+
+                  call evaluate2(fspc(1),.false.,.false.,
+     &                           op_info,str_info,strmap_info,orb_info,
+     &                           xnrm,.false.)
+
+                else
+c dbg
+c                  print *,"iopt=",iopt
+c                  call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c dbgend
+                  call evaluate2(fspc(1),.false.,.false.,
+     &                 op_info,str_info,strmap_info,orb_info,
+     &                 xnrm,.false.)
+c dbg
+c                  call print_list('projected vector:',
+c     &                 me_scr(iopt)%mel,"NORM",
+c     &                 -1d0,0d0,
+c     &                 orb_info,str_info)
+c dbgend
+                end if
+                if (xnrm.lt.1d-12) call warn('evpc_core',
+     &               'Nothing left after projection!')
+              end do
+              ! reassign op. with list containing trial vector
+              call assign_me_list(me_trv(iopt)%mel%label,
+     &                            me_opt(iopt)%mel%op%name,op_info)
+            end if
+          case(optinf_prc_blocked)
+            if (nincore.lt.3)
+     &           call quit(1,'evpc_core',
+     &           'I need at least 3 incore vectors (prc_special)')
+            do iroot = 1, nnew
+              xnrm = 0d0
+              do jopt = 1, nopt
+                xnrm = xnrm+xrsnrm(idxroot(iroot),jopt)**2
+              end do
+              xnrm = sqrt(xnrm)
+c              xnrm = 1d0
+              call vec_from_da(ffscr(iopt)%fhand,iroot,xbuf1,
+     &                         nwfpar(iopt))
+              call dscal(nwfpar(iopt),1d0/xnrm,xbuf1,1)
+              xshf = -xeig(idxroot(iroot),1)
+              call optc_prc_special2(me_mvp(iopt)%mel,me_special,
+     &                                                        nspecial,
+     &                           me_opt(iopt)%mel%op%name,xshf,
+     &                           nincore,xbuf1,xbuf2,xbuf3,lenbuf,
+     &                           orb_info,op_info,str_info,strmap_info)
+              call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,
+     &                       nwfpar(iopt))
+            end do
+          case default
+            call quit(1,'evpc_core','unknown preconditioner type')
+          end select
 
           ! if requested, transform new subspace vectors
           if (trafo) then
-             do iroot=1,nnew
-                call transform_back_wrap(flist,depend,
-     &               me_special,me_opt,me_trv,
-     &               iroot, iopt,
-     &               op_info, str_info, strmap_info, 
-     &               orb_info, opti_info)
+            ! use non-daggered transformation matrix if requested
+            if (nspecial.ge.3)
+     &         call assign_me_list(me_special(2)%mel%label,
+     &                             me_special(2)%mel%op%name,op_info)
+            ! assign op. with original list 
+            ! (to ensure proper spin symmetry if needed)
+            call assign_me_list(me_opt(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
 
-                call switch_mel_record(me_scr(iopt)%mel,iroot)
-                call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,
-     &               .false.)
-             end do
+            ! calculate transformed vector
+            allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+            nselect = 0
+            call select_formula_target(idxselect,nselect,
+     &                  me_trv(iopt)%mel%label,depend,op_info)
+            do iroot = 1, nnew
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                  call  switch_mel_record(me_special(4)%mel,iroot)
+               else
+                  call switch_mel_record(me_special(1)%mel,iroot)
+               endif
 
-             call assign_me_list(me_scr(iopt)%mel%label,
-     &            me_opt(iopt)%mel%op%name,op_info)
+               call switch_mel_record(me_opt(iopt)%mel,iroot)
+              ! pretend that me_trv is not up to date
+              call reset_file_rec(me_trv(iopt)%mel%fhand)
+              call frm_sched(xret,flist,depend,idxselect,nselect,
+     &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
+              ! in reality me_trv is still up to date:
+              call touch_file_rec(me_trv(iopt)%mel%fhand)
+              ! copy to scr list and reassign
+              call switch_mel_record(me_scr(iopt)%mel,iroot)
+              call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
+            end do
+            call assign_me_list(me_scr(iopt)%mel%label,
+     &                          me_opt(iopt)%mel%op%name,op_info)
+            deallocate(xret,idxselect)
+c dbg
+c            print *,'back-transformed trial vector:'
+c            call vec_from_da(me_scr(iopt)%mel%fhand,
+c     &        me_scr(iopt)%mel%fhand%current_record,xbuf1,nwfpar(iopt))
+c            do idx = 1, nwfpar(iopt)
+c              print *,idx,xbuf1(idx)
+c            end do
+c            ! symmetrize!
+c            if (nspecial.eq.3) then
+c              call sym_ab_blk(xbuf2(2),xbuf1(2),0.5d0,dble(1),
+c     &                        me_scr(iopt)%mel,2,
+c     &                        str_info,strmap_info,orb_info)
+c              xbuf2(1) = 0d0
+c              print *,'back-transformed trial vector:'
+c              do idx = 1, nwfpar(iopt)
+c                print *,idx,xbuf2(idx)
+c              end do
+c              call vec_to_da(me_scr(iopt)%mel%fhand,
+c     &         me_scr(iopt)%mel%fhand%current_record,xbuf2,nwfpar(iopt))
+c            end if
+c dbgend 
 
             ! reassign op. with list containing trial vector
             call assign_me_list(me_trv(iopt)%mel%label,
@@ -477,575 +700,5 @@ c dbgend
       deallocate(ffmet)
 
       return
-
-      contains
-*----------------------------------------------------------------------*
-!>   compresses the the occupied parts of an array into a another array
-!!
-!!   assumes the input array is a transformed matrix where only the upper left
-!!   quadrant is occupied
-!!   nmat gives dimension of the quadrant lmat of the actual matrix
-*----------------------------------------------------------------------*
-      subroutine rl8_compress_array(arr_in, nmat, lmat, arr_out)
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=*),parameter::
-     &     i_am="rl8_copy_matrix_to_array"
-      integer,parameter::
-     &     ntest=00
-
-      real(8),dimension(*),intent(in)::
-     &     arr_in
-      real(8),dimension(*),intent(out)::
-     &     arr_out
-      integer,intent(in)::
-     &     lmat,                !> actual dimension of matrix
-     &     nmat                 !> dimension of filled part
-      
-      integer::
-     &     kdx, idx, jdx
-
-      if (ntest.ge.100)
-     &     call write_title(lulog,wst_dbg_subr,i_am)
-
-      kdx=0
-      do idx = 1, nmat
-         do jdx = 1, nmat
-            kdx=kdx+1
-            arr_out(kdx) = arr_in((idx-1)*lmat+jdx)
-         end do
-      end do
-      return
-      end subroutine
-*----------------------------------------------------------------------*
-!>  expands an array into a another array
-!!
-!!   assumes the output array is a transformed matrix where only the upper left
-!!   quadrant is occupied
-!!   nmat gives dimension of the quadrant lmat of the actual matrix
-!!   note the changed order of arguments as nmat and lmat belong to the matrix
-*----------------------------------------------------------------------*
-      subroutine rl8_expand_array(arr_in, arr_out, nmat, lmat )
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=*),parameter::
-     &     i_am="rl8_copy_matrix_to_array"
-      integer,parameter::
-     &     ntest=00
-
-      real(8),dimension(*),intent(in)::
-     &     arr_in
-      real(8),dimension(*),intent(out)::
-     &     arr_out
-      integer,intent(in)::
-     &     lmat,                !> actual dimension of matrix
-     &     nmat                 !> dimension of filled part
-      
-      integer::
-     &     kdx, idx, jdx
-
-      if (ntest.ge.100)
-     &     call write_title(lulog,wst_dbg_subr,i_am)
-
-      kdx=0
-      do idx = 1, nmat
-         do jdx = 1, nmat
-            kdx=kdx+1
-            arr_out((idx-1)*lmat+jdx) = arr_in(kdx)
-         end do
-      end do
-      return
-      end subroutine
-*----------------------------------------------------------------------
-!>    tests if all operators of the current root are converged 
-*----------------------------------------------------------------------*
-      pure function is_converged(xrsnrm, iroot, nroot , nopt, thrsh)
-*----------------------------------------------------------------------*
-      implicit none
-      logical::
-     &     is_converged
-
-      integer, intent(in) ::
-     &     iroot, nroot, nopt 
-
-      real(8),dimension(nroot,nopt),intent(in)::
-     &     xrsnrm
-
-      real(8),dimension(nopt),intent(in)::
-     &     thrsh
-      integer ::
-     &     iopt
-      is_converged=.true.
-
-      do iopt=1,nopt
-         is_converged = is_converged
-     &        .and. ( xrsnrm(iroot,iopt).lt.thrsh(iopt) )
-      end do
-      return
-      end function
-
-!######################################################################
-! subroutines for the transformation 
-!######################################################################
-*----------------------------------------------------------------------*
-!>    wrapper for forward transformation to encapsulate some stupid decisions
-!!
-!!
-*----------------------------------------------------------------------*
-      subroutine transform_forward_wrap(flist,depend,
-     &     me_special,me_scr,me_trv,
-     &     xrsnrm, 
-     &     nroot, iroot, iopt, irecscr,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-*----------------------------------------------------------------------*
-      implicit none
-
-      type(me_list_array), dimension(*)::
-     &     me_special,me_scr,me_trv
-      type(formula_item),intent(in)::
-     &     flist
-      type(dependency_info),intent(in)::
-     &     depend
-      integer, intent(in)::
-     &     nroot,
-     &     iroot, 
-     &     iopt,
-     &     irecscr
-
-      real(8), Dimension(nroot,*), intent(inout)::
-     &     xrsnrm
-
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-      type(optimize_info)::
-     &     opti_info
-
-
-      type(me_list),pointer::
-     &     me_in,
-     &     me_trf
-      type(operator),pointer::
-     &     op_in,
-     &     op_trf
-      real(8) ::
-     &     xnrm
-
-      if (nspecial.ge.3)then ! who thought it would be good 
-         me_trf=> me_special(3)%mel
-         op_trf=> me_special(3)%mel%op
-      else
-         me_trf=> null() ! leave it associated as it is now
-         op_trf=> null() ! --
-      end if
-
-      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         me_in => me_special(4)%mel
-      else
-         me_in => me_special(1)%mel
-      endif
-
-
-      call switch_mel_record(me_scr(iopt)%mel,irecscr)
-      call  switch_mel_record(me_in,irecscr)
-      
-c dbg     
-c      call print_list('residual vector before transformation:',
-c     &     me_in,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-      call change_basis_old(flist, depend,
-     &     me_in, me_in%op,
-     &     me_scr(iopt)%mel, me_scr(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
-     &     me_trv(iopt)%mel,
-     &     op_info, str_info, strmap_info, orb_info)
-c dbg
-c            call print_list('transformed residual vector:',
-c     &           me_scr(iopt)%mel,"LIST",
-c     &           -1d0,0d0,
-c     &           orb_info,str_info)
-c dbgend
-      xrsnrm(iroot,iopt) = xnrm
-      return
-      end subroutine
-*----------------------------------------------------------------------*
-!>    wrapper for back transformateion to encapsulate some stupid decisions
-!!
-!!
-*----------------------------------------------------------------------*
-      subroutine transform_back_wrap(flist,depend,
-     &     me_special, me_opt,me_trv, 
-     &     iroot, iopt,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-*----------------------------------------------------------------------*
-      implicit none
-
-      type(me_list_array), dimension(*)::
-     &     me_special,me_trv, me_opt
-      type(formula_item),intent(in)::
-     &     flist
-      type(dependency_info),intent(in)::
-     &     depend
-      integer, intent(in)::
-     &     iroot, 
-     &     iopt
-
-
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-      type(optimize_info)::
-     &     opti_info
-
-
-      type(me_list),pointer::
-     &     me_in,
-     &     me_trf
-      type(operator),pointer::
-     &     op_in,
-     &     op_trf
-      real(8) ::
-     &     xnrm
-
-      if (nspecial.ge.3)then ! who thought it would be good 
-         me_trf=> me_special(2)%mel
-         op_trf=> me_special(2)%mel%op
-      else
-         me_trf=> null() ! leave it associated as it is now
-         op_trf=> null() ! --
-      end if
-
-      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         me_in => me_special(4)%mel
-      else
-         me_in => me_special(1)%mel
-      endif
-
-
-      call  switch_mel_record(me_in,iroot)
-
-      call switch_mel_record(me_opt(iopt)%mel,iroot)
-c dbg     
-c      call print_list('trial vector before back transformation:',
-c     &     me_in,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-
-
-
-
-      call change_basis_old(flist, depend,
-     &     me_in, me_in%op,
-     &     me_opt(iopt)%mel, me_opt(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         ! notice the difference : me_trf != me_trv
-     &     me_trv(iopt)%mel,
-     &     op_info, str_info, strmap_info, orb_info)
-
-c dbg     
-c      call print_list('trial vector after back transformation:',
-c     &     me_opt(iopt)%mel,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-      return
-      end subroutine
-
-
-
-
-
-*----------------------------------------------------------------------*
-!>    subroutine for the transformation into the orthogonal basis
-!!
-!!    uses the old convention where the transformation formula is a subset of the whole formula
-!!    me_tgt and determines the me_list that was bound to the target operator as the dependencies where 
-!!    evaluated
-*----------------------------------------------------------------------*
-      subroutine change_basis_old(flist, depend,
-     &     me_in, op_in, 
-     &     me_out, op_out, outnrm,
-     &     me_trf, op_trf,
-     &     me_tgt,
-     &     op_info, str_info, strmap_info, orb_info)
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=*),parameter::
-     &     i_am="change_basis_old"
-      integer,parameter::
-     &     ntest=00
-      
-      type(formula_item)::
-     &     flist
-
-      type(me_list)::
-     &     me_in,              !> list to be transformed 
-     &     me_out,             !> result list
-     &     me_tgt             !>list with the transformation operator
-      type(me_list),pointer::     
-     &     me_trf               !> target list definition to specify which subformula should actually be evaluated (stupid design decision)
-      type(operator)::
-     &     op_in,
-     &     op_out
-      type(operator),pointer::
-     &     op_trf
-      real(8),intent(out)::
-     &     outnrm               !norm of the output list
-      type(dependency_info)::
-     &     depend               !>dependency info for the formula 
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-
-      integer,dimension(:),allocatable::
-     &     idxselect
-      real(8),dimension(:),allocatable::
-     &     xret
-      integer::
-     &     nselect
-
-      if (ntest.ge.100)then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) "out:",me_out%label,op_out%name
-         end if 
-      call assign_me_list(me_out%label,
-     &     op_out%name, op_info)
-
-      if(associated(me_trf).and. associated(op_trf)) then
-         call assign_me_list(me_trf%label, op_trf%name, op_info)
-      else if(associated(me_trf).or. associated(op_trf))then
-         call quit(1,i_am,
-     &        "please make sure that either both (transformation list"//
-     &        "and operator) or neither is associated") 
-      end if
-
-      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-      nselect=0
-      call select_formula_target(idxselect,nselect,
-     &     me_tgt%label,depend,op_info)
-! pretend that me_trv is not up to date
-      call reset_file_rec(me_tgt%fhand)
-      call frm_sched(xret,flist,depend,idxselect, nselect,
-     &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
-      ! actually it stays up to date
-      call touch_file_rec(me_trv(iopt)%mel%fhand)
-      outnrm=xret(idxselect(1))
-      deallocate(xret,idxselect)
-      return
-
-      end subroutine
-
-!#######################################################################
-!   apply the preconditioner
-!######################################################################
-*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
-      subroutine apply_preconditioner(
-     &     me_resid, me_diag, me_result, lenme,
-     &     typ_prc, 
-     &     xeig, xnrm, nnew, iroot,
-     &     op_opt, me_opt,      !
-     &     me_special, nspecial,!
-     &     fspc, nfspc,         !head of special formulars 
-     $     xbuf1, xbuf2, xbuf3, lbuf, nincore,
-     &     renormalize, op_info, str_info, strmap_info)
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=*),parameter::
-     &     i_am="apply_preconditioner"
-      integer,parameter::
-     &     ntest=00
-      
-
-      type(me_list), intent(in)::
-     &     me_resid,
-     &     me_diag,
-     &     me_result
-      
-
-      integer,intent(in)::
-     &     lenme,
-     &     nnew,
-     &     nspecial,
-     &     nfspc,
-     &     iroot,
-     &     lbuf, nincore
-
-      integer,intent(in)::
-     &     typ_prc
-      
-      real(8),intent(in)::
-     &     xeig
-      real(8),intent(inout)::
-     &     xbuf1(*), xbuf2(*), xbuf3(*)
-      
-      real(8),intent(inout)::
-     &     xnrm                 !> norm of the associated vectors
-      logical, intent(in)::
-     &     renormalize
-      type(formula_item), intent(in)::
-     &     fspc(*)
-      type(me_list_array)::
-     &     me_special(*)
-      
-      type(operator),intent(inout)::
-     &     op_opt
-      
-      type(me_list),intent(inout)::
-     &     me_opt
-      
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf), intent(in)::
-     &     strmap_info
-      real(8)::
-     &     xshf
-      
-      select case(typ_prc)
-      case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
-     &     ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
-      if (nincore.ge.2) then
-         call vec_from_da(
-     &        me_diag%fhand,1, xbuf2,nwfpar(iopt))
-         call vec_from_da(me_resid%fhand,iroot,xbuf1,
-     &        lenme)
-         
-            
-c     dbg
-c     print *,"xnorm:",xnrm
-c     dbgend                
-c     xnrm = 1d0
-c     dbg
-c     print *,"precon not yet applied. "
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg)
-c     end do
-c     dbgend
-! scale residual for numerical stability:
-         xshf = -xeig 
-         call diavc(xbuf1,xbuf1,1d0/xnrm,
-     &        xbuf2,xshf,lenme)
-c     dbg
-c     print *,"debug shift:",xshf
-c     print *,"precon applied. ",nwfpar(iopt),"entries"
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
-c     end do
-c     dbgend
-         if (renormalize) then
-            xnrm = dnrm2(lenme,xbuf1,1)
-            call dscal(lenme,1d0/xnrm,xbuf1,1)
-         end if
-         call vec_to_da(me_result%fhand,iroot,xbuf1,
-     &        lenme)
-      else
-c     ! request (nroot-iroot+1)th-last root 
-c     irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
-c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
-         xshf = -xeig
-! decrease xshf in first iteration
-         if (iter .eq. 1) xshf=0.8d0*xshf
-         call da_diavec(me_resid%fhand,iroot,0d0,
-     &        ffscr(iopt)%fhand,iroot,
-     &        1d0/xnrm,me_dia(iopt)%mel%fhand,
-     &        1,xshf,-1d0,
-     &        nwfpar(iopt),xbuf1,xbuf2,lenbuf)
-      end if
-
-      if (typ_prc.eq.optinf_prc_spinp.or.
-     &     typ_prc.eq.optinf_prc_prj.or.
-     &     typ_prc.eq.optinf_prc_spinrefp) then
-! assign op. with list containing the scratch trial vector
-c dbg
-c     print *, "assign ",me_scr(iopt)%mel%label," to ",
-c     &              me_opt(iopt)%mel%op%name
-c     dbgend
-         call assign_me_list(me_resid%label,
-     &        op_opt%name,op_info)
-         call switch_mel_record(me_resid,iroot)
-         if (typ_prc.eq.optinf_prc_spinp) then
-            call spin_project(me_resid,me_special(1)%mel,
-     &              fspc(1),opti_info%nwfpar(iopt),
-     &              xbuf1,xbuf2,.true.,xnrm,
-     &              opti_info,orb_info,
-     &              op_info,str_info,strmap_info)
-            elseif (typ_prc.eq.
-     &              optinf_prc_spinrefp)then
-               call spin_project(me_resid,me_special(1)%mel,
-     &              fspc(2),lenme,
-     &              xbuf1,xbuf2,.true.,xnrm,
-     &              opti_info,orb_info,
-     &              op_info,str_info,strmap_info)
-               
-               call evaluate2(fspc(1),.false.,.false.,
-     &              op_info,str_info,strmap_info,orb_info,
-     &              xnrm,.false.)
-
-            else
-c     dbg
-c     print *,"iopt=",iopt
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
-               call evaluate2(fspc(1),.false.,.false.,
-     &              op_info,str_info,strmap_info,orb_info,
-     &              xnrm,.false.)
-c     dbg
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
-            end if
-            if (xnrm.lt.1d-12) call warn('evpc_core',
-     &           'Nothing left after projection!')
-            call assign_me_list(me_opt%label,
-     &           op_opt%name,op_info)
-      end if
-      case(optinf_prc_blocked)
-         if (nincore.lt.3)
-     &        call quit(1,'evpc_core',
-     &        'I need at least 3 incore vectors (prc_special)')
-         call vec_from_da(me_resid%fhand,iroot,xbuf1,
-     &        lenme)
-         call dscal(lenme,1d0/xnrm,xbuf1,1)
-         xshf = -xeig
-         call optc_prc_special2(me_mvp(iopt)%mel,me_special,
-     &        nspecial,
-     &        op_opt%name,xshf,
-     &        nincore,xbuf1,xbuf2,xbuf3,lbuf,
-     &        orb_info,op_info,str_info,strmap_info)
-         call vec_to_da(me_result%fhand,iroot,xbuf1,
-     &        lenme)
-      case default
-         call quit(1,'evpc_core','unknown preconditioner type')
-      end select
-      return
-      end subroutine
-      
       end
 
