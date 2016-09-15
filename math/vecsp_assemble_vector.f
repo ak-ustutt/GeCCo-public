@@ -30,8 +30,6 @@
 
 
 
-
-      
       integer,intent(inout)::
      &     nlists,               !> number of me-lists in a vector
      &     lcoeff,                !> length of coeff

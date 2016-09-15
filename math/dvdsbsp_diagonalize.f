@@ -28,7 +28,7 @@
       integer,intent(in)::
      &     nroot, ndim
       
-      real(8),intent(out)::
+      real(8),intent(inout)::
      &     eigr(nroot), eigi(nroot), vecs(ndim,nroot)
 
       real(8),allocatable::

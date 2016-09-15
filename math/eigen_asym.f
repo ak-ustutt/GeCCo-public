@@ -17,12 +17,12 @@
 
       integer, intent(in) ::
      &     ndim
-      real(8), intent(in) ::
+      real(8), intent(inout) ::
      &     xmat(ndim,ndim)
-      real(8), intent(out) ::
+      real(8), intent(inout) ::
      &     eigr(ndim), eigi(ndim), vecs(ndim,ndim),
      &     xscr(ndim,ndim)
-      integer, intent(out) ::
+      integer, intent(inout) ::
      &     ierr
 
       integer ::

@@ -38,7 +38,7 @@
      &     xbuf1(*),xbuf2(*),
      &     rvals(nroots)
 
-      real(8),allocatable::
+      real(8),pointer::
      &     eigenvecs(:,:)
       
       real(8) ::

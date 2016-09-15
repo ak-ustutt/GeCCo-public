@@ -701,7 +701,6 @@ c dbg
      &                 me_opt(iopt)%mel%op%name,op_info)
                   call assign_me_list(me_mvp(iopt)%mel%label,
      &                 label_op_mvp(iopt),op_info)
-                  ifree = mem_flushmark()
                end if
             end do
          end do
@@ -838,7 +837,7 @@ c dbgend
       end do
       
       call dvdsbsp_del(dvdsbsp)
-      ifree = mem_flushmark()
+      ifree = mem_flushmark('solve_evp')
 
       return
 
