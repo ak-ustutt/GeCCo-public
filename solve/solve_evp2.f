@@ -195,7 +195,7 @@ c dbg end
      &     xresnrm(nroots,nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
-     &     me_trv(:), me_mvp(:), 
+     &     me_trv(:), me_mvp(:), me_mvpprj(:), 
      &     me_mvort(:), me_vort(:),
      &     me_special(:), me_scr(:), me_home(:),
      &     me_met(:), me_res(:)
@@ -254,7 +254,7 @@ c dbg end
 
       allocate(me_opt(nopt),
      &     me_dia(nopt), 
-     &     me_mvp(nopt),me_trv(nopt),
+     &     me_mvp(nopt),me_trv(nopt),me_mvpprj(nopt),
      &     me_mvort(nopt),me_vort(nopt),
      &     me_special(nspecial),me_scr(nopt),
      &     me_met(nopt),me_res(nopt))
@@ -336,8 +336,18 @@ c dbg end
      &       fname, label_op_mvp(iopt), me_opt(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info )
-
-
+        
+        select case (opti_info%typ_prc(iopt))
+        case(optinf_prc_spinp)
+           me_mvpprj(iopt)%mel => me_special(1)%mel
+        case(optinf_prc_prj)
+           call quit(1,i_am, "route not tested")
+           continue             !TODO where assign here?
+        case(optinf_prc_spinrefp)
+           me_mvpprj(iopt)%mel => me_special(1)%mel
+        case default
+           me_mvpprj(iopt)%mel => me_mvp(1)%mel
+        end select
         
       write(fname,'("trv_",i3.3)') iopt
       me_trv(iopt)%mel => me_from_template(
@@ -674,14 +684,14 @@ c dbg
                   call assign_me_list(me_mvp(iopt)%mel%label,
      &                 me_opt(iopt)%mel%op%name,op_info)
                   if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-                   call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+                 call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
      &                    fl_spc(1),opti_info%nwfpar(iopt),
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
                   elseif (opti_info%typ_prc(iopt).eq.
      &                  optinf_prc_spinrefp) then
-                   call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+                 call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
      &                    fl_spc(2),opti_info%nwfpar(iopt),
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
@@ -690,8 +700,9 @@ c dbg
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
-                   
+
                   else
+                     !TODO not tested
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
@@ -713,7 +724,7 @@ c dbg
      &       xrsnrm , xeig, reig,
      &       me_opt,me_dia,
      &       me_met,me_scr,me_res,
-     &       me_trv,me_mvp,me_vort,me_mvort,
+     &       me_trv,me_mvpprj,me_vort,me_mvort,
      &       me_special, nspecial,
      &       xbuf1,xbuf2, xbuf3, nincore,lenbuf,
      &       fl_mvp,depend,
