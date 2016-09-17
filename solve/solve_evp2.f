@@ -341,8 +341,7 @@ c dbg end
         case(optinf_prc_spinp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
         case(optinf_prc_prj)
-           call quit(1,i_am, "route not tested")
-           continue             !TODO where assign here?
+           me_mvpprj(iopt)%mel => me_mvp(1)%mel
         case(optinf_prc_spinrefp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
         case default
@@ -390,7 +389,7 @@ c     &       op_info,  orb_info, str_info, strmap_info)
         if (trafo(iopt))then
            me_mvort(iopt)%mel => me_scr(iopt)%mel
         else
-           me_mvort(iopt)%mel => me_mvp(iopt)%mel
+           me_mvort(iopt)%mel => me_mvpprj(iopt)%mel
         end if
 
         write(fname,'("res_",i3.3)') iopt
@@ -398,6 +397,22 @@ c     &       op_info,  orb_info, str_info, strmap_info)
      &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
+
+
+
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &        .and.nspecial.ge.3) then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(1)%mel !redundant
+         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(4)%mel !redundant
+         else
+            trafo(iopt)=.false.
+            me_vort(iopt)%mel => me_trv(iopt)%mel !changing
+         end if
+
+
         
       end do
 
@@ -553,7 +568,18 @@ c dbgend
       call init_buffers(opti_info%nwfpar, nopt,
      &     xbuf1,xbuf2,xbuf3,nincore,lenbuf)
       do iroot=1,nroots
-         call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
+         if (ntest.gt.100)then
+            do iopt=1,nopt
+               write(lulog,*) "root no.",iroot
+               call print_list("unprojected trv",me_trv(iopt)%mel,
+     &           "LIST",0d0,0d0,
+     &              orb_info,str_info)
+               end do
+            end if
+            do iopt=1,nopt
+               call switch_mel_record(me_trv(iopt)%mel,iroot)
+            end do
+         call dvdsbsp_append_vvec(dvdsbsp,
      &        me_trv,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)
       end do
@@ -626,7 +652,7 @@ c     &       me_trv(iopt)%mel,
 c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
 c dbgend
-                 if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
+                 if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0) !TODO this has to move into davidson_driver
      &                call sym_ab_list(
      &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
      &                xdum,.false.,
@@ -634,6 +660,7 @@ c dbgend
                  
 ! here?
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
+                 call reset_file_rec(me_mvp(iopt)%mel%fhand)
               end do
 
 c dbg
@@ -696,13 +723,11 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-                     
+                  call reset_file_rec(me_mvpprj(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
-
                   else
-                     !TODO not tested
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)

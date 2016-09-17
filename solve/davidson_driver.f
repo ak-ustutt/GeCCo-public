@@ -147,8 +147,8 @@ c      end do
       
       do iroot=1,nnew
          do iopt=1,nopt
-            
-
+            call switch_mel_record(me_mvp(iopt)%mel,iroot)
+            call switch_mel_record(me_mvort(iopt)%mel,iroot)
             if (trafo(iopt)) then
                
                call transform_forward_wrap(flist,depend,
@@ -161,7 +161,7 @@ c      end do
                  call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                endif
             end if
-         end do
+         end do !iopt
          call dvdsbsp_update(dvdsbsp,
      &        me_vort,
      &        me_mvort,nopt,    !mvort into dvdsbsp and update the vMv-matrix
@@ -248,13 +248,18 @@ c      end do
          task=4       ! calculate new mv product when returning
       end if
       
-      do iroot = 1, nnew 
+      do iroot = 1, nnew
+         do iopt=1,nopt
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+         end do
+
          do iopt = 1,nopt
   
             xnrm=0.0
             do jopt = 1,nopt
                xnrm = xnrm+xrsnrm(iroot,jopt)**2
             end do
+
             xnrm=sqrt(xnrm)
             call apply_preconditioner(
      &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort 
@@ -267,6 +272,14 @@ c      end do
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
      &           nopt.eq.1, op_info, str_info, strmap_info)
          end do
+         if (ntest.gt.100)then
+            do iopt=1,nopt
+               write(lulog,*) "root no.",iroot
+               call print_list("unprojected trv",me_trv(iopt)%mel,
+     &              "LIST",0d0,0d0,
+     &              orb_info,str_info)
+            end do
+         end if
          call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
      &        me_vort,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)

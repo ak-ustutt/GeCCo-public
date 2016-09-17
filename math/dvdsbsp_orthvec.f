@@ -52,10 +52,8 @@
       if(ntest.ge.100)
      &     write(lulog,*)"old norm was",xnrm
       if(xnrm.lt.thresh)then
-         if (ntest.gt.10)
-     &        call print_out(
-     &        i_am//"linear dependend trialvector rejected",
-     &        "ULOG" )
+         call warn(
+     &        i_am,"linear dependend trialvector rejected")
          return
       end if
       call vec_multiply(me_lists, nlists, 1/xnrm, xbuf1, lbuf)
