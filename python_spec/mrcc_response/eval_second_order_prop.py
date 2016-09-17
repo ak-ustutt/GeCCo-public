@@ -23,14 +23,15 @@ _option=_response_data['option']
 #to the actual Lagrangian of ic-MRCC and then replacing the electronic Hamiltonian with the Perturbation
 #NOTE: This perturbation is still the previous one. It should be a new one for a non-diagonal component of the properties
 
-new_target('F_preRSPNS(2)')
+new_target('F_MRCC_LAG_PROP')
 
 depend('F_MRCC_LAG')
+depend('L')
+depend('C0_bar')
 
-DEF_SCALAR({LABEL:'preRSPNS(2)'})
+DEF_SCALAR({LABEL:'LAG_PROP'})
 DEF_SCALAR({LABEL:'preRSPNS(2)_1'})
 DEF_SCALAR({LABEL:'preRSPNS(2)_2'})
-DEF_SCALAR({LABEL:'preRSPNS(2)_3'})
 
 DERIVATIVE({LABEL_RES:'F_preRSPNS(2)_1',
             LABEL_IN:'F_MRCC_LAG',
@@ -49,20 +50,25 @@ DERIVATIVE({LABEL_RES:'F_preRSPNS(2)_2',
             OP_DERIV:'C0^+',
             OP_MULT:'C0_bar'})
 
-DEF_FORMULA({LABEL:'F_preRSPNS(2)',
-             FORMULA:'preRSPNS(2)=preRSPNS(2)_1+preRSPNS(2)_2'})
+DEF_FORMULA({LABEL:'F_MRCC_LAG_PROP',
+             FORMULA:'LAG_PROP=preRSPNS(2)_1+preRSPNS(2)_2'})
 
-EXPAND({LABEL_RES:'F_preRSPNS(2)',
-        LABEL_IN:'F_preRSPNS(2)',
+EXPAND({LABEL_RES:'F_MRCC_LAG_PROP',
+        LABEL_IN:'F_MRCC_LAG_PROP',
         INTERM:['F_preRSPNS(2)_1','F_preRSPNS(2)_2']})
 
-REPLACE({LABEL_RES:'F_preRSPNS(2)_3',
-         LABEL_IN:'F_preRSPNS(2)',
+new_target('F_preRSPNS(2)')
+
+depend('F_MRCC_LAG_PROP')
+
+DEF_SCALAR({LABEL:'preRSPNS(2)'})
+REPLACE({LABEL_RES:'F_preRSPNS(2)',
+         LABEL_IN:'F_MRCC_LAG_PROP',
          OP_LIST:['H','V(1)']})
 
-INVARIANT({LABEL_RES:'F_preRSPNS(2)_3',
-           LABEL_IN:'F_preRSPNS(2)_3',
-           OP_RES:'preRSPNS(2)_3',
+INVARIANT({LABEL_RES:'F_preRSPNS(2)',
+           LABEL_IN:'F_preRSPNS(2)',
+           OP_RES:'preRSPNS(2)',
            OPERATORS:'H'})
 
 
@@ -81,7 +87,7 @@ for i in range(0,n_par):
 
     _deriv_arg = {}
     _deriv_arg[LABEL_RES] = 'F_RSPNS(2)'+i_par
-    _deriv_arg[LABEL_IN]  = 'F_preRSPNS(2)_3'
+    _deriv_arg[LABEL_IN]  = 'F_preRSPNS(2)'
     _deriv_arg[OP_RES]    = 'RSPNS(2)'+i_par
 
     _replace_arg = {}
@@ -154,7 +160,7 @@ if _option == 1:
 
 _deriv_arg = {}
 _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)1' 
-_deriv_arg[LABEL_IN]  = 'F_preRSPNS(2)' 
+_deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
 _deriv_arg[OP_RES]    = 'RSPNS(2)_coup_1'
 _deriv_arg[OP_DERIV]  =  ['T','C0']
 
@@ -175,7 +181,7 @@ DERIVATIVE({LABEL_RES:'F_RSPNS(2)_coup_1',
 if n_par == 2:
 
     DERIVATIVE({LABEL_RES:'F_intRSPNS(2)2',
-                LABEL_IN:'F_preRSPNS(2)',
+                LABEL_IN:'F_MRCC_LAG_PROP',
                 OP_RES:'RSPNS(2)_coup_2',
                 OP_DERIV:'C0',
                 OP_MULT:'C0(1)1'})

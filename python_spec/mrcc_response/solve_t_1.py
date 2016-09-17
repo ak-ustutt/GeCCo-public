@@ -62,6 +62,8 @@ DEF_HAMILTONIAN({LABEL:'V(1)',MAX_RANK:1})
 
 new_target('IMPORT_V(1)')
 
+depend('V(1)')
+
 _op_list={'V(1)':'ME_V(1)'}
 
 for _op in _op_list:
@@ -191,8 +193,7 @@ for i in range(0,n_par):
               'O(1)LCM'+i_par:'A_C0',
               'O(1)RC'+i_par:'A_C0',
               'O(1)RCM'+i_par:'A_C0',
-              'DIAG_T(1)'+i_par:'T',
-              'DIAG_C0(1)'+i_par:'C0'}
+              'DIAG_T(1)'+i_par:'T'}
 
     for _op in _op_list:
         CLONE_OPERATOR({LABEL:_op,
@@ -583,21 +584,6 @@ for i in range(0,n_par):
                      IRREP:1,
                      '2MS':0})
 
-    _op_list={'DIAG_C0(1)'+i_par:'ME_DIAG_C0(1)'+i_par}
-    
-    for _op in _op_list:
-        DEF_ME_LIST({LIST:_op_list[_op],
-                     OPERATOR:_op,
-                     IRREP:_isym,
-                     '2MS':_ms})
-
-    DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
-                 OPERATOR:'E(MR)',
-                 IRREP:1,
-                 '2MS':0})
-
-    ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
-
 # Initializing the ME_FREQ for this i_par
     SET_MEL({LIST:'ME_FREQ'+i_par,
              IDX_LIST:1,
@@ -634,13 +620,32 @@ for i in range(0,n_par):
 
     new_target('DIAG_C0(1)'+i_par)
 
-    #depend('DIAG1SxxM00C0')
+    depend('H0', 'DEF_ME_E(MR)')
+
+    _op_list={'DIAG_C0(1)'+i_par:'C0'}
+
+    for _op in _op_list:
+        CLONE_OPERATOR({LABEL:_op,
+                        TEMPLATE:_op_list[_op]})
+
+    _op_list={'DIAG_C0(1)'+i_par:'ME_DIAG_C0(1)'+i_par}
+    
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_isym,
+                     '2MS':_ms})
+
+    DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
+                 OPERATOR:'E(MR)',
+                 IRREP:1,
+                 '2MS':0})
+
+    ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
 
     PRECONDITIONER({LIST_PRC:'ME_DIAG_C0(1)'+i_par,
                     LIST_INP:'H0',
                     MODE:'dia-H'})
-
-    PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
 
     SCALE_COPY({LIST_RES:'ME_MINEN'+i_par,
                 LIST_INP:'ME_E(MR)',
@@ -649,7 +654,7 @@ for i in range(0,n_par):
     EXTRACT_DIAG({LIST_RES:'ME_DIAG_C0(1)'+i_par,
                   LIST_IN:'ME_MINEN'+i_par,
                   MODE:'ext_act'})
-    PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
+    #PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
 
     #EXTRACT_DIAG({LIST_RES:'ME_DIAG_C0(1)'+i_par,
     #              LIST_IN:'ME_FREQ'+i_par,
