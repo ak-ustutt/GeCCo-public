@@ -61,15 +61,6 @@
       ifree=mem_alloc_real(dvdsbsp%vMv_mat, maxsub*maxsub,
      &     "davidson subspace vMv")
       dvdsbsp%vMv_mat(1:maxsub*maxsub) = 0d0
-!!!!!!!!!!!!!!!!
-!!       This is the correct way sadly commonly installed gfortran versions don't support this.
-c$$$      ifree=mem_alloc_real(mymat, maxsub*maxsub, 
-c$$$     &     "davidson subspace vMv")
-c$$$      do ii=1,maxsub*maxsub
-c$$$         mymat(ii)=0
-c$$$      end do
-c$$$      dvdsbsp%vMv_mat(1:maxsub, 1:maxsub)=> mymat
-c$$$      mymat=>null()
 
 
       end subroutine

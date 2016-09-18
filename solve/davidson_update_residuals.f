@@ -64,8 +64,16 @@
       
       call dvdsbsp_get_eigenvec(dvdsbsp, eigenvecs, rvals, eigi,
      &     nroots, leigenvec)
-
+      if (ntest.ge.20) then
+         write (lulog,*) 'eigenvec'
+         call wrtmat2(eigenvecs,leigenvec,nroots,
+     &        leigenvec,nroots)
+      end if
+      
       do iroot=1,nnew
+         do ilist=1,nlists
+            call switch_mel_record(me_res(ilist)%mel,iroot)
+         end do
          call dvdsbsp_assemble_residual(dvdsbsp,
      &        eigenvecs(1:leigenvec,iroot),
      &        rvals(iroot), leigenvec, me_res, nlists, lxnrm2,

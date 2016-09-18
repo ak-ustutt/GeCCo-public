@@ -198,7 +198,7 @@ c dbg end
      &     me_trv(:), me_mvp(:), me_mvpprj(:), 
      &     me_mvort(:), me_vort(:),
      &     me_special(:), me_scr(:), me_home(:),
-     &     me_met(:), me_res(:)
+     &     me_met(:),me_metort(:), me_res(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:),
@@ -257,7 +257,7 @@ c dbg end
      &     me_mvp(nopt),me_trv(nopt),me_mvpprj(nopt),
      &     me_mvort(nopt),me_vort(nopt),
      &     me_special(nspecial),me_scr(nopt),
-     &     me_met(nopt),me_res(nopt))
+     &     me_met(nopt),me_metort(nopt),me_res(nopt))
       allocate(ffopt(nopt),ffdia(nopt),
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
      &     ff_scr(nopt),ff_ext(nopt) )
@@ -392,6 +392,12 @@ c     &       op_info,  orb_info, str_info, strmap_info)
            me_mvort(iopt)%mel => me_mvpprj(iopt)%mel
         end if
 
+        write(fname,'("metort_",i3.3)') iopt
+        me_metort(iopt)%mel => me_from_template(
+     &       fname, me_opt(iopt)%mel%op%name,me_vort(iopt)%mel,
+     &       nvectors,
+     &       op_info,  orb_info, str_info, strmap_info)
+        
         write(fname,'("res_",i3.3)') iopt
         me_res(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
@@ -742,13 +748,14 @@ c dbg
          end do
       end if
         call davidson_driver(
-     &       dvdsbsp,
-     &       iter, task, nrequest,
-     &       opti_info%nroot, nopt,
-     &       trafo, use_s,
-     &       xrsnrm , xeig, reig,
-     &       me_opt,me_dia,
-     &       me_met,me_scr,me_res,
+     &     dvdsbsp,
+     &     iter, task, nrequest,
+     &     opti_info%nroot, nopt,
+     &     trafo, use_s,
+     &     xrsnrm , xeig, reig,
+     &     me_opt,me_dia,
+     &     me_met,me_metort,
+     &     me_scr,me_res,
      &       me_trv,me_mvpprj,me_vort,me_mvort,
      &       me_special, nspecial,
      &       xbuf1,xbuf2, xbuf3, nincore,lenbuf,
@@ -788,6 +795,8 @@ c dbg
          write(fname,'("res_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
          write(fname,'("scr_",i3.3)') iopt
+         call me_ensure_deleted(fname,op_info)
+         write(fname,'("metort_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
 
         call assign_me_list(label_opt(iopt),

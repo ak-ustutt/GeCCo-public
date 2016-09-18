@@ -11,7 +11,8 @@
      &     trafo, use_s,
      &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
-     &     me_met,me_scr,me_res,
+     &     me_met,me_metort,
+     &     me_scr,me_res,
      &     me_trv,me_mvp,me_vort,me_mvort,
      &     me_special, nspecial,
      &     xbuf1,xbuf2, xbuf3, nincore,lenbuf,
@@ -58,7 +59,8 @@
 
       type(me_list_array), intent(inout) :: !inout to be sure
      &     me_opt(*), me_dia(*),
-     &     me_met(*),me_scr(*),me_res(*),
+     &     me_met(*), me_metort(*),
+     &     me_scr(*),me_res(*),
      &     me_trv(*), me_mvp(*),me_vort(*),me_mvort(*),
      &     me_special(*)
 
@@ -149,6 +151,10 @@ c      end do
          do iopt=1,nopt
             call switch_mel_record(me_mvp(iopt)%mel,iroot)
             call switch_mel_record(me_mvort(iopt)%mel,iroot)
+            if (use_s(iopt))then
+               call switch_mel_record(me_met(iopt)%mel,iroot)
+               call switch_mel_record(me_metort(iopt)%mel,iroot)
+            end if
             if (trafo(iopt)) then
                
                call transform_forward_wrap(flist,depend,
@@ -159,8 +165,21 @@ c      end do
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                  call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-               endif
-            end if
+              endif
+              ! Not yet sure how to treat the metric
+!              if (use_s(iopt))then
+!                 call transform_forward_wrap(flist,depend,
+!     &                me_special,me_met,me_metort, !met-> metort
+!     &                xrsnrm, nroot, 
+!     &                iroot, iopt, iroot,
+!     &                me_opt,
+!     &                op_info,str_info,strmap_info, orb_info, opti_info)
+!                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+!                    call set_blks(me_mvort(iopt)%mel,
+!     &                   "P,H|P,V|V,H|V,V",0d0)
+!                end if
+!              end if 
+           end if 
          end do !iopt
          call dvdsbsp_update(dvdsbsp,
      &        me_vort,
@@ -168,6 +187,14 @@ c      end do
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
          
       end do
+
+      if (nroot.gt.dvdsbsp_get_nfree(dvdsbsp) )then
+         call dvdsbsp_compress(dvdsbsp, nroot,
+     &        nopt, me_scr,     !scr as scratch
+     &        xbuf1, xbuf2, lenbuf ,nincore)
+      end if
+
+      
       call davidson_assemble_residuals(dvdsbsp,
      &     leig, nnew,
      &     me_scr, nopt, nroot, xrsnrm, !temporary assemble on scr
@@ -188,9 +215,10 @@ c      end do
             conv= conv .and. (xrsnrm(iroot,iopt) .le.
      &           opti_info%thrgrd(iopt) )
          end do
-         if (.not.conv)then 
+         if (.not.conv)then
             irecres=irecres+1
             do iopt=1,nopt
+               call switch_mel_record(me_scr(iopt)%mel,iroot)
                call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other 
                call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
      &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
@@ -216,6 +244,7 @@ c      end do
          do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
+               call switch_mel_record(me_opt(iopt)%mel,iroot)
             end do 
             call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
             do iopt=1,nopt
@@ -244,13 +273,14 @@ c      end do
          end if
          task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
-      else 
+      else
          task=4       ! calculate new mv product when returning
       end if
       
       do iroot = 1, nnew
          do iopt=1,nopt
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call switch_mel_record(me_res(iopt)%mel,iroot)
+            call switch_mel_record(me_vort(iopt)%mel,iroot)
          end do
 
          do iopt = 1,nopt
@@ -291,9 +321,11 @@ c      end do
       
       do iopt=1,nopt
          do iroot=1,nnew
+            call switch_mel_record(me_vort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
-     &              me_special,me_vort,me_trv, !scr -> trv !new_trialvector created
+     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
      &              iroot, iopt,
      &              me_opt,
      &              op_info, str_info, strmap_info, 
@@ -775,7 +807,7 @@ c     dbgend
      &           op_opt%name,op_info)
       end if
       case(optinf_prc_blocked)
-! not sure, what happens her
+! not sure, what happens here
          if (nincore.lt.3)
      &        call quit(1,'evpc_core',
      &        'I need at least 3 incore vectors (prc_special)')
@@ -954,5 +986,15 @@ c     dbgend
       type(me_list),intent(in)::mel
       mel_get_maxrec=mel%fhand%active_records(2)
 
+      end function
+      pure function dvdsbsp_get_nfree(dvdsbsp)
+      
+      integer::
+     &     dvdsbsp_get_nfree
+
+      type(davidson_subspace_t),intent(in)::
+     &     dvdsbsp
+
+      dvdsbsp_get_nfree=dvdsbsp%nmaxsub-dvdsbsp%ncursub
       end function
       end subroutine
