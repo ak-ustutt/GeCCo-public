@@ -60,6 +60,7 @@ EXPAND({LABEL_RES:'F_MRCC_LAG_PROP',
 new_target('F_preRSPNS(2)')
 
 depend('F_MRCC_LAG_PROP')
+depend('IMPORT_V(1)')
 
 DEF_SCALAR({LABEL:'preRSPNS(2)'})
 REPLACE({LABEL_RES:'F_preRSPNS(2)',

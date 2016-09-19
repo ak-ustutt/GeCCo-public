@@ -75,8 +75,8 @@ if (_response_data['order']>=3):
     if (relax_ref):
         print 'importing solve_lambda_1 ...'
         import solve_lambda_1
-#       print 'importing eval_second_order_prop_alt ...'
-#       import eval_second_order_prop_alt
+        print 'importing eval_second_order_prop_alt ...'
+        import eval_second_order_prop_alt
     else:
         print 'importing solve_lambda_0_restr ...'
         import solve_lambda_1_restr
