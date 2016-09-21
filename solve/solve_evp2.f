@@ -341,11 +341,11 @@ c dbg end
         case(optinf_prc_spinp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
         case(optinf_prc_prj)
-           me_mvpprj(iopt)%mel => me_mvp(1)%mel
+           me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         case(optinf_prc_spinrefp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
         case default
-           me_mvpprj(iopt)%mel => me_mvp(1)%mel
+           me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         end select
         
       write(fname,'("trv_",i3.3)') iopt
@@ -422,7 +422,8 @@ c     &       op_info,  orb_info, str_info, strmap_info)
         
       end do
 
-      call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt)
+      call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt,
+     &     use_s)
       
 c dbg
 c      do iopt = 1,nopt
@@ -516,6 +517,7 @@ c dbgend
         ! open corresponding matrix vector products ...
         call file_ensure_open(me_mvp(iopt)%mel%fhand)
         call file_ensure_open(me_mvort(iopt)%mel%fhand)
+        call file_ensure_open(me_metort(iopt)%mel%fhand)
         call file_ensure_open(me_res(iopt)%mel%fhand)
         if (associated(me_met(iopt)%mel))
      &       call file_ensure_open(me_met(iopt)%mel%fhand)
@@ -557,8 +559,11 @@ c dbgend
         enddo
 
       else
-
-        ! get initial amplitudes
+! get initial amplitudes
+         do iopt=1,nopt
+            call assign_me_list(me_trv(iopt)%mel%label,
+     &           me_opt(iopt)%mel%op%name,op_info)
+         end do
         if (nopt.eq.1) then
         call init_guess(nopt,use_init_guess,nroots,
      &                  me_opt,me_trv,me_dia,me_special,nspecial,
@@ -589,7 +594,6 @@ c dbgend
      &        me_trv,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)
       end do
-
       
       iter = 0
       task = 4
@@ -665,6 +669,7 @@ c dbgend
      &                op_info,str_info,strmap_info,orb_info)
                  
 ! here?
+                 call touch_file_rec(me_opt(iopt)%mel%fhand)
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
                  call reset_file_rec(me_mvp(iopt)%mel%fhand)
               end do
@@ -685,12 +690,17 @@ c             write(lulog,*) 'Fixing signs of residual+metric,iopt=',iopt
               call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
      &                            irequest,
      &                            opti_info,iopt,
-     &                            opti_info%nwfpar(iopt),xbuf1)
+     &                           opti_info%nwfpar(iopt),xbuf1)
+              print *, "calculated mvp sign fix on",
+     &             me_mvp(iopt)%mel%label
+
               if (use_s(iopt))
-     &           call optc_fix_signs2(me_met(iopt)%mel%fhand,
-     &                            irequest,
-     &                            opti_info,iopt,
-     &                            opti_info%nwfpar(iopt),xbuf1)
+     &             call optc_fix_signs2(me_met(iopt)%mel%fhand,
+     &             irequest,
+     &             opti_info,iopt,
+     &             opti_info%nwfpar(iopt),xbuf1)
+              print *, "calculated metric sign fix on",
+     &             me_met(iopt)%mel%label
             end do
 c dbg
 c            write(lulog,*) 'output for request: ',irequest
@@ -729,11 +739,11 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-                  call reset_file_rec(me_mvpprj(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
                   else
+                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
@@ -773,11 +783,11 @@ c dbg
            if (iprlvl.gt.0) then
               do iroot = 1, nroots
                  write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
-     &                xeig(iroot),(xresnrm(iroot,idx),
+     &                xeig(iroot),(xrsnrm(iroot,idx),
      &                idx = 1, nopt)
                  if (lulog.ne.luout.and.iprlvl.ge.5)
      &                write(luout,'("   ",3x,f24.12,x,3g10.4)')
-     &                xeig(iroot),(xresnrm(iroot,idx),
+     &                xeig(iroot),(xrsnrm(iroot,idx),
      &                idx = 1, nopt)
               end do
            end if

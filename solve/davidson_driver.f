@@ -167,22 +167,31 @@ c      end do
                  call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
               endif
               ! Not yet sure how to treat the metric
-!              if (use_s(iopt))then
-!                 call transform_forward_wrap(flist,depend,
-!     &                me_special,me_met,me_metort, !met-> metort
-!     &                xrsnrm, nroot, 
-!     &                iroot, iopt, iroot,
-!     &                me_opt,
-!     &                op_info,str_info,strmap_info, orb_info, opti_info)
-!                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-!                    call set_blks(me_mvort(iopt)%mel,
-!     &                   "P,H|P,V|V,H|V,V",0d0)
-!                end if
-!              end if 
-           end if 
+              if (use_s(iopt))then
+                 call transform_forward_wrap(flist,depend,
+     &                me_special,me_met,me_metort, !met-> metort
+     &                xrsnrm, nroot, 
+     &                iroot, iopt, iroot,
+     &                me_opt,
+     &                op_info,str_info,strmap_info, orb_info, opti_info)
+                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                    call set_blks(me_mvort(iopt)%mel,
+     &                   "P,H|P,V|V,H|V,V",0d0)
+                 end if
+              else
+                 me_metort(iopt)%mel=> null()
+              end if
+           else
+              if (use_s(iopt))then
+                 me_metort(iopt)%mel=> me_met(iopt)%mel
+              else
+                 me_metort(iopt)%mel=> null()
+              end if
+           end if
+
          end do !iopt
          call dvdsbsp_update(dvdsbsp,
-     &        me_vort,
+     &        me_metort,
      &        me_mvort,nopt,    !mvort into dvdsbsp and update the vMv-matrix
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
          
@@ -543,7 +552,7 @@ c dbg end
       character(len=*),parameter::
      &     i_am="change_basis_old"
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
       
       type(formula_item)::
      &     flist
@@ -636,7 +645,7 @@ c dbg end
       character(len=*),parameter::
      &     i_am="apply_preconditioner"
       integer,parameter::
-     &     ntest=00
+     &     ntest=1000
       
 
       type(me_list), intent(in), target::

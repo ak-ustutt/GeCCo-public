@@ -32,12 +32,16 @@
      &     ncursub,             ! current number of vectors
      &     icursub,              ! last updated vectors (if new vectors are added after nmaxsub is reached, vectors are overridden)
      &     lcursub       !
+      logical::
+     & with_metric
       real(8),dimension(:),pointer::
-     &     vMv_mat=>null()           ! matrix of all vMv products it is a maxsub x maxsub matrix  with ncursub xncursub  elements !=0 
+     &     vMv_mat=>null(),           ! matrix of all vMv products it is a maxsub x maxsub matrix  with ncursub xncursub  elements !=0
+     &     vSv_mat=>null()	
 ! (vMv_mat)_{i,j} = (v)_i*(Mv)_j
 
       type(vector_space_t)::
      &     vspace,        ! vector space
+     &     Svspace,        ! metric-vector product space (only used if a metric is available)
      &     Mvspace        ! matrix-vector product space
 
       end type

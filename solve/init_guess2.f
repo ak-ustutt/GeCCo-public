@@ -181,15 +181,18 @@ c dbg
 
          ! transformed preconditioner => transformed initial guess vector
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
+             print *,"prc_traf"
              me_pnt => me_special(1)%mel
              trafo = .true.
           else if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+             print *, "traf_spc"
              me_pnt => me_special(4)%mel
              trafo = .true.
           else
+             print *,"no_traf"
              me_pnt => me_trv(iopt)%mel
              trafo = .false.
-          end if
+          end if 
 
           nset = 0
           if (isign(iopt).ne.0) then
@@ -250,7 +253,7 @@ c dbg
             allocate(idxselect(nout))
             nselect = 0
             call select_formula_target(idxselect,nselect,
-     &                  me_trv(iopt)%mel%label,depend,op_info)
+     &                  me_opt(iopt)%mel%label,depend,op_info)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)

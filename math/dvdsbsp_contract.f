@@ -63,6 +63,11 @@
      &     me_scr, xbuf1, xbuf2, lbuf)
       call vecsp_compress(dvdsbsp%Mvspace,vecs,nretain,nlists,ndim,
      &     me_scr, xbuf1, xbuf2, lbuf)
+      if (dvdsbsp%with_metric)then
+         call vecsp_compress(dvdsbsp%Svspace,vecs,nretain,nlists,ndim,
+     &        me_scr, xbuf1, xbuf2, lbuf)
+      end if
+      
       maxsub=dvdsbsp%nmaxsub
       dvdsbsp%vMv_mat(1:maxsub*maxsub) = 0d0
       

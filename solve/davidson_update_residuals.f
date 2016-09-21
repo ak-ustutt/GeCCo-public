@@ -12,7 +12,7 @@
 
 
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 1000
       character(len=*),parameter::
      &     i_am="davidson_update_residuals"
       

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-!>    disposes of a davidson subspace without memory leaks
+!>    disposes of a davidson subspace 
 *----------------------------------------------------------------------*
       subroutine dvdsbsp_del(dvdsbsp)
 *----------------------------------------------------------------------*
@@ -23,6 +23,10 @@
       
       call vecsp_del(dvdsbsp%vspace)
       call vecsp_del(dvdsbsp%Mvspace)
+      if(dvdsbsp%with_metric)then
+         call vecsp_del(dvdsbsp%Svspace)
+      end if
+      dvdsbsp%with_metric=.false.
       dvdsbsp%nmaxsub=0
       dvdsbsp%ncursub=0
       dvdsbsp%icursub=0

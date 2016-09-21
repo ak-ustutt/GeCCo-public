@@ -8,7 +8,7 @@ method
  MRCC maxcom_res=2
  MRCC excite method=LR 
 calculate
- solve maxiter=4,conv=1d-2,maxsub=8
+ solve maxiter=50,conv=1d-5,maxsub=40
  solve non_linear optref=-3
  routes maxbranch=4,sv_thresh=1d-5,use_tr=t
  excitation sym=(1,0,0,0),mult=1

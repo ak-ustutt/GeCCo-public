@@ -16,7 +16,7 @@
       include 'def_optimize_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       integer, intent(in) ::
      &     irecvec
@@ -43,6 +43,9 @@
 
 
       nsec = opti_info%nsec(iopt)
+      if(ntest.gt.10)then
+         write(lulog,*) "fixing signs on", ff_vec%name
+      end if 
 c dbg
 c      print *,'nsec = ',nsec
 c dbg

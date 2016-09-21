@@ -33,7 +33,7 @@
 
       real(8),allocatable::
      &     xmat(:),           !submatrix only
-     &     xscr(:),           !scratch
+     &     xscr(:),             !scratch
      &     totvecs(:,:),        ! all eigenvectors
      &     toteigr(:),toteigi(:) ! all eigenvalues
       
@@ -52,18 +52,32 @@
      &     "requested dimension inconsistent with subspace.")
 
       allocate(xmat(ndim*ndim),xscr(ndim*ndim),totvecs(ndim,ndim),
-     &     toteigr(ndim),toteigi(ndim))
+     &     toteigr(ndim),toteigi(ndim) )
       
       maxdim=dvdsbsp%nmaxsub
-   
-      if (ndim .eq. maxdim)then
-         call eigen_asym(ndim, dvdsbsp%vMv_mat, toteigr, toteigi, 
-     &        totvecs, xscr, ierr)
-      else
-         call extract_submatrix(dvdsbsp%vMv_mat,  maxdim,  xmat, ndim) !vMv_mat -> xmat
-         call eigen_asym(ndim, xmat, toteigr, toteigi, 
-     &        totvecs, xscr, ierr)
-      end if
+      if (.not.dvdsbsp%with_metric)then
+!      if(.True.)then
+         if (ndim .eq. maxdim)then
+            call eigen_asym(ndim, dvdsbsp%vMv_mat, toteigr, toteigi, 
+     &           totvecs, xscr, ierr)
+         else
+            call extract_submatrix(dvdsbsp%vMv_mat,  maxdim,  xmat,ndim) !vMv_mat -> xmat
+            call eigen_asym(ndim, xmat, toteigr, toteigi, 
+     &           totvecs, xscr, ierr)
+         end if
+      else !with metric
+         if (ndim .eq. maxdim)then
+            call eigen_asym_met(ndim, dvdsbsp%vMv_mat, dvdsbsp%vSv_mat,
+     &           toteigr, toteigi, 
+     &           totvecs, xscr, ierr)
+         else
+            call extract_submatrix(dvdsbsp%vMv_mat,  maxdim,  xmat,ndim) !vMv_mat -> xmat
+            call extract_submatrix(dvdsbsp%vSv_mat,  maxdim,  xscr,ndim) !vSv_mat -> xscr
+            call eigen_asym_met(ndim, xmat, xscr, toteigr, toteigi, 
+     &           totvecs, xscr, ierr) !xscr =vSv_matrix and scratch
+            
+         end if
+      end if 
 
       eigi=toteigi(1:nroot)
       eigr=toteigr(1:nroot)
