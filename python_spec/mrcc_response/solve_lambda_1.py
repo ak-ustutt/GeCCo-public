@@ -422,6 +422,7 @@ for i in range(0,n_par):
 
     _op_list={'PRJ_O(1)LCb'+i_par:'ME_PRJ_O(1)LCb'+i_par,
               'PRJ_O(1)RCb'+i_par:'ME_PRJ_O(1)RCb'+i_par,
+              'O(1)LCb'+i_par:'ME_O(1)LCb'+i_par,
               'O(1)RCb'+i_par:'ME_O(1)RCb'+i_par}
 
     for _op in _op_list:
@@ -482,6 +483,7 @@ for i in range(0,n_par):
 
     OPTIMIZE({LABEL_OPT:'FOPT_SOLVE_L(1)'+i_par,
               LABELS_IN:['F_O(1)LL'+i_par,'F_O(1)RL'+i_par,'F_PRJ_O(1)LCb'+i_par,'F_PRJ_O(1)RCb'+i_par]})
+#             LABELS_IN:['F_O(1)LL'+i_par,'F_O(1)RL'+i_par,'F_O(1)LCb'+i_par,'F_O(1)RCb'+i_par]})
 
     new_target('SOLVE_LAMBDA(1)'+i_par,True)
 
@@ -495,10 +497,15 @@ for i in range(0,n_par):
     SOLVE_LEQ({LIST_OPT:['ME_L(1)'+i_par,'ME_C0_bar(1)'+i_par],
                LIST_PRC:['ME_DIA_L(1)'+i_par,'ME_DIAG_C0_bar(1)'+i_par],
                OP_MVP:['O(1)LL'+i_par,'PRJ_O(1)LCb'+i_par],
+#              OP_MVP:['O(1)LL'+i_par,'O(1)LCb'+i_par],
                OP_SVP:['L(1)'+i_par,'C0_bar(1)'+i_par],
                OP_RHS:['O(1)RL'+i_par,'PRJ_O(1)RCb'+i_par],
+#              OP_RHS:['O(1)RL'+i_par,'O(1)RCb'+i_par],
                FORM:'FOPT_SOLVE_L(1)'+i_par,
                LIST_SPC:['ME_L(1)'+i_par,'ME_Ltr(1)'+i_par,'ME_Dtr','ME_Dtrdag'],
                FORM_SPC:'FOPT_L(1)'+i_par,
                MODE:'TRF DIA',
                N_ROOTS:1})
+
+    PRINT_MEL({LIST:'ME_C0_bar(1)'+i_par})
+

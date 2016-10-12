@@ -83,6 +83,9 @@ for i in range(0,n_par):
     new_target('F_RSPNS(2)'+i_par)
 
     depend('F_preRSPNS(2)')
+    depend('EVAL_RSPNS(1)')
+    depend('DEF_ME_C0_bar')
+
 
     DEF_SCALAR({LABEL:'RSPNS(2)'+i_par})
 
@@ -114,6 +117,12 @@ for i in range(0,n_par):
     else:
         quit_error('Input error: unknown option for ic-MRCC properties') 
 
+    EXPAND_OP_PRODUCT({LABEL:'F_RSPNS(2)'+i_par,NEW:False,
+                       OP_RES:'RSPNS(2)'+i_par,
+                       OPERATORS:['RSPNS(1)','C0_bar','C0(1)'+i_par],
+                       IDX_SV:[1,2,3],
+                       FAC:-1.0})
+
     
     #PRINT_FORMULA({LABEL:'F_preRSPNS(2)_3'})
     #PRINT_FORMULA({LABEL:'F_RSPNS(2)'+i_par})
@@ -133,6 +142,7 @@ DEF_SCALAR({LABEL:'RSPNS(2)_coup_1'})
 DEF_SCALAR({LABEL:'RSPNS(2)_coup_2'})
 DEF_SCALAR({LABEL:'RSPNS(2)_coup_3'})
 DEF_SCALAR({LABEL:'RSPNS(2)_coup_4'})
+DEF_SCALAR({LABEL:'RSPNS(2)_coup_5'})
 
 
 if _option == 1:
@@ -163,12 +173,12 @@ _deriv_arg = {}
 _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)1' 
 _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
 _deriv_arg[OP_RES]    = 'RSPNS(2)_coup_1'
-_deriv_arg[OP_DERIV]  =  ['T','C0']
+_deriv_arg[OP_DERIV]  =  ['T','C0','C0']
 
 if n_par == 1:
-    _deriv_arg[OP_MULT] = ['T(1)1','C0(1)1']
+    _deriv_arg[OP_MULT] = ['T(1)1','C0(1)1','C0(1)1']
 else:
-    _deriv_arg[OP_MULT] = ['T(1)2','C0(1)2']
+    _deriv_arg[OP_MULT] = ['T(1)2','C0(1)2','C0(1)2']
 
 
 DERIVATIVE(_deriv_arg)
@@ -226,7 +236,7 @@ _expand_form[LABEL_IN] = 'F_RSPNS(2)_2'
 #both of _option and n_par. 
 if _option ==1:
     if n_par == 1:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_3'
+        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_3+RSPNS(2)_coup_3'
         _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_3']
     if n_par == 2:
         _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2+RSPNS(2)_coup_3+RSPNS(2)_coup_4' #Should have a factor half adjoint
