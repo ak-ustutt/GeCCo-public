@@ -3,7 +3,7 @@
 #This particular interface started to be written on September, 2015
 
 from gecco_interface import *
-from get_response_data import _response_data
+from get_response_data import _response_data, _pop_data, _cmp_data
 import math
 
 _inp = GeCCo_Input()
@@ -11,13 +11,25 @@ _inp = GeCCo_Input()
 # Get the name of the package GeCCo uses the integrals from 
 _env = _inp.env
 
+# _multd2h will be required later to find out the spatial symmetry of 'T(1)' ####
+
+_multd2h = [[1,2,3,4,5,6,7,8],
+[2,1,4,3,6,5,8,7],
+[3,4,1,2,7,8,5,6],
+[4,3,2,1,8,7,6,5],
+[5,6,7,8,1,2,3,4],
+[6,5,8,7,2,1,4,3],
+[7,8,5,6,3,4,1,2],
+[8,7,6,5,4,3,2,1]]
+
 _orb = Orb_Info()
 
 _s2 = _orb.get('imult')
 
 _ms = _orb.get('ims')
 
-_isym = _orb.get('lsym')
+_isym_0 = _orb.get('lsym')
+_isym= _isym_0
 
 if ((_ms == 0) and ((_s2-1 % 4) == 0)):
     _msc = 1

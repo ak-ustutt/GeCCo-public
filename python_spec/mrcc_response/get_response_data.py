@@ -10,18 +10,6 @@ if(_order == None):
     _order=1
 _response_data['order']=int(_order)
 
-#Get the type of the perturbation, the default is to use the dipole operator
-_pert=_inp.get('method.MRCC.response.pert')
-if(_pert == None):
-    _pert='d'
-_response_data['pert']=_pert
-
-#Get the cartesian component of the perturbation
-_comp=_inp.get('method.MRCC.response.comp')
-if(_comp == None):
-    _comp='Z'
-_response_data['comp']=_comp
-
 #Get the frequency of the perturbation if we are going to calculate dynamic properties
 _freq=_inp.get('method.MRCC.response.freq')
 if(_freq == None):
@@ -64,6 +52,86 @@ if(_restart == None):
     _restart=1
 
 _response_data['restart']=int(_restart)
+
+#Now we are reading the information about the response calculation written 
+#in the file 'prop_info.gecco'
+
+#_pop_data is a dictionary that has the information about the perturbation 
+#operators influencing the response calculation
+
+_pop_data={}
+#cartisian component of the pertubation operator
+_pop_data['comp']=[]
+#name of the perturbation operator, for the time bieng only dipole operator ('d') is allowed
+_pop_data['name']=[]
+#name of the integral corresponding to the perturbation
+_pop_data['int_name']=[]
+#sign of the perturbation
+_pop_data['sign']=[]
+#symmetry of the pertubation
+_pop_data['isym']=[]
+
+#cmp_data is a dictionary that has the information about all the new components 
+#of the wabefunction that has to be solved to get the response properties
+
+_cmp_data={}
+#with which perturbation operator this component of the wavefunction is linked to
+_cmp_data['pop_idx']=[]
+#frequency linked to the component
+_cmp_data['freq']=[]
+#if calculation of this component is redundant then to which previous component
+_cmp_data['redun']=[]
+
+_prop_info_name='prop_info.gecco'
+
+lines=[line.rstrip('\n') for line in open(_prop_info_name)]
+
+# l is the just the line number
+l=0
+
+#Now reading line by line from the file
+
+#reading the number of operator influencing the calculation
+part=lines[l].split()
+_npop=int(part[1])
+l=l+1
+#print 'npop', _npop
+for i in xrange (0,_npop):
+    part=lines[l].split()
+    _pop_data['comp'].append(str(part[1]))
+    part=lines[l+1].split()
+    _pop_data['name'].append(str(part[1]))
+    if(str(part[1])!='d'):
+        quit_error('Properties for ic-MRCC can be calculated only for dipole operators...')
+    part=lines[l+2].split()
+    _pop_data['int_name'].append(str(part[1]))
+    part=lines[l+3].split()
+    _pop_data['isym'].append(int(part[1]))
+    part=lines[l+4].split()
+    _pop_data['sign'].append(int(part[1]))
+    l=l+5
+#print 'pop_data', _pop_data
+part=lines[l].split()
+#number of the calculation asked in the input
+_ncnt=int(part[0])
+#maximum order of the properties that has been asked for
+_maxord=int(part[1])
+l=l+1
+#print '_ncnt', _ncnt, '_maxord', _maxord
+for i in xrange (0,_ncnt*_maxord):
+    part=lines[l].split()
+    _cmp_data['pop_idx'].append(int(part[1]))
+    part=lines[l+1].split()
+    _cmp_data['freq'].append(float(part[1]))
+    part=lines[l+2].split()
+    _cmp_data['redun'].append(int(part[1]))
+    l=l+3
+#print 'cmp_data', _cmp_data
+
+#adding the lone parameters in to the _response_data
+_response_data['nPop']=_npop
+_response_data['nCnt']=_ncnt
+_response_data['maxorder']=_maxord
 
 print 'Using following options for the response calculations:'
 print _response_data
