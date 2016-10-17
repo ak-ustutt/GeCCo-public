@@ -697,9 +697,21 @@ for i in range(0,n_loop):
     new_target('DIAG_T(1)'+i_par)
 
     depend('DIAG1SxxM00_T')
+    depend('EVAL_FREF','FOPT_Atr')
+        
+#   SCALE_COPY({LIST_RES:'ME_DIAG_T(1)'+i_par,LIST_INP:'DIAG1SxxM00_T',FAC:1.0})
 
-    SCALE_COPY({LIST_RES:'ME_DIAG_T(1)'+i_par,LIST_INP:'DIAG1SxxM00_T',FAC:1.0})
-
+    PRECONDITIONER({LIST_PRC:'ME_DIAG_T(1)'+i_par,
+                    LIST_INP:'ME_FREF'})
+    
+    ASSIGN_ME2OP({LIST:'ME_Dtr',
+                 OPERATOR:'Dtr'})
+   
+    EVALUATE({FORM:'FOPT_Atr'})
+    
+    EXTRACT_DIAG({LIST_RES:'ME_DIAG_T(1)'+i_par,
+                  LIST_IN:'ME_A',
+                  MODE:'extend'})
 
     new_target('DIAG_C0(1)'+i_par)
 
