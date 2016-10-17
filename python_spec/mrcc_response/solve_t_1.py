@@ -42,7 +42,12 @@ else:
 _freq=_response_data['freq']
 #Getting the value of the restart option
 _restart=_response_data['restart']
-
+#Getting the total number of perturbation operator need to be defined 
+_npop=_response_data['nPop']
+#Getting total number of response calculation
+_ncnt=_response_data['nCnt']
+#Getting the maximum order of the properties that will be calculated
+_maxord=_response_data['maxorder']
 #n_par tells how many version of the same operator has to be defined 
 #depending on whether we are doing static or dynamic property calcualtion
 if (_freq == 0.0):
@@ -62,60 +67,79 @@ else:
     
 print 'frequency for the second order proeprties is set to:', _freq
 
-#Define the perturbation operator. This is the first operator that has been 
-#defined. For second order property one more pertubation is involved that 
-#takes part while during the evaluation of the property. This code now 
-#works only for diagonal elements of the second order properties. So 
-#Defining one pertubation is still okay. 
+#Defining all the perturbation operators needed for the whole calculations
 
-new_target('V(1)')
+_list_to_depend=[]
 
-DEF_HAMILTONIAN({LABEL:'V(1)',MAX_RANK:1})
+for ipop in xrange (0,_npop):
+    _cur_ext=_pop_data['name'][ipop]+_pop_data['comp'][ipop]
+    _pop_name='V'+_cur_ext
 
-new_target('IMPORT_V(1)')
+    new_target(_pop_name)
 
-depend('V(1)')
+    DEF_HAMILTONIAN({LABEL:_pop_name,MAX_RANK:1})
 
-_op_list={'V(1)':'ME_V(1)'}
+    new_target('IMPORT_'+_pop_name)
 
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:1}) # For second order properties, the perturbations are mainly singlet. 
+    depend(_pop_name)
 
-#Importing the integrals: It is hard coded to be a dipole operator in z-direction. 
-##TODO##  ###NEED TO BE GENERALIZED###
+    _op_list={_pop_name:'ME_'+_pop_name}
 
-IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:_env})
+    _irrep=_pop_data['isym'][ipop]
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_irrep,
+                     '2MS':0,
+                     AB_SYM:1}) # For second order properties, the perturbations are mainly singlet. 
 
+#Getting the type of the integrals needed while importing the integrals
+    _int_type=_pop_data['int_name'][ipop]
 
-# We define all the parameters from earlier calculation that will be needed here
+    IMPORT({LIST:'ME_'+_pop_name,
+            TYPE:_int_type,
+            ENV:_env})
 
-new_target('DEF_RSPNS(1)')
-depend('DEF_ME_L')
-depend('DEF_ME_C0_bar')
-depend('IMPORT_V(1)')
+    _list_to_depend.append('IMPORT_'+_pop_name)
 
-DEF_SCALAR({LABEL:'RSPNS(1)'})
+    new_target('DEF_RSPNS(1)'+_cur_ext)
 
-_op_list={'RSPNS(1)':'ME_RSPNS(1)'}
+    DEF_SCALAR({LABEL:'RSPNS(1)'+_cur_ext})
 
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:1,
-                 '2MS':0})
+    _op_list={'RSPNS(1)'+_cur_ext:'ME_RSPNS(1)'+_cur_ext}
+
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_irrep,
+                     '2MS':0})
+
+new_target('IMPORT_PERT_OPS')
+
+for ele in _list_to_depend:
+    depend(ele)
+
+# We calculate the first order response, again(!), that will be needed here
+# Here we will first get the formula, and then for each of the operator we 
+# will use the same formula, but changing only the list of the operators
 
 new_target('GET_RSPNS(1)_FORM')
 
 depend('F_MRCC_LAG')
-depend('DEF_RSPNS(1)')
+depend('DEF_ME_T')
+depend('DEF_ME_C0')
+depend('DEF_ME_L')
+depend('DEF_ME_C0_bar')
 
 DEF_SCALAR({LABEL:'preRSPNS(1)_1'})
 DEF_SCALAR({LABEL:'preRSPNS(1)_2'})
 DEF_SCALAR({LABEL:'preRSPNS(1)'})
+
+#Defining a dummy scalar operator for RSPNS(1)
+DEF_SCALAR({LABEL:'RSPNS(1)'})
+
+#Defining a dummy perturbation operator
+DEF_HAMILTONIAN({LABEL:'V(1)',MAX_RANK:1})
 
 INVARIANT({LABEL_RES:'F_preRSPNS(1)_1',
            LABEL_IN:'F_MRCC_LAG',
@@ -148,24 +172,58 @@ INVARIANT({LABEL_RES:'F_RSPNS(1)',
            OP_RES:'RSPNS(1)',
            OPERATORS:'H'})
 
+_list_to_depend=[]
+
+for ipop in xrange (0,_npop):
+    _cur_ext=_pop_data['name'][ipop]+_pop_data['comp'][ipop]
+    _pop_name='V'+_cur_ext
+
+    new_target('EVAL_RSPNS(1)'+_cur_ext)
+
+    depend('DEF_RSPNS(1)'+_cur_ext)
+
+    ASSIGN_ME2OP({LIST:'ME_RSPNS(1)'+_cur_ext,
+                  OPERATOR:'RSPNS(1)'})
+
+    ASSIGN_ME2OP({LIST:'ME_'+_pop_name,
+                  OPERATOR:'V(1)'})
+
+    depend('H0')
+    depend('GET_RSPNS(1)_FORM')
+
+    OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(1)'+_cur_ext,
+              LABELS_IN:'F_RSPNS(1)'})
+
+    EVALUATE({FORM:'FOPT_RSPNS(1)'+_cur_ext})
+
+    PRINT_MEL({LIST:'ME_RSPNS(1)'+_cur_ext})
+
+    _list_to_depend.append('EVAL_RSPNS(1)'+_cur_ext)
+
 new_target('EVAL_RSPNS(1)')
 
-depend('H0','DEF_ME_T','DEF_ME_C0')
-depend('GET_RSPNS(1)_FORM')
-
-OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(1)',
-          LABELS_IN:'F_RSPNS(1)'})
-
-EVALUATE({FORM:'FOPT_RSPNS(1)'})
-
-PRINT_MEL({LIST:'ME_RSPNS(1)'})
+depend('IMPORT_PERT_OPS')
+for ele in _list_to_depend:
+    depend(ele)
 
 #Loop over n_par to define operators corresponding to both negative and positive frequencies, if necessary.
 #Operators with structure of the cluster operators are necessary here.
 
-for i in range(0,n_par):
+n_loop=_ncnt*_maxord
+n_par=0
+for i in range(0,n_loop):
 
-    i_par = str(i+1)
+    if (_cmp_data['redun'][i]==i):
+        n_par=n_par+1
+    else:
+        continue
+
+    i_par = str(n_par)
+
+    _pop_idx = _cmp_data['pop_idx'][i]-1
+
+    _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
+    _pop_name='V'+_cur_ext
 
     new_target('T(1)'+i_par)
     depend('T')
@@ -334,11 +392,11 @@ for i in range(0,n_par):
     new_target('F_O(1)RT'+i_par)
 
     depend ('F_O(1)LT'+i_par)
-    depend('V(1)')
+#   depend('V(1)')
 
     REPLACE({LABEL_RES:'F_RED_LAG(1)RT'+i_par,
              LABEL_IN:'F_preRED_LAG(1)LT'+i_par,
-             OP_LIST:['H','V(1)']})
+             OP_LIST:['H',_pop_name]})
 
     INVARIANT({LABEL_RES:'F_RED_LAG(1)RT'+i_par,
                LABEL_IN:'F_RED_LAG(1)RT'+i_par,
@@ -358,11 +416,11 @@ for i in range(0,n_par):
     depend('EVAL_RSPNS(1)')
 
     depend ('F_O(1)LC'+i_par)
-    depend('V(1)')
+#   depend('V(1)')
 
     REPLACE({LABEL_RES:'F_RED_LAG(1)RC'+i_par,
              LABEL_IN:'F_preRED_LAG(1)LC'+i_par,
-             OP_LIST:['H','V(1)']})
+             OP_LIST:['H',_pop_name]})
 
     INVARIANT({LABEL_RES:'F_RED_LAG(1)RC'+i_par,
                LABEL_IN:'F_RED_LAG(1)RC'+i_par,
@@ -532,14 +590,20 @@ for i in range(0,n_par):
 #Getting the signed frequency that would be needed to initialize frequency for the 
 #parameters we are going to solve
 
-    _freq_sign = _freq*math.pow(-1,i)
+#   _freq_sign = _freq*math.pow(-1,i)
+    _freq_sign = _cmp_data['freq'][i]
+
+    _isym = _pop_data['isym'][_pop_idx]
+    _isym_t = _multd2h[_isym-1][_isym_0-1]
+
+    print 'isym:', _isym, _isym_t
 
     new_target('DEF_ME_T(1)'+i_par)
     depend('T(1)'+i_par)
 
     DEF_ME_LIST({LIST:'ME_T(1)'+i_par,
                  OPERATOR:'T(1)'+i_par,
-                 IRREP:1,
+                 IRREP:_isym_t,
                  '2MS':0,
                  AB_SYM:1})
 
@@ -570,7 +634,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:1,
+                     IRREP:_isym_t,
                      '2MS':0,
                      AB_SYM:1})
 
@@ -587,8 +651,15 @@ for i in range(0,n_par):
                      AB_SYM:_msc})
 
     _op_list={'Ttr(1)'+i_par:'ME_Ttr(1)'+i_par,
-              'DIAG_T(1)'+i_par:'ME_DIAG_T(1)'+i_par,
-              'FREQ'+i_par:'ME_FREQ'+i_par}
+              'DIAG_T(1)'+i_par:'ME_DIAG_T(1)'+i_par}
+    
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_isym_t,
+                     '2MS':0})
+
+    _op_list={'FREQ'+i_par:'ME_FREQ'+i_par}
     
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
@@ -609,7 +680,7 @@ for i in range(0,n_par):
     depend('LIST_RSPNS(1)_OP'+i_par)
     depend('F_T(1)'+i_par,'DEF_ME_Dtrdag')
     depend('F_ST(1)'+i_par)
-    depend('IMPORT_V(1)')
+#   depend('IMPORT_V(1)')
     depend('F_PRJ_C(1)'+i_par)
 
     OPTIMIZE({LABEL_OPT:'FOPT_RSPNS_T(1)'+i_par,
@@ -679,6 +750,8 @@ for i in range(0,n_par):
     else:
         new_target('SOLVE_T(1)'+i_par)
 
+    depend('IMPORT_PERT_OPS')
+    depend('EVAL_RSPNS(1)')
     depend('OPT_RSPNS_T(1)'+i_par)
     depend('DIAG_T(1)'+i_par)
     depend('DIAG_C0(1)'+i_par)
@@ -739,9 +812,9 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:1,
-                     '2MS':0,
-                     AB_SYM:1})
+                     IRREP:_isym,
+                     '2MS':_ms,
+                     AB_SYM:_msc})
 
     OPTIMIZE({LABEL_OPT:'FOPT_ORTH_C(1)'+i_par,
               LABELS_IN:['F_ORTH_C(1)'+i_par]})
@@ -751,4 +824,3 @@ for i in range(0,n_par):
     PRINT_MEL({LIST:'ME_C0(1)_orth_'+i_par})
     SCALE_COPY({LIST_RES:'ME_C0(1)'+i_par,LIST_INP:'ME_C0(1)_orth_'+i_par,FAC:1.0})
     #COPY_LIST({LIST_RES:'ME_C0(1)'+i_par,LIST_INP:'ME_C0(1)_orth_'+i_par})
-

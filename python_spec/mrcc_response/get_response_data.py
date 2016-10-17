@@ -106,9 +106,9 @@ for i in xrange (0,_npop):
     part=lines[l+2].split()
     _pop_data['int_name'].append(str(part[1]))
     part=lines[l+3].split()
-    _pop_data['isym'].append(int(part[1]))
-    part=lines[l+4].split()
     _pop_data['sign'].append(int(part[1]))
+    part=lines[l+4].split()
+    _pop_data['isym'].append(int(part[1]))
     l=l+5
 #print 'pop_data', _pop_data
 part=lines[l].split()

@@ -2,19 +2,19 @@
 #order paramaters and the first order cluster amplitudes and ci coefficients.
 
 from gecco_interface import *
-from get_response_data import _response_data
+from get_response_data import _response_data, _pop_data, _cmp_data
 
 #Getting the frequency
 _freq=_response_data['freq']
 #Getting the value of the restart option
 _restart=_response_data['restart']
 
-#n_par tells how many version of the same operator has to be defined 
-#depending on whether we are doing static or dynamic property calcualtion
-if (_freq == 0.0):
-    n_par = 1
-else:
-    n_par = 2
+#Getting the total number of perturbation operator need to be defined 
+_npop=_response_data['nPop']
+#Getting total number of response calculation
+_ncnt=_response_data['nCnt']
+#Getting the maximum order of the properties that will be calculated
+_maxord=_response_data['maxorder']
 
 #Getting the option from response data
 _option=_response_data['option']
@@ -60,7 +60,7 @@ EXPAND({LABEL_RES:'F_MRCC_LAG_PROP',
 new_target('F_preRSPNS(2)')
 
 depend('F_MRCC_LAG_PROP')
-depend('IMPORT_V(1)')
+depend('EVAL_RSPNS(1)')
 
 DEF_SCALAR({LABEL:'preRSPNS(2)'})
 REPLACE({LABEL_RES:'F_preRSPNS(2)',
@@ -73,9 +73,21 @@ INVARIANT({LABEL_RES:'F_preRSPNS(2)',
            OPERATORS:'H'})
 
 
-for i in range(0,n_par):
+n_loop=_ncnt*_maxord
+n_par=0
+for i in range(0,n_loop):
 
-    i_par = str(i+1)
+    if (_cmp_data['redun'][i]==i):
+        n_par=n_par+1
+    else:
+        continue
+
+    i_par = str(n_par)
+
+    _pop_idx = _cmp_data['pop_idx'][i]-1
+
+    _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
+    _pop_name='V'+_cur_ext
 
 #Getting the part of the second order response function which is a product of perturbation and 
 #first order wave function paramaeters, T(1) and C(1). It Corresponds the scalar RSPNS(2)_1
@@ -119,9 +131,13 @@ for i in range(0,n_par):
 
     EXPAND_OP_PRODUCT({LABEL:'F_RSPNS(2)'+i_par,NEW:False,
                        OP_RES:'RSPNS(2)'+i_par,
-                       OPERATORS:['RSPNS(1)','C0_bar','C0(1)'+i_par],
+                       OPERATORS:['RSPNS(1)'+_cur_ext,'C0_bar','C0(1)'+i_par],
                        IDX_SV:[1,2,3],
                        FAC:-1.0})
+
+    REPLACE({LABEL_RES:'F_RSPNS(2)'+i_par,
+             LABEL_IN:'F_RSPNS(2)'+i_par,
+             OP_LIST:['V(1)',_pop_name]})
 
     
     #PRINT_FORMULA({LABEL:'F_preRSPNS(2)_3'})

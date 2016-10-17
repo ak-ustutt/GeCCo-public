@@ -50,8 +50,8 @@
         call quit(1,'get_mrcc_response_input',
      &            'response keyword is not set')
       else if(ncnt.gt.1) then
-!       call quit(1,'get_mrcc_response_input',
-!    &            'response keyword can be set only once, for now')
+        call quit(1,'get_mrcc_response_input',
+     &            'response keyword can be set only once, for now')
       end if
 
       allocate(maxord(ncnt))
