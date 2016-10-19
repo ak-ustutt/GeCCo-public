@@ -81,6 +81,13 @@ _cmp_data['pop_idx']=[]
 _cmp_data['freq']=[]
 #if calculation of this component is redundant then to which previous component
 _cmp_data['redun']=[]
+#order corresponding to the component
+_cmp_data['order']=[]
+
+_calc_data={}
+_calc_data['comp']=[]
+_calc_data['conj_comp']=[]
+_calc_data['conj_prop']=[]
 
 _prop_info_name='prop_info.gecco'
 
@@ -117,7 +124,7 @@ _ncnt=int(part[0])
 #maximum order of the properties that has been asked for
 _maxord=int(part[1])
 l=l+1
-#print '_ncnt', _ncnt, '_maxord', _maxord
+print '_ncnt', _ncnt, '_maxord', _maxord
 for i in xrange (0,_ncnt*_maxord):
     part=lines[l].split()
     _cmp_data['pop_idx'].append(int(part[1]))
@@ -125,9 +132,39 @@ for i in xrange (0,_ncnt*_maxord):
     _cmp_data['freq'].append(float(part[1]))
     part=lines[l+2].split()
     _cmp_data['redun'].append(int(part[1]))
-    l=l+3
+    part=lines[l+3].split()
+    _cmp_data['order'].append(int(part[1]))
+    l=l+4
 #print 'cmp_data', _cmp_data
 
+_calc_data=[{} for i in range(_ncnt)]
+
+_calc_data[0]['order']=1
+part=lines[l].split()
+
+for i in xrange (0,_ncnt):
+    _calc_data[i]['order']=int(part[i+1])
+l=l+1
+for i in xrange (0,_ncnt):
+    part=lines[l].split()
+    _calc_data[i]['prop_comp']=[]
+    for j in xrange (0,_calc_data[i]['order']):
+        _calc_data[i]['prop_comp'].append(int(part[j+1]))
+        print j, len(_calc_data[i]['prop_comp'])
+    part=lines[l+1].split()
+    _calc_data[i]['conj_comp']=[]
+    for j in xrange (0,_calc_data[i]['order']):
+        _calc_data[i]['conj_comp'].append(int(part[j+1]))
+        print j, len(_calc_data[i]['conj_comp'])
+    part=lines[l+2].split()
+    _calc_data[i]['conj_prop']=[]
+    for j in xrange (0,_calc_data[i]['order']):
+        _calc_data[i]['conj_prop'].append(int(part[j+1]))
+        print j, len(_calc_data[i]['conj_prop'])
+
+print _calc_data
+
+print 'calc_data', _calc_data
 #adding the lone parameters in to the _response_data
 _response_data['nPop']=_npop
 _response_data['nCnt']=_ncnt

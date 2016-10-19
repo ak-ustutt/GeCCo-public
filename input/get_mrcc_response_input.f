@@ -28,9 +28,13 @@
       integer ::
      &     ncnt, icnt, idx, jdx, ipop, pos, sign
       integer ::
-     &     ncmp, npop, luprop, idum
+     &     ncmp, npop, luprop, idum, maxord, new_pos
       integer, allocatable :: 
-     &     maxord(:)
+     &     ord(:)
+      integer, allocatable ::
+     &     prop_comp(:,:), conj_comp(:,:), conj_prop(:,:)
+      real ::
+     &     order
       logical ::
      &     skip
       character(len=1) ::
@@ -50,31 +54,41 @@
         call quit(1,'get_mrcc_response_input',
      &            'response keyword is not set')
       else if(ncnt.gt.1) then
-        call quit(1,'get_mrcc_response_input',
-     &            'response keyword can be set only once, for now')
+!       call quit(1,'get_mrcc_response_input',
+!    &            'response keyword can be set only once, for now')
       end if
 
-      allocate(maxord(ncnt))
+      allocate(ord(ncnt))
 
       do icnt = 1,ncnt
         call get_argument_value('method.MRCC.response','order',
-     &       keycount=icnt,ival=maxord(icnt))
+     &       keycount=icnt,ival=ord(icnt))
       end do
-      ncmp = ncnt*maxval(maxord)
+
+      maxord = maxval(ord(:))
+      allocate(prop_comp(ncnt,maxord))
+      allocate(conj_comp(ncnt,maxord))
+      allocate(conj_prop(ncnt,maxord))
+      prop_comp=0
+      conj_comp=0
+      conj_prop=0
+
+      ncmp = ncnt*maxord
       cmp(:)%redun = 0
       cmp(:)%pop_idx = 0
       cmp(:)%freq = 0d0
-      if (maxval(maxord).gt.maximum_order) then
+      cmp(:)%order=0
+      if (maxord.gt.maximum_order) then
         write(pert_ord,'(i1)') maximum_order
         call quit(1,'get_mrcc_response_input',
-     &        'maxord must not exceed '//pert_ord)
+     &        'ord must not exceed '//pert_ord)
       end if
       pert(1:len_command_par) = ' '
       pertop(1:len_command_par) = ' '
 
       npop = 0
       do icnt = 1,ncnt
-        pos = (icnt-1)*maxval(maxord) + 1
+        pos = (icnt-1)*maxord + 1
         call get_argument_value('method.MRCC.response','comp',
      &       keycount=icnt,str=pert(pos:len_command_par))
         call get_argument_value('method.MRCC.response','pert',
@@ -83,21 +97,21 @@
         ! starting from the second place in cmp%freq
         call get_argument_value('method.MRCC.response','freq',
      &       keycount=icnt,xarr=cmp(pos+1:ncmp)%freq)
-        cmp(pos+maxord(icnt):ncmp)%freq = 0d0
+        cmp(pos+ord(icnt):ncmp)%freq = 0d0
         ! Then putting the frequency at the first position of cmp
         ! This is the negative of the sum of all the frequencies
-        if (maxord(icnt).gt.0)
-     &       cmp(pos)%freq = -sum(cmp(pos+1:pos+maxord(icnt)-1)%freq)
+        if (ord(icnt).gt.0)
+     &       cmp(pos)%freq = -sum(cmp(pos+1:pos+ord(icnt)-1)%freq)
 
         ! duplicate values for pert if necessary and not specified
-        do idx = pos+1,pos+maxord(icnt)-1
+        do idx = pos+1,pos+ord(icnt)-1
           if (pert(idx:idx).eq.' ')
      &        pert(idx:idx) = pert(idx-1:idx-1)
           if (pertop(idx:idx).eq.' ')
      &        pertop(idx:idx) = pertop(idx-1:idx-1)
         end do
 
-        do idx = pos,pos+maxord(icnt)-1
+        do idx = pos,pos+ord(icnt)-1
           ! check if perturbation operator input is ok
           if (pert(idx:idx).ne.'X' .and.
      &          pert(idx:idx).ne.'Y' .and.
@@ -117,14 +131,23 @@
      &          'perturbation operator "'//pertop(idx:idx)//
      &          '" is currently not allowed.')
           skip = .false.
-          do ipop = 1,npop
-            if (pop(ipop)%comp.eq.pert(idx:idx).and.
-     &              pop(ipop)%name.eq.pertop(idx:idx)) then
-              skip = .true.
-              cmp(idx)%pop_idx = ipop
-              exit
-            end if
-          end do
+          ! get the order corresponding to the component 
+          order=((real(ord(icnt))-1.0d0)/2.0d0)
+          write(*,*) 'order', ord(icnt), order
+          cmp(idx)%order=ceiling(order)
+
+          if(cmp(idx)%order.gt.0) then
+            do ipop = 1,npop
+              if (pop(ipop)%comp.eq.pert(idx:idx).and.
+     &                pop(ipop)%name.eq.pertop(idx:idx)) then
+                skip = .true.
+                cmp(idx)%pop_idx = ipop
+                exit
+              end if
+            end do
+          end if
+
+          prop_comp(icnt,idx-(icnt-1)*maxord) = idx
 
           if (.not.skip) then
             npop = npop + 1
@@ -140,6 +163,7 @@
           do jdx = 1,idx-1
             if (pert(idx:idx).eq.pert(jdx:jdx) .and.
      &          pertop(idx:idx).eq.pertop(jdx:jdx) .and.
+     &          cmp(idx)%order.eq.cmp(jdx)%order.and.
      &          abs(cmp(idx)%freq - cmp(jdx)%freq).lt.1d-12)
      &         cmp(idx)%redun = jdx
           end do
@@ -147,6 +171,42 @@
         end do
       end do
       
+      ! Here we get and store the information about each call  
+      ! for the response calculation. 
+      do icnt = 1, ncnt
+        pos = (icnt-1)*maxord + 1
+          if (ord(icnt).eq.1)then
+!             prop_comp(icnt,1)=pos
+              conj_comp(icnt,1)=pos
+              conj_prop(icnt,1)=cmp(pos)%pop_idx
+          elseif(ord(icnt).eq.2)then
+            if (cmp(pos)%redun.eq.pos) then
+              new_pos=cmp(pos+1)%redun
+              conj_comp(icnt,1)=new_pos
+              conj_prop(icnt,1)=cmp(new_pos)%pop_idx
+            else
+              new_pos=cmp(pos)%redun
+              prop_comp(icnt,1)=new_pos
+              conj_comp(icnt,1)=new_pos
+              conj_prop(icnt,1)=cmp(new_pos)%pop_idx
+            end if
+            if (cmp(pos+1)%redun.eq.pos+1) then
+              new_pos=cmp(pos)%redun
+              conj_comp(icnt,2)=new_pos
+              conj_prop(icnt,2)=cmp(new_pos)%pop_idx
+            else
+              new_pos=cmp(pos+1)%redun
+              prop_comp(icnt,2)=new_pos
+              conj_comp(icnt,2)=new_pos
+              conj_prop(icnt,2)=cmp(new_pos)%pop_idx
+            end if
+          end if
+          write(*,*) 'Case:', icnt
+          write(*,*) 'prop_comp:', prop_comp(icnt,:)
+          write(*,*) 'conj_comp:', conj_comp(icnt,:)
+          write(*,*) 'conj_prop:', conj_prop(icnt,:)
+      end do
+
       call file_init(ffpropinf,trim(name_propinf),ftyp_sq_frm,idum)
       call file_open(ffpropinf)
       luprop = ffpropinf%unit
@@ -159,12 +219,21 @@
         write(luprop,*) 'pop(npop)%sign:  ', pop(ipop)%sign
         write(luprop,*) 'pop(npop)%isym:  ', pop(ipop)%isym
       enddo
-      write(luprop,*) ncnt, maxval(maxord)
-      do idx=1,ncnt*maxval(maxord)
+      write(luprop,*) ncnt, maxord
+      do idx=1,ncnt*maxord
         write(luprop,*) 'cmp(idx)%pop_idx', cmp(idx)%pop_idx
         write(luprop,*) 'cmp(idx)%freq', cmp(idx)%freq
         write(luprop,*) 'cmp(idx)%redun', cmp(idx)%redun
+        write(luprop,*) 'cmp(idx)%order', cmp(idx)%order
       end do
+      write(luprop,*) 'order: ', ord(1:ncnt)
+      do icnt=1,ncnt
+        write(luprop,*) 'prop_comp:', prop_comp(icnt,:)
+        write(luprop,*) 'conj_comp:', conj_comp(icnt,:)
+        write(luprop,*) 'conj_prop:', conj_prop(icnt,:)
+      end do
+
+      deallocate(ord)
 
       return
       end

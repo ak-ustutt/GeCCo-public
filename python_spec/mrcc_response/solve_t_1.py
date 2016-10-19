@@ -3,7 +3,7 @@
 #This particular interface started to be written on September, 2015
 
 from gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data
+from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 import math
 
 _inp = GeCCo_Input()
@@ -49,11 +49,33 @@ _ncnt=_response_data['nCnt']
 #Getting the maximum order of the properties that will be calculated
 _maxord=_response_data['maxorder']
 #n_par tells how many version of the same operator has to be defined 
-#depending on whether we are doing static or dynamic property calcualtion
-if (_freq == 0.0):
-    n_par = 1
-else:
-    n_par = 2
+
+n_par=0
+
+_first_order_param={}
+_first_order_param['cmp_indx']=[]
+_first_order_param['pop_idx']=[]
+_first_order_param['conj_cmp']=[]
+_first_order_param['conj_pop']=[]
+_first_order_param['freq']=[]
+for i in range(0,_ncnt):
+    for j in xrange (0,_calc_data[i]['order']):
+        pos=i*_maxord+j
+        if (_cmp_data['order'][pos]==1 and _cmp_data['redun'][pos]==pos+1):
+            n_par=n_par+1
+            _first_order_param['cmp_indx'].append(n_par)
+            _first_order_param['pop_idx'].append(_cmp_data['pop_idx'][pos])
+            _conj=n_par+_calc_data[i]['conj_comp'][j]-pos-1
+            _first_order_param['conj_cmp'].append(_conj)
+            _conj=_calc_data[i]['conj_prop'][j]
+            _first_order_param['conj_pop'].append(_conj)
+            _first_order_param['freq'].append(_cmp_data['freq'][pos])
+    else:
+        continue
+
+_first_order_param['n_par']=n_par
+
+print _first_order_param
 
 #Getting the option from response data
 _option=_response_data['option']
@@ -65,8 +87,6 @@ elif _option == 2:
 else:
     quit_error('Input error: unknown option for ic-MRCC properties') 
     
-print 'frequency for the second order proeprties is set to:', _freq
-
 #Defining all the perturbation operators needed for the whole calculations
 
 _list_to_depend=[]
@@ -209,18 +229,11 @@ for ele in _list_to_depend:
 #Loop over n_par to define operators corresponding to both negative and positive frequencies, if necessary.
 #Operators with structure of the cluster operators are necessary here.
 
-n_loop=_ncnt*_maxord
-n_par=0
-for i in range(0,n_loop):
+for i in range(0,n_par):
 
-    if (_cmp_data['redun'][i]==i):
-        n_par=n_par+1
-    else:
-        continue
+    i_par = str(i+1)
 
-    i_par = str(n_par)
-
-    _pop_idx = _cmp_data['pop_idx'][i]-1
+    _pop_idx = _first_order_param['pop_idx'][i]-1
 
     _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
     _pop_name='V'+_cur_ext
@@ -591,7 +604,7 @@ for i in range(0,n_loop):
 #parameters we are going to solve
 
 #   _freq_sign = _freq*math.pow(-1,i)
-    _freq_sign = _cmp_data['freq'][i]
+    _freq_sign = _first_order_param['freq'][i]
 
     _isym = _pop_data['isym'][_pop_idx]
     _isym_t = _multd2h[_isym-1][_isym_0-1]

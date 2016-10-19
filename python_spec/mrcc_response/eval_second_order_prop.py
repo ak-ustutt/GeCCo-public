@@ -3,6 +3,7 @@
 
 from gecco_interface import *
 from get_response_data import _response_data, _pop_data, _cmp_data
+from solve_t_1 import _first_order_param
 
 #Getting the frequency
 _freq=_response_data['freq']
@@ -73,18 +74,13 @@ INVARIANT({LABEL_RES:'F_preRSPNS(2)',
            OPERATORS:'H'})
 
 
-n_loop=_ncnt*_maxord
-n_par=0
-for i in range(0,n_loop):
 
-    if (_cmp_data['redun'][i]==i):
-        n_par=n_par+1
-    else:
-        continue
+n_par=_first_order_param['n_par']
+for i in range(0,n_par):
 
-    i_par = str(n_par)
+    i_par = str(i+1)
 
-    _pop_idx = _cmp_data['pop_idx'][i]-1
+    _pop_idx = _first_order_param['pop_idx'][i]-1
 
     _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
     _pop_name='V'+_cur_ext
