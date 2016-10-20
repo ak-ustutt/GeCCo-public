@@ -1,9 +1,6 @@
 from python_interface.gecco_interface import *
 from get_response_data import _response_data
 
-import sys
-print sys.path
-
 _inp = GeCCo_Input()
 _orb = Orb_Info()
 
