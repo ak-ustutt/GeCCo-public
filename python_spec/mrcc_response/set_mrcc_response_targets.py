@@ -1,9 +1,5 @@
 
-import sys,os
-interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
-sys.path=[interface_path]+sys.path
-
-from gecco_interface import *
+from python_interface.gecco_interface import *
 from get_response_data import _response_data
 
 _inp = GeCCo_Input()

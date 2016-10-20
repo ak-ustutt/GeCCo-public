@@ -4,8 +4,8 @@
 # First one has to import the interface module:
 
 import sys,os
-sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
-from gecco_interface import *
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
 
 # One can define targets, like this:
 new_target('MP2_HAM')

@@ -1,9 +1,8 @@
 #This is python interface to evaluate the second order properties using the all the zeroeth 
 #order paramaters and the first order cluster amplitudes and ci coefficients.
 
-from gecco_interface import *
+from python_interface.gecco_interface import *
 from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
-from solve_t_1 import _first_order_param
 
 #Getting the frequency
 _freq=_response_data['freq']
