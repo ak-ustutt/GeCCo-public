@@ -7,7 +7,7 @@ Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT f
 \date 17.06.2015
 \version 1.19 tested,
 """
-from gecco_interface import * # This is an extension to the gecco interface. 
+from python_interface.gecco_interface import * # This is an extension to the gecco interface. 
                               # it relies on the functions provided there 
 import copy # to produce deepcopys of objects
 import re #support for Regular expressions

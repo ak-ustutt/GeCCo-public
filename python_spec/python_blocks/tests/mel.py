@@ -1,4 +1,4 @@
-from gecco_interface import *
+from python_interface.gecco_interface import *
 
 
 

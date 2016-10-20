@@ -1,6 +1,6 @@
-from gecco_interface import *
-from gecco_modules.NoticeUtil import *
-import gecco_modules.string_to_form as stf
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import *
+import python_interface.gecco_modules.string_to_form as stf
 
 i_am="MRCCPT2lag.py"
 

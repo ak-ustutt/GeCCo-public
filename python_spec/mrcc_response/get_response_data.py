@@ -1,5 +1,5 @@
 # Get the informations about response calculation from the input
-from gecco_interface import *
+from python_interface.gecco_interface import *
 
 _inp = GeCCo_Input()
 

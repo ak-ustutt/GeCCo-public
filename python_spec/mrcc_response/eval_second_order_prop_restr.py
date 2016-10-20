@@ -2,7 +2,7 @@
 #order paramaters and the first order cluster amplitudes. This code only work when the ci 
 #coeffients are not relaxed at all.
 
-from gecco_interface import *
+from python_interface.gecco_interface import *
 from get_response_data import _response_data
 
 #Getting the frequency
