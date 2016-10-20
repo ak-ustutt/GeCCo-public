@@ -398,8 +398,6 @@ if (_restart<2):
 else:
     new_target('NORMALIZE')
 
-print "yaa"
-
 depend('SOLVE_LMBD')
 
 EXPAND_OP_PRODUCT({LABEL:'F_NORM_C',NEW:True,
