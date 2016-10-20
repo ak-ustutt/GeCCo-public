@@ -2,13 +2,8 @@
 #calculate static and dynamic polarizability using the linear response method.
 #This particular interface started to be written on September, 2015
 
-<<<<<<< HEAD
-from gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
-=======
 from python_interface.gecco_interface import *
-from get_response_data import _response_data
->>>>>>> b43376d3fa2d36fa7897548dbf0330c1226c0b30
+from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 import math
 
 _inp = GeCCo_Input()

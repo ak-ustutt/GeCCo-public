@@ -1,3 +1,5 @@
+import sys,os
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
 
 from python_interface.gecco_interface import *
 from get_response_data import _response_data
