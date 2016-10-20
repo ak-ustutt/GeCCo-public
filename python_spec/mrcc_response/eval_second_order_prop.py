@@ -2,7 +2,7 @@
 #order paramaters and the first order cluster amplitudes and ci coefficients.
 
 from gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data
+from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 from solve_t_1 import _first_order_param
 
 #Getting the frequency
@@ -75,42 +75,59 @@ INVARIANT({LABEL_RES:'F_preRSPNS(2)',
 
 
 
-n_par=_first_order_param['n_par']
+_formula_to_add_1=[]
+_formula_to_add_2=[]
+_formula_to_add_3=[]
+_formula_to_add_4=[]
+
+_interm_to_add_1=[]
+_interm_to_add_2=[]
+_interm_to_add_3=[]
+_interm_to_add_4=[]
+
+n_par=len(_calc_data[0]['conj_comp'])
+
 for i in range(0,n_par):
 
     i_par = str(i+1)
 
-    _pop_idx = _first_order_param['pop_idx'][i]-1
+    _pop_idx = _calc_data[0]['conj_prop'][i]-1
 
     _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
     _pop_name='V'+_cur_ext
 
+    ext_1=str(_calc_data[0]['prop_comp'][i])
+    t_op_1='T(1)'+ext_1
+    c_op_1='C0(1)'+ext_1
+    ext_2=str(_calc_data[0]['conj_comp'][i])
+    t_op_2='T(1)'+ext_2
+    c_op_2='C0(1)'+ext_2
+
 #Getting the part of the second order response function which is a product of perturbation and 
 #first order wave function paramaeters, T(1) and C(1). It Corresponds the scalar RSPNS(2)_1
 
-    new_target('F_RSPNS(2)'+i_par)
+    new_target('F_RSPNS(2)_1'+i_par)
 
     depend('F_preRSPNS(2)')
     depend('EVAL_RSPNS(1)')
     depend('DEF_ME_C0_bar')
 
-
-    DEF_SCALAR({LABEL:'RSPNS(2)'+i_par})
+    DEF_SCALAR({LABEL:'RSPNS(2)_1'+i_par})
 
     _deriv_arg = {}
-    _deriv_arg[LABEL_RES] = 'F_RSPNS(2)'+i_par
+    _deriv_arg[LABEL_RES] = 'F_RSPNS(2)_1'+i_par
     _deriv_arg[LABEL_IN]  = 'F_preRSPNS(2)'
-    _deriv_arg[OP_RES]    = 'RSPNS(2)'+i_par
+    _deriv_arg[OP_RES]    = 'RSPNS(2)_1'+i_par
 
     _replace_arg = {}
-    _replace_arg[LABEL_RES] = 'F_RSPNS(2)'+i_par
-    _replace_arg[LABEL_IN]  = 'F_RSPNS(2)'+i_par
-    _replace_arg[OP_LIST]   = ['C0(1)_x'+i_par,'C0(1)'+i_par+'^+']
+    _replace_arg[LABEL_RES] = 'F_RSPNS(2)_1'+i_par
+    _replace_arg[LABEL_IN]  = 'F_RSPNS(2)_1'+i_par
+    _replace_arg[OP_LIST]   = ['C0(1)_x1',c_op_1+'^+']
 
     if _option == 1: 
 # option=1 has extra contribution from the 'C0(1)^+'
         _deriv_arg[OP_DERIV] = ['T','C0','C0^+']
-        _deriv_arg[OP_MULT]  = ['T(1)'+i_par,'C0(1)'+i_par,'C0(1)_x'+i_par]
+        _deriv_arg[OP_MULT]  = [t_op_1,c_op_1,'C0(1)_x1']
 
         DERIVATIVE(_deriv_arg)
 
@@ -118,207 +135,179 @@ for i in range(0,n_par):
 
     elif _option == 2: 
         _deriv_arg[OP_DERIV] = ['T','C0']
-        _deriv_arg[OP_MULT]  = ['T(1)'+i_par,'C0(1)'+i_par]
+        _deriv_arg[OP_MULT]  = [t_op_1,c_op_1]
 
         DERIVATIVE(_deriv_arg)
 
     else:
         quit_error('Input error: unknown option for ic-MRCC properties') 
 
-    EXPAND_OP_PRODUCT({LABEL:'F_RSPNS(2)'+i_par,NEW:False,
-                       OP_RES:'RSPNS(2)'+i_par,
-                       OPERATORS:['RSPNS(1)'+_cur_ext,'C0_bar','C0(1)'+i_par],
+    EXPAND_OP_PRODUCT({LABEL:'F_RSPNS(2)_1'+i_par,NEW:False,
+                       OP_RES:'RSPNS(2)_1'+i_par,
+                       OPERATORS:['RSPNS(1)'+_cur_ext,'C0_bar',c_op_1],
                        IDX_SV:[1,2,3],
                        FAC:-1.0})
 
-    REPLACE({LABEL_RES:'F_RSPNS(2)'+i_par,
-             LABEL_IN:'F_RSPNS(2)'+i_par,
+    REPLACE({LABEL_RES:'F_RSPNS(2)_1'+i_par,
+             LABEL_IN:'F_RSPNS(2)_1'+i_par,
              OP_LIST:['V(1)',_pop_name]})
 
+    _formula_to_add_1.append('F_RSPNS(2)_1'+i_par)
+    _interm_to_add_1.append('RSPNS(2)_1'+i_par)
     
-    #PRINT_FORMULA({LABEL:'F_preRSPNS(2)_3'})
-    #PRINT_FORMULA({LABEL:'F_RSPNS(2)'+i_par})
-
 #Getting the part of the second order response function which is the product of two first order wave function 
 #parameters, T(1) and C0(1). This also includes the cross terms between T(1) and C0(1). It corresponds the scalar RSPNS(2)_2.
 #npar=2 would involve the product of T(1) and C0(1) corresponding to different frequencies. 
 
-new_target('F_RSPNS(2)')
+    if _option == 1:
 
-depend('F_RSPNS(2)1')
+        new_target('F_RSPNS(2)_2'+i_par)
 
-if (n_par == 2):
-    depend('F_RSPNS(2)2')
+        DEF_SCALAR({LABEL:'RSPNS(2)_2'+i_par})
 
-DEF_SCALAR({LABEL:'RSPNS(2)_coup_1'})
-DEF_SCALAR({LABEL:'RSPNS(2)_coup_2'})
-DEF_SCALAR({LABEL:'RSPNS(2)_coup_3'})
-DEF_SCALAR({LABEL:'RSPNS(2)_coup_4'})
-DEF_SCALAR({LABEL:'RSPNS(2)_coup_5'})
-
-
-if _option == 1:
-
-    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_coup_3',
-                LABEL_IN:'F_preRSPNS(2)_1',
-                OP_RES:'RSPNS(2)_coup_3',
-                OP_DERIV:['T','C0'],
-                OP_MULT:['T(1)1','C0(1)1']})
-
-    REPLACE({LABEL_RES:'F_RSPNS(2)_coup_3',
-             LABEL_IN:'F_RSPNS(2)_coup_3',
-             OP_LIST:['C0^+','C0(1)1'+'^+']})
-
-    if n_par == 2:
- 
-        DERIVATIVE({LABEL_RES:'F_RSPNS(2)_coup_4',
+        DERIVATIVE({LABEL_RES:'F_RSPNS(2)_2'+i_par,
                     LABEL_IN:'F_preRSPNS(2)_1',
-                    OP_RES:'RSPNS(2)_coup_4',
+                    OP_RES:'RSPNS(2)_2'+i_par,
                     OP_DERIV:['T','C0'],
-                    OP_MULT:['T(1)2','C0(1)2']})
+                    OP_MULT:[t_op_1,c_op_1]})
 
-        REPLACE({LABEL_RES:'F_RSPNS(2)_coup_4',
-                 LABEL_IN:'F_RSPNS(2)_coup_4',
-                 OP_LIST:['C0^+','C0(1)2'+'^+']})
+        REPLACE({LABEL_RES:'F_RSPNS(2)_2'+i_par,
+                 LABEL_IN:'F_RSPNS(2)_2'+i_par,
+                 OP_LIST:['C0^+',c_op_2+'^+']})
 
-_deriv_arg = {}
-_deriv_arg[LABEL_RES] = 'F_intRSPNS(2)1' 
-_deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
-_deriv_arg[OP_RES]    = 'RSPNS(2)_coup_1'
-_deriv_arg[OP_DERIV]  =  ['T','C0','C0']
+        _formula_to_add_2.append('F_RSPNS(2)_2'+i_par)
+        _interm_to_add_2.append('RSPNS(2)_2'+i_par)
 
-if n_par == 1:
-    _deriv_arg[OP_MULT] = ['T(1)1','C0(1)1','C0(1)1']
-else:
-    _deriv_arg[OP_MULT] = ['T(1)2','C0(1)2','C0(1)2']
+    new_target('F_RSPNS(2)_3'+i_par)
+
+    DEF_SCALAR({LABEL:'RSPNS(2)_3'+i_par})
+
+    _deriv_arg = {}
+    _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)_1'+i_par 
+    _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
+    _deriv_arg[OP_RES]    = 'RSPNS(2)_3'+i_par
+    _deriv_arg[OP_DERIV]  =  'C0'
+    _deriv_arg[OP_MULT] = c_op_1
 
 
-DERIVATIVE(_deriv_arg)
+    DERIVATIVE(_deriv_arg)
 
-DERIVATIVE({LABEL_RES:'F_RSPNS(2)_coup_1',
-            LABEL_IN:'F_intRSPNS(2)1',
-            OP_RES:'RSPNS(2)_coup_1',
-            OP_DERIV:'T',
-            OP_MULT:'T(1)1'})
-    
-if n_par == 2:
-
-    DERIVATIVE({LABEL_RES:'F_intRSPNS(2)2',
-                LABEL_IN:'F_MRCC_LAG_PROP',
-                OP_RES:'RSPNS(2)_coup_2',
-                OP_DERIV:'C0',
-                OP_MULT:'C0(1)1'})
-    
-    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_coup_2',
-                LABEL_IN:'F_intRSPNS(2)2',
-                OP_RES:'RSPNS(2)_coup_2',
+    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_3'+i_par,
+                LABEL_IN:'F_intRSPNS(2)_1'+i_par,
+                OP_RES:'RSPNS(2)_3'+i_par,
                 OP_DERIV:'T',
-                OP_MULT:'T(1)2'})
+                OP_MULT:t_op_2})
     
-#PRINT_FORMULA({LABEL:'F_RSPNS(2)_coup_1'})
-#PRINT_FORMULA({LABEL:'F_RSPNS(2)_coup_2'})
+    _formula_to_add_3.append('F_RSPNS(2)_3'+i_par)
+    _interm_to_add_3.append('RSPNS(2)_3'+i_par)
+
+    new_target('F_RSPNS(2)_4'+i_par)
+
+    DEF_SCALAR({LABEL:'RSPNS(2)_4'+i_par})
+
+    _deriv_arg = {}
+    _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)_2'+i_par 
+    _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
+    _deriv_arg[OP_RES]    = 'RSPNS(2)_4'+i_par
+    _deriv_arg[OP_DERIV]  =  'T'
+    _deriv_arg[OP_MULT] = t_op_1
+
+
+    DERIVATIVE(_deriv_arg)
+
+    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_4'+i_par,
+                LABEL_IN:'F_intRSPNS(2)_2'+i_par,
+                OP_RES:'RSPNS(2)_4'+i_par,
+                OP_DERIV:'T',
+                OP_MULT:t_op_2})
+    
+    _formula_to_add_4.append('F_RSPNS(2)_4'+i_par)
+    _interm_to_add_4.append('RSPNS(2)_4'+i_par)
+
+
+_formula_to_add=[_formula_to_add_1, _formula_to_add_2, _formula_to_add_3, _formula_to_add_4]
+_interm_to_add=[_interm_to_add_1, _interm_to_add_2, _interm_to_add_3, _interm_to_add_4]
+
+_fac=[1,1,1,0.5]
+
+_target_to_depend=[]
+
+new_target('RSPNS(2)')
 
 DEF_SCALAR({LABEL:'RSPNS(2)'})
-DEF_SCALAR({LABEL:'RSPNS(2)_1'})
-DEF_SCALAR({LABEL:'RSPNS(2)_2'})
 
+DEF_ME_LIST({LIST:'ME_RSPNS(2)',
+             OPERATOR:'RSPNS(2)',
+             IRREP:1,
+             '2MS':0})
+    
+for i in xrange (0,4):
 
-if n_par ==1:
-    DEF_FORMULA({LABEL:'F_RSPNS(2)_1',
-                 FORMULA:'RSPNS(2)_1=RSPNS(2)1+RSPNS(2)1'})
-    EXPAND({LABEL_RES:'F_RSPNS(2)_1',
-            LABEL_IN:'F_RSPNS(2)_1',
-            INTERM:['F_RSPNS(2)1']})
+    j = str(i+1)
+    new_target('EVAL_RSPNS(2)_'+j)
 
-else:
-    DEF_FORMULA({LABEL:'F_RSPNS(2)_1',
-                 FORMULA:'RSPNS(2)_1=RSPNS(2)1+RSPNS(2)2'})
-    EXPAND({LABEL_RES:'F_RSPNS(2)_1',
-            LABEL_IN:'F_RSPNS(2)_1',
-            INTERM:['F_RSPNS(2)1','F_RSPNS(2)2']})
+    depend('RSPNS(2)')
+    DEF_SCALAR({LABEL:'RSPNS(2)_'+j})
 
-_def_form_arg = {}
-_def_form_arg[LABEL] = 'F_RSPNS(2)_2'
+    print 'formula_to_add:', _formula_to_add[i]
+    print 'interm_to_add:', _interm_to_add[i]
 
-_expand_form = {}
-_expand_form[LABEL_RES] = 'F_RSPNS(2)_2'
-_expand_form[LABEL_IN] = 'F_RSPNS(2)_2'
+    _def_formula='RSPNS(2)_'+j+'='
 
-#Here we are adding different parts of the RSPNS(2)_2 together. This would depend on 
-#both of _option and n_par. 
-if _option ==1:
-    if n_par == 1:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_3+RSPNS(2)_coup_3'
-        _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_3']
-    if n_par == 2:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2+RSPNS(2)_coup_3+RSPNS(2)_coup_4' #Should have a factor half adjoint
-        _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_2','F_RSPNS(2)_coup_3','F_RSPNS(2)_coup_4']
-if _option ==2:
-    if n_par == 1:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1'
-        _expand_form[INTERM] = ['F_RSPNS(2)_coup_1']
-    if n_par == 2:
-        _def_form_arg[FORMULA] = 'RSPNS(2)_2=RSPNS(2)_coup_1+RSPNS(2)_coup_2'
-        _expand_form[INTERM] = ['F_RSPNS(2)_coup_1','F_RSPNS(2)_coup_2']
+    for k in xrange (0,n_par):
+        i_par = str(k+1)
 
-#PRINT_FORMULA({LABEL:'F_RSPNS(2)_2'})
+        depend(_formula_to_add[i][k])
 
-DEF_FORMULA(_def_form_arg)
+        _def_formula= _def_formula+'RSPNS(2)_'+j+i_par
+        if (k!=(n_par-1)):
+            _def_formula=_def_formula+'+'
 
-EXPAND(_expand_form)
+        print '_def_formula_'+j, _def_formula 
 
-#RSPNS(2)_1 and RSPNS(2)_2 are then summed up to calculate the total response function RSPNS(2)
-DEF_FORMULA({LABEL:'F_RSPNS(2)',
-             FORMULA:'RSPNS(2)=RSPNS(2)_1+RSPNS(2)_2'})
+    DEF_FORMULA({LABEL:'F_RSPNS(2)_'+j,
+                 FORMULA:_def_formula})
 
-EXPAND({LABEL_RES:'F_RSPNS(2)',
-        LABEL_IN:'F_RSPNS(2)',
-        INTERM:'F_RSPNS(2)_coup_1'})
+    EXPAND({LABEL_RES:'F_RSPNS(2)_'+j,
+            LABEL_IN:'F_RSPNS(2)_'+j,
+            INTERM:_formula_to_add[i]})
+    
 
-new_target('OPT_RSPNS(2)')
-
-depend('F_RSPNS(2)')
-
-#Defining the me-list for all the response function
-_op_list={'RSPNS(2)':'ME_RSPNS(2)',
-          'RSPNS(2)_1':'ME_RSPNS(2)_1',
-          'RSPNS(2)_2':'ME_RSPNS(2)_2'}
-
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
+    DEF_ME_LIST({LIST:'ME_RSPNS(2)_'+j,
+                 OPERATOR:'RSPNS(2)_'+j,
                  IRREP:1,
                  '2MS':0})
+    
+    OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(2)_'+j,
+              LABELS_IN:'F_RSPNS(2)_'+j})
 
-#Optimizing all the formula
-OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(2)_1',
-          LABELS_IN:'F_RSPNS(2)_1'})
+    EVALUATE({FORM:'FOPT_RSPNS(2)_'+j})
 
-OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(2)_2',
-          LABELS_IN:'F_RSPNS(2)_2'})
+
+    PRINT_MEL({LIST:'ME_RSPNS(2)_'+j,
+               FORMAT:'SCAL',
+               COMMENT:'Part of the second order property: '})
+
+    EXPAND_OP_PRODUCT({LABEL:'F_RSPNS(2)',
+                       NEW:bool(i==0),
+                       OP_RES:'RSPNS(2)',
+                       OPERATORS:'RSPNS(2)_'+j,
+                       IDX_SV:1,
+                       FAC:_fac[i]})
+
+    _target_to_depend.append('EVAL_RSPNS(2)_'+j)
+
+new_target('EVAL_RSPNS(2)', True)
+
+for ele in _target_to_depend: 
+    depend(ele)
 
 OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(2)',
           LABELS_IN:'F_RSPNS(2)'})
 
-#evaluating the response function:
-if (_restart<3):
-    new_target('EVAL_RSPNS(2)',True)
-else:
-    new_target('EVAL_RSPNS(2)')
-
-depend('OPT_RSPNS(2)')
-
-EVALUATE({FORM:'FOPT_RSPNS(2)_1'})
-PRINT_MEL({LIST:'ME_RSPNS(2)_1',
-           FORMAT:'SCAL',
-           COMMENT:'Asymmetric part of the second order property: '})
-
-EVALUATE({FORM:'FOPT_RSPNS(2)_2'})
-PRINT_MEL({LIST:'ME_RSPNS(2)_2',
-           FORMAT:'SCAL',
-           COMMENT:'Symmetric part of the second order property: '})
-
 EVALUATE({FORM:'FOPT_RSPNS(2)'})
+
+
 PRINT_MEL({LIST:'ME_RSPNS(2)',
            FORMAT:'SCAL',
-           COMMENT:'Total value of the second order property: '})
+           COMMENT:'Total second order property: '})

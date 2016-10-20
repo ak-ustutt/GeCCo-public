@@ -162,8 +162,6 @@ for i in xrange (0,_ncnt):
         _calc_data[i]['conj_prop'].append(int(part[j+1]))
         print j, len(_calc_data[i]['conj_prop'])
 
-print _calc_data
-
 print 'calc_data', _calc_data
 #adding the lone parameters in to the _response_data
 _response_data['nPop']=_npop
