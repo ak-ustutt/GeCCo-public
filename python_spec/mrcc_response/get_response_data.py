@@ -18,7 +18,6 @@ _response_data['freq']=float(_freq)
 
 #Check if the perturation is triplet, that makes the resultant property a spin-dependent one
 _triplet_str=_inp.get('calculate.properties.triplet')
-print 'debugging 1:', _triplet_str
 if(_triplet_str=='T'):
     _triplet=True
 elif(_triplet_str=='F'):
@@ -27,7 +26,6 @@ else:
     _triplet=False
     
 _response_data['triplet']=bool(_triplet)
-print 'debugging 2:', _response_data['triplet']
 
 #Check if we are going to use the B_{\lambda c} term in to our response equations
 _use_b_str=_inp.get('method.MRCC.response.use_b')
@@ -150,19 +148,16 @@ for i in xrange (0,_ncnt):
     _calc_data[i]['prop_comp']=[]
     for j in xrange (0,_calc_data[i]['order']):
         _calc_data[i]['prop_comp'].append(int(part[j+1]))
-        print j, len(_calc_data[i]['prop_comp'])
     part=lines[l+1].split()
     _calc_data[i]['conj_comp']=[]
     for j in xrange (0,_calc_data[i]['order']):
         _calc_data[i]['conj_comp'].append(int(part[j+1]))
-        print j, len(_calc_data[i]['conj_comp'])
     part=lines[l+2].split()
     _calc_data[i]['conj_prop']=[]
     for j in xrange (0,_calc_data[i]['order']):
         _calc_data[i]['conj_prop'].append(int(part[j+1]))
-        print j, len(_calc_data[i]['conj_prop'])
 
-print 'calc_data', _calc_data
+#print 'calc_data', _calc_data
 #adding the lone parameters in to the _response_data
 _response_data['nPop']=_npop
 _response_data['nCnt']=_ncnt

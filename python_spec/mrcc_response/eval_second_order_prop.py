@@ -158,41 +158,45 @@ for i in range(0,n_par):
 #parameters, T(1) and C0(1). This also includes the cross terms between T(1) and C0(1). It corresponds the scalar RSPNS(2)_2.
 #npar=2 would involve the product of T(1) and C0(1) corresponding to different frequencies. 
 
-    if _option == 1:
+    new_target('F_RSPNS(2)_2'+i_par)
 
-        new_target('F_RSPNS(2)_2'+i_par)
-
-        DEF_SCALAR({LABEL:'RSPNS(2)_2'+i_par})
-
-        DERIVATIVE({LABEL_RES:'F_RSPNS(2)_2'+i_par,
-                    LABEL_IN:'F_preRSPNS(2)_1',
-                    OP_RES:'RSPNS(2)_2'+i_par,
-                    OP_DERIV:['T','C0'],
-                    OP_MULT:[t_op_1,c_op_1]})
-
-        REPLACE({LABEL_RES:'F_RSPNS(2)_2'+i_par,
-                 LABEL_IN:'F_RSPNS(2)_2'+i_par,
-                 OP_LIST:['C0^+',c_op_2+'^+']})
-
-        _formula_to_add_2.append('F_RSPNS(2)_2'+i_par)
-        _interm_to_add_2.append('RSPNS(2)_2'+i_par)
-
-    new_target('F_RSPNS(2)_3'+i_par)
-
-    DEF_SCALAR({LABEL:'RSPNS(2)_3'+i_par})
+    DEF_SCALAR({LABEL:'RSPNS(2)_2'+i_par})
 
     _deriv_arg = {}
     _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)_1'+i_par 
     _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
-    _deriv_arg[OP_RES]    = 'RSPNS(2)_3'+i_par
+    _deriv_arg[OP_RES]    = 'RSPNS(2)_2'+i_par
     _deriv_arg[OP_DERIV]  =  'C0'
     _deriv_arg[OP_MULT] = c_op_1
 
 
     DERIVATIVE(_deriv_arg)
 
-    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_3'+i_par,
+    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_2'+i_par,
                 LABEL_IN:'F_intRSPNS(2)_1'+i_par,
+                OP_RES:'RSPNS(2)_2'+i_par,
+                OP_DERIV:'T',
+                OP_MULT:t_op_2})
+    
+    _formula_to_add_2.append('F_RSPNS(2)_2'+i_par)
+    _interm_to_add_2.append('RSPNS(2)_2'+i_par)
+
+    new_target('F_RSPNS(2)_3'+i_par)
+
+    DEF_SCALAR({LABEL:'RSPNS(2)_3'+i_par})
+
+    _deriv_arg = {}
+    _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)_2'+i_par 
+    _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
+    _deriv_arg[OP_RES]    = 'RSPNS(2)_3'+i_par
+    _deriv_arg[OP_DERIV]  =  'T'
+    _deriv_arg[OP_MULT] = t_op_1
+
+
+    DERIVATIVE(_deriv_arg)
+
+    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_3'+i_par,
+                LABEL_IN:'F_intRSPNS(2)_2'+i_par,
                 OP_RES:'RSPNS(2)_3'+i_par,
                 OP_DERIV:'T',
                 OP_MULT:t_op_2})
@@ -200,34 +204,37 @@ for i in range(0,n_par):
     _formula_to_add_3.append('F_RSPNS(2)_3'+i_par)
     _interm_to_add_3.append('RSPNS(2)_3'+i_par)
 
-    new_target('F_RSPNS(2)_4'+i_par)
+    if _option == 1:
 
-    DEF_SCALAR({LABEL:'RSPNS(2)_4'+i_par})
+        new_target('F_RSPNS(2)_4'+i_par)
 
-    _deriv_arg = {}
-    _deriv_arg[LABEL_RES] = 'F_intRSPNS(2)_2'+i_par 
-    _deriv_arg[LABEL_IN]  = 'F_MRCC_LAG_PROP' 
-    _deriv_arg[OP_RES]    = 'RSPNS(2)_4'+i_par
-    _deriv_arg[OP_DERIV]  =  'T'
-    _deriv_arg[OP_MULT] = t_op_1
+        DEF_SCALAR({LABEL:'RSPNS(2)_4'+i_par})
+
+        DERIVATIVE({LABEL_RES:'F_RSPNS(2)_4'+i_par,
+                    LABEL_IN:'F_preRSPNS(2)_1',
+                    OP_RES:'RSPNS(2)_4'+i_par,
+                    OP_DERIV:['T','C0'],
+                    OP_MULT:[t_op_1,c_op_1]})
+
+        REPLACE({LABEL_RES:'F_RSPNS(2)_4'+i_par,
+                 LABEL_IN:'F_RSPNS(2)_4'+i_par,
+                 OP_LIST:['C0^+',c_op_2+'^+']})
+
+        _formula_to_add_4.append('F_RSPNS(2)_4'+i_par)
+        _interm_to_add_4.append('RSPNS(2)_4'+i_par)
 
 
-    DERIVATIVE(_deriv_arg)
-
-    DERIVATIVE({LABEL_RES:'F_RSPNS(2)_4'+i_par,
-                LABEL_IN:'F_intRSPNS(2)_2'+i_par,
-                OP_RES:'RSPNS(2)_4'+i_par,
-                OP_DERIV:'T',
-                OP_MULT:t_op_2})
+if _option==1:
+    _fac=[1,1,0.5,1]
+    _formula_to_add=[_formula_to_add_1, _formula_to_add_2, _formula_to_add_3, _formula_to_add_4]
+    _interm_to_add=[_interm_to_add_1, _interm_to_add_2, _interm_to_add_3, _interm_to_add_4]
+    _n_formula=4
+else:
+    _fac=[1,1,0.5]
+    _formula_to_add=[_formula_to_add_1, _formula_to_add_2, _formula_to_add_3]
+    _interm_to_add=[_interm_to_add_1, _interm_to_add_2, _interm_to_add_3]
+    _n_formula=3
     
-    _formula_to_add_4.append('F_RSPNS(2)_4'+i_par)
-    _interm_to_add_4.append('RSPNS(2)_4'+i_par)
-
-
-_formula_to_add=[_formula_to_add_1, _formula_to_add_2, _formula_to_add_3, _formula_to_add_4]
-_interm_to_add=[_interm_to_add_1, _interm_to_add_2, _interm_to_add_3, _interm_to_add_4]
-
-_fac=[1,1,1,0.5]
 
 _target_to_depend=[]
 
@@ -240,7 +247,7 @@ DEF_ME_LIST({LIST:'ME_RSPNS(2)',
              IRREP:1,
              '2MS':0})
     
-for i in xrange (0,4):
+for i in xrange (0,_n_formula):
 
     j = str(i+1)
     new_target('EVAL_RSPNS(2)_'+j)
@@ -248,21 +255,17 @@ for i in xrange (0,4):
     depend('RSPNS(2)')
     DEF_SCALAR({LABEL:'RSPNS(2)_'+j})
 
-    print 'formula_to_add:', _formula_to_add[i]
-    print 'interm_to_add:', _interm_to_add[i]
-
     _def_formula='RSPNS(2)_'+j+'='
 
     for k in xrange (0,n_par):
         i_par = str(k+1)
 
+        print _formula_to_add[i][k]
         depend(_formula_to_add[i][k])
 
         _def_formula= _def_formula+'RSPNS(2)_'+j+i_par
         if (k!=(n_par-1)):
             _def_formula=_def_formula+'+'
-
-        print '_def_formula_'+j, _def_formula 
 
     DEF_FORMULA({LABEL:'F_RSPNS(2)_'+j,
                  FORMULA:_def_formula})

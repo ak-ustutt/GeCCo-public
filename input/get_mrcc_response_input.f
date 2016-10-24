@@ -79,7 +79,6 @@
       cmp(:)%freq = 0d0
       cmp(:)%order=0
       if (maxord.gt.maximum_order) then
-        write(pert_ord,'(i1)') maximum_order
         call quit(1,'get_mrcc_response_input',
      &        'ord must not exceed '//pert_ord)
       end if
@@ -133,7 +132,6 @@
           skip = .false.
           ! get the order corresponding to the component 
           order=((real(ord(icnt))-1.0d0)/2.0d0)
-          write(*,*) 'order', ord(icnt), order
           cmp(idx)%order=ceiling(order)
 
           if(cmp(idx)%order.gt.0) then
@@ -201,10 +199,6 @@
               conj_prop(icnt,2)=cmp(new_pos)%pop_idx
             end if
           end if
-          write(*,*) 'Case:', icnt
-          write(*,*) 'prop_comp:', prop_comp(icnt,:)
-          write(*,*) 'conj_comp:', conj_comp(icnt,:)
-          write(*,*) 'conj_prop:', conj_prop(icnt,:)
       end do
 
       call file_init(ffpropinf,trim(name_propinf),ftyp_sq_frm,idum)
