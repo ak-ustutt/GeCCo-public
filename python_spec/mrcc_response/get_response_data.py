@@ -18,9 +18,9 @@ _response_data['freq']=float(_freq)
 
 #Check if the perturation is triplet, that makes the resultant property a spin-dependent one
 _triplet_str=_inp.get('calculate.properties.triplet')
-if(_triplet_str=='T'):
+if(_triplet_str=='T' or _triplet_str=='t'):
     _triplet=True
-elif(_triplet_str=='F'):
+elif(_triplet_str=='F' or _triplet_str=='f'):
     _triplet=False
 else:
     _triplet=False
@@ -29,9 +29,9 @@ _response_data['triplet']=bool(_triplet)
 
 #Check if we are going to use the B_{\lambda c} term in to our response equations
 _use_b_str=_inp.get('method.MRCC.response.use_b')
-if(_use_b_str=='T'):
+if(_use_b_str=='T' or _use_b_str=='t'):
     _use_b=True
-elif(_use_b_str=='F'):
+elif(_use_b_str=='F' or _use_b_str=='f'):
     _use_b=False
 else:
     _use_b=True
