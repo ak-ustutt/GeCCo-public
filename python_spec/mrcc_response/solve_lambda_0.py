@@ -20,9 +20,9 @@ _high_cas = False
 
 _triplet=_response_data['triplet']
 
-if ((_ms == 0) and ((_s2-1 % 4) == 0)):
+if ((_ms == 0) and (((_s2-1) % 4) == 0)):
     _msc = 1
-elif ((_ms == 0) and ((_s2+1 % 4) == 0)):
+elif ((_ms == 0) and (((_s2+1) % 4) == 0)):
     _msc = -1
 else:
     _msc = 0
