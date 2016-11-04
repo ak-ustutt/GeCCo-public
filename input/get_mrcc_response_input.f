@@ -36,7 +36,7 @@
       real ::
      &     order
       logical ::
-     &     skip
+     &     skip, trplt
       character(len=1) ::
      &     pert_ord
       character(len=6) ::
@@ -64,6 +64,9 @@
         call get_argument_value('method.MRCC.response','order',
      &       keycount=icnt,ival=ord(icnt))
       end do
+
+      call get_argument_value('calculate.properties','triplet',
+     &     lval=trplt)
 
       maxord = maxval(ord(:))
       allocate(prop_comp(ncnt,maxord))
@@ -153,7 +156,12 @@
             pop(npop)%name = pertop(idx:idx)
             pop(npop)%int_name = pert(idx:idx)//int_name//' '
             pop(npop)%sign = sign
-            pop(npop)%isym = pert_sym(pop(npop)%int_name,orb_info)
+            if(trplt) then
+                pop(npop)%isym = 1  ! If the perturbation is triplet,
+                                    !then we can ignore the isym and set it to 1
+            else
+                pop(npop)%isym = pert_sym(pop(npop)%int_name,orb_info)
+            end if
             cmp(idx)%pop_idx = npop
           end if
 
