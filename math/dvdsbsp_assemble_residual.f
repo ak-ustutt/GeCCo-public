@@ -43,13 +43,19 @@
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
       end if
-      
-      call vecsp_assemble_vector(dvdsbsp%vspace,
-     &     me_lists, nlists,
-     &     coeff, ncoeff,
-     &     0d0,
-     &     xbuf1,xbuf2,nincore,lbuf)
-      
+      if (dvdsbsp%with_metric)then
+         call vecsp_assemble_vector(dvdsbsp%Svspace,
+     &        me_lists, nlists,
+     &        coeff, ncoeff,
+     &        0d0,
+     &        xbuf1,xbuf2,nincore,lbuf)
+      else
+         call vecsp_assemble_vector(dvdsbsp%vspace,
+     &        me_lists, nlists,
+     &        coeff, ncoeff,
+     &        0d0,
+     &        xbuf1,xbuf2,nincore,lbuf)
+      end if
       call vecsp_assemble_vector(dvdsbsp%Mvspace,
      &     me_lists, nlists,
      &     coeff, ncoeff,

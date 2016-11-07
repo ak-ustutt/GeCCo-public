@@ -404,22 +404,19 @@ c     &       op_info,  orb_info, str_info, strmap_info)
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
 
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &       .and.nspecial.ge.3) then
+           trafo(iopt)=.true.
+           me_vort(iopt)%mel => me_special(1)%mel 
+        elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+           trafo(iopt)=.true.
+           me_vort(iopt)%mel => me_special(4)%mel !redundant
+        else
+           trafo(iopt)=.false.
+           me_vort(iopt)%mel => me_trv(iopt)%mel !changing
+       
+        end if
 
-
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.ge.3) then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(1)%mel !redundant
-         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(4)%mel !redundant
-         else
-            trafo(iopt)=.false.
-            me_vort(iopt)%mel => me_trv(iopt)%mel !changing
-         end if
-
-
-        
       end do
 
       call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt,
@@ -583,18 +580,44 @@ c dbgend
             do iopt=1,nopt
                write(lulog,*) "root no.",iroot
                call print_list("unprojected trv",me_trv(iopt)%mel,
-     &           "LIST",0d0,0d0,
+     &              "LIST",0d0,0d0,
      &              orb_info,str_info)
-               end do
-            end if
-            do iopt=1,nopt
-               call switch_mel_record(me_trv(iopt)%mel,iroot)
             end do
+         end if
+         do iopt=1,nopt
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            if(trafo(iopt))then
+               me_vort(iopt)%mel => me_scr(iopt)%mel
+               call transform_forward_wrap(fl_mvp,depend,
+     &              me_special,me_trv,me_vort, !trv-> vort
+     &              xrsnrm, nroots, 
+     &              iroot, iopt, iroot, nspecial,
+     &              me_opt,
+     &              op_info, str_info, strmap_info, orb_info, opti_info)
+            else
+               me_vort(iopt)%mel => me_trv(iopt)%mel
+            end if
+            call assign_me_list(me_scr(iopt)%mel%label,
+     &           me_opt(iopt)%mel%op%name,op_info)
+            call assign_me_list(me_trv(iopt)%mel%label,
+     &           me_opt(iopt)%mel%op%name,op_info)
+         end do
          call dvdsbsp_append_vvec(dvdsbsp,
-     &        me_trv,nopt, 
+     &        me_vort,nopt, 
      &        xbuf1, xbuf2, nincore, lenbuf)
       end do
       
+      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &     .and.nspecial.ge.3) then
+         trafo(iopt)=.true.
+         me_vort(iopt)%mel => me_special(1)%mel 
+      elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+         trafo(iopt)=.true.
+         me_vort(iopt)%mel => me_special(4)%mel 
+      else
+         trafo(iopt)=.false.
+         me_vort(iopt)%mel => me_trv(iopt)%mel 
+      end if
       iter = 0
       task = 4
       nrequest=dvdsbsp_get_nnew_vvec(dvdsbsp)

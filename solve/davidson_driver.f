@@ -159,8 +159,8 @@ c      end do
                
                call transform_forward_wrap(flist,depend,
      &              me_special,me_mvp,me_mvort, !mvp-> mvort
-     &              xrsnrm, nroot, 
-     &              iroot, iopt, iroot,
+     &              xrsnrm, 
+     &              nroot, iroot, iopt, iroot, nspecial,
      &              me_opt,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
@@ -171,7 +171,7 @@ c      end do
                  call transform_forward_wrap(flist,depend,
      &                me_special,me_met,me_metort, !met-> metort
      &                xrsnrm, nroot, 
-     &                iroot, iopt, iroot,
+     &                iroot, iopt, iroot, nspecial,
      &                me_opt,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
                  if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
@@ -260,7 +260,7 @@ c      end do
                if (trafo(iopt) ) then
                   call transform_back_wrap(flist,depend,
      &                 me_special,me_vort,me_opt, !vort -> opt !
-     &                 iroot, iopt,
+     &                 iroot, iopt, nspecial,
      &                 me_opt,
      &                 op_info, str_info, strmap_info, 
      &                 orb_info, opti_info)
@@ -335,7 +335,7 @@ c      end do
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
      &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
-     &              iroot, iopt,
+     &              iroot, iopt,nspecial,
      &              me_opt,
      &              op_info, str_info, strmap_info, 
      &              orb_info, opti_info)
@@ -346,285 +346,285 @@ c      end do
       return
       contains
 
-!######################################################################
-! subroutines for the transformation 
-!######################################################################
-*----------------------------------------------------------------------*
-!>    wrapper for forward transformation to encapsulate some stupid decisions
-!!
-!!
-*----------------------------------------------------------------------*
-      subroutine transform_forward_wrap(flist,depend,
-     &     me_special,me_in,me_out,
-     &     xrsnrm, 
-     &     nroot, iroot, iopt, irecscr,
-     &     me_tgt,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-*----------------------------------------------------------------------*
-      implicit none
-
-      type(me_list_array), dimension(*)::
-     &     me_special,me_in,me_out, me_tgt
-      type(formula_item),intent(in)::
-     &     flist
-      type(dependency_info),intent(in)::
-     &     depend
-      integer, intent(in)::
-     &     nroot,
-     &     iroot, 
-     &     iopt,
-     &     irecscr
-
-      real(8), Dimension(nroot,*), intent(inout)::
-     &     xrsnrm
-
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-      type(optimize_info)::
-     &     opti_info
-
-
-      type(me_list),pointer::
-     &     me_trf
-      type(operator),pointer::
-     &     op_in,
-     &     op_trf
-      real(8) ::
-     &     xnrm
-
-      if (nspecial.ge.3)then 
-         me_trf=> me_special(3)%mel
-         op_trf=> me_special(3)%mel%op
-      else
-         me_trf=> null() ! leave it associated as it is now
-         op_trf=> null() ! --
-      end if
-
-      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         op_in => me_special(4)%mel%op
-      else
-         op_in => me_special(1)%mel%op
-      endif
-
-
-
-      call switch_mel_record(me_out(iopt)%mel,irecscr)
-      call  switch_mel_record(me_in(iopt)%mel,irecscr)
-      
-c dbg     
-c      call print_list('residual vector before transformation:',
-c     &     me_in,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-      call change_basis_old(flist, depend,
-     &     me_in(iopt)%mel, op_in,
-     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         
-     &     me_tgt(iopt)%mel,
-     &     op_info, str_info, strmap_info, orb_info)
-c dbg
-c            call print_list('transformed residual vector:',
-c     &           me_scr(iopt)%mel,"LIST",
-c     &           -1d0,0d0,
-c     &           orb_info,str_info)
-c dbgend
-      xrsnrm(iroot,iopt) = xnrm
-      return
-      end subroutine
-*----------------------------------------------------------------------*
-!>    wrapper for back transformateion to encapsulate some stupid decisions
-!!
-!!
-*----------------------------------------------------------------------*
-      subroutine transform_back_wrap(flist,depend,
-     &     me_special, me_in,me_out, 
-     &     iroot, iopt,
-     &     me_tgt,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-*----------------------------------------------------------------------*
-      implicit none
-
-      type(me_list_array), dimension(*)::
-     &     me_special,me_in, me_out, me_tgt
-      type(formula_item),intent(in)::
-     &     flist
-      type(dependency_info),intent(in)::
-     &     depend
-      integer, intent(in)::
-     &     iroot, 
-     &     iopt
-
-
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-      type(optimize_info)::
-     &     opti_info
-
-
-      type(me_list),pointer::
-     &     me_trf
-      type(operator),pointer::
-     &     op_in,
-     &     op_trf
-      real(8) ::
-     &     xnrm
-
-      if (nspecial.ge.3)then ! who thought it would be a good idea to determine the algorithm by the number of arguments? 
-         me_trf=> me_special(2)%mel
-         op_trf=> me_special(2)%mel%op
-      else
-         me_trf=> null() ! leave it associated as it is now
-         op_trf=> null() ! --
-      end if
-
-      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         op_in => me_special(4)%mel%op
-      else
-         op_in => me_special(1)%mel%op
-      endif
-
-
-      call  switch_mel_record(me_in(iopt)%mel,iroot)
-
-      call switch_mel_record(me_out(iopt)%mel,iroot)
-      
-c dbg     
-c      call print_list('trial vector before back transformation:',
-c     &     me_in,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-
-
-
-
-      call change_basis_old(flist, depend,
-     &     me_in(iopt)%mel, op_in,
-     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
-     &     me_trf, op_trf,                         ! 
-     &     me_tgt(iopt)%mel,
-     &     op_info, str_info, strmap_info, orb_info)
-
-c dbg     
-c      call print_list('trial vector after back transformation:',
-c     &     me_opt(iopt)%mel,"LIST",
-c     &     -1d0,0d0,
-c     &     orb_info,str_info)
-c dbg end 
-
-      return
-      end subroutine
-
-
-
-
-
-*----------------------------------------------------------------------*
-!>    subroutine for the transformation into the orthogonal basis
-!!
-!!    uses the old convention where the transformation formula is a subset of the whole formula
-!!    me_tgt and determines the me_list that was bound to the target operator as the dependencies where 
-!!    evaluated
-*----------------------------------------------------------------------*
-      subroutine change_basis_old(flist, depend,
-     &     me_in, op_in, 
-     &     me_out, op_out, outnrm,
-     &     me_trf, op_trf,
-     &     me_tgt,
-     &     op_info, str_info, strmap_info, orb_info)
-*----------------------------------------------------------------------*
-      implicit none
-      character(len=*),parameter::
-     &     i_am="change_basis_old"
-      integer,parameter::
-     &     ntest=1000
-      
-      type(formula_item)::
-     &     flist
-
-      type(me_list)::
-     &     me_in,              !> list to be transformed 
-     &     me_out,             !> result list
-     &     me_tgt             !>list with the transformation operator
-      type(me_list),pointer::     
-     &     me_trf               !> target list definition to specify which subformula should actually be evaluated (stupid design decision)
-      type(operator)::
-     &     op_in,
-     &     op_out
-      type(operator),pointer::
-     &     op_trf
-      real(8),intent(out)::
-     &     outnrm               !norm of the output list
-      type(dependency_info)::
-     &     depend               !>dependency info for the formula 
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf) ::
-     &     strmap_info
-
-      integer,dimension(:),allocatable::
-     &     idxselect
-      real(8),dimension(:),allocatable::
-     &     xret
-      integer::
-     &     nselect
-
-      if (ntest.ge.100)then
-         call write_title(lulog,wst_dbg_subr,i_am)
-         write(lulog,*) "out:",me_out%label,"bound to:",op_out%name
-         write(lulog,*) " in:",me_in%label,"bound to:",op_in%name
-         write(lulog,*) "tgt:",me_tgt%label,"bound to:",me_tgt%op%name
-         if (associated(me_trf))
-     &        write(lulog,*) "trf:",me_trf%label
-         if (associated(op_trf))
-     &        write(lulog,*) "trf bound:",op_trf%name
-      end if 
-      call assign_me_list(me_out%label,
-     &     op_out%name, op_info)
-      call assign_me_list(me_in%label,
-     &     op_in%name,op_info)
-      if(associated(me_trf).and. associated(op_trf)) then
-         call assign_me_list(me_trf%label, op_trf%name, op_info)
-      else if(associated(me_trf).or. associated(op_trf))then
-         call quit(1,i_am,
-     &        "please make sure that either both (transformation list"//
-     &        "and operator) or neither is associated") 
-      end if
-
-      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-      nselect=0
-      call select_formula_target(idxselect,nselect,
-     &     me_tgt%label,depend,op_info)
-! pretend that me_tgt is not up to date
-      call reset_file_rec(me_tgt%fhand)
-      call frm_sched(xret,flist,depend,idxselect, nselect,
-     &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
-      ! actually it stays up to date
-      call touch_file_rec(me_tgt%fhand)
-      outnrm=xret(idxselect(1))
-      deallocate(xret,idxselect)
-      return
-
-      end subroutine
+c$$$!######################################################################
+c$$$! subroutines for the transformation 
+c$$$!######################################################################
+c$$$*----------------------------------------------------------------------*
+c$$$!>    wrapper for forward transformation to encapsulate some stupid decisions
+c$$$!!
+c$$$!!
+c$$$*----------------------------------------------------------------------*
+c$$$      subroutine transform_forward_wrap(flist,depend,
+c$$$     &     me_special,me_in,me_out,
+c$$$     &     xrsnrm, 
+c$$$     &     nroot, iroot, iopt, irecscr,
+c$$$     &     me_tgt,
+c$$$     &     op_info, str_info, strmap_info, orb_info, opti_info)
+c$$$*----------------------------------------------------------------------*
+c$$$      implicit none
+c$$$
+c$$$      type(me_list_array), dimension(*)::
+c$$$     &     me_special,me_in,me_out, me_tgt
+c$$$      type(formula_item),intent(in)::
+c$$$     &     flist
+c$$$      type(dependency_info),intent(in)::
+c$$$     &     depend
+c$$$      integer, intent(in)::
+c$$$     &     nroot,
+c$$$     &     iroot, 
+c$$$     &     iopt,
+c$$$     &     irecscr
+c$$$
+c$$$      real(8), Dimension(nroot,*), intent(inout)::
+c$$$     &     xrsnrm
+c$$$
+c$$$      type(orbinf), intent(in) ::
+c$$$     &     orb_info
+c$$$      type(operator_info), intent(inout) ::
+c$$$     &     op_info
+c$$$      type(strinf), intent(in) ::
+c$$$     &     str_info
+c$$$      type(strmapinf) ::
+c$$$     &     strmap_info
+c$$$      type(optimize_info)::
+c$$$     &     opti_info
+c$$$
+c$$$
+c$$$      type(me_list),pointer::
+c$$$     &     me_trf
+c$$$      type(operator),pointer::
+c$$$     &     op_in,
+c$$$     &     op_trf
+c$$$      real(8) ::
+c$$$     &     xnrm
+c$$$
+c$$$      if (nspecial.ge.3)then 
+c$$$         me_trf=> me_special(3)%mel
+c$$$         op_trf=> me_special(3)%mel%op
+c$$$      else
+c$$$         me_trf=> null() ! leave it associated as it is now
+c$$$         op_trf=> null() ! --
+c$$$      end if
+c$$$
+c$$$      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+c$$$         op_in => me_special(4)%mel%op
+c$$$      else
+c$$$         op_in => me_special(1)%mel%op
+c$$$      endif
+c$$$
+c$$$
+c$$$
+c$$$      call switch_mel_record(me_out(iopt)%mel,irecscr)
+c$$$      call  switch_mel_record(me_in(iopt)%mel,irecscr)
+c$$$      
+c$$$c dbg     
+c$$$c      call print_list('residual vector before transformation:',
+c$$$c     &     me_in,"LIST",
+c$$$c     &     -1d0,0d0,
+c$$$c     &     orb_info,str_info)
+c$$$c dbg end 
+c$$$
+c$$$      call change_basis_old(flist, depend,
+c$$$     &     me_in(iopt)%mel, op_in,
+c$$$     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
+c$$$     &     me_trf, op_trf,                         
+c$$$     &     me_tgt(iopt)%mel,
+c$$$     &     op_info, str_info, strmap_info, orb_info)
+c$$$c dbg
+c$$$c            call print_list('transformed residual vector:',
+c$$$c     &           me_scr(iopt)%mel,"LIST",
+c$$$c     &           -1d0,0d0,
+c$$$c     &           orb_info,str_info)
+c$$$c dbgend
+c$$$      xrsnrm(iroot,iopt) = xnrm
+c$$$      return
+c$$$      end subroutine
+c$$$*----------------------------------------------------------------------*
+c$$$!>    wrapper for back transformateion to encapsulate some stupid decisions
+c$$$!!
+c$$$!!
+c$$$*----------------------------------------------------------------------*
+c$$$      subroutine transform_back_wrap(flist,depend,
+c$$$     &     me_special, me_in,me_out, 
+c$$$     &     iroot, iopt,
+c$$$     &     me_tgt,
+c$$$     &     op_info, str_info, strmap_info, orb_info, opti_info)
+c$$$*----------------------------------------------------------------------*
+c$$$      implicit none
+c$$$
+c$$$      type(me_list_array), dimension(*)::
+c$$$     &     me_special,me_in, me_out, me_tgt
+c$$$      type(formula_item),intent(in)::
+c$$$     &     flist
+c$$$      type(dependency_info),intent(in)::
+c$$$     &     depend
+c$$$      integer, intent(in)::
+c$$$     &     iroot, 
+c$$$     &     iopt
+c$$$
+c$$$
+c$$$      type(orbinf), intent(in) ::
+c$$$     &     orb_info
+c$$$      type(operator_info), intent(inout) ::
+c$$$     &     op_info
+c$$$      type(strinf), intent(in) ::
+c$$$     &     str_info
+c$$$      type(strmapinf) ::
+c$$$     &     strmap_info
+c$$$      type(optimize_info)::
+c$$$     &     opti_info
+c$$$
+c$$$
+c$$$      type(me_list),pointer::
+c$$$     &     me_trf
+c$$$      type(operator),pointer::
+c$$$     &     op_in,
+c$$$     &     op_trf
+c$$$      real(8) ::
+c$$$     &     xnrm
+c$$$
+c$$$      if (nspecial.ge.3)then ! who thought it would be a good idea to determine the algorithm by the number of arguments? 
+c$$$         me_trf=> me_special(2)%mel
+c$$$         op_trf=> me_special(2)%mel%op
+c$$$      else
+c$$$         me_trf=> null() ! leave it associated as it is now
+c$$$         op_trf=> null() ! --
+c$$$      end if
+c$$$
+c$$$      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+c$$$         op_in => me_special(4)%mel%op
+c$$$      else
+c$$$         op_in => me_special(1)%mel%op
+c$$$      endif
+c$$$
+c$$$
+c$$$      call  switch_mel_record(me_in(iopt)%mel,iroot)
+c$$$
+c$$$      call switch_mel_record(me_out(iopt)%mel,iroot)
+c$$$      
+c$$$c dbg     
+c$$$c      call print_list('trial vector before back transformation:',
+c$$$c     &     me_in,"LIST",
+c$$$c     &     -1d0,0d0,
+c$$$c     &     orb_info,str_info)
+c$$$c dbg end 
+c$$$
+c$$$
+c$$$
+c$$$
+c$$$
+c$$$      call change_basis_old(flist, depend,
+c$$$     &     me_in(iopt)%mel, op_in,
+c$$$     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
+c$$$     &     me_trf, op_trf,                         ! 
+c$$$     &     me_tgt(iopt)%mel,
+c$$$     &     op_info, str_info, strmap_info, orb_info)
+c$$$
+c$$$c dbg     
+c$$$c      call print_list('trial vector after back transformation:',
+c$$$c     &     me_opt(iopt)%mel,"LIST",
+c$$$c     &     -1d0,0d0,
+c$$$c     &     orb_info,str_info)
+c$$$c dbg end 
+c$$$
+c$$$      return
+c$$$      end subroutine
+c$$$
+c$$$
+c$$$
+c$$$
+c$$$
+c$$$*----------------------------------------------------------------------*
+c$$$!>    subroutine for the transformation into the orthogonal basis
+c$$$!!
+c$$$!!    uses the old convention where the transformation formula is a subset of the whole formula
+c$$$!!    me_tgt and determines the me_list that was bound to the target operator as the dependencies where 
+c$$$!!    evaluated
+c$$$*----------------------------------------------------------------------*
+c$$$      subroutine change_basis_old(flist, depend,
+c$$$     &     me_in, op_in, 
+c$$$     &     me_out, op_out, outnrm,
+c$$$     &     me_trf, op_trf,
+c$$$     &     me_tgt,
+c$$$     &     op_info, str_info, strmap_info, orb_info)
+c$$$*----------------------------------------------------------------------*
+c$$$      implicit none
+c$$$      character(len=*),parameter::
+c$$$     &     i_am="change_basis_old"
+c$$$      integer,parameter::
+c$$$     &     ntest=1000
+c$$$      
+c$$$      type(formula_item)::
+c$$$     &     flist
+c$$$
+c$$$      type(me_list)::
+c$$$     &     me_in,              !> list to be transformed 
+c$$$     &     me_out,             !> result list
+c$$$     &     me_tgt             !>list with the transformation operator
+c$$$      type(me_list),pointer::     
+c$$$     &     me_trf               !> target list definition to specify which subformula should actually be evaluated (stupid design decision)
+c$$$      type(operator)::
+c$$$     &     op_in,
+c$$$     &     op_out
+c$$$      type(operator),pointer::
+c$$$     &     op_trf
+c$$$      real(8),intent(out)::
+c$$$     &     outnrm               !norm of the output list
+c$$$      type(dependency_info)::
+c$$$     &     depend               !>dependency info for the formula 
+c$$$      type(orbinf), intent(in) ::
+c$$$     &     orb_info
+c$$$      type(operator_info), intent(inout) ::
+c$$$     &     op_info
+c$$$      type(strinf), intent(in) ::
+c$$$     &     str_info
+c$$$      type(strmapinf) ::
+c$$$     &     strmap_info
+c$$$
+c$$$      integer,dimension(:),allocatable::
+c$$$     &     idxselect
+c$$$      real(8),dimension(:),allocatable::
+c$$$     &     xret
+c$$$      integer::
+c$$$     &     nselect
+c$$$
+c$$$      if (ntest.ge.100)then
+c$$$         call write_title(lulog,wst_dbg_subr,i_am)
+c$$$         write(lulog,*) "out:",me_out%label,"bound to:",op_out%name
+c$$$         write(lulog,*) " in:",me_in%label,"bound to:",op_in%name
+c$$$         write(lulog,*) "tgt:",me_tgt%label,"bound to:",me_tgt%op%name
+c$$$         if (associated(me_trf))
+c$$$     &        write(lulog,*) "trf:",me_trf%label
+c$$$         if (associated(op_trf))
+c$$$     &        write(lulog,*) "trf bound:",op_trf%name
+c$$$      end if 
+c$$$      call assign_me_list(me_out%label,
+c$$$     &     op_out%name, op_info)
+c$$$      call assign_me_list(me_in%label,
+c$$$     &     op_in%name,op_info)
+c$$$      if(associated(me_trf).and. associated(op_trf)) then
+c$$$         call assign_me_list(me_trf%label, op_trf%name, op_info)
+c$$$      else if(associated(me_trf).or. associated(op_trf))then
+c$$$         call quit(1,i_am,
+c$$$     &        "please make sure that either both (transformation list"//
+c$$$     &        "and operator) or neither is associated") 
+c$$$      end if
+c$$$
+c$$$      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
+c$$$      nselect=0
+c$$$      call select_formula_target(idxselect,nselect,
+c$$$     &     me_tgt%label,depend,op_info)
+c$$$! pretend that me_tgt is not up to date
+c$$$      call reset_file_rec(me_tgt%fhand)
+c$$$      call frm_sched(xret,flist,depend,idxselect, nselect,
+c$$$     &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
+c$$$      ! actually it stays up to date
+c$$$      call touch_file_rec(me_tgt%fhand)
+c$$$      outnrm=xret(idxselect(1))
+c$$$      deallocate(xret,idxselect)
+c$$$      return
+c$$$
+c$$$      end subroutine
 
 !#######################################################################
 !   apply the preconditioner
