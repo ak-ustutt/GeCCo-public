@@ -36,6 +36,17 @@ elif(_use_b_str=='F' or _use_b_str=='f'):
 else:
     _use_b=True
     
+#check if we are trying to get for the zero eigen value while solving the lambda equation
+_eig_zero_str=_inp.get('calculate.properties.eig_zero')
+if(_eig_zero_str=='T' or _eig_zero_str=='t'):
+    _eig_zero=True
+elif(_eig_zero_str=='F' or _eig_zero_str=='f'):
+    _eig_zero=False
+else:
+    _eig_zero=True
+
+_response_data['eig_zero']=bool(_eig_zero)
+
 #We then change this information to call it as two different 'option'
 if(_use_b):
     option=1

@@ -16,7 +16,7 @@ _root = _inp.get('method.MR.ciroot')
 
 _option=_response_data['option']
 
-_high_cas = False
+_eig_zero=_response_data['eig_zero']
 
 _triplet=_response_data['triplet']
 
@@ -34,7 +34,7 @@ elif (int(_root) > 2):
 _root = int(_root)
 
 #set the '2ms' value for the operators associated with the ci coefficients
-if (_triplet):
+if (_triplet or _ms!=0):
     _ms_c0= -1.0*_ms
 else:
     _ms_c0 = _ms
@@ -95,7 +95,7 @@ DERIVATIVE({LABEL_RES:'F_LAG_2',
             OP_DERIV:'C0^+',
             OP_MULT:'C0_bar'}) 
 
-if (not _high_cas):
+if (_eig_zero):
 # substracting E <\bar{Psi_0}|Psi_0> from F_LAG_2
 
     EXPAND_OP_PRODUCT({LABEL:'F_LAG_2',NEW:False,
@@ -144,7 +144,7 @@ elif (_option == 2):
 
 # Constructing A_{\lambda t}+A_{\bar{c} t} => F_L_1 from F_LAG
 
-if (_high_cas):
+if (not _eig_zero):
     EXPAND_OP_PRODUCT({LABEL:'F_LAG',NEW:False,
                        OP_RES:'RED_LAG',
                        OPERATORS:['C0^+','E(MR)','L','T','C0'],
