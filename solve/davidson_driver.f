@@ -45,7 +45,7 @@
       character(len=*),parameter::
      &     i_am="davidson_driver"
       real(8),parameter::
-     &     thrgrd_e=0.1
+     &     thrgrd_e=0.1d0
       
       type(davidson_subspace_t),intent(inout)::
      &     dvdsbsp
@@ -190,9 +190,9 @@ c      end do
            end if
 
          end do !iopt
-         call dvdsbsp_update(dvdsbsp,
+         call dvdsbsp_append_covariantvecs(dvdsbsp,
      &        me_metort,
-     &        me_mvort,nopt,    !mvort into dvdsbsp and update the vMv-matrix
+     &        me_mvort, nopt,    !mvort & metort into dvdsbsp and update the vMv-matrix and vSv-matrix
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
          
       end do
@@ -209,22 +209,23 @@ c      end do
      &     me_scr, nopt, nroot, xrsnrm, !temporary assemble on scr
      &     xbuf1, xbuf2, nincore, lenbuf)
       
+
+!................. check convergence
       irecres=0
       do iroot=1,nnew
-         conv=.true.
-         if (iter.gt.1
-     &        .and. abs(leig(iroot)-xeig(iroot)).gt.thrgrd_e)then !energy changing?
+         ! test energy criteria
+         if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is stupid also
+     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot),
+     &        thrgrd_e) )then
+            conv = .true. ! yet 
+         else
             conv=.false.
-            if (iprlvl.ge.5)then
-               write(lulog,*) "root order may have changed:"
-               write(lulog,*) "root no.:",iroot
-               write(lulog,*) "old,new:" , xeig(iroot),leig(iroot)
-            end if
-         end if 
-         do iopt=1,nopt
-            conv= conv .and. (xrsnrm(iroot,iopt) .le.
-     &           opti_info%thrgrd(iopt) )
-         end do
+            call warn_e_convergence(lulog,iroot,leig(iroot),xeig(iroot))
+         end if
+         ! test gradient(residual) criteria
+         conv= conv .and.
+     &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
+ 
          if (.not.conv)then
             irecres=irecres+1
             do iopt=1,nopt
@@ -238,19 +239,20 @@ c      end do
       end do
       xeig=leig
 
-      nnew=irecres
+      nnew=irecres ! 0 if all converged
       
 
+!................. if all converged, assemble results.
       if (nnew .eq. 0
-     &     .or. iter .ge. maxiter) then ! check for end condition
+     &     .or. iter .ge. maxiter) then
          do iopt=1,nopt
             if(.not.trafo(iopt))me_vort(iopt)%mel => me_opt(iopt)%mel
          end do
+         maxvec=min(nroot,mel_get_maxrec(me_opt(1)%mel))
          call davidson_assemble_results(dvdsbsp,
      &        xeig,
-     &        me_vort, nopt, nroot, lrsnrm, ! results on me_vort
+     &        me_vort, nopt, maxvec, lrsnrm, ! results on me_vort
      &        xbuf1, xbuf2, nincore, lenbuf)
-         maxvec=min(nroot,mel_get_maxrec(me_vort(1)%mel)) 
          do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
@@ -320,8 +322,8 @@ c      end do
      &              orb_info,str_info)
             end do
          end if
-         call dvdsbsp_append_vvec(dvdsbsp, !ortho scratchvec to subspace
-     &        me_vort,nopt, 
+         call dvdsbsp_append_vvec(dvdsbsp, ! orthogonalize and normalize new vector
+     &        me_vort,nopt,                ! vort -> vort
      &        xbuf1, xbuf2, nincore, lenbuf)
       end do                    !iroot
       nnew=dvdsbsp_get_nnew_vvec(dvdsbsp)
@@ -347,285 +349,7 @@ c      end do
       return
       contains
 
-c$$$!######################################################################
-c$$$! subroutines for the transformation 
-c$$$!######################################################################
-c$$$*----------------------------------------------------------------------*
-c$$$!>    wrapper for forward transformation to encapsulate some stupid decisions
-c$$$!!
-c$$$!!
-c$$$*----------------------------------------------------------------------*
-c$$$      subroutine transform_forward_wrap(flist,depend,
-c$$$     &     me_special,me_in,me_out,
-c$$$     &     xrsnrm, 
-c$$$     &     nroot, iroot, iopt, irecscr,
-c$$$     &     me_tgt,
-c$$$     &     op_info, str_info, strmap_info, orb_info, opti_info)
-c$$$*----------------------------------------------------------------------*
-c$$$      implicit none
-c$$$
-c$$$      type(me_list_array), dimension(*)::
-c$$$     &     me_special,me_in,me_out, me_tgt
-c$$$      type(formula_item),intent(in)::
-c$$$     &     flist
-c$$$      type(dependency_info),intent(in)::
-c$$$     &     depend
-c$$$      integer, intent(in)::
-c$$$     &     nroot,
-c$$$     &     iroot, 
-c$$$     &     iopt,
-c$$$     &     irecscr
-c$$$
-c$$$      real(8), Dimension(nroot,*), intent(inout)::
-c$$$     &     xrsnrm
-c$$$
-c$$$      type(orbinf), intent(in) ::
-c$$$     &     orb_info
-c$$$      type(operator_info), intent(inout) ::
-c$$$     &     op_info
-c$$$      type(strinf), intent(in) ::
-c$$$     &     str_info
-c$$$      type(strmapinf) ::
-c$$$     &     strmap_info
-c$$$      type(optimize_info)::
-c$$$     &     opti_info
-c$$$
-c$$$
-c$$$      type(me_list),pointer::
-c$$$     &     me_trf
-c$$$      type(operator),pointer::
-c$$$     &     op_in,
-c$$$     &     op_trf
-c$$$      real(8) ::
-c$$$     &     xnrm
-c$$$
-c$$$      if (nspecial.ge.3)then 
-c$$$         me_trf=> me_special(3)%mel
-c$$$         op_trf=> me_special(3)%mel%op
-c$$$      else
-c$$$         me_trf=> null() ! leave it associated as it is now
-c$$$         op_trf=> null() ! --
-c$$$      end if
-c$$$
-c$$$      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-c$$$         op_in => me_special(4)%mel%op
-c$$$      else
-c$$$         op_in => me_special(1)%mel%op
-c$$$      endif
-c$$$
-c$$$
-c$$$
-c$$$      call switch_mel_record(me_out(iopt)%mel,irecscr)
-c$$$      call  switch_mel_record(me_in(iopt)%mel,irecscr)
-c$$$      
-c$$$c dbg     
-c$$$c      call print_list('residual vector before transformation:',
-c$$$c     &     me_in,"LIST",
-c$$$c     &     -1d0,0d0,
-c$$$c     &     orb_info,str_info)
-c$$$c dbg end 
-c$$$
-c$$$      call change_basis_old(flist, depend,
-c$$$     &     me_in(iopt)%mel, op_in,
-c$$$     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
-c$$$     &     me_trf, op_trf,                         
-c$$$     &     me_tgt(iopt)%mel,
-c$$$     &     op_info, str_info, strmap_info, orb_info)
-c$$$c dbg
-c$$$c            call print_list('transformed residual vector:',
-c$$$c     &           me_scr(iopt)%mel,"LIST",
-c$$$c     &           -1d0,0d0,
-c$$$c     &           orb_info,str_info)
-c$$$c dbgend
-c$$$      xrsnrm(iroot,iopt) = xnrm
-c$$$      return
-c$$$      end subroutine
-c$$$*----------------------------------------------------------------------*
-c$$$!>    wrapper for back transformateion to encapsulate some stupid decisions
-c$$$!!
-c$$$!!
-c$$$*----------------------------------------------------------------------*
-c$$$      subroutine transform_back_wrap(flist,depend,
-c$$$     &     me_special, me_in,me_out, 
-c$$$     &     iroot, iopt,
-c$$$     &     me_tgt,
-c$$$     &     op_info, str_info, strmap_info, orb_info, opti_info)
-c$$$*----------------------------------------------------------------------*
-c$$$      implicit none
-c$$$
-c$$$      type(me_list_array), dimension(*)::
-c$$$     &     me_special,me_in, me_out, me_tgt
-c$$$      type(formula_item),intent(in)::
-c$$$     &     flist
-c$$$      type(dependency_info),intent(in)::
-c$$$     &     depend
-c$$$      integer, intent(in)::
-c$$$     &     iroot, 
-c$$$     &     iopt
-c$$$
-c$$$
-c$$$      type(orbinf), intent(in) ::
-c$$$     &     orb_info
-c$$$      type(operator_info), intent(inout) ::
-c$$$     &     op_info
-c$$$      type(strinf), intent(in) ::
-c$$$     &     str_info
-c$$$      type(strmapinf) ::
-c$$$     &     strmap_info
-c$$$      type(optimize_info)::
-c$$$     &     opti_info
-c$$$
-c$$$
-c$$$      type(me_list),pointer::
-c$$$     &     me_trf
-c$$$      type(operator),pointer::
-c$$$     &     op_in,
-c$$$     &     op_trf
-c$$$      real(8) ::
-c$$$     &     xnrm
-c$$$
-c$$$      if (nspecial.ge.3)then ! who thought it would be a good idea to determine the algorithm by the number of arguments? 
-c$$$         me_trf=> me_special(2)%mel
-c$$$         op_trf=> me_special(2)%mel%op
-c$$$      else
-c$$$         me_trf=> null() ! leave it associated as it is now
-c$$$         op_trf=> null() ! --
-c$$$      end if
-c$$$
-c$$$      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-c$$$         op_in => me_special(4)%mel%op
-c$$$      else
-c$$$         op_in => me_special(1)%mel%op
-c$$$      endif
-c$$$
-c$$$
-c$$$      call  switch_mel_record(me_in(iopt)%mel,iroot)
-c$$$
-c$$$      call switch_mel_record(me_out(iopt)%mel,iroot)
-c$$$      
-c$$$c dbg     
-c$$$c      call print_list('trial vector before back transformation:',
-c$$$c     &     me_in,"LIST",
-c$$$c     &     -1d0,0d0,
-c$$$c     &     orb_info,str_info)
-c$$$c dbg end 
-c$$$
-c$$$
-c$$$
-c$$$
-c$$$
-c$$$      call change_basis_old(flist, depend,
-c$$$     &     me_in(iopt)%mel, op_in,
-c$$$     &     me_out(iopt)%mel, me_out(iopt)%mel%op, xnrm,
-c$$$     &     me_trf, op_trf,                         ! 
-c$$$     &     me_tgt(iopt)%mel,
-c$$$     &     op_info, str_info, strmap_info, orb_info)
-c$$$
-c$$$c dbg     
-c$$$c      call print_list('trial vector after back transformation:',
-c$$$c     &     me_opt(iopt)%mel,"LIST",
-c$$$c     &     -1d0,0d0,
-c$$$c     &     orb_info,str_info)
-c$$$c dbg end 
-c$$$
-c$$$      return
-c$$$      end subroutine
-c$$$
-c$$$
-c$$$
-c$$$
-c$$$
-c$$$*----------------------------------------------------------------------*
-c$$$!>    subroutine for the transformation into the orthogonal basis
-c$$$!!
-c$$$!!    uses the old convention where the transformation formula is a subset of the whole formula
-c$$$!!    me_tgt and determines the me_list that was bound to the target operator as the dependencies where 
-c$$$!!    evaluated
-c$$$*----------------------------------------------------------------------*
-c$$$      subroutine change_basis_old(flist, depend,
-c$$$     &     me_in, op_in, 
-c$$$     &     me_out, op_out, outnrm,
-c$$$     &     me_trf, op_trf,
-c$$$     &     me_tgt,
-c$$$     &     op_info, str_info, strmap_info, orb_info)
-c$$$*----------------------------------------------------------------------*
-c$$$      implicit none
-c$$$      character(len=*),parameter::
-c$$$     &     i_am="change_basis_old"
-c$$$      integer,parameter::
-c$$$     &     ntest=1000
-c$$$      
-c$$$      type(formula_item)::
-c$$$     &     flist
-c$$$
-c$$$      type(me_list)::
-c$$$     &     me_in,              !> list to be transformed 
-c$$$     &     me_out,             !> result list
-c$$$     &     me_tgt             !>list with the transformation operator
-c$$$      type(me_list),pointer::     
-c$$$     &     me_trf               !> target list definition to specify which subformula should actually be evaluated (stupid design decision)
-c$$$      type(operator)::
-c$$$     &     op_in,
-c$$$     &     op_out
-c$$$      type(operator),pointer::
-c$$$     &     op_trf
-c$$$      real(8),intent(out)::
-c$$$     &     outnrm               !norm of the output list
-c$$$      type(dependency_info)::
-c$$$     &     depend               !>dependency info for the formula 
-c$$$      type(orbinf), intent(in) ::
-c$$$     &     orb_info
-c$$$      type(operator_info), intent(inout) ::
-c$$$     &     op_info
-c$$$      type(strinf), intent(in) ::
-c$$$     &     str_info
-c$$$      type(strmapinf) ::
-c$$$     &     strmap_info
-c$$$
-c$$$      integer,dimension(:),allocatable::
-c$$$     &     idxselect
-c$$$      real(8),dimension(:),allocatable::
-c$$$     &     xret
-c$$$      integer::
-c$$$     &     nselect
-c$$$
-c$$$      if (ntest.ge.100)then
-c$$$         call write_title(lulog,wst_dbg_subr,i_am)
-c$$$         write(lulog,*) "out:",me_out%label,"bound to:",op_out%name
-c$$$         write(lulog,*) " in:",me_in%label,"bound to:",op_in%name
-c$$$         write(lulog,*) "tgt:",me_tgt%label,"bound to:",me_tgt%op%name
-c$$$         if (associated(me_trf))
-c$$$     &        write(lulog,*) "trf:",me_trf%label
-c$$$         if (associated(op_trf))
-c$$$     &        write(lulog,*) "trf bound:",op_trf%name
-c$$$      end if 
-c$$$      call assign_me_list(me_out%label,
-c$$$     &     op_out%name, op_info)
-c$$$      call assign_me_list(me_in%label,
-c$$$     &     op_in%name,op_info)
-c$$$      if(associated(me_trf).and. associated(op_trf)) then
-c$$$         call assign_me_list(me_trf%label, op_trf%name, op_info)
-c$$$      else if(associated(me_trf).or. associated(op_trf))then
-c$$$         call quit(1,i_am,
-c$$$     &        "please make sure that either both (transformation list"//
-c$$$     &        "and operator) or neither is associated") 
-c$$$      end if
-c$$$
-c$$$      allocate(xret(depend%ntargets),idxselect(depend%ntargets))
-c$$$      nselect=0
-c$$$      call select_formula_target(idxselect,nselect,
-c$$$     &     me_tgt%label,depend,op_info)
-c$$$! pretend that me_tgt is not up to date
-c$$$      call reset_file_rec(me_tgt%fhand)
-c$$$      call frm_sched(xret,flist,depend,idxselect, nselect,
-c$$$     &     .true.,.false.,op_info,str_info,strmap_info,orb_info)
-c$$$      ! actually it stays up to date
-c$$$      call touch_file_rec(me_tgt%fhand)
-c$$$      outnrm=xret(idxselect(1))
-c$$$      deallocate(xret,idxselect)
-c$$$      return
-c$$$
-c$$$      end subroutine
+
 
 !#######################################################################
 !   apply the preconditioner
@@ -646,7 +370,7 @@ c$$$      end subroutine
       character(len=*),parameter::
      &     i_am="apply_preconditioner"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=00
       
 
       type(me_list), intent(in), target::
@@ -991,7 +715,84 @@ c     dbgend
       return
       end subroutine
 *----------------------------------------------------------------------*
+!>    checks if the energy change between iterations is small enough to count as converged
+!!    
+!!    @param iter iteration counter
+!!    @param old_eig old eigenvalue of current root
+!!    @param new_eig new_eigenvalue of current root
+!!    @param thrgrd_e threshold for energy change
+*----------------------------------------------------------------------*      
+      pure function check_e_convergence(iter,old_eig,new_eig, thrgrd_e)
+*----------------------------------------------------------------------*
+      implicit none
+      logical :: check_e_convergence
+      integer, intent(in)::
+     &     iter
+      
+      real(8),intent(in)::
+     &     old_eig,new_eig,
+     &     thrgrd_e
+      check_e_convergence=.true.
+      if (abs(old_eig-new_eig).gt.thrgrd_e)
+     &     check_e_convergence=.false.
+      return
+      end function
+
+
+*----------------------------------------------------------------------*
+!>  warns that energy changed too much    
+!!
+!!  
+*----------------------------------------------------------------------*      
+      subroutine warn_e_convergence(lu, iroot, old_eig, new_eig)
+      implicit none
+      !iprlvl from include in paren routine
+      integer,intent(in)::
+     &     lu,
+     &     iroot
+      real(8),intent(in)::
+     &     old_eig,
+     &     new_eig
+      
+      character(len=*),parameter::
+     &     i_am="davidson_driver:check_convergence"
+      
+      call warn (i_am,"root order may have changed")
+      if (iprlvl.ge.5)then
+         write(lu,*) "root no.:",iroot
+         write(lu,*) "old,new:" , old_eig,new_eig
+      end if
+      end subroutine
+      
+
+      
+*----------------------------------------------------------------------*
+!!   check if the norm of the residual is below threshold
+!> 
+*----------------------------------------------------------------------*
+      pure function check_r_convergence( xrsnrm, thrgrd_r, iroot, nopt)
+      implicit none
+      logical :: check_r_convergence
+      integer,intent(in)::
+     &     iroot, nopt
+      real(8),dimension(:,:),intent(in)::
+     &     xrsnrm
+      real(8),dimension(nopt),intent(in)::
+     &     thrgrd_r
+      integer::
+     &     iopt
+      check_r_convergence=.true.
+      do iopt=1, nopt
+         check_r_convergence=  check_r_convergence.and.
+     &        (xrsnrm(iroot,iopt) .le. thrgrd_r(iopt) )
+      end do
+      return
+      end function
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
       pure function mel_get_maxrec(mel)
+      implicit none
       integer:: mel_get_maxrec
       type(me_list),intent(in)::mel
       mel_get_maxrec=mel%fhand%active_records(2)

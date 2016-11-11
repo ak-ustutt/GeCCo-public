@@ -2,18 +2,19 @@
 
 
 *----------------------------------------------------------------------*
-!> adds a new_vector to the  davidson subspace dvdsbsp and updates the v*Mv matrix
+!> appends covariant vectors (Mv) and possibly Sv to the dvdsbsp
 !!
+!!   also updates the reduced subspace and overlap matrices
 !!   @param dvdsbsp a davidson subspace
 !!   @param vvec a list of me-lists representing the v-vector (currently active record)
 !!   @param mvvec same for the Mv-vector (currently active record)
 !!   @param nlist number of lists
-!!   @param buf1,buf2,buf3 !scratch space buf3 is currently not used no guarantee whats on it on exit
+!!   @param buf1,buf2,buf3 !scratch space buf3 is currently not used !no guarantee whats on buffers on exit
 !!   @param nincore how many buffers are usable
 !!   @param lbuf length of those buffers
 *----------------------------------------------------------------------*
-      subroutine dvdsbsp_update(dvdsbsp, svvec, mvvec, nlist, buf1,buf2, 
-     &     buf3, nincore,  lbuf)
+      subroutine dvdsbsp_append_covariantvecs(dvdsbsp, svvec, mvvec,
+     &     nlist, buf1, buf2, buf3, nincore,  lbuf)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
@@ -40,7 +41,7 @@
      &     nincore,                 !how many buffer may be used?
      &     lbuf                  ! length of buffer
       real(8),dimension(*),intent(inout)::
-     &     buf1, buf2, buf3
+     &     buf1, buf2, buf3 !buf3 currently not used
 
       
 !     alialising the davidson subspace fields 
