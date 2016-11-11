@@ -62,7 +62,10 @@
          ncursub=ncursub+1
       end if
       icursub=mod(icursub,nmaxsub)+1
-      print *,icursub,ncursub,nmaxsub      
+      if (ntest .gt. 30) then
+         write (lulog,*) "subspace dimensions: pointer, current, max",
+     &        icursub, ncursub, nmaxsub
+      end if
       do ilist=1,nlists
          call vecsp_set_list_mel(dvdsbsp%vspace,me_lists(ilist)%mel,
      &        icursub, ilist, xbuf2,lbuf)

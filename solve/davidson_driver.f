@@ -212,7 +212,8 @@ c      end do
       irecres=0
       do iroot=1,nnew
          conv=.true.
-         if (abs(leig(iroot)-xeig(iroot)).gt.thrgrd_e)then !energy changing?
+         if (iter.gt.1
+     &        .and. abs(leig(iroot)-xeig(iroot)).gt.thrgrd_e)then !energy changing?
             conv=.false.
             if (iprlvl.ge.5)then
                write(lulog,*) "root order may have changed:"
