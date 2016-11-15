@@ -1,9 +1,9 @@
 
 !>    driver for the davidson algoritmus
-!!    
-!!    Davidson      
+!!
+!!    Davidson
 !!    on entry: Mv-product on me_mvp me
-      
+
       subroutine davidson_driver(
      &     dvdsbsp,
      &     iter,  task, nnew,
@@ -46,7 +46,7 @@
      &     i_am="davidson_driver"
       real(8),parameter::
      &     thrgrd_e=0.1d0
-      
+
       type(davidson_subspace_t),intent(inout)::
      &     dvdsbsp
       integer, intent(inout) ::
@@ -69,7 +69,7 @@
      &     opti_info
       type(optimize_status), intent(inout), target ::
      &     opti_stat
-      
+
       real(8), intent(inout) ::
      &     xrsnrm(nroot,nopt),
      &     xeig(nroot),reig(nroot)      ! xeig persistent copy of eigenvalues to detect root switching
@@ -92,11 +92,11 @@
      &     str_info
       type(strmapinf), intent(in)::
      &     strmap_info
-     
+
 
 *----------------------------------------------------------------------*
 !     locals
- 
+
       integer::
      &     iopt, jopt,
      &     iroot,
@@ -118,11 +118,11 @@
       real(8)::
      &     lrsnrm(nroot,nopt), ! local copy of xrsnrm
      &     leig(nroot) !local variable for eigenvalues
-      
 
 
 
-      
+
+
       if (ntest.ge.100)
      &     call write_title(lulog,wst_dbg_subr,i_am)
       if (ntest.ge.100) write (lulog,*) "iteration ",iter
@@ -131,8 +131,8 @@
       typ_prc => opti_info%typ_prc
       nwfpar => opti_info%nwfpar
 cc     the lists are alialized as if the following block had been executed ARNE 8.9.16
-cc     
-c      do iopt = 1,nopt 
+cc
+c      do iopt = 1,nopt
 c         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
 c            me_vort(iopt)%mel => me_special(1)%mel
 c            me_mvort(iopt)%mel => me_scr(iopt)%mel
@@ -146,7 +146,7 @@ c            me_vort(iopt)%mel => me_trv(iopt)%mel
 c            me_mvort(iopt)%mel => me_mvp(iopt)%mel
 c         end if
 c      end do
-      
+
       do iroot=1,nnew
          do iopt=1,nopt
             call switch_mel_record(me_mvp(iopt)%mel,iroot)
@@ -156,21 +156,20 @@ c      end do
                call switch_mel_record(me_metort(iopt)%mel,iroot)
             end if
             if (trafo(iopt)) then
-               
+
                call transform_forward_wrap(flist,depend,
      &              me_special,me_mvp,me_mvort, !mvp-> mvort
-     &              xrsnrm, 
+     &              xrsnrm,
      &              nroot, iroot, iopt, iroot, nspecial,
      &              me_opt,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                  call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
               endif
-              ! Not yet sure how to treat the metric
               if (use_s(iopt))then
                  call transform_forward_wrap(flist,depend,
      &                me_special,me_met,me_metort, !met-> metort
-     &                xrsnrm, nroot, 
+     &                xrsnrm, nroot,
      &                iroot, iopt, iroot, nspecial,
      &                me_opt,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
@@ -194,7 +193,7 @@ c      end do
      &        me_metort,
      &        me_mvort, nopt,    !mvort & metort into dvdsbsp and update the vMv-matrix and vSv-matrix
      &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
-         
+
       end do
 
       if (nroot.gt.dvdsbsp_get_nfree(dvdsbsp) )then
@@ -203,12 +202,12 @@ c      end do
      &        xbuf1, xbuf2, lenbuf ,nincore)
       end if
 
-      
+
       call davidson_assemble_residuals(dvdsbsp,
      &     leig, nnew,
      &     me_scr, nopt, nroot, xrsnrm, !temporary assemble on scr
      &     xbuf1, xbuf2, nincore, lenbuf)
-      
+
 
 !................. check convergence
       irecres=0
@@ -217,30 +216,32 @@ c      end do
          if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is stupid also
      &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot),
      &        thrgrd_e) )then
-            conv = .true. ! yet 
-         else
+            conv = .true. ! yet
+         else if(iter.gt.1)then
             conv=.false.
             call warn_e_convergence(lulog,iroot,leig(iroot),xeig(iroot))
+         else
+            conv=.true.
          end if
          ! test gradient(residual) criteria
          conv= conv .and.
      &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
- 
+
          if (.not.conv)then
             irecres=irecres+1
             do iopt=1,nopt
                call switch_mel_record(me_scr(iopt)%mel,iroot)
-               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other 
+               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other
                call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
      &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
             end do
             reig(irecres)=leig(iroot)
-         end if 
+         end if
       end do
       xeig=leig
 
       nnew=irecres ! 0 if all converged
-      
+
 
 !................. if all converged, assemble results.
       if (nnew .eq. 0
@@ -257,7 +258,7 @@ c      end do
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
                call switch_mel_record(me_opt(iopt)%mel,iroot)
-            end do 
+            end do
             call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
             do iopt=1,nopt
                if (trafo(iopt) ) then
@@ -265,13 +266,13 @@ c      end do
      &                 me_special,me_vort,me_opt, !vort -> opt !
      &                 iroot, iopt, nspecial,
      &                 me_opt,
-     &                 op_info, str_info, strmap_info, 
+     &                 op_info, str_info, strmap_info,
      &                 orb_info, opti_info)
-                  
-                  
+
+
 !     else me_vort => me_trv => me_opt
                end if
-            end do 
+            end do
          end do
          if(nnew.eq.0)then
             write(lulog,'(x,a,i5,a)')
@@ -288,7 +289,7 @@ c      end do
       else
          task=4       ! calculate new mv product when returning
       end if
-      
+
       do iroot = 1, nnew
          do iopt=1,nopt
             call switch_mel_record(me_res(iopt)%mel,iroot)
@@ -296,7 +297,7 @@ c      end do
          end do
 
          do iopt = 1,nopt
-  
+
             xnrm=0.0
             do jopt = 1,nopt
                xnrm = xnrm+xrsnrm(iroot,jopt)**2
@@ -304,11 +305,11 @@ c      end do
 
             xnrm=sqrt(xnrm)
             call apply_preconditioner(
-     &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort 
+     &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
      &           nwfpar(iopt),
-     &           opti_info%typ_prc(iopt), 
+     &           opti_info%typ_prc(iopt),
      &           xeig(iroot), xnrm, nnew, iroot,
-     &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,  
+     &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,
      &           me_special, nspecial,
      &           fspc, nspcfrm,
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
@@ -330,7 +331,7 @@ c      end do
       if ( nnew.eq.0)
      &     call quit(0,i_am,
      &     "only linear depended new directions generated")
-      
+
       do iopt=1,nopt
          do iroot=1,nnew
             call switch_mel_record(me_vort(iopt)%mel,iroot)
@@ -340,7 +341,7 @@ c      end do
      &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
      &              iroot, iopt,nspecial,
      &              me_opt,
-     &              op_info, str_info, strmap_info, 
+     &              op_info, str_info, strmap_info,
      &              orb_info, opti_info)
 !            else me_vort => me_trv
             end if
@@ -358,11 +359,11 @@ c      end do
 *----------------------------------------------------------------------*
       subroutine apply_preconditioner(
      &     me_resid, me_diag, me_result, lenme,
-     &     typ_prc, 
+     &     typ_prc,
      &     xeig, xnrm, nnew, iroot,
-     &     op_opt, me_opt, me_scr, ! opt needed for some assignments me_scr as scratch list, may or may not be used 
+     &     op_opt, me_opt, me_scr, ! opt needed for some assignments me_scr as scratch list, may or may not be used
      &     me_special, nspecial,!
-     &     fspc, nfspc,         !head of special formulars 
+     &     fspc, nfspc,         !head of special formulars
      $     xbuf1, xbuf2, xbuf3, lbuf, nincore,
      &     renormalize, op_info, str_info, strmap_info)
 *----------------------------------------------------------------------*
@@ -371,14 +372,14 @@ c      end do
      &     i_am="apply_preconditioner"
       integer,parameter::
      &     ntest=00
-      
+
 
       type(me_list), intent(in), target::
      &     me_resid,
      &     me_diag,
      &     me_result,
      &     me_scr               !me_list that might be used
-      
+
 
       integer,intent(in)::
      &     lenme,
@@ -390,12 +391,12 @@ c      end do
 
       integer,intent(in)::
      &     typ_prc
-      
+
       real(8),intent(in)::
      &     xeig
       real(8),intent(inout)::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
-      
+
       real(8),intent(inout)::
      &     xnrm                 !> norm of the associated vectors
       logical, intent(in)::
@@ -404,13 +405,13 @@ c      end do
      &     fspc(*)
       type(me_list_array)::
      &     me_special(*)
-      
+
       type(operator),intent(inout)::
      &     op_opt
-      
+
       type(me_list),intent(inout)::
      &     me_opt
-      
+
       type(operator_info), intent(inout) ::
      &     op_info
       type(strinf), intent(in) ::
@@ -428,7 +429,7 @@ c      end do
       integer::
      &     idxdbg
 
-      
+
       select case(typ_prc)
       case(optinf_prc_file,optinf_prc_traf,optinf_prc_traf_spc
      &     ,optinf_prc_spinp,optinf_prc_prj,optinf_prc_spinrefp)
@@ -440,18 +441,18 @@ c      end do
       else
          spin_prj=.false.
          me_intm => me_result
-      end if 
+      end if
 
       if (nincore.ge.2) then
          call vec_from_da(
      &        me_diag%fhand,1, xbuf2,lenme)
          call vec_from_da(me_resid%fhand,iroot,xbuf1,
      &        lenme)
-         
-            
+
+
 c     dbg
 c     print *,"xnorm:",xnrm
-c     dbgend                
+c     dbgend
 c     xnrm = 1d0
 c     dbg
 c     print *,"precon not yet applied. "
@@ -460,7 +461,7 @@ c     print *,idxdbg,xbuf1(idxdbg)
 c     end do
 c     dbgend
 ! scale residual for numerical stability:
-         xshf = -xeig 
+         xshf = -xeig
          call diavc(xbuf1,xbuf1,1d0/xnrm,
      &        xbuf2,xshf,lenme)
 c     dbg
@@ -477,7 +478,7 @@ c     dbgend
          call vec_to_da(me_result%fhand,iroot,xbuf1,
      &        lenme)
       else
-c     ! request (nroot-iroot+1)th-last root 
+c     ! request (nroot-iroot+1)th-last root
 c     irec = ioptc_get_sbsp_rec(-nroot+iroot-1,
 c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
          xshf = -xeig
@@ -512,7 +513,7 @@ c     dbgend
      &              xbuf1,xbuf2,.true.,xnrm,
      &              opti_info,orb_info,
      &              op_info,str_info,strmap_info)
-               
+
                call evaluate2(fspc(1),.false.,.false.,
      &              op_info,str_info,strmap_info,orb_info,
      &              xnrm,.false.)
@@ -549,7 +550,7 @@ c     dbgend
      &        lenme)
          call dscal(lenme,1d0/xnrm,xbuf1,1)
          xshf = -xeig
-         call optc_prc_special2(me_mvp(iopt)%mel,me_special,      
+         call optc_prc_special2(me_mvp(iopt)%mel,me_special,
      &        nspecial,
      &        op_opt%name,xshf,
      &        nincore,xbuf1,xbuf2,xbuf3,lbuf,
@@ -561,7 +562,7 @@ c     dbgend
       end select
       return
       end subroutine
-      
+
 *----------------------------------------------------------------------*
 !>    norms a vector of nlists me_lists
 *----------------------------------------------------------------------*
@@ -587,10 +588,10 @@ c     dbgend
      &     ii
       real(8)::
      &     xnrm2,xnrm
-   
+
       type(filinf),pointer::
      &     ffme
-      
+
       xnrm2=0
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
@@ -603,7 +604,7 @@ c     dbgend
       end do
       xnrm=sqrt(xnrm2)
       print *,"old norm was",xnrm
-      
+
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
          irec=me_lists(ilist)%mel%fhand%current_record
@@ -617,7 +618,7 @@ c     dbgend
 
       end subroutine
 *-------------------------------------------------------------*
-!>   orthogonalizes all nroot vectors on me_lists()nlists with respect to each other 
+!>   orthogonalizes all nroot vectors on me_lists()nlists with respect to each other
 !!   and orthogonalizes them
 *-------------------------------------------------------------*
       subroutine vecs_orthonorm(me_lists,nlists,nroot,
@@ -631,10 +632,10 @@ c     dbgend
       integer,intent(in)::
      &     nlists, nroot,
      &     lbuf
-      
+
       real(8),intent(inout)::
      &     xbuf1(*), xbuf2(*)
-      
+
       integer::
      &     iroot,ilist, jroot,kroot,
      &     lenlist
@@ -661,7 +662,7 @@ c     dbgend
             end do
          end do
       end do
-     
+
       if (ntest.ge.100) then
          write(lulog,*) 'trafo-matrix:'
          call wrtmat2(overlapp,nroot,nroot,nroot,nroot)
@@ -670,7 +671,7 @@ c     dbgend
 !|i'>=|i>-sum_j(|j> <j|i>)
 ! assuming <i|j>=<j|i>
 !<i'|i'>=<i|i>+sum_j(<j|i>(-2<j|i>+sum_k( <i|k><k|j> ) ) )
-     
+
       orth_norm2(1:nroot)=0.0
       do iroot=1, nroot
          do jroot=1,iroot-1
@@ -710,25 +711,25 @@ c     dbgend
             do ilist=1,lenlist
                write(lulog, *) ilist,xbuf1(ilist)
             end do
-           end if 
+           end if
       end do                    !iroot
       return
       end subroutine
 *----------------------------------------------------------------------*
 !>    checks if the energy change between iterations is small enough to count as converged
-!!    
+!!
 !!    @param iter iteration counter
 !!    @param old_eig old eigenvalue of current root
 !!    @param new_eig new_eigenvalue of current root
 !!    @param thrgrd_e threshold for energy change
-*----------------------------------------------------------------------*      
+*----------------------------------------------------------------------*
       pure function check_e_convergence(iter,old_eig,new_eig, thrgrd_e)
 *----------------------------------------------------------------------*
       implicit none
       logical :: check_e_convergence
       integer, intent(in)::
      &     iter
-      
+
       real(8),intent(in)::
      &     old_eig,new_eig,
      &     thrgrd_e
@@ -740,10 +741,10 @@ c     dbgend
 
 
 *----------------------------------------------------------------------*
-!>  warns that energy changed too much    
+!>  warns that energy changed too much
 !!
-!!  
-*----------------------------------------------------------------------*      
+!!
+*----------------------------------------------------------------------*
       subroutine warn_e_convergence(lu, iroot, old_eig, new_eig)
       implicit none
       !iprlvl from include in paren routine
@@ -753,22 +754,22 @@ c     dbgend
       real(8),intent(in)::
      &     old_eig,
      &     new_eig
-      
+
       character(len=*),parameter::
      &     i_am="davidson_driver:check_convergence"
-      
+
       call warn (i_am,"root order may have changed")
       if (iprlvl.ge.5)then
          write(lu,*) "root no.:",iroot
          write(lu,*) "old,new:" , old_eig,new_eig
       end if
       end subroutine
-      
 
-      
+
+
 *----------------------------------------------------------------------*
 !!   check if the norm of the residual is below threshold
-!> 
+!>
 *----------------------------------------------------------------------*
       pure function check_r_convergence( xrsnrm, thrgrd_r, iroot, nopt)
       implicit none
@@ -799,7 +800,7 @@ c     dbgend
 
       end function
       pure function dvdsbsp_get_nfree(dvdsbsp)
-      
+
       integer::
      &     dvdsbsp_get_nfree
 

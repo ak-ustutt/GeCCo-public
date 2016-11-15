@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
-!>    ???????
-!!     
+!>    appends trialvector to subspace
+!!
+!!    orthogonalize new trial vector agains previous vectors,
 *----------------------------------------------------------------------*
       subroutine dvdsbsp_append_vvec(dvdsbsp, me_lists, nlists,
      &     xbuf1, xbuf2, nincore, lbuf)
@@ -12,7 +13,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 1000
+     &     ntest = 30
       character(len=*),parameter::
      &     i_am="dvdsbsp_append_vvec"
       real(8),parameter::
@@ -20,7 +21,7 @@
       integer,intent(in)::
      &     nlists,
      &     lbuf,nincore
-     
+
       type(davidson_subspace_t),intent(inout)::
      &     dvdsbsp
 
@@ -35,21 +36,21 @@
      &     nmaxsub, ncursub,icursub,
      &     ilist,
      &     idxdbg
-      
-      if (ntest.ge.100) then
+
+      if (ntest.ge.10) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) 'ncursub ',dvdsbsp%ncursub
       end if
-      
+
       ncursub=dvdsbsp%ncursub
       icursub=dvdsbsp%icursub
       nmaxsub=dvdsbsp%nmaxsub
-      
+
       if (nincore .lt.2) call quit(0,i_am, "at least 2 buffer required")
       call vecsp_orthvec(dvdsbsp%vspace, me_lists, nlists,
      &     xbuf1, xbuf2, lbuf)
       xnrm=vec_get_norm(me_lists,nlists,xbuf1,lbuf)
-      if(ntest.ge.100)
+      if(ntest.ge.10)
      &     write(lulog,*)"old norm was",xnrm
       if(xnrm.lt.thresh)then
          call warn(
@@ -57,19 +58,19 @@
          return
       end if
       call vec_multiply(me_lists, nlists, 1/xnrm, xbuf1, lbuf)
-      
+
       if (ncursub .ne. nmaxsub)then
          ncursub=ncursub+1
       end if
       icursub=mod(icursub,nmaxsub)+1
-      if (ntest .gt. 30) then
+      if (ntest .ge. 30) then
          write (lulog,*) "subspace dimensions: pointer, current, max",
      &        icursub, ncursub, nmaxsub
       end if
       do ilist=1,nlists
          call vecsp_set_list_mel(dvdsbsp%vspace,me_lists(ilist)%mel,
      &        icursub, ilist, xbuf2,lbuf)
-        if (ntest.ge.100)then 
+        if (ntest.ge.100)then
            write(lulog, *) "trialvector",me_lists(ilist)%mel%label
            do idxdbg=1,me_lists(ilist)%mel%len_op
               write(lulog, *) idxdbg,xbuf2(idxdbg)
@@ -88,7 +89,7 @@
      &     ntest = 00
       character(len=*),parameter::
      &     i_am="vec_get_norm"
-      
+
       integer,intent(in)::
      &     nlists,
      &     lbuf
@@ -97,7 +98,7 @@
       real(8),intent(inout)::
      &     xbuf(*)
       real(8)::vec_get_norm
-      
+
       integer::
      &     ilist,
      &     lenlist,
@@ -144,10 +145,10 @@
      &     lenlist,
      &     irec,
      &     ii
-   
+
       type(filinf),pointer::
      &     ffme
-      
+
       do ilist=1,nlists
          ffme=> me_lists(ilist)%mel%fhand
          irec=me_lists(ilist)%mel%fhand%current_record
@@ -160,5 +161,5 @@
 
 
       end subroutine
-      
+
       end subroutine
