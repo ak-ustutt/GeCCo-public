@@ -23,7 +23,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 30,          !20 some scalar values; 60 input lists; 100 all used vectors (large)
+     &     ntest = 00,          !20 some scalar values; 60 input lists; 100 all used vectors (large)
      &     maxelem = 100        ! maximal maxelem elements per list are printed
       character(len=*),parameter::
      &     i_am="dvdsbsp_update"
@@ -116,7 +116,7 @@
      &        nmaxsub,nmaxsub)
 
          if (dvdsbsp%with_metric)then
-            write (lulog,*) 'overlapp matrix on input:'
+            write (lulog,*) 'subspace matrix on output:'
             call wrtmat2(vSv_mat,ncursub,ncursub,
      &           nmaxsub,nmaxsub)
          end if
@@ -284,6 +284,11 @@
 
          if (ilist.eq.1) vMv_mat(nmaxsub*(lcursub-1)+jj)=0 !if there was anything on that vector erase it
 
+         if(ntest.ge.20 )then
+            write(lulog, *) "vMv, lcursub, jj",lcursub, jj
+            write(lulog, *) "old:",vMv_mat(nmaxsub*(lcursub-1)+jj)
+            write(lulog, *) "added:",ddot(lenlist,buf1,1,buf2,1)
+         end if
          vMv_mat(nmaxsub*(lcursub-1)+jj) =
      &        vMv_mat(nmaxsub*(lcursub-1)+jj)
      &        + ddot(lenlist,buf1,1,buf2,1)
@@ -293,6 +298,11 @@
             call vecsp_get_list_buf(dvdsbsp%Svspace, lcursub,
      &           ilist, lenlist, buf1, lbuf)
 
+            if(ntest.ge.20 )then
+               write(lulog, *) "vSv, lcursub, jj",lcursub, jj
+               write(lulog, *) "old:",vSv_mat(nmaxsub*(lcursub-1)+jj)
+               write(lulog, *) "added:",ddot(lenlist,buf1,1,buf2,1)
+            end if
             vSv_mat(nmaxsub*(lcursub-1)+jj) =
      &           vSv_mat(nmaxsub*(lcursub-1)+jj)
      &           + ddot(lenlist,buf1,1,buf2,1)
@@ -309,6 +319,11 @@
          call vecsp_get_list_buf(dvdsbsp%mvspace, jj, ilist,
      &        lenlist, buf1, lbuf)
          if (ilist.eq.1)  vMv_mat(nmaxsub*(jj-1)+lcursub)=0
+         if(ntest.ge.20 )then
+            write(lulog, *) "vMv, lcursub, jj",lcursub, jj
+            write(lulog, *) "old:",vMv_mat(nmaxsub*(lcursub-1)+jj)
+            write(lulog, *) "added:",ddot(lenlist,buf1,1,buf2,1)
+         end if
          vMv_mat(nmaxsub*(jj-1)+lcursub) =
      &        vMv_mat(nmaxsub*(jj-1)+lcursub)
      &        + ddot(lenlist,buf1,1,buf2,1)
@@ -322,6 +337,11 @@
             call vecsp_get_list_buf(dvdsbsp%Svspace, jj, ilist,
      &           lenlist, buf1, lbuf)
             if (ilist.eq.1)  vSv_mat(nmaxsub*(jj-1)+lcursub)=0
+            if(ntest.ge.20 )then
+               write(lulog, *) "vSv, lcursub, jj",lcursub, jj
+               write(lulog, *) "old:",vSv_mat(nmaxsub*(lcursub-1)+jj)
+               write(lulog, *) "added:",ddot(lenlist,buf1,1,buf2,1)
+            end if
             vSv_mat(nmaxsub*(jj-1)+lcursub) =
      &           vSv_mat(nmaxsub*(jj-1)+lcursub)
      &           + ddot(lenlist,buf1,1,buf2,1)

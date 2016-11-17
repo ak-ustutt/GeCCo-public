@@ -174,7 +174,7 @@ c      end do
      &                me_opt,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
                  if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                    call set_blks(me_mvort(iopt)%mel,
+                    call set_blks(me_metort(iopt)%mel,
      &                   "P,H|P,V|V,H|V,V",0d0)
                  end if
               else
