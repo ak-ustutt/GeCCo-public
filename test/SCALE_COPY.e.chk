@@ -1,38 +1,12 @@
 title
-  the rule/command ADD_UNITY
+  the rule/command SCALE_COPY
 molecule
   B-MRCC2-MOLPRO 
 input
-  ADD_UNITY.inp
+  SCALE_COPY.inp
 check
-  label SymSign 0
-  find Sym_sign 0
-  find PRINT_MEL
-  find ^ +1
-  compare real 8 1e-5
-  find ^ +93
-  compare real 8 1e-5
-  find ^ +98
-  compare real 8 1e-5
-  find block no. +2
-  compare int 6
-  find ^ +72684
-  compare real 8 1e-5
-  find RINT_MEL
-  find ^ +1 
-  compare real 8 1e-5
-  find ^ +93 
-  compare real 8 1e-5
-  find ^ +98
-  compare real 8 1e-5
-  find block no. +2
-  compare int 6
-  find ^ +72684 
-  compare real 8 1e-5
-check
-  rewind
-  label SymSign +1
-  find Sym_sign \+1
+  label Mode square
+  find Mode square
   find PRINT_MEL
   find ^ +1 
   compare real 8 1e-5
@@ -46,8 +20,23 @@ check
   compare real 8 1e-5
 check
   rewind
-  label Advanced State
-  find Advanced State
+  label Mode scale
+  find Mode scale
+  find PRINT_MEL
+  find ^ +1 
+  compare real 8 1e-5
+  find ^ +93 
+  compare real 8 1e-5
+  find ^ +98
+  compare real 8 1e-5
+  find block no. +2
+  compare int 6
+  find ^ +72684 
+  compare real 8 1e-5
+check
+  rewind
+  label Mode prc-thresh
+  find Mode prc-thresh
   find PRINT_MEL
   find ^ +1
   compare real 8 1e-5
@@ -60,9 +49,9 @@ check
   find ^ +72684
   compare real 8 1e-5
 check
-  rewind
-  label Overwrite only one record
-  find Overwrite only one record
+   rewind
+  label Mode precond
+  find Mode precond
   find PRINT_MEL
   find ^ +1
   compare real 8 1e-5
@@ -74,11 +63,5 @@ check
   compare int 6
   find ^ +72684
   compare real 8 1e-5
-  find Other record
-  find PRINT_MEL
-  find total norm
-  compare real 4 1e-10
 end 
-
-
 

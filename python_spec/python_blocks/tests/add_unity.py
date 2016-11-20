@@ -48,6 +48,36 @@ ADD_UNITY({
 
 PRINT_MEL({LIST:'ME_DUMMY_1'})
 
+PRINT({STRING:"Advanced State"})
+
+SET_STATE({LISTS:'ME_DUMMY_1',
+           ISTATE:2})
+
+PRINT_MEL({LIST:'ME_DUMMY_1'})
+
+PRINT({STRING:"Overwrite only one record"})
+
+
+
+ADD_UNITY({
+        LIST:'ME_DUMMY_1',
+        FAC:1.0,
+        INIT:False,
+        MS_SYM_SIGN:0,
+        MIN_BLK:2,
+        MAX_BLK:2
+})
+
+PRINT_MEL({LIST:'ME_DUMMY_1'})
+
+SET_STATE({LISTS:'ME_DUMMY_1',
+           ISTATE:1})
+PRINT({STRING:"Other record"})
+
+PRINT_MEL({LIST:'ME_DUMMY_1'})
+
+
+
 #PRINT({STRING:"Sym_sign neg"})
 #
 #DEF_OP_FROM_OCC({
