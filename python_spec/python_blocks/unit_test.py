@@ -4,6 +4,9 @@ from gecco_interface import *
 
 testing=keywords.get('method.unit_test.tests')
 
+if re.search("SCALE_COPY", testing) is not None:
+    import tests.scale_copy
+
 if re.search("MODIFY_BLOCK", testing) is not None:
     import tests.mel
 
