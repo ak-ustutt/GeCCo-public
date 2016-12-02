@@ -128,7 +128,7 @@
                end do
             case(MOD_ADD_VEC)
                do idx = 1, idxnd_src-idxst_src+1
-                  buf1(idx) = buf1(idx)+signsec(isec)*fac(1)*buf2(idx)
+                  buf1(idx) = signsec(isec)*(buf1(idx)+fac(1)*buf2(idx))
                end do
             case(MOD_MULT)
                do idx = 1, idxnd_src-idxst_src+1
@@ -155,7 +155,8 @@
                case(MOD_SQUARE)
                   buf1(idx) = signsec(isec)*fac(ifac)*(buf1(idx)**2)
                case(MOD_ADD_VEC)
-                     buf1(idx) = buf1(idx)+signsec(isec)*fac(ifac)*buf2(idx)
+                  buf1(idx) = signsec(isec)*(buf1(idx)
+     &                 +fac(ifac)*buf2(idx))
                case(MOD_MULT)
                   buf1(idx) = signsec(isec)*
      &                 fac(ifac)*buf1(idx)*buf2(idx)
