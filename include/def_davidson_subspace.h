@@ -34,6 +34,8 @@
      &     lcursub       !
       logical::
      & with_metric
+      logical, dimension(:),pointer::
+     & use_metric 
       real(8),dimension(:),pointer::
      &     vMv_mat=>null(),           ! matrix of all vMv products it is a maxsub x maxsub matrix  with ncursub xncursub  elements !=0
      &     vSv_mat=>null()	

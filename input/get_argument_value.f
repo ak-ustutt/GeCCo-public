@@ -23,7 +23,7 @@
       include 'stdunit.h'
 
       integer,parameter::
-     &     ntest=00
+     &     ntest=100
       character(len=18),parameter ::
      &     i_am="get_argument_value"
 
@@ -84,8 +84,8 @@
      &        write (lulog,*) "active_node not in input found"
       end if
 
-      ikeycount_target=ikeycount
-      iargcount_target=iargcount
+      ikeycount_target=1
+      iargcount_target=1
       if(.not.associated(curarg))
      &     curarg=>tree_get_arg_from_context(registry,context,argkey,
      &     .false.,ikeycount_target,iargcount_target)
@@ -97,7 +97,6 @@
          if (ntest.ge.100) then 
             write(lulog,'(" argument has ",i3," elements")') dim 
          end if
-      end if 
       select case(itype)
       case (vtyp_log)
          if (.not.(present(lval).or.present(larr)))
@@ -145,7 +144,7 @@
          string = trim(getAttribute(curarg,atr_val))
          succ = .true.
       end select
-     
+      end if 
 
       if (.not.succ)
      &     call quit(1,i_am,

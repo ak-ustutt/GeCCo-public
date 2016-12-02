@@ -50,7 +50,8 @@
             write (lulog,*)me_lists(ii)%mel%label
          end do
       end if
-      dvdsbsp%with_metric=.false.
+      dvdsbsp%with_metric=.true.
+!      dvdsbsp%with_metric=.false.
       do ii=1,nlists
          dvdsbsp%with_metric=dvdsbsp%with_metric.or.use_s(ii)
       end do
@@ -82,6 +83,7 @@
      &        "davidson subspace vSv")
          dvdsbsp%vSv_mat(1:maxsub*maxsub) = 0d0
       end if 
-
+      allocate(dvdsbsp%use_metric(nlists))
+      dvdsbsp%use_metric(1:nlists)=use_s(1:nlists)
 
       end subroutine

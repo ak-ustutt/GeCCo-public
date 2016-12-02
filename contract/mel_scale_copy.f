@@ -20,12 +20,13 @@
 !!\param[in] opti_info an opti info object for sections with sign change
 !-----------------------------------------------------------------------
       subroutine mel_scale_copy(
-!-----------------------------------------------------------------------
      &     me_inp, me_res,
      &     buf1,buf2, lbuf, nbuf,
      &     fac, nfac,
      &     mode,
      &     opti_info)
+!-----------------------------------------------------------------------
+      
       implicit none
       include 'stdunit.h'
       include 'opdim.h'
@@ -46,8 +47,8 @@
       
       type(optimize_info),intent(in)::
      &     opti_info
-      real(8),  intent(inout) ::
-     &     buf1(*), buf2(*)
+      real(8), intent(inout) ::
+     &     buf1(:), buf2(:)
       real(8),intent(in)::
      &     fac(nfac)
       
@@ -72,9 +73,17 @@
      &     .and. nbuf .lt. 2 )
      &     call quit(2,i_am,"this mode requires two buffer")
       
+      if (ntest.ge.10)
+     &     call write_title(lulog,wst_dbg_subr,i_am)
+      if(ntest.ge.20) then
+         write(lulog,*)me_res%label
+         write(lulog,*)me_inp%label
+      end if
+
       ffop_tgt => me_res%fhand
       ffop_src => me_inp%fhand
-      
+      smapre_num=0
+      negpre_num=0 
       ! offset on file (if more than one instance of list exists)
       idisc_off_src =
      &     ffop_src%length_of_record*(ffop_src%current_record-1)
@@ -100,7 +109,9 @@
      &           idxst_tgt-1+lbuf)
             
             call get_vec(ffop_src,buf1,idxst_src,idxnd_src)
-            if (mode .eq. MOD_MULT.or. mode .eq. MOD_PRECOND)
+            if (mode .eq. MOD_MULT
+     &           .or. mode .eq. MOD_PRECOND
+     &           .or. mode .eq. MOD_ADD_VEC)
      &           call get_vec(ffop_tgt,buf2,idxst_tgt,idxnd_tgt)
 
             if (mode .eq. MOD_PRECOND)then
@@ -114,6 +125,10 @@
             case(MOD_SQUARE)
                do idx = 1, idxnd_src-idxst_src+1
                   buf1(idx) = signsec(isec)*fac(1)*(buf1(idx)**2)
+               end do
+            case(MOD_ADD_VEC)
+               do idx = 1, idxnd_src-idxst_src+1
+                  buf1(idx) = buf1(idx)+signsec(isec)*fac(1)*buf2(idx)
                end do
             case(MOD_MULT)
                do idx = 1, idxnd_src-idxst_src+1
@@ -139,6 +154,8 @@
                   select case(mode)
                case(MOD_SQUARE)
                   buf1(idx) = signsec(isec)*fac(ifac)*(buf1(idx)**2)
+               case(MOD_ADD_VEC)
+                     buf1(idx) = buf1(idx)+signsec(isec)*fac(ifac)*buf2(idx)
                case(MOD_MULT)
                   buf1(idx) = signsec(isec)*
      &                 fac(ifac)*buf1(idx)*buf2(idx)
@@ -148,10 +165,13 @@
                   buf1(idx) = max(fac(ifac),buf1(idx))
                case(MOD_SCALE)
                   buf1(idx) = signsec(isec)*fac(ifac)*buf1(idx)
-                  end select 
-                  ifac = ifac + 1
-                  if (ifac.gt.nfac) ifac = 1
-               end do
+                  
+               case default
+                  call quit(2,i_am,"unknown mode")
+               end select 
+               ifac = ifac + 1
+               if (ifac.gt.nfac) ifac = 1
+            end do
             end if
             call put_vec(ffop_tgt,buf1,idxst_src,idxnd_src)
             idxst_src = idxnd_src+1

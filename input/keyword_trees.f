@@ -624,7 +624,7 @@
       type(node), pointer::
      &     curkey
 
-      if (ntest .gt. 100) then
+      if (ntest .ge. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' argument = "',name,'"'
          write(lulog,*) ' context = "',trim(context),'"'

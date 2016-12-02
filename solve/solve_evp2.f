@@ -571,6 +571,20 @@ c dbgend
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         end if
       endif
+
+      deallocate(xret)
+      !init guess needed a false version of the dependency informations
+      call set_formula_dependencies(depend,fl_mvp,op_info)
+      ! number of info values returned on xret
+      nout = depend%ntargets
+      allocate(xret(nout))
+      
+      do iroot=1,nroots
+         do iopt=1,nopt
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call touch_file_rec(me_trv(iopt)%mel%fhand)
+         end do
+      end do
       call init_buffers(opti_info%nwfpar, nopt,
      &     xbuf1,xbuf2,xbuf3,nincore,lenbuf)
 
@@ -583,67 +597,65 @@ c dbgend
      &              orb_info,str_info)
             end do
          end if
-         do iopt=1,nopt
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            if(trafo(iopt))then
-               me_vort(iopt)%mel => me_scr(iopt)%mel
-               call transform_forward_wrap(fl_mvp,depend,
-     &              me_special,me_trv,me_vort, !trv-> vort
-     &              xrsnrm, nroots,
-     &              iroot, iopt, iroot, nspecial,
-     &              me_opt,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-            else
-               me_vort(iopt)%mel => me_trv(iopt)%mel
-            end if
-            call assign_me_list(me_scr(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-            call assign_me_list(me_trv(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-         end do
-         call dvdsbsp_append_vvec(dvdsbsp, !append initial guess vector to dvdsbsp and normalize
-     &        me_vort,nopt,
-     &        xbuf1, xbuf2, nincore, lenbuf)
-         do iopt=1,nopt
-            if(trafo(iopt))then
-               call transform_back_wrap(fl_mvp,depend,
-     &              me_special,me_vort,me_trv, !vort-> trv
-     &              iroot, iopt, nspecial,
-     &              me_opt,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-            end if
-            call assign_me_list(me_scr(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-            call assign_me_list(me_trv(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-         end do
       end do
-
-      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &     .and.nspecial.ge.3) then
-         trafo(iopt)=.true.
-         me_vort(iopt)%mel => me_special(1)%mel
-      elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-         trafo(iopt)=.true.
-         me_vort(iopt)%mel => me_special(4)%mel
-      else
-         trafo(iopt)=.false.
-         me_vort(iopt)%mel => me_trv(iopt)%mel
-      end if
+      do iopt=1,nopt
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &        .and.nspecial.ge.3) then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(1)%mel
+         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(4)%mel
+         else
+            trafo(iopt)=.false.
+            me_vort(iopt)%mel => me_trv(iopt)%mel
+         end if
+      end do
+      
       iter = 0
       task = 4
-      nrequest=dvdsbsp_get_nnew_vvec(dvdsbsp)
+      nrequest=nroots
       xrsnrm=0d0
       xeig=0d0
       reig=0d0
-      opt_loop: do while(task.lt.8)
-      iter=iter+1
 
-        if (iter.gt.1) then
-           call print_step_results(iter-1,xrsnrm, xeig,
-     &          nroots, nopt)
-        end if
-
+      
+      do iroot=1,nrequest
+         do iopt=1,nopt
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call switch_mel_record(me_vort(iopt)%mel,iroot)
+            if (trafo(iopt)) then
+            call transform_forward_wrap(fl_mvp,depend,
+     &           me_special,me_trv,me_vort, !trv-> vort
+     &           xrsnrm,
+     &           nrequest, iroot, iopt, iroot, nspecial,
+     &           me_trv,
+     &           op_info, str_info, strmap_info, orb_info, opti_info)
+            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+               call set_blks(me_vort(iopt)%mel,
+     &              "P,H|P,V|V,H|V,V",0d0)
+            end if
+            else
+               me_vort(iopt)%mel => me_trv(iopt)%mel
+            end if
+            if (trafo(iopt)) then
+               call transform_back_wrap(fl_mvp,depend,
+     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
+     &              iroot, iopt,nspecial,
+     &              me_trv,
+     &              op_info, str_info, strmap_info,
+     &              orb_info, opti_info)
+            end if
+         end do
+      end do
+                  
+         opt_loop: do while(task.lt.8)
+         iter=iter+1
+         if (iter.gt.1) then
+            call print_step_results(iter-1,xrsnrm, xeig,
+     &           nroots, nopt)
+         end if
+         
 ! normalize initial trial vector?
 c        if (iter.eq.1.and.use_init_guess(1).and.
 c     &       (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
@@ -653,7 +665,6 @@ c     &       call normalize_guess(me_trv(1)%mel%fhand,irequest,
 c     &       ff_mvp,irecmvp(irequest),
 c     &       ff_met,irecmet(irequest),
 c     &       use_s,1,nopt,opti_info)
-
 
 ! 4 - get residual
         if (iand(task,4).eq.4) then
@@ -701,16 +712,15 @@ c     &                op_info,str_info,strmap_info,orb_info)
 
             ! apply sign-fix (if needed)
             do iopt = 1, nopt
-              call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
-     &                            irequest,
-     &                            opti_info,iopt,
-     &                           opti_info%nwfpar(iopt),xbuf1)
-
-              if (use_s(iopt))
-     &             call optc_fix_signs2(me_met(iopt)%mel%fhand,
-     &             irequest,
-     &             opti_info,iopt,
-     &             opti_info%nwfpar(iopt),xbuf1)
+               call optc_fix_signs2(me_mvp(iopt)%mel%fhand,
+     &              irequest,
+     &              opti_info,iopt,
+     &              opti_info%nwfpar(iopt),xbuf1)
+               if (use_s(iopt))
+     &              call optc_fix_signs2(me_met(iopt)%mel%fhand,
+     &              irequest,
+     &              opti_info,iopt,
+     &              opti_info%nwfpar(iopt),xbuf1)
             end do
 c dbg
 c            write(lulog,*) 'output for request: ',irequest
@@ -737,11 +747,17 @@ c dbg
                   call assign_me_list(me_mvp(iopt)%mel%label,
      &                 me_opt(iopt)%mel%op%name,op_info)
                   if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
+                     call print_list("unpr mvp",me_mvp(iopt)%mel,
+     &                    "LIST",0d0,0d0,
+     &                    orb_info,str_info)
                  call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
      &                    fl_spc(1),opti_info%nwfpar(iopt),
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
+                 call print_list("prj mvp",me_mvpprj(iopt)%mel,
+     &                    "LIST",0d0,0d0,
+     &                    orb_info,str_info)
                   elseif (opti_info%typ_prc(iopt).eq.
      &                  optinf_prc_spinrefp) then
                  call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
@@ -753,10 +769,16 @@ c dbg
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
                   else
+                     call print_list("unpr mvp",me_mvp(iopt)%mel,
+     &                    "LIST",0d0,0d0,
+     &                    orb_info,str_info)
                      call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
+                     call print_list("prj mvp",me_mvp(iopt)%mel,
+     &                    "LIST",0d0,0d0,
+     &                    orb_info,str_info)
                   end if
 !     reassign lists to correct ops
                   call assign_me_list(me_trv(iopt)%mel%label,
@@ -1224,7 +1246,10 @@ c dbg
       write(lu,'(x,a,3i10)')
      &     'Number of parameters:      ',
      &     opti_info%nwfpar(1:opti_info%nopt)
-
+      write(lu,'(x,a,3i10)')
+     &     'modes      ',
+     &     opti_info%typ_prc(1:opti_info%nopt)
+      
 
       end subroutine
       end

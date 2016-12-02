@@ -41,7 +41,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 00
       character(len=*),parameter::
      &     i_am="davidson_driver"
       real(8),parameter::
@@ -107,7 +107,7 @@
       integer,pointer::
      &     typ_prc(:),nwfpar(:)
       logical::
-     &     conv
+     &     conv, zero_nrm
       real(8)::
      &     xnrm                !temporary variable for some norms
 ! lists for the mv-product and vector in the orthogonal space
@@ -147,31 +147,43 @@ c            me_mvort(iopt)%mel => me_mvp(iopt)%mel
 c         end if
 c      end do
 
+      irecres=0
       do iroot=1,nnew
+         
+         if (ntest.ge.100)then
+            do iopt=1,nopt
+               write(lulog,*) "root no.",iroot
+              call print_list("entry trv",me_trv(iopt)%mel,
+     &              "LIST",0d0,0d0,
+     &              orb_info,str_info)
+            end do
+         end if
          do iopt=1,nopt
             call switch_mel_record(me_mvp(iopt)%mel,iroot)
             call switch_mel_record(me_mvort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call switch_mel_record(me_vort(iopt)%mel,iroot)
             if (use_s(iopt))then
                call switch_mel_record(me_met(iopt)%mel,iroot)
                call switch_mel_record(me_metort(iopt)%mel,iroot)
             end if
             if (trafo(iopt)) then
-
                call transform_forward_wrap(flist,depend,
      &              me_special,me_mvp,me_mvort, !mvp-> mvort
      &              xrsnrm,
      &              nroot, iroot, iopt, iroot, nspecial,
-     &              me_opt,
+     &              me_trv,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                 call set_blks(me_mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-              endif
+                 call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               endif
+              
               if (use_s(iopt))then
                  call transform_forward_wrap(flist,depend,
      &                me_special,me_met,me_metort, !met-> metort
      &                xrsnrm, nroot,
      &                iroot, iopt, iroot, nspecial,
-     &                me_opt,
+     &                me_trv,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
                  if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                     call set_blks(me_metort(iopt)%mel,
@@ -184,23 +196,32 @@ c      end do
               if (use_s(iopt))then
                  me_metort(iopt)%mel=> me_met(iopt)%mel
               else
-                 me_metort(iopt)%mel=> null()
+                 me_metort(iopt)%mel=>null()
               end if
            end if
-
-         end do !iopt
-         call dvdsbsp_append_covariantvecs(dvdsbsp,
-     &        me_metort,
-     &        me_mvort, nopt,    !mvort & metort into dvdsbsp and update the vMv-matrix and vSv-matrix
-     &        xbuf1, xbuf2, xbuf3, nincore, lenbuf)
-
+        end do                  !iopt
       end do
+      
 
-      if (nroot.gt.dvdsbsp_get_nfree(dvdsbsp) )then
+
+      call dvdsbsp_append_vecs(dvdsbsp,
+     &     me_metort,
+     &     me_mvort,
+     &     me_vort,
+     &     nnew,
+     &     nopt,                !mvort & metort into dvdsbsp and update the vMv-matrix and vSv-matrix
+     &     xbuf1, xbuf2, xbuf3, nincore, lenbuf)
+      
+      if ( nnew.eq.0)
+     &     call quit(0,i_am,
+     &     "only linear depended new directions generated")
+
+      if (nroot.gt. dvdsbsp_get_nfree(dvdsbsp) )then
          call dvdsbsp_compress(dvdsbsp, nroot,
      &        nopt, me_scr,     !scr as scratch
      &        xbuf1, xbuf2, lenbuf ,nincore)
       end if
+
 
 
       call davidson_assemble_residuals(dvdsbsp,
@@ -240,8 +261,8 @@ c      end do
       end do
       xeig=leig
 
-      nnew=irecres ! 0 if all converged
-
+      nnew=irecres              ! 0 if all converged
+      
 
 !................. if all converged, assemble results.
       if (nnew .eq. 0
@@ -254,18 +275,29 @@ c      end do
      &        xeig,
      &        me_vort, nopt, maxvec, lrsnrm, ! results on me_vort
      &        xbuf1, xbuf2, nincore, lenbuf)
+         
          do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
                call switch_mel_record(me_opt(iopt)%mel,iroot)
             end do
-            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
+            if (ntest.ge.00)then
+               write(lulog,*) "root:",iroot
+               do iopt=1,nopt
+                  call print_list("result in orth space",
+     &                 me_vort(iopt)%mel,
+     &                 "LIST",0d0,0d0,
+     &                 orb_info,str_info)
+               end do
+            end if
+           
+!            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
             do iopt=1,nopt
                if (trafo(iopt) ) then
                   call transform_back_wrap(flist,depend,
      &                 me_special,me_vort,me_opt, !vort -> opt !
      &                 iroot, iopt, nspecial,
-     &                 me_opt,
+     &                 me_trv,
      &                 op_info, str_info, strmap_info,
      &                 orb_info, opti_info)
 
@@ -273,6 +305,15 @@ c      end do
 !     else me_vort => me_trv => me_opt
                end if
             end do
+            if (ntest.ge.00)then
+               write(lulog,*) "root:",iroot
+               do iopt=1,nopt
+                  call print_list("result in normal space",
+     &                 me_opt(iopt)%mel,
+     &                 "LIST",0d0,0d0,
+     &                 orb_info,str_info)
+               end do
+            end if
          end do
          if(nnew.eq.0)then
             write(lulog,'(x,a,i5,a)')
@@ -290,14 +331,29 @@ c      end do
          task=4       ! calculate new mv product when returning
       end if
 
+      if (ntest.ge.100)then
+         do iopt=1,nopt
+            call print_list("preconditioner",me_dia(iopt)%mel,
+     &           "LIST",0d0,0d0,
+     &           orb_info,str_info)
+         end do
+      end if
       do iroot = 1, nnew
          do iopt=1,nopt
             call switch_mel_record(me_res(iopt)%mel,iroot)
             call switch_mel_record(me_vort(iopt)%mel,iroot)
          end do
 
+         if (ntest.ge.100)then
+            do iopt=1,nopt
+               write(lulog,*) "root no.",iroot
+               call print_list("residual",me_res(iopt)%mel,
+     &              "LIST",0d0,0d0,
+     &              orb_info,str_info)
+            end do
+         end if
          do iopt = 1,nopt
-
+           
             xnrm=0.0
             do jopt = 1,nopt
                xnrm = xnrm+xrsnrm(iroot,jopt)**2
@@ -315,22 +371,26 @@ c      end do
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
      &           nopt.eq.1, op_info, str_info, strmap_info)
          end do
-         if (ntest.gt.100)then
+         if (ntest.ge.100)then
             do iopt=1,nopt
                write(lulog,*) "root no.",iroot
-               call print_list("unprojected trv",me_trv(iopt)%mel,
+               call print_list("unprojected vort",me_vort(iopt)%mel,
      &              "LIST",0d0,0d0,
      &              orb_info,str_info)
             end do
          end if
-         call dvdsbsp_append_vvec(dvdsbsp, ! orthogonalize and normalize new vector
-     &        me_vort,nopt,                ! vort -> vort
-     &        xbuf1, xbuf2, nincore, lenbuf)
+         call vecsp_orthvec(dvdsbsp%vspace, me_vort, nopt,
+     &        xbuf1, xbuf2, lenbuf)
+         if (ntest.ge.100)then
+            do iopt=1,nopt
+               write(lulog,*) "root no.",iroot
+               call print_list("projected trv",me_vort(iopt)%mel,
+     &              "LIST",0d0,0d0,
+     &              orb_info,str_info)
+            end do
+         end if
+
       end do                    !iroot
-      nnew=dvdsbsp_get_nnew_vvec(dvdsbsp)
-      if ( nnew.eq.0)
-     &     call quit(0,i_am,
-     &     "only linear depended new directions generated")
 
       do iopt=1,nopt
          do iroot=1,nnew
@@ -340,13 +400,22 @@ c      end do
                call transform_back_wrap(flist,depend,
      &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
      &              iroot, iopt,nspecial,
-     &              me_opt,
+     &              me_trv,
      &              op_info, str_info, strmap_info,
      &              orb_info, opti_info)
 !            else me_vort => me_trv
             end if
          end do
       end do                    !iopt
+      
+      if (ntest.ge.100)then
+         do iopt=1,nopt
+            write(lulog,*) "root no.",iroot
+            call print_list("retransformed trv",me_trv(iopt)%mel,
+     &           "LIST",0d0,0d0,
+     &           orb_info,str_info)
+         end do
+      end if
       return
       contains
 
@@ -437,7 +506,7 @@ c      end do
      &     typ_prc.eq.optinf_prc_prj.or.
      &     typ_prc.eq.optinf_prc_spinrefp)then
          spin_prj=.true.
-         me_intm => me_scr
+         me_intm => me_result
       else
          spin_prj=.false.
          me_intm => me_result
@@ -499,14 +568,16 @@ c     &              me_opt(iopt)%mel%op%name
 c     dbgend
          call assign_me_list(me_intm%label,
      &        op_opt%name,op_info)
-         call switch_mel_record(me_resid,iroot)
+         call switch_mel_record(me_intm,iroot)
+         call reset_file_rec(me_intm%fhand)
+         
          if (typ_prc.eq.optinf_prc_spinp) then
             call spin_project(me_intm,me_result,
      &              fspc(1),lenme,
      &              xbuf1,xbuf2,.true.,xnrm,
      &              opti_info,orb_info,
      &              op_info,str_info,strmap_info)
-            elseif (typ_prc.eq.
+         elseif (typ_prc.eq.
      &              optinf_prc_spinrefp)then
                call spin_project(me_intm,me_result,
      &              fspc(2),lenme,
@@ -566,155 +637,158 @@ c     dbgend
 *----------------------------------------------------------------------*
 !>    norms a vector of nlists me_lists
 *----------------------------------------------------------------------*
-      subroutine vec_normalize(me_lists, nlists, xbuf1, xbuf2, lbuf)
+c$$$      subroutine orthogonalize_records(
+c$$$     &     me_lists, me_Svlists, me_Mvlists, nlists,
+c$$$     &     zero_nrm, use_s,
+c$$$     &     xbuf1, xbuf2, lbuf)
+c$$$      implicit none
+c$$$
+c$$$      do irec=1,nrec
+c$$$         do jrec=1,irec
+c$$$            do ilist=1,nlists
+c$$$               lenlist=me_lists(ilist)%mel%len_op
+c$$$               ffme=>me_lists(ilist)%mel%fhand
+c$$$               
+c$$$               call vec_from_da(me_lists(ilist)%mel%fhand,irec,xbuf1,
+c$$$     &              lenlist)
+c$$$               call vec_from_da(me_clists(ilist)%mel%fhand,jrec,xbuf2,
+c$$$     &              lenlist)
+c$$$               overlapp=overlapp+ddot(lenlist,xbuf1,1,xbuf2,1)
+c$$$            end do
+c$$$            do ilist=1,nlists
+c$$$               call vec_from_da(ffme,irec,xbuf1,lenlist)
+c$$$               call vec_from_da(ffme,jrec,xbuf2,lenlist)
+c$$$               do idx=1,lenlist
+c$$$                  
+c$$$               
+c$$$            end do
+c$$$         end do
+c$$$      end do
+c$$$      end subroutine
+
+      subroutine rescale_vecs(me_lists, me_clists, me_Mvlists, nlists,
+     &     zero_nrm, use_s,
+     &     xbuf1, xbuf2, lbuf)
       implicit none
+      include 'par_scale_copy_modes.h'
+
+      
+      interface
+         subroutine mel_scale_copy(
+     &     me_inp, me_res,
+     &     buf1,buf2, lbuf, nbuf,
+     &     fac, nfac,
+     &     mode,
+     &        opti_info)
+         import optimize_info,me_list
+         integer,intent(in)::
+     &        lbuf, nbuf, nfac,
+     &        mode
+         type(me_list), intent(inout)::
+     &        me_inp, me_res
+         type(optimize_info),intent(in)::
+     &        opti_info
+         real(8), intent(inout) ::
+     &        buf1(:), buf2(:)
+         real(8),intent(in)::
+     &        fac(nfac)
+         end subroutine
+      end interface
+      
+      real(8),parameter::
+     &     zero_norm2_thresh=1.0D-12
       integer, parameter::
-     &     ntest = 100
+     &     ntest = 30
       character(len=*),parameter::
-     &     i_am="vec_normalize"
+     &     i_am="rescale_vecs"
 
       integer,intent(in)::
      &     nlists,
      &     lbuf
-      type(me_list_array),intent(in)::
-     &     me_lists(*)
+      type(me_list_array),intent(inout)::
+     &     me_lists(*), me_clists(*),me_MVlists(*)
       real(8),intent(inout)::
-     &     xbuf1(*), xbuf2(*)
-
+     &     xbuf1(lbuf), xbuf2(lbuf)
+      logical,intent(out)::
+     &     zero_nrm
+      logical,intent(in)::
+     &     use_s(nlists)
+      
       integer::
      &     ilist,
-     &     lenlist,
-     &     irec,
-     &     ii
+     &     ifree
       real(8)::
-     &     xnrm2,xnrm
-
+     &     xnrm2
+      logical::
+     &     use_metric
       type(filinf),pointer::
      &     ffme
 
+      real(8),external::
+     &     me_ddot
+      type(optimize_info)::
+     &     opti_info2           
+
+      use_metric = .False.
+      do ilist=1,nlists
+         use_metric = use_metric .or. use_s(ilist)
+      end do
       xnrm2=0
       do ilist=1,nlists
-         ffme=> me_lists(ilist)%mel%fhand
-         irec=me_lists(ilist)%mel%fhand%current_record
-         lenlist= me_lists(ilist)%mel%len_op
-         call vec_from_da(ffme,irec,xbuf1,lenlist)
-         do ii=1,lenlist
-            xnrm2=xnrm2+xbuf1(ii)**2
-         end do
+         if(use_s(ilist))then
+            xnrm2=xnrm2+
+     &           me_ddot(me_lists(ilist)%mel, me_clists(ilist)%mel,
+     &           xbuf1, xbuf2, 2, lbuf)
+         else
+            xnrm2=xnrm2+
+     &           me_ddot(me_lists(ilist)%mel, me_lists(ilist)%mel,
+     &           xbuf1, xbuf2, 2, lbuf)
+         end if
       end do
-      xnrm=sqrt(xnrm2)
-      print *,"old norm was",xnrm
+
+      print *,"norm**2 was", xnrm2
+      zero_nrm = xnrm2.le.zero_norm2_thresh
+
+      if(zero_nrm .and. ntest.gt.20)
+     &     write(lulog,*) "detected vector with norm**2 of",xnrm2
+
+      if(zero_nrm) return
+      
+         
+      ifree = mem_alloc_int(opti_info2%nsec,1,'nsec')
+      ifree = mem_alloc_int(opti_info2%nwfpsec,1,'nwfpsec')
+      ifree = mem_alloc_int(opti_info2%idstsec,1,'idstsec')
+      ifree = mem_alloc_real(opti_info2%signsec,1,'signsec')
+      opti_info2%nsec(1) = 1
+      opti_info2%idstsec(1) = 1
+      opti_info2%signsec(1) = 1d0
 
       do ilist=1,nlists
-         ffme=> me_lists(ilist)%mel%fhand
-         irec=me_lists(ilist)%mel%fhand%current_record
-         lenlist= me_lists(ilist)%mel%len_op
-         call vec_from_da(ffme,irec,xbuf1,lenlist)
-         xbuf1(1:lenlist)=xbuf1(1:lenlist)/xnrm
-         call vec_to_da(ffme,irec,xbuf1,lenlist)
-      end do
-
-
-
-      end subroutine
-*-------------------------------------------------------------*
-!>   orthogonalizes all nroot vectors on me_lists()nlists with respect to each other
-!!   and orthogonalizes them
-*-------------------------------------------------------------*
-      subroutine vecs_orthonorm(me_lists,nlists,nroot,
-     &     xbuf1,xbuf2,lbuf)
-      implicit none
-      integer,parameter::
-     &     ntest=00
-      type(me_list_array),intent(in)::
-     &     me_lists(*)
-
-      integer,intent(in)::
-     &     nlists, nroot,
-     &     lbuf
-
-      real(8),intent(inout)::
-     &     xbuf1(*), xbuf2(*)
-
-      integer::
-     &     iroot,ilist, jroot,kroot,
-     &     lenlist
-      real(8)::
-     &     overlapp(nroot,nroot),
-     &     orth_norm2(nroot)     ! squared norm of the orthogonalized vectors
-      type(filinf),pointer::
-     &     ffme1,ffme2
-      real(8)::
-     &     tmp_orth_norm2,dbg_nrm
-      real(8),external::
-     &     ddot
-      overlapp(1:nroot,1:nroot)=0.0
-      do ilist=1,nlists
-         ffme1 => me_lists(ilist)%mel%fhand
-         ffme2 => me_lists(ilist)%mel%fhand
-         lenlist= me_lists(ilist)%mel%len_op
-         do iroot=1,nroot
-            call vec_from_da(ffme1,iroot,xbuf1,lenlist)
-            do jroot=1,iroot
-               call vec_from_da(ffme2,jroot,xbuf2,lenlist)
-               overlapp(iroot,jroot) = overlapp(iroot,jroot) +
-     &              ddot(lenlist, xbuf1,1, xbuf2 ,1)
-            end do
-         end do
-      end do
-
-      if (ntest.ge.100) then
-         write(lulog,*) 'trafo-matrix:'
-         call wrtmat2(overlapp,nroot,nroot,nroot,nroot)
-      end if
-
-!|i'>=|i>-sum_j(|j> <j|i>)
-! assuming <i|j>=<j|i>
-!<i'|i'>=<i|i>+sum_j(<j|i>(-2<j|i>+sum_k( <i|k><k|j> ) ) )
-
-      orth_norm2(1:nroot)=0.0
-      do iroot=1, nroot
-         do jroot=1,iroot-1
-            do kroot=1,jroot    !k <=j or no values in matrix but <k|j> +<j|k>=2<j|k>
-               tmp_orth_norm2=tmp_orth_norm2+
-     &              2*overlapp(iroot,kroot)*overlapp(jroot,kroot)
-            end do
-            orth_norm2(iroot)=(tmp_orth_norm2
-     &           -2*overlapp(iroot,jroot)
-     &           -overlapp(iroot,kroot)*overlapp(jroot,jroot)! added k=j term twice, remove once
-     &           )*overlapp(iroot,jroot)
-         end do
-         orth_norm2(iroot)=orth_norm2(iroot)+overlapp(iroot,iroot)
-      end do
-      dbg_nrm=0d0
-      do iroot=1,nroot
-         do ilist=1,nlists
-            ffme1 => me_lists(ilist)%mel%fhand
-            ffme2 => me_lists(ilist)%mel%fhand
-            lenlist= me_lists(ilist)%mel%len_op
-            if(ntest.ge.100)
-     &           write(lulog,*)"normalizing",me_lists(ilist)%mel%label
-            call vec_from_da(ffme1,iroot,xbuf1,lenlist)
-            do jroot=iroot+1,nroot
-               call vec_from_da(ffme2,jroot,xbuf2,lenlist)
-               xbuf2(1:lenlist)=xbuf2(1:lenlist)-
-     &              overlapp(iroot,jroot)*xbuf1(1:lenlist)
-               call vec_to_da(ffme2,jroot,xbuf2,lenlist)
-            end do
-            xbuf1(1:lenlist)=xbuf1(1:lenlist)/sqrt(orth_norm2(iroot)) !norm
-            call vec_to_da(ffme1,jroot,xbuf1,lenlist)
-            if(ntest.ge.100)
-     &           dbg_nrm=dbg_nrm+ddot(lenlist,xbuf1,1,xbuf1,1)
-         end do
-         if(ntest.ge.100)then
-            write(lulog, *) "norm of vector: ", iroot,"is",dbg_nrm
-            do ilist=1,lenlist
-               write(lulog, *) ilist,xbuf1(ilist)
-            end do
-           end if
-      end do                    !iroot
-      return
-      end subroutine
+         opti_info2%nwfpsec(1) = me_lists(ilist)%mel%len_op
+         call mel_scale_copy(
+     &        me_lists(ilist)%mel, me_lists(ilist)%mel,
+     &        xbuf1,xbuf2, lbuf, 2,
+     &        (/ 1/sqrt(xnrm2) /), 1,
+     &        MOD_SCALE,
+     &        opti_info2)
+         if(use_metric)then
+            call mel_scale_copy(
+     &           me_clists(ilist)%mel, me_clists(ilist)%mel,
+     &           xbuf1,xbuf2, lbuf, 2,
+     &           (/ 1/sqrt(xnrm2) /), 1,
+     &           MOD_SCALE,
+     &           opti_info2)
+         end if
+          call mel_scale_copy(
+     &        me_Mvlists(ilist)%mel, me_Mvlists(ilist)%mel,
+     &        xbuf1,xbuf2, lbuf, 2,
+     &        (/ 1/sqrt(xnrm2) /), 1,
+     &        MOD_SCALE,
+     &        opti_info2)
+       end do
+       end subroutine
+      
+      
 *----------------------------------------------------------------------*
 !>    checks if the energy change between iterations is small enough to count as converged
 !!

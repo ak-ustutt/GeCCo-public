@@ -18,7 +18,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 00
+     &     ntest = 101
       character(len=*),parameter::
      &     i_am="dvdsbsp_get_eigenvec"
 
@@ -47,6 +47,8 @@
 
       if (ntest.ge.100) then
          call write_title(lulog,wst_dbg_subr,i_am)
+         write(lulog,*) "eigenvectors for ",nroot,"roots requested"
+         write(lulog,*)  ndim," dimensions available"
       end if
       if(dvdsbsp%ncursub.ne.ndim) call quit(1,i_am,
      &     "requested dimension inconsistent with subspace.")
@@ -85,9 +87,17 @@
          if (eigi(ii).gt.0) call quit(2,i_am,
      &        "imaginary eigenvalue detected")
       end do
+
+      if(ntest.ge.100)then
+         write (lulog,*) "eigenvalues"
+         do ii=1,ndim
+            write (lulog,*)  toteigr(ii), toteigi(ii)
+         end do
+      end if
       do ii=1,nroot
         vecs(1:ndim,ii)=totvecs(1:ndim,ii)
       end do
+
       deallocate(xmat,xscr,totvecs,
      &     toteigr,toteigi)
       return

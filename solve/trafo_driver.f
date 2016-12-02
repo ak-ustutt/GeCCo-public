@@ -69,7 +69,10 @@
      &     me_trf
       type(operator),pointer::
      &     op_in,
-     &     op_trf
+     &     op_trf,
+     &     op_out,
+     &     op_in_save
+      
       real(8) ::
      &     xnrm
       logical::
@@ -95,12 +98,12 @@
       else
          op_in => me_special(1)%mel%op
       endif
-
-
+      op_out => me_out(iopt)%mel%op
+      op_in_save => me_in(iopt)%mel%op
 
       call switch_mel_record(me_out(iopt)%mel,irecscr)
       call  switch_mel_record(me_in(iopt)%mel,irecscr)
-      
+
 c dbg     
 c      call print_list('residual vector before transformation:',
 c     &     me_in,"LIST",
@@ -114,6 +117,19 @@ c dbg end
      &     me_trf, op_trf, trf,                      
      &     me_tgt(iopt)%mel,
      &     op_info, str_info, strmap_info, orb_info)
+      
+      if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+         call assign_me_list(me_special(4)%mel%label,
+     &        op_in%name, op_info)
+      else
+        call assign_me_list(me_special(1)%mel%label,
+     &        op_in%name, op_info)
+      endif
+      call assign_me_list(me_out(iopt)%mel%label,
+     &     op_out%name, op_info)
+      call assign_me_list(me_in(iopt)%mel%label,
+     &     op_in_save%name, op_info)
+
 c dbg
 c            call print_list('transformed residual vector:',
 c     &           me_scr(iopt)%mel,"LIST",

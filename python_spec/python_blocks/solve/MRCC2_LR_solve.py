@@ -1,7 +1,5 @@
 from gecco_interface import *
 import gecco_modules.string_to_form as stf
-
-
 from gecco_modules.NoticeUtil import *
 _op_list={'R1_prime_q':'T1',
           'R1_q':'T1',
@@ -70,6 +68,32 @@ PRINT({STRING: 'IRREP, S2, Ms of the reference state:' + str(_isym_0) +
        '       ' + str(_s2_0) + '          ' + str(_msc_0)  })
 
 PRINT({STRING: 'factor for spin-combination' + '    ' + str(_msc_0)})
+
+new_target("FORM_EXCITED_ENERGY")
+depend('DEF_RESPONSE_OPs')
+
+
+
+
+DEF_SCALAR({LABEL:"Exc_En"})
+EE = stf.GenForm("FORM_EXCITED_ENERGY","Exc_En")
+EE += "<C0^+(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')*C0>"
+EE += "<C0^+(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')*C0>"
+EE += "<R_mu^+*(AR_rspns_mu')>"
+print "\n".join([str(br) for br in EE.show()])
+
+EE.set_rule()
+
+
+
+DEF_SCALAR({LABEL:"Exc_Sr"})
+
+SR = stf.GenForm("FORM_EXCITED_OVERLAPP","Exc_Sr")
+SR += "<C0^+(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')*C0>"
+SR += "<C0^+(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')*C0>"
+SR += "<R_mu^+*(SR_rspns_mu')>"
+print "\n".join([str(br) for br in SR.show()])
+SR.set_rule()
 
 new_target("FORM_LR_TRANSFORM")
 depend("DEF_RESPONSE_OPs")
@@ -174,7 +198,9 @@ for _icnt in range (0,_ncnt):
         
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
-                        '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2]})
+                         '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2],
+                         MIN_REC:1,
+                         MAX_REC:_no_root})
         
         _op_list={'PRECON1':['ME_DIAG_t1',_isym_r,_ms_r],
                   'PRECON':['ME_DIAG_t2g',_isym_r,_ms_r],
@@ -329,32 +355,94 @@ for _icnt in range (0,_ncnt):
         PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
         
         SOLVE_EVP(_solve_evp_basis)
- 
+        
 
         _get_mel_inf = 'GET_MEL_INF' + _extnsn 
 
-#        new_target(_get_mel_inf,True)
+        new_target(_get_mel_inf,True)
 #        
-#        depend(_solve_eqn)#
-#
-#        DEF_ME_LIST({LIST:'ME_SR_q'+_extnsn,
-#                     OPERATOR:'SR_rspns_q',
-#                     IRREP:_isym_r,
-#                     '2MS':0,
-#                     AB_SYM:_msc_r,
-#                     MIN_REC:1,MAX_REC:_no_root})
+        depend(_solve_eqn)
+        depend("FORM_EXCITED_ENERGY")
+        DEF_ME_LIST({LIST:'ME_Exc_En'+_extnsn,
+                     OPERATOR:'Exc_En',
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:0,
+                     MIN_REC:1,MAX_REC:_no_root})
+        DEF_ME_LIST({LIST:'ME_Exc_Sr'+_extnsn,
+                     OPERATOR:'Exc_Sr',
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:0,
+                     MIN_REC:1,MAX_REC:_no_root})
 ##
-#
-#        OPTIMIZE({LABEL_OPT:'F_OPT_SR'+_extnsn,
-#                  LABELS_IN:'F_SR_rspns_q'})#
-#
-#        TRANSFORM({LIST_IN:'ME_R_q'+_extnsn,
-#                   LIST_OUT:'ME_SR_q'+_extnsn,
-#                   FORM:'F_OPT_SR'+_extnsn})
-#       
-#        ANALYZE_MEL({LISTS:['ME_R_mu'+_extnsn,'ME_R_q'+_extnsn],
-#                     LISTS_CV:['ME_R_mu'+_extnsn,'ME_SR_q'+_extnsn]})
-#
-#        PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) + 
-#                       '  and of spin multiplicity:    ' + str(_s2)})
 
+        _op_list={'AR1_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'AR2g_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'AR_rspns_mu':[_isym+1,_ms_0,_msc],
+                  'SR1_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'SR2g_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'SR_rspns_mu':[_isym+1,_ms_0,_msc],
+                  }
+        #                  'INT_PPr':[_isym_r,_ms_r,_msc_r]}
+
+#        _op='AR1_rspns_q'
+#        ASSIGN_ME2OP({LIST:'ME_'+_op+_extnsn,
+#                      OPERATOR:_op })
+
+#        DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
+#                     '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2]})
+        
+        for _op in _op_list:
+            ASSIGN_ME2OP({LIST:'ME_'+_op+_extnsn,
+                          OPERATOR:_op })
+        
+            
+        OPTIMIZE({LABEL_OPT:'FOPT_SR'+_extnsn,
+                  LABELS_IN:['FORM_AR1_RSPNS_q','FORM_AR2g_RSPNS_q','FORM_AR_RSPNS_mu',
+                             'FORM_S1','FORM_S2g','FORM_SR_RSPNS_mu']})
+        debug_FORM("FORM_EXCITED_OVERLAPP",only_this=True)
+        debug_FORM("FORM_EXCITED_ENERGY",only_this=True)
+        
+        OPTIMIZE({LABEL_OPT:"FOPT_Exc_En"+_extnsn,
+                  LABELS_IN:["FORM_EXCITED_OVERLAPP","FORM_EXCITED_ENERGY"]})
+        
+       
+        
+        for i in xrange(1,_no_root +1):
+            SET_STATE({LISTS:['ME_AR1_rspns_q'+_extnsn,
+                              'ME_AR2g_rspns_q'+_extnsn,
+                              'ME_AR_rspns_mu'+_extnsn,
+                              'ME_SR1_rspns_q'+_extnsn,
+                              'ME_SR2g_rspns_q'+_extnsn,
+                              'ME_SR_rspns_mu'+_extnsn,
+                              'ME_R1_q'+_extnsn,
+                              'ME_R2g_q'+_extnsn,
+                              'ME_R_mu'+_extnsn] ,
+                       ISTATE:i})
+            EVALUATE({FORM:'FOPT_SR'+_extnsn})
+#            debug_MEL('ME_R1_q'+_extnsn, only_this=True)
+#            debug_MEL('ME_R2g_q'+_extnsn, only_this=True)
+            debug_MEL('ME_R_mu'+_extnsn, only_this = True)
+            debug_MEL('ME_AR_rspns_mu'+_extnsn, only_this=True)
+
+            EVALUATE({FORM:'FOPT_Exc_En'+_extnsn})
+            
+            debug_MEL('ME_Exc_En'+_extnsn, only_this=True)
+            debug_MEL('ME_Exc_Sr'+_extnsn, only_this=True)
+
+
+        for i in xrange(1,_no_root +1):
+            SET_STATE({LISTS:['ME_R2g_q'+_extnsn,
+                              ],
+                       ISTATE:i})
+            SCALE_COPY({LIST_INP:'ME_R2g_q'+_extnsn,
+                        LIST_RES:'ME_R2g_q'+_extnsn,
+                        LIST_SHAPE:'ME_SR2g_rspns_q'+_extnsn,
+                        FAC:1,
+                        MODE:"scale"
+            })
+            
+            
+        ANALYZE_MEL({LISTS:['ME_R_mu'+_extnsn,'ME_R1_q'+_extnsn,'ME_R2g_q'+_extnsn],
+                     LISTS_CV:['ME_SR_rspns_mu'+_extnsn,'ME_SR1_rspns_q'+_extnsn,'ME_SR2g_rspns_q'+_extnsn]})

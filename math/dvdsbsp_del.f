@@ -30,5 +30,5 @@
       dvdsbsp%nmaxsub=0
       dvdsbsp%ncursub=0
       dvdsbsp%icursub=0
-
+      deallocate(dvdsbsp%use_metric)
       end subroutine

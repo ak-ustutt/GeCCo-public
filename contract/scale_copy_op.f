@@ -33,6 +33,32 @@
       include 'par_opnames_gen.h'
       include 'def_optimize_info.h'
       include 'par_scale_copy_modes.h'
+
+
+      
+      interface
+         subroutine mel_scale_copy(
+     &     me_inp, me_res,
+     &     buf1,buf2, lbuf, nbuf,
+     &     fac, nfac,
+     &     mode,
+     &        opti_info)
+         import optimize_info,me_list
+         integer,intent(in)::
+     &        lbuf, nbuf, nfac,
+     &        mode
+         type(me_list), intent(inout)::
+     &        me_inp, me_res
+         type(optimize_info),intent(in)::
+     &        opti_info
+         real(8), intent(inout) ::
+     &        buf1(:), buf2(:)
+         real(8),intent(in)::
+     &        fac(nfac)
+         end subroutine
+      end interface
+
+      
       integer, intent(in) ::
      &     nfac, nspc
       real(8), intent(in) ::
@@ -219,8 +245,11 @@
             ifree = mem_alloc_real(buf_in,lbuff,'buf_in')
             nbuff=2
          else
+            buf_in => null()
             nbuff=1
          end if
+
+
          
           call mel_scale_copy(
      &     me_inp, me_res,

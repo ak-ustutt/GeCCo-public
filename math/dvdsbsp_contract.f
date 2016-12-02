@@ -52,12 +52,6 @@
       
       call dvdsbsp_get_eigenvec(dvdsbsp, vecs, eigr, eigi, nretain,
      &     dvdsbsp%ncursub)
-      if(ntest.gt.100)then
-         write (lulog,*) "eigenvalues"
-         do idxdbg=1,ndim
-            write (lulog,*) eigr(idxdbg), eigi(idxdbg)
-         end do
-      end if
       
       call vecsp_compress(dvdsbsp%vspace,vecs,nretain,nlists,ndim,
      &     me_scr, xbuf1, xbuf2, lbuf)
