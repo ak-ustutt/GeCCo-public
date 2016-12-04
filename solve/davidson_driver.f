@@ -560,7 +560,7 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
      &        lenme,xbuf1,xbuf2,lenbuf)
       end if
 
-      if (spin_prj)then !intm != result
+      if (spin_prj)then
 ! assign op. with list containing the scratch trial vector
 c     dbg
 c     print *, "assign ",me_scr(iopt)%mel%label," to ",
@@ -572,14 +572,14 @@ c     dbgend
          call reset_file_rec(me_intm%fhand)
          
          if (typ_prc.eq.optinf_prc_spinp) then
-            call spin_project(me_intm,me_result,
+            call spin_project(me_intm,me_scr,
      &              fspc(1),lenme,
      &              xbuf1,xbuf2,.true.,xnrm,
      &              opti_info,orb_info,
      &              op_info,str_info,strmap_info)
          elseif (typ_prc.eq.
      &              optinf_prc_spinrefp)then
-               call spin_project(me_intm,me_result,
+               call spin_project(me_intm,me_scr,
      &              fspc(2),lenme,
      &              xbuf1,xbuf2,.true.,xnrm,
      &              opti_info,orb_info,

@@ -387,7 +387,7 @@ c     &       op_info,  orb_info, str_info, strmap_info)
         if (trafo(iopt))then
            me_mvort(iopt)%mel => me_scr(iopt)%mel
         else
-           me_mvort(iopt)%mel => me_mvpprj(iopt)%mel
+           me_mvort(iopt)%mel => me_mvp(iopt)%mel
         end if
 
         write(fname,'("metort_",i3.3)') iopt
@@ -747,17 +747,11 @@ c dbg
                   call assign_me_list(me_mvp(iopt)%mel%label,
      &                 me_opt(iopt)%mel%op%name,op_info)
                   if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-                     call print_list("unpr mvp",me_mvp(iopt)%mel,
-     &                    "LIST",0d0,0d0,
-     &                    orb_info,str_info)
                  call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
      &                    fl_spc(1),opti_info%nwfpar(iopt),
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-                 call print_list("prj mvp",me_mvpprj(iopt)%mel,
-     &                    "LIST",0d0,0d0,
-     &                    orb_info,str_info)
                   elseif (opti_info%typ_prc(iopt).eq.
      &                  optinf_prc_spinrefp) then
                  call spin_project(me_mvp(iopt)%mel,me_mvpprj(iopt)%mel,
@@ -765,6 +759,7 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
+                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
@@ -798,7 +793,7 @@ c dbg
      &     me_opt,me_dia,
      &     me_met,me_metort,
      &     me_scr,me_res,
-     &       me_trv,me_mvpprj,me_vort,me_mvort,
+     &       me_trv,me_mvp,me_vort,me_mvort,
      &       me_special, nspecial,
      &       xbuf1,xbuf2, xbuf3, nincore,lenbuf,
      &       fl_mvp,depend,
