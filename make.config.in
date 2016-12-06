@@ -75,7 +75,7 @@ dir_sep:=:
 foxdir:=@foxdir@
 fox_lib_finder:=@foxdir@/FoX-config 
 fox_lib_flags:= --libs --dom
-fox_libs:=$(shell $(fox_lib_finder) $(fox_lib_flags))   #space separated
+fox_libfiles:=$(shell $(fox_lib_finder) $(fox_lib_flags))  #space separated
 fox_inc_flags:=--fcflags
 fox_FC_flags:=$(shell $(fox_lib_finder) $(fox_inc_flags))
 
@@ -129,7 +129,7 @@ ifdef RANGE
   cflags+=$(crange)
 endif
 
-fldflags:=$(fldflags) -L. -L$(libdir) $(fox_libs) $(LDFLAGS)
+fldflags:=$(fldflags) -L. -L$(libdir) $(fox_libfiles) $(LDFLAGS) 
 cldflags:=$(cldflags) -L. -L$(libdir) $(LDFLAGS)
 
 # remove extra whitespace
