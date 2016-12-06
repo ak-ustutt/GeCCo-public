@@ -137,7 +137,7 @@ class GeCCo_Input:
             if (len(line) == 0):
                 continue
         
-            if (re.search(' |=',line)):
+            if (re.search('=',line)):
                 if (not( context)):
                     quit_error('Getting GeCCo input: context not yet defined.')
                     

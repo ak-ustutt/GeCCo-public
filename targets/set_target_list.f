@@ -90,13 +90,11 @@
       if (is_keyword_set('calculate.experimental').gt.0) then
         call set_experimental_targets(tgt_info,orb_info,env_type)
       end if
-      if ( (is_keyword_set('method.MRCC2').gt.0 ).or. 
-     &     (is_keyword_set('method.MRCCPT2').gt.0 ).or. 
-     &     (is_keyword_set('method.MR_P') .gt.0 ) )then
-         call set_python_targets(tgt_info,
-     &        trim(gecco_path)//'/python_spec/python_start.py',
-     &        name_infile,fforbinf%name)
-      end if
+
+      ! general python targets
+      call set_python_targets(tgt_info,
+     &     trim(gecco_path)//'/python_spec/python_start.py',
+     &     name_infile,fforbinf%name)
       
       ! Interfaces
       if (is_keyword_set('calculate.interfaces').gt.0) then
