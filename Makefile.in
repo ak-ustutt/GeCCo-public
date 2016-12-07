@@ -50,7 +50,7 @@ ifneq ($(libdirs),)
        done; 
 endif
 
-prog:$(sublib_make)
+prog: lib
 	@$(mkinstalldirs) $(bindir)
 ifneq ($(progdirs),)
 	@set -e; \
