@@ -174,7 +174,7 @@
                if (ifac.gt.nfac) ifac = 1
             end do
             end if
-            call put_vec(ffop_tgt,buf1,idxst_src,idxnd_src)
+            call put_vec(ffop_tgt,buf1,idxst_tgt,idxnd_tgt)
             idxst_src = idxnd_src+1
             idxst_tgt = idxnd_tgt+1
             

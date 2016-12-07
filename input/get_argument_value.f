@@ -23,7 +23,7 @@
       include 'stdunit.h'
 
       integer,parameter::
-     &     ntest=100
+     &     ntest=000
       character(len=18),parameter ::
      &     i_am="get_argument_value"
 
