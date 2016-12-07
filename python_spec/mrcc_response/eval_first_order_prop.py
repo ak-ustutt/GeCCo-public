@@ -1,4 +1,4 @@
-from gecco_interface import *
+from python_interface.gecco_interface import *
 from get_response_data import _response_data
 
 _triplet = _response_data['triplet']
@@ -10,9 +10,7 @@ else:
     absym_dens = 1.0
 
 # Get the restart option to skip the calculation of lower order response properties
-_restart=_inp.get('calculate.properties.restart')
-if(_restart == None):
-    _restart=1
+_restart=_response_data['restart']
 
 ##########
 new_target('DENS_0')

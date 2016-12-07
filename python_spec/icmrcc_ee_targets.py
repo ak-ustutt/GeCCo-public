@@ -2,11 +2,10 @@
 #This is a python interface for GeCCo to calculate excitation energies using ic-MRCEOM-LRT.
 #This code is originally written as an experimental file by Pradipta Samanta on October, 2012.
 #This particular interface is written on November, 2014 by Pradipta Samanta.
-import sys,os
-interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
-sys.path=[interface_path]+sys.path
 
-from gecco_interface import *
+import sys,os
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
@@ -707,5 +706,6 @@ for _icnt in range (0,_ncnt):
 
         PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) + 
                        '  and of spin multiplicity:    ' + str(_s2)})
+
 
 export_targets();

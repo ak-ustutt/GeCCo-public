@@ -30,6 +30,7 @@ FORMAL int
 FORMAT str
 FORMULA str
 FORM_SPC label
+FREQ real
 FROMTO int
 IDX_FREQ int
 IDX_LIST int

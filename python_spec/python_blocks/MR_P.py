@@ -1,9 +1,9 @@
 
-from gecco_interface import *
-from gecco_modules.NoticeUtil import*
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import*
 
-from gecco_modules.omg_generator import *
-import gecco_modules.default_keywords as dk
+from python_interface.gecco_modules.omg_generator import *
+import python_interface.gecco_modules.default_keywords as dk
 
 
 ##

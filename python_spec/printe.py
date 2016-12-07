@@ -1,7 +1,6 @@
 import sys,os
-interface_path=os.path.join(os.getenv("GECCO_DIR"),"python_interface")
-sys.path=[interface_path]+sys.path
-from gecco_interface import *
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
 
 new_target('PRINTE',True)
 

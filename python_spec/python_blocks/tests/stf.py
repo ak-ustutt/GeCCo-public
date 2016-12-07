@@ -1,7 +1,7 @@
-from gecco_interface import *
+from python_interface.gecco_interface import *
 import sys
 import unittest as ut
-import gecco_modules.stf_pack.stf_tests as test
+import python_interface.gecco_modules.stf_pack.stf_tests as test
 
 
 suite=ut.TestLoader().loadTestsFromTestCase( test.Test_OPProduct )

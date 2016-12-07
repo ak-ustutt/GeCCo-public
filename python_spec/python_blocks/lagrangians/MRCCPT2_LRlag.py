@@ -1,6 +1,6 @@
-from gecco_modules.NoticeUtil import *
-from gecco_interface import *
-import gecco_modules.string_to_form as stf
+from python_interface.gecco_modules.NoticeUtil import *
+from python_interface.gecco_interface import *
+import python_interface.gecco_modules.string_to_form as stf
 
 #[(A_c',c   A_c',t1  A_c',t2g  )     (1  0   0  ) ](r_c)    0
 #[(A_l1,c   A_l1,t1  A_l1,t2g  ) - w (0  S11 S12) ](r_t1)  =0

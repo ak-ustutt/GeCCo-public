@@ -1,6 +1,8 @@
-from gecco_interface import *
-import gecco_modules.string_to_form as stf
-from gecco_modules.NoticeUtil import *
+from python_interface.gecco_interface import *
+import python_interface.gecco_modules.string_to_form as stf
+
+
+from python_interface.gecco_modules.NoticeUtil import *
 _op_list={'R1_prime_q':'T1',
           'R1_q':'T1',
           'R2g_prime_q':'T2g',

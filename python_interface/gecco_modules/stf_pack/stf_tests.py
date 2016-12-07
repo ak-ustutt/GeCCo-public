@@ -1,7 +1,7 @@
 import unittest as ut
 from stf_top import *
 from stf_top import _OPProduct,_Bracket
-from gecco_modules.stf_pack.operators import Vertex
+from python_interface.gecco_modules.stf_pack.operators import Vertex
 
 
 #NOTE: For manual testing you have to comment out the import of  gecco_interface in string_to_form2.py as gecco_interface exits if the correct environment is not found

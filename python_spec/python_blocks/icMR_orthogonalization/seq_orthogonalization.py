@@ -1,6 +1,6 @@
 
-from gecco_interface import *
-from gecco_modules.NoticeUtil import * 
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import * 
 
 
 spinadapt=0

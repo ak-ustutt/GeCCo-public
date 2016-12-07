@@ -1,5 +1,5 @@
 import re
-from gecco_interface import *
+from python_interface.gecco_interface import *
 
 
 testing=keywords.get('method.unit_test.tests')

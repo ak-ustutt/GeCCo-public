@@ -32,9 +32,10 @@
 
       idxcmo = 1
       do igas = 1, ngas
-        if (hpvxgas(igas,1).eq.ivale)
-     &       call quit(1,'make_refmat',
-     &                   'not prepared for valence spaces')
+! COMMENTING OUT NEXT THREE LINES --- SHOULD NOT BE A PROBLEM @pradipta
+!       if (hpvxgas(igas,1).eq.ivale)
+!    &       call quit(1,'make_refmat',
+!    &                   'not prepared for valence spaces')
         idxdao = 1
         do isym = 1, nsym
           norb = mostnd(2,isym,igas)-mostnd(1,isym,igas)+1
