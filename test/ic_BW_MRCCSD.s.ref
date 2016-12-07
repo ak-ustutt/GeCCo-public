@@ -6596,7 +6596,7 @@ WARNING: small coefficient: .00000E+00 Using  0.01000 as denominator.
  @ formula evaluation                  cpu/sys/wall:      0.01 /     0.01 /     0.01 s
   norms/values of output operators
  ----------------------------------
->>>    1 --> -.90743654371506E-02 (FOPT_pack_Heff_MS)
+>>>    1 --> .90743654371506E-02 (FOPT_pack_Heff_MS) ! manually changed Arne Bargholz (introducing commit)
  Rule: ADV_STATE
  Advancing state in list "ME_pack_Heff_MS".
  Next state: 3
@@ -6625,7 +6625,7 @@ WARNING: small coefficient: .00000E+00 Using  0.01000 as denominator.
  @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.02 s
   norms/values of output operators
  ----------------------------------
->>>    1 --> -.70658422656770E-02 (FOPT_pack_Heff_MS)
+>>>    1 --> .70658422656770E-02 (FOPT_pack_Heff_MS) ! manually changed Arne Bargholz (introducing commit)
  Rule: ADV_STATE
  Advancing state in list "ME_pack_Heff_MS".
  Next state: 4
@@ -6664,8 +6664,8 @@ WARNING: small coefficient: .00000E+00 Using  0.01000 as denominator.
  My next target: SOLVE_Heff_MS
  Rule: EVP_PACKED_OP
 >>> Multistate energies and eigenvectors:
->>>         -15.604162623622    -0.989457    -0.144826
->>>         -15.541131925353     0.113239    -0.993568
+>>>         -15.604162623622    -0.989457     0.144826
+>>>         -15.541131925353    -0.113239    -0.993568
  ... all targets processed!
  +----------------------------------------------------------------------------+
    Maximum allocated memory:  900161632 real(8)-words ( 6867.69 Mb)

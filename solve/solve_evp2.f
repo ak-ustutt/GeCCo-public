@@ -649,7 +649,7 @@ c dbgend
          end do
       end do
                   
-         opt_loop: do while(task.lt.8)
+      opt_loop: do while(task.lt.8)
          iter=iter+1
          if (iter.gt.1) then
             call print_step_results(iter-1,xrsnrm, xeig,
@@ -686,7 +686,6 @@ c     &       use_s,1,nopt,opti_info)
 
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
-C              if (me_trv(iopt)%mel%absym.ne.0)
 c dbg
 c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
 c        call wrt_mel_file(lulog,5,
@@ -694,16 +693,17 @@ c     &       me_trv(iopt)%mel,
 c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
 c     &       str_info,orb_info)
 c dbgend
-c                 if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0) !TODO this has to move into davidson_driver
-c     &                call sym_ab_list(
-c     &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
-c     &                xdum,.false.,
-c     &                op_info,str_info,strmap_info,orb_info)
+              ! enforce MS-combination symmetry of trial vectors
+              ! (if requested)
+c                 print *,"trv ab_sym",me_trv(iopt)%mel%absym
+                 if (me_trv(iopt)%mel%absym.ne.0) !TODO this has to move into davidson_driver
+     &                call sym_ab_list(
+     &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
+     &                xdum,.false.,
+     &                op_info,str_info,strmap_info,orb_info)
 
 !     here?
-                 if (use_s(iopt))
-     &                call reset_file_rec(me_met(iopt)%mel%fhand)
-                 call reset_file_rec(me_mvp(iopt)%mel%fhand)
+                 call touch_file_rec(me_trv(iopt)%mel%fhand)
               end do
 
 
@@ -759,21 +759,22 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
+c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
                   else
-                     call print_list("unpr mvp",me_mvp(iopt)%mel,
-     &                    "LIST",0d0,0d0,
-     &                    orb_info,str_info)
-                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
+c  dbg
+c                     call print_list("unpr mvp",me_mvp(iopt)%mel,
+c     &                    "LIST",0d0,0d0,
+c     &                    orb_info,str_info)
+c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
-                     call print_list("prj mvp",me_mvp(iopt)%mel,
-     &                    "LIST",0d0,0d0,
-     &                    orb_info,str_info)
+c                     call print_list("prj mvp",me_mvp(iopt)%mel,
+c     &                    "LIST",0d0,0d0,
+c     &                    orb_info,str_info)
                   end if
 !     reassign lists to correct ops
                   call assign_me_list(me_trv(iopt)%mel%label,

@@ -77,8 +77,8 @@ depend('DEF_RESPONSE_OPs')
 
 DEF_SCALAR({LABEL:"Exc_En"})
 EE = stf.GenForm("FORM_EXCITED_ENERGY","Exc_En")
-EE += "<C0^+(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')*C0>"
-EE += "<C0^+(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')*C0>"
+EE += "<(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')>"
+EE += "<(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')>"
 EE += "<R_mu^+*(AR_rspns_mu')>"
 print "\n".join([str(br) for br in EE.show()])
 
@@ -89,8 +89,8 @@ EE.set_rule()
 DEF_SCALAR({LABEL:"Exc_Sr"})
 
 SR = stf.GenForm("FORM_EXCITED_OVERLAPP","Exc_Sr")
-SR += "<C0^+(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')*C0>"
-SR += "<C0^+(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')*C0>"
+SR += "<(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')>"
+SR += "<(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')>"
 SR += "<R_mu^+*(SR_rspns_mu')>"
 print "\n".join([str(br) for br in SR.show()])
 SR.set_rule()

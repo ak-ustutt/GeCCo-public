@@ -18,7 +18,7 @@
       include 'def_davidson_subspace.h'
 
       integer, parameter::
-     &     ntest = 101
+     &     ntest = 000
       character(len=*),parameter::
      &     i_am="dvdsbsp_get_eigenvec"
 

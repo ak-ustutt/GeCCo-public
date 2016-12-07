@@ -12,7 +12,7 @@
 
 
       integer, parameter::
-     &     ntest = 100
+     &     ntest =  00
       character(len=*),parameter::
      &     i_am="davidson_assemble_results"
       

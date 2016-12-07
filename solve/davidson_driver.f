@@ -240,7 +240,7 @@ c      end do
             conv = .true. ! yet
          else if(iter.gt.1)then
             conv=.false.
-            call warn_e_convergence(lulog,iroot,leig(iroot),xeig(iroot))
+            call warn_e_convergence(lulog,iroot,xeig(iroot),leig(iroot))
          else
             conv=.true.
          end if
@@ -281,7 +281,7 @@ c      end do
                call switch_mel_record(me_vort(iopt)%mel,iroot)
                call switch_mel_record(me_opt(iopt)%mel,iroot)
             end do
-            if (ntest.ge.00)then
+            if (ntest.ge.100)then
                write(lulog,*) "root:",iroot
                do iopt=1,nopt
                   call print_list("result in orth space",

@@ -286,7 +286,7 @@ c dbg end
       character(len=*),parameter::
      &     i_am="change_basis_old"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=0000
       
       type(formula_item)::
      &     flist
