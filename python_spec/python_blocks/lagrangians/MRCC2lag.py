@@ -282,3 +282,23 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG2',
         LABELS_IN:['FORM_PT_LAG_Amp2','FORM_PT_LAG_Amp1','FORM_PT_LAG']})
 
+#----------------------------------------------------------------------
+# formula for reference relaxiation  
+new_target("FORM_HMRCC2_C0")
+depend("DEF_FORM_PT_LAG2")
+
+depend("DEF_HMRCC2_C0")
+
+
+
+DERIVATIVE({
+    LABEL_IN:'FORM_PT_LAG_E',
+    LABEL_RES:'FORM_HMRCC2_C0',
+    OP_RES:'HMRCC2_C0',
+    OP_DERIV:'C0^+'})
+
+OPTIMIZE({
+        LABEL_OPT:'FOPT_HMRCC2_C0',
+        LABELS_IN:'FORM_HMRCC2_C0'})
+
+

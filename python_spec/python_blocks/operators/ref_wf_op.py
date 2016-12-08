@@ -116,3 +116,23 @@ depend('Make_C0')
 depend('Make_D0')
 depend('Make_H_C0')
 depend('Make_GAM0')
+
+
+
+#----------------------------------------------------------------------
+#
+new_target("DEF_HMRCC2_C0")
+depend("Make_H_C0")
+
+CLONE_OPERATOR({
+     LABEL:"HMRCC2_C0",
+     TEMPLATE:"H_C0"})
+DEF_ME_LIST({LIST:"ME_HMRCC2_C0",
+    OPERATOR:"HMRCC2_C0",
+    IRREP:wf_sym, 
+    '2MS':ims,
+     AB_SYM:msc})
+
+debug_MEL('H_C0_LST',info_only=True)
+
+
