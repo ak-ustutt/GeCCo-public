@@ -1,109 +1,215 @@
 import re #regular expression support
-import xml.etree.ElementTree as ET #xml and DOM functionality
+import xml.dom.minidom
 import os # to find the set_keywords file
 
+import unittest
+
+default_keyword_file = os.getenv("GECCO_DIR")+"/data/keyword_registry.xml"
+
+key_root_tag = "key_root"
+argument_tag = "argument"
+keyword_tag = "keyword"
+
+
+class ContextError(Exception):
+    pass
 
 
 
-keyword_file=os.getenv("GECCO_DIR")+"/data/keyword_registry.xml"
 
+def is_empty(container):
+    """ checks if a given container contains no elements
 
-
-
-_type_dict={8:"str",
-            2:"int",
-            1:"log",
-            4:"rl8",}
-
-
-_tree=ET.parse(keyword_file)
-
-
-
-def _find_element_core(context,root):
-    """gets an Element  context
+    @param container a container (list, dict, set)
+    @return True if the container is empty, False if the container is not empty
     """
-    for item in root.getchildren():
-        #iterates through all children of root.
-        regexp_context_extr=re.compile("^"+item.get("name")+"(?:\.|$)"+"(?P<rest>.+)?")
-        match=regexp_context_extr.match(context)
-        #Looks if context is of the form "item_name.<rest>"
-        ##todo It may be faster and more straigthforward to test by string slicing 
-        #and extract in the end with only one regexp 
-        if match and match.group("rest"):
-            #there was a match and 
-            return _find_parent_core(match.group("rest"),item)
-        elif match:
-            #there was a match but all context is resolved
-            return item
-    raise UnknownContextError(context)
+    return len(container) == 0
     
-def _find_element  (context,root):   
-    """wrapper for _find_element_core
+
+     
+class Converter(object):
+    """class to take care of conversion between xml strings and python objects"""
+
+    def to_bool(self,string):
+        """converts an xml string to a boolean
+
+
+        @param string an xmlstring either 'true' of 'false'
+        @return either True or False
+        @raises ValueError if the string is not convertible
+        """
+        if string.strip() == "true":
+            return True
+        elif string.strip() == "false":
+            return False
+        else :
+            raise ValueError("Unconverible boolean")
+
+    
+    def to_float(self, string):
+        """converts an string to a float
+
+        Fortran may use d as exponent separator, this function replaces this by e
+        @param string a floating point number as a string
+        @return the float
+        @raises a Value Error, if it was not convertible
+        """
+        return float( re.sub( "[dD]", "e", string.strip() ) )
+
+    def to_int(self, string):
+        """converts an string to an integer
+
+        for completeness
+        @param string an integer as a string
+        @return the integer
+        @raises a Value Error, if it was not convertible
+        """
+        return int( string.strip() )
+
+    def to_str(self, string):
+        """converts an string to an integer
+    
+        for completeness
+        @param string string
+        @return the string
+        """
+        return str(string)
+
+
+class GeCCoValueExtractor(object):
+    """ Holds some GeCCo specific conversions
     """
-    try:
-        return _find_parent_core(context,root)
-    except UnknownContextError as ex :
-        print "default_keywords.py"
-        print "no context found for: " ,match.group("keyword")
-        print match.group("context")+"\n at level:"+ex.context
-
-
-
 
     
+    def __init__(self, converter=Converter()):
+        self._conv = converter
+        self._convfunc = {8:converter.to_str,
+                          2:converter.to_int,
+                          1:converter.to_bool,
+                          4:converter.to_float,}
+        self._typedict = {8:str,
+                          2:int,
+                          1:bool,
+                          4:float,}
+        
+    def _get_type_convfunc(self, argument):
+        """ returns a function that can convert the value of the given argument to the appropriate python type"""
+        return self._convfunc[self._getitype(argument)]
 
-def find_by_context(context,name,tree=_tree):
-    full_context=context+"."+name
-    root=tree.getroot()
-
-    # finds actually the designated element
-    return _find_parent(full_context,root)
-
-def convert_to_bool(string):
-    """takes a string of xml bools and converts it to python booleans"""
-    if re.match("true",string,flags=re.I):
-        return True
-    elif re.match("false",string,flags=re.I):
-        return False
-    else :
-        print "convert_to_bool:"
-        print "unconvertible string: "+string
-        exit
+    def _get_convfunc(self, argument):
+        """ generates a conversion function for elements that are arrays"""
+        if self.get_len(argument) >1 and self.get_type != str:
+            def conv(arg):
+                return [self._get_type_convfunc(argument)(elem) for elem in arg.split(",")]
+            return conv
+        else:
+            return self._get_type_convfunc(argument)
+        
     
-def convert_to_float(string):
-    """Fortran uses d as exponent separator, this function replaces this by e"""
-    try:
-        return float(re.sub("[dD]","e",string))
-    except:
-        print "convert_to_float:"
-        print "unconvertible string: "+string
-        exit
+    def get_type(self, argument):
+        """ returns the python class corresponding to the type of an argument
 
-def get_value_by_context(context,name,tree=_tree):
-    elem= find_by_context(context,name,default_keys)
-    type_=_type_dict[int(elem.get("type","8"))]
-    val=elem.get("value",None)
-    if val is None:
-        raise Exception("No default value set")
+        @param argument an argument node
+        @return one of (int, bool, str, float)
+        @raises ValueError if the type can not be determined
+        """
+        return self._typedict[self._getitype(argument)]
 
-    if  type_=="str":
-        return str(val)
-        #by xml definition elem.text is saved as string
-        #but better make this stable
-    elif  type_=="int":
-        return int(val)
-    elif  type_=="log":
-        return convert_to_bool(val)
-    elif  type_=="rl8":
-        return convert_to_float(val)
-    else:
-        raise Exception("Unknown type: "+type_)
+    
+    def get_len(self, argument):
+        """extracts the length of an argument
+
+        Note that by gecco convention the length of a string is its maximal length
+        @param argument an argument node
+        @return the length of that argument
+        @raises Value or TypeError if a length attribute was available but unreadable
+        """
+        return 1 if ( argument.getAttribute("len") == "" ) else self._conv.to_int( argument.getAttribute("len") )
+    
+    def _get_itype(self, argument):
+        """returns the integer specification of an arguments type"""
+        try:
+            itype = self._conv.to_int(
+                argument.getAttribute("type")
+            )
+            self._typedict[itype] #trigger key error if not in 
+        except ValueError, KeyError:
+            raise ValueError("Argument with unknown type"+argument.getAttribute("type"))
+        else:
+            return itype
+
+    def get_value(self, argument):
+        """ returns an arguments value converted to an appropriate python class
+
+        @param argument an argument node
+        @return the converted value
+        @raises ValueError if the type can not be determined
+        """
+        convfunc = self._get_convfunc(self, argument)
+        try:
+            return convfunc(argument.getAttribute("value"))
+        except ValueError as err:
+            err.msg += "in element "+argument.getAttribute("name")
+            raise
 
 
+class RegistryHandler(object):
+    def __init__(self, filename=None):
+        filename = filename if ( filename is not None) else default_keyword_file
+        self._root = self._parse(filename).getElementsByTagName(key_root_tag).item(0)
 
+    def _parse(self, filename):
+        return minidom.parse(filename)
+    
+    def _find_element_core(self, context_list, parent):
+        """recursive core of find element"""
+        if is_empty(context_list):
+            return parent
+        head , context_list = context_list[0], context_list[1:]
+        for item in parent.childNodes:
+            if item.hasAttributes()  \
+               and item.getAttribute("name") == head:    # returns "" if name is undefined doesn't throw
+                return self._find_element_core(context_list, head)
+        else:
+            raise ContextError("Could not find {name} in context: ".format(name=head) )
 
+    def _find_element(self, context, name, root):
+        """finds an element or argument node in context"""
+        context_list = context.strip().split(".")
+        context_list += [name]
+        try:
+            return self._find_element_core(context_list, root)
+        except ContextError as ex:
+            ex.msg + context
+            raise     # reraise same exception
 
+    def get_value_by_context(self, context, name):
+        elem = self._find_element(context, name, self._root)
+        return GeCCoValueExtractor().get_value(element)
+    
+    def get_type_by_context(self, context, name):
+        elem = self._find_element(context, name, self._root)
+        return GeCCoValueExtractor().get_type(element)
+
+    def does_exist(self, context, name):
+        try:
+            elem = self._find_element(context, name, self._root)
+        except ContextError:
+            return False
+        else:
+            return True
+
+    def is_argument(self, context, name):
+        elem = self._find_element(context, name, self._root)
+        return elem.tagName == ArgumentTag
+    
+    def is_keyword(self, context, name):
+        elem = self._find_element(context, name, self._root)
+        return elem.tagName == KeywordTag
+    
+    def get_type_convfunc(self, context, name):
+        elem = self._find_element(context, name, self._root)
+        return GeCCoValueExtractor().get_type_convfunc(element)
 
 
         
