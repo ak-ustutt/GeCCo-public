@@ -18,6 +18,10 @@ check
   compare str 4
   compare str 5
   compare str 6
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
 check
   rewind
   label Is keyword set
