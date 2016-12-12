@@ -78,12 +78,6 @@
      &     call set_mr_targets(tgt_info,orb_info,env_type,
      &     name_infile,fforbinf)
 
-      ! unit_tests
-      if (is_keyword_set('method.unit_test').gt.0)
-     &     call set_python_targets(tgt_info,
-     &     trim(gecco_path)//'/python_spec/python_start.py',
-     &     name_infile,fforbinf%name)
- 
 
 
       ! experimental section
