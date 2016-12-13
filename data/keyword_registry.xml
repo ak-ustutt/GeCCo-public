@@ -89,7 +89,7 @@
           <argument length="1" name="notrunc" status="A" type="1" value="false"/>
           <argument length="1" name="semi_int" status="A" type="2" value="0"/>
           <argument length="1" name="semi_r12" status="A" type="1" value="false"/>
-        </keyword>
+        <keyword name="SC" status="A"><argument length="1" name="en_from_res" status="A" type="1" value="false"><!--If True, use the energy expression from residual in singles correction calculation. Default=False.--></argument></keyword></keyword>
         <keyword name="MR" status="A">
           <argument length="1" name="cminh" status="A" type="2" value="0">
             <!--min. number of holes for wf-->
