@@ -1,6 +1,6 @@
-
 from python_interface.gecco_interface import *
 from get_response_data import _response_data
+from python_interface.gecco_modules.python_target_graph import export_python_target_graph
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
@@ -66,5 +66,7 @@ if (_response_data['order']>=2):
         import solve_t_1_restr
         print 'importing eval_second_order_prop_restr ...'
         import eval_second_order_prop_restr
+
+export_python_target_graph()
 
 export_targets();

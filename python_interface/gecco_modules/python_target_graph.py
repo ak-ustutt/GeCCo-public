@@ -11,6 +11,7 @@ __all__ =["export_python_target_graph"]
 def export_python_target_graph( filename="python_target_graph.dot", arguments_re=None, target_list=None ):
      if target_list is None: # not PEP8 compliant but totally worth it.
           from python_interface.gecco_interface import _target_list 
+          target_list=_target_list
      matcher = _TargetMatcher(arguments_re_string=arguments_re)
      nodefactory = _NodeFactory(matcher)
      subgraphs = _create_subgraphs(target_list, nodefactory)
@@ -209,7 +210,7 @@ def _create_subgraphs(target_list,nodefactory):
 
 def _create_edges(target_list, nodefactory):
      edges = []
-     for target in _target_list:
+     for target in target_list:
          edges += [ _DependencyEdge( nodefactory.get_node(target.name), nodefactory.get_node(dependency_name  ) )  for dependency_name in target.dependencies ]
      return edges
 
