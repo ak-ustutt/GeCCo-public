@@ -284,7 +284,7 @@ OPTIMIZE({
 
 #----------------------------------------------------------------------
 # formula for reference relaxiation  
-new_target("FORM_HMRCC2_C0")
+new_target("FOPT_HMRCC2_C0")
 depend("DEF_FORM_PT_LAG2")
 
 depend("DEF_HMRCC2_C0")

@@ -7,6 +7,7 @@ from python_interface.gecco_modules.NoticeUtil import *
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 
+
 new_target('SOLVE_MRCCPT2')
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
@@ -39,7 +40,44 @@ SOLVE_NLEQ({
 
 PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
-new_target('SOLVE_MRCCPT2ref')
+new_target('SOLVE_MRCC2ref')
+depend("SOLVE_MRCCPT2")
+depend("FOPT_HMRCC2_C0")
+depend("MAKE_D0")
+
+spinadapt=0
+if keywords.is_keyword_set('calculate.routes.spinadapt'):
+    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+
+ciroot=1
+if keywords.is_keyword_set('method.MR_P.ciroot'):
+    ciroot=int(keywords.get('method.MR_P.ciroot'))
 
 
+maxroots=ciroot
+if keywords.is_keyword_set('method.MR_P.maxroot'):
+    maxroots=int(keywords.get('method.MR_P.maxroot'))
+
+SOLVE_map={
+        LIST_OPT:'C0_LST',
+        LIST_PRC:'D0_LST',
+        OP_MVP:'HMRCC2_C0',
+        OP_SVP:'C0',
+        FORM:'FOPT_HMRCC2_C0',
+        MODE:'DIA',
+        N_ROOTS:maxroots,
+        TARG_ROOT:ciroot
+}
+
+if (spinadapt != 0): #and refproj = 0  
+    SOLVE_map[MODE]='SPP' #'DIA' will be overwritten
+    SOLVE_map[LIST_SPC]='C0_sp_LST'
+    SOLVE_map[FORM_SPC]='FOPT_C0_sp'
+SOLVE_EVP(SOLVE_map)
+
+new_target("MAKE_GAM0_HMRCC2")
+depend("FOPT_GAM0")
+depend("SOLVE_MRCC2ref")
+EVALUATE({
+        FORM:'FOPT_GAM0'})
 

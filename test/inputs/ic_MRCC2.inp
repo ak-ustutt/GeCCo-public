@@ -9,6 +9,7 @@ method
   MR ms=-1,sym=1,mult=2
   MR_P
   MRCC2 lagrangian=2
+   relaxref
 calculate
  skip_E
  solve maxiter=30,conv=1d-11,maxsub=10

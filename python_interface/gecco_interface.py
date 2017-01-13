@@ -118,10 +118,7 @@ _possible_contexts=['general',
 #
 class GeCCo_Input:
 
-    def __init__( self, *print_data):
-        if (len( print_data) > 1):
-            quit_error('Getting GeCCo input: too much arguments. Pass, optionally, a boolean for printing.')
-
+    def __init__( self, do_print=True):
         self.data = {}
         self.env = ''
 
@@ -178,11 +175,10 @@ class GeCCo_Input:
                 self.data[context + key] = None
 
         # Print, if required
-        if (len( print_data) == 1):
-            if (print_data[0]):
-                print "Input information from python interface:"
-                for k in self.data:
-                    print k + " -> " + str(self.data[k])
+        if (do_print):
+            print "Input information from python interface:"
+            for k in self.data:
+                print k + " -> " + str(self.data[k])
 
         # Check the package environment that GeCCo is currently using
         ok=False

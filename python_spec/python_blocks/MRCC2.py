@@ -30,19 +30,6 @@ ntest=000
 #---------------------------------------------------------------##
 new_target("general considerations",True)
 
-ims = int(orbitals.get('ims'))   
-notice("ims",ims)    
-imult =int(orbitals.get('imult'))
-notice("imult",imult)
-
-if (ims == 0) and ((imult-1)%4 == 0) :
-    msc = 1
-elif (ims == 0) and ((imult+1)%4 == 0) :
-    msc = -1
-else :
-    msc = 0                        # msc is the AB_sym for many operators
-
-wf_sym=orbitals.get('lsym')        #symmetry of wavefunction
 
 
 
@@ -64,6 +51,9 @@ import solve.MRCC2solve
 # ... do it ...
 #-----------------------------------------------------------------#
 if (not keywords.is_keyword_set("method.MRCC2.excite")):
-    modify_target('do all')
+    modify_target('do_all')
     depend('SOLVE_MRCCPT2')
-
+if (keywords.is_keyword_set("method.relaxref")):
+    modify_target('do_all')
+    depend('SOLVE_MRCC2ref')
+    

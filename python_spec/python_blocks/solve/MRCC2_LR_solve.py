@@ -42,7 +42,9 @@ else:
     _msc_0 = 0
 
 
-
+relaxref = False
+if keywords.is_keyword_set('method.relaxref'):
+    relaxref = True
 
 _sym = _inp.get('calculate.excitation.sym')
 _mult = _inp.get('calculate.excitation.mult')
@@ -333,6 +335,7 @@ for _icnt in range (0,_ncnt):
         _solve_eqn_arr.append(_solve_eqn)
         
         new_target(_solve_eqn)
+        if (relaxref):depend("MAKE_GAM0_HMRCC2")
         depend('INPUT_INFO')
         depend(_rspns_opt)
         depend(_diag_cal_q)

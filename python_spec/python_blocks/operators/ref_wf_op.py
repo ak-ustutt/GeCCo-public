@@ -60,7 +60,7 @@ DEF_ME_LIST({
 
 debug_MEL('C0_LST',info_only=True)
 
-new_target('Make_D0')
+new_target('MAKE_D0')
 comment('CASCI preconditioner')
 CLONE_OPERATOR({
         LABEL:'D0',
@@ -74,7 +74,17 @@ DEF_ME_LIST({
         })
 #        S2:imult})
 
-debug_MEL('DIAG_LST',info_only=True)
+depend('H0')
+
+
+comment('Prepare diagonal ...')
+
+PRECONDITIONER({
+        LIST_PRC:'D0_LST',
+        LIST_INP:'H0',
+        MODE:'dia-H'})
+
+debug_MEL('DIAG_LST')
 
 
 
@@ -113,7 +123,7 @@ debug_MEL('GAM0LST',info_only=True)
 new_target('RefState-Operators')
 depend('Make_E0')
 depend('Make_C0')
-depend('Make_D0')
+depend('MAKE_D0')
 depend('Make_H_C0')
 depend('Make_GAM0')
 

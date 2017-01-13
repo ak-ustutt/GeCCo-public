@@ -13,34 +13,36 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
 ciroot=1
 if keywords.is_keyword_set('method.MR_P.ciroot'):
     ciroot=int(keywords.get('method.MR_P.ciroot'))
-print "ciroot: "+str(ciroot)
 
 
 maxroots=ciroot
 if keywords.is_keyword_set('method.MR_P.maxroot'):
     maxroots=int(keywords.get('method.MR_P.maxroot'))
-print "maxroot: "+str(maxroots)
 ###################################################################
 # ---- solve for reference state
 ###################################################################
+
+
+
+
 new_target('MakeRefState')
 if spinadapt > 0:
     depend('SpinProjSpec')
 depend('RefState-Operators')
-depend('H0')
+depend('MAKE_D0')
 
 
 heading('Preparing equations ...')
 # Formula for Eigenvalue-Problem 
 #E0=<|C0^+*H*C0|>
-#dE0/dC0^+
-#H_C0=H*C0         <= E0*C0=H*C0
+#dE0/dC0^+ :       H_C0=H*C0   <= E0*C0=H*C0
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_EREF',
         NEW:True,
         OP_RES:'E0',
         OPERATORS:['C0^+','H','C0'],
         IDX_SV:[1,2,3]})
+
 DERIVATIVE({
         LABEL_RES:'FORM_H_C0',
         LABEL_IN:'FORM_EREF',
@@ -52,12 +54,6 @@ DERIVATIVE({
 OPTIMIZE({
         LABEL_OPT:'FOPT_H_C0',
         LABELS_IN:'FORM_H_C0'})
-comment('Prepare diagonal ...')
-PRECONDITIONER({
-        LIST_PRC:'D0_LST',
-        LIST_INP:'H0',
-        MODE:'dia-H'})
-
 
 comment('Solving equations ...')
 
@@ -87,8 +83,7 @@ SOLVE_EVP(SOLVE_map)
 
 
 
-
-new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
+new_target("FOPT_GAM0")
 depend('MakeRefState')
 depend('RefState-Operators')
 # Formula for Densities
@@ -100,7 +95,7 @@ EXPAND_OP_PRODUCT({
         OPERATORS:['GAM0','C0^+','GAM0','GAM0','C0','GAM0'],
         IDX_SV:[1,2,1,1,3,1]})
 
-debug_FORM('FORM_GAM0')
+debug_FORM('FORM_GAM0', only_this = True)
 
 
 
@@ -111,6 +106,9 @@ OPTIMIZE({
         LABELS_IN:'FORM_GAM0'})
 PRINT({
         STRING:'Setup densities up to 3rd order'})
+
+new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
+depend("FOPT_GAM0")
 EVALUATE({
         FORM:'FOPT_GAM0'})
 
