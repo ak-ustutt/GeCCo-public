@@ -607,16 +607,14 @@ for i in range(0,n_par):
     _freq_sign = _first_order_param['freq'][i]
 
     _isym = _pop_data['isym'][_pop_idx]
-    _isym_t = _multd2h[_isym-1][_isym_0-1]
-
-    print 'isym:', _isym, _isym_t
+    _isym_c = _multd2h[_isym-1][_isym_0-1]
 
     new_target('DEF_ME_T(1)'+i_par)
     depend('T(1)'+i_par)
 
     DEF_ME_LIST({LIST:'ME_T(1)'+i_par,
                  OPERATOR:'T(1)'+i_par,
-                 IRREP:_isym_t,
+                 IRREP:_isym,
                  '2MS':0,
                  AB_SYM:1})
 
@@ -628,7 +626,7 @@ for i in range(0,n_par):
 
     DEF_ME_LIST({LIST:'ME_C0(1)'+i_par,
                  OPERATOR:'C0(1)'+i_par,
-                 IRREP:_isym,
+                 IRREP:_isym_c,
                  '2MS':_ms,
                  AB_SYM:_msc})
 
@@ -647,7 +645,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym_t,
+                     IRREP:_isym,
                      '2MS':0,
                      AB_SYM:1})
 
@@ -659,7 +657,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym,
+                     IRREP:_isym_c,
                      '2MS':_ms,
                      AB_SYM:_msc})
 
@@ -669,7 +667,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym_t,
+                     IRREP:_isym,
                      '2MS':0})
 
     _op_list={'FREQ'+i_par:'ME_FREQ'+i_par}
@@ -741,7 +739,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym,
+                     IRREP:_isym_c,
                      '2MS':_ms})
 
     DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
