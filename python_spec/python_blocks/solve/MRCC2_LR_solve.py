@@ -43,7 +43,7 @@ else:
 
 
 relaxref = False
-if keywords.is_keyword_set('method.relaxref'):
+if keywords.is_keyword_set('method.MRCC2.relaxref'):
     relaxref = True
 
 _sym = _inp.get('calculate.excitation.sym')
