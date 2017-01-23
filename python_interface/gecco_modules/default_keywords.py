@@ -1,5 +1,5 @@
 import re #regular expression support
-import xml.dom.minidom
+import xml.dom.minidom as minidom
 import os # to find the set_keywords file
 
 import unittest
@@ -12,7 +12,9 @@ keyword_tag = "keyword"
 
 
 class ContextError(Exception):
-    pass
+    def __init__(self,*args):
+        self.msg = ""
+        Exception.__init__(self,*args)
 
 
 
@@ -167,20 +169,20 @@ class RegistryHandler(object):
             return parent
         head , context_list = context_list[0], context_list[1:]
         for item in parent.childNodes:
-            if item.hasAttributes()  \
+            if (item.nodeType == item.ELEMENT_NODE ) and item.hasAttributes()  \
                and item.getAttribute("name") == head:    # returns "" if name is undefined doesn't throw
-                return self._find_element_core(context_list, head)
+                return self._find_element_core(context_list, item)
         else:
             raise ContextError("Could not find {name} in context: ".format(name=head) )
 
     def _find_element(self, context, name, root):
         """finds an element or argument node in context"""
         context_list = context.strip().split(".")
-        context_list += [name]
+        context_list = [name] if context_list == [''] else context_list + [name]
         try:
             return self._find_element_core(context_list, root)
         except ContextError as ex:
-            ex.msg + context
+            ex.msg += context
             raise     # reraise same exception
 
     def get_value_by_context(self, context, name):

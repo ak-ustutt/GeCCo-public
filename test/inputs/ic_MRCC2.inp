@@ -13,5 +13,5 @@ method
 calculate
  skip_E
  solve maxiter=30,conv=1d-11,maxsub=10
-  non_linear optref=0,maxiter=20
+  non_linear optref=0,maxiter=25
  routes maxbranch=4,sv_thresh=1d-6,reo_factor=10,auto_opt=F,spinadapt=3

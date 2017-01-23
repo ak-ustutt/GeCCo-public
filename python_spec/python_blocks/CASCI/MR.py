@@ -6,18 +6,15 @@ from gecco_modules.NoticeUtil import *
 
 
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt = keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 
-ciroot=1
-if keywords.is_keyword_set('method.MR_P.ciroot'):
-    ciroot=int(keywords.get('method.MR_P.ciroot'))
+ciroot=keywords.get('method.MR_P.ciroot')
+ciroot = int(ciroot) if ciroot is not None else 1
 
+maxroots = keywords.get('method.MR_P.maxroot')
+maxroots = int(maxroots) if maxroots is not None else ciroot
 
-maxroots=ciroot
-if keywords.is_keyword_set('method.MR_P.maxroot'):
-    maxroots=int(keywords.get('method.MR_P.maxroot'))
 ###################################################################
 # ---- solve for reference state
 ###################################################################

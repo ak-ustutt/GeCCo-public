@@ -5,14 +5,14 @@ import python_interface.gecco_modules.string_to_form as stf
 i_am="MRCC2lag.py"
 
 lag_type=4
-if keywords.is_keyword_set('method.MRCC2.lagrangian'):
-    lag_type=int(keywords.get('method.MRCC2.lagrangian'))
+
+lagrangian = keywords.get('method.MRCC2.lagrangian')
+lag_type = int(lagrangian) if lagrangian is not None else 4 
 print("lagrangian:",lag_type,type(lag_type))
 
 known_hamiltonians=["DYALL","REPT","F_EFF"]
-hamiltonian="DYALL"
-if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
-    hamiltonian=str(keywords.get('method.MRCC2.hamiltonian')).strip()
+hamiltonian = keywords.get('method.MRCC2.hamiltonian')
+hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
 print("hamiltonian: ", hamiltonian, type(hamiltonian))
 
 if hamiltonian not in known_hamiltonians : 
