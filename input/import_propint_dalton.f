@@ -23,12 +23,12 @@
      &     prop_type
       integer, intent(in) ::
      &     psym
+      logical, intent(in) ::
+     &     trplt
       type(strinf), intent(in) ::
      &     str_info
       type(orbinf), intent(in) ::
      &     orb_info
-      logical, intent(in) ::
-     &     trplt
 
       type(filinf) ::
      &     ffcmo, ffao

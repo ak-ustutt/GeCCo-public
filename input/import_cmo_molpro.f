@@ -10,7 +10,7 @@
       include 'def_filinf.h'
       include 'ifc_memman.h'
       include 'multd2h.h'
-      include 'par_dalton.h'
+      include 'par_molpro.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -56,12 +56,12 @@
       ! buffer for reordered CMO-matrix
       ifree = mem_alloc_real(cmo_reo,ncmo,'cmo_reo')
 
-      inquire(file='CMOMOL',exist=ok)
+      inquire(file=f_coeff,exist=ok)
       if (.not.ok) call quit(0,'import_cmo_molpro',
-     &       'did not find any CMO file')
+     &       'did not find the CMOMOL file for the coeffs')
 
       ! open files
-      call file_init(ffsir,'CMOMOL',ftyp_sq_frm,0)
+      call file_init(ffsir,f_coeff,ftyp_sq_frm,0)
       call file_open(ffsir)
 
       lusir = ffsir%unit

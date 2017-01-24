@@ -835,7 +835,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym,
+                     IRREP:_isym_c,
                      '2MS':_ms,
                      AB_SYM:_msc})
 

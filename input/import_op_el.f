@@ -257,8 +257,8 @@ c     &                                str_info,orb_info)
         select case(trim(list_type))
         case ('H_INT')
           call import_hamint_molpro_dump(mel_target,str_info,orb_info)
-        case ('ZDIPLEN')
-          call import_propint_molpro(mel_target,list_type,1,
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_molpro(mel_target,list_type,1,trplt,
      &         str_info,orb_info)
         case default
           call quit(1,'import_op_el',
@@ -270,6 +270,9 @@ c     &                                str_info,orb_info)
         select case(trim(list_type))
         case ('H_INT')
           call import_hamint_molpro(mel_target,str_info,orb_info)
+        case ('XDIPLEN','YDIPLEN','ZDIPLEN')
+          call import_propint_molpro(mel_target,list_type,1,trplt,
+     &         str_info,orb_info)
 !! TODO reading property integrals need to be implemented for molpro_ifc
         case default
           call quit(1,'import_op_el',
