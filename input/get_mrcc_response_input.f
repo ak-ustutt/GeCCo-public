@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine get_mrcc_response_input(orb_info)
+      subroutine get_mrcc_response_input(orb_info,env_type)
 *----------------------------------------------------------------------*
 *     process response functions input for ic-MRCC and write everything 
 *     in a file.
@@ -18,6 +18,8 @@
 
       type(orbinf), intent(in) ::
      &     orb_info
+      character(len=*), intent(in) ::
+     &     env_type
 
       type(filinf) ::
      &     ffpropinf
@@ -47,7 +49,7 @@
      &     name_propinf="prop_info.gecco"
 
       integer, external ::
-     &     pert_sym
+     &     pert_sym_dalton, pert_sym_molpro
 
       ncnt = is_keyword_set('method.MRCC.response')
       if (ncnt.eq.0) then
@@ -156,12 +158,30 @@
             pop(npop)%name = pertop(idx:idx)
             pop(npop)%int_name = pert(idx:idx)//int_name//' '
             pop(npop)%sign = sign
-            if(trplt) then
-                pop(npop)%isym = 1  ! If the perturbation is triplet,
-                                    !then we can ignore the isym and set it to 1
-            else
-                pop(npop)%isym = pert_sym(pop(npop)%int_name,orb_info)
-            end if
+            select case(env_type(1:6))
+            case ('dalton','DALTON')
+              if(trplt) then
+                  pop(npop)%isym = 1  ! If the perturbation is triplet,
+                                      !then we can ignore the isym and set it to 1
+              else
+                  pop(npop)%isym = pert_sym_dalton(pop(npop)%int_name,
+     &                                             orb_info)
+              end if
+            case ('molpro','MOLPRO')
+              if(trplt) then
+                  pop(npop)%isym = 1  ! If the perturbation is triplet,
+                                      !then we can ignore the isym and set it to 1
+              else
+                  pop(npop)%isym = pert_sym_molpro(pop(npop)%int_name,
+     &                                             orb_info)
+              end if
+
+            case default
+              call quit(1,'get_mrcc_response_input',
+     &        'Calculations of properties not possible with "'
+     &        //trim(env_type)//'" ')
+              
+            end select
             cmp(idx)%pop_idx = npop
           end if
 

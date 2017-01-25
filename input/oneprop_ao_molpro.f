@@ -8,7 +8,7 @@
 
       include 'opdim.h'
       include 'stdunit.h'
-      include 'par_dalton.h'
+      include 'par_molpro.h'
       include 'def_operator.h'
       include 'def_filinf.h'
       include 'def_me_list.h'
@@ -70,12 +70,12 @@ c dbg
 
       if (closeit) call file_close_keep(ffdao)
 
-      inquire(file='DIPZ',exist=ok)
+      inquire(file=aoproper,exist=ok)
       if (.not.ok) call quit(0,'oneprop_ao_molpro',
-     &       'did not find any DIPZ file')
+     &       'did not find any integral file')
 
       ! open file with property integrals
-      call file_init(ffprop,'DIPZ',ftyp_sq_frm,0)
+      call file_init(ffprop,aoproper,ftyp_sq_frm,0)
       call file_open(ffprop)
       ! loop over list of property integrals
       rewind ffprop%unit
@@ -108,7 +108,7 @@ c dbg
       end do
 
       if (ntest.ge.100) then 
-        write(lulog,*) 'CMO (original):'
+        write(lulog,*) 'AO integrals (original):'
         call wr_blkmat(xint_blk,orb_info%nbas,orb_info%ntoobs,
      &                     orb_info%nsym,0)
       end if
@@ -130,8 +130,10 @@ c dbg
 
       return
 
-    3 call quit(0,'import_cmo_molpro','reading CMOMOL ended early')
+    3 call quit(0,'import_cmo_molpro','reading property integrals 
+     &             ended early')
 
-    6 call quit(0,'import_cmo_molpro','error in reading from CMOMOL')
+    6 call quit(0,'import_cmo_molpro','error in reading property
+     &  integrals')
       end
 

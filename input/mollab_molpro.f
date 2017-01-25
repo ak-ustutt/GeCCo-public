@@ -1,20 +1,14 @@
       subroutine mollab_molpro(a,lu,luerr)
 C
-C  adapted from mollab for MOLPRO integral file
+C  adapted from mollab for MOLPRO integral files
 C
 C  Purpose:
 C     Search for MOLECULE labels on file LU
 C
       character*8 a,c
       character*32  b
-      data c/'********'/
-c   1 read (lu,end=3,err=6) b
     1 read (lu,9,end=3,err=6) b
-      write(6,*) b(10:16)
-      flush(6)
-!     if (b(1).ne.c) go to 1
       if (b(10:16).ne.a(1:7)) go to 1
-      write(6,*) b(10:16)
       if (luerr.lt.0) luerr = 0
       return
     9 format(a32)

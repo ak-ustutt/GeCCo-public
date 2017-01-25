@@ -37,7 +37,7 @@
      &     pert, pertop
 
       integer, external ::
-     &     pert_sym
+     &     pert_sym_dalton
 
       do icnt = 1,ncnt
         call get_argument_value('method.response','order',
@@ -112,7 +112,8 @@
             pop(npop)%name = pertop(idx:idx)
             pop(npop)%int_name = pert(idx:idx)//int_name//' '
             pop(npop)%sign = sign
-            pop(npop)%isym = pert_sym(pop(npop)%int_name,orb_info)
+            pop(npop)%isym = pert_sym_dalton(pop(npop)%int_name,
+     &                                       orb_info)
             cmp(idx)%pop_idx = npop
           end if
 

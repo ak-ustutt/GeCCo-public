@@ -35,7 +35,7 @@
       case ('dalton','DALTON')
         call import_cmo_dalton(ffcmo,orb_info)
         cmo_type = 1  ! DALTON provides SAO basis only
-      case ('molpro_dump','MOLPRO_DUMP')
+      case ('molpro_dump','MOLPRO_DUMP','MOLPRO_IFC','molpro_ifc')
         call import_cmo_molpro(ffcmo,orb_info)
       case ('intern','INTERN')
         call quit(1,'import_cmo','type INTERN not implemented')
