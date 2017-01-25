@@ -45,18 +45,15 @@ depend("SOLVE_MRCCPT2")
 depend("FOPT_HMRCC2_C0")
 depend("MAKE_D0")
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt=keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 
-ciroot=1
-if keywords.is_keyword_set('method.MR_P.ciroot'):
-    ciroot=int(keywords.get('method.MR_P.ciroot'))
+ciroot=keywords.get('method.MR_P.ciroot')
+ciroot = int(ciroot) if ciroot is not None else 1
 
+maxroots = keywords.get('method.MR_P.maxroot')
+maxroots = int(maxroots) if maxroots is not None else ciroot
 
-maxroots=ciroot
-if keywords.is_keyword_set('method.MR_P.maxroot'):
-    maxroots=int(keywords.get('method.MR_P.maxroot'))
 
 SOLVE_map={
         LIST_OPT:'C0_LST',
@@ -81,3 +78,13 @@ depend("SOLVE_MRCC2ref")
 EVALUATE({
         FORM:'FOPT_GAM0'})
 
+new_target("MAKE_MRCC2_E")
+depend('SOLVE_MRCCPT2')
+DEF_SCALAR({LABEL:"MRCC2_E"})
+DEF_ME_LIST({LIST:"ME_MRCC2_E",
+             OPERATOR:"MRCC2_E",
+             IRREP:1,
+             "2MS":0})
+SCALE_COPY({LIST_RES:"ME_MRCC2_E",
+            LIST_INP:"PT_LAG_LST",
+            FAC:1,})

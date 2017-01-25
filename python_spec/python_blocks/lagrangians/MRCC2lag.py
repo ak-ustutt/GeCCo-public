@@ -10,7 +10,7 @@ lagrangian = keywords.get('method.MRCC2.lagrangian')
 lag_type = int(lagrangian) if lagrangian is not None else 4 
 print("lagrangian:",lag_type,type(lag_type))
 
-known_hamiltonians=["DYALL","REPT","F_EFF"]
+known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')
 hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
 print("hamiltonian: ", hamiltonian, type(hamiltonian))
@@ -96,6 +96,8 @@ if lag_type >= 1 :
         LAG_A2.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
     elif hamiltonian=="F_EFF":
         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
+    elif hamiltonian=="FULL":
+        LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
 #quadratic lagrangian: linear lagrangian+something
 #something:
 if lag_type >= 2 :
