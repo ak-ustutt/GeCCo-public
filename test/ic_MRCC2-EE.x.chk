@@ -1,0 +1,43 @@
+title
+   CH2/MINI; DALTON env.: ic-MRCC2 quadratic LR (2 el. in 2 act. orb.)
+molecule
+   CH2-MINI-DALTON
+input
+  ic_MRCC2-EE.inp
+check
+  label MRCC2 Energy
+  find SOLVE_MRCCPT2
+  find >>> CONVERGED
+  find final energy:
+  compare real 4 1e-5
+check
+  rewind
+  label reference relaxation
+  find  SOLVE_MRCC2ref
+  find E>>========
+  skip 3
+  compare real 3 1e-5
+check
+  rewind
+  label projection_formula
+  find PRJ_FORM_
+  find Reading in
+  find read
+  compare int 2
+check
+  rewind
+  label metric
+  find DEF_FORMS_METRIC
+  find SELECT_SPECIAL
+  find read
+  compare int 2
+check
+  label excited energies
+  find SOLVE_EQN_2_2
+  find E>>========
+  skip 3
+  compare real 3 1e-5
+  skip 1
+  compare real 3 1e-5
+end
+
