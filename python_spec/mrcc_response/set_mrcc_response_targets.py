@@ -12,7 +12,8 @@ _orb = Orb_Info()
 _env = _inp.env
 
 # For triplet perturbation, only DALTON provides the integrals, otherwise quit the calculation
-if (_response_data['triplet']):
+_triplet=_response_data['triplet']
+if (_triplet):
     if(not ( _env=='DALTON')):
         quit_error('Properties for triplet perturbation are possible only using DALTON')
 
@@ -51,13 +52,16 @@ if (_response_data['order']>=1):
     if (relax_ref):
         print 'importing solve_lambda_0 ...'
         import solve_lambda_0
-        print 'importing eval_first_order_prop ...'
-        import eval_first_order_prop
     else:
         print 'importing solve_lambda_0_restr ...'
         import solve_lambda_0_restr
-        print 'importing eval_first_order_prop_restr ...'
-        import eval_first_order_prop_restr
+
+    if (_triplet):
+        print 'importing eval_first_order_prop for triplet ...'
+        import eval_first_order_prop_trip
+    else:
+        print 'importing eval_first_order_prop ...'
+        import eval_first_order_prop
 
 if (_response_data['order']>=2):
     if (relax_ref):

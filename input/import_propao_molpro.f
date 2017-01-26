@@ -60,14 +60,10 @@
       
       ! buffer for AO-matrix as read from AOPROPER
       ifree = mem_alloc_real(ao_full,nao_blk,'ao_full')
-!     ! buffer for extracted matrix in symmetry blocked form
-!     ifree = mem_alloc_real(ao_blk,nao_blk,'ao_blk')
 
-!     inquire(file='DIPZ',exist=ok)
-!     if (.not.ok) call quit(0,'import_propao_molpro',
-!    &       'did not find any DIPZ file')
-
-!     propfile = 'DIPZ'
+      inquire(file=aoproper,exist=ok)
+      if (.not.ok) call quit(0,'import_propao_molpro',
+     &       'did not find any DIPZ file')
 
       ! open files
       call file_init(ffaoprop,aoproper,ftyp_sq_frm,0)
@@ -86,35 +82,15 @@
       label2 = '        '
       label2 = trim(label)
       luerror = lulog
-      inquire(file=aoproper,exist=ok)
-      if (ok) write(6,*) 'file is there!'
-      if (.not.ok) call quit(0,'import_propao_molpro',
-     &       'did not find any DIPZ file')
+
       call mollab_molpro(label2,luaoprop,luerror)
-!     read (luaoprop,*)
-!     read (luaoprop,*)
+
       ! read matrix in upper triangular form
       read (luaoprop,*) ao_full(1:nao_blk)
 
       call file_close_keep(ffaoprop)
 
       naoint = 0
-
-!     do isym = 1, orb_info%nsym
-!       jsym = multd2h(isym,gamma)
-!       nao_i = orb_info%nbas(isym)
-!       nao_j = orb_info%nbas(jsym)
-!       do i = 1, nao_j
-!         do j = 1, nao_i
-!           ij = (i-1)* nao_j + j
-!           ji = (j-1)* nao_i + i
-!           ao_blk(ij + naoint) = ao_full(ij + naoint)
-!           write(6,*) ij, ji, ao_blk(ji+naoint), ao_full(ij+naoint)
-!         end do
-!       end do
-!       naoint = naoint +
-!    &       orb_info%nbas(jsym)*orb_info%nbas(isym)
-!     end do
 
       len_blk(1:orb_info%nsym) =
      &    orb_info%nbas(1:orb_info%nsym)

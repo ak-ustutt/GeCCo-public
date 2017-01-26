@@ -110,6 +110,12 @@ for i in range(0,n_par):
     depend('F_preRSPNS(2)')
     depend('EVAL_RSPNS(1)')
     depend('DEF_ME_C0_bar')
+    depend('DEF_ME_C0')
+    depend('DEF_ME_T')
+    depend('DEF_ME_'+t_op_1)
+    depend('DEF_ME_'+t_op_2)
+    depend('DEF_ME_'+c_op_1)
+    depend('DEF_ME_'+c_op_2)
 
     DEF_SCALAR({LABEL:'RSPNS(2)_1'+i_par})
 
@@ -150,6 +156,8 @@ for i in range(0,n_par):
     REPLACE({LABEL_RES:'F_RSPNS(2)_1'+i_par,
              LABEL_IN:'F_RSPNS(2)_1'+i_par,
              OP_LIST:['V(1)',_pop_name]})
+
+    PRINT_MEL({LIST:'ME_'+_pop_name})
 
     _formula_to_add_1.append('F_RSPNS(2)_1'+i_par)
     _interm_to_add_1.append('RSPNS(2)_1'+i_par)
