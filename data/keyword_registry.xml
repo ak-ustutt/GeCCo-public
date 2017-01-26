@@ -423,7 +423,7 @@
           <argument length="1" name="spinadapt" status="A" type="2" value="-1">
             <!--spin projection (=3 for non-singlet MRCC)-->
           </argument>
-        </keyword>
+        <argument length="1" name="fix_met" status="A" type="1" value="false"><!--in order to use a fixed metric matrix throughout the energy calculation of MRCC--></argument></keyword>
         <keyword name="class" status="A">
           <argument length="2" name="hpclass" status="A" type="2" value="-1,-1">
             <!--ih,ip-->
