@@ -1,0 +1,16 @@
+general
+ memmax=500000000
+ print=1
+method
+ MR maxexc=2,oldref=T
+ MR excrestr=(0,0,1,1,1,1)
+ MR excrestr=(1,1,0,0,1,1)
+ MRCC maxcom_res=1
+ MRCC response order=2,comp=Z
+calculate
+ solve maxiter=100,conv=1d-6,maxsub=8
+ solve non_linear optref=-3
+ solve eigen maxiter=500,maxsub=60
+ routes maxbranch=4,sv_thresh=1d-4,use_tr=t,auto_opt=F
+ properties eig_zero=T
+ skip_E
