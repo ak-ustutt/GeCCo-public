@@ -7,9 +7,8 @@ c0_shape='V'*orbitals.get('nactel')+','
 
 
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt=keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 
 
 
@@ -50,7 +49,7 @@ DEF_OP_FROM_OCC({
         LABEL:'C0',
         DESCR:c0_shape})
 DEF_ME_LIST({
-        LIST:'C0_LST',
+        LIST:'ME_C0',
         OPERATOR:'C0',
         IRREP:wf_sym,
         '2MS':ims,
@@ -58,7 +57,7 @@ DEF_ME_LIST({
         })
 #        S2:imult})
 
-debug_MEL('C0_LST',info_only=True)
+debug_MEL('ME_C0',info_only=True)
 
 new_target('MAKE_D0')
 comment('CASCI preconditioner')
@@ -66,25 +65,25 @@ CLONE_OPERATOR({
         LABEL:'D0',
         TEMPLATE:'C0'})
 DEF_ME_LIST({
-        LIST:'D0_LST',
+        LIST:'ME_D0',
         OPERATOR:'D0',
         IRREP:wf_sym,
         '2MS':ims,
         AB_SYM:msc
         })
-#        S2:imult})
 
 depend('H0')
+
 
 
 comment('Prepare diagonal ...')
 
 PRECONDITIONER({
-        LIST_PRC:'D0_LST',
+        LIST_PRC:'ME_D0',
         LIST_INP:'H0',
         MODE:'dia-H'})
 
-debug_MEL('DIAG_LST')
+debug_MEL('ME_D0')
 
 
 
@@ -94,7 +93,7 @@ CLONE_OPERATOR({
         LABEL:'H_C0',
         TEMPLATE:'C0'})
 DEF_ME_LIST({
-        LIST:'H_C0_LST',
+        LIST:'ME_H_C0',
         OPERATOR:'H_C0',
         IRREP:wf_sym,
         '2MS':ims,
@@ -102,7 +101,7 @@ DEF_ME_LIST({
         })
 #        S2:imult})
 
-debug_MEL('H_C0_LST',info_only=True)
+debug_MEL('ME_H_C0',info_only=True)
 
 
 new_target('Make_GAM0')

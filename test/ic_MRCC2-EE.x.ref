@@ -8238,7 +8238,7 @@ msa, gama, ndim:      -2       3       1
  @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @  time for rule SCALE_COPY           cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  @  time for target BUILD_PRECON       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
- My next target: SOLVE_MRCCPT2
+ My next target: SOLVE_MRCC2
  Rule: ASSIGN_ME2OP
  @  time for rule ASSIGN_ME2OP         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
  Rule: SOLVE_NLEQ

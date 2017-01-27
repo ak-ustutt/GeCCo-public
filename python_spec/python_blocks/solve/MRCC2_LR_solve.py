@@ -341,7 +341,7 @@ for _icnt in range (0,_ncnt):
         depend(_diag_cal_q)
         depend(_diag_cal_mu)
         depend(_prj_form)
-        depend('SOLVE_MRCCPT2')
+        depend('SOLVE_MRCC2')
         _solve_evp_basis={}
         _solve_evp_basis[LIST_OPT]=['ME_R1_q'+_extnsn,'ME_R2g_q'+_extnsn,'ME_R_mu'+_extnsn]
         _solve_evp_basis[LIST_PRC]=['ME_DIAG_t1'+_extnsn,'ME_DIAG_t2g'+_extnsn,'ME_DIAG_c'+_extnsn] 

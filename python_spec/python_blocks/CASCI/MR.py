@@ -55,19 +55,19 @@ OPTIMIZE({
 comment('Solving equations ...')
 
 SOLVE_map={
-        LIST_OPT:'C0_LST',
-        LIST_PRC:'D0_LST',
+        LIST_OPT:'ME_C0',
+        LIST_PRC:'ME_D0',
         OP_MVP:'H_C0',
         OP_SVP:'C0',
         FORM:'FOPT_H_C0',
         MODE:'DIA',
         N_ROOTS:maxroots,
-        TARG_ROOT:ciroot
+        TARG_ROOT:ciroot,
 }
 
 if (spinadapt != 0): #and refproj = 0  
     SOLVE_map[MODE]='SPP' #'DIA' will be overwritten
-    SOLVE_map[LIST_SPC]='C0_sp_LST'
+    SOLVE_map[LIST_SPC]='ME_C0_sp'
     SOLVE_map[FORM_SPC]='FOPT_C0_sp'
 
 elif False: # ref_proj !=0

@@ -1,4 +1,4 @@
-#single entry file for all methods implemented by Arne Bargholz
+#single entry file 
 
 import sys,os
 sys.path=[os.getenv("GECCO_DIR")]+sys.path

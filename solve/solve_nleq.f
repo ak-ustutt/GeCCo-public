@@ -514,7 +514,7 @@ c     &       ff_trv,ff_h_trv,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
            else
-             call solve_evp('DIA',1,ndx_eff,idx_eff,
+             call solve_evp2('DIA',1,ndx_eff,idx_eff,
      &            'ME_C0',trim(dia_label),'A_C0',
      &            'C0','FOPT_OMG_C0'//trim(c_st),
      &            '-',0,

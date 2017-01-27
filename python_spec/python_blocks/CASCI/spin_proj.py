@@ -30,7 +30,7 @@ CLONE_OPERATOR({
         LABEL:'C0_sp'})
 
 DEF_ME_LIST({
-        LIST:'C0_sp_LST',
+        LIST:'ME_C0_sp',
         OPERATOR:'C0_sp',
         IRREP:wf_sym,
         '2MS':ims,
@@ -38,7 +38,7 @@ DEF_ME_LIST({
         })
 #        S2:imult})
 
-debug_MEL('C0_sp_LST',info_only=True)
+debug_MEL('ME_C0_sp',info_only=True)
 
 
 

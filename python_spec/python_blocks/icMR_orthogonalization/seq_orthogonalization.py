@@ -3,14 +3,17 @@ from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import * 
 
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt = keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 ntest=100
 
-minexc=1
-if keywords.is_keyword_set('method.MR.minexc'):
-  minexc=int(keywords.get('method.MR.minexc'))
+minexc= keywords.get('method.MR.minexc')
+minexc = int(minexc) if minexc is not None else 1
+
+maxexc= keywords.get('method.MR.maxexc')
+maxexc = int(maxexc) if maxexc is not None else 1
+
+
 if (minexc==1):
   _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'
   _Ov_shape=',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'
@@ -25,6 +28,7 @@ else:
   useT1=False
 
 
+  
 _s2 = orbitals.get('imult')
 
 _ms = orbitals.get('ims')
@@ -354,6 +358,5 @@ if (useT1):
 OPTIMIZE({
         LABEL_OPT:'FOPT_GES',
         LABELS_IN:['FORM_T2_orth']})
-#        LABELS_IN:['FORM_T1_orth','FORM_T2_orth']})
 
 

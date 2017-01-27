@@ -52,8 +52,4 @@ import solve.MRCC2solve
 #-----------------------------------------------------------------#
 if (not keywords.is_keyword_set("method.MRCC2.excite")):
     modify_target('do_all')
-    depend('SOLVE_MRCCPT2')
-if (keywords.is_keyword_set("method.relaxref")):
-    modify_target('do_all')
-    depend('SOLVE_MRCC2ref')
-    
+    depend('MAKE_MRCC2')

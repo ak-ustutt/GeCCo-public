@@ -151,7 +151,7 @@ c dbg end
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
-     &     i_am="solve_evp"
+     &     i_am="solve_evp2"
 
       integer, intent(in) ::
      &     nopt, nroots, nspecial, nspcfrm, targ_root,choice_opt
@@ -247,7 +247,7 @@ c dbg end
 
       idx = idx_formlist(label_form,form_info)
       if (idx.le.0)
-     &     call quit(1,'solve_evp',
+     &     call quit(1,i_am,
      &     'did not find formula '//trim(label_form))
       form_mvp => form_info%form_arr(idx)%form
 
@@ -287,7 +287,7 @@ c dbg end
       do jdx = 1, nspcfrm
         idx = idx_formlist(label_spcfrm(jdx),form_info)
         if (idx.le.0)
-     &       call quit(1,'solve_evp',
+     &       call quit(1,i_am,
      &       'did not find formula '//trim(label_spcfrm(jdx)))
         call read_form_list(form_info%form_arr(idx)%form%fhand,
      &                      fl_spc(jdx),.true.)
@@ -706,6 +706,7 @@ c                 print *,"trv ab_sym",me_trv(iopt)%mel%absym
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
               end do
 
+              
 
               call frm_sched(xret,fl_mvp,depend,0,0,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
@@ -1060,7 +1061,7 @@ c dbg
      &     idxmel
       idxmel = idx_mel_list(label,op_info)
       if (idxmel.le.0)
-     &       call quit(1,'solve_evp',
+     &       call quit(1,i_am,
      &       'did not find list '//trim(label_opt(iopt)))
       get_mel=> op_info%mel_arr(idxmel)%mel
       return

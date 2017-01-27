@@ -6,7 +6,7 @@ input
   ic_MRCC2-EE.inp
 check
   label MRCC2 Energy
-  find SOLVE_MRCCPT2
+  find SOLVE_MRCC2
   find >>> CONVERGED
   find final energy:
   compare real 4 1e-5
