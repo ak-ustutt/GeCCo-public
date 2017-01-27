@@ -170,9 +170,13 @@ for ipop in xrange (0,_npop):
 
     EVALUATE({FORM:'FOPT_RSPNS(1)'+_cur_ext})
 
-    PRINT_MEL({LIST:'ME_RSPNS(1)'+_cur_ext,
-#              FORMAT:'SCAL',
-               COMMENT:'First order property('+str(ipop)+')'})
+    _print_mel_arg={}
+
+    _print_mel_arg[LIST]='ME_RSPNS(1)'+_cur_ext
+    _print_mel_arg[COMMENT]='First order property('+str(ipop)+')'
+    _print_mel_arg[FORMAT]='NORM'
+
+    PRINT_MEL(_print_mel_arg)
 
     _list_to_depend.append('EVAL_RSPNS(1)'+_cur_ext)
 
