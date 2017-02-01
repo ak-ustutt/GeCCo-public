@@ -197,11 +197,12 @@ if False : # (gno >= 0 and l_iccc)
             })    
 
 
-# SVD
+# Singular value decomposition
+# does this overwrite ME_GAM_S w
 INVERT({
         LIST_INV:'ME_GAM_S',
         LIST:'ME_GAM_S_ISQ',
-        MODE:'invsqrt'})
+        MODE:'invsqrt'}) 
 
 debug_MEL('ME_GAM_S_ISQ')
 
@@ -227,7 +228,6 @@ DEF_ME_LIST({
         AB_SYM:0,
         CA_SYM:0})
 
-#SET_MEL({LIST:'X_TRM_LIST',IDX_LIST:1,VAL_LIST:0.0})
 
 DEF_ME_LIST({LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM_DAG',
@@ -240,6 +240,10 @@ REORDER_MEL({
         LIST_RES:'ME_X_TRM',
         LIST_IN:'ME_GAM_S_ISQ',
         FROMTO: 13})
+
+
+
+
 #IMPORTANT: transposes on the input list. 
 REORDER_MEL({
         LIST_RES:'ME_X_TRM_DAG',
@@ -253,6 +257,23 @@ debug_MEL('ME_X_TRM')
 
 
 
+CLONE_OPERATOR({
+        LABEL:'P_PROJ',
+        TEMPLATE:'X_TRM'})
+
+DEF_ME_LIST({
+        LIST:'ME_P_PROJ',
+        OPERATOR:'P_PROJ',
+        IRREP:1,
+        '2MS':0,
+        S2:0,
+        AB_SYM:0,
+        CA_SYM:0})
+REORDER_MEL({
+        LIST_RES:'ME_P_PROJ',
+        LIST_IN:'ME_GAM_S',
+        FROMTO:13
+})
 
 
 # Transformation Formula for Excitation operators (OMEGA and T2_orth are 

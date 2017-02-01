@@ -71,7 +71,6 @@
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
-
       if (gno.gt.0) then
         ! perform spin projection?
         if (spinadapt.ge.2)

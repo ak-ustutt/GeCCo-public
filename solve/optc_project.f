@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
-     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,opti_info,
-     &     orb_info,op_info,str_info,strmap_info)
+     &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,lzero,
+     &     opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *
 *     projects out linear dependencies in me_amp
@@ -43,6 +43,8 @@
      &     me_amp,me_dia,me_trf
       real(8), intent(inout) ::
      &     xbuf1(*)
+      logical, intent(in)::
+     &     lzero
 
       type(formula_item), intent(in) ::
      &     fspc(nspcfrm)
@@ -80,7 +82,9 @@
      &     c_st
       character(len_target_name), external ::
      &     state_label
-
+      if(ntest.ge.10)
+     &     write(lulog,*) "Projecting now "
+      
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
         c_st = state_label(i_state,.false.)
@@ -94,21 +98,31 @@
      &        opti_info%update_prc.gt.0.and.
      &        mod(imacit,max(opti_info%update_prc,1)).eq.0)
       end if
-
-      call assign_me_list(me_special(1)%mel%label,
-     &                      me_special(1)%mel%op%name,op_info)
-
-      ! put new vector to special list for transformation
-      call list_copy(me_amp,me_special(1)%mel,.false.)
-
+      if (lzero)then
+         call assign_me_list(me_special(7)%mel%label,
+     &        me_special(7)%mel%op%name,op_info)
+         call list_copy(me_amp,me_special(7)%mel,.false.)
+         call assign_me_list(me_special(4)%mel%label,
+     &        me_special(2)%mel%op%name,op_info)
+         call evaluate2(fspc(3),.true.,.true.,
+     &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
+         
+         
+      else
+         call assign_me_list(me_special(1)%mel%label,
+     &        me_special(1)%mel%op%name,op_info)
+         
+! put new vector to special list for transformation
+         call list_copy(me_amp,me_special(1)%mel,.false.)
+         
       ! use projection matrix
-      call assign_me_list(me_special(4)%mel%label,
-     &                      me_special(2)%mel%op%name,op_info)
+         call assign_me_list(me_special(4)%mel%label,
+     &        me_special(2)%mel%op%name,op_info)
 
       ! evaluate projected vector
-      call evaluate2(fspc(1),.true.,.true.,
-     &         op_info,str_info,strmap_info,orb_info,xdum,.true.)
-
+         call evaluate2(fspc(1),.true.,.true.,
+     &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
+      end if
 
 c      ! Now add "redundant" T components?
 c      if (opti_info%update_prc.gt.0.and.

@@ -44,6 +44,8 @@
 
       integer, parameter ::
      &     ntest = 00
+      character(len=*),parameter::
+     &     i_am = "invsqrt"
 
       type(orbinf), intent(in) ::
      &     orb_info
@@ -148,6 +150,7 @@ c dbgend
       iprint=max(iprlvl,ntest)
 
       if (iprint.ge.100) write(lulog,*) 'entered invsqrt'
+
 c dbg
 c      ipass = 0
 c dbgend

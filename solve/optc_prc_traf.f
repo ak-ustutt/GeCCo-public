@@ -99,7 +99,6 @@
        c_st = ""
       end if
       idx = idx_mel_list('ME_C0'//trim(c_st),op_info) ! quick & dirty
-      print *, "ME_C0 found:", idx.gt.0
       ! update me lists for transformation matrices if required
       if (opti_info%optref.ne.0.and.
      &    op_info%mel_arr(idx)%mel%fhand%last_mod(
@@ -161,8 +160,13 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
 
       if (lzero_flag)then
       ! assign op. with list containing special vector
-         call assign_me_list(me_special(4)%mel%label,
-     &                    trim(op_amp_name),op_info)
+         if ( opti_info%optref.eq. -3 )then
+            call assign_me_list(me_special(7)%mel%label,
+     &           trim(op_amp_name),op_info)
+         else
+            call assign_me_list(me_special(4)%mel%label,
+     &           trim(op_amp_name),op_info)
+         end if 
          else
       ! assign op. with list containing special vector
             call assign_me_list(me_special(1)%mel%label,
@@ -176,9 +180,15 @@ c      write(lulog,*) 'Fixing sign of residual for iopt =',iopt
       ! calculate transformed residual
 
       if (lzero_flag)then
-         call evaluate2(fspc(2),.true.,.true.,
+         if ( opti_info%optref.eq. -3 )then
+            call evaluate2(fspc(3),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,
-     &            xngrd(iopt),.true.) !get transformed res. norm
+     &           xngrd(iopt),.true.)
+         else
+            call evaluate2(fspc(2),.true.,.true.,
+     &           op_info,str_info,strmap_info,orb_info,
+     &           xngrd(iopt),.true.) !get transformed res. norm
+         end if
          else
          call evaluate2(fspc(1),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,

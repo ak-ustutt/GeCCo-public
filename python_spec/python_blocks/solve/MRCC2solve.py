@@ -169,8 +169,9 @@ SOLVE_NLEQ({
         LIST_E:'PT_LAG_LST',
         FORM:'FOPT_PT_LAG2',
         MODE:'TRF TR0',
-        FORM_SPC:['FOPT_T1_orth','FOPT_T2_orth'],
-        LIST_SPC:['ME_T1_orth','ME_X_TRM','ME_X_TRM_DAG','ME_T2_orth']
+        FORM_SPC:['FOPT_T1_orth','FOPT_GAM_S','FOPT_T2_orth'],
+        LIST_SPC:['ME_T1_orth','ME_X_TRM','ME_X_TRM_DAG',"ME_P_PROJ","ME_GAM_S",
+                  "ME_GAM_S_ISQ",'ME_T2_orth']
         })
 
 

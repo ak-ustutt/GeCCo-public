@@ -117,7 +117,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-debug_MEL('GAM0LST',info_only=True)
+debug_MEL('GAM0_LST',info_only=True)
 
 new_target('RefState-Operators')
 depend('Make_E0')
