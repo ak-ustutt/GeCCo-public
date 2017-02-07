@@ -4,6 +4,7 @@
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &       n_states,
+     &       me_u, use_u,
      &       me_special,nspecial,
 c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
@@ -39,12 +40,13 @@ c      include 'mdef_me_list.h'
       integer, intent(inout) ::
      &     imacit, imicit, imicit_tot
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm, n_states
+     &     iroute, nincore, lenbuf, nopt, nspecial, nspcfrm, n_states,
+     &     use_u
 
       type(me_list_array), intent(inout) ::
      &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
      &     me_trv(nopt), me_h_trv(nopt),
-     &     me_special(nspecial)
+     &     me_special(nspecial), me_u(3)
       type(filinf), intent(in) ::
      &     ffscr
 
@@ -442,11 +444,13 @@ c dbg end
      &        opti_info%optref.ne.0.and.nspecial.ge.5) then
               lzero =opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc
               call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
-     &        me_dia(iopt)%mel,me_special,nspecial,
-     &        opti_info%nwfpar(iopt),xbuf1,
-     &        fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
-     &        nspcfrm_eff,iopt,imacit,i_state,lzero,
-     &        opti_info,orb_info,op_info,str_info,strmap_info)
+     &             me_dia(iopt)%mel,
+     &             me_u,use_u,
+     &             me_special,nspecial,
+     &             opti_info%nwfpar(iopt),xbuf1,
+     &             fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
+     &             nspcfrm_eff,iopt,imacit,i_state,lzero,
+     &             opti_info,orb_info,op_info,str_info,strmap_info)
          end if
          if(n_states.gt.1.and.iopt_state.eq.nopt_state)then
           do i_spc = 1,nspecial
@@ -575,6 +579,7 @@ c dbg
 
             call optc_prc_traf(
      &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
+     &              me_u,use_u,
      &              me_special,nspecial,
      &              opti_info%nwfpar(iopt),xbuf1,xbuf2,
      &              fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),

@@ -73,13 +73,14 @@
       logical::
      &     lzero_flag
       integer ::
-     &     irecr, irecv, inum, idx_inv
+     &     irecr, irecv, inum, idx_inv,use_u
       character(len_opname) ::
      &     op_grd_name, op_trf_name, op_amp_name
 
       real(8) ::
      &     xdum
-
+      type(me_list_array)::
+     &     me_u(3)
       type(filinf), pointer ::
      &     ffamp, ffgrd, ffdia
 
@@ -87,7 +88,7 @@
      &     ioptc_get_sbsp_rec, idx_oplist2, idx_mel_list
       real(8), external ::
      &     dnrm2
-
+      use_u=0
       ! pointers to file handle
       ffamp => me_amp%fhand
       ffgrd => me_grd%fhand
@@ -175,7 +176,9 @@ c dbg
            lzero_flag=.false.
            if (typ_prc .eq. optinf_prc_traf_spc) lzero_flag=.true.
 
-          call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
+           call optc_prc_traf(me_amp,me_grd,me_dia,
+     &                       me_u, use_u,
+     &                       me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
      &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,
      &                       opti_info,
