@@ -13,7 +13,7 @@
       include 'par_molpro.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 0
 
       type(orbinf), intent(in), target ::
      &     orb_info

@@ -138,8 +138,7 @@ c dbg
         call import_parameters(+1,rule%parameters,
      &       list_type,env_type)
 
-        call import_op_el(rule%labels(1),
-     &       list_type,env_type,.False.,
+        call import_op_el(rule%labels(1),list_type,env_type,
      &       op_info,str_info,strmap_info,orb_info)
 
       case(PRECONDITIONER)

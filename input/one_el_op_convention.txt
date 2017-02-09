@@ -1,0 +1,87 @@
+# Parity and triplet information of one-electron integrals
+# Name convention from molpro and Dalton.
+# 
+# Molpro Dalton parity tripl
+S     - 1 F  # Overlap
+EKIN  KINENE 1 F  # Kinetic energy
+POT   - 1 F  # Potential energy
+DELTA - 1 F  # Delta function
+DEL4  - 1 F  # \Delta^4
+DARW  DARWIN   1 F  # one electron Darwin term
+MASSV MASSVELO 1 F  # Mass velocity term
+REL   - 1 F  # Cowan-Griffin Relativistic correction
+# Dipole moments
+DMX  XDIPLEN  1 F
+DMY  YDIPLEN  1 F
+DMZ  ZDIPLEN  1 F
+# Second moments
+XX  XXSECMOM   1 F
+YY  YYSECMOM   1 F
+ZZ  ZZSECMOM   1 F
+XY  XYSECMOM   1 F
+XZ  XZSECMOM   1 F
+YZ  YZSECMOM   1 F
+# Third moments
+XXX - 1 F
+XXY - 1 F
+XXZ - 1 F
+XYY - 1 F
+XYZ - 1 F
+XZZ - 1 F
+YYY - 1 F
+YYZ - 1 F
+YZZ - 1 F
+ZZZ - 1 F
+# Quadrupole moments 
+QMXX - 1 F
+QMYY - 1 F
+QMZZ - 1 F
+QMXY - 1 F
+QMXZ - 1 F
+QMYZ - 1 F
+QMRR - 1 F  # R^2
+# Electric field
+EFX - 1 F
+EFY - 1 F
+EFZ - 1 F
+# Electric field gradients
+FGXX  -  1 F
+FGYY  -  1 F
+FGZZ  -  1 F
+FGXY  -  1 F
+FGXZ  -  1 F
+FGYZ  -  1 F
+# Diamagnetic shielding tensor
+DMSXX -  1 F
+DMSYX -  1 F
+DMSZX -  1 F
+DMSXY -  1 F
+DMSYY -  1 F
+DMSZY -  1 F
+DMSXZ -  1 F
+DMSYZ -  1 F
+DMSZZ -  1 F
+# Angular momentum operators
+LX XANGMON   -1 F
+LY XANGMON   -1 F
+LZ XANGMON   -1 F
+# One electron part of products of angular momentum operators
+LXLX -  1 F
+LYLY -  1 F
+LZLZ -  1 F
+# Correspond to the symmetric combination, for example, (LX*LY + LY*LX)/2
+LXLY -  1 F
+LYLZ -  1 F
+LYLZ -  1 F
+# Velocity
+D/DX XDIPVEL  -1 F
+D/DY YDIPVEL  -1 F
+D/DZ ZDIPVEL  -1 F
+# One electron Spin-orbit integrals
+LSX X1SPNORB   -1 F
+LSY Y1SPNORB   -1 F
+LSZ Z1SPNORB   -1 F
+# ECP spin-orbit operators
+ECPLSX -      -1 F
+ECPLSY -      -1 F
+ECPLSZ -      -1 F

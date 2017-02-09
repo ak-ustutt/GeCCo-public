@@ -967,12 +967,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST',rule,tgt_info,val_label=label)
         call get_arg('TYPE',rule,tgt_info,val_str=list_type)
         call get_arg('ENV',rule,tgt_info,val_str=env_type)
-        call get_arg('TRIPLET',rule,tgt_info,val_log=trplt)
 
         if (form_test) return
 
-        call import_op_el(label,
-     &       list_type,env_type,trplt,
+        call import_op_el(label,list_type,env_type,
      &       op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
       case(GETEST)

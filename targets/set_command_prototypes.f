@@ -538,8 +538,6 @@
      &     val_str='-',req=.true.)
       call set_arg('_PROTO_',IMPORT,'ENV',1,tgt_info,
      &     val_str=trim(env_type),def=.true.)
-      call set_arg('_PROTO_',IMPORT,'TRIPLET',1,tgt_info,
-     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SPIN_PROJECT,tgt_info)
       call set_arg('_PROTO_',SPIN_PROJECT,'LIST',0,tgt_info,
