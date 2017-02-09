@@ -76,7 +76,7 @@ c      logical ::
 c     &     loop(nocc_cls)
       integer ::
      &     ifree, nbuff, idxmsa, iocc_cls, iexc_cls,
-     &     msmax, msa, igama, idx, jdx, ngam, idxt,
+     &     msmax, msa, igama, idx, jdx, ngam, 
      &     ioff, njoined,
      &     idxdis, lenca, iblkoff, ncblk, nablk,
      &     msc, igamc, idxmsc, mscmax,
@@ -245,6 +245,16 @@ c dbgend
         buffer_u => ffu%buffer(1:)
       endif
 
+c dbg AB
+      if(get_u)then
+         print *, i_am,"finding NaNs", get_u,bufu
+         do idx=1,nbuff
+            if (is_nan_h(buffer_u(idx)))
+     &           call warn(i_am,"NaN detected 1")
+         end do
+      end if
+c dbgend
+
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
       xmax = 0d0   ! largest excluded singular value
@@ -258,13 +268,7 @@ c dbgend
       iexc_cls = 0
       tocc_cls = 0
 
-      ! (assuming name 'T' for cluster op.
-      ! but ... uuups ... sometimes it will not be there ....
-      idxt = idx_oplist2('T',op_info)
-      if (is_keyword_set('method.MRCI').gt.0) 
-     &      idxt = idx_oplist2('C',op_info)
-      if (idxt.gt.0) 
-     &   op_t => op_info%op_arr(idxt)%op
+      op_t => get_cluster_op_h(op_info) ! 'T' 'C' or null
 
       if (.not.half.and. (iprint.ge.3) ) write(lulog,*)
      &         'Input list will be overwritten by projector.'
@@ -1766,7 +1770,7 @@ c dbgend
      &       'Singular value histogram (by excitation classes)'
         if (lmodspc) then
           write(lulog,'(x,a,x,14i10)') 'class:', (idx,idx=1,iexc_cls)
-        else if (idxt.gt.0) then
+        else if (associated(op_t)) then
           write(lulog,'(x,a,x,14i10)') 'n_h = ',
      &         op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
           write(lulog,'(x,a,x,14i10)') 'n_p = ',
@@ -1819,7 +1823,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
         call get_argument_value('method.MR','svdonly',lval=svdonly)
         if (svdonly.and..not.lmodspc) then
           ! Excplicitly print restrictions for input file
-          if (idxt.lt.0) call quit(0,'invsqrt',
+          if (.not.associated(op_t)) call quit(0,'invsqrt',
      &         'inconsistency in program: fix reference to op_t')
           write(lulog,*)
           write(lulog,'(x,a)') 'Copy the following into the input file:'
@@ -1890,4 +1894,51 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       ifree = mem_flushmark('invsqrt')
 
       return
+      contains
+!-----------------------------------------------------------------------!
+!! as I can't rely on gforts nonstandard is_nan or the standard ieee_arithmetic module (because we have to support older compilers),
+!! here is a reproduction of the is_nan functionality
+!-----------------------------------------------------------------------!
+      function is_nan_h(value)
+!-----------------------------------------------------------------------!
+      implicit none
+      logical ::
+     &     is_nan_h
+      
+      real(8),intent(in)::
+     &     value
+      is_nan_h = .not. ((value.le. 0d0) .or.(value.ge.0d0))
+
+      end
+!-----------------------------------------------------------------------!
+!!    tries to guess the cluster operator for the singular value histogramm
+!!
+!!    returns a pointer to the cluster operator or a null pointer if no guess could be generated
+!-----------------------------------------------------------------------!
+      function get_cluster_op_h(op_info)
+!-----------------------------------------------------------------------!
+      implicit none
+      type(operator),pointer::
+     &     get_cluster_op_h
+      type(operator_info),intent(in)::
+     &     op_info
+      integer::
+     &     idxop
+
+      idxop = idx_oplist2('T',op_info)
+
+      if (is_keyword_set('method.MRCI').gt.0) 
+     &      idxop = idx_oplist2('C',op_info)
+
+      if (idxop.gt.0)then
+         get_cluster_op_h => op_info%op_arr(idxop)%op
+      else 
+         get_cluster_op_h => null()
+      end if
+
+      end function get_cluster_op_h
+      
+!-----------------------------------------------------------------------!
+!-----------------------------------------------------------------------!
+      
       end
