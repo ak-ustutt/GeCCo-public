@@ -98,7 +98,7 @@ c      include 'mdef_me_list.h'
       integer, external ::
      &     idx_mel_list
       integer :: iii
-
+      
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
       do iopt = 1, nopt
@@ -213,6 +213,7 @@ c dbg
      &             init,
      &             opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
      &             me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
+     &             me_u,use_u,
      &             me_special,nspecial,
      &             opti_stat_ini%ffrsbsp(iopt)%fhand,
      &             opti_stat_ini%ffvsbsp(iopt)%fhand,

@@ -2,6 +2,7 @@
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import * 
 
+import re
 
 spinadapt = keywords.get('calculate.routes.spinadapt')
 spinadapt = int(spinadapt) if spinadapt is not None else 0
@@ -14,11 +15,12 @@ maxexc= keywords.get('method.MR.maxexc')
 maxexc = int(maxexc) if maxexc is not None else 1
 
 
+
 if (minexc==1):
   _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'
   _Ov_shape=',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'
-  _GAM_S_shape=',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|,;VV,VV;,|,VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|,V;V,V;V,|,V;V,;,|,;,V;V,|,;,;,|,VV;,;VV,'
-  _X_TRM_shape='VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'
+  _GAM_S_shape=',V;VV,VV;V,|,VV;V,V;VV,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|,;VV,VV;,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|,V;V,V;V,|,V;V,;,|,;,V;V,|,;,;,|,VV;,;VV,'
+  _X_TRM_shape='VV,VV;V,V|V,V;VV,VV|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'
   useT1=True
 else:
   _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH' # need P,H to generate ,;,;,
@@ -103,6 +105,7 @@ DEF_ME_LIST({
         AB_SYM:_msc,
         S2:S2_val})
 
+#ISQ = Inverse square root
 CLONE_OPERATOR({
         LABEL:'ISQ_GAM',
         TEMPLATE:'GAM_S'})
@@ -139,6 +142,7 @@ EXPAND_OP_PRODUCT({
         OP_RES:'SSCAL',
         OPERATORS:['C0^+','Tv^+','Tv','C0'],
         IDX_SV:[1,2,3,4]})
+
 FACTOR_OUT({
         LABEL_RES:'FORM_SMAT',
         LABEL_IN:'FORM_SMAT',
@@ -169,7 +173,7 @@ DERIVATIVE({
         OP_RES:'GAM_S',
         OP_DERIV:'Tv'})
 
-debug_FORM('FORM_GAM_S')
+debug_FORM('FORM_GAM_S', only_this=True)
 
 
 
@@ -181,7 +185,7 @@ debug_FORM('FORM_GAM_S')
 comment('Evaluate effective densities for overlap ...')
 OPTIMIZE({
         LABEL_OPT:'FOPT_GAM_S',
-        LABELS_IN:'FORM_GAM_S'})
+        LABELS_IN:['FORM_GAM0','FORM_GAM_S']})
 
 EVALUATE({
         FORM:'FOPT_GAM_S'})

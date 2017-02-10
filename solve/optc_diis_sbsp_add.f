@@ -3,6 +3,7 @@
      &     get_new_rec,
      &     iord_vsbsp,iord_rsbsp,
      &     me_amp,me_grd,me_dia,
+     &     me_u,use_u,
      &     me_special,nspecial,
      &     ff_rsbsp,ff_vsbsp,
      &     typ_prc,
@@ -41,14 +42,15 @@
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial)
+     &     me_special(nspecial), me_u(3)
       type(me_list), intent(in) ::
      &     me_amp,me_grd,me_dia
       type(filinf), intent(in) ::
      &     ff_rsbsp,ff_vsbsp
       integer, intent(inout) ::
      &     ndim_rsbsp,ndim_vsbsp,
-     &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp)
+     &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp),
+     &     use_u
       integer, intent(in) ::
      &     mxdim_sbsp,
      &     nincore, nwfpar, 
@@ -73,14 +75,12 @@
       logical::
      &     lzero_flag
       integer ::
-     &     irecr, irecv, inum, idx_inv,use_u
+     &     irecr, irecv, inum, idx_inv
       character(len_opname) ::
      &     op_grd_name, op_trf_name, op_amp_name
 
       real(8) ::
      &     xdum
-      type(me_list_array)::
-     &     me_u(3)
       type(filinf), pointer ::
      &     ffamp, ffgrd, ffdia
 
@@ -88,7 +88,6 @@
      &     ioptc_get_sbsp_rec, idx_oplist2, idx_mel_list
       real(8), external ::
      &     dnrm2
-      use_u=0
       ! pointers to file handle
       ffamp => me_amp%fhand
       ffgrd => me_grd%fhand

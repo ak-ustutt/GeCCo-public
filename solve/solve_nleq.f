@@ -225,28 +225,7 @@ c dbg end
      &                        'restart',lval=restart)
 
 ! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
-      use_u = 0
-      do iopt=1,nopt
-         if (opti_info%optref .eq. -3
-     &        .and. opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            use_u=iopt
-            write(fname,'("me_Ueta")') 
-            me_U(1)%mel => me_from_template(
-     &           fname, me_special(6)%mel%op%name,me_special(6)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            write(fname,'("me_Utrf")')
-            me_U(2)%mel=> me_from_template(
-     &           fname, me_special(2)%mel%op%name,me_special(2)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            write(fname,'("me_Udag")') 
-            me_U(3)%mel => me_from_template(
-     &       fname, me_special(3)%mel%op%name,me_special(3)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-         end if
-      end do
+
       
       do iopt = 1, nopt 
         ! open result vector file(s)
@@ -292,6 +271,41 @@ cmh     if file already open, use as initial guess!
       call set_opti_info_signs(opti_info,1,nopt,
      &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
+
+
+      use_u = 0
+      do iopt=1,nopt
+         print *,"prc:", opti_info%typ_prc(iopt),optinf_prc_traf_spc
+         print *, opti_info%optref,sqrt(-1.d0).ge.0d0,sqrt(-1.d0).le.0d0
+         if (opti_info%optref .eq. -3
+     &        .and. opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            use_u=iopt
+            print *, "unitary lists created"
+            write(fname,'("me_Ueta")') 
+            me_U(1)%mel => me_from_template(
+     &           fname, me_special(6)%mel%op%name,me_special(6)%mel,
+     &           1,
+     &           op_info,  orb_info, str_info, strmap_info)
+            call zeroop(me_u(1)%mel)
+            write(fname,'("me_Utrf")')
+            me_U(2)%mel=> me_from_template(
+     &           fname, me_special(2)%mel%op%name,me_special(2)%mel,
+     &           1,
+     &           op_info,  orb_info, str_info, strmap_info)
+            call zeroop(me_u(2)%mel)
+            write(fname,'("me_Udag")') 
+            me_U(3)%mel => me_from_template(
+     &       fname, me_special(3)%mel%op%name,me_special(3)%mel,
+     &           1,
+     &           op_info,  orb_info, str_info, strmap_info)
+            call zeroop(me_u(3)%mel)
+         end if
+      end do
+
+
+
+
+      
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res,.true.)
 
@@ -509,7 +523,7 @@ c     &       ff_trv,ff_h_trv,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
            else
-             call solve_evp2('DIA',1,ndx_eff,idx_eff,
+             call solve_evp('DIA',1,ndx_eff,idx_eff,
      &            'ME_C0',trim(dia_label),'A_C0',
      &            'C0','FOPT_OMG_C0'//trim(c_st),
      &            '-',0,
@@ -703,7 +717,7 @@ c dbg
 c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
-        ! ... and corresponding preconditioner(s)
+        ! ... and corresponding preconditioner(s)x
         if (ffdia(iopt)%fhand%unit.gt.0)
      &       call file_close_keep(ffdia(iopt)%fhand)
       end do

@@ -18,6 +18,8 @@
 
       integer, parameter ::
      &     ntest = 00
+      character(len=*),parameter::
+     &     i_am="invsqrt_mat"
       real(8), parameter ::
      &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::
@@ -103,8 +105,17 @@ c      call svd_drv(ndim,mat,singval)
       end if
 
       if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
-
-c      icnt_sv = icnt_sv + ndim
+c dbg AB
+      if (get_u)then
+         print *, i_am,"finding NaNs"
+         do idx=1,ndim
+            do idx2=1,ndim
+               if (is_nan_h(umat(idx,idx2)))
+     &              call warn(i_am,"NaN detected")
+            end do
+         end do
+      end if
+c dbg end
 
 c      if (half) then
 c        mat_tmp => mat
@@ -142,7 +153,7 @@ c      end if
      &         call warn('invsqrt_mat','small singular values!')
           if (.not.half) mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
 c dbg
-c          if (get_u) umat(1:ndim,idx) = mat(1:ndim,idx)
+          if (get_u) umat(1:ndim,idx) = mat(1:ndim,idx)
 c dbgend
           mat(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
@@ -151,7 +162,7 @@ c dbgend
           icnt_sv0 = icnt_sv0 + 1
           if (abs(singval(idx)).gt.abs(xmax)) xmax = singval(idx)
 c dbg
-c          if (get_u) umat(1:ndim,idx) = 0d0
+          if (get_u) umat(1:ndim,idx) = 0d0
 c dbgend
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
@@ -177,6 +188,9 @@ c dbgend
           call wrtmat3(mat2,ndim,ndim,ndim,ndim)
         end if
       end if
+      
+      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
+      
 c dbg  can be used to set 1
 c      mat(1:ndim,1:ndim) = 0d0
 c      do idx = 1, ndim
@@ -186,5 +200,26 @@ c dbgend
 
       if (sv_fix) call file_close_keep(ffsv)
 
+      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
+      print *, i_am,"finding NaNs"
+      do idx=1,ndim
+         do idx2=1,ndim
+            if (is_nan_h(umat(idx,idx2)))
+     &           call warn(i_am,"NaN detected 2")
+         end do
+      end do
       return
+      contains
+!! as I can't rely on gforts nonstandard is_nan or the standard ieee_arithmetic module
+!! here a reproduction of the localization functionality
+      function is_nan_h(value)
+      implicit none
+      logical ::
+     &     is_nan_h
+      
+      real(8),intent(in)::
+     &     value
+      is_nan_h = .not. ((value.le. 0d0) .or.(value.ge.0d0))
+
+      end 
       end

@@ -27,7 +27,9 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
+      character(len=*),parameter::
+     &     i_am="update_metric"
 
       integer, intent(in) ::
      &     nspecial, nspcfrm,use_u
@@ -70,7 +72,7 @@
       call get_argument_value('method.MR','GNO',ival=gno)
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','prc_traf',lval=prc_traf)
-
+      write (lulog,*)i_am," entering"
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
@@ -110,9 +112,9 @@
      &              'invsqrt',
      &              op_info,orb_info,str_info,strmap_info)
       else if(use_u.gt.0)then
-         call inv_op(2,(/trim(me_special(5)%mel%label),
-     &                   trim(me_u(1)%mel%label)      /),
-     &              1,trim(me_special(6)%mel%label),
+         call inv_op(1,trim(me_special(5)%mel%label),
+     &               2,(/trim(me_special(6)%mel%label),
+     &                         trim(me_u(1)%mel%label) /),
      &              'invsqrt',
      &              op_info,orb_info,str_info,strmap_info)
          
@@ -149,7 +151,8 @@ c      call reo_mel(trim(me_special(3)%mel%label),
 c     &             trim(me_special(6)%mel%label),.false.,
 c     &             op_info,str_info,strmap_info,orb_info,
 c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
-
+      print *, "use_u",use_u
+      
       if(use_u.gt.0)then
 ! reorder unitary matrix
          call reo_mel(trim(me_u(2)%mel%label),
@@ -163,7 +166,6 @@ c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
      &        13,.true.)        ! dirty: reo vtx. 1 --> 3
       
       end if
-!and its ajoint
       
 
       

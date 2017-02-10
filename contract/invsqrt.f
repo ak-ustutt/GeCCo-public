@@ -42,6 +42,7 @@
       include 'ifc_input.h'
       include 'routes.h'
 
+      
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
@@ -271,17 +272,18 @@ c dbgend
       op_t => get_cluster_op_h(op_info) ! 'T' 'C' or null
 
       if (.not.half.and. (iprint.ge.3) ) write(lulog,*)
-     &         'Input list will be overwritten by projector.'
+     &     'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
       iocc_loop: do iocc_cls = 1, nocc_cls
         iblkoff = (iocc_cls-1)*njoined
         if (ntest.ge.100) then
-          write(lulog,*) 'iocc_cls = ',iocc_cls
-          write(lulog,*) 'formal:   ',op_inp%formal_blk(iocc_cls)
-          write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
+           write(lulog,*) 'iocc_cls = ',iocc_cls
+           write(lulog,*) 'formal:   ',op_inp%formal_blk(iocc_cls)
+           write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
           call wrt_occ_n(lulog,op_inp%ihpvca_occ(1,1,iblkoff+1),njoined)
         end if
+       
         if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined))
      &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
@@ -291,6 +293,7 @@ c dbgend
         ex2occ_cls(iexc_cls) = tocc_cls
 
         if (iprint.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
+        
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
@@ -303,9 +306,13 @@ c dbgend
      &                       bins(1,iexc_cls))
           else if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
-     &                       half,buffer_u(ioff+1),get_u,
-     &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                         half,buffer_u(ioff+1),get_u,
+     &                         xdum,icnt_sv,icnt_sv0,xmax,xmin,
+     &                         bins(1,iexc_cls))
+c            print *, i_am,"finding NaNs 2"
+c            if (is_nan_h(buffer_u(ioff+1)))
+c     &           call warn(i_am,"NaN detected 2")
+
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,xdummy,get_u, !buffer_u: dummy
@@ -317,6 +324,7 @@ c dbgend
           cycle iocc_loop
         end if 
 
+        
         ifree = mem_setmark('invsqrt_blk')
 
         call get_num_subblk(ncblk,nablk,
@@ -408,7 +416,7 @@ c dbgend
           msmax = op_inp%ica_occ(1,iocc_cls)
           mscmax = op_inp%ica_occ(2,iocc_cls)
           if (msmax.ne.mscmax) call quit(1,'invsqrt',
-     &            'need particle conserving operator')
+     &         'need particle conserving operator')
           msa_loop : do msa = msmax, -msmax, -2
 
             idxmsa = idxmsa+1
@@ -453,20 +461,10 @@ c dbgend
                 allocate(scratch3(ndim,ndim))
               else
                 scratch3 => xdummy
-              end if
-              if (transp) then
-                do idx = 1,ndim
-                  do jdx = 1,ndim
-                    scratch(jdx,idx) = buffer_in(ioff+(idx-1)*ndim+jdx)
-                  enddo
-                enddo
-              else
-                do idx = 1,ndim
-                  do jdx = 1,ndim
-                    scratch(idx,jdx) = buffer_in(ioff+(idx-1)*ndim+jdx)
-                  enddo
-                enddo
-              end if
+             end if
+             call copy_buffer_1_h(buffer_in, scratch,
+     &            ndim,ndim,ioff,transp)
+             
 
               if (msc.eq.0.and..not.lmodspc) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
@@ -535,17 +533,16 @@ c dbgend
               else
 
                if (lmodspc) then
-                call mat_svd_traf(ndim,scratch,scratch2,
-     &                           icnt_sv,icnt_sv0,xmax,xmin,
-     &                           bins(1,iexc_cls))
+                  call mat_svd_traf(ndim,scratch,scratch2,
+     &                 icnt_sv,icnt_sv0,xmax,xmin,
+     &                 bins(1,iexc_cls))
                else
-                ! calculate S^(-0.5)
-                call invsqrt_mat(ndim,scratch,scratch2,
-     &                           half,scratch3,get_u,svs,
-     &                           icnt_sv,icnt_sv0,xmax,xmin,
-     &                           bins(1,iexc_cls))
+                  ! calculate S^(-0.5)
+                  call invsqrt_mat(ndim,scratch,scratch2,
+     &                             half,scratch3,get_u,svs,
+     &                             icnt_sv,icnt_sv0,xmax,xmin,
+     &                             bins(1,iexc_cls))
                end if
-
               end if
 
               ! Tikhonov regularization?
@@ -553,66 +550,35 @@ c dbgend
      &           call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
               ! write to output buffer
-              if (transp) then
-                do idx = 1,ndim
-                  do jdx = 1,ndim
-                    buffer_out((idx-1)*ndim+jdx+ioff) = scratch(jdx,idx)
-                  enddo
-                enddo
-              else
-                do idx = 1,ndim
-                  do jdx = 1,ndim
-                    buffer_out((idx-1)*ndim+jdx+ioff) = scratch(idx,jdx)
-                  enddo
-                enddo
-              end if
+              call copy_buffer_2_h(scratch, buffer_out,
+     &             ndim,ndim,ioff,transp)
 
               deallocate(scratch,svs)
 
               if (.not.half.or.lmodspc) then
-                ! write projector to input buffer
-                if (transp) then
-                  do idx = 1,ndim
-                    do jdx = 1,ndim
-                      buffer_in((idx-1)*ndim+jdx+ioff) 
-     &                       = scratch2(jdx,idx)
-                    enddo
-                  enddo
-                else
-                  do idx = 1,ndim
-                    do jdx = 1,ndim
-                      buffer_in((idx-1)*ndim+jdx+ioff) 
-     &                       = scratch2(idx,jdx)
-                    enddo
-                  enddo
-                end if
-
-                deallocate(scratch2)
+! write projector to input buffer
+                 call copy_buffer_2_h(scratch2, buffer_in,
+     &                ndim,ndim,ioff,transp)
+                 deallocate(scratch2)
               end if
-
+              
               if (get_u) then
-                ! write unitary matrix to buffer
-                if (transp) then
-                  do idx = 1,ndim
-                    do jdx = 1,ndim
-                      buffer_u((idx-1)*ndim+jdx+ioff)
-     &                       = scratch3(jdx,idx)
-                    enddo
-                  enddo
-                else
-                  do idx = 1,ndim
-                    do jdx = 1,ndim
-                      buffer_u((idx-1)*ndim+jdx+ioff)
-     &                       = scratch3(idx,jdx)
-                    enddo
-                  enddo
-                end if
-
-                deallocate(scratch3)
+! write unitary matrix to buffer
+                 call copy_buffer_2_h(scratch3, buffer_u,
+     &                ndim,ndim,ioff,transp)
+cdbg AB
+c                 do idx = 1,ndim
+c                    do jdx = 1,ndim
+c                       if (is_nan_h(buffer_u((idx-1)*ndim+jdx+ioff)))
+c     &                      call warn(i_am,"NaN detected 3")
+c                    enddo
+c                 enddo
+cdbg end                 
+                 
+                 deallocate(scratch3)
               end if
-
-            enddo igama_loop
-          enddo msa_loop
+           enddo igama_loop
+        enddo msa_loop
 
           deallocate(hpvx_csub,hpvx_asub,
      &             occ_csub, occ_asub,
@@ -628,9 +594,10 @@ c dbgend
      &             ldim_opin_c,ldim_opin_a)
           ifree = mem_flushmark('invsqrt_blk')
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
-     &       blk_redundant(iocc_cls) = .false.
+     &         blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
-        end if
+       end if
+
 
         ! Here comes the complicated part for densities with 3 vertices
         ! and multiple distributions per Ms(A)/GAMMA(A) block
@@ -838,6 +805,7 @@ c           ndim = 0
             scratch2(1:ndim,1:ndim) = 0d0
           end if
           if (get_u) allocate(scratch3(ndim,ndim))
+          if (get_u) scratch3(1:ndim,1:ndim) = 0d0
 c dbg
 c          allocate(matrix(ndim,ndim))
 c dbgend
@@ -1573,8 +1541,11 @@ c dbgend
               buffer_out(ioff+1) = scratch(off_line2+1,off_col2+1)
               if (.not.half.or.lmodspc) ! copy projector to input buffer
      &           buffer_in(ioff+1) = scratch2(off_line2+1,off_col2+1)
-              if (get_u)
-     &           buffer_u(ioff+1) = scratch3(off_line2+1,off_col2+1)
+              if (get_u)then
+                 buffer_u(ioff+1) = scratch3(off_line2+1,off_col2+1)
+c                 if (is_nan_h(buffer_u(ioff+1)))
+c     &                call warn(i_am,"NaN detected 4")
+              end if
               exit
             end if
             msmax = op_inp%ica_occ(1,jocc_cls)
@@ -1701,8 +1672,13 @@ c dbgend
                         buffer_out(idx) = scratch(iline,icol)
                         if (.not.half.or.lmodspc) ! copy projector to input buffer
      &                     buffer_in(idx) = scratch2(iline,icol)
-                        if (get_u)
-     &                     buffer_u(idx) = scratch3(iline,icol)
+                        if (get_u)then
+                           buffer_u(idx) = scratch3(iline,icol)
+c                           if (is_nan_h(buffer_u(idx)))then
+c                              call warn(i_am,"NaN detected 5")
+c                              write (lulog,*) "in line",iline
+c                           end if
+                        end if
                       end do
                     end do
                   end do
@@ -1888,9 +1864,14 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       endif
       curr_rec=ffu%current_record
       len_rec =ffu%length_of_record
-      if (.not.bufu.and.get_u) call put_vec(ffu,buffer_u,
+      if (.not.bufu.and.get_u)then
+c         do idx=1,nbuff
+c            if (is_nan_h(buffer_u(idx) ))
+c     &           call warn(i_am,"NaN detected 6")
+c         end do
+         call put_vec(ffu,buffer_u,
      &     (curr_rec-1)*len_rec+1,(curr_rec-1)*len_rec+nbuff)
-
+      end if
       ifree = mem_flushmark('invsqrt')
 
       return
@@ -1937,8 +1918,72 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       end if
 
       end function get_cluster_op_h
-      
 !-----------------------------------------------------------------------!
+!!   
 !-----------------------------------------------------------------------!
+      subroutine copy_buffer_1_h(buffer_in,buffer_out,
+     &     dim1,dim2,ioff,transpose )
+!-----------------------------------------------------------------------!
+      implicit none
+      real(8),intent(in)::
+     &     buffer_in(:)
+      real(8),intent(inout)::
+     &     buffer_out(:,:)
+      integer,intent(in)::
+     &     dim1,dim2,
+     &     ioff
+      logical,intent(in)::
+     &     transpose
+
+      integer::
+     &     idx,jdx
+
+      if(transpose)then
+         do idx = 1,dim1
+            do jdx = 1,dim2
+               buffer_out(jdx,idx) =  buffer_in(ioff+(idx-1)*dim2+jdx)
+            end do
+         end do
+      else
+         do idx = 1,dim1
+            do jdx = 1,dim2
+               buffer_out(idx,jdx) =  buffer_in(ioff+(idx-1)*dim2+jdx)
+            end do
+         end do
+      end if
+      end subroutine
+!-----------------------------------------------------------------------!
+!!
+!-----------------------------------------------------------------------!
+      subroutine copy_buffer_2_h(buffer_in,buffer_out,
+     &     dim1,dim2,ioff,transpose )
+!-----------------------------------------------------------------------!
+      implicit none
+      real(8),intent(in)::
+     &     buffer_in(:,:)
+      real(8),intent(inout)::
+     &     buffer_out(:)
+      integer,intent(in)::
+     &     dim1,dim2,
+     &     ioff
+      logical,intent(in)::
+     &     transpose
+
+      integer::
+     &     idx,jdx
       
+      if(transpose)then
+         do idx = 1,dim1
+            do jdx = 1,dim2
+               buffer_out(ioff+(idx-1)*dim2+jdx)  =  buffer_in(jdx,idx)
+            end do
+         end do
+      else
+         do idx = 1,dim1
+            do jdx = 1,dim2
+               buffer_out(ioff+(idx-1)*dim2+jdx)  =  buffer_in(idx,jdx)
+            end do
+         end do
+      end if
+      end subroutine
       end

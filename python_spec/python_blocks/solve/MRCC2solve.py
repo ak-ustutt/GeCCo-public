@@ -143,17 +143,6 @@ SCALE_COPY({LIST_RES:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
             LIST_INP:"ME_D0",
             FAC:1,})
 
-#DEF_ME_LIST({LIST:"ME_C0",
-#             OPERATOR:"C0",
-#             IRREP:int(orbitals.get('lsym')),
-#             "2MS":int(orbitals.get('ims')),
-#             AB_SYM:ab_sym(int(orbitals.get('ims')),int(orbitals.get('imult')))
-#})
-
-#SCALE_COPY({LIST_RES:"ME_C0",
-#            LIST_INP:"C0_LST",
-#            FAC:1,})
-
 
 
 ASSIGN_ME2OP({

@@ -45,8 +45,6 @@
       implicit none             ! for sure
 !     DAVIDSON algorithm: solves M*v+x*S*v=0 M,S are matrices, v is an (unknown) vector x is a scalar(the root)
 
-
-
       include 'opdim.h'
       include 'stdunit.h'
       include 'ioparam.h'
@@ -67,87 +65,6 @@
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
 
-c      interface
-c         real*8 function fndmnx(vector,ndim,minmax)
-c         implicit none
-c         integer, intent(in) ::
-c     &        ndim, minmax
-c         real(8), intent(in) ::
-c     &        vector(ndim)
-c
-c         end function fndmnx
-c
-c      end interface
-
-c     dbg e
-
-c      interface
-c         subroutine davidson_driver(
-c     &     dvdsbsp,
-c     &        iter,  task,
-c     &        nroot, nopt,
-c     &     trafo, use_s,
-c     &     xrsnrm , xeig,
-c     &     me_opt,me_dia,
-c     &     me_met,me_scr,me_res,
-c     &     me_trv,me_mvp,me_vort,me_mvort,
-c     &     me_special, nspecial,
-c     &     xbuf1,xbuf2, xbuf3, nincore,lenbuf,
-c     &     flist,depend,
-c     &     fspc,nspcfrm,
-c     &     opti_info, opti_stat,
-c     &     orb_info, op_info, str_info,strmap_info
-c     &        )
-c         import:: davidson_subspace_t,me_list_array,formula_item,
-c     &        dependency_info,orbinf,operator_info,strinf,strmapinf,
-c     &        optimize_info, optimize_status
-c$$$
-c$$$         implicit none
-c$$$         type(davidson_subspace_t),intent(inout)::
-c$$$     &        dvdsbsp
-c$$$         integer, intent(inout) ::
-c$$$     &        iter, task
-c$$$         logical, intent(in)::
-c$$$     &        trafo(*), use_s(*)
-c$$$         integer, intent(in) ::
-c$$$     &        nincore, lenbuf, nspecial, nspcfrm,
-c$$$     &        nroot, nopt       !
-c$$$
-c$$$      type(me_list_array), intent(inout) :: !inout to be sure
-c$$$     &     me_opt(*), me_dia(*),
-c$$$     &     me_met(*),me_scr(*),me_res(*),
-c$$$     &     me_trv(*), me_mvp(*),me_vort(*),me_mvort(*),
-c$$$     &     me_special(*)
-c$$$      real(8), intent(inout) ::
-c$$$     &     xrsnrm(nroot,nopt),
-c$$$     &     xeig(nroot)
-c$$$
-c$$$      real(8), intent(inout) ::
-c$$$     &     xbuf1(*), xbuf2(*), xbuf3(*)
-c$$$      type(formula_item), intent(inout) ::
-c$$$     &     flist
-c$$$      type(dependency_info) ,intent(in)::
-c$$$     &     depend
-c$$$      type(formula_item), intent(in) ::
-c$$$     &     fspc(nspcfrm)
-c$$$
-c$$$
-c$$$      type(orbinf), intent(in) ::
-c$$$     &     orb_info
-c$$$      type(operator_info), intent(inout) ::
-c$$$     &     op_info
-c$$$      type(strinf), intent(in) ::
-c$$$     &     str_info
-c$$$      type(strmapinf), intent(in)::
-c$$$     &     strmap_info
-c$$$
-c$$$      type(optimize_info), intent(in) ::
-c$$$     &     opti_info
-c$$$      type(optimize_status), intent(inout)::
-c$$$     &     opti_stat
-c$$$      end subroutine
-c$$$      end interface
-c dbg end
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
@@ -1172,6 +1089,7 @@ c dbg
       end if
       end subroutine
       subroutine del_buffers(ifree)
+*--------------------------------------------------------------*
       integer,intent(out)::
      &     ifree
       ifree=mem_flushmark('solve_evp_buffer')
@@ -1206,7 +1124,7 @@ c dbg
       end if
       end subroutine
       function has_perm_file(mel, mels, nmels)
-
+      implicit none
       type(me_list) ,intent(in)::
      &     mel
       type(me_list_array),intent(in)::
