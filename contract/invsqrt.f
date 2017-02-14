@@ -43,6 +43,7 @@
       include 'routes.h'
 
       
+      
       integer, parameter ::
      &     ntest = 100
       character(len=*),parameter::
@@ -647,7 +648,8 @@ cdbg end
         ! loop over Ms/Gamma combinations of A1/C1 tuple
         ! which are the decoupled blocks of the A1/C1 | A2/C2 matrix
         ! Ms/Gamma of C2/A2 is then already defined
-        ! For now we consider densities: Ms(total)=0, Gamma(total) = 1
+! For now we consider densities: Ms(total)=0, Gamma(total) = 1
+
         do ms1 = msmax_sub, -msmax_sub, -2
          ms2 = -ms1 ! particle conserving operator
          do igam = 1, ngam ! irrep of the second dimension must be the same
@@ -695,58 +697,14 @@ cdbg end
               exit blk_loop
            end if
            
-            call get_num_subblk(ncblk2,nablk2,
-     &           hpvx_occ(1,1,jblkoff+1),njoined)
-            allocate(hpvx_csub2(ncblk2),hpvx_asub2(nablk2),
-     &               occ_csub2(ncblk2), occ_asub2(nablk2),
-     &               graph_csub2(ncblk2), graph_asub2(nablk2))
-            ! set HPVX and OCC info
-            call condense_occ(occ_csub2, occ_asub2,
-     &                      hpvx_csub2,hpvx_asub2,
-     &                      hpvx_occ(1,1,jblkoff+1),njoined,hpvxblkseq)
-            ! do the same for the graph info
-            call condense_occ(graph_csub2, graph_asub2,
-     &                      hpvx_csub2,hpvx_asub2,
-     &                      idx_graph(1,1,jblkoff+1),njoined,hpvxblkseq)
-
-c           ! First we need the dimension of the A1/C1 | A2/C2 block
-c           ndim = 0
-            do msa1 = na1, -na1, -2
-             msc1 = msa1 + ms1
-             if (abs(msc1).gt.nc1) cycle
-             msdis_c(1) = msc1
-             msdis_a(1) = msa1
-             do gama1 = 1, ngam
-                gamc1 = multd2h(gama1,igam)
-                call set_dis_string1_h(
-     &               gamdis_c,gamdis_a,
-     &               msdis_c,msdis_a,
-     &               lcycle,
-     &               msc1,msa1,
-     &               gamc1,gama1,
-     &               ncblk2,nablk2,
-     &               na2,na1) ! we are in a diagonal block so na2 = nc1
-                if(lcycle)cycle
-
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2) !translates ms numbers on msdis into indexes
-              call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
-
-              call set_len_str(len_str,ncblk2,nablk2, ! finds the number of strings for for the given distribution
-     &                       graphs,
-     &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
-     &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
-     &                       hpvxseq,.false.)
-              if (nablk2.eq.1) then
-                rdim = rdim + len_str(1)
-              else
-                rdim = rdim + len_str(1)*len_str(3)
-              end if
-             end do
-            end do
-            ndim = ndim + rdim
-
-            deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
-     &               occ_asub2,graph_csub2,graph_asub2)
+            call get_combineddistlen_h(
+     &           rdim,
+     &           hpvx_occ,idx_graph,
+     &           jblkoff, njoined,
+     &           ms1,igam,
+     &           graphs)
+            ndim = ndim + rdim      
+                                    
             na2 = na2 - 1
             nc2 = nc2 - 1
             jocc_cls = jocc_cls + 1
@@ -759,7 +717,7 @@ c           ndim = 0
            nc1 = nc1 - 1
            if (project.gt.0.and.rdim.gt.0) then
              nrank = nrank + 1
-             if (nrank.gt.maxrank) call quit(1,'invsqrt',
+             if (nrank.gt.maxrank) call quit(1,i_am,
      &                                       'increase maxrank')
              do idx = nrank, 2, -1
                rankdim(idx) = rankdim(idx-1)
@@ -778,7 +736,7 @@ c           ndim = 0
             rankoff(1) = 0
           else if (ndim.eq.rankoff(1)+rankdim(1)+1) then !inactive blk.
              nrank = nrank + 1
-             if (nrank.gt.maxrank) call quit(1,'invsqrt',
+             if (nrank.gt.maxrank) call quit(1,i_am,
      &                                       'increase maxrank')
              do idx = nrank, 2, -1
                rankdim(idx) = rankdim(idx-1)
@@ -790,7 +748,7 @@ c           ndim = 0
           else if (ndim.ne.rankoff(1)+rankdim(1)) then
             write(lulog,'(1x,a,3i12)') 
      &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff(1),rankdim(1)
-            call quit(1,'invsqrt','dimensions don''t add up!')
+            call quit(1,i_am,'dimensions don''t add up!')
           end if
 
           if (iprint.ge.10)
@@ -2099,6 +2057,63 @@ c         end do
      &           hpvx_occ(1,1,offset+1),njoined)
       mel_get_msgamblocklen_h=0
       end function
+
+!-----------------------------------------------------------------------!
+!>  adds the number of all strings in the ioff block to len
+!
+!!   @param[inout] len cumulative number of all strings with this ms restrictions
+!!   @param hpvx_occ (occupational numbers for all spaces for all vertices)   
+!!   @param idx_graph graph indices for all spaces of all vertices
+!!   @param ioff, 
+!!   @param ms1,gam1 combined ms symmetry of C1/A1 tuple
+!
+!    Note: only works for derived density matrices ms_total =0, totalsymmetrisch , form:
+!
+!!    / 0 0 0 0 \
+!!    \ 0 0 x 0 /  msa2 gama2 na2
+!!    / 0 0 y 0 \  msc2 gamc2 nc2
+!!    \ 0 0 y 0 /  msa1 gama1 na1
+!!    / 0 0 x 0 \  msc1 gamc1 nc1
+!!    \ 0 0 0 0 /      
+!-----------------------------------------------------------------------!
+       subroutine get_combineddistlen_h(
+     &     len,
+     &     hpvx_occ,idx_graph,
+     &     ioff,njoined,
+     &     ms1,gam1,
+     &     graphs)
+!-----------------------------------------------------------------------!
+      implicit none
+      
+      integer::
+     &     hpvx_occ(ngastp,2,*),         !ngastp from hostinclude
+     &     idx_graph(ngastp,2,*)
+      integer,intent(in)::
+     &     ioff,                !offset of block
+     &     njoined
+      
+      integer,intent(in)::
+     &     ms1,gam1
+      type(graph), pointer,intent(in)::
+     &     graphs(:)
+      integer,intent(inout)::
+     &     len
+      integer::
+     &     ncblk,nablk
+      
+      
+            call get_num_subblk(ncblk,nablk,
+     &           hpvx_occ(1,1,ioff+1),njoined)
+            call get_combineddistlen_core_h(
+     &           len,
+     &           hpvx_occ,idx_graph,
+     &           ioff, njoined,
+     &           ncblk,nablk,
+     &           ms1,igam,
+     &           graphs)
+
+      end subroutine
+      
 !-----------------------------------------------------------------------!
 !
 !
@@ -2108,12 +2123,10 @@ c         end do
      &     hpvx_occ,idx_graph,
      &     ioff,njoined,
      &     ncblk,nablk,
-     &     na1,na2,
-     &     ms1,gam1, str_info)
+     &     ms1,gam1,
+     &     graphs)
 !-----------------------------------------------------------------------!
       implicit none
-      integer::
-     &     mel_get_msgamblocklen_core_h
       
       integer::
      &     hpvx_occ(ngastp,2,*),         !ngastp from hostinclude
@@ -2121,16 +2134,16 @@ c         end do
       integer,intent(in)::
      &     ioff,                !offset of block
      &     njoined,
-     &     nablk,ncblk,
-     &     na1,na2
+     &     nablk,ncblk
       
       integer,intent(in)::
      &     ms1,gam1
-      type(strinf), intent(in)::
-     &     str_info
+      type(graph), pointer,intent(in)::
+     &     graphs(:)
       integer,intent(inout)::
      &     len
-      
+      integer,pointer::
+     &     len_str(:)
       integer::
      &     hpvx_csub(ncblk),hpvx_asub(nablk),
      &     occ_csub(ncblk),occ_asub(nablk),
@@ -2139,14 +2152,17 @@ c         end do
      &     gamdis_c(ncblk),gamdis_a(nablk),
      &     msdis_c(ncblk),msdis_a(nablk)
       integer ::
-     &     idxmsdis_c,idxmsdix_a !index of
+     &     idxmsdis_c(ncblk),idxmsdis_a(nablk) !index of
       integer::
-     &     msc1,gama1
+     &     msc1,gama1,gamc1
       logical::
      &     lcycle
 
 
+      allocate(len_str(nablk+ncblk))
       
+      na1=sum(hpvx_occ(1:ngastp,2,ioff+1))
+      nc1=sum(hpvx_occ(1:ngastp,1,ioff+2))
       call condense_occ(occ_csub, occ_asub,
      &     hpvx_csub,hpvx_asub,
      &     hpvx_occ(1,1,ioff+1),njoined,hpvxblkseq)!hpvxblkseq from hostinclude
@@ -2168,25 +2184,24 @@ c         end do
      &           msc1,msa1,
      &           gamc1,gama1,
      &           ncblk,nablk,
-     &           na1,na2)
+     &           nc1,na1)
             if(lcycle)cycle
-            call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
-            call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
+            call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk) !translates ms numbers on msdis into indexes
+            call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
             
-            call set_len_str(len_str,ncblk,nablk,
-     &           str_info%g,
+            call set_len_str(len_str,ncblk,nablk, ! finds the number of strings for for the given distribution
+     &           graphs,
      &           graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
      &           graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
      &           hpvxseq,.false.)
-            if (nablk2.eq.1) then
+            if (nablk.eq.1) then
                len = len + len_str(1)
             else
                len = len + len_str(1)*len_str(3)
             end if
          end do
       end do
-     
-      mel_get_msgamblocklen_core_h=0
+      deallocate(len_str)
       end subroutine
       
 !-----------------------------------------------------------------------!
@@ -2229,6 +2244,8 @@ c         end do
      &     ncblk,nablk,
      &     nc1,na1
       
+      msdis_c(1) = msc1
+      msdis_a(1) = msa1
       skip = .false.
       if (ncblk.eq.1.and.nc1.eq.0) then
          if (msc1.ne.0.or.gamc1.ne.1) then ! there are no creation operators in nc1
