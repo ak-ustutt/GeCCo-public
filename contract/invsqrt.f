@@ -44,7 +44,7 @@
 
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       character(len=*),parameter::
      &     i_am = "invsqrt"
 
@@ -70,7 +70,7 @@
 
       logical ::
      &     bufin, bufout, first, ms_fix, fix_success, onedis, transp,
-     &     logdum, sgrm, bufu, svdonly, reg_tik, first2
+     &     logdum, sgrm, bufu, svdonly, reg_tik, first2,lcycle
       logical, pointer ::
      &     blk_used(:), blk_redundant(:)
 c      logical ::
@@ -275,7 +275,7 @@ c dbgend
      &     'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
-      iocc_loop: do iocc_cls = 1, nocc_cls
+      iocc_loop: do iocc_cls = 1, nocc_cls !loops over occupations of input operator
         iblkoff = (iocc_cls-1)*njoined
         if (ntest.ge.100) then
            write(lulog,*) 'iocc_cls = ',iocc_cls
@@ -288,6 +288,7 @@ c dbgend
      &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
         if (blk_used(iocc_cls)) cycle iocc_loop
+        
         blk_used(iocc_cls) = .true.
         iexc_cls = iexc_cls + 1
         ex2occ_cls(iexc_cls) = tocc_cls
@@ -309,9 +310,6 @@ c dbgend
      &                         half,buffer_u(ioff+1),get_u,
      &                         xdum,icnt_sv,icnt_sv0,xmax,xmin,
      &                         bins(1,iexc_cls))
-c            print *, i_am,"finding NaNs 2"
-c            if (is_nan_h(buffer_u(ioff+1)))
-c     &           call warn(i_am,"NaN detected 2")
 
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
@@ -327,9 +325,16 @@ c     &           call warn(i_am,"NaN detected 2")
         
         ifree = mem_setmark('invsqrt_blk')
 
+!-----------
+        ! for simplicity we distinguish the following two types:
+        !  /0 0 0 0\       /0 0 0 0\  i.e. occupation classes  with
+        !  \0 0 x 0/       \0 0 x 0/  several distributions per
+        !  /0 0 y 0\  and  /0 0 0 0\  per Ms(A)/GAMMA(A) block
+        !  \0 0 y 0/       \0 0 0 0/  and those with only single
+        !  /0 0 x 0\       /0 0 x 0\  distributions
+        !  \0 0 0 0/       \0 0 0 0/
         call get_num_subblk(ncblk,nablk,
      &       hpvx_occ(1,1,iblkoff+1),njoined)
-
         ! for simplicity we distinguish the following two types:
         !  /0 0 0 0\       /0 0 0 0\  i.e. occupation classes  with
         !  \0 0 x 0/       \0 0 x 0/  several distributions per
@@ -345,6 +350,7 @@ c     &           call warn(i_am,"NaN detected 2")
           call quit(1,'invsqrt','not adapted for this case')
         end if
 
+!----------
         allocate(hpvx_csub(ncblk),hpvx_asub(nablk),
      &           occ_csub(ncblk), occ_asub(nablk),
      &           graph_csub(ncblk), graph_asub(nablk),
@@ -427,18 +433,21 @@ c dbgend
             igama_loop: do igama =1, ngam
 
               igamc = multd2h(igama,mel_inp%gamt)
-              ndis = mel_inp%off_op_gmox(iocc_cls)%ndis(igamc,idxmsc)
+              ndis = mel_get_ndis_h(mel_inp,iocc_cls,igamc,idxmsc) 
 
-              ndim = int(sqrt(dble(mel_inv%
-     &           len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa))))
+              ndim = isqrt_h(
+     &             mel_get_lenblock_h(mel_inv,iocc_cls,igama,idxmsa))
+
               if (ndim.gt.0.and.ndis.ne.1)
-     &                call quit(1,'invsqrt','cannot handle this')
+     &                call quit(1,i_am,'cannot handle this')
               if (ndim.eq.0) cycle igama_loop
 
               if (iprint.ge.10)
      &           write(lulog,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
-     &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
-     &                         gam_ms(igama,idxmsa))))
+     &             ndim
+c     &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
+c     &                         gam_ms(igama,idxmsa))))
+              
               if (iprint.ge.100)
      &           write(lulog,*) ' len = ',
      &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
@@ -462,7 +471,7 @@ c dbgend
               else
                 scratch3 => xdummy
              end if
-             call copy_buffer_1_h(buffer_in, scratch,
+             call copy_buffer_1_h(buffer_in, scratch, !buffer_in -> scatch
      &            ndim,ndim,ioff,transp)
              
 
@@ -684,7 +693,8 @@ cdbg end
             if (na1.eq.0.and.nc1.eq.0) then
               if (igam.eq.1) ndim = ndim + 1
               exit blk_loop
-            end if
+           end if
+           
             call get_num_subblk(ncblk2,nablk2,
      &           hpvx_occ(1,1,jblkoff+1),njoined)
             allocate(hpvx_csub2(ncblk2),hpvx_asub2(nablk2),
@@ -707,29 +717,21 @@ c           ndim = 0
              msdis_c(1) = msc1
              msdis_a(1) = msa1
              do gama1 = 1, ngam
-              gamc1 = multd2h(gama1,igam)
-              if (nablk2.eq.1.and.na2.eq.0) then ! diag.: nablk2=ncblk2
-                if (msc1.ne.0.or.gamc1.ne.1) cycle
-                gamdis_c(1) = gama1
-                msdis_c(1) = msa1
-                gamdis_a(1) = gama1
-              else if (nablk2.eq.1.and.na1.eq.0) then
-                if (msa1.ne.0.or.gama1.ne.1) cycle
-                gamdis_a(1) = gamc1
-                msdis_a(1) = msc1
-                gamdis_c(1) = gamc1
-              else
-                gamdis_c(1) = gamc1
-                gamdis_a(1) = gama1
-                msdis_c(2) = msa1
-                msdis_a(2) = msc1
-                gamdis_c(2) = gama1
-                gamdis_a(2) = gamc1
-              end if
-              call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+                gamc1 = multd2h(gama1,igam)
+                call set_dis_string1_h(
+     &               gamdis_c,gamdis_a,
+     &               msdis_c,msdis_a,
+     &               lcycle,
+     &               msc1,msa1,
+     &               gamc1,gama1,
+     &               ncblk2,nablk2,
+     &               na2,na1) ! we are in a diagonal block so na2 = nc1
+                if(lcycle)cycle
+
+              call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2) !translates ms numbers on msdis into indexes
               call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
 
-              call set_len_str(len_str,ncblk2,nablk2,
+              call set_len_str(len_str,ncblk2,nablk2, ! finds the number of strings for for the given distribution
      &                       graphs,
      &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
@@ -914,6 +916,7 @@ c dbg
 c                print *,'gamc2,gama2: ',gamc2,gama2
 c                print *,'off_line, off_col: ',off_line,off_col
 c dbgend
+                
                 if (nablk2.eq.1.and.na1.eq.0) then
                   msdis_a(1) = msa2
                   gamdis_a(1) = gama2
@@ -1919,7 +1922,7 @@ c         end do
 
       end function get_cluster_op_h
 !-----------------------------------------------------------------------!
-!!   
+!!   copies a one dimensional buffer onto a two dimensional buffer
 !-----------------------------------------------------------------------!
       subroutine copy_buffer_1_h(buffer_in,buffer_out,
      &     dim1,dim2,ioff,transpose )
@@ -1953,7 +1956,7 @@ c         end do
       end if
       end subroutine
 !-----------------------------------------------------------------------!
-!!
+!! copies a two dimensional buffer onto a two dimensional buffer
 !-----------------------------------------------------------------------!
       subroutine copy_buffer_2_h(buffer_in,buffer_out,
      &     dim1,dim2,ioff,transpose )
@@ -1986,4 +1989,284 @@ c         end do
          end do
       end if
       end subroutine
+!-----------------------------------------------------------------------!
+!>    returns the number of distributions within a symmetry /MS block
+!!
+!!    @param mel the me-list in question
+!!    @param occupation block number
+!!    @param igam symetry number (of anihilation symmetry)
+!!    @param ms index      (of anihilation MS
+!-----------------------------------------------------------------------!
+      pure function mel_get_ndis_h(mel,iocc,igam,idxms)
+!-----------------------------------------------------------------------!
+      implicit none
+
+      integer::
+     &     mel_get_ndis_h
+     
+      type(me_list),intent(in)::
+     &     mel
+      integer,intent(in)::
+     &     iocc,                !occupation block number
+     &     igam,                !symetry number (of anihilation symmetry
+     &     idxms                ! ms index      (of anihilation MS
+      
+      mel_get_ndis_h=
+     &     mel%off_op_gmox(iocc)%ndis(igam,idxms) !yep, it is saved there.
+      end function
+      
+!-----------------------------------------------------------------------!
+!>    returns length of a  symmetry /MS block
+!!
+!!    @param mel the me-list in question
+!!    @param occupation block number
+!!    @param igam symetry number (of anihilation symmetry)
+!!    @param ms index  of anihilation MS
+!-----------------------------------------------------------------------!
+      pure function  mel_get_lenblock_h(mel,iocc,igam,idxms)
+!-----------------------------------------------------------------------!
+      implicit none
+
+      integer::
+     &     mel_get_lenblock_h
+     
+      type(me_list),intent(in)::
+     &     mel
+      integer,intent(in)::
+     &     iocc,
+     &     igam,
+     &     idxms
+      mel_get_lenblock_h =
+     &     mel%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa)
+      end function mel_get_lenblock_h
+      
+!-----------------------------------------------------------------------!
+!>    finds the square root of an integer (delivered as integer)
+!!
+!!     undefined if a negative integer is passed
+!!    @param in integer 
+!-----------------------------------------------------------------------!
+      function isqrt_h(in)
+!-----------------------------------------------------------------------!
+      implicit none
+
+      integer::
+     &     isqrt_h
+      integer,intent(in)::
+     &     in
+      integer ::
+     &     last_step
+
+      isqrt_h = int(sqrt(dble(in)))
+
+      if(isqrt_h*isqrt_h.ne.in) call quit(1,i_am,"square root error")
+         
+
+      
+      end function isqrt_h
+
+!-----------------------------------------------------------------------!
+!>    
+!!
+!!     undefined if a negative integer is passed
+!!    @param in integer 
+!-----------------------------------------------------------------------!
+      function mel_get_msgamblocklen_h(mel,hpvx_occ,
+     &     iocc, njoined,ms1, igam, na1,na2,str_info)
+!-----------------------------------------------------------------------!
+      implicit none
+      integer::
+     &     mel_get_msgamblocklen_h
+      type(me_list),intent(in)::
+     &     mel
+      integer,intent(in)::
+     &     iocc,                !index of block
+     &     njoined
+      integer::
+     &     hpvx_occ(ngastp,2,*)
+      
+      integer,intent(in)::
+     &     ms1,igam,
+     &     na1,na2
+      type(strinf), intent(in)::
+     &     str_info
+
+      integer::
+     &     offset,
+     &     ncblk, nablk
+      offset = (iocc-1)*njoined
+      call get_num_subblk(ncblk2,nablk2,
+     &           hpvx_occ(1,1,offset+1),njoined)
+      mel_get_msgamblocklen_h=0
+      end function
+!-----------------------------------------------------------------------!
+!
+!
+!-----------------------------------------------------------------------!
+      subroutine get_combineddistlen_core_h(
+     &     len,
+     &     hpvx_occ,idx_graph,
+     &     ioff,njoined,
+     &     ncblk,nablk,
+     &     na1,na2,
+     &     ms1,gam1, str_info)
+!-----------------------------------------------------------------------!
+      implicit none
+      integer::
+     &     mel_get_msgamblocklen_core_h
+      
+      integer::
+     &     hpvx_occ(ngastp,2,*),         !ngastp from hostinclude
+     &     idx_graph(ngastp,2,*)
+      integer,intent(in)::
+     &     ioff,                !offset of block
+     &     njoined,
+     &     nablk,ncblk,
+     &     na1,na2
+      
+      integer,intent(in)::
+     &     ms1,gam1
+      type(strinf), intent(in)::
+     &     str_info
+      integer,intent(inout)::
+     &     len
+      
+      integer::
+     &     hpvx_csub(ncblk),hpvx_asub(nablk),
+     &     occ_csub(ncblk),occ_asub(nablk),
+     &     graph_csub(ncblk), graph_asub(nablk)
+      integer ::
+     &     gamdis_c(ncblk),gamdis_a(nablk),
+     &     msdis_c(ncblk),msdis_a(nablk)
+      integer ::
+     &     idxmsdis_c,idxmsdix_a !index of
+      integer::
+     &     msc1,gama1
+      logical::
+     &     lcycle
+
+
+      
+      call condense_occ(occ_csub, occ_asub,
+     &     hpvx_csub,hpvx_asub,
+     &     hpvx_occ(1,1,ioff+1),njoined,hpvxblkseq)!hpvxblkseq from hostinclude
+! do the same for the graph info
+      call condense_occ(graph_csub, graph_asub,
+     &     hpvx_csub,hpvx_asub,
+     &     idx_graph(1,1,ioff+1),njoined,hpvxblkseq)
+      
+      do msa1 = na1, -na1, -2
+         msc1 = msa1 + ms1
+         if (abs(msc1).gt.nc1) cycle
+         do gama1 = 1, ngam
+            gamc1=multd2h(gama1,igam)
+
+            call set_dis_string1_h(
+     &           gamdis_c,gamdis_a,
+     &           msdis_c,msdis_a,
+     &           lcycle,
+     &           msc1,msa1,
+     &           gamc1,gama1,
+     &           ncblk,nablk,
+     &           na1,na2)
+            if(lcycle)cycle
+            call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
+            call ms2idxms(idxmsdis_a,msdis_a,occ_asub2,nablk2)
+            
+            call set_len_str(len_str,ncblk,nablk,
+     &           str_info%g,
+     &           graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
+     &           graph_asub,idxmsdis_a,gamdis_a,hpvx_asub,
+     &           hpvxseq,.false.)
+            if (nablk2.eq.1) then
+               len = len + len_str(1)
+            else
+               len = len + len_str(1)*len_str(3)
+            end if
+         end do
+      end do
+     
+      mel_get_msgamblocklen_core_h=0
+      end subroutine
+      
+!-----------------------------------------------------------------------!
+!
+!!  sets the ms and gam values for the distributions
+!!
+!!   @param[out] gamdis_c,gamdis_a symmetry of the creator/anihilator strings of a specific distribution (see also condense_occ.f)
+!!   @param[out] msmdis_c,msmdis_a symmetry of the creator/anihilator strings of a specific distribution
+!!   @param[out] skip true if this distribution cannot exist
+!!
+!!    assumes a symmetric 3-vertex block like:
+!!
+!!    / 0 0 0 0 \
+!!    \ 0 0 x 0 /  msa2 gama2 na2
+!!    / 0 0 y 0 \  msc2 gamc2 nc2
+!!    \ 0 0 y 0 /  msa1 gama1 na1
+!!    / 0 0 x 0 \  msc1 gamc1 nc1
+!!    \ 0 0 0 0 /      
+!-----------------------------------------------------------------------!
+      subroutine set_dis_string1_h(
+     &     gamdis_c,gamdis_a,
+     &     msdis_c,msdis_a,
+     &     skip,
+     &     msc1,msa1,
+     &     gamc1,gama1,
+     &     ncblk,nablk,
+     &     nc1,na1)
+!-----------------------------------------------------------------------!
+
+
+      implicit none
+      integer,intent(inout)::
+     &     gamdis_c(*),gamdis_a(*),
+     &     msdis_c(*),msdis_a(*)
+      logical, intent(out)::
+     &     skip
+      integer,intent(in)::
+     &     msc1,msa1,
+     &     gamc1,gama1,
+     &     ncblk,nablk,
+     &     nc1,na1
+      
+      skip = .false.
+      if (ncblk.eq.1.and.nc1.eq.0) then
+         if (msc1.ne.0.or.gamc1.ne.1) then ! there are no creation operators in nc1
+            skip=.true.
+            return
+         end if
+         gamdis_c(1) = gama1
+         msdis_c(1) = msa1
+         gamdis_a(1) = gama1
+      else if (nablk.eq.1.and.na1.eq.0) then
+         if (msa1.ne.0.or.gama1.ne.1)then !  there are no anihilation operators in na1
+            skip = .true.
+            return
+         end if
+         gamdis_a(1) = gamc1
+         msdis_a(1) = msc1
+         gamdis_c(1) = gamc1
+      else
+         gamdis_c(1) = gamc1
+         gamdis_a(1) = gama1
+         msdis_c(2) = msa1
+         msdis_a(2) = msc1
+         gamdis_c(2) = gama1
+         gamdis_a(2) = gamc1
+      end if
+      end subroutine
+!------------------------------------------------------------------!
+!!    calculates the occupation offset of an occupation on the hpvx_occ array 
+!!
+!!   @param iocc index of the occupation
+!!   @param njoined numbers of vertexes the operator has
+!------------------------------------------------------------------!
+      pure function occoff_h(iocc,njoined)
+!------------------------------------------------------------------!
+      integer::
+     &     occoff_h
+      integer,intent(in)::
+     &     iocc,njoined
+      occoff_h = (iocc-1)*njoined
+      end function
       end

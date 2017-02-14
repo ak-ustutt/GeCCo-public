@@ -12,15 +12,18 @@
 !c  /1 0 1 0\/0 2 1 0\/0 0 0 0\
 !a  \0 0 0 0/\0 2 0 0/\1 1 1 0/
 !
-!occ_csub =  2 1 1 1                    !assuming hpvx_blk_seq = 4 2 3 1 -> x p v h
-!hpvx_csub = 2 3 3 1
+! assuming hpvx_blk_seq = 4 2 3 1 -> x p v h :
+!
+!occ_csub =  2 1 1 1  ! number of creators
+!hpvx_csub = 2 3 3 1  ! in space
 !            p v v h
 !           meaning the following creator string: p p ; v ; v ; h
 !
 !occ_asub  = 2 1 1 1
 !hpvx_asub = 2 2 3 1
 !            p p v h
-!           meaning the following creator string: p p ; p ; v ; h
+!           meaning the following anihilator string: p p ; p ; v ; h
+! NOTE: if called with idx_graph, collect the index of the associated graph to a subspace string on occ_csub, occ_asub
 *----------------------------------------------------------------------*
       implicit none
 

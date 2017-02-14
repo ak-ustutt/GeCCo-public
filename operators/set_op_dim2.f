@@ -297,14 +297,14 @@ c              call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nasub)
      &                         hpvxseq,.false.)
 
 c dbg
-c              print *,'current dis:'
+c              write(lulog,*)'current dis:'
 c              write(lulog,*) idxmsdis_c(1:ncsub)
 c              write(lulog,*) gamdis_c(1:ncsub)
 c              write(lulog,*) idxmsdis_a(1:nasub)
 c              write(lulog,*) gamdis_a(1:nasub)
-c              print *,'graphs c:',graph_csub(1:ncsub)
-c              print *,'graphs a:',graph_asub(1:nasub)
-c              print *,'len_str: ',len_str(1:ncsub+nasub)
+c              write(lulog,*)'graphs c:',graph_csub(1:ncsub)
+c              write(lulog,*)'graphs a:',graph_asub(1:nasub)
+c              write(lulog,*)'len_str: ',len_str(1:ncsub+nasub)
 c dbg
                 ld_blk = 1
                 do icmp = 1, ncsub

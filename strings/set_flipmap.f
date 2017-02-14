@@ -67,7 +67,6 @@
       maxlenbuf = 0
       idxms = 0
       do ms = iocc, -iocc, -2
-c      do ms = iocc, 0, -2
         idxms = idxms+1
         lenbuf = 0
         do igam = 1, nsym
@@ -107,6 +106,7 @@ c          print *,'idxflip,idxms,igam: ',idxflip,idxms,igam
 c          print *,'offset: ',idxmap
 c          print *,'ityp,ngas_hpv(ityp)',ityp,ngas_hpv(ityp)
 c dbg
+
           if (nstr.eq.0) cycle
           call set_flipmap_kernel(buffer(idxbuf+1),
      &                 iocc,irestr,idxms,igam,

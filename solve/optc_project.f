@@ -104,16 +104,17 @@
      &        opti_info%update_prc.gt.0.and.
      &        mod(imacit,max(opti_info%update_prc,1)).eq.0)
       end if
-      call print_list("unitary_matrix", me_u(1)%mel,
-     &     "LIST",0d0,0d0,
-     &     orb_info,str_info)
-      call print_list("unitary_matrix reordered", me_u(2)%mel,
-     &     "LIST",0d0,0d0,
-     &     orb_info,str_info)
-      call print_list("unitary_matrix reo_transposed", me_u(3)%mel,
-     &     "LIST",0d0,0d0,
-     &     orb_info,str_info)
-      
+      if(lzero)then
+         call print_list("unitary_matrix", me_u(1)%mel,
+     &        "LIST",0d0,0d0,
+     &        orb_info,str_info)
+         call print_list("unitary_matrix reordered", me_u(2)%mel,
+     &        "LIST",0d0,0d0,
+     &        orb_info,str_info)
+         call print_list("unitary_matrix reo_transposed", me_u(3)%mel,
+     &        "LIST",0d0,0d0,
+     &        orb_info,str_info)
+      end if
       
       
       if (lzero)then            !also use_u is >0 and optref == -3

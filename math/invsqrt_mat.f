@@ -189,7 +189,7 @@ c dbgend
         end if
       end if
       
-      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
+!      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
       
 c dbg  can be used to set 1
 c      mat(1:ndim,1:ndim) = 0d0
@@ -200,18 +200,18 @@ c dbgend
 
       if (sv_fix) call file_close_keep(ffsv)
 
-      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
-      print *, i_am,"finding NaNs"
-      do idx=1,ndim
-         do idx2=1,ndim
-            if (is_nan_h(umat(idx,idx2)))
-     &           call warn(i_am,"NaN detected 2")
-         end do
-      end do
+!      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
+!      print *, i_am,"finding NaNs"
+!      do idx=1,ndim
+!         do idx2=1,ndim
+!            if (is_nan_h(umat(idx,idx2)))
+!     &           call warn(i_am,"NaN detected 2")
+!         end do
+!      end do
       return
       contains
 !! as I can't rely on gforts nonstandard is_nan or the standard ieee_arithmetic module
-!! here a reproduction of the localization functionality
+!! here a reproduction of the  functionality
       function is_nan_h(value)
       implicit none
       logical ::
