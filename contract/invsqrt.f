@@ -664,6 +664,9 @@ cdbg end
           jblkoff = (jocc_cls-1)*njoined
           na1 = na1mx
           nc1 = nc1mx
+
+
+          !-------
           blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
            nc2 = na1mx
@@ -682,13 +685,8 @@ cdbg end
      &         nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit blk_loop
             ! skip off-diagonal blocks
             if (na1.ne.nc2) then
-              na2 = na2 - 1
-              nc2 = nc2 - 1
-              jocc_cls = jocc_cls + 1
-              if (na2+nc2.lt.abs(ms1)) !jump to next line
-     &                  jocc_cls = jocc_cls + min(na1mx,nc1mx)
-     &                  -(na1mx+nc1mx-abs(ms1))/2
-              jblkoff = (jocc_cls-1)*njoined
+               call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
+               jblkoff = occoff_h(jocc_cls,njoined)
               cycle
             end if
             ! exception for pure inactive block:
@@ -696,22 +694,20 @@ cdbg end
               if (igam.eq.1) ndim = ndim + 1
               exit blk_loop
            end if
-           
+! note: only diagonal blocks reach this point.
+! so only 1 block per na1,nc1 touple
+! as na1,nc1 is only decremented in the blk_loop, rdim = 0 at this point !Doh
             call get_combineddistlen_h(
      &           rdim,
-     &           hpvx_occ,idx_graph,
-     &           jblkoff, njoined,
+     &           op_inp,mel_inp,
+     &           jocc_cls,
      &           ms1,igam,
      &           graphs)
-            ndim = ndim + rdim      
+            ndim = ndim + rdim
                                     
-            na2 = na2 - 1
-            nc2 = nc2 - 1
-            jocc_cls = jocc_cls + 1
-            if (na2+nc2.lt.abs(ms1)) !jump to next line
-     &                jocc_cls = jocc_cls + min(na1mx,nc1mx)
-     &                -(na1mx+nc1mx-abs(ms1))/2
-            jblkoff = (jocc_cls-1)*njoined
+            call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
+            jblkoff = occoff_h(jocc_cls,njoined)
+            
            end do
            na1 = na1 - 1
            nc1 = nc1 - 1
@@ -753,7 +749,7 @@ cdbg end
 
           if (iprint.ge.10)
      &       write(lulog,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
-          if (iprint.ge.100)
+          if (iprint.ge.10)
      &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
@@ -899,7 +895,7 @@ c dbgend
      &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
      &                       hpvxseq,.false.)
-                lenca = ielprd(len_str,ncblk2+nablk2)
+                lenca = ielprd(len_str,ncblk2+nablk2) ! yeah, a product
                 len2(1:4) = 1
                 if (ncblk2.eq.1.and.nc2.eq.0) len2(1) = len_str(1)
                 if (ncblk2.eq.1.and.nc1.eq.0) len2(2) = len_str(1)
@@ -915,7 +911,7 @@ c dbgend
                 end if
                 if (lenca.eq.0) cycle
 
-                ndis = mel_inp%off_op_gmox(jocc_cls)%ndis(igama,idxmsa)
+                ndis = mel_get_ndis_h(mel_inp,jocc_cls,igama,idxmsa)
                 idxdis = 1
                 if (ndis.gt.1)
      &             idxdis =
@@ -2024,41 +2020,6 @@ c         end do
       end function isqrt_h
 
 !-----------------------------------------------------------------------!
-!>    
-!!
-!!     undefined if a negative integer is passed
-!!    @param in integer 
-!-----------------------------------------------------------------------!
-      function mel_get_msgamblocklen_h(mel,hpvx_occ,
-     &     iocc, njoined,ms1, igam, na1,na2,str_info)
-!-----------------------------------------------------------------------!
-      implicit none
-      integer::
-     &     mel_get_msgamblocklen_h
-      type(me_list),intent(in)::
-     &     mel
-      integer,intent(in)::
-     &     iocc,                !index of block
-     &     njoined
-      integer::
-     &     hpvx_occ(ngastp,2,*)
-      
-      integer,intent(in)::
-     &     ms1,igam,
-     &     na1,na2
-      type(strinf), intent(in)::
-     &     str_info
-
-      integer::
-     &     offset,
-     &     ncblk, nablk
-      offset = (iocc-1)*njoined
-      call get_num_subblk(ncblk2,nablk2,
-     &           hpvx_occ(1,1,offset+1),njoined)
-      mel_get_msgamblocklen_h=0
-      end function
-
-!-----------------------------------------------------------------------!
 !>  adds the number of all strings in the ioff block to len
 !
 !!   @param[inout] len cumulative number of all strings with this ms restrictions
@@ -2070,47 +2031,49 @@ c         end do
 !    Note: only works for derived density matrices ms_total =0, totalsymmetrisch , form:
 !
 !!    / 0 0 0 0 \
-!!    \ 0 0 x 0 /  msa2 gama2 na2
-!!    / 0 0 y 0 \  msc2 gamc2 nc2
-!!    \ 0 0 y 0 /  msa1 gama1 na1
-!!    / 0 0 x 0 \  msc1 gamc1 nc1
-!!    \ 0 0 0 0 /      
+!!    \ 0 0 x 0 /  msc1 gamc1 nc1 
+!!    / 0 0 y 0 \  msa1 gama1 na1
+!!    \ 0 0 y 0 /  msc2 gamc2 nc2
+!!    / 0 0 x 0 \  msa2 gama2 na2
+!!    \ 0 0 0 0 /
 !-----------------------------------------------------------------------!
        subroutine get_combineddistlen_h(
      &     len,
-     &     hpvx_occ,idx_graph,
-     &     ioff,njoined,
+     &     op,mel,
+     &     iocc,
      &     ms1,gam1,
      &     graphs)
 !-----------------------------------------------------------------------!
       implicit none
-      
-      integer::
-     &     hpvx_occ(ngastp,2,*),         !ngastp from hostinclude
-     &     idx_graph(ngastp,2,*)
+      type(me_list),intent(in)::
+     &     mel
+      type(operator),intent(in)::
+     &     op
       integer,intent(in)::
-     &     ioff,                !offset of block
-     &     njoined
-      
+     &     iocc
       integer,intent(in)::
      &     ms1,gam1
       type(graph), pointer,intent(in)::
      &     graphs(:)
+      
       integer,intent(inout)::
      &     len
       integer::
-     &     ncblk,nablk
+     &     ncblk,nablk,ioff,njoined
+
+      njoined = op%njoined
       
+      ioff = (iocc-1)*njoined
       
-            call get_num_subblk(ncblk,nablk,
-     &           hpvx_occ(1,1,ioff+1),njoined)
-            call get_combineddistlen_core_h(
-     &           len,
-     &           hpvx_occ,idx_graph,
-     &           ioff, njoined,
-     &           ncblk,nablk,
-     &           ms1,igam,
-     &           graphs)
+      call get_num_subblk(ncblk,nablk,
+     &     op%ihpvca_occ(1,1,ioff+1),njoined)
+      call get_combineddistlen_core_h(
+     &     len,
+     &     op%ihpvca_occ,mel%idx_graph,
+     &     ioff, njoined,
+     &     ncblk,nablk,
+     &     ms1,igam,
+     &     graphs)
 
       end subroutine
       
@@ -2215,10 +2178,10 @@ c         end do
 !!    assumes a symmetric 3-vertex block like:
 !!
 !!    / 0 0 0 0 \
-!!    \ 0 0 x 0 /  msa2 gama2 na2
-!!    / 0 0 y 0 \  msc2 gamc2 nc2
-!!    \ 0 0 y 0 /  msa1 gama1 na1
-!!    / 0 0 x 0 \  msc1 gamc1 nc1
+!!    \ 0 0 x 0 /  msc1 gamc1 nc1 
+!!    / 0 0 y 0 \  msa1 gama1 na1
+!!    \ 0 0 y 0 /  msc2 gamc2 nc2
+!!    / 0 0 x 0 \  msa2 gama2 na2
 !!    \ 0 0 0 0 /      
 !-----------------------------------------------------------------------!
       subroutine set_dis_string1_h(
@@ -2280,10 +2243,38 @@ c         end do
 !------------------------------------------------------------------!
       pure function occoff_h(iocc,njoined)
 !------------------------------------------------------------------!
+      implicit none
       integer::
      &     occoff_h
       integer,intent(in)::
      &     iocc,njoined
       occoff_h = (iocc-1)*njoined
       end function
+!------------------------------------------------------------------!
+!!
+!!    generates the next block by reducing nc2 and na2:
+!!    ,v;v,vv;vv, -> ,v;v,vv;vv
+!------------------------------------------------------------------!
+      subroutine advance_block_n2_h(
+     &     nc2,na2,
+     &     ms1,
+     &     nc1mx,na1mx,
+     &     jocc_cls)
+!------------------------------------------------------------------!
+      implicit none
+      integer,intent(in)::
+     &     ms1,
+     &     nc1mx,na1mx
+
+      integer,intent(inout)::
+     &     nc2,na2,
+     &     jocc_cls
+
+      na2 = na2 - 1
+      nc2 = nc2 - 1
+      jocc_cls = jocc_cls + 1
+      if (na2+nc2.lt.abs(ms1))  !jump to next line
+     &     jocc_cls = jocc_cls + min(na1mx,nc1mx)
+     &     -(na1mx+nc1mx-abs(ms1))/2
+      end subroutine
       end
