@@ -42,8 +42,18 @@
       include 'ifc_input.h'
       include 'routes.h'
 
-      
-      
+      type gam_generator_t
+          integer::last_gam
+          integer::ngam
+          integer::total_gam
+      end type
+          
+      type ms_generator_t 
+        integer::last_ms
+        integer::nel
+        integer::total_ms
+      end type
+          
       integer, parameter ::
      &     ntest = 100
       character(len=*),parameter::
@@ -148,6 +158,10 @@ c dbgend
      &     idxlist, idx_oplist2
       logical, external ::
      &     next_tupel_ca, occ_is_diag_blk
+      type(gam_generator_t)::
+     &     gam_gen1,gam_gen2
+      type(ms_generator_t)::
+     &     ms_gen1,ms_gen2
 
       iprint=max(iprlvl,ntest)
 
@@ -665,7 +679,8 @@ cdbg end
           na1 = na1mx
           nc1 = nc1mx
 
-
+          rankoff = 0
+          rankdim = 0
           !-------
           blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
@@ -685,13 +700,17 @@ cdbg end
      &         nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit blk_loop
             ! skip off-diagonal blocks
             if (na1.ne.nc2) then
-               call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
+               call advance_block_n2_h(nc2,na2,
+     &              ms1,nc1mx,na1mx,jocc_cls)
                jblkoff = occoff_h(jocc_cls,njoined)
               cycle
             end if
             ! exception for pure inactive block:
             if (na1.eq.0.and.nc1.eq.0) then
-              if (igam.eq.1) ndim = ndim + 1
+               if (igam.eq.1)then
+                  ndim = ndim + 1
+                  call update_rankarrays_h(nrank,rankdim,rankoff,1)
+               end if
               exit blk_loop
            end if
 ! note: only diagonal blocks reach this point.
@@ -704,46 +723,31 @@ cdbg end
      &           ms1,igam,
      &           graphs)
             ndim = ndim + rdim
-                                    
+            print *, "ndim update",ndim  
             call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
             jblkoff = occoff_h(jocc_cls,njoined)
             
            end do
+         
            na1 = na1 - 1
            nc1 = nc1 - 1
+
            if (project.gt.0.and.rdim.gt.0) then
-             nrank = nrank + 1
-             if (nrank.gt.maxrank) call quit(1,i_am,
-     &                                       'increase maxrank')
-             do idx = nrank, 2, -1
-               rankdim(idx) = rankdim(idx-1)
-               rankoff(idx) = rankoff(idx-1)
-             end do
-             rankdim(1) = rdim
-             rankoff(1) = 0
-             if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
+              call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
            end if
+          
           end do blk_loop
 
           if (ndim.eq.0) cycle
+          
           if (project.eq.0) then
             nrank = 1
             rankdim(1) = ndim
             rankoff(1) = 0
-          else if (ndim.eq.rankoff(1)+rankdim(1)+1) then !inactive blk.
-             nrank = nrank + 1
-             if (nrank.gt.maxrank) call quit(1,i_am,
-     &                                       'increase maxrank')
-             do idx = nrank, 2, -1
-               rankdim(idx) = rankdim(idx-1)
-               rankoff(idx) = rankoff(idx-1)
-             end do
-             rankdim(1) = 1
-             rankoff(1) = 0
-             if (nrank.ge.2) rankoff(1) = rankoff(2) + rankdim(2)
           else if (ndim.ne.rankoff(1)+rankdim(1)) then
-            write(lulog,'(1x,a,3i12)') 
-     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff(1),rankdim(1)
+!            write(lulog,'(1x,a,3i12)')
+             write(lulog,*)
+     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff,":",rankdim
             call quit(1,i_am,'dimensions don''t add up!')
           end if
 
@@ -753,6 +757,7 @@ cdbg end
      &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
+          
           scratch = 0d0
           svs = 0d0
           if (.not.half.or.lmodspc) then
@@ -833,44 +838,47 @@ c dbgend
             ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
             off_line = off_line2
             off_colmax = 0
-            do msa1 = na1, -na1, -2
-             msc1 = msa1 + ms1
-             if (abs(msc1).gt.nc1) cycle
-             msdis_c(1) = msc1
-             msdis_a(1) = msa1
-c dbg
-c             print *,'msa1,msc1: ',msa1,msc1
-c dbgend
-             do gama1 = 1, ngam
-              gamc1 = multd2h(gama1,igam)
-              if (na1.eq.0.and.gama1.ne.1.or.
-     &            nc1.eq.0.and.gamc1.ne.1) cycle
+            
+            call init_ms_generator_h(ms_gen1,na1,ms1)
+            do while(next_ms_h(ms_gen1,msa1,msc1))
+               if (.not. is_possible_h(nc1,msc1,1) ) cycle
+               msdis_c(1) = msc1
+               msdis_a(1) = msa1
+
+             call init_gam_generator_h(gam_gen1,ngam,igam)
+             do while(next_gam_h(gam_gen1, gama1,gamc1))
+              if (.not. is_possible_h(na1,0,gama1) ) cycle
+              if (.not. is_possible_h(nc1,0,gamc1) ) cycle
+                  
               gamdis_c(1) = gamc1
               gamdis_a(1) = gama1
-              ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
               off_col = off_col2
-c dbg
-c              print *,'gama1,gamc1: ',gama1,gamc1
-c dbgend
-              do msc2 = nc2, -nc2, -2
-               msa2 = msc2 - ms2
-               if (abs(msa2).gt.na2) cycle
+
+! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
+              call init_ms_generator_h(ms_gen2,nc2,-ms2)
+              do while(next_ms_h(ms_gen2,msc2,msa2) )
+                 if (.not. is_possible_h(na2, msa2,1)) cycle
+                 
                msa = msa1 + msa2
                idxmsa = (msmax-msa)/2 + 1
                idxmsa2 = msa2idxms4op(-msa,ms1+ms2,msmax,msmax)
-c dbg
-c               print *,'msc2,msa2: ',msc2,msa2
-c dbgend
-               do gamc2 = 1, ngam
-                gama2 = multd2h(gamc2,igam)
-                if (na2.eq.0.and.gama2.ne.1.or.
-     &              nc2.eq.0.and.gamc2.ne.1) cycle
-                igama = multd2h(gama1,gama2)
-c dbg
-c                print *,'gamc2,gama2: ',gamc2,gama2
-c                print *,'off_line, off_col: ',off_line,off_col
-c dbgend
+               
+               call init_gam_generator_h(gam_gen2,ngam,igam)
+               do while(next_gam_h(gam_gen2, gamc2,gama2))
+                if (.not. is_possible_h(na2,0,gama2) ) cycle
+                if (.not. is_possible_h(nc2,0,gamc2) ) cycle
                 
+                igama = multd2h(gama1,gama2)
+c$$$                call set_dist_msgam(
+c$$$     &               gamdis_c,gamdis_a,
+c$$$     &               msdis_c,msdis_a,
+c$$$     &               msc1,msa1,
+c$$$     &               msc2,msa2,
+c$$$     &               gamc1,gama1,
+c$$$     &               gamc2,gama2,
+c$$$     &               nc1,na1,
+c$$$     &               nc2,na2,
+c$$$     &               nablk2,ncblk2)
                 if (nablk2.eq.1.and.na1.eq.0) then
                   msdis_a(1) = msa2
                   gamdis_a(1) = gama2
@@ -1236,7 +1244,7 @@ c dbgend
                scratch(idxnd+1:ndim,idxst:idxnd) = 0d0
              end if
 
-            case (3)
+            case (3,4)
              ! Gram-Schmidt step: substract lower-rank components from
              ! the diagonal block and the blocks above
              do jrank = irank, nrank ! target block: row j, column i
@@ -1281,10 +1289,10 @@ c dbgend
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
-c            write(lulog,*) 'flmap:'
-c            do icol = idxst, idxnd
-c              write(lulog,'(i4,2i6)') icol,flmap(icol,1:2)
-c            end do
+            write(lulog,*) 'flmap:'
+            do icol = idxst, idxnd
+              write(lulog,'(i4,2i6)') icol,flmap(icol,1:2)
+            end do
 c dbgend
             do icol = idxst, idxnd
               idx = idxlist(flmap(icol,1),flmap(idxst:idxnd,2),rdim,1)
@@ -1422,7 +1430,7 @@ c dbgend
               deallocate(scratch4,proj)
             end if
 
-           case (3)
+           case (3,4)
             ! multiply off-diagonal blocks of trafo matrix with dia.blks
             ! and set upper off-diagonal blocks to zero
             do jrank = 1, irank-1 ! target: (j,i) input: (i,j) and (i,i)
@@ -2118,8 +2126,10 @@ c         end do
      &     idxmsdis_c(ncblk),idxmsdis_a(nablk) !index of
       integer::
      &     msc1,gama1,gamc1
-      logical::
-     &     lcycle
+      type(gam_generator_t)::
+     &     gama_gen
+      type(ms_generator_t)::
+     &     msa_gen
 
 
       allocate(len_str(nablk+ncblk))
@@ -2128,27 +2138,33 @@ c         end do
       nc1=sum(hpvx_occ(1:ngastp,1,ioff+2))
       call condense_occ(occ_csub, occ_asub,
      &     hpvx_csub,hpvx_asub,
-     &     hpvx_occ(1,1,ioff+1),njoined,hpvxblkseq)!hpvxblkseq from hostinclude
-! do the same for the graph info
+     &     hpvx_occ(1,1,ioff+1),njoined,hpvxblkseq) !hpvxblkseq from hostinclude
+      
       call condense_occ(graph_csub, graph_asub,
      &     hpvx_csub,hpvx_asub,
      &     idx_graph(1,1,ioff+1),njoined,hpvxblkseq)
       
-      do msa1 = na1, -na1, -2
-         msc1 = msa1 + ms1
-         if (abs(msc1).gt.nc1) cycle
-         do gama1 = 1, ngam
-            gamc1=multd2h(gama1,igam)
+      call init_ms_generator_h(msa_gen,na1,ms1)
+      do while(next_ms_h(msa_gen,msa1,msc1) )
+         if (.not. is_possible_h(nc1, msc1,1)) cycle
+         
+         call init_gam_generator_h(gama_gen,ngam,igam)
+         do while(next_gam_h(gama_gen,gama1,gamc1) )
+            if (.not. is_possible_h(na1,0,gama1) ) cycle
+            if (.not. is_possible_h(nc1,0,gamc1) ) cycle
 
-            call set_dis_string1_h(
+            call set_dist_msgam(
      &           gamdis_c,gamdis_a,
      &           msdis_c,msdis_a,
-     &           lcycle,
      &           msc1,msa1,
+     &           msa1,msc1,
      &           gamc1,gama1,
-     &           ncblk,nablk,
-     &           nc1,na1)
-            if(lcycle)cycle
+     &           gama1,gamc1,
+     &           nc1,na1,
+     &           na1,nc1,
+     &           ncblk,nablk)
+
+
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk) !translates ms numbers on msdis into indexes
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
             
@@ -2167,16 +2183,13 @@ c         end do
       deallocate(len_str)
       end subroutine
       
+
 !-----------------------------------------------------------------------!
-!
+!!  
 !!  sets the ms and gam values for the distributions
 !!
 !!   @param[out] gamdis_c,gamdis_a symmetry of the creator/anihilator strings of a specific distribution (see also condense_occ.f)
 !!   @param[out] msmdis_c,msmdis_a symmetry of the creator/anihilator strings of a specific distribution
-!!   @param[out] skip true if this distribution cannot exist
-!!
-!!    assumes a symmetric 3-vertex block like:
-!!
 !!    / 0 0 0 0 \
 !!    \ 0 0 x 0 /  msc1 gamc1 nc1 
 !!    / 0 0 y 0 \  msa1 gama1 na1
@@ -2184,56 +2197,51 @@ c         end do
 !!    / 0 0 x 0 \  msa2 gama2 na2
 !!    \ 0 0 0 0 /      
 !-----------------------------------------------------------------------!
-      subroutine set_dis_string1_h(
+      subroutine set_dist_msgam(
      &     gamdis_c,gamdis_a,
      &     msdis_c,msdis_a,
-     &     skip,
      &     msc1,msa1,
+     &     msc2,msa2,
      &     gamc1,gama1,
-     &     ncblk,nablk,
-     &     nc1,na1)
+     &     gamc2,gama2,
+     &     nc1,na1,
+     &     nc2,na2,
+     &     ncblk,nablk)
 !-----------------------------------------------------------------------!
-
-
       implicit none
       integer,intent(inout)::
      &     gamdis_c(*),gamdis_a(*),
      &     msdis_c(*),msdis_a(*)
-      logical, intent(out)::
-     &     skip
       integer,intent(in)::
      &     msc1,msa1,
+     &     msc2,msa2,
      &     gamc1,gama1,
-     &     ncblk,nablk,
-     &     nc1,na1
+     &     gamc2,gama2,
+     &     nc1,na1,
+     &     nc2,na2,
+     &     ncblk,nablk
       
       msdis_c(1) = msc1
       msdis_a(1) = msa1
-      skip = .false.
-      if (ncblk.eq.1.and.nc1.eq.0) then
-         if (msc1.ne.0.or.gamc1.ne.1) then ! there are no creation operators in nc1
-            skip=.true.
-            return
-         end if
-         gamdis_c(1) = gama1
-         msdis_c(1) = msa1
-         gamdis_a(1) = gama1
-      else if (nablk.eq.1.and.na1.eq.0) then
-         if (msa1.ne.0.or.gama1.ne.1)then !  there are no anihilation operators in na1
-            skip = .true.
-            return
-         end if
-         gamdis_a(1) = gamc1
-         msdis_a(1) = msc1
-         gamdis_c(1) = gamc1
-      else
-         gamdis_c(1) = gamc1
-         gamdis_a(1) = gama1
-         msdis_c(2) = msa1
-         msdis_a(2) = msc1
-         gamdis_c(2) = gama1
-         gamdis_a(2) = gamc1
+      gamdis_c(1) = gamc1
+      gamdis_a(1) = gama1
+      
+      if(nablk.eq.1 .and. na1.eq.0)then
+         msdis_a(1) = msa2
+         gamdis_a(1) = gama2
+      else if (nablk.eq.2)then
+         msdis_a(2) = msa2
+         gamdis_a(2) = gama2
       end if
+      
+      if(ncblk.eq.1 .and. nc1.eq.0)then
+         msdis_c(1) = msc2
+         gamdis_c(1) = gamc2
+      else if (nablk.eq.2)then
+         msdis_c(2) = msc2
+         gamdis_c(2) = gamc2
+      end if
+      
       end subroutine
 !------------------------------------------------------------------!
 !!    calculates the occupation offset of an occupation on the hpvx_occ array 
@@ -2253,7 +2261,7 @@ c         end do
 !------------------------------------------------------------------!
 !!
 !!    generates the next block by reducing nc2 and na2:
-!!    ,v;v,vv;vv, -> ,v;v,vv;vv
+!!    ,v;v,vv;vv, -> ,v;v,v;v,
 !------------------------------------------------------------------!
       subroutine advance_block_n2_h(
      &     nc2,na2,
@@ -2277,4 +2285,150 @@ c         end do
      &     jocc_cls = jocc_cls + min(na1mx,nc1mx)
      &     -(na1mx+nc1mx-abs(ms1))/2
       end subroutine
+!------------------------------------------------------------------!
+!>
+!!    so the dimension for an excitation rank lies on rankdim(nrank+1 )
+!!    because then the information for ,;,;, lies on rankdim(1)
+!!    on rankoff lies the offset for the respective rank.
+!------------------------------------------------------------------!
+      subroutine update_rankarrays_h(nrank,rankdim,rankoff,rdim)
+!------------------------------------------------------------------!
+      implicit none
+      integer,intent(inout)::
+     &     nrank,
+     &     rankdim(maxrank),
+     &     rankoff(maxrank)
+      integer,intent(in)::
+     &     rdim
+      integer::
+     &     idx
+
+      nrank = nrank+1
+      if(nrank.gt.maxrank)call quit(1,i_am,
+     &     'increase maxrank')
+
+      do idx=nrank,2,-1
+         rankdim(idx)=rankdim(idx-1)
+         rankoff(idx)=rankoff(idx-1)
+      end do
+      rankdim(1)=rdim
+      rankoff(1)=0
+      if(nrank.ge.2) rankoff(1)=rankoff(2)+rankdim(2)
+      end subroutine
+
+
+!------------------------------------------------------------------!
+      subroutine init_ms_generator_h(ms_gen,nel,total_ms)
+!------------------------------------------------------------------!
+      implicit none
+      type(ms_generator_t),intent(inout)::
+     &     ms_gen
+      integer,intent(in)::
+     &     nel,total_ms
+      
+      ms_gen%last_ms = nel+2 !msa starts at last_ms -2
+      ms_gen%nel = nel
+      ms_gen%total_ms = total_ms
+
+      end subroutine
+
+
+!------------------------------------------------------------------!
+      subroutine del_ms_generator_h(ms_gen)
+!------------------------------------------------------------------!
+      implicit none
+      type(ms_generator_t),intent(inout)::
+     &     ms_gen
+      continue !noting to do
+      end subroutine
+      
+!------------------------------------------------------------------!
+      function next_ms_h(ms_gen,msa,msc)
+!------------------------------------------------------------------!
+      implicit none
+      logical::
+     &     next_ms_h
+      type(ms_generator_t),intent(inout)::
+     &     ms_gen
+      integer,intent(inout)::
+     &     msa,msc
+
+      if (ms_gen%last_ms .le. -ms_gen%nel)then
+         msa=0
+         ms_gen%last_ms = msa
+         msc = msa + ms_gen%total_ms
+         next_ms_h =.false.
+      else
+         msa= ms_gen%last_ms-2
+         ms_gen%last_ms = msa
+         msc = msa + ms_gen%total_ms
+         next_ms_h =.true.
+      end if
+      
+      end function
+!------------------------------------------------------------------!
+      subroutine init_gam_generator_h(gam_gen,ngam,total_gam)
+!------------------------------------------------------------------!
+      implicit none
+      type(gam_generator_t),intent(inout)::
+     &     gam_gen
+      integer,intent(in)::
+     &     ngam,total_gam
+      
+      gam_gen%last_gam=0 !gama starts at last_gam+1
+      gam_gen%ngam = ngam
+      gam_gen%total_gam = total_gam
+      end subroutine
+
+
+!------------------------------------------------------------------!
+      subroutine del_gam_generator_h(gam_gen)
+!------------------------------------------------------------------!
+      implicit none
+      type(gam_generator_t),intent(inout)::
+     &     gam_gen
+      continue !noting to do
+      end subroutine
+      
+!------------------------------------------------------------------!
+      function next_gam_h(gam_gen,gama,gamc)
+!------------------------------------------------------------------!
+      implicit none
+      logical::
+     &     next_gam_h
+      integer,intent(inout)::
+     &     gama,gamc
+      type(gam_generator_t),intent(inout)::
+     &     gam_gen
+      
+      if (gam_gen%last_gam .ge. gam_gen%ngam)then
+         gama=0
+         gam_gen%last_gam = gama
+         gamc = multd2h(gama,gam_gen%total_gam)
+         next_gam_h =.false.
+      else
+         gama= gam_gen%last_gam+1
+         gam_gen%last_gam = gama
+         gamc = multd2h(gama,gam_gen%total_gam)
+         next_gam_h =.true.
+      end if
+      end function
+!------------------------------------------------------------------!
+!!    checks if a given combination of electron number, ms and symmetry is possible for a gam/ms block
+!!    ms=0 and gam =1 are qlways possible and check only the other condition
+!------------------------------------------------------------------!
+      pure function is_possible_h(nel, ms,gam)
+!------------------------------------------------------------------!
+      implicit none
+      logical::
+     &     is_possible_h
+      
+      integer,intent(in)::
+     &     nel,ms,gam
+      
+      is_possible_h = .true.
+      if (abs(ms).gt. nel)is_possible_h = .false.
+      if (nel .eq.0 .and. gam.ne.1)is_possible_h = .false.
+
+      end function
       end
