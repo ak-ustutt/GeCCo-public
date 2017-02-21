@@ -1440,8 +1440,16 @@ c dbgend
              call dgemm('t','n',rdim2,rdim,rdim,
      &                  1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
      &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &                  0d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+     &            0d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
              scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
+             if (project.eq.4)then
+!P12 = - P21^+* U2U2^+ =
+                call dgemm("t","n",rdim,rdim2,rdim2,
+     &               -1d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2,
+     &               scratch(idxst2:idxnd2,idxst2:idxnd2),rdim2,
+     &               0d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim)
+                scratch2(idxst2:idxnd2,idxst:idxnd)=0d0
+              end if
             end do
             do jrank = irank+1, nrank ! target: (i,j) input: (i,i) and (j,i)
              rdim2 = rankdim(jrank)
@@ -1451,6 +1459,20 @@ c dbgend
      &                  1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
      &                  scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
      &                  0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+             if(project.eq.4)then
+             !P12 =  X1^+ S12
+                call dgemm ("t","n",rdim,rdim2,rdim,
+     &               1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &               scratch(idxst:idxnd,idxst2:idxnd2),rdim,
+     &               0d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim)
+            !P21 = P12^+*X1^+ =S12^+ X1 X1^+
+                call dgemm ("t","t",rdim2,rdim,rdim,
+     &               1d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim,
+     &               scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &               0d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2)
+
+                !P12 = -X1X1^+S12U2U2^+
+             end if
             end do
 
            end select
