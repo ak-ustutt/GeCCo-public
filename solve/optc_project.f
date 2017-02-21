@@ -1,7 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine optc_project(me_amp,me_trf,me_dia,
-     &     me_u,use_u,
-     &     me_special,nspecial,
+      subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
      &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,lzero,
      &     opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -39,9 +37,9 @@
       character(len=*),parameter::
      &     i_am = "optc_project"
       integer, intent(in) ::
-     &     nspecial, nspcfrm, nwfpar, iopt, imacit, i_state,use_u
+     &     nspecial, nspcfrm, nwfpar, iopt, imacit, i_state
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial),me_u(3)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_amp,me_dia,me_trf
       real(8), intent(inout) ::
@@ -97,9 +95,7 @@
      &      op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &      me_special(2)%mel%fhand%last_mod(
      &      me_special(2)%mel%fhand%current_record))
-     &       call update_metric(me_dia,
-     &       me_u,use_u,
-     &       me_special,nspecial,
+     &      call update_metric(me_dia,me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &        opti_info%update_prc.gt.0.and.
      &        mod(imacit,max(opti_info%update_prc,1)).eq.0)

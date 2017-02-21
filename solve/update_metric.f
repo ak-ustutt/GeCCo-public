@@ -1,7 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine update_metric(me_dia,
-     &     me_u,use_u,
-     &     me_special,nspecial,
+      subroutine update_metric(me_dia,me_special,nspecial,
      &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &     prcupdate)
 *----------------------------------------------------------------------*
@@ -32,12 +30,11 @@
      &     i_am="update_metric"
 
       integer, intent(in) ::
-     &     nspecial, nspcfrm,use_u
+     &     nspecial, nspcfrm
       logical, intent(in) ::
      &     prcupdate
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial),
-     &     me_u(3)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_dia
 
@@ -111,13 +108,6 @@
      &              1,trim(me_special(6)%mel%label),
      &              'invsqrt',
      &              op_info,orb_info,str_info,strmap_info)
-      else if(use_u.gt.0)then
-         call inv_op(1,trim(me_special(5)%mel%label),
-     &               2,(/trim(me_special(6)%mel%label),
-     &                         trim(me_u(1)%mel%label) /),
-     &              'invsqrt',
-     &              op_info,orb_info,str_info,strmap_info)
-         
       else
         call inv_op(1,trim(me_special(5)%mel%label),
      &              1,trim(me_special(6)%mel%label),
@@ -151,24 +141,8 @@ c      call reo_mel(trim(me_special(3)%mel%label),
 c     &             trim(me_special(6)%mel%label),.false.,
 c     &             op_info,str_info,strmap_info,orb_info,
 c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
-      print *, "use_u",use_u
-      
-      if(use_u.gt.0)then
-! reorder unitary matrix
-         call reo_mel(trim(me_u(2)%mel%label),
-     &        trim(me_u(1)%mel%label),.false.,
-     &        op_info,str_info,strmap_info,orb_info,
-     &        13,.false.)
-! and its adjoint/transposed
-         call reo_mel(trim(me_u(3)%mel%label),
-     &        trim(me_u(1)%mel%label),.false.,
-     &        op_info,str_info,strmap_info,orb_info,
-     &        13,.true.)        ! dirty: reo vtx. 1 --> 3
-      
-      end if
-      
 
-      
+
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
      &             trim(me_special(5)%mel%label),.false.,
