@@ -42,12 +42,17 @@ mkinstalldirs=$(topdir)/config/mkinstalldirs
 FC_MODEXT=@FC_MODEXT@
 FC_MODCASE=@FC_MODCASE@
 
-ARCH:=$(host_cpu)-$(host_os)-$(FC)
+BRNCH:=$(shell git rev-parse --abbrev-ref HEAD)
+ARCH_TEMP:=$(host_cpu)-$(host_os)-$(FC)
+ifdef BRANCH
+  ARCH_TEMP:=$(host_cpu)-$(host_os)-$(FC)-$(BRNCH)
+endif
+ARCH:=$(ARCH_TEMP)
 ifdef DEBUG
-  ARCH:=$(host_cpu)-$(host_os)-$(FC)-dbg
+  ARCH:=$(ARCH_TEMP)-dbg
 endif
 ifdef PROF
-  ARCH:=$(host_cpu)-$(host_os)-$(FC)-prf
+  ARCH:=$(ARCH_TEMP)-prf
 endif
 
 prefix=@prefix@
