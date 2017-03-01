@@ -5,6 +5,7 @@
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
      &                   n_states,
+     &                   me_P, 
      &                   me_special,nspecial,
      &                   fspc,nspcfrm,
      &                   opti_info,opti_stat,
@@ -106,7 +107,7 @@
 
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_grd(*), me_dia(*), me_special(nspecial),
-     &     me_trv(*), me_h_trv(*)
+     &     me_trv(*), me_h_trv(*), me_P(2)
       
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -128,7 +129,6 @@
       real(8) ::
      &     de, cpu, sys, wall, cpu0, sys0, wall0
 
-      print *, "use_u",i_am,use_u
       iprint = max(ntest,iprlvl)
       call atim_csw(cpu0,sys0,wall0)
 
@@ -212,6 +212,7 @@
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &       n_states,
+     &       me_P,
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,

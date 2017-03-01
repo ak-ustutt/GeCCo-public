@@ -3,7 +3,7 @@
      &     get_new_rec,
      &     iord_vsbsp,iord_rsbsp,
      &     me_amp,me_grd,me_dia,
-     &     me_u,use_u,
+     &     me_P,
      &     me_special,nspecial,
      &     ff_rsbsp,ff_vsbsp,
      &     typ_prc,
@@ -42,15 +42,14 @@
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial), me_u(3)
+     &     me_special(nspecial), me_P(2)
       type(me_list), intent(in) ::
      &     me_amp,me_grd,me_dia
       type(filinf), intent(in) ::
      &     ff_rsbsp,ff_vsbsp
       integer, intent(inout) ::
      &     ndim_rsbsp,ndim_vsbsp,
-     &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp),
-     &     use_u
+     &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp)
       integer, intent(in) ::
      &     mxdim_sbsp,
      &     nincore, nwfpar, 
@@ -177,7 +176,9 @@ c dbg
            lzero_flag=.false.
            if (typ_prc .eq. optinf_prc_traf_spc) lzero_flag=.true.
 
-          call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
+           call optc_prc_traf(me_amp,me_grd,me_dia,
+     &                       me_P, 
+     &                       me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
      &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,
      &                       opti_info,

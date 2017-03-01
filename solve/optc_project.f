@@ -1,5 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine optc_project(me_amp,me_trf,me_dia,me_special,nspecial,
+      subroutine optc_project(me_amp,me_trf,me_dia,
+     &     me_P,
+     &     me_special,nspecial,
      &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,lzero,
      &     opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -31,6 +33,7 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'mdef_target_info.h'
+      include 'ifc_input.h'
 
       integer, parameter ::
      &     ntest = 100
@@ -39,7 +42,7 @@
       integer, intent(in) ::
      &     nspecial, nspcfrm, nwfpar, iopt, imacit, i_state
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial)
+     &     me_special(nspecial),me_P(2)
       type(me_list), intent(in) ::
      &     me_amp,me_dia,me_trf
       real(8), intent(inout) ::
@@ -64,7 +67,8 @@
 
       integer ::
      &     idx, ioff,
-     &     nblk, iblk, nj, iblkoff, jblk
+     &     nblk, iblk, nj, iblkoff, jblk,
+     &     project 
       character(len_opname) ::
      &     op_spc_name, op_trf_name, op_amp_name
 
@@ -86,7 +90,9 @@
      &     state_label
       if(ntest.ge.10)
      &     write(lulog,*) "Projecting now "
-      print *, i_am," called for ",iopt
+      
+      call get_argument_value('method.MR','project',ival=project)
+      
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
         c_st = state_label(i_state,.false.)
@@ -95,55 +101,62 @@
      &      op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &      me_special(2)%mel%fhand%last_mod(
      &      me_special(2)%mel%fhand%current_record))
-     &      call update_metric(me_dia,me_special,nspecial,
+     &       call update_metric(me_dia,
+     &       me_P,
+     &       me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &        opti_info%update_prc.gt.0.and.
      &        mod(imacit,max(opti_info%update_prc,1)).eq.0)
       end if
       if(lzero)then
-         call print_list("unitary_matrix", me_u(1)%mel,
+         call print_list("Projector_matrix1", me_P(1)%mel,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
-         call print_list("unitary_matrix reordered", me_u(2)%mel,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
-         call print_list("unitary_matrix reo_transposed", me_u(3)%mel,
+         call print_list("Projector_matrix2", me_P(2)%mel,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
       end if
       
       
-      if (lzero)then            !also use_u is >0 and optref == -3
+      if (project.eq.4.and.lzero)then            
          op_amp => me_amp%op
          op_orth => me_special(7)%mel%op
          op_trf => me_special(2)%mel%op
-         print *,"current record", me_u(2)%mel%fhand%current_record
          call print_list("untransformed", me_amp,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
-         call assign_me_list(me_special(7)%mel%label,
-     &        op_amp%name,op_info)
-         call assign_me_list(me_amp%label,
-     &        op_orth%name,op_info)
-         call assign_me_list(me_u(2)%mel%label,
-     &        op_trf%name,op_info)
-         call evaluate2(fspc(3),.true.,.true.,
-     &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
-         call set_blks(me_special(7)%mel,"P,H|P,V|V,H|V,V",0d0)
-c         call print_list("transformed vector", me_special(7)%mel,
-c     &        "LIST",0d0,0d0,
-c     &        orb_info,str_info)
+         call list_copy(me_amp,me_special(7)%mel,.false.)
          call assign_me_list(me_special(7)%mel%label,
      &        op_orth%name,op_info)
          call assign_me_list(me_amp%label,
      &        op_amp%name,op_info)
-         call assign_me_list(me_u(3)%mel%label,
+         call assign_me_list(me_P(2)%mel%label,
      &        op_trf%name,op_info)
          call evaluate2(fspc(3),.true.,.true.,
      &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
          call print_list("backtranformed", me_amp,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
+      else if(project.eq.4)then
+         op_amp => me_amp%op
+         op_orth => me_special(1)%mel%op
+         op_trf => me_special(2)%mel%op
+         call print_list("untransformed", me_amp,
+     &        "LIST",0d0,0d0,
+     &        orb_info,str_info)
+         call list_copy(me_amp,me_special(1)%mel,.false.)
+         call assign_me_list(me_special(1)%mel%label,
+     &        op_orth%name,op_info)
+         call assign_me_list(me_amp%label,
+     &        op_amp%name,op_info)
+         call assign_me_list(me_P(1)%mel%label,
+     &        op_trf%name,op_info)
+         call evaluate2(fspc(1),.true.,.true.,
+     &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
+         call print_list("backtranformed", me_amp,
+     &        "LIST",0d0,0d0,
+     &        orb_info,str_info)
+        
       else
          call assign_me_list(me_special(1)%mel%label,
      &        me_special(1)%mel%op%name,op_info)
