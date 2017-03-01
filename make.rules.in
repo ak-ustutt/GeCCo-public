@@ -61,8 +61,8 @@ ifneq ($(FC_MODEXT),)
 	rm -f *.$(FC_MODEXT); 
 endif
 ifneq ($(INST_PROGS),)
-	@set -e; for i in $(INST_PROGS); do \
-	echo "rm -f $$i"; rm -f $$i; done
+	@set -e; for i in $(bindir); do \
+	echo "rm -rf $$i"; rm -rf $$i; done
 endif
 ifneq ($(INST_LIBS),)
 	@set -e; for i in $(INST_LIBS); do \
