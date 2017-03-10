@@ -35,7 +35,7 @@
       type(me_list), pointer ::
      &     me_res, me_current
 
-      character(len_command_par) ::
+      character(len_command_name) ::
      &     label_res
       integer ::
      &     iadd,idx_res,idx_add(nadd),

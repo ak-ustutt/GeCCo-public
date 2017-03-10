@@ -164,7 +164,7 @@
      &     ival=simp)
       call get_argument_value('method.MRCC','Dyall0',
      &     lval=dyall0)
-      call get_argument_value('method.MRCC','PTlag',
+      call get_argument_value('method.MRCC','T3Lag',
      &     lval=pt_lag_corr)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
@@ -230,6 +230,7 @@
      &                 'T1ord        = ', t1ord
         if (trunc.and.simp.ge.0) write(lulog,*)
      &                 'simp         = ', simp
+        if (trunc) write(lulog,*) 'T3Lag        = ', pt_lag_corr
         if (spinadapt.eq.1) then
           write(lulog,*) 'Using spin adapted reference function.'
         else if (spinadapt.eq.2) then

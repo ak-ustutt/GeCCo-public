@@ -112,7 +112,7 @@ c        read(parameters(2),'(480(i1))')
 c dbg
 c      print *,'"',trim(parameters(2)),'"'
 c dbg
-        read(parameters(2),'(984(i2))')
+        read(parameters(2),'(2047(i2))')
      &        occ_def(1:2*ngastp*ndef*njoined)
       end if
 
