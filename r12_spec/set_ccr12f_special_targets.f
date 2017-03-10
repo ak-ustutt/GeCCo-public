@@ -477,6 +477,22 @@ c        call set_dependency(form_ccr12lg0,form_r12_xpint,tgt_info)
      &              labels,5,1,
      &              title_ccr12lg0,1,tgt_info)
       end if
+c dbg -- for testing: remove certain terms
+c      call set_rule2(form_ccr12lg0,DEL_TERMS,tgt_info)
+c      call set_arg(form_ccr12lg0,DEL_TERMS,'LABEL_RES',1,tgt_info,
+c     &             val_label=(/form_ccr12lg0/))
+c      call set_arg(form_ccr12lg0,DEL_TERMS,'LABEL_IN',1,tgt_info,
+c     &             val_label=(/form_ccr12lg0/))
+c      call set_arg(form_ccr12lg0,DEL_TERMS,'TERMS',11,tgt_info,
+c     &             val_int=(/
+c     &                      !3,9,12,10, ! energy
+c     &                      31,32,43,44,  ! T1-res. (31)
+c     &                      !55,
+c     &                      21,22,23,24,26,27,  ! (41)
+c     &                      !36,37,41,
+c     &                      48   ! (40)
+c     &                      /))
+c dbg
 
       ! there remain a few unprocessed R12 contributions
       ! for ansatz > 1
