@@ -94,8 +94,8 @@
         do idx = 1, n_me_traf
           write(lulog,*)'   ',trim(me_traf(idx)%mel%label)
         end do
-c        write(lulog,*) 'formula:'
-c        call print_form_list(lulog,ftraf,op_info)
+        write(lulog,*) 'formula:'
+        call print_form_list(lulog,ftraf,op_info)
       end if
 
       ! remember names of originally assigned operators
@@ -123,6 +123,9 @@ c      op_out_mel = trim(me_out%op%assoc_list)
         ! do nothing THIS MUST BE CHANGED AS WE CANNOT RELY ON PROPER ASSIGNMENTS OF LISTS
          ! PRIOR TO CALL !!!!!!
         ! ACTUALLY, THIS NEEDS SOME RETHINKING OF THE WHOLE PROCEDURE ....
+        ! However: we should make sure that the list is correctly associated
+        call assign_me_list(me_traf(3)%mel%label,
+     &                         me_traf(3)%mel%op%name,op_info)
       case ('B','b')
         ! backtrafo: use daggered transformation matrix
         if (n_me_traf.lt.4) call quit(1,i_am,'B: missing me_traf(4)')

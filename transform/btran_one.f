@@ -1,5 +1,9 @@
 *----------------------------------------------------------------------*
-      subroutine btran_one(ffao,ffcmo,add_dref,me_dens,orb_info)
+      subroutine btran_one(ffao,ffcmo,trplt,me_dens,orb_info,
+     &                     str_info)
+*----------------------------------------------------------------------*
+*     transform one-particle density in MO basis (me_dens) to AO basis
+*     (storing in file ffao) using CMOs from file ffcmo
 *----------------------------------------------------------------------*
       implicit none
 
@@ -9,6 +13,8 @@
       include 'def_operator.h'
       include 'def_me_list.h'
       include 'def_orbinf.h'
+      include 'def_graph.h'
+      include 'def_strinf.h'
       include 'ifc_memman.h'
 
       integer, parameter ::
@@ -20,8 +26,10 @@
      &     me_dens
       type(orbinf), intent(in), target ::
      &     orb_info
+      type(strinf),intent(in) ::
+     &     str_info
       logical, intent(in) ::
-     &     add_dref
+     &     trplt
 
 
       logical ::
@@ -64,6 +72,7 @@
       nsym = orb_info%nsym
       ngas = orb_info%ngas
       nspin = orb_info%nspin
+      !nspin = 2
       nbas => orb_info%nbas
       ntoobs => orb_info%ntoobs
       mostnd => orb_info%mostnd
@@ -126,9 +135,10 @@
       xao(1:nao) = 0d0 
 
       ! add reference contribution, if requested
-      if (add_dref) then
+      if (.not.trplt) then
         call make_refmat(xao,cmo,orb_info)
       end if
+
 
       ! loop over all blocks of density
       do iblk = 1, nblk
@@ -156,6 +166,7 @@
 
           ispin = 1
           if (nspin.eq.2.and.idxms.eq.2) ispin = 2
+          !if (nspin.eq.2) ispin = 2
         
           ! load density, or reassign buffer pointer
           idxst = me_dens%off_op_gmo(iblk)%gam_ms(1,idxms) + 1
@@ -171,16 +182,16 @@
           end if
 
           call btran_one_blk(xao,xop,cmo,xhlf,
-     &         me_dens%gamt,idxcmo,hpvx_c,hpvx_a,
+     &         me_dens%gamt,idxcmo,hpvx_c,hpvx_a,idxms,trplt,
      &         nbas,mostnd,iad_gas,hpvx_gas(1,ispin),ngas,nsym)
-
-          if (ntest.ge.100) then
-            write(lulog,*) 'XAO after block,idxms: ',iblk, idxms
-            call wr_blkmat(xao,nbas,nbas,nsym,0)
-          end if
 
         end do
       end do
+
+      if (ntest.ge.100) then
+        write(lulog,*) 'XAO after block,idxms: ',iblk, idxms
+        call wr_blkmat(xao,nbas,nbas,nsym,0)
+      end if
 
       if (close_ffmo)
      &     call file_close_keep(ffmo)

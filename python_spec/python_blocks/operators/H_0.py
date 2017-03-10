@@ -1,5 +1,5 @@
-from gecco_interface import *
-from gecco_modules.NoticeUtil import *
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import *
 
 
 #---------------------------------------------------------------------------------
@@ -89,6 +89,89 @@ EVALUATE({
         FORM:"FOPT_FOCK_REF"})
 
 #---------------------------------------------------------------------------------
+# Effective Fock operator, diagonal part only
+#---------------------------------------------------------------------------------
+new_target('MAKE_FOCK_EFF_D')
+heading('===Building of effective fock matrix (diagonal blocks)===')
+depend('H0')
+depend('MakeRefState')
+depend('GAM0_CALC')
+
+comment("defining effective fock operator and building formula")
+
+DEF_OP_FROM_OCC({
+        LABEL:'FOCK_EFF_D',
+        DESCR:'H,H|V,V|P,P'
+        })
+
+DEF_SCALAR({
+        LABEL:'FOCK_EFF_D_EXP'})
+
+DEF_ME_LIST({
+        LIST:'FOCK_EFF_D_LST',
+        OPERATOR:'FOCK_EFF_D',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
+DEF_ME_LIST({
+        LIST:'FOCK_EFF_D_EXP_LST',
+        OPERATOR:'FOCK_EFF_D_EXP',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
+
+#F_eff= F + g^pv_qu*gam^u_q  implicitly limited since F_eff has only rank 1
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_F_EFF_D',
+        NEW:True,
+        OP_RES:'FOCK_EFF_D',
+        OPERATORS:['FOCK_EFF_D','H','FOCK_EFF_D'],
+        IDX_SV:[1,2,1]})
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_F_EFF_D',
+        NEW:False,
+        OP_RES:'FOCK_EFF_D',
+        OPERATORS:['FOCK_EFF_D','GAM0','H','GAM0','FOCK_EFF_D'],
+        LABEL_DESCR:['2,,,V'],
+        CONNECT:[2,3],
+        AVOID:[1,2,1,4,2,5,4,5],
+        IDX_SV:[1,2,3,2,1]
+        })
+
+# expectation value <F_EFF_D> - the active energy is sufficient
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_F_EFF_D_EXP',
+        NEW:True,
+        FAC:1.0,
+        OP_RES:'FOCK_EFF_D_EXP',
+        OPERATORS:['GAM0','FOCK_EFF_D','GAM0'],
+        LABEL_DESCR:['1,,,V'],
+        CONNECT:[1,2],
+        IDX_SV:[1,2,1]
+        })
+
+debug_FORM('FORM_F_EFF_D')
+debug_FORM('FORM_F_EFF_D_EXP')
+
+
+new_target('EVAL_F_EFF_D')
+depend('MAKE_FOCK_EFF_D')
+comment("evaluate effective Fock operator")
+
+OPTIMIZE({
+        LABELS_IN:['FORM_F_EFF_D','FORM_F_EFF_D_EXP'],
+        LABEL_OPT:'FOPT_F_EFF_D'})
+EVALUATE({
+        FORM:'FOPT_F_EFF_D'})
+
+
+debug_MEL('FOCK_EFF_D_LST')
+debug_MEL('FOCK_EFF_D_EXP_LST')
+
+#---------------------------------------------------------------------------------
 # Effective Fock operator
 #---------------------------------------------------------------------------------
 new_target('MAKE_FOCK_EFF')
@@ -97,13 +180,11 @@ depend('H0')
 depend('MakeRefState')
 depend('GAM0_CALC')
 
-
-
 comment("defining effective fock operator and building formula")
 
 DEF_HAMILTONIAN({
         LABEL:'FOCK_EFF',
-        MIN_RANK:0,
+        MIN_RANK:1,
         MAX_RANK:1})
 
 DEF_ME_LIST({
@@ -112,6 +193,17 @@ DEF_ME_LIST({
         IRREP:1,
         '2MS':0,
 	AB_SYM:1})
+
+DEF_SCALAR({
+        LABEL:'FOCK_EFF_EXP'})
+
+DEF_ME_LIST({
+        LIST:'FOCK_EFF_EXP_LST',
+        OPERATOR:'FOCK_EFF_EXP',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
 
 #F_eff= F + g^pv_qu*gam^u_q  implicitly limited since F_eff has only rank 1
 EXPAND_OP_PRODUCT({
@@ -125,12 +217,27 @@ EXPAND_OP_PRODUCT({
         NEW:False,
         OP_RES:'FOCK_EFF',
         OPERATORS:['FOCK_EFF','GAM0','H','GAM0','FOCK_EFF'],
-        LABEL_DESCR:['2,,,V','2,3,,V','3,4,,V'],
-        CONNECT:[1,3,3,5],
+        LABEL_DESCR:['2,,,V'],
+        CONNECT:[2,3],
+        AVOID:[1,2,1,4,2,5,4,5],
         IDX_SV:[1,2,3,2,1]
         })
 
+# expectation value <F_EFF> - the active energy is sufficient
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_F_EFF_EXP',
+        NEW:True,
+        FAC:1.0,
+        OP_RES:'FOCK_EFF_EXP',
+        OPERATORS:['GAM0','FOCK_EFF','GAM0'],
+        LABEL_DESCR:['1,,,V'],
+        CONNECT:[1,2],
+        IDX_SV:[1,2,1]
+        })
+
 debug_FORM('FORM_F_EFF')
+debug_FORM('FORM_F_EFF_EXP')
 
 
 new_target('EVAL_F_EFF')
@@ -138,16 +245,17 @@ depend('MAKE_FOCK_EFF')
 comment("evaluate effective Fock operator")
 
 OPTIMIZE({
-        LABELS_IN:'FORM_F_EFF',
+        LABELS_IN:['FORM_F_EFF','FORM_F_EFF_EXP'],
         LABEL_OPT:'FOPT_F_EFF'})
 EVALUATE({
         FORM:'FOPT_F_EFF'})
 
 
 debug_MEL('FOCK_EFF_LST')
+debug_MEL('FOCK_EFF_EXP_LST')
 
 
-#because I need it without the v,v part for the preconditioner 
+#because for DYALL I need it without the v,v part for the preconditioner 
 new_target("Make_F_EFF_INACT")
 depend('EVAL_F_EFF')
 
@@ -211,6 +319,17 @@ DEF_ME_LIST({
 
 debug_MEL('HAM_D_LIST',info_only=True)
 
+DEF_SCALAR({
+        LABEL:'HAM_D_EXP'})
+
+DEF_ME_LIST({
+        LIST:'HAM_D_EXP_LIST',
+        OPERATOR:'HAM_D_EXP',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
+
 
  
 EXPAND_OP_PRODUCT({
@@ -237,15 +356,31 @@ EXPAND_OP_PRODUCT({
 
 debug_FORM('FORM_HAM_D')
 
+# expectation value <HAM_D> - the active energy is sufficient
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_D_EXP',
+        NEW:True,
+        FAC:1.0,
+        OP_RES:'HAM_D_EXP',
+        OPERATORS:['GAM0','HAM_D','GAM0'],
+        CONNECT:[1,2],
+        AVOID:[1,3],
+        IDX_SV:[1,2,1]
+        })
+
+debug_FORM('FORM_HAM_D_EXP',True)
+
 
 OPTIMIZE({
-        LABELS_IN:'FORM_HAM_D',
+        LABELS_IN:['FORM_HAM_D','FORM_HAM_D_EXP'],
         LABEL_OPT:'FOPT_HAM_D'})
 
 EVALUATE({
         FORM:'FOPT_HAM_D'})
 
 debug_MEL('HAM_D_LIST')
+debug_MEL('HAM_D_EXP_LIST',True)
 
 
 
@@ -255,6 +390,108 @@ new_target("EVAL_HAM_D")
 #Make_HAM_D
 depend('Make_HAM_D')
 
+
+
+# for the extended DYALL I need some more parts
+new_target("Make_F_EFF_4DX")
+depend('EVAL_F_EFF')
+
+comment("defining effective Fock operator without V,V part and defining Fomula for that")
+
+DEF_OP_FROM_OCC({
+        LABEL:'FOCK_EFF_4DX',
+        JOIN:1,
+        DESCR:'H,H|P,P|H,V|V,H|H,P|P,H|V,P|P,V'})
+DEF_ME_LIST({
+        LIST:'FOCK_EFF_4DX_LST',
+        OPERATOR:'FOCK_EFF_4DX',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:1})
+
+#F_eff_diag= F_eff limited by blocks of F_eff_diag
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_F_EFF_4DX',
+        OP_RES:'FOCK_EFF_4DX',
+        OPERATORS:['FOCK_EFF_4DX','FOCK_EFF','FOCK_EFF_4DX'],
+        IDX_SV:[1,2,1],
+        NEW:True})
+
+
+
+
+new_target('EVAL_F_EFF_4DX')
+depend("Make_F_EFF_4DX")
+
+comment("Evaluate effective Fock operator (inactive part only)")
+
+OPTIMIZE({
+        LABELS_IN:'FORM_F_EFF_4DX',
+        LABEL_OPT:'FOPT_F_EFF_4DX'})
+EVALUATE({
+        FORM:'FOPT_F_EFF_4DX'})
+
+debug_MEL('FOCK_EFF_4DX_LIST')
+
+
+
+#---------------------------------------------------------------------------------
+# Dyalls 0th order Hamiltonian (extended version with off-diagonal Fock)
+#---------------------------------------------------------------------------------
+new_target('EVAL_HAM_DX')
+heading("====== Building of Dyall's 0th order Hamiltonian (extended) ======")
+depend('EVAL_F_EFF_4DX')
+depend('H0')
+
+
+DEF_OP_FROM_OCC({
+        LABEL:'HAM_DX',
+        DESCR:'H,H|P,P|H,V|V,H|H,P|P,H|V,P|P,V|V,V|VV,VV'})
+
+DEF_ME_LIST({
+        LIST:'HAM_DX_LIST',
+        OPERATOR:'HAM_DX',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:+1})
+
+debug_MEL('HAM_DX_LIST',info_only=True)
+
+
+ 
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_DX',
+        OP_RES:'HAM_DX',
+        OPERATORS:['HAM_DX','FOCK_EFF_4DX','HAM_DX'],
+        IDX_SV:[1,2,1],
+        NEW:True})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_DX',
+        OP_RES:'HAM_DX',
+        OPERATORS:['HAM_DX','H','HAM_DX'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,V,V',
+        NEW:False})
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_DX',
+        OP_RES:'HAM_DX',
+        OPERATORS:['HAM_DX','H','HAM_DX'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,VV,VV',
+        NEW:False})
+
+debug_FORM('FORM_HAM_DX')
+
+
+OPTIMIZE({
+        LABELS_IN:'FORM_HAM_DX',
+        LABEL_OPT:'FOPT_HAM_DX'})
+
+EVALUATE({
+        FORM:'FOPT_HAM_DX'})
+
+debug_MEL('HAM_DX_LIST')
 
 
 

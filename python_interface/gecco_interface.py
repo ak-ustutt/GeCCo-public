@@ -27,6 +27,8 @@ import re
 import sys
 import os
 
+import inspect
+
 # ====================================================================
 # Some general functions and variables
 #
@@ -123,6 +125,7 @@ class GeCCo_Input:
             quit_error('Getting GeCCo input: too much arguments. Pass, optionally, a boolean for printing.')
 
         self.data = {}
+        self.env = ''
 
         f = open( _gecco_input, 'r')
         input_lines = f.readlines()
@@ -136,7 +139,7 @@ class GeCCo_Input:
             if (len(line) == 0):
                 continue
         
-            if (re.search(' |=',line)):
+            if (re.search('=',line)):
                 if (not( context)):
                     quit_error('Getting GeCCo input: context not yet defined.')
                     
@@ -182,6 +185,40 @@ class GeCCo_Input:
                 print "Input information from python interface:"
                 for k in self.data:
                     print k + " -> " + str(self.data[k])
+
+        # Check the package environment that GeCCo is currently using
+        ok=False
+        # start with DATON: It does not distinguish between DALTON_64 and DALTON
+        if(os.path.isfile('SIRIFC')):
+            ok=True
+        if(ok and os.path.isfile('MO_G')):
+            self.env = 'DALTON_SPECIAL'
+        elif(ok and os.path.isfile('MOTWOINT')):
+            self.env = 'DALTON'
+
+        # try GAMESS
+        if(not ok):
+            if(os.path.isfile('DICTNRY')):
+                self.env = 'GAMESS'
+                ok=True
+
+        # try new MOLPRO interface file
+        if(not ok):
+            if(os.path.isfile('mpro_gecco_ifc.dat')):
+                self.env = 'MOLPRO_IFC'
+                ok=True
+
+        # try MOLPRO fci interface
+        if(not ok):
+            if(os.path.isfile('FCIDUMP')):
+                self.env = 'MOLPRO_DUMP'
+                ok=True
+
+        # try CFOUR interface file
+        if(not ok):
+            if(os.path.isfile('cfour_gecco_ifc.dat')):
+                self.env = 'CFOUR'
+                ok=True
 
     def is_keyword_set( self, arg):
         for k in self.data:
@@ -405,7 +442,7 @@ class _target:
         self.dependencies = []
         self.joined = []
         self.rules = []
-
+        self.filename = ""
 # Function to print list
 #
 def print_tgt_list():
@@ -438,6 +475,8 @@ def new_target( *args):
     tgt = _target( name)
     if (len( args) == 2):
         tgt.required = args[1]
+    frame = inspect.stack()[1]
+    tgt.filename = inspect.getframeinfo(frame[0])[0]
     if (len( args) > 2):
         quit_error( "new_target: too much arguments.\n Give just the name and, optionaly, if it is required.")
     _target_list.append( tgt)

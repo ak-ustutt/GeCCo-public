@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine get_argument_value(
      &     context,argkey,keycount,argcount,
-     &     ival,iarr,lval,larr,xval,xarr,str)
+     &     ival,iarr,lval,larr,xval,xarr,string)
 *----------------------------------------------------------------------*
 *     return dimension (and type) of argument for keyword given 
 *     the keyword is given as "context" i.e. as string including all
@@ -9,10 +9,23 @@
 *     the keyword must be active (status > 0)
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
+      use keyword_trees,only : 
+     &     fetch_input_keyword_tree,fetch_registry_keyword_tree,
+     &     tree_get_arg_from_context,
+     &     Node,tree_t,
+     &     atr_val,atr_name,atr_len,
+     &     getAttribute
+      use parse_input, only :get_argument_dimension_core
+      use FoX_common, only : rts
 
-      use parse_input
       implicit none
       include 'par_vtypes.h'
+      include 'stdunit.h'
+
+      integer,parameter::
+     &     ntest=00
+      character(len=18),parameter ::
+     &     i_am="get_argument_value"
 
       character, intent(in) ::
      &     context*(*), argkey*(*)
@@ -25,122 +38,120 @@
       real(8), intent(out), optional ::
      &     xval, xarr(*)
       character, intent(out), optional ::
-     &     str*(*)
-
-      type(keyword), pointer ::
-     &     curkey
-      type(argument), pointer ::
+     &     string*(*)
+      type(tree_t)::
+     &     input, registry
+      type(Node),pointer::
      &     curarg
-      character ::
-     &     curcontext*1024
+
       integer ::
-     &     iargcount, icount_target, iargcount_target, type, dim, idx
+     &     iargcount, iargcount_target,
+     &     ikeycount, ikeycount_target,
+     &     idx, itype, dim, ex, num
       logical ::
-     &     try_default, succ
+     &     succ, dummy
 
-      if (.not.associated(keyword_history%down_h))
-     &     call quit(1,'get_argument_value','invalid keyword history')
 
-      icount_target = 1
-      if (present(keycount)) icount_target = keycount
+      input=fetch_input_keyword_tree()
+      registry=fetch_registry_keyword_tree()
 
-      try_default = .false.
-      call find_active_node(keyword_history,curkey,
-     &     context,icount_target)
-
-      iargcount = 0
-      iargcount_target = 1
-      if (present(argcount)) iargcount_target = argcount
-
-      succ = .false.
-
-      ! try default instead
-      if ((.not.associated(curkey).or..not.associated(curkey%arg_h))
-     &     .and.iargcount_target.eq.1) then
-        try_default = .true.
-        call find_node(keyword_root,curkey,context)
+      if (ntest.ge.100) then
+         call write_title(lulog,wst_dbg_subr,i_am)
+         if (present(keycount)) write (lulog,*) "keycount:",keycount
+         if (present(argcount)) write (lulog,*) "argcount:",argcount
+         write (lulog,*) "looking for ",argkey," in context:",context
       end if
 
-      if (associated(curkey).and.associated(curkey%arg_h)) then
-        curarg => curkey%arg_h
+      succ=.false.
 
-        arg_loop: do 
+      ikeycount = 1
+      if (present(keycount)) ikeycount = keycount
+      ikeycount_target=ikeycount
+      
+      iargcount = 1
+      if (present(argcount)) iargcount = argcount
+      iargcount_target=iargcount
 
-          if (trim(curarg%key).eq.trim(argkey)) iargcount = iargcount+1
-          if (trim(curarg%key).eq.trim(argkey).and.
-     &         iargcount.eq.iargcount_target) then
-            dim = curarg%val%len
-            type = curarg%val%type
-            select case(type)
-            case (vtyp_log)
-              if (.not.(present(lval).or.present(larr)))
-     &             call quit(1,'get_argument_value',
-     &             trim(context)//'->'//trim(argkey)//
-     &             'no l-value array present')
-              if (associated(curarg%val%lval)) then
-                if (present(lval)) lval = curarg%val%lval(1)
-                if (present(larr)) larr(1:dim) = curarg%val%lval(1:dim)
-                succ = .true.
-              end if
-            case (vtyp_int)
-              if (.not.(present(ival).or.present(iarr)))
-     &             call quit(1,'get_argument_value',
-     &             trim(context)//'->'//trim(argkey)//
-     &             'no i-value array present')
-              if (associated(curarg%val%ival)) then
-                if (present(ival)) ival = curarg%val%ival(1)
-                if (present(iarr)) iarr(1:dim) = curarg%val%ival(1:dim)
-                succ = .true.
-              end if
-            case (vtyp_rl8)
-              if (.not.(present(xval).or.present(xarr)))
-     &             call quit(1,'get_argument_value',
-     &             trim(context)//'->'//trim(argkey)//
-     &             'no r-value array present')
-              if (associated(curarg%val%xval)) then
-                if (present(xval)) xval = curarg%val%xval(1)
-                if (present(xarr)) xarr(1:dim) = curarg%val%xval(1:dim)
-                succ = .true.
-              end if
-            case (vtyp_str)
-              if (.not.(present(str)))
-     &             call quit(1,'get_argument_value',
-     &             trim(context)//'->'//trim(argkey)//
-     &             'no r-value array present')
-              if (associated(curarg%val%cval)) then
-                do idx = 1, dim
-                  str(idx:idx) = curarg%val%cval(idx)
-                end do
-                succ = .true.
-              end if
-            end select
-          end if
+      
+      
+      curarg=> tree_get_arg_from_context(input,context,argkey,.false.,
+     &     ikeycount_target,iargcount_target)
 
-          if (succ) exit arg_loop
-  
-          if (associated(curarg%next)) then
-            ! go to next argument
-            curarg => curarg%next
-          else
-            if (try_default) exit arg_loop
-            ! else try default (if applicable)
-            try_default = .true.
-            call find_node(keyword_root,curkey,context)
-
-            if (.not.associated(curkey).or.
-     &           .not.associated(curkey%arg_h)) exit arg_loop
-
-            curarg => curkey%arg_h
-          end if        
-          
-        end do arg_loop
-
+      if (ntest.ge.100) then
+         if (associated(curarg))
+     &       write (lulog,*)  "active_node in input found"
+         if (.not.associated(curarg)) 
+     &        write (lulog,*) "active_node not in input found"
       end if
+
+      ikeycount_target=ikeycount
+      iargcount_target=iargcount
+      if(.not.associated(curarg))
+     &     curarg=>tree_get_arg_from_context(registry,context,argkey,
+     &     .false.,ikeycount_target,iargcount_target)
+
+
+      if (associated(curarg))then
+         call get_argument_dimension_core(curarg,dim,
+     &        itype,dummy)
+         if (ntest.ge.100) then 
+            write(lulog,'(" argument has ",i3," elements")') dim 
+         end if
+      end if 
+      select case(itype)
+      case (vtyp_log)
+         if (.not.(present(lval).or.present(larr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no l-value array present')
+         if (present(lval)) 
+     &        call rts(getAttribute(curarg,atr_val),lval,
+     &        iostat=ex)
+         if (present(larr))  
+     &        call rts(getAttribute(curarg,atr_val),
+     &        larr(1:dim),iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_int)
+         if (.not.(present(ival).or.present(iarr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no i-value array present')
+         if (present(ival)) then
+            call rts(getAttribute(curarg,atr_val),
+     &           ival,iostat=ex,num=num)
+         end if 
+         if (present(iarr)) 
+     &        call rts(trim(getAttribute(curarg,atr_val)),
+     &        iarr(1:dim),iostat=ex,num=num)
+         if (ex.le. 0) succ = .true.
+         
+      case (vtyp_rl8)
+         if (.not.(present(xval).or.present(xarr)))
+     &        call quit(1,i_am,
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no r-value array present')
+         if (present(xval)) 
+     &        call rts(getAttribute(curarg,atr_val),xval
+     &        ,iostat=ex)
+         if (present(xarr)) 
+     &        call rts(getAttribute(curarg,atr_val),
+     &        xarr(1:dim),iostat=ex,num=num) 
+         if (ex.le. 0) succ = .true.
+      case (vtyp_str)
+         if (.not.(present(string)))
+     &        call quit(1,'get_argument_value',
+     &        trim(context)//'->'//trim(argkey)//
+     &        'no r-value array present')
+         string = trim(getAttribute(curarg,atr_val))
+         succ = .true.
+      end select
+     
 
       if (.not.succ)
-     &     call quit(1,'get_argument_value',
+     &     call quit(1,i_am,
      &     'Could not provide any value for '//trim(context)//
      &     '.'//trim(argkey))
+
 
       return
       end

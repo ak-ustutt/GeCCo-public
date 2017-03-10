@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------#
 #  perform the test
 #-----------------------------------------------------------------------------#
-def runtest_kernel(commands,options,testname):
+def runtest_kernel(commands, options, testname, basename):
 
     import sys,os,shutil
 
@@ -20,7 +20,7 @@ def runtest_kernel(commands,options,testname):
         return USAGE_ERROR
         
     curdir = os.getcwd()
-    scrdir = options.scratch
+    scrdir = os.path.join(options.scratch,basename)
     scrdir_save = scrdir   # make VERY sure that we remove this and
                            # only this directory in the end
 

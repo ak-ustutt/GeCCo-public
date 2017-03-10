@@ -7,7 +7,7 @@ Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT f
 \date 17.06.2015
 \version 1.19 tested,
 """
-from gecco_interface import * # This is an extension to the gecco interface. 
+from python_interface.gecco_interface import * # This is an extension to the gecco interface. 
                               # it relies on the functions provided there 
 import copy # to produce deepcopys of objects
 import re #support for Regular expressions
@@ -539,7 +539,6 @@ class _Formula( _FormulaStringRepUtil):
         ges_dic=self._combine_dicts(special_dic)
         ret_list=[]
         for bracket in self._content:
-            print ges_dic
             ret_list+=bracket.set_rule(ges_dic,settle=settle)
             ges_dic[NEW]=False
             if ((flags is None) or (CLEANUP in flags)) and settle:
@@ -635,7 +634,6 @@ class GenForm(_Formula):
 
     def _set_values(self,label,OP_res,body):
         """Deal with the arguments of __init__"""
-        print label,OP_res,body
         if label is not None:
             self.arguments[LABEL]=label
         if OP_res is not None:

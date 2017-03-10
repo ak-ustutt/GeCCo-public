@@ -26,15 +26,20 @@ spc_obj_list:=printversion.o
 
 include $(topdir)/make.rules
 
-libs:=-lexperimental -lsolve -lcontract -lformula -lr12_spec -lcc_spec -lformula -loperators -ltargets -linput -ltransform -lstrings -lfileutil -lmemman -lbaserout -lmath -lcrout
+libnames:=experimental solve contract formula r12_spec cc_spec formula operators targets input transform strings fileutil memman baserout math crout
+
+libfiles:= $(addprefix $(topdir)/lib/$(ARCH)/lib,$(addsuffix .a,$(libnames) ) ) $(fox_libfiles)  #e.g. experimental -> lib/x86_64-linux-gnu-ifort/libexperimental.a 
+
+libflags:= $(addprefix -l,$(libnames) ) $(fox_FC_flags) $(fox_)
+
 
 
 #all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)
 all: $(INST_PROGS)
 
-$(bindir)/gecco.x: $(objs) $(libs)
+$(bindir)/gecco.x: $(objs) $(libfiles)
 	$(MAKE) $(ARCH)/printversion.o
-	$(FC) $(FLDFLAGS) -o $@ $+ $(libs) $(ARCH)/printversion.o $(BLAS_LIBS) $(LAPACK_LIBS)
+	$(FC) $(FLDFLAGS) -o $@ $+ $(libflags) $(ARCH)/printversion.o $(BLAS_LIBS) $(LAPACK_LIBS)
 
 date.h:
 	./date.sh "$(FC)" "$(FCFLAGS)"

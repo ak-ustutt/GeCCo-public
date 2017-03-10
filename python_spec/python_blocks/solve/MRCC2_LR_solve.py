@@ -1,5 +1,5 @@
-from gecco_interface import *
-import gecco_modules.string_to_form as stf
+from python_interface.gecco_interface import *
+import python_interface.gecco_modules.string_to_form as stf
 
 
 from gecco_modules.NoticeUtil import *

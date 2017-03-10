@@ -9,7 +9,7 @@ Step II - configure
 -------
 Run
 - ifort version 10 and higher (Linux or MAC OS)
-FC=ifort CC=icc ./configure --with-blas=-mkl
+FC=ifort CC=icc ./configure --with-blas='-mkl=sequential'
 - for xeon machines on our cluster with old ifort (9.1)
 FC=ifort CC=icc ./configure --with-blas='-L/share/apps/intel/mkl/9.0/lib/em64t/ -lmkl -lmkl_lapack -lguide -lpthread'
 FC=pgf95 CC=pgcc ./configure --with-blas=-lacml
@@ -24,6 +24,8 @@ FC=gfortran CC=gcc ./configure --with-blas='-lmkl_gf_lp64 -lmkl_core -lmkl_seque
 
 Step III - compile
 --------
+First make all the dependencies right
+> make deps
 Run (gives optimized executable ./bin/gecco.x)
 > make
 or (gives non-optimized debugger-ready executable ./gecco/gecco.x)

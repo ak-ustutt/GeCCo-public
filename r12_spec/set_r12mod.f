@@ -165,7 +165,7 @@ c dbg
      &       0,0,
      &       (/'2,3,,P            ',
      &         '3,,PX,[HPVX][HPVX]'/),2,
-     &       op_info)
+     &       .false.,op_info)
 
       ! go to end of list
       flist_pnt => flist
@@ -182,7 +182,7 @@ c dbg
      &       0,0,
      &       (/'2,3,,X               ',
      &         '3,,[PX]X,[HPVX][HPVX]'/),2,
-     &       op_info)
+     &       .false.,op_info)
 
 
       if (ntest.ge.100) then

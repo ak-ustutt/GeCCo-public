@@ -1,4 +1,6 @@
-from gecco_interface import *
+import sys,os
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
 
 new_target('PRINTE',True)
 

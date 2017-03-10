@@ -168,7 +168,12 @@
         if (ssign.ne.1) xsign = 1d0 ! maybe we will have to rethink this
       else if (.not.all(iocc(1:ngastp,1:2).eq.0)) then
         ! here we have to think again ... have a look at dia_from_blk!
-        call quit(1,'add_unity','for njoined>1, think about the sign')
+c        ! I think we know what we want for the H,;,H case (occ. density)
+c        if (njoined.eq.2.and.all(iocc(2:ngastp,1:2).eq.0)) then
+c          xsign=1d0
+c        else
+          call quit(1,'add_unity','for njoined>1, think about the sign')
+c        end if
       else
         xsign = 1d0
       end if

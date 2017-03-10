@@ -56,7 +56,7 @@
      &     gno, prc_type, prc_iter, idx_jac, project,
      &     idx_jacuni
       logical ::
-     &     prc_traf
+     &     prc_traf,fix_met
       character(len_opname) ::
      &     dia_label
 
@@ -67,10 +67,26 @@
       call get_argument_value('method.MR','GNO',ival=gno)
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','prc_traf',lval=prc_traf)
+      call get_argument_value('calculate.routes','fix_met',lval=fix_met)
+
+      ! fix_met option is used to fix the metric matrix throughout the
+      ! calculation by hacking into update part of it. This, along with
+      ! oldref=T, can be used to fix the metric matrix even for
+      ! different calculations. This can be used to get energies for
+      ! different field strengths while ignoring the relaxation effect
+      ! of metric matrix (To check the analytic values of properties)
+
+      ! ME_C00 has the initial C0 copied
+       if (fix_met)
+     &  call assign_me_list('ME_C00','C0',op_info)
 
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
+
+      ! assigning  back C0 to its exact ME list
+       if (fix_met)
+     &  call assign_me_list('ME_C0','C0',op_info)
 
       if (gno.gt.0) then
         ! perform spin projection?

@@ -14,12 +14,13 @@
 #
 
 import sys,os
-sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
-from gecco_interface import *
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
+
 inp = GeCCo_Input()
 orb = Orb_Info()
 
-from gecco_modules.BCH_fac import set_BCH_factor
+from python_interface.gecco_modules.BCH_fac import set_BCH_factor
 
 # Set some parameters fom input
 #

@@ -1,5 +1,12 @@
-from gecco_interface import *
-from gecco_modules.NoticeUtil import *
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import *
+
+
+minexc=1
+if keywords.is_keyword_set('method.MR.minexc'):
+  minexc=int(keywords.get('method.MR.minexc'))
+useT1=(minexc==1)
+
 #------------------------------------------------------------------
 #Setting up A_TRF
 #-------------------------------------------------------------------
@@ -8,14 +15,11 @@ from gecco_modules.NoticeUtil import *
 new_target('MAKE_A_TRF')
 depend('MakeOrthBasis')
 
-depend('DEF_T2g')
-depend('DEF_T1')
+depend('DEF_T')
 
-depend('DEF_LAM2g')
-depend('DEF_LAM1')
+depend('DEF_LAM')
 
-depend('DEF_O2g')
-depend('DEF_O1')
+depend('DEF_O')
 
 depend('MakeRefState')
 depend('H0')
@@ -52,16 +56,20 @@ DEF_ME_LIST({
 #SCAL=<C0^+*L*[H,T]*C0>
 #Insert transformation formulas for L and T
 #derive with respect to L' and T'
+_hamil_='H'
+# there is a option to try more here: FOCK_EFF alone is not good, needs shifts (I guess)
+#_hamil_='FOCK_EFF'
+#depend('MAKE_FOCK_EFF')
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_A_TRF',
         OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+        OPERATORS:['C0^+','LAM2g',_hamil_,'T2g','C0'],
         IDX_SV:[1,2,3,4,5],
         NEW:True})
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_A_TRF',OP_RES:'A_TRF_SCAL',
-        OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
+        OPERATORS:['C0^+','LAM2g','T2g',_hamil_,'C0'],
         IDX_SV:[1,2,3,4,5],
         FIX_VTX:True,
         FAC:-1,
@@ -165,31 +173,32 @@ debug_MEL('ME_PRECON2g')
 #Preconditioner for T1
 #----------------------------------------------------------
 
-CLONE_OPERATOR({
+if (useT1):
+  CLONE_OPERATOR({
         LABEL:'PRECON1',
         TEMPLATE:'T1'})
-DEF_ME_LIST({
+  DEF_ME_LIST({
         LIST:'ME_PRECON1',
         OPERATOR:'PRECON1',
         IRREP:1,
         '2MS':0,
         AB_SYM:+1})
 
-#extract preconditioner 
-PRECONDITIONER({
+  #extract preconditioner 
+  PRECONDITIONER({
         LIST_PRC:'ME_PRECON1',
         LIST_INP:'FOCK_EFF_INACT_LST'})
 
-EXTRACT_DIAG({
+  EXTRACT_DIAG({
         LIST_RES:'ME_PRECON1',
         LIST_IN:'A_TRF_LST',
         MODE:'extend'})
-SCALE_COPY({
+  SCALE_COPY({
         LIST_RES:'ME_PRECON1',
         LIST_INP:'ME_PRECON1',
         FAC:0.2,
         MODE:'prc_thresh'})
 
-debug_MEL('ME_PRECON1')
+  debug_MEL('ME_PRECON1')
 
 

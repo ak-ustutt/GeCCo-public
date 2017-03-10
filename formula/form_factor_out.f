@@ -21,6 +21,7 @@
 c      include 'def_contraction_list.h'
       include 'def_formula_item.h'
       include 'mdef_formula_info.h'
+      include 'ifc_formula.h' 
 
       integer, parameter ::
      &     ntest = 00

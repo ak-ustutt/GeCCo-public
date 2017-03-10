@@ -32,8 +32,8 @@
       integer ::
      &     maxexc, cmaxexc, maxh, maxp, mult, ms, sym, maxtop, maxcum
       logical ::
-     &     l_icci, l_iccc, use_met, fixed, use_f12,response,multistate,
-     &     set_up_T_corr,skip
+     &     l_icci, l_iccc, use_met, fixed, use_f12,excite,multistate,
+     &     set_up_T_corr,skip,response
       integer, allocatable ::
      &     excrestr(:,:,:)
       real(8) ::
@@ -42,7 +42,7 @@
       integer ::
      &     stndD(2,60), nsupD, nremblk, remblk(60), len
       character(len=256) ::
-     &     gecco_path
+     &     gecco_path, filename
       
 
       skip = (is_keyword_set('calculate.skip_E').gt.0)
@@ -121,11 +121,17 @@
       else
         use_f12 = .false.
       end if
-      ! set response targets, if necessary
+      ! set targets for finding excitation energies using MRCC, if necessary
       if (is_keyword_set('calculate.excitation').gt.0) then
-        response=.true.
+        excite=.true.
       else
-        response=.false.
+        excite=.false.
+      endif
+
+      if (is_keyword_set('calculate.properties').gt.0) then
+        response =.true.
+      else
+        response =.false.
       endif
 
       ! first set targets for CASSCF or uncontracted CI wave function
@@ -185,10 +191,22 @@ c dbgend
      &                       name_infile,fforbinf%name)
       if (use_f12) call set_ic_mrcc_f12_targets(tgt_info,orb_info,
      &                       excrestr,maxh,maxp)
-      if (response) call set_python_targets(tgt_info,
+      deallocate(excrestr)
+
+      ! Rest of the targets are written using python scripts
+
+      ! set targets to calculate excitation energies for ic-MRCC
+      if (excite) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/python_spec/icmrcc_ee_targets.py",
      &     name_infile,fforbinf%name)
-      deallocate(excrestr)
+
+      filename="/python_spec/mrcc_response/set_mrcc_response_targets.py"
+      if (response) then 
+          call get_mrcc_response_input(orb_info,env_type)
+          call set_python_targets(tgt_info,
+     &        trim(gecco_path)//filename,
+     &        name_infile,fforbinf%name)
+      endif
 
       if (multistate) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/python_spec/multistate_eff_ham.py",

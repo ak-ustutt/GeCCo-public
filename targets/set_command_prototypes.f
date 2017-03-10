@@ -205,6 +205,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',TRANSPS_FORMULA,'INIT',1,tgt_info,
      &     val_log=(/.true./),def=.true.)
+      call set_arg('_PROTO_',TRANSPS_FORMULA,'MULTI',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,
@@ -565,6 +567,12 @@
       call set_arg('_PROTO_',ADD,'REPLACE',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(UPDATE_HAMILTONIAN,tgt_info)
+      call set_arg('_PROTO_',UPDATE_HAMILTONIAN,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',UPDATE_HAMILTONIAN,'FAC',0,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(TRANS_LIST,tgt_info)
       call set_arg('_PROTO_',TRANS_LIST,'LIST_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
@@ -590,6 +598,8 @@
 !     &     val_int=(/-1/),def=.true.)
       call set_arg('_PROTO_',SCALE,'IDX_LIST',1,tgt_info,
      &     val_int=(/0/),def=.true.)
+      call set_arg('_PROTO_',SCALE,'INV',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SCALE_COPY,tgt_info)
       call set_arg('_PROTO_',SCALE_COPY,'LIST_RES',0,tgt_info,
@@ -652,6 +662,8 @@
      &     val_int=(/1/),req=.true.)
       call set_arg('_PROTO_',EVALPROP,'ENV',1,tgt_info,
      &     val_str=env_type,def=.true.)
+      call set_arg('_PROTO_',EVALPROP,'TRIPLET',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(NORM_MEL,tgt_info)
       call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,
@@ -722,6 +734,8 @@
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &     val_int=(/-1/),def=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'INIT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(UNITY,tgt_info)
       call set_arg('_PROTO_',UNITY,'LIST',0,tgt_info,

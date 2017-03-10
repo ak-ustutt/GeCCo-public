@@ -78,7 +78,7 @@
       end if
 
       label2 = '        '
-      label2 = trim(label)
+      label2 = trim(label(index(label,':')+1:))
       luerror = lulog
       call mollab(label2,luaoprop,luerror)
 

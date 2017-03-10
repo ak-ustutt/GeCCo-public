@@ -17,6 +17,7 @@
       include 'def_formula_item.h'
       include 'def_formula_item_array.h'
       include 'def_formula_item_list.h'
+      include 'ifc_formula.h'
       
       type(formula_item), target, intent(inout) ::
      &     fl_tgt      

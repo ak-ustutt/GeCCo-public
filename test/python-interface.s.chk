@@ -6,18 +6,12 @@ input
   python-interface.inp
 check
   label Reading Python files
-  find Reading target file
-  compare str 4
-  compare str 5
-  compare str 6
-  find Reading target file
-  compare str 4
-  compare str 5
-  compare str 6
-  find Reading target file
-  compare str 4
-  compare str 5
-  compare str 6
+  find Reading target file setting_up_python_interface.py.tgt_list
+  compare str 7
+  find Reading target file MP2.py.tgt_list
+  compare str 7
+  find Reading target file orb_inp.py.tgt_list
+  compare str 7
 check
   rewind
   label Is keyword set

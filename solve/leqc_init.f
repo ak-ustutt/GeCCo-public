@@ -175,7 +175,8 @@ c            xrsnrm(iroot,iopt) = xnrm
             end do
             xnrm = sqrt(xnrm)
             ! %shift is for shifted LEQ
-            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
+C            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
+            call diavc(xbuf1,xbuf1,1d0,xbuf2,opti_info%shift,
      &                 nwfpar(iopt))
             if (ntest.ge.100)
      &           write(lulog,*) 'xbuf1 after division: ' //

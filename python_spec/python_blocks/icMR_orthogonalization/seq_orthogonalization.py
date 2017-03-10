@@ -1,12 +1,29 @@
 
-from gecco_interface import *
-from gecco_modules.NoticeUtil import * 
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import * 
 
 
 spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 ntest=100
+
+minexc=1
+if keywords.is_keyword_set('method.MR.minexc'):
+  minexc=int(keywords.get('method.MR.minexc'))
+if (minexc==1):
+  _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'
+  _Ov_shape=',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'
+  _GAM_S_shape=',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|,;VV,VV;,|,VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|,V;V,V;V,|,V;V,;,|,;,V;V,|,;,;,|,VV;,;VV,'
+  _X_TRM_shape='VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'
+  useT1=True
+else:
+  _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH' # need P,H to generate ,;,;,
+  _Ov_shape=',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'
+  _GAM_S_shape=',V;VV,VV;V,|,;V,V;,|,;VV,VV;,|,VV;V,V;VV,|,V;,;V,|,V;V,V;V,|,VV;,;VV,|,;,;,' # <-- this I meant above
+  _X_TRM_shape='VV,VV;V,V|V,V;,|VV,VV;,|V,V;VV,VV|,;V,V|V,V;V,V|,;VV,VV|,;,'
+  useT1=False
+
 
 _s2 = orbitals.get('imult')
 
@@ -24,12 +41,9 @@ else:
 ###################################################################
 ###################################################################
 new_target('MakeOrthBasis')
-depend('DEF_T2g')
-depend('DEF_T1')
-depend('DEF_O2g')
-depend('DEF_O1')
-depend('DEF_LAM2g')
-depend('DEF_LAM1')
+depend('DEF_T')
+depend('DEF_O')
+depend('DEF_LAM')
 
 depend('MakeRefState')
 depend('GAM0_CALC')
@@ -60,17 +74,17 @@ ADD_UNITY({
 
 DEF_OP_FROM_OCC({
         LABEL:'Tv',
-        DESCR:'V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'})
+        DESCR:_Tv_shape})
 DEF_OP_FROM_OCC({
         LABEL:'Ov',
         JOIN:2,
-        DESCR:',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'})
+        DESCR:_Ov_shape})
 
 
 DEF_OP_FROM_OCC({
         LABEL:'GAM_S',
         JOIN:3,
-        DESCR:',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|,;VV,VV;,|,VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|,V;V,V;V,|,V;V,;,|,;,V;V,|,;,;,|,VV;,;VV,'})
+        DESCR:_GAM_S_shape})
 
 if spinadapt >= 2 : # and gno >= 0
     S2_val=0
@@ -195,7 +209,7 @@ debug_MEL('ME_GAM_S_ISQ')
 DEF_OP_FROM_OCC({
         LABEL:'X_TRM',
         JOIN:2,
-        DESCR:'VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|VV,VV;,|V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|V,V;V,V|V,;,V|,V;V,|,;,|,;VV,VV'})
+        DESCR:_X_TRM_shape})
 
 CLONE_OPERATOR({
         LABEL:'X_TRM_DAG',
@@ -237,7 +251,9 @@ debug_MEL('ME_X_TRM')
 
 
 
-# Transformation Formular for Excitation operators (OMEGA and T2_orth are transformed by the same Formular with different definitions of X_TRM)  T2_orth:T_Tr(ans)f(ormed) 
+# Transformation Formula for Excitation operators (OMEGA and T2_orth are 
+# transformed by the same Formula with different definitions of X_TRM)  
+# T2_orth:T_Tr(ans)f(ormed) 
 #t=t'*X
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_T2_orth',
@@ -291,23 +307,25 @@ SELECT_LINE({
         IGAST:3,         #virtual
         MODE:'no_ext'})
 
+debug_FORM('FORM_T2_orth')
+debug_FORM('FORM_LAM_TRF')
 
 
 #Formula to transform T1 only
 #
 
-
-CLONE_OPERATOR({
+if (useT1):
+  CLONE_OPERATOR({
         LABEL:'T1_orth',
         TEMPLATE:'T1'})
-DEF_ME_LIST({
+  DEF_ME_LIST({
         LIST:'ME_T1_orth',
         OPERATOR:'T1_orth',
         IRREP:1,
         '2MS':0,
         AB_SYM:0})
 
-EXPAND_OP_PRODUCT({
+  EXPAND_OP_PRODUCT({
         LABEL:'FORM_T1_orth',
         NEW:True,
         OP_RES:'T1',
@@ -318,8 +336,8 @@ EXPAND_OP_PRODUCT({
                2,5],
         })
 
-#delete all terms where T1_orth has active external lines. external lines should be modified by X_trm
-SELECT_LINE({
+  #delete all terms where T1_orth has active external lines. external lines should be modified by X_trm
+  SELECT_LINE({
         LABEL_IN:'FORM_T1_orth',
         LABEL_RES:'FORM_T1_orth',
         OP_RES:'T1',
@@ -327,9 +345,11 @@ SELECT_LINE({
         IGAST:3,
         MODE:'no_ext'})
 
-OPTIMIZE({
+  OPTIMIZE({
         LABEL_OPT:'FOPT_T1_orth',
         LABELS_IN:'FORM_T1_orth'})
+# end of block for (useT1)
+
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_GES',

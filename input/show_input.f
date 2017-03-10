@@ -1,16 +1,15 @@
 *----------------------------------------------------------------------*
-      subroutine show_keyword_history(lulog)
+!>     wrapper routine for inp_show
 *----------------------------------------------------------------------*
-*     wrapper routine
+      subroutine show_input(lulog)
 *----------------------------------------------------------------------*
 
-      use parse_input
+      use parse_input,only: inp_show
       implicit none
 
       integer, intent(in) ::
      &     lulog
 
-      call keyword_list(lulog,keyword_history,show_args=.false.)
-
+      call inp_show(lulog)
       return
       end

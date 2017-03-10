@@ -62,7 +62,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps
+     &     use_1,trnsps, trplt, inv, multi
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -484,8 +484,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('OP_RES',rule,tgt_info,val_label=label_list(1))
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label2)
         call get_arg('INIT',rule,tgt_info,val_log=init)
+        call get_arg('MULTI',rule,tgt_info,val_log=multi)
         call transpose_formula_wrap(label,label2,label_list(1),init,
-     &       op_info,form_info)
+     &       multi,op_info,form_info)
 *----------------------------------------------------------------------*
       case(EXPAND_OP_PRODUCT)
 *----------------------------------------------------------------------*
@@ -969,8 +970,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 
         if (form_test) return
 
-        call import_op_el(label,
-     &       list_type,env_type,
+        call import_op_el(label,list_type,env_type,
      &       op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
       case(GETEST)
@@ -1084,7 +1084,7 @@ c dbg
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
         
-        call print_out(strscr,title)
+        call print_out(" "//trim(strscr),trim(title))
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
@@ -1363,7 +1363,15 @@ c          mode = 'dia-R12'
         
         call add_op(label,fac,label_list,nfac,
      &       op_info,orb_info,str_info,init)
+*----------------------------------------------------------------------*
+      case(UPDATE_HAMILTONIAN)
+*----------------------------------------------------------------------*
 
+        call get_arg('LABEL_IN',rule,tgt_info,
+     &       val_label_list=label_list,ndim=nfac)
+        call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call add_1b_op_ham(label_list,fac,nfac,
+     &     op_info,orb_info,str_info)
 *----------------------------------------------------------------------*
       case(TRANS_LIST)
 *----------------------------------------------------------------------*
@@ -1393,10 +1401,12 @@ c          mode = 'dia-R12'
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
         !call get_arg('NFAC',rule,tgt_info,val_int=nfac)
         call get_arg('IDX_LIST',rule,tgt_info,val_int_list=idxblk)
+        call get_arg('INV',rule,tgt_info,val_log=inv)
 
         imode = 2
         if (len_trim(label_list(2)).eq.0.or.label_list(2)(1:1).eq.'-')
      &       imode = 1
+        if (inv) imode=3
         call scale_op(label,
      &       imode,idxblk,fac,label_list,nfac,
      &       op_info,orb_info,str_info)
@@ -1437,8 +1447,9 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list,ndim=ndens)
         call get_arg('ENV',rule,tgt_info,val_str=env_type)
         call get_arg('RANK',rule,tgt_info,val_int=rank)
+        call get_arg('TRIPLET',rule,tgt_info,val_log=trplt)
 
-        call prop_evaluate(ndens,rank,label_list,
+        call prop_evaluate(ndens,rank,label_list,trplt,
      &       env_type,op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
@@ -1558,6 +1569,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(4*nopt+nspecial+1:),ndim=nspcfrm)
         call get_arg('FORM',rule,tgt_info,
      &       val_label=label)
+        call get_arg('INIT',rule,tgt_info,val_log=init)
 
         if (form_test) return
 
@@ -1571,7 +1583,7 @@ c          mode = 'dia-R12'
      &                   4*nopt+nspecial),nspecial,
      &       label_list(4*nopt+nspecial+1:     ! spec. form.
      &                  4*nopt+nspecial+nspcfrm),
-     &          nspcfrm,0d0,choice,
+     &          nspcfrm,0d0,choice,init,
      &       op_info,form_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     subsection: others

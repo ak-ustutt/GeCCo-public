@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine prop_evaluate(ndens,rank,label_den,
+      subroutine prop_evaluate(ndens,rank,label_den,trplt,
      &     env_type,op_info,str_info,orb_info)
 *----------------------------------------------------------------------*
 *
@@ -19,6 +19,8 @@
       
       integer, intent(in) ::
      &     ndens, rank
+      logical, intent(in) ::
+     &     trplt
       character(*), intent(in) ::
      &     label_den(ndens)
       character(*), intent(in) ::
@@ -55,8 +57,8 @@
         ! back-transform densities
         if (rank.eq.1) then
           call file_init(ffdao,'DAO',ftyp_da_unf,lblk_da)
-          call btran_one(ffdao,ffcmo,.true.,
-     &         op_info%mel_arr(idxden)%mel,orb_info)
+          call btran_one(ffdao,ffcmo,trplt,
+     &         op_info%mel_arr(idxden)%mel,orb_info,str_info)
         else
           call quit(1,'prop_evaluate','only rank==1 supported')
         end if

@@ -30,6 +30,7 @@ FORMAL int
 FORMAT str
 FORMULA str
 FORM_SPC label
+FREQ real
 FROMTO int
 IDX_FREQ int
 IDX_LIST int
@@ -40,6 +41,7 @@ ISTATE int
 INIT log
 INPROJ int
 INTERM label
+INV log
 IRREP int
 JOIN int
 LABEL label
@@ -83,6 +85,7 @@ MODE str
 MODIFY int
 MS_FIX log
 MS_SYM_SIGN int
+MULTI log
 NEW log
 N_AVOID int
 N_CONNECT int
@@ -129,6 +132,7 @@ THRESH real
 TITLE str
 TITLE_RHS str
 TITLE_TRF str
+TRIPLET log
 TYPE str
 USE1 log
 VAL_LIST real

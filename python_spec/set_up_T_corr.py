@@ -7,10 +7,9 @@
 #
 
 import sys,os
-sys.path=sys.path+[os.getenv("GECCO_DIR")+"/python_interface"]
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
+from python_interface.gecco_interface import *
 
-
-from gecco_interface import *
 inp = GeCCo_Input()
 orb = Orb_Info()
 

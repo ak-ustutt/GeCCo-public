@@ -1,0 +1,22 @@
+title
+  LiH/vdz; DALTON env.: ic-MRCCD prop (2 el. in 2 act. orb.)
+molecule
+  LIH-VDZ-DALTON
+input
+  ic_MRCC-prop.inp
+check
+  label No of terms first order
+  find F_L_1
+  find read
+  compare int 2
+  find read
+  compare int 2
+check
+  label first order property
+  find First order prop
+  compare real 4 1e-6
+check
+  label second order property
+  find Total second order
+  compare real 5 1e-6
+end

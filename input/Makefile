@@ -22,7 +22,7 @@ INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
 
-mod_obj_list:=parse_input.o
+mod_obj_list:=keyword_trees.o  parse_input.o
 
 include $(topdir)/make.rules
 

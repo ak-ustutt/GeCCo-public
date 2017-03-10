@@ -1,0 +1,45 @@
+
+# some new rules (must be defined here BEFORE the objects)
+
+%.res : %.out    
+	@ GECCO_DIR=$(GECCO_DIR);\
+	if $(CHECK) $(CHECKFLAGS) $(basename $<) 1>>  $(basename $<).sum 2>&1  ;\
+	then \
+	 echo "test "$(basename $<)" was successful." ;\
+	else \
+	 echo "!!ERROR!! test "$(basename $<)" failed.;  Output in: "$(basename $<).out";  Error message in: "$(basename $<).sum ;\
+	fi
+
+
+#=$?;\
+
+%.out : %.chk $(GECCOPRG) 
+	@if  $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum ;\
+	then \
+	 echo $(basename $<)" ran successfully.";\
+	else\
+	 echo "!!ERROR!! running "$(basename $<)" failed. Output in: "$(basename $<).out"  Error messagein: "$(basename $<).sum ;\
+	fi
+
+
+
+topdir:=..
+srcdir:=.
+
+
+
+RUNTEST:=./runtest.py
+CHECK:=./runtest.py
+ifndef SCRDIR
+  RUNFLAGS:=-r -p $(GECCOPRG)
+else
+  RUNFLAGS:=-r -p $(GECCOPRG) -s $(SCRDIR)
+endif
+CHECKFLAGS:=-c
+
+.PRECIOUS: %.out %.res
+
+
+
+
+

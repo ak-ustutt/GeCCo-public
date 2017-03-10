@@ -1,16 +1,15 @@
 *----------------------------------------------------------------------*
+*     wrapper routine for reg_show
+*----------------------------------------------------------------------*
       subroutine show_keywords(lulog)
 *----------------------------------------------------------------------*
-*     wrapper routine
-*----------------------------------------------------------------------*
 
-      use parse_input
+      use parse_input,only: reg_show
       implicit none
 
       integer, intent(in) ::
      &     lulog
 
-      call keyword_list(lulog,keyword_root,show_args=.true.)
-
+      call reg_show(lulog)
       return
       end

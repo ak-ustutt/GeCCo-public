@@ -1,8 +1,10 @@
 
-from gecco_interface import *
-from gecco_modules.NoticeUtil import *
+from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import *
 
-from gecco_modules.omg_generator import *
+from python_interface.gecco_modules.omg_generator import *
+
+i_am='cluster_residue'
 
 orbitals=Orb_Info()
 keywords=GeCCo_Input()
@@ -14,11 +16,49 @@ if keywords.is_keyword_set('calculate.routes.spinadapt'):
 #-----------------------------------------------------------------#
 # operators associated with T
 #-----------------------------------------------------------------#
+minexc=1
+maxexc=2
+if keywords.is_keyword_set('method.MR.minexc'):
+  minexc=int(keywords.get('method.MR.minexc'))
+if keywords.is_keyword_set('method.MR.maxexc'):
+  maxexc=int(keywords.get('method.MR.maxexc'))
+if (minexc==1 and maxexc==2):
+  t1_shape='V,H|P,V|P,H'
+  t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
+  useT1=True
+elif (minexc==2 and maxexc==2):  
+  t2g_shape='VV,VH|VV,HH|PV,VV|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
+  t1_shape=',' # just to not leave it undefined
+  useT1=False
+else:
+  raise Exception(i_am+": covered only minexc=1,2 and maxexc=2 so far ...")
 
-t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
-t1_shape='V,H|P,V|P,H'
+#-----------------------------------------------------------------#
+# targets to be included from other places
+#-----------------------------------------------------------------#
+
+new_target('DEF_T')
+depend('DEF_T2g')
+if (useT1):
+   depend('DEF_T1')
 
 
+new_target('DEF_O')
+depend('DEF_O2g')
+if (useT1):
+   depend('DEF_O1')
+
+
+new_target('DEF_LAM')
+depend('DEF_LAM2g')
+if (useT1):
+   depend('DEF_LAM1')
+
+
+
+#-----------------------------------------------------------------#
+# specific targets (to be included with care)
+#-----------------------------------------------------------------#
 
 new_target('DEF_T2g')
 comment('=== Cluster Operators ===')
@@ -67,7 +107,6 @@ DEF_ME_LIST(ME_param)
 
 
 debug_MEL('ME_T1',info_only=True)
-
 
 
 

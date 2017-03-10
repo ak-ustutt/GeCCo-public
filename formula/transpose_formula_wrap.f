@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine transpose_formula_wrap(label_in,label_res,
-     &      label_op,init,
+     &      label_op,init,multi,
      &      op_info,form_info)
 *----------------------------------------------------------------------*
 *     wrapper for transpose_formula
@@ -15,11 +15,12 @@
       include 'mdef_formula_info.h'
       include 'def_formula_item.h'
 !     include 'def_formula.h'
+      include 'ifc_formula.h'
       
       character(*), intent(in) ::
      &     label_in, label_res, label_op
       logical, intent(in) ::
-     &     init
+     &     init, multi
       type(operator_info), intent(inout) ::
      &     op_info      
       type(formula_info), intent(inout) ::
@@ -36,7 +37,6 @@
 
       integer, external ::
      &     idx_formlist, idx_oplist2
-
 
       idx_op = idx_oplist2(trim(label_op),op_info)
 
@@ -76,7 +76,7 @@
       call read_form_list(form_in%fhand,flist_in,.true.)
 
       call transpose_formula(flist_in,
-     &       op_info)
+     &       op_info, multi)
 
 !     flist_in%target = - flist_in%target
 

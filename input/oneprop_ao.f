@@ -26,6 +26,8 @@
       select case(trim(env_type))
       case ('dalton','DALTON')
         call oneprop_ao_dalton(ffdao,dens,orb_info)
+      case ('molpro_dump','MOLPRO_DUMP','molpro_ifc','MOLPRO_IFC')
+        call oneprop_ao_molpro(ffdao,dens,orb_info)
       case ('intern','INTERN')
         call quit(1,'oneprop_ao','type INTERN not implemented')
       case ('aces2','ACES2')
