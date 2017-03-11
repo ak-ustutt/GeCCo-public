@@ -1,6 +1,9 @@
+import sys,os
+sys.path=[os.getenv("GECCO_DIR")]+sys.path
 
 from python_interface.gecco_interface import *
 from get_response_data import _response_data
+from python_interface.gecco_modules.python_target_graph import export_python_target_graph
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
@@ -9,7 +12,8 @@ _orb = Orb_Info()
 _env = _inp.env
 
 # For triplet perturbation, only DALTON provides the integrals, otherwise quit the calculation
-if (_response_data['triplet']):
+_triplet=_response_data['triplet']
+if (_triplet):
     if(not ( _env=='DALTON')):
         quit_error('Properties for triplet perturbation are possible only using DALTON')
 
@@ -42,18 +46,22 @@ else:
     relax_ref=True
 
 print 'relax_ref:', relax_ref
+
 # first calculate the first order properties, need to solve the zeroeth order lambda parameters for that
 if (_response_data['order']>=1):
     if (relax_ref):
         print 'importing solve_lambda_0 ...'
         import solve_lambda_0
-        print 'importing eval_first_order_prop ...'
-        import eval_first_order_prop
     else:
         print 'importing solve_lambda_0_restr ...'
         import solve_lambda_0_restr
-        print 'importing eval_first_order_prop_restr ...'
-        import eval_first_order_prop_restr
+
+    if (_triplet):
+        print 'importing eval_first_order_prop for triplet ...'
+        import eval_first_order_prop_trip
+    else:
+        print 'importing eval_first_order_prop ...'
+        import eval_first_order_prop
 
 if (_response_data['order']>=2):
     if (relax_ref):
@@ -66,5 +74,19 @@ if (_response_data['order']>=2):
         import solve_t_1_restr
         print 'importing eval_second_order_prop_restr ...'
         import eval_second_order_prop_restr
+
+if (_response_data['order']>=3):
+    if (relax_ref):
+        print 'importing solve_lambda_1 ...'
+        import solve_lambda_1
+        print 'importing eval_second_order_prop_alt ...'
+        import eval_second_order_prop_alt
+    else:
+        print 'importing solve_lambda_0_restr ...'
+        import solve_lambda_1_restr
+        print 'importing eval_second_order_prop_alt_restr ...'
+        import eval_second_order_prop_alt_restr
+
+export_python_target_graph()
 
 export_targets();

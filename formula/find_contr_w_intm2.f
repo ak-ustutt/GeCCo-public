@@ -372,6 +372,10 @@ c                end if
       end if
 
       call dealloc_contr(contr_t0)
+      if (nmod_max.gt.0) then
+        imod(1)=0
+        xmod(1)=0d0
+      end if
 
       return
       end

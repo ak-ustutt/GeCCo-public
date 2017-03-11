@@ -3,7 +3,7 @@
 #This particular interface started to be written on September, 2015
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data
+from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 import math
 
 _inp = GeCCo_Input()
@@ -11,13 +11,25 @@ _inp = GeCCo_Input()
 # Get the name of the package GeCCo uses the integrals from 
 _env = _inp.env
 
+# _multd2h will be required later to find out the spatial symmetry of 'T(1)' ####
+
+_multd2h = [[1,2,3,4,5,6,7,8],
+[2,1,4,3,6,5,8,7],
+[3,4,1,2,7,8,5,6],
+[4,3,2,1,8,7,6,5],
+[5,6,7,8,1,2,3,4],
+[6,5,8,7,2,1,4,3],
+[7,8,5,6,3,4,1,2],
+[8,7,6,5,4,3,2,1]]
+
 _orb = Orb_Info()
 
 _s2 = _orb.get('imult')
 
 _ms = _orb.get('ims')
 
-_isym = _orb.get('lsym')
+_isym_0 = _orb.get('lsym')
+_isym= _isym_0
 
 if ((_ms == 0) and ((_s2-1 % 4) == 0)):
     _msc = 1
@@ -30,13 +42,40 @@ else:
 _freq=_response_data['freq']
 #Getting the value of the restart option
 _restart=_response_data['restart']
-
+#Getting the total number of perturbation operator need to be defined 
+_npop=_response_data['nPop']
+#Getting total number of response calculation
+_ncnt=_response_data['nCnt']
+#Getting the maximum order of the properties that will be calculated
+_maxord=_response_data['maxorder']
 #n_par tells how many version of the same operator has to be defined 
-#depending on whether we are doing static or dynamic property calcualtion
-if (_freq == 0.0):
-    n_par = 1
-else:
-    n_par = 2
+
+n_par=0
+
+_first_order_param={}
+_first_order_param['cmp_indx']=[]
+_first_order_param['pop_idx']=[]
+_first_order_param['conj_cmp']=[]
+_first_order_param['conj_pop']=[]
+_first_order_param['freq']=[]
+for i in range(0,_ncnt):
+    for j in xrange (0,_calc_data[i]['order']):
+        pos=i*_maxord+j
+        if (_cmp_data['order'][pos]==1 and _cmp_data['redun'][pos]==pos+1):
+            n_par=n_par+1
+            _first_order_param['cmp_indx'].append(n_par)
+            _first_order_param['pop_idx'].append(_cmp_data['pop_idx'][pos])
+            _conj=n_par+_calc_data[i]['conj_comp'][j]-pos-1
+            _first_order_param['conj_cmp'].append(_conj)
+            _conj=_calc_data[i]['conj_prop'][j]
+            _first_order_param['conj_pop'].append(_conj)
+            _first_order_param['freq'].append(_cmp_data['freq'][pos])
+    else:
+        continue
+
+_first_order_param['n_par']=n_par
+
+#print _first_order_param
 
 #Getting the option from response data
 _option=_response_data['option']
@@ -48,110 +87,17 @@ elif _option == 2:
 else:
     quit_error('Input error: unknown option for ic-MRCC properties') 
     
-print 'frequency for the second order proeprties is set to:', _freq
-
-#Define the perturbation operator. This is the first operator that has been 
-#defined. For second order property one more pertubation is involved that 
-#takes part while during the evaluation of the property. This code now 
-#works only for diagonal elements of the second order properties. So 
-#Defining one pertubation is still okay. 
-
-new_target('V(1)')
-
-DEF_HAMILTONIAN({LABEL:'V(1)',MAX_RANK:1})
-
-new_target('IMPORT_V(1)')
-
-_op_list={'V(1)':'ME_V(1)'}
-
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:1}) # For second order properties, the perturbations are mainly singlet. 
-
-#Importing the integrals: It is hard coded to be a dipole operator in z-direction. 
-##TODO##  ###NEED TO BE GENERALIZED###
-
-IMPORT({LIST:'ME_V(1)',TYPE:'ZDIPLEN',ENV:_env})
-
-
-# We define all the parameters from earlier calculation that will be needed here
-
-new_target('DEF_RSPNS(1)')
-depend('DEF_ME_L')
-depend('DEF_ME_C0_bar')
-depend('IMPORT_V(1)')
-
-DEF_SCALAR({LABEL:'RSPNS(1)'})
-
-_op_list={'RSPNS(1)':'ME_RSPNS(1)'}
-
-for _op in _op_list:
-    DEF_ME_LIST({LIST:_op_list[_op],
-                 OPERATOR:_op,
-                 IRREP:1,
-                 '2MS':0})
-
-new_target('GET_RSPNS(1)_FORM')
-
-depend('F_MRCC_LAG')
-depend('DEF_RSPNS(1)')
-
-DEF_SCALAR({LABEL:'preRSPNS(1)_1'})
-DEF_SCALAR({LABEL:'preRSPNS(1)_2'})
-DEF_SCALAR({LABEL:'preRSPNS(1)'})
-
-INVARIANT({LABEL_RES:'F_preRSPNS(1)_1',
-           LABEL_IN:'F_MRCC_LAG',
-           OP_RES:'preRSPNS(1)_1',
-           OPERATORS:'L'})
-
-REPLACE({LABEL_RES:'F_preRSPNS(1)_1',
-         LABEL_IN:'F_preRSPNS(1)_1',
-         OP_LIST:['C0^+','C0_bar']})
-
-DERIVATIVE({LABEL_RES:'F_preRSPNS(1)_2',
-            LABEL_IN:'F_MRCC_LAG',
-            OP_RES:'preRSPNS(1)_2',
-            OP_DERIV:'L',
-            OP_MULT:'L'})
-
-DEF_FORMULA({LABEL:'F_preRSPNS(1)',
-             FORMULA:'preRSPNS(1)=preRSPNS(1)_1+preRSPNS(1)_2'})
-
-EXPAND({LABEL_RES:'F_preRSPNS(1)',
-        LABEL_IN:'F_preRSPNS(1)',
-        INTERM:['F_preRSPNS(1)_1','F_preRSPNS(1)_2']})
-
-REPLACE({LABEL_RES:'F_RSPNS(1)',
-         LABEL_IN:'F_preRSPNS(1)',
-         OP_LIST:['H','V(1)']})
-
-INVARIANT({LABEL_RES:'F_RSPNS(1)',
-           LABEL_IN:'F_RSPNS(1)',
-           OP_RES:'RSPNS(1)',
-           OPERATORS:'H'})
-
-new_target('EVAL_RSPNS(1)')
-
-depend('H0','DEF_ME_T','DEF_ME_C0')
-depend('GET_RSPNS(1)_FORM')
-
-OPTIMIZE({LABEL_OPT:'FOPT_RSPNS(1)',
-          LABELS_IN:'F_RSPNS(1)'})
-
-EVALUATE({FORM:'FOPT_RSPNS(1)'})
-
-PRINT_MEL({LIST:'ME_RSPNS(1)'})
-
 #Loop over n_par to define operators corresponding to both negative and positive frequencies, if necessary.
 #Operators with structure of the cluster operators are necessary here.
 
 for i in range(0,n_par):
 
     i_par = str(i+1)
+
+    _pop_idx = _first_order_param['pop_idx'][i]-1
+
+    _cur_ext=_pop_data['name'][_pop_idx]+_pop_data['comp'][_pop_idx]
+    _pop_name='V'+_cur_ext
 
     new_target('T(1)'+i_par)
     depend('T')
@@ -191,8 +137,7 @@ for i in range(0,n_par):
               'O(1)LCM'+i_par:'A_C0',
               'O(1)RC'+i_par:'A_C0',
               'O(1)RCM'+i_par:'A_C0',
-              'DIAG_T(1)'+i_par:'T',
-              'DIAG_C0(1)'+i_par:'C0'}
+              'DIAG_T(1)'+i_par:'T'}
 
     for _op in _op_list:
         CLONE_OPERATOR({LABEL:_op,
@@ -321,11 +266,11 @@ for i in range(0,n_par):
     new_target('F_O(1)RT'+i_par)
 
     depend ('F_O(1)LT'+i_par)
-    depend('V(1)')
+#   depend('V(1)')
 
     REPLACE({LABEL_RES:'F_RED_LAG(1)RT'+i_par,
              LABEL_IN:'F_preRED_LAG(1)LT'+i_par,
-             OP_LIST:['H','V(1)']})
+             OP_LIST:['H',_pop_name]})
 
     INVARIANT({LABEL_RES:'F_RED_LAG(1)RT'+i_par,
                LABEL_IN:'F_RED_LAG(1)RT'+i_par,
@@ -345,11 +290,11 @@ for i in range(0,n_par):
     depend('EVAL_RSPNS(1)')
 
     depend ('F_O(1)LC'+i_par)
-    depend('V(1)')
+#   depend('V(1)')
 
     REPLACE({LABEL_RES:'F_RED_LAG(1)RC'+i_par,
              LABEL_IN:'F_preRED_LAG(1)LC'+i_par,
-             OP_LIST:['H','V(1)']})
+             OP_LIST:['H',_pop_name]})
 
     INVARIANT({LABEL_RES:'F_RED_LAG(1)RC'+i_par,
                LABEL_IN:'F_RED_LAG(1)RC'+i_par,
@@ -519,14 +464,18 @@ for i in range(0,n_par):
 #Getting the signed frequency that would be needed to initialize frequency for the 
 #parameters we are going to solve
 
-    _freq_sign = _freq*math.pow(-1,i)
+#   _freq_sign = _freq*math.pow(-1,i)
+    _freq_sign = _first_order_param['freq'][i]
+
+    _isym = _pop_data['isym'][_pop_idx]
+    _isym_c = _multd2h[_isym-1][_isym_0-1]
 
     new_target('DEF_ME_T(1)'+i_par)
     depend('T(1)'+i_par)
 
     DEF_ME_LIST({LIST:'ME_T(1)'+i_par,
                  OPERATOR:'T(1)'+i_par,
-                 IRREP:1,
+                 IRREP:_isym,
                  '2MS':0,
                  AB_SYM:1})
 
@@ -538,7 +487,7 @@ for i in range(0,n_par):
 
     DEF_ME_LIST({LIST:'ME_C0(1)'+i_par,
                  OPERATOR:'C0(1)'+i_par,
-                 IRREP:_isym,
+                 IRREP:_isym_c,
                  '2MS':_ms,
                  AB_SYM:_msc})
 
@@ -557,7 +506,7 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:1,
+                     IRREP:_isym,
                      '2MS':0,
                      AB_SYM:1})
 
@@ -569,34 +518,26 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:_isym,
+                     IRREP:_isym_c,
                      '2MS':_ms,
                      AB_SYM:_msc})
 
     _op_list={'Ttr(1)'+i_par:'ME_Ttr(1)'+i_par,
-              'DIAG_T(1)'+i_par:'ME_DIAG_T(1)'+i_par,
-              'FREQ'+i_par:'ME_FREQ'+i_par}
+              'DIAG_T(1)'+i_par:'ME_DIAG_T(1)'+i_par}
+    
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_isym,
+                     '2MS':0})
+
+    _op_list={'FREQ'+i_par:'ME_FREQ'+i_par}
     
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
                      IRREP:1,
                      '2MS':0})
-
-    _op_list={'DIAG_C0(1)'+i_par:'ME_DIAG_C0(1)'+i_par}
-    
-    for _op in _op_list:
-        DEF_ME_LIST({LIST:_op_list[_op],
-                     OPERATOR:_op,
-                     IRREP:_isym,
-                     '2MS':_ms})
-
-    DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
-                 OPERATOR:'E(MR)',
-                 IRREP:1,
-                 '2MS':0})
-
-    ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
 
 # Initializing the ME_FREQ for this i_par
     SET_MEL({LIST:'ME_FREQ'+i_par,
@@ -611,7 +552,7 @@ for i in range(0,n_par):
     depend('LIST_RSPNS(1)_OP'+i_par)
     depend('F_T(1)'+i_par,'DEF_ME_Dtrdag')
     depend('F_ST(1)'+i_par)
-    depend('IMPORT_V(1)')
+#   depend('IMPORT_V(1)')
     depend('F_PRJ_C(1)'+i_par)
 
     OPTIMIZE({LABEL_OPT:'FOPT_RSPNS_T(1)'+i_par,
@@ -628,19 +569,50 @@ for i in range(0,n_par):
     new_target('DIAG_T(1)'+i_par)
 
     depend('DIAG1SxxM00_T')
+    depend('EVAL_FREF','FOPT_Atr')
+        
+#   SCALE_COPY({LIST_RES:'ME_DIAG_T(1)'+i_par,LIST_INP:'DIAG1SxxM00_T',FAC:1.0})
 
-    SCALE_COPY({LIST_RES:'ME_DIAG_T(1)'+i_par,LIST_INP:'DIAG1SxxM00_T',FAC:1.0})
-
+    PRECONDITIONER({LIST_PRC:'ME_DIAG_T(1)'+i_par,
+                    LIST_INP:'ME_FREF'})
+    
+    ASSIGN_ME2OP({LIST:'ME_Dtr',
+                 OPERATOR:'Dtr'})
+   
+    EVALUATE({FORM:'FOPT_Atr'})
+    
+    EXTRACT_DIAG({LIST_RES:'ME_DIAG_T(1)'+i_par,
+                  LIST_IN:'ME_A',
+                  MODE:'extend'})
 
     new_target('DIAG_C0(1)'+i_par)
 
-    #depend('DIAG1SxxM00C0')
+    depend('H0', 'DEF_ME_E(MR)')
+
+    _op_list={'DIAG_C0(1)'+i_par:'C0'}
+
+    for _op in _op_list:
+        CLONE_OPERATOR({LABEL:_op,
+                        TEMPLATE:_op_list[_op]})
+
+    _op_list={'DIAG_C0(1)'+i_par:'ME_DIAG_C0(1)'+i_par}
+    
+    for _op in _op_list:
+        DEF_ME_LIST({LIST:_op_list[_op],
+                     OPERATOR:_op,
+                     IRREP:_isym_c,
+                     '2MS':_ms})
+
+    DEF_ME_LIST({LIST:'ME_MINEN'+i_par,
+                 OPERATOR:'E(MR)',
+                 IRREP:1,
+                 '2MS':0})
+
+    ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
 
     PRECONDITIONER({LIST_PRC:'ME_DIAG_C0(1)'+i_par,
                     LIST_INP:'H0',
                     MODE:'dia-H'})
-
-    PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
 
     SCALE_COPY({LIST_RES:'ME_MINEN'+i_par,
                 LIST_INP:'ME_E(MR)',
@@ -649,7 +621,7 @@ for i in range(0,n_par):
     EXTRACT_DIAG({LIST_RES:'ME_DIAG_C0(1)'+i_par,
                   LIST_IN:'ME_MINEN'+i_par,
                   MODE:'ext_act'})
-    PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
+    #PRINT_MEL({LIST:'ME_DIAG_C0(1)'+i_par})
 
     #EXTRACT_DIAG({LIST_RES:'ME_DIAG_C0(1)'+i_par,
     #              LIST_IN:'ME_FREQ'+i_par,
@@ -662,6 +634,8 @@ for i in range(0,n_par):
     else:
         new_target('SOLVE_T(1)'+i_par)
 
+    depend('IMPORT_PERT_OPS')
+    depend('EVAL_RSPNS(1)')
     depend('OPT_RSPNS_T(1)'+i_par)
     depend('DIAG_T(1)'+i_par)
     depend('DIAG_C0(1)'+i_par)
@@ -722,9 +696,9 @@ for i in range(0,n_par):
     for _op in _op_list:
         DEF_ME_LIST({LIST:_op_list[_op],
                      OPERATOR:_op,
-                     IRREP:1,
-                     '2MS':0,
-                     AB_SYM:1})
+                     IRREP:_isym_c,
+                     '2MS':_ms,
+                     AB_SYM:_msc})
 
     OPTIMIZE({LABEL_OPT:'FOPT_ORTH_C(1)'+i_par,
               LABELS_IN:['F_ORTH_C(1)'+i_par]})
@@ -734,4 +708,3 @@ for i in range(0,n_par):
     PRINT_MEL({LIST:'ME_C0(1)_orth_'+i_par})
     SCALE_COPY({LIST_RES:'ME_C0(1)'+i_par,LIST_INP:'ME_C0(1)_orth_'+i_par,FAC:1.0})
     #COPY_LIST({LIST_RES:'ME_C0(1)'+i_par,LIST_INP:'ME_C0(1)_orth_'+i_par})
-

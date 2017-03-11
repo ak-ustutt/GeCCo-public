@@ -1,10 +1,15 @@
 *----------------------------------------------------------------------*
-      subroutine import_propao_molpro(ffao,label,gamma,psym,orb_info)
+      subroutine import_propao_molpro(ffao,label,gamma,orb_info)
 *----------------------------------------------------------------------*
-*     read property integral "label" from AOPROPER file
-*     we have to provide the symmetry block (gamma) to be extracted
-*     and the symmetry with respect to ij<->ji permutation (psym,
-*     can be 1 or -1)
+*     read one-electron integrals from AOPROPER file in MOLPRO format
+*
+*     label: describe the operator using the following sintax:
+*            <labelM>:<labelD>
+*            where these are the conventions for Molpro and Dalton
+*            see get_oper_info.f and one_el_op_convention.txt
+*
+*     gamma: symmetry block to be extracted
+*
 *----------------------------------------------------------------------*
       implicit none
 
@@ -13,10 +18,10 @@
       include 'def_filinf.h'
       include 'ifc_memman.h'
       include 'multd2h.h'
-      include 'par_dalton.h'
+      include 'par_molpro.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(orbinf), intent(in), target ::
      &     orb_info
@@ -25,7 +30,7 @@
       character(len=*), intent(in) ::
      &     label
       integer, intent(in) ::
-     &     gamma, psym
+     &     gamma
 
       type(filinf) ::
      &     ffaoprop
@@ -34,93 +39,92 @@
       real(8) ::
      &     cpu0,sys0,wall0,cpu,sys,wall
       integer ::
-     &     luaoprop, isym, jsym, ifree, luerror,
-     &     nao_blk, nao_full,nao_i,nao_j,i,j,ij,ji,
-     &     naoint,len_blk(8)
-      character(8) ::
-     &     propfile
-
+     &     luaoprop, isym, jsym, ifree,
+     &     nao,
+     &     len_blk(8),
+     &     gammaN, i_gammaN, iMD
+      character(len=100)
+     &     :: line
       real(8), pointer ::
-     &     ao_full(:), ao_blk(:)
+     &     ao_full(:)
+
 
       call atim_csw(cpu0,sys0,wall0)
 
       ifree = mem_setmark('import_ao_molpro')
 
       ! get buffers (SAO basis -> symmetry blocked)
-      nao_blk = 0
+      ! integrals corresponding to the F12 calculations are not
+      ! considered here
+      nao = 0
       do isym = 1, orb_info%nsym
         jsym = multd2h(isym,gamma)
-        nao_blk = nao_blk
-     &          + orb_info%nbas(isym)*
-     &            orb_info%nbas(jsym)
+        nao = nao
+     &       + orb_info%nbas(isym)*orb_info%nbas(jsym)
       end do
       
       ! buffer for AO-matrix as read from AOPROPER
-      ifree = mem_alloc_real(ao_full,nao_blk,'ao_full')
-      ! buffer for extracted matrix in symmetry blocked form
-      ifree = mem_alloc_real(ao_blk,nao_blk,'ao_blk')
+      ifree = mem_alloc_real(ao_full,nao,'ao_full')
 
-      inquire(file='DIPZ',exist=ok)
+      inquire(file=aoproper,exist=ok)
       if (.not.ok) call quit(0,'import_propao_molpro',
-     &       'did not find any DIPZ file')
+     &       'did not find any '//aoproper//' file')
 
-      propfile = 'DIPZ'
-
-      ! open files
-      call file_init(ffaoprop,propfile,ftyp_sq_frm,0)
+      ! Get integrals
+      call file_init(ffaoprop,aoproper,ftyp_sq_frm,0)
       call file_open(ffaoprop)
-
-      luaoprop = ffaoprop%unit
-      rewind luaoprop
+c     rewind ffaoprop%unit
       
+      gammaN = -1
+!     Find the position of label in the file and get gammaN
+      iMD = index( label, ':')
+      do while (gammaN .EQ. -1)
+        read (ffaoprop%unit, '(a100)', end=3, err=6) line
+        if (line(1:1).EQ.'#') then
+          if  (index(line,'MATRIX '//label(1:iMD-1)) .NE. 0 .OR.
+     &         index(line,'MATRIX '//trim(label(iMD+1:))) .NE. 0) then
+            i_gammaN = index(line,'SYMMETRY=') + 9
+            read(line(i_gammaN:i_gammaN), '(I1)') gammaN
+          end if
+        end if
+      end do
+
+      if (gammaN.NE.gamma) then
+         write(lulog, '("Inconsistent irrep for operator ",A,".")')
+     &        trim(label)
+         call quit(0,'import_propao_molpro',
+     &        'Inconsistent irrep for operator '//trim(label)//'.')
+      end if
+
+      ! read matrix in blocks form
+      read (ffaoprop%unit,*) ao_full(1:nao)
+
+      call file_close_keep(ffaoprop)
+
+      len_blk(1:orb_info%nsym) =
+     &    orb_info%nbas(1:orb_info%nsym)
+
+      if (ntest.ge.100) then
+        write(lulog,*) '----------------------------------'
+        write(lulog,*) 'One electron integrals of '//trim(label)//
+     &        ' in AO (blocked):'
+        call wr_blkmat2(ao_full,len_blk,len_blk,
+     &                     orb_info%nsym,gamma,0)
+      end if
+      
+!     Write to file
       if (ffao%unit.le.0) then
         call file_open(ffao)
         closeit = .true.
       else
         closeit = .false.
       end if
-
-      read (luaoprop,*)
-      read (luaoprop,*)
-      ! read matrix in upper triangular form
-      read (luaoprop,*) ao_full(1:nao_blk)
-
-      call file_close_keep(ffaoprop)
-
-      naoint = 0
-
-      do isym = 1, orb_info%nsym
-        jsym = multd2h(isym,gamma)
-        nao_i = orb_info%nbas(isym)
-        nao_j = orb_info%nbas(jsym)
-        do i = 1, nao_j
-          do j = 1, nao_i
-            ij = (i-1)* nao_j + j
-            ji = (j-1)* nao_i + i
-            ao_blk(ji + naoint) = ao_full(ij + naoint)
-          end do
-        end do
-        naoint = naoint +
-     &       orb_info%nbas(jsym)*orb_info%nbas(isym)
-      end do
-
-      len_blk(1:orb_info%nsym) =
-     &    orb_info%nbas(1:orb_info%nsym)
-
-      if (ntest.ge.100) then
-        write(lulog,*) 'Property integral: AO (blocked):'
-        call wr_blkmat2(ao_blk,len_blk,len_blk,
-     &                     orb_info%nsym,gamma,0)
-      end if
-      
-      ! write to file
-      call put_vec(ffao,ao_blk,1,nao_blk)
-
+      call put_vec(ffao,ao_full,1,nao)
       if (closeit)
      &     call file_close_keep(ffao)
 
-      ifree = mem_flushmark('import_ao_molpro')
+      !ifree = mem_flushmark('import_ao_molpro')
+      ifree = mem_flushmark()
 
       call atim_csw(cpu,sys,wall)
 
@@ -129,4 +133,17 @@
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       return
+
+ 3    write(lulog, 7) trim(label)
+      call quit(0,'import_propao_molpro',
+     &     'One electron operator label not found: end of file.')
+c
+ 6    write(lulog, 7) trim(label)
+      call quit(0,'import_propao_molpro',
+     &     'One electron operator label not found: error.')
+c
+ 7    format(/' Operator label ', A ,
+     &     ' not found in the one electron integrals file'//
+     &     ' Did you request it in the molpro input?')
+
       end

@@ -31,7 +31,8 @@
       type pert_component_info
         integer ::
      &       redun,          ! refers to highest idx of similar component
-     &       pop_idx         ! idx of assigned pert. op.
+     &       pop_idx,         ! idx of assigned pert. op.
+     &       order           ! order of the response parameters associated with this component
         real(8) ::
      &       freq            ! assigned frequency
       end type pert_component_info

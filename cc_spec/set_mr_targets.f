@@ -201,9 +201,12 @@ c dbgend
      &     name_infile,fforbinf%name)
 
       filename="/python_spec/mrcc_response/set_mrcc_response_targets.py"
-      if (response) call set_python_targets(tgt_info,
-     &    trim(gecco_path)//filename,
-     &    name_infile,fforbinf%name)
+      if (response) then 
+          call get_mrcc_response_input(orb_info,env_type)
+          call set_python_targets(tgt_info,
+     &        trim(gecco_path)//filename,
+     &        name_infile,fforbinf%name)
+      endif
 
       if (multistate) call set_python_targets(tgt_info,
      &     trim(gecco_path)//"/python_spec/multistate_eff_ham.py",
