@@ -99,6 +99,8 @@
        c_st = ""
       end if
       idx = idx_mel_list('ME_C0'//trim(c_st),op_info) ! quick & dirty
+      if (opti_info%optref.ne.0.and.idx.le.0) 
+     &   call quit(1,'q & dirty','oh no: ME_C0... not there')
       ! update me lists for transformation matrices if required
       if (opti_info%optref.ne.0.and.
      &    op_info%mel_arr(idx)%mel%fhand%last_mod(
