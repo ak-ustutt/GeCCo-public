@@ -70,6 +70,7 @@
 
       implicit none
       
+      include 'stdunit.h'
       include 'opdim.h'
 
       integer, intent(in) ::
@@ -91,12 +92,14 @@
      &        njoined, ndef, freeze(1:2,1:njoined)
 c        if (2*ngastp*ndef*njoined.gt.120)
 c        if (2*ngastp*ndef*njoined.gt.240)
-        if (2*ngastp*ndef*njoined.gt.984)
-     &      call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.984')
+        if (2*ngastp*ndef*njoined.gt.2047) then
+           write(lulog,*) 'ndef, njoined: ',ndef,njoined
+           call quit(1,'op_from_occ_parameters','2*ngastp*ndef.gt.2047')
+        end if
 c        write(parameters(2),'(120(i2))')
 c        write(parameters(2),'(240(i1))')
 c        write(parameters(2),'(480(i1))')
-        write(parameters(2),'(984(i2))')
+        write(parameters(2),'(2047(i2))')
      &        occ_def(1:2*ngastp*ndef*njoined)        
       else
         read(parameters(1),'(2(i5,x),10(i2))')
@@ -109,7 +112,7 @@ c        read(parameters(2),'(480(i1))')
 c dbg
 c      print *,'"',trim(parameters(2)),'"'
 c dbg
-        read(parameters(2),'(984(i2))')
+        read(parameters(2),'(2047(i2))')
      &        occ_def(1:2*ngastp*ndef*njoined)
       end if
 

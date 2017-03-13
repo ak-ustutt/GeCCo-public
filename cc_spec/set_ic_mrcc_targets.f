@@ -56,7 +56,8 @@
      &     skip, preopt, first, Op_eqs, F0_fix,
      &     h1bar, htt, svdonly, fact_tt, ex_t3red, trunc, l_exist,
      &     oldref, solve, use_f12, restart, eval_dens3, prc_traf,
-     &     pure_vv, multistate, MS_coupled, C0rst_there, dyall0
+     &     pure_vv, multistate, MS_coupled, C0rst_there, dyall0,
+     &     pt_lag_corr
       character(len_target_name) ::
      &     dia_label, dia_label2, dia_label_2,
      &     labels(20), c_st, c_st_2
@@ -163,6 +164,8 @@
      &     ival=simp)
       call get_argument_value('method.MRCC','Dyall0',
      &     lval=dyall0)
+      call get_argument_value('method.MRCC','T3Lag',
+     &     lval=pt_lag_corr)
       call get_argument_value('method.MR','oldref',
      &     lval=oldref)
       call get_argument_value('method.MR','maxcum',
@@ -227,6 +230,7 @@
      &                 'T1ord        = ', t1ord
         if (trunc.and.simp.ge.0) write(lulog,*)
      &                 'simp         = ', simp
+        if (trunc) write(lulog,*) 'T3Lag        = ', pt_lag_corr
         if (spinadapt.eq.1) then
           write(lulog,*) 'Using spin adapted reference function.'
         else if (spinadapt.eq.2) then
@@ -263,7 +267,7 @@ C?     &     'Manually setting T1ord only enabled yet for Tfix>0')
      &      .or.maxcum.ge.0)
      &     call quit(1,'set_ic_mrcc_targets',
      &     'New (T) implementation only works for '//
-     &     'Tfix=2,trunc_order=4,H1bar=F,T1ord=2,simp=1-2,'//
+     &     'Tfix=2,trunc_order=4,H1bar=F,T1ord=2,simp=1-3,'//
      &     'maxcom_res=2,maxcom_en=2-4,maxcum=-1')
         if (excrestr(0,0,1).lt.excrestr(0,0,2))
      &     call quit(1,'set_ic_mrcc_targets',
@@ -933,7 +937,10 @@ c     &     val_str=descr)
 
       descr = ',|,|,V|V,'
       if (orb_info%nactel.ge.4) descr = ',|,|,V|V,|,VV|VV,'      
-      if (orb_info%nactel.ge.6) 
+      if (orb_info%nactel.ge.6.and.ntrunc.eq.1) 
+     &       descr = trim(descr)//'|,VVV|VVV,' 
+c     &       descr = trim(descr)//'|,VVV|VVV,|,VVVV|VVVV,' 
+      if (orb_info%nactel.ge.6.and.ntrunc.ne.1) 
      &       descr = trim(descr)//'|,VVV|VVV,|,VVVV|VVVV,|,VVVVV|VVVVV,' 
 c dbg
 c      print *,'nactel: ',orb_info%nactel
@@ -3920,6 +3927,7 @@ c_T_proj_3_fix end of change
      &             val_rl8=(/-1d0/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &             val_log=(/.false./))
+      if (simp.lt.3) then ! add quadratic terms with Hdyall
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &             val_label=(/'MRCC_PT_LAG'/))
@@ -4004,6 +4012,7 @@ c_T_proj_3_fix end of change
      &             val_rl8=(/0.5d0/))
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
      &             val_log=(/.false./))
+      end if
       ! (d) triples residual
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
@@ -4176,6 +4185,16 @@ c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
 c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_OMG_PT'/))
 c dbgend
+      if (pt_lag_corr) then
+      ! (i') replace Lambda by T3^+ -> energy expression
+      call set_rule2('MRCC_PT_LAG',REPLACE,tgt_info)
+      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_arg('MRCC_PT_LAG',REPLACE,'OP_LIST',2,tgt_info,
+     &     val_label=(/'L  ','T^+'/))
+      else
       ! (i) delete Lambda-containing part from Lag. -> energy expression
       call set_rule2('MRCC_PT_LAG',INVARIANT,tgt_info)
       call set_arg('MRCC_PT_LAG',INVARIANT,'LABEL_RES',1,tgt_info,
@@ -4186,6 +4205,7 @@ c dbgend
      &     val_label=(/'E(MR)'/))
       call set_arg('MRCC_PT_LAG',INVARIANT,'OPERATORS',1,tgt_info,
      &     val_label=(/'L'/))
+      end if
 c dbg
 c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
 c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
