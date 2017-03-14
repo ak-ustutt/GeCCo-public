@@ -4096,7 +4096,8 @@ c_T_proj_3_fix end of change
      &               val_log=(/.false./))
       end if
       ! (f) triples contribution to residual (for iterative variant)
-      if (maxit.gt.1) then
+      !     for the variant with Lagrange correction, we need it, however
+      if (maxit.gt.1.or.pt_lag_corr) then
         call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
         call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
      &               val_label=(/'MRCC_PT_LAG'/))
@@ -4186,6 +4187,18 @@ c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_OMG_PT'/))
 c dbgend
       if (pt_lag_corr) then
+      ! (h') for non-iterative variant: remove T3 contribution from residual
+      if (maxit.eq.1) then
+        call set_rule2('MRCC_PT_LAG',INVARIANT,tgt_info)
+        call set_arg('MRCC_PT_LAG',INVARIANT,'LABEL_RES',1,tgt_info,
+     &     val_label=(/'F_OMG_PT'/))
+        call set_arg('MRCC_PT_LAG',INVARIANT,'LABEL_IN',1,tgt_info,
+     &     val_label=(/'F_OMG_PT'/))
+        call set_arg('MRCC_PT_LAG',INVARIANT,'OP_RES',1,tgt_info,
+     &     val_label=(/'OMG'/))
+        call set_arg('MRCC_PT_LAG',INVARIANT,'OPERATORS',1,tgt_info,
+     &     val_label=(/'T'/))
+      end if
       ! (i') replace Lambda by T3^+ -> energy expression
       call set_rule2('MRCC_PT_LAG',REPLACE,tgt_info)
       call set_arg('MRCC_PT_LAG',REPLACE,'LABEL_RES',1,tgt_info,
@@ -6555,13 +6568,13 @@ c     &               tgt_info,val_label=(/'ME_OMG'/))
      &     val_str='SCAL F24.14')
 
 c dbg
-c        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
-c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
-c     &       val_label=(/'ME_T'/))
-c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'COMMENT',1,tgt_info,
-c     &       val_str='Final T amplitudes, norms for blocks:')
-c        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
-c     &       val_str='BLKS')
+        call set_rule2('EVAL_PERT_CORR',PRINT_MEL,tgt_info)
+        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'LIST',1,tgt_info,
+     &       val_label=(/'ME_T'/))
+        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'COMMENT',1,tgt_info,
+     &       val_str='Final T amplitudes, norms for blocks:')
+        call set_arg('EVAL_PERT_CORR',PRINT_MEL,'FORMAT',1,tgt_info,
+     &       val_str='BLKS')
 c dbgend
       if (spinexpec.gt.0) then
         ! Calculate and print <C0|T^+ S^2 T|C0>/<C0|S^2|C0>
