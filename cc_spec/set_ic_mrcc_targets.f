@@ -3808,6 +3808,7 @@ c_T_proj_3_fix end of change
      &                val_log=(/.false./))
         end if
       end if
+      if (simp.lt.4) then
       ! (b) direct energy contribution of triples
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
@@ -3896,6 +3897,7 @@ c$$$     &             val_rl8=(/0.5d0/))
 c$$$      call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'NEW',1,tgt_info,
 c$$$     &             val_log=(/.false./))
 c_T_proj_3_fix end of change
+      end if
       ! (c) triples correction from the singles and doubles residual terms
       call set_rule2('MRCC_PT_LAG',EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('MRCC_PT_LAG',EXPAND_OP_PRODUCT,'LABEL',1,tgt_info,
@@ -4220,9 +4222,9 @@ c dbgend
      &     val_label=(/'L'/))
       end if
 c dbg
-c      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
-c      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
-c     &     val_label=(/'MRCC_PT_LAG'/))
+      call set_rule2('MRCC_PT_LAG',PRINT_FORMULA,tgt_info)
+      call set_arg('MRCC_PT_LAG',PRINT_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'MRCC_PT_LAG'/))
 c dbgend
 
 *----------------------------------------------------------------------*
