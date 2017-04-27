@@ -620,7 +620,7 @@ cdbg end
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &         blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
-       end if
+       end if !onedis 
 
 
         ! Here comes the complicated part for densities with 3 vertices
@@ -665,89 +665,25 @@ cdbg end
 ! For now we consider densities: Ms(total)=0, Gamma(total) = 1
 
         do ms1 = msmax_sub, -msmax_sub, -2
-         ms2 = -ms1 ! particle conserving operator
+           ms2 = -ms1           ! particle conserving operator
+           
          do igam = 1, ngam ! irrep of the second dimension must be the same
-
-          ! First we need the dimension of the A1/C1 | A2/C2 block
-          ndim = 0
-          nrank = 0
-          ! loops over coupling blocks. Must be in correct order!
-          ! it seems: all lower rank coupling blocks are expected behind this block
-          !       e.g. after (,V;V,V;V,) we have to have (,V;V,;,), (,;,V;V,) and (,;,;,)
-          jocc_cls = iocc_cls
-          jblkoff = (jocc_cls-1)*njoined
-          na1 = na1mx
-          nc1 = nc1mx
-
-          rankoff = 0
-          rankdim = 0
-          !-------
-          blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
-           na2 = nc1mx
-           nc2 = na1mx
-           rdim = 0
-           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
-            ! no off-diagonal blocks in SepO (separate orthog.)
-            if (sgrm.and.na1.ne.nc2) then
-              na2 = na2 - 1
-              nc2 = nc2 - 1
-              cycle
-            end if
-            ! exit if there is no block like this
-            if (na1.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+1)).or.
-     &         nc1.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+2)).or.
-     &         na2.ne.sum(hpvx_occ(1:ngastp,2,jblkoff+2)).or.
-     &         nc2.ne.sum(hpvx_occ(1:ngastp,1,jblkoff+3))) exit blk_loop
-            ! skip off-diagonal blocks
-            if (na1.ne.nc2) then
-               call advance_block_n2_h(nc2,na2,
-     &              ms1,nc1mx,na1mx,jocc_cls)
-               jblkoff = occoff_h(jocc_cls,njoined)
-              cycle
-            end if
-            ! exception for pure inactive block:
-            if (na1.eq.0.and.nc1.eq.0) then
-               if (igam.eq.1)then
-                  ndim = ndim + 1
-                  call update_rankarrays_h(nrank,rankdim,rankoff,1)
-               end if
-              exit blk_loop
-           end if
-! note: only diagonal blocks reach this point.
-! so only 1 block per na1,nc1 touple
-! as na1,nc1 is only decremented in the blk_loop, rdim = 0 at this point !Doh
-            call get_combineddistlen_h(
-     &           rdim,
-     &           op_inp,mel_inp,
-     &           jocc_cls,
-     &           ms1,igam,
-     &           graphs)
-            ndim = ndim + rdim
-            print *, "ndim update",ndim  
-            call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
-            jblkoff = occoff_h(jocc_cls,njoined)
+            call calculate_rank_dimensions_h(
+     &           mel_inp,op_inp,graphs,iocc_cls, njoined,
+     &           ms1, igam,
+     &           sgrm,project,
+     &           na1mx,nc1mx,
+     &           ndim,nrank,rankoff,rankdim)
             
-           end do
-         
-           na1 = na1 - 1
-           nc1 = nc1 - 1
-
-           if (project.gt.0.and.rdim.gt.0) then
-              call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
-           end if
-          
-          end do blk_loop
-
           if (ndim.eq.0) cycle
-          
+
           if (project.eq.0) then
             nrank = 1
             rankdim(1) = ndim
             rankoff(1) = 0
           else if (ndim.ne.rankoff(1)+rankdim(1)) then
-!            write(lulog,'(1x,a,3i12)')
-             write(lulog,*)
-     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff,":",rankdim
+            write(lulog,'(1x,a,3i12)')
+     &        'ndim,rankoff(1),rankdim(1): ',ndim,rankoff(1),rankdim(1)
             call quit(1,i_am,'dimensions don''t add up!')
           end if
 
@@ -869,16 +805,6 @@ c dbgend
                 if (.not. is_possible_h(nc2,0,gamc2) ) cycle
                 
                 igama = multd2h(gama1,gama2)
-c$$$                call set_dist_msgam(
-c$$$     &               gamdis_c,gamdis_a,
-c$$$     &               msdis_c,msdis_a,
-c$$$     &               msc1,msa1,
-c$$$     &               msc2,msa2,
-c$$$     &               gamc1,gama1,
-c$$$     &               gamc2,gama2,
-c$$$     &               nc1,na1,
-c$$$     &               nc2,na2,
-c$$$     &               nablk2,ncblk2)
                 if (nablk2.eq.1.and.na1.eq.0) then
                   msdis_a(1) = msa2
                   gamdis_a(1) = gama2
@@ -1079,7 +1005,6 @@ c dbgend
                           first = .false.
                           if (.not.logdum) call quit(1,'invsqrt',
      &                         'no next tuple found!')
-c                          if (mod(idxcount(2,idspn,na2+nc2,1),4).ne.0)
                           if (mod(na2+nc2
      &                            -idxcount(2,idspn,na2+nc2,1),4).ne.0)
      &                          flmap(icol,3) = -1
@@ -1103,13 +1028,12 @@ c dbgend
 
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &              occ_asub2,graph_csub2,graph_asub2,
-     &              iocc2,idx_g2)
-            na2 = na2 - 1
-            nc2 = nc2 - 1
-            jocc_cls = jocc_cls + 1
-            if (na2+nc2.lt.abs(ms1)) !jump to next line
-     &                jocc_cls = jocc_cls + min(na1mx,nc1mx)
-     &                -(na1mx+nc1mx-abs(ms1))/2
+     &           iocc2,idx_g2)
+            subroutine advance_block_n2_h(
+     &           nc2,na2,
+     &           ms1,
+     &           nc1mx,na1mx,
+     &           jocc_cls)
             jblkoff = (jocc_cls-1)*njoined
             off_col2 = off_colmax
            end do
@@ -2048,15 +1972,119 @@ c         end do
 
       
       end function isqrt_h
+ 
+!-----------------------------------------------------------------------!
+      subroutine calculate_rank_dimensions_h(
+     &     mel,op,graphs,iocc_cls, njoined,
+     &     ms1, igam,
+     &     sgrm,project,
+     &     na1mx,nc1mx,
+     &     ndim,nrank,rankoff,rankdim)
+!-----------------------------------------------------------------------!
+      type(me_list),intent(in)::
+     &     mel
+      type(operator),intent(in)::
+     &     op
+      type(graph), pointer,intent(in)::
+     &     graphs(:)
+      integer,intent(in)::
+     &     na1mx,nc1mx,         !maximum number of anihilation/creation operators in vertex pair1
+     &     iocc_cls,njoined,
+     &     ms1, igam,           !ms and symmetry filter
+     &     project
+      logical, intent(in)::
+     &     sgrm                 ! if separate orthogonalization is requested 
+      integer, intent(out)::
+     &     ndim, nrank
+      integer, dimension(maxrank),intent(out)::
+     &     rankoff, rankdim
+      integer::
+     &     jocc_cls, jblkoff,   ! running indices for occupation class number and offset
+     &     na1,nc1,
+     &     na2,nc2,
+     &     rdim
+      
+      ndim = 0
+      nrank = 0
 
+      jocc_cls = iocc_cls
+      jblkoff = occoff_h(jocc_cls,njoined)
+ 
+      na1 = na1mx
+      nc1 = nc1mx
+      rankoff = 0
+      rankdim = 0
+      blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
+           na2 = nc1mx 
+           nc2 = na1mx
+           rdim = 0
+           
+           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+              
+           ! no off-diagonal blocks in SepO (separate orthog.)
+           if (sgrm.and.na1.ne.nc2) then
+              na2 = na2 - 1
+              nc2 = nc2 - 1
+              cycle
+           end if
+           
+            ! exit if there is no block like this
+           if ( na1.ne.sum( op_inp%ihpvca_occ(1:ngastp,2,jblkoff+1)).or.
+     &          nc1.ne.sum( op_inp%ihpvca_occ(1:ngastp,1,jblkoff+2)).or.
+     &          na2.ne.sum( op_inp%ihpvca_occ(1:ngastp,2,jblkoff+2)).or.
+     &          nc2.ne.sum( op_inp%ihpvca_occ(1:ngastp,1,jblkoff+3)))
+     &          exit blk_loop
+           
+! skip off-diagonal blocks
+            if (na1.ne.nc2) then
+               call advance_block_n2_h(nc2,na2,
+     &              ms1,nc1mx,na1mx,jocc_cls)
+               jblkoff = occoff_h(jocc_cls,njoined)
+              cycle
+            end if
+            ! fasttrack pure inactive block:
+            if (na1.eq.0.and.nc1.eq.0) then
+               if (igam.eq.1)then
+                  ndim = ndim + 1
+                  call update_rankarrays_h(nrank,rankdim,rankoff,1)
+               end if
+              exit blk_loop
+           end if
+ 
+! ASSUMPTION rdim = 0 at this point
+! currently ensured by:
+! because only diagonal blocks reach this point.
+! so only 1 block per na1,nc1 touple
+! a new na1 nc1 touple is generated at the end of an blk_loop iteration
+! at the begin of next iteration rdim is set to zero
+           call get_combineddistlen_h(
+     &          rdim,
+     &          op,mel,
+     &          jocc_cls,
+     &          ms1,igam,
+     &          graphs)
+           ndim = ndim + rdim
+           call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
+           jblkoff = occoff_h(jocc_cls,njoined)
+           end do
+         
+           na1 = na1 - 1
+           nc1 = nc1 - 1
+      
+           if (project.gt.0.and.rdim.gt.0) then
+              call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
+           end if
+        end do blk_loop
+
+      end subroutine calculate_rank_dimensions_h
 !-----------------------------------------------------------------------!
 !>  adds the number of all strings in the ioff block to len
 !
 !!   @param[inout] len cumulative number of all strings with this ms restrictions
 !!   @param hpvx_occ (occupational numbers for all spaces for all vertices)   
 !!   @param idx_graph graph indices for all spaces of all vertices
-!!   @param ioff, 
-!!   @param ms1,gam1 combined ms symmetry of C1/A1 tuple
+!!   @param iocc, index of the occupation block 
+!!   @param ms1,gam1 combined ms and symmetry of C1/A1 tuple
 !
 !    Note: only works for derived density matrices ms_total =0, totalsymmetrisch , form:
 !
@@ -2107,9 +2135,6 @@ c         end do
 
       end subroutine
       
-!-----------------------------------------------------------------------!
-!
-!
 !-----------------------------------------------------------------------!
       subroutine get_combineddistlen_core_h(
      &     len,
@@ -2338,7 +2363,28 @@ c         end do
       if(nrank.ge.2) rankoff(1)=rankoff(2)+rankdim(2)
       end subroutine
 
+!###################################################################!
+!!  Generators: They iterate through a number of possible states:
+!!
+!!  usage:
+!!  call init_generator(mygenerator, ....   )
+!!  do  while (next(mygenerator, ...values) ) ! values are intent(out) or intent(inout) 
+!!     ! code, that uses values
+!!  end do
+!!  call del_generator(mygenerator) ! mygenerator may now be reused (new call to init_generator...)
+!
 
+!##################################################################!
+!! ms Generator: generates all combinations  of creator ms values and anihilator ms values possible for a given number of electrons
+!!  Attention: ms values correspond to 2*physical ms (here and everywhere else) to avoid using floating point units
+
+!------------------------------------------------------------------!
+!!   initializes an ms Generator
+!!
+!!   
+!!   @param ms_gen the ms_generator
+!!   @param nel number of electrons
+!!   @param total_ms total ms
 !------------------------------------------------------------------!
       subroutine init_ms_generator_h(ms_gen,nel,total_ms)
 !------------------------------------------------------------------!
@@ -2348,7 +2394,7 @@ c         end do
       integer,intent(in)::
      &     nel,total_ms
       
-      ms_gen%last_ms = nel+2 !msa starts at last_ms -2
+      ms_gen%last_ms = nel+2 !msa starts at last_ms -2 so first value is msa=nel
       ms_gen%nel = nel
       ms_gen%total_ms = total_ms
 
@@ -2363,7 +2409,12 @@ c         end do
      &     ms_gen
       continue !noting to do
       end subroutine
-      
+!------------------------------------------------------------------!
+!!  generates actual ms values
+!!
+!!  note that msa and msc should not be used if the function returns false
+!!  @param msa the ms value of the anihilator string 
+!!  @param msc the ms value of the creator string
 !------------------------------------------------------------------!
       function next_ms_h(ms_gen,msa,msc)
 !------------------------------------------------------------------!
@@ -2376,6 +2427,7 @@ c         end do
      &     msa,msc
 
       if (ms_gen%last_ms .le. -ms_gen%nel)then
+         ! setting some defined values
          msa=0
          ms_gen%last_ms = msa
          msc = msa + ms_gen%total_ms
@@ -2388,6 +2440,13 @@ c         end do
       end if
       
       end function
+
+
+
+
+!##################################################################!
+!! gam Generator: generates all combinations  of creator symmetry indexes and anihilator indexes possible for a given number of electrons
+
 !------------------------------------------------------------------!
       subroutine init_gam_generator_h(gam_gen,ngam,total_gam)
 !------------------------------------------------------------------!
@@ -2411,7 +2470,17 @@ c         end do
      &     gam_gen
       continue !noting to do
       end subroutine
-      
+
+!------------------------------------------------------------------!
+!!
+!!
+!!  note that gama and gamc should not be used if the function returns false
+!------------------------------------------------------------------!
+!!  generates actual ms values
+!!
+!!  note that gama and gamc should not be used if the function returns false
+!!  @param gama the symmetry number of the anihilator string 
+!!  @param gamc the symmetry number of the creator string
 !------------------------------------------------------------------!
       function next_gam_h(gam_gen,gama,gamc)
 !------------------------------------------------------------------!
@@ -2424,6 +2493,7 @@ c         end do
      &     gam_gen
       
       if (gam_gen%last_gam .ge. gam_gen%ngam)then
+         ! setting some defined values
          gama=0
          gam_gen%last_gam = gama
          gamc = multd2h(gama,gam_gen%total_gam)
