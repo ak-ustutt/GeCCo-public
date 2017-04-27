@@ -824,19 +824,8 @@ c dbgend
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
      &                       hpvxseq,.false.)
                 lenca = ielprd(len_str,ncblk2+nablk2) ! yeah, a product
-                len2(1:4) = 1
-                if (ncblk2.eq.1.and.nc2.eq.0) len2(1) = len_str(1)
-                if (ncblk2.eq.1.and.nc1.eq.0) len2(2) = len_str(1)
-                if (ncblk2.eq.2) then
-                  len2(1) = len_str(1)
-                  len2(2) = len_str(2)
-                end if
-                if (nablk2.eq.1.and.na2.eq.0) len2(3) =len_str(ncblk2+1)
-                if (nablk2.eq.1.and.na1.eq.0) len2(4) =len_str(ncblk2+1)
-                if (nablk2.eq.2) then
-                  len2(3) = len_str(ncblk2+1)
-                  len2(4) = len_str(ncblk2+2)
-                end if
+                call expand_len_str_h(len2,len_str,nablk2,ncblk2,nc1,nc2
+     &               ,na1,na2)
                 if (lenca.eq.0) cycle
 
                 ndis = mel_get_ndis_h(mel_inp,jocc_cls,igama,idxmsa)
@@ -1509,20 +1498,10 @@ c dbgend
      &                       graphs,
      &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
-     &                       hpvxseq,.false.)
-                len2(1:4) = 1
-                if (ncblk2.eq.1.and.nc2.eq.0) len2(1) = len_str(1)
-                if (ncblk2.eq.1.and.nc1.eq.0) len2(2) = len_str(1)
-                if (ncblk2.eq.2) then
-                  len2(1) = len_str(1)
-                  len2(2) = len_str(2)
-                end if
-                if (nablk2.eq.1.and.na2.eq.0) len2(3) =len_str(ncblk2+1)
-                if (nablk2.eq.1.and.na1.eq.0) len2(4) =len_str(ncblk2+1)
-                if (nablk2.eq.2) then
-                  len2(3) = len_str(ncblk2+1)
-                  len2(4) = len_str(ncblk2+2)
-                end if
+     &               hpvxseq,.false.)
+                
+                call expand_len_str_h(len2,len_str,nablk2,ncblk2,nc1,nc2
+     &               ,na1,na2)
                 if (ielprd(len_str,ncblk2+nablk2).eq.0) cycle
 
                 ndis = mel_inp%off_op_gmox(jocc_cls)%ndis(igama,idxmsa)
@@ -1758,10 +1737,6 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       curr_rec=ffu%current_record
       len_rec =ffu%length_of_record
       if (.not.bufu.and.get_u)then
-c         do idx=1,nbuff
-c            if (is_nan_h(buffer_u(idx) ))
-c     &           call warn(i_am,"NaN detected 6")
-c         end do
          call put_vec(ffu,buffer_u,
      &     (curr_rec-1)*len_rec+1,(curr_rec-1)*len_rec+nbuff)
       end if
@@ -1769,21 +1744,6 @@ c         end do
 
       return
       contains
-!-----------------------------------------------------------------------!
-!! as I can't rely on gforts nonstandard is_nan or the standard ieee_arithmetic module (because we have to support older compilers),
-!! here is a reproduction of the is_nan functionality
-!-----------------------------------------------------------------------!
-      function is_nan_h(value)
-!-----------------------------------------------------------------------!
-      implicit none
-      logical ::
-     &     is_nan_h
-      
-      real(8),intent(in)::
-     &     value
-      is_nan_h = .not. ((value.le. 0d0) .or.(value.ge.0d0))
-
-      end
 !-----------------------------------------------------------------------!
 !!    tries to guess the cluster operator for the singular value histogramm
 !!
@@ -1951,7 +1911,35 @@ c         end do
 
       if(isqrt_h*isqrt_h.ne.in) call quit(1,i_am,"square root error")
       end function isqrt_h
- 
+!----------------------------------------------------------------------!
+      subroutine expand_len_str_h(len_str_out, len_str,
+     &     nablk,ncblk,
+     &     nc1,nc2,
+     &     na1,na2)
+!-----------------------------------------------------------------------!
+      implicit none
+      integer, intent(inout)::
+     &     len_str_out(4)
+      integer, intent(in)::
+     &     len_str(*),
+     &     nablk,ncblk,
+     &     nc1,nc2,
+     &     na1,na2
+      len_str_out(1:4) = 1
+      if (ncblk.eq.1.and.nc2.eq.0) len_str_out(1) = len_str(1)
+      if (ncblk.eq.1.and.nc1.eq.0) len_str_out(2) = len_str(1)
+      if (ncblk.eq.2) then
+         len_str_out(1) = len_str(1)
+         len_str_out(2) = len_str(2)
+      end if
+      if (nablk.eq.1.and.na2.eq.0) len_str_out(3) =len_str(ncblk+1)
+      if (nablk.eq.1.and.na1.eq.0) len_str_out(4) =len_str(ncblk+1)
+      if (nablk.eq.2) then
+         len_str_out(3) = len_str(ncblk+1)
+         len_str_out(4) = len_str(ncblk+2)
+      end if
+      
+      end subroutine
 !-----------------------------------------------------------------------!
       subroutine calculate_rank_dimensions_h(
      &     mel,op,graphs,iocc_cls, njoined,
@@ -1960,6 +1948,7 @@ c         end do
      &     na1mx,nc1mx,
      &     ndim,nrank,rankoff,rankdim)
 !-----------------------------------------------------------------------!
+      implicit none
       type(me_list),intent(in)::
      &     mel
       type(operator),intent(in)::
