@@ -778,16 +778,12 @@ c dbgend
             call init_ms_generator_h(ms_gen1,na1,ms1)
             do while(next_ms_h(ms_gen1,msa1,msc1))
                if (.not. is_possible_h(nc1,msc1,1) ) cycle
-               msdis_c(1) = msc1
-               msdis_a(1) = msa1
 
              call init_gam_generator_h(gam_gen1,ngam,igam)
              do while(next_gam_h(gam_gen1, gama1,gamc1))
               if (.not. is_possible_h(na1,0,gama1) ) cycle
               if (.not. is_possible_h(nc1,0,gamc1) ) cycle
                   
-              gamdis_c(1) = gamc1
-              gamdis_a(1) = gama1
               off_col = off_col2
 
 ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
@@ -805,20 +801,18 @@ c dbgend
                 if (.not. is_possible_h(nc2,0,gamc2) ) cycle
                 
                 igama = multd2h(gama1,gama2)
-                if (nablk2.eq.1.and.na1.eq.0) then
-                  msdis_a(1) = msa2
-                  gamdis_a(1) = gama2
-                else if (nablk2.eq.2) then
-                  msdis_a(2) = msa2
-                  gamdis_a(2) = gama2
-                end if
-                if (ncblk2.eq.1.and.nc1.eq.0) then
-                  msdis_c(1) = msc2
-                  gamdis_c(1) = gamc2
-                else if (ncblk2.eq.2) then
-                  msdis_c(2) = msc2
-                  gamdis_c(2) = gamc2
-                end if
+                
+                call set_dist_msgam_h(
+     &               gamdis_c,gamdis_a,
+     &               msdis_c,msdis_a,
+     &               msc1,msa1,
+     &               msc2,msa2,
+     &               gamc1,gama1,
+     &               gamc2,gama2,
+     &               nc1,na1,
+     &               nc2,na2,
+     &               ncblk2,nablk2)
+               
 
                 ! determine the distribution in question
                 call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
@@ -862,7 +856,7 @@ c     &               d_gam_ms(idxdis,igama,idxmsa)
 c dbgend
                 if (lenca.ne.mel_inp%len_op_gmox(jocc_cls)%
      &               d_gam_ms(idxdis,igama,idxmsa))
-     &             call quit(1,'invsqrt','inconsistency!')
+     &             call quit(1,i_am,'inconsistency!')
 
                 call set_op_ldim_c(ldim_opin_c,ldim_opin_a,
      &               hpvx_csub2,hpvx_asub2,
@@ -894,12 +888,12 @@ c dbgend
                 call strmap_man_flip(
      &               maxbuf_tmp,graph_csub2,ncblk2,
      &               str_info,strmap_info,orb_info)
-                if (maxbuf_tmp.gt.maxbuf) call quit(1,'invsqrt',
+                if (maxbuf_tmp.gt.maxbuf) call quit(1,i_am,
      &             'add more to maxbuf')
                 call strmap_man_flip(
      &               maxbuf_tmp,graph_asub2,nablk2,
      &               str_info,strmap_info,orb_info)
-                if (maxbuf_tmp.gt.maxbuf) call quit(1,'invsqrt',
+                if (maxbuf_tmp.gt.maxbuf) call quit(1,i_am,
      &             'add more to maxbuf')
 
                 call get_flipmap_blk(flipmap_c,
@@ -964,7 +958,6 @@ c dbgend
                        istr_asub(1) = idxa2-1
                        istr_asub_flip(1) = 
      &                          abs(flipmap_a(idxa2))-1
-c     &                          abs(flipmap_a(len2(3)+idxa2))-1
                       else if (na2.ne.0) then
                        istr_asub(2) = idxa2-1
                        istr_asub_flip(2) =
@@ -975,7 +968,6 @@ c     &                          abs(flipmap_a(len2(3)+idxa2))-1
                          istr_csub(1) = idxc2-1
                          istr_csub_flip(1) =
      &                          abs(flipmap_c(idxc2))-1
-c     &                          abs(flipmap_c(len2(1)+idxc2))-1
                         else if (nc2.ne.0) then
                          istr_csub(2) = idxc2-1
                          istr_csub_flip(2) =
@@ -1029,7 +1021,7 @@ c dbgend
             deallocate(hpvx_csub2,hpvx_asub2,occ_csub2,
      &              occ_asub2,graph_csub2,graph_asub2,
      &           iocc2,idx_g2)
-            subroutine advance_block_n2_h(
+            call advance_block_n2_h(
      &           nc2,na2,
      &           ms1,
      &           nc1mx,na1mx,
@@ -1454,8 +1446,6 @@ c dbgend
      &           buffer_in(ioff+1) = scratch2(off_line2+1,off_col2+1)
               if (get_u)then
                  buffer_u(ioff+1) = scratch3(off_line2+1,off_col2+1)
-c                 if (is_nan_h(buffer_u(ioff+1)))
-c     &                call warn(i_am,"NaN detected 4")
               end if
               exit
             end if
@@ -1477,43 +1467,39 @@ c     &                call warn(i_am,"NaN detected 4")
             ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
             off_line = off_line2
             off_colmax = 0
-            do msa1 = na1, -na1, -2
-             msc1 = msa1 + ms1
-             if (abs(msc1).gt.nc1) cycle
-             msdis_c(1) = msc1
-             msdis_a(1) = msa1
-             do gama1 = 1, ngam
-              gamc1 = multd2h(gama1,igam)
-              if (na1.eq.0.and.gama1.ne.1.or.
-     &            nc1.eq.0.and.gamc1.ne.1) cycle
-              gamdis_c(1) = gamc1
-              gamdis_a(1) = gama1
+            call init_ms_generator_h(ms_gen1,na1,ms1)
+            do while(next_ms_h(ms_gen1,msa1,msc1))
+               if (.not. is_possible_h(nc1,msc1,1) ) cycle
+             
+             call init_gam_generator_h(gam_gen1,ngam,igam)
+             do while(next_gam_h(gam_gen1, gama1,gamc1))
+              if (.not. is_possible_h(na1,0,gama1) ) cycle
+              if (.not. is_possible_h(nc1,0,gamc1) ) cycle
+              
               ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
               off_col = off_col2
-              do msc2 = nc2, -nc2, -2
-               msa2 = msc2 - ms2
-               if (abs(msa2).gt.na2) cycle
-               msa = msa1 + msa2
-               idxmsa = (msmax-msa)/2 + 1
-               do gamc2 = 1, ngam
-                gama2 = multd2h(gamc2,igam)
-                if (na2.eq.0.and.gama2.ne.1.or.
-     &              nc2.eq.0.and.gamc2.ne.1) cycle
+              call init_ms_generator_h(ms_gen2,nc2,-ms2)
+              do while(next_ms_h(ms_gen2,msc2,msa2) )
+                 if (.not. is_possible_h(na2, msa2,1)) cycle
+                 msa = msa1 + msa2
+                 idxmsa = (msmax-msa)/2 + 1
+               
+               call init_gam_generator_h(gam_gen2,ngam,igam)
+               do while(next_gam_h(gam_gen2, gamc2,gama2))
+                  if (.not. is_possible_h(na2,0,gama2) ) cycle
+                  if (.not. is_possible_h(nc2,0,gamc2) ) cycle
+                
                 igama = multd2h(gama1,gama2)
-                if (nablk2.eq.1.and.na1.eq.0) then
-                  msdis_a(1) = msa2
-                  gamdis_a(1) = gama2
-                else if (nablk2.eq.2) then
-                  msdis_a(2) = msa2
-                  gamdis_a(2) = gama2
-                end if
-                if (ncblk2.eq.1.and.nc1.eq.0) then
-                  msdis_c(1) = msc2
-                  gamdis_c(1) = gamc2
-                else if (ncblk2.eq.2) then
-                  msdis_c(2) = msc2
-                  gamdis_c(2) = gamc2
-                end if
+                call set_dist_msgam_h(
+     &               gamdis_c,gamdis_a,
+     &               msdis_c,msdis_a,
+     &               msc1,msa1,
+     &               msc2,msa2,
+     &               gamc1,gama1,
+     &               gamc2,gama2,
+     &               nc1,na1,
+     &               nc2,na2,
+     &               ncblk2,nablk2)
 
                 ! determine the distribution in question
                 call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
@@ -1585,10 +1571,6 @@ c     &                call warn(i_am,"NaN detected 4")
      &                     buffer_in(idx) = scratch2(iline,icol)
                         if (get_u)then
                            buffer_u(idx) = scratch3(iline,icol)
-c                           if (is_nan_h(buffer_u(idx)))then
-c                              call warn(i_am,"NaN detected 5")
-c                              write (lulog,*) "in line",iline
-c                           end if
                         end if
                       end do
                     end do
@@ -1968,9 +1950,6 @@ c         end do
       isqrt_h = int(sqrt(dble(in)))
 
       if(isqrt_h*isqrt_h.ne.in) call quit(1,i_am,"square root error")
-         
-
-      
       end function isqrt_h
  
 !-----------------------------------------------------------------------!
@@ -2200,7 +2179,7 @@ c         end do
             if (.not. is_possible_h(na1,0,gama1) ) cycle
             if (.not. is_possible_h(nc1,0,gamc1) ) cycle
 
-            call set_dist_msgam(
+            call set_dist_msgam_h(
      &           gamdis_c,gamdis_a,
      &           msdis_c,msdis_a,
      &           msc1,msa1,
@@ -2244,7 +2223,7 @@ c         end do
 !!    / 0 0 x 0 \  msa2 gama2 na2
 !!    \ 0 0 0 0 /      
 !-----------------------------------------------------------------------!
-      subroutine set_dist_msgam(
+      subroutine set_dist_msgam_h(
      &     gamdis_c,gamdis_a,
      &     msdis_c,msdis_a,
      &     msc1,msa1,
@@ -2272,19 +2251,19 @@ c         end do
       msdis_a(1) = msa1
       gamdis_c(1) = gamc1
       gamdis_a(1) = gama1
-      
-      if(nablk.eq.1 .and. na1.eq.0)then
-         msdis_a(1) = msa2
-         gamdis_a(1) = gama2
-      else if (nablk.eq.2)then
-         msdis_a(2) = msa2
-         gamdis_a(2) = gama2
-      end if
+   
+       if(nablk.eq.1 .and. na1.eq.0)then
+          msdis_a(1) = msa2
+          gamdis_a(1) = gama2
+       else if (nablk.eq.2)then
+          msdis_a(2) = msa2
+          gamdis_a(2) = gama2
+       end if
       
       if(ncblk.eq.1 .and. nc1.eq.0)then
          msdis_c(1) = msc2
          gamdis_c(1) = gamc2
-      else if (nablk.eq.2)then
+      else if (ncblk.eq.2)then
          msdis_c(2) = msc2
          gamdis_c(2) = gamc2
       end if
