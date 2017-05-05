@@ -55,7 +55,7 @@
       end type
           
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=*),parameter::
      &     i_am = "invsqrt"
 
@@ -261,15 +261,6 @@ c dbgend
         buffer_u => ffu%buffer(1:)
       endif
 
-c dbg AB
-      if(get_u)then
-         print *, i_am,"finding NaNs", get_u,bufu
-         do idx=1,nbuff
-            if (is_nan_h(buffer_u(idx)))
-     &           call warn(i_am,"NaN detected 1")
-         end do
-      end if
-c dbgend
 
       icnt_sv  = 0 ! we will count the
       icnt_sv0 = 0 ! number of singular values below threshold
@@ -457,7 +448,7 @@ c dbgend
      &                call quit(1,i_am,'cannot handle this')
               if (ndim.eq.0) cycle igama_loop
 
-              if (iprint.ge.10)
+              if (iprint.ge.15)
      &           write(lulog,'(a,3i8)') 'msa, gama, ndim:',msa,igama,
      &             ndim
 c     &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
@@ -590,14 +581,6 @@ c dbgend
 ! write unitary matrix to buffer
                  call copy_buffer_2_h(scratch3, buffer_u,
      &                ndim,ndim,ioff,transp)
-cdbg AB
-c                 do idx = 1,ndim
-c                    do jdx = 1,ndim
-c                       if (is_nan_h(buffer_u((idx-1)*ndim+jdx+ioff)))
-c     &                      call warn(i_am,"NaN detected 3")
-c                    enddo
-c                 enddo
-cdbg end                 
                  
                  deallocate(scratch3)
               end if
@@ -687,9 +670,9 @@ cdbg end
             call quit(1,i_am,'dimensions don''t add up!')
           end if
 
-          if (iprint.ge.10)
+          if (iprint.ge.15)
      &       write(lulog,'(a,3i8)') 'ms1, igam, ndim:',ms1,igam,ndim
-          if (iprint.ge.10)
+          if (iprint.ge.15)
      &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
@@ -1045,7 +1028,7 @@ c dbgend
 
            ! build projector and apply to current block
            if (irank.ge.2) then
-            if (iprint.ge.10)
+            if (iprint.ge.15)
      &        write(lulog,'(x,a,i8)') 'next rank:',irank
             select case(project)
             case (1,2)
@@ -1160,6 +1143,7 @@ c dbgend
                rdim3 = rankdim(krank)
                idxst3 = rankoff(krank) + 1
                idxnd3 = rankoff(krank) + rdim3
+               
                call dgemm('t','n',rdim2,rdim,rdim3,
      &                  -1d0,scratch(idxst3:idxnd3,idxst2:idxnd2),rdim3,
      &                  scratch(idxst3:idxnd3,idxst:idxnd),rdim3,
@@ -1194,10 +1178,10 @@ c dbgend
             ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
-            write(lulog,*) 'flmap:'
-            do icol = idxst, idxnd
-              write(lulog,'(i4,2i6)') icol,flmap(icol,1:2)
-            end do
+c            write(lulog,*) 'flmap:'
+c            do icol = idxst, idxnd
+c              write(lulog,'(i4,2i6)') icol,flmap(icol,1:2)
+c            end do
 c dbgend
             do icol = idxst, idxnd
               idx = idxlist(flmap(icol,1),flmap(idxst:idxnd,2),rdim,1)
@@ -1343,18 +1327,17 @@ c dbgend
              idxst2 = rankoff(jrank) + 1
              idxnd2 = rankoff(jrank) + rdim2
              call dgemm('t','n',rdim2,rdim,rdim,
-     &                  1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
-     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &            1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
+     &            scratch(idxst:idxnd,idxst:idxnd),rdim,
      &            0d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+             if(project.eq.4)then
+             !P12 =  X1^+ S12
+             call dgemm('t','n',rdim2,rdim,rdim,
+     &            1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
+     &            scratch2(idxst:idxnd,idxst:idxnd),rdim,
+     &            0d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2)
+             end if
              scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
-             if (project.eq.4)then
-!P12 = - P21^+* U2U2^+ =
-                call dgemm("t","n",rdim,rdim2,rdim2,
-     &               -1d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2,
-     &               scratch(idxst2:idxnd2,idxst2:idxnd2),rdim2,
-     &               0d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim)
-                scratch2(idxst2:idxnd2,idxst:idxnd)=0d0
-              end if
             end do
             do jrank = irank+1, nrank ! target: (i,j) input: (i,i) and (j,i)
              rdim2 = rankdim(jrank)
@@ -1364,20 +1347,6 @@ c dbgend
      &                  1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
      &                  scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
      &                  0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
-             if(project.eq.4)then
-             !P12 =  X1^+ S12
-                call dgemm ("t","n",rdim,rdim2,rdim,
-     &               1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &               scratch(idxst:idxnd,idxst2:idxnd2),rdim,
-     &               0d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim)
-            !P21 = P12^+*X1^+ =S12^+ X1 X1^+
-                call dgemm ("t","t",rdim2,rdim,rdim,
-     &               1d0,scratch2(idxst:idxnd,idxst2:idxnd2),rdim,
-     &               scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &               0d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2)
-
-                !P12 = -X1X1^+S12U2U2^+
-             end if
             end do
 
            end select
@@ -1522,7 +1491,7 @@ c dbgend
      &                 d_gam_ms(idxdis,igama,idxmsa)
 
                 ! copy all required elements of this distribution
-                ! to their block in the A1/C1 | A2/C2 matrix
+                ! to their block in the A1/C1 | A2/C2 matrix1
                 iline = off_line
                 do idxc1 = 1, len2(1)
                   if (nc1.ne.0) istr_csub(1) = idxc1-1
@@ -1962,7 +1931,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     project
       logical, intent(in)::
      &     sgrm                 ! if separate orthogonalization is requested 
-      integer, intent(out)::
+      integer, intent(inout)::
      &     ndim, nrank
       integer, dimension(maxrank),intent(out)::
      &     rankoff, rankdim
@@ -2031,7 +2000,6 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &          jocc_cls,
      &          ms1,igam,
      &          graphs)
-           ndim = ndim + rdim
            call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
            jblkoff = occoff_h(jocc_cls,njoined)
            end do
@@ -2039,6 +2007,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
            na1 = na1 - 1
            nc1 = nc1 - 1
       
+           ndim = ndim + rdim
            if (project.gt.0.and.rdim.gt.0) then
               call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
            end if
@@ -2329,6 +2298,9 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       rankdim(1)=rdim
       rankoff(1)=0
       if(nrank.ge.2) rankoff(1)=rankoff(2)+rankdim(2)
+!      print *, nrank,rdim
+!      print *, rankoff
+!      print *, rankdim
       end subroutine
 
 !###################################################################!

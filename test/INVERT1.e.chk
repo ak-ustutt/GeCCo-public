@@ -1,0 +1,53 @@
+title
+  the rule/command INVERT with project=1
+molecule
+  BeH2_4akt-MR-DALTON 
+input
+  INVERT1.inp
+check
+  label Trafo 
+  find This is ME_GAM_S_ISQ
+  find PRINT_MEL
+  find  block no. +2
+  compare int 6
+  find ^ +1379 
+  compare real 8 1e-5
+  find ^ +1384
+  compare real 8 1e-5
+  find  block no. +3
+  compare int 6
+  find ^ +1398
+  compare real 10 1e-5
+  find  block no. +4
+  compare int 6
+  find ^ +1441
+  compare real 16 1e-5
+  find ^ +1442
+  compare real 16 1e-5
+check
+  rewind
+  label Projector
+  find This is ME_GAM_S
+  find PRINT_MEL
+  find  block no. +2
+  compare int 6
+  find ^ +1379
+  compare real 8 1e-5
+  find ^ +1384
+  compare real 8 1e-5
+check
+  label Trafo2
+  find  block no. +3
+  compare int 6
+  find ^ +1398
+  compare real 8 1e-5
+  find  block no. +4
+  compare int 6
+  find ^ +1440
+  compare real 16 1e-5
+  find ^ +1443
+  compare real 16 1e-5
+end 
+
+
+
