@@ -5,7 +5,7 @@
      &                   me_opt,me_grd,me_dia,
      &                   me_trv,me_h_trv,
      &                   n_states,
-     &                   me_u, use_u,
+     &                   me_P, 
      &                   me_special,nspecial,
      &                   fspc,nspcfrm,
      &                   opti_info,opti_stat,
@@ -71,6 +71,8 @@
 * parameters
       integer, parameter ::
      &     ntest = 00
+      character(len=*),parameter::
+     &     i_am="optcont"
       character(len=10), parameter ::
      &     name_alg(0:3) =
      &     (/"Pert. Upd.","      DIIS","  ASSJ/RLE"," 2ND ORDER"/)
@@ -101,11 +103,11 @@
      &     energy(0:*), xngrd(*)
 
       integer, intent(in) ::
-     &     nspecial, n_states, use_u
+     &     nspecial, n_states
 
-      type(me_list_array), intent(inout) ::
+      type(me_list_array), intent(in) ::
      &     me_opt(*), me_grd(*), me_dia(*), me_special(nspecial),
-     &     me_trv(*), me_h_trv(*), me_u(3)
+     &     me_trv(*), me_h_trv(*), me_P(2)
       
       type(optimize_info), intent(in) ::
      &     opti_info
@@ -126,7 +128,6 @@
      &     iprint, iroute, ifree, iopt, i_state
       real(8) ::
      &     de, cpu, sys, wall, cpu0, sys0, wall0
-
 
       iprint = max(ntest,iprlvl)
       call atim_csw(cpu0,sys0,wall0)
@@ -211,7 +212,7 @@
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &       n_states,
-     &       me_u,use_u,
+     &       me_P,
      &       me_special,nspecial,
      &       nincore,lenbuf,ffscr,
      &       xbuf1,xbuf2,xbuf3,

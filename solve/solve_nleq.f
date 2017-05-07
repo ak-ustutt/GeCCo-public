@@ -82,8 +82,7 @@ c dbgend
      &     imacit, imicit, imicit_tot, iprint, task, ifree, iopt, jopt,
      &     idx, idxmel, ierr, nout,
      &     ndx, idx_res_xret(nopt), jdx, it_print,refproj,
-     &     i_state, i_state2, ndx_eff, idx_eff, n_energies, nopt_state,
-     &     use_u
+     &     i_state, i_state2, ndx_eff, idx_eff, n_energies, nopt_state
       integer, allocatable ::
      &     idx_en_xret(:)
       real(8) ::
@@ -98,10 +97,9 @@ c dbgend
      &     ff_unit_dummy
       type(me_list_array), pointer ::
      &     me_opt(:), me_grd(:), me_dia(:), me_special(:),
-     &     me_trv(:), me_h_trv(:) ! not yet needed
+     &     me_trv(:), me_h_trv(:)   ! not yet needed
       type(me_list_array)::
-     &     me_U(3)
-      
+     &     me_P(2)
       type(file_array), pointer ::
      &     ffopt(:), ffgrd(:), ffdia(:), ffspecial(:),
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
@@ -113,8 +111,7 @@ c dbgend
      &     form_en_res
       type(formula_item) ::
      &     fl_en_res, fl_spc(nspcfrm)
-      character(len=7)::
-     &     fname
+
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret
       logical, external ::
@@ -133,6 +130,8 @@ c dbgend
      &     evp_mode
       character(2) ::
      &     MRCC_type
+      character(len=5)::
+     &     fname
 
       ifree = mem_setmark('solve_nleq')
 
@@ -225,30 +224,8 @@ c dbg end
      &                        'restart',lval=restart)
 
 ! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
-      use_u = 0
-      do iopt=1,nopt
-         if (opti_info%optref .eq. -3
-     &        .and. opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            use_u=iopt
-            write(fname,'("me_Ueta")') 
-            me_U(1)%mel => me_from_template(
-     &           fname, me_special(6)%mel%op%name,me_special(6)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            write(fname,'("me_Utrf")')
-            me_U(2)%mel=> me_from_template(
-     &           fname, me_special(2)%mel%op%name,me_special(2)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            write(fname,'("me_Udag")') 
-            me_U(3)%mel => me_from_template(
-     &       fname, me_special(3)%mel%op%name,me_special(3)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-         end if
-      end do
-      
-      do iopt = 1, nopt 
+      do iopt = 1, nopt
+
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
@@ -281,6 +258,16 @@ cmh     if file already open, use as initial guess!
         if (ffspecial(idx)%fhand%unit.le.0)
      &       call file_open(ffspecial(idx)%fhand)
       end do
+      
+cmh      ! get initial amplitudes
+cmh      do iopt = 1, nopt
+cmhc        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
+cmh          call zeroop(me_opt(iopt)%mel)
+cmhc dbg DBGDBG!!!
+cmhc        else
+cmhc          call warn('solve_nleq','debug version of restart active')
+cmhc        end if
+cmh      end do
 
       ! use mode_str to set special preconditioning, e.g. for R12
 
@@ -292,6 +279,31 @@ cmh     if file already open, use as initial guess!
       call set_opti_info_signs(opti_info,1,nopt,
      &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
+
+      me_P(1)%mel => null()
+      me_P(2)%mel => null()
+      do iopt=1,nopt
+         if (opti_info%optref .eq. -3 !actually if project =4
+     &        .and. opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            write(fname,'("me_P1")') 
+            me_P(1)%mel => me_from_template(
+     &           fname, me_special(6)%mel%op%name,me_special(6)%mel,
+     &           1,
+     &           op_info,  orb_info, str_info, strmap_info)
+            call zeroop(me_P(1)%mel)
+            write(fname,'("me_P2")')
+            me_P(2)%mel=> me_from_template(
+     &           fname, me_special(2)%mel%op%name,me_special(2)%mel,
+     &           1,
+     &           op_info,  orb_info, str_info, strmap_info)
+            call zeroop(me_P(2)%mel)
+         end if
+      end do
+
+
+
+
+      
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res,.true.)
 
@@ -328,8 +340,9 @@ cmh     if file already open, use as initial guess!
      &       'formula does not provide an update for all the energies')
        end do
       end if
-
-      
+c dbg
+c      print *,'idx_en_xret: ',idx_en_xret
+c dbg
       if (idx_en_xret(0).le.0)
      &     call quit(1,i_am,
      &     'formula does not provide an update for the energy')
@@ -362,7 +375,7 @@ cmh     if file already open, use as initial guess!
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &      n_states,
-     &      me_U,use_u,
+     &      me_P,
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
@@ -509,7 +522,7 @@ c     &       ff_trv,ff_h_trv,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
            else
-             call solve_evp2('DIA',1,ndx_eff,idx_eff,
+             call solve_evp('DIA',1,ndx_eff,idx_eff,
      &            'ME_C0',trim(dia_label),'A_C0',
      &            'C0','FOPT_OMG_C0'//trim(c_st),
      &            '-',0,
@@ -656,7 +669,7 @@ c test
      &         op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &         me_special(2)%mel%fhand%last_mod(1)) then
              call update_metric(me_dia(1)%mel,
-     &            me_u,use_u,
+     &            me_P,
      &            me_special,nspecial,
      &            fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &            opti_info%update_prc.gt.0.and.
@@ -703,7 +716,7 @@ c dbg
 c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
-        ! ... and corresponding preconditioner(s)
+        ! ... and corresponding preconditioner(s)x
         if (ffdia(iopt)%fhand%unit.gt.0)
      &       call file_close_keep(ffdia(iopt)%fhand)
       end do

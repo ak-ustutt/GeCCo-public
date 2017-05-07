@@ -6,21 +6,27 @@
 *----------------------------------------------------------------------*
       type leninf
         integer, pointer ::
-     &     gam_ms(:,:)
-      end type leninf
+     &     gam_ms(:,:)          ! GAM/MS-blocks in an excitation class
+                                 !indexed by (GAM(A),MS(A)-index)
+        end type leninf
+! note for  GAM the numerical representation  of the
+!symmetry class is used (look in the program, the integrals are imported from.).
+! for MS the the index goes from largest to smallest (e.g ms=-1 would be msidx=3 in a triplett)
       type leninfx
         integer ::
-     &     maxd
+     &     maxd                 !maximum number of distributions in any GAM(A), MS(A) pairing
         integer, pointer ::
-     &     ndis(:,:)
+     &       ndis(:,:)          ! number of distributions for a specific
+                                ! GAM(a), MS(a)
         integer, pointer ::
-     &     did(:,:,:)
+     &     did(:,:,:)           ! id of a distribution is created by msgmdid2
+                                ! indexed by (distribution_index, GAM(a), MS(a)-index)
         integer, pointer ::
-     &     d_gam_ms(:,:,:)
+     &     d_gam_ms(:,:,:)      ! indexed by (distribution_index, GAM(a), MS(a)-index)
       end type leninfx
       type leninfx2
         integer, pointer ::
-     &     d_gam_ms(:,:,:)
+     &     d_gam_ms(:,:,:)     ! indexed by (distribution_index, GAM(a), MS(a)-indx)
       end type leninfx2
 
       integer, parameter ::
@@ -97,7 +103,7 @@
      &       off_op_gmo(:),    ! offset for IRREP, MS and occupation class
      &       len_op_gmo(:)     ! length per IRREP, MS and occupation class
         type(leninfx), pointer ::
-     &       off_op_gmox(:)    ! offset per IRREP, MS and occupation class,
+     &       off_op_gmox(:)    ! length per IRREP, MS and occupation class,
                                ! and IRREP and MS distr. over HPV per C/A
         type(leninfx2), pointer ::
      &       len_op_gmox(:)    ! length per IRREP, MS and occupation class,

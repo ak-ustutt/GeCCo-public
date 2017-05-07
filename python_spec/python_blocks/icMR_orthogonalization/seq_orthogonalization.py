@@ -198,7 +198,7 @@ if False : # (gno >= 0 and l_iccc)
 
 
 # Singular value decomposition
-# does this overwrite ME_GAM_S w
+# does this overwrite ME_GAM_S ? yes it does! ME_GAM_S is now the projector
 INVERT({
         LIST_INV:'ME_GAM_S',
         LIST:'ME_GAM_S_ISQ',

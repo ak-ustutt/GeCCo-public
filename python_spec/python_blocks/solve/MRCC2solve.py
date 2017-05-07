@@ -23,6 +23,13 @@ def ab_sym(ms, mult):
     else :
         return 0
 
+spinadapt = keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
+
+if spinadapt >= 2 : # and gno >= 0
+    S2_val=0
+else:
+    S2_val=-1  # the default
 #------------------------------------------------------------------
 #------------------------------------------------------------------
 #SOLVE it
@@ -97,6 +104,101 @@ SOLVE_EVP(SOLVE_map)
 
 
 
+new_target("MAKE_U_TRM")
+depend('MakeOrthBasis')
+
+PRINT({STRING:"The full Projector"})
+debug_MEL('ME_GAM_S',only_this=True)
+
+
+EVALUATE({
+        FORM:'FOPT_GAM_S'})
+debug_MEL('ME_GAM_S',only_this=True)
+
+CLONE_OPERATOR({LABEL:"U",
+                TEMPLATE:"GAM_S"})
+
+
+DEF_ME_LIST({
+        LIST:'ME_U',
+        OPERATOR:'U',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM: ab_sym( orbitals.get('imult'), orbitals.get('ims')),
+        S2:S2_val})
+
+
+CLONE_OPERATOR({LABEL:"U_TRM",
+                TEMPLATE:"X_TRM"})
+DEF_ME_LIST({
+        LIST:'ME_U_TRM',
+        OPERATOR:'U_TRM',
+        IRREP:1,
+        '2MS':0,
+        S2:0,
+        AB_SYM:0,
+        S2:0})
+
+CLONE_OPERATOR({LABEL:"U_DAG",
+                TEMPLATE:"X_TRM"})
+DEF_ME_LIST({
+        LIST:'ME_U_DAG',
+        OPERATOR:'U_DAG',
+        IRREP:1,
+        '2MS':0,
+        S2:0,
+        AB_SYM:0,
+        S2:0})
+
+INVERT({
+        LIST_INV:'ME_GAM_S',
+        LIST:['ME_GAM_S_ISQ',"ME_U"],
+        MODE:'invsqrt'}) 
+debug_MEL("ME_U",only_this=True)
+
+REORDER_MEL({LIST_RES:'ME_U_DAG',
+             LIST_IN:'ME_U',
+             FROMTO: 13})
+debug_MEL("ME_U_DAG",only_this=True)
+
+REORDER_MEL({LIST_RES:'ME_U_TRM',
+             LIST_IN:'ME_U',
+             ADJOINT:True,
+             FROMTO: 13})
+
+debug_MEL("ME_U_TRM",only_this=True)
+
+new_target("FOPT_UNIT",True)
+depend("MAKE_U_TRM")
+
+DEF_ME_LIST({LIST:"ME_U2",
+             OPERATOR:"U",
+             IRREP:1,
+             '2MS':0,
+             AB_SYM: ab_sym( orbitals.get('imult'), orbitals.get('ims')),
+             S2:S2_val})
+
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_UNIT',
+                   NEW:True,
+                   OP_RES:"U",
+                   OPERATORS:["U","U_DAG","U","U","U_DAG","U_TRM","U","U","U_TRM","U"],
+                   IDX_SV:[1,2,1,1,2,3,1,1,3,1],
+                   AVOID:[2,5,6,9]
+})
+
+
+
+debug_FORM("FORM_UNIT",only_this=True)
+
+OPTIMIZE({LABELS_IN:"FORM_UNIT",
+          LABEL_OPT:"FOPT_UNIT"
+})
+EVALUATE({FORM:"FOPT_UNIT"})
+
+debug_MEL("ME_U",only_this=True)
+
+
 
 
 new_target("SOLVE_MRCC2_refopt")
@@ -105,15 +207,7 @@ depend('BUILD_PRECON')
 depend("MakeRefState")
 
 
-
-
-
-
-
 # as SOLVE_NLEQ uses internally predefined labels for micro iterations so ...
-
-
-
 CLONE_OPERATOR({
     TEMPLATE:"H_C0",
     LABEL:"A_C0"   })
@@ -142,17 +236,6 @@ DEF_ME_LIST({LIST:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
 SCALE_COPY({LIST_RES:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
             LIST_INP:"ME_D0",
             FAC:1,})
-
-#DEF_ME_LIST({LIST:"ME_C0",
-#             OPERATOR:"C0",
-#             IRREP:int(orbitals.get('lsym')),
-#             "2MS":int(orbitals.get('ims')),
-#             AB_SYM:ab_sym(int(orbitals.get('ims')),int(orbitals.get('imult')))
-#})
-
-#SCALE_COPY({LIST_RES:"ME_C0",
-#            LIST_INP:"C0_LST",
-#            FAC:1,})
 
 
 

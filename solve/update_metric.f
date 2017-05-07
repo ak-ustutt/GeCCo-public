@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine update_metric(me_dia,
-     &     me_u,use_u,
+     &     me_P,
      &     me_special,nspecial,
      &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &     prcupdate)
@@ -27,15 +27,17 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
+      character(len=*),parameter::
+     &     i_am="update_metric"
 
       integer, intent(in) ::
-     &     nspecial, nspcfrm,use_u
+     &     nspecial, nspcfrm
       logical, intent(in) ::
      &     prcupdate
       type(me_list_array), intent(inout) ::
      &     me_special(nspecial),
-     &     me_u(3)
+     &     me_P(2)
       type(me_list), intent(in) ::
      &     me_dia
 
@@ -70,7 +72,7 @@
       call get_argument_value('method.MR','GNO',ival=gno)
       call get_argument_value('method.MR','project',ival=project)
       call get_argument_value('method.MR','prc_traf',lval=prc_traf)
-
+      write (lulog,*)i_am," entering"
       ! calculate metric (if not up to date)
       call evaluate2(fspc(2),.true.,.false.,
      &               op_info,str_info,strmap_info,orb_info,xdum,.false.)
@@ -109,13 +111,6 @@
      &              1,trim(me_special(6)%mel%label),
      &              'invsqrt',
      &              op_info,orb_info,str_info,strmap_info)
-      else if(use_u.gt.0)then
-         call inv_op(2,(/trim(me_special(5)%mel%label),
-     &                   trim(me_u(1)%mel%label)      /),
-     &              1,trim(me_special(6)%mel%label),
-     &              'invsqrt',
-     &              op_info,orb_info,str_info,strmap_info)
-         
       else
         call inv_op(1,trim(me_special(5)%mel%label),
      &              1,trim(me_special(6)%mel%label),
@@ -150,28 +145,18 @@ c     &             trim(me_special(6)%mel%label),.false.,
 c     &             op_info,str_info,strmap_info,orb_info,
 c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
-      if(use_u.gt.0)then
-! reorder unitary matrix
-         call reo_mel(trim(me_u(2)%mel%label),
-     &        trim(me_u(1)%mel%label),.false.,
-     &        op_info,str_info,strmap_info,orb_info,
-     &        13,.false.)
-! and its adjoint/transposed
-         call reo_mel(trim(me_u(3)%mel%label),
-     &        trim(me_u(1)%mel%label),.false.,
-     &        op_info,str_info,strmap_info,orb_info,
-     &        13,.true.)        ! dirty: reo vtx. 1 --> 3
-      
-      end if
-!and its ajoint
-      
 
-      
       ! reorder projector ...
       call reo_mel(trim(me_special(4)%mel%label),
      &             trim(me_special(5)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
-     &             13,.false.)  ! dirty: reo vtx. 1 --> 3
+     &             13,.false.)          ! dirty: reo vtx. 1 --> 3
+      if (project.eq.4)then
+         call list_copy(me_special(4)%mel,me_P(1)%mel,.false.)
+         
+         call list_copy(me_special(4)%mel,me_P(2)%mel,.false.)
+
+      end if
 
       ! update preconditioner if requested
       if (prcupdate.or.prc_traf) then
