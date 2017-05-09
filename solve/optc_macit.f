@@ -4,7 +4,6 @@
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &       n_states,
-     &       me_P,
      &       me_special,nspecial,
 c     &       ffopt,ffgrd,ffdia,ffmet,
 c     &       ff_trv,ff_h_trv,
@@ -45,7 +44,7 @@ c      include 'mdef_me_list.h'
       type(me_list_array), intent(inout) ::
      &     me_opt(nopt), me_grd(nopt), me_dia(nopt),
      &     me_trv(nopt), me_h_trv(nopt),
-     &     me_special(nspecial), me_P(2)
+     &     me_special(nspecial)
       type(filinf), intent(in) ::
      &     ffscr
 
@@ -212,7 +211,6 @@ c dbg
      &             init,
      &             opti_stat%iord_vsbsp, opti_stat%iord_rsbsp,
      &             me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
-     &             me_P,
      &             me_special,nspecial,
      &             opti_stat_ini%ffrsbsp(iopt)%fhand,
      &             opti_stat_ini%ffvsbsp(iopt)%fhand,
@@ -445,7 +443,6 @@ c dbg end
               lzero =opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc
               call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
      &             me_dia(iopt)%mel,
-     &             me_P,
      &             me_special,nspecial,
      &             opti_info%nwfpar(iopt),xbuf1,
      &             fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
@@ -579,7 +576,6 @@ c dbg
 
             call optc_prc_traf(
      &              me_opt(iopt)%mel,me_grd(iopt)%mel,me_dia(iopt)%mel,
-     &              me_P,
      &              me_special,nspecial,
      &              opti_info%nwfpar(iopt),xbuf1,xbuf2,
      &              fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),

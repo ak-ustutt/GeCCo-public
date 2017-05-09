@@ -41,7 +41,7 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
-c dbg
+c dbg it's now itegral
       include 'ifc_input.h'
 c dbgend
       include 'routes.h'
@@ -98,8 +98,6 @@ c dbgend
       type(me_list_array), pointer ::
      &     me_opt(:), me_grd(:), me_dia(:), me_special(:),
      &     me_trv(:), me_h_trv(:)   ! not yet needed
-      type(me_list_array)::
-     &     me_P(2)
       type(file_array), pointer ::
      &     ffopt(:), ffgrd(:), ffdia(:), ffspecial(:),
      &     ff_trv(:), ff_h_trv(:)   ! not yet needed
@@ -280,25 +278,6 @@ cmh      end do
      &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
 
-      me_P(1)%mel => null()
-      me_P(2)%mel => null()
-      do iopt=1,nopt
-         if (opti_info%optref .eq. -3 !actually if project =4
-     &        .and. opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            write(fname,'("me_P1")') 
-            me_P(1)%mel => me_from_template(
-     &           fname, me_special(6)%mel%op%name,me_special(6)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            call zeroop(me_P(1)%mel)
-            write(fname,'("me_P2")')
-            me_P(2)%mel=> me_from_template(
-     &           fname, me_special(2)%mel%op%name,me_special(2)%mel,
-     &           1,
-     &           op_info,  orb_info, str_info, strmap_info)
-            call zeroop(me_P(2)%mel)
-         end if
-      end do
 
 
 
@@ -375,7 +354,6 @@ c dbg
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
      &      n_states,
-     &      me_P,
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
@@ -669,7 +647,6 @@ c test
      &         op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &         me_special(2)%mel%fhand%last_mod(1)) then
              call update_metric(me_dia(1)%mel,
-     &            me_P,
      &            me_special,nspecial,
      &            fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &            opti_info%update_prc.gt.0.and.
@@ -817,6 +794,5 @@ c dbgend
 
       return
       end function
-      
       end
 

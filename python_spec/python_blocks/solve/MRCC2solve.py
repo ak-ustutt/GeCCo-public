@@ -168,7 +168,7 @@ REORDER_MEL({LIST_RES:'ME_U_TRM',
 
 debug_MEL("ME_U_TRM",only_this=True)
 
-new_target("FOPT_UNIT",True)
+new_target("FOPT_UNIT")
 depend("MAKE_U_TRM")
 
 DEF_ME_LIST({LIST:"ME_U2",

@@ -1,6 +1,5 @@
 *----------------------------------------------------------------------*
       subroutine update_metric(me_dia,
-     &     me_P,
      &     me_special,nspecial,
      &     fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &     prcupdate)
@@ -36,8 +35,7 @@
       logical, intent(in) ::
      &     prcupdate
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial),
-     &     me_P(2)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_dia
 
@@ -151,12 +149,6 @@ c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
      &             trim(me_special(5)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)          ! dirty: reo vtx. 1 --> 3
-      if (project.eq.4)then
-         call list_copy(me_special(4)%mel,me_P(1)%mel,.false.)
-         
-         call list_copy(me_special(4)%mel,me_P(2)%mel,.false.)
-
-      end if
 
       ! update preconditioner if requested
       if (prcupdate.or.prc_traf) then

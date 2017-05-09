@@ -1,6 +1,5 @@
 *----------------------------------------------------------------------*
       subroutine optc_prc_traf(me_amp,me_grd,me_dia,
-     &     me_P,
      &     me_special,nspecial,
      &     nwfpar,xbuf1,xbuf2,
      &     fspc,nspcfrm,xngrd,iopt,imacit,i_state,opti_info,
@@ -40,7 +39,7 @@
       integer, intent(in) ::
      &     nspecial, iopt, nspcfrm, nwfpar, imacit, i_state
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial),me_P(2)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_amp,me_grd,me_dia
       real(8), intent(inout) ::
@@ -102,13 +101,12 @@
       end if
       idx = idx_mel_list('ME_C0'//trim(c_st),op_info) ! quick & dirty
       ! update me lists for transformation matrices if required
-      if (opti_info%optref.ne.0 .and.
+      if (opti_info%optref.ne.0  .and.
      &    op_info%mel_arr(idx)%mel%fhand%last_mod(
      &    op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &    me_special(2)%mel%fhand%last_mod( ! 1
      &    me_special(2)%mel%fhand%current_record)) then
          call update_metric(me_dia,
-     &      me_P,
      &      me_special,nspecial,
      &      fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &      opti_info%update_prc.gt.0.and.

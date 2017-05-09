@@ -3,7 +3,6 @@
      &     get_new_rec,
      &     iord_vsbsp,iord_rsbsp,
      &     me_amp,me_grd,me_dia,
-     &     me_P,
      &     me_special,nspecial,
      &     ff_rsbsp,ff_vsbsp,
      &     typ_prc,
@@ -42,7 +41,7 @@
       logical, intent(in) ::
      &     get_new_rec
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial), me_P(2)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_amp,me_grd,me_dia
       type(filinf), intent(in) ::
@@ -177,7 +176,6 @@ c dbg
            if (typ_prc .eq. optinf_prc_traf_spc) lzero_flag=.true.
 
            call optc_prc_traf(me_amp,me_grd,me_dia,
-     &                       me_P, 
      &                       me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
      &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,

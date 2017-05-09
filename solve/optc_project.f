@@ -1,6 +1,5 @@
 *----------------------------------------------------------------------*
       subroutine optc_project(me_amp,me_trf,me_dia,
-     &     me_P,
      &     me_special,nspecial,
      &     nwfpar,xbuf1,fspc,nspcfrm,iopt,imacit,i_state,lzero,
      &     opti_info,orb_info,op_info,str_info,strmap_info)
@@ -42,7 +41,7 @@
       integer, intent(in) ::
      &     nspecial, nspcfrm, nwfpar, iopt, imacit, i_state
       type(me_list_array), intent(inout) ::
-     &     me_special(nspecial),me_P(2)
+     &     me_special(nspecial)
       type(me_list), intent(in) ::
      &     me_amp,me_dia,me_trf
       real(8), intent(inout) ::
@@ -102,19 +101,10 @@
      &      me_special(2)%mel%fhand%last_mod(
      &      me_special(2)%mel%fhand%current_record))
      &       call update_metric(me_dia,
-     &       me_P,
      &       me_special,nspecial,
      &        fspc,nspcfrm,orb_info,op_info,str_info,strmap_info,
      &        opti_info%update_prc.gt.0.and.
      &        mod(imacit,max(opti_info%update_prc,1)).eq.0)
-      end if
-      if(lzero)then
-         call print_list("Projector_matrix1", me_P(1)%mel,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
-         call print_list("Projector_matrix2", me_P(2)%mel,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
       end if
       
       
@@ -126,15 +116,16 @@
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
          call list_copy(me_amp,me_special(7)%mel,.false.)
+         call set_blks(me_special(7)%mel,"P,H|P,V|V,H|V,V",0d0)
          call assign_me_list(me_special(7)%mel%label,
      &        op_orth%name,op_info)
          call assign_me_list(me_amp%label,
      &        op_amp%name,op_info)
-         call assign_me_list(me_P(2)%mel%label,
+         call assign_me_list(me_special(4)%mel%label,
      &        op_trf%name,op_info)
          call evaluate2(fspc(3),.true.,.true.,
      &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
-         call print_list("backtranformed", me_amp,
+         call print_list("backtransformed", me_amp,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
       else if(project.eq.4)then
@@ -149,13 +140,14 @@
      &        op_orth%name,op_info)
          call assign_me_list(me_amp%label,
      &        op_amp%name,op_info)
-         call assign_me_list(me_P(1)%mel%label,
+         call assign_me_list(me_special(4)%mel%label,
      &        op_trf%name,op_info)
          call evaluate2(fspc(1),.true.,.true.,
      &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
-         call print_list("backtranformed", me_amp,
+         call print_list("backtransformed", me_amp,
      &        "LIST",0d0,0d0,
      &        orb_info,str_info)
+        
         
       else
          call assign_me_list(me_special(1)%mel%label,
