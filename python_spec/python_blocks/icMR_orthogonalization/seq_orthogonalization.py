@@ -181,7 +181,7 @@ debug_FORM('FORM_GAM_S')
 comment('Evaluate effective densities for overlap ...')
 OPTIMIZE({
         LABEL_OPT:'FOPT_GAM_S',
-        LABELS_IN:'FORM_GAM_S'})
+        LABELS_IN:['FORM_GAM_S',"FORM_GAM0"]})
 
 EVALUATE({
         FORM:'FOPT_GAM_S'})

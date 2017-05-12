@@ -273,30 +273,43 @@ c        write(lulog,*) xbuf1(1:nwfpar)
      &                 prc_iter,' iteration(s)'
       end if
       if (lzero_flag)then
-      call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
-     &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
-     &                     me_special(4)%mel,me_special(nspecial)%mel,
-     &                     me_grd,fspc(2),opti_info,
-     &                     orb_info,op_info,str_info,strmap_info)
+         if ( opti_info%optref.eq. -3 )then
+            call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
+     &           xbuf1,xbuf2,nwfpar,iopt,ffdia,
+     &           me_special(7)%mel,me_special(nspecial)%mel,
+     &           me_grd,fspc(2),opti_info,
+     &           orb_info,op_info,str_info,strmap_info)
+         else
+            call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
+     &           xbuf1,xbuf2,nwfpar,iopt,ffdia,
+     &           me_special(4)%mel,me_special(nspecial)%mel,
+     &           me_grd,fspc(2),opti_info,
+     &           orb_info,op_info,str_info,strmap_info)
+         end if
       else
          call prc_iterimp_rec(prc_iter,prc_iter,prc_impfac,
-     &                     xbuf1,xbuf2,nwfpar,iopt,ffdia,
-     &                     me_special(1)%mel,me_special(nspecial)%mel,
-     &                     me_grd,fspc(1),opti_info,
-     &                     orb_info,op_info,str_info,strmap_info)
+     &        xbuf1,xbuf2,nwfpar,iopt,ffdia,
+     &        me_special(1)%mel,me_special(nspecial)%mel,
+     &        me_grd,fspc(1),opti_info,
+     &        orb_info,op_info,str_info,strmap_info)
       end if
       if (ntest.ge.100) then
-        write(lulog,*) 'preconditioned gradient vector:'
+            write(lulog,*) 'preconditioned gradient vector:'
 c        write(lulog,*) xbuf1(1:nwfpar)
-        if (lzero_flag)then
-
-           call wrt_mel_buf(lulog,5,xbuf1,me_special(4)%mel,1,
-     &          me_special(4)%mel%op%n_occ_cls,
-     &          str_info,orb_info)
-        else
+            if (lzero_flag)then
+               if ( opti_info%optref.eq. -3 )then
+                  call wrt_mel_buf(lulog,5,xbuf1,me_special(4)%mel,1,
+     &                 me_special(7)%mel%op%n_occ_cls,
+     &                 str_info,orb_info)
+               else
+                  call wrt_mel_buf(lulog,5,xbuf1,me_special(4)%mel,1,
+     &                 me_special(4)%mel%op%n_occ_cls,
+     &                 str_info,orb_info)
+               end if
+            else
            call wrt_mel_buf(lulog,5,xbuf1,me_special(1)%mel,1,
-     &          me_special(1)%mel%op%n_occ_cls,
-     &          str_info,orb_info)
+     &              me_special(1)%mel%op%n_occ_cls,
+     &              str_info,orb_info)
         end if
       end if
 
@@ -345,6 +358,7 @@ c        write(lulog,*) xbuf1(1:nwfpar)
          call evaluate2(fspc(1),.true.,.true.,
      &            op_info,str_info,strmap_info,orb_info,xdum,.false.)
       end if   
+
 
       call vec_from_da(ffamp,1,xbuf1,nwfpar)
 c dbg
