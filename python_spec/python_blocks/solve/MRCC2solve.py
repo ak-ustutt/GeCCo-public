@@ -71,7 +71,7 @@ PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
 new_target('SOLVE_MRCC2ref')
 depend("SOLVE_MRCC2")
-depend("FOPT_HMRCC2_C0")
+#depend("FOPT_HMRCC2_C0")
 depend("MAKE_D0")
 
 spinadapt=keywords.get('calculate.routes.spinadapt')
@@ -205,25 +205,26 @@ new_target("SOLVE_MRCC2_refopt")
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
 depend("MakeRefState")
+depend("FOPT_OMG_C0")
 
 
 # as SOLVE_NLEQ uses internally predefined labels for micro iterations so ...
-CLONE_OPERATOR({
-    TEMPLATE:"H_C0",
-    LABEL:"A_C0"   })
+#CLONE_OPERATOR({
+#    TEMPLATE:"H_C0",
+#    LABEL:"A_C0"   })
 
-ASSIGN_ME2OP({LIST:'ME_H_C0',
-             OPERATOR:'A_C0'})
+#ASSIGN_ME2OP({LIST:'ME_H_C0',
+#             OPERATOR:'A_C0'})
 
-DERIVATIVE({
-        LABEL_RES:'FORM_A_C0',
-        LABEL_IN:'FORM_EREF',
-        OP_RES:'A_C0',
-        OP_DERIV:'C0^+'})
+#DERIVATIVE({
+#        LABEL_RES:'FORM_A_C0',
+#        LABEL_IN:'FORM_EREF',
+#        OP_RES:'A_C0',
+#        OP_DERIV:'C0^+'})
 
-OPTIMIZE({
-        LABEL_OPT:'FOPT_OMG_C0',
-        LABELS_IN:'FORM_A_C0'}) # FOPT_OMG_C0 is equal to FOPT_H_C0
+#OPTIMIZE({
+#        LABEL_OPT:'FOPT_OMG_C0',
+#        LABELS_IN:'FORM_A_C0'}) # FOPT_OMG_C0 is equal to FOPT_H_C0
 
 
 DEF_ME_LIST({LIST:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
@@ -264,7 +265,7 @@ SOLVE_NLEQ({
 
 new_target("MAKE_GAM0_HMRCC2")
 depend("FOPT_GAM0")
-depend("SOLVE_MRCC2ref")
+#depend("SOLVE_MRCC2ref")
 EVALUATE({
         FORM:'FOPT_GAM0'})
 

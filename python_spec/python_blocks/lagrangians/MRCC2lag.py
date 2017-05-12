@@ -286,21 +286,23 @@ OPTIMIZE({
 
 #----------------------------------------------------------------------
 # formula for reference relaxiation  
-new_target("FOPT_HMRCC2_C0")
+new_target("FOPT_OMG_C0")
 depend("DEF_FORM_PT_LAG2")
 
-depend("DEF_HMRCC2_C0")
+depend("DEF_A_C0")
 
 
 
 DERIVATIVE({
     LABEL_IN:'FORM_PT_LAG_E',
-    LABEL_RES:'FORM_HMRCC2_C0',
-    OP_RES:'HMRCC2_C0',
+    LABEL_RES:'FORM_A_C0',
+    OP_RES:'A_C0',
     OP_DERIV:'C0^+'})
 
+debug_FORM('FORM_A_C0')
+
 OPTIMIZE({
-        LABEL_OPT:'FOPT_HMRCC2_C0',
-        LABELS_IN:'FORM_HMRCC2_C0'})
+        LABEL_OPT:'FOPT_OMG_C0',
+        LABELS_IN:'FORM_A_C0'})
 
 

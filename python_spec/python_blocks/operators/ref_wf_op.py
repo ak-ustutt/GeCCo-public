@@ -130,18 +130,18 @@ depend('Make_GAM0')
 
 #----------------------------------------------------------------------
 #
-new_target("DEF_HMRCC2_C0")
+new_target("DEF_A_C0")
 depend("Make_H_C0")
 
 CLONE_OPERATOR({
-     LABEL:"HMRCC2_C0",
+     LABEL:"A_C0",
      TEMPLATE:"H_C0"})
-DEF_ME_LIST({LIST:"ME_HMRCC2_C0",
-    OPERATOR:"HMRCC2_C0",
+DEF_ME_LIST({LIST:"ME_A_C0",
+    OPERATOR:"A_C0",
     IRREP:wf_sym, 
     '2MS':ims,
      AB_SYM:msc})
 
-debug_MEL('H_C0_LST',info_only=True)
+debug_MEL('ME_A_C0',info_only=True)
 
 
