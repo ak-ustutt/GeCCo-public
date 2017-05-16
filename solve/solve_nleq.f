@@ -509,11 +509,11 @@ c     &       ff_trv,ff_h_trv,
      &            thr_suggest(i_state),0,.false.,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
-           end if
-
+          end if
+          
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
-            idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
-            mel_pnt => op_info%mel_arr(idxmel)%mel
+              idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
+              mel_pnt => op_info%mel_arr(idxmel)%mel
             call list_copy(mel_C0,mel_pnt,.false.)
            end if
 

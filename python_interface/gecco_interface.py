@@ -238,7 +238,6 @@ class GeCCo_Input(object):
 
         # Print, if required
         if (do_print):
-            print "Input information from python interface:"
             for k in self.data:
                 print k + " -> " + str(self.data[k])
 

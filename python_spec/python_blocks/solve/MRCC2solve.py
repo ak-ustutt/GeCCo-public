@@ -69,9 +69,21 @@ SOLVE_NLEQ({
 
 PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
+
+
+
+
+
+
+
+
+
+
+
+
 new_target('SOLVE_MRCC2ref')
 depend("SOLVE_MRCC2")
-#depend("FOPT_HMRCC2_C0")
+depend("FOPT_OMG_C0")
 depend("MAKE_D0")
 
 spinadapt=keywords.get('calculate.routes.spinadapt')
@@ -87,9 +99,9 @@ maxroots = int(maxroots) if maxroots is not None else ciroot
 SOLVE_map={
         LIST_OPT:'ME_C0',
         LIST_PRC:'ME_D0',
-        OP_MVP:'HMRCC2_C0',
+        OP_MVP:'A_C0',
         OP_SVP:'C0',
-        FORM:'FOPT_HMRCC2_C0',
+        FORM:'FOPT_OMG_C0',
         MODE:'DIA',
         N_ROOTS:maxroots,
         TARG_ROOT:ciroot
@@ -104,99 +116,30 @@ SOLVE_EVP(SOLVE_map)
 
 
 
-new_target("MAKE_U_TRM")
-depend('MakeOrthBasis')
-
-PRINT({STRING:"The full Projector"})
-debug_MEL('ME_GAM_S',only_this=True)
-
-
-EVALUATE({
-        FORM:'FOPT_GAM_S'})
-debug_MEL('ME_GAM_S',only_this=True)
-
-CLONE_OPERATOR({LABEL:"U",
-                TEMPLATE:"GAM_S"})
-
-
-DEF_ME_LIST({
-        LIST:'ME_U',
-        OPERATOR:'U',
-        IRREP:1,
-        '2MS':0,
-        AB_SYM: ab_sym( orbitals.get('imult'), orbitals.get('ims')),
-        S2:S2_val})
-
-
-CLONE_OPERATOR({LABEL:"U_TRM",
-                TEMPLATE:"X_TRM"})
-DEF_ME_LIST({
-        LIST:'ME_U_TRM',
-        OPERATOR:'U_TRM',
-        IRREP:1,
-        '2MS':0,
-        S2:0,
-        AB_SYM:0,
-        S2:0})
-
-CLONE_OPERATOR({LABEL:"U_DAG",
-                TEMPLATE:"X_TRM"})
-DEF_ME_LIST({
-        LIST:'ME_U_DAG',
-        OPERATOR:'U_DAG',
-        IRREP:1,
-        '2MS':0,
-        S2:0,
-        AB_SYM:0,
-        S2:0})
-
-INVERT({
-        LIST_INV:'ME_GAM_S',
-        LIST:['ME_GAM_S_ISQ',"ME_U"],
-        MODE:'invsqrt'}) 
-debug_MEL("ME_U",only_this=True)
-
-REORDER_MEL({LIST_RES:'ME_U_DAG',
-             LIST_IN:'ME_U',
-             FROMTO: 13})
-debug_MEL("ME_U_DAG",only_this=True)
-
-REORDER_MEL({LIST_RES:'ME_U_TRM',
-             LIST_IN:'ME_U',
-             ADJOINT:True,
-             FROMTO: 13})
-
-debug_MEL("ME_U_TRM",only_this=True)
-
-new_target("FOPT_UNIT")
-depend("MAKE_U_TRM")
-
-DEF_ME_LIST({LIST:"ME_U2",
-             OPERATOR:"U",
-             IRREP:1,
-             '2MS':0,
-             AB_SYM: ab_sym( orbitals.get('imult'), orbitals.get('ims')),
-             S2:S2_val})
-
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_UNIT',
-                   NEW:True,
-                   OP_RES:"U",
-                   OPERATORS:["U","U_DAG","U","U","U_DAG","U_TRM","U","U","U_TRM","U"],
-                   IDX_SV:[1,2,1,1,2,3,1,1,3,1],
-                   AVOID:[2,5,6,9]
-})
 
 
 
-debug_FORM("FORM_UNIT",only_this=True)
 
-OPTIMIZE({LABELS_IN:"FORM_UNIT",
-          LABEL_OPT:"FOPT_UNIT"
-})
-EVALUATE({FORM:"FOPT_UNIT"})
 
-debug_MEL("ME_U",only_this=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -207,24 +150,6 @@ depend('BUILD_PRECON')
 depend("MakeRefState")
 depend("FOPT_OMG_C0")
 
-
-# as SOLVE_NLEQ uses internally predefined labels for micro iterations so ...
-#CLONE_OPERATOR({
-#    TEMPLATE:"H_C0",
-#    LABEL:"A_C0"   })
-
-#ASSIGN_ME2OP({LIST:'ME_H_C0',
-#             OPERATOR:'A_C0'})
-
-#DERIVATIVE({
-#        LABEL_RES:'FORM_A_C0',
-#        LABEL_IN:'FORM_EREF',
-#        OP_RES:'A_C0',
-#        OP_DERIV:'C0^+'})
-
-#OPTIMIZE({
-#        LABEL_OPT:'FOPT_OMG_C0',
-#        LABELS_IN:'FORM_A_C0'}) # FOPT_OMG_C0 is equal to FOPT_H_C0
 
 
 DEF_ME_LIST({LIST:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",

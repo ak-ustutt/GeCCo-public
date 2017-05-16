@@ -84,7 +84,6 @@ EE = stf.GenForm("FORM_EXCITED_ENERGY","Exc_En")
 EE += "<(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')>"
 EE += "<(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')>"
 EE += "<R_mu^+*(AR_rspns_mu')>"
-print "\n".join([str(br) for br in EE.show()])
 
 EE.set_rule()
 
@@ -96,7 +95,6 @@ SR = stf.GenForm("FORM_EXCITED_OVERLAPP","Exc_Sr")
 SR += "<(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')>"
 SR += "<(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')>"
 SR += "<R_mu^+*(SR_rspns_mu')>"
-print "\n".join([str(br) for br in SR.show()])
 SR.set_rule()
 
 new_target("FORM_LR_TRANSFORM")
@@ -138,8 +136,6 @@ for _icnt in range (0,_ncnt):
         _msc = -1
     else:
         _msc = 0
-#dbg
-    print _nsym,_sym_arr,_sym_arr
     for _isym in range (0,_nsym):
 
         _no_root = int(_sym_arr[_isym])
@@ -406,8 +402,8 @@ for _icnt in range (0,_ncnt):
         OPTIMIZE({LABEL_OPT:'FOPT_SR'+_extnsn,
                   LABELS_IN:['FORM_AR1_RSPNS_q','FORM_AR2g_RSPNS_q','FORM_AR_RSPNS_mu',
                              'FORM_S1','FORM_S2g','FORM_SR_RSPNS_mu']})
-        debug_FORM("FORM_EXCITED_OVERLAPP",only_this=True)
-        debug_FORM("FORM_EXCITED_ENERGY",only_this=True)
+        debug_FORM("FORM_EXCITED_OVERLAPP")
+        debug_FORM("FORM_EXCITED_ENERGY")
         
         OPTIMIZE({LABEL_OPT:"FOPT_Exc_En"+_extnsn,
                   LABELS_IN:["FORM_EXCITED_OVERLAPP","FORM_EXCITED_ENERGY"]})
@@ -426,15 +422,13 @@ for _icnt in range (0,_ncnt):
                               'ME_R_mu'+_extnsn] ,
                        ISTATE:i})
             EVALUATE({FORM:'FOPT_SR'+_extnsn})
-#            debug_MEL('ME_R1_q'+_extnsn, only_this=True)
-#            debug_MEL('ME_R2g_q'+_extnsn, only_this=True)
-            debug_MEL('ME_R_mu'+_extnsn, only_this = True)
-            debug_MEL('ME_AR_rspns_mu'+_extnsn, only_this=True)
+            debug_MEL('ME_R_mu'+_extnsn )
+            debug_MEL('ME_AR_rspns_mu'+_extnsn )
 
             EVALUATE({FORM:'FOPT_Exc_En'+_extnsn})
             
-            debug_MEL('ME_Exc_En'+_extnsn, only_this=True)
-            debug_MEL('ME_Exc_Sr'+_extnsn, only_this=True)
+            debug_MEL('ME_Exc_En'+_extnsn)
+            debug_MEL('ME_Exc_Sr'+_extnsn)
 
 
         for i in xrange(1,_no_root +1):

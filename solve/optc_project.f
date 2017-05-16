@@ -35,7 +35,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=*),parameter::
      &     i_am = "optc_project"
       integer, intent(in) ::
@@ -112,9 +112,6 @@
          op_amp => me_amp%op
          op_orth => me_special(7)%mel%op
          op_trf => me_special(2)%mel%op
-         call print_list("untransformed", me_amp,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
          call list_copy(me_amp,me_special(7)%mel,.false.)
          call set_blks(me_special(7)%mel,"P,H|P,V|V,H|V,V",0d0)
          call assign_me_list(me_special(7)%mel%label,
@@ -125,17 +122,12 @@
      &        op_trf%name,op_info)
          call evaluate2(fspc(3),.true.,.true.,
      &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
-         call print_list("backtransformed", me_amp,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
       else if(project.eq.4)then
          op_amp => me_amp%op
          op_orth => me_special(1)%mel%op
          op_trf => me_special(2)%mel%op
-         call print_list("untransformed", me_amp,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
          call list_copy(me_amp,me_special(1)%mel,.false.)
+         call touch_file_rec(me_special(1)%mel%fhand)
          call assign_me_list(me_special(1)%mel%label,
      &        op_orth%name,op_info)
          call assign_me_list(me_amp%label,
@@ -144,9 +136,6 @@
      &        op_trf%name,op_info)
          call evaluate2(fspc(1),.true.,.true.,
      &        op_info,str_info,strmap_info,orb_info,xdum,.true.)
-         call print_list("backtransformed", me_amp,
-     &        "LIST",0d0,0d0,
-     &        orb_info,str_info)
         
         
       else

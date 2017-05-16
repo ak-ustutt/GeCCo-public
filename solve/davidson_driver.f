@@ -305,7 +305,8 @@ c      end do
 !     else me_vort => me_trv => me_opt
                end if
             end do
-            if (ntest.ge.00)then
+            
+            if (ntest.ge.10)then
                write(lulog,*) "root:",iroot
                do iopt=1,nopt
                   call print_list("result in normal space",

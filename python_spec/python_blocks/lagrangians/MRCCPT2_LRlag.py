@@ -10,7 +10,6 @@ import python_interface.gecco_modules.string_to_form as stf
 
 lagrangian = keywords.get('method.MRCC2.lagrangian')
 lag_type = int(lagrangian) if lagrangian is not None else 4 
-print("lagrangian:",lag_type,type(lag_type))
 
 
 
@@ -124,7 +123,6 @@ if lag_type >=5:
     raise Exception("unknown lagrangian")
 
 
-print "\n".join([str(br) for br in SR1.show()])
 
 SR1.set_rule()
 
@@ -165,7 +163,6 @@ if lag_type >=4:
 if lag_type >=5:
     raise Exception("unknown lagrangian")
 
-print "\n".join([str(br) for br in SR2.show()])
     
 SR2.set_rule()
 

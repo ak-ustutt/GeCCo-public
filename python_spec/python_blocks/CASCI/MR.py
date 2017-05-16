@@ -92,7 +92,7 @@ EXPAND_OP_PRODUCT({
         OPERATORS:['GAM0','C0^+','GAM0','GAM0','C0','GAM0'],
         IDX_SV:[1,2,1,1,3,1]})
 
-debug_FORM('FORM_GAM0', only_this = True)
+debug_FORM('FORM_GAM0')
 
 
 
