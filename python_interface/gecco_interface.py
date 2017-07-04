@@ -26,6 +26,7 @@
 import re
 import sys
 import os
+import inspect
 
 from .gecco_modules.default_keywords import RegistryHandler, ContextError
 
@@ -511,7 +512,7 @@ class _target:
         self.dependencies = []
         self.joined = []
         self.rules = []
-
+        self.filename = ""
 # Function to print list
 #
 def print_tgt_list():
@@ -544,6 +545,8 @@ def new_target( *args):
     tgt = _target( name)
     if (len( args) == 2):
         tgt.required = args[1]
+    frame = inspect.stack()[1]
+    tgt.filename = inspect.getframeinfo(frame[0])[0]
     if (len( args) > 2):
         quit_error( "new_target: too much arguments.\n Give just the name and, optionaly, if it is required.")
     _target_list.append( tgt)
