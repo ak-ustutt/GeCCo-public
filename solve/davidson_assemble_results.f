@@ -33,14 +33,15 @@
       
       real(8),intent(inout)::
      &     xbuf1(*),xbuf2(*),
-     &     rvals(nroots)
+     &     rvals(nroots,2)
 
       real(8),allocatable::
      &     eigenvecs(:,:)
       
       real(8) ::
      &     eigi(nroots),
-     &     lxnrm(nlists)
+     &     lxnrm(nlists),
+     &     eigr(nroots)
 
       integer::
      &     leigenvec,
@@ -61,8 +62,12 @@
       leigenvec=dvdsbsp_get_curlen(dvdsbsp)
       allocate(eigenvecs(leigenvec,nroots))
       
-      call dvdsbsp_get_eigenvec(dvdsbsp, eigenvecs, rvals, eigi,
+      call dvdsbsp_get_eigenvec(dvdsbsp, eigenvecs, eigr, eigi,
      &     nroots, leigenvec)
+      
+      rvals(1:nroots,1) = eigr
+      rvals(1:nroots,2) = eigi
+      print *,rvals
       maxlist=min(nroots,mel_get_maxrec(me_res(1)%mel)) !TODO remove the hardcoded one
       do iroot=1,maxlist
          do ilist=1,nlists

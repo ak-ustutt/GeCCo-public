@@ -108,7 +108,7 @@
      &     lenbuf, nincore
       real(8) ::
      &     xresmax, xdum, xnrm,
-     &     xeig(nroots),reig(nroots),
+     &     xeig(nroots,2),reig(nroots,2),
      &     xresnrm(nroots,nopt)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
@@ -848,7 +848,7 @@ c dbgend
       real(8),Dimension(nroots,nopt),intent(in)::
      &     xrsnrm
       real(8)::
-     &     xeig(nroots)
+     &     xeig(nroots,2)
 
       real(8)::
      &     xresmax
@@ -870,11 +870,11 @@ c dbgend
       if (iprlvl.gt.0) then
          do iroot = 1, nroots
             write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
-     &           xeig(iroot),(xrsnrm(iroot,idx),
+     &           xeig(iroot,1),(xrsnrm(iroot,idx),
      &           idx = 1, nopt)
             if (lulog.ne.luout.and.iprlvl.ge.5)
      &           write(luout,'("   ",3x,f24.12,x,3g10.4)')
-     &           xeig(iroot),(xrsnrm(iroot,idx),
+     &           xeig(iroot,1),(xrsnrm(iroot,idx),
      &           idx = 1, nopt)
          end do
       end if
@@ -889,7 +889,7 @@ c dbgend
       integer, intent(in) :: lu, nroots, nopt
       real(8)::
      &     xresnrm(nroots,nopt),
-     &     xeig(nroots)
+     &     xeig(nroots,2)
 
       call write_title(lu,wst_title,
      &     'Results for '//trim(label_opt(1)))
@@ -899,8 +899,8 @@ c dbgend
      &     '  |residual|")')
       write(lu,'("E>>",66("-"))')
       do iroot = 1, nroots
-         write(lu,'("E>>",2x,i3,x,f22.12,20x,"N/A",2x,x,g10.4)')
-     &        iroot,xeig(iroot),xresnrm(iroot,1)
+         write(lu,'("E>>",2x,i3,x,f22.12,2x,f22.12,2x,x,g10.4)')
+     &        iroot,xeig(iroot,1),xeig(iroot,2),xresnrm(iroot,1)
 
 c dbg
 c        if (xresnrm(iroot).lt.opti_info%thrgrd(iopt)

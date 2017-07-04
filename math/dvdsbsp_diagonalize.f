@@ -83,10 +83,10 @@
 
       eigi=toteigi(1:nroot)
       eigr=toteigr(1:nroot)
-      do ii=1,nroot
-         if (eigi(ii).gt.0) call quit(2,i_am,
-     &        "imaginary eigenvalue detected")
-      end do
+!      do ii=1,nroot
+!         if (eigi(ii).gt.0) call quit(2,i_am,
+!     &        "imaginary eigenvalue detected")
+!      end do
 
       if(ntest.ge.100)then
          write (lulog,*) "eigenvalues"

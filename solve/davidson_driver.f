@@ -72,8 +72,8 @@
 
       real(8), intent(inout) ::
      &     xrsnrm(nroot,nopt),
-     &     xeig(nroot),reig(nroot)      ! xeig persistent copy of eigenvalues to detect root switching
-                                        ! reig copy for outer routine to commutincate eigevalues (only nnew entries are defined)
+     &     xeig(nroot,2),reig(nroot,2)      ! xeig persistent copy of eigenvalues to detect root switching
+                                            ! reig copy for outer routine to commutincate eigevalues (only nnew entries are defined)
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*)
       type(formula_item), intent(inout) ::
@@ -234,13 +234,14 @@ c      end do
       irecres=0
       do iroot=1,nnew
          ! test energy criteria
-         if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is stupid also
-     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot),
+         if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is obsolete
+     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot,1),
      &        thrgrd_e) )then
             conv = .true. ! yet
          else if(iter.gt.1)then
             conv=.false.
-            call warn_e_convergence(lulog,iroot,xeig(iroot),leig(iroot))
+            call warn_e_convergence(lulog,iroot,xeig(iroot,1),
+     &           leig(iroot))
          else
             conv=.true.
          end if
@@ -256,11 +257,10 @@ c      end do
                call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
      &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
             end do
-            reig(irecres)=leig(iroot)
+            reig(irecres,1)=leig(iroot)
          end if
       end do
-      xeig=leig
-
+      xeig(1:nroot,1)=leig
       nnew=irecres              ! 0 if all converged
       
 
@@ -365,7 +365,7 @@ c      end do
      &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
      &           nwfpar(iopt),
      &           opti_info%typ_prc(iopt),
-     &           xeig(iroot), xnrm, nnew, iroot,
+     &           xeig(iroot,1), xnrm, nnew, iroot,
      &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,
      &           me_special, nspecial,
      &           fspc, nspcfrm,
