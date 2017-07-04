@@ -199,6 +199,8 @@ LAG_A1.set_rule()
 LAG_A2.set_rule()
 
 
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_E",
+                 LABEL_IN:"FORM_PT_LAG_E"})
 
 
 debug_FORM('FORM_PT_LAG_E')
@@ -264,7 +266,10 @@ debug_FORM('FORM_PT_LAG_Amp1')
 
 debug_FORM('FORM_PT_LAG_Amp2')
 
-
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_Amp2",
+                     LABEL_IN:"FORM_PT_LAG_Amp2"})
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_Amp1",
+                     LABEL_IN:"FORM_PT_LAG_Amp1"})
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG2',
