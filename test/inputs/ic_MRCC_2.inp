@@ -5,6 +5,8 @@ orb_space
  shell type=frozen,def=(1,0,0,0)
 method
  MR maxexc=2,project=3
+ MR excrestr=(0,0,1,1,1,1)
+ MR excrestr=(1,1,0,0,1,1)
  MRCC maxcom_en=2,maxcom_res=2,set_up_T_corr=T
 calculate
  solve maxiter=300,conv=1d-7,maxsub=8
