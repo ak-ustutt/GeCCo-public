@@ -124,26 +124,6 @@ SOLVE_EVP(SOLVE_map)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 new_target("SOLVE_MRCC2_refopt")
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
@@ -196,9 +176,7 @@ EVALUATE({
 
 
 new_target("MAKE_MRCC2_E")
-depend('SOLVE_MRCC2')
-if (keywords.is_keyword_set("method.MRCC2.relaxref")):
-    depend("SOLVE_MRCC2ref")
+depend('MAKE_MRCC2')
 DEF_SCALAR({LABEL:"MRCC2_E"})
 DEF_ME_LIST({LIST:"ME_MRCC2_E",
              OPERATOR:"MRCC2_E",
@@ -214,10 +192,8 @@ new_target("MAKE_MRCC2")
 if (keywords.is_keyword_set("method.MRCC2.relaxref")):
     depend("SOLVE_MRCC2ref")
     depend("MAKE_GAM0_HMRCC2")
-    depend("MAKE_MRCC2_E")
 elif (keywords.get("calculate.solve.non_linear.optref") is not None
       and int(keywords.get("calculate.solve.non_linear.optref")) == -3 ):
     depend("SOLVE_MRCC2_refopt")
 else:
     depend("SOLVE_MRCC2")
-print keywords.get("calculate.solve.non_linear.optref"),keywords.is_keyword_set("method.MRCC2.relaxref")
