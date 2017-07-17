@@ -259,11 +259,7 @@ c dbg
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
             ! guess vectors of wrong spin symmetry will be discarded
 
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-               call set_blks(me_trv(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-               xret(idxselect(1))=xnormop(me_trv(iopt)%mel)
-               write(*,*) "debug:  new norm",xret(idxselect(1))
-            endif
+
 
             if (abs(xret(idxselect(1))).lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)
