@@ -8,6 +8,8 @@
       include 'stdunit.h'
       include 'def_filinf.h'
 
+      integer,parameter::
+     &     ntest=00
       type(filinf), intent(inout) ::
      &     fhand
       
@@ -26,6 +28,9 @@
       end if
 
       fhand%last_mod(fhand%current_record) = -1
-
+      if(ntest.ge.100)then
+          write (lulog,*) "set record",fhand%current_record," of ",
+     &         trim(fhand%name)," to ",-1
+      end if
       return
       end

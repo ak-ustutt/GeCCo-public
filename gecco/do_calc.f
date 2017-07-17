@@ -67,6 +67,15 @@
       logical ::
      &     print_tgt_graph
 
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall ! variables for timing information
+      character(len=512)::
+     &     timing_msg                   ! to write a message for timings information
+
+
+
       ifree = mem_setmark('do_calc')
       
       ! set up orbital info
@@ -110,16 +119,16 @@
         write(lulog,*)
      &       'My next target: ',trim(tgt_info%array(idx)%tgt%name)
 
+          call atim_csw(cpu0_t,sys0_t,wall0_t)
 c        if (tgt%n_rules.eq.0)
 c     &       call quit(1,'do_calc','no rules for target?')
-
         ! loop over rules for this target
         do jdx = 1, tgt%n_rules
 
           rule => tgt%rules(jdx)
           write(lulog,*)
      &       'Rule: ',trim(rule%command)
-
+          call atim_csw(cpu0_r,sys0_r,wall0_r)
           if (.not.rule%new) then 
             ! old route:
           ! which type of target gets modified?
@@ -145,8 +154,13 @@ c     &       call quit(1,'do_calc','no rules for target?')
             call process_rule(rule,tgt_info,
      &           form_info,op_info,str_info,strmap_info,orb_info)
           end if
-
-c          do kdx = 1, rule%n_update
+          call atim_csw(cpu,sys,wall)
+          if(iprlvl.ge.10)then
+          write (timing_msg,"(x,'time for rule ',A)")rule%command
+          call prtim(lulog,trim(timing_msg),
+     &           cpu-cpu0_r,sys-sys0_r,wall-wall0_r)
+          end if
+c          do kdx = 0, rule%n_update
 c            ldx = idx_target(rule%labels,tgt_info)
 c            if (ldx.le.0) cycle ! needs not necessarily be a def'd target
 c            call touch_target(ldx,.false.,tgt_info)
@@ -155,6 +169,13 @@ c          end do
         end do
 
         call touch_target(idx,.true.,tgt_info)
+        call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for target ',A)") 
+     &                   trim(tgt_info%array(idx)%tgt%name)
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
 
       end do
 

@@ -734,6 +734,8 @@
      &     (/'-'/),def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'TARG_ROOT',1,tgt_info,
      &     val_int=(/-1/),def=.true.)
+      call set_arg('_PROTO_',SOLVEEVP,'SOLVER',1,tgt_info,
+     &     val_str='OLD',def=.true.)
       call set_arg('_PROTO_',SOLVEEVP,'INIT',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
@@ -784,7 +786,7 @@
       call add_command_proto(PRINT_,tgt_info)
       call set_arg('_PROTO_',PRINT_,'STRING',0,tgt_info,
      &     val_str=' ',req=.true.)
-      call set_arg('_PROTO_',PRINT_,'OUTPUT',0,tgt_info,
+      call set_arg('_PROTO_',PRINT_,'OUTPUT',1,tgt_info,
      &     val_str='UOUT',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PUSH_RESULT,tgt_info)

@@ -1,6 +1,6 @@
 general
  memmax=50000000
- print=1
+ print=10
 method
  MR maxexc=2
  MR excrestr=(0,0,1,1,1,1)
@@ -8,8 +8,8 @@ method
  MRCC maxcom_res=2
  MRCC excite method=LR 
 calculate
- solve maxiter=4,conv=1d-2,maxsub=8
+ solve maxiter=50,conv=1d-2,maxsub=40
  solve non_linear optref=-3
- routes maxbranch=4,sv_thresh=1d-5,use_tr=t
+ routes maxbranch=4,sv_thresh=1d-5,use_tr=t,auto_opt=F
  excitation sym=(1,0,0,0),mult=1
  skip_E

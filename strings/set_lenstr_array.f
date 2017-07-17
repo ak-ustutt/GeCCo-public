@@ -17,7 +17,8 @@
      &     str_info
 
       integer ::
-     &     ngraph, igraph, idxms, isym
+     &     ngraph, igraph, idxms, isym,
+     &     nelec
 
       integer, pointer ::
      &     lengm(:,:)
@@ -25,8 +26,10 @@
       ngraph = str_info%ngraph
       lenstr(1:nsym,1:maxidxms,1:ngraph) = 0
       do igraph = 1, ngraph
-        lengm => str_info%g(igraph)%lenstr_gm
-        do idxms = 1, maxidxms
+         lengm => str_info%g(igraph)%lenstr_gm
+         nelec= str_info%ispc_occ(igraph)
+         
+        do idxms = 1, nelec+1
           do isym = 1, nsym
             lenstr(isym,idxms,igraph) = lengm(isym,idxms)
           end do

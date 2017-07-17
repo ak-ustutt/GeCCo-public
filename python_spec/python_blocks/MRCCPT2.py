@@ -52,5 +52,5 @@ import solve.MRCCPT2solve
 # ... do it ...
 #-----------------------------------------------------------------#
 
-modify_target('do all')
+modify_target('do_all')
 depend('SOLVE_MRCCPT2')

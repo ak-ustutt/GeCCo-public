@@ -5,15 +5,13 @@ import python_interface.gecco_modules.string_to_form as stf
 i_am="MRCC2lag.py"
 
 lag_type=4
-if keywords.is_keyword_set('method.MRCC2.lagrangian'):
-    lag_type=int(keywords.get('method.MRCC2.lagrangian'))
-print("lagrangian:",lag_type,type(lag_type))
 
-known_hamiltonians=["DYALL","REPT","F_EFF"]
-hamiltonian="DYALL"
-if keywords.is_keyword_set('method.MRCC2.hamiltonian'):
-    hamiltonian=str(keywords.get('method.MRCC2.hamiltonian')).strip()
-print("hamiltonian: ", hamiltonian, type(hamiltonian))
+lagrangian = keywords.get('method.MRCC2.lagrangian')
+lag_type = int(lagrangian) if lagrangian is not None else 4 
+
+known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
+hamiltonian = keywords.get('method.MRCC2.hamiltonian')
+hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
 
 if hamiltonian not in known_hamiltonians : 
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
@@ -96,6 +94,8 @@ if lag_type >= 1 :
         LAG_A2.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
     elif hamiltonian=="F_EFF":
         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
+    elif hamiltonian=="FULL":
+        LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
 #quadratic lagrangian: linear lagrangian+something
 #something:
 if lag_type >= 2 :
@@ -191,26 +191,16 @@ if not 0<lag_type<5 :
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
 
 
-#dbg
-#for item in LAG_E.show():
-#    print item
-#print "LAG_E finished"
 
 LAG_E.set_rule()
 
-#dbg
-#for item in LAG_A1.show():
-#    print item
-#print "LAG_A1 finished"
 LAG_A1.set_rule()
 
-#dbg
-#for item in LAG_A2.show():
-#    print item
-#print "LAG_A2 finished"
 LAG_A2.set_rule()
 
 
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_E",
+                 LABEL_IN:"FORM_PT_LAG_E"})
 
 
 debug_FORM('FORM_PT_LAG_E')
@@ -276,9 +266,34 @@ debug_FORM('FORM_PT_LAG_Amp1')
 
 debug_FORM('FORM_PT_LAG_Amp2')
 
-
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_Amp2",
+                     LABEL_IN:"FORM_PT_LAG_Amp2"})
+REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_Amp1",
+                     LABEL_IN:"FORM_PT_LAG_Amp1"})
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG2',
-        LABELS_IN:['FORM_PT_LAG_Amp2','FORM_PT_LAG_Amp1','FORM_PT_LAG']})
+        LABELS_IN:['FORM_GAM0','FORM_PT_LAG_Amp2','FORM_PT_LAG_Amp1','FORM_PT_LAG']})
+
+#----------------------------------------------------------------------
+# formula for reference relaxiation  
+new_target("FOPT_OMG_C0")
+depend("DEF_FORM_PT_LAG2")
+
+depend("DEF_A_C0")
+
+
+
+DERIVATIVE({
+    LABEL_IN:'FORM_PT_LAG_E',
+    LABEL_RES:'FORM_A_C0',
+    OP_RES:'A_C0',
+    OP_DERIV:'C0^+'})
+
+debug_FORM('FORM_A_C0')
+
+OPTIMIZE({
+        LABEL_OPT:'FOPT_OMG_C0',
+        LABELS_IN:'FORM_A_C0'})
+
 

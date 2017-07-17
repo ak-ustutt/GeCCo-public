@@ -1,6 +1,9 @@
 *----------------------------------------------------------------------*
       subroutine fh_init(iprint)
 *----------------------------------------------------------------------*
+!> initializes the freeunit mechanic and the blocklength parameter
+!! 
+*----------------------------------------------------------------------*
 
       implicit none
       include "freeunits.h"
@@ -13,11 +16,12 @@
       integer :: iunit
       logical :: lopen
 
-      ! set standard values for direct access
-      nrecfc  = 8  ! can be compiler dependent --> improve that
-c      lblk_da = 1024*1024/nrecfc
+! set standard values for direct access
+      nrecfc  = 8               ! can be compiler dependent --> improve that
+      
       ! currently 32K blocks
       ! could be adapted to size of current calculation
+      !lblk_da is record_length of a direct access file ( reals)
       lblk_da = 32*1024/nrecfc
 
       ifrunit(1:6)       = 3 ! reserved
@@ -31,9 +35,9 @@ c      lblk_da = 1024*1024/nrecfc
         end if
       end do
 
-      if (iprint.gt.10) then
-        call fh_prstat(lulog)
-      end if
+!      if (iprint.gt.10) then
+!        call fh_prstat(lulog)
+!      end if
 
       end
 

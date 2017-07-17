@@ -116,6 +116,7 @@
             end do arg_loop 
          end if
          curkey=> tree_iterate(tree)
+         if (.not.associated(curkey)) exit key_loop
          do while (getNodeName(curkey).ne. key_tag)
             curkey=> tree_iterate(tree)
             if (.not.associated(curkey)) exit key_loop

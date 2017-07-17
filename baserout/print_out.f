@@ -12,22 +12,22 @@
 
       include 'stdunit.h'
 
-      character(len=9), parameter::
+      character(len=*), parameter::
      &     i_am="print_out"
       
       character(len=*),intent(in)::
      &     string,out_unit
 
      
-      write (lulog,'(a)') string
+      write (lulog,'(a)') trim(string)
 
       if ( (lulog .ne. luout) .and.
      &     (trim(out_unit) .EQ. "UOUT"))
-     & write (luout,'(a)') string
+     & write (luout,'(a)') trim(string)
 
 
       if ((trim(out_unit) .NE. "UOUT") .and.
-     &(trim(out_unit) .EQ. "ULOG")      )
-     & call warn(i_am,"unrecognized ouput unit"//out_unit)
+     &     (trim(out_unit) .ne. "ULOG")      )
+     & call warn(i_am,"unrecognized ouput unit"//trim(out_unit))
       
       end subroutine

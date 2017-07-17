@@ -8,11 +8,10 @@ import python_interface.gecco_modules.string_to_form as stf
 
 
 
+lagrangian = keywords.get('method.MRCC2.lagrangian')
+lag_type = int(lagrangian) if lagrangian is not None else 4 
 
-lag_type=4
-if keywords.is_keyword_set('method.MRCC2.lagrangian'):
-    lag_type=int(keywords.get('method.MRCC2.lagrangian'))
-print("lagrangian:",lag_type,type(lag_type))
+
 
 
 
@@ -67,7 +66,7 @@ debug_FORM("FORM_AR2g_RSPNS_q")
 
 new_target("DEF_FORM_AR_RSPNS_mu")
 depend("DEF_FORM_PT_LAG2")
-depend("EVAL_E0")
+depend("MAKE_MRCC2_E")
 depend('DEF_RESPONSE_OPs')
 
 DERIVATIVE({LABEL_RES:'FORM_AR_RSPNS_mu_INT',
@@ -86,7 +85,7 @@ EXPAND_OP_PRODUCT({
             LABEL:'FORM_AR_RSPNS_mu',
             NEW:False,
             OP_RES:'AR_rspns_mu',
-            OPERATORS:['AR_rspns_mu','E0','R_mu','AR_rspns_mu'],
+            OPERATORS:['AR_rspns_mu',"MRCC2_E",'R_mu','AR_rspns_mu'],
             IDX_SV:[1,2,3,1],
             FAC:-1.0})
 
@@ -124,7 +123,6 @@ if lag_type >=5:
     raise Exception("unknown lagrangian")
 
 
-print "\n".join([str(br) for br in SR1.show()])
 
 SR1.set_rule()
 
@@ -165,7 +163,6 @@ if lag_type >=4:
 if lag_type >=5:
     raise Exception("unknown lagrangian")
 
-print "\n".join([str(br) for br in SR2.show()])
     
 SR2.set_rule()
 
