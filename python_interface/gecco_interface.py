@@ -27,6 +27,7 @@ import re
 import sys
 import os
 import inspect
+from gecco_modules.default_keywords import RegistryHandler
 # ====================================================================
 # Some general functions and variables
 #
@@ -116,73 +117,128 @@ _possible_contexts=['general',
 #
 #
 #
+
+class Keyword(object):
+    def __init__(self, name):
+        self.name = name
+        self.children = {}
+        self.arguments = {}
+
+    def add_child(self, keyword):
+        if not keyword.name in self.children:
+            self.children[keyword.name] = keyword
+
+    def add_argument(self, argument):
+        if argument.name in self.arguments:
+            self.arguments[argument.name].append(argument)
+        else:
+            self.arguments[argument.name] = [argument]
+ 
+    def get_child(self, name):
+        return self.children[name]
+
+    def get_argument(self, name):
+        return self.arguments[name]
+
+class Argument(object):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = self.cast_value(value)
+    def cast_value(self, value):
+        if value[0] == "(":
+            return value[1:-1].split(",")
+        else:
+            return value
+
+class GeCCoInputParser(object):
+    def __init__(self, registry = RegistryHandler() ):
+        self._root = Keyword("key_root")
+        self._cur_context = [self._root ]
+        self._registry = registry
+
+    def parse_line(self,line):
+        line = re.match("^([^!]*)",line).group().strip()
+        if (len(line) == 0):
+            return [],{}
+        local_context = []
+        arguments = []
+        match = re.match('([^ ;=,]+)(?:[ ;]+|$)(.*)',line)
+        while ( match is not None and line.strip() != "" ):
+            local_context += [Keyword(match.group(1))]
+            line = match.group(2)
+            match = re.match('([^ ;=,]+)(?:[ ;]+|$)(.*)',line)
+        match = re.match('(?P<name>[^=]+)=(?P<value>(?:[^(][^,; ]*|\([^)]+\)))[,; ]*(?P<line>.*)',line)
+        while match is not None and line.strip() != "" :
+            arguments += [Argument(match.group("name") , match.group("value") )]
+            line = match.group("line")
+            match = re.match('(?P<name>[^=]+)=(?P<value>(?:[^(][^,; ]*|\([^)]+\)))[,; ]*(?P<line>.*)',line)
+        return local_context, arguments
+    
+    def parse(self, lines):
+        for line in lines:
+            keywords, arguments = self.parse_line(line)
+            self.set_keywords(keywords)
+            self.set_arguments(arguments)
+        return self._root
+
+    def transform_value(self, value):
+        if value[0] == "(":
+            return list(value[1:-1].split(","))
+        else :
+            return value
+
+    def set_arguments(self,arguments):
+        keyword = self._cur_context[-1]
+        for argument in arguments:
+            keyword.add_argument(argument)
+
+        
+    def set_keywords(self, keywords):
+        if keywords == []:
+            return
+        for i in xrange(len(self._cur_context),0,-1):
+            context_str = ".".join([key.name for key in self._cur_context[1:i]])
+            if self._registry.does_exist(context_str, keywords[0].name) :
+                self._cur_context = self._cur_context[:i]
+                diverged = False
+                for keyword in keywords:
+                    if not diverged:
+                        try:
+                            old_keyword = self._cur_context[-1].get_child(keyword.name)
+                        except KeyError:
+                            diverged = True
+
+                    if not diverged:
+                        self._cur_context.append(old_keyword)
+                    else:
+                        self._cur_context[-1].add_child(keyword)
+                        self._cur_context.append(keyword)
+                break
+        else:
+            raise ContextError(
+                "{key} not found in {context}".format(
+                    key=keywords[0].name,
+                    context=".".join(
+                        [key.name for key in self._cur_context[1:]]
+                    )
+                )
+            )
+ 
 class GeCCo_Input:
 
-    def __init__( self, *print_data):
-        if (len( print_data) > 1):
-            quit_error('Getting GeCCo input: too much arguments. Pass, optionally, a boolean for printing.')
-
+    def __init__( self, do_print=True):
         self.data = {}
         self.env = ''
 
-        f = open( _gecco_input, 'r')
-        input_lines = f.readlines()
-        f.close()
-
-        context = ''
-        key = ''
-        for line in input_lines:
-            line = re.findall("^([^#!]*)", line)
-            line = line[0].strip()
-            if (len(line) == 0):
-                continue
-        
-            if (re.search(' |=',line)):
-                if (not( context)):
-                    quit_error('Getting GeCCo input: context not yet defined.')
-                    
-                info = line.split(' ')
-                key = ''
-                if (len( info) > 1):
-                    for i in range(0, len(info)-1):
-                        key += '.' + info[i]
-
-                args = re.findall('(.+?)=(\(.+\)|[^,]+),?',info[len(info)-1]) # get values and lists
-
-                for a in args:
-                    new_key = context + key + '.' + a[0]
-                    new_value = a[1]
-
-                    if (re.search('^\(',new_value) and re.search('\)$',new_value)): # get list elements
-                        new_value = new_value[1:len(new_value)-1].split(',')
-                    
-                    if new_key in self.data:
-                        if (isinstance( self.data[new_key], list)):
-                            self.data[new_key].append( new_value)
-                        else:
-                            self.data[new_key] = [self.data[new_key], new_value]
-                    else:
-                        if (isinstance( new_value, list)):
-                            self.data[new_key] = [new_value]
-                        else:
-                            self.data[new_key] = new_value
-                
-            elif (line in _possible_contexts):
-                context = line
-            else:
-                info = line.split(' ')
-                key = ''
-                if (len( info) >= 1):
-                    for i in range(0, len(info)):
-                        key += '.' + info[i]
-                self.data[context + key] = None
+        with open( _gecco_input, 'r') as f:
+            input_lines = f.readlines()
+        self.root = GeCCoInputParser().parse(input_lines)
 
         # Print, if required
-        if (len( print_data) == 1):
-            if (print_data[0]):
-                print "Input information from python interface:"
-                for k in self.data:
-                    print k + " -> " + str(self.data[k])
+        if (do_print):
+            print "Input information from python interface:"
+            for k in self.data:
+                print k + " -> " + str(self.data[k])
 
         # Check the package environment that GeCCo is currently using
         ok=False
@@ -219,16 +275,31 @@ class GeCCo_Input:
                 ok=True
 
     def is_keyword_set( self, arg):
-        for k in self.data:
-            if (re.match(arg + '\.{0,1}', k)):
-                return True
-        return False
+        keyword = self.root
+        context = arg.split(".")
+        for name in context:
+            try:
+                keyword = keyword.get_child(name)
+            except KeyError:
+                return False
+        return True
 
     def get( self, arg):
-        if arg in self.data:
-            return self.data[ arg]
-        else:
+        context,arg_name = arg.split(".")[:-1],arg.split(".")[-1]
+        keyword = self.root
+        for name in context:
+            try:
+                keyword = keyword.get_child(name)
+            except KeyError:
+                return None
+        try:
+            arguments = keyword.get_argument(arg_name)
+        except KeyError:
             return None
+        else:
+            return arguments[0].value if (not
+                    isinstance(arguments[0].value,list) and
+                    len(arguments) == 1 ) else [argument.value for argument in arguments] 
 
 # ====================================================================
 # Class for orbital information
@@ -575,38 +646,36 @@ def _write_value_on_f( value, f):
 # Write targets on disk, to be available by GeCCo
 def export_targets():
 
-    f = open( _tgt_list_name, 'w')
+    with open( _tgt_list_name, 'w') as f:
+        f.write( _msg_final + '\n')
+        for tgt in _target_list:
+            f.write( "Name " + tgt.name + "\n")
+            f.write( "Required " + str(tgt.required)[0] + "\n")
+            f.write( "Dependencies " + str( len( tgt.dependencies)) + "\n")
+            for d in tgt.dependencies:
+                f.write( str( d) + "\n")
+            f.write( "Joined " + str( len( tgt.joined)) + "\n")
+            for j in tgt.joined:
+                f.write( str( j) + "\n")
+            f.write( "Rules " + str( len( tgt.rules)) + "\n")
+            for r in tgt.rules:
+                f.write( r[0] + " " + str( len( r[1])) + "\n")
+                for a in r[1]:
+                    v = r[1][a]
+                    v_type = _val_type(a, v)
+                    narg = 0
+                    if (isinstance(v, list)):
+                        narg = len( v)
+                    else:
+                        narg = 1
+                    f.write( a + " " + v_type + " " + str(narg) + "\n")
+                    if (isinstance(v, list)):
+                        for v_i in v:
+                            _write_value_on_f( v_i, f)
+                    else:
+                        _write_value_on_f( v, f)
+            f.write( "---\n")
 
-    f.write( _msg_final + '\n')
-    for tgt in _target_list:
-        f.write( "Name " + tgt.name + "\n")
-        f.write( "Required " + str(tgt.required)[0] + "\n")
-        f.write( "Dependencies " + str( len( tgt.dependencies)) + "\n")
-        for d in tgt.dependencies:
-            f.write( str( d) + "\n")
-        f.write( "Joined " + str( len( tgt.joined)) + "\n")
-        for j in tgt.joined:
-            f.write( str( j) + "\n")
-        f.write( "Rules " + str( len( tgt.rules)) + "\n")
-        for r in tgt.rules:
-            f.write( r[0] + " " + str( len( r[1])) + "\n")
-            for a in r[1]:
-                v = r[1][a]
-                v_type = _val_type(a, v)
-                narg = 0
-                if (isinstance(v, list)):
-                    narg = len( v)
-                else:
-                    narg = 1
-                f.write( a + " " + v_type + " " + str(narg) + "\n")
-                if (isinstance(v, list)):
-                    for v_i in v:
-                        _write_value_on_f( v_i, f)
-                else:
-                    _write_value_on_f( v, f)
-        f.write( "---\n")
-
-    f.close()
 
 # ====================================================================
 # Wrappers for rules and variables for arguments
@@ -636,9 +705,8 @@ def export_targets():
 # Functions for rules
 _rules_names_file = _gecco_dir + "/python_interface/rules_names.txt"
 
-_f = open( _rules_names_file, 'r')
-_rules = _f.readlines()
-_f.close()
+with open( _rules_names_file, 'r') as f:
+    _rules = f.readlines()
 _rules = map( str.strip, _rules)
 for _r in _rules:
     exec ('def ' + _r + ' ( arguments):\n\trule("' + _r + '", arguments)')
@@ -652,9 +720,9 @@ if _print_level == None:
 # Variables for arguments
 _arguments_names_file = _gecco_dir + "/python_interface/arguments_names.txt"
 
-_f = open( _arguments_names_file, 'r')
-_keywords = _f.readlines()
-_f.close()
+with  open( _arguments_names_file, 'r') as f:
+    _keywords = f.readlines()
+
 _keywords = map( str.strip, _keywords)
 for _k in _keywords:
     [_k_name, _k_type] =  _k.split()
