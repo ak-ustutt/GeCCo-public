@@ -1,4 +1,12 @@
+
 *----------------------------------------------------------------------*
+!>      multiplies two me_lists
+!
+!!      @param[in] me1 -
+!!      @param[in] me2 -
+!!      @param[inout] buf1,buf2 buffer for the
+!!      @param nincore without function
+!!      @param lbuf lenght of the buffers
 *----------------------------------------------------------------------*
       function me_ddot(me1,me2, buf1, buf2, nincore, lbuf)
 *----------------------------------------------------------------------*

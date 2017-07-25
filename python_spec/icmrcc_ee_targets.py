@@ -670,7 +670,7 @@ for _icnt in range (0,_ncnt):
         _solve_evp_basis[FORM_SPC]='FOPT_prj'
         _solve_evp_basis[N_ROOTS]=_no_root
         _solve_evp_basis[CHOICE_OPT]=_choice
-        _solve_evp_basis[SOLVER]="NEW"
+        _solve_evp_basis[SOLVER]="OLD"
 
         PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) + 
                        '  and of spin multiplicity:    ' + str(_s2)})
