@@ -3,6 +3,17 @@ from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
 
 
+ciroot=1
+if keywords.is_keyword_set('method.MR_P.ciroot'):
+    ciroot=int(keywords.get('method.MR_P.ciroot'))
+print "ciroot: "+str(ciroot)
+
+maxroot=ciroot
+if keywords.is_keyword_set('method.MR_P.maxroot'):
+    maxroot=int(keywords.get('method.MR_P.maxroot'))
+print "maxroot: "+str(maxroot)
+
+
 c0_shape='V'*orbitals.get('nactel')+','
 
 
@@ -54,7 +65,9 @@ DEF_ME_LIST({
         OPERATOR:'C0',
         IRREP:wf_sym,
         '2MS':ims,
-        AB_SYM:msc
+        AB_SYM:msc,
+        MIN_REC:1,
+        MAX_REC:maxroot
         })
 #        S2:imult})
 
