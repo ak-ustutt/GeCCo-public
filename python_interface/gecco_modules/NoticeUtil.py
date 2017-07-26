@@ -1,18 +1,22 @@
 from python_interface.gecco_interface import *
 
 
-ntest=000
+if keywords.is_keyword_set('general.print'):
+    ntest = int(keywords.get('general.print'))
+else:
+    ntest = 0
+
 def _print_str(string):
     """ Wrapper for PRINT """
     PRINT({'STRING':string})
 
 def comment(string):
     """Easy way to print comments. No formatting yet"""
-    _print_str(string)
+    _print_str("--> " + string)
 
 def heading(string):
-    """Easy way to print headings for a target. No formatting yet"""
-    _print_str(string)
+    """Easy way to print headings for a target."""
+    _print_str("===== " + string + " =====")
 
 def notice(arg_name,arg_val="",printlvl=0): 
     """ For notifications of used input values
@@ -26,11 +30,18 @@ def notice(arg_name,arg_val="",printlvl=0):
 
 def mark(string,printlvl=0):
     """To set marks for the tests"""
-    _print_str("Mark: "+string)
+    if (ntest >= printlvl):
+        _print_str("Mark: "+string)
 
 #Debug functions
 def debug_MEL(label,only_this=False,nthresh=100,info_only=False):
-    """function to debug, prints Me-lists"""
+    """Debugs the ME-lists
+
+    label              The label for the MEL
+    @param only_this   If True, prints information for any print level. Default = False
+    @param nthresh     Prints the information if print level is higher than nthresh. Default = 100
+    @param info_only   Prints only informations about the ME, but not the ME itself. Default = False
+    """
     global ntest
     if ( ntest>=nthresh or only_this):
         PRINT({'STRING':'This is ' + label})
@@ -39,6 +50,14 @@ def debug_MEL(label,only_this=False,nthresh=100,info_only=False):
             PRINT_MEL({'LIST':label})
 
 def debug_FORM(label,only_this=False,nthresh=50,mode='SHORT', output=""):
+    """Debugs the Formula
+
+    label       The label for the formula
+    @param only_this   If True, prints information for any print level. Default = False
+    @param nthresh     Prints the information if print level is higher than nthresh. Default = 50
+    @param mode        The MODE argument for printing formula. Default = SHORT
+    @param output      The OUTPUT argument for printing formula. Default = ""
+    """
     global ntest
     interm_dict={'LABEL':label,'MODE':mode}
     if ( output != ""):
@@ -46,5 +65,4 @@ def debug_FORM(label,only_this=False,nthresh=50,mode='SHORT', output=""):
     if ( ntest >= nthresh or only_this):
         PRINT({'STRING':'This is the formula ' + label})
         PRINT_FORMULA(interm_dict)
-
 
