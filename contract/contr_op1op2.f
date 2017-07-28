@@ -81,10 +81,12 @@
      &     cpu, sys, cpu0, sys0
 
 c dbg
-c      print *,'op1 ',trim(me_op1%op%name)
-c      print *,'op2 ',trim(me_op2%op%name)
-c      print *,'op1op2 ',trim(me_op1op2%op%name)
-c      print *,'op1op2tmp ',trim(me_op1op2tmp%op%name)
+!      print *,'op1 ',trim(me_op1%op%name)
+!      print *,'op2 ',trim(me_op2%op%name)
+!      print *,'me1 ',trim(me_op1%label)
+!      print *,'me2 ',trim(me_op2%label)
+!     print *,'op1op2 ',trim(me_op1op2%op%name)
+!      print *,'op1op2tmp ',trim(me_op1op2tmp%op%name)
 c dbg
 
       if (mode_rst.ne.0.and.mode_rst.ne.2)

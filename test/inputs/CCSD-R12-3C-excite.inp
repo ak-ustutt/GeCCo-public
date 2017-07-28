@@ -11,5 +11,5 @@ calculate
   eigen maxiter=50,maxsub=12,conv=1d-7
   excitation msc=+1,sym=(0,2,0,0)
   excitation msc=-1,sym=(1,0,0,0)
-  routes simtraf=2,contract=3
+  routes simtraf=2,contract=3,auto_opt=F
 

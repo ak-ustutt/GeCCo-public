@@ -10,8 +10,7 @@ __all__ =["export_python_target_graph"]
 
 def export_python_target_graph( filename="python_target_graph.dot", arguments_re=None, target_list=None ):
      if target_list is None: # not PEP8 compliant but totally worth it.
-          from python_interface.gecco_interface import _target_list 
-          target_list=_target_list
+          from python_interface.gecco_interface import _target_list as target_list
      matcher = _TargetMatcher(arguments_re_string=arguments_re)
      nodefactory = _NodeFactory(matcher)
      subgraphs = _create_subgraphs(target_list, nodefactory)

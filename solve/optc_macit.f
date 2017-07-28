@@ -89,13 +89,14 @@ c      include 'mdef_me_list.h'
      &     ivec(:)
       type(optimize_status), pointer ::
      &     opti_stat
-
+      logical ::
+     &     lzero
       real(8), external :: dnrm2
 
       integer, external ::
      &     idx_mel_list
       integer :: iii
-
+      
       ! set file arrays for calls to "old" routines
       allocate(ffopt(nopt),ffgrd(nopt),ffdia(nopt))
       do iopt = 1, nopt
@@ -436,16 +437,18 @@ c dbg end
           iopt_state = iopt_state + 1
          end if
          if ((opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
+     &        opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc.or.
      &        opti_info%typ_prc(iopt).eq.optinf_prc_invH0 ).and.
      &        opti_info%optref.ne.0.and.nspecial.ge.5) then
-         call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
-     &        me_dia(iopt)%mel,me_special,nspecial,
-     &        opti_info%nwfpar(iopt),xbuf1,
-     &        fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
-     &        nspcfrm_eff,iopt,imacit,i_state,
-     &        opti_info,orb_info,op_info,str_info,strmap_info)
+              lzero =opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc
+              call optc_project(me_opt(iopt)%mel,me_opt(iopt)%mel,
+     &             me_dia(iopt)%mel,
+     &             me_special,nspecial,
+     &             opti_info%nwfpar(iopt),xbuf1,
+     &             fspc((i_state-1)*nspcfrm_eff+1:i_state*nspcfrm_eff),
+     &             nspcfrm_eff,iopt,imacit,i_state,lzero,
+     &             opti_info,orb_info,op_info,str_info,strmap_info)
          end if
-
          if(n_states.gt.1.and.iopt_state.eq.nopt_state)then
           do i_spc = 1,nspecial
            call mel_adv_state(me_special(i_spc)%mel,n_states)

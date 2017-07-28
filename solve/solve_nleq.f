@@ -41,7 +41,7 @@
       include 'mdef_formula_info.h'
       include 'def_dependency_info.h'
       include 'ifc_memman.h'
-c dbg
+c dbg it's now itegral
       include 'ifc_input.h'
 c dbgend
       include 'routes.h'
@@ -49,7 +49,9 @@ c dbgend
 
       integer, parameter ::
      &     ntest = 000
-
+      character(len=*),parameter::
+     &     i_am = "solve_nleq"
+      
       integer, intent(in) ::
      &     nopt, nspecial, nspcfrm, n_states
       character(*), intent(in) ::
@@ -126,6 +128,8 @@ c dbgend
      &     evp_mode
       character(2) ::
      &     MRCC_type
+      character(len=5)::
+     &     fname
 
       ifree = mem_setmark('solve_nleq')
 
@@ -135,6 +139,8 @@ c dbgend
      &     lval=MS_coupled)
       call get_argument_value('method.MRCC','type',
      &     str=MRCC_type)
+      call get_argument_value('calculate.solve.non_linear',
+     &                        'restart',lval=restart)
 
       nopt_state = nopt/n_states
 
@@ -151,7 +157,7 @@ c dbgend
 
       idx = idx_formlist(label_form,form_info)
       if (idx.le.0)
-     &     call quit(1,'solve_nleq',
+     &     call quit(1,i_am,
      &     'did not find formula '//trim(label_form))
       form_en_res => form_info%form_arr(idx)%form
 
@@ -160,66 +166,44 @@ c dbgend
       allocate(thr_suggest(n_states))
       allocate(opti_stat)
 
+
+      ! associate all normal ME-Lists (amplitutes, gradients, preconditioner)
       do iopt = 1, nopt
-        jopt = iopt
-        idxmel = idx_mel_list(label_opt(iopt),op_info)
-        ierr = 1
-        if (idxmel.le.0) exit
-        me_opt(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
-        ffopt(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-        ierr = 2
-        if (.not.associated(ffopt(iopt)%fhand)) exit
-        idxmel = idx_mel_list(label_res(iopt),op_info)
-        ierr = 3
-        if (idxmel.le.0) exit
-        me_grd(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
-        ffgrd(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-        ierr = 4
-        if (.not.associated(ffgrd(iopt)%fhand)) exit
-        idxmel = idx_mel_list(label_prc(iopt),op_info)
-        ierr = 5
-        if (idxmel.le.0) exit
-        me_dia(iopt)%mel =>  op_info%mel_arr(idxmel)%mel
-        ffdia(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-        ierr = 6
-        if (.not.associated(ffdia(iopt)%fhand)) exit
-        ierr = 0
+         me_opt(iopt)%mel   => get_mel_h(label_opt(iopt), op_info)
+         if (.not.mel_has_file_h( me_opt(iopt)%mel))then
+            call quit(1,i_am,
+     &           'no file associated with list '//trim(label_opt(iopt)))
+         else
+            ffopt(iopt)%fhand => me_opt(iopt)%mel%fhand
+         end if
+         
+         me_grd(iopt)%mel => get_mel_h(label_res(iopt), op_info)
+         if (.not.mel_has_file_h( me_grd(iopt)%mel))then
+            call quit(1,i_am,
+     &           'no file associated with list '//trim(label_res(iopt)))
+         else
+            ffgrd(iopt)%fhand => me_grd(iopt)%mel%fhand
+         end if
+         
+         me_dia(iopt)%mel   => get_mel_h(label_prc(iopt),op_info)
+         if (.not.mel_has_file_h( me_dia(iopt)%mel))then
+            call quit(1,i_am,
+     &           'no file associated with list '//trim(label_prc(iopt)))
+         else
+            ffdia(iopt)%fhand => me_dia(iopt)%mel%fhand
+         end if
       end do
-
+      
       ! special lists needed?
-      if (ierr.eq.0) then
-        do idx = 1, nspecial
-c dbg
-c      write(lulog,*),"form energy: ", trim(label_form)
-c      write(lulog,*),"solve_nleq: label_special: ",
-c     &        trim(label_special(idx))
-c dbgend
-          jopt = idx
-          idxmel = idx_mel_list(label_special(idx),op_info)
-          ierr = 7
-          if (idxmel.le.0) exit
-          me_special(idx)%mel  => op_info%mel_arr(idxmel)%mel
-          ffspecial(idx)%fhand => op_info%mel_arr(idxmel)%mel%fhand
-          ierr = 8
-          if (.not.associated(ffspecial(idx)%fhand)) exit
-          ierr = 0
-        end do
-      end if
-
-      ! error handling
-      if (ierr.gt.0) then
-        if (ierr.eq.1.or.ierr.eq.2) label = label_opt(jopt)
-        if (ierr.eq.3.or.ierr.eq.4) label = label_res(jopt)
-        if (ierr.eq.5.or.ierr.eq.6) label = label_prc(jopt)
-        if (ierr.eq.7.or.ierr.eq.8) label = label_special(jopt)
-
-        if (mod(ierr,2).eq.1)
-     &       call quit(1,'solve_nleq',
-     &       'did not find list "'//trim(label)//'"')
-        if (mod(ierr,2).eq.0)
-     &       call quit(1,'solve_nleq',
-     &       'no file associated to list '//trim(label))
-      end if
+      do idx = 1, nspecial
+         me_special(idx)%mel => get_mel_h(label_special(idx), op_info)
+         if (.not.mel_has_file_h( me_special(idx)%mel))then
+            call quit(1,i_am,
+     &      'no file associated with list '//trim(label_special(idx)))
+         else
+            ffspecial(idx)%fhand => me_special(idx)%mel%fhand
+         end if
+      end do
 
       ! special formulae
       do jdx = 1, nspcfrm
@@ -229,7 +213,7 @@ c     &      trim(label_spcfrm(jdx))
 c dbg end
         idx = idx_formlist(label_spcfrm(jdx),form_info)
         if (idx.le.0)
-     &       call quit(1,'solve_nleq',
+     &       call quit(1,i_am,
      &       'did not find formula '//trim(label_spcfrm(jdx)))
         ! read formula
         call read_form_list(form_info%form_arr(idx)%form%fhand,
@@ -238,12 +222,10 @@ c dbg end
 
       ! for safety reasons, we allocate the two guys
       allocate(me_trv(1),me_h_trv(1))
-      call get_argument_value('calculate.solve.non_linear',
-     &                        'restart',lval=restart)
 
-      ! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
+! role of restart? it looks to me that currently ffopt(iopt)%fhand%unit is already open when present, hence no effect of restart option here (for icMRCC at least).
       do iopt = 1, nopt
-       
+
         ! open result vector file(s)
 cmh     if file already open, use as initial guess!
         if (ffopt(iopt)%fhand%unit.gt.0) then
@@ -255,7 +237,7 @@ cmh     if file already open, use as initial guess!
           ! hard restart? (just use old amplitude file as initial guess)
           if (restart) then
             inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
-            if (.not.restart) call warn('solve_nleq',
+            if (.not.restart) call warn(i_am,
      &         'No amplitude file found for restart! Setting to zero.')
           end if
           if (restart) then
@@ -297,6 +279,12 @@ cmh      end do
       call set_opti_info_signs(opti_info,1,nopt,
      &                         me_opt,me_grd,me_grd,me_grd,.false.)
 
+
+
+
+
+
+      
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res,.true.)
 
@@ -329,20 +317,19 @@ cmh      end do
         idx_en_xret(i_state) =
      &       idx_xret(trim(label_en)//trim(c_st),op_info,depend)
         if (idx_en_xret(i_state).le.0)
-     &       call quit(1,'solve_nleq',
+     &       call quit(1,i_am,
      &       'formula does not provide an update for all the energies')
        end do
       end if
-c dbg
-c      print *,'idx_en_xret: ',idx_en_xret
-c dbg
+      
       if (idx_en_xret(0).le.0)
-     &     call quit(1,'solve_nleq',
+     &     call quit(1,i_am,
      &     'formula does not provide an update for the energy')
+      
       do iopt = 1, nopt
         idx_res_xret(iopt) = idx_xret(label_res(iopt),op_info,depend)
         if (idx_res_xret(iopt).le.0)
-     &       call quit(1,'solve_nleq',
+     &       call quit(1,i_am,
      &       'formula does not provide an update for all residuals')
       end do
 
@@ -367,7 +354,7 @@ c dbg
      &       energy,xresnrm,
      &       me_opt,me_grd,me_dia,
      &       me_trv,me_h_trv,
-     &       n_states,
+     &      n_states,
      &       me_special, nspecial,! <- R12: pass B, X, H here
 c     &       ffopt,ffgrd,ffdia,ffmet, ! <- R12: pass X here (metric)
 c     &       ff_trv,ff_h_trv,
@@ -522,11 +509,11 @@ c     &       ff_trv,ff_h_trv,
      &            thr_suggest(i_state),0,.false.,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
-           end if
-
+          end if
+          
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
-            idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
-            mel_pnt => op_info%mel_arr(idxmel)%mel
+              idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
+              mel_pnt => op_info%mel_arr(idxmel)%mel
             call list_copy(mel_C0,mel_pnt,.false.)
            end if
 
@@ -660,10 +647,11 @@ c test
      &         op_info%mel_arr(idx)%mel%fhand%last_mod(
      &         op_info%mel_arr(idx)%mel%fhand%current_record).gt.
      &         me_special(2)%mel%fhand%last_mod(1)) then
-            call update_metric(me_dia(1)%mel,me_special,nspecial,
-     &           fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
-     &           opti_info%update_prc.gt.0.and.
-     &           mod(imacit,max(opti_info%update_prc,1)).eq.0)
+             call update_metric(me_dia(1)%mel,
+     &            me_special,nspecial,
+     &            fl_spc,nspcfrm,orb_info,op_info,str_info,strmap_info,
+     &            opti_info%update_prc.gt.0.and.
+     &            mod(imacit,max(opti_info%update_prc,1)).eq.0)
           end if
 
           call solve_leq('TRF',
@@ -706,7 +694,7 @@ c dbg
 c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
-        ! ... and corresponding preconditioner(s)
+        ! ... and corresponding preconditioner(s)x
         if (ffdia(iopt)%fhand%unit.gt.0)
      &       call file_close_keep(ffdia(iopt)%fhand)
       end do
@@ -727,5 +715,44 @@ c dbgend
       ifree = mem_flushmark()
 
       return
+      contains
+*----------------------------------------------------------------------*
+!!    resolves a label to a pointer to the matrix element list object
+!!
+*----------------------------------------------------------------------*
+      function get_mel_h(label, op_info)
+*----------------------------------------------------------------------*
+      implicit none
+      character(*),intent(in) ::
+     &     label
+      type(operator_info), intent(inout) ::
+     &     op_info
+
+      type(me_list),pointer::
+     &     get_mel_h
+      integer,external::
+     &     idx_mel_list
+      integer::
+     &     idxmel
+      idxmel = idx_mel_list(label,op_info)
+      if (idxmel.le.0)
+     &       call quit(1,i_am,
+     &       'did not find list '//trim(label_opt(iopt)))
+      get_mel_h=> op_info%mel_arr(idxmel)%mel
+      return
+      end function
+*----------------------------------------------------------------------*
+!!    determines if the file of a subroutine is associated
+!!
+*----------------------------------------------------------------------*
+      pure  function mel_has_file_h(mel)
+      implicit none
+      type(me_list),intent(in)::
+     &     mel
+      logical::
+     &     mel_has_file_h
+      mel_has_file_h=associated(mel%fhand)
+      return
+      end function
       end
 

@@ -325,7 +325,9 @@
      &   context_sep//trim(curcontext)
          internal=> getParentNode(internal)
       end do
-      curcontext(len_trim(curcontext):len_trim(curcontext))=" "
+      if(len_trim(curcontext).gt.0)then
+      curcontext(len_trim(curcontext):len_trim(curcontext))=" " ! removing last context_sep
+      end if 
       end subroutine
 
 
@@ -622,7 +624,7 @@
       type(node), pointer::
      &     curkey
 
-      if (ntest .gt. 100) then
+      if (ntest .ge. 100) then
          call write_title(lulog,wst_dbg_subr,i_am)
          write(lulog,*) ' argument = "',name,'"'
          write(lulog,*) ' context = "',trim(context),'"'

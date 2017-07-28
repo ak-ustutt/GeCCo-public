@@ -129,6 +129,7 @@ No module named gecco_interface
  Warning from setting_up_python_interface.py: "REPLACE" is an argument and a rule. Use quotes for this keyword.
  Reading target file setting_up_python_interface.py.tgt_list: Python Interface (setting_up_python_interface.py)
  setting general targets ...
+  Reading target file python_start.py.tgt_list: Python Interface (python_start.py)  ! manually inserted Arne Bargholz
 /home/bargholz/Programme/GeCCo MP2.py
  Reading target file MP2.py.tgt_list: Python Interface (MP2.py)
 /home/bargholz/Programme/GeCCo orb_inp.py

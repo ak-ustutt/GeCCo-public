@@ -70,6 +70,8 @@
 * parameters
       integer, parameter ::
      &     ntest = 00
+      character(len=*),parameter::
+     &     i_am="optcont"
       character(len=10), parameter ::
      &     name_alg(0:3) =
      &     (/"Pert. Upd.","      DIIS","  ASSJ/RLE"," 2ND ORDER"/)
@@ -125,7 +127,6 @@
      &     iprint, iroute, ifree, iopt, i_state
       real(8) ::
      &     de, cpu, sys, wall, cpu0, sys0, wall0
-
 
       iprint = max(ntest,iprlvl)
       call atim_csw(cpu0,sys0,wall0)

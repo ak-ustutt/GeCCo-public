@@ -369,7 +369,7 @@ EXPAND_OP_PRODUCT({
         IDX_SV:[1,2,1]
         })
 
-debug_FORM('FORM_HAM_D_EXP',True)
+debug_FORM('FORM_HAM_D_EXP')
 
 
 OPTIMIZE({
@@ -380,7 +380,7 @@ EVALUATE({
         FORM:'FOPT_HAM_D'})
 
 debug_MEL('HAM_D_LIST')
-debug_MEL('HAM_D_EXP_LIST',True)
+debug_MEL('HAM_D_EXP_LIST')
 
 
 

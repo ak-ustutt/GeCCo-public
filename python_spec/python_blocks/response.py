@@ -12,6 +12,6 @@ import preconditioner.precon_c0
 import solve.MRCC2_LR_solve as solve
 
 
-modify_target('do all')
+modify_target('do_all')
 for target in solve._solve_eqn_arr:
     depend(target)

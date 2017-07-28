@@ -9,6 +9,8 @@
       include 'stdunit.h'
       include 'def_filinf.h'
 
+      integer,parameter::
+     &     ntest=00
       type(filinf), intent(in) ::
      &     ffvec
 
@@ -20,6 +22,9 @@
       integer ::
      &     luvec, lblk, nrec, len_last, len, irec, irecnd, idxst, idxnd
 
+      if(ntest.ge.20)then
+         write (lulog,'(1X,"depositing on file ",A20)')ffvec%name
+      end if
       lblk = ffvec%reclen
       luvec = ffvec%unit
       nrec = lenvec/lblk
