@@ -333,7 +333,7 @@
         <keyword name="unit_test" status="A">
           <argument length="256" name="tests" status="A" type="8"/>
         </keyword>
-      </keyword>
+      <keyword name="MRCC_new" status="A"/></keyword>
       <keyword name="calculate" status="A">
         <keyword name="check" status="A">
           <keyword name="formulae" status="A"/>
