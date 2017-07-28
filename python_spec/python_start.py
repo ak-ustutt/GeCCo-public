@@ -1,4 +1,6 @@
-#single entry file for all methods implemented by Arne Bargholz
+# single entry file for all methods implemented in Python
+# 
+# Author: Arne Bargholz
 
 import sys,os
 sys.path=[os.getenv("GECCO_DIR")]+sys.path
@@ -18,6 +20,10 @@ if ( keywords.is_keyword_set("method.MR_P") ) :
 if ( keywords.is_keyword_set("method.MRCC2") ):
     print "begin setting MRCC2 targets"
     import python_blocks.MRCC2
+
+if ( keywords.is_keyword_set("method.MRCC_new") ):
+    print "begin setting icMRCC targets"
+    import python_blocks.icMRCC
 
 if ( keywords.is_keyword_set("method.MRCCPT2") ):
     print "begin setting MRCCPT2 targets"
