@@ -23,6 +23,17 @@ if keywords.is_keyword_set('method.MRCCPT2.connected'):
         raise Exception(i_am+": unrecognised value for option connected (must be T or F)")
 print("connected ", connected, type(connected))
 
+connected_O3=connected
+if keywords.is_keyword_set('method.MRCCPT2.connected_O3'):
+    if (keywords.get('method.MRCCPT2.connected_O3') == "T"):
+        connected_O3=True
+    elif(keywords.get('method.MRCCPT2.connected_O3') == "F"):
+        connected_O3=False
+    else :
+        raise Exception(i_am+": unrecognised value for option connected_O3 (must be T or F)")
+print("connected_O3 ", connected_O3, type(connected_O3))
+
+# Third order term for the energy
 third_ord_energy=False
 if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
     if (keywords.get('method.MRCCPT2.3rd_E') == "T"):
@@ -127,21 +138,8 @@ if (connected):
 else:
       LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
 
-
-# We need to check the third-order energy expression again
-# (e.g. replace H by H_N (i.e. without scalar contribution) for formula generation
-#  and replace back H_N->H aferwards (using "REPLACE")
-if (third_ord_energy):
-    if (connected):
-        LAG_E.append("<C0^+*(T2g^+)*[H,T2g]*C0>")
-        # ??? LAG_E.append("<C0^+*(T2g^+)*([H,T2g]-["+_h0_+",T2g])*C0>")
-    else:
-        LAG_E.append("<C0^+*(T2g^+)*((H-"+_h0_+")*T2g)*C0>")
-
-
 # optional penality term
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
-
 
 #dbg
 #for item in LAG_E.show():
@@ -232,3 +230,57 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_PT_EQ',
         LABELS_IN:['FORM_PT_RHS','FORM_PT_MVP','FORM_PT_SxT']})
 
+
+# Comments fomr master
+# We need to check the third-order energy expression again
+# (e.g. replace H by H_N (i.e. without scalar contribution) for formula generation
+#  and replace back H_N->H aferwards (using "REPLACE")
+if (third_ord_energy):
+    new_target('MRCCPT_E_3rd_O', True)
+    depend('SOLVE_MRCCPT2')
+
+    for i in ['_C', '_NC']:
+        if (i == '_C'):
+            term = "<C0^+*(T2g^+)*([H-"+_h0_+",T2g])*C0>"
+            str_i = "(with commutator)"
+        else:
+            term = "<C0^+*(T2g^+)*((H-"+_h0_+")*T2g)*C0>"
+            str_i = "(w/o commutator)"
+
+        DEF_SCALAR({LABEL:'MRCCPT_O3'+i})
+        DEF_ME_LIST({LIST:'ME_MRCCPT_O3'+i,
+                     OPERATOR:'MRCCPT_O3'+i,
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:+1})
+
+        E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term)
+        E_O3.set_rule()
+
+        debug_FORM('FORM_MRCCPT_O3'+i)
+
+        OPTIMIZE({LABEL_OPT:'FOPT_MRCCPT_O3'+i,
+                  LABELS_IN:['FORM_MRCCPT_O3'+i]})
+
+        EVALUATE({FORM:'FOPT_MRCCPT_O3'+i})
+
+        DEF_SCALAR({LABEL:'E_MRCCPT2_plus_O3'+i})
+        DEF_ME_LIST({LIST:'ME_E_MRCCPT2_plus_O3'+i,
+                     OPERATOR:'E_MRCCPT2_plus_O3'+i,
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:+1})
+
+        ASSIGN_ME2OP({LIST:'PT_LAG_LST',OPERATOR:'PT_LAG'})
+
+        E_plus_3rd = stf.Formula("F_MRCCPT2_plus_O3"+i+":E_MRCCPT2_plus_O3"+i+"=<PT_LAG>+<MRCCPT_O3"+i+">")
+        E_plus_3rd.set_rule()
+
+        OPTIMIZE({LABEL_OPT:'FOPT_MRCCPT2_plus_O3'+i,
+                  LABELS_IN:['F_MRCCPT2_plus_O3'+i]})
+
+        EVALUATE({FORM:'FOPT_MRCCPT2_plus_O3'+i})
+
+        PRINT_MEL({LIST:'ME_MRCCPT_O3'+i,COMMENT:'3rd order correction '+str_i,FORMAT:'SCAL F24.14'})
+        PRINT_MEL({LIST:'ME_E_MRCCPT2_plus_O3'+i,COMMENT:'MRCCPT3 = MRCCPT2 + 3rd order '+str_i,FORMAT:'SCAL F24.14'})
+        PUSH_RESULT({LIST:'ME_E_MRCCPT2_plus_O3'+i,COMMENT:"MRCCPT3"+i, FORMAT:"SCAL F24.14"})

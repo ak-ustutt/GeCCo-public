@@ -319,7 +319,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-debug_MEL('HAM_D_LIST',info_only=True)
+debug_MEL('HAM_D_LIST')
 
 DEF_SCALAR({
         LABEL:'HAM_D_EXP'})
@@ -457,7 +457,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-debug_MEL('HAM_DX_LIST',info_only=True)
+debug_MEL('HAM_DX_LIST')
 
 
  
