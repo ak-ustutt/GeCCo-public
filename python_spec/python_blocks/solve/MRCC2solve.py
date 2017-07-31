@@ -72,15 +72,7 @@ PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
 
 
-
-
-
-
-
-
-
-
-
+#--------------
 new_target('SOLVE_MRCC2ref')
 depend("SOLVE_MRCC2")
 depend("FOPT_OMG_C0")
@@ -123,7 +115,7 @@ SOLVE_EVP(SOLVE_map)
 
 
 
-
+#-----------------------
 new_target("SOLVE_MRCC2_refopt")
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
@@ -164,6 +156,7 @@ SOLVE_NLEQ({
         })
 
 
+PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
 
 

@@ -6,7 +6,7 @@ from python_interface.gecco_modules.NoticeUtil import *
 # Finks excitation retaining hamiltonian
 #---------------------------------------------------------------------------------
 new_target('MAKE_REPT_HAM')
-heading('===Building of excitation retaining hamiltonian===')
+heading('Building of excitation retaining hamiltonian')
 #generalized from
 #Fink Chemical Physics Letters 428 (2006) 461 DOI: 10.1016/j.cplett.2006.07.081
 depend('H0')
@@ -56,7 +56,7 @@ debug_MEL('REPT_HAM_LST')
 #---------------------------------------------------------------------------------
 new_target('MAKE_FOCK_REF')
 
-heading('===Building of simple fock matrix===')
+heading('Building of simple fock matrix')
 depend('H0')
 depend('MakeRefState')
 depend('GAM0_CALC')
@@ -92,7 +92,7 @@ EVALUATE({
 # Effective Fock operator, diagonal part only
 #---------------------------------------------------------------------------------
 new_target('MAKE_FOCK_EFF_D')
-heading('===Building of effective fock matrix (diagonal blocks)===')
+heading('Building of effective fock matrix (diagonal blocks)')
 depend('H0')
 depend('MakeRefState')
 depend('GAM0_CALC')
@@ -175,7 +175,7 @@ debug_MEL('FOCK_EFF_D_EXP_LST')
 # Effective Fock operator
 #---------------------------------------------------------------------------------
 new_target('MAKE_FOCK_EFF')
-heading('===Building of effective fock matrix===')
+heading('Building of effective fock matrix')
 depend('H0')
 depend('MakeRefState')
 depend('GAM0_CALC')
@@ -301,7 +301,7 @@ debug_MEL('FOCK_EFF_INACT_LST')
 #Building Dyalls 0th order Hamiltonian
 #---------------------------------------------------------------------------------
 new_target('Make_HAM_D')
-heading("====== Building of Dyall's 0th order Hamiltonian ======")
+heading("Building of Dyall's 0th order Hamiltonian")
 depend('EVAL_F_EFF_INACT')
 depend('H0')
 
@@ -439,7 +439,7 @@ debug_MEL('FOCK_EFF_4DX_LIST')
 # Dyalls 0th order Hamiltonian (extended version with off-diagonal Fock)
 #---------------------------------------------------------------------------------
 new_target('EVAL_HAM_DX')
-heading("====== Building of Dyall's 0th order Hamiltonian (extended) ======")
+heading("Building of Dyall's 0th order Hamiltonian (extended)")
 depend('EVAL_F_EFF_4DX')
 depend('H0')
 

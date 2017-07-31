@@ -40,7 +40,7 @@ wf_sym=orbitals.get('lsym')
 
 
 new_target('Make_E0')
-heading('=== Operators for Reference State ===')
+heading('Operators for Reference State')
 
 comment('Reference energy')
 DEF_SCALAR({
