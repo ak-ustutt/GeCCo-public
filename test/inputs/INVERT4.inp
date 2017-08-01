@@ -1,0 +1,9 @@
+ general
+   print=10
+   memmax=10000000
+method
+  MR project=4
+  MR_P
+  unit_test tests=INVERT
+calculate
+  skip_E

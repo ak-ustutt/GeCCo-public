@@ -11,6 +11,7 @@ opt1=$optstr
 opt2=""
 opt3=""
 host=`hostname`
+commit=`git rev-parse HEAD ` 
 set `date`
 cat > date.h <<EOF
       character, parameter :: vers*80 = 
@@ -24,5 +25,7 @@ cat > date.h <<EOF
      ,  "$opt2 "
       character, parameter :: opt3*60 =
      ,  "$opt3 "
+      character, parameter :: commit*40 =
+     ,  "$commit"
 EOF
 

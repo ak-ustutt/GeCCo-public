@@ -16,7 +16,7 @@ from python_interface.python_blocks.Arnes_helfer import *
 #Building Dyalls 0th order Hamiltonian
 #---------------------------------------------------------------------------------
 new_target('DyallsHamiltonian')
-heading("====== Building of Dyall's 0th order Hamiltonian ======")
+heading("Building of Dyall's 0th order Hamiltonian")
 depend('EVAL_F_EFF_DIAG')
 
 depend('H0')

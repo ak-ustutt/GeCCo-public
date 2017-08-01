@@ -289,7 +289,8 @@
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
             <!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) -->
           </argument>
-        </keyword>
+          <keyword name="relaxref" status="A"/>
+	</keyword>
         <keyword name="MRCCPT2" status="A">
           <argument length="1" name="3rd_E" status="A" type="1"/>
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">

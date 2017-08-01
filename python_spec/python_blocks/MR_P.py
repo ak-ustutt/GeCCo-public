@@ -18,5 +18,5 @@ import CASCI.spin_proj
 import CASCI.MR
 
 
-modify_target("do all")
+modify_target("do_all")
 depend("MakeRefState")

@@ -175,7 +175,8 @@ c dbg
            lzero_flag=.false.
            if (typ_prc .eq. optinf_prc_traf_spc) lzero_flag=.true.
 
-          call optc_prc_traf(me_amp,me_grd,me_dia,me_special,nspecial,
+           call optc_prc_traf(me_amp,me_grd,me_dia,
+     &                       me_special,nspecial,
      &                       nwfpar,xbuf1,xbuf2,
      &                       fspc,nspcfrm,xngrd,iopt,imacit,i_state,
      &                       opti_info,

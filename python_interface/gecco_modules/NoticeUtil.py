@@ -11,8 +11,8 @@ def _print_str(string):
     PRINT({'STRING':string})
 
 def comment(string):
-    """Easy way to print comments. No formatting yet"""
-    _print_str("--> " + string)
+    """Easy way to print comments."""
+    _print_str("# " + string)
 
 def heading(string):
     """Easy way to print headings for a target."""
