@@ -50,19 +50,21 @@ LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _refexp("LAM2g*H"))
 
 
 LAG_E.append(_refexp("(H*T1)+(H*T2g)"))
+LAG_E.append(_refexp("-(T1*H)-(T2g*H)"))
 
 LAG_A1.append(_refexp("(LAM1*H*T1)+(LAM1*H*T2g)"))
-LAG_A1.append(_refexp("(LAM1*T1*H)+(LAM1*T2g*H)"))
+LAG_A1.append(_refexp("-(LAM1*T1*H)-(LAM1*T2g*H)"))
 
-LAG_A1.append(_refexp("(LAM2g*H*T1)+(LAM2g*H*T2g)"))
-LAG_A1.append(_refexp("(LAM2g*T1*H)+(LAM2g*T2g*H)"))
-
-
+LAG_A2.append(_refexp("(LAM2g*H*T1)+(LAM2g*H*T2g)"))
+LAG_A2.append(_refexp("-(LAM2g*T1*H)-(LAM2g*T2g*H)"))
 
 
 LAG_E.set_rule()
 LAG_A1.set_rule()
 LAG_A2.set_rule()
+
+comment("debug form MRCC_LAG_E")
+debug_FORM('FORM_MRCC_LAG_E', True)
 
 
 #Make the Derivative with respect to LAM  
