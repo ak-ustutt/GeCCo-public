@@ -832,7 +832,7 @@ c dbgend
       implicit none
       include "stdunit.h"
       character(len=*),parameter::
-     &     unit="UOUT"
+     &     unit="O"
 
       character(len=*), intent(in) ::
      &     line,msg

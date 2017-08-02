@@ -1082,9 +1082,9 @@ c dbg
 *----------------------------------------------------------------------*
 
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
-        call get_arg('OUTPUT',rule,tgt_info,val_str=title)
+        call get_arg('OUTPUT',rule,tgt_info,val_str=mode)
         
-        call print_out(" "//trim(strscr),trim(title))
+        call print_out(" "//trim(strscr),mode(1:1))
 
 *----------------------------------------------------------------------*
       case(SET_MEL)
