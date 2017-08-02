@@ -12,13 +12,13 @@ try:
                                stderr=subprocess.PIPE,
                                cwd=os.getenv("GECCO_DIR") )
 except OSError as ex:
-    print "could not get current version information"
+    print "Could not get current version information"
 else:
     err = gitproc.stderr.read()
     if (err==""):
-        print "current revision: "+gitproc.stdout.read(),
+        print "Current git revision: "+gitproc.stdout.read(),
     else:
-        print "could not get current version information"
+        print "Could not get current version information"
         
 print "Using python version: ", sys.version
 inp = GeCCo_Input()

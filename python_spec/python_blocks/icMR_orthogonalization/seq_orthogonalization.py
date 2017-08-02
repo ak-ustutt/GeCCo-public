@@ -2,6 +2,7 @@
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import * 
 
+i_am='seq_orthogonalization'
 
 spinadapt = keywords.get('calculate.routes.spinadapt')
 spinadapt = int(spinadapt) if spinadapt is not None else 0
