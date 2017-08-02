@@ -1,6 +1,8 @@
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
 
+i_am='H_0'
+
 
 #---------------------------------------------------------------------------------
 # Finks excitation retaining hamiltonian
