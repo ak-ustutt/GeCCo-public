@@ -26,7 +26,6 @@ else :
 
 wf_sym = orbitals.get('lsym')        #symmetry of wavefunction
 
-
 import operators.cluster_residue_op 
 import operators.ref_wf_op
 import operators.H_0
@@ -40,6 +39,6 @@ import solve.icMRCCSDsolve
 #-----------------------------------------------------------------#
 # ... do it ...
 #-----------------------------------------------------------------#
-modify_target('do all')
+modify_target('do_all')
 depend('SOLVE_MRCC')
 
