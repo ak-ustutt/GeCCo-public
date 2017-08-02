@@ -7,6 +7,10 @@ depend('DEF_FORM_MRCC_LAG')
 depend('EVAL_E0')
 depend('BUILD_PRECON')
 
+ASSIGN_ME2OP({
+        LIST:'ME_X_TRM_DAG',
+        OPERATOR:'X_TRM'})
+
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],
