@@ -12,7 +12,6 @@ print ("-"*50+"\npython_start")
 
 new_target("do_all",True)
 
-print "before try"
 try:
 
     if ( keywords.is_keyword_set("method.MR_P") ) :
@@ -44,8 +43,6 @@ try:
         import python_blocks.singles_correction
 
     print ("end of python_start\n"+"-"*50)
-
-    print 'no Exception'
 
 except Exception as ex:
 
