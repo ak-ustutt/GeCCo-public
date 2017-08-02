@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-#single entry file 
-=======
 # single entry file for all methods implemented in Python
 # 
 # Author: Arne Bargholz
->>>>>>> Start python version of mrcc
 
 import sys,os
 import traceback
@@ -25,6 +21,10 @@ try:
     if ( keywords.is_keyword_set("method.MRCC2") ):
         print "begin setting MRCC2 targets"
         import python_blocks.MRCC2
+
+    if ( keywords.is_keyword_set("method.MRCC_new") ):
+        print "begin setting icMRCC targets"
+        import python_blocks.icMRCC
 
     if ( keywords.is_keyword_set("method.MRCCPT2") ):
         print "begin setting MRCCPT2 targets"
