@@ -204,7 +204,7 @@ DERIVATIVE({LABEL_IN:'FORM_OVL',
         OP_DERIV:'LAM2g'})
 
 debug_FORM('FORM_PT_Amp')
-debug_FORM('FORM_PT_SxT',True)
+debug_FORM('FORM_PT_SxT')
 
 #devide into RHS and transformation part
 LEQ_SPLIT({LABEL_RAW:'FORM_PT_Amp',
@@ -214,8 +214,8 @@ LEQ_SPLIT({LABEL_RAW:'FORM_PT_Amp',
            OP_RHS:'H1rhs',
            OP_X:'T2g'})
 
-debug_FORM('FORM_PT_MVP',True)
-debug_FORM('FORM_PT_RHS',True)
+debug_FORM('FORM_PT_MVP')
+debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
