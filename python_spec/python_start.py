@@ -61,7 +61,7 @@ except Exception as ex:
     print "  Type:  " + str(exc_type)
     print "  Traceback:"
     for tb in traceback.extract_tb(exc_traceback):
-        print "    " + str(tb)
+        print "    in {0}, line {1:d}: {2}, {3}".format(tb[0], tb[1], str(tb[2]), tb[3])
     print
     flog.close()
 
