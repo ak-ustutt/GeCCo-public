@@ -1,3 +1,36 @@
+"""An implementation of the icMRCCSD theory
+
+Usage:
+
+For a calculation with fixed reference, the GeGGo input needs (possibly among other things):
+
+method
+ MR_P
+ MRCC_new
+calculate
+ solve non_linear optref=0,
+
+For a calculation relaxing the reference:
+
+method
+ MR project=4,prc_traf=F
+calculate
+ solve non_linear optref=-3
+ skip_E
+
+
+TODO:
+
+
+For details, see:
+  solve/icMRCCSDsolve.py
+  lagrangians/icMRCCSDlag.py
+
+History:
+
+Yuri Aoto, august 2017: Creation based on MRCC2.py
+
+"""
 
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import*
@@ -11,20 +44,6 @@ import python_interface.gecco_modules.default_keywords as dk
 # Things to do before calculation starts
 #---------------------------------------------------------------##
 new_target("general considerations",True)
-
-ims = int(orbitals.get('ims'))   
-notice("ims",ims)    
-imult = int(orbitals.get('imult'))
-notice("imult",imult)
-
-if (ims == 0) and ((imult-1)%4 == 0) :
-    msc = 1
-elif (ims == 0) and ((imult+1)%4 == 0) :
-    msc = -1
-else :
-    msc = 0                        # msc is the AB_sym for many operators
-
-wf_sym = orbitals.get('lsym')        #symmetry of wavefunction
 
 import operators.cluster_residue_op 
 import operators.ref_wf_op
