@@ -119,29 +119,12 @@ SOLVE_EVP(SOLVE_map)
 new_target("SOLVE_MRCC2_refopt")
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
-depend("MakeRefState")
 depend("FOPT_OMG_C0")
-
-
-
-DEF_ME_LIST({LIST:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
-             OPERATOR:"D0",
-             IRREP:int(orbitals.get('lsym')),
-             "2MS":int(orbitals.get('ims')),
-             AB_SYM:ab_sym(int(orbitals.get('ims')),int(orbitals.get('imult')))
-})
-
-SCALE_COPY({LIST_RES:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
-            LIST_INP:"ME_D0",
-            FAC:1,})
-
 
 
 ASSIGN_ME2OP({
         LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM'})
-
-
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],

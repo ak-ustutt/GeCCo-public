@@ -1,6 +1,8 @@
-# single entry file for all methods implemented in Python
-# 
-# Author: Arne Bargholz
+"""single entry file for all methods implemented in Python
+
+Hystory:
+Arne Bargholz, January 2016 - Creation
+"""
 
 import sys,os
 import traceback

@@ -1,15 +1,21 @@
-#
-# An implementation of the icMRCC Lagrangian, with term by term analysis.
-# 
-#
+"""An implementation of the icMRCCSD Lagrangian, done term by term and separated T1 and T2.
+
+
+
+History:
+
+Yuri august 2017: Creation based on MRCC2lag.py. Implementation up to maxcom=2
+
+"""
+
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
+import ref_relaxation
 
 i_am="icMRCCSDlag.py"
 
-
-
 new_target('DEF_FORM_MRCC_LAG')
+heading('Defining the icMRCC Lagrangian')
 
 depend('DEF_T2g')
 depend('DEF_T1')
@@ -19,7 +25,6 @@ depend('DEF_LAM1')
 
 depend('DEF_O2g')
 depend('DEF_O1')
-
 
 DEF_SCALAR({
         LABEL:'MRCC_LAG'})
@@ -42,21 +47,78 @@ DEF_SCALAR({
 def _refexp(x):
     return "<C0^+*(" + x + ")*C0>"
 
+# The terms with the Lambda are always enclosed by <C0^+|LAM1 and C0> or <C0^+|LAM2g and C0>
+def _L1_refexp(x):
+    return _refexp("LAM1(" + x + ")")
+
+def _L2_refexp(x):
+    return _refexp("LAM2g(" + x + ")")
+
 
 LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
-LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _refexp("LAM1*H"))
-LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _refexp("LAM2g*H"))
+LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
+LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 
 
 
 LAG_E.append(_refexp("(H*T1)+(H*T2g)"))
 LAG_E.append(_refexp("-(T1*H)-(T2g*H)"))
 
-LAG_A1.append(_refexp("(LAM1*H*T1)+(LAM1*H*T2g)"))
-LAG_A1.append(_refexp("-(LAM1*T1*H)-(LAM1*T2g*H)"))
+LAG_E.append(_refexp("(1/2)*(H*T1 *T1 )"))
+LAG_E.append(_refexp("(1/2)*(H*T1 *T2g)"))
+LAG_E.append(_refexp("(1/2)*(H*T2g*T1 )"))
+LAG_E.append(_refexp("(1/2)*(H*T2g*T2g)"))
 
-LAG_A2.append(_refexp("(LAM2g*H*T1)+(LAM2g*H*T2g)"))
-LAG_A2.append(_refexp("-(LAM2g*T1*H)-(LAM2g*T2g*H)"))
+LAG_E.append(_refexp("-(T1 *H*T1 )"))
+LAG_E.append(_refexp("-(T1 *H*T2g)"))
+LAG_E.append(_refexp("-(T2g*H*T1 )"))
+LAG_E.append(_refexp("-(T2g*H*T2g)"))
+
+LAG_E.append(_refexp("(1/2)*(T1 *T1 *H)"))
+LAG_E.append(_refexp("(1/2)*(T1 *T2g*H)"))
+LAG_E.append(_refexp("(1/2)*(T2g*T1 *H)"))
+LAG_E.append(_refexp("(1/2)*(T2g*T2g*H)"))
+
+
+
+LAG_A1.append(_L1_refexp("(H*T1)+(H*T2g)"))
+LAG_A1.append(_L1_refexp("-(T1*H)-(T2g*H)"))
+
+LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T1 )"))
+LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T2g)"))
+LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T1 )"))
+LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T2g)"))
+
+LAG_A1.append(_L1_refexp("-(T1 *H*T1 )"))
+LAG_A1.append(_L1_refexp("-(T1 *H*T2g)"))
+LAG_A1.append(_L1_refexp("-(T2g*H*T1 )"))
+LAG_A1.append(_L1_refexp("-(T2g*H*T2g)"))
+
+LAG_A1.append(_L1_refexp("(1/2)*(T1 *T1 *H)"))
+LAG_A1.append(_L1_refexp("(1/2)*(T1 *T2g*H)"))
+LAG_A1.append(_L1_refexp("(1/2)*(T2g*T1 *H)"))
+LAG_A1.append(_L1_refexp("(1/2)*(T2g*T2g*H)"))
+
+
+
+LAG_A2.append(_L2_refexp("(H*T1)+(H*T2g)"))
+LAG_A2.append(_L2_refexp("-(T1*H)-(T2g*H)"))
+
+LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T1 )"))
+LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T2g)"))
+LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T1 )"))
+LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T2g)"))
+
+LAG_A2.append(_L2_refexp("-(T1 *H*T1 )"))
+LAG_A2.append(_L2_refexp("-(T1 *H*T2g)"))
+LAG_A2.append(_L2_refexp("-(T2g*H*T1 )"))
+LAG_A2.append(_L2_refexp("-(T2g*H*T2g)"))
+
+LAG_A2.append(_L2_refexp("(1/2)*(T1 *T1 *H)"))
+LAG_A2.append(_L2_refexp("(1/2)*(T1 *T2g*H)"))
+LAG_A2.append(_L2_refexp("(1/2)*(T2g*T1 *H)"))
+LAG_A2.append(_L2_refexp("(1/2)*(T2g*T2g*H)"))
+
 
 
 LAG_E.set_rule()
@@ -82,7 +144,9 @@ DERIVATIVE({
 
 
 OPTIMIZE({
-        LABEL_OPT:'FOPT_MRCC_LAG2',
+        LABEL_OPT:'FOPT_MRCC_LAG',
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
 
 
+#-----
+ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')
