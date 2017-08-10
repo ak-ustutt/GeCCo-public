@@ -6586,13 +6586,6 @@ c     &               tgt_info,val_label=(/'ME_OMG'/))
      &     parameters,2,tgt_info)
       call set_rule2('EVAL_PERT_CORR',PUSH_RESULT,tgt_info)
       call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'LIST',1,tgt_info,
-     &     val_label=(/'ME_E_REF'/))
-      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'COMMENT',1,tgt_info,
-     &     val_str='Reference')
-      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'FORMAT',1,tgt_info,
-     &     val_str='SCAL F24.14')
-      call set_rule2('EVAL_PERT_CORR',PUSH_RESULT,tgt_info)
-      call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'LIST',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
       call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'COMMENT',1,tgt_info,
      &     val_str=methods_name)
