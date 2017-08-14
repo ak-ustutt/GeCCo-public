@@ -275,9 +275,16 @@ class GeCCo_Input:
     def is_keyword_set( self, arg):
         keyword = self.root
         context = arg.split(".")
-        for name in context:
+        for name in context[:-1]:
             try:
                 keyword = keyword.get_child(name)
+            except KeyError:
+                return False
+        try:
+            keyword.get_child(context[-1])
+        except KeyError:
+            try:
+                keyword.get_argument(context[-1])
             except KeyError:
                 return False
         return True
