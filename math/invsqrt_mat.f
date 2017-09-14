@@ -15,6 +15,7 @@
       include 'stdunit.h'
       include 'routes.h'
       include 'def_filinf.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -33,22 +34,26 @@
       logical, intent(in) ::
      &     half, get_u
       real(8) ::
-     &     wrk(max(1024,ndim**2)),dum1,dum2,expo
+     &     dum1,dum2,expo
       real(8), pointer ::
-     &     mat_tmp(:,:)
+     &     mat_tmp(:,:),mat_tmpv(:),  !mat_tmpv is only a handler for the mat_tmp memory as memman can only allocate one dimensional vectors
+     &     wrk(:)
 
       type(filinf) ::
      &     ffsv
       integer ::
-     &     idx, lwrk, info, idx2, luinp, iostatus
+     &     idx, lwrk, info, idx2, luinp, iostatus,
+     &     ifree
       logical ::
      &     l_exist, sv_above, read_file
 
       if (ndim.eq.0) return
-
-      lwrk=max(1024,ndim**2)
+      
       info = 0
-
+      lwrk=max(1024,ndim**2)
+      ifree = mem_setmark('invsqrt_mat')
+      ifree = mem_alloc_real(wrk, lwrk,'wrk')
+      
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
         call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)
@@ -105,23 +110,16 @@ c      call svd_drv(ndim,mat,singval)
       end if
 
       if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
-c dbg AB
-      if (get_u)then
-         print *, i_am,"finding NaNs"
-         do idx=1,ndim
-            do idx2=1,ndim
-               if (is_nan_h(umat(idx,idx2)))
-     &              call warn(i_am,"NaN detected")
-            end do
-         end do
-      end if
-c dbg end
 
 c      if (half) then
 c        mat_tmp => mat
        expo = -0.5d0
 c      else
-       if (.not.half) allocate(mat_tmp(ndim,ndim))
+       
+       if (.not.half) then
+          ifree = mem_alloc_real(mat_tmpv,ndim*ndim,'mat_tmp')
+          mat_tmp(1:ndim, 1:ndim) => mat_tmpv
+       end if
 cmh        expo = -0.25d0
 c        expo = 0d0  ! to obtain matrix to project out lin. dep.
 c      end if
@@ -181,8 +179,8 @@ c dbgend
         call dgemm('n','t',ndim,ndim,ndim,
      &             1d0,mat_tmp,ndim,
      &                 mat_tmp,ndim,
-     &             0d0,mat2,ndim)
-        deallocate(mat_tmp)
+     &        0d0,mat2,ndim)
+        mat_tmp => null() ! mat_tmpv is automatically deallocated at flushmark.
         if (ntest.ge.100) then
           write(lulog,*) 'U*1s*U^+ projector:'
           call wrtmat3(mat2,ndim,ndim,ndim,ndim)
@@ -200,26 +198,7 @@ c dbgend
 
       if (sv_fix) call file_close_keep(ffsv)
 
-!      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
-!      print *, i_am,"finding NaNs"
-!      do idx=1,ndim
-!         do idx2=1,ndim
-!            if (is_nan_h(umat(idx,idx2)))
-!     &           call warn(i_am,"NaN detected 2")
-!         end do
-!      end do
+      ifree = mem_flushmark()
       return
       contains
-!! as I can't rely on gforts nonstandard is_nan or the standard ieee_arithmetic module
-!! here a reproduction of the  functionality
-      function is_nan_h(value)
-      implicit none
-      logical ::
-     &     is_nan_h
-      
-      real(8),intent(in)::
-     &     value
-      is_nan_h = .not. ((value.le. 0d0) .or.(value.ge.0d0))
-
-      end 
       end
