@@ -649,8 +649,7 @@ def _write_value_on_f( value, f):
 
 # Write targets on disk, to be available by GeCCo
 def export_targets():
-
-    flog.close()
+    # flog.close()   ! this currently gives an error when export_targets is called twice TODO: find a more graceful way
     with open( _tgt_list_name, 'w') as f:
         f.write( _msg_final + '\n')
         for tgt in _target_list:
