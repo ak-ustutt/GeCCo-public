@@ -12,6 +12,7 @@
       include 'stdunit.h'
       include 'routes.h'
       include 'def_filinf.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -24,16 +25,18 @@
       real(8), intent(inout) ::
      &     mat(ndim,ndim)
       real(8) ::
-     &     wrk(max(1024,ndim**2)),dum1,dum2,umat(ndim,ndim)
+     &     dum1,dum2,umat(ndim,ndim)
       real(8), pointer ::
-     &     mat_tmp(:,:), sing_tmp(:)
+     &     mat_tmp(:,:),mat_tmpv(:), !mat_tmpv is only a handler for the mat_tmp memory as memman can only allocate one dimensional vectors
+     &     sing_tmp(:), wrk(:)
       integer ::
      &     cur_els(ndim), nels, iels, iidim
       logical ::
      &     decomposed(ndim)
 
       integer ::
-     &     nrot, idx, lwrk, info, idx2, luinp, iostatus
+     &     nrot, idx, lwrk, info, idx2, luinp, iostatus,
+     &     ifree
       integer, external ::
      &     idxlist
 
@@ -42,6 +45,7 @@
       decomposed = .false.
 
       do iidim = 1, ndim
+        ifree = mem_setmark('svd_drv')
         if (decomposed(iidim)) cycle
 
         ! find all coupling elements
@@ -68,8 +72,11 @@ c dbg
 c        print *,'cur_els: ',cur_els(1:nels)
 c dbgend
 
-        ! assemble block
-        allocate(mat_tmp(nels,nels),sing_tmp(nels))
+! assemble block
+        
+        ifree = mem_alloc_real(mat_tmpv, nels*nels,'mat_tmp')
+        ifree = mem_alloc_real(sing_tmp, nels,'sing_tmp')
+        mat_tmp(1:nels,1:nels) => mat_tmpv
         do idx = 1, nels
           do idx2 = 1, nels
             mat_tmp(idx,idx2) = mat(cur_els(idx),cur_els(idx2))
@@ -78,6 +85,7 @@ c dbgend
 
         ! call singular value decomposer
         lwrk=max(1024,nels**2)
+        ifree = mem_alloc_real(wrk, lwrk,'wrk')
         info = 0
         call dgesvd('O','N',nels,nels,
      &       mat_tmp,nels,sing_tmp,
@@ -95,7 +103,7 @@ c dbgend
           end do
         end do
 
-        deallocate(mat_tmp,sing_tmp)
+        ifree = mem_flushmark()
       end do
 
       mat = umat
