@@ -134,9 +134,9 @@ elif hamiltonian=="F_EFF-D":
     _h0exp_='FOCK_EFF_D_EXP'
 
 if (connected):
-      LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
 else:
-      LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
 
 # optional penality term
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
@@ -231,21 +231,51 @@ OPTIMIZE({
         LABELS_IN:['FORM_PT_RHS','FORM_PT_MVP','FORM_PT_SxT']})
 
 
-# Comments fomr master
+# Comments from master
 # We need to check the third-order energy expression again
 # (e.g. replace H by H_N (i.e. without scalar contribution) for formula generation
 #  and replace back H_N->H aferwards (using "REPLACE")
+
+# Third order terms
+_h1_ = "(H-" +_h0_ + ")"
+
+
+term_CI = "<C0^+ * (T2g^+) * (" + _h1_ + "*T2g) * C0>"
+term_CC0 =       "<C0^+ * (T2g^+) * ([H-"+ _h0_ + ",T2g]) * C0>"
+term_CCa = "1/2 * <C0^+ *           ([[" + _h1_ + ",T2g],T2g]) * C0>"
+term_CCb = "1/2 * <C0^+ * (T2g^+) * ([[" + _h0_ + ",T2g],T2g]) * C0>"
+
 if (third_ord_energy):
     new_target('MRCCPT_E_3rd_O', True)
+    heading('Third order correction for the energy')
     depend('SOLVE_MRCCPT2')
 
-    for i in ['_C', '_NC']:
-        if (i == '_C'):
-            term = "<C0^+*(T2g^+)*([H-"+_h0_+",T2g])*C0>"
-            str_i = "(with commutator)"
+    for i in ['_CI', '_CC0', '_CCa', '_CCb', '_CC']:
+        if (i == '_CI'):
+            term = term_CI
+            str_i = "CI like term"
+
+        elif (i == '_CC0'):
+            term = term_CC0
+            str_i = "term 0 of CC like: L[H1,T]"
+
+        elif (i == '_CCa'):
+            term = term_CCa
+            str_i = "term a of CC like: 1/2 [[H1,T],T]"
+
+        elif (i == '_CCb'):
+            term = term_CCb
+            str_i = "term b of CC like: 1/2 L[[H0,T],T]"
+
+        elif (i == '_CC'):
+            term = [term_CC0,
+                    term_CCa,
+                    term_CCb]
+            str_i = "CC like term"
+
         else:
-            term = "<C0^+*(T2g^+)*((H-"+_h0_+")*T2g)*C0>"
-            str_i = "(w/o commutator)"
+            raise Exception(i_am + ": unrecognised kind of third order correction")
+
 
         DEF_SCALAR({LABEL:'MRCCPT_O3'+i})
         DEF_ME_LIST({LIST:'ME_MRCCPT_O3'+i,
@@ -254,10 +284,14 @@ if (third_ord_energy):
                      '2MS':0,
                      AB_SYM:+1})
 
-        E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term)
-        E_O3.set_rule()
+        if (isinstance(term, str)):
+            E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term)
+        else:
+            E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term[0])
+            for j in range(1, len(term)):
+                E_O3.append(term[j])
 
-        debug_FORM('FORM_MRCCPT_O3'+i)
+        E_O3.set_rule()
 
         OPTIMIZE({LABEL_OPT:'FOPT_MRCCPT_O3'+i,
                   LABELS_IN:['FORM_MRCCPT_O3'+i]})
@@ -281,6 +315,15 @@ if (third_ord_energy):
 
         EVALUATE({FORM:'FOPT_MRCCPT2_plus_O3'+i})
 
-        PRINT_MEL({LIST:'ME_MRCCPT_O3'+i,COMMENT:'3rd order correction '+str_i,FORMAT:'SCAL F24.14'})
-        PRINT_MEL({LIST:'ME_E_MRCCPT2_plus_O3'+i,COMMENT:'MRCCPT3 = MRCCPT2 + 3rd order '+str_i,FORMAT:'SCAL F24.14'})
-        PUSH_RESULT({LIST:'ME_E_MRCCPT2_plus_O3'+i,COMMENT:"MRCCPT3"+i, FORMAT:"SCAL F24.14"})
+        PRINT_MEL({
+                LIST:'ME_MRCCPT_O3'+i,
+                COMMENT:'3rd order correction          ('+str_i+')',
+                FORMAT:'SCAL F24.14'})
+        PRINT_MEL({
+                LIST:'ME_E_MRCCPT2_plus_O3'+i,
+                COMMENT:'MRCCPT3 = MRCCPT2 + 3rd order ('+str_i+')',
+                FORMAT:'SCAL F24.14'})
+        PUSH_RESULT({
+                LIST:'ME_E_MRCCPT2_plus_O3'+i,
+                COMMENT:"icMRPT3"+i,
+                FORMAT:"SCAL F24.14"})

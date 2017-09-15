@@ -69,6 +69,8 @@ LAG_E.append(_refexp("(1/2)*(H*T1 *T2g)"))
 LAG_E.append(_refexp("(1/2)*(H*T2g*T1 )"))
 LAG_E.append(_refexp("(1/2)*(H*T2g*T2g)"))
 
+#LAG_E.append(_refexp("(1/2)*(H*T2g'*T2g'')"), avoid=["T2g'","T2g''"])
+
 LAG_E.append(_refexp("-(T1 *H*T1 )"))
 LAG_E.append(_refexp("-(T1 *H*T2g)"))
 LAG_E.append(_refexp("-(T2g*H*T1 )"))
@@ -125,9 +127,9 @@ LAG_E.set_rule()
 LAG_A1.set_rule()
 LAG_A2.set_rule()
 
-comment("debug form MRCC_LAG_E")
-debug_FORM('FORM_MRCC_LAG_E', True)
 
+#comment("debug form MRCC_LAG_E")
+#debug_FORM('FORM_MRCC_LAG_E', True,mode='LONG')
 
 #Make the Derivative with respect to LAM  
 DERIVATIVE({

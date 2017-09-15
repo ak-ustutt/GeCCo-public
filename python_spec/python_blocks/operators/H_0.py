@@ -341,6 +341,16 @@ EXPAND_OP_PRODUCT({
         IDX_SV:[1,2,1],
         NEW:True})
 
+# The scalar part of HAM_D
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_D',
+        OP_RES:'HAM_D',
+        OPERATORS:['HAM_D','H','HAM_D'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,,',
+        NEW:False})
+
+
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_HAM_D',
         OP_RES:'HAM_D',
