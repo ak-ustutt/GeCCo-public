@@ -19,6 +19,7 @@ from stf_string_expansion import InputString,BracketRep  # what I actually need 
 import Flags
 
 from Util import combine_dicts,_IDXUtil,_NumberCollectUtil,remove_whites
+from operators import Vertex
 
 
 
@@ -207,6 +208,12 @@ class _OPProduct(object):
             self._OPs_to_string(
                 self._OPs)
         )
+
+    ##@return the position of the operator op in the operator product list
+    def index(self, op):
+        for i, o in enumerate(self._OPs):
+            if o.identical(op):
+                return i
 
     ##@param other an _OP_PRODUCT
     def compare(self,other):
@@ -418,6 +425,29 @@ class _Bracket(_AbstractBracket):
         else:
             return ret_list
 
+    def avoid(self, op_str1, op_str2):
+        """Make the Expand op product avoid connections between the two operators
+
+        Does not return anything, just set the avoid in the product, if the two operators
+        are present
+        """
+        op1 = Vertex(op_str1)
+        op2 = Vertex(op_str2)
+
+        for prod in self.OP_products:
+            try:
+                av1 = prod.arguments['IDX_SV'][prod.index(op1)]
+                av2 = prod.arguments['IDX_SV'][prod.index(op2)]
+                new_avoid = [av1, av2]
+            except:
+                new_avoid = None
+
+            if new_avoid is not None:
+                if 'AVOID' in prod.arguments:
+                    prod.arguments['AVOID'].extend(new_avoid)
+                else:
+                    prod.arguments['AVOID'] = new_avoid
+
     def show(self,form_dic={}):
         return self.set_rule(form_dic,settle=False)
 
@@ -521,6 +551,20 @@ class _Formula( _FormulaStringRepUtil):
             except ValueError:
                 break
 
+    def set_avoid(self, ops):
+        """Set avoid to the brackets in the formula.
+
+        Use after extracting, because extract overwrites this.
+        """
+        if (len(ops)%2 != 0):
+            raise MissingArgumentError("Pleas, give an even number of operators in the avoid list")
+            
+        for bracket in self._content:
+            i = 0
+            while i < len(ops):
+                bracket.avoid(ops[i],ops[i+1])
+                i += 2
+
     def extract(self):
         """triggers the extraction of the deeper layers"""
         for bracket in self._content:
@@ -558,11 +602,13 @@ class _Formula( _FormulaStringRepUtil):
         return combine_dicts(special_dict,self.arguments)
 
     #Append functionality
-    def _append(self,other):
+    def _append(self,other,avoid=None):
         """Appends another formula body either from _Formula or from a string.
 
         @parameter other either a formula (only the body is appended) 
-        or a  string representing a formula body """
+        or a  string representing a formula body
+        @parameter avoid a list of two operators to be avoided in the expand_op_product
+        """
         if isinstance(other, _Formula):
             self._content+=other._content
             self._string.extend(str(other._string))
@@ -574,6 +620,8 @@ class _Formula( _FormulaStringRepUtil):
             string=interm.preprocess_string(other)
             interm.process_string(string)
             interm.extract()
+            if avoid is not None:
+                interm.set_avoid(avoid)
             self._append(interm)
         elif isinstance(other,list):
             for member in other:
@@ -581,13 +629,16 @@ class _Formula( _FormulaStringRepUtil):
         else:
             raise NotImplementedError
 
-    def append(self,other):
+    def append(self,other,avoid=None):
         """Appending a string or a formula
 
         @parameter other either a formula  
-        or a  string representing a formula body """
+        or a  string representing a formula body
+        @parameter avoid a list of two operators
+        to be avoided in the expand_op_product
+        """
         try:
-            self._append(other)
+            self._append(other,avoid)
         except ExpFormError as ex:
             quit_error(ex.msg)
 
