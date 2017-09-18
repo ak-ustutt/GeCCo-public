@@ -4,10 +4,8 @@ import python_interface.gecco_modules.string_to_form as stf
 
 i_am="MRCC2lag.py"
 
-lag_type=4
-
 lagrangian = keywords.get('method.MRCC2.lagrangian')
-lag_type = int(lagrangian) if lagrangian is not None else 4 
+lag_type = int(lagrangian) if lagrangian is not None else 4
 
 known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')
@@ -59,35 +57,27 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'PT_LAG_A2'})
 
+LAG_E  = stf.GenForm(label="FORM_PT_LAG_E",      OP_res="PT_LAG") # energy part of the lagrangian
+LAG_A1 = stf.GenForm(label="FORM_PT_LAG_A1_RAW", OP_res="PT_LAG_A1") # single excitation equations 
+LAG_A2 = stf.GenForm(label="FORM_PT_LAG_A2_RAW", OP_res="PT_LAG_A2") # double excitation equations
 
-
-#linear lagrangian
 if lag_type >= 1 :
-    #energy expression 
-    LAG_E=stf.Formula("FORM_PT_LAG_E:PT_LAG="\
-                "<C0^+*("\
+    LAG_E +=  "<C0^+*("\
                     "H"\
-                    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
                     "+(H*T1)"\
                     "+(H*T2g)"\
                 ")*C0>"
-    )
-
-    #T1 amplitudes
-    LAG_A1=stf.Formula("FORM_PT_LAG_A1_RAW:PT_LAG_A1="\
-        "<C0^+*(LAM1)*("\
-            "H"\
-            "+[H,T1]"\
-            "+[H,T2g]"\
-        ")*C0>"
-    )
-    #T2 amplitudes
-    LAG_A2=stf.Formula("FORM_PT_LAG_A2_RAW:PT_LAG_A2="\
-        "<C0^+*(LAM2g)*("\
-            "H"\
-            "+[H,T1]"\
-        ")*C0>"             
-    )
+    LAG_A1 += "<C0^+*(LAM1)*("\
+                    "H"\
+                    "+[H,T1]"\
+                    "+[H,T2g]"\
+              ")*C0>"
+              
+    LAG_A2 += "<C0^+*(LAM2g)*("\
+                    "H"\
+                    "+[H,T1]"\
+              ")*C0>"      
+              
     if hamiltonian=="DYALL":
         LAG_A2.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
     elif hamiltonian=="REPT":
@@ -96,106 +86,61 @@ if lag_type >= 1 :
         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
     elif hamiltonian=="FULL":
         LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
-#quadratic lagrangian: linear lagrangian+something
-#something:
+
 if lag_type >= 2 :
-    #energy expression    
-    LAG_E.append(
-        "<C0^+*("\
-            #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-            "1/2((H*T1)*T1)"\
+#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+    LAG_E +="<C0^+*("\
+                    "1/2((H*T1)*T1)"\
+                    "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
+            ")*C0>"
 
-            #these terms where not included in SRCC2-T1q 
-            "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
-        ")*C0>"             
-    )
-    #T1 amplitudes
-    LAG_A1.append(
+    LAG_A1 += "<C0^+*(LAM1)*("\
+                    "1/2[[H,T1],T1]"\
+                    "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
+              ")*C0>"
 
-        "<C0^+*(LAM1)*("\
-            "1/2[[H,T1],T1]"\
-            "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
-        ")*C0>"             
-    )
-    #T2 amplitudes
-    LAG_A2.append(
-        "<C0^+*(LAM2g)*("\
-            "1/2[[H,T1],T1]"\
-        ")*C0>"             
-    )
-
-
-
-#kubic lagrangian: quadratic lagrangian+something
-#something:
+    LAG_A2 += "<C0^+*(LAM2g)*("\
+                    "1/2[[H,T1],T1]"\
+              ")*C0>"             
 
 if lag_type >= 3 :
-    #energy expression    
-    LAG_E.append(
-        "<C0^+*("\
-            #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-            #these terms where not included in SRCC2-T1c
-            "1/6(((H*T1)*T1)*T1)"\
-            "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
-        ")*C0>"             
-    )
-    #T1 amplitudes
-    LAG_A1.append(
-        "<C0^+*(LAM1)*("\
-            "1/6[[[H,T1],T1],T1]"\
+#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+    LAG_E += "<C0^+*("\
+                    "1/6(((H*T1)*T1)*T1)"\
+                    "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
+             ")*C0>"
+          
+    LAG_A1 += "<C0^+*(LAM1)*("\
+                    "1/6[[[H,T1],T1],T1]"\
+                    "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
+              ")*C0>"
 
-            #these terms where not included in SRCC2-T1c
-            "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
-        ")*C0>"             
-    )
-    #T2 amplitudes
-    LAG_A2.append(
-        "<C0^+*(LAM2g)*("\
-            "1/6[[[H,T1],T1],T1]"\
-        ")*C0>"             
-    )
+    LAG_A2 += "<C0^+*(LAM2g)*("\
+                    "1/6[[[H,T1],T1],T1]"\
+              ")*C0>"             
 
-#quartic lagrangian: cubic lagrangian+something
-#something:
 if lag_type >= 4 :
-    #energy expression    
-    LAG_E.append(
-        "<C0^+*("\
-            #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-            #these terms where not included in SRCC2
-            "1/24((((H*T1)*T1)*T1)*T1)"\
-            "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
-        ")*C0>"             
-    )
+#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+#these terms where not included in SRCC2
+    LAG_E += "<C0^+*("\
+                    "1/24((((H*T1)*T1)*T1)*T1)"\
+                    "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
+             ")*C0>"             
 
-    #T1 projection
-    LAG_A1.append(
-        "<C0^+*(LAM1)*("\
-            "1/24[[[[H,T1],T1],T1],T1]"\
+    LAG_A1 += "<C0^+*(LAM1)*("\
+                    "1/24[[[[H,T1],T1],T1],T1]"\
+                    "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
+              ")*C0>"
 
-            #these terms where not included in CC2
-            "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
-        ")*C0>"             
-    )
-    #T2 projection
-    LAG_A2.append(
-        "<C0^+*(LAM2g)*("\
-            "1/24[[[[H,T1],T1],T1],T1]"\
-        ")*C0>"             
-    )
+    LAG_A2 += "<C0^+*(LAM2g)*("\
+                    "1/24[[[[H,T1],T1],T1],T1]"\
+              ")*C0>"
 if not 0<lag_type<5 :
-    raise Exception("MRCCPT_split unknown lagrangian type\nlag_type="+str(lag_type))
-
-
-#LAG_E.append("<C0^+*(T1^+)*O1*C0>")
-#LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
-
+    raise Exception("MRCC2 unknown lagrangian type\nlag_type="+str(lag_type))
 
 
 LAG_E.set_rule()
-
 LAG_A1.set_rule()
-
 LAG_A2.set_rule()
 
 
