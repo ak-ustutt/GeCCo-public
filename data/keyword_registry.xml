@@ -285,6 +285,8 @@
           </keyword>
           <argument length="1" name="lagrangian" status="A" type="2" value="0">
             <!--type of lagrangian-->
+	    <argument length="1" name="maxcom_res" status="A" type="2" value="0"/>
+            <argument length="1" name="maxcom_en" status="A" type="2" value="0"/>
           </argument>
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
             <!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) -->

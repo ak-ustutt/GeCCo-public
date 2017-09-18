@@ -7,9 +7,18 @@ i_am="MRCC2lag.py"
 lagrangian = keywords.get('method.MRCC2.lagrangian')
 lag_type = int(lagrangian) if lagrangian is not None else 4
 
+lagrangian = keywords.get('method.MRCC2.maxcom_en')
+maxcom_en = int(lagrangian) if lagrangian is not None else lag_type
+lagrangian = keywords.get('method.MRCC2.maxcom_res1')
+maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
+lagrangian = keywords.get('method.MRCC2.maxcom_res2')
+maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
+
 known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')
 hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
+
+
 
 if hamiltonian not in known_hamiltonians : 
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
@@ -57,27 +66,76 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'PT_LAG_A2'})
 
-LAG_E  = stf.GenForm(label="FORM_PT_LAG_E",      OP_res="PT_LAG") # energy part of the lagrangian
-LAG_A1 = stf.GenForm(label="FORM_PT_LAG_A1_RAW", OP_res="PT_LAG_A1") # single excitation equations 
-LAG_A2 = stf.GenForm(label="FORM_PT_LAG_A2_RAW", OP_res="PT_LAG_A2") # double excitation equations
 
-if lag_type >= 1 :
-    LAG_E +=  "<C0^+*("\
-                    "H"\
-                    "+(H*T1)"\
-                    "+(H*T2g)"\
-                ")*C0>"
-    LAG_A1 += "<C0^+*(LAM1)*("\
-                    "H"\
-                    "+[H,T1]"\
-                    "+[H,T2g]"\
-              ")*C0>"
-              
-    LAG_A2 += "<C0^+*(LAM2g)*("\
-                    "H"\
-                    "+[H,T1]"\
-              ")*C0>"      
-              
+
+
+
+def create_lag_E(label, OP_res, maxcom):
+    LAG_E  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
+    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+    if maxcom >= 1 :
+        LAG_E +=  "<C0^+*("\
+                      "H"\
+                      "+(H*T1)"\
+                      "+(H*T2g)"\
+                  ")*C0>"
+    if maxcom >= 2 :
+        LAG_E += "<C0^+*("\
+                      "1/2((H*T1)*T1)"\
+                      "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
+                 ")*C0>"
+
+    if maxcom >= 3 :
+        LAG_E += "<C0^+*("\
+                      "1/6(((H*T1)*T1)*T1)"\
+                      "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
+                 ")*C0>"
+    if maxcom >= 4 :
+        LAG_E += "<C0^+*("\
+                      "1/24((((H*T1)*T1)*T1)*T1)"\
+                      "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
+                 ")*C0>"             
+    if not 0<maxcom<5 :
+        raise Exception("MRCC2 unknown maxcommutator\nmaxcom="+str(maxcom))
+    return LAG_E
+
+def create_lag_A1(label, OP_res, maxcom):
+    LAG_A1  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
+    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+    if maxcom >= 1 :
+        LAG_A1 +=  "<C0^+*(LAM1)*("\
+                      "H"\
+                      "+[H,T1]"\
+                      "+[H,T2g]"\
+                  ")*C0>"
+    if maxcom >= 2 :
+        LAG_A1 += "<C0^+*(LAM1)*("\
+                      "1/2[[H,T1],T1]"\
+                      "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
+                  ")*C0>"
+
+    if maxcom >= 3 :
+        LAG_A1 += "<C0^+*(LAM1)*("\
+                      "1/6[[[H,T1],T1],T1]"\
+                      "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
+                  ")*C0>"
+    if maxcom >= 4 :
+        LAG_A1 += "<C0^+*(LAM1)*("\
+                      "1/24[[[[H,T1],T1],T1],T1]"\
+                      "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
+                 ")*C0>"             
+    if not 0<maxcom<5 :
+        raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
+    return LAG_A1
+
+def create_lag_A2(label, OP_res, maxcom, hamiltonian):
+    LAG_A2  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
+    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+    if maxcom >= 1 :
+        LAG_A2 +=  "<C0^+*(LAM2g)*("\
+                      "H"\
+                      "+[H,T1]"\
+                  ")*C0>"
     if hamiltonian=="DYALL":
         LAG_A2.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
     elif hamiltonian=="REPT":
@@ -86,62 +144,114 @@ if lag_type >= 1 :
         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
     elif hamiltonian=="FULL":
         LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+        
+    if maxcom >= 2 :
+        LAG_A2 += "<C0^+*(LAM2g)*("\
+                      "1/2[[H,T1],T1]"\
+                  ")*C0>"
 
-if lag_type >= 2 :
-#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-    LAG_E +="<C0^+*("\
-                    "1/2((H*T1)*T1)"\
-                    "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
-            ")*C0>"
+    if maxcom >= 3 :
+        LAG_A2 += "<C0^+*(LAM2g)*("\
+                      "1/6[[[H,T1],T1],T1]"\
+                  ")*C0>"
+    if maxcom >= 4 :
+        LAG_A2 += "<C0^+*(LAM2g)*("\
+                      "1/24[[[[H,T1],T1],T1],T1]"\
+                 ")*C0>"             
+    if not 0<maxcom<5 :
+        raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
+    return LAG_A2
 
-    LAG_A1 += "<C0^+*(LAM1)*("\
-                    "1/2[[H,T1],T1]"\
-                    "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
-              ")*C0>"
 
-    LAG_A2 += "<C0^+*(LAM2g)*("\
-                    "1/2[[H,T1],T1]"\
-              ")*C0>"             
 
-if lag_type >= 3 :
-#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-    LAG_E += "<C0^+*("\
-                    "1/6(((H*T1)*T1)*T1)"\
-                    "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
-             ")*C0>"
+    
+create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en).set_rule()
+create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_en).set_rule()
+create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_en, hamiltonian).set_rule()
+
+
+
+# if lag_type >= 1 :
+#     LAG_E +=  "<C0^+*("\
+#                     "H"\
+#                     "+(H*T1)"\
+#                     "+(H*T2g)"\
+#                 ")*C0>"
+#     LAG_A1 += "<C0^+*(LAM1)*("\
+#                     "H"\
+#                     "+[H,T1]"\
+#                     "+[H,T2g]"\
+#               ")*C0>"
+              
+#     LAG_A2 += "<C0^+*(LAM2g)*("\
+#                     "H"\
+#                     "+[H,T1]"\
+#               ")*C0>"      
+              
+#     if hamiltonian=="DYALL":
+#         LAG_A2.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
+#     elif hamiltonian=="REPT":
+#         LAG_A2.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
+#     elif hamiltonian=="F_EFF":
+#         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
+#     elif hamiltonian=="FULL":
+#         LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+
+# if lag_type >= 2 :
+# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+#     LAG_E +="<C0^+*("\
+#                     "1/2((H*T1)*T1)"\
+#                     "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
+#             ")*C0>"
+
+#     LAG_A1 += "<C0^+*(LAM1)*("\
+#                     "1/2[[H,T1],T1]"\
+#                     "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
+#               ")*C0>"
+
+#     LAG_A2 += "<C0^+*(LAM2g)*("\
+#                     "1/2[[H,T1],T1]"\
+#               ")*C0>"             
+
+# if lag_type >= 3 :
+# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+#     LAG_E += "<C0^+*("\
+#                     "1/6(((H*T1)*T1)*T1)"\
+#                     "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
+#              ")*C0>"
           
-    LAG_A1 += "<C0^+*(LAM1)*("\
-                    "1/6[[[H,T1],T1],T1]"\
-                    "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
-              ")*C0>"
+#     LAG_A1 += "<C0^+*(LAM1)*("\
+#                     "1/6[[[H,T1],T1],T1]"\
+#                     "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
+#               ")*C0>"
 
-    LAG_A2 += "<C0^+*(LAM2g)*("\
-                    "1/6[[[H,T1],T1],T1]"\
-              ")*C0>"             
+#     LAG_A2 += "<C0^+*(LAM2g)*("\
+#                     "1/6[[[H,T1],T1],T1]"\
+#               ")*C0>"             
 
-if lag_type >= 4 :
-#no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-#these terms where not included in SRCC2
-    LAG_E += "<C0^+*("\
-                    "1/24((((H*T1)*T1)*T1)*T1)"\
-                    "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
-             ")*C0>"             
+# if lag_type >= 4 :
+# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+# #these terms where not included in SRCC2
+#     LAG_E += "<C0^+*("\
+#                     "1/24((((H*T1)*T1)*T1)*T1)"\
+#                     "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
+#              ")*C0>"             
 
-    LAG_A1 += "<C0^+*(LAM1)*("\
-                    "1/24[[[[H,T1],T1],T1],T1]"\
-                    "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
-              ")*C0>"
+#     LAG_A1 += "<C0^+*(LAM1)*("\
+#                     "1/24[[[[H,T1],T1],T1],T1]"\
+#                     "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
+#               ")*C0>"
 
-    LAG_A2 += "<C0^+*(LAM2g)*("\
-                    "1/24[[[[H,T1],T1],T1],T1]"\
-              ")*C0>"
-if not 0<lag_type<5 :
-    raise Exception("MRCC2 unknown lagrangian type\nlag_type="+str(lag_type))
+#     LAG_A2 += "<C0^+*(LAM2g)*("\
+#                     "1/24[[[[H,T1],T1],T1],T1]"\
+#               ")*C0>"
+# if not 0<lag_type<5 :
+#     raise Exception("MRCC2 unknown lagrangian type\nlag_type="+str(lag_type))
 
 
-LAG_E.set_rule()
-LAG_A1.set_rule()
-LAG_A2.set_rule()
+# LAG_E.set_rule()
+# LAG_A1.set_rule()
+# LAG_A2.set_rule()
 
 
 REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_E",
