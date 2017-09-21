@@ -70,7 +70,7 @@ DEF_SCALAR({
 
 
 
-def create_lag_E(label, OP_res, maxcom):
+def create_lag_E(label, OP_res, maxcom, MRCCSD_mode = False):
     LAG_E  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
     if maxcom >= 1 :
@@ -84,22 +84,35 @@ def create_lag_E(label, OP_res, maxcom):
                       "1/2((H*T1)*T1)"\
                       "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
                  ")*C0>"
-
+        if MRCCSD_mode:
+            LAG_E += "<C0^+*("\
+                         "1/2((H*T2g)*T2g)"\
+                     ")*C0>"
     if maxcom >= 3 :
-        LAG_E += "<C0^+*("\
-                      "1/6(((H*T1)*T1)*T1)"\
-                      "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
-                 ")*C0>"
+        if MRCCSD_mode:
+            LAG_E += "<C0^+*("\
+                         "1/6( ( ( H*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )"\
+                     ")*C0>"
+        else:
+            LAG_E += "<C0^+*("\
+                         "1/6(((H*T1)*T1)*T1)"\
+                         "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
+                     ")*C0>"
     if maxcom >= 4 :
-        LAG_E += "<C0^+*("\
-                      "1/24((((H*T1)*T1)*T1)*T1)"\
-                      "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
-                 ")*C0>"             
+        if MRCCSD_mode:
+            LAG_E += "<C0^+*("\
+                         "1/24( ( ( ( H*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )"\
+                     ")*C0>"
+        else:
+            LAG_E += "<C0^+*("\
+                          "1/24((((H*T1)*T1)*T1)*T1)"\
+                          "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
+                     ")*C0>"             
     if not 0<maxcom<5 :
-        raise Exception("MRCC2 unknown maxcommutator\nmaxcom="+str(maxcom))
+        raise Exception("MRCC2 unknown maxcommutator for energy\nmaxcom="+str(maxcom))
     return LAG_E
 
-def create_lag_A1(label, OP_res, maxcom):
+def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False):
     LAG_A1  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
     if maxcom >= 1 :
@@ -113,22 +126,37 @@ def create_lag_A1(label, OP_res, maxcom):
                       "1/2[[H,T1],T1]"\
                       "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
                   ")*C0>"
-
+        if MRCCSD_mode:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                          "1/2[[H,T2g],T2g]"\
+                      ")*C0>"
+          
     if maxcom >= 3 :
-        LAG_A1 += "<C0^+*(LAM1)*("\
-                      "1/6[[[H,T1],T1],T1]"\
-                      "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
-                  ")*C0>"
+        if MRCCSD_mode:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                         "1/6[[[H,T1+T2g],T1+T2g],T1+T2g]"\
+                      ")*C0>"
+
+        else:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                          "1/6[[[H,T1],T1],T1]"\
+                          "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
+                      ")*C0>"
     if maxcom >= 4 :
-        LAG_A1 += "<C0^+*(LAM1)*("\
-                      "1/24[[[[H,T1],T1],T1],T1]"\
-                      "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
-                 ")*C0>"             
+        if MRCCSD_mode:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                          "1/24[[[[H,T1+T2g],T1+T2g],T1+T2g],T1+T2g]"\
+                      ")*C0>"             
+        else:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                          "1/24[[[[H,T1],T1],T1],T1]"\
+                          "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
+                     ")*C0>"             
     if not 0<maxcom<5 :
         raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
     return LAG_A1
 
-def create_lag_A2(label, OP_res, maxcom, hamiltonian):
+def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
     LAG_A2  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
     if maxcom >= 1 :
@@ -146,18 +174,32 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian):
         LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
         
     if maxcom >= 2 :
-        LAG_A2 += "<C0^+*(LAM2g)*("\
-                      "1/2[[H,T1],T1]"\
-                  ")*C0>"
-
+        if MRCCSD_mode:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/2[[H,T1+T2g],T1+T2g]"\
+                      ")*C0>"
+        else:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/2[[H,T1],T1]"\
+                      ")*C0>"
     if maxcom >= 3 :
-        LAG_A2 += "<C0^+*(LAM2g)*("\
-                      "1/6[[[H,T1],T1],T1]"\
-                  ")*C0>"
+        if MRCCSD_mode:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/6[[[H,T1+T2g],T1+T2g],T1+T2g]"\
+                      ")*C0>"
+        else:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/6[[[H,T1],T1],T1]"\
+                      ")*C0>"
     if maxcom >= 4 :
-        LAG_A2 += "<C0^+*(LAM2g)*("\
-                      "1/24[[[[H,T1],T1],T1],T1]"\
-                 ")*C0>"             
+        if MRCCSD_mode:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/24[[[[H,T1+T2g],T1+T2g],T1+T2g],T1+T2g]"\
+                      ")*C0>"
+        else:
+            LAG_A2 += "<C0^+*(LAM2g)*("\
+                          "1/24[[[[H,T1],T1],T1],T1]"\
+                      ")*C0>"             
     if not 0<maxcom<5 :
         raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
     return LAG_A2
@@ -166,8 +208,8 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian):
 
     
 create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en).set_rule()
-create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_en).set_rule()
-create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_en, hamiltonian).set_rule()
+create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1).set_rule()
+create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian).set_rule()
 
 
 
