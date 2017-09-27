@@ -178,22 +178,24 @@
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
      &     ff_scr(nopt),ff_ext(nopt) )
       allocate(xrsnrm(nroots,nopt))
+      
       do iopt = 1, nopt
-         me_opt(iopt)%mel   => get_mel(label_opt(iopt), op_info)
+         ! lists to be optimized
+         me_opt(iopt)%mel   => get_mel_h(label_opt(iopt), op_info)
          if (.not.mel_has_file( me_opt(iopt)%mel))
      &        call quit(1,i_am,
      &       'no file associated with list '//trim(label_opt(iopt)))
-
-        me_dia(iopt)%mel   => get_mel(label_prc(iopt),op_info)
+         ! preconditioner (diag because they might beinverted diagonals of Hamiltonian)
+         me_dia(iopt)%mel   => get_mel_h(label_prc(iopt),op_info)
          if (.not.mel_has_file( me_dia(iopt)%mel))
      &        call quit(1,i_am,
-     &       'no file associated with list '//trim(label_prc(iopt)))
+     &        'no file associated with list '//trim(label_prc(iopt)))
 
       end do
 
       ! special lists needed?
       do idx = 1, nspecial
-         me_special(idx)%mel => get_mel(label_special(idx), op_info)
+         me_special(idx)%mel => get_mel_h(label_special(idx), op_info)
          if (.not.mel_has_file( me_special(idx)%mel))
      &        call quit(1,i_am,
      &        'no file associated with list '//trim(label_special(idx)))
@@ -218,44 +220,29 @@
       do iopt=1,nopt
         ! weaker convergence threshold requested?
          opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
+        ! which operators use a metric?
          use_s(iopt) = trim(label_op_met(iopt)).ne.
      &        trim(me_opt(iopt)%mel%op%name)
+         ! does any operator use a metric
          if (use_s(iopt)) use_s_t = .true.
-
-
-        ! get a ME-list for vectors in transformed(orthogonal space)
-! in case of ab-sym braking trafo, get sym props from special list
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.ge.3) then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(1)%mel
-         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(4)%mel
-         else
-            trafo(iopt)=.false.
-            me_vort(iopt)%mel => me_opt(iopt)%mel
-         end if
       end do
-
-      do iopt = 1, nopt
+      
+      do iopt=1,nopt
         ! get a ME-list for vectors in transformed(orthogonal space)
 ! in case of ab-sym braking trafo get sym props from special list
-
-
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     intermediate lists in normal space
-        write(fname,'("mvp_",i3.3)') iopt
-        me_mvp(iopt)%mel => me_from_template(
-     &       fname, label_op_mvp(iopt), me_opt(iopt)%mel,
-     &       nvectors,
-     &       op_info,  orb_info, str_info, strmap_info )
-
-        select case (opti_info%typ_prc(iopt))
-        case(optinf_prc_spinp)
-           me_mvpprj(iopt)%mel => me_special(1)%mel
-        case(optinf_prc_prj)
+         ! mvp = matrix vector product
+         write(fname,'("mvp_",i3.3)') iopt 
+         me_mvp(iopt)%mel => me_from_template(
+     &        fname, label_op_mvp(iopt), me_opt(iopt)%mel,
+     &        nvectors,
+     &        op_info,  orb_info, str_info, strmap_info )
+         
+         select case (opti_info%typ_prc(iopt))
+         case(optinf_prc_spinp)
+            me_mvpprj(iopt)%mel => me_special(1)%mel
+         case(optinf_prc_prj)
            me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         case(optinf_prc_spinrefp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
@@ -263,62 +250,76 @@
            me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         end select
 
-      write(fname,'("trv_",i3.3)') iopt
-      me_trv(iopt)%mel => me_from_template(
+        ! trv = trialvector
+        write(fname,'("trv_",i3.3)') iopt
+        me_trv(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name, me_opt(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
-!        me_trv(iopt)%mel => me_opt(iopt)%mel
 
-        ! use of metric requested?
+
+        
+! use of metric requested?
         if (use_s(iopt)) then
              ! get a ME list for metric-times-vector products
-          ! (have same symmtry properties as result!)
-          write(fname,'("svp_",i3.3)') iopt !S * vector product -- svp
-          me_met(iopt)%mel => me_from_template(
-     &         fname, label_op_met(iopt) , me_vort(iopt)%mel,
-     &         nvectors,
-     &         op_info,  orb_info, str_info, strmap_info)
-          ff_met(iopt)%fhand => me_met(iopt)%mel%fhand
-       else
-          me_met(iopt)%mel => me_trv(iopt)%mel
+! (have same symmtry properties as result!)
+!S * vector product -- svp
+           write(fname,'("svp_",i3.3)') iopt 
+           me_met(iopt)%mel => me_from_template(
+     &          fname, label_op_met(iopt) , me_trv(iopt)%mel,
+     &          nvectors,
+     &          op_info,  orb_info, str_info, strmap_info)
+           ff_met(iopt)%fhand => me_met(iopt)%mel%fhand
+        else
+           me_met(iopt)%mel => me_trv(iopt)%mel 
        end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     intermediate lists in possibly transformed space
 
-        write(fname,'("scr_",i3.3)') iopt
-        me_scr(iopt)%mel => me_from_template(
-     &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
-     &       nvectors,
-     &       op_info,  orb_info, str_info, strmap_info)
+! vort is used as template
+! in case of ab-sym braking trafo, get sym props from special list
+       if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &      .and.nspecial.ge.3) then
+          trafo(iopt)=.true.
+          me_vort(iopt)%mel => me_special(1)%mel
+       elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+          trafo(iopt)=.true.
+          me_vort(iopt)%mel => me_special(4)%mel
+       else
+          trafo(iopt)=.false.
+          me_vort(iopt)%mel => me_opt(iopt)%mel
+       end if
+       
+         ! scr = scratch used for mvp is orthogonal space
+         write(fname,'("scr_",i3.3)') iopt
+         me_scr(iopt)%mel => me_from_template(
+     &        fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
+     &        nvectors,
+     &        op_info,  orb_info, str_info, strmap_info)
 
-
-c        write(fname,'("mvort_",i3.3)') iopt
-c        me_mvort(iopt)%mel => me_from_template(
-c     &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt),
-c     &       nvectors,
-c     &       op_info,  orb_info, str_info, strmap_info)
-
-! can use me_scr/me_mvp
+        ! can use me_scr/me_mvp
         if (trafo(iopt))then
            me_mvort(iopt)%mel => me_scr(iopt)%mel
         else
            me_mvort(iopt)%mel => me_mvp(iopt)%mel
         end if
 
+        ! metric in orthogonal space
         write(fname,'("metort_",i3.3)') iopt
         me_metort(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name,me_vort(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
 
+        ! residual (in orthogonal space)
         write(fname,'("res_",i3.3)') iopt
         me_res(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
 
+        ! assign me_vort to the list actually used in the calculation
         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &       .and.nspecial.ge.3) then
            trafo(iopt)=.true.
@@ -329,10 +330,8 @@ c     &       op_info,  orb_info, str_info, strmap_info)
         else
            trafo(iopt)=.false.
            me_vort(iopt)%mel => me_trv(iopt)%mel !changing
-
         end if
-
-      end do
+      end do ! iopt
 
       call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt,
      &     use_s)
@@ -355,6 +354,7 @@ c dbgend
      &     me_trv,me_mvp,me_met,me_met,use_s)
 
       call print_settings(lulog, opti_info)
+
       do iopt=1, nopt
          call assign_me_list(me_opt(iopt)%mel%label,
      &        me_opt(iopt)%mel%op%name,op_info)
@@ -385,7 +385,7 @@ c dbgend
         end if
         if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
           ! copy this root so that we may home in on it later
-          if (nopt.ne.1) call quit(1,'solve_evp',
+          if (nopt.ne.1) call quit(1,i_am,
      &         'homing in available only for one opt. vector yet')
           home_in = .true.
           allocate(me_home(1),ffhome(1))
@@ -504,8 +504,9 @@ c dbgend
             call touch_file_rec(me_trv(iopt)%mel%fhand)
          end do
       end do
+      
       call init_buffers(opti_info%nwfpar, nopt,
-     &     xbuf1,xbuf2,xbuf3,nincore,lenbuf)
+     &     xbuf1,xbuf2,xbuf3,nincore, lenbuf) 
 
       do iroot=1,nroots
          if (ntest.gt.100)then
@@ -517,6 +518,7 @@ c dbgend
             end do
          end if
       end do
+      
       do iopt=1,nopt
          if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &        .and.nspecial.ge.3) then
@@ -538,7 +540,11 @@ c dbgend
       xeig=0d0
       reig=0d0
 
-      
+! vort is defined as the vector which under transformation generates me_trv!!!
+! as the initialization (and restart) routines return an me_trv this would require us to invert the transformation step (transform_forward is not an inversion in the actual sense.)
+! can we do that ? Spin requirements
+! instead we generate by a forward_transformation a guess vector in the orthogonal space which satisfies basic requirements (e.g. orthogonality of T1 and T2)
+! and use this as guess vector. The trv  guess vector is then easily created via back_transformation
       do iroot=1,nrequest
          do iopt=1,nopt
             call switch_mel_record(me_trv(iopt)%mel,iroot)
@@ -558,10 +564,12 @@ c dbgend
                me_vort(iopt)%mel => me_trv(iopt)%mel
             end if
             if (trafo(iopt)) then
+               call switch_mel_record(me_vort(iopt)%mel,iroot)
+               call switch_mel_record(me_trv(iopt)%mel,iroot)
                call transform_back_wrap(fl_mvp,depend,
-     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
-     &              iroot, iopt,nspecial,
-     &              me_trv,
+     &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              iopt,nspecial,
+     &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,
      &              orb_info, opti_info)
             end if
@@ -956,7 +964,7 @@ c dbg
      &     me_template%mst,.false.,
      &     -1,1,nvectors,0,0,0,
      &     op_info,orb_info,str_info,strmap_info)
-      me_from_template   => get_mel(label, op_info)
+      me_from_template   => get_mel_h(label, op_info)
 
       return
       end function
@@ -964,7 +972,7 @@ c dbg
 !!    resolves a label to a pointer to the matrix element list object
 !!
 *----------------------------------------------------------------------*
-      function get_mel(label, op_info)
+      function get_mel_h(label, op_info)
 *----------------------------------------------------------------------*
       implicit none
       character(*),intent(in) ::
@@ -973,7 +981,7 @@ c dbg
      &     op_info
 
       type(me_list),pointer::
-     &     get_mel
+     &     get_mel_h
       integer,external::
      &     idx_mel_list
       integer::
@@ -982,7 +990,7 @@ c dbg
       if (idxmel.le.0)
      &       call quit(1,i_am,
      &       'did not find list '//trim(label_opt(iopt)))
-      get_mel=> op_info%mel_arr(idxmel)%mel
+      get_mel_h=> op_info%mel_arr(idxmel)%mel
       return
       end function
       pure  function mel_has_file(mel)
@@ -1117,7 +1125,7 @@ c dbg
 
       idxmel = idx_mel_list(label,op_info)
       if (idxmel .gt. 0 ) then
-            me_pnt => get_mel(label,op_info)
+            me_pnt => get_mel_h(label,op_info)
          if (has_perm_file(me_pnt, me_special,nspecial) ! Attention these are accessed by host association
      &        .or. has_perm_file(me_pnt, me_opt, nopt) )then
             call detach_mel_file(me_pnt,.false.)

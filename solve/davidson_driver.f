@@ -1,5 +1,5 @@
 
-!>    driver for the davidson algoritmus
+!>    driver for the davidson algorithm
 !!
 !!    Davidson
 !!    on entry: Mv-product on me_mvp me
@@ -294,10 +294,12 @@ c      end do
 !            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
             do iopt=1,nopt
                if (trafo(iopt) ) then
+                  call switch_mel_record(me_vort(iopt)%mel,iroot)
+                  call switch_mel_record(me_trv(iopt)%mel,iroot)
                   call transform_back_wrap(flist,depend,
-     &                 me_special,me_vort,me_opt, !vort -> opt !
-     &                 iroot, iopt, nspecial,
-     &                 me_trv,
+     &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
+     &                 iopt, nspecial,
+     &                 me_trv(iopt)%mel,
      &                 op_info, str_info, strmap_info,
      &                 orb_info, opti_info)
 
@@ -399,9 +401,9 @@ c      end do
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
-     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
-     &              iroot, iopt,nspecial,
-     &              me_trv,
+     &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              iopt,nspecial,
+     &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,
      &              orb_info, opti_info)
 !            else me_vort => me_trv
