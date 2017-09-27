@@ -361,8 +361,6 @@ c dbgend
       end do
       ! read formula
       call read_form_list(form_mvp%fhand,fl_mvp,.true.)
-      ! set dependency info for submitted formula list
-      call set_formula_dependencies(depend,fl_mvp,op_info)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
@@ -444,6 +442,11 @@ c dbgend
         call assign_me_list(me_trv(iopt)%mel%label,
      &       me_opt(iopt)%mel%op%name,op_info)
       end do
+      
+      ! set dependency info for submitted formula list
+      call set_formula_dependencies(depend,fl_mvp,op_info)
+
+      
       if (init) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
@@ -491,8 +494,6 @@ c dbgend
       endif
 
       deallocate(xret)
-      !init guess needed a false version of the dependency informations
-      call set_formula_dependencies(depend,fl_mvp,op_info)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
