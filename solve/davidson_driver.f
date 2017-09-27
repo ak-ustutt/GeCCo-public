@@ -149,7 +149,6 @@ c      end do
 
       irecres=0
       do iroot=1,nnew
-         
          if (ntest.ge.100)then
             do iopt=1,nopt
                write(lulog,*) "root no.",iroot
@@ -163,27 +162,25 @@ c      end do
             call switch_mel_record(me_mvort(iopt)%mel,iroot)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call switch_mel_record(me_vort(iopt)%mel,iroot)
-            if (use_s(iopt))then
-               call switch_mel_record(me_met(iopt)%mel,iroot)
-               call switch_mel_record(me_metort(iopt)%mel,iroot)
-            end if
             if (trafo(iopt)) then
                call transform_forward_wrap(flist,depend,
-     &              me_special,me_mvp,me_mvort, !mvp-> mvort
-     &              xrsnrm,
-     &              nroot, iroot, iopt, iroot, nspecial,
-     &              me_trv,
+     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
+     &              xrsnrm(iroot,iopt),
+     &              iopt, nspecial,
+     &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info, orb_info, opti_info)
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                  call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                endif
               
               if (use_s(iopt))then
+                 call switch_mel_record(me_met(iopt)%mel,iroot)
+                 call switch_mel_record(me_metort(iopt)%mel,iroot)
                  call transform_forward_wrap(flist,depend,
-     &                me_special,me_met,me_metort, !met-> metort
-     &                xrsnrm, nroot,
-     &                iroot, iopt, iroot, nspecial,
-     &                me_trv,
+     &                me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
+     &                xrsnrm(iopt,iroot),
+     &                iopt, nspecial,
+     &                me_trv(iopt)%mel,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
                  if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                     call set_blks(me_metort(iopt)%mel,

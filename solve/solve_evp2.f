@@ -64,7 +64,8 @@
       include 'mdef_target_info.h'
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
-
+      
+      
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
@@ -228,9 +229,8 @@
       end do
       
       do iopt=1,nopt
-        ! get a ME-list for vectors in transformed(orthogonal space)
-! in case of ab-sym braking trafo get sym props from special list
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         
 !     intermediate lists in normal space
          ! mvp = matrix vector product
          write(fname,'("mvp_",i3.3)') iopt 
@@ -238,7 +238,7 @@
      &        fname, label_op_mvp(iopt), me_opt(iopt)%mel,
      &        nvectors,
      &        op_info,  orb_info, str_info, strmap_info )
-         
+
          select case (opti_info%typ_prc(iopt))
          case(optinf_prc_spinp)
             me_mvpprj(iopt)%mel => me_special(1)%mel
@@ -550,16 +550,16 @@ c dbgend
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call switch_mel_record(me_vort(iopt)%mel,iroot)
             if (trafo(iopt)) then
-            call transform_forward_wrap(fl_mvp,depend,
-     &           me_special,me_trv,me_vort, !trv-> vort
-     &           xrsnrm,
-     &           nrequest, iroot, iopt, iroot, nspecial,
-     &           me_trv,
-     &           op_info, str_info, strmap_info, orb_info, opti_info)
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-               call set_blks(me_vort(iopt)%mel,
-     &              "P,H|P,V|V,H|V,V",0d0)
-            end if
+               call transform_forward_wrap(fl_mvp,depend,
+     &              me_special,me_trv(iopt)%mel,me_vort(iopt)%mel, !trv-> vort
+     &              xrsnrm(iroot,iopt),
+     &              iopt, nspecial,
+     &              me_trv(iopt)%mel,
+     &              op_info, str_info, strmap_info, orb_info, opti_info)
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                  call set_blks(me_vort(iopt)%mel,
+     &                 "P,H|P,V|V,H|V,V",0d0)
+               end if
             else
                me_vort(iopt)%mel => me_trv(iopt)%mel
             end if
