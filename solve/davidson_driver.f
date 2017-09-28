@@ -170,38 +170,9 @@
      &     xbuf1, xbuf2, nincore, lenbuf)
 
 
-!................. check convergence
-      irecres=0
-      do iroot=1,nnew
-         ! test energy criteria
-         if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is obsolete
-     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot,1),
-     &        thrgrd_e) )then
-            conv = .true. ! yet
-         else if(iter.gt.1)then
-            conv=.false.
-            call warn_e_convergence(lulog,iroot,xeig(iroot,1),
-     &           leig(iroot))
-         else
-            conv=.true.
-         end if
-         ! test gradient(residual) criteria
-         conv= conv .and.
-     &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
-
-         if (.not.conv)then
-            irecres=irecres+1
-            do iopt=1,nopt
-               call switch_mel_record(me_scr(iopt)%mel,iroot)
-               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other
-               call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
-     &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
-            end do
-            reig(irecres,1)=leig(iroot)
-         end if
-      end do
-      xeig(1:nroot,1)=leig
-      nnew=irecres              ! 0 if all converged
+!................. compress unconverged vectors
+      nnew = collect_unconverged_h(me_scr,me_res,nopt,leig,xeig,xrsnrm,
+     &     nnew,iter, opti_info) 
       
 
 !................. if all converged, assemble results.
@@ -979,6 +950,9 @@ c$$$      end subroutine
             end do
          end if
       end do
+      xeig(1:nroot,1)=leig
       collect_unconverged_h = irecres
-      end function 
+      return
+      end function
+      
       end subroutine
