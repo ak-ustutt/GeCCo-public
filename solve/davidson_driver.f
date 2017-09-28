@@ -98,23 +98,18 @@
 !     locals
 
       integer::
-     &     iopt, jopt,
+     &     iopt,
      &     iroot,
      &     maxvec,
-     &     irecres,        !record pointer for contracting lists to be updated on me_res, number of new_lists
      &     maxiter              !aliases for opti_info fields
 
       integer,pointer::
      &     typ_prc(:),nwfpar(:)
-      logical::
-     &     conv, zero_nrm
       real(8)::
      &     xnrm                !temporary variable for some norms
 ! lists for the mv-product and vector in the orthogonal space
       integer,external::
      &     dvdsbsp_get_nnew_vvec
-      real(8),external::
-     &     xnormop
       real(8)::
      &     lrsnrm(nroot,nopt), ! local copy of xrsnrm
      &     leig(nroot) !local variable for eigenvalues
@@ -170,8 +165,8 @@
      &     xbuf1, xbuf2, nincore, lenbuf)
 
 
-!................. compress unconverged vectors
-      nnew = collect_unconverged_h(me_scr,me_res,nopt,leig,xeig,xrsnrm,
+!................. compress unconverged vectors on me_res
+      nnew = collect_unconverged_h(me_scr,me_res,nopt,leig,xeig,xrsnrm, ! me_scr -> me_res
      &     nnew,iter, opti_info) 
       
 
@@ -190,23 +185,9 @@
          do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
-               call switch_mel_record(me_opt(iopt)%mel,iroot)
-            end do
-            if (ntest.ge.100)then
-               write(lulog,*) "root:",iroot
-               do iopt=1,nopt
-                  call print_list("result in orth space",
-     &                 me_vort(iopt)%mel,
-     &                 "LIST",0d0,0d0,
-     &                 orb_info,str_info)
-               end do
-            end if
-           
+               call switch_mel_record(me_opt(iopt)%mel,iroot)           
 !            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
-            do iopt=1,nopt
                if (trafo(iopt) ) then
-                  call switch_mel_record(me_vort(iopt)%mel,iroot)
-                  call switch_mel_record(me_trv(iopt)%mel,iroot)
                   call transform_back_wrap(flist,depend,
      &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
      &                 iopt, nspecial,
@@ -219,15 +200,6 @@
                end if
             end do
             
-            if (ntest.ge.10)then
-               write(lulog,*) "root:",iroot
-               do iopt=1,nopt
-                  call print_list("result in normal space",
-     &                 me_opt(iopt)%mel,
-     &                 "LIST",0d0,0d0,
-     &                 orb_info,str_info)
-               end do
-            end if
          end do
          if(nnew.eq.0)then
             write(lulog,'(x,a,i5,a)')
@@ -245,64 +217,28 @@
          task=4       ! calculate new mv product when returning
       end if
 
-      if (ntest.ge.100)then
-         do iopt=1,nopt
-            call print_list("preconditioner",me_dia(iopt)%mel,
-     &           "LIST",0d0,0d0,
-     &           orb_info,str_info)
-         end do
-      end if
       do iroot = 1, nnew
          do iopt=1,nopt
             call switch_mel_record(me_res(iopt)%mel,iroot)
             call switch_mel_record(me_vort(iopt)%mel,iroot)
-         end do
-
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("residual",me_res(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-         do iopt = 1,nopt
-           
-            xnrm=0.0
-            do jopt = 1,nopt
-               xnrm = xnrm+xrsnrm(iroot,jopt)**2
-            end do
-
-            xnrm=sqrt(xnrm)
+            xnrm = get_norm_of_root_h(xrsnrm,iroot,nopt,nnew)
             call apply_preconditioner(
      &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
      &           nwfpar(iopt),
      &           opti_info%typ_prc(iopt),
-     &           xeig(iroot,1), xnrm, nnew, iroot,
+     &           xeig(iroot,1),
+     &           xnrm,
+     &           nnew, iroot,
      &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,
      &           me_special, nspecial,
      &           fspc, nspcfrm,
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
      &           nopt.eq.1, op_info, str_info, strmap_info)
          end do
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("unprojected vort",me_vort(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
+! pre orthogonalization
+         ! true orthogonalization can only be done when the metric is known
          call vecsp_orthvec(dvdsbsp%vspace, me_vort, nopt,
      &        xbuf1, xbuf2, lenbuf)
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("projected trv",me_vort(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
 
       end do                    !iroot
 
@@ -321,19 +257,8 @@
             end if
          end do
       end do                    !iopt
-      
-      if (ntest.ge.100)then
-         do iopt=1,nopt
-            write(lulog,*) "root no.",iroot
-            call print_list("retransformed trv",me_trv(iopt)%mel,
-     &           "LIST",0d0,0d0,
-     &           orb_info,str_info)
-         end do
-      end if
       return
       contains
-
-
 
 !#######################################################################
 !   apply the preconditioner
@@ -551,64 +476,12 @@ c     dbgend
 *----------------------------------------------------------------------*
 !>    norms a vector of nlists me_lists
 *----------------------------------------------------------------------*
-c$$$      subroutine orthogonalize_records(
-c$$$     &     me_lists, me_Svlists, me_Mvlists, nlists,
-c$$$     &     zero_nrm, use_s,
-c$$$     &     xbuf1, xbuf2, lbuf)
-c$$$      implicit none
-c$$$
-c$$$      do irec=1,nrec
-c$$$         do jrec=1,irec
-c$$$            do ilist=1,nlists
-c$$$               lenlist=me_lists(ilist)%mel%len_op
-c$$$               ffme=>me_lists(ilist)%mel%fhand
-c$$$               
-c$$$               call vec_from_da(me_lists(ilist)%mel%fhand,irec,xbuf1,
-c$$$     &              lenlist)
-c$$$               call vec_from_da(me_clists(ilist)%mel%fhand,jrec,xbuf2,
-c$$$     &              lenlist)
-c$$$               overlapp=overlapp+ddot(lenlist,xbuf1,1,xbuf2,1)
-c$$$            end do
-c$$$            do ilist=1,nlists
-c$$$               call vec_from_da(ffme,irec,xbuf1,lenlist)
-c$$$               call vec_from_da(ffme,jrec,xbuf2,lenlist)
-c$$$               do idx=1,lenlist
-c$$$                  
-c$$$               
-c$$$            end do
-c$$$         end do
-c$$$      end do
-c$$$      end subroutine
 
       subroutine rescale_vecs(me_lists, me_clists, me_Mvlists, nlists,
      &     zero_nrm, use_s,
      &     xbuf1, xbuf2, lbuf)
       implicit none
       include 'par_scale_copy_modes.h'
-
-      
-      interface
-         subroutine mel_scale_copy(
-     &     me_inp, me_res,
-     &     buf1,buf2, lbuf, nbuf,
-     &     fac, nfac,
-     &     mode,
-     &        opti_info)
-         import optimize_info,me_list
-         integer,intent(in)::
-     &        lbuf, nbuf, nfac,
-     &        mode
-         type(me_list), intent(inout)::
-     &        me_inp, me_res
-         type(optimize_info),intent(in)::
-     &        opti_info
-         real(8), intent(inout) ::
-     &        buf1(:), buf2(:)
-         real(8),intent(in)::
-     &        fac(nfac)
-         end subroutine
-      end interface
-      
       real(8),parameter::
      &     zero_norm2_thresh=1.0D-12
       integer, parameter::
@@ -954,5 +827,30 @@ c$$$      end subroutine
       collect_unconverged_h = irecres
       return
       end function
+*----------------------------------------------------------------------*
+!!     calculates the total norm of a root
+!
+*----------------------------------------------------------------------*
+      pure function get_norm_of_root_h(xrsnrm ,iroot,nopt, nroots)
+*----------------------------------------------------------------------*
+      implicit none
+      real(8) ::
+     &     get_norm_of_root_h
+      integer,intent(in)::
+     &     iroot,nopt,nroots
       
+      real(8),intent(in)::
+     &     xrsnrm(nroots,nopt)
+
+      integer::
+     &     jopt
+      real(8)::
+     &     xnrm
+      xnrm = 0.0
+      do jopt = 1, nopt
+         xnrm = xnrm + xrsnrm(iroot,jopt)**2
+      end do
+      get_norm_of_root_h=sqrt(xnrm)
+      return
+      end function
       end subroutine
