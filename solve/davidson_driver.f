@@ -130,74 +130,17 @@
       maxiter = opti_info%maxmacit
       typ_prc => opti_info%typ_prc
       nwfpar => opti_info%nwfpar
-cc     the lists are alialized as if the following block had been executed ARNE 8.9.16
-cc
-c      do iopt = 1,nopt
-c         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-c            me_vort(iopt)%mel => me_special(1)%mel
-c            me_mvort(iopt)%mel => me_scr(iopt)%mel
-c         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-c            if (nspecial .lt. 4) call quit(1,'evpc_core',
-c     &           'TR0 with <4 me_lists')
-c            me_vort(iopt)%mel => me_special(4)%mel
-c            me_mvort(iopt)%mel => me_scr(iopt)%mel
-c         else !no transformation needed
-c            me_vort(iopt)%mel => me_trv(iopt)%mel
-c            me_mvort(iopt)%mel => me_mvp(iopt)%mel
-c         end if
-c      end do
 
-      irecres=0
-      do iroot=1,nnew
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-              call print_list("entry trv",me_trv(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-         do iopt=1,nopt
-            call switch_mel_record(me_mvp(iopt)%mel,iroot)
-            call switch_mel_record(me_mvort(iopt)%mel,iroot)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            if (trafo(iopt)) then
-               call transform_forward_wrap(flist,depend,
-     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
-     &              xrsnrm(iroot,iopt),
-     &              iopt, nspecial,
-     &              me_trv(iopt)%mel,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                 call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-               endif
-              
-              if (use_s(iopt))then
-                 call switch_mel_record(me_met(iopt)%mel,iroot)
-                 call switch_mel_record(me_metort(iopt)%mel,iroot)
-                 call transform_forward_wrap(flist,depend,
-     &                me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
-     &                xrsnrm(iopt,iroot),
-     &                iopt, nspecial,
-     &                me_trv(iopt)%mel,
-     &                op_info,str_info,strmap_info, orb_info, opti_info)
-                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                    call set_blks(me_metort(iopt)%mel,
-     &                   "P,H|P,V|V,H|V,V",0d0)
-                 end if
-              else
-                 me_metort(iopt)%mel=> null()
-              end if
-           else
-              if (use_s(iopt))then
-                 me_metort(iopt)%mel=> me_met(iopt)%mel
-              else
-                 me_metort(iopt)%mel=>null()
-              end if
-           end if
-        end do                  !iopt
-      end do
+      call transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv, 
+     &     nopt, nnew,
+     &     me_special, nspecial,
+     &     flist, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
       
 
 
@@ -864,23 +807,178 @@ c$$$      end subroutine
       return
       end function
 *----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
+!!    return the maximum record of ME-list
 *----------------------------------------------------------------------*
       pure function mel_get_maxrec(mel)
       implicit none
       integer:: mel_get_maxrec
       type(me_list),intent(in)::mel
       mel_get_maxrec=mel%fhand%active_records(2)
-
       end function
-      pure function dvdsbsp_get_nfree(dvdsbsp)
 
+
+*----------------------------------------------------------------------*
+!!    return the number of vectors a davidson subspace can still add
+*----------------------------------------------------------------------*
+      pure function dvdsbsp_get_nfree(dvdsbsp)
+*----------------------------------------------------------------------*
+      implicit none
       integer::
      &     dvdsbsp_get_nfree
-
       type(davidson_subspace_t),intent(in)::
      &     dvdsbsp
-
       dvdsbsp_get_nfree=dvdsbsp%nmaxsub-dvdsbsp%ncursub
       end function
+*----------------------------------------------------------------------*
+!!    transforms mvp and metric into orthogonal state
+*----------------------------------------------------------------------*
+      subroutine transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv,
+     &     nopt, nnew,
+     &     me_special, nspecial,
+     &     flist, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+  
+      integer,intent(in)::
+     &     nnew, nopt,
+     &     nspecial
+
+      logical, intent(in)::
+     &     trafo(nopt), use_s(nopt)
+      type(me_list_array), intent(inout) ::
+     &     me_mvp(nopt), me_mvort(nopt),
+     &     me_met(nopt), me_metort(nopt),
+     &     me_special(nspecial),
+     &     me_trv(nopt)                  ! needed as target for transformation formula
+   
+      real(8),intent(inout)::
+     &     xrsnrm(nnew,nopt)
+      type(formula_item), intent(inout) ::
+     &     flist
+
+      type(dependency_info) ,intent(in)::
+     &     depend
+      
+      type(optimize_info), intent(in) ::
+     &     opti_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf), intent(in)::
+     &     strmap_info
+      
+      integer ::
+     &     iroot,iopt
+      do iroot = 1, nnew
+         do iopt = 1, nopt
+            call switch_mel_record(me_mvp(iopt)%mel,iroot)
+            call switch_mel_record(me_mvort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            if (trafo(iopt)) then
+               call transform_forward_wrap(flist,depend,
+     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
+     &              xrsnrm(iroot,iopt),
+     &              iopt, nspecial,
+     &              me_trv(iopt)%mel,
+     &              op_info, str_info, strmap_info, orb_info, opti_info)
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               endif
+               
+               if (use_s(iopt))then
+                  call switch_mel_record(me_met(iopt)%mel,iroot)
+                  call switch_mel_record(me_metort(iopt)%mel,iroot)
+                  call transform_forward_wrap(flist,depend,
+     &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
+     &                 xrsnrm(iopt,iroot),
+     &                 iopt, nspecial,
+     &                 me_trv(iopt)%mel,
+     &                op_info,str_info,strmap_info, orb_info, opti_info)
+                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                    call set_blks(me_metort(iopt)%mel,
+     &                   "P,H|P,V|V,H|V,V",0d0)
+                 end if
+              else
+                 me_metort(iopt)%mel=> null()
+              end if
+           else
+              if (use_s(iopt))then
+                 me_metort(iopt)%mel=> me_met(iopt)%mel
+              else
+                 me_metort(iopt)%mel=>null()
+              end if
+           end if
+        end do !iopt
+      end do !iroot
+      
+      return
+      end subroutine
+      
+*----------------------------------------------------------------------*
+!!    
+*----------------------------------------------------------------------*
+      function collect_unconverged_h(
+     &     me_scr, me_res, nopt,
+     &     leig,xeig,xrsnrm, nroots,
+     &     iter, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+      integer ::
+     &     collect_unconverged_h
+
+      integer,intent(in)::
+     &     nroots, iter,nopt
+
+      real(8), intent(inout)::
+     &     leig(nroots), xeig(nroots,2),
+     &     xrsnrm(nroots,nopt)
+
+      type(optimize_info), intent(in) ::
+     &     opti_info
+
+      type(me_list_array), intent(inout) ::
+     &     me_scr(nopt), me_res(nopt)
+
+      integer ::
+     &     irecres, iroot
+      logical ::
+     &     conv
+      
+      irecres = 0
+      do iroot=1,nroots
+         ! test energy criteria
+         if (iter .gt.1      ! if iter was 1 old energy was 0:then the convergence check is obsolete
+     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot,1),
+     &        thrgrd_e) )then
+            conv = .true. ! yet
+         else if(iter.gt.1)then
+            conv=.false.
+         else !! assume no convergence in first iteration
+            conv=.false. 
+         end if
+         ! test gradient(residual) criteria
+         conv= conv .and.
+     &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
+
+         if (.not.conv)then
+            irecres=irecres+1
+            do iopt=1,nopt
+               call switch_mel_record(me_scr(iopt)%mel,iroot)
+               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other
+               call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel,!scr ->res
+     &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
+            end do
+         end if
+      end do
+      collect_unconverged_h = irecres
+      end function 
       end subroutine
