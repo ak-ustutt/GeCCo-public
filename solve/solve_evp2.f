@@ -571,6 +571,7 @@ c dbgend
                call switch_mel_record(me_trv(iopt)%mel,iroot)
                call transform_back_wrap(fl_mvp,depend,
      &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              xdum,
      &              iopt,nspecial,
      &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,

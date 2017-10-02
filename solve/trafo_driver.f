@@ -143,7 +143,8 @@ c dbgend
 !!
 *----------------------------------------------------------------------*
       subroutine transform_back_wrap(flist,depend,
-     &     me_special, me_in,me_out, 
+     &     me_special, me_in,me_out,
+     &     trf_nrm,
      &     iopt, nspecial,
      &     me_tgt,
      &     op_info, str_info, strmap_info, orb_info, opti_info)
@@ -166,6 +167,8 @@ c dbgend
 
       type(me_list_array), dimension(*)::
      &     me_special
+      real(8),intent(inout)::
+     &     trf_nrm
       type(me_list)::
      &     me_in, me_out, me_tgt
       type(formula_item),intent(in)::
@@ -194,8 +197,6 @@ c dbgend
       type(operator),pointer::
      &     op_in,
      &     op_trf
-      real(8) ::
-     &     xnrm
       logical::
      &     trf
 
@@ -230,7 +231,7 @@ c dbg end
 
       call change_basis_old(flist, depend,
      &     me_in, op_in,
-     &     me_out, me_tgt%op , xnrm,
+     &     me_out, me_tgt%op , trf_nrm,
      &     me_trf, op_trf, trf,                   ! 
      &     me_tgt,
      &     op_info, str_info, strmap_info, orb_info)

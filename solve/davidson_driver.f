@@ -104,7 +104,7 @@
      &     maxiter              !aliases for opti_info fields
 
       real(8)::
-     &     xnrm                !temporary variable for some norms
+     &     xnrm , xdummy               !temporary variable for some norms
       integer,external::
      &     dvdsbsp_get_nnew_vvec
       real(8)::
@@ -175,6 +175,7 @@
                if (trafo(iopt) ) then
                   call transform_back_wrap(flist,depend,
      &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
+     &                 xdummy,
      &                 iopt, nspecial,
      &                 me_trv(iopt)%mel,
      &                 op_info, str_info, strmap_info,
@@ -223,6 +224,7 @@
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
      &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              xdummy,
      &              iopt,nspecial,
      &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,

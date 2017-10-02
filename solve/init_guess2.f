@@ -71,20 +71,20 @@
      &     trafo, read_in
       real(8) ::
      &     xnrm, xnrm2(nroots), xover, 
-     &     fac1, fac2, xlow
+     &     fac1, fac2
       type(me_list), pointer ::
      &     me_pnt
 
       integer ::
      &     idxset(2)
       real(8) ::
-     &     valset(2)
+     &     valset(2), trf_nrm
 
       integer, pointer ::
-     &     idxselect(:), isign(:), ntrials(:),
+     &     isign(:), ntrials(:),
      &     idxlist(:,:), idxlist_all(:,:), idxlist_ba(:), idxscr(:)
       real(8), pointer ::
-     &      xret(:), xbuf1(:), xbuf2(:), xlist_all(:), xlist(:,:)
+     &     xbuf1(:), xbuf2(:), xlist_all(:), xlist(:,:)
 
       real(8), external ::
      &     da_ddot,xnormop
@@ -93,15 +93,14 @@
 
       maxtrials = max(1000,4*nroots)
       nout = depend%ntargets
-      allocate(xret(nout), isign(nopt), ntrials(nopt))
+      allocate( isign(nopt), ntrials(nopt))
       allocate(idxlist(maxtrials,nopt),idxlist_all(2,maxtrials),
      &     idxlist_ba(maxtrials))
       allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
-      xlow = huge(xlow)
       do iopt = 1, nopt
-        call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
-     &       maxtrials,me_dia(iopt)%mel)
-        ntrials(iopt) = min(maxtrials,me_dia(iopt)%mel%len_op)
+         call find_nmin_list(xlist(1,iopt),idxlist(1,iopt),
+     &        maxtrials,me_dia(iopt)%mel)
+         ntrials(iopt) = min(maxtrials,me_dia(iopt)%mel%len_op)
 c dbg
 c        call wrt_mel_file(lulog,5,me_dia(iopt)%mel,1,
 c     &     me_dia(iopt)%mel%op%n_occ_cls,
@@ -114,29 +113,8 @@ c dbg
      &     xlist,idxlist,
      &     nopt,maxtrials,ntrials,choice)
 
-      ! read from file?
-      read_in = .false.
-      do iopt = 1, nopt
-        read_in = read_in.or..not.init(iopt)
-      end do
-
-      if (read_in) then
-
-        do iopt = 1, nopt
-          if (.not.init(iopt)) then
-            do iroot = 1, nroots
-              call switch_mel_record(me_trv(iopt)%mel,iroot)
-              call switch_mel_record(me_opt(iopt)%mel,iroot)
-              call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
-            end do
-          else
-            do iroot = 1, nroots
-              call switch_mel_record(me_trv(iopt)%mel,iroot)
-              call zeroop(me_trv(iopt)%mel)
-            end do
-          end if
-        end do
-
+      if (has_to_read_from_file_h(init,nopt)) then
+         call read_from_file_h(init, nopt, nroots, me_trv, me_opt)
       else
 
         iroot = 0
@@ -243,62 +221,33 @@ c dbg
 
           ! if requested, back-transformation of initial guess vector
           if (trafo) then
-             if (nspecial.ge.3)
-     &            call assign_me_list(me_special(2)%mel%label,
-     &            me_special(2)%mel%op%name,op_info)
-            ! do the transformation
-             allocate(idxselect(nout))
-             nselect = 0
-             call select_formula_target(idxselect,nselect,
-     &            me_trv(iopt)%mel%label,depend,op_info)
              call switch_mel_record(me_trv(iopt)%mel,iroot)
-             call reset_file_rec(me_trv(iopt)%mel%fhand)
-             call frm_sched(xret,fl_mvp,depend,idxselect,nselect,
-     &            .true.,.false.,op_info,str_info,strmap_info,orb_info)
-             call touch_file_rec(me_trv(iopt)%mel%fhand)
-             
-             ! guess vectors of wrong spin symmetry will be discarded
-
-
+             call transform_back_wrap(fl_mvp,depend,
+     &            me_special,me_pnt,me_trv(iopt)%mel,
+     &            trf_nrm,
+     &            iopt,nspecial,
+     &            me_trv(iopt)%mel,
+     &            op_info, str_info, strmap_info, orb_info, opti_info)
+            
             ! guess vectors of wrong spin symmetry will be discarded
-            if (abs(xret(idxselect(1))).lt.1d-12) then
+            if (trf_nrm.lt.1d-12) then
               if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding guess vector with wrong spin symmetry.'
               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
               iroot = iroot - 1
             else 
 c              guess vector will be normalized later (see solve_evp)
-c              if (abs(xret(idxselect(1))).lt.1d0-1d-12)
-c     &            call warn('init_guess','guess vector not normalized')
-                
-              if (iroot.gt.1) then
-                ! Due to symmetrization we might get same guess twice
-                ifree = mem_setmark('init_guess.check_guess')
-                ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
-     &                                 'xbuf1')
-                ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
-     &                                 'xbuf2')
-                xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,
-     &                            me_trv(iopt)%mel%fhand,iroot,
-     &                            opti_info%nwfpar(iopt),
-     &                            xbuf1,xbuf2,
-     &                            opti_info%nwfpar(iopt))
-c                if (abs(abs(xover)-xretlast).lt.1d-6) then
-                if (abs(xover**2/xnrm2(iroot-1)
-     &              -xret(idxselect(1))**2).lt.1d-6) then
+               if(check_last_guess_h(nopt,iopt,nroots,iroot,
+     &              (trf_nrm**2),
+     &              xnrm2, me_trv,opti_info) ) then
+                  xnrm2(iroot) = trf_nrm**2
+               else
                   if (iprlvl.ge.5) write(lulog,*)
-     &                'Discarding twin guess vector.'
+     &                 'Discarding twin guess vector.'
                   me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
                   iroot = iroot - 1
-                else
-                  xnrm2(iroot) = xret(idxselect(1))**2
-                end if  
-                ifree = mem_flushmark()
-              else
-                xnrm2(iroot) = xret(idxselect(1))**2
-              end if
+               end if
             end if
-            deallocate(idxselect)
           end if ! trafo
 
           ! project out spin contaminations or other components?
@@ -332,63 +281,213 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
      &                       xnrm,.true.)
             end if
             ifree = mem_flushmark()
-            xnrm = xnrm**2 ! makes things easier below
-            if (xnrm.lt.1d-12) then
-              if (iprlvl.ge.5) write(lulog,*)
-     &           'Discarding guess vector due to projection.'
-              me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
-              iroot = iroot - 1
+            if (xnrm**2.lt.1d-12) then
+               if (iprlvl.ge.5) write(lulog,*)
+     &              'Discarding guess vector due to projection.'
+               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
+               iroot = iroot - 1
             else if (iroot.gt.1) then
-              ! Gram-Schmidt orthogonalize to previous roots
-              ifree = mem_setmark('init_guess.check_guess')
-              ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
-     &                               'xbuf1')
-              ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
-     &                               'xbuf2')
-              do jroot = 1, iroot-1
-                xover = da_ddot(me_trv(iopt)%mel%fhand,jroot,
-     &                          me_trv(iopt)%mel%fhand,iroot,
-     &                          opti_info%nwfpar(iopt),
-     &                          xbuf1,xbuf2,
-     &                          opti_info%nwfpar(iopt))
-                if (abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6) then
-                  if (iprlvl.ge.5) write(lulog,*)
-     &                'Discarding redundant guess vector.'
-                  me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
-                  iroot = iroot - 1
-                  exit
-                else if (abs(xover).ge.1d-12) then
-                  ! remove this component using norm-conserving factors
-                  if (iprlvl.ge.5) write(lulog,*)
-     &               'Removing overlap to root',jroot,'(',xover,')'
-                  fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
-                  fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2
-     &                             -xnrm2(jroot)/xnrm),xover)
-                  call da_vecsum(me_trv(iopt)%mel%fhand,iroot,
-     &                           me_trv(iopt)%mel%fhand,iroot,fac1,
-     &                           me_trv(iopt)%mel%fhand,jroot,fac2,
-     &                           opti_info%nwfpar(iopt),
-     &                           xbuf1,xbuf2,opti_info%nwfpar(iopt))
-c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
-                end if  
-                if (jroot.eq.iroot-1) xnrm2(iroot) = xnrm
-              end do
-              ifree = mem_flushmark()
+               call orthogonalize_roots_h(iroot, opti_info%nwfpar(iopt),
+     &              xnrm2,xnrm**2,me_trv(iopt)%mel)
             else
-              xnrm2(iroot) = xnrm
+               xnrm2(iroot) = xnrm**2
             end if
           end if
 
           if (iroot.eq.nroots) exit
-
         end do ! loop over iguess
-
         if (iroot.ne.nroots) call quit(1,i_am,
      &        'Could not find enough guess vectors')
       end if
 
-      deallocate(xret,isign,ntrials)
+      deallocate(isign,ntrials)
       deallocate(idxlist,idxlist_all,idxlist_ba,xlist,xlist_all)
 
       return
+      contains
+      
+
+      
+*----------------------------------------------------------------------*
+!>    orthogonalizes the newest root (iroot) to all previous roots
+*----------------------------------------------------------------------*
+      subroutine orthogonalize_roots_h(iroot,len_op,xnrm2,xnrm,me_root)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, intent(in)::
+     &     len_op
+      integer, intent(inout)::
+     &     iroot
+      type(me_list)::
+     &     me_root
+  
+      integer::
+     &     ifree,jroot,len_buf
+      real(8)::
+     &     xnrm2(*),xnrm
+      
+      real(8),pointer::
+     &     xbuf1(:),xbuf2(:)
+      real(8)::
+     &     xover,fac1,fac2
+
+      ifree = mem_setmark('init_guess.check_guess')
+      len_buf = len_op
+      ifree = mem_alloc_real(xbuf1,len_buf,
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,len_buf,
+     &     'xbuf2')
+
+      do jroot = 1,iroot-1
+         xover = da_ddot(
+     &        me_root%fhand,jroot,
+     &        me_root%fhand,iroot,
+     &        len_op,
+     &        xbuf1, xbuf2,
+     &        len_buf)
+         if(abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6)then
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Discarding redundant guess vector.'
+            me_root%fhand%last_mod(iroot) = -1
+            iroot = iroot - 1
+            exit
+         else if (abs(xover).ge.1d-12) then
+! remove this component using norm-conserving factors
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Removing overlap to root',jroot,'(',xover,')'
+            fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
+            fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2
+     &           -xnrm2(jroot)/xnrm),xover)
+            call da_vecsum(me_root%fhand,iroot,
+     &           me_root%fhand,iroot,fac1,
+     &           me_root%fhand,jroot,fac2,
+     &           len_op,
+     &           xbuf1,xbuf2,
+     &           len_buf)
+c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
+         end if
+         if (jroot.eq.iroot-1)xnrm2(iroot) = xnrm
+      end do
+      ifree = mem_flushmark()
+      end subroutine 
+*----------------------------------------------------------------------*
+!!    determines if the trialvector should be read from a file
+*----------------------------------------------------------------------*
+      pure function has_to_read_from_file_h(init,nopt) 
+*----------------------------------------------------------------------*
+      implicit none
+
+      logical ::
+     &     has_to_read_from_file_h
+
+      integer,intent(in)::
+     &     nopt
+
+      logical,intent(in)::
+     &     init(nopt)
+      integer::
+     &     iopt
+      
+      has_to_read_from_file_h = .false.
+      do iopt = 1, nopt
+         has_to_read_from_file_h = has_to_read_from_file_h
+     &        .or..not.init(iopt)
+      end do
+      return
+      end function
+      
+*----------------------------------------------------------------------*
+!>    reads a trialvector from the file of the optimized operator
+*----------------------------------------------------------------------*
+      subroutine read_from_file_h(init,nopt, nroots, me_trv, me_opt) 
+*----------------------------------------------------------------------*
+      implicit none
+      
+      
+      integer,intent(in)::
+     &     nopt, nroots
+      logical,intent(in)::
+     &     init(nopt)
+      type(me_list_array), intent(inout) :: 
+     &     me_opt(nopt), me_trv(nopt)
+
+      integer::
+     &     iopt, iroot
+      
+      do iopt = 1, nopt
+         if (.not.init(iopt)) then
+            do iroot = 1, nroots
+               call switch_mel_record(me_trv(iopt)%mel,iroot)
+               call switch_mel_record(me_opt(iopt)%mel,iroot)
+               call list_copy(me_opt(iopt)%mel,me_trv(iopt)%mel,.false.)
+            end do
+         else
+            do iroot = 1, nroots
+               call switch_mel_record(me_trv(iopt)%mel,iroot)
+               call zeroop(me_trv(iopt)%mel)
+            end do
+         end if
+      end do
+      
+      end subroutine
+
+      
+
+      
+*----------------------------------------------------------------------*
+!>    reads a trialvector from the file of the optimized operator
+*----------------------------------------------------------------------*
+      function check_last_guess_h( nopt, iopt,nroots,iroot,guess_norm2,
+     &     xnrm2, me_trv,opti_info) 
+*----------------------------------------------------------------------*
+      implicit none
+      logical ::
+     &     check_last_guess_h
+      
+      integer,intent(in)::
+     &     nopt, iopt,
+     &     nroots,iroot
+      real(8),intent(in)::
+     &     guess_norm2,xnrm2(nroots)
+
+      type(me_list_array)::
+     &     me_trv(nopt)
+
+      type(optimize_info), intent(in)::
+     &     opti_info
+
+      
+      integer::
+     &     ifree
+      real(8)::
+     &     xover
+      real(8),pointer::
+     &     xbuf1(:), xbuf2(:)
+      real(8),external::
+     &     da_ddot
+
+      if (iroot .eq.1) then
+         check_last_guess_h = .true.
+         return
+      end if  
+
+      ifree = mem_setmark('init_guess.check_guess')
+      ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
+     &     'xbuf2')
+      xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,
+     &     me_trv(iopt)%mel%fhand,iroot,
+     &     opti_info%nwfpar(iopt),
+     &     xbuf1, xbuf2,
+     &     opti_info%nwfpar(iopt))
+      ifree = mem_flushmark()
+      if (abs(
+     &     xover**2/xnrm2(iroot-1)-guess_norm2).lt.1d-6) then
+         check_last_guess_h = .false.
+      else
+         check_last_guess_h = .true.
+      end if  
+      return
+      end function
       end
