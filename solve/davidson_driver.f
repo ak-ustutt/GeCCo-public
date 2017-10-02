@@ -11,7 +11,7 @@
      &     trafo, use_s,
      &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
-     &     me_met,me_metort,
+     &     me_metort,
      &     me_scr,me_res,
      &     me_trv,me_mvp,me_vort,me_mvort,
      &     me_special, nspecial,
@@ -59,7 +59,7 @@
 
       type(me_list_array), intent(inout) :: !inout to be sure
      &     me_opt(*), me_dia(*),
-     &     me_met(*), me_metort(*),
+     &     me_metort(*),
      &     me_scr(*),me_res(*),
      &     me_trv(*), me_mvp(*),me_vort(*),me_mvort(*),
      &     me_special(*)
@@ -103,11 +103,8 @@
      &     maxvec,
      &     maxiter              !aliases for opti_info fields
 
-      integer,pointer::
-     &     typ_prc(:),nwfpar(:)
       real(8)::
      &     xnrm                !temporary variable for some norms
-! lists for the mv-product and vector in the orthogonal space
       integer,external::
      &     dvdsbsp_get_nnew_vvec
       real(8)::
@@ -123,20 +120,6 @@
       if (ntest.ge.100) write (lulog,*) "iteration ",iter
 
       maxiter = opti_info%maxmacit
-      typ_prc => opti_info%typ_prc
-      nwfpar => opti_info%nwfpar
-
-      call transform_forward_h(
-     &     me_mvp, me_mvort,
-     &     me_met, me_metort,
-     &     me_trv, 
-     &     nopt, nnew,
-     &     me_special, nspecial,
-     &     flist, depend,
-     &     xrsnrm,
-     &     trafo, use_s,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-      
 
 
       call dvdsbsp_append_vecs(dvdsbsp,
@@ -152,6 +135,8 @@
      &     "only linear depended new directions generated")
 
       if (nroot.gt. dvdsbsp_get_nfree(dvdsbsp) )then
+         call quit(0,i_am,
+     &        "subspace compression doesn't work at the moment")
          call dvdsbsp_compress(dvdsbsp, nroot,
      &        nopt, me_scr,     !scr as scratch
      &        xbuf1, xbuf2, lenbuf ,nincore)
@@ -165,7 +150,7 @@
      &     xbuf1, xbuf2, nincore, lenbuf)
 
 
-!................. compress unconverged vectors on me_res
+!................. compress unconverged vectors on me_res & determine how many unconverged roots there are
       nnew = collect_unconverged_h(me_scr,me_res,nopt,leig,xeig,xrsnrm, ! me_scr -> me_res
      &     nnew,iter, opti_info) 
       
@@ -195,28 +180,17 @@
      &                 op_info, str_info, strmap_info,
      &                 orb_info, opti_info)
 
-
 !     else me_vort => me_trv => me_opt
                end if
             end do
             
          end do
-         if(nnew.eq.0)then
-            write(lulog,'(x,a,i5,a)')
-     &           'CONVERGED IN ',iter,' ITERATIONS'
-            if (luout.ne.lulog.and.iprlvl.ge.5)
-     &           write(luout,'(x,a,i5,a)')
-     &           'CONVERGED IN ',iter,' ITERATIONS'
-         else
-            write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
-            call warn('linear solver', 'NO CONVERGENCE OBTAINED')
-         end if
          task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
       else
          task=4       ! calculate new mv product when returning
       end if
-
+      ! create new trialvector in orthogonal space
       do iroot = 1, nnew
          do iopt=1,nopt
             call switch_mel_record(me_res(iopt)%mel,iroot)
@@ -224,7 +198,7 @@
             xnrm = get_norm_of_root_h(xrsnrm,iroot,nopt,nnew)
             call apply_preconditioner(
      &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
-     &           nwfpar(iopt),
+     &           opti_info%nwfpar(iopt),
      &           opti_info%typ_prc(iopt),
      &           xeig(iroot,1),
      &           xnrm,
@@ -242,8 +216,8 @@
 
       end do                    !iroot
 
-      do iopt=1,nopt
-         do iroot=1,nnew
+      do iroot=1,nnew
+         do iopt=1,nopt
             call switch_mel_record(me_vort(iopt)%mel,iroot)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             if (trafo(iopt) ) then
@@ -255,8 +229,8 @@
      &              orb_info, opti_info)
 !            else me_vort => me_trv
             end if
-         end do
-      end do                    !iopt
+         end do  !iopt
+      end do                   
       return
       contains
 
@@ -358,27 +332,10 @@
      &        lenme)
 
 
-c     dbg
-c     print *,"xnorm:",xnrm
-c     dbgend
-c     xnrm = 1d0
-c     dbg
-c     print *,"precon not yet applied. "
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg)
-c     end do
-c     dbgend
 ! scale residual for numerical stability:
          xshf = -xeig
          call diavc(xbuf1,xbuf1,1d0/xnrm,
      &        xbuf2,xshf,lenme)
-c     dbg
-c     print *,"debug shift:",xshf
-c     print *,"precon applied. ",nwfpar(iopt),"entries"
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
-c     end do
-c     dbgend
          if (renormalize) then
             xnrm = dnrm2(lenme,xbuf1,1)
             call dscal(lenme,1d0/xnrm,xbuf1,1)
@@ -401,10 +358,6 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
       if (spin_prj)then
 ! assign op. with list containing the scratch trial vector
-c     dbg
-c     print *, "assign ",me_scr(iopt)%mel%label," to ",
-c     &              me_opt(iopt)%mel%op%name
-c     dbgend
          call assign_me_list(me_intm%label,
      &        op_opt%name,op_info)
          call switch_mel_record(me_intm,iroot)
@@ -429,22 +382,9 @@ c     dbgend
      &              xnrm,.false.)
 
             else
-c     dbg
-c     print *,"iopt=",iopt
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
                call evaluate2(fspc(1),.false.,.false.,
      &              op_info,str_info,strmap_info,orb_info,
      &              xnrm,.false.)
-c     dbg
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
             end if
             if (xnrm.lt.1d-12) call warn('evpc_core',
      &           'Nothing left after projection!')
@@ -673,100 +613,6 @@ c     dbgend
      &     dvdsbsp
       dvdsbsp_get_nfree=dvdsbsp%nmaxsub-dvdsbsp%ncursub
       end function
-*----------------------------------------------------------------------*
-!!    transforms mvp and metric into orthogonal state
-*----------------------------------------------------------------------*
-      subroutine transform_forward_h(
-     &     me_mvp, me_mvort,
-     &     me_met, me_metort,
-     &     me_trv,
-     &     nopt, nnew,
-     &     me_special, nspecial,
-     &     flist, depend,
-     &     xrsnrm,
-     &     trafo, use_s,
-     &     op_info, str_info, strmap_info, orb_info, opti_info)
-*----------------------------------------------------------------------*
-      implicit none
-  
-      integer,intent(in)::
-     &     nnew, nopt,
-     &     nspecial
-
-      logical, intent(in)::
-     &     trafo(nopt), use_s(nopt)
-      type(me_list_array), intent(inout) ::
-     &     me_mvp(nopt), me_mvort(nopt),
-     &     me_met(nopt), me_metort(nopt),
-     &     me_special(nspecial),
-     &     me_trv(nopt)                  ! needed as target for transformation formula
-   
-      real(8),intent(inout)::
-     &     xrsnrm(nnew,nopt)
-      type(formula_item), intent(inout) ::
-     &     flist
-
-      type(dependency_info) ,intent(in)::
-     &     depend
-      
-      type(optimize_info), intent(in) ::
-     &     opti_info
-      type(orbinf), intent(in) ::
-     &     orb_info
-      type(operator_info), intent(inout) ::
-     &     op_info
-      type(strinf), intent(in) ::
-     &     str_info
-      type(strmapinf), intent(in)::
-     &     strmap_info
-      
-      integer ::
-     &     iroot,iopt
-      do iroot = 1, nnew
-         do iopt = 1, nopt
-            call switch_mel_record(me_mvp(iopt)%mel,iroot)
-            call switch_mel_record(me_mvort(iopt)%mel,iroot)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            if (trafo(iopt)) then
-               call transform_forward_wrap(flist,depend,
-     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
-     &              xrsnrm(iroot,iopt),
-     &              iopt, nspecial,
-     &              me_trv(iopt)%mel,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-               endif
-               
-               if (use_s(iopt))then
-                  call switch_mel_record(me_met(iopt)%mel,iroot)
-                  call switch_mel_record(me_metort(iopt)%mel,iroot)
-                  call transform_forward_wrap(flist,depend,
-     &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
-     &                 xrsnrm(iopt,iroot),
-     &                 iopt, nspecial,
-     &                 me_trv(iopt)%mel,
-     &                op_info,str_info,strmap_info, orb_info, opti_info)
-                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                    call set_blks(me_metort(iopt)%mel,
-     &                   "P,H|P,V|V,H|V,V",0d0)
-                 end if
-              else
-                 me_metort(iopt)%mel=> null()
-              end if
-           else
-              if (use_s(iopt))then
-                 me_metort(iopt)%mel=> me_met(iopt)%mel
-              else
-                 me_metort(iopt)%mel=>null()
-              end if
-           end if
-        end do !iopt
-      end do !iroot
-      
-      return
-      end subroutine
-      
 *----------------------------------------------------------------------*
 !!    
 *----------------------------------------------------------------------*

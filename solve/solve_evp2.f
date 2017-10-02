@@ -160,6 +160,9 @@
         write(lulog,*) 'nroots = ',nroots
         write(lulog,*) 'targ_root = ',targ_root
       end if
+      call print_solver_header_h(luout)
+      if (lulog .ne. luout)  call print_solver_header_h(luout)
+
 
 
 
@@ -583,15 +586,6 @@ c dbgend
      &           nroots, nopt)
          end if
          
-! normalize initial trial vector?
-c        if (iter.eq.1.and.use_init_guess(1).and.
-c     &       (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
-c     &       opti_info%typ_prc(1).eq.optinf_prc_prj.or.
-c     &       opti_info%typ_prc(1).eq.optinf_prc_spinrefp))
-c     &       call normalize_guess(me_trv(1)%mel%fhand,irequest,
-c     &       ff_mvp,irecmvp(irequest),
-c     &       ff_met,irecmet(irequest),
-c     &       use_s,1,nopt,opti_info)
 
 ! 4 - get residual
         if (iand(task,4).eq.4) then
@@ -713,6 +707,18 @@ c     &                    orb_info,str_info)
             end do
          end do
       end if
+      ! 
+      call transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv, 
+     &     nopt, nrequest,
+     &     me_special, nspecial,
+     &     fl_mvp, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+      
         call davidson_driver(
      &     dvdsbsp,
      &     iter, task, nrequest,
@@ -720,21 +726,34 @@ c     &                    orb_info,str_info)
      &     trafo, use_s,
      &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
-     &     me_met,me_metort,
+     &     me_metort,
      &     me_scr,me_res,
-     &       me_trv,me_mvp,me_vort,me_mvort,
-     &       me_special, nspecial,
-     &       xbuf1,xbuf2, xbuf3, nincore,lenbuf,
-     &       fl_mvp,depend,
-     &       fl_spc,nspcfrm,
-     &       opti_info, opti_stat,
-     &       orb_info, op_info, str_info,strmap_info
-     &       )
+     &     me_trv,me_mvp,me_vort,me_mvort,
+     &     me_special, nspecial,
+     &     xbuf1,xbuf2, xbuf3, nincore,lenbuf,
+     &     fl_mvp,depend,
+     &     fl_spc,nspcfrm,
+     &     opti_info, opti_stat,
+     &     orb_info, op_info, str_info,strmap_info
+     &     )
         if (iand(task,8).eq.8)
      &       call print_step_results(iter,
      &       xrsnrm, xeig,nroots, nopt)
 
+      
       end do opt_loop
+
+      if(nrequest.eq.0)then
+         write(lulog,'(x,a,i5,a)')
+     &        'CONVERGED IN ',iter,' ITERATIONS'
+         if (luout.ne.lulog.and.iprlvl.ge.5)
+     &        write(luout,'(x,a,i5,a)')
+     &        'CONVERGED IN ',iter,' ITERATIONS'
+      else
+         write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
+         call warn('linear solver', 'NO CONVERGENCE OBTAINED')
+      end if
+      
 
       do iopt = 1, nopt
 
@@ -1177,5 +1196,111 @@ c dbg
       
 
       end subroutine
+*----------------------------------------------------------------------*
+!!   writes a header for the solver
+!
+*----------------------------------------------------------------------*
+      subroutine print_solver_header_h(lu)
+*----------------------------------------------------------------------*
+      integer, intent(in)::
+     &     lu
+
+      write(lu,*) "This is the 'NEW' solver by Arne Bargholz 2017"
+      end subroutine
+      
+*----------------------------------------------------------------------*
+!!    transforms mvp and metric into orthogonal state
+*----------------------------------------------------------------------*
+      subroutine transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv,
+     &     nopt, nnew,
+     &     me_special, nspecial,
+     &     flist, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+  
+      integer,intent(in)::
+     &     nnew, nopt,
+     &     nspecial
+
+      logical, intent(in)::
+     &     trafo(nopt), use_s(nopt)
+      type(me_list_array), intent(inout) ::
+     &     me_mvp(nopt), me_mvort(nopt),
+     &     me_met(nopt), me_metort(nopt),
+     &     me_special(nspecial),
+     &     me_trv(nopt)                  ! needed as target for transformation formula
+   
+      real(8),intent(inout)::
+     &     xrsnrm(nnew,nopt)
+      type(formula_item), intent(inout) ::
+     &     flist
+
+      type(dependency_info) ,intent(in)::
+     &     depend
+      
+      type(optimize_info), intent(in) ::
+     &     opti_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf), intent(in)::
+     &     strmap_info
+      
+      integer ::
+     &     iroot,iopt
+      do iroot = 1, nnew
+         do iopt = 1, nopt
+            call switch_mel_record(me_mvp(iopt)%mel,iroot)
+            call switch_mel_record(me_mvort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            if (trafo(iopt)) then
+               call transform_forward_wrap(flist,depend,
+     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
+     &              xrsnrm(iroot,iopt),
+     &              iopt, nspecial,
+     &              me_trv(iopt)%mel,
+     &              op_info, str_info, strmap_info, orb_info, opti_info)
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               endif
+               
+               if (use_s(iopt))then
+                  call switch_mel_record(me_met(iopt)%mel,iroot)
+                  call switch_mel_record(me_metort(iopt)%mel,iroot)
+                  call transform_forward_wrap(flist,depend,
+     &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
+     &                 xrsnrm(iopt,iroot),
+     &                 iopt, nspecial,
+     &                 me_trv(iopt)%mel,
+     &                op_info,str_info,strmap_info, orb_info, opti_info)
+                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                    call set_blks(me_metort(iopt)%mel,
+     &                   "P,H|P,V|V,H|V,V",0d0)
+                 end if
+               else
+                  me_metort(iopt)%mel=> null()
+               end if
+           else
+              if (use_s(iopt))then
+                 me_metort(iopt)%mel=> me_met(iopt)%mel
+              else
+                 me_metort(iopt)%mel=>null()
+              end if
+           end if
+        end do !iopt
+      end do !iroot
+      
+      return
+      end subroutine
+      
       end
 
