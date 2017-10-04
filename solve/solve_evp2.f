@@ -590,7 +590,6 @@ c dbgend
 
 ! 4 - get residual
         if (iand(task,4).eq.4) then
-! preliminary solution:
 !   outside loop over requested Mv-products
            do irequest = 1, nrequest
               do iopt = 1, nopt
@@ -608,23 +607,12 @@ c dbgend
 
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
-c dbg
-c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
-c        call wrt_mel_file(lulog,5,
-c     &       me_trv(iopt)%mel,
-c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
-c     &       str_info,orb_info)
-c dbgend
-              ! enforce MS-combination symmetry of trial vectors
-              ! (if requested)
-c                 print *,"trv ab_sym",me_trv(iopt)%mel%absym
-                 if (me_trv(iopt)%mel%absym.ne.0) !TODO this has to move into davidson_driver
+                 if (me_trv(iopt)%mel%absym.ne.0) 
      &                call sym_ab_list(
      &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
      &                xdum,.false.,
      &                op_info,str_info,strmap_info,orb_info)
 
-!     here?
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
               end do
 
@@ -651,8 +639,9 @@ c            call wrt_mel_file(lulog,5,me_mvp(1)%mel,
 c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
-              ! enforce MS-combination symmetry of Mv-products:
-              ! (if requested)
+            
+! enforce MS-combination symmetry of Mv-products:
+! (if requested)
             do iopt = 1, nopt
                if (me_mvp(iopt)%mel%absym.ne.0)
      &              call sym_ab_list(
@@ -682,22 +671,13 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
                   else
-c  dbg
-c                     call print_list("unpr mvp",me_mvp(iopt)%mel,
-c     &                    "LIST",0d0,0d0,
-c     &                    orb_info,str_info)
-c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
-c                     call print_list("prj mvp",me_mvp(iopt)%mel,
-c     &                    "LIST",0d0,0d0,
-c     &                    orb_info,str_info)
                   end if
 !     reassign lists to correct ops
                   call assign_me_list(me_trv(iopt)%mel%label,
