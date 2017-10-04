@@ -72,8 +72,6 @@
       real(8) ::
      &     xnrm, xnrm2(nroots), xover, 
      &     fac1, fac2
-!      type(me_list), pointer ::
-!     &     me_pnt
       type(me_list_array):: 
      &     me_pnt(nopt)
 

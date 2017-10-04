@@ -64,6 +64,7 @@
       include 'mdef_target_info.h'
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
+      include "def_guess_gen.h"
       
       
       integer, parameter ::
@@ -108,9 +109,11 @@
      &     jdx,
      &     lenbuf, nincore
       real(8) ::
+     &     trf_nrm,
      &     xresmax, xdum, xnrm,
      &     xeig(nroots,2),reig(nroots,2),
-     &     xresnrm(nroots,nopt)
+     &     xresnrm(nroots,nopt),
+     &     xnrm2(nroots)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
      &     me_trv(:), me_mvp(:), me_mvpprj(:),
@@ -134,6 +137,8 @@
       type(formula_item) ::
      &     fl_mvp, fl_spc(nspcfrm)
 
+      type(guess_generator)::
+     &     guess_gen
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:)
       real(8), pointer::
@@ -146,11 +151,12 @@
      &     dvdsbsp
 
       logical, external ::
-     &     file_exists
+     &     file_exists, generate_guess
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_xret, dvdsbsp_get_nnew_vvec
       real(8), external ::
      &     da_ddot
+      
 
       ifree = mem_setmark('solve_evp')
 
@@ -189,7 +195,7 @@
          if (.not.mel_has_file( me_opt(iopt)%mel))
      &        call quit(1,i_am,
      &       'no file associated with list '//trim(label_opt(iopt)))
-         ! preconditioner (diag because they might beinverted diagonals of Hamiltonian)
+         ! preconditioner (diag because they might be inverted diagonals of Hamiltonian)
          me_dia(iopt)%mel   => get_mel_h(label_prc(iopt),op_info)
          if (.not.mel_has_file( me_dia(iopt)%mel))
      &        call quit(1,i_am,
@@ -339,17 +345,6 @@
       call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt,
      &     use_s)
 
-c dbg
-c      do iopt = 1,nopt
-c         write(lulog,*) 'preconditioner: iopt = ',iopt
-c         call wrt_mel_file(lulog,5,
-c     &        me_dia(iopt)%mel,
-c     &        1,me_dia(iopt)%mel%op%n_occ_cls,
-c     &        str_info,orb_info)
-c      enddo
-c
-c dbgend
-
       ! write information to opti_info about signs which occur
       ! in trv*mvp or trv*met  multiplication
       ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
@@ -449,7 +444,19 @@ c dbgend
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_mvp,op_info)
 
-      
+      do iopt=1,nopt
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &        .and.nspecial.ge.3) then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(1)%mel
+         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(4)%mel
+         else
+            trafo(iopt)=.false.
+            me_vort(iopt)%mel => me_trv(iopt)%mel
+         end if
+      end do
       if (init) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
@@ -478,22 +485,66 @@ c dbgend
 
       else
 ! get initial amplitudes
-         do iopt=1,nopt
-            call assign_me_list(me_trv(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-         end do
-        if (nopt.eq.1) then
-        call init_guess(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,nspecial,
-     &                  fl_mvp,depend,fl_spc,nspcfrm,
-     &                  opti_info,orb_info,op_info,str_info,strmap_info)
-        else
-        call init_guess2(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,
-     &                  nspecial,0,1, !<- check solve_evp for reason
-     &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
-     &                  opti_info,orb_info,op_info,str_info,strmap_info)
-        end if
+        do iopt=1,nopt
+          call assign_me_list(me_trv(iopt)%mel%label,
+     &          me_opt(iopt)%mel%op%name,op_info)
+        end do
+        call init_guess_gen(guess_gen, max(1000,4*nroots),
+     &       me_dia, me_vort, nopt,
+     &       op_info,str_info,strmap_info, orb_info)
+        iroot = 1
+        trial_gen_loop: do while(iroot .le.nroots)
+        
+          do iopt = 1,nopt
+            call switch_mel_record(me_vort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            call touch_file_rec(me_trv(iopt)%mel%fhand)
+          end do
+          print *, "iroot outside0",iroot,nroots
+          if (.not.generate_guess(guess_gen, me_vort,
+     &         iopt,nopt,choice_opt))
+     &         call quit(1,i_am,
+     &         'Could not find enough guess vectors')
+          if (trafo(iopt))then
+            call transform_back_wrap(fl_mvp,depend,
+     &           me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
+     &           trf_nrm,
+     &           iopt,nspecial,
+     &           me_trv(iopt)%mel,
+     &           op_info, str_info, strmap_info, orb_info, opti_info)
+! guess vectors of wrong spin symmetry and twinned guess vectors will be discarded
+            if (should_discard_vector_h(trf_nrm, nopt,nroots,
+     &           iroot,xnrm2,me_trv, opti_info) )then
+              cycle trial_gen_loop
+            else
+              xnrm2(iroot) = trf_nrm**2
+            end if 
+           end if
+           
+           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
+             call  spin_proj_h(opti_info%typ_prc(iopt),
+     &            opti_info%nwfpar(iopt),me_trv(iopt)%mel,me_special,
+     &            nspecial,0,1,
+     &            fl_spc, xnrm,
+     &            opti_info,orb_info, op_info, str_info, strmap_info)
+             if (xnrm**2.lt.1d-12) then
+               if (iprlvl.ge.5) write(lulog,*)
+     &              'Discarding guess vector due to projection.'
+               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
+               cycle trial_gen_loop
+             else if (iroot.gt.1) then
+               call orthogonalize_roots_h(iroot, opti_info%nwfpar(iopt),
+     &              xnrm2,xnrm**2,me_trv(iopt)%mel)
+             else 
+               xnrm2(iroot) = xnrm**2
+             end if
+           end if
+! Assumption: If the controlflow reaches here, a new guess vector was created
+         iroot = iroot +1
+       end do trial_gen_loop
+       call del_guess_gen(guess_gen)
       endif
 
       deallocate(xret)
@@ -511,74 +562,12 @@ c dbgend
       call init_buffers(opti_info%nwfpar, nopt,
      &     xbuf1,xbuf2,xbuf3,nincore, lenbuf) 
 
-      do iroot=1,nroots
-         if (ntest.gt.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("unprojected trv",me_trv(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-      end do
-      
-      do iopt=1,nopt
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.ge.3) then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(1)%mel
-         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(4)%mel
-         else
-            trafo(iopt)=.false.
-            me_vort(iopt)%mel => me_trv(iopt)%mel
-         end if
-      end do
-      
       iter = 0
       task = 4
       nrequest=nroots
       xrsnrm=0d0
       xeig=0d0
       reig=0d0
-
-! vort is defined as the vector which under transformation generates me_trv!!!
-! as the initialization (and restart) routines return an me_trv this would require us to invert the transformation step (transform_forward is not an inversion in the actual sense.)
-! can we do that ? Spin requirements
-! instead we generate by a forward_transformation a guess vector in the orthogonal space which satisfies basic requirements (e.g. orthogonality of T1 and T2)
-! and use this as guess vector. The trv  guess vector is then easily created via back_transformation
-      do iroot=1,nrequest
-         do iopt=1,nopt
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            if (trafo(iopt)) then
-               call transform_forward_wrap(fl_mvp,depend,
-     &              me_special,me_trv(iopt)%mel,me_vort(iopt)%mel, !trv-> vort
-     &              xrsnrm(iroot,iopt),
-     &              iopt, nspecial,
-     &              me_trv(iopt)%mel,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                  call set_blks(me_vort(iopt)%mel,
-     &                 "P,H|P,V|V,H|V,V",0d0)
-               end if
-            else
-               me_vort(iopt)%mel => me_trv(iopt)%mel
-            end if
-            if (trafo(iopt)) then
-               call switch_mel_record(me_vort(iopt)%mel,iroot)
-               call switch_mel_record(me_trv(iopt)%mel,iroot)
-               call transform_back_wrap(fl_mvp,depend,
-     &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
-     &              xdum,
-     &              iopt,nspecial,
-     &              me_trv(iopt)%mel,
-     &              op_info, str_info, strmap_info,
-     &              orb_info, opti_info)
-            end if
-         end do
-      end do
                   
       opt_loop: do while(task.lt.8)
          iter=iter+1
@@ -1282,6 +1271,230 @@ c dbg
       
       return
       end subroutine
+
+*----------------------------------------------------------------------*
+!>    orthogonalizes the newest root (iroot) to all previous roots
+*----------------------------------------------------------------------*
+      subroutine orthogonalize_roots_h(iroot,len_op,xnrm2,xnrm,me_root)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, intent(in)::
+     &     len_op
+      integer, intent(inout)::
+     &     iroot
+      type(me_list)::
+     &     me_root
+  
+      integer::
+     &     ifree,jroot,len_buf
+      real(8)::
+     &     xnrm2(*),xnrm
       
+      real(8),pointer::
+     &     xbuf1(:),xbuf2(:)
+      real(8)::
+     &     xover,fac1,fac2
+
+      ifree = mem_setmark('init_guess.check_guess')
+      len_buf = len_op
+      ifree = mem_alloc_real(xbuf1,len_buf,
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,len_buf,
+     &     'xbuf2')
+
+      do jroot = 1,iroot-1
+         xover = da_ddot(
+     &        me_root%fhand,jroot,
+     &        me_root%fhand,iroot,
+     &        len_op,
+     &        xbuf1, xbuf2,
+     &        len_buf)
+         if(abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6)then
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Discarding redundant guess vector.'
+            me_root%fhand%last_mod(iroot) = -1
+            iroot = iroot - 1
+            exit
+         else if (abs(xover).ge.1d-12) then
+! remove this component using norm-conserving factors
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Removing overlap to root',jroot,'(',xover,')'
+            fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
+            fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2
+     &           -xnrm2(jroot)/xnrm),xover)
+            call da_vecsum(me_root%fhand,iroot,
+     &           me_root%fhand,iroot,fac1,
+     &           me_root%fhand,jroot,fac2,
+     &           len_op,
+     &           xbuf1,xbuf2,
+     &           len_buf)
+c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
+         end if
+         if (jroot.eq.iroot-1) xnrm2(iroot) = xnrm
+      end do
+      ifree = mem_flushmark()
+      end subroutine 
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      function should_discard_vector_h(trf_nrm, nopt, nroots,iroot,
+     &     xnrm2,me_trv,opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+
+      logical::
+     &     should_discard_vector_h
+      real(8),intent(in)::
+     &     trf_nrm,xnrm2(nroots)
+
+      integer,intent(in)::
+     &     nopt,nroots,iroot
+
+      type(me_list_array)::
+     &     me_trv(nopt)
+      type(optimize_info), intent(in)::
+     &     opti_info
+
+      if (trf_nrm.lt.1d-12) then
+        if (iprlvl.ge.5) write(lulog,*)
+     &       'Discarding guess vector with wrong spin symmetry.'
+        should_discard_vector_h =.true.
+      else
+        if(check_last_guess_h(nopt,iopt,nroots,iroot,
+     &       (trf_nrm**2),
+     &       xnrm2, me_trv,opti_info) ) then
+          should_discard_vector_h =.false.
+        else
+          if (iprlvl.ge.5) write(lulog,*)
+     &         'Discarding twin guess vector.'
+          should_discard_vector_h =.true.
+        end if
+        
+      end if 
+      return
+      end function
+*----------------------------------------------------------------------*
+!>    check the last guess for twinning 
+*----------------------------------------------------------------------*
+      function check_last_guess_h( nopt, iopt,nroots,iroot,guess_norm2,
+     &     xnrm2, me_trv,opti_info) 
+*----------------------------------------------------------------------*
+      implicit none
+      logical ::
+     &     check_last_guess_h
+      
+      integer,intent(in)::
+     &     nopt, iopt,
+     &     nroots,iroot
+      real(8),intent(in)::
+     &     guess_norm2,xnrm2(nroots)
+
+      type(me_list_array)::
+     &     me_trv(nopt)
+
+      type(optimize_info), intent(in)::
+     &     opti_info
+
+      
+      integer::
+     &     ifree
+      real(8)::
+     &     xover
+      real(8),pointer::
+     &     xbuf1(:), xbuf2(:)
+      real(8),external::
+     &     da_ddot
+
+      if (iroot .eq.1) then
+         check_last_guess_h = .true.
+         return
+      end if  
+      print *, iroot
+      ifree = mem_setmark('init_guess.check_guess')
+      ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
+     &     'xbuf2')
+      xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,
+     &     me_trv(iopt)%mel%fhand,iroot,
+     &     opti_info%nwfpar(iopt),
+     &     xbuf1, xbuf2,
+     &     opti_info%nwfpar(iopt))
+      ifree = mem_flushmark()
+      if (abs(
+     &     xover**2/xnrm2(iroot-1)-guess_norm2).lt.1d-6) then
+         check_last_guess_h = .false.
+      else
+         check_last_guess_h = .true.
+      end if  
+      return
+      end function
+
+    
+*----------------------------------------------------------------------*
+!>    projects out spin parts
+*----------------------------------------------------------------------*
+      subroutine spin_proj_h( typ_prc,len_list,me_root,me_special,
+     &     nspecial, nextra, idxspc,
+     &     fl_spc, xnrm,
+     &     opti_info, orb_info, op_info,str_info, strmap_info) 
+*----------------------------------------------------------------------*
+      implicit none
+      integer,intent(in)::
+     &     typ_prc,len_list, nspecial,nextra,idxspc
+      real(8),intent(inout)::
+     &     xnrm
+
+      type(me_list)::
+     &     me_root
+      type(me_list_array)::
+     &     me_special(nspecial+nextra)
+      type(formula_item)::
+     &     fl_spc(*)
+      type(optimize_info)::
+     &     opti_info
+      type(orbinf)::
+     &     orb_info
+      type(operator_info)::
+     &     op_info
+      type(strinf)::
+     &     str_info
+      type(strmapinf)::
+     &     strmap_info
+      
+      real(8),pointer::
+     &     xbuf1(:),xbuf2(:)
+      
+      integer::
+     &     ifree, len_buf
+      len_buf = len_list
+      ifree = mem_setmark('solve_evp2.spin_proj')
+      ifree = mem_alloc_real(xbuf1,len_buf,'xbuf1')
+      ifree = mem_alloc_real(xbuf2,len_buf,'xbuf2')
+      select case(typ_prc)
+      case(optinf_prc_spinp)
+         call spin_project(me_root,me_special(idxspc)%mel,
+     &        fl_spc(1),len_buf,
+     &        xbuf1,xbuf2,.true.,xnrm,
+     &        opti_info,orb_info,
+     &        op_info,str_info,strmap_info)
+      case(optinf_prc_spinrefp)
+         call spin_project(me_root,me_special(idxspc)%mel,
+     &        fl_spc(2),len_buf,
+     &        xbuf1,xbuf2,.true.,xnrm,
+     &        opti_info,orb_info,
+     &        op_info,str_info,strmap_info)
+         call evaluate2(fl_spc(1),.false.,.false.,
+     &        op_info,str_info,strmap_info,orb_info,
+     &        xnrm,.true.)
+      case(optinf_prc_prj)
+         call evaluate2(fl_spc(1),.false.,.false.,
+     &        op_info,str_info,strmap_info,orb_info,
+     &        xnrm,.true.)
+      end select
+      ifree = mem_flushmark()
+      return
+      end subroutine
+
       end
 

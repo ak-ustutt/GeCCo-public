@@ -18,7 +18,7 @@
       type(guess_generator),intent(out)::
      &     guess_gen
       integer,parameter::
-     &     ntest = 000
+     &     ntest = 1000
       integer,intent(in)::
      &     maxtrials, nopt
       type(me_list_array)::
@@ -27,7 +27,7 @@
       integer::
      &     iopt,isign(nopt),ntrials(nopt)
       integer,pointer::
-     &     idxlist(:,:),idxlist_all(:,:), idxlist_ba(:), idxscr(:)
+     &     idxlist(:,:)
       real(8),pointer::
      &     xlist_all(:), xlist(:,:)
       type(orbinf), intent(in) ::
@@ -39,13 +39,14 @@
       type(strmapinf), intent(in) ::
      &     strmap_info
 
-
+      print *, "initializing guess_gen"
       
       allocate(guess_gen%idxlist_all(2,maxtrials),
      &     guess_gen%idxlist_ba(maxtrials))
       allocate(idxlist(maxtrials,nopt))
       allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
 
+      print *, "allocated"
       do iopt = 1,nopt
         call find_nmin_list(xlist(1:maxtrials,iopt),
      &       idxlist(1:maxtrials,iopt),
@@ -54,20 +55,22 @@
       end do
       if (nopt .gt.1 )then
         call merge_min_lists(
-     &       xlist_all,idxlist_all,guess_gen%ntrials_all,
+     &       xlist_all,guess_gen%idxlist_all,guess_gen%ntrials_all,
      &       xlist,idxlist,
      &       nopt,maxtrials,ntrials,0)
       else
         xlist_all(1:maxtrials) = xlist(1:maxtrials,1)
-        idxlist_all(2,1:maxtrials) = idxlist(1:maxtrials,1)
-        idxlist_all(1,1:maxtrials) = 1
+        guess_gen%idxlist_all(2,1:maxtrials) = idxlist(1:maxtrials,1)
+        guess_gen%idxlist_all(1,1:maxtrials) = 1
       end if
 
       do iopt =1,nopt
         isign(iopt) = me_trv(iopt)%mel%absym
       end do
       call create_inverted_spin_indexlist_h(
-     &     idxlist_ba,idxlist,idxlist_all,guess_gen%ntrials_all,
+     &     guess_gen%idxlist_ba,
+     &     idxlist,guess_gen%idxlist_all,
+     &     guess_gen%ntrials_all,
      &     maxtrials,ntrials,me_diag,isign,nopt,
      &     op_info,str_info,strmap_info,orb_info)
       deallocate( idxlist, xlist, xlist_all)
@@ -110,7 +113,8 @@
      &     iopt, idx, iguess
       integer,pointer::
      &     idxscr(:)
-      
+      print *, "creating inverted spin_indexlist"
+
       allocate(idxscr(maxtrials))
       do iopt = 1, nopt
         if (isign(iopt).eq.0) cycle
@@ -142,29 +146,36 @@
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
-      subroutine generate_guess(guess_gen,me_trv,nopt,choice)
+      function generate_guess(guess_gen,me_trv,iopt,nopt,choice)
 *----------------------------------------------------------------------*
       implicit none
       include 'stdunit.h'
       include "def_guess_gen.h"
       include 'mdef_me_list.h'
-      
+      logical::
+     &     generate_guess
       character(*),parameter::
      &     i_am = "generate_guess"
       integer,parameter::
-     &     ntest=000
+     &     ntest=1000
       
       type(guess_generator),intent(inout)::
      &     guess_gen
+      integer,intent(out)::
+     &     iopt
       integer,intent(in)::
      &     nopt,choice
       type(me_list_array)::
      &     me_diag(nopt),me_trv(nopt)
 
+      
       integer::
-     &     iopt,iroot,isign(nopt)
- 
+     &     iroot,isign(nopt)
       guess_gen%iguess =  guess_gen%iguess +1
+      
+      do iopt =1,nopt
+        isign(iopt) = me_trv(iopt)%mel%absym
+      end do
       
       if (choice .ne. 0)then
         iopt = choice
@@ -172,22 +183,19 @@
         iopt = guess_gen%idxlist_all(1,guess_gen%iguess)
       end if
       
-      do iopt =1,nopt
-        isign(iopt) = me_trv(iopt)%mel%absym
-      end do
       iroot = me_trv(1)%mel%fhand%current_record
-      
       do while(.not. generate_guess_list_h(
      &     me_trv,isign,iopt,nopt,
      &     iroot, 
      &     guess_gen%idxlist_all,
      &     guess_gen%idxlist_ba,
      &     guess_gen%iguess,
-     &     guess_gen%ntrials_all) ) 
-        if (guess_gen%iguess.ge.guess_gen%ntrials_all)
-     &       call quit(1,i_am,
-     &       'Could not find enough guess vectors')
-          
+     &     guess_gen%ntrials_all) )
+        print *, iopt,guess_gen%iguess
+        if (guess_gen%iguess.ge.guess_gen%ntrials_all)then
+          generate_guess = .false.
+          return
+        end if 
         
         guess_gen%iguess =  guess_gen%iguess +1
         
@@ -196,13 +204,9 @@
         else
           iopt = guess_gen%idxlist_all(1,guess_gen%iguess)
         end if
-        
-        do iopt =1,nopt
-          isign(iopt) = me_trv(iopt)%mel%absym
-        end do
-        
+         
       end do
-      
+      generate_guess = .true.
       contains
 *----------------------------------------------------------------------*
       function generate_guess_list_h(
@@ -284,7 +288,7 @@
       
       return
       end function
-      end subroutine
+      end function
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
       subroutine del_guess_gen(guess_gen)
