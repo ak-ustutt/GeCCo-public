@@ -153,7 +153,7 @@
       logical, external ::
      &     file_exists, generate_guess
       integer, external ::
-     &     idx_formlist, idx_mel_list, idx_xret, dvdsbsp_get_nnew_vvec
+     &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
      &     da_ddot
       
@@ -167,7 +167,7 @@
         write(lulog,*) 'targ_root = ',targ_root
       end if
       call print_solver_header_h(luout)
-      if (lulog .ne. luout)  call print_solver_header_h(luout)
+      if (lulog .ne. luout)  call print_solver_header_h(lulog)
 
 
 
@@ -373,56 +373,45 @@
       do iopt = 1, nopt
         ! open result vector file(s)
 ! if file already open, use as initial guess (if requested)!
-         ffopt(iopt)%fhand => me_opt(iopt)%mel%fhand
-        if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume
-     &      .and.nroots.eq.1) then ! switched off due to frequent
-                                   ! problems for nroots>1
+        me_opt(iopt)%mel%fhand => me_opt(iopt)%mel%fhand
+        if (me_opt(iopt)%mel%fhand%unit.gt.0.and.opti_info%resume
+     &       .and.nroots.eq.1) then ! switched off due to frequent
+! problems for nroots>1
           write(lulog,'(a,i4,a)')
-     &          'Using last vector as initial guess (iopt =',iopt,')'
+     &         'Using last vector as initial guess (iopt =',iopt,')'
           use_init_guess(iopt) = .false.
         end if
-        if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
-          ! copy this root so that we may home in on it later
+        if (me_opt(iopt)%mel%fhand%unit.gt.0.and.nroots.gt.1) then
+! copy this root so that we may home in on it later
           if (nopt.ne.1) call quit(1,i_am,
      &         'homing in available only for one opt. vector yet')
           home_in = .true.
           allocate(me_home(1),ffhome(1))
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &         .and.nspecial.ge.3) then
-             me_pnt => me_special(1)%mel
+            me_pnt => me_special(1)%mel
           elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-             me_pnt => me_special(4)%mel
+            me_pnt => me_special(4)%mel
           else
-             me_pnt => me_opt(iopt)%mel
+            me_pnt => me_opt(iopt)%mel
           end if
-
-
-          call define_me_list('home',me_opt(iopt)%mel%op%name,
-     &         me_pnt%absym,me_pnt%casym,
-     &         me_pnt%gamt,me_pnt%s2,
-     &         me_pnt%mst,.false.,
-     &         -1,1,1,0,0,0,
-     &         op_info,orb_info,str_info,strmap_info)
-          idxmel = idx_mel_list('home',op_info)
-          me_home(1)%mel   => op_info%mel_arr(idxmel)%mel
-          ffhome(1)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          
+          fname = "home"
+          me_home(1)%mel => me_from_template(
+     &         fname, me_opt(iopt)%mel%op%name,me_pnt,
+     &         1,
+     &         op_info,  orb_info, str_info, strmap_info)
+          ffhome(1)%fhand => me_home(1)%mel%fhand
+          call file_open(me_home(1)%mel%fhand)
           call assign_me_list(me_trv(iopt)%mel%label,
-     &                        me_opt(iopt)%mel%op%name,op_info)
-          call file_open(ffhome(1)%fhand)
+     &         me_opt(iopt)%mel%op%name,op_info)
+          
           call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
-c dbg
-c          print *,'preparing for homing in later. Saved vector:'
-c          call wrt_mel_file(lulog,5,
-c     &         me_home(1)%mel,
-c     &         1,me_trv(iopt)%mel%op%n_occ_cls,
-c     &         str_info,orb_info)
-c dbgend
-        else if (ffopt(iopt)%fhand%unit.le.0) then
-          call file_open(ffopt(iopt)%fhand)
         end if
+        call file_ensure_open(me_opt(iopt)%mel%fhand)
         call file_ensure_open(me_scr(iopt)%mel%fhand)
         call file_ensure_open(me_trv(iopt)%mel%fhand)
-        ! open corresponding matrix vector products ...
+! open corresponding matrix vector products ...
         call file_ensure_open(me_mvp(iopt)%mel%fhand)
         call file_ensure_open(me_mvort(iopt)%mel%fhand)
         call file_ensure_open(me_metort(iopt)%mel%fhand)
@@ -460,16 +449,13 @@ c dbgend
       if (init) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
-          if (ffopt(iopt)%fhand%unit.le.0) then
-            call file_open(ffopt(iopt)%fhand)
-          endif
-          inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
+          call file_ensure_open(me_opt(iopt)%mel%fhand)
+          inquire(file=trim(me_opt(iopt)%mel%fhand%name),exist=restart)
           if (.not.restart) call warn(i_am,
      &         'No amplitude file found for restart! Setting to zero.')
           if (restart) then
             write(lulog,'(x,a,i1,a)')
-     &         'Using old amplitude file for vector ',iopt,'!'
-!           if(iopt.eq.1) call zeroop(me_opt(iopt)%mel)
+     &           'Using old amplitude file for vector ',iopt,'!'
             do iroot = 1, nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
               call switch_mel_record(me_opt(iopt)%mel,iroot)
@@ -495,23 +481,24 @@ c dbgend
         iroot = 1
         trial_gen_loop: do while(iroot .le.nroots)
         
-          do iopt = 1,nopt
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call touch_file_rec(me_trv(iopt)%mel%fhand)
-          end do
-          print *, "iroot outside0",iroot,nroots
-          if (.not.generate_guess(guess_gen, me_vort,
-     &         iopt,nopt,choice_opt))
-     &         call quit(1,i_am,
-     &         'Could not find enough guess vectors')
-          if (trafo(iopt))then
-            call transform_back_wrap(fl_mvp,depend,
-     &           me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
-     &           trf_nrm,
-     &           iopt,nspecial,
-     &           me_trv(iopt)%mel,
-     &           op_info, str_info, strmap_info, orb_info, opti_info)
+        do iopt = 1,nopt
+          call switch_mel_record(me_vort(iopt)%mel,iroot)
+          call zeroop(me_trv(iopt)%mel)
+          call switch_mel_record(me_trv(iopt)%mel,iroot)
+          call touch_file_rec(me_trv(iopt)%mel%fhand)
+          call zeroop(me_trv(iopt)%mel)
+        end do
+        if (.not.generate_guess(guess_gen, me_vort,
+     &       iopt,nopt,choice_opt))
+     &       call quit(1,i_am,
+     &       'Could not find enough guess vectors')
+        if (trafo(iopt))then
+          call transform_back_wrap(fl_mvp,depend,
+     &         me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
+     &         trf_nrm,
+     &         iopt,nspecial,
+     &         me_trv(iopt)%mel,
+     &         op_info, str_info, strmap_info, orb_info, opti_info)
 ! guess vectors of wrong spin symmetry and twinned guess vectors will be discarded
             if (should_discard_vector_h(trf_nrm, nopt,nroots,
      &           iroot,xnrm2,me_trv, opti_info) )then
@@ -595,7 +582,7 @@ c dbgend
      &                irequest)
 
               ! enforce MS-combination symmetry of trial vectors
-              ! (if requested)
+! (if requested)
                  if (me_trv(iopt)%mel%absym.ne.0) 
      &                call sym_ab_list(
      &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
@@ -750,8 +737,6 @@ c dbg
 
 
 c        ! solution vector has been updated (if we had some iteration)
-c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
-! solution vector has been updated
 
         call touch_file_rec(me_opt(iopt)%mel%fhand)
 
@@ -763,8 +748,8 @@ c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
            ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
            xresmax = 0d0
            do iroot = 1, nroots
-              xoverlap(iroot) = da_ddot(ffhome(1)%fhand,1,
-     &                                ffopt(iopt)%fhand,iroot,
+              xoverlap(iroot) = da_ddot(me_home(1)%mel%fhand,1,
+     &                                me_opt(iopt)%mel%fhand,iroot,
      &                                opti_info%nwfpar(iopt),
      &                                xbuf1,xbuf2,
      &                                opti_info%nwfpar(iopt))
@@ -1409,7 +1394,6 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
          check_last_guess_h = .true.
          return
       end if  
-      print *, iroot
       ifree = mem_setmark('init_guess.check_guess')
       ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &     'xbuf1')

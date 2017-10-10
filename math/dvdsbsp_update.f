@@ -92,8 +92,7 @@
  
 
 
-      dvdsbsp%lcursub=
-     &     mod(dvdsbsp%lcursub,dvdsbsp%nmaxsub)+1
+
       nnew=0
       if (nincore.ge.2)then
          do irec=1,nrec
@@ -237,6 +236,8 @@
          ivec = mod(dvdsbsp%ncursub,
      &        dvdsbsp%nmaxsub)+1
          dvdsbsp%ncursub=ivec
+         dvdsbsp%lcursub=
+     &        mod(dvdsbsp%lcursub,dvdsbsp%nmaxsub)+1
          do ilist=1,nlists
             irec= me_vlists(ilist)%mel%fhand%current_record
             lenlist= me_vlists(ilist)%mel%len_op

@@ -105,8 +105,6 @@
 
       real(8)::
      &     xnrm , xdummy               !temporary variable for some norms
-      integer,external::
-     &     dvdsbsp_get_nnew_vvec
       real(8)::
      &     lrsnrm(nroot,nopt), ! local copy of xrsnrm
      &     leig(nroot) !local variable for eigenvalues
@@ -135,8 +133,8 @@
      &     "only linear depended new directions generated")
 
       if (nroot.gt. dvdsbsp_get_nfree(dvdsbsp) )then
-         call quit(0,i_am,
-     &        "subspace compression doesn't work at the moment")
+!         call quit(0,i_am,
+!     &        "subspace compression doesn't work at the moment")
          call dvdsbsp_compress(dvdsbsp, nroot,
      &        nopt, me_scr,     !scr as scratch
      &        xbuf1, xbuf2, lenbuf ,nincore)

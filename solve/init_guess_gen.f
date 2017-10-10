@@ -18,7 +18,7 @@
       type(guess_generator),intent(out)::
      &     guess_gen
       integer,parameter::
-     &     ntest = 1000
+     &     ntest = 000
       integer,intent(in)::
      &     maxtrials, nopt
       type(me_list_array)::
@@ -39,14 +39,12 @@
       type(strmapinf), intent(in) ::
      &     strmap_info
 
-      print *, "initializing guess_gen"
       
       allocate(guess_gen%idxlist_all(2,maxtrials),
      &     guess_gen%idxlist_ba(maxtrials))
       allocate(idxlist(maxtrials,nopt))
       allocate(xlist(maxtrials,nopt),xlist_all(maxtrials))
 
-      print *, "allocated"
       do iopt = 1,nopt
         call find_nmin_list(xlist(1:maxtrials,iopt),
      &       idxlist(1:maxtrials,iopt),
@@ -113,7 +111,6 @@
      &     iopt, idx, iguess
       integer,pointer::
      &     idxscr(:)
-      print *, "creating inverted spin_indexlist"
 
       allocate(idxscr(maxtrials))
       do iopt = 1, nopt
@@ -157,7 +154,7 @@
       character(*),parameter::
      &     i_am = "generate_guess"
       integer,parameter::
-     &     ntest=1000
+     &     ntest=000
       
       type(guess_generator),intent(inout)::
      &     guess_gen
@@ -191,7 +188,6 @@
      &     guess_gen%idxlist_ba,
      &     guess_gen%iguess,
      &     guess_gen%ntrials_all) )
-        print *, iopt,guess_gen%iguess
         if (guess_gen%iguess.ge.guess_gen%ntrials_all)then
           generate_guess = .false.
           return
