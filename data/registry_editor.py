@@ -260,8 +260,8 @@ def _update_promt():
     _set_promt(_registry.get_curContext())
 
 def _set_promt(context_list):
-    sys.ps1=".".join(context_list)+">" if (len(context_list) >0) else ">" 
-    sys.ps2="."*(len(sys.ps1)-0)+">"
+    sys.ps1=".".join(context_list)+"> " if (len(context_list) >0) else "> "
+    sys.ps2="."*(len(sys.ps1)-0)+"> "
 
 
 def load(file):
