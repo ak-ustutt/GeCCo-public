@@ -138,10 +138,11 @@ c          print *,'after check = ',isep
 c dbg
         end if
 
-        ! remove closing quote, if necessary:
-        if (cmp_ch_list(line(iend:iend),qu_list,nqu))
-     &      iend = iend-1
-
+! remove closing quote, if necessary:
+        if (iend.gt.0)then
+           if (cmp_ch_list(line(iend:iend),qu_list,nqu))
+     &          iend = iend-1
+           end if 
 c dbg
 c        print *,'iend = ',iend
 c        print *,'call to new_word_list_entry'

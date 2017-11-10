@@ -61,7 +61,7 @@ if (useT1):
 #-----------------------------------------------------------------#
 
 new_target('DEF_T2g')
-comment('=== Cluster Operators ===')
+comment('Cluster Operators')
 
 
 DEF_OP_FROM_OCC({
@@ -112,7 +112,7 @@ debug_MEL('ME_T1',info_only=True)
 
 
 new_target('DEF_O2g')
-comment('=== Residue Operators ===')
+comment('Residue Operators')
 
 DEF_OP_FROM_OCC({
         LABEL:'O2g',
@@ -162,7 +162,7 @@ debug_MEL('ME_O1',info_only=True)
 
 
 new_target('DEF_LAM2g')
-comment('=== Lambda Operators ===')
+comment('Lambda Operators')
 depend('DEF_T2g')
 
 
@@ -189,7 +189,7 @@ debug_MEL('ME_LAM2g',info_only=True)
 
 
 new_target('DEF_LAM1')
-comment('=== Lambda Operators ===')
+comment('Lambda Operators')
 depend('DEF_T1')
 
 CLONE_OPERATOR({

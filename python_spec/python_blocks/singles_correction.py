@@ -13,7 +13,7 @@ gecco_input = GeCCo_Input()
 print_level = 0
 alt_res_en = gecco_input.get('method.R12.SC.en_from_res')
 
-# Check a sequence of stuffs needed for singles correction
+# Check a sequence of things needed for singles correction
 # Maybe turn on the necessary stuffs automaticaly?
 if ( not( gecco_input.is_keyword_set('calculate.skip_E'))):
     quit_error('Use "calculate skip_E" for singles correction.')

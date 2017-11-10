@@ -10,6 +10,7 @@
 
       include 'stdunit.h'
       include 'routes.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -22,15 +23,20 @@
 
       real(8) ::
      &     singval(min(nrow,ncol)),
-     &     wrk(max(1024,max(nrow,ncol)**2)),dum1,dum2
+     &     dum1,dum2
+      real(8),pointer ::
+     &      wrk(:)
       integer ::
-     &     idx, lwrk, info
+     &     idx, lwrk, info,
+     &     ifree
 
       if (nrow*ncol.eq.0) return
       if (nrow.lt.ncol) call quit(1,'svd_get_left',
      &       'not yet tested for nrow < ncol')
 
+      ifree = mem_setmark('svd_get_left')
       lwrk=max(1024,max(nrow,ncol)**2)
+      ifree = mem_alloc_real(wrk, lwrk,'wrk')
       info = 0
 
       if (ntest.ge.100) then
@@ -68,6 +74,8 @@
           end if
         end if
       end do
+      ifree = mem_flushmark()
+
 
       return
       end

@@ -5,7 +5,11 @@ c
 c     adapted from jeppe olsen's diavc2
 c
       implicit none
-
+      include 'stdunit.h'
+      character(len=*),parameter::
+     &     i_am="diavc"
+      integer,parameter::
+     &     ntest=00
       real(8), parameter ::
      &     thresh = 1d-10 
 
@@ -21,6 +25,9 @@ c
       real(8) ::
      &     divide
 
+      if (ntest.ge.10)then
+         write(lulog,*) "thresh, shift",thresh,shift
+      end if
       do i=1,ndim
         divide=diag(i)+shift
         if(abs(divide).le.thresh) divide=thresh

@@ -15,6 +15,7 @@
       include 'stdunit.h'
       include 'routes.h'
       include 'def_filinf.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -25,21 +26,27 @@
       real(8), intent(inout), target ::
      &     mat(ndim,ndim), mat2(ndim,ndim), xmax, xmin
       real(8) ::
-     &     dum1, cur_sv, singval(ndim), vt(ndim,ndim),
-     &     wrk(max(1024,ndim**2))
+     &     dum1, cur_sv, singval(ndim), vt(ndim,ndim)
+      real(8), pointer::
+     &     wrk(:)
 
       type(filinf) ::
      &     ffsv
       integer ::
-     &     idx, info, idx2, luinp, iostatus, lwrk
+     &     idx, info, idx2, luinp, iostatus, lwrk, ifree
       logical ::
      &     l_exist, sv_above, read_file, symmetrize
-
+      
       if (ndim.eq.0) return
+      
+      ifree = mem_setmark('mat_svd_traf')
 
       info = 0
       lwrk = max(1024,ndim**2)
-
+      ifree = mem_alloc_real(wrk, lwrk,'wrk')
+      
+      
+      
       if (jac_fix) then
         inquire(file='SINGVALS2',exist=l_exist)
         call file_init(ffsv,'SINGVALS2',ftyp_sq_frm,0)
@@ -192,6 +199,8 @@ c      end do
       end if
 
       if (jac_fix) call file_close_keep(ffsv)
+      
+      ifree = mem_flushmark()
 
       return
       end

@@ -79,6 +79,8 @@
 
       character(100) ::
      &     label_title
+      character(25) ::
+     &     methods_name
 
       character(len_target_name), external ::
      &     state_label
@@ -242,6 +244,19 @@
       end if
 
       call get_environment_variable( "GECCO_DIR", value=gecco_path)
+
+      ! Set a proper method's name to push results back to the caller
+      if (maxexc == 2) then
+        methods_name = 'icMRCCSD'
+      elseif (maxexc == 3 .and. Tfix == 2 .and. t1ord == 2) then
+        methods_name = 'icMRCCSD(T)'
+      elseif (maxexc == 3) then
+        methods_name = 'icMRCCSDT'
+      elseif (maxexc == 4) then
+        methods_name = 'icMRCCSDTQ'
+      else
+        methods_name = 'icMRCC'
+      endif
 
       if (x_ansatz.ne.0.5d0.and.x_ansatz.ne.0d0.and.abs(x_ansatz).ne.1d0
      &    .and.x_ansatz.ne.-2d0.and.x_ansatz.ne.-3d0
@@ -5741,6 +5756,7 @@ c dbgend
 
       ! Solve MR coupled cluster equations
       call add_target2('SOLVE_MRCC',solve,tgt_info)
+      call set_dependency('SOLVE_MRCC','EVAL_E_REF',tgt_info)
       call set_dependency('SOLVE_MRCC','EVAL_REF_S(S+1)',tgt_info)
       call set_dependency('SOLVE_MRCC','FOPT_OMG',tgt_info)
       call me_list_label(dia_label,mel_dia,1,0,0,0,.false.)
@@ -6259,9 +6275,16 @@ c dbgend
      &       val_str='SCAL F20.12')
         call set_rule2('SOLVE_MRCC',PUSH_RESULT,tgt_info)
         call set_arg('SOLVE_MRCC',PUSH_RESULT,'LIST',1,tgt_info,
+     &       val_label=(/'ME_E_REF'/))
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'COMMENT',1,tgt_info,
+     &       val_str='Reference')
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'FORMAT',1,tgt_info,
+     &       val_str='SCAL F24.14')
+        call set_rule2('SOLVE_MRCC',PUSH_RESULT,tgt_info)
+        call set_arg('SOLVE_MRCC',PUSH_RESULT,'LIST',1,tgt_info,
      &       val_label=(/'ME_E(MR)'/))
         call set_arg('SOLVE_MRCC',PUSH_RESULT,'COMMENT',1,tgt_info,
-     &       val_str='icMRCC')
+     &       val_str=trim(methods_name))
         call set_arg('SOLVE_MRCC',PUSH_RESULT,'FORMAT',1,tgt_info,
      &       val_str='SCAL F24.14')
       end if
@@ -6565,7 +6588,7 @@ c     &               tgt_info,val_label=(/'ME_OMG'/))
       call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'LIST',1,tgt_info,
      &     val_label=(/'ME_E(MR)'/))
       call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'COMMENT',1,tgt_info,
-     &     val_str='icMRCC+PT')
+     &     val_str=methods_name)
       call set_arg('EVAL_PERT_CORR',PUSH_RESULT,'FORMAT',1,tgt_info,
      &     val_str='SCAL F24.14')
 

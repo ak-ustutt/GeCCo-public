@@ -38,6 +38,8 @@
         fhand%reclen = -1
       end if
       fhand%buffered = .false.  ! default behaviour
+      fhand%nbuffer=0
+
       fhand%recoff_superfile = 0 ! unused
       fhand%length_of_record = 0 ! super-records, init to zero
       fhand%current_record = 1   ! current super-record settings:

@@ -2,12 +2,16 @@ from python_interface.gecco_interface import *
 from get_response_data import _response_data
 from set_mrcc_response_targets import relax_ref
 
+_triplet = _response_data['triplet']
 _inp = GeCCo_Input()
 
 # Get the name of the package GeCCo uses the integrals from 
 _env = _inp.env
 
-absym_dens = -1.0
+if (_triplet):
+    absym_dens = -1.0
+else:
+    absym_dens = 1.0
 
 # Get the restart option to skip the calculation of lower order response properties
 _restart=_response_data['restart']
@@ -102,6 +106,9 @@ depend('EVAL_DENS_0')
 _eval_prop_args={}
 _eval_prop_args[DENS]='ME_DENS_0'
 _eval_prop_args[RANK]=1
-_eval_prop_args[TRIPLET]=True
+if (_triplet):
+    _eval_prop_args[TRIPLET]=True
+else:
+    _eval_prop_args[TRIPLET]=False
 
 EVAL_PROP(_eval_prop_args)

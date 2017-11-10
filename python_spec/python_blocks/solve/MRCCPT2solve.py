@@ -8,6 +8,7 @@ from python_interface.gecco_modules.NoticeUtil import *
 #------------------------------------------------------------------
 
 new_target('SOLVE_MRCCPT2')
+depend('EVAL_E0')
 depend('DEF_FORM_PT_LAG')
 depend('BUILD_PRECON')
 

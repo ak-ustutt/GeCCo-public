@@ -31,7 +31,7 @@
       real(8) ::
      &     ecore
       integer :: 
-     &     nirr, nel, isym, mult, mem_ext,
+     &     nirr, nel, isym, mult, mem_ext, istate, refstate,
      &     norbs(8), nocc(8), ncore(8),
      &     nclosed(8)
       integer ::
@@ -39,7 +39,7 @@
       logical ::
      &     error, rd_intfile, rd_nirr, rd_nel, rd_sym, rd_mult,
      &     rd_norbs, rd_nocc, rd_ncore, rd_closed, !rd_irrtyp
-     &     rd_ecore
+     &     rd_ecore, rd_istate, rd_refstate
 
 
       iprint = max(iprlvl,ntest)
@@ -67,6 +67,8 @@
       rd_nirr = .false.
       rd_nel = .false.
       rd_sym = .false.
+      rd_istate = .false.
+      rd_refstate = .false.
       rd_mult = .false.
       rd_norbs = .false.
       rd_nocc = .false.
@@ -98,6 +100,12 @@
         case('refsym')
           read (line(idelim+1:),*) isym
           rd_sym = .true.
+        case('istate') ! TODO: set ciroot to istate
+          read (line(idelim+1:),*) istate
+          rd_istate = .true.
+        case('refstate') ! TODO: set maxroot to refstate
+          read (line(idelim+1:),*) refstate
+          rd_refstate = .true.
         case('refmult')
           read (line(idelim+1:),*) mult
           rd_mult = .true.
@@ -152,6 +160,14 @@
       end if
       if (.not.rd_sym) then
         write(lulog,*) 'Could not read reference state IRREP'
+        error = .true.
+      end if
+      if (.not.rd_istate) then
+        write(lulog,*) 'Could not read istate'
+        error = .true.
+      end if
+      if (.not.rd_refstate) then
+        write(lulog,*) 'Could not read refstate'
         error = .true.
       end if
       if (.not.rd_mult) then
@@ -211,7 +227,7 @@
       orb_info%nsym = nirr
       orb_info%ngas = ngas 
       orb_info%nspin = 1    ! no UHF
- 
+
       orb_info%nbast = sum(norbs(1:nirr))
       orb_info%ntoob = sum(norbs(1:nirr))
       orb_info%lsym  = isym

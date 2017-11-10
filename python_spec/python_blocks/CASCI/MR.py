@@ -6,41 +6,40 @@ from python_interface.gecco_modules.NoticeUtil import *
 
 
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt = keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 
-ciroot=1
-if keywords.is_keyword_set('method.MR_P.ciroot'):
-    ciroot=int(keywords.get('method.MR_P.ciroot'))
-print "ciroot: "+str(ciroot)
+ciroot=keywords.get('method.MR_P.ciroot')
+ciroot = int(ciroot) if ciroot is not None else 1
 
+maxroots = keywords.get('method.MR_P.maxroot')
+maxroots = int(maxroots) if maxroots is not None else ciroot
 
-maxroots=ciroot
-if keywords.is_keyword_set('method.MR_P.maxroot'):
-    maxroots=int(keywords.get('method.MR_P.maxroot'))
-print "maxroot: "+str(maxroots)
 ###################################################################
 # ---- solve for reference state
 ###################################################################
+
+
+
+
 new_target('MakeRefState')
 if spinadapt > 0:
     depend('SpinProjSpec')
 depend('RefState-Operators')
-depend('H0')
+depend('MAKE_D0')
 
 
 heading('Preparing equations ...')
 # Formula for Eigenvalue-Problem 
 #E0=<|C0^+*H*C0|>
-#dE0/dC0^+
-#H_C0=H*C0         <= E0*C0=H*C0
+#dE0/dC0^+ :       H_C0=H*C0   <= E0*C0=H*C0
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_EREF',
         NEW:True,
         OP_RES:'E0',
         OPERATORS:['C0^+','H','C0'],
         IDX_SV:[1,2,3]})
+
 DERIVATIVE({
         LABEL_RES:'FORM_H_C0',
         LABEL_IN:'FORM_EREF',
@@ -52,29 +51,23 @@ DERIVATIVE({
 OPTIMIZE({
         LABEL_OPT:'FOPT_H_C0',
         LABELS_IN:'FORM_H_C0'})
-comment('Prepare diagonal ...')
-PRECONDITIONER({
-        LIST_PRC:'D0_LST',
-        LIST_INP:'H0',
-        MODE:'dia-H'})
-
 
 comment('Solving equations ...')
 
 SOLVE_map={
-        LIST_OPT:'C0_LST',
-        LIST_PRC:'D0_LST',
+        LIST_OPT:'ME_C0',
+        LIST_PRC:'ME_D0',
         OP_MVP:'H_C0',
         OP_SVP:'C0',
         FORM:'FOPT_H_C0',
         MODE:'DIA',
         N_ROOTS:maxroots,
-        TARG_ROOT:ciroot
+        TARG_ROOT:ciroot,
 }
 
 if (spinadapt != 0): #and refproj = 0  
     SOLVE_map[MODE]='SPP' #'DIA' will be overwritten
-    SOLVE_map[LIST_SPC]='C0_sp_LST'
+    SOLVE_map[LIST_SPC]='ME_C0_sp'
     SOLVE_map[FORM_SPC]='FOPT_C0_sp'
 
 elif False: # ref_proj !=0
@@ -87,8 +80,7 @@ SOLVE_EVP(SOLVE_map)
 
 
 
-
-new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
+new_target("FOPT_GAM0")
 depend('MakeRefState')
 depend('RefState-Operators')
 # Formula for Densities
@@ -111,6 +103,9 @@ OPTIMIZE({
         LABELS_IN:'FORM_GAM0'})
 PRINT({
         STRING:'Setup densities up to 3rd order'})
+
+new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
+depend("FOPT_GAM0")
 EVALUATE({
         FORM:'FOPT_GAM0'})
 
@@ -125,4 +120,5 @@ OPTIMIZE({
 EVALUATE({
         FORM:'FOPT_EREF'})
 
-
+PRINT_MEL({LIST:'ME_E0',COMMENT:'Reference energy',FORMAT:'SCAL F24.14'})
+PUSH_RESULT({LIST:'ME_E0',COMMENT:"Reference", FORMAT:"SCAL F24.14"})

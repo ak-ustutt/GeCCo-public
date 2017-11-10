@@ -28,6 +28,11 @@
       write(luout,'(2x,47("-"))')
       write(luout,'(3x,"Operator:  ",a)') trim(mel%op%name)
       write(luout,'(3x,"List:      ",a)') trim(mel%label)
+      if(associated(mel%fhand))then
+        write(luout,'(3x,"Active_record: ",I3)')mel%fhand%current_record
+      else
+        write(luout,'(3x,"No file associated")')
+      end if
       write(luout,'(2x,47("-"))')
       do iblk = 1, nblk
         idxblk = (iblk-1)*nj+1

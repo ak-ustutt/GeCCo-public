@@ -15,9 +15,12 @@
       include 'stdunit.h'
       include 'routes.h'
       include 'def_filinf.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
+      character(len=*),parameter::
+     &     i_am="invsqrt_mat"
       real(8), parameter ::
      &     warn_sv = 1d-12!5  ! give a warning for small singular values
       integer, intent(in) ::
@@ -31,22 +34,26 @@
       logical, intent(in) ::
      &     half, get_u
       real(8) ::
-     &     wrk(max(1024,ndim**2)),dum1,dum2,expo
+     &     dum1,dum2,expo
       real(8), pointer ::
-     &     mat_tmp(:,:)
+     &     mat_tmp(:,:),mat_tmpv(:),  !mat_tmpv is only a handler for the mat_tmp memory as memman can only allocate one dimensional vectors
+     &     wrk(:)
 
       type(filinf) ::
      &     ffsv
       integer ::
-     &     idx, lwrk, info, idx2, luinp, iostatus
+     &     idx, lwrk, info, idx2, luinp, iostatus,
+     &     ifree
       logical ::
      &     l_exist, sv_above, read_file
 
       if (ndim.eq.0) return
-
-      lwrk=max(1024,ndim**2)
+      
       info = 0
-
+      lwrk=max(1024,ndim**2)
+      ifree = mem_setmark('invsqrt_mat')
+      ifree = mem_alloc_real(wrk, lwrk,'wrk')
+      
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
         call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)
@@ -104,13 +111,15 @@ c      call svd_drv(ndim,mat,singval)
 
       if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
 
-c      icnt_sv = icnt_sv + ndim
-
 c      if (half) then
 c        mat_tmp => mat
        expo = -0.5d0
 c      else
-       if (.not.half) allocate(mat_tmp(ndim,ndim))
+       
+       if (.not.half) then
+          ifree = mem_alloc_real(mat_tmpv,ndim*ndim,'mat_tmp')
+          mat_tmp(1:ndim, 1:ndim) => mat_tmpv
+       end if
 cmh        expo = -0.25d0
 c        expo = 0d0  ! to obtain matrix to project out lin. dep.
 c      end if
@@ -142,7 +151,7 @@ c      end if
      &         call warn('invsqrt_mat','small singular values!')
           if (.not.half) mat_tmp(1:ndim,idx) = mat(1:ndim,idx)
 c dbg
-c          if (get_u) umat(1:ndim,idx) = mat(1:ndim,idx)
+          if (get_u) umat(1:ndim,idx) = mat(1:ndim,idx)
 c dbgend
           mat(1:ndim,idx) = mat(1:ndim,idx)
      &                         * (singval(idx)**expo)
@@ -151,7 +160,7 @@ c dbgend
           icnt_sv0 = icnt_sv0 + 1
           if (abs(singval(idx)).gt.abs(xmax)) xmax = singval(idx)
 c dbg
-c          if (get_u) umat(1:ndim,idx) = 0d0
+          if (get_u) umat(1:ndim,idx) = 0d0
 c dbgend
           mat(1:ndim,idx) = 0d0
           if (.not.half) mat_tmp(1:ndim,idx) = 0d0
@@ -170,13 +179,16 @@ c dbgend
         call dgemm('n','t',ndim,ndim,ndim,
      &             1d0,mat_tmp,ndim,
      &                 mat_tmp,ndim,
-     &             0d0,mat2,ndim)
-        deallocate(mat_tmp)
+     &        0d0,mat2,ndim)
+        mat_tmp => null() ! mat_tmpv is automatically deallocated at flushmark.
         if (ntest.ge.100) then
           write(lulog,*) 'U*1s*U^+ projector:'
           call wrtmat3(mat2,ndim,ndim,ndim,ndim)
         end if
       end if
+      
+!      if (get_u) umat(1:ndim,1:ndim) = mat(1:ndim,1:ndim)
+      
 c dbg  can be used to set 1
 c      mat(1:ndim,1:ndim) = 0d0
 c      do idx = 1, ndim
@@ -186,5 +198,7 @@ c dbgend
 
       if (sv_fix) call file_close_keep(ffsv)
 
+      ifree = mem_flushmark()
       return
+      contains
       end

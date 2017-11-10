@@ -2,15 +2,19 @@
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import * 
 
+i_am='seq_orthogonalization'
 
-spinadapt=0
-if keywords.is_keyword_set('calculate.routes.spinadapt'):
-    spinadapt=int(keywords.get('calculate.routes.spinadapt'))
+spinadapt = keywords.get('calculate.routes.spinadapt')
+spinadapt = int(spinadapt) if spinadapt is not None else 0
 ntest=100
 
-minexc=1
-if keywords.is_keyword_set('method.MR.minexc'):
-  minexc=int(keywords.get('method.MR.minexc'))
+minexc= keywords.get('method.MR.minexc')
+minexc = int(minexc) if minexc is not None else 1
+
+maxexc= keywords.get('method.MR.maxexc')
+maxexc = int(maxexc) if maxexc is not None else 1
+
+
 if (minexc==1):
   _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'
   _Ov_shape=',;V,H|,V;P,|,;P,H|,VV;PP,|,V;PV,H|,;VV,HH|,VV;PV,|,V;VV,H'
@@ -25,6 +29,7 @@ else:
   useT1=False
 
 
+  
 _s2 = orbitals.get('imult')
 
 _ms = orbitals.get('ims')
@@ -177,7 +182,7 @@ debug_FORM('FORM_GAM_S')
 comment('Evaluate effective densities for overlap ...')
 OPTIMIZE({
         LABEL_OPT:'FOPT_GAM_S',
-        LABELS_IN:'FORM_GAM_S'})
+        LABELS_IN:['FORM_GAM_S',"FORM_GAM0"]})
 
 EVALUATE({
         FORM:'FOPT_GAM_S'})
@@ -193,11 +198,12 @@ if False : # (gno >= 0 and l_iccc)
             })    
 
 
-# SVD
+# Singular value decomposition
+# does this overwrite ME_GAM_S ? yes it does! ME_GAM_S is now the projector
 INVERT({
         LIST_INV:'ME_GAM_S',
         LIST:'ME_GAM_S_ISQ',
-        MODE:'invsqrt'})
+        MODE:'invsqrt'}) 
 
 debug_MEL('ME_GAM_S_ISQ')
 
@@ -223,7 +229,6 @@ DEF_ME_LIST({
         AB_SYM:0,
         CA_SYM:0})
 
-#SET_MEL({LIST:'X_TRM_LIST',IDX_LIST:1,VAL_LIST:0.0})
 
 DEF_ME_LIST({LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM_DAG',
@@ -236,6 +241,10 @@ REORDER_MEL({
         LIST_RES:'ME_X_TRM',
         LIST_IN:'ME_GAM_S_ISQ',
         FROMTO: 13})
+
+
+
+
 #IMPORTANT: transposes on the input list. 
 REORDER_MEL({
         LIST_RES:'ME_X_TRM_DAG',
@@ -249,6 +258,23 @@ debug_MEL('ME_X_TRM')
 
 
 
+CLONE_OPERATOR({
+        LABEL:'P_PROJ',
+        TEMPLATE:'X_TRM'})
+
+DEF_ME_LIST({
+        LIST:'ME_P_PROJ',
+        OPERATOR:'P_PROJ',
+        IRREP:1,
+        '2MS':0,
+        S2:0,
+        AB_SYM:0,
+        CA_SYM:0})
+REORDER_MEL({
+        LIST_RES:'ME_P_PROJ',
+        LIST_IN:'ME_GAM_S',
+        FROMTO:13
+})
 
 
 # Transformation Formula for Excitation operators (OMEGA and T2_orth are 
@@ -354,6 +380,5 @@ if (useT1):
 OPTIMIZE({
         LABEL_OPT:'FOPT_GES',
         LABELS_IN:['FORM_T2_orth']})
-#        LABELS_IN:['FORM_T1_orth','FORM_T2_orth']})
 
 

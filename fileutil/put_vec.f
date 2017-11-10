@@ -13,6 +13,8 @@
       include 'def_filinf.h'
       include 'stdunit.h'
 
+      integer,parameter::
+     &     ntest=00
       type(filinf), intent(in) ::
      &     fhand
       real(8), intent(in) ::
@@ -29,7 +31,12 @@
      &     recbuf(:)
 *----------------------------------------------------------------------*
 
-      ! do not use structure elements directly
+!     do not use structure elements directly
+
+      if(ntest.ge.20)then
+         write (lulog,'(1X,"depositing on file ",A20)')fhand%name
+      end if
+
       un = fhand%unit
       lenr = fhand%reclen
 

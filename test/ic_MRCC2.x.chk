@@ -1,5 +1,5 @@
 title
-  B/STO-3G; MOLPRO env.: ic-MRCC2 quadratic; w. spinadapt; DYALL
+  B/cc-pVTZ; MOLPRO env.: ic-MRCC2 quadratic; w. spinadapt; DYALL
 molecule
   B-MRCC2-MOLPRO
 input

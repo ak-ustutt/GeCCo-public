@@ -1,41 +1,56 @@
-#single entry file for all methods implemented by Arne Bargholz
+#single entry file 
 
 import sys,os
+import traceback
+
 sys.path=[os.getenv("GECCO_DIR")]+sys.path
 from python_interface.gecco_interface import *
 
+print ("-"*50+"\npython_start")
 
-print( "python start"+"-"*50)
+new_target("do_all",True)
 
-new_target("do all",True)
+try:
 
-print keywords.data
+    if ( keywords.is_keyword_set("method.MR_P") ) :
+        print "setting MR python code"
+        import python_blocks.MR_P
 
-if ( keywords.is_keyword_set("method.MR_P") ) :
-    print "setting MR python code"
-    import python_blocks.MR_P
+    if ( keywords.is_keyword_set("method.MRCC2") ):
+        print "begin setting MRCC2 targets"
+        import python_blocks.MRCC2
 
-if ( keywords.is_keyword_set("method.MRCC2") ):
-    print "begin setting MRCC2 targets"
-    import python_blocks.MRCC2
+    if ( keywords.is_keyword_set("method.MRCCPT2") ):
+        print "begin setting MRCCPT2 targets"
+        import python_blocks.MRCCPT2
 
-if ( keywords.is_keyword_set("method.MRCCPT2") ):
-    print "begin setting MRCCPT2 targets"
-    import python_blocks.MRCCPT2
+    if ( keywords.is_keyword_set("method.unit_test") ):
+        print "begin setting unit-test targets"
+        import python_blocks.unit_test
 
-if ( keywords.is_keyword_set("method.unit_test") ):
-    print "begin setting unit-test targets"
-    import python_blocks.unit_test
-    
-if ( keywords.is_keyword_set("method.MRCC2.excite")) : 
-    print "begin setting MRCC2 response targets"
-    import python_blocks.response
+    if ( keywords.is_keyword_set("method.MRCC2.excite")):
+        print "begin setting MRCC2 response targets"
+        import python_blocks.response
 
-if ( keywords.is_keyword_set("method.R12.SC")) :
-    print "begin setting SC targets"
-    import python_blocks.singles_correction
+    if ( keywords.is_keyword_set("method.R12.SC")) :
+        print "begin setting SC targets"
+        import python_blocks.singles_correction
 
+    print ("end of python_start\n"+"-"*50)
 
-export_targets();
+except Exception as ex:
 
-print ("python target_setting ends"+"-"*50)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print
+    print 'Exception caught in python_start:'
+    print "  Value: " + str(exc_value)
+    print "  Type:  " + str(exc_type)
+    print "  Traceback:"
+    for tb in traceback.extract_tb(exc_traceback):
+        print "    " + str(tb)
+    print
+    flog.close()
+
+else:
+    export_targets()
+

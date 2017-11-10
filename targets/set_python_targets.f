@@ -15,6 +15,7 @@
 
       include 'stdunit.h'
       include 'mdef_target_info.h'
+      include 'def_filinf.h'
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -27,6 +28,12 @@
      &     file_exists
       integer ::
      &     pos
+      integer ::
+     &     idum, lupylog
+      type(filinf) ::
+     &     ffpylog
+      character(len=256) ::
+     &     line
 
       pos = index(python_file,'/',back=.true.)
       pos = pos+1
@@ -42,12 +49,29 @@ c dbg
 c       write(lulog,*) 'called python to process: ',trim(python_file)
 c dbg
      
+
+c     Echo Python's log
+      inquire(file='log_from_py_'//trim(python_file(pos:)),
+     &     exist=file_exists)
+      if (file_exists) then
+        call file_init(ffpylog,'log_from_py_'//trim(python_file(pos:)),
+     &       ftyp_sq_frm,idum)
+        call file_open(ffpylog)
+        lupylog = ffpylog%unit
+        do
+          read(lupylog,'(a)',err=121,end=123) line
+          write(lulog,'(a)') trim(line)
+        end do
+ 121    call warn(lulog,'Error while reading log file from Python')
+ 123    call file_close_keep(ffpylog)
+      end if
+
       inquire(file=trim(python_file(pos:))//trim(tgt_sufix),
      &     exist=file_exists)
       if (.not.file_exists)
      &     call quit(1,'set_python_targets',
      &     "Target file not generated!")
-  
+
       call get_targets_from_file(tgt_info,
      &     trim(python_file(pos:))//trim(tgt_sufix))
 

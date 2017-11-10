@@ -353,6 +353,20 @@ class Test_Bracket(ut.TestCase):
             '<\nC0^+*H*C0\n+1.0/2.0*C0^+*V*C0\n>'
         )
 
+    def test_Bracket_with_restriction(self):
+        string="<C0^+*(H*T'*T''*T'''*T'''')*C0>"
+        inp={"LABEL":"L",
+             "OP_RES":"L",
+             "NEW":True}
+        exp_res={'OP_RES': 'L', 'OPERATORS': ['C0^+','H','T','T','T','T','C0'], 'LABEL': 'L', 'FAC_INV': 1, 'NEW': True, 'FAC': 1, 'IDX_SV': [1,2,3,4,5,6,7], 'AVOID':[3,5,4,6]}
+        b_with_restr = _Bracket(InputString(string))
+        b_with_restr.avoid("T'","T'''")
+        b_with_restr.avoid("T''","T''''")
+        b_with_restr.set_rule(inp)
+        self.assertEqual(
+            self.logger.events[0],
+            ("EXPAND_OP_PRODUCT",exp_res) )
+
 
         
 if __name__=="__main__":

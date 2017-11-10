@@ -97,7 +97,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
      &     ndim_rsbsp, ndim_vsbsp, ndim_ssbsp,
      &     iord_rsbsp(:), iord_vsbsp(:), iord_ssbsp(:),
      &     nwfpar(:), idxselect(:),
-     &     ipiv(:), iconv(:), idxroot(:)
+     &     ipiv(:), idxroot(:)
       type(file_array), pointer ::
      &     ffrsbsp(:), ffvsbsp(:), ffssbsp(:), ffscr(:), ffmet(:),
      &     ffext(:)
@@ -138,25 +138,11 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffdia(*)
 
       allocate(ffmet(nopt))
 
-c      if (nopt.gt.1)
-c     &     call quit(1,'evpc_core','not yet adapted for nopt>1')
 
-      ! check for previously converged roots
-      ifree = mem_alloc_int(iconv,nopt*nroot,'EVP_conv')
-      idx = 0
-      do iopt = 1, nopt
-        do iroot = 1, nroot
-          idx = idx+1
-          iconv(idx) = 0
-          if (iter.gt.1.and.xrsnrm(iroot,iopt)
-     &              .lt.opti_info%thrgrd(iopt))
-     &         iconv(idx) = 1
-        end do
-      end do
 
       ifree = mem_alloc_int(idxroot,nopt*nroot,'EVP_idxroot')
 
-c      iopt = 1  ! preliminary
+
       if (ndim_vsbsp.ne.ndim_rsbsp)
      &     call quit(1,'evpc_core','subspace dimensions differ?')
 c dbg
