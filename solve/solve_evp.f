@@ -539,11 +539,13 @@ c dbgend
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
 
-c dbg
-c            write(lulog,*) 'input for request: ',irequest
-c            call wrt_mel_file(lulog,5,me_trv(1)%mel,
-c     &           1,me_trv(1)%mel%op%n_occ_cls,
+c dbg   
+c            do iopt = 1, nopt
+c            write(lulog,*) 'input for request, iopt: ',irequest, iopt
+c            call wrt_mel_file(lulog,5,me_trv(iopt)%mel,
+c     &           1,me_trv(iopt)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
+c            end do
 c dbg
 
             call frm_sched(xret,fl_mvp,depend,0,0,

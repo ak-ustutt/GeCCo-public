@@ -70,7 +70,7 @@ c      iprlvl = 3     ! print level
      &     trim(date),trim(host)
       
       ! give information about compilation date etc.
-      if (.not.l_molpro) call printversion(lulog)
+      call printversion(lulog)
 
       ! set internal counter to 0
       event_time = 0

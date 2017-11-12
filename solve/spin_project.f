@@ -73,8 +73,13 @@
       ffspc => me_special%fhand
 
       ab_sym = me_amp%absym
-      if (ab_sym.ne.me_special%absym)
-     &   call quit(1,'spin_project','incompatible absym')
+      if (ab_sym.ne.me_special%absym) then
+        write(lulog,*) 'me_amp     = ',trim(me_amp%label)
+        write(lulog,*) 'me_special = ',trim(me_special%label)
+        write(lulog,*) 'absym from me_amp, me_special:',
+     &                  me_amp%absym,me_special%absym
+        call quit(1,'spin_project','incompatible absym')
+      end if
       if (me_amp%op%njoined.ne.1)
      &   call quit(1,'spin_project','not yet adapted for nj>1')
       mult = orb_info%imult

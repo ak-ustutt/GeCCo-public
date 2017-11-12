@@ -42,6 +42,8 @@
      &     rd_ecore, rd_istate, rd_refstate
 
 
+      if (ntest.ge.10) write(lulog,*) 'entered read_env_molpro'
+ 
       iprint = max(iprlvl,ntest)
 
       call file_init(ffintf,'mpro_gecco_ifc.dat',ftyp_sq_frm,0)

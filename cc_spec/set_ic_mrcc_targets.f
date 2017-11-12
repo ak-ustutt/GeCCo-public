@@ -213,7 +213,8 @@
       msc = +1
       if (orb_info%ims.ne.0) msc = 0
 
-      if (ntest.ge.100) then
+      ! the log-file should always show this info! A.K.
+      !if (ntest.ge.100) then
         write(lulog,*) 'maxcom_en    = ', maxcom_en
         write(lulog,*) 'maxcom_res   = ', maxcom
         write(lulog,*) 'G_level      = ', G_level
@@ -241,7 +242,7 @@
           write(lulog,*)
      &         'Using full spin adaptation, including preconditioner.'
         end if
-      end if
+      !end if
 
       call get_environment_variable( "GECCO_DIR", value=gecco_path)
 

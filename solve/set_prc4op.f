@@ -289,6 +289,9 @@ cmh        call dia4op(me_prc,ecore,h1dia,str_info,orb_info)
       end if
 
       if (ntest.ge.1000) then
+        write(lulog,*) 'ecore was: ',ecore
+        write(lulog,*) 'further info: ',d1dia,use_shift,shift,prc_thres
+        write(lulog,*) 'Final list:'
         call wrt_mel_file(lulog,5,me_prc,1,
      &       me_prc%op%n_occ_cls,str_info,orb_info)
       end if

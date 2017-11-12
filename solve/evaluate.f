@@ -110,7 +110,7 @@
         end do
       end if
 
-      if (iprint.ge.20) then
+      if (iprint.ge.30) then
         do iout = 1, nout
           idx = depend%idxlist(iout)
           write(lulog,*) 'dump of result for ',

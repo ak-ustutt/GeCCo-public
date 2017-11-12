@@ -14,6 +14,11 @@ _isym = _orb.get('lsym')
 
 _root = _inp.get('method.MR.ciroot')
 
+# unfortunately, GeCCo_Input does not provide the defaults
+_spinadapt = 3 #_inp.get('calculate.routes.spinadapt')
+if _s2 == 1:
+  _spinadapt = 0
+
 _option=_response_data['option']
 
 _eig_zero=_response_data['eig_zero']
@@ -67,7 +72,8 @@ CLONE_OPERATOR({LABEL:'OMG_SL',TEMPLATE:'OMG',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'OMG_C0_bar',TEMPLATE:'C0',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'OMG_SC0',TEMPLATE:'C0',ADJOINT:True})
 CLONE_OPERATOR({LABEL:'DIA_L',TEMPLATE:'L'})
-CLONE_OPERATOR({LABEL:'DIA_C0_bar',TEMPLATE:'C0',ADJOINT:True})
+#CLONE_OPERATOR({LABEL:'DIA_C0_bar',TEMPLATE:'C0',ADJOINT:True})
+CLONE_OPERATOR({LABEL:'DIA_C0_bar',TEMPLATE:'C0',ADJOINT:False})
 CLONE_OPERATOR({LABEL:'D_1',TEMPLATE:'D'})
 
 new_target('F_LMBD')
@@ -233,13 +239,17 @@ DERIVATIVE({LABEL_RES:'F_PPlint',
 new_target('DEF_ME_L')
 depend('L')
 
+_s=-1
+if _spinadapt > 1:
+    _s=0
+
 _op_list={'L':'ME_L'}
 
 for _op in _op_list:
     DEF_ME_LIST({LIST:_op_list[_op],
                  OPERATOR:_op,
                  IRREP:1,
-                 '2MS':0,
+                 '2MS':0,S2:_s,
                  AB_SYM:1,
                  MIN_REC:1,MAX_REC:_root})
 
@@ -265,8 +275,16 @@ depend('F_LMBD','F_L','DEF_ME_E(MR)')
 depend('F_PPlint')
 
 _op_list={'OMG_L':'ME_OMG_L',
-          'OMG_SL':'ME_OMG_SL',
-          'INT_PPl':'ME_INT_PPl'}
+          'OMG_SL':'ME_OMG_SL'}
+
+for _op in _op_list:
+    DEF_ME_LIST({LIST:_op_list[_op],
+                 OPERATOR:_op,
+                 IRREP:1,
+                 '2MS':0,S2:_s,
+                 AB_SYM:1})
+
+_op_list={'INT_PPl':'ME_INT_PPl'}
 
 for _op in _op_list:
     DEF_ME_LIST({LIST:_op_list[_op],
@@ -309,6 +327,7 @@ for _op in _op_list:
                  OPERATOR:_op,
                  IRREP:_isym,
                  '2MS':_ms})
+                 #'2MS':_ms_c0})
 
 DEF_ME_LIST({LIST:'ME_MINEN',
              OPERATOR:'E(MR)',
@@ -329,6 +348,8 @@ COPY_LIST({LIST_RES:'ME_DIA_L',LIST_INP:'DIAG1SxxM00_T',ADJOINT:True,FAC:1.0})
 
 new_target('DIAG_C0_bar')
 
+depend('H0','LIST_LMBD')
+
 PRECONDITIONER({LIST_PRC:'ME_DIA_C0_bar',
                 LIST_INP:'H0',
                 MODE:'dia-H'})
@@ -347,12 +368,12 @@ PRINT_MEL({LIST:'ME_E(MR)',COMMENT:'ENERGY ICMRCC:'})
 
 new_target('LMBD_OPT')
 
-depend('DEF_ME_L','DEF_ME_C0_bar')
-depend('LIST_LMBD','DEF_ME_C0','H0','DEF_ME_T','DIAG_L','DIAG_C0_bar','DEF_ME_Ttr','F_L')
+depend('DEF_ME_L','DEF_ME_C0_bar','DEF_ME_INT_D')
+depend('LIST_LMBD','DEF_ME_C0','H0','DEF_ME_T','DIAG_L','DIAG_C0_bar','DEF_ME_Ttr','F_L','F_INT_D')
 
 OPTIMIZE({LABEL_OPT:'LMBD_OPT',
           LABELS_IN:['F_L_1','F_L_2','F_SL','F_L','F_OMG_SC0'],
-          INTERM:['F_PPlint']})
+          INTERM:['F_PPlint','F_INT_D']})
 
 OPTIMIZE({LABEL_OPT:'FOPT_L',
           LABELS_IN:'F_L'})
@@ -388,6 +409,7 @@ _solve_evp_basis[INIT]=True
 _solve_evp_basis[LIST_SPC]=['ME_Ltr','ME_Dtr','ME_Dtrdag']
 _solve_evp_basis[N_ROOTS]=_root
 _solve_evp_basis[MODE]='TRF DIA'
+#_solve_evp_basis[MODE]='TRF SPP'
 
 SOLVE_EVP(_solve_evp_basis)
 
