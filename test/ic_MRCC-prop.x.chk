@@ -14,9 +14,9 @@ check
 check
   label first order property
   find First order prop
-  compare real 4 1e-6
+  compare real 4 1e-5
 check
   label second order property
   find Total second order
-  compare real 5 1e-6
+  compare real 5 1e-4
 end
