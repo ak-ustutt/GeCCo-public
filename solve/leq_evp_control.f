@@ -5,7 +5,7 @@
      &                   nrequest,irectrv,irecmvp,irecmet,
      &                   me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,
      &                   me_dia,me_ext,
-     &                   me_special,nspecial,
+     &                   me_special,nspecial,nextra,idxspc,
 c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &                   flist,depend,
      &                   fspc,nspcfrm,
@@ -88,10 +88,10 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
      &     nrequest,irectrv(*),irecmvp(*),irecmet(*)
 
       integer, intent(in) ::
-     &     nspecial, nspcfrm
+     &     nspecial, nextra, idxspc, nspcfrm
 
       type(me_list_array), intent(in) ::
-     &     me_opt(*), me_dia(*), me_special(nspecial),
+     &     me_opt(*), me_dia(*), me_special(nspecial+nextra),
      &     me_mvp(*), me_rhs(*), me_scr(*), me_ext(*)
       type(me_list_array), intent(inout) ::
      &     me_met(*), me_trv(*)
@@ -227,7 +227,7 @@ c        end if
         if (modestr(1:3).eq.'LEQ') then
           call leqc_init(xrsnrm,iroute,
      &       me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,
-     &       me_special,nspecial,
+     &       me_special,nspecial+nextra,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
      &       flist,depend,use_s,
@@ -275,7 +275,7 @@ c        end if
      &         task,iroute,xrsnrm,
      &         use_s,
      &         me_opt,me_trv,me_mvp,me_rhs,me_dia,me_met,me_scr,me_ext,
-     &         me_special,nspecial,
+     &         me_special,nspecial+nextra,
 c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,
@@ -288,7 +288,7 @@ c     &         ffopt,fftrv,ffmvp,ffrhs,ffdia,
      &         task,iroute,xrsnrm,xeig,
      &         use_s,
      &         me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
-     &         me_special,nspecial,
+     &         me_special,nspecial,nextra,idxspc,
 c     &         ffopt,fftrv,ffmvp,ffdia,
      &         nincore,lenbuf,
      &         xbuf1,xbuf2,xbuf3,

@@ -25,7 +25,7 @@
       include 'def_formula_item.h'
 
       integer, parameter ::
-     &     ntest =  00
+     &     ntest =  000
 
       integer, intent(in) ::
      &     nwfpar
@@ -72,6 +72,13 @@
       ffamp => me_amp%fhand
       ffspc => me_special%fhand
 
+      if (ntest.ge.1000) then
+        write(lulog,*) 'spin_project: on input:'
+        call wrt_mel_file(lulog,5,me_amp,
+     &           1,me_amp%op%n_occ_cls,
+     &           str_info,orb_info)
+      end if
+
       ab_sym = me_amp%absym
       if (ab_sym.ne.me_special%absym) then
         write(lulog,*) 'me_amp     = ',trim(me_amp%label)
@@ -82,10 +89,10 @@
       end if
       if (me_amp%op%njoined.ne.1)
      &   call quit(1,'spin_project','not yet adapted for nj>1')
-      mult = orb_info%imult
+      mult = orb_info%imult  ! FIXME: actually this should be me_amp%s2
       ssp1 = dble(mult**2-1)/4d0
       mult_min = 2 - mod(mult,2) !1 for odd and 2 for even multipl.
-      mult_min = max(mult_min,orb_info%ims+1)
+      mult_min = max(mult_min,iabs(orb_info%ims)+1)
       mult_max = 1
       do iblk = 1, me_amp%op%n_occ_cls
         mult_max = max(mult_max,me_amp%op%ica_occ(1,iblk)+
@@ -134,6 +141,13 @@ c      do iblk = 1, nwfpar
 c        print *,iblk,xbuf1(iblk)
 c      end do
 c dbgend
+
+      if (ntest.ge.1000) then
+        write(lulog,*) 'spin_project: on output:'
+        call wrt_mel_file(lulog,5,me_amp,
+     &           1,me_amp%op%n_occ_cls,
+     &           str_info,orb_info)
+      end if
 
       return
       end

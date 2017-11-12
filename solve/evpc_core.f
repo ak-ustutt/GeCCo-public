@@ -3,7 +3,7 @@
      &       task,iroute,xrsnrm,xeig,
      &       use_s,
      &       me_opt,me_trv,me_mvp,me_dia,me_met,me_scr,me_ext,
-     &       me_special,nspecial,
+     &       me_special,nspecial,nextra,idxspc,
 c     &       ffopt,fftrv,ffmvp,ffdia,
      &       nincore,lenbuf,
      &       xbuf1,xbuf2,xbuf3,
@@ -40,7 +40,7 @@ c      include 'def_filinf.h'
       integer, intent(inout) ::
      &     iter
       integer, intent(in) ::
-     &     iroute, nincore, lenbuf, nspecial, nspcfrm
+     &     iroute, nincore, lenbuf, nspecial, nextra, idxspc, nspcfrm
       logical, intent(in) ::
      &     use_s(*)
 
@@ -465,17 +465,21 @@ c dbgend
      &                            me_opt(iopt)%mel%op%name,op_info)
               do iroot = 1, nnew
                 call switch_mel_record(me_scr(iopt)%mel,iroot)
+                ! <--- below: normalize=.true. for nopt=1, although I do
+                ! not see the reason for normalizing here ...
                 if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+                  call spin_project(me_scr(iopt)%mel,
+     &                                         me_special(idxspc)%mel,
      &                              fspc(1),opti_info%nwfpar(iopt),
-     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              xbuf1,xbuf2,nopt.eq.1,xnrm, !<--
      &                              opti_info,orb_info,
      &                              op_info,str_info,strmap_info)
                 elseif (opti_info%typ_prc(iopt).eq.
      &                  optinf_prc_spinrefp)then
-                  call spin_project(me_scr(iopt)%mel,me_special(1)%mel,
+                  call spin_project(me_scr(iopt)%mel,
+     &                                         me_special(idxspc)%mel,
      &                              fspc(2),opti_info%nwfpar(iopt),
-     &                              xbuf1,xbuf2,.true.,xnrm,
+     &                              xbuf1,xbuf2,nopt.eq.1,xnrm, !<--
      &                              opti_info,orb_info,
      &                              op_info,str_info,strmap_info)
 
@@ -501,7 +505,8 @@ c     &                 -1d0,0d0,
 c     &                 orb_info,str_info)
 c dbgend
                 end if
-                if (xnrm.lt.1d-12) call warn('evpc_core',
+                ! no need to worry, if more components exist:
+                if (nopt.eq.1.and.xnrm.lt.1d-12) call warn('evpc_core',
      &               'Nothing left after projection!')
               end do
               ! reassign op. with list containing trial vector

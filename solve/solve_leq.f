@@ -411,7 +411,7 @@ c dbg
      &       nrequest,irectrv,irecmvp,irecmet, 
      &       me_opt,me_scr,me_trv,me_mvp,me_met,me_rhs,me_dia,
      &       me_ext,
-     &       me_special,nspecial,
+     &       me_special,nspecial,0,1,
 c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       fl_rhs_mvp,depend,
      &       fl_spc,nspcfrm,

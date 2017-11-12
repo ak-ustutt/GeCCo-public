@@ -483,7 +483,8 @@ c dbgend
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         else
         call init_guess2(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,nspecial,
+     &                  me_opt,me_trv,me_dia,me_special,
+     &                  nspecial,0,1, !<- check solve_evp for reason
      &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         end if

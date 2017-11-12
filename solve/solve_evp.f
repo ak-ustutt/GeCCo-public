@@ -94,13 +94,13 @@
 
       logical ::
      &     conv, use_s_t, use_s(nopt), trafo, use_init_guess(nopt),
-     &     home_in, restart
+     &     home_in, restart, error
       character(len_opname) ::
      &     label
       integer ::
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
-     &     jdx
+     &     jdx, nspec_, nextra_, idxspc
       real(8) ::
      &     xresmax, xdum, xnrm,
      &     xeig(nroots,2), xresnrm(nroots*nopt)
@@ -222,6 +222,44 @@
       end do
 
       call set_opti_info(opti_info,3,nopt,nroots,me_opt,mode_str)
+
+      ! do some postprocessing of options and make sure they fit
+      ! to current code (which is not as flexible as it should be)
+      ! in particular there are a number of assumptions about the
+      ! "special" lists and formulas
+      nspec_ = nspecial
+      idxspc = 1
+      error = .false.
+      do iopt = 1, nopt
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
+     &      opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc) then
+          if (iopt.ne.1) then
+            write(lulog,*) 
+     &      'Detected TRF or TR0 option, but not for first vector!'
+            error = .true.
+          end if
+        end if
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &      opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &      opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
+          if (nopt.gt.1.and.iopt.ne.2) then
+            write(lulog,*)
+     &       'Detected SPP, PRJ or SRP option in coupled equations,'
+            write(lulog,*)
+     &       'but the vector is not the second!'
+            error = .true.
+          end if
+          ! SPP and SRP have one extra ME list that we need to "hide"
+          if (opti_info%typ_prc(iopt).ne.optinf_prc_prj) then
+            nspec_ = nspec_-1  ! # "special" lists for TRF (if there)
+            idxspc = nspecial  ! idx "special" list for SPP or SRP
+          end if 
+        end if
+      end do
+      nextra_ = nspecial - nspec_
+
+      if (error) call quit(1,'solve_evp',
+     &                       'Error in use of routine, see output')
 
       nvectors = opti_info%maxsbsp
       use_s_t = .false.
@@ -445,7 +483,8 @@ c dbgend
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         else
         call init_guess2(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,nspecial,
+     &                  me_opt,me_trv,me_dia,me_special,
+     &                  nspec_,nextra_,idxspc,
      &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         end if
@@ -472,7 +511,7 @@ c dbgend
      &       use_s,
      &       nrequest,irectrv,irecmvp,irecmet,
      &       me_opt,me_scr,me_trv,me_mvp,me_met,me_dia,me_dia,me_ext,
-     &       me_special,nspecial,
+     &       me_special,nspec_,nextra_,idxspc,
 c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
      &       fl_mvp,depend,
      &       fl_spc,nspcfrm,
@@ -596,14 +635,16 @@ c dbg
                 call assign_me_list(me_mvp(iopt)%mel%label,
      &                              me_opt(iopt)%mel%op%name,op_info)
                 if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-                  call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+                  call spin_project(me_mvp(iopt)%mel,
+     &                                        me_special(idxspc)%mel,
      &                             fl_spc(1),opti_info%nwfpar(iopt),
      &                             xbuf1,xbuf2,.false.,xnrm,
      &                             opti_info,orb_info,
      &                             op_info,str_info,strmap_info)
                 elseif (opti_info%typ_prc(iopt).eq.
      &                  optinf_prc_spinrefp) then
-                  call spin_project(me_mvp(iopt)%mel,me_special(1)%mel,
+                  call spin_project(me_mvp(iopt)%mel,
+     &                                        me_special(idxspc)%mel,
      &                             fl_spc(2),opti_info%nwfpar(iopt),
      &                             xbuf1,xbuf2,.false.,xnrm,
      &                             opti_info,orb_info,

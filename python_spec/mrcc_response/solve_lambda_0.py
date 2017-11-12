@@ -14,10 +14,12 @@ _isym = _orb.get('lsym')
 
 _root = _inp.get('method.MR.ciroot')
 
+_spinadapt = _inp.get('calculate.routes.spinadapt')
 # unfortunately, GeCCo_Input does not provide the defaults
-_spinadapt = 3 #_inp.get('calculate.routes.spinadapt')
-if _s2 == 1:
-  _spinadapt = 0
+if _spinadapt == None:
+  _spinadapt = 3 
+  if _s2 == 1:
+    _spinadapt = 0
 
 _option=_response_data['option']
 
@@ -204,6 +206,39 @@ REPLACE({LABEL_RES:'F_DENS(1)',
 
 #PRINT_FORMULA({LABEL:'F_DENS(1)'})
 
+#for spin projection
+new_target('FOPT_C0_bar_sp')
+depend('DEF_ME_C0_bar','DEF_ME_S+','DEF_ME_S-','DEF_ME_Sz')
+
+CLONE_OPERATOR({LABEL:'C0_bar_sp',TEMPLATE:'C0_bar'})
+_op_list={'C0_bar_sp':'ME_C0_bar_sp'}
+for _op in _op_list:
+    DEF_ME_LIST({LIST:_op_list[_op],
+                 OPERATOR:_op,
+                 IRREP:_isym,
+                 '2MS':_ms_c0,
+                 AB_SYM:_msc})
+# FIXME: in future we should set s2 of C0_bar_sp here (check side effects first)
+#        currently, the imult form orb_info is read
+    # <C0bar| 1/2*(S+S- + S-S+) + Sz^2
+    # <C0bar| {S+S-} + 1/2*(S+S-)_c + 1/2*(S-S+)_c + Sz^2
+    # I admit I still don't know, why the upper does not work directly
+    EXPAND_OP_PRODUCT({LABEL:'F_C0_bar_sp',NEW:True,OP_RES:'C0_bar_sp',
+           FAC:1.0,OPERATORS:['C0_bar_sp','C0_bar','S+','S-','C0_bar_sp'],
+                   IDX_SV:[1,2,3,4,1],AVOID:[3,4]})
+    EXPAND_OP_PRODUCT({LABEL:'F_C0_bar_sp',NEW:False,OP_RES:'C0_bar_sp',
+           FAC:0.5,OPERATORS:['C0_bar_sp','C0_bar','S+','S-','C0_bar_sp'],
+                   IDX_SV:[1,2,3,4,1],CONNECT:[3,4]})
+    EXPAND_OP_PRODUCT({LABEL:'F_C0_bar_sp',NEW:False,OP_RES:'C0_bar_sp',
+           FAC:0.5,OPERATORS:['C0_bar_sp','C0_bar','S-','S+','C0_bar_sp'],
+                   IDX_SV:[1,2,3,4,1],CONNECT:[3,4]})
+    EXPAND_OP_PRODUCT({LABEL:'F_C0_bar_sp',NEW:False,OP_RES:'C0_bar_sp',
+           FAC:1.0,OPERATORS:['C0_bar_sp','C0_bar','Sz','Sz','C0_bar_sp'],
+                   IDX_SV:[1,2,3,4,1],FIX_VTX:True})
+    OPTIMIZE({LABEL_OPT:'FOPT_C0_bar_sp',
+              LABELS_IN:'F_C0_bar_sp'})
+    
+
 #some intermediates for fast calculations
 
 new_target('F_prePPlint')
@@ -266,6 +301,8 @@ for _op in _op_list:
                  '2MS':_ms_c0,
                  AB_SYM:_msc,
                  MIN_REC:1,MAX_REC:_root})
+# FIXME: in future we should set s2 of C0_bar here (check side effects first)
+#        currently, the imult form orb_info is read
 
 # creating ME list for the new operators:
 
@@ -406,10 +443,15 @@ _solve_evp_basis[OP_MVP]=['OMG_L','OMG_C0_bar']
 _solve_evp_basis[OP_SVP]=['OMG_SL','OMG_SC0']
 _solve_evp_basis[FORM]='LMBD_OPT'
 _solve_evp_basis[INIT]=True
-_solve_evp_basis[LIST_SPC]=['ME_Ltr','ME_Dtr','ME_Dtrdag']
 _solve_evp_basis[N_ROOTS]=_root
-_solve_evp_basis[MODE]='TRF DIA'
-#_solve_evp_basis[MODE]='TRF SPP'
+if _spinadapt == 0:
+  _solve_evp_basis[MODE]='TRF DIA'
+  _solve_evp_basis[LIST_SPC]=['ME_Ltr','ME_Dtr','ME_Dtrdag']
+else:
+  depend('FOPT_C0_bar_sp')
+  _solve_evp_basis[MODE]='TRF SPP'
+  _solve_evp_basis[LIST_SPC]=['ME_Ltr','ME_Dtr','ME_Dtrdag','ME_C0_bar_sp']
+  _solve_evp_basis[FORM_SPC]=['FOPT_C0_bar_sp']
 
 SOLVE_EVP(_solve_evp_basis)
 

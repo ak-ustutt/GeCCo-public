@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine init_guess2(nopt,init,nroots,
-     &                me_opt,me_trv,me_dia,me_special,nspecial,
+     &                me_opt,me_trv,me_dia,me_special,
+     &                nspecial,nextra,idxspc,
      &                fl_mvp,depend,fl_spc,nspcfrm,choice,
      &                opti_info,orb_info,op_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
@@ -42,11 +43,11 @@
      &     i_am = 'init_guess2 '
 
       integer, intent(in) ::
-     &     nopt, nroots, nspecial, nspcfrm, choice
+     &     nopt, nroots, nspecial, nextra, idxspc, nspcfrm, choice
       logical, intent(in) ::
      &     init(nopt)
       type(me_list_array), intent(inout) :: 
-     &     me_opt(*), me_trv(*), me_dia(*), me_special(nspecial)
+     &     me_opt(*), me_trv(*), me_dia(*), me_special(nspecial+nextra)
       type(formula_item), intent(inout) ::
      &     fl_mvp, fl_spc(nspcfrm)
       type(dependency_info), intent(in) ::
@@ -309,14 +310,14 @@ c                if (abs(abs(xover)-xretlast).lt.1d-6) then
             ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
             ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
             if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp) then
-              call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
+              call spin_project(me_trv(iopt)%mel,me_special(idxspc)%mel,
      &                          fl_spc(1),opti_info%nwfpar(iopt),
      &                          xbuf1,xbuf2,.true.,xnrm,
      &                          opti_info,orb_info,
      &                          op_info,str_info,strmap_info)
             else if (opti_info%typ_prc(iopt).eq.
      &              optinf_prc_spinrefp) then
-              call spin_project(me_trv(iopt)%mel,me_special(1)%mel,
+              call spin_project(me_trv(iopt)%mel,me_special(idxspc)%mel,
      &                          fl_spc(2),opti_info%nwfpar(iopt),
      &                          xbuf1,xbuf2,.true.,xnrm,
      &                          opti_info,orb_info,
