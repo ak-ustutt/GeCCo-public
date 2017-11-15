@@ -15,7 +15,8 @@
       include 'def_operator.h'
       include 'def_me_list.h'
       include 'ifc_memman.h'
-
+      character(len=*),parameter::
+     &     i_am = 'blk_norm_for_list'
       type(me_list), intent(in) ::
      &     melist_a, melist_b
       integer, intent(in) ::
