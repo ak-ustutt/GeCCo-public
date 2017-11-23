@@ -128,7 +128,27 @@ DEF_ME_LIST({
         OPERATOR:'GAM0',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1})
+        AB_SYM:msc}) # as in the fortran code
+#        AB_SYM:+1}) # original
+
+
+# YAA tmp: Small formula for testing the density
+# Just for testing.
+# Why does the density needs AB_sym=msc for a
+# correct behaviour?
+#
+# DEF_OP_FROM_OCC({
+#         LABEL:'GAM0_cpy',
+#         JOIN:2,
+#         DESCR:',;,|,V;V,|,VV;VV,|,VVV;VVV,'})
+# DEF_ME_LIST({
+#         LIST:'GAM0_LST_cpy',
+#         OPERATOR:'GAM0_cpy',
+#         IRREP:1,
+#         '2MS':0,
+#         S2:0,
+# #        AB_SYM:msc}) # as in the fortran code
+#         AB_SYM:+1}) # original
 
 debug_MEL('GAM0_LST',info_only=True)
 

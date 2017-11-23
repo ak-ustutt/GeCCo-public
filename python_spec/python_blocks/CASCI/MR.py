@@ -111,6 +111,27 @@ EVALUATE({
 
 
 
+# YAA tmp: Small formula for testing the density
+# Just for testing.
+# Why does the density needs AB_sym=msc for a
+# correct behaviour?
+#
+# EXPAND_OP_PRODUCT({
+#         LABEL:'FORM_GAM0_cpy',
+#         NEW:True,
+#         OP_RES:'GAM0_cpy',
+#         OPERATORS:['GAM0_cpy','C0^+','GAM0_cpy','GAM0_cpy','C0','GAM0_cpy'],
+#         IDX_SV:[1,2,1,1,3,1]})
+# debug_FORM('FORM_GAM0_cpy')
+# OPTIMIZE({
+#         LABEL_OPT:'FOPT_GAM0_cpy',
+#         LABELS_IN:'FORM_GAM0_cpy'})
+# EVALUATE({
+#         FORM:'FOPT_GAM0_cpy'})
+# debug_MEL('GAM0_LST')
+# debug_MEL('GAM0_LST_cpy')
+
+
 new_target("EVAL_E0")
 depend("MakeRefState")
 OPTIMIZE({
