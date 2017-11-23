@@ -177,6 +177,9 @@ ME_param={
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
+if spinadapt>=2:
+    ME_param['S2']= 0
+
 
 DEF_ME_LIST(ME_param)
 
@@ -203,6 +206,8 @@ ME_param={
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
+if spinadapt>=2:
+    ME_param['S2']= 0
 
 DEF_ME_LIST(ME_param)
 
