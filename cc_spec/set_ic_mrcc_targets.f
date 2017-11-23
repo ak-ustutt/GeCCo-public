@@ -2270,6 +2270,8 @@ c dbg
 c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'MODE',1,tgt_info,
+c     &     val_str='SHORT')
 c      call set_rule2('F_E(MRCC)tr',ABORT,tgt_info)
 c dbgend
 
