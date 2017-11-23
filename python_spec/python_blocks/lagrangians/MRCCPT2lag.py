@@ -34,7 +34,7 @@ if keywords.is_keyword_set('method.MRCCPT2.connected_O3'):
 print("connected_O3 ", connected_O3, type(connected_O3))
 
 # Third order term for the energy
-third_ord_energy=False
+third_ord_energy = False
 if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
     if (keywords.get('method.MRCCPT2.3rd_E') == "T"):
         third_ord_energy=True
@@ -43,6 +43,11 @@ if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
     else :
         raise Exception(i_am+": unrecognised value for option 3rd_E (must be T or F)")
 print("3rd_E ", third_ord_energy, type(third_ord_energy))
+
+ampl_type = "PT2"
+if keywords.is_keyword_set('method.MRCCPT2.ampl_type'):
+    ampl_type = keywords.get('method.MRCCPT2.ampl_type')
+print("ampl_type: ", ampl_type, type(ampl_type))
 
 spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
@@ -110,13 +115,6 @@ DEF_ME_LIST({LIST:'SxT_LST',OPERATOR:'SxT',
 DEF_ME_LIST({LIST:'H1rhs_LST',OPERATOR:'H1rhs',
              IRREP:1,'2MS':0,AB_SYM:+1,'S2':0})
 
-#Energy equation no 
-LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
-                  "<C0^+*(H+H*T2g)*C0>")
-
-LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
-                  "<C0^+*(LAM2g*H)*C0>")
-
 if hamiltonian=="DYALL":
     _h0_='HAM_D'
     _h0exp_='HAM_D_EXP'
@@ -133,10 +131,74 @@ elif hamiltonian=="F_EFF-D":
     _h0_='FOCK_EFF_D'
     _h0exp_='FOCK_EFF_D_EXP'
 
-if (connected):
+_h1_ = "(H-" +_h0_ + ")"
+
+#Starting energy and amplitudes equations
+LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+                  "<C0^+*H*C0>")
+LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+                  "<C0^+*(LAM2g*H)*C0>")
+
+LAG_E.append("<C0^+*H*T2g*C0>")
+
+# How the amplitudes equations look like:
+if ampl_type == 'PT2':
+    if (connected):
+        LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
+    else:
+        LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
+
+elif ampl_type == 'LCC':
+    LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+
+elif ampl_type == 'MRPT_3O-CC':
+    LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*([["+_h0_+",T2g],T2g])*C0>")
+
+elif ampl_type == 'MRPT_3O-CI':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>")
+    LAG_A.append("-<C0^+*(LAM2g)*T2g*"+_h0_+"*C0>")
+
+elif ampl_type == 'CC_2comm':
+    LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*([[H,T2g],T2g])*C0>")
+
+# testing: H + (HT)c - (TH0)c.
+elif ampl_type == 'HTc_TH0c':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>", connect=["H","T2g"])
+    LAG_A.append("-<C0^+*(LAM2g)*T2g*"+_h0_+"*C0>", connect=[_h0_,"T2g"])
+
+# testing: H + HT. Does not work. Does not converge.
+elif ampl_type == 'HT_conn':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>", connect=["H","T2g"])
+
+elif ampl_type == 'HT_HTT_conn':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>", connect=["H","T2g"])
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", connect=["H","T2g'",  "H","T2g''"])
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", avoid=["H","T2g''"], connect=["H","T2g'",  "T2g'","T2g''"])
+
+elif ampl_type == 'HT_all':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>")
+
+# Amplitudes equations as first order, but with Heff up to second order
+# Does not work well...
+elif ampl_type == 'PT1_Heff2':
     LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
+    LAG_A.append("-<C0^+*(LAM2g)*T2g*C0*C0^+'*H*T2g'*C0'>", avoid=["C0^+","H",
+                                                                   "C0^+","T2g'",
+                                                                   "C0^+","C0'",
+                                                                   "LAM2g","H",
+                                                                   "LAM2g","T2g'",
+                                                                   "LAM2g","C0'",
+                                                                   "T2g","H",
+                                                                   "T2g","T2g'",
+                                                                   "T2g","C0'"
+                                                                   ])
+
 else:
-    LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
+    quit_error(i_am+': Unknown ampl_type: ' + ampl_type)
+
+
 
 # optional penality term
 #LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
@@ -154,11 +216,22 @@ LAG_E.set_rule()
 LAG_A.set_rule()
 
 #print("LAG_A finished")
+debug_FORM('FORM_PT_LAG_A')
 
 #we need the overlap terms for the LEQ solver
 OVL=stf.Formula("FORM_OVL:OVL_A=<C0^+*LAM2g*T2g*C0>")
 OVL.set_rule()
 
+
+# By now, for testing purposes.
+# Replaces h0 to H.
+# Is it okay for every kind of amplitude equation?
+#if True:
+#    REPLACE({
+#        LABEL_RES:'FORM_PT_LAG_A',
+#        LABEL_IN:'FORM_PT_LAG_A',
+#        OP_LIST:[_h0_,'H']
+#        })
 
 FACTOR_OUT({
         LABEL_RES:'FORM_PT_LAG',
@@ -176,6 +249,7 @@ FACTOR_OUT({
        INTERM:'FORM_GAM0'
        })
 
+debug_FORM('FORM_PT_LAG_A')
 
 mark("PT-LAGRANGIAN")
 
@@ -188,8 +262,8 @@ SUM_TERMS({
         LABEL_RES:'FORM_PT_LAG_A'})
 
 
+debug_FORM('FORM_PT_LAG_A')
 
-debug_FORM('FORM_PT_LAG')
 
 
 #Make the Derivative with respect to LAM2g.
@@ -234,35 +308,39 @@ OPTIMIZE({
 
 
 # Third order terms
-_h1_ = "(H-" +_h0_ + ")"
-
-
 term_CI = "<C0^+ * (T2g^+) * (" + _h1_ + "*T2g) * C0>"
-term_CC0 =       "<C0^+ * (T2g^+) * ([H-"+ _h0_ + ",T2g]) * C0>"
+term_CC0 =       "<C0^+ * (T2g^+) * (["  + _h1_ + ",T2g]) * C0>"
 term_CCa = "1/2 * <C0^+ *           ([[" + _h1_ + ",T2g],T2g]) * C0>"
 term_CCb = "1/2 * <C0^+ * (T2g^+) * ([[" + _h0_ + ",T2g],T2g]) * C0>"
+
+# The CC like third order term, written an another way
+term_pureV = "-<C0^+ * (T2g^+) * T2g * ( " +_h1_+ " + [" +_h0_+ ",T2g])  * C0>"
+term_highO = "1/2 * <C0^+ * ( " +_h1_+ " + [(T2g^+)," +_h0_+ "]) * T2g * T2g * C0>"
+
+term_2Oa = "<C0^+ * (T2g^+) * H * C0>"
+term_2Ob = "<C0^+ * (T2g^+) * [" + _h0_ + ",T2g] * C0>"
 
 if (third_ord_energy):
     new_target('MRCCPT_E_3rd_O', True)
     heading('Third order correction for the energy')
     depend('SOLVE_MRCCPT2')
 
-    for i in ['_CI', '_CC0', '_CCa', '_CCb', '_CC']:
+    for i in ['_CI', '_CC0', '_CCa', '_CCb', '_CC', '_CC_pureV', '_CC_higherO']:
         if (i == '_CI'):
             term = term_CI
-            str_i = "CI like term"
+            str_i = "Rayleigh-Schrodinger like term: <T^+ W T>"
 
         elif (i == '_CC0'):
             term = term_CC0
-            str_i = "term 0 of CC like: L[H1,T]"
+            str_i = "term 0 of CC like: <T^+ [H1,T]>"
 
         elif (i == '_CCa'):
             term = term_CCa
-            str_i = "term a of CC like: 1/2 [[H1,T],T]"
+            str_i = "term a of CC like: 1/2 <[[H1,T],T]>"
 
         elif (i == '_CCb'):
             term = term_CCb
-            str_i = "term b of CC like: 1/2 L[[H0,T],T]"
+            str_i = "term b of CC like: 1/2 <T^+ [[H0,T],T]>"
 
         elif (i == '_CC'):
             term = [term_CC0,
@@ -270,9 +348,23 @@ if (third_ord_energy):
                     term_CCb]
             str_i = "CC like term"
 
-        else:
-            raise Exception(i_am + ": unrecognised kind of third order correction")
+        elif (i == '_CC_pureV'):
+            term = term_pureV
+            str_i = "CC term with pure virtual excitations"
 
+        elif (i == '_CC_higherO'):
+            term = term_highO
+            str_i = "CC term with higher order excitations"
+
+        else:
+            raise Exception(i_am + ": unrecognised kind of third order correction: " + i)
+
+# This includes the terms from the 2nd order Lagrangian
+# that are exactly zero if ampl_type == 'PT2'
+#        if isinstance(term, list):
+#            term.extend([term_2Oa, term_2Ob])
+#        else:
+#            term = [term, term_2Oa, term_2Ob]
 
         DEF_SCALAR({LABEL:'MRCCPT_O3'+i})
         DEF_ME_LIST({LIST:'ME_MRCCPT_O3'+i,

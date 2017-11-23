@@ -299,7 +299,7 @@
           <argument length="1" name="connected" status="A" type="1" value="true">
             <!--Toggle connected expression for H0 matrix-->
           </argument>
-        </keyword>
+        <argument length="10" name="ampl_type" status="A" type="8" value="PT2"><!--The type of amplitude equations--></argument></keyword>
         <keyword name="truncate" status="A">
           <argument length="1" name="trunc_type" status="A" type="2" value="0"/>
         </keyword>
