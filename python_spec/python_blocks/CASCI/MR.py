@@ -109,6 +109,7 @@ depend("FOPT_GAM0")
 EVALUATE({
         FORM:'FOPT_GAM0'})
 
+debug_MEL('GAM0_LST')
 
 
 # YAA tmp: Small formula for testing the density

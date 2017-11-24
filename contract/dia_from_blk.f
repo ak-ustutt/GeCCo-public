@@ -381,6 +381,12 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
                   ! note:this element might be overwritten several times
                   buffer_inp(idx2) = fac*buffer_out(idx1)
                 else
+c dbg
+c                  write(lulog,'(1x,i5,f14.8," + ",f8.3," * ",f14.8,'//
+c     &'" = ",f14.8)') 
+c     &                    idx1,buffer_out(idx1),fac,buffer_inp(idx2),
+c     &                    buffer_out(idx1)+fac*buffer_inp(idx2)
+c dbg
                   buffer_out(idx1)
      &                    = buffer_out(idx1)+fac*buffer_inp(idx2)
                 end if
