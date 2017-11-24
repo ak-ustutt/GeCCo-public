@@ -222,7 +222,6 @@ debug_FORM('FORM_PT_LAG_A')
 OVL=stf.Formula("FORM_OVL:OVL_A=<C0^+*LAM2g*T2g*C0>")
 OVL.set_rule()
 
-
 # By now, for testing purposes.
 # Replaces h0 to H.
 # Is it okay for every kind of amplitude equation?
