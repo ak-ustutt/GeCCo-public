@@ -2319,6 +2319,8 @@ c dbg
 c      call set_rule2('F_Atr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_Atr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_Atr'/))
+c      call set_arg('F_Atr',PRINT_FORMULA,'MODE',1,tgt_info,
+c     &     val_str='short')
 c      call set_rule2('F_Atr',ABORT,tgt_info)
 c dbgend
 

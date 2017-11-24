@@ -20,7 +20,7 @@
 
       ! for debugging it is sometimes convenient to have at most:
       integer, parameter ::
-     &     maxlines = 100 !-1 !75
+     &     maxlines = 500 !-1 !75
       ! set to -1 if you want the full output
       real(8), parameter ::
      &     thrsh = 1d-12  !-0.5d0

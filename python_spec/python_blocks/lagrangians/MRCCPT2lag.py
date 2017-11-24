@@ -134,6 +134,7 @@ else:
 if (third_ord_energy):
     if (connected):
         LAG_E.append("<C0^+*(T2g^+)*[H,T2g]*C0>")
+        # ??? LAG_E.append("<C0^+*(T2g^+)*([H,T2g]-["+_h0_+",T2g])*C0>")
     else:
         LAG_E.append("<C0^+*(T2g^+)*((H-"+_h0_+")*T2g)*C0>")
 
@@ -159,7 +160,6 @@ LAG_A.set_rule()
 #we need the overlap terms for the LEQ solver
 OVL=stf.Formula("FORM_OVL:OVL_A=<C0^+*LAM2g*T2g*C0>")
 OVL.set_rule()
-
 
 FACTOR_OUT({
         LABEL_RES:'FORM_PT_LAG',
@@ -205,7 +205,7 @@ DERIVATIVE({LABEL_IN:'FORM_OVL',
         OP_DERIV:'LAM2g'})
 
 debug_FORM('FORM_PT_Amp')
-debug_FORM('FORM_PT_SxT',True)
+debug_FORM('FORM_PT_SxT')
 
 #devide into RHS and transformation part
 LEQ_SPLIT({LABEL_RAW:'FORM_PT_Amp',
@@ -215,8 +215,8 @@ LEQ_SPLIT({LABEL_RAW:'FORM_PT_Amp',
            OP_RHS:'H1rhs',
            OP_X:'T2g'})
 
-debug_FORM('FORM_PT_MVP',True)
-debug_FORM('FORM_PT_RHS',True)
+debug_FORM('FORM_PT_MVP')
+debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 

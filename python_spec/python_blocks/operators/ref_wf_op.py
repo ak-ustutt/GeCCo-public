@@ -26,12 +26,23 @@ spinadapt = int(spinadapt) if spinadapt is not None else 0
 ims = int(orbitals.get('ims'))       
 imult =int(orbitals.get('imult'))
 
+s_ref=-1  # for reference state and related quantities
+s_op=-1   # for operators
+msc_op=0
+if (spinadapt > 0):
+    s_ref=imult  # currently, the program uses projection operators
+                 # the solver takes care of that and reads imult from input
+                 # to be fixed as we might once allow for different references
+                 # with different S in the same run ...
+    s_op=0        # spin-free operators
+    msc_op=1      # are singlet operators
+
 if (ims == 0) and ((imult-1)%4 == 0) :
     msc = 1
 elif (ims == 0) and ((imult+1)%4 == 0) :
     msc = -1
 else :
-    msc = 0                        # msc is the AB_sym for many operators
+    msc = 0                        # msc is the AB_sym for operators directly related to reference symmetry
 wf_sym=orbitals.get('lsym')
 
 #------------------------------------------------------------------
@@ -64,11 +75,11 @@ DEF_ME_LIST({
         OPERATOR:'C0',
         IRREP:wf_sym,
         '2MS':ims,
+        # S2:s_ref,  # currently not supported, done by projection in SOLVE_EVP
         AB_SYM:msc,
         MIN_REC:1,
         MAX_REC:maxroot
         })
-#        S2:imult})
 
 debug_MEL('ME_C0',info_only=True)
 
@@ -110,25 +121,30 @@ DEF_ME_LIST({
         OPERATOR:'H_C0',
         IRREP:wf_sym,
         '2MS':ims,
+        #S2:s_ref,  # currently not supported, see above
         AB_SYM:msc
         })
-#        S2:imult})
 
 debug_MEL('ME_H_C0',info_only=True)
 
 
 new_target('Make_GAM0')
-comment('Density matrix up to third order')
+if (spinadapt > 0) :
+    comment('Density matrix up to fourth order')
+    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+else:
+    comment('Density matrix up to third order')
+    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,'
 DEF_OP_FROM_OCC({
         LABEL:'GAM0',
         JOIN:2,
-        DESCR:',;,|,V;V,|,VV;VV,|,VVV;VVV,'})
+        DESCR:dstr})
 DEF_ME_LIST({
         LIST:'GAM0_LST',
         OPERATOR:'GAM0',
         IRREP:1,
-        '2MS':0,
-        AB_SYM:+1})
+        '2MS':0,S2:s_op,
+        AB_SYM:msc_op})
 
 debug_MEL('GAM0_LST',info_only=True)
 
@@ -153,6 +169,7 @@ DEF_ME_LIST({LIST:"ME_A_C0",
     OPERATOR:"A_C0",
     IRREP:wf_sym, 
     '2MS':ims,
+     #S2:s_ref,    # currently not supported, see above
      AB_SYM:msc})
 
 debug_MEL('ME_A_C0',info_only=True)
