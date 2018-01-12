@@ -4,7 +4,7 @@ import python_interface.gecco_modules.string_to_form as stf
 
 i_am="MRCCPT2lag.py"
 
-known_hamiltonians=["DYALL","DYALL-X","REPT","F_EFF","F_EFF-D"]
+known_hamiltonians=["DYALL","DYALL-X","REPT","F_EFF","F_EFF-D","EXT_DYALL","SIMP_REPT"]
 hamiltonian="DYALL"
 if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
@@ -13,7 +13,27 @@ print("hamiltonian: ", hamiltonian, type(hamiltonian))
 if hamiltonian not in known_hamiltonians : 
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
 
-connected=True
+# Option 'connected':
+#
+# If connected = False, triggers the equations assuming
+# a zeroth order Hamiltonian of the kind
+#  H^(0) = P hamiltonian P + Q hamiltonian Q
+# where P and Q are the projectors into the reference and
+# external spaces. This is as CASPT theory and it is needed if
+# the CASCI functions are not eigenfunctions of hamiltonian
+#
+# If connected = True, just aplies the equations from
+# perturbation theory. This will work well
+# as long that the CASCI wave functions are eigenfunctions
+# of hamiltonian with the same eigenvalues as the CASCI energies
+# (and thus E^(1) = 0)
+#
+# By default, uses the appropriate version according to the
+# hamiltonian
+if hamiltonian in ["F_EFF","F_EFF-D"]:
+    connected = False
+else:
+    connected = True
 if keywords.is_keyword_set('method.MRCCPT2.connected'):
     if (keywords.get('method.MRCCPT2.connected') == "T"):
         connected=True
@@ -22,16 +42,6 @@ if keywords.is_keyword_set('method.MRCCPT2.connected'):
     else :
         raise Exception(i_am+": unrecognised value for option connected (must be T or F)")
 print("connected ", connected, type(connected))
-
-connected_O3=connected
-if keywords.is_keyword_set('method.MRCCPT2.connected_O3'):
-    if (keywords.get('method.MRCCPT2.connected_O3') == "T"):
-        connected_O3=True
-    elif(keywords.get('method.MRCCPT2.connected_O3') == "F"):
-        connected_O3=False
-    else :
-        raise Exception(i_am+": unrecognised value for option connected_O3 (must be T or F)")
-print("connected_O3 ", connected_O3, type(connected_O3))
 
 # Third order term for the energy
 third_ord_energy = False
@@ -84,6 +94,10 @@ elif hamiltonian=="F_EFF":
     depend('EVAL_F_EFF')
 elif hamiltonian=="F_EFF-D":
     depend('EVAL_F_EFF_D')
+elif hamiltonian=="EXT_DYALL":
+    depend('EVAL_HAM_EXT_D')
+elif hamiltonian=="SIMP_REPT":
+    depend('EVAL_SIMP_REPT_HAM')
 
 DEF_SCALAR({
         LABEL:'PT_LAG'})
@@ -130,6 +144,15 @@ elif hamiltonian=="F_EFF":
 elif hamiltonian=="F_EFF-D":
     _h0_='FOCK_EFF_D'
     _h0exp_='FOCK_EFF_D_EXP'
+elif hamiltonian=="EXT_DYALL":
+    _h0_='HAM_EXT_D'
+    _h0exp_='missing'
+elif hamiltonian=="SIMP_REPT":
+    _h0_='SIMP_REPT_HAM'
+    _h0exp_='missing'
+
+if not(connected) and _h0exp_ == 'missing':
+    raise Exception(i_am+": The use of this hamiltonian: " + str(hamiltonian) + " is not compatible to not connected=F.")
 
 _h1_ = "(H-" +_h0_ + ")"
 
@@ -310,64 +333,205 @@ OPTIMIZE({
 # (e.g. replace H by H_N (i.e. without scalar contribution) for formula generation
 #  and replace back H_N->H aferwards (using "REPLACE")
 
+# =======================
 # Third order terms
-term_CI = "<C0^+ * (T2g^+) * (" + _h1_ + "*T2g) * C0>"
-term_CC0 =       "<C0^+ * (T2g^+) * (["  + _h1_ + ",T2g]) * C0>"
-term_CCa = "1/2 * <C0^+ *           ([[" + _h1_ + ",T2g],T2g]) * C0>"
-term_CCb = "1/2 * <C0^+ * (T2g^+) * ([[" + _h0_ + ",T2g],T2g]) * C0>"
+# =======================
 
-# The CC like third order term, written an another way
-term_pureV = "-<C0^+ * (T2g^+) * T2g * ( " +_h1_+ " + [" +_h0_+ ",T2g])  * C0>"
-term_highO = "1/2 * <C0^+ * ( " +_h1_+ " + [(T2g^+)," +_h0_+ "]) * T2g * T2g * C0>"
+# RS-based (CI-based) third order energy: <T^+ W T> - <W><T^+ T>
+term_CI = "<C0^+ * (T2g^+) * " + _h1_ + " * T2g * C0>"
+if not connected:
+    # <W><T^+ T> term:
+    # This term vanishes if E^(1) = <W> = 0
+    # This happens for Fink's and Dyall's H0, for example
+    term_CI_E1a = ("-<C0^+ * H * C0 * C0^+' * (T2g^+') * T2g' * C0'>",
+                   ["C0^+","T2g^+'",
+                    "C0^+","T2g'",
+                    "C0^+","C0'",
+                    "H","T2g^+'",
+                    "H","T2g'",
+                    "H","C0'"])
+    term_CI_E1b = "<" +_h0exp_+ " * C0^+ * (T2g^+) * T2g * C0>"
+    term_CI = [term_CI, term_CI_E1a, term_CI_E1b]
 
-term_2Oa = "<C0^+ * (T2g^+) * H * C0>"
-term_2Ob = "<C0^+ * (T2g^+) * [" + _h0_ + ",T2g] * C0>"
 
-if (third_ord_energy):
+# CC-based third order energy: <T^+ [W,T]> + 1/2 <[[W,T],T]> + 1/2 <T^+ [[H0,T],T]>
+#                                CC0    +       CCa       +       CCb
+if connected:
+    term_CC0 = "<C0^+ * (T2g^+) * ([" +_h1_+ ",T2g]) * C0>"
+else:
+    term_CC0 = ["<C0^+ * (T2g^+) * [H,T2g] * C0>",
+                "<C0^+ * (T2g^+) * (" +_h0exp_+"-"+_h0_+ ") * T2g * C0>"]
+
+# Originally <[[W,T],T]>, but T on the bra is zero and just <WTT> remains
+# Also, <WTT> = <HTT>
+term_CCa = "1/2 * <C0^+ * H * T2g * T2g * C0>"
+
+if connected:
+    term_CCb = "1/2 * <C0^+ * (T2g^+) * ([[" +_h0_+ ",T2g],T2g]) * C0>"
+    term_CCb_Q = None
+else:
+    term_CCb = ["1/2 * <C0^+ * (T2g^+) * " +_h0_+ " * T2g * T2g * C0>",
+                "1/2 * <C0^+ * (T2g^+) * T2g * T2g * " +_h0exp_+ " * C0>"]
+
+
+    # Term -<T^+ T Q H0 T>
+    # where Q is the projector into the external space
+    #
+    # Version 1: Q = 1-|C0><C0^+| is the projector into the full external space
+    # (including the part of the reference space orthogonal to the CASCI wave function
+    term_TTQH0T_all = {OPERATORS: ['C0^+', 'T2g^+', 'T2g', _h0_ , 'T2g', 'C0'],
+                       IDX_SV: [1,2,3,4,5,6],
+                       FAC:-1.0,
+                       FIX_VTX:True}
+
+    term_TTQH0T_ref = {OPERATORS: ['C0^+', 'T2g^+', 'T2g', 'C0^+', 'C0^+', _h0_ , 'T2g', 'C0'],
+                       IDX_SV:    [1     , 2      , 3    , 4     , 5     , 6    , 7    , 8],
+                       FAC:1.0,
+                       FIX_VTX:True,
+                       AVOID: [1,6,  1,7,  1,8,
+                               2,6,  2,7,  2,8,
+                               3,6,  3,7,  3,8]}
+
+    term_TTQH0T = [term_TTQH0T_all, term_TTQH0T_ref]
+
+
+    # Version 2: Q = 1-P is the projection into the orthogonal complement
+    # of the complete reference space; P = sum_\mu |\mu> <\mu| where the sum
+    # go over all the CAS determinants
+
+    # We implement -<T^+ T H0 T> +<T^+ T P H0 T>
+    # The first (negative) term is straightforward;
+    # For the second, we consider the possible terms in H0 T>
+    # such that no inactive lines are left to connect to the
+    # (<T^+ T) side.
+    # This is restricted to one body H0!!!
+
+    ops_for_TTQH0T =    ['C0^+', 'T2g^+', 'T2g', _h0_ , 'T2g', 'C0']
+    idx_sv_for_TTQH0T = [1     , 2      , 3    , 4    , 5    , 6]
+
+    term_TTH0T_full = {OPERATORS:ops_for_TTQH0T,
+                       IDX_SV:idx_sv_for_TTQH0T,
+                       FAC:-1.0,
+                       FIX_VTX:True}
+
+
+    term_TTQH0T_hp = {OPERATORS:ops_for_TTQH0T,
+                      IDX_SV:idx_sv_for_TTQH0T,
+                      FAC:1.0,
+                      FIX_VTX:True,
+                      LABEL_DESCR:['4,,H,P',
+                                   '5,,P,H',
+                                   '5,,VP,VH',
+                                   '4,5,H,P']}
+
+    term_TTQH0T_vp = {OPERATORS:ops_for_TTQH0T,
+                      IDX_SV:idx_sv_for_TTQH0T,
+                      FAC:1.0,
+                      FIX_VTX:True,
+                      LABEL_DESCR:['4,,V,P',
+                                   '5,,P,V',
+                                   '5,,PV,VV',
+                                   '4,5,,P']}
+
+    term_TTQH0T_hv = {OPERATORS:ops_for_TTQH0T,
+                      IDX_SV:idx_sv_for_TTQH0T,
+                      FAC:1.0,
+                      FIX_VTX:True,
+                      LABEL_DESCR:['4,,H,V',
+                                   '5,,V,H',
+                                   '5,,VV,VH',
+                                   '4,5,H,']}
+
+    term_TTQH0T = [term_TTH0T_full, term_TTQH0T_hp, term_TTQH0T_vp, term_TTQH0T_hv]
+
+
+# The difference between CC-based and RS-based
+# third order terms, written as:
+# 1/2 <(W + [T^+, H0])TT> - <T^+ T (W-<W> + [H0,T])>
+# term_highO             + term_pureV
+if connected:
+    term_highO = "1/2 * <C0^+ * ( H + [(T2g^+)," +_h0_+ "]) * T2g * T2g * C0>"
+    term_pureV = "-<C0^+ * (T2g^+) * T2g * ( " +_h1_+ " + [" +_h0_+ ",T2g]) * C0>"
+else:
+    term_highO = "1/2 * <C0^+ * ( H +  (T2g^+)*(" +_h0_+"-"+_h0exp_+ ") ) * T2g * T2g * C0>"
+    # term_pureV is as below, plus term_TTQH0T
+    term_pureV = ["-<C0^+ * (T2g^+) * T2g * H * C0>",
+                  ("<C0^+ * (T2g^+) * T2g * C0 * C0^+' * H * C0' >",
+                   ["C0^+","H",
+                    "C0^+","C0'",
+                    "T2g^+","H",
+                    "T2g^+","C0'",
+                    "C0","H",
+                    "C0","C0'"]),
+                  "<C0^+ * (T2g^+) * T2g * T2g * " +_h0exp_+ " * C0>"
+                  ]
+
+third_ord_terms = ['_CI', '_CC', '_CC0', '_CCa', '_CCb', '_CC_higherO', '_CC_pureV']
+#third_ord_terms = ['_CI', '_CC']
+#third_ord_terms = ['_CCb']
+
+if third_ord_energy:
     new_target('MRCCPT_E_3rd_O', True)
     heading('Third order correction for the energy')
     depend('SOLVE_MRCCPT2')
 
-    for i in ['_CI', '_CC0', '_CCa', '_CCb', '_CC', '_CC_pureV', '_CC_higherO']:
+    for i in third_ord_terms:
+        terms_extra = None
         if (i == '_CI'):
+            str_i = "RS-based term"
             term = term_CI
-            str_i = "Rayleigh-Schrodinger like term: <T^+ W T>"
-
-        elif (i == '_CC0'):
-            term = term_CC0
-            str_i = "term 0 of CC like: <T^+ [H1,T]>"
-
-        elif (i == '_CCa'):
-            term = term_CCa
-            str_i = "term a of CC like: 1/2 <[[H1,T],T]>"
-
-        elif (i == '_CCb'):
-            term = term_CCb
-            str_i = "term b of CC like: 1/2 <T^+ [[H0,T],T]>"
 
         elif (i == '_CC'):
-            term = [term_CC0,
-                    term_CCa,
-                    term_CCb]
-            str_i = "CC like term"
+            str_i = "CC-based term"
+            term = []
+            for t in (term_CC0, term_CCa, term_CCb):
+                if isinstance(t,str):
+                    term.append(t)
+                else:
+                    term.extend(t)
+            if not(connected):
+                terms_extra = term_TTQH0T
 
-        elif (i == '_CC_pureV'):
-            term = term_pureV
-            str_i = "CC term with pure virtual excitations"
+        elif (i == '_CC0'):
+            str_i = "term 0 of CC-based term: <T^+ [H1,T]>"
+            term = term_CC0
+
+        elif (i == '_CCa'):
+            str_i = "term a of CC-based term: 1/2 <[[H1,T],T]>"
+            term = term_CCa
+
+        elif (i == '_CCb'):
+            str_i = "term b of CC-based term: 1/2 <T^+ [[H0,T],T]>"
+            term = term_CCb
+            if not(connected):
+                terms_extra = term_TTQH0T
 
         elif (i == '_CC_higherO'):
-            term = term_highO
             str_i = "CC term with higher order excitations"
+            if isinstance(term_CI, str):
+                term = [term_CI]
+            else:
+                term = list(term_CI)
+            if isinstance(term_highO, str):
+                term.append(term_highO)
+            else:
+                term.extend(term_highO)
+
+        elif (i == '_CC_pureV'):
+            str_i = "CC term with pure virtual excitations"
+            if isinstance(term_CI, str):
+                term = [term_CI]
+            else:
+                term = list(term_CI)
+            if isinstance(term_pureV, str):
+                term.append(term_pureV)
+            else:
+                term.extend(term_pureV)
+            if not(connected):
+                terms_extra = term_TTQH0T
 
         else:
             raise Exception(i_am + ": unrecognised kind of third order correction: " + i)
-
-# This includes the terms from the 2nd order Lagrangian
-# that are exactly zero if ampl_type == 'PT2'
-#        if isinstance(term, list):
-#            term.extend([term_2Oa, term_2Ob])
-#        else:
-#            term = [term, term_2Oa, term_2Ob]
 
         DEF_SCALAR({LABEL:'MRCCPT_O3'+i})
         DEF_ME_LIST({LIST:'ME_MRCCPT_O3'+i,
@@ -376,35 +540,65 @@ if (third_ord_energy):
                      '2MS':0,
                      AB_SYM:+1})
 
+        # dbg
+        # print "Third order terms for i = " + i + ":"
+        # if (isinstance(term, str)):
+        #     print term
+        # else:
+        #     for t in term:
+        #         print str(t)
+        # if terms_extra is not None:
+        #     print "Extra terms:"
+        #     for t in terms_extra:
+        #         print t
+        # end dbg
+
         if (isinstance(term, str)):
             E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term)
         else:
             E_O3 = stf.Formula("FORM_MRCCPT_O3"+i+":MRCCPT_O3"+i+"="+term[0])
-            for j in range(1, len(term)):
-                E_O3.append(term[j])
+            for t in term[1:]:
+                if isinstance(t,str):
+                    E_O3.append(t)
+                elif isinstance(t, tuple):
+                    E_O3.append(t[0], avoid=t[1])
+                else:
+                    raise Exception(i_am+": I don't know what to do with this: " + str(t))
 
         E_O3.set_rule()
 
+        # Extra terms, that need the explicit EXPAND_OP_PRODUCT
+        # because the stf does not allow LABEL_DESCR
+        if terms_extra is not None:
+            for t in terms_extra:
+                t_actual = dict(t)
+                t_actual.update(
+                    {LABEL:"FORM_MRCCPT_O3"+i,
+                     NEW:False,
+                     OP_RES:"MRCCPT_O3"+i})
+                EXPAND_OP_PRODUCT(t_actual)
+            SUM_TERMS({LABEL_RES:"FORM_MRCCPT_O3"+i,
+                       LABEL_IN:"FORM_MRCCPT_O3"+i})
+
+        # if i == '_CCb':
+        #     debug_FORM("FORM_MRCCPT_O3"+i,True)
+        #     ABORT({})
+
         OPTIMIZE({LABEL_OPT:'FOPT_MRCCPT_O3'+i,
                   LABELS_IN:['FORM_MRCCPT_O3'+i]})
-
         EVALUATE({FORM:'FOPT_MRCCPT_O3'+i})
-
         DEF_SCALAR({LABEL:'E_MRCCPT2_plus_O3'+i})
         DEF_ME_LIST({LIST:'ME_E_MRCCPT2_plus_O3'+i,
                      OPERATOR:'E_MRCCPT2_plus_O3'+i,
                      IRREP:1,
                      '2MS':0,
                      AB_SYM:+1})
-
         ASSIGN_ME2OP({LIST:'PT_LAG_LST',OPERATOR:'PT_LAG'})
 
         E_plus_3rd = stf.Formula("F_MRCCPT2_plus_O3"+i+":E_MRCCPT2_plus_O3"+i+"=<PT_LAG>+<MRCCPT_O3"+i+">")
         E_plus_3rd.set_rule()
-
         OPTIMIZE({LABEL_OPT:'FOPT_MRCCPT2_plus_O3'+i,
                   LABELS_IN:['F_MRCCPT2_plus_O3'+i]})
-
         EVALUATE({FORM:'FOPT_MRCCPT2_plus_O3'+i})
 
         PRINT_MEL({
