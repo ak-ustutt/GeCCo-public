@@ -22,7 +22,8 @@
       integer, parameter ::
      &     maxcount = 1000000, ! at most 1000000 iterations
      &     ndisconn = 14,     ! at most 4 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 101,       ! vertices
+     &     itflog = 234       ! File to print ITF info
 
       type(contraction), intent(inout) ::
      &     contr
@@ -86,6 +87,9 @@
      &     next_fact
       integer, external ::
      &     int_pack, ifac
+
+      logical ::
+     &     exists       ! Check if itflog exists
      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'form_fact_new at work!')
@@ -301,6 +305,20 @@ c dbg
       if (ntest.ge.100) then
         write(lulog,*) 'generated formula'
         call print_form_list(lulog,fl_fact,op_info)
+
+
+        ! Write formula to ITF log file
+        inquire(file="itflog.itf", exist=exists)
+        if (exists) then
+          open(itflog, file="itflog.itf", status="old",
+     &         position="append", action="write")
+        else
+          open(itflog, file="itflog.itf", status="new", action="write")
+        end if
+
+        write(itflog,*) 'generated formula'
+        call print_form_list(itflog,fl_fact,op_info)
+        close(itflog)
       end if
 
       return
