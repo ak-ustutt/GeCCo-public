@@ -89,7 +89,8 @@
      &     int_pack, ifac
 
       logical ::
-     &     exists       ! Check if itflog exists
+     &     exists,       ! Check if itflog exists
+     &     itf=.false.   ! Trigger itf print to file
      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'form_fact_new at work!')
@@ -303,10 +304,11 @@ c dbg
      &     cpu-cpu0,sys-sys0,wall-wall0)
 
       if (ntest.ge.100) then
+        itf=.false.
         write(lulog,*) 'generated formula'
-        call print_form_list(lulog,fl_fact,op_info)
+        call print_form_list(lulog,fl_fact,op_info,itf)
 
-
+        itf=.true.
         ! Write formula to ITF log file
         inquire(file="itflog.itf", exist=exists)
         if (exists) then
@@ -317,7 +319,7 @@ c dbg
         end if
 
         write(itflog,*) 'generated formula'
-        call print_form_list(itflog,fl_fact,op_info)
+        call print_form_list(itflog,fl_fact,op_info,itf)
         close(itflog)
       end if
 
