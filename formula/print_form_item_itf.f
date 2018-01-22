@@ -27,6 +27,8 @@
 
       logical ::
      &     long
+      integer ::
+     &     inter=1    ! Counter of intermediates
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -45,6 +47,9 @@
      &                        trim(fl_item%parent2)
         write(lulog,'(2x,"incore: ",i2)') fl_item%incore
         call print_op_occ(lulog,fl_item%interm)
+
+        inter=inter+1
+
       case(command_del_intermediate)
         write(lulog,*) '[DELETE INTERMEDIATE]',fl_item%target
         write(lulog,'(2x,a)') trim(fl_item%label)

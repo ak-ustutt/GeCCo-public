@@ -44,6 +44,7 @@
         write(lulog,*) 'contracted by'
 c        call wrt_occ_n(lulog,bcontr%occ_cnt,bcontr%n_cnt)
         do ij = 1, bcontr%n_cnt
+          write(lulog,*) "Hello", bcontr%occ_cnt(1:,1:,ij)
           call wrt_occ_rstr(lulog,ij,
      &         bcontr%occ_cnt(1:,1:,ij),
      &         bcontr%rst_cnt(1:,1:,1:,1:,1:,ij),
