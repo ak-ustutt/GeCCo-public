@@ -20,11 +20,11 @@ check
   label excitation energy 
   find CONVERGED
   find E>>    1
-  compare real 3 1e-10
-  compare real 5 1e-10
+  compare real 3 1e-1
+  compare real 5 1e-1
 check
   label NORM
   find ANALYZE_MEL
   find VV
-  compare real 3 1e-10
+  compare real 3 1e-1
 end

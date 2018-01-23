@@ -14,6 +14,8 @@ maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
 lagrangian = keywords.get('method.MRCC2.maxcom_res2')
 maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
 
+MRCCSD_mode = keywords.is_keyword_set('method.MRCC2.MRCCSD_mode')
+
 known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')
 hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
@@ -207,9 +209,9 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
 
 
     
-create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en).set_rule()
-create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1).set_rule()
-create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian).set_rule()
+create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en, MRCCSD_mode).set_rule()
+create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1, MRCCSD_mode).set_rule()
+create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian, MRCCSD_mode).set_rule()
 
 
 
