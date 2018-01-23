@@ -104,9 +104,7 @@
      &     maxiter              !aliases for opti_info fields
 
       real(8)::
-     &     xnrm                !temporary variable for some norms
-      integer,external::
-     &     dvdsbsp_get_nnew_vvec
+     &     xnrm , xdummy               !temporary variable for some norms
       real(8)::
      &     lrsnrm(nroot,nopt), ! local copy of xrsnrm
      &     leig(nroot) !local variable for eigenvalues
@@ -135,8 +133,8 @@
      &     "only linear depended new directions generated")
 
       if (nroot.gt. dvdsbsp_get_nfree(dvdsbsp) )then
-         call quit(0,i_am,
-     &        "subspace compression doesn't work at the moment")
+!         call quit(0,i_am,
+!     &        "subspace compression doesn't work at the moment")
          call dvdsbsp_compress(dvdsbsp, nroot,
      &        nopt, me_scr,     !scr as scratch
      &        xbuf1, xbuf2, lenbuf ,nincore)
@@ -175,6 +173,7 @@
                if (trafo(iopt) ) then
                   call transform_back_wrap(flist,depend,
      &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
+     &                 xdummy,
      &                 iopt, nspecial,
      &                 me_trv(iopt)%mel,
      &                 op_info, str_info, strmap_info,
@@ -223,6 +222,7 @@
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
      &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              xdummy,
      &              iopt,nspecial,
      &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,
