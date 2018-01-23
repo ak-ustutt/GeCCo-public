@@ -116,7 +116,9 @@ c dbgend
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
      &     palph(:), pbeta(:), proj(:,:), norm(:), scratch3(:,:),
      &     scratch4(:,:), sing3(:,:), trip3(:,:), buffer_u(:),
-     &     svs(:)
+     &     svs(:),
+     &     scratch_tmp1(:,:),scratch_tmp2(:,:),scratch_tmp3(:,:),
+     &     scratch_tmp4(:,:)
       real(8), target ::
      &     xdummy(1,1)
 c dbg
@@ -1038,13 +1040,29 @@ c dbgend
                 rdim2 = rankdim(jrank)
                 idxst2 = rankoff(jrank) + 1
                 idxnd2 = rankoff(jrank) + rdim2
-                scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
-                call get_vec2remove(scratch(idxst:idxnd,idxst2:idxnd2),
-     &                             scratch(idxst2:idxnd2,idxst2:idxnd2),
+               call create_submatrix_h(
+     &               idxst,idxnd,
+     &               idxst2,idxnd2,
+     &               scratch_tmp1)
+               scratch_tmp1=0d0
+               call extract_submatrix_h(scratch,
+     &              ndim, idxst2, idxnd2,
+     &              ndim, idxst2, idxnd2,
+     &              scratch_tmp2)
+                call get_vec2remove(scratch_tmp1,
+     &                             scratch_tmp2,
      &                             rdim,rdim2,ms1,igam,irank-jrank,
      &                             na1mx-nrank+irank,nc1mx-nrank+irank,
      &                             gno,pass_spc,mel_spc,na1mx,nc1mx,
      &                             orb_info,str_info,strmap_info)
+               call delete_submatrix_h(
+     &              scratch_tmp2
+     &              )
+               call insert_submatrix_h(scratch,
+     &              ndim, idxst, idxnd,
+     &              ndim, idxst2, idxnd2,
+     &              scratch_tmp1)
+
               end do
              else ! if project.eq.2
               ! multiply off-diagonal blocks with lower trafo matrices
@@ -1052,10 +1070,20 @@ c dbgend
                rdim2 = rankdim(jrank)
                idxst2 = rankoff(jrank) + 1
                idxnd2 = rankoff(jrank) + rdim2
+! Evil Hacking ahead:
+! this actually is scratch(idxst:idxnd,idxst2:idxnd2)=scratch(idxst2:idxnd2,idxst:idxnd)*scratch(idxst2:idxnd2,idxst2:idxnd2)
+! But defining it with ranges creates temorary matrices on the stack (at least with ifort) leading stackoverflow
+! we could create those matrices on the heap and our elements. (we do this for other routines)
+! to avoid copying : we give the first element of the submatrix in question and tell dgemm, that
+!                  scratch(idxst2,idxst+1) is ndim elements behind scratch(idxst2,idxst)
+!  this is how dgemm is intended to be used.
+! I miss C++
+              
                call dgemm('t','n',rdim,rdim2,rdim2,
-     &                   1d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
-     &                   scratch(idxst2:idxnd2,idxst2:idxnd2),rdim2,
-     &                   0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+     &                   1d0,scratch(idxst2,idxst),ndim,
+     &                   scratch(idxst2,idxst2),ndim,
+     &                   0d0,scratch(idxst,idxst2),ndim) 
+               
 c dbg
                ! transpose (only needed for double-check below)
                do idx = 0, rdim2-1
@@ -1067,26 +1095,32 @@ c dbgend
               ! singular value decompose off-diagonal block
               ! and overwrite by nonredundant part of W^+ (left-hand)
               call svd_get_left(rdim,ndim-idxnd,
-     &                          scratch(idxst:idxnd,idxnd+1:ndim))
+     &                          scratch(idxst:idxnd,idxnd+1:ndim)) ! TODO avoid stack overflow
              end if
              allocate(proj(rdim,rdim))
              if (project.eq.1) then
               allocate(scratch4(rdim,rdim))
-              ! form outer product of these vectors
+! form outer product of these vectors
+              print *, "to be tested or not to be tested"
+           
+! Evil Hacking ahead:
+! see above
               call dgemm('n','t',rdim,rdim,ndim-idxnd,
-     &                   1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
-     &                   scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   1d0,scratch(idxst,idxnd+1),ndim,
+     &                   scratch(idxst,idxnd+1),ndim,
      &                   0d0,scratch4,rdim)
               ! assemble projector: 1 - sum(p*p^T)*S
               call dgemm('n','n',rdim,rdim,rdim,
      &                   -1d0,scratch4,rdim,
-     &                   scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                   scratch(idxst,idxst),ndim,
      &                   0d0,proj,rdim)
              else ! if project.eq.2
-              ! form outer product -W^+ * W
+! form outer product -W^+ * W
+! Evil Hacking ahead:
+! see above
               call dgemm('n','t',rdim,rdim,ndim-idxnd,
-     &                   -1d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim,
-     &                   scratch(idxst:idxnd,idxnd+1:ndim),rdim,
+     &                   -1d0,scratch(idxst,idxnd+1),ndim,
+     &                   scratch(idxst,idxnd+1),ndim,
      &                   0d0,proj,rdim)
              end if
              do idx = 1, rdim
@@ -1103,20 +1137,22 @@ c dbgend
              if (project.eq.2) allocate(scratch4(rdim,rdim))
              call dgemm('t','n',rdim,rdim,rdim,
      &                  1d0,proj,rdim,
-     &                  scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                  scratch(idxst,idxst),ndim,
      &                  0d0,scratch4,rdim)
              ! (b) (Q^+*S)*Q
              call dgemm('n','n',rdim,rdim,rdim,
-     &                  1d0,scratch4,rdim,proj,rdim,
-     &                  0d0,scratch(idxst:idxnd,idxst:idxnd),rdim)
+     &            1d0,scratch4,rdim,proj,rdim,
+     &            0d0,scratch(idxst,idxst),ndim)
              deallocate(scratch4)
 c dbg
              if (project.eq.2) then
+! Evil Hacking ahead:
+! see above
                ! check that off-diagonal blocks are projected out
                call dgemm('t','t',rdim,ndim-idxnd,rdim,
      &                    1d0,proj,rdim,
-     &                    scratch(idxnd+1:ndim,idxst:idxnd),ndim-idxnd,
-     &                    0d0,scratch(idxst:idxnd,idxnd+1:ndim),rdim)
+     &                    scratch(idxnd+1,idxst),ndim,
+     &                    0d0,scratch(idxst,idxnd+1),ndim)
                if (iprint.ge.100) then
                  write(lulog,*) 'Projected off-diagonal block:'
                  call wrtmat3(scratch(idxst:idxnd,idxnd+1:ndim),
@@ -1143,11 +1179,12 @@ c dbgend
                rdim3 = rankdim(krank)
                idxst3 = rankoff(krank) + 1
                idxnd3 = rankoff(krank) + rdim3
-               
+! Evil Hacking ahead:
+! see above
                call dgemm('t','n',rdim2,rdim,rdim3,
-     &                  -1d0,scratch(idxst3:idxnd3,idxst2:idxnd2),rdim3,
-     &                  scratch(idxst3:idxnd3,idxst:idxnd),rdim3,
-     &                  1d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+     &                  -1d0,scratch(idxst3,idxst2),ndim,
+     &                  scratch(idxst3,idxst),ndim,
+     &                  1d0,scratch(idxst2,idxst),ndim)
               end do
              end do
              ! compute the blocks below (intermediately stored on the right)
@@ -1161,10 +1198,12 @@ c dbgend
                rdim3 = rankdim(krank)
                idxst3 = rankoff(krank) + 1
                idxnd3 = rankoff(krank) + rdim3
+! Evil Hacking ahead:
+! see above
                call dgemm('t','t',rdim,rdim2,rdim3,
-     &                  -1d0,scratch(idxst3:idxnd3,idxst:idxnd),rdim3,
-     &                  scratch(idxst2:idxnd2,idxst3:idxnd3),rdim2,
-     &                  1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
+     &                  -1d0,scratch(idxst3,idxst),ndim,
+     &                  scratch(idxst2,idxst3),ndim,
+     &                  1d0,scratch(idxst,idxst2),ndim)
               end do
              end do
 
@@ -1216,11 +1255,18 @@ c dbgend
               sing3 => xdummy
               trip3 => xdummy
             end if
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
             call spinsym_traf(1,rdim,
-     &                        scratch(idxst:idxnd,idxst:idxnd),
+     &                        scratch_tmp1,
      &                        flmap(idxst:idxnd,3),nsing,
      &                        sing,trip,.false.)
-
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
             ! calculate T^(-0.5) for both blocks
             call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
      &                       svs(idxst),icnt_sv,icnt_sv0,
@@ -1231,62 +1277,173 @@ c dbgend
      &                       xmax,xmin,bins(1,iexc_cls))
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            print *, "to test or not to test0"
             call spinsym_traf(2,rdim,
-     &                        scratch(idxst:idxnd,idxst:idxnd),
+     &                        scratch_tmp1,
      &                        flmap(idxst:idxnd,3),nsing,
      &                        sing,trip,.true.)
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+         
             if (.not.half) then
               ! full undo of pre-diagonalization for projector
+              call extract_submatrix_h(scratch2,
+     &             ndim, idxst, idxnd,
+     &             ndim, idxst, idxnd,
+     &             scratch_tmp1)
+              print *, "to test or not to test1"
               call spinsym_traf(2,rdim,
-     &                          scratch2(idxst:idxnd,idxst:idxnd),
+     &                          scratch_tmp1,
      &                          flmap(idxst:idxnd,3),nsing,
-     &                          sing2,trip2,.false.)
+     &             sing2,trip2,.false.)
+            call insert_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+              
               deallocate(sing2,trip2)
             end if
             if (get_u) then
+            print *, "to test or not to test2"
               ! partial undo of pre-diagonalization: Upre*U
-              call spinsym_traf(2,rdim,
-     &                          scratch3(idxst:idxnd,idxst:idxnd),
+            call extract_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call spinsym_traf(2,rdim,
+     &                          scratch_tmp1,
      &                          flmap(idxst:idxnd,3),nsing,
      &                          sing3,trip3,.true.)
-              deallocate(sing3,trip3)
+            call insert_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            deallocate(sing3,trip3)
             end if
             deallocate(sing,trip)
 
           else if (lmodspc) then
-            call mat_svd_traf(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2(idxst:idxnd,idxst:idxnd),
+            print *, "to test or not to test4"
+
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call extract_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call mat_svd_traf(rdim,scratch_tmp1,
+     &                       scratch_tmp2,
      &                       icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
+            call insert_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            
           else if (.not.half.and.get_u) then
-            ! calculate S^(-0.5)
-            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2(idxst:idxnd,idxst:idxnd),
+! calculate S^(-0.5)
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call extract_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call extract_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp3)
+            call invsqrt_mat(rdim,scratch_tmp1,
+     &                       scratch_tmp2,
      &                       half,
-     &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
+     &                       scratch_tmp3,get_u,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
+            call insert_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp3)
+            call insert_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
           else if (.not.half) then
-            ! calculate S^(-0.5)
-            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
-     &                       scratch2(idxst:idxnd,idxst:idxnd),
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call extract_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call invsqrt_mat(rdim,scratch_tmp1,
+     &                       scratch_tmp2,
      &                       half,xdummy,get_u, !scratch3: dummy
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
+            call insert_submatrix_h(scratch2,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp2)
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
           else if (get_u) then
             ! calculate S^(-0.5)
-            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call extract_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp3)
+            call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
-     &                       scratch3(idxst:idxnd,idxst:idxnd),get_u,
+     &                       scratch_tmp3,get_u,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
+            call insert_submatrix_h(scratch3,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp3)
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
           else
             ! calculate S^(-0.5)
-            call invsqrt_mat(rdim,scratch(idxst:idxnd,idxst:idxnd),
+            call extract_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
+            call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
      &                       xdummy,get_u, !scratch3: dummy
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
+            call insert_submatrix_h(scratch,
+     &           ndim, idxst, idxnd,
+     &           ndim, idxst, idxnd,
+     &           scratch_tmp1)
           end if
 
            select case(project)
@@ -1294,9 +1451,11 @@ c dbgend
             ! apply projector again: X = Q*U*s^(-0.5)
             if (irank.ge.2) then
               allocate(scratch4(rdim,rdim))
+! Evil Hacking ahead:
+! see above
               call dgemm('n','n',rdim,rdim,rdim,
      &                   1d0,proj,rdim,
-     &                   scratch(idxst:idxnd,idxst:idxnd),rdim,
+     &                   scratch(idxst,idxst),ndim,
      &                   0d0,scratch4,rdim)
               scratch(idxst:idxnd,idxst:idxnd) = scratch4
               if (iprint.ge.100) then
@@ -1305,9 +1464,11 @@ c dbgend
      &                       rdim,rdim,rdim,rdim)
               end if
               if (.not.half) then
+! Evil Hacking ahead:
+! see above
                 call dgemm('n','n',rdim,rdim,rdim,
      &                     1d0,proj,rdim,
-     &                     scratch2(idxst:idxnd,idxst:idxnd),rdim,
+     &                     scratch2(idxst,idxst),ndim,
      &                     0d0,scratch4,rdim)
                 scratch2(idxst:idxnd,idxst:idxnd) = scratch4
                 if (iprint.ge.100) then
@@ -1326,16 +1487,18 @@ c dbgend
              rdim2 = rankdim(jrank)
              idxst2 = rankoff(jrank) + 1
              idxnd2 = rankoff(jrank) + rdim2
+! Evil Hacking ahead:
+! see above
              call dgemm('t','n',rdim2,rdim,rdim,
-     &            1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
-     &            scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &            0d0,scratch(idxst2:idxnd2,idxst:idxnd),rdim2)
+     &            1d0,scratch(idxst,idxst2),ndim,
+     &            scratch(idxst,idxst),ndim,
+     &            0d0,scratch(idxst2,idxst),ndim)
              if(project.eq.4)then
              !P12 =  X1^+ S12
              call dgemm('t','n',rdim2,rdim,rdim,
-     &            1d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim,
-     &            scratch2(idxst:idxnd,idxst:idxnd),rdim,
-     &            0d0,scratch2(idxst2:idxnd2,idxst:idxnd),rdim2)
+     &            1d0,scratch(idxst,idxst2),ndim,
+     &            scratch2(idxst,idxst),ndim,
+     &            0d0,scratch2(idxst2,idxst),ndim)
              end if
              scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
             end do
@@ -2445,6 +2608,81 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
          next_gam_h =.true.
       end if
       end function
+!##################################################################!
+
+
+!------------------------------------------------------------------!
+!!     this could be easier done by just transferring mat(a_start:a_end,b_start:b_end)
+!!     where mat is used, but ifort then allocates the matrix on the stack => possible stackoverflow
+!!     instead we explicitly allocate them on the heap
+!!
+!!     I miss C++      
+!------------------------------------------------------------------!
+      subroutine extract_submatrix_h(mat,
+     &     dim1, a_start, a_end,
+     &     dim2, b_start, b_end,
+     &     outmat)
+!------------------------------------------------------------------!
+      implicit none
+      integer,intent(in)::
+     &     dim1, a_start, a_end,
+     &     dim2, b_start, b_end
+   
+      double precision, intent(in)::
+     &     mat(dim1,dim2)
+      double precision, pointer::
+     &     outmat(:,:)
+      allocate(outmat(a_end-a_start+1,b_end-b_start+1))
+      outmat = mat(a_start:a_end,b_start:b_end)
+      end subroutine
+
+!------------------------------------------------------------------!
+      subroutine insert_submatrix_h(
+     &     mat,
+     &     dim1, a_start, a_end,
+     &     dim2, b_start, b_end,
+     &     inmat)
+!------------------------------------------------------------------!
+      implicit none
+      integer,intent(in)::
+     &     dim1, a_start, a_end,
+     &     dim2, b_start, b_end
+   
+      double precision, pointer::
+     &     inmat(:,:)
+      double precision::
+     &     mat(dim1,dim2)
+      mat(a_start:a_end,b_start:b_end) = inmat
+      deallocate(inmat)
+      inmat=> null()
+      end subroutine
+!------------------------------------------------------------------!
+      subroutine create_submatrix_h(
+     &     a_start, a_end,
+     &     b_start, b_end,
+     &     outmat)
+!------------------------------------------------------------------!
+      implicit none
+      integer,intent(in)::
+     &     a_start, a_end,
+     &     b_start, b_end
+      double precision, pointer::
+     &     outmat(:,:)
+      allocate(outmat(a_end-a_start+1,b_end-b_start+1))
+      end subroutine
+!------------------------------------------------------------------!
+!------------------------------------------------------------------!
+      subroutine delete_submatrix_h(
+     &     inmat)
+!------------------------------------------------------------------!
+      implicit none
+      double precision, pointer::
+     &     inmat(:,:)
+      deallocate(inmat)
+      inmat=>null()
+      end subroutine
+!------------------------------------------------------------------!
+      
 !------------------------------------------------------------------!
 !!    checks if a given combination of electron number, ms and symmetry is possible for a gam/ms block
 !!    ms=0 and gam =1 are qlways possible and check only the other condition
@@ -2463,4 +2701,43 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       if (nel .eq.0 .and. gam.ne.1)is_possible_h = .false.
 
       end function
+!------------------------------------------------------------------!
+! we need to distinguish:
+! /0 0 0 0\     /0 0 0 0\
+! \0 0 x 0/     \0 0 0 0/ i.e. if creators come first,
+! /0 0 0 0\ and /0 0 x 0\ we need to transpose the
+! \0 0 0 0/     \0 0 x 0/ scratch matrix
+! /0 0 x 0\     /0 0 0 0\ (important if result is non-symmetric!)
+! \0 0 0 0/     \0 0 0 0/
+!------------------------------------------------------------------!
+      function use_transposed_scratch_h(hpvx_occ, njoined)
+      character(len=*),parameter ::
+     &     i_am = 'invsqrt:use_transposed_scratch_h'
+      logical::
+     &     use_transposed_scratch_h
+
+      integer, intent(in)::
+     &     njoined,
+     &     hpvx_occ(ngastp,2,njoined)
+      logical ::
+     &     error
+      integer ::
+     &     ij
+   
+      if ( njoined .ne. 3) then
+        call quit(2, i_am, "not prepared for njonied !=3")
+      end if
+      use_transposed_scratch_h = .false. ! necessary to give an result if there are no creators or anihilators
+      do ij = 1, njoined
+        if (sum(hpvx_occ(1:ngastp,1,iblkoff+ij)).gt.0) then
+          use_transposed_scratch_h = .true.
+          exit
+        else if (sum(hpvx_occ(1:ngastp,2,iblkoff+ij)).gt.0) then
+          use_transposed_scratch_h = .false.
+          exit
+        end if
+      end do
+      return
+      end function
+!------------------------------------------------------------------!
       end

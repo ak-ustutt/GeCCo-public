@@ -283,11 +283,15 @@
           <keyword name="excite" status="A">
             <argument length="8" name="method" status="A" type="8" value="LR      "/>
           </keyword>
+          <keyword name="MRCCSD_mode" status="A" > <!-- For debugging, extends the formulas  to full MRCCSD formulas the hamiltonian has to manually to be set to FULL -->
+          </keyword>
           <argument length="1" name="lagrangian" status="A" type="2" value="0">
             <!--type of lagrangian-->
+	    <argument length="1" name="maxcom_res" status="A" type="2" value="0"/>
+            <argument length="1" name="maxcom_en" status="A" type="2" value="0"/>
           </argument>
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
-            <!--the H0 hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) -->
+            <!--the unperturbed hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) or "FULL" (full hamiltonian perturbation is 0) -->
           </argument>
           <keyword name="relaxref" status="A"/>
 	</keyword>
@@ -385,7 +389,17 @@
         </keyword>
         <keyword name="CC_solve_tbar" status="A"/>
         <keyword name="CC_solve_sim" status="A"/>
-        <keyword name="properties" status="A"><argument length="1" name="triplet" status="A" type="1" value="false"><!--whether the perturbation is triplet--></argument><argument length="1" name="restart" status="A" type="2" value="1"><!--restart the response calculation from a particular order--></argument><argument length="1" name="eig_zero" status="A" type="1" value="true"><!--whether solving for the zero eigen value of the lambda equation--></argument></keyword>
+        <keyword name="properties" status="A">
+          <argument length="1" name="triplet" status="A" type="1" value="false">
+	    <!--whether the perturbation is triplet-->
+	  </argument>
+          <argument length="1" name="restart" status="A" type="2" value="1">
+            <!--restart the response calculation from a particular order-->
+          </argument>
+          <argument length="1" name="eig_zero" status="A" type="1" value="true">
+            <!--whether solving for the zero eigen value of the lambda equation-->
+          </argument>
+        </keyword>
         <keyword name="skip_E" status="A"/>
         <keyword name="check_S" status="A">
           <argument length="8" name="sym" status="A" type="2" value="1,0,0,0,0,0,0,0"/>

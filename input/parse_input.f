@@ -128,8 +128,8 @@
 !>    prints a keyword 
 !!
 !!   @param luwrt output unit
-!!   @param arg argument node
-!!   @param status_vis if status should be printed as well
+!!   @param keywd keyword node
+!!   @param level the level (number of nodes fromm root) of the keyword
 *----------------------------------------------------------------------*
       subroutine print_keyword(luwrt,keywd,level)
 *----------------------------------------------------------------------*
@@ -162,7 +162,7 @@
       write (luwrt,fmtstr)getAttribute(curkey,atr_name)
       end subroutine print_keyword
 *----------------------------------------------------------------------*
-!>    prints a keyword 
+!>    prints an argument 
 !!
 !!   @param luwrt output unit
 !!   @param arg argument node
@@ -243,6 +243,7 @@
 !!   @param tree the tree object
 !!   @param history pointer to the last active history file (may be null())
 !!   @param one_more true if active blocks were found
+!!     depreceated feature
 *----------------------------------------------------------------------*
       subroutine tree_toggle_status_(tree,one_more)
 *----------------------------------------------------------------------*
@@ -848,7 +849,6 @@ c dbgend
       else
          write(fmtstr,'("(x,""^"")")')
       end if
-      write(luout,*)fmtstr
       write(outstr,fmtstr)
       call print_out(outstr,unit)
       write(outstr,'(x,"INPUT ERROR: ",a)') msg

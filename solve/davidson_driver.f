@@ -1,5 +1,5 @@
 
-!>    driver for the davidson algoritmus
+!>    driver for the davidson algorithm
 !!
 !!    Davidson
 !!    on entry: Mv-product on me_mvp me
@@ -11,7 +11,7 @@
      &     trafo, use_s,
      &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
-     &     me_met,me_metort,
+     &     me_metort,
      &     me_scr,me_res,
      &     me_trv,me_mvp,me_vort,me_mvort,
      &     me_special, nspecial,
@@ -59,7 +59,7 @@
 
       type(me_list_array), intent(inout) :: !inout to be sure
      &     me_opt(*), me_dia(*),
-     &     me_met(*), me_metort(*),
+     &     me_metort(*),
      &     me_scr(*),me_res(*),
      &     me_trv(*), me_mvp(*),me_vort(*),me_mvort(*),
      &     me_special(*)
@@ -98,23 +98,13 @@
 !     locals
 
       integer::
-     &     iopt, jopt,
+     &     iopt,
      &     iroot,
      &     maxvec,
-     &     irecres,        !record pointer for contracting lists to be updated on me_res, number of new_lists
      &     maxiter              !aliases for opti_info fields
 
-      integer,pointer::
-     &     typ_prc(:),nwfpar(:)
-      logical::
-     &     conv, zero_nrm
       real(8)::
-     &     xnrm                !temporary variable for some norms
-! lists for the mv-product and vector in the orthogonal space
-      integer,external::
-     &     dvdsbsp_get_nnew_vvec
-      real(8),external::
-     &     xnormop
+     &     xnrm , xdummy               !temporary variable for some norms
       real(8)::
      &     lrsnrm(nroot,nopt), ! local copy of xrsnrm
      &     leig(nroot) !local variable for eigenvalues
@@ -128,80 +118,6 @@
       if (ntest.ge.100) write (lulog,*) "iteration ",iter
 
       maxiter = opti_info%maxmacit
-      typ_prc => opti_info%typ_prc
-      nwfpar => opti_info%nwfpar
-cc     the lists are alialized as if the following block had been executed ARNE 8.9.16
-cc
-c      do iopt = 1,nopt
-c         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf) then
-c            me_vort(iopt)%mel => me_special(1)%mel
-c            me_mvort(iopt)%mel => me_scr(iopt)%mel
-c         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-c            if (nspecial .lt. 4) call quit(1,'evpc_core',
-c     &           'TR0 with <4 me_lists')
-c            me_vort(iopt)%mel => me_special(4)%mel
-c            me_mvort(iopt)%mel => me_scr(iopt)%mel
-c         else !no transformation needed
-c            me_vort(iopt)%mel => me_trv(iopt)%mel
-c            me_mvort(iopt)%mel => me_mvp(iopt)%mel
-c         end if
-c      end do
-
-      irecres=0
-      do iroot=1,nnew
-         
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-              call print_list("entry trv",me_trv(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-         do iopt=1,nopt
-            call switch_mel_record(me_mvp(iopt)%mel,iroot)
-            call switch_mel_record(me_mvort(iopt)%mel,iroot)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            if (use_s(iopt))then
-               call switch_mel_record(me_met(iopt)%mel,iroot)
-               call switch_mel_record(me_metort(iopt)%mel,iroot)
-            end if
-            if (trafo(iopt)) then
-               call transform_forward_wrap(flist,depend,
-     &              me_special,me_mvp,me_mvort, !mvp-> mvort
-     &              xrsnrm,
-     &              nroot, iroot, iopt, iroot, nspecial,
-     &              me_trv,
-     &              op_info, str_info, strmap_info, orb_info, opti_info)
-               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                 call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
-               endif
-              
-              if (use_s(iopt))then
-                 call transform_forward_wrap(flist,depend,
-     &                me_special,me_met,me_metort, !met-> metort
-     &                xrsnrm, nroot,
-     &                iroot, iopt, iroot, nspecial,
-     &                me_trv,
-     &                op_info,str_info,strmap_info, orb_info, opti_info)
-                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-                    call set_blks(me_metort(iopt)%mel,
-     &                   "P,H|P,V|V,H|V,V",0d0)
-                 end if
-              else
-                 me_metort(iopt)%mel=> null()
-              end if
-           else
-              if (use_s(iopt))then
-                 me_metort(iopt)%mel=> me_met(iopt)%mel
-              else
-                 me_metort(iopt)%mel=>null()
-              end if
-           end if
-        end do                  !iopt
-      end do
-      
 
 
       call dvdsbsp_append_vecs(dvdsbsp,
@@ -217,6 +133,8 @@ c      end do
      &     "only linear depended new directions generated")
 
       if (nroot.gt. dvdsbsp_get_nfree(dvdsbsp) )then
+!         call quit(0,i_am,
+!     &        "subspace compression doesn't work at the moment")
          call dvdsbsp_compress(dvdsbsp, nroot,
      &        nopt, me_scr,     !scr as scratch
      &        xbuf1, xbuf2, lenbuf ,nincore)
@@ -230,38 +148,9 @@ c      end do
      &     xbuf1, xbuf2, nincore, lenbuf)
 
 
-!................. check convergence
-      irecres=0
-      do iroot=1,nnew
-         ! test energy criteria
-         if (iter .gt.1      ! if iter was 1 old energy was 0 convergence check is obsolete
-     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot,1),
-     &        thrgrd_e) )then
-            conv = .true. ! yet
-         else if(iter.gt.1)then
-            conv=.false.
-            call warn_e_convergence(lulog,iroot,xeig(iroot,1),
-     &           leig(iroot))
-         else
-            conv=.true.
-         end if
-         ! test gradient(residual) criteria
-         conv= conv .and.
-     &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
-
-         if (.not.conv)then
-            irecres=irecres+1
-            do iopt=1,nopt
-               call switch_mel_record(me_scr(iopt)%mel,iroot)
-               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other
-               call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel, !scr ->res
-     &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
-            end do
-            reig(irecres,1)=leig(iroot)
-         end if
-      end do
-      xeig(1:nroot,1)=leig
-      nnew=irecres              ! 0 if all converged
+!................. compress unconverged vectors on me_res & determine how many unconverged roots there are
+      nnew = collect_unconverged_h(me_scr,me_res,nopt,leig,xeig,xrsnrm, ! me_scr -> me_res
+     &     nnew,iter, opti_info) 
       
 
 !................. if all converged, assemble results.
@@ -279,148 +168,71 @@ c      end do
          do iroot=1,maxvec
             do iopt=1,nopt
                call switch_mel_record(me_vort(iopt)%mel,iroot)
-               call switch_mel_record(me_opt(iopt)%mel,iroot)
-            end do
-            if (ntest.ge.100)then
-               write(lulog,*) "root:",iroot
-               do iopt=1,nopt
-                  call print_list("result in orth space",
-     &                 me_vort(iopt)%mel,
-     &                 "LIST",0d0,0d0,
-     &                 orb_info,str_info)
-               end do
-            end if
-           
+               call switch_mel_record(me_opt(iopt)%mel,iroot)           
 !            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
-            do iopt=1,nopt
                if (trafo(iopt) ) then
                   call transform_back_wrap(flist,depend,
-     &                 me_special,me_vort,me_opt, !vort -> opt !
-     &                 iroot, iopt, nspecial,
-     &                 me_trv,
+     &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
+     &                 xdummy,
+     &                 iopt, nspecial,
+     &                 me_trv(iopt)%mel,
      &                 op_info, str_info, strmap_info,
      &                 orb_info, opti_info)
-
 
 !     else me_vort => me_trv => me_opt
                end if
             end do
             
-            if (ntest.ge.10)then
-               write(lulog,*) "root:",iroot
-               do iopt=1,nopt
-                  call print_list("result in normal space",
-     &                 me_opt(iopt)%mel,
-     &                 "LIST",0d0,0d0,
-     &                 orb_info,str_info)
-               end do
-            end if
          end do
-         if(nnew.eq.0)then
-            write(lulog,'(x,a,i5,a)')
-     &           'CONVERGED IN ',iter,' ITERATIONS'
-            if (luout.ne.lulog.and.iprlvl.ge.5)
-     &           write(luout,'(x,a,i5,a)')
-     &           'CONVERGED IN ',iter,' ITERATIONS'
-         else
-            write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
-            call warn('linear solver', 'NO CONVERGENCE OBTAINED')
-         end if
          task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
       else
          task=4       ! calculate new mv product when returning
       end if
-
-      if (ntest.ge.100)then
-         do iopt=1,nopt
-            call print_list("preconditioner",me_dia(iopt)%mel,
-     &           "LIST",0d0,0d0,
-     &           orb_info,str_info)
-         end do
-      end if
+      ! create new trialvector in orthogonal space
       do iroot = 1, nnew
          do iopt=1,nopt
             call switch_mel_record(me_res(iopt)%mel,iroot)
             call switch_mel_record(me_vort(iopt)%mel,iroot)
-         end do
-
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("residual",me_res(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-         do iopt = 1,nopt
-           
-            xnrm=0.0
-            do jopt = 1,nopt
-               xnrm = xnrm+xrsnrm(iroot,jopt)**2
-            end do
-
-            xnrm=sqrt(xnrm)
+            xnrm = get_norm_of_root_h(xrsnrm,iroot,nopt,nnew)
             call apply_preconditioner(
      &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
-     &           nwfpar(iopt),
+     &           opti_info%nwfpar(iopt),
      &           opti_info%typ_prc(iopt),
-     &           xeig(iroot,1), xnrm, nnew, iroot,
+     &           xeig(iroot,1),
+     &           xnrm,
+     &           nnew, iroot,
      &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,
      &           me_special, nspecial,
      &           fspc, nspcfrm,
      $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
      &           nopt.eq.1, op_info, str_info, strmap_info)
          end do
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("unprojected vort",me_vort(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
+! pre orthogonalization
+         ! true orthogonalization can only be done when the metric is known
          call vecsp_orthvec(dvdsbsp%vspace, me_vort, nopt,
      &        xbuf1, xbuf2, lenbuf)
-         if (ntest.ge.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("projected trv",me_vort(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
 
       end do                    !iroot
 
-      do iopt=1,nopt
-         do iroot=1,nnew
+      do iroot=1,nnew
+         do iopt=1,nopt
             call switch_mel_record(me_vort(iopt)%mel,iroot)
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             if (trafo(iopt) ) then
                call transform_back_wrap(flist,depend,
-     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
-     &              iroot, iopt,nspecial,
-     &              me_trv,
+     &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
+     &              xdummy,
+     &              iopt,nspecial,
+     &              me_trv(iopt)%mel,
      &              op_info, str_info, strmap_info,
      &              orb_info, opti_info)
 !            else me_vort => me_trv
             end if
-         end do
-      end do                    !iopt
-      
-      if (ntest.ge.100)then
-         do iopt=1,nopt
-            write(lulog,*) "root no.",iroot
-            call print_list("retransformed trv",me_trv(iopt)%mel,
-     &           "LIST",0d0,0d0,
-     &           orb_info,str_info)
-         end do
-      end if
+         end do  !iopt
+      end do                   
       return
       contains
-
-
 
 !#######################################################################
 !   apply the preconditioner
@@ -520,27 +332,10 @@ c      end do
      &        lenme)
 
 
-c     dbg
-c     print *,"xnorm:",xnrm
-c     dbgend
-c     xnrm = 1d0
-c     dbg
-c     print *,"precon not yet applied. "
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg)
-c     end do
-c     dbgend
 ! scale residual for numerical stability:
          xshf = -xeig
          call diavc(xbuf1,xbuf1,1d0/xnrm,
      &        xbuf2,xshf,lenme)
-c     dbg
-c     print *,"debug shift:",xshf
-c     print *,"precon applied. ",nwfpar(iopt),"entries"
-c     do idxdbg = 1, nwfpar(iopt)
-c     print *,idxdbg,xbuf1(idxdbg),xbuf2(idxdbg)
-c     end do
-c     dbgend
          if (renormalize) then
             xnrm = dnrm2(lenme,xbuf1,1)
             call dscal(lenme,1d0/xnrm,xbuf1,1)
@@ -563,10 +358,6 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
 
       if (spin_prj)then
 ! assign op. with list containing the scratch trial vector
-c     dbg
-c     print *, "assign ",me_scr(iopt)%mel%label," to ",
-c     &              me_opt(iopt)%mel%op%name
-c     dbgend
          call assign_me_list(me_intm%label,
      &        op_opt%name,op_info)
          call switch_mel_record(me_intm,iroot)
@@ -591,22 +382,9 @@ c     dbgend
      &              xnrm,.false.)
 
             else
-c     dbg
-c     print *,"iopt=",iopt
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
                call evaluate2(fspc(1),.false.,.false.,
      &              op_info,str_info,strmap_info,orb_info,
      &              xnrm,.false.)
-c     dbg
-c     call print_list('projected vector:',
-c     &                 me_scr(iopt)%mel,"NORM",
-c     &                 -1d0,0d0,
-c     &                 orb_info,str_info)
-c     dbgend
             end if
             if (xnrm.lt.1d-12) call warn('evpc_core',
      &           'Nothing left after projection!')
@@ -638,64 +416,12 @@ c     dbgend
 *----------------------------------------------------------------------*
 !>    norms a vector of nlists me_lists
 *----------------------------------------------------------------------*
-c$$$      subroutine orthogonalize_records(
-c$$$     &     me_lists, me_Svlists, me_Mvlists, nlists,
-c$$$     &     zero_nrm, use_s,
-c$$$     &     xbuf1, xbuf2, lbuf)
-c$$$      implicit none
-c$$$
-c$$$      do irec=1,nrec
-c$$$         do jrec=1,irec
-c$$$            do ilist=1,nlists
-c$$$               lenlist=me_lists(ilist)%mel%len_op
-c$$$               ffme=>me_lists(ilist)%mel%fhand
-c$$$               
-c$$$               call vec_from_da(me_lists(ilist)%mel%fhand,irec,xbuf1,
-c$$$     &              lenlist)
-c$$$               call vec_from_da(me_clists(ilist)%mel%fhand,jrec,xbuf2,
-c$$$     &              lenlist)
-c$$$               overlapp=overlapp+ddot(lenlist,xbuf1,1,xbuf2,1)
-c$$$            end do
-c$$$            do ilist=1,nlists
-c$$$               call vec_from_da(ffme,irec,xbuf1,lenlist)
-c$$$               call vec_from_da(ffme,jrec,xbuf2,lenlist)
-c$$$               do idx=1,lenlist
-c$$$                  
-c$$$               
-c$$$            end do
-c$$$         end do
-c$$$      end do
-c$$$      end subroutine
 
       subroutine rescale_vecs(me_lists, me_clists, me_Mvlists, nlists,
      &     zero_nrm, use_s,
      &     xbuf1, xbuf2, lbuf)
       implicit none
       include 'par_scale_copy_modes.h'
-
-      
-      interface
-         subroutine mel_scale_copy(
-     &     me_inp, me_res,
-     &     buf1,buf2, lbuf, nbuf,
-     &     fac, nfac,
-     &     mode,
-     &        opti_info)
-         import optimize_info,me_list
-         integer,intent(in)::
-     &        lbuf, nbuf, nfac,
-     &        mode
-         type(me_list), intent(inout)::
-     &        me_inp, me_res
-         type(optimize_info),intent(in)::
-     &        opti_info
-         real(8), intent(inout) ::
-     &        buf1(:), buf2(:)
-         real(8),intent(in)::
-     &        fac(nfac)
-         end subroutine
-      end interface
-      
       real(8),parameter::
      &     zero_norm2_thresh=1.0D-12
       integer, parameter::
@@ -865,23 +591,112 @@ c$$$      end subroutine
       return
       end function
 *----------------------------------------------------------------------*
-*----------------------------------------------------------------------*
+!!    return the maximum record of ME-list
 *----------------------------------------------------------------------*
       pure function mel_get_maxrec(mel)
       implicit none
       integer:: mel_get_maxrec
       type(me_list),intent(in)::mel
       mel_get_maxrec=mel%fhand%active_records(2)
-
       end function
-      pure function dvdsbsp_get_nfree(dvdsbsp)
 
+
+*----------------------------------------------------------------------*
+!!    return the number of vectors a davidson subspace can still add
+*----------------------------------------------------------------------*
+      pure function dvdsbsp_get_nfree(dvdsbsp)
+*----------------------------------------------------------------------*
+      implicit none
       integer::
      &     dvdsbsp_get_nfree
-
       type(davidson_subspace_t),intent(in)::
      &     dvdsbsp
-
       dvdsbsp_get_nfree=dvdsbsp%nmaxsub-dvdsbsp%ncursub
+      end function
+*----------------------------------------------------------------------*
+!!    
+*----------------------------------------------------------------------*
+      function collect_unconverged_h(
+     &     me_scr, me_res, nopt,
+     &     leig,xeig,xrsnrm, nroots,
+     &     iter, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+      integer ::
+     &     collect_unconverged_h
+
+      integer,intent(in)::
+     &     nroots, iter,nopt
+
+      real(8), intent(inout)::
+     &     leig(nroots), xeig(nroots,2),
+     &     xrsnrm(nroots,nopt)
+
+      type(optimize_info), intent(in) ::
+     &     opti_info
+
+      type(me_list_array), intent(inout) ::
+     &     me_scr(nopt), me_res(nopt)
+
+      integer ::
+     &     irecres, iroot
+      logical ::
+     &     conv
+      
+      irecres = 0
+      do iroot=1,nroots
+         ! test energy criteria
+         if (iter .gt.1      ! if iter was 1 old energy was 0:then the convergence check is obsolete
+     &        .and. check_e_convergence(iter,leig(iroot) ,xeig(iroot,1),
+     &        thrgrd_e) )then
+            conv = .true. ! yet
+         else if(iter.gt.1)then
+            conv=.false.
+         else !! assume no convergence in first iteration
+            conv=.false. 
+         end if
+         ! test gradient(residual) criteria
+         conv= conv .and.
+     &        check_r_convergence(xrsnrm,opti_info%thrgrd,iroot, nopt)
+
+         if (.not.conv)then
+            irecres=irecres+1
+            do iopt=1,nopt
+               call switch_mel_record(me_scr(iopt)%mel,iroot)
+               call switch_mel_record(me_res(iopt)%mel,irecres) ! all updated vectors are one after the other
+               call list_copy(me_scr(iopt)%mel,me_res(iopt)%mel,!scr ->res
+     &              .false.)    !collecting vectors which will lead to new direction on me_res (me_residual)
+            end do
+         end if
+      end do
+      xeig(1:nroot,1)=leig
+      collect_unconverged_h = irecres
+      return
+      end function
+*----------------------------------------------------------------------*
+!!     calculates the total norm of a root
+!
+*----------------------------------------------------------------------*
+      pure function get_norm_of_root_h(xrsnrm ,iroot,nopt, nroots)
+*----------------------------------------------------------------------*
+      implicit none
+      real(8) ::
+     &     get_norm_of_root_h
+      integer,intent(in)::
+     &     iroot,nopt,nroots
+      
+      real(8),intent(in)::
+     &     xrsnrm(nroots,nopt)
+
+      integer::
+     &     jopt
+      real(8)::
+     &     xnrm
+      xnrm = 0.0
+      do jopt = 1, nopt
+         xnrm = xnrm + xrsnrm(iroot,jopt)**2
+      end do
+      get_norm_of_root_h=sqrt(xnrm)
+      return
       end function
       end subroutine

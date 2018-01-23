@@ -64,7 +64,9 @@
       include 'mdef_target_info.h'
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
-
+      include "def_guess_gen.h"
+      
+      
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
@@ -107,9 +109,11 @@
      &     jdx,
      &     lenbuf, nincore
       real(8) ::
+     &     trf_nrm,
      &     xresmax, xdum, xnrm,
      &     xeig(nroots,2),reig(nroots,2),
-     &     xresnrm(nroots,nopt)
+     &     xresnrm(nroots,nopt),
+     &     xnrm2(nroots)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
      &     me_trv(:), me_mvp(:), me_mvpprj(:),
@@ -133,6 +137,8 @@
       type(formula_item) ::
      &     fl_mvp, fl_spc(nspcfrm)
 
+      type(guess_generator)::
+     &     guess_gen
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:)
       real(8), pointer::
@@ -145,11 +151,12 @@
      &     dvdsbsp
 
       logical, external ::
-     &     file_exists
+     &     file_exists, generate_guess
       integer, external ::
-     &     idx_formlist, idx_mel_list, idx_xret, dvdsbsp_get_nnew_vvec
+     &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
      &     da_ddot
+      
 
       ifree = mem_setmark('solve_evp')
 
@@ -159,6 +166,9 @@
         write(lulog,*) 'nroots = ',nroots
         write(lulog,*) 'targ_root = ',targ_root
       end if
+      call print_solver_header_h(luout)
+      if (lulog .ne. luout)  call print_solver_header_h(lulog)
+
 
 
 
@@ -178,22 +188,24 @@
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
      &     ff_scr(nopt),ff_ext(nopt) )
       allocate(xrsnrm(nroots,nopt))
+      
       do iopt = 1, nopt
-         me_opt(iopt)%mel   => get_mel(label_opt(iopt), op_info)
+         ! lists to be optimized
+         me_opt(iopt)%mel   => get_mel_h(label_opt(iopt), op_info)
          if (.not.mel_has_file( me_opt(iopt)%mel))
      &        call quit(1,i_am,
      &       'no file associated with list '//trim(label_opt(iopt)))
-
-        me_dia(iopt)%mel   => get_mel(label_prc(iopt),op_info)
+         ! preconditioner (diag because they might be inverted diagonals of Hamiltonian)
+         me_dia(iopt)%mel   => get_mel_h(label_prc(iopt),op_info)
          if (.not.mel_has_file( me_dia(iopt)%mel))
      &        call quit(1,i_am,
-     &       'no file associated with list '//trim(label_prc(iopt)))
+     &        'no file associated with list '//trim(label_prc(iopt)))
 
       end do
 
       ! special lists needed?
       do idx = 1, nspecial
-         me_special(idx)%mel => get_mel(label_special(idx), op_info)
+         me_special(idx)%mel => get_mel_h(label_special(idx), op_info)
          if (.not.mel_has_file( me_special(idx)%mel))
      &        call quit(1,i_am,
      &        'no file associated with list '//trim(label_special(idx)))
@@ -218,44 +230,28 @@
       do iopt=1,nopt
         ! weaker convergence threshold requested?
          opti_info%thrgrd(iopt)=max(opti_info%thrgrd(iopt),thr_suggest)
+        ! which operators use a metric?
          use_s(iopt) = trim(label_op_met(iopt)).ne.
      &        trim(me_opt(iopt)%mel%op%name)
+         ! does any operator use a metric
          if (use_s(iopt)) use_s_t = .true.
-
-
-        ! get a ME-list for vectors in transformed(orthogonal space)
-! in case of ab-sym braking trafo, get sym props from special list
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.ge.3) then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(1)%mel
-         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(4)%mel
-         else
-            trafo(iopt)=.false.
-            me_vort(iopt)%mel => me_opt(iopt)%mel
-         end if
       end do
-
-      do iopt = 1, nopt
-        ! get a ME-list for vectors in transformed(orthogonal space)
-! in case of ab-sym braking trafo get sym props from special list
-
-
-
+      
+      do iopt=1,nopt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         
 !     intermediate lists in normal space
-        write(fname,'("mvp_",i3.3)') iopt
-        me_mvp(iopt)%mel => me_from_template(
-     &       fname, label_op_mvp(iopt), me_opt(iopt)%mel,
-     &       nvectors,
-     &       op_info,  orb_info, str_info, strmap_info )
+         ! mvp = matrix vector product
+         write(fname,'("mvp_",i3.3)') iopt 
+         me_mvp(iopt)%mel => me_from_template(
+     &        fname, label_op_mvp(iopt), me_opt(iopt)%mel,
+     &        nvectors,
+     &        op_info,  orb_info, str_info, strmap_info )
 
-        select case (opti_info%typ_prc(iopt))
-        case(optinf_prc_spinp)
-           me_mvpprj(iopt)%mel => me_special(1)%mel
-        case(optinf_prc_prj)
+         select case (opti_info%typ_prc(iopt))
+         case(optinf_prc_spinp)
+            me_mvpprj(iopt)%mel => me_special(1)%mel
+         case(optinf_prc_prj)
            me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         case(optinf_prc_spinrefp)
            me_mvpprj(iopt)%mel => me_special(1)%mel
@@ -263,62 +259,76 @@
            me_mvpprj(iopt)%mel => me_mvp(iopt)%mel
         end select
 
-      write(fname,'("trv_",i3.3)') iopt
-      me_trv(iopt)%mel => me_from_template(
+        ! trv = trialvector
+        write(fname,'("trv_",i3.3)') iopt
+        me_trv(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name, me_opt(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
-!        me_trv(iopt)%mel => me_opt(iopt)%mel
 
-        ! use of metric requested?
+
+        
+! use of metric requested?
         if (use_s(iopt)) then
              ! get a ME list for metric-times-vector products
-          ! (have same symmtry properties as result!)
-          write(fname,'("svp_",i3.3)') iopt !S * vector product -- svp
-          me_met(iopt)%mel => me_from_template(
-     &         fname, label_op_met(iopt) , me_vort(iopt)%mel,
-     &         nvectors,
-     &         op_info,  orb_info, str_info, strmap_info)
-          ff_met(iopt)%fhand => me_met(iopt)%mel%fhand
-       else
-          me_met(iopt)%mel => me_trv(iopt)%mel
+! (have same symmtry properties as result!)
+!S * vector product -- svp
+           write(fname,'("svp_",i3.3)') iopt 
+           me_met(iopt)%mel => me_from_template(
+     &          fname, label_op_met(iopt) , me_trv(iopt)%mel,
+     &          nvectors,
+     &          op_info,  orb_info, str_info, strmap_info)
+           ff_met(iopt)%fhand => me_met(iopt)%mel%fhand
+        else
+           me_met(iopt)%mel => me_trv(iopt)%mel 
        end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     intermediate lists in possibly transformed space
 
-        write(fname,'("scr_",i3.3)') iopt
-        me_scr(iopt)%mel => me_from_template(
-     &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
-     &       nvectors,
-     &       op_info,  orb_info, str_info, strmap_info)
+! vort is used as template
+! in case of ab-sym braking trafo, get sym props from special list
+       if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &      .and.nspecial.ge.3) then
+          trafo(iopt)=.true.
+          me_vort(iopt)%mel => me_special(1)%mel
+       elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+          trafo(iopt)=.true.
+          me_vort(iopt)%mel => me_special(4)%mel
+       else
+          trafo(iopt)=.false.
+          me_vort(iopt)%mel => me_opt(iopt)%mel
+       end if
+       
+         ! scr = scratch used for mvp is orthogonal space
+         write(fname,'("scr_",i3.3)') iopt
+         me_scr(iopt)%mel => me_from_template(
+     &        fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
+     &        nvectors,
+     &        op_info,  orb_info, str_info, strmap_info)
 
-
-c        write(fname,'("mvort_",i3.3)') iopt
-c        me_mvort(iopt)%mel => me_from_template(
-c     &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt),
-c     &       nvectors,
-c     &       op_info,  orb_info, str_info, strmap_info)
-
-! can use me_scr/me_mvp
+        ! can use me_scr/me_mvp
         if (trafo(iopt))then
            me_mvort(iopt)%mel => me_scr(iopt)%mel
         else
            me_mvort(iopt)%mel => me_mvp(iopt)%mel
         end if
 
+        ! metric in orthogonal space
         write(fname,'("metort_",i3.3)') iopt
         me_metort(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name,me_vort(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
 
+        ! residual (in orthogonal space)
         write(fname,'("res_",i3.3)') iopt
         me_res(iopt)%mel => me_from_template(
      &       fname, me_opt(iopt)%mel%op%name, me_vort(iopt)%mel,
      &       nvectors,
      &       op_info,  orb_info, str_info, strmap_info)
 
+        ! assign me_vort to the list actually used in the calculation
         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &       .and.nspecial.ge.3) then
            trafo(iopt)=.true.
@@ -329,24 +339,11 @@ c     &       op_info,  orb_info, str_info, strmap_info)
         else
            trafo(iopt)=.false.
            me_vort(iopt)%mel => me_trv(iopt)%mel !changing
-
         end if
-
-      end do
+      end do ! iopt
 
       call dvdsbsp_init(dvdsbsp, opti_info%maxsbsp, me_vort, nopt,
      &     use_s)
-
-c dbg
-c      do iopt = 1,nopt
-c         write(lulog,*) 'preconditioner: iopt = ',iopt
-c         call wrt_mel_file(lulog,5,
-c     &        me_dia(iopt)%mel,
-c     &        1,me_dia(iopt)%mel%op%n_occ_cls,
-c     &        str_info,orb_info)
-c      enddo
-c
-c dbgend
 
       ! write information to opti_info about signs which occur
       ! in trv*mvp or trv*met  multiplication
@@ -355,14 +352,13 @@ c dbgend
      &     me_trv,me_mvp,me_met,me_met,use_s)
 
       call print_settings(lulog, opti_info)
+
       do iopt=1, nopt
          call assign_me_list(me_opt(iopt)%mel%label,
      &        me_opt(iopt)%mel%op%name,op_info)
       end do
       ! read formula
       call read_form_list(form_mvp%fhand,fl_mvp,.true.)
-      ! set dependency info for submitted formula list
-      call set_formula_dependencies(depend,fl_mvp,op_info)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
@@ -377,56 +373,45 @@ c dbgend
       do iopt = 1, nopt
         ! open result vector file(s)
 ! if file already open, use as initial guess (if requested)!
-         ffopt(iopt)%fhand => me_opt(iopt)%mel%fhand
-        if (ffopt(iopt)%fhand%unit.gt.0.and.opti_info%resume
-     &      .and.nroots.eq.1) then ! switched off due to frequent
-                                   ! problems for nroots>1
+        me_opt(iopt)%mel%fhand => me_opt(iopt)%mel%fhand
+        if (me_opt(iopt)%mel%fhand%unit.gt.0.and.opti_info%resume
+     &       .and.nroots.eq.1) then ! switched off due to frequent
+! problems for nroots>1
           write(lulog,'(a,i4,a)')
-     &          'Using last vector as initial guess (iopt =',iopt,')'
+     &         'Using last vector as initial guess (iopt =',iopt,')'
           use_init_guess(iopt) = .false.
         end if
-        if (ffopt(iopt)%fhand%unit.gt.0.and.nroots.gt.1) then
-          ! copy this root so that we may home in on it later
-          if (nopt.ne.1) call quit(1,'solve_evp',
+        if (me_opt(iopt)%mel%fhand%unit.gt.0.and.nroots.gt.1) then
+! copy this root so that we may home in on it later
+          if (nopt.ne.1) call quit(1,i_am,
      &         'homing in available only for one opt. vector yet')
           home_in = .true.
           allocate(me_home(1),ffhome(1))
           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
      &         .and.nspecial.ge.3) then
-             me_pnt => me_special(1)%mel
+            me_pnt => me_special(1)%mel
           elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-             me_pnt => me_special(4)%mel
+            me_pnt => me_special(4)%mel
           else
-             me_pnt => me_opt(iopt)%mel
+            me_pnt => me_opt(iopt)%mel
           end if
-
-
-          call define_me_list('home',me_opt(iopt)%mel%op%name,
-     &         me_pnt%absym,me_pnt%casym,
-     &         me_pnt%gamt,me_pnt%s2,
-     &         me_pnt%mst,.false.,
-     &         -1,1,1,0,0,0,
-     &         op_info,orb_info,str_info,strmap_info)
-          idxmel = idx_mel_list('home',op_info)
-          me_home(1)%mel   => op_info%mel_arr(idxmel)%mel
-          ffhome(1)%fhand => op_info%mel_arr(idxmel)%mel%fhand
+          
+          fname = "home"
+          me_home(1)%mel => me_from_template(
+     &         fname, me_opt(iopt)%mel%op%name,me_pnt,
+     &         1,
+     &         op_info,  orb_info, str_info, strmap_info)
+          ffhome(1)%fhand => me_home(1)%mel%fhand
+          call file_open(me_home(1)%mel%fhand)
           call assign_me_list(me_trv(iopt)%mel%label,
-     &                        me_opt(iopt)%mel%op%name,op_info)
-          call file_open(ffhome(1)%fhand)
+     &         me_opt(iopt)%mel%op%name,op_info)
+          
           call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
-c dbg
-c          print *,'preparing for homing in later. Saved vector:'
-c          call wrt_mel_file(lulog,5,
-c     &         me_home(1)%mel,
-c     &         1,me_trv(iopt)%mel%op%n_occ_cls,
-c     &         str_info,orb_info)
-c dbgend
-        else if (ffopt(iopt)%fhand%unit.le.0) then
-          call file_open(ffopt(iopt)%fhand)
         end if
+        call file_ensure_open(me_opt(iopt)%mel%fhand)
         call file_ensure_open(me_scr(iopt)%mel%fhand)
         call file_ensure_open(me_trv(iopt)%mel%fhand)
-        ! open corresponding matrix vector products ...
+! open corresponding matrix vector products ...
         call file_ensure_open(me_mvp(iopt)%mel%fhand)
         call file_ensure_open(me_mvort(iopt)%mel%fhand)
         call file_ensure_open(me_metort(iopt)%mel%fhand)
@@ -444,19 +429,33 @@ c dbgend
         call assign_me_list(me_trv(iopt)%mel%label,
      &       me_opt(iopt)%mel%op%name,op_info)
       end do
+      
+      ! set dependency info for submitted formula list
+      call set_formula_dependencies(depend,fl_mvp,op_info)
+
+      do iopt=1,nopt
+         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
+     &        .and.nspecial.ge.3) then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(1)%mel
+         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+            trafo(iopt)=.true.
+            me_vort(iopt)%mel => me_special(4)%mel
+         else
+            trafo(iopt)=.false.
+            me_vort(iopt)%mel => me_trv(iopt)%mel
+         end if
+      end do
       if (init) then
       ! get the initial amplitudes from files
         do iopt = 1,nopt
-          if (ffopt(iopt)%fhand%unit.le.0) then
-            call file_open(ffopt(iopt)%fhand)
-          endif
-          inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
+          call file_ensure_open(me_opt(iopt)%mel%fhand)
+          inquire(file=trim(me_opt(iopt)%mel%fhand%name),exist=restart)
           if (.not.restart) call warn(i_am,
      &         'No amplitude file found for restart! Setting to zero.')
           if (restart) then
             write(lulog,'(x,a,i1,a)')
-     &         'Using old amplitude file for vector ',iopt,'!'
-!           if(iopt.eq.1) call zeroop(me_opt(iopt)%mel)
+     &           'Using old amplitude file for vector ',iopt,'!'
             do iroot = 1, nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
               call switch_mel_record(me_opt(iopt)%mel,iroot)
@@ -472,27 +471,70 @@ c dbgend
 
       else
 ! get initial amplitudes
-         do iopt=1,nopt
-            call assign_me_list(me_trv(iopt)%mel%label,
-     &           me_opt(iopt)%mel%op%name,op_info)
-         end do
-        if (nopt.eq.1) then
-        call init_guess(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,nspecial,
-     &                  fl_mvp,depend,fl_spc,nspcfrm,
-     &                  opti_info,orb_info,op_info,str_info,strmap_info)
-        else
-        call init_guess2(nopt,use_init_guess,nroots,
-     &                  me_opt,me_trv,me_dia,me_special,
-     &                  nspecial,0,1, !<- check solve_evp for reason
-     &                  fl_mvp,depend,fl_spc,nspcfrm,choice_opt,
-     &                  opti_info,orb_info,op_info,str_info,strmap_info)
-        end if
+        do iopt=1,nopt
+          call assign_me_list(me_trv(iopt)%mel%label,
+     &          me_opt(iopt)%mel%op%name,op_info)
+        end do
+        call init_guess_gen(guess_gen, max(1000,4*nroots),
+     &       me_dia, me_vort, nopt,
+     &       op_info,str_info,strmap_info, orb_info)
+        iroot = 1
+        trial_gen_loop: do while(iroot .le.nroots)
+        
+        do iopt = 1,nopt
+          call switch_mel_record(me_vort(iopt)%mel,iroot)
+          call zeroop(me_trv(iopt)%mel)
+          call switch_mel_record(me_trv(iopt)%mel,iroot)
+          call touch_file_rec(me_trv(iopt)%mel%fhand)
+          call zeroop(me_trv(iopt)%mel)
+        end do
+        if (.not.generate_guess(guess_gen, me_vort,
+     &       iopt,nopt,choice_opt))
+     &       call quit(1,i_am,
+     &       'Could not find enough guess vectors')
+        if (trafo(iopt))then
+          call transform_back_wrap(fl_mvp,depend,
+     &         me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
+     &         trf_nrm,
+     &         iopt,nspecial,
+     &         me_trv(iopt)%mel,
+     &         op_info, str_info, strmap_info, orb_info, opti_info)
+! guess vectors of wrong spin symmetry and twinned guess vectors will be discarded
+            if (should_discard_vector_h(trf_nrm, nopt,nroots,
+     &           iroot,xnrm2,me_trv, opti_info) )then
+              cycle trial_gen_loop
+            else
+              xnrm2(iroot) = trf_nrm**2
+            end if 
+           end if
+           
+           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
+     &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
+             call  spin_proj_h(opti_info%typ_prc(iopt),
+     &            opti_info%nwfpar(iopt),me_trv(iopt)%mel,me_special,
+     &            nspecial,0,1,
+     &            fl_spc, xnrm,
+     &            opti_info,orb_info, op_info, str_info, strmap_info)
+             if (xnrm**2.lt.1d-12) then
+               if (iprlvl.ge.5) write(lulog,*)
+     &              'Discarding guess vector due to projection.'
+               me_trv(iopt)%mel%fhand%last_mod(iroot) = -1
+               cycle trial_gen_loop
+             else if (iroot.gt.1) then
+               call orthogonalize_roots_h(iroot, opti_info%nwfpar(iopt),
+     &              xnrm2,xnrm**2,me_trv(iopt)%mel)
+             else 
+               xnrm2(iroot) = xnrm**2
+             end if
+           end if
+! Assumption: If the controlflow reaches here, a new guess vector was created
+         iroot = iroot +1
+       end do trial_gen_loop
+       call del_guess_gen(guess_gen)
       endif
 
       deallocate(xret)
-      !init guess needed a false version of the dependency informations
-      call set_formula_dependencies(depend,fl_mvp,op_info)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
@@ -503,69 +545,16 @@ c dbgend
             call touch_file_rec(me_trv(iopt)%mel%fhand)
          end do
       end do
-      call init_buffers(opti_info%nwfpar, nopt,
-     &     xbuf1,xbuf2,xbuf3,nincore,lenbuf)
-
-      do iroot=1,nroots
-         if (ntest.gt.100)then
-            do iopt=1,nopt
-               write(lulog,*) "root no.",iroot
-               call print_list("unprojected trv",me_trv(iopt)%mel,
-     &              "LIST",0d0,0d0,
-     &              orb_info,str_info)
-            end do
-         end if
-      end do
-      do iopt=1,nopt
-         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf
-     &        .and.nspecial.ge.3) then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(1)%mel
-         elseif (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-            trafo(iopt)=.true.
-            me_vort(iopt)%mel => me_special(4)%mel
-         else
-            trafo(iopt)=.false.
-            me_vort(iopt)%mel => me_trv(iopt)%mel
-         end if
-      end do
       
+      call init_buffers(opti_info%nwfpar, nopt,
+     &     xbuf1,xbuf2,xbuf3,nincore, lenbuf) 
+
       iter = 0
       task = 4
       nrequest=nroots
       xrsnrm=0d0
       xeig=0d0
       reig=0d0
-
-      
-      do iroot=1,nrequest
-         do iopt=1,nopt
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            if (trafo(iopt)) then
-            call transform_forward_wrap(fl_mvp,depend,
-     &           me_special,me_trv,me_vort, !trv-> vort
-     &           xrsnrm,
-     &           nrequest, iroot, iopt, iroot, nspecial,
-     &           me_trv,
-     &           op_info, str_info, strmap_info, orb_info, opti_info)
-            if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
-               call set_blks(me_vort(iopt)%mel,
-     &              "P,H|P,V|V,H|V,V",0d0)
-            end if
-            else
-               me_vort(iopt)%mel => me_trv(iopt)%mel
-            end if
-            if (trafo(iopt)) then
-               call transform_back_wrap(fl_mvp,depend,
-     &              me_special,me_vort,me_trv, !vort -> trv !new_trialvector created
-     &              iroot, iopt,nspecial,
-     &              me_trv,
-     &              op_info, str_info, strmap_info,
-     &              orb_info, opti_info)
-            end if
-         end do
-      end do
                   
       opt_loop: do while(task.lt.8)
          iter=iter+1
@@ -574,19 +563,9 @@ c dbgend
      &           nroots, nopt)
          end if
          
-! normalize initial trial vector?
-c        if (iter.eq.1.and.use_init_guess(1).and.
-c     &       (opti_info%typ_prc(1).eq.optinf_prc_traf.or.
-c     &       opti_info%typ_prc(1).eq.optinf_prc_prj.or.
-c     &       opti_info%typ_prc(1).eq.optinf_prc_spinrefp))
-c     &       call normalize_guess(me_trv(1)%mel%fhand,irequest,
-c     &       ff_mvp,irecmvp(irequest),
-c     &       ff_met,irecmet(irequest),
-c     &       use_s,1,nopt,opti_info)
 
 ! 4 - get residual
         if (iand(task,4).eq.4) then
-! preliminary solution:
 !   outside loop over requested Mv-products
            do irequest = 1, nrequest
               do iopt = 1, nopt
@@ -603,24 +582,13 @@ c     &       use_s,1,nopt,opti_info)
      &                irequest)
 
               ! enforce MS-combination symmetry of trial vectors
-              ! (if requested)
-c dbg
-c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
-c        call wrt_mel_file(lulog,5,
-c     &       me_trv(iopt)%mel,
-c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
-c     &       str_info,orb_info)
-c dbgend
-              ! enforce MS-combination symmetry of trial vectors
-              ! (if requested)
-c                 print *,"trv ab_sym",me_trv(iopt)%mel%absym
-                 if (me_trv(iopt)%mel%absym.ne.0) !TODO this has to move into davidson_driver
+! (if requested)
+                 if (me_trv(iopt)%mel%absym.ne.0) 
      &                call sym_ab_list(
      &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
      &                xdum,.false.,
      &                op_info,str_info,strmap_info,orb_info)
 
-!     here?
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
               end do
 
@@ -647,8 +615,9 @@ c            call wrt_mel_file(lulog,5,me_mvp(1)%mel,
 c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
-              ! enforce MS-combination symmetry of Mv-products:
-              ! (if requested)
+            
+! enforce MS-combination symmetry of Mv-products:
+! (if requested)
             do iopt = 1, nopt
                if (me_mvp(iopt)%mel%absym.ne.0)
      &              call sym_ab_list(
@@ -678,22 +647,13 @@ c dbg
      &                    xbuf1,xbuf2,.false.,xnrm,
      &                    opti_info,orb_info,
      &                    op_info,str_info,strmap_info)
-c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                  op_info,str_info,strmap_info,orb_info,
      &                  xnrm,.false.)
                   else
-c  dbg
-c                     call print_list("unpr mvp",me_mvp(iopt)%mel,
-c     &                    "LIST",0d0,0d0,
-c     &                    orb_info,str_info)
-c                     call reset_file_rec(me_mvp(iopt)%mel%fhand)
                      call evaluate2(fl_spc(1),.false.,.false.,
      &                    op_info,str_info,strmap_info,orb_info,
      &                    xnrm,.false.)
-c                     call print_list("prj mvp",me_mvp(iopt)%mel,
-c     &                    "LIST",0d0,0d0,
-c     &                    orb_info,str_info)
                   end if
 !     reassign lists to correct ops
                   call assign_me_list(me_trv(iopt)%mel%label,
@@ -704,6 +664,18 @@ c     &                    orb_info,str_info)
             end do
          end do
       end if
+      ! 
+      call transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv, 
+     &     nopt, nrequest,
+     &     me_special, nspecial,
+     &     fl_mvp, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+      
         call davidson_driver(
      &     dvdsbsp,
      &     iter, task, nrequest,
@@ -711,21 +683,34 @@ c     &                    orb_info,str_info)
      &     trafo, use_s,
      &     xrsnrm , xeig, reig,
      &     me_opt,me_dia,
-     &     me_met,me_metort,
+     &     me_metort,
      &     me_scr,me_res,
-     &       me_trv,me_mvp,me_vort,me_mvort,
-     &       me_special, nspecial,
-     &       xbuf1,xbuf2, xbuf3, nincore,lenbuf,
-     &       fl_mvp,depend,
-     &       fl_spc,nspcfrm,
-     &       opti_info, opti_stat,
-     &       orb_info, op_info, str_info,strmap_info
-     &       )
+     &     me_trv,me_mvp,me_vort,me_mvort,
+     &     me_special, nspecial,
+     &     xbuf1,xbuf2, xbuf3, nincore,lenbuf,
+     &     fl_mvp,depend,
+     &     fl_spc,nspcfrm,
+     &     opti_info, opti_stat,
+     &     orb_info, op_info, str_info,strmap_info
+     &     )
         if (iand(task,8).eq.8)
      &       call print_step_results(iter,
      &       xrsnrm, xeig,nroots, nopt)
 
+      
       end do opt_loop
+
+      if(nrequest.eq.0)then
+         write(lulog,'(x,a,i5,a)')
+     &        'CONVERGED IN ',iter,' ITERATIONS'
+         if (luout.ne.lulog.and.iprlvl.ge.5)
+     &        write(luout,'(x,a,i5,a)')
+     &        'CONVERGED IN ',iter,' ITERATIONS'
+      else
+         write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
+         call warn('linear solver', 'NO CONVERGENCE OBTAINED')
+      end if
+      
 
       do iopt = 1, nopt
 
@@ -752,8 +737,6 @@ c     &                    orb_info,str_info)
 
 
 c        ! solution vector has been updated (if we had some iteration)
-c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
-! solution vector has been updated
 
         call touch_file_rec(me_opt(iopt)%mel%fhand)
 
@@ -765,8 +748,8 @@ c        if (iter.gt.1) call touch_file_rec(me_opt(iopt)%mel%fhand)
            ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
            xresmax = 0d0
            do iroot = 1, nroots
-              xoverlap(iroot) = da_ddot(ffhome(1)%fhand,1,
-     &                                ffopt(iopt)%fhand,iroot,
+              xoverlap(iroot) = da_ddot(me_home(1)%mel%fhand,1,
+     &                                me_opt(iopt)%mel%fhand,iroot,
      &                                opti_info%nwfpar(iopt),
      &                                xbuf1,xbuf2,
      &                                opti_info%nwfpar(iopt))
@@ -955,7 +938,7 @@ c dbg
      &     me_template%mst,.false.,
      &     -1,1,nvectors,0,0,0,
      &     op_info,orb_info,str_info,strmap_info)
-      me_from_template   => get_mel(label, op_info)
+      me_from_template   => get_mel_h(label, op_info)
 
       return
       end function
@@ -963,7 +946,7 @@ c dbg
 !!    resolves a label to a pointer to the matrix element list object
 !!
 *----------------------------------------------------------------------*
-      function get_mel(label, op_info)
+      function get_mel_h(label, op_info)
 *----------------------------------------------------------------------*
       implicit none
       character(*),intent(in) ::
@@ -972,7 +955,7 @@ c dbg
      &     op_info
 
       type(me_list),pointer::
-     &     get_mel
+     &     get_mel_h
       integer,external::
      &     idx_mel_list
       integer::
@@ -981,7 +964,7 @@ c dbg
       if (idxmel.le.0)
      &       call quit(1,i_am,
      &       'did not find list '//trim(label_opt(iopt)))
-      get_mel=> op_info%mel_arr(idxmel)%mel
+      get_mel_h=> op_info%mel_arr(idxmel)%mel
       return
       end function
       pure  function mel_has_file(mel)
@@ -1116,7 +1099,7 @@ c dbg
 
       idxmel = idx_mel_list(label,op_info)
       if (idxmel .gt. 0 ) then
-            me_pnt => get_mel(label,op_info)
+            me_pnt => get_mel_h(label,op_info)
          if (has_perm_file(me_pnt, me_special,nspecial) ! Attention these are accessed by host association
      &        .or. has_perm_file(me_pnt, me_opt, nopt) )then
             call detach_mel_file(me_pnt,.false.)
@@ -1168,5 +1151,334 @@ c dbg
       
 
       end subroutine
+*----------------------------------------------------------------------*
+!!   writes a header for the solver
+!
+*----------------------------------------------------------------------*
+      subroutine print_solver_header_h(lu)
+*----------------------------------------------------------------------*
+      integer, intent(in)::
+     &     lu
+
+      write(lu,*) "This is the 'NEW' solver by Arne Bargholz 2017"
+      end subroutine
+      
+*----------------------------------------------------------------------*
+!!    transforms mvp and metric into orthogonal state
+*----------------------------------------------------------------------*
+      subroutine transform_forward_h(
+     &     me_mvp, me_mvort,
+     &     me_met, me_metort,
+     &     me_trv,
+     &     nopt, nnew,
+     &     me_special, nspecial,
+     &     flist, depend,
+     &     xrsnrm,
+     &     trafo, use_s,
+     &     op_info, str_info, strmap_info, orb_info, opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+  
+      integer,intent(in)::
+     &     nnew, nopt,
+     &     nspecial
+
+      logical, intent(in)::
+     &     trafo(nopt), use_s(nopt)
+      type(me_list_array), intent(inout) ::
+     &     me_mvp(nopt), me_mvort(nopt),
+     &     me_met(nopt), me_metort(nopt),
+     &     me_special(nspecial),
+     &     me_trv(nopt)                  ! needed as target for transformation formula
+   
+      real(8),intent(inout)::
+     &     xrsnrm(nnew,nopt)
+      type(formula_item), intent(inout) ::
+     &     flist
+
+      type(dependency_info) ,intent(in)::
+     &     depend
+      
+      type(optimize_info), intent(in) ::
+     &     opti_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf), intent(in)::
+     &     strmap_info
+      
+      integer ::
+     &     iroot,iopt
+      do iroot = 1, nnew
+         do iopt = 1, nopt
+            call switch_mel_record(me_mvp(iopt)%mel,iroot)
+            call switch_mel_record(me_mvort(iopt)%mel,iroot)
+            call switch_mel_record(me_trv(iopt)%mel,iroot)
+            if (trafo(iopt)) then
+               call transform_forward_wrap(flist,depend,
+     &              me_special,me_mvp(iopt)%mel,me_mvort(iopt)%mel, !mvp-> mvort
+     &              xrsnrm(iroot,iopt),
+     &              iopt, nspecial,
+     &              me_trv(iopt)%mel,
+     &              op_info, str_info, strmap_info, orb_info, opti_info)
+               if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
+               endif
+               
+               if (use_s(iopt))then
+                  call switch_mel_record(me_met(iopt)%mel,iroot)
+                  call switch_mel_record(me_metort(iopt)%mel,iroot)
+                  call transform_forward_wrap(flist,depend,
+     &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
+     &                 xrsnrm(iopt,iroot),
+     &                 iopt, nspecial,
+     &                 me_trv(iopt)%mel,
+     &                op_info,str_info,strmap_info, orb_info, opti_info)
+                 if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+                    call set_blks(me_metort(iopt)%mel,
+     &                   "P,H|P,V|V,H|V,V",0d0)
+                 end if
+               else
+                  me_metort(iopt)%mel=> null()
+               end if
+           else
+              if (use_s(iopt))then
+                 me_metort(iopt)%mel=> me_met(iopt)%mel
+              else
+                 me_metort(iopt)%mel=>null()
+              end if
+           end if
+        end do !iopt
+      end do !iroot
+      
+      return
+      end subroutine
+
+*----------------------------------------------------------------------*
+!>    orthogonalizes the newest root (iroot) to all previous roots
+*----------------------------------------------------------------------*
+      subroutine orthogonalize_roots_h(iroot,len_op,xnrm2,xnrm,me_root)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, intent(in)::
+     &     len_op
+      integer, intent(inout)::
+     &     iroot
+      type(me_list)::
+     &     me_root
+  
+      integer::
+     &     ifree,jroot,len_buf
+      real(8)::
+     &     xnrm2(*),xnrm
+      
+      real(8),pointer::
+     &     xbuf1(:),xbuf2(:)
+      real(8)::
+     &     xover,fac1,fac2
+
+      ifree = mem_setmark('init_guess.check_guess')
+      len_buf = len_op
+      ifree = mem_alloc_real(xbuf1,len_buf,
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,len_buf,
+     &     'xbuf2')
+
+      do jroot = 1,iroot-1
+         xover = da_ddot(
+     &        me_root%fhand,jroot,
+     &        me_root%fhand,iroot,
+     &        len_op,
+     &        xbuf1, xbuf2,
+     &        len_buf)
+         if(abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6)then
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Discarding redundant guess vector.'
+            me_root%fhand%last_mod(iroot) = -1
+            iroot = iroot - 1
+            exit
+         else if (abs(xover).ge.1d-12) then
+! remove this component using norm-conserving factors
+            if (iprlvl.ge.5) write(lulog,*)
+     &           'Removing overlap to root',jroot,'(',xover,')'
+            fac1 = 1d0/sqrt(1d0-xover**2/(xnrm2(jroot)*xnrm))
+            fac2 = -sign(1d0/sqrt((xnrm2(jroot)/xover)**2
+     &           -xnrm2(jroot)/xnrm),xover)
+            call da_vecsum(me_root%fhand,iroot,
+     &           me_root%fhand,iroot,fac1,
+     &           me_root%fhand,jroot,fac2,
+     &           len_op,
+     &           xbuf1,xbuf2,
+     &           len_buf)
+c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
+         end if
+         if (jroot.eq.iroot-1) xnrm2(iroot) = xnrm
+      end do
+      ifree = mem_flushmark()
+      end subroutine 
+
+*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      function should_discard_vector_h(trf_nrm, nopt, nroots,iroot,
+     &     xnrm2,me_trv,opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+
+      logical::
+     &     should_discard_vector_h
+      real(8),intent(in)::
+     &     trf_nrm,xnrm2(nroots)
+
+      integer,intent(in)::
+     &     nopt,nroots,iroot
+
+      type(me_list_array)::
+     &     me_trv(nopt)
+      type(optimize_info), intent(in)::
+     &     opti_info
+
+      if (trf_nrm.lt.1d-12) then
+        if (iprlvl.ge.5) write(lulog,*)
+     &       'Discarding guess vector with wrong spin symmetry.'
+        should_discard_vector_h =.true.
+      else
+        if(check_last_guess_h(nopt,iopt,nroots,iroot,
+     &       (trf_nrm**2),
+     &       xnrm2, me_trv,opti_info) ) then
+          should_discard_vector_h =.false.
+        else
+          if (iprlvl.ge.5) write(lulog,*)
+     &         'Discarding twin guess vector.'
+          should_discard_vector_h =.true.
+        end if
+        
+      end if 
+      return
+      end function
+*----------------------------------------------------------------------*
+!>    check the last guess for twinning 
+*----------------------------------------------------------------------*
+      function check_last_guess_h( nopt, iopt,nroots,iroot,guess_norm2,
+     &     xnrm2, me_trv,opti_info) 
+*----------------------------------------------------------------------*
+      implicit none
+      logical ::
+     &     check_last_guess_h
+      
+      integer,intent(in)::
+     &     nopt, iopt,
+     &     nroots,iroot
+      real(8),intent(in)::
+     &     guess_norm2,xnrm2(nroots)
+
+      type(me_list_array)::
+     &     me_trv(nopt)
+
+      type(optimize_info), intent(in)::
+     &     opti_info
+
+      
+      integer::
+     &     ifree
+      real(8)::
+     &     xover
+      real(8),pointer::
+     &     xbuf1(:), xbuf2(:)
+      real(8),external::
+     &     da_ddot
+
+      if (iroot .eq.1) then
+         check_last_guess_h = .true.
+         return
+      end if  
+      ifree = mem_setmark('init_guess.check_guess')
+      ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
+     &     'xbuf1')
+      ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),
+     &     'xbuf2')
+      xover = da_ddot(me_trv(iopt)%mel%fhand,iroot-1,
+     &     me_trv(iopt)%mel%fhand,iroot,
+     &     opti_info%nwfpar(iopt),
+     &     xbuf1, xbuf2,
+     &     opti_info%nwfpar(iopt))
+      ifree = mem_flushmark()
+      if (abs(
+     &     xover**2/xnrm2(iroot-1)-guess_norm2).lt.1d-6) then
+         check_last_guess_h = .false.
+      else
+         check_last_guess_h = .true.
+      end if  
+      return
+      end function
+
+    
+*----------------------------------------------------------------------*
+!>    projects out spin parts
+*----------------------------------------------------------------------*
+      subroutine spin_proj_h( typ_prc,len_list,me_root,me_special,
+     &     nspecial, nextra, idxspc,
+     &     fl_spc, xnrm,
+     &     opti_info, orb_info, op_info,str_info, strmap_info) 
+*----------------------------------------------------------------------*
+      implicit none
+      integer,intent(in)::
+     &     typ_prc,len_list, nspecial,nextra,idxspc
+      real(8),intent(inout)::
+     &     xnrm
+
+      type(me_list)::
+     &     me_root
+      type(me_list_array)::
+     &     me_special(nspecial+nextra)
+      type(formula_item)::
+     &     fl_spc(*)
+      type(optimize_info)::
+     &     opti_info
+      type(orbinf)::
+     &     orb_info
+      type(operator_info)::
+     &     op_info
+      type(strinf)::
+     &     str_info
+      type(strmapinf)::
+     &     strmap_info
+      
+      real(8),pointer::
+     &     xbuf1(:),xbuf2(:)
+      
+      integer::
+     &     ifree, len_buf
+      len_buf = len_list
+      ifree = mem_setmark('solve_evp2.spin_proj')
+      ifree = mem_alloc_real(xbuf1,len_buf,'xbuf1')
+      ifree = mem_alloc_real(xbuf2,len_buf,'xbuf2')
+      select case(typ_prc)
+      case(optinf_prc_spinp)
+         call spin_project(me_root,me_special(idxspc)%mel,
+     &        fl_spc(1),len_buf,
+     &        xbuf1,xbuf2,.true.,xnrm,
+     &        opti_info,orb_info,
+     &        op_info,str_info,strmap_info)
+      case(optinf_prc_spinrefp)
+         call spin_project(me_root,me_special(idxspc)%mel,
+     &        fl_spc(2),len_buf,
+     &        xbuf1,xbuf2,.true.,xnrm,
+     &        opti_info,orb_info,
+     &        op_info,str_info,strmap_info)
+         call evaluate2(fl_spc(1),.false.,.false.,
+     &        op_info,str_info,strmap_info,orb_info,
+     &        xnrm,.true.)
+      case(optinf_prc_prj)
+         call evaluate2(fl_spc(1),.false.,.false.,
+     &        op_info,str_info,strmap_info,orb_info,
+     &        xnrm,.true.)
+      end select
+      ifree = mem_flushmark()
+      return
+      end subroutine
+
       end
 
