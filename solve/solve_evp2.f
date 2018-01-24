@@ -107,7 +107,8 @@
      &     iter, iprint, task, ifree, iopt, jopt, nintm, irequest,
      &     nrequest, nvectors, iroot, idx, ierr, idxmel, nout,
      &     jdx,
-     &     lenbuf, nincore
+     &     lenbuf, nincore,
+     &     nlists
       real(8) ::
      &     trf_nrm,
      &     xresmax, xdum, xnrm,
@@ -119,7 +120,8 @@
      &     me_trv(:), me_mvp(:), me_mvpprj(:),
      &     me_mvort(:), me_vort(:),
      &     me_special(:), me_scr(:), me_home(:),
-     &     me_met(:),me_metort(:), me_res(:)
+     &     me_met(:),me_metort(:), me_res(:),
+     &     me_pnt_list(:)
       type(file_array), pointer ::
      &     ffdia(:), ff_trv(:),
      &     ffopt(:), ff_mvp(:), ff_met(:), ffspecial(:), ff_scr(:),
@@ -693,6 +695,26 @@ c dbg
      &     opti_info, opti_stat,
      &     orb_info, op_info, str_info,strmap_info
      &     )
+        if (iand(task,8).eq.8)then
+          me_pnt_list=> me_opt
+          nlists = min(nroots,mel_get_maxrec_h(me_opt(1)%mel))
+        else
+          me_pnt_list=>me_trv
+          nlists = nrequest
+        end if
+       call transform_back_h(fl_mvp,depend,
+     &      trafo,
+     &      me_special,
+     &      me_vort, me_pnt_list,    !vort -> trv !new_trialvector created
+     &      nopt, nlists,
+     &      nspecial,
+     &      me_trv,
+     &      op_info,str_info,
+     &      strmap_info, orb_info,
+     &      opti_info)
+        
+        
+        
         if (iand(task,8).eq.8)
      &       call print_step_results(iter,
      &       xrsnrm, xeig,nroots, nopt)
@@ -1479,6 +1501,79 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
       ifree = mem_flushmark()
       return
       end subroutine
+*----------------------------------------------------------------------*
+!!     helper routine to transform the trialvector back into non-orthogonal space
+!
+*----------------------------------------------------------------------*
+      subroutine transform_back_h(
+     &     flist, depend,
+     &     trafo,
+     &     me_special,
+     &     me_vort,me_trv,
+     &     nopt, maxvec,
+     &     nspecial,
+     &     me_tgt,
+     &     op_info,str_info,
+     &     strmap_info,orb_info,
+     &     opti_info)
+*----------------------------------------------------------------------*
+      implicit none
+      integer, intent(in)::
+     &     nspecial,nopt, maxvec
+      logical, intent(in)::
+     &     trafo(nopt)
+      type(formula_item),intent(in)::
+     &     flist
+      type(dependency_info),intent(in)::
+     &     depend
+      type(me_list_array)::
+     &     me_special(nspecial),
+     &     me_vort(nopt),me_trv(nopt),
+     &     me_tgt(nopt)
+      
+      type(orbinf), intent(in) ::
+     &     orb_info
+      type(operator_info), intent(inout) ::
+     &     op_info
+      type(strinf), intent(in) ::
+     &     str_info
+      type(strmapinf) ::
+     &     strmap_info
+      type(optimize_info)::
+     &     opti_info
+
+      integer::
+     &     iroot,iopt
+      real(8)::
+     &     xdummy
+      
+      do iroot=1,maxvec
+        do iopt=1,nopt
+          call switch_mel_record(me_vort(iopt)%mel,iroot)
+          call switch_mel_record(me_trv(iopt)%mel,iroot)
+          if (trafo(iopt) ) then
+            call transform_back_wrap(flist,depend,
+     &           me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> opt !
+     &           xdummy,
+     &           iopt, nspecial,
+     &           me_tgt(iopt)%mel,
+     &           op_info, str_info, strmap_info,
+     &           orb_info, opti_info)
+!     else me_vort => me_trv => me_opt
+          end if
+        end do
+      end do
+      end subroutine
+*----------------------------------------------------------------------*
+!!    return the maximum record of ME-list
+*----------------------------------------------------------------------*
+      pure function mel_get_maxrec_h(mel)
+      implicit none
+      integer:: mel_get_maxrec_h
+      type(me_list),intent(in)::mel
+      mel_get_maxrec_h=mel%fhand%active_records(2)
+      end function
+*----------------------------------------------------------------------*
 
       end
 
