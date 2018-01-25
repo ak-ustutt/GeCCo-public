@@ -28,7 +28,10 @@
       logical ::
      &     long
       integer ::
-     &     inter=1    ! Counter of intermediates
+     &     inter=1,    ! Counter of intermediates
+     &     iblk
+      type(operator) ::
+     &     test
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -47,6 +50,18 @@
      &                        trim(fl_item%parent2)
         write(lulog,'(2x,"incore: ",i2)') fl_item%incore
         call print_op_occ(lulog,fl_item%interm)
+
+        test=fl_item%interm
+
+        do idx = 1, test%n_occ_cls*test%njoined
+          iblk = (idx-1)/test%njoined + 1
+
+           call count_index(lulog,iblk,
+     &         test%ihpvca_occ(1,1,idx),
+     &         test%igasca_restr(1,1,1,1,1,idx),
+     &         test%ngas,test%nspin)
+
+        end do
 
         inter=inter+1
 
