@@ -32,6 +32,16 @@
      &     iblk
       type(operator) ::
      &     test
+      integer ::
+     &     nops(4,2)  ! Matrix of index info
+      character, dimension(4) ::
+     &     hol=(/ 'i','j','k','l' /),
+     &     par=(/ 'a','b','c','d' /),
+     &     val=(/ 'u','v','w','x' /)
+      character ::
+     &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
+      integer ::
+     &     i,j      ! loop indcies
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -55,12 +65,40 @@
 
         do idx = 1, test%n_occ_cls*test%njoined
           iblk = (idx-1)/test%njoined + 1
+          call count_index(lulog,iblk,
+     &        test%ihpvca_occ(1,1,idx),
+     &        test%igasca_restr(1,1,1,1,1,idx),
+     &        test%ngas,test%nspin,nops)
+        end do
+! get array, loop over index and add to index string array
 
-           call count_index(lulog,iblk,
-     &         test%ihpvca_occ(1,1,idx),
-     &         test%igasca_restr(1,1,1,1,1,idx),
-     &         test%ngas,test%nspin)
+        ! Annhilators first
+        do i=1, nops(1,2)
+            i_array(1,i)=hol(i)
+        end do
+        do i=1, nops(2,2)
+          i_array(1,i+nops(1,2))=par(i)
+        end do
+        do i=1, nops(3,2)
+          i_array(1,i+nops(1,2)+nops(2,2))=val(i)
+        end do
+        ! Creations second
+        do i=1, nops(1,1)
+          i_array(2,i)=hol(i+nops(1,2))
+        end do
+        do i=1, nops(2,1)
+          i_array(2,i+nops(1,1))=par(i+nops(2,2))
+        end do
+        do i=1, nops(3,1)
+          i_array(2,i+nops(1,1)+nops(2,1))=val(i+nops(3,2))
+        end do
 
+        write(lulog,*) 'TENSOR[', i_array, ']'
+        ! Reset array
+        do i=1, 2
+          do j=1, 2
+            i_array(i,j)='>'
+          end do
         end do
 
         inter=inter+1
