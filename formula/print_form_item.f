@@ -23,7 +23,7 @@
 
       if (itf) then
         ! Print tensor info to file
-        call print_form_item_itf(lulog,'long',idx,fl_item,op_info)
+        call print_itf(lulog,'long',idx,fl_item,op_info)
       else
         ! just a convenience wrapper
         call print_form_item2(lulog,'long',idx,fl_item,op_info)
