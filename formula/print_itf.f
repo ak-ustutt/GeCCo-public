@@ -63,28 +63,6 @@
         call print_op_occ(lulog,fl_item%interm)
 
         call index_array(lulog,fl_item%interm,i_array)
-!        call index_array(lulog,fl_item%parent1,p1_array)
-!        call index_array(lulog,fl_item%parent2,p2_array)
-
-!        write(lulog,*) 'TENSOR:'
-!        if (inter<10) then
-!          write(lulog,'(a1,i1,a1,4a1,3a3,a1,a1,4a1,a1)') 'I',inter,'[',
-!     &          i_array,']+=',fl_item%parent1,'[',p1_array,']'
-!        else if (inter>=10 .and. inter<100) then
-!          write(lulog,'(a1,i2,a1,4a1,3a3)') 'I',inter,'[',i_array,']+='
-!        else if (inter>=100 .and. inter<1000) then
-!          write(lulog,'(a1,i3,a1,4a1,3a3)') 'I',inter,'[',i_array,']+='
-!        end if
-!
-!        ! Reset array
-!        do i=1, 2
-!          do j=1, 2
-!            i_array(i,j)='>'
-!            p1_array(i,j)='>'
-!            p2_array(i,j)='>'
-!          end do
-!        end do
-
         inter=inter+1
 
       case(command_del_intermediate)

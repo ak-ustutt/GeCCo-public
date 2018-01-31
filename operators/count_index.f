@@ -16,9 +16,6 @@
      &     fmtr*8, fmto*3, fmtx*5
       integer, external ::
      &     ielsqsum
-      integer ::
-     &     pc=0, hc=0, vc=0, xc=0,       ! Number of creation and annhilation operators
-     &     pa=0, ha=0, va=0, xa=0
 
 !      write(fmto,'(i1,"i3")') ngastp
 !      write(fmtx,'(i1,"(3x)")')  ngastp
@@ -68,8 +65,6 @@
       write(lulog, *) 'va:', nops(3,2)
       write(lulog, *) 'xa:', nops(4,2)
 
-! return an array with this info
-
       return
       end
 
@@ -94,7 +89,8 @@
      &     val=(/ 'u','v','w','x' /)
 
 
-       do idx = 1, tensor%n_occ_cls*tensor%njoined
+!       do idx = 1, tensor%n_occ_cls*tensor%njoined
+       do idx = 1, 1      ! Just get one block
          iblk = (idx-1)/tensor%njoined + 1
          call count_index(lulog,iblk,
      &       tensor%ihpvca_occ(1,1,idx),
@@ -145,9 +141,6 @@
      &     fmtr*8, fmto*3, fmtx*5
       integer, external ::
      &     ielsqsum
-      integer ::
-     &     pc=0, hc=0, vc=0, xc=0,       ! Number of creation and annhilation operators
-     &     pa=0, ha=0, va=0, xa=0
 
       write(lulog, *) 'Count index', iocc(1:ngastp,1)
       write(lulog, *) 'Count index', iocc(1:ngastp,2)
@@ -225,7 +218,8 @@
          i_array(2,i+nops(1,1)+nops(2,1))=val(i+nops(3,2))
        end do
         
-        do i = 1, tensor%nj_op1
+!        do i = 1, tensor%nj_op1
+        do i = 1, 1 ! Just get one block
         call count_index2(lulog,i,
      &       tensor%occ_op2(1:,1:,i),
      &       tensor%rst_op2(1:,1:,1:,1:,1:,i),tensor%ngas,
