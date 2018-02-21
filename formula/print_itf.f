@@ -40,7 +40,8 @@
       character ::
      &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
-     &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
+     &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
+     &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
       integer ::
      &     i,j      ! loop indcies
 
@@ -104,23 +105,25 @@
         call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call index_array2(lulog,fl_item%bcontr,p1_array,p2_array) 
+        call index_array2(lulog,fl_item%bcontr,p1_array,p2_array,
+     &                    k_array) 
         
         write(lulog,*) 'TENSOR:'
+        write(lulog,*) k_array
         if (inter<10) then
           write(lulog,'(a1,i1,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
      &          'I',inter,'[',
-     &          i_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
+     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
      &          fl_item%bcontr%label_op2,'[',p2_array,']'
         else if (inter>=10 .and. inter<100) then
           write(lulog,'(a1,i2,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
      &          'I',inter,'[',
-     &          i_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
+     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
      &          fl_item%bcontr%label_op2,'[',p2_array,']'
         else if (inter>=100 .and. inter<1000) then
           write(lulog,'(a1,i3,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
      &          'I',inter,'[',
-     &          i_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
+     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
      &          fl_item%bcontr%label_op2,'[',p2_array,']'
         end if
 
@@ -130,6 +133,7 @@
             i_array(i,j)='>'
             p1_array(i,j)='>'
             p2_array(i,j)='>'
+            k_array(i,j)='>'
           end do
         end do
 
