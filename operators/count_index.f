@@ -185,6 +185,8 @@
      &     idx, iblk,
      &     nops(4,2),     ! Matrix of index info
      &     eops(4,2),     ! Matrix of external index info
+     &     eops1(4,2),    ! Matrix of external index info, tensor 1
+     &     shift_l,       ! Letter shift when assging index of second tensor
      &     counter1, counter2
       character, dimension(4) ::
      &     hol=(/ 'i','j','k','l' /),
@@ -240,7 +242,6 @@
        end do
        do i=1, nops(2,2)
          j_array(1,i+nops(1,2))=par(i)
-         write(lulog,*) "Hello", j_array
        end do
        do i=1, nops(3,2)
          j_array(1,i+nops(1,2)+nops(2,2))=val(i)
@@ -264,34 +265,57 @@
      &       tensor%rst_ex2(1:,1:,1:,1:,1:,ij),
      &       tensor%ngas,tensor%nspin,eops)
         end do
+        
+        ! Count external index of first tensor
+        do ij = 1, 1 ! Just the first block
+          call count_contraction(lulog,ij,
+     &       tensor%occ_ex1(1:,1:,ij),
+     &       tensor%rst_ex1(1:,1:,1:,1:,1:,ij),
+     &       tensor%ngas,tensor%nspin,eops1)
+        end do
       
-       ! Annhilators first
+       ! Creations first
        ! Each index must be shifted so as a) not to overwrite previous index
        !                                  b) not to use same index twice
-       do i=1, eops(1,2)
-         j_array(1,i+nops(1,2)+nops(2,2)+
-     &   nops(3,2))=hol(i+nops(1,2)+nops(1,1))
-       end do
-       do i=1, eops(2,2)
-         j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+
-     &   eops(1,2))=par(i+nops(2,2)+nops(2,1))
-       end do
-       do i=1, eops(3,2)
-         j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+eops(1,2)+
-     &   eops(2,2))=val(i+nops(3,2)+nops(3,1))
-       end do
-       ! Creations second
+       ! Using 'transpose' of E (so no. of ann + cre !> 3
+       ! shift_l shifts position in letter array, so external indicies are unique
+       shift_l=0
        do i=1, eops(1,1)
-         j_array(2,i+nops(1,1)+nops(2,1)+
-     &   nops(3,1))=hol(i+nops(1,2)+nops(1,1)+eops(1,2))
+         shift_l=i+nops(1,2)+nops(1,1)+eops1(1,2)+eops(1,1)
+         j_array(1,i+nops(1,2)+nops(2,2)+
+     &   nops(3,2))=hol(shift_l)
        end do
        do i=1, eops(2,1)
-         j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+
-     &   eops(1,1))=par(i+nops(2,2)+nops(2,1)+eops(2,2))
+         shift_l=i+nops(2,2)+nops(2,1)+eops1(2,2)+eops1(2,1)
+         j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+
+     &   eops(1,1))=par(shift_l)
        end do
        do i=1, eops(3,1)
-         j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+eops(1,1)+
-     &   eops(2,1))=val(i+nops(3,2)+nops(3,1)+eops(3,2))
+         shift_l=i+nops(3,2)+nops(3,1)+eops1(3,2)+eops1(3,1)
+         write(lulog,*) "Hello", shift_l
+         write(lulog,*) "i", i
+         write(lulog,*) "nops(3,2)", nops(3,2)
+         write(lulog,*) "nops(3,1)", nops(3,1)
+         write(lulog,*) "eops1(3,2)", eops1(3,2)
+         write(lulog,*) "eops1(3,1)", eops1(3,1)
+         j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+eops(1,1)+
+     &   eops(2,1))=val(shift_l)
+       end do
+       ! Annhilators second
+       do i=1, eops(1,2)
+         shift_l=i+nops(1,2)+nops(1,1)+eops(1,1)+eops1(1,2)+eops1(1,1)
+         j_array(2,i+nops(1,1)+nops(2,1)+
+     &   nops(3,1))=hol(shift_l)
+       end do
+       do i=1, eops(2,2)
+         shift_l=i+nops(2,2)+nops(2,1)+eops(2,1)+eops1(2,2)+eops1(2,1)
+         j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+
+     &   eops(1,2))=par(shift_l)
+       end do
+       do i=1, eops(3,2)
+         shift_l=i+nops(3,2)+nops(3,1)+eops(3,1)+eops1(3,2)+eops1(3,2)
+         j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+eops(1,2)+
+     &   eops(2,2))=val(shift_l)
        end do
 
 
@@ -403,8 +427,8 @@
 !      end if
 
 
-!      write(lulog, *) 'Count contraction index', iocc(1:ngastp,1)
-!      write(lulog, *) 'Count contraction index', iocc(1:ngastp,2)
+      write(lulog, *) 'Count contraction index', iocc(1:ngastp,1)
+      write(lulog, *) 'Count contraction index', iocc(1:ngastp,2)
 
       nops(1,1)=iocc(1,1)
       nops(2,1)=iocc(2,1)
@@ -415,14 +439,14 @@
       nops(3,2)=iocc(3,2)
       nops(4,2)=iocc(4,2)
 
-!      write(lulog, *) 'con hc:', nops(1,1)
-!      write(lulog, *) 'con pc:', nops(2,1)
-!      write(lulog, *) 'con vc:', nops(3,1)
-!      write(lulog, *) 'con xc:', nops(4,1)
-!      write(lulog, *) 'con ha:', nops(1,2)
-!      write(lulog, *) 'con pa:', nops(2,2)
-!      write(lulog, *) 'con va:', nops(3,2)
-!      write(lulog, *) 'con xa:', nops(4,2)
+      write(lulog, *) 'con hc:', nops(1,1)
+      write(lulog, *) 'con pc:', nops(2,1)
+      write(lulog, *) 'con vc:', nops(3,1)
+      write(lulog, *) 'con xc:', nops(4,1)
+      write(lulog, *) 'con ha:', nops(1,2)
+      write(lulog, *) 'con pa:', nops(2,2)
+      write(lulog, *) 'con va:', nops(3,2)
+      write(lulog, *) 'con xa:', nops(4,2)
 
       return
       end
