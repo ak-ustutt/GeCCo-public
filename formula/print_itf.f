@@ -43,12 +43,18 @@
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
+      character(len=4)
+     &     index1
       character(len=maxlen_bc_label) ::
      &     tensor1, tensor2
       integer ::
      &     i,j      ! loop indcies
-      character(len=46) ::
-     &     fomt
+      character(len=5) ::
+     &     s_int
+      character(len=4) ::
+     &     istr1, istr2, istr3
+      character(len=50) ::
+     &     itf_line
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -109,9 +115,38 @@
         call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call index_array2(lulog,fl_item%bcontr,p1_array,p2_array,
-     &                    k_array) 
-        
+        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
+     &                    k_array)
+
+        do i=1, 2
+          do j=1, 2
+            if (p1_array(j,i).ne.'>') then
+              istr1(j+(2*i-2):)=p1_array(j,i)
+            end if
+            if (p2_array(j,i).ne.'>') then
+              istr2(j+(2*i-2):)=p2_array(j,i)
+            end if
+            if (k_array(j,i).ne.'>') then
+              istr3(j+(2*i-2):)=k_array(j,i)
+            end if
+          end do
+        end do
+
+        ! Determine how to format ITF line
+!        do case select
+!        if res=2
+!        else if op1 =2
+!        fomt='(a1,i0,a1,4a1,a4,i0,a1,4a1,a1,a1,a1,4a1,a1)'
+!        else if op2=2
+!        else if res=2, op1=2
+!        else if res=2,op2=2
+!        else if res=2, op1=2, op2=2
+!        else format for 4 spaces
+!        else if res=0, op1=0, op2=0
+!        else if res=0, op1=2, op1=2
+!        else if res=0, op1=4, op1=4
+
+
         ! Check if intermediate is constructed from previous intermediate
         if (trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
           parent_inter=.true.
@@ -120,13 +155,22 @@
         tensor1=fl_item%bcontr%label_op1
         tensor2=fl_item%bcontr%label_op2
 
+        ! Change integral tensor name
         if (tensor1.eq.'INT_D') then
           tensor1='K    '
         else if (tensor2.eq.'INT_D') then
           tensor2='K'
         end if
 
-        
+        write(s_int(1:),'(i5)') inter 
+! Or construct a string and concatonate info onto it
+        itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
+     &      trim(tensor1)//'['//trim(istr1)//']'//trim(tensor2)//'['//
+     &      trim(istr2)//']'
+        write(lulog,*)'Hallo',trim(itf_line)
+
+
+        ! Output ITF line
         write(lulog,*) 'TENSOR:'
         if (parent_inter) then
           write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
@@ -143,7 +187,6 @@
      &          '[',p2_array,']'
         end if
 
-
         ! Reset array
         do i=1, 2
           do j=1, 2
@@ -155,7 +198,6 @@
         end do
 
         parent_inter=.false.
-
 
       case(command_bc_reo)
         idx = idx+1
