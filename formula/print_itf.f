@@ -26,7 +26,8 @@
      &     op_info
 
       logical ::
-     &     long
+     &     long,
+     &     parent_inter=.false.  ! True if intermediate is constructed from another intermediate
       integer ::
      &     inter=0    ! Counter of intermediates
       type(operator) ::
@@ -44,6 +45,8 @@
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
       integer ::
      &     i,j      ! loop indcies
+      character(len=46) ::
+     &     fomt
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -63,7 +66,6 @@
         write(lulog,'(2x,"incore: ",i2)') fl_item%incore
         call print_op_occ(lulog,fl_item%interm)
 
-        call index_array(lulog,fl_item%interm,i_array)
         inter=inter+1
 
       case(command_del_intermediate)
@@ -108,23 +110,53 @@
         call index_array2(lulog,fl_item%bcontr,p1_array,p2_array,
      &                    k_array) 
         
+        ! Check if intermediate is constructed from previous intermediate
+        if(trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
+          parent_inter=.true.
+        end if
+
         write(lulog,*) 'TENSOR:'
-        write(lulog,*) k_array
         if (inter<10) then
-          write(lulog,'(a1,i1,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &          'I',inter,'[',
-     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
-     &          fl_item%bcontr%label_op2,'[',p2_array,']'
+          if (parent_inter) then
+            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
+     &                   4a1,a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=I',inter-1,
+     &            '[',p1_array,']',fl_item%bcontr%label_op2,
+     &            '[',p2_array,']'
+          else
+            write(lulog,'(a1,i1,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=',fl_item%bcontr%label_op1,
+     &            '[',p1_array,']',fl_item%bcontr%label_op2,
+     &            '[',p2_array,']'
+          end if
         else if (inter>=10 .and. inter<100) then
-          write(lulog,'(a1,i2,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &          'I',inter,'[',
-     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
-     &          fl_item%bcontr%label_op2,'[',p2_array,']'
+          if (parent_inter) then
+            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,4a1,
+     &                    a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=I',inter-1,'[',
+     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+          else
+            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
+     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+          end if 
         else if (inter>=100 .and. inter<1000) then
-          write(lulog,'(a1,i3,a1,4a1,3a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &          'I',inter,'[',
-     &          k_array,']+=',fl_item%bcontr%label_op1,'[',p1_array,']',
-     &          fl_item%bcontr%label_op2,'[',p2_array,']'
+          if (parent_inter) then
+            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,
+     &                    4a1,a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=I',inter-1,'[',
+     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+          else
+            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+     &            'I',inter,'[',
+     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
+     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+          end if
         end if
 
         ! Reset array
@@ -136,6 +168,8 @@
             k_array(i,j)='>'
           end do
         end do
+
+        parent_inter=.false.
 
       case(command_bc_reo)
         idx = idx+1

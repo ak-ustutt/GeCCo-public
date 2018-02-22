@@ -44,8 +44,8 @@
 !     &     irstr(1:2,1:ngas,2,2,2)
 !      end if
 
-      write(lulog, *) 'Count index', iocc(1:ngastp,1)
-      write(lulog, *) 'Count index', iocc(1:ngastp,2)
+!      write(lulog, *) 'Count index', iocc(1:ngastp,1)
+!      write(lulog, *) 'Count index', iocc(1:ngastp,2)
 
       nops(1,1)=iocc(1,1)
       nops(2,1)=iocc(2,1)
@@ -56,14 +56,14 @@
       nops(3,2)=iocc(3,2)
       nops(4,2)=iocc(4,2)
 
-      write(lulog, *) 'hc:', nops(1,1)
-      write(lulog, *) 'pc:', nops(2,1)
-      write(lulog, *) 'vc:', nops(3,1)
-      write(lulog, *) 'xc:', nops(4,1)
-      write(lulog, *) 'ha:', nops(1,2)
-      write(lulog, *) 'pa:', nops(2,2)
-      write(lulog, *) 'va:', nops(3,2)
-      write(lulog, *) 'xa:', nops(4,2)
+!      write(lulog, *) 'hc:', nops(1,1)
+!      write(lulog, *) 'pc:', nops(2,1)
+!      write(lulog, *) 'vc:', nops(3,1)
+!      write(lulog, *) 'xc:', nops(4,1)
+!      write(lulog, *) 'ha:', nops(1,2)
+!      write(lulog, *) 'pa:', nops(2,2)
+!      write(lulog, *) 'va:', nops(3,2)
+!      write(lulog, *) 'xa:', nops(4,2)
 
       return
       end
@@ -292,12 +292,6 @@
        end do
        do i=1, eops(3,1)
          shift_l=i+nops(3,2)+nops(3,1)+eops1(3,2)+eops1(3,1)
-         write(lulog,*) "Hello", shift_l
-         write(lulog,*) "i", i
-         write(lulog,*) "nops(3,2)", nops(3,2)
-         write(lulog,*) "nops(3,1)", nops(3,1)
-         write(lulog,*) "eops1(3,2)", eops1(3,2)
-         write(lulog,*) "eops1(3,1)", eops1(3,1)
          j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+eops(1,1)+
      &   eops(2,1))=val(shift_l)
        end do
@@ -351,8 +345,8 @@
          end do
        end do
 
-       write(lulog,*) 'TMP1:', tmp1
-       write(lulog,*) 'TMP2:', tmp2
+       !write(lulog,*) 'TMP1:', tmp1
+       !write(lulog,*) 'TMP2:', tmp2
 
        counter1=1
        counter2=1
@@ -427,8 +421,8 @@
 !      end if
 
 
-      write(lulog, *) 'Count contraction index', iocc(1:ngastp,1)
-      write(lulog, *) 'Count contraction index', iocc(1:ngastp,2)
+!      write(lulog, *) 'Count contraction index', iocc(1:ngastp,1)
+!      write(lulog, *) 'Count contraction index', iocc(1:ngastp,2)
 
       nops(1,1)=iocc(1,1)
       nops(2,1)=iocc(2,1)
@@ -439,14 +433,14 @@
       nops(3,2)=iocc(3,2)
       nops(4,2)=iocc(4,2)
 
-      write(lulog, *) 'con hc:', nops(1,1)
-      write(lulog, *) 'con pc:', nops(2,1)
-      write(lulog, *) 'con vc:', nops(3,1)
-      write(lulog, *) 'con xc:', nops(4,1)
-      write(lulog, *) 'con ha:', nops(1,2)
-      write(lulog, *) 'con pa:', nops(2,2)
-      write(lulog, *) 'con va:', nops(3,2)
-      write(lulog, *) 'con xa:', nops(4,2)
+!      write(lulog, *) 'con hc:', nops(1,1)
+!      write(lulog, *) 'con pc:', nops(2,1)
+!      write(lulog, *) 'con vc:', nops(3,1)
+!      write(lulog, *) 'con xc:', nops(4,1)
+!      write(lulog, *) 'con ha:', nops(1,2)
+!      write(lulog, *) 'con pa:', nops(2,2)
+!      write(lulog, *) 'con va:', nops(3,2)
+!      write(lulog, *) 'con xa:', nops(4,2)
 
       return
       end
