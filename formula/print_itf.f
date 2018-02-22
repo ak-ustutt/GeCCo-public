@@ -43,6 +43,8 @@
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
+      character(len=maxlen_bc_label) ::
+     &     op1_save, op2_save
       integer ::
      &     i,j      ! loop indcies
       character(len=46) ::
@@ -115,55 +117,74 @@
           parent_inter=.true.
         end if
 
-        ! Change integral tensor names
-        if (trim(fl_item%bcontr%label_op1).eq.'INT_D') then
-          fl_item%bcontr%label_op1='K'
-        else if (trim(fl_item%bcontr%label_op2).eq.'INT_D') then
-          fl_item%bcontr%label_op2='K'
-        end if
+        !! Change integral tensor names
+        !if (trim(fl_item%bcontr%label_op1).eq.'INT_D') then
+        !  op1_save=fl_item%bcontr%label_op1
+        !  fl_item%bcontr%label_op1='K    '
+        !else if (trim(fl_item%bcontr%label_op2).eq.'INT_D') then
+        !  fl_item%bcontr%label_op2='K    '
+        !  op2_save=fl_item%bcontr%label_op2
+        !end if
+
+!        write(lulog,*) 'TENSOR:'
+!        if (inter<10) then
+!          if (parent_inter) then
+!            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
+!     &                   4a1,a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=I',inter-1,
+!     &            '[',p1_array,']',fl_item%bcontr%label_op2,
+!     &            '[',p2_array,']'
+!          else
+!            write(lulog,'(a1,i1,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=',fl_item%bcontr%label_op1,
+!     &            '[',p1_array,']',fl_item%bcontr%label_op2,
+!     &            '[',p2_array,']'
+!          end if
+!        else if (inter>=10 .and. inter<100) then
+!          if (parent_inter) then
+!            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,4a1,
+!     &                    a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=I',inter-1,'[',
+!     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+!          else
+!            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
+!     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+!          end if
+!        else if (inter>=100 .and. inter<1000) then
+!          if (parent_inter) then
+!            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,
+!     &                    4a1,a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=I',inter-1,'[',
+!     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+!          else
+!            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+!     &            'I',inter,'[',
+!     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
+!     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
+!          end if
+!        end if
+        
 
         write(lulog,*) 'TENSOR:'
-        if (inter<10) then
-          if (parent_inter) then
-            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
-     &                   4a1,a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=I',inter-1,
-     &            '[',p1_array,']',fl_item%bcontr%label_op2,
-     &            '[',p2_array,']'
-          else
-            write(lulog,'(a1,i1,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=',fl_item%bcontr%label_op1,
-     &            '[',p1_array,']',fl_item%bcontr%label_op2,
-     &            '[',p2_array,']'
-          end if
-        else if (inter>=10 .and. inter<100) then
-          if (parent_inter) then
-            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,4a1,
-     &                    a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=I',inter-1,'[',
-     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
-          else
-            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
-     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
-          end if
-        else if (inter>=100 .and. inter<1000) then
-          if (parent_inter) then
-            write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,
-     &                    4a1,a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=I',inter-1,'[',
-     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
-          else
-            write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &            'I',inter,'[',
-     &            k_array,']+=',fl_item%bcontr%label_op1,'[',
-     &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
-          end if
+        if (parent_inter) then
+          write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
+     &                 4a1,a1,a1,a1,4a1,a1)'),
+     &          'I',inter,'[',
+     &          k_array,']+=I',inter-1,
+     &          '[',p1_array,']',fl_item%bcontr%label_op2,
+     &          '[',p2_array,']'
+        else
+          write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+     &          'I',inter,'[',
+     &          k_array,']+=',fl_item%bcontr%label_op1,
+     &          '[',p1_array,']',fl_item%bcontr%label_op2,
+     &          '[',p2_array,']'
         end if
 
         ! Reset array
@@ -177,6 +198,11 @@
         end do
 
         parent_inter=.false.
+        !if (trim(fl_item%bcontr%label_op1).eq.'INT_D') then
+        !  fl_item%bcontr%label_op1=op1_save
+        !else if (trim(fl_item%bcontr%label_op2).eq.'INT_D') then
+        !  fl_item%bcontr%label_op2=op2_save
+        !end if
 
       case(command_bc_reo)
         idx = idx+1
