@@ -111,8 +111,15 @@
      &                    k_array) 
         
         ! Check if intermediate is constructed from previous intermediate
-        if(trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
+        if (trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
           parent_inter=.true.
+        end if
+
+        ! Change integral tensor names
+        if (trim(fl_item%bcontr%label_op1).eq.'INT_D') then
+          fl_item%bcontr%label_op1='K'
+        else if (trim(fl_item%bcontr%label_op2).eq.'INT_D') then
+          fl_item%bcontr%label_op2='K'
         end if
 
         write(lulog,*) 'TENSOR:'
@@ -143,7 +150,7 @@
      &            'I',inter,'[',
      &            k_array,']+=',fl_item%bcontr%label_op1,'[',
      &            p1_array,']',fl_item%bcontr%label_op2,'[',p2_array,']'
-          end if 
+          end if
         else if (inter>=100 .and. inter<1000) then
           if (parent_inter) then
             write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,a1,
