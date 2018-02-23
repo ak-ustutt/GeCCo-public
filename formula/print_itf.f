@@ -50,11 +50,14 @@
       integer ::
      &     i,j      ! loop indcies
       character(len=5) ::
-     &     s_int
+     &     s_int,
+     &     p_int
       character(len=4) ::
-     &     istr1, istr2, istr3
+     &     istr1='    ', istr2='    ', istr3='    '
       character(len=50) ::
      &     itf_line
+      integer ::
+     &     last=1, actual=1
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -118,6 +121,7 @@
         call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
      &                    k_array)
 
+        ! Get index letters from arrays
         do i=1, 2
           do j=1, 2
             if (p1_array(j,i).ne.'>') then
@@ -132,25 +136,23 @@
           end do
         end do
 
-        ! Determine how to format ITF line
-!        do case select
-!        if res=2
-!        else if op1 =2
-!        fomt='(a1,i0,a1,4a1,a4,i0,a1,4a1,a1,a1,a1,4a1,a1)'
-!        else if op2=2
-!        else if res=2, op1=2
-!        else if res=2,op2=2
-!        else if res=2, op1=2, op2=2
-!        else format for 4 spaces
-!        else if res=0, op1=0, op2=0
-!        else if res=0, op1=2, op1=2
-!        else if res=0, op1=4, op1=4
+        do while (actual < len(istr3))
+          if (istr3(last:last) == ' ') then
+            actual = actual + 1
+            istr3(last:last) = istr3(actual:actual)
+            istr3(actual:actual) = ' '
+          else
+            last=last + 1
+            if (actual < last) then
+                actual = last
+            end if
+          end if
+        end do
 
-
-        ! Check if intermediate is constructed from previous intermediate
-        if (trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
-          parent_inter=.true.
-        end if
+!        ! Check if intermediate is constructed from previous intermediate
+!        if (trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
+!          parent_inter=.true.
+!        end if
 
         tensor1=fl_item%bcontr%label_op1
         tensor2=fl_item%bcontr%label_op2
@@ -161,33 +163,45 @@
         else if (tensor2.eq.'INT_D') then
           tensor2='K'
         end if
-
-        write(s_int(1:),'(i5)') inter 
-! Or construct a string and concatonate info onto it
-        itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
-     &      trim(tensor1)//'['//trim(istr1)//']'//trim(tensor2)//'['//
-     &      trim(istr2)//']'
-        write(lulog,*)'Hallo',trim(itf_line)
-
+          
+        write(s_int,'(i0)') inter
 
         ! Output ITF line
         write(lulog,*) 'TENSOR:'
-        if (parent_inter) then
-          write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
-     &                 4a1,a1,a1,a1,4a1,a1)'),
-     &          'I',inter,'[',
-     &          k_array,']+=I',inter-1,
-     &          '[',p1_array,']',tensor2,
-     &          '[',p2_array,']'
+        if (tensor1.eq.'_STIN0001') then
+          ! Previous intermediate appears on rhs
+          tensor1='I'
+          write(p_int,'(i0)') inter-1
+          itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
+     &        trim(tensor1)//trim(p_int)//'['//trim(istr1)//']'//
+     &        trim(tensor2)//'['//trim(istr2)//']'
+          write(lulog,*) trim(itf_line)
         else
-          write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-     &          'I',inter,'[',
-     &          k_array,']+=',tensor1,
-     &          '[',p1_array,']',tensor2,
-     &          '[',p2_array,']'
+          itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
+     &        trim(tensor1)//'['//trim(istr1)//']'//trim(tensor2)//'['//
+     &        trim(istr2)//']'
+          write(lulog,*) trim(itf_line)
         end if
 
-        ! Reset array
+
+!        ! Output ITF line
+!        write(lulog,*) 'TENSOR:'
+!        if (parent_inter) then
+!          write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
+!     &                 4a1,a1,a1,a1,4a1,a1)'),
+!     &          'I',inter,'[',
+!     &          k_array,']+=I',inter-1,
+!     &          '[',p1_array,']',tensor2,
+!     &          '[',p2_array,']'
+!        else
+!          write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
+!     &          'I',inter,'[',
+!     &          k_array,']+=',tensor1,
+!     &          '[',p1_array,']',tensor2,
+!     &          '[',p2_array,']'
+!        end if
+
+        ! Reset array and strings
         do i=1, 2
           do j=1, 2
             i_array(i,j)='>'
@@ -197,7 +211,11 @@
           end do
         end do
 
-        parent_inter=.false.
+        istr1='    '
+        istr2='    '
+        istr3='    '
+
+!        parent_inter=.false.
 
       case(command_bc_reo)
         idx = idx+1
