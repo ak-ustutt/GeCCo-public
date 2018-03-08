@@ -230,7 +230,6 @@ elif ampl_type == 'PT1_Heff2':
 
 elif ampl_type == 'CEPA-like':
     DEF_SCALAR({LABEL:'ECEPA'})
-
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.append("<C0^+*H*T2g*C0>")
     E_CEPA.set_rule()
