@@ -5821,6 +5821,11 @@ c dbgend
         call set_dependency('SOLVE_MRCC','DEF_ME_Dproj',tgt_info)
         call set_dependency('SOLVE_MRCC','DEF_ME_C00',tgt_info)
       end if
+      if (n_states.eq.1) then
+        call set_rule2('SOLVE_MRCC',PRINT_MEL_INFO_,tgt_info)
+        call set_arg('SOLVE_MRCC',PRINT_MEL_INFO_,'LIST',1,tgt_info,
+     &         val_label='ME_T')
+      end if
       do icnt = 1, max(1,optref)
       call set_rule2('SOLVE_MRCC',SOLVENLEQ,tgt_info)
       if (optref.lt.0) then

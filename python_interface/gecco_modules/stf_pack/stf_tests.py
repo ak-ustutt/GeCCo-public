@@ -10,6 +10,19 @@ from python_interface.gecco_modules.stf_pack.operators import Vertex
 non_essential=True
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 class Test_OPProduct(ut.TestCase):
     def setUp(self):
@@ -284,20 +297,24 @@ class Test_Bracket(ut.TestCase):
     def setUp(self):
         logger.clear()
         self.logger=logger
-    def test_creation(self):
-        """Tests the creation of a _Bracket object"""
+
+    def test_simple_use(self):
+        """Tests the most simple use case of a _Bracket object"""
         string="<H>"
         inp={"LABEL":"L", 
              "OP_RES":"L", 
              "NEW":True}
 
         exp_res={'OP_RES': 'L', 'OPERATORS': ['H'], 'LABEL': 'L', 'FAC_INV': 1, 'NEW': True, 'FAC': 1, 'IDX_SV': [1]}
-        _Bracket(InputString(string)).set_rule(inp)
+        bracket = _Bracket(InputString(string))
+        bracket.extract()
+        bracket.set_rule(inp)
         self.assertEqual(
             self.logger.events[0],
             ("EXPAND_OP_PRODUCT",exp_res) )
+        
     def test_factors_float(self):
-        """testst the bracket with a floatinf point prefactor"""
+        """tests the bracket with a floatinf point prefactor"""
         string="2.4*<H>"
         inp={"LABEL":"L", 
              "OP_RES":"L", 
@@ -310,7 +327,9 @@ class Test_Bracket(ut.TestCase):
                  'FAC': 2.4, 
                  'IDX_SV': [1]
         }
-        _Bracket(InputString(string)).set_rule(inp)
+        bracket = _Bracket(InputString(string))
+        bracket.extract()
+        bracket.set_rule(inp)
         self.assertEqual(
             self.logger.events[0],
             ("EXPAND_OP_PRODUCT",exp_res) )
@@ -329,6 +348,13 @@ class Test_Bracket(ut.TestCase):
                  'FAC': 2.0, 
                  'IDX_SV': [1]
         }
+        bracket = _Bracket(InputString(string))
+        bracket.extract()
+        bracket.set_rule(inp)
+        self.assertEqual(
+            self.logger.events[0],
+            ("EXPAND_OP_PRODUCT",exp_res) )
+
     def test_ignore(self):
         """tests if objects between < and | and  | and > respectively are ignored"""
         string="<C0*D|H|C0+-*[[[>"
@@ -344,11 +370,20 @@ class Test_Bracket(ut.TestCase):
                  'FAC': 1, 
                  'IDX_SV': [1]
         }
+        bracket = _Bracket(InputString(string))
+        bracket.extract()
+        bracket.set_rule(inp)
+        self.assertEqual(
+            self.logger.events[0],
+            ("EXPAND_OP_PRODUCT",exp_res) )
+
     def test_string_representation(self):
         string="<C0^+*(H+1/2V)C0>"
+        bracket = _Bracket(InputString(string))
+        bracket.extract()
         self.assertEqual(
             str(
-                _Bracket(InputString(string))
+                bracket
             ),
             '<\nC0^+*H*C0\n+1.0/2.0*C0^+*V*C0\n>'
         )
@@ -360,6 +395,7 @@ class Test_Bracket(ut.TestCase):
              "NEW":True}
         exp_res={'OP_RES': 'L', 'OPERATORS': ['C0^+','H','T','T','T','T','C0'], 'LABEL': 'L', 'FAC_INV': 1, 'NEW': True, 'FAC': 1, 'IDX_SV': [1,2,3,4,5,6,7], 'AVOID':[3,5,4,6]}
         b_with_restr = _Bracket(InputString(string))
+        b_with_restr.extract()
         b_with_restr.avoid("T'","T'''")
         b_with_restr.avoid("T''","T''''")
         b_with_restr.set_rule(inp)

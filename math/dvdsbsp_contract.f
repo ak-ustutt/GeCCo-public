@@ -41,7 +41,7 @@
       if(dvdsbsp%ncursub.ne.dvdsbsp%lcursub)
      &     call quit(1,i_am,"Subspace must be be up to date") !same number of Mv vectors as of Vvectors
       if(dvdsbsp%ncursub.lt.nretain)
-     &     call quit(1,i_am,"I can't expand the subspace") !same number of Mv vectors as of Vvectors
+     &     call quit(1,i_am,"I can't expand the subspace")
 
       
       ndim=dvdsbsp%ncursub
@@ -67,6 +67,12 @@
       
       call vecsp_calculate_overlapp(dvdsbsp%vspace,dvdsbsp%Mvspace,
      &     xbuf1,xbuf2, lbuf, dvdsbsp%vMv_mat, maxsub)
+      
+      if (dvdsbsp%with_metric)then
+        dvdsbsp%vSv_mat(1:maxsub*maxsub) = 0d0
+        call vecsp_calculate_overlapp(dvdsbsp%vspace,dvdsbsp%Svspace,
+     &       xbuf1,xbuf2, lbuf, dvdsbsp%vSv_mat, maxsub)
+      end if
       
       deallocate(eigi, eigr,vecs)
       dvdsbsp%ncursub=nretain

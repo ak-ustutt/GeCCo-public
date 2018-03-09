@@ -454,7 +454,12 @@ c dbg
       use_tr_here = use_tr       .and.
      &     me_op1%absym   .ne.0  .and.
      &     me_op2%absym   .ne.0  .and.
-     &     me_op1op2%absym.ne.0
+     &     me_op1op2%absym.ne.0  .and.
+     &     me_op1%absym*me_op2%absym.eq.me_op1op2%absym
+      ! the last fix is to avoid a bug with spin densities, which are
+      ! obtained by anti-symmetrizing the resulting ME list; in this
+      ! case it can happen, that the symmetries do not match (can happen
+      ! for all states with MS=0)
 
       fac_scal = 1d0
 

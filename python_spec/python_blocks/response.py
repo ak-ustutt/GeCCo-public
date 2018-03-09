@@ -7,7 +7,7 @@ import python_interface.gecco_modules.default_keywords as dk
 import MRCC2
 
 import operators.linear_response_op
-import lagrangians.MRCCPT2_LRlag
+import lagrangians.MRCC2_LRlag
 import preconditioner.precon_c0
 import solve.MRCC2_LR_solve as solve
 
