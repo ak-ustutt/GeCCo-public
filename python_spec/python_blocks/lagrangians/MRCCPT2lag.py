@@ -230,13 +230,84 @@ elif ampl_type == 'PT1_Heff2':
 
 elif ampl_type == 'CEPA-like':
     DEF_SCALAR({LABEL:'ECEPA'})
+
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.append("<C0^+*H*T2g*C0>")
     E_CEPA.set_rule()
     
-    LAG_A.append("<C0^+*(LAM2g)*("+_h1_+"-ECEPA)*T2g*C0>")
-    LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g*T2g*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
+
+elif ampl_type == 'CCSD-like':
+    # CCSD-like, but only -E_c in quadratic term
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
     
+    LAG_A.append("<C0^+*(LAM2g)*(H-E0-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
+
+elif ampl_type == 'CCSD-like_c':
+    # CCSD-like, but only connected terms
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>", connect=["H","T2g"])
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>", connect=["H","T2g"])
+    LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g'*T2g''*C0>", connect=["H","T2g'", "H","T2g''"])
+
+elif ampl_type == 'CISD-like':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+elif ampl_type == 'CEPAn-like':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+elif ampl_type == 'HT_HTTc':
+    LAG_A.append("<C0^+*(LAM2g)*H*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", connect=["H","T2g'",  "H","T2g''"])
+    LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", avoid=["H","T2g''"], connect=["H","T2g'",  "T2g'","T2g''"])
+
+elif ampl_type == '3O-SCF':
+    # Third order SCF method
+    LAG_E.append("1/2*<C0^+*[[(H-"+_h0_+"),T2g],T2g]*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[["+_h0_+",T2g],T2g]*C0>")
+
+elif ampl_type == 'no_Ec':
+    # CCSD-like, but with no -Ec contribution
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
+
+elif ampl_type == 'IDEA1_2':
+    # Add disconnected terms to connected cepa
+    # Reproduces MRPT_3O-CI
+    LAG_A.append("<C0^+*(LAM2g)*(H-"+_h0_+")*T2g*C0>", connect=["H","T2g",  _h0_,"T2g"])
+    LAG_A.append("<C0^+*(LAM2g)*["+_h0_+",T2g]*C0>")
+
+elif ampl_type == 'IDEA1_3':
+    # Add/subrtract connected terms to connected cepa
+    # Poor convergence
+    LAG_A.append("<C0^+*(LAM2g)*(H-"+_h0_+")*T2g*C0>", connect=["H","T2g",  _h0_,"T2g"])
+    LAG_A.append("<C0^+*(LAM2g)*["+_h0_+",T2g]*C0>")
 
 elif ampl_type == 'IDEA1':
     LAG_A.append("<C0^+*(LAM2g)*(H-"+_h0_+")*T2g*C0>", connect=["H","T2g",  _h0_,"T2g"])
@@ -339,7 +410,78 @@ LAG_E.set_rule()
 #dbg
 #for item in LAG_A.show():
 #    print item
-LAG_A.set_rule()
+
+
+if ampl_type == 'IDEA1_2':
+    # Add disconnected terms onto FORM_PT_LAG_A
+    LAG_A.set_rule()
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[2,3, 4,2],
+                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,VP,VV"],
+                       AVOID:[3,4]})
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[2,3, 4,2],
+                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,VP,VV"],
+                       AVOID:[3,4]})
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[2,3, 4,2],
+                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,P,V"],
+                       AVOID:[3,4]})
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[2,3, 4,2],
+                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,P,V"],
+                       AVOID:[3,4]})
+
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A',MODE:'SHORT'})
+
+elif ampl_type == 'IDEA1_3':
+    # Add connected terms onto FORM_PT_LAG_A
+    LAG_A.set_rule()
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[3,4, 4,2],
+                       LABEL_DESCR:["2,,V,P","3,,VV,VP","4,,PP,VV"],
+                       AVOID:[2,3]})
+    
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[3,4, 4,2],
+                       LABEL_DESCR:["2,,V,P","3,,V,P","4,,PP,VV"],
+                       AVOID:[2,3]})
+    
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[3,4, 4,2],
+                       LABEL_DESCR:["2,,VV,PV","3,,VV,VP","4,,PP,VV"],
+                       AVOID:[2,3]})
+    
+    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                       IDX_SV   :[1   ,2   ,3, 4, 5],
+                       CONNECT:[3,4, 4,2],
+                       LABEL_DESCR:["2,,VV,PV","3,,V,P","4,,PP,VV"],
+                       AVOID:[2,3]})
+
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A',MODE:'SHORT'})
+else:
+    LAG_A.set_rule()
+
 
 #print("LAG_A finished")
 debug_FORM('FORM_PT_LAG_A')
@@ -420,7 +562,7 @@ TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 #PRINT_FORMULA({LABEL:'FORM_PT_Amp',MODE:'SHORT'})
 
 
-if ampl_type == 'CEPA-like':
+if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec']:
     DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
                 IRREP:1,
@@ -956,107 +1098,206 @@ if test_terms:
 
 
     
-    DEF_SCALAR({LABEL:'E_J1'})
-    DEF_ME_LIST({LIST:'ME_J1',
-                 OPERATOR:'E_J1',
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:+1})
-
-    E_LAG_1=stf.Formula("FORM_J1:E_J1=-<C0^+*T2g^+*(T2g*("+_h1_+"))*C0>")
-    E_LAG_1.set_rule()
-    REPLACE({LABEL_RES:'FORM_J1',
-             LABEL_IN:'FORM_J1',
-             OP_LIST:[_h0_,'H']})
-    SUM_TERMS({LABEL_RES:'FORM_J1',
-               LABEL_IN:'FORM_J1'})
-    OPTIMIZE({LABEL_OPT:'FOPT_J1',
-              LABELS_IN:['FORM_J1']})
-    PRINT_FORMULA({LABEL:'FORM_J1',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J1'})
+#    DEF_SCALAR({LABEL:'E_J1'})
+#    DEF_ME_LIST({LIST:'ME_J1',
+#                 OPERATOR:'E_J1',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_1=stf.Formula("FORM_J1:E_J1=-<C0^+*T2g^+*(T2g*("+_h1_+"))*C0>")
+#    E_LAG_1.set_rule()
+#    REPLACE({LABEL_RES:'FORM_J1',
+#             LABEL_IN:'FORM_J1',
+#             OP_LIST:[_h0_,'H']})
+#    SUM_TERMS({LABEL_RES:'FORM_J1',
+#               LABEL_IN:'FORM_J1'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J1',
+#              LABELS_IN:['FORM_J1']})
+#    PRINT_FORMULA({LABEL:'FORM_J1',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J1'})
+#   
+#
+#    # CEPA - IDEA1
+#    DEF_SCALAR({LABEL:'E_J2'})
+#    DEF_ME_LIST({LIST:'ME_J2',
+#                 OPERATOR:'E_J2',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_2=stf.Formula("FORM_J2:E_J2=<C0^+*T2g^+*H*T2g*C0>")
+#    E_LAG_2.append("-<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
+#    E_LAG_2.append("-<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g"])
+#    E_LAG_2.append("<C0^+*T2g^+*"+_h0_+"*T2g*C0>", connect=[_h0_,"T2g"])
+#    E_LAG_2.append("-<C0^+*T2g^+*"+_h0_+"*T2g*C0>")
+#    E_LAG_2.append("<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
+#    E_LAG_2.set_rule()
+#    REPLACE({LABEL_RES:'FORM_J2',
+#             LABEL_IN:'FORM_J2',
+#             OP_LIST:[_h0_,'H']})
+#    SUM_TERMS({LABEL_RES:'FORM_J2',
+#               LABEL_IN:'FORM_J2'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J2',
+#              LABELS_IN:['FORM_J2']})
+#    PRINT_FORMULA({LABEL:'FORM_J2',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J2'})
+#    
+#
+#    # HT
+#    DEF_SCALAR({LABEL:'E_J3'})
+#    DEF_ME_LIST({LIST:'ME_J3',
+#                 OPERATOR:'E_J3',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_3=stf.Formula("FORM_J3:E_J3=<C0^+*T2g^+*H*T2g*C0>")
+#    E_LAG_3.set_rule()
+#    SUM_TERMS({LABEL_RES:'FORM_J3',
+#               LABEL_IN:'FORM_J3'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J3',
+#              LABELS_IN:['FORM_J3']})
+#    PRINT_FORMULA({LABEL:'FORM_J3',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J3'})
+#    
+#    
+#    # H_0T
+#    DEF_SCALAR({LABEL:'E_J4'})
+#    DEF_ME_LIST({LIST:'ME_J4',
+#                 OPERATOR:'E_J4',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_4=stf.Formula("FORM_J4:E_J4=<C0^+*T2g^+*"+_h0_+"*T2g*C0>")
+#    E_LAG_4.set_rule()
+#    SUM_TERMS({LABEL_RES:'FORM_J4',
+#               LABEL_IN:'FORM_J4'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J4',
+#              LABELS_IN:['FORM_J4']})
+#    PRINT_FORMULA({LABEL:'FORM_J4',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J4'})
+#    
+#    
+#    # -TH_0
+#    DEF_SCALAR({LABEL:'E_J5'})
+#    DEF_ME_LIST({LIST:'ME_J5',
+#                 OPERATOR:'E_J5',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_5=stf.Formula("FORM_J5:E_J5=-<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
+#    E_LAG_5.set_rule()
+#    SUM_TERMS({LABEL_RES:'FORM_J5',
+#               LABEL_IN:'FORM_J5'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J5',
+#              LABELS_IN:['FORM_J5']})
+#    PRINT_FORMULA({LABEL:'FORM_J5',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J5'})
+#
+#
+#    # (WT)_c
+#    DEF_SCALAR({LABEL:'E_J6'})
+#    DEF_ME_LIST({LIST:'ME_J6',
+#                 OPERATOR:'E_J6',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    E_LAG_6=stf.Formula("FORM_J6:E_J6=<C0^+*H*C0>")
+#    E_LAG_6.append("-<C0^+*H*C0>")
+#    E_LAG_6.append("<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g"])
+#    E_LAG_6.append("-<C0^+*T2g^+*"+_h0_+"*T2g*C0>", connect=[_h0_,"T2g"])
+#    E_LAG_6.set_rule()
+#    REPLACE({LABEL_RES:'FORM_J6',
+#             LABEL_IN:'FORM_J6',
+#             OP_LIST:[_h0_,'H']})
+#    SUM_TERMS({LABEL_RES:'FORM_J6',
+#               LABEL_IN:'FORM_J6'})
+#    OPTIMIZE({LABEL_OPT:'FOPT_J6',
+#              LABELS_IN:['FORM_J6']})
+#    PRINT_FORMULA({LABEL:'FORM_J6',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J6'})
    
-
-    # CEPA - IDEA1
-    DEF_SCALAR({LABEL:'E_J2'})
-    DEF_ME_LIST({LIST:'ME_J2',
-                 OPERATOR:'E_J2',
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:+1})
-
-    E_LAG_2=stf.Formula("FORM_J2:E_J2=<C0^+*T2g^+*H*T2g*C0>")
-    E_LAG_2.append("-<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
-    E_LAG_2.append("-<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g"])
-    E_LAG_2.append("<C0^+*T2g^+*"+_h0_+"*T2g*C0>", connect=[_h0_,"T2g"])
-    E_LAG_2.append("-<C0^+*T2g^+*"+_h0_+"*T2g*C0>")
-    E_LAG_2.append("<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
-    E_LAG_2.set_rule()
-    REPLACE({LABEL_RES:'FORM_J2',
-             LABEL_IN:'FORM_J2',
-             OP_LIST:[_h0_,'H']})
-    SUM_TERMS({LABEL_RES:'FORM_J2',
-               LABEL_IN:'FORM_J2'})
-    OPTIMIZE({LABEL_OPT:'FOPT_J2',
-              LABELS_IN:['FORM_J2']})
-    PRINT_FORMULA({LABEL:'FORM_J2',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J2'})
-    
-
-    # HT
-    DEF_SCALAR({LABEL:'E_J3'})
-    DEF_ME_LIST({LIST:'ME_J3',
-                 OPERATOR:'E_J3',
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:+1})
-
-    E_LAG_3=stf.Formula("FORM_J3:E_J3=<C0^+*T2g^+*H*T2g*C0>")
-    E_LAG_3.set_rule()
-    SUM_TERMS({LABEL_RES:'FORM_J3',
-               LABEL_IN:'FORM_J3'})
-    OPTIMIZE({LABEL_OPT:'FOPT_J3',
-              LABELS_IN:['FORM_J3']})
-    PRINT_FORMULA({LABEL:'FORM_J3',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J3'})
-    
-    
-    # H_0T
-    DEF_SCALAR({LABEL:'E_J4'})
-    DEF_ME_LIST({LIST:'ME_J4',
-                 OPERATOR:'E_J4',
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:+1})
-
-    E_LAG_4=stf.Formula("FORM_J4:E_J4=<C0^+*T2g^+*"+_h0_+"*T2g*C0>")
-    E_LAG_4.set_rule()
-    SUM_TERMS({LABEL_RES:'FORM_J4',
-               LABEL_IN:'FORM_J4'})
-    OPTIMIZE({LABEL_OPT:'FOPT_J4',
-              LABELS_IN:['FORM_J4']})
-    PRINT_FORMULA({LABEL:'FORM_J4',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J4'})
-    
-    
-    # -TH_0
-    DEF_SCALAR({LABEL:'E_J5'})
-    DEF_ME_LIST({LIST:'ME_J5',
-                 OPERATOR:'E_J5',
-                 IRREP:1,
-                 '2MS':0,
-                 AB_SYM:+1})
-
-    E_LAG_5=stf.Formula("FORM_J5:E_J5=-<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
-    E_LAG_5.set_rule()
-    SUM_TERMS({LABEL_RES:'FORM_J5',
-               LABEL_IN:'FORM_J5'})
-    OPTIMIZE({LABEL_OPT:'FOPT_J5',
-              LABELS_IN:['FORM_J5']})
-    PRINT_FORMULA({LABEL:'FORM_J5',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J5'})
+   
+#    # connect counterparts to (WT)d
+#    DEF_SCALAR({LABEL:'E_J7'})
+#    DEF_ME_LIST({LIST:'ME_J7',
+#                 OPERATOR:'E_J7',
+#                 IRREP:1,
+#                 '2MS':0,
+#                 AB_SYM:+1})
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:True,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,VP,VV"],
+#                       AVOID:[3,4]})
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,VP,VV"],
+#                       AVOID:[3,4]})
+#    
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,P,V"],
+#                       AVOID:[3,4]})
+#    
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,P,V"],
+#                       AVOID:[3,4]})
+#   
+#    # Connected terms
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,4,  3,4],
+#                       LABEL_DESCR:["2,,V,P","3,,VV,VP","4,,PP,VV"],
+#                       AVOID:[2,3]})
+#    
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[3,4, 4,2],
+#                       LABEL_DESCR:["2,,V,P","3,,V,P","4,,PP,VV"],
+#                       AVOID:[2,3]})
+#    
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[3,4, 4,2],
+#                       LABEL_DESCR:["2,,VV,PV","3,,VV,VP","4,,PP,VV"],
+#                       AVOID:[2,3]})
+#    
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
+#                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[3,4, 4,2],
+#                       LABEL_DESCR:["2,,VV,PV","3,,V,P","4,,PP,VV"],
+#                       AVOID:[2,3]})
+#
+#    #E_LAG_7=stf.Formula("FORM_J7:E_J7=<C0^+*H*C0>")
+#    #E_LAG_7.append("-<C0^+*H*C0>")
+#    #E_LAG_7.append("<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g",  "T2g","T2g^+"])
+#    #E_LAG_7.set_rule()
+#    OPTIMIZE({LABEL_OPT:'FOPT_J7',
+#              LABELS_IN:['FORM_J7']})
+#    PRINT_FORMULA({LABEL:'FORM_J7',MODE:'SHORT'})
+#    EVALUATE({FORM:'FOPT_J7'})
 
 
-    # (WT)_c
+    # Linear-CEPA
     DEF_SCALAR({LABEL:'E_J6'})
     DEF_ME_LIST({LIST:'ME_J6',
                  OPERATOR:'E_J6',
@@ -1064,41 +1305,17 @@ if test_terms:
                  '2MS':0,
                  AB_SYM:+1})
 
-    E_LAG_6=stf.Formula("FORM_J6:E_J6=<C0^+*H*C0>")
-    E_LAG_6.append("-<C0^+*H*C0>")
-    E_LAG_6.append("<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g"])
-    E_LAG_6.append("-<C0^+*T2g^+*"+_h0_+"*T2g*C0>", connect=[_h0_,"T2g"])
+    E_LAG_6=stf.Formula("FORM_J6:E_J6=<C0^+*T2g^+*H*C0>")
+    E_LAG_6.append("<C0^+*T2g^+*[H,T2g]*C0>")
+    E_LAG_6.append("-<C0^+*T2g^+*H*T2g*C0>")
+    E_LAG_6.append("<C0^+*T2g^+*T2g*"+_h0_+"*C0>")
     E_LAG_6.set_rule()
-    REPLACE({LABEL_RES:'FORM_J6',
-             LABEL_IN:'FORM_J6',
-             OP_LIST:[_h0_,'H']})
+#    REPLACE({LABEL_RES:'FORM_J6',
+#             LABEL_IN:'FORM_J6',
+#             OP_LIST:[_h0_,'H']})
     SUM_TERMS({LABEL_RES:'FORM_J6',
                LABEL_IN:'FORM_J6'})
     OPTIMIZE({LABEL_OPT:'FOPT_J6',
               LABELS_IN:['FORM_J6']})
     PRINT_FORMULA({LABEL:'FORM_J6',MODE:'SHORT'})
     EVALUATE({FORM:'FOPT_J6'})
-   
-   
-    # connect counterparts to (WT)d
-    DEF_SCALAR({LABEL:'E_J7'})
-    DEF_ME_LIST({LIST:'ME_J7',
-                OPERATOR:'E_J7',
-                IRREP:1,
-                '2MS':0,
-                AB_SYM:+1})
-
-#    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',OP_RES:'E_J7',
-#                      OPERATORS:['T2g','H','T2g'],
-#                      IDX_SV:[1,2,3],
-#                      CONNECT:[2,3, 3,1],
-#                      LABEL_DESCR:["1,,P,V","2,,VV,VP","3,,PP,VV"]})
-
-    E_LAG_7=stf.Formula("FORM_J7:E_J7=<C0^+*H*C0>")
-    E_LAG_7.append("-<C0^+*H*C0>")
-    E_LAG_7.append("<C0^+*T2g^+*H*T2g*C0>", connect=["H","T2g",  "T2g","T2g^+"])
-    E_LAG_7.set_rule()
-    OPTIMIZE({LABEL_OPT:'FOPT_J7',
-              LABELS_IN:['FORM_J7']})
-    PRINT_FORMULA({LABEL:'FORM_J7',MODE:'SHORT'})
-    EVALUATE({FORM:'FOPT_J7'})
