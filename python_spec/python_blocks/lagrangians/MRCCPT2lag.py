@@ -1431,20 +1431,28 @@ if stabm:
     depend('SOLVE_MRCCPT2')
     depend(('DEF_FORM_PT_LAG'))
     depend('BUILD_PRECON')
+
+    _nroot_ = 3
     
     CLONE_OPERATOR({LABEL:'R2g',TEMPLATE:'T2g'})
     DEF_ME_LIST({LIST:'ME_R2g',
             OPERATOR:'R2g',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1})
+            AB_SYM:+1,MAX_REC:_nroot_})
+    CLONE_OPERATOR({LABEL:'R2g_prime',TEMPLATE:'T2g'})
+    DEF_ME_LIST({LIST:'ME_R2g_prime',
+            OPERATOR:'R2g_prime',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:0,MAX_REC:_nroot_})
 
     CLONE_OPERATOR({LABEL:'S2g',TEMPLATE:'O2g'})
     DEF_ME_LIST({LIST:'ME_S2g',
             OPERATOR:'S2g',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1})
+            AB_SYM:+1,MAX_REC:_nroot_})
     OVRLAP=stf.Formula("FORM_OVRLAP:S2g=<C0^+*LAM2g*R2g*C0>")
     OVRLAP.set_rule()
 
@@ -1460,7 +1468,7 @@ if stabm:
             OPERATOR:'JAC_R',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1})
+            AB_SYM:+1,MAX_REC:_nroot_})
 
     
     DERIVATIVE({LABEL_IN:'FORM_PT_Amp',
@@ -1469,20 +1477,31 @@ if stabm:
             OP_DERIV:'T2g',
             OP_MULT:'R2g'})
 
+    # for transformation:
+    DEF_SCALAR({LABEL:'DUMM_Y'})
+    INVARIANT({LABEL_RES:'FORM_R2g',
+           LABEL_IN:'FORM_T2_orth',
+           OP_RES:'R2g',
+           OPERATORS:'DUMM_Y'}) # currently the only way to change the OP_RES
+
+    REPLACE({LABEL_RES:'FORM_R2g',
+         LABEL_IN:'FORM_R2g',
+         OP_LIST:['T2_orth','R2g_prime']})
+
     OPTIMIZE({LABEL_OPT:'FOPT_JAC_R',
-              LABELS_IN:['FORM_PT_Stabm','FORM_S_R','FORM_PT_SxT']})
+              LABELS_IN:['FORM_PT_Stabm','FORM_S_R','FORM_R2g']})
 
     ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
                 OPERATOR:'X_TRM'})
 
     SOLVE_EVP({LIST_OPT:'ME_R2g',
                LIST_PRC:'ME_PRECON2g',
-               SOLVER:'NEW',
+               #SOLVER:'NEW',
+               SOLVER:'OLD',
                OP_MVP:'JAC_R',
                OP_SVP:'S2g',
                FORM:'FOPT_JAC_R',
                MODE:'TRF',
-               FORM_SPC:['FOPT_T2_orth'],
-               LIST_SPC:['ME_T2g','ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG'],
-               LIST_SPC:['ME_JAC_R','ME_X_TRM','ME_X_TRM_DAG'],
-               N_ROOTS:5})
+               #FORM_SPC:['FOPT_T2_orth'],
+               LIST_SPC:['ME_R2g_prime','ME_X_TRM','ME_X_TRM_DAG'],
+               N_ROOTS:_nroot_})
