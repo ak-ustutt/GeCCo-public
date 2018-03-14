@@ -2,6 +2,7 @@ from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
 
+
 i_am="MRCCPT2lag.py"
 
 known_hamiltonians=["DYALL","DYALL-X","REPT","F_EFF","F_EFF-D"]
