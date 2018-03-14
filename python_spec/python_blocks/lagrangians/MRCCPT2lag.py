@@ -59,6 +59,8 @@ if keywords.is_keyword_set('method.MRCCPT2.ampl_type'):
     ampl_type = keywords.get('method.MRCCPT2.ampl_type')
 print("ampl_type: ", ampl_type, type(ampl_type))
 
+
+# Evaluate specific terms
 test_terms = False
 if keywords.is_keyword_set('method.MRCCPT2.test_terms'):
     if (keywords.get('method.MRCCPT2.test_terms') == "T"):
@@ -68,6 +70,19 @@ if keywords.is_keyword_set('method.MRCCPT2.test_terms'):
     else :
         raise Exception(i_am+": unrecognised value for option test_terms (must be T or F)")
 print("test_terms ", test_terms, type(test_terms))
+
+
+# Calculate the stability matrix (Jacobian)
+stabm = False
+if keywords.is_keyword_set('method.MRCCPT2.stabm'):
+    if (keywords.get('method.MRCCPT2.stabm') == "T"):
+        stabm=True
+    elif(keywords.get('method.MRCCPT2.stabm') == "F"):
+        stabm=False
+    else :
+        raise Exception(i_am+": unrecognised value for option stabm (must be T or F)")
+print("Stability matrix ", stabm, type(stabm))
+
 
 spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
@@ -429,6 +444,7 @@ LAG_E.set_rule()
 #    print item
 
 
+# Option to add specific terms using EXPAND_OP_PRODUCT to lagragian
 if ampl_type == 'IDEA1_2':
     # Add disconnected terms onto FORM_PT_LAG_A
     LAG_A.set_rule()
@@ -517,6 +533,7 @@ elif ampl_type == 'CEPA_2c':
 
 elif ampl_type == 'LCC_2c':
     # Take away 2 connected terms which are hypothesied to cause trouble in LCC compared to CEPA
+    # This reproduces connected CEPA method
     LAG_A.set_rule()
     PRINT_FORMULA({LABEL:'FORM_PT_LAG_A',MODE:'SHORT'})
 
@@ -586,7 +603,6 @@ SUM_TERMS({
 debug_FORM('FORM_PT_LAG_A')
 
 
-
 #Make the Derivative with respect to LAM2g.
 DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         LABEL_RES:'FORM_PT_Amp',
@@ -617,6 +633,7 @@ TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
 
 if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec']:
+    # Construct energy operator for use in lagradian
     DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
                 IRREP:1,
@@ -1403,3 +1420,68 @@ if test_terms:
                   LABELS_IN:['FORM_quad2']})
         PRINT_FORMULA({LABEL:'FORM_quad2',MODE:'SHORT'})
         EVALUATE({FORM:'FOPT_quad2'})
+
+
+
+# Calculate stability matrix (Jacobian)
+if stabm:
+    new_target('stability_matrix', True)
+    heading('Calculating eigenvalues of stability matrix (Jacobian)')
+    depend('SOLVE_MRCCPT2')
+    depend(('DEF_FORM_PT_LAG'))
+    depend('BUILD_PRECON')
+    
+    CLONE_OPERATOR({LABEL:'R2g',TEMPLATE:'T2g'})
+    DEF_ME_LIST({LIST:'ME_R2g',
+            OPERATOR:'R2g',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1})
+
+    CLONE_OPERATOR({LABEL:'S2g',TEMPLATE:'O2g'})
+    DEF_ME_LIST({LIST:'ME_S2g',
+            OPERATOR:'S2g',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1})
+    OVRLAP=stf.Formula("FORM_OVRLAP:S2g=<C0^+*LAM2g*R2g*C0>")
+    OVRLAP.set_rule()
+
+
+    DERIVATIVE({LABEL_IN:'FORM_OVRLAP',
+            LABEL_RES:'FORM_S_R',
+            OP_RES:'S2g',
+            OP_DERIV:'LAM2g'})
+
+
+    CLONE_OPERATOR({LABEL:'JAC_R',TEMPLATE:'O2g'})
+    DEF_ME_LIST({LIST:'ME_JAC_R',
+            OPERATOR:'JAC_R',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1})
+
+    
+    DERIVATIVE({LABEL_IN:'FORM_PT_Amp',
+            LABEL_RES:'FORM_PT_Stabm',
+            OP_RES:'JAC_R',
+            OP_DERIV:'T2g',
+            OP_MULT:'R2g'})
+
+    OPTIMIZE({LABEL_OPT:'FOPT_JAC_R',
+              LABELS_IN:['FORM_PT_Stabm','FORM_S_R','FORM_PT_SxT']})
+
+    ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
+                OPERATOR:'X_TRM'})
+
+    SOLVE_EVP({LIST_OPT:'ME_R2g',
+               LIST_PRC:'ME_PRECON2g',
+               SOLVER:'NEW',
+               OP_MVP:'JAC_R',
+               OP_SVP:'S2g',
+               FORM:'FOPT_JAC_R',
+               MODE:'TRF',
+               FORM_SPC:['FOPT_T2_orth'],
+               LIST_SPC:['ME_T2g','ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG'],
+               N_ROOTS:5})
+
