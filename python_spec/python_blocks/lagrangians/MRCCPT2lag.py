@@ -73,16 +73,11 @@ if keywords.is_keyword_set('method.MRCCPT2.test_terms'):
 print("test_terms ", test_terms, type(test_terms))
 
 
-# Calculate the stability matrix (Jacobian)
-stabm = False
+# Calculate 'stabm' roots of the stability matrix (Jacobian)
+stabm = 0
 if keywords.is_keyword_set('method.MRCCPT2.stabm'):
-    if (keywords.get('method.MRCCPT2.stabm') == "T"):
-        stabm=True
-    elif(keywords.get('method.MRCCPT2.stabm') == "F"):
-        stabm=False
-    else :
-        raise Exception(i_am+": unrecognised value for option stabm (must be T or F)")
-print("Stability matrix ", stabm, type(stabm))
+    stabm = keywords.get('method.MRCCPT2.stabm')
+print("Stability matrix roots: ", stabm, type(stabm))
 
 
 spinadapt=0
@@ -1425,34 +1420,34 @@ if test_terms:
 
 
 # Calculate stability matrix (Jacobian)
-if stabm:
+# stabm=number of roots
+if stabm > 0:
     new_target('stability_matrix', True)
     heading('Calculating eigenvalues of stability matrix (Jacobian)')
     depend('SOLVE_MRCCPT2')
     depend(('DEF_FORM_PT_LAG'))
     depend('BUILD_PRECON')
 
-    _nroot_ = 3
-    
     CLONE_OPERATOR({LABEL:'R2g',TEMPLATE:'T2g'})
     DEF_ME_LIST({LIST:'ME_R2g',
             OPERATOR:'R2g',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1,MAX_REC:_nroot_})
+            AB_SYM:+1,MAX_REC:stabm})
     CLONE_OPERATOR({LABEL:'R2g_prime',TEMPLATE:'T2g'})
     DEF_ME_LIST({LIST:'ME_R2g_prime',
             OPERATOR:'R2g_prime',
             IRREP:1,
             '2MS':0,
-            AB_SYM:0,MAX_REC:_nroot_})
+            AB_SYM:0,MAX_REC:stabm})
 
+    # Construct overlap matrix
     CLONE_OPERATOR({LABEL:'S2g',TEMPLATE:'O2g'})
     DEF_ME_LIST({LIST:'ME_S2g',
             OPERATOR:'S2g',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1,MAX_REC:_nroot_})
+            AB_SYM:+1,MAX_REC:stabm})
     OVRLAP=stf.Formula("FORM_OVRLAP:S2g=<C0^+*LAM2g*R2g*C0>")
     OVRLAP.set_rule()
 
@@ -1468,7 +1463,7 @@ if stabm:
             OPERATOR:'JAC_R',
             IRREP:1,
             '2MS':0,
-            AB_SYM:+1,MAX_REC:_nroot_})
+            AB_SYM:+1,MAX_REC:stabm})
 
     
     DERIVATIVE({LABEL_IN:'FORM_PT_Amp',
@@ -1505,4 +1500,4 @@ if stabm:
                MODE:'TRF',
                #FORM_SPC:['FOPT_T2_orth'],
                LIST_SPC:['ME_R2g_prime','ME_X_TRM','ME_X_TRM_DAG'],
-               N_ROOTS:_nroot_})
+               N_ROOTS:stabm})

@@ -305,7 +305,7 @@
           </argument>
           <argument length="10" name="ampl_type" status="A" type="8" value="PT2"><!--The type of amplitude equations--></argument>
           <argument length="1" name="test_terms" status="A" type="1"/><!--Evalulate specific terms-->
-          <argument length="1" name="stabm" status="A" type="1"/>     <!--Calculate stability matrix (Jacobian)-->
+          <argument length="1" name="stabm" status="A" type="2" value="0"/>     <!--Calculate 'stabm' roots of stability matrix (Jacobian), doesn't do anything by default-->
         </keyword>
         <keyword name="truncate" status="A">
           <argument length="1" name="trunc_type" status="A" type="2" value="0"/>
