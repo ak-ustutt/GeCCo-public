@@ -1475,6 +1475,7 @@ if stabm:
     ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
                 OPERATOR:'X_TRM'})
 
+
     SOLVE_EVP({LIST_OPT:'ME_R2g',
                LIST_PRC:'ME_PRECON2g',
                SOLVER:'NEW',
@@ -1483,6 +1484,5 @@ if stabm:
                FORM:'FOPT_JAC_R',
                MODE:'TRF',
                FORM_SPC:['FOPT_T2_orth'],
-               LIST_SPC:['ME_T2g','ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG'],
                LIST_SPC:['ME_JAC_R','ME_X_TRM','ME_X_TRM_DAG'],
-               N_ROOTS:5})
+               N_ROOTS:2})
