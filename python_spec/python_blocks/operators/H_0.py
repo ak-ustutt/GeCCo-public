@@ -319,7 +319,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-debug_MEL('HAM_D_LIST',info_only=True)
+debug_MEL('HAM_D_LIST')
 
 DEF_SCALAR({
         LABEL:'HAM_D_EXP'})
@@ -340,6 +340,16 @@ EXPAND_OP_PRODUCT({
         OPERATORS:['HAM_D','FOCK_EFF_INACT','HAM_D'],
         IDX_SV:[1,2,1],
         NEW:True})
+
+# The scalar part of HAM_D
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_D',
+        OP_RES:'HAM_D',
+        OPERATORS:['HAM_D','H','HAM_D'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,,',
+        NEW:False})
+
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_HAM_D',
@@ -457,7 +467,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
-debug_MEL('HAM_DX_LIST',info_only=True)
+debug_MEL('HAM_DX_LIST')
 
 
  
@@ -543,3 +553,175 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_V'})
 EVALUATE({
         FORM:'FOPT_V'})
+
+
+# -------------------
+# Some Hamiltonians in between Dyall's and Fink's
+#
+#
+# Select below which couplings will be added to the Hamiltonian
+ham_classes=[
+    'HP,HP',
+    'HH,HH',
+    'PP,PP'
+    ]
+
+extra_classes = ''
+if ham_classes:
+    extra_classes = '|' + '|'.join(ham_classes)
+
+#---------------------------------------------------------------------------------
+# Extended Dyalls 0th order Hamiltonian
+#
+# Does not have couplings between active and inactive parts
+# so it still uses f_eff for the one-electron inactive parts
+#
+#---------------------------------------------------------------------------------
+
+new_target('Make_HAM_EXT_D')
+heading("Building of Extended Dyall's 0th order Hamiltonian")
+depend('EVAL_F_EFF_INACT')
+depend('H0')
+
+DEF_OP_FROM_OCC({
+        LABEL:'HAM_EXT_D',
+        DESCR:',|H,H|P,P|V,V|VV,VV' + extra_classes})
+
+DEF_ME_LIST({
+        LIST:'HAM_EXT_D_LIST',
+        OPERATOR:'HAM_EXT_D',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:+1})
+
+debug_MEL('HAM_EXT_D_LIST')
+
+DEF_SCALAR({
+        LABEL:'HAM_EXT_D_EXP'})
+
+DEF_ME_LIST({
+        LIST:'HAM_EXT_D_EXP_LIST',
+        OPERATOR:'HAM_EXT_D_EXP',
+        IRREP:1,
+        '2MS':0,
+	AB_SYM:1})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_EXT_D',
+        OP_RES:'HAM_EXT_D',
+        OPERATORS:['HAM_EXT_D','FOCK_EFF_INACT','HAM_EXT_D'],
+        IDX_SV:[1,2,1],
+        NEW:True})
+
+# The scalar part of HAM_EXT_D
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_EXT_D',
+        OP_RES:'HAM_EXT_D',
+        OPERATORS:['HAM_EXT_D','H','HAM_EXT_D'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,,',
+        NEW:False})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_EXT_D',
+        OP_RES:'HAM_EXT_D',
+        OPERATORS:['HAM_EXT_D','H','HAM_EXT_D'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,V,V',
+        NEW:False})
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_EXT_D',
+        OP_RES:'HAM_EXT_D',
+        OPERATORS:['HAM_EXT_D','H','HAM_EXT_D'],
+        IDX_SV:[1,2,1],
+        LABEL_DESCR:'2,,VV,VV',
+        NEW:False})
+for hamC in ham_classes:
+    EXPAND_OP_PRODUCT({
+            LABEL:'FORM_HAM_EXT_D',
+            OP_RES:'HAM_EXT_D',
+            OPERATORS:['HAM_EXT_D','H','HAM_EXT_D'],
+            IDX_SV:[1,2,1],
+            LABEL_DESCR:'2,,' + hamC,
+            NEW:False})
+
+debug_FORM('FORM_HAM_EXT_D')
+
+# expectation value <HAM_D> - the active energy is sufficient
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_HAM_EXT_D_EXP',
+        NEW:True,
+        FAC:1.0,
+        OP_RES:'HAM_EXT_D_EXP',
+        OPERATORS:['GAM0','HAM_EXT_D','GAM0'],
+        CONNECT:[1,2],
+        AVOID:[1,3],
+        IDX_SV:[1,2,1]
+        })
+
+debug_FORM('FORM_HAM_EXT_D_EXP')
+
+OPTIMIZE({
+        LABELS_IN:['FORM_HAM_EXT_D','FORM_HAM_EXT_D_EXP'],
+        LABEL_OPT:'FOPT_HAM_EXT_D'})
+
+EVALUATE({
+        FORM:'FOPT_HAM_EXT_D'})
+
+debug_MEL('HAM_EXT_D_LIST')
+debug_MEL('HAM_EXT_D_EXP_LIST')
+
+new_target("EVAL_HAM_EXT_D")
+#this target should contain the evaluation of FORM_HAM_EXT_D but currently there are targets that expect that in
+#Make_HAM_EXT_D
+depend('Make_HAM_EXT_D')
+
+
+#---------------------------------------------------------------------------------
+# Simplified Finks excitation retaining hamiltonian
+#
+# It has the couplings between active and inactive parts
+# Thus it uses the Hamiltonian element for the one-electrons
+# inactive parts
+#
+#---------------------------------------------------------------------------------
+new_target('MAKE_SIMP_REPT_HAM')
+heading('Building of simplified excitation retaining hamiltonian')
+depend('H0')
+depend('MakeRefState')
+
+comment("defining simpl REPT-hamiltonian and building formula")
+
+DEF_OP_FROM_OCC({
+        LABEL:'SIMP_REPT_HAM',
+        JOIN:1,
+        DESCR:',|H,H|V,V|P,P|VV,VV|HV,HV|PV,PV' + extra_classes})
+
+DEF_ME_LIST({
+        LIST:'SIMP_REPT_HAM_LST',
+        OPERATOR:'SIMP_REPT_HAM',
+        IRREP:1,
+        '2MS':0,
+        AB_SYM:1})
+
+EXPAND_OP_PRODUCT({
+        LABEL:'FORM_SIMP_REPT_HAM',
+        NEW:True,
+        OP_RES:'SIMP_REPT_HAM',
+        OPERATORS:['SIMP_REPT_HAM','H','SIMP_REPT_HAM'],
+        IDX_SV:[1,2,1]})
+
+debug_FORM('FORM_SIMP_REPL_HAM')
+
+new_target('EVAL_SIMP_REPT_HAM')
+depend('MAKE_SIMP_REPT_HAM')
+comment("evaluate SIMP_REPT-hamiltonian")
+
+OPTIMIZE({
+        LABELS_IN:'FORM_SIMP_REPT_HAM',
+        LABEL_OPT:'FOPT_SIMP_REPT_HAM'})
+EVALUATE({
+        FORM:'FOPT_SIMP_REPT_HAM'})
+
+debug_MEL('SIMP_REPT_HAM_LST')

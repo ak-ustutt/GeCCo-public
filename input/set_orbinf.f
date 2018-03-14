@@ -166,6 +166,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         ist = orb_info%ngas_hpv(ihole)
         ind = 1
         inc = -1
+        call quit(1,'set_orbinf','who needs hole_rv?? (1)')
       else        
         ist = 1
         ind = orb_info%ngas_hpv(ihole)
@@ -186,7 +187,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         end do
       end do
       ! remaining spaces
-      ist = max(ist,ind)+1
+      ist = ind+1
       ind = ngas
       do igas = ist, ind
         do isym = 1, nsym
@@ -306,7 +307,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       case default
         call quit(1,'set_orbinf','unknown type '//trim(env_type))
       end select
-      
+
         ! generate reverse mapping
         do idx = 1, ntoob+caborb
           orb_info%ireots(orb_info%ireost(idx)) = idx 
