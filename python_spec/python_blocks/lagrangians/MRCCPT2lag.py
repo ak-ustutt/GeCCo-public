@@ -1494,6 +1494,7 @@ if stabm:
     ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
                 OPERATOR:'X_TRM'})
 
+
     SOLVE_EVP({LIST_OPT:'ME_R2g',
                LIST_PRC:'ME_PRECON2g',
                #SOLVER:'NEW',
