@@ -25,6 +25,7 @@
         </keyword>
       </keyword>
       <keyword name="method" status="A">
+        <keyword name="ITF" status="A"/> 
         <keyword name="MP" status="A">
           <argument length="1" name="level" status="A" type="2" value="2"/>
         </keyword>

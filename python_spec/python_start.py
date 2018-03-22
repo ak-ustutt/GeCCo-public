@@ -36,6 +36,18 @@ try:
         print "begin setting SC targets"
         import python_blocks.singles_correction
 
+    if ( keywords.is_keyword_set("method.MRCC_new") ):
+        print "begin setting icMRCC targets"
+        import python_blocks.icMRCC
+
+    if ( keywords.is_keyword_set("method.MRCCPT2") ):
+        print "begin setting MRCCPT2 targets"
+        import python_blocks.MRCCPT2
+
+    if ( keywords.is_keyword_set("method.ITF") ):
+        print "begin setting icMRCC targets"
+        import python_blocks.ITF
+
     print ("end of python_start\n"+"-"*50)
 
 except Exception as ex:
