@@ -68,7 +68,7 @@
       
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       character(len=*),parameter::
      &     i_am="solve_evp2"
 
