@@ -249,6 +249,17 @@ elif ampl_type == 'CEPA-like':
     LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
     LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
 
+elif ampl_type == 'CCSD-like-noE':
+    # CCSD-like but without the energy term in quadratic
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g*T2g*C0>")
+
 elif ampl_type == 'CCSD-like-h0':
     # CCSD-like, but with H0
     # Results in terrible energy
@@ -311,6 +322,7 @@ elif ampl_type == 'CCSD-like-5h0':
 
 elif ampl_type == 'CCSD-like_2':
     # CCSD-like, but only -E_c in quadratic term (call this CCSD-like_2)
+    # Does not converge; terrible
     DEF_SCALAR({LABEL:'ECEPA'})
 
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*T2g*C0>")
@@ -426,6 +438,74 @@ elif ampl_type == 'CEPA+quad':
     
     LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
     LAG_A.append("1/2*<C0^+*(LAM2g)*[[(H-ECEPA),T2g],T2g]*C0>")
+
+elif ampl_type in ['CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5']:
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+    if ampl_type == 'CEPA+quad_1':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+
+    elif ampl_type == 'CEPA+quad_2':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+    elif ampl_type == 'CEPA+quad_3':
+        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+
+    elif ampl_type == 'CEPA+quad_4':
+        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+    elif ampl_type == 'CEPA+quad_5':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+elif ampl_type == 'CEPA+quad+Ec':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[[(H-ECEPA),T2g],T2g]*C0>")
+
+elif ampl_type in ['CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD+quad_5','CEPA+quad_6']:
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+    if ampl_type == 'CCSD+quad_1':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+
+    elif ampl_type == 'CCSD+quad_2':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+    elif ampl_type == 'CCSD+quad_3':
+        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+
+    elif ampl_type == 'CCSD+quad_4':
+        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+    elif ampl_type == 'CCSD+quad_5':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+    
+    elif ampl_type == 'CCSD+quad_6':
+        LAG_A.append("1/2*<C0^+*(LAM2g)(H-E0)*T2g*T2g*C0>")
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-E0)*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
 
 elif ampl_type == 'IDEA1_2':
     # Add disconnected terms to connected cepa
@@ -747,7 +827,7 @@ debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
-if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec','CCSD-like-h0','CCSD-like-2h0','CCSD-like-3h0','CCSD-like-4h0','CCSD-like-5h0','CCSD-like_2','CCSD-like+1','CCSD-like+2','CCSD-like+3','CEPA+quad']:
+if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec','CCSD-like-h0','CCSD-like-2h0','CCSD-like-3h0','CCSD-like-4h0','CCSD-like-5h0','CCSD-like_2','CCSD-like+1','CCSD-like+2','CCSD-like+3','CEPA+quad','CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5','CCSD-like-noE','CEPA+quad+Ec','CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD+quad_5','CEPA+quad_6']:
     # Construct energy operator for use in lagradian
     DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
@@ -771,7 +851,7 @@ OPTIMIZE({
         LABELS_IN:['FORM_PT_RHS','FORM_PT_MVP','FORM_PT_SxT']})
 
 
-if ampl_type == 'LCC':
+if ampl_type in ['LCC','CEPAn-like','CEPA+quad_2']:
     # Print out terms used for testing in ITF
     PRINT_FORMULA({LABEL:'FORM_PT_LAG',MODE:'SHORT'})
 
@@ -1461,35 +1541,6 @@ if test_terms:
                  AB_SYM:+1})
 
     EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:True,OP_RES:'E_J7',
-                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
-                       IDX_SV   :[1   ,2   ,3, 4, 5],
-                       CONNECT:[2,3, 4,2],
-                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,VP,VV"],
-                       AVOID:[3,4]})
-
-    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
-                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
-                       IDX_SV   :[1   ,2   ,3, 4, 5],
-                       CONNECT:[2,3, 4,2],
-                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,VP,VV"],
-                       AVOID:[3,4]})
-    
-    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
-                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
-                       IDX_SV   :[1   ,2   ,3, 4, 5],
-                       CONNECT:[2,3, 4,2],
-                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,P,V"],
-                       AVOID:[3,4]})
-    
-    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
-                       OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
-                       IDX_SV   :[1   ,2   ,3, 4, 5],
-                       CONNECT:[2,3, 4,2],
-                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,P,V"],
-                       AVOID:[3,4]})
-   
-    # Connected terms
-    EXPAND_OP_PRODUCT({LABEL:'FORM_J7',NEW:False,OP_RES:'E_J7',
                        OPERATORS:['C0^+','T2g^+','H','T2g','C0'],
                        IDX_SV   :[1   ,2   ,3, 4, 5],
                        CONNECT:[2,4,  3,4],
