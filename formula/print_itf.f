@@ -24,10 +24,8 @@
      &     fl_item
       type(operator_info), intent(in) ::
      &     op_info
-
       logical ::
-     &     long,
-     &     parent_inter=.false.  ! True if intermediate is constructed from another intermediate
+     &     long
       integer ::
      &     inter=0    ! Counter of intermediates
       type(operator) ::
@@ -35,29 +33,25 @@
       integer ::
      &     nops(4,2)  ! Matrix of index info
       character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),
+     &     hol=(/ 'i','j','k','l' /),  ! Hole, particle, valence indicies to be used in the ITF contractions
      &     par=(/ 'a','b','c','d' /),
      &     val=(/ 'u','v','w','x' /)
       character ::
-     &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
+     &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)), ! Arrays that contain raw ITF index (maybe this could be done better...)
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
-      character(len=4)
-     &     index1
       character(len=maxlen_bc_label) ::
-     &     tensor1, tensor2
+     &     tensor1, tensor2     ! Name of tensors involved in the contraction
       integer ::
      &     i,j      ! loop indcies
       character(len=5) ::
-     &     s_int,
-     &     p_int
+     &     s_int,   ! Intermdiate tensor number
+     &     p_int    ! Previous intermdiate tensor number
       character(len=4) ::
-     &     istr1='    ', istr2='    ', istr3='    '  ! Temporary index string, can contain whitspace inbetween index
+     &     istr1='    ', istr2='    ', istr3='    '  ! ITF index string
       character(len=50) ::
-     &     itf_line
-      integer ::
-     &     last=1, actual=1
+     &     itf_line    ! Line of ITF code
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
