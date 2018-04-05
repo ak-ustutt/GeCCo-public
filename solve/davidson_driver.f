@@ -164,74 +164,40 @@
      &        xeig,
      &        me_vort, nopt, maxvec, lrsnrm, ! results on me_vort
      &        xbuf1, xbuf2, nincore, lenbuf)
-         
-         do iroot=1,maxvec
-            do iopt=1,nopt
-               call switch_mel_record(me_vort(iopt)%mel,iroot)
-               call switch_mel_record(me_opt(iopt)%mel,iroot)           
-!            call vec_normalize(me_vort, nopt, xbuf1, xbuf2, lenbuf)
-               if (trafo(iopt) ) then
-                  call transform_back_wrap(flist,depend,
-     &                 me_special,me_vort(iopt)%mel,me_opt(iopt)%mel, !vort -> opt !
-     &                 xdummy,
-     &                 iopt, nspecial,
-     &                 me_trv(iopt)%mel,
-     &                 op_info, str_info, strmap_info,
-     &                 orb_info, opti_info)
-
-!     else me_vort => me_trv => me_opt
-               end if
-            end do
-            
-         end do
          task=8
          return                 !END of method !!!!!!!!!!!!!!!!!!!
-      else
-         task=4       ! calculate new mv product when returning
-      end if
-      ! create new trialvector in orthogonal space
-      do iroot = 1, nnew
-         do iopt=1,nopt
-            call switch_mel_record(me_res(iopt)%mel,iroot)
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            xnrm = get_norm_of_root_h(xrsnrm,iroot,nopt,nnew)
-            call apply_preconditioner(
-     &           me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel,  !res -> vort
-     &           opti_info%nwfpar(iopt),
-     &           opti_info%typ_prc(iopt),
-     &           xeig(iroot,1),
-     &           xnrm,
-     &           nnew, iroot,
-     &           me_opt(iopt)%mel%op, me_trv(iopt)%mel,me_scr(iopt)%mel,
-     &           me_special, nspecial,
-     &           fspc, nspcfrm,
-     $           xbuf1, xbuf2, xbuf3, lenbuf, nincore,
-     &           nopt.eq.1, op_info, str_info, strmap_info)
-         end do
+       else
+! create new trialvector in orthogonal space
+         do iroot = 1, nnew
+           do iopt=1,nopt
+             call switch_mel_record(me_res(iopt)%mel,iroot)
+             call switch_mel_record(me_vort(iopt)%mel,iroot)
+             xnrm = get_norm_of_root_h(xrsnrm,iroot,nopt,nnew)
+             call apply_preconditioner(
+     &            me_res(iopt)%mel, me_dia(iopt)%mel, me_vort(iopt)%mel, !res -> vort
+     &            opti_info%nwfpar(iopt),
+     &            opti_info%typ_prc(iopt),
+     &            xeig(iroot,1),
+     &            xnrm,
+     &            nnew, iroot,
+     &            me_opt(iopt)%mel%op, me_trv(iopt)%mel,
+     &            me_scr(iopt)%mel,
+     &            me_special, nspecial,
+     &            fspc, nspcfrm,
+     $            xbuf1, xbuf2, xbuf3, lenbuf, nincore,
+     &            nopt.eq.1, op_info, str_info, strmap_info)
+           end do
 ! pre orthogonalization
-         ! true orthogonalization can only be done when the metric is known
-         call vecsp_orthvec(dvdsbsp%vspace, me_vort, nopt,
-     &        xbuf1, xbuf2, lenbuf)
+! assumes metric is small and avoids having vectors with vanishing norm.
+! true orthogonalization can only be done when the metric is known
+           call vecsp_orthvec(dvdsbsp%vspace, me_vort, nopt,
+     &          xbuf1, xbuf2, lenbuf)
+         end do                 !iroot
+         task=4       ! calculate new mv product when returning
+         return
+       end if
 
-      end do                    !iroot
 
-      do iroot=1,nnew
-         do iopt=1,nopt
-            call switch_mel_record(me_vort(iopt)%mel,iroot)
-            call switch_mel_record(me_trv(iopt)%mel,iroot)
-            if (trafo(iopt) ) then
-               call transform_back_wrap(flist,depend,
-     &              me_special,me_vort(iopt)%mel,me_trv(iopt)%mel, !vort -> trv !new_trialvector created
-     &              xdummy,
-     &              iopt,nspecial,
-     &              me_trv(iopt)%mel,
-     &              op_info, str_info, strmap_info,
-     &              orb_info, opti_info)
-!            else me_vort => me_trv
-            end if
-         end do  !iopt
-      end do                   
-      return
       contains
 
 !#######################################################################
@@ -599,8 +565,6 @@ c     &         iord_vsbsp,ndim_vsbsp,mxsbsp)
       type(me_list),intent(in)::mel
       mel_get_maxrec=mel%fhand%active_records(2)
       end function
-
-
 *----------------------------------------------------------------------*
 !!    return the number of vectors a davidson subspace can still add
 *----------------------------------------------------------------------*
