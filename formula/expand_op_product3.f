@@ -74,7 +74,7 @@
       include 'ifc_baserout.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=18), parameter ::
      &     i_am = 'expand_op_product3'
 
@@ -135,6 +135,7 @@
         write(lulog,*) ' nvtx, nops, nconnect: ',nvtx,nops,nconnect
         write(lulog,*) ' idx_op_vtx: ',idx_op_vtx(1:nvtx)
         write(lulog,*) ' idx_sv_vtx: ',idx_sv_vtx(1:nvtx)
+        write(lulog,*) ' fix_in:     ',fix_in
         write(lulog,*) ' connect:',connect(1:2,1:nconnect)
         write(lulog,*) ' avoid:',avoid(1:2,1:navoid)
         write(lulog,*) ' dscr:'

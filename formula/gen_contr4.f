@@ -102,7 +102,7 @@ c        call prt_contr2(lulog,proto_main,op_info)
       call copy_contr(proto_main,proto)
       call strip_contr(proto,1) ! remove the (x 0 [C]) type arcs
 c dbg
-c      print *,'the stripped proto:'
+c      write(lulog,*) 'the stripped proto:'
 c      call prt_contr3(lulog,proto,occ_vtx)
 c dbg
       do ivtx = 1, nvtx
@@ -204,7 +204,7 @@ c dbg
       ok = iocc_bound('<=',occ_sum,.false.,zero_occ,.false.) 
 c dbg
 c      call wrt_occ2(lulog,occ_sum,occ_tgt_ex)
-c      print *,'ok 1: ',ok
+c      write(lulog,*) 'ok 1: ',ok
 c dbg
       if (ok) then
         ! (b) do not overshoot the number of deexcitations in target
@@ -213,8 +213,8 @@ c dbg
 
         ok = iocc_bound('<=',occ_sum,.false.,zero_occ,.false.)
 c dbg
-c      call wrt_occ(lulog,occ_sum)
-c        print *,'ok 2: ',ok
+c        call wrt_occ(lulog,occ_sum)
+c        write(lulog,*) 'ok 2: ',ok
 c dbg
       end if
 
@@ -269,9 +269,9 @@ c dbg
           end if
         end do
 c dbg
-c        print *,'ok 3: ',ok
-c        print *,'must_connect:     ',must_connect(1:ivtx-1)
-c        print *,'must_not_connect: ',must_not_connect(1:ivtx-1)
+c        write(lulog,*) 'ok 3: ',ok
+c        write(lulog,*) 'must_connect:     ',must_connect(1:ivtx-1)
+c        write(lulog,*) 'must_not_connect: ',must_not_connect(1:ivtx-1)
 c dbg
 
         if (ok) then
@@ -311,7 +311,7 @@ c     &               occ_ol_vtx(1:ngastp,1:2,jvtx),.false.)
      &               occ_ol_vtx(1:ngastp,1:2,ivtx_reo(jvtx)),.false.)
               end do
 c dbg
-c              print *,'check (a): ',ok
+c              write(lulog,*) 'check (a): ',ok
 c dbg
 
               ! (b) are all operators connected that must be connected?
@@ -323,7 +323,7 @@ c dbg
                 end do
               end if
 c dbg
-c              print *,'check (b): ',ok
+c              write(lulog,*) 'check (b): ',ok
 c dbg
 
               ! (c) no connections between operators for which
@@ -337,7 +337,7 @@ c dbg
                 end do
               end if
 c dbg
-c              print *,'check (c): ',ok
+c              write(lulog,*) 'check (c): ',ok
 c dbg
 
               ! set up prototype
@@ -357,7 +357,7 @@ c dbg
                     if (proto_new%arc(iarc)%link(1).eq.kvtx .and.
      &                  proto_new%arc(iarc)%link(2).eq.ivtx) then
 c dbg
-c                      print *,'(a) add arc at ',iarc
+c                      write(lulog,*) '(a) add arc at ',iarc
 c                      call wrt_occ(lulog,occ_conn(1:ngastp,1:2,jvtx))
 c dbg
                       ! only if this was a proto-connection (indicated
@@ -394,7 +394,7 @@ c     &                     occ_conn(1:ngastp,1:2,jvtx)
                     proto_new%narc = proto_new%narc + 1
                     iarc = proto_new%narc
 c dbg
-c                      print *,'(b) add arc at ',iarc
+c                      write(lulog,*) '(b) add arc at ',iarc
 c                      call wrt_occ(lulog,occ_conn(1:ngastp,1:2,jvtx))
 c dbg
                     proto_new%arc(iarc)%link(1) = kvtx
@@ -419,10 +419,8 @@ c     &               occ_ol_prev,occ_ol_rem,occ_ol_vtx)
      &                 iocc_dagger(occ_cnt2prev)
                   ok = .not.iocc_nonzero(occ_sum)
 c dbg
-c                  call wrt_occ4(lulog,occ_ex,iocc_xdn(1,occ_ol_prev),
-c     &                 iocc_dagger(occ_cnt2prev),occ_tgt_ex)
 c                  call wrt_occ(lulog,occ_sum)
-c                  print *,'EX : ',ok
+c                  write(lulog,*) 'EX : ',ok
 c dbg                  
                   if (ok) then
                     ! [DX_current] + [DX_prev] - [CNT2prev_max] == 0
@@ -430,9 +428,8 @@ c dbg
      &                   occ_cnt2prev
                     ok = .not.iocc_nonzero(occ_sum)
 c dbg
-c                    call wrt_occ4(lulog,occ_dx,iocc_xdn(2,occ_ol_prev),
-c     &                   occ_tgt_dx,occ_sum)
-c                    print *,'DX : ',ok
+c                    call wrt_occ(lulog,occ_sum)
+c                    write(lulog,*) 'DX : ',ok
 c dbg                  
                   end if
 
@@ -444,7 +441,7 @@ c dbg
 
                     ok = ieqvfac.gt.0
 c dbg
-c                    print *,'check ieqvfac: ',ok,ieqvfac
+c                    write(lulog,*) 'check ieqvfac: ',ok,ieqvfac
 c dbg
                   end if
 
@@ -453,16 +450,16 @@ c dbg
                   ! must be present (as such or partitioned)
                   if (ok) then
 c dbg
-c                    print *,'+----+'
+c                    write(lulog,*) '+----+'
 c                    call prt_contr2(lulog,proto_new,op_info)
 c                    call prt_contr2(lulog,proto_main,op_info)
-c                    print *,'+----+'
+c                    write(lulog,*) '+----+'
 c dbg
                     ok = check_contr(proto_new,proto_main)
 
                   end if
 c dbg
-c                  print *,'final: ',ok
+c                  write(lulog,*) 'final: ',ok
 c dbg
 
                   if (ok) then

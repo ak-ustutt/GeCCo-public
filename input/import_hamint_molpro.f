@@ -1,11 +1,16 @@
 *----------------------------------------------------------------------*
-      subroutine import_hamint_molpro(hlist,str_info,orb_info)
+      subroutine import_hamint_molpro(hlist,anti,str_info,orb_info)
 *----------------------------------------------------------------------*
 *     import one- and two-electron integrals from the file generated
 *     by the molpro interface ...
 *     initially, we fix the name as "moints"
 *
 *     andreas, jan 16
+*
+*     anti==.true.  normal case
+*
+*     anti==.false. only import non-antisymmetrized two-electron
+*     integrals
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -28,6 +33,8 @@
      &     str_info
       type(orbinf), intent(in) ::
      &     orb_info
+      logical, intent(in) ::
+     &     anti
 
       type(filinf) ::
      &     ffmoint
@@ -59,12 +66,18 @@
       ifpos = 1
       ! that contains a two-electron integral
       ! transfer control to H2 reader      
-      call import_h2_molpro_ifc(lumoint,ifpos,hlist,fock,nfock,
+      if (anti) 
+     & call import_h2_molpro_ifc(lumoint,ifpos,hlist,fock,nfock,
+     &     str_info,orb_info)
+      if (.not.anti) 
+     & call import_hnox_molpro_ifc(lumoint,ifpos,hlist,
      &     str_info,orb_info)
 
       ! the previous routine has exited with the file 
       ! positioned on the first record that contains F
-      call import_fock_molpro_ifc(lumoint,ifpos,hlist,ecore,fock,nfock,
+      ! call this only in the normal case (anti==.true.)
+      if (anti) 
+     & call import_fock_molpro_ifc(lumoint,ifpos,hlist,ecore,fock,nfock,
      &     str_info,orb_info)
 
       ifree = mem_flushmark('import_hamint')
