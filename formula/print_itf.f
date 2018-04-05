@@ -53,7 +53,7 @@
      &     s_int,
      &     p_int
       character(len=4) ::
-     &     istr1='    ', istr2='    ', istr3='    '
+     &     istr1='    ', istr2='    ', istr3='    '  ! Temporary index string, can contain whitspace inbetween index
       character(len=50) ::
      &     itf_line
       integer ::
@@ -121,7 +121,7 @@
         call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
      &                    k_array)
 
-        ! Get index letters from arrays
+        ! Get index letters from arrays and copy to strings
         do i=1, 2
           do j=1, 2
             if (p1_array(j,i).ne.'>') then
@@ -136,23 +136,10 @@
           end do
         end do
 
-        do while (actual < len(istr3))
-          if (istr3(last:last) == ' ') then
-            actual = actual + 1
-            istr3(last:last) = istr3(actual:actual)
-            istr3(actual:actual) = ' '
-          else
-            last=last + 1
-            if (actual < last) then
-                actual = last
-            end if
-          end if
-        end do
-
-!        ! Check if intermediate is constructed from previous intermediate
-!        if (trim(fl_item%bcontr%label_op1).eq.'_STIN0001') then
-!          parent_inter=.true.
-!        end if
+        ! Remove whitespaces from wihtin strings
+        call remove_whitespace(istr1)
+        call remove_whitespace(istr2)
+        call remove_whitespace(istr3)
 
         tensor1=fl_item%bcontr%label_op1
         tensor2=fl_item%bcontr%label_op2
@@ -183,24 +170,6 @@
           write(lulog,*) trim(itf_line)
         end if
 
-
-!        ! Output ITF line
-!        write(lulog,*) 'TENSOR:'
-!        if (parent_inter) then
-!          write(lulog,'(a1,i0,a1,4a1,a4,i0,a1,
-!     &                 4a1,a1,a1,a1,4a1,a1)'),
-!     &          'I',inter,'[',
-!     &          k_array,']+=I',inter-1,
-!     &          '[',p1_array,']',tensor2,
-!     &          '[',p2_array,']'
-!        else
-!          write(lulog,'(a1,i0,a1,4a1,a3,a1,a1,4a1,a1,a1,a1,4a1,a1)'),
-!     &          'I',inter,'[',
-!     &          k_array,']+=',tensor1,
-!     &          '[',p1_array,']',tensor2,
-!     &          '[',p2_array,']'
-!        end if
-
         ! Reset array and strings
         do i=1, 2
           do j=1, 2
@@ -214,8 +183,6 @@
         istr1='    '
         istr2='    '
         istr3='    '
-
-!        parent_inter=.false.
 
       case(command_bc_reo)
         idx = idx+1

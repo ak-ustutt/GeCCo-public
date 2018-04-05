@@ -25,6 +25,35 @@
       return
       end
 
+*----------------------------------------------------------------------*
+      subroutine remove_whitespace(string)
+*----------------------------------------------------------------------*
+!     Remove whitespace inbetween ITF index string
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      character(len=4), intent(inout) ::
+     &     string   ! IFT index string with whitespaces
+      character(len=4) ::
+     &     tmp      ! Tempory holder of index
+      integer ::
+     &     i,j      ! Loop index
+
+      tmp='    '
+      j=0
+
+      do i=1, len(string)
+        if(string(i:i).ne.' ') then
+          j=j+1
+          tmp(j:j)=string(i:i)
+        endif
+      enddo
+ 
+      string=tmp
+
+      return
+      end
 
 *----------------------------------------------------------------------*
       subroutine assign_index(arr,nops)
