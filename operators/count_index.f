@@ -56,6 +56,52 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine print_itf_line(t1, t2, idx1, idx2,
+     &                          idx3, inter, lulog)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      character(len=maxlen_bc_label) ::
+     &     t1, t2      ! Name of tensors involved in the contraction
+      character(len=4), intent(in) ::
+     &     idx1, idx2, idx3   ! Index strings
+      integer, intent(in) ::
+     &     inter,                ! Number of current intermediate
+     &     lulog                 ! File to write to
+      character(len=5) ::
+     &     s_int,                ! Intermdiate tensor number
+     &     p_int                 ! Previous intermdiate tensor number
+      character(len=50) ::
+     &     itf_line              ! Line of ITF code
+
+      write(s_int,'(i0)') inter
+
+      write(lulog,*) 'TENSOR:'
+      if (t1.eq.'_STIN0001') then
+        ! Previous intermediate appears on rhs
+        t1='I'
+        write(p_int,'(i0)') inter-1
+        itf_line='I'//trim(s_int)//'['//trim(idx3)//']+='//
+     &      trim(t1)//trim(p_int)//'['//trim(idx1)//']'//
+     &      trim(t2)//'['//trim(idx2)//']'
+        write(lulog,*) trim(itf_line)
+      else
+        itf_line='I'//trim(s_int)//'['//trim(idx3)//']+='//
+     &      trim(t1)//'['//trim(idx1)//']'//trim(t2)//'['//
+     &      trim(idx2)//']'
+        write(lulog,*) trim(itf_line)
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine assign_index(arr,nops)
 *----------------------------------------------------------------------*
 !     Assign index letters to arrays

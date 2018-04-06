@@ -32,10 +32,6 @@
      &     tensor     ! Debug delete
       integer ::
      &     nops(4,2)  ! Matrix of index info
-      character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),  ! Hole, particle, valence indicies to be used in the ITF contractions
-     &     par=(/ 'a','b','c','d' /),
-     &     val=(/ 'u','v','w','x' /)
       character ::
      &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)), ! Arrays that contain raw ITF index (maybe this could be done better...)
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
@@ -45,13 +41,8 @@
      &     tensor1, tensor2     ! Name of tensors involved in the contraction
       integer ::
      &     i,j      ! loop indcies
-      character(len=5) ::
-     &     s_int,   ! Intermdiate tensor number
-     &     p_int    ! Previous intermdiate tensor number
       character(len=4) ::
      &     istr1='    ', istr2='    ', istr3='    '  ! ITF index string
-      character(len=50) ::
-     &     itf_line    ! Line of ITF code
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -144,25 +135,10 @@
         else if (tensor2.eq.'INT_D') then
           tensor2='K'
         end if
-          
-        write(s_int,'(i0)') inter
 
-        ! Output ITF line
-        write(lulog,*) 'TENSOR:'
-        if (tensor1.eq.'_STIN0001') then
-          ! Previous intermediate appears on rhs
-          tensor1='I'
-          write(p_int,'(i0)') inter-1
-          itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
-     &        trim(tensor1)//trim(p_int)//'['//trim(istr1)//']'//
-     &        trim(tensor2)//'['//trim(istr2)//']'
-          write(lulog,*) trim(itf_line)
-        else
-          itf_line='I'//trim(s_int)//'['//trim(istr3)//']+='//
-     &        trim(tensor1)//'['//trim(istr1)//']'//trim(tensor2)//'['//
-     &        trim(istr2)//']'
-          write(lulog,*) trim(itf_line)
-        end if
+        ! Print ITF tensor contraction
+        call print_itf_line(tensor1, tensor2, istr1, istr2, istr3,
+     &                      inter, lulog)
 
         ! Reset array and strings
         do i=1, 2
