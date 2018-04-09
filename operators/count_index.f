@@ -97,7 +97,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(t1, t2, idx1, idx2,
+      subroutine print_itf_line(res, t1, t2, idx1, idx2,
      &                          idx3, inter, lulog)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
@@ -109,9 +109,52 @@
       include 'def_contraction.h'
 
       character(len=maxlen_bc_label) ::
-     &     t1, t2      ! Name of tensors involved in the contraction
+     &     res, t1, t2           ! Name of tensors involved in the contraction
       character(len=4), intent(in) ::
-     &     idx1, idx2, idx3   ! Index strings
+     &     idx1, idx2, idx3      ! Index strings
+      integer, intent(in) ::
+     &     inter,                ! Intermediate number involved in contraction
+     &     lulog                 ! File to write to
+      character(len=5) ::
+     &     s_int                 ! Intermdiate tensor number
+      character(len=50) ::
+     &     itf_line              ! Line of ITF code
+
+      write(lulog,*) 'TENSOR:'
+
+      if (t1.eq.'_STIN0001') then
+        write(s_int,'(i0)') inter
+        t1='I'
+        itf_line=trim(res)//'['//trim(idx3)//']+='//
+     &      trim(t1)//trim(s_int)//'['//trim(idx1)//']'//trim(t2)//'['//
+     &      trim(idx2)//']'
+        write(lulog,*) trim(itf_line)
+      else
+        itf_line=trim(res)//'['//trim(idx3)//']+='//
+     &      trim(t1)//'['//trim(idx1)//']'//trim(t2)//'['//
+     &      trim(idx2)//']'
+        write(lulog,*) trim(itf_line)
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine print_itf_line_inter(t1, t2, idx1, idx2,
+     &                                idx3, inter, lulog)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      character(len=maxlen_bc_label) ::
+     &     t1, t2                ! Name of tensors involved in the contraction
+      character(len=4), intent(in) ::
+     &     idx1, idx2, idx3      ! Index strings
       integer, intent(in) ::
      &     inter,                ! Number of current intermediate
      &     lulog                 ! File to write to

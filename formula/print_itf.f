@@ -37,8 +37,8 @@
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
-      character(len=maxlen_bc_label) ::
-     &     tensor1, tensor2     ! Name of tensors involved in the contraction
+!      character(len=maxlen_bc_label) ::
+!     &     tensor1, tensor2     ! Name of tensors involved in the contraction
       integer ::
      &     i,j      ! loop indcies
       character(len=4) ::
@@ -90,6 +90,28 @@
         write(lulog,*) '[CONTRACT][ADD]',
      &       fl_item%target,'( term #',idx,')'
         call prt_bcontr(lulog,fl_item%bcontr)
+
+        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
+     &                    k_array)
+        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
+     &                       istr3)
+        call print_itf_line(fl_item%bcontr%label_res,
+     &                      fl_item%bcontr%label_op1,
+     &                      fl_item%bcontr%label_op2, 
+     &                      istr1, istr2, istr3, inter, lulog)
+        do i=1, 2
+          do j=1, 2
+            i_array(i,j)='>'
+            p1_array(i,j)='>'
+            p2_array(i,j)='>'
+            k_array(i,j)='>'
+          end do
+        end do
+
+        istr1='    '
+        istr2='    '
+        istr3='    '
+
       case(command_add_bc_reo)
         idx = idx+1
         write(lulog,*) '[CONTRACT][REORDER][ADD]',
@@ -110,19 +132,17 @@
         call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
      &                       istr3)
 
-        tensor1=fl_item%bcontr%label_op1
-        tensor2=fl_item%bcontr%label_op2
-
         ! Change integral tensor name
-        if (tensor1.eq.'INT_D') then
-          tensor1='K    '
-        else if (tensor2.eq.'INT_D') then
-          tensor2='K'
+        if (fl_item%bcontr%label_op1.eq.'INT_D') then
+          fl_item%bcontr%label_op1='K    '
+        else if (fl_item%bcontr%label_op2.eq.'INT_D') then
+          fl_item%bcontr%label_op2='K'
         end if
 
         ! Print ITF tensor contraction
-        call print_itf_line(tensor1, tensor2, istr1, istr2, istr3,
-     &                      inter, lulog)
+        call print_itf_line_inter(fl_item%bcontr%label_op1,
+     &                            fl_item%bcontr%label_op2, 
+     &                            istr1, istr2, istr3, inter, lulog)
 
         ! Reset array and strings
         do i=1, 2
