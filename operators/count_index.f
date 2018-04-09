@@ -26,6 +26,47 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine array_to_string(ans_arr, t1_arr, t2_arr, idx1, idx2,
+     &                           idx3)
+*----------------------------------------------------------------------*
+!     Copy index array to index string
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      character, intent(in) ::
+     &     ans_arr(2,2),
+     &     t1_arr(2,2),
+     &     t2_arr(2,2)
+      character(len=4), intent(inout) ::
+     &     idx1,
+     &     idx2,
+     &     idx3
+      integer ::
+     &     i,j      ! Loop index
+
+      do i=1, 2
+        do j=1, 2
+          if (t1_arr(j,i).ne.'>') then
+            idx1(j+(2*i-2):)=t1_arr(j,i)
+          end if
+          if (t2_arr(j,i).ne.'>') then
+            idx2(j+(2*i-2):)=t2_arr(j,i)
+          end if
+          if (ans_arr(j,i).ne.'>') then
+            idx3(j+(2*i-2):)=ans_arr(j,i)
+          end if
+        end do
+      end do
+
+      call remove_whitespace(idx1)
+      call remove_whitespace(idx2)
+      call remove_whitespace(idx3)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine remove_whitespace(string)
 *----------------------------------------------------------------------*
 !     Remove whitespace inbetween ITF index string

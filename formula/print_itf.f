@@ -107,24 +107,8 @@
      &                    k_array)
 
         ! Get index letters from arrays and copy to strings
-        do i=1, 2
-          do j=1, 2
-            if (p1_array(j,i).ne.'>') then
-              istr1(j+(2*i-2):)=p1_array(j,i)
-            end if
-            if (p2_array(j,i).ne.'>') then
-              istr2(j+(2*i-2):)=p2_array(j,i)
-            end if
-            if (k_array(j,i).ne.'>') then
-              istr3(j+(2*i-2):)=k_array(j,i)
-            end if
-          end do
-        end do
-
-        ! Remove whitespaces from wihtin strings
-        call remove_whitespace(istr1)
-        call remove_whitespace(istr2)
-        call remove_whitespace(istr3)
+        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
+     &                       istr3)
 
         tensor1=fl_item%bcontr%label_op1
         tensor2=fl_item%bcontr%label_op2
