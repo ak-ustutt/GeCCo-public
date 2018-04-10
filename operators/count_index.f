@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine count_index(lulog,idx,iocc,irstr,ngas,nspin,nops)
+      subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
 *----------------------------------------------------------------------*
 !     Count index of operator
 *----------------------------------------------------------------------*
@@ -8,7 +8,7 @@
       include 'opdim.h'
 
       integer, intent(in) ::
-     &     lulog, iocc(ngastp,2), ngas, nspin,
+     &     iocc(ngastp,2), ngas, nspin,
      &     irstr(2,ngas,2,2,nspin), idx
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
@@ -108,8 +108,10 @@
       include 'opdim.h'
       include 'def_contraction.h'
 
-      character(len=maxlen_bc_label) ::
+      character(len=maxlen_bc_label), intent(in) ::
      &     res, t1, t2           ! Name of tensors involved in the contraction
+      character(len=maxlen_bc_label) ::
+     &     nres, nt1, nt2           ! Name of tensors involved in the contraction
       character(len=4), intent(in) ::
      &     idx1, idx2, idx3      ! Index strings
       integer, intent(in) ::
@@ -120,21 +122,27 @@
       character(len=50) ::
      &     itf_line              ! Line of ITF code
 
-      write(lulog,*) 'TENSOR:'
+      ! Remove leading '_' from intermediate label
+      nres=res
+      nt1=t1
+      nt2=t2
 
-      if (t1.eq.'_STIN0001') then
-        write(s_int,'(i0)') inter
-        t1='I'
-        itf_line=trim(res)//'['//trim(idx3)//']+='//
-     &      trim(t1)//trim(s_int)//'['//trim(idx1)//']'//trim(t2)//'['//
-     &      trim(idx2)//']'
-        write(lulog,*) trim(itf_line)
-      else
-        itf_line=trim(res)//'['//trim(idx3)//']+='//
-     &      trim(t1)//'['//trim(idx1)//']'//trim(t2)//'['//
-     &      trim(idx2)//']'
-        write(lulog,*) trim(itf_line)
+      if (nres(1:1).eq.'_') then
+          nres(1:1)=' '
       end if
+      if (nt1(1:1).eq.'_') then
+          nt1(1:1)=' '
+      end if
+      if (nt2(1:1).eq.'_') then
+          nt2(1:1)=' '
+      end if
+
+      ! Print the ITF line
+      write(lulog,*) 'TENSOR:'
+      itf_line=trim(adjustl(nres))//'['//trim(idx3)//']+='//
+     &    trim(adjustl(nt1))//'['//trim(idx1)//']'//trim(adjustl(nt2))
+     &    //'['//trim(idx2)//']'
+      write(lulog,*) trim(itf_line)
 
       return
       end
@@ -266,7 +274,7 @@
 
       ! Count index of first tensor
       do i = 1, tensor%nj_op1
-        call count_index(lulog,i,
+        call count_index(i,
      &       tensor%occ_op1(1:,1:,i),
      &       tensor%rst_op1(1:,1:,1:,1:,1:,i),tensor%ngas,
      &       tensor%nspin,nops)
@@ -276,7 +284,7 @@
 
       ! Count contraction index
       do i = 1, 1 !Just get one block
-        call count_index(lulog,i,
+        call count_index(i,
      &       tensor%occ_cnt(1:,1:,i),
      &       tensor%rst_cnt(1:,1:,1:,1:,1:,i),
      &       tensor%ngas,tensor%nspin,nops)
@@ -286,7 +294,7 @@
 
       ! Count external index of second tensor
       do i = 1, 1 ! Just the first block
-        call count_index(lulog,i,
+        call count_index(i,
      &     tensor%occ_ex2(1:,1:,i),
      &     tensor%rst_ex2(1:,1:,1:,1:,1:,i),
      &     tensor%ngas,tensor%nspin,eops)
@@ -294,7 +302,7 @@
       
       ! Count external index of first tensor
       do i = 1, 1 ! Just the first block
-        call count_index(lulog,i,
+        call count_index(i,
      &     tensor%occ_ex1(1:,1:,i),
      &     tensor%rst_ex1(1:,1:,1:,1:,1:,i),
      &     tensor%ngas,tensor%nspin,eops1)

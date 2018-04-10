@@ -95,6 +95,7 @@
      &                    k_array)
         call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
      &                       istr3)
+
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
@@ -133,16 +134,20 @@
      &                       istr3)
 
         ! Change integral tensor name
-        if (fl_item%bcontr%label_op1.eq.'INT_D') then
-          fl_item%bcontr%label_op1='K    '
-        else if (fl_item%bcontr%label_op2.eq.'INT_D') then
-          fl_item%bcontr%label_op2='K'
-        end if
+!        if (fl_item%bcontr%label_op1.eq.'INT_D') then
+!          fl_item%bcontr%label_op1='K    '
+!        else if (fl_item%bcontr%label_op2.eq.'INT_D') then
+!          fl_item%bcontr%label_op2='K'
+!        end if
 
-        ! Print ITF tensor contraction
-        call print_itf_line_inter(fl_item%bcontr%label_op1,
-     &                            fl_item%bcontr%label_op2, 
-     &                            istr1, istr2, istr3, inter, lulog)
+!        ! Print ITF tensor contraction
+!        call print_itf_line_inter(fl_item%bcontr%label_op1,
+!     &                            fl_item%bcontr%label_op2, 
+!     &                            istr1, istr2, istr3, inter, lulog)
+        call print_itf_line(fl_item%bcontr%label_res,
+     &                      fl_item%bcontr%label_op1,
+     &                      fl_item%bcontr%label_op2, 
+     &                      istr1, istr2, istr3, inter, lulog)
 
         ! Reset array and strings
         do i=1, 2
