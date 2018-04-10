@@ -28,8 +28,9 @@
      &     long
       integer ::
      &     inter=0    ! Counter of intermediates
-      type(operator) ::
-     &     tensor     ! Debug delete
+      type(formula_item), pointer ::
+     &     next_item,  ! Next formula_item
+     &     prev_item  ! Next formula_item
       integer ::
      &     nops(4,2)  ! Matrix of index info
       character ::
@@ -37,8 +38,9 @@
      &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
-!      character(len=maxlen_bc_label) ::
-!     &     tensor1, tensor2     ! Name of tensors involved in the contraction
+      character(len=maxlen_bc_label) ::
+     &     old_res='>',     ! Name of tensors involved in the contraction
+     &     contract_next='>'     ! Name of tensors involved in the contraction
       integer ::
      &     i,j      ! loop indcies
       character(len=4) ::
@@ -60,9 +62,17 @@
      &                        trim(fl_item%parent1),
      &                        trim(fl_item%parent2)
         write(lulog,'(2x,"incore: ",i2)') fl_item%incore
-        call print_op_occ(lulog,fl_item%interm)
+!        call print_op_occ(lulog,fl_item%interm)
 
         inter=inter+1
+
+!        prev_item=>fl_item%prev
+!        if (prev_item%command.eq.8) then
+!            write(lulog,*) "PREV res: ", prev_item%bcontr%label_res
+!        end if
+!        if (prev_item%command.eq.0) then
+!            write(lulog,*) "PREV res: ", prev_item%target
+!        end if
 
       case(command_del_intermediate)
         write(lulog,*) '[DELETE INTERMEDIATE]',fl_item%target
@@ -89,7 +99,20 @@
         idx = idx+1
         write(lulog,*) '[CONTRACT][ADD]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+!        call prt_bcontr(lulog,fl_item%bcontr)
+
+
+        ! Check if still part of old block (ie. old result == new result)
+        if (old_res.ne.fl_item%bcontr%label_res) then
+            ! Check if still part of the old block (ie. if the next
+            ! result from the previous CONTRACT case == new result)
+            ! This checks if a new intermediate is part of the new block
+            if (fl_item%bcontr%label_res.ne.contract_next)
+     &      then
+                write(lulog,*) "End block---------------------------"
+                write(lulog,*) "Start block---------------------------"
+            end if
+        end if
 
         call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
      &                    k_array)
@@ -113,6 +136,9 @@
         istr2='    '
         istr3='    '
 
+        ! Update old result for use next time around
+        old_res=fl_item%bcontr%label_res
+
       case(command_add_bc_reo)
         idx = idx+1
         write(lulog,*) '[CONTRACT][REORDER][ADD]',
@@ -123,7 +149,7 @@
         idx = idx+1
         write(lulog,*) '[CONTRACT]',
      &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+!        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
@@ -133,17 +159,30 @@
         call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
      &                       istr3)
 
-        ! Change integral tensor name
+!        ! Change integral tensor name
 !        if (fl_item%bcontr%label_op1.eq.'INT_D') then
 !          fl_item%bcontr%label_op1='K    '
 !        else if (fl_item%bcontr%label_op2.eq.'INT_D') then
 !          fl_item%bcontr%label_op2='K'
 !        end if
 
-!        ! Print ITF tensor contraction
-!        call print_itf_line_inter(fl_item%bcontr%label_op1,
-!     &                            fl_item%bcontr%label_op2, 
-!     &                            istr1, istr2, istr3, inter, lulog)
+        ! If old result does not equal the next result, then the intermediate
+        ! belongs to the next block.
+        ! So end current block, start new block and print intermediate
+        ! line.
+        next_item=>fl_item%next
+        if (next_item%command.eq.8) then
+            ! command_add_bc
+            !write(lulog,*) "NEXT parent: ", next_item%bcontr%label_res
+            if (next_item%bcontr%label_res.ne.old_res)
+     &      then
+                write(lulog,*) "End block ---------------------------"
+                write(lulog,*) "Start block ---------------------------"
+            end if
+            ! Update varible for use in CONTRACT ADD
+            contract_next=next_item%bcontr%label_res
+        end if
+
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
