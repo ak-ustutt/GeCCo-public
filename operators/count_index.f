@@ -157,7 +157,9 @@
      &     a_line,             ! Line of ITF code
      &     s_line              ! Line of ITF code
       logical ::
-     &     interm=.false.       ! True if result involves intermediate
+     &     interm_res=.false.,    ! True if result involves intermediate
+     &     interm_t1=.false.,      ! True if contraction involves intermediate
+     &     interm_t2=.false.       ! True if contraction involves intermediate
 
       ! Remove leading '_' from intermediate label
       nres=res
@@ -166,42 +168,63 @@
 
       if (nres(1:1).eq.'_') then
           nres(1:1)=' '
-          interm=.true.
+          ! Check if result is an intermediate
+          interm_res=.true.
       end if
       if (nt1(1:1).eq.'_') then
           nt1(1:1)=' '
+          interm_t1=.true.
       end if
       if (nt2(1:1).eq.'_') then
           nt2(1:1)=' '
+          interm_t2=.true.
       end if
+
+      ! Change names of specific tensors
+      if (trim(nres).eq.'OMG') then
+          nres='R'
+      end if
+
       ires=trim(adjustl(nres))//'['//trim(idx3)//']'
       it1=trim(adjustl(nt1))//'['//trim(idx1)//']'
       it2=trim(adjustl(nt2))//'['//trim(idx2)//']'
 
-      if (interm) then
+      if (interm_res) then
           ! Need to alloc intermediate
           a_line='alloc '//trim(ires)
           l_line='load '//trim(it1)//', '//trim(it2)
           d_line='drop '//trim(it2)//', '//trim(it1)
           s_line='store '//trim(ires)
       else
-          l_line='load '//trim(it1)//', '//trim(it2)
-          d_line='drop '//trim(it2)//', '//trim(it1)
+          if (interm_t1) then
+              ! Intermediate already in memory from previous alloc
+              ! Just drop it at the end, don't store it
+              l_line='load '//trim(it2)
+              d_line='drop '//trim(it2)//', '//trim(it1)
+          elseif (interm_t2) then
+              l_line='load '//trim(it1)
+              d_line='drop '//trim(it2)//', '//trim(it1)
+          else
+              l_line='drop '//trim(it1)//', '//trim(it2)
+              d_line='drop '//trim(it2)//', '//trim(it1)
+          end if
       end if
 
       ! Print the ITF line
-      if (interm) then
+      if (interm_res) then
           write(lulog,*) a_line
       end if
+
       write(lulog,*) l_line
       itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
      &    trim(adjustl(nt1))//'['//trim(idx1)//'] '//trim(adjustl(nt2))
      &    //'['//trim(idx2)//']'
       write(lulog,*) trim(itf_line)
       write(lulog,*) d_line
-      if (interm) then
-          write(lulog,*) s_line
-      end if
+
+      interm_res=.false.
+      interm_t1=.false.
+      interm_t2=.false.
 
       return
       end

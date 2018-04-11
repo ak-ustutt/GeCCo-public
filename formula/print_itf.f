@@ -44,7 +44,8 @@
       integer ::
      &     i,j      ! loop indcies
       character(len=4) ::
-     &     istr1='    ', istr2='    ', istr3='    '  ! ITF index string
+     &     istr1='    ', istr2='    ', istr3='    ',  ! ITF index string
+     &     prev_str3='    '        ! Index of previous result
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -105,6 +106,12 @@
 !        write(lulog,*) "Previous stuff: ", prev_item%command
 !        write(lulog,*) "Previous stuff: ", prev_item%target
 
+        ! Get the index of the previous result
+
+        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
+     &                    k_array)
+        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
+     &                       istr3)
 
         ! Check if still part of old block (ie. old result == new result)
         if (old_res.ne.fl_item%bcontr%label_res) then
@@ -113,33 +120,28 @@
             ! This checks if a new intermediate is part of the new block
             if (fl_item%bcontr%label_res.ne.contract_next)
      &      then
+                ! Store result using previous result index string,
+                ! stored when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ", trim(old_res)
+                    write(lulog,*) "store ", trim(old_res), "[",
+     &                             trim(prev_str3), "]"
                 end if
                 write(lulog,*) 
-                write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res)
+                write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res),
+     &                         "[", trim(istr3), "]"
+                prev_str3=istr3
             end if
         end if
-
-        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
-     &                    k_array)
-        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
-     &                       istr3)
 
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
      &                      istr1, istr2, istr3, inter, lulog)
-
         call clear_index(p1_array, p2_array, k_array, istr1,
      &                   istr2, istr3)
 
         ! Update old result for use next time around
         old_res=fl_item%bcontr%label_res
-
-!        next_item=>fl_item%next
-!        write(lulog,*) "Next stuff: ", next_item%command
-!        write(lulog,*) "Next stuff: ", next_item%target
 
       case(command_add_bc_reo)
         idx = idx+1
@@ -168,29 +170,37 @@
         next_item=>fl_item%next
         if (next_item%command.eq.8) then
             ! command_add_bc
-            !write(lulog,*) "NEXT parent: ", next_item%bcontr%label_res
             if (next_item%bcontr%label_res.ne.old_res)
      &      then
+                ! Store the tensor, use previous result index stored
+                ! when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ", trim(old_res)
+                    write(lulog,*) "store ", trim(old_res), "[",
+     &                             trim(prev_str3), "]"
                 end if
                 write(lulog,*)
-                if (fl_item%bcontr%label_res(1:1).eq.'_') then
-                    tmpI=fl_item%bcontr%label_res
-                    tmpI(1:1)=' '
-                end if
-                write(lulog,*) "alloc ", trim(adjustl(tmpI))
             end if
             ! Update varible for use in CONTRACT ADD
             contract_next=next_item%bcontr%label_res
+        end if
+
+        ! Assume that this is called after NEW INTERMEDIATE
+        ! We need to allocate memory for next result, this should be
+        ! done before the memory is allocated for the intermediate.
+        ! So result tensor is allocated even if ITF block starts by
+        ! constructing intermediate
+        if (next_item%command.eq.8) then
+            write(lulog,*) "alloc ", trim(next_item%bcontr%label_res),
+     &                     "[",trim(istr3),"]"
+            prev_str3=istr3
         end if
 
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
      &                      istr1, istr2, istr3, inter, lulog)
-
-      call clear_index(p1_array, p2_array, k_array, istr1, istr2, istr3)
+        call clear_index(p1_array, p2_array, k_array, istr1,
+     &                   istr2, istr3)
 
       case(command_bc_reo)
         idx = idx+1
