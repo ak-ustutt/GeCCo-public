@@ -138,8 +138,8 @@
       end if
 
       ! Print the ITF line
-      write(lulog,*) 'TENSOR:'
-      itf_line=trim(adjustl(nres))//'['//trim(idx3)//']+='//
+      !write(lulog,*) 'TENSOR:'
+      itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//']+='//
      &    trim(adjustl(nt1))//'['//trim(idx1)//']'//trim(adjustl(nt2))
      &    //'['//trim(idx2)//']'
       write(lulog,*) trim(itf_line)

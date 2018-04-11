@@ -318,7 +318,7 @@ c dbg
           open(itflog, file="itflog.itf", status="new", action="write")
         end if
 
-        write(itflog,*) 'generated formula'
+        !write(itflog,*) 'generated formula'
         call print_form_list(itflog,fl_fact,op_info,itf)
         close(itflog)
       end if

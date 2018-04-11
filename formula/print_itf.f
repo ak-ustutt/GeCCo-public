@@ -40,7 +40,8 @@
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
       character(len=maxlen_bc_label) ::
      &     old_res='>',     ! Name of tensors involved in the contraction
-     &     contract_next='>'     ! Name of tensors involved in the contraction
+     &     contract_next='>',     ! Name of tensors involved in the contraction
+     &     tmpI     ! Name of intermediate without leading '_'
       integer ::
      &     i,j      ! loop indcies
       character(len=4) ::
@@ -50,18 +51,18 @@
 
       select case(fl_item%command)
       case(command_end_of_formula)
-        write(lulog,*) '[END]'
+!        write(lulog,*) '[END]'
       case(command_set_target_init)
         write(lulog,*) '[INIT TARGET]',fl_item%target
       case(command_set_target_update)
         write(lulog,*) '[SET TARGET]',fl_item%target
       case(command_new_intermediate)
-        write(lulog,*) '[NEW INTERMEDIATE]',fl_item%target
-        write(lulog,'(2x,a)') trim(fl_item%interm%name)
-        write(lulog,'(2x,"attribute parentage: ",a," ",a)')
-     &                        trim(fl_item%parent1),
-     &                        trim(fl_item%parent2)
-        write(lulog,'(2x,"incore: ",i2)') fl_item%incore
+!        write(lulog,*) '[NEW INTERMEDIATE]',fl_item%target
+!        write(lulog,'(2x,a)') trim(fl_item%interm%name)
+!        write(lulog,'(2x,"attribute parentage: ",a," ",a)')
+!     &                        trim(fl_item%parent1),
+!     &                        trim(fl_item%parent2)
+!        write(lulog,'(2x,"incore: ",i2)') fl_item%incore
 !        call print_op_occ(lulog,fl_item%interm)
 
         inter=inter+1
@@ -97,9 +98,13 @@
         call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc)
         idx = idx+1
-        write(lulog,*) '[CONTRACT][ADD]',
-     &       fl_item%target,'( term #',idx,')'
+!        write(lulog,*) '[CONTRACT][ADD]',
+!     &       fl_item%target,'( term #',idx,')'
 !        call prt_bcontr(lulog,fl_item%bcontr)
+
+!        prev_item=>fl_item%prev
+!        write(lulog,*) "Previous stuff: ", prev_item%command
+!        write(lulog,*) "Previous stuff: ", prev_item%target
 
 
         ! Check if still part of old block (ie. old result == new result)
@@ -109,8 +114,10 @@
             ! This checks if a new intermediate is part of the new block
             if (fl_item%bcontr%label_res.ne.contract_next)
      &      then
+                write(lulog,*) "store ", trim(old_res)
                 write(lulog,*) "End block---------------------------"
                 write(lulog,*) "Start block---------------------------"
+                write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res)
             end if
         end if
 
@@ -139,6 +146,10 @@
         ! Update old result for use next time around
         old_res=fl_item%bcontr%label_res
 
+!        next_item=>fl_item%next
+!        write(lulog,*) "Next stuff: ", next_item%command
+!        write(lulog,*) "Next stuff: ", next_item%target
+
       case(command_add_bc_reo)
         idx = idx+1
         write(lulog,*) '[CONTRACT][REORDER][ADD]',
@@ -147,8 +158,8 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-        write(lulog,*) '[CONTRACT]',
-     &       fl_item%target,'( term #',idx,')'
+!        write(lulog,*) '[CONTRACT]',
+!     &       fl_item%target,'( term #',idx,')'
 !        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
@@ -176,8 +187,14 @@
             !write(lulog,*) "NEXT parent: ", next_item%bcontr%label_res
             if (next_item%bcontr%label_res.ne.old_res)
      &      then
+                write(lulog,*) "store ", trim(old_res)
                 write(lulog,*) "End block ---------------------------"
                 write(lulog,*) "Start block ---------------------------"
+                if (fl_item%bcontr%label_res(1:1).eq.'_') then
+                    tmpI=fl_item%bcontr%label_res
+                    tmpI(1:1)=' '
+                end if
+                write(lulog,*) "alloc ", trim(adjustl(tmpI))
             end if
             ! Update varible for use in CONTRACT ADD
             contract_next=next_item%bcontr%label_res
