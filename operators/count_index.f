@@ -110,17 +110,24 @@
 
       character(len=maxlen_bc_label), intent(in) ::
      &     res, t1, t2           ! Name of tensors involved in the contraction
-      character(len=maxlen_bc_label) ::
-     &     nres, nt1, nt2           ! Name of tensors involved in the contraction
       character(len=4), intent(in) ::
      &     idx1, idx2, idx3      ! Index strings
+      character(len=maxlen_bc_label) ::
+     &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
+     &     ires, it1, it2           ! Name of tensors + index
       integer, intent(in) ::
      &     inter,                ! Intermediate number involved in contraction
      &     lulog                 ! File to write to
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=50) ::
-     &     itf_line              ! Line of ITF code
+     &     itf_line,             ! Line of ITF code
+     &     d_line,             ! Line of ITF code
+     &     l_line,             ! Line of ITF code
+     &     a_line,             ! Line of ITF code
+     &     s_line              ! Line of ITF code
+      logical ::
+     &     interm=.false.       ! True if result involves intermediate
 
       ! Remove leading '_' from intermediate label
       nres=res
@@ -129,6 +136,7 @@
 
       if (nres(1:1).eq.'_') then
           nres(1:1)=' '
+          interm=.true.
       end if
       if (nt1(1:1).eq.'_') then
           nt1(1:1)=' '
@@ -136,13 +144,34 @@
       if (nt2(1:1).eq.'_') then
           nt2(1:1)=' '
       end if
+      ires=trim(adjustl(nres))//'['//trim(idx3)//']'
+      it1=trim(adjustl(nt1))//'['//trim(idx1)//']'
+      it2=trim(adjustl(nt2))//'['//trim(idx2)//']'
+
+      if (interm) then
+          ! Need to alloc intermediate
+          a_line='alloc '//trim(ires)
+          l_line='load '//trim(it1)//', '//trim(it2)
+          d_line='drop '//trim(it2)//', '//trim(it1)
+          s_line='store '//trim(ires)
+      else
+          l_line='load '//trim(it1)//', '//trim(it2)
+          d_line='drop '//trim(it2)//', '//trim(it1)
+      end if
 
       ! Print the ITF line
-      !write(lulog,*) 'TENSOR:'
+      if (interm) then
+          write(lulog,*) a_line
+      end if
+      write(lulog,*) l_line
       itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//']+='//
      &    trim(adjustl(nt1))//'['//trim(idx1)//']'//trim(adjustl(nt2))
      &    //'['//trim(idx2)//']'
       write(lulog,*) trim(itf_line)
+      write(lulog,*) d_line
+      if (interm) then
+          write(lulog,*) s_line
+      end if
 
       return
       end

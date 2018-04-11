@@ -114,9 +114,10 @@
             ! This checks if a new intermediate is part of the new block
             if (fl_item%bcontr%label_res.ne.contract_next)
      &      then
-                write(lulog,*) "store ", trim(old_res)
-                write(lulog,*) "End block---------------------------"
-                write(lulog,*) "Start block---------------------------"
+                if (old_res.ne.'>') then
+                    write(lulog,*) "store ", trim(old_res)
+                end if
+                write(lulog,*) 
                 write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res)
             end if
         end if
@@ -187,9 +188,10 @@
             !write(lulog,*) "NEXT parent: ", next_item%bcontr%label_res
             if (next_item%bcontr%label_res.ne.old_res)
      &      then
-                write(lulog,*) "store ", trim(old_res)
-                write(lulog,*) "End block ---------------------------"
-                write(lulog,*) "Start block ---------------------------"
+                if (old_res.ne.'>') then
+                    write(lulog,*) "store ", trim(old_res)
+                end if
+                write(lulog,*)
                 if (fl_item%bcontr%label_res(1:1).eq.'_') then
                     tmpI=fl_item%bcontr%label_res
                     tmpI(1:1)=' '
