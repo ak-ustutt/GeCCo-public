@@ -34,8 +34,7 @@
       integer ::
      &     nops(4,2)  ! Matrix of index info
       character ::
-     &     i_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)), ! Arrays that contain raw ITF index (maybe this could be done better...)
-     &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
+     &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)), ! Arrays that contain raw ITF index (maybe this could be done better...)
      &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
      &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
       character(len=maxlen_bc_label) ::
@@ -131,18 +130,9 @@
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
      &                      istr1, istr2, istr3, inter, lulog)
-        do i=1, 2
-          do j=1, 2
-            i_array(i,j)='>'
-            p1_array(i,j)='>'
-            p2_array(i,j)='>'
-            k_array(i,j)='>'
-          end do
-        end do
 
-        istr1='    '
-        istr2='    '
-        istr3='    '
+        call clear_index(p1_array, p2_array, k_array, istr1,
+     &                   istr2, istr3)
 
         ! Update old result for use next time around
         old_res=fl_item%bcontr%label_res
@@ -170,13 +160,6 @@
         ! Get index letters from arrays and copy to strings
         call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
      &                       istr3)
-
-!        ! Change integral tensor name
-!        if (fl_item%bcontr%label_op1.eq.'INT_D') then
-!          fl_item%bcontr%label_op1='K    '
-!        else if (fl_item%bcontr%label_op2.eq.'INT_D') then
-!          fl_item%bcontr%label_op2='K'
-!        end if
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
@@ -207,19 +190,7 @@
      &                      fl_item%bcontr%label_op2, 
      &                      istr1, istr2, istr3, inter, lulog)
 
-        ! Reset array and strings
-        do i=1, 2
-          do j=1, 2
-            i_array(i,j)='>'
-            p1_array(i,j)='>'
-            p2_array(i,j)='>'
-            k_array(i,j)='>'
-          end do
-        end do
-
-        istr1='    '
-        istr2='    '
-        istr3='    '
+      call clear_index(p1_array, p2_array, k_array, istr1, istr2, istr3)
 
       case(command_bc_reo)
         idx = idx+1

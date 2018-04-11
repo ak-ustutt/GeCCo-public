@@ -97,6 +97,36 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine clear_index(arr1, arr2, arr3, str1, str2, str3)
+*----------------------------------------------------------------------*
+!     Clear ITF index array and string
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      character, intent(inout) ::
+     &     arr1(2,2), arr2(2,2), arr3(2,2)
+      character(len=4), intent(inout) ::
+     &     str1, str2, str3
+      integer ::
+     &     i,j
+
+      do i=1, 2
+        do j=1, 2
+          arr1(i,j)='>'
+          arr2(i,j)='>'
+          arr3(i,j)='>'
+        end do
+      end do
+
+      str1='    '
+      str2='    '
+      str3='    '
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine print_itf_line(res, t1, t2, idx1, idx2,
      &                          idx3, inter, lulog)
 *----------------------------------------------------------------------*
@@ -164,8 +194,8 @@
           write(lulog,*) a_line
       end if
       write(lulog,*) l_line
-      itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//']+='//
-     &    trim(adjustl(nt1))//'['//trim(idx1)//']'//trim(adjustl(nt2))
+      itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
+     &    trim(adjustl(nt1))//'['//trim(idx1)//'] '//trim(adjustl(nt2))
      &    //'['//trim(idx2)//']'
       write(lulog,*) trim(itf_line)
       write(lulog,*) d_line
