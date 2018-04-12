@@ -202,6 +202,7 @@
             <!--(0=off)-->
           </argument>
         </keyword>
+        <keyword name="NEW" status="A"/>
         <keyword name="MR_P" status="A">
           <argument length="1" name="maxroot" status="A" type="2" value="-1">
             <!--max trial roots for wf-->

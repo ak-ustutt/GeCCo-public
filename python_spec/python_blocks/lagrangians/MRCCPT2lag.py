@@ -439,7 +439,7 @@ elif ampl_type == 'CEPA+quad':
     LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
     LAG_A.append("1/2*<C0^+*(LAM2g)*[[(H-ECEPA),T2g],T2g]*C0>")
 
-elif ampl_type in ['CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5']:
+elif ampl_type in ['CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5','CEPA+quad_7']:
     DEF_SCALAR({LABEL:'ECEPA'})
 
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
@@ -464,6 +464,40 @@ elif ampl_type in ['CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA
     elif ampl_type == 'CEPA+quad_5':
         LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
         LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+    elif ampl_type == 'CEPA+quad_7':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g*H*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*H*C0>")
+
+elif ampl_type in ['CEPA+avoid_1','CEPA+avoid_2','CEPA+avoid_3','CEPA+avoid_4','CEPA+avoid_5','CEPA+avoid_6']:
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+    if ampl_type == 'CEPA+avoid_1':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CEPA+avoid_2':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CEPA+avoid_3':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CEPA+avoid_4':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CEPA+avoid_5':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CEPA+avoid_6':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*H*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*H*C0>", avoid=["T2g'","T2g''"])
 
 elif ampl_type == 'CEPA+quad+Ec':
     DEF_SCALAR({LABEL:'ECEPA'})
@@ -491,11 +525,11 @@ elif ampl_type in ['CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD
         LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
 
     elif ampl_type == 'CCSD+quad_3':
-        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
         LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-ECEPA)*T2g*C0>")
 
     elif ampl_type == 'CCSD+quad_4':
-        LAG_A.append("1/2*<C0^+*(LAM2g)(H-ECEPA)*T2g*T2g*C0>")
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
         LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
 
     elif ampl_type == 'CCSD+quad_5':
@@ -506,6 +540,60 @@ elif ampl_type in ['CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD
         LAG_A.append("1/2*<C0^+*(LAM2g)(H-E0)*T2g*T2g*C0>")
         LAG_A.append("-<C0^+*(LAM2g)*T2g*(H-E0)*T2g*C0>")
         LAG_A.append("1/2*<C0^+*(LAM2g)*T2g*T2g*(H-ECEPA)*C0>")
+
+elif ampl_type in ['CCSD+avoid_1','CCSD+avoid_2','CCSD+avoid_3','CCSD+avoid_4','CCSD+avoid_5','CCSD+avoid_6']:
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+    if ampl_type == 'CCSD+avoid_1':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CCSD+avoid_2':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CCSD+avoid_3':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CCSD+avoid_4':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'CCSD+avoid_5':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*(H-ECEPA)*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*(H-ECEPA)*C0>", avoid=["T2g'","T2g''"])
+
+elif ampl_type in ['quad+avoid_1','quad+avoid_2','quad+avoid_3','quad+avoid_4','quad+avoid_5','quad+avoid_6']:
+    
+    LAG_A.append("<C0^+*(LAM2g)*(H-E0)*T2g*C0>")
+
+    if ampl_type == 'quad+avoid_1':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*H*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'quad+avoid_2':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*H*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'quad+avoid_3':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*H*T2g''*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'quad+avoid_4':
+        LAG_A.append("1/2*<C0^+*(LAM2g)*H*T2g'*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*H*C0>", avoid=["T2g'","T2g''"])
+
+    elif ampl_type == 'quad+avoid_5':
+        LAG_A.append("-<C0^+*(LAM2g)*T2g'*H*T2g''*C0>", avoid=["T2g'","T2g''"])
+        LAG_A.append("1/2*<C0^+*(LAM2g)*T2g'*T2g''*H*C0>", avoid=["T2g'","T2g''"])
+
+elif ampl_type == 'MRCCSD_avoid':
+    LAG_E.append("-<C0^+*T2g*H*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[[H,T2g'],T2g'']*C0>", avoid=["T2g'","T2g''"])
 
 elif ampl_type == 'IDEA1_2':
     # Add disconnected terms to connected cepa
@@ -827,7 +915,7 @@ debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
-if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec','CCSD-like-h0','CCSD-like-2h0','CCSD-like-3h0','CCSD-like-4h0','CCSD-like-5h0','CCSD-like_2','CCSD-like+1','CCSD-like+2','CCSD-like+3','CEPA+quad','CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5','CCSD-like-noE','CEPA+quad+Ec','CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD+quad_5','CEPA+quad_6']:
+if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec','CCSD-like-h0','CCSD-like-2h0','CCSD-like-3h0','CCSD-like-4h0','CCSD-like-5h0','CCSD-like_2','CCSD-like+1','CCSD-like+2','CCSD-like+3','CEPA+quad','CEPA+quad_1','CEPA+quad_2','CEPA+quad_3','CEPA+quad_4','CEPA+quad_5','CEPA+quad_7','CCSD-like-noE','CEPA+quad+Ec','CCSD+quad_1','CCSD+quad_2','CCSD+quad_3','CCSD+quad_4','CCSD+quad_5','CEPA+quad_6','CEPA+avoid_1','CEPA+avoid_2','CEPA+avoid_3','CEPA+avoid_4','CEPA+avoid_5','CEPA+avoid_6','CCSD+avoid_1','CCSD+avoid_2','CCSD+avoid_3','CCSD+avoid_4','CCSD+avoid_5']:
     # Construct energy operator for use in lagradian
     DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
@@ -837,6 +925,7 @@ if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c',
     OPTIMIZE({
             LABEL_OPT:'FOPT_PT_LAG',
             LABELS_IN:['FORM_ECEPA','FORM_PT_Amp','FORM_PT_LAG']})
+
 else:
     OPTIMIZE({
             LABEL_OPT:'FOPT_PT_LAG',
@@ -853,6 +942,9 @@ OPTIMIZE({
 
 if ampl_type in ['LCC','CEPAn-like','CEPA+quad_2']:
     # Print out terms used for testing in ITF
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG',MODE:'SHORT'})
+
+if ampl_type in ['CEPA+quad_1','CEPA+avoid_1']:
     PRINT_FORMULA({LABEL:'FORM_PT_LAG',MODE:'SHORT'})
 
 
@@ -1595,6 +1687,7 @@ if test_terms:
               LABELS_IN:['FORM_J8']})
     PRINT_FORMULA({LABEL:'FORM_J8',MODE:'SHORT'})
     EVALUATE({FORM:'FOPT_J8'})
+
 
     if ampl_type in ['CEPA-like','CEPAn-like','CISD-like','CCSD-like','CCSD-like_c','no_Ec']:
         # <T2g^+ E T>
