@@ -205,7 +205,7 @@
               l_line='load '//trim(it1)
               d_line='drop '//trim(it2)//', '//trim(it1)
           else
-              l_line='drop '//trim(it1)//', '//trim(it2)
+              l_line='load '//trim(it1)//', '//trim(it2)
               d_line='drop '//trim(it2)//', '//trim(it1)
           end if
       end if
