@@ -190,9 +190,12 @@
         ! So result tensor is allocated even if ITF block starts by
         ! constructing intermediate
         if (next_item%command.eq.8) then
-            write(lulog,*) "alloc ", trim(next_item%bcontr%label_res),
-     &                     "[",trim(istr3),"]"
-            prev_str3=istr3
+            ! Do this unless the result is the same as the previous result
+            if (trim(next_item%bcontr%label_res).ne.trim(old_res)) then
+               write(lulog,*) "alloc ",trim(next_item%bcontr%label_res),
+     &                        "[",trim(istr3),"]"
+               prev_str3=istr3
+            end if
         end if
 
         call print_itf_line(fl_item%bcontr%label_res,
