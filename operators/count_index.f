@@ -127,7 +127,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(res, t1, t2, idx1, idx2,
+      subroutine print_itf_line(res, t1, t2, fact, idx1, idx2,
      &                          idx3, inter, lulog)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
@@ -142,12 +142,15 @@
      &     res, t1, t2           ! Name of tensors involved in the contraction
       character(len=4), intent(in) ::
      &     idx1, idx2, idx3      ! Index strings
-      character(len=maxlen_bc_label) ::
-     &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
-     &     ires, it1, it2           ! Name of tensors + index
       integer, intent(in) ::
      &     inter,                ! Intermediate number involved in contraction
      &     lulog                 ! File to write to
+      real(8), intent(in) ::
+     &     fact                ! Factor associated with binary contraction
+
+      character(len=maxlen_bc_label) ::
+     &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
+     &     ires, it1, it2           ! Name of tensors + index
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=50) ::
@@ -156,6 +159,9 @@
      &     l_line,             ! Line of ITF code
      &     a_line,             ! Line of ITF code
      &     s_line              ! Line of ITF code
+      character(len=25) ::
+     &     sfact='                         ',             ! String representation of factor
+     &     sfact_star='                         '              ! String representation of factor formatted for output
       logical ::
      &     interm_res=.false.,    ! True if result involves intermediate
      &     interm_t1=.false.,      ! True if contraction involves intermediate
@@ -210,16 +216,35 @@
           end if
       end if
 
+      ! Convert factor to string, ignore if 1.0 or -1.0
+      if (fact.ne.1.0) then
+          if (fact.ne.-1.0) then
+              write(sfact,*) fact
+              sfact_star=' '//trim(sfact)//'*'
+          end if
+      end if
+
       ! Print the ITF line
       if (interm_res) then
           write(lulog,*) a_line
       end if
 
       write(lulog,*) l_line
-      itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
-     &    trim(adjustl(nt1))//'['//trim(idx1)//'] '//trim(adjustl(nt2))
-     &    //'['//trim(idx2)//']'
+
+      if (fact.lt.0.0) then
+          itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] -= '//
+     &        trim(sfact_star)//
+     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
+     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+      else
+          itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
+     &        trim(sfact_star)//
+     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
+     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+      end if
+
       write(lulog,*) trim(itf_line)
+
       write(lulog,*) d_line
 
       interm_res=.false.

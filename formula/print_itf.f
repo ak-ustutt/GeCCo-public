@@ -136,6 +136,7 @@
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
+     &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
         call clear_index(p1_array, p2_array, k_array, istr1,
      &                   istr2, istr3)
@@ -200,7 +201,8 @@
 
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
-     &                      fl_item%bcontr%label_op2, 
+     &                      fl_item%bcontr%label_op2,
+     &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
         call clear_index(p1_array, p2_array, k_array, istr1,
      &                   istr2, istr3)
