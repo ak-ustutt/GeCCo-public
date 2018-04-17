@@ -97,27 +97,15 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine clear_index(arr1, arr2, arr3, str1, str2, str3)
+      subroutine clear_index(str1, str2, str3)
 *----------------------------------------------------------------------*
 !     Clear ITF index array and string
 *----------------------------------------------------------------------*
 
       implicit none
 
-      character, intent(inout) ::
-     &     arr1(2,2), arr2(2,2), arr3(2,2)
       character(len=8), intent(inout) ::
      &     str1, str2, str3
-      integer ::
-     &     i,j
-
-      do i=1, 2
-        do j=1, 2
-          arr1(i,j)='>'
-          arr2(i,j)='>'
-          arr3(i,j)='>'
-        end do
-      end do
 
       str1='        '
       str2='        '
@@ -273,100 +261,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line_inter(t1, t2, idx1, idx2,
-     &                                idx3, inter, lulog)
-*----------------------------------------------------------------------*
-!     Print line of ITF code
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      character(len=maxlen_bc_label) ::
-     &     t1, t2                ! Name of tensors involved in the contraction
-      character(len=4), intent(in) ::
-     &     idx1, idx2, idx3      ! Index strings
-      integer, intent(in) ::
-     &     inter,                ! Number of current intermediate
-     &     lulog                 ! File to write to
-      character(len=5) ::
-     &     s_int,                ! Intermdiate tensor number
-     &     p_int                 ! Previous intermdiate tensor number
-      character(len=50) ::
-     &     itf_line              ! Line of ITF code
-
-      write(s_int,'(i0)') inter
-
-      write(lulog,*) 'TENSOR:'
-      if (t1.eq.'_STIN0001') then
-        ! Previous intermediate appears on rhs
-        t1='I'
-        write(p_int,'(i0)') inter-1
-        itf_line='I'//trim(s_int)//'['//trim(idx3)//']+='//
-     &      trim(t1)//trim(p_int)//'['//trim(idx1)//']'//
-     &      trim(t2)//'['//trim(idx2)//']'
-        write(lulog,*) trim(itf_line)
-      else
-        itf_line='I'//trim(s_int)//'['//trim(idx3)//']+='//
-     &      trim(t1)//'['//trim(idx1)//']'//trim(t2)//'['//
-     &      trim(idx2)//']'
-        write(lulog,*) trim(itf_line)
-      end if
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine assign_index(arr,nops)
-*----------------------------------------------------------------------*
-!     Assign index letters to arrays
-*----------------------------------------------------------------------*
-
-      implicit none
-      
-      character, intent(inout)  ::
-     &     arr(2,2)        ! Array to assign letters
-      integer, intent(in) ::
-     &     nops(4,2)      ! Matrix of index info
-      integer ::
-     &     i,j
-      character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),
-     &     par=(/ 'a','b','c','d' /),
-     &     val=(/ 'p','q','r','s' /)
-      character(len=4) ::
-     &     cre='    ',
-     &     ann='    '
-      
-
-      ! Annhilators first
-      do i=1, nops(1,2)
-          arr(1,i)=hol(i)
-      end do
-      do i=1, nops(2,2)
-        arr(1,i+nops(1,2))=par(i)
-      end do
-      do i=1, nops(3,2)
-        arr(1,i+nops(1,2)+nops(2,2))=val(i)
-      end do
-      ! Creations second
-      do i=1, nops(1,1)
-        arr(2,i)=hol(i+nops(1,2))
-      end do
-      do i=1, nops(2,1)
-        arr(2,i+nops(1,1))=par(i+nops(2,2))
-      end do
-      do i=1, nops(3,1)
-        arr(2,i+nops(1,1)+nops(2,1))=val(i+nops(3,2))
-      end do
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine assign_index2(contr_info,istr1,istr2,istr3,lulog)
+      subroutine assign_index2(contr_info,istr1,istr2,istr3)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -376,13 +271,11 @@
       include 'def_contraction.h'
       
       character(len=8), intent(inout)  ::
-     &     istr1,        ! Array to assign letters
-     &     istr2,        ! Array to assign letters
-     &     istr3        ! Array to assign letters
+     &     istr1,       ! Operator 1 index
+     &     istr2,       ! Operator 2 index
+     &     istr3        ! Result index
       type(binary_contr), intent(in) ::
-     &     contr_info
-      integer, intent(in) ::
-     &     lulog      ! Debug delete
+     &     contr_info   ! Inofrmation about binary contraction
       integer ::
      &     t1(4,2),      ! Matrix of index info
      &     c(4,2),       ! Matrix of index info
@@ -396,7 +289,7 @@
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
       character(len=4) ::
-     &     c1='    ',
+     &     c1='    ',    ! Workspace to assign index before array
      &     c2='    ',
      &     c3='    ',
      &     c4='    ',
@@ -405,10 +298,10 @@
      &     a3='    ',
      &     a4='    '
       character(len=4), dimension(8) ::
-     &     t1_array,
-     &     c_array,
-     &     e1_array,
-     &     e2_array
+     &     t1_array,    ! Operator 1 array
+     &     c_array,     ! Contraction index array
+     &     e1_array,    ! External index of operator 1 array
+     &     e2_array     ! External index of operator 2 array
 
       istr1='        '
       istr2='        '
@@ -438,9 +331,12 @@
       ! Order in ITF usually follows: apij
       ! Defualt [ccaa] as in the case of T[abij]
 
-      ! Assign t1_array
+      ! Assign t1 (tensor 1)
+      ! Creations first
       do i=1, t1(2,1)
           c1(i:)=par(i)
+          ! Below doesn't work...
+          !t1_array(1)(i:)=par(i)
       end do
       t1_array(1)=c1
       do i=1, t1(3,1)
@@ -452,6 +348,7 @@
       end do
       t1_array(3)=c3
 
+      ! Annhilators second
       do i=1, t1(2,2)
           a1(i:)=par(i+t1(2,1))
       end do
@@ -473,8 +370,7 @@
       a3='    '
       
       
-      ! Assign C (contracted by)
-      ! Creations first
+      ! Assign c (contracted by)
       ! These will be assigned as above
       do i=1, c(2,1)
           c1(i:)=par(i)
@@ -489,8 +385,7 @@
       end do
       c_array(3)=c3
 
-      ! Annhilators second
-      ! Need to to be shifted so to match assignment of T1 above
+      ! Need to to be shifted so to match assignment of t1 above
       do i=1, c(2,2)
           a1(i:)=par(i+c(2,1))
       end do
@@ -512,7 +407,7 @@
       a3='    '
 
 
-      ! Assign E1 (external indicies of t1)
+      ! Assign e1 (external indicies of t1)
       do i=1, e1(2,1)
           c1(i:)=par(i)
       end do
@@ -584,10 +479,13 @@
       a3='    '
 
 
+      ! Construct final index strings
+      ! Operator 1
       istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
      &      trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
      &      trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
 
+      ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
      &      trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
@@ -596,6 +494,7 @@
      &      trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
      &      trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
 
+      ! Result
       istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
      &      trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
      &      trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
@@ -603,179 +502,5 @@
      &      trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
      &      trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
       
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine index_array(lulog,tensor,i_array,j_array,k_array)
-*----------------------------------------------------------------------*
-!     Determine tensor index for ITF
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      integer, intent(in) ::
-     &     lulog
-      type(binary_contr), intent(in) ::
-     &     tensor
-      character, intent(inout)  ::
-     &     i_array(2,2),
-     &     j_array(2,2),
-     &     k_array(2,2)
-      integer ::
-     &     nops(4,2),     ! Matrix of index info
-     &     eops(4,2),     ! Matrix of external index info
-     &     eops1(4,2),    ! Matrix of external index info, tensor 1
-     &     t1(4,2),     ! Matrix of index info
-     &     c(4,2),     ! Matrix of index info
-     &     e1(4,2),     ! Matrix of index info
-     &     e2(4,2),     ! Matrix of index info
-     &     shift_l,       ! Letter shift when assging index of second tensor
-     &     counter1, counter2,
-     &     i,j
-      character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),
-     &     par=(/ 'a','b','c','d' /),
-     &     val=(/ 'u','v','w','x' /)
-      character ::
-     &     tmp1(2,2),
-     &     tmp2(2,2)
-      character(len=8) ::
-     &     is1, is2, is3
-
-
-      ! Count index of first tensor
-      !do i = 1, tensor%nj_op1
-      do i = 1, 1
-        call count_index(i,
-     &       tensor%occ_op1(1:,1:,i),
-     &       tensor%rst_op1(1:,1:,1:,1:,1:,i),tensor%ngas,
-     &       tensor%nspin,nops)
-      end do
-       
-      call assign_index(i_array,nops)
-
-      ! Count contraction index
-      do i = 1, 1 !Just get one block
-        call count_index(i,
-     &       tensor%occ_cnt(1:,1:,i),
-     &       tensor%rst_cnt(1:,1:,1:,1:,1:,i),
-     &       tensor%ngas,tensor%nspin,nops)
-       end do
-      
-      call assign_index(j_array,nops)
-
-      ! Count external index of second tensor
-      do i = 1, 1 ! Just the first block
-        call count_index(i,
-     &     tensor%occ_ex2(1:,1:,i),
-     &     tensor%rst_ex2(1:,1:,1:,1:,1:,i),
-     &     tensor%ngas,tensor%nspin,eops)
-      end do
-      
-      ! Count external index of first tensor
-      do i = 1, 1 ! Just the first block
-        call count_index(i,
-     &     tensor%occ_ex1(1:,1:,i),
-     &     tensor%rst_ex1(1:,1:,1:,1:,1:,i),
-     &     tensor%ngas,tensor%nspin,eops1)
-      end do
-
-      ! Creations first
-      ! Each index must be shifted so as a) not to overwrite previous index
-      !                                  b) not to use same index twice
-      ! Using 'transpose' of E (so no. of ann + cre !> 3
-      ! shift_l shifts position in letter array, so external indicies are unique
-      shift_l=0
-      do i=1, eops(1,1)
-        shift_l=i+nops(1,2)+nops(1,1)+eops1(1,2)+eops(1,1)
-        j_array(1,i+nops(1,2)+nops(2,2)+
-     &  nops(3,2))=hol(shift_l)
-      end do
-      do i=1, eops(2,1)
-        shift_l=i+nops(2,2)+nops(2,1)+eops1(2,2)+eops1(2,1)
-        j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+
-     &  eops(1,1))=par(shift_l)
-      end do
-      do i=1, eops(3,1)
-        shift_l=i+nops(3,2)+nops(3,1)+eops1(3,2)+eops1(3,1)
-        j_array(1,i+nops(1,2)+nops(2,2)+nops(3,2)+eops(1,1)+
-     &  eops(2,1))=val(shift_l)
-      end do
-      ! Annhilators second
-      do i=1, eops(1,2)
-        shift_l=i+nops(1,2)+nops(1,1)+eops(1,1)+eops1(1,2)+eops1(1,1)
-        j_array(2,i+nops(1,1)+nops(2,1)+
-     &  nops(3,1))=hol(shift_l)
-      end do
-      do i=1, eops(2,2)
-        shift_l=i+nops(2,2)+nops(2,1)+eops(2,1)+eops1(2,2)+eops1(2,1)
-        j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+
-     &  eops(1,2))=par(shift_l)
-      end do
-      do i=1, eops(3,2)
-        shift_l=i+nops(3,2)+nops(3,1)+eops(3,1)+eops1(3,2)+eops1(3,2)
-        j_array(2,i+nops(1,1)+nops(2,1)+nops(3,1)+eops(1,2)+
-     &  eops(2,2))=val(shift_l)
-      end do
-
-
-      ! Compare index of tensors, different is used to label result tensor
-      do i=1, 2
-        do j=1, 2
-          tmp1(i,j)='>'
-          tmp2(i,j)='>'
-        end do
-      end do
-
-      
-      do i=1, 2
-        do j=1, 2
-          if (i_array(i,j).ne.j_array(1,1)) then
-            if (i_array(i,j).ne.j_array(1,2)) then
-              if (i_array(i,j).ne.j_array(2,1)) then
-                if (i_array(i,j).ne.j_array(2,2)) then
-                  tmp1(i,j)=i_array(i,j)
-                end if
-              end if
-            end if
-          end if
-          if (j_array(i,j).ne.i_array(1,1)) then
-            if (j_array(i,j).ne.i_array(1,2)) then
-              if (j_array(i,j).ne.i_array(2,1)) then
-                if (j_array(i,j).ne.i_array(2,2)) then
-                  tmp2(i,j)=j_array(i,j)
-                end if
-              end if
-            end if
-          end if
-        end do
-      end do
-
-      counter1=1
-      counter2=1
-      do i=1, 2
-        if(tmp1(1,i).ne.'>') then
-          k_array(1,counter1)=tmp1(1,i)
-          counter1=counter1+1
-        endif
-        if(tmp1(2,i).ne.'>') then
-          k_array(2,counter2)=tmp1(2,i)
-          counter2=counter2+1
-        endif
-      end do
-      do i=1, 2
-        if(tmp2(1,i).ne.'>') then
-          k_array(1,counter1)=tmp2(1,i)
-          counter1=counter1+1
-        endif
-        if(tmp2(2,i).ne.'>') then
-          k_array(2,counter2)=tmp2(2,i)
-          counter2=counter2+1
-        endif
-      end do
-
       return
       end

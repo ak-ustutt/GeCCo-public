@@ -33,10 +33,6 @@
      &     prev_item  ! Next formula_item
       integer ::
      &     nops(4,2)  ! Matrix of index info
-      character ::
-     &     p1_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)), ! Arrays that contain raw ITF index (maybe this could be done better...)
-     &     p2_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/)),
-     &     k_array(2,2)=reshape((/'>','>','>','>'/),(/2,2/))
       character(len=maxlen_bc_label) ::
      &     old_res='>',     ! Name of tensors involved in the contraction
      &     contract_next='>',     ! Name of tensors involved in the contraction
@@ -44,8 +40,10 @@
       integer ::
      &     i,j      ! loop indcies
       character(len=8) ::
-     &     istr1='        ', istr2='        ', istr3='        ',  ! ITF index string
-     &     prev_str3='        '        ! Index of previous result
+     &     istr1='        ',         ! Operator 1 index
+     &     istr2='        ',         ! Operator 2 index
+     &     istr3='        ',         ! Result index
+     &     prev_str3='        '      ! Index of previous result
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -98,9 +96,9 @@
         call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc)
         idx = idx+1
-        write(lulog,*) '[CONTRACT][ADD]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+!        write(lulog,*) '[CONTRACT][ADD]',
+!     &       fl_item%target,'( term #',idx,')'
+!        call prt_bcontr(lulog,fl_item%bcontr)
 
 !        prev_item=>fl_item%prev
 !        write(lulog,*) "Previous stuff: ", prev_item%command
@@ -108,12 +106,7 @@
 
         ! Get the index of the previous result
 
-!        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
-!     &                    k_array)
-!        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
-!     &                       istr3)
-
-        call assign_index2(fl_item%bcontr,istr1,istr2,istr3,lulog)
+        call assign_index2(fl_item%bcontr,istr1,istr2,istr3)
 
         ! Check if still part of old block (ie. old result == new result)
         if (old_res.ne.fl_item%bcontr%label_res) then
@@ -140,8 +133,7 @@
      &                      fl_item%bcontr%label_op2, 
      &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
-        call clear_index(p1_array, p2_array, k_array, istr1,
-     &                   istr2, istr3)
+        call clear_index(istr1,istr2, istr3)
 
         ! Update old result for use next time around
         old_res=fl_item%bcontr%label_res
@@ -154,19 +146,12 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-        write(lulog,*) '[CONTRACT]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+!        write(lulog,*) '[CONTRACT]',
+!     &       fl_item%target,'( term #',idx,')'
+!        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-!        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
-!     &                    k_array)
-!
-!        ! Get index letters from arrays and copy to strings
-!        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
-!     &                       istr3)
-
-        call assign_index2(fl_item%bcontr,istr1,istr2,istr3,lulog)
+        call assign_index2(fl_item%bcontr,istr1,istr2,istr3)
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
@@ -208,8 +193,7 @@
      &                      fl_item%bcontr%label_op2,
      &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
-        call clear_index(p1_array, p2_array, k_array, istr1,
-     &                   istr2, istr3)
+        call clear_index(istr1,istr2, istr3)
 
       case(command_bc_reo)
         idx = idx+1
