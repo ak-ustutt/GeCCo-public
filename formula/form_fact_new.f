@@ -310,12 +310,13 @@ c dbg
 
         itf=.true.
         ! Write formula to ITF log file
-        inquire(file="itflog.itf", exist=exists)
+        inquire(file="itflog.itfaa", exist=exists)
         if (exists) then
-          open(itflog, file="itflog.itf", status="old",
+          open(itflog, file="itflog.itfaa", status="old",
      &         position="append", action="write")
         else
-          open(itflog, file="itflog.itf", status="new", action="write")
+          open(itflog, file="itflog.itfaa", status="new",
+     &         action="write")
         end if
 
         !write(itflog,*) 'generated formula'

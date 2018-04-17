@@ -43,9 +43,9 @@
      &     tmpI     ! Name of intermediate without leading '_'
       integer ::
      &     i,j      ! loop indcies
-      character(len=4) ::
-     &     istr1='    ', istr2='    ', istr3='    ',  ! ITF index string
-     &     prev_str3='    '        ! Index of previous result
+      character(len=8) ::
+     &     istr1='        ', istr2='        ', istr3='        ',  ! ITF index string
+     &     prev_str3='        '        ! Index of previous result
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -98,9 +98,9 @@
         call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc)
         idx = idx+1
-!        write(lulog,*) '[CONTRACT][ADD]',
-!     &       fl_item%target,'( term #',idx,')'
-!        call prt_bcontr(lulog,fl_item%bcontr)
+        write(lulog,*) '[CONTRACT][ADD]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(lulog,fl_item%bcontr)
 
 !        prev_item=>fl_item%prev
 !        write(lulog,*) "Previous stuff: ", prev_item%command
@@ -108,10 +108,12 @@
 
         ! Get the index of the previous result
 
-        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
-     &                    k_array)
-        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
-     &                       istr3)
+!        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
+!     &                    k_array)
+!        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
+!     &                       istr3)
+
+        call assign_index2(fl_item%bcontr,istr1,istr2,istr3,lulog)
 
         ! Check if still part of old block (ie. old result == new result)
         if (old_res.ne.fl_item%bcontr%label_res) then
@@ -152,17 +154,19 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-!        write(lulog,*) '[CONTRACT]',
-!     &       fl_item%target,'( term #',idx,')'
-!        call prt_bcontr(lulog,fl_item%bcontr)
+        write(lulog,*) '[CONTRACT]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
-     &                    k_array)
+!        call index_array(lulog,fl_item%bcontr,p1_array,p2_array,
+!     &                    k_array)
+!
+!        ! Get index letters from arrays and copy to strings
+!        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
+!     &                       istr3)
 
-        ! Get index letters from arrays and copy to strings
-        call array_to_string(k_array, p1_array, p2_array, istr1, istr2,
-     &                       istr3)
+        call assign_index2(fl_item%bcontr,istr1,istr2,istr3,lulog)
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
