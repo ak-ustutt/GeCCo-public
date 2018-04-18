@@ -155,9 +155,9 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-        write(lulog,*) '[CONTRACT]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+!        write(lulog,*) '[CONTRACT]',
+!     &       fl_item%target,'( term #',idx,')'
+!        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
