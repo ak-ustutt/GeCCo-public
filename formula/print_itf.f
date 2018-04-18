@@ -136,25 +136,6 @@
             end if
         end if
 
-!        ! So far we have printed an ITF line including load and drop
-!        ! Need to check whether to store previous result and allocate
-!        ! the new one
-!        if (trim(old_res).ne.trim(fl_item%bcontr%label_res) .or.
-!     &     trim(istr3).ne.trim(prev_str3)) then
-!        ! Check if current result is part of the old block (ie. if the
-!        ! next result from previous CONTRACT case == new result)
-!        if(fl_item%bcontr%label_res.ne.contract_next) then
-!
-!           ! Store previous result
-!           write(lulog,*) "store ", trim(old_res), "[",
-!     &                   trim(prev_str3), "]"
-!           write(lulog,*) 
-!           ! Allocate current result
-!           write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res),
-!     &                    "[", trim(istr3), "]"
-!        end if
-!        end if
-           
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
@@ -174,9 +155,9 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-!        write(lulog,*) '[CONTRACT]',
-!     &       fl_item%target,'( term #',idx,')'
-!        call prt_bcontr(lulog,fl_item%bcontr)
+        write(lulog,*) '[CONTRACT]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
@@ -186,29 +167,6 @@
         ! same, then store previous result and allocate for the next
         ! result and the intermediate
         next_item=>fl_item%next
-
-!        if (next_item%command.eq.8) then
-!            ! Assign index of next_item
-!            call assign_index(next_item%bcontr,nstr1,istr2,istr3) 
-!            ! Compare previous and next result/index
-!            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
-!     &          trim(prev_str3).ne.trim(nstr3)) then
-!
-!                ! Store previous result
-!                write(lulog,*) "store ", trim(old_res), "[",
-!     &                         trim(prev_str3), "]"
-!                write(lulog,*)
-!
-!                ! Allocate next result, allocation/store for intermediate is
-!                ! taken care of in print_itf_line()
-!                write(lulog,*) "alloc ",trim(next_item%bcontr%label_res)
-!     &                         , "[",trim(istr3),"]"
-!
-!                ! Other contraction cases need to know to write store
-!                ! and alloc for their current contraction.
-!                contract_next=next_item%bcontr%label_res
-!            end if
-!         end if
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
