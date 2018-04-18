@@ -261,7 +261,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine assign_index2(contr_info,istr1,istr2,istr3)
+      subroutine assign_index(contr_info,istr1,istr2,istr3)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -270,17 +270,17 @@
       include 'opdim.h'
       include 'def_contraction.h'
       
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Inofrmation about binary contraction
       character(len=8), intent(inout)  ::
      &     istr1,       ! Operator 1 index
      &     istr2,       ! Operator 2 index
      &     istr3        ! Result index
-      type(binary_contr), intent(in) ::
-     &     contr_info   ! Inofrmation about binary contraction
       integer ::
-     &     t1(4,2),      ! Matrix of index info
-     &     c(4,2),       ! Matrix of index info
-     &     e1(4,2),      ! Matrix of index info
-     &     e2(4,2)      ! Matrix of index info
+     &     t1(4,2),      ! Occupations of operator 1
+     &     c(4,2),       ! Occupations of contraction index
+     &     e1(4,2),      ! Occupations of external index 1
+     &     e2(4,2)       ! Occupations of external index 2
       integer ::
      &     i,j
       character, dimension(4) ::
@@ -298,14 +298,38 @@
      &     a3='    ',
      &     a4='    '
       character(len=4), dimension(8) ::
+      ! x_array(1:4) = creation operators (par/val/hol/f12)
+      ! x_array(5:8) = annhilation operators (par/val/hol/f12)
      &     t1_array,    ! Operator 1 array
      &     c_array,     ! Contraction index array
      &     e1_array,    ! External index of operator 1 array
      &     e2_array     ! External index of operator 2 array
+      integer, dimension(3) ::
+     &     idx_type     ! Info about index convention
+      integer, parameter ::
+     &     t_amp = 0,       ! [apij] (aacc)
+     &     ham   = 1        ! [abip]
+      character(len=20), dimension(3) ::
+     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH' /)  ! Tensor names to use ham index convention
+
 
       istr1='        '
       istr2='        '
       istr3='        '
+
+      ! Set index convention
+      idx_type=(/ 0, 0, 0 /)
+      do i=1, len(tensor_ham)
+          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
+              idx_type(1)=1
+          end if
+          if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
+              idx_type(2)=1
+          end if
+          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
+              idx_type(3)=1
+          end if
+      end do
 
       ! Get occuation info
       do i = 1, 1 ! Just the first block
@@ -481,26 +505,57 @@
 
       ! Construct final index strings
       ! Operator 1
-      istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
-     &      trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
-     &      trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
+      select case(idx_type(1))
+      case(ham)
+          ! Hamiltonian/integral convention
+          istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(5)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(7)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(t1_array(6)))
+      case default
+          ! [apij] (aacc), ie. T[abij]
+          istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
+      end select
+
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
-      istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
-     &      trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
-     &      trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
-     &      trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
-     &      trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
-     &      trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      select case(idx_type(2))
+      case(ham)
+          istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))
+      case default
+          istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      end select
+      
 
       ! Result
-      istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
-     &      trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
-     &      trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
-     &      trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
-     &      trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
-     &      trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
+      select case(idx_type(3))
+      case(ham)
+          istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))
+      case default
+          istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
+      end select
       
       return
       end

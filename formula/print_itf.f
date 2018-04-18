@@ -106,7 +106,7 @@
 
         ! Get the index of the previous result
 
-        call assign_index2(fl_item%bcontr,istr1,istr2,istr3)
+        call assign_index(fl_item%bcontr,istr1,istr2,istr3)
 
         ! Check if still part of old block (ie. old result == new result)
         if (old_res.ne.fl_item%bcontr%label_res) then
@@ -151,7 +151,7 @@
 !        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call assign_index2(fl_item%bcontr,istr1,istr2,istr3)
+        call assign_index(fl_item%bcontr,istr1,istr2,istr3)
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
