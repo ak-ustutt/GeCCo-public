@@ -35,15 +35,18 @@
      &     nops(4,2)  ! Matrix of index info
       character(len=maxlen_bc_label) ::
      &     old_res='>',     ! Name of tensors involved in the contraction
-     &     contract_next='>',     ! Name of tensors involved in the contraction
-     &     tmpI     ! Name of intermediate without leading '_'
+     &     contract_next='>'     ! Name of tensors involved in the contraction
       integer ::
      &     i,j      ! loop indcies
       character(len=8) ::
      &     istr1='        ',         ! Operator 1 index
      &     istr2='        ',         ! Operator 2 index
      &     istr3='        ',         ! Result index
-     &     prev_str3='        '      ! Index of previous result
+     &     nstr1='        ',         ! Next operator 1 index
+     &     nstr2='        ',         ! Next operator 2 index
+     &     nstr3='        ',         ! Next result index
+     &     contract_next_index='        ',         ! Next CONTRACT result index
+     &     prev_str3='>       '      ! Previous result index
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
 
@@ -100,34 +103,58 @@
 !     &       fl_item%target,'( term #',idx,')'
 !        call prt_bcontr(lulog,fl_item%bcontr)
 
-!        prev_item=>fl_item%prev
-!        write(lulog,*) "Previous stuff: ", prev_item%command
-!        write(lulog,*) "Previous stuff: ", prev_item%target
 
-        ! Get the index of the previous result
-
+        ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
 
+        !write(lulog,*) "current index ", istr3
+        !write(lulog,*) "previous index ", prev_str3
+        !write(lulog,*) "contract next ", contract_next
+        !write(lulog,*) "contract next index ", contract_next_index
+
         ! Check if still part of old block (ie. old result == new result)
-        if (old_res.ne.fl_item%bcontr%label_res) then
+        ! Check result name and result index
+        if (trim(old_res).ne.trim(fl_item%bcontr%label_res) .or.
+     &      trim(istr3).ne.trim(prev_str3)) then
             ! Check if still part of the old block (ie. if the next
             ! result from the previous CONTRACT case == new result)
             ! This checks if a new intermediate is part of the new block
-            if (fl_item%bcontr%label_res.ne.contract_next)
-     &      then
+            if (trim(fl_item%bcontr%label_res).ne.trim(contract_next)
+     &      .or. trim(istr3).ne.trim(contract_next_index)) then
                 ! Store result using previous result index string,
                 ! stored when wrote alloc
                 if (old_res.ne.'>') then
                     write(lulog,*) "store ", trim(old_res), "[",
-     &                             trim(prev_str3), "]"
+     &                             trim(contract_next_index), "]"
                 end if
                 write(lulog,*) 
                 write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res),
      &                         "[", trim(istr3), "]"
                 prev_str3=istr3
+                ! Update info from CONTRACT ADD
+                contract_next_index=prev_str3
             end if
         end if
 
+!        ! So far we have printed an ITF line including load and drop
+!        ! Need to check whether to store previous result and allocate
+!        ! the new one
+!        if (trim(old_res).ne.trim(fl_item%bcontr%label_res) .or.
+!     &     trim(istr3).ne.trim(prev_str3)) then
+!        ! Check if current result is part of the old block (ie. if the
+!        ! next result from previous CONTRACT case == new result)
+!        if(fl_item%bcontr%label_res.ne.contract_next) then
+!
+!           ! Store previous result
+!           write(lulog,*) "store ", trim(old_res), "[",
+!     &                   trim(prev_str3), "]"
+!           write(lulog,*) 
+!           ! Allocate current result
+!           write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res),
+!     &                    "[", trim(istr3), "]"
+!        end if
+!        end if
+           
         call print_itf_line(fl_item%bcontr%label_res,
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
@@ -135,8 +162,9 @@
      &                      istr1, istr2, istr3, inter, lulog)
         call clear_index(istr1,istr2, istr3)
 
-        ! Update old result for use next time around
+        ! Update previous results for use next time around
         old_res=fl_item%bcontr%label_res
+
 
       case(command_add_bc_reo)
         idx = idx+1
@@ -153,6 +181,35 @@
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
 
+        ! Need to compare previous result from before the intermediate
+        ! and next result after the intermediate. If these aren't the
+        ! same, then store previous result and allocate for the next
+        ! result and the intermediate
+        next_item=>fl_item%next
+
+!        if (next_item%command.eq.8) then
+!            ! Assign index of next_item
+!            call assign_index(next_item%bcontr,nstr1,istr2,istr3) 
+!            ! Compare previous and next result/index
+!            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
+!     &          trim(prev_str3).ne.trim(nstr3)) then
+!
+!                ! Store previous result
+!                write(lulog,*) "store ", trim(old_res), "[",
+!     &                         trim(prev_str3), "]"
+!                write(lulog,*)
+!
+!                ! Allocate next result, allocation/store for intermediate is
+!                ! taken care of in print_itf_line()
+!                write(lulog,*) "alloc ",trim(next_item%bcontr%label_res)
+!     &                         , "[",trim(istr3),"]"
+!
+!                ! Other contraction cases need to know to write store
+!                ! and alloc for their current contraction.
+!                contract_next=next_item%bcontr%label_res
+!            end if
+!         end if
+
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
         ! So end current block, start new block and print intermediate
@@ -160,7 +217,13 @@
         next_item=>fl_item%next
         if (next_item%command.eq.8) then
             ! command_add_bc
-            if (next_item%bcontr%label_res.ne.old_res)
+
+            ! Assign index of next_item
+            call assign_index(next_item%bcontr,nstr1,nstr2,nstr3)
+
+            ! Check if name and index are same as previous result
+            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
+     &          trim(istr3).ne.trim(prev_str3))
      &      then
                 ! Store the tensor, use previous result index stored
                 ! when wrote alloc
@@ -169,9 +232,11 @@
      &                             trim(prev_str3), "]"
                 end if
                 write(lulog,*)
+!                prev_str3=istr3
             end if
             ! Update varible for use in CONTRACT ADD
             contract_next=next_item%bcontr%label_res
+            contract_next_index=nstr3
         end if
 
         ! Assume that this is called after NEW INTERMEDIATE
@@ -181,9 +246,10 @@
         ! constructing intermediate
         if (next_item%command.eq.8) then
             ! Do this unless the result is the same as the previous result
-            if (trim(next_item%bcontr%label_res).ne.trim(old_res)) then
+            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
+     &          trim(istr3).ne.trim(prev_str3)) then
                write(lulog,*) "alloc ",trim(next_item%bcontr%label_res),
-     &                        "[",trim(istr3),"]"
+     &                        "[",trim(nstr3),"]"
                prev_str3=istr3
             end if
         end if

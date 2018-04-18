@@ -309,8 +309,8 @@
       integer, parameter ::
      &     t_amp = 0,       ! [apij] (aacc)
      &     ham   = 1        ! [abip]
-      character(len=20), dimension(3) ::
-     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH' /)  ! Tensor names to use ham index convention
+      character(len=20), dimension(4) ::
+     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
 
 
       istr1='        '
