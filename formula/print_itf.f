@@ -35,7 +35,8 @@
      &     nops(4,2)  ! Matrix of index info
       character(len=maxlen_bc_label) ::
      &     old_res='>',     ! Name of tensors involved in the contraction
-     &     contract_next='>'     ! Name of tensors involved in the contraction
+     &     contract_next='>', ! Name of tensors involved in the contraction
+     &     rename_tensor
       integer ::
      &     i,j      ! loop indcies
       character(len=8) ::
@@ -124,11 +125,13 @@
                 ! Store result using previous result index string,
                 ! stored when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ", trim(old_res), "[",
+                    write(lulog,*) "store ",
+     &              trim(rename_tensor(old_res)), "[",
      &                             trim(contract_next_index), "]"
                 end if
                 write(lulog,*) 
-                write(lulog,*) "alloc ", trim(fl_item%bcontr%label_res),
+                write(lulog,*) "alloc ",
+     &          trim(rename_tensor(fl_item%bcontr%label_res)),
      &                         "[", trim(istr3), "]"
                 prev_str3=istr3
                 ! Update info from CONTRACT ADD
@@ -186,7 +189,8 @@
                 ! Store the tensor, use previous result index stored
                 ! when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ", trim(old_res), "[",
+                    write(lulog,*) "store ",
+     &              trim(rename_tensor(old_res)), "[",
      &                             trim(prev_str3), "]"
                 end if
                 write(lulog,*)
@@ -206,7 +210,8 @@
             ! Do this unless the result is the same as the previous result
             if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
      &          trim(istr3).ne.trim(prev_str3)) then
-               write(lulog,*) "alloc ",trim(next_item%bcontr%label_res),
+               write(lulog,*) "alloc ",
+     &         trim(rename_tensor(next_item%bcontr%label_res)),
      &                        "[",trim(nstr3),"]"
                prev_str3=istr3
             end if

@@ -115,6 +115,29 @@
       end
 
 *----------------------------------------------------------------------*
+      pure function rename_tensor(string)
+*----------------------------------------------------------------------*
+!     Rename tensor acording to taste 
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      character(len=maxlen_bc_label), intent(in) ::
+     &    string
+      character(len=maxlen_bc_label) ::
+     &    rename_tensor
+
+      if (trim(string).eq.'OMG') then
+          rename_tensor='R'
+      else
+          rename_tensor=trim(string)
+      end if
+
+      end function
+
+*----------------------------------------------------------------------*
       subroutine spin_sum_index(index)
 *----------------------------------------------------------------------*
 !     Spin sum index and produce resulting binary contractions
@@ -172,6 +195,8 @@
      &     interm_res=.false.,    ! True if result involves intermediate
      &     interm_t1=.false.,      ! True if contraction involves intermediate
      &     interm_t2=.false.       ! True if contraction involves intermediate
+      character(len=maxlen_bc_label) ::
+     &     rename_tensor
 
       ! Remove leading '_' from intermediate label
       nres=res
@@ -193,9 +218,7 @@
       end if
 
       ! Change names of specific tensors
-      if (trim(nres).eq.'OMG') then
-          nres='R'
-      end if
+      nres=rename_tensor(nres)
 
       ires=trim(adjustl(nres))//'['//trim(idx3)//']'
       it1=trim(adjustl(nt1))//'['//trim(idx1)//']'
