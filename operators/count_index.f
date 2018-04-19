@@ -118,6 +118,8 @@
       pure function rename_tensor(string)
 *----------------------------------------------------------------------*
 !     Rename tensor acording to taste 
+!     This should be expanded to rename all tensors so they correspond
+!     with the ITF algo file
 *----------------------------------------------------------------------*
 
       implicit none
@@ -138,19 +140,90 @@
       end function
 
 *----------------------------------------------------------------------*
-      subroutine spin_sum_index(index)
+      subroutine spin_sum_index(itf1, itf2, itf3, lulog)
 *----------------------------------------------------------------------*
 !     Spin sum index and produce resulting binary contractions
 *----------------------------------------------------------------------*
 
       implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_tensor.h'
 
-      character(len=4), intent(in) ::
-     &    index
-      character(len=4) ::
-     &    tmp='    '
+      type(itf_tensor), intent(in) ::
+     &    itf1, itf2, itf3          ! Op1, op2, res
+      integer, intent(in) ::
+     &    lulog
+      
+      return
+      end
 
-      tmp=index
+*----------------------------------------------------------------------*
+      subroutine construct_tensor(res, op1, op2, istr1, istr2, istr3,
+     &                            itf1, itf2, itf3, factor, lulog)
+*----------------------------------------------------------------------*
+!     Form itf_tensor objects
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_tensor.h'
+
+      character(len=maxlen_bc_label), intent(in) ::
+     &     res, op1, op2           ! Name of tensors involved in the contraction
+      character(len=index_len), intent(in) ::
+     &    istr1, istr2, istr3
+      type(itf_tensor), intent(inout) ::
+     &    itf1, itf2, itf3         ! Op1, op2, res
+      real(8) ::
+     &    factor
+      integer, intent(in) ::
+     &    lulog
+      
+      itf1%name=op1
+      itf2%name=op2
+      itf3%name=res
+      
+      itf1%idx=istr1
+      itf2%idx=istr2
+      itf3%idx=istr3
+
+      itf1%rank=len(trim(istr1))
+      itf2%rank=len(trim(istr2))
+      itf3%rank=len(trim(istr3))
+
+      itf1%fact=factor
+      itf2%fact=factor
+      itf3%fact=1.0
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine recursive_formular_item(fl_item,lulog)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+
+      type(formula_item), intent(in), target ::
+     &     fl_item
+      integer, intent(in) ::
+     &     lulog
+      type(formula_item), pointer ::
+     &     next_item,  ! Next formula_item
+     &     next2_item  ! Next formula_item
+
+      next_item=>fl_item%next
+      write(lulog,*) "WHAT: ", next_item%command
+      next2_item=>next_item%next
+      write(lulog,*) "WHAT2: ", next2_item%command
 
       return
       end

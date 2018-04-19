@@ -13,6 +13,7 @@
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'def_itf_tensor.h'
 
       integer, intent(in) ::
      &     lulog
@@ -48,8 +49,11 @@
      &     nstr3='        ',         ! Next result index
      &     contract_next_index='        ',         ! Next CONTRACT result index
      &     prev_str3='>       '      ! Previous result index
+      type(itf_tensor) ::
+     &     itf1, itf2, itf3
 
       long = mode.eq.'long'.or.mode.eq.'LONG'
+
 
       select case(fl_item%command)
       case(command_end_of_formula)
@@ -165,12 +169,6 @@
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
 
-        ! Need to compare previous result from before the intermediate
-        ! and next result after the intermediate. If these aren't the
-        ! same, then store previous result and allocate for the next
-        ! result and the intermediate
-        next_item=>fl_item%next
-
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
         ! So end current block, start new block and print intermediate
@@ -222,6 +220,12 @@
      &                      fl_item%bcontr%label_op2,
      &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
+        call construct_tensor(fl_item%bcontr%label_res,
+     &                      fl_item%bcontr%label_op1,
+     &                      fl_item%bcontr%label_op2,
+     &                      istr1, istr2, istr3,
+     &                      itf1, itf2, itf3,
+     &                      fl_item%bcontr%fact, lulog)
         call clear_index(istr1,istr2, istr3)
 
       case(command_bc_reo)
