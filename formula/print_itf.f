@@ -104,13 +104,14 @@
         call prt_bcontr(lulog,fl_item%bcontr)
       case(command_add_bc)
         idx = idx+1
-!        write(lulog,*) '[CONTRACT][ADD]',
-!     &       fl_item%target,'( term #',idx,')'
-!        call prt_bcontr(lulog,fl_item%bcontr)
+        write(lulog,*) '[CONTRACT][ADD]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(lulog,fl_item%bcontr)
 
 
         ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
+        !call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3)
 
         !write(lulog,*) "current index ", istr3
         !write(lulog,*) "previous index ", prev_str3
@@ -162,9 +163,9 @@
         call prt_reorder(lulog,fl_item%reo)
       case(command_bc)
         idx = idx+1
-!        write(lulog,*) '[CONTRACT]',
-!     &       fl_item%target,'( term #',idx,')'
-!        call prt_bcontr(lulog,fl_item%bcontr)
+        write(lulog,*) '[CONTRACT]',
+     &       fl_item%target,'( term #',idx,')'
+        call prt_bcontr(lulog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
@@ -179,6 +180,7 @@
 
             ! Assign index of next_item
             call assign_index(next_item%bcontr,nstr1,nstr2,nstr3)
+            call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3,lulog)
 
             ! Check if name and index are same as previous result
             if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
@@ -220,12 +222,12 @@
      &                      fl_item%bcontr%label_op2,
      &                      fl_item%bcontr%fact,
      &                      istr1, istr2, istr3, inter, lulog)
-        call construct_tensor(fl_item%bcontr%label_res,
-     &                      fl_item%bcontr%label_op1,
-     &                      fl_item%bcontr%label_op2,
-     &                      istr1, istr2, istr3,
-     &                      itf1, itf2, itf3,
-     &                      fl_item%bcontr%fact, lulog)
+!        call construct_tensor(fl_item%bcontr%label_res,
+!     &                      fl_item%bcontr%label_op1,
+!     &                      fl_item%bcontr%label_op2,
+!     &                      istr1, istr2, istr3,
+!     &                      itf1, itf2, itf3,
+!     &                      fl_item%bcontr%fact, lulog)
         call clear_index(istr1,istr2, istr3)
 
       case(command_bc_reo)
