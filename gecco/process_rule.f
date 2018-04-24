@@ -686,11 +686,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
       case(TRANSLATE_ITF)
 *----------------------------------------------------------------------*
-        call get_arg('LABELS_IN',rule,tgt_info,
-     &       val_label_list=label_list,ndim=ncat)
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),OLD)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
-        call form_itf(ncat,label_list(1:),title,
-     &       form_info,op_info,str_info,orb_info)
+        call form_itf(form_pnt,title,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

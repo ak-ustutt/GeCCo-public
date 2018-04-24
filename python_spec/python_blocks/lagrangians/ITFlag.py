@@ -100,7 +100,7 @@ OPTIMIZE({
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
 
 TRANSLATE_ITF({
-        LABELS_IN:'FOPT_MRCC_LAG',
+        LABEL:'FOPT_MRCC_LAG',
         OUTPUT:'Hello.txt'})
 
 
