@@ -42,6 +42,7 @@
      &     DERIVATIVE*10            = 'DERIVATIVE',
      &     LEQ_SPLIT*9              = 'LEQ_SPLIT',
      &     OPTIMIZE*8               = 'OPTIMIZE',
+     &     TRANSLATE_ITF*13         = 'TRANSLATE_ITF',
      &     PRINT_FORMULA*13         = 'PRINT_FORMULA',
      &     TEX_FORMULA*11           = 'TEX_FORMULA',
      &     KEEP_TERMS*10            = 'KEEP_TERMS',

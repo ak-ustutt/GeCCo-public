@@ -99,6 +99,10 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
 
+TRANSLATE_ITF({
+        LABELS_IN:'FOPT_MRCC_LAG',
+        OUTPUT:'Hello.txt'})
+
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')
