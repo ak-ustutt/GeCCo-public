@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_item(lulog,idx,fl_item,op_info,itf)
+      subroutine print_form_item(lulog,idx,fl_item,op_info)
 *----------------------------------------------------------------------*
 *     print formula item to unit lulog
 *----------------------------------------------------------------------*
@@ -18,15 +18,8 @@
      &     fl_item
       type(operator_info), intent(in) ::
      &     op_info
-      logical, intent(in) ::
-     &     itf
 
-      if (itf) then
-        ! Print tensor info to file
-        call print_itf(lulog,'long',idx,fl_item,op_info)
-      else
-        ! just a convenience wrapper
-        call print_form_item2(lulog,'long',idx,fl_item,op_info)
-      end if
+      ! just a convenience wrapper
+      call print_form_item2(lulog,'long',idx,fl_item,op_info)
       
       end

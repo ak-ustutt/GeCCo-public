@@ -1,11 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine print_itf(lulog,mode,idx,fl_item,op_info)
+      subroutine print_itf(itflog,fl_item,op_info)
 *----------------------------------------------------------------------*
-*     Print ITF info to lulog
-*
-*     mode: "shrt", "long"; short takes only effect for [CONTR] type
-*        definitions (whole diagrams, not factorized)
-*
+*     Print ITF info to itflog
 *----------------------------------------------------------------------*
       implicit none
 
@@ -16,11 +12,7 @@
       include 'def_itf_tensor.h'
 
       integer, intent(in) ::
-     &     lulog
-      integer, intent(inout) ::
-     &     idx
-      character(len=4), intent(in) ::
-     &     mode
+     &     itflog
       type(formula_item), intent(in), target ::
      &     fl_item
       type(operator_info), intent(in) ::
@@ -52,71 +44,61 @@
       type(itf_tensor) ::
      &     itf1, itf2, itf3
 
-      long = mode.eq.'long'.or.mode.eq.'LONG'
-
+      write(itflog,*) "from print_itf()"
 
       select case(fl_item%command)
       case(command_end_of_formula)
-!        write(lulog,*) '[END]'
+!        write(itflog,*) '[END]'
       case(command_set_target_init)
-        write(lulog,*) '[INIT TARGET]',fl_item%target
+        write(itflog,*) '[INIT TARGET]',fl_item%target
       case(command_set_target_update)
-        write(lulog,*) '[SET TARGET]',fl_item%target
+        write(itflog,*) '[SET TARGET]',fl_item%target
       case(command_new_intermediate)
-!        write(lulog,*) '[NEW INTERMEDIATE]',fl_item%target
-!        write(lulog,'(2x,a)') trim(fl_item%interm%name)
-!        write(lulog,'(2x,"attribute parentage: ",a," ",a)')
+!        write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
+!        write(itflog,'(2x,a)') trim(fl_item%interm%name)
+!        write(itflog,'(2x,"attribute parentage: ",a," ",a)')
 !     &                        trim(fl_item%parent1),
 !     &                        trim(fl_item%parent2)
-!        write(lulog,'(2x,"incore: ",i2)') fl_item%incore
-!        call print_op_occ(lulog,fl_item%interm)
+!        write(itflog,'(2x,"incore: ",i2)') fl_item%incore
+!        call print_op_occ(itflog,fl_item%interm)
 
         inter=inter+1
 
 !        prev_item=>fl_item%prev
 !        if (prev_item%command.eq.8) then
-!            write(lulog,*) "PREV res: ", prev_item%bcontr%label_res
+!            write(itflog,*) "PREV res: ", prev_item%bcontr%label_res
 !        end if
 !        if (prev_item%command.eq.0) then
-!            write(lulog,*) "PREV res: ", prev_item%target
+!            write(itflog,*) "PREV res: ", prev_item%target
 !        end if
 
       case(command_del_intermediate)
-        write(lulog,*) '[DELETE INTERMEDIATE]',fl_item%target
-        write(lulog,'(2x,a)') trim(fl_item%label)
+        write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
+        write(itflog,'(2x,a)') trim(fl_item%label)
       case(command_add_contribution)
-        idx = idx+1
-        if (long)
-     &       write(lulog,*) '[CONTR]',fl_item%target,'( term #',idx,')'
-        if (long)
-     &       call prt_contr2(lulog,fl_item%contr,op_info)
-        if (.not.long)
-     &       call prt_contr_short(lulog,idx,fl_item%contr,op_info)
+        write(itflog,*) '[CONTR]',fl_item%target
       case(command_add_intm)
-        idx = idx+1
-        write(lulog,*) '[ADD]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+        write(itflog,*) '[ADD]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
       case(command_cp_intm)
-        idx = idx+1
-        write(lulog,*) '[COPY]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+        write(itflog,*) '[COPY]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
       case(command_add_bc)
-        idx = idx+1
-        write(lulog,*) '[CONTRACT][ADD]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+        write(itflog,*) '[CONTRACT][ADD]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
 
 
         ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
         !call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3)
 
-        !write(lulog,*) "current index ", istr3
-        !write(lulog,*) "previous index ", prev_str3
-        !write(lulog,*) "contract next ", contract_next
-        !write(lulog,*) "contract next index ", contract_next_index
+        !write(itflog,*) "current index ", istr3
+        !write(itflog,*) "previous index ", prev_str3
+        !write(itflog,*) "contract next ", contract_next
+        !write(itflog,*) "contract next index ", contract_next_index
 
         ! Check if still part of old block (ie. old result == new result)
         ! Check result name and result index
@@ -130,12 +112,12 @@
                 ! Store result using previous result index string,
                 ! stored when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ",
+                    write(itflog,*) "store ",
      &              trim(rename_tensor(old_res)), "[",
      &                             trim(contract_next_index), "]"
                 end if
-                write(lulog,*) 
-                write(lulog,*) "alloc ",
+                write(itflog,*) 
+                write(itflog,*) "alloc ",
      &          trim(rename_tensor(fl_item%bcontr%label_res)),
      &                         "[", trim(istr3), "]"
                 prev_str3=istr3
@@ -148,7 +130,7 @@
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2, 
      &                      fl_item%bcontr%fact,
-     &                      istr1, istr2, istr3, inter, lulog)
+     &                      istr1, istr2, istr3, inter, itflog)
         call clear_index(istr1,istr2, istr3)
 
         ! Update previous results for use next time around
@@ -156,16 +138,14 @@
 
 
       case(command_add_bc_reo)
-        idx = idx+1
-        write(lulog,*) '[CONTRACT][REORDER][ADD]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
-        call prt_reorder(lulog,fl_item%reo)
+        write(itflog,*) '[CONTRACT][REORDER][ADD]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
+        call prt_reorder(itflog,fl_item%reo)
       case(command_bc)
-        idx = idx+1
-        write(lulog,*) '[CONTRACT]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
+        write(itflog,*) '[CONTRACT]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
@@ -180,7 +160,7 @@
 
             ! Assign index of next_item
             call assign_index(next_item%bcontr,nstr1,nstr2,nstr3)
-            call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3,lulog)
+            call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3,itflog)
 
             ! Check if name and index are same as previous result
             if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
@@ -189,11 +169,11 @@
                 ! Store the tensor, use previous result index stored
                 ! when wrote alloc
                 if (old_res.ne.'>') then
-                    write(lulog,*) "store ",
+                    write(itflog,*) "store ",
      &              trim(rename_tensor(old_res)), "[",
      &                             trim(prev_str3), "]"
                 end if
-                write(lulog,*)
+                write(itflog,*)
 !                prev_str3=istr3
             end if
             ! Update varible for use in CONTRACT ADD
@@ -210,7 +190,7 @@
             ! Do this unless the result is the same as the previous result
             if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
      &          trim(istr3).ne.trim(prev_str3)) then
-               write(lulog,*) "alloc ",
+               write(itflog,*) "alloc ",
      &         trim(rename_tensor(next_item%bcontr%label_res)),
      &                        "[",trim(nstr3),"]"
                prev_str3=istr3
@@ -221,34 +201,32 @@
      &                      fl_item%bcontr%label_op1,
      &                      fl_item%bcontr%label_op2,
      &                      fl_item%bcontr%fact,
-     &                      istr1, istr2, istr3, inter, lulog)
+     &                      istr1, istr2, istr3, inter, itflog)
 !        call construct_tensor(fl_item%bcontr%label_res,
 !     &                      fl_item%bcontr%label_op1,
 !     &                      fl_item%bcontr%label_op2,
 !     &                      istr1, istr2, istr3,
 !     &                      itf1, itf2, itf3,
-!     &                      fl_item%bcontr%fact, lulog)
+!     &                      fl_item%bcontr%fact, itflog)
         call clear_index(istr1,istr2, istr3)
 
       case(command_bc_reo)
-        idx = idx+1
-        write(lulog,*) '[CONTRACT][REORDER]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
-        call prt_reorder(lulog,fl_item%reo)
+        write(itflog,*) '[CONTRACT][REORDER]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
+        call prt_reorder(itflog,fl_item%reo)
       case(command_reorder)
-        write(lulog,*) '[REORDER]',fl_item%target
-        call prt_reorder(lulog,fl_item%reo)
+        write(itflog,*) '[REORDER]',fl_item%target
+        call prt_reorder(itflog,fl_item%reo)
       case(command_add_reo)
-        idx = idx+1
-        write(lulog,*) '[REORDER][ADD]',
-     &       fl_item%target,'( term #',idx,')'
-        call prt_bcontr(lulog,fl_item%bcontr)
-        call prt_reorder(lulog,fl_item%reo)
+        write(itflog,*) '[REORDER][ADD]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
+        call prt_reorder(itflog,fl_item%reo)
       case(command_symmetrise)
-        write(lulog,*) '[SYMMETRISE]',fl_item%target
+        write(itflog,*) '[SYMMETRISE]',fl_item%target
       case default
-        write(lulog,*) 'unknown command ',fl_item%command,
+        write(itflog,*) 'unknown command ',fl_item%command,
      &       fl_item%target
       end select
       

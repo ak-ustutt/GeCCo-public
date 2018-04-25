@@ -363,10 +363,10 @@
      &     val_label=(/' '/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(TRANSLATE_ITF,tgt_info)
-      call set_arg('_PROTO_',TRANSLATE_ITF,'LABELS_IN',0,tgt_info,
+      call set_arg('_PROTO_',TRANSLATE_ITF,'LABEL',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'OUTPUT',1,tgt_info,
-     &     val_str='stdout',def=.true.)
+     &     val_str='stdout',req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,

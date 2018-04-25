@@ -42,7 +42,7 @@
         write(lulog,*) 'Code written to file: ',trim(ffitf%name)
       end if
 
-!      call tex_form_list(ffitf%unit,flist,op_info)
+      call print_itf(ffitf%unit,flist,op_info)
 
       write(ffitf%unit,*) "Hello world"
 

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_form_list(lulog,form_head,op_info,itf)
+      subroutine print_form_list(lulog,form_head,op_info)
 *----------------------------------------------------------------------*
 *     print formula on linked list to unit lulog
 *----------------------------------------------------------------------*
@@ -16,8 +16,6 @@
      &     form_head
       type(operator_info), intent(in) ::
      &     op_info
-      logical, intent(in) ::
-     &     itf
 
       integer ::
      &     idx
@@ -28,7 +26,7 @@
       idx = 0
       form_ptr => form_head
       do
-        call print_form_item(lulog,idx,form_ptr,op_info,itf)
+        call print_form_item(lulog,idx,form_ptr,op_info)
 
         if (.not.associated(form_ptr%next)) exit
         form_ptr => form_ptr%next
