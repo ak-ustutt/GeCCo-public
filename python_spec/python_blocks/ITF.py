@@ -1,34 +1,14 @@
-"""An implementation of the icMRCCSD theory
+"""Simple implementation of the icMRCC method based on code in icMRCC.py by Yuri Aoto
 
 Usage:
 
-For a calculation with fixed reference, the GeGGo input needs (possibly among other things):
+To generate and test formulae for ITF translator
 
 method
  MR_P
- MRCC_new
+ ITF en_type=2,res_type=2
 calculate
  solve non_linear optref=0,
-
-For a calculation relaxing the reference:
-
-method
- MR project=4,prc_traf=F
-calculate
- solve non_linear optref=-3
- skip_E
-
-
-TODO:
-
-
-For details, see:
-  solve/icMRCCSDsolve.py
-  lagrangians/icMRCCSDlag.py
-
-History:
-
-Yuri Aoto, august 2017: Creation based on MRCC2.py
 
 """
 
@@ -59,5 +39,4 @@ import solve.ITFsolve
 # ... do it ...
 #-----------------------------------------------------------------#
 modify_target('do_all')
-depend('SOLVE_MRCC')
-
+depend('SOLVE_ITF')
