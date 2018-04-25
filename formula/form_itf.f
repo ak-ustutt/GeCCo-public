@@ -23,31 +23,31 @@
      &     op_info
 
       type(filinf) ::
-     &     ffitf
+     &     fitf
       type(formula_item) ::
      &     flist
 
       call write_title(lulog,wst_section,'Translating formula to ITF')
 
-      call file_init(ffitf,name_output,ftyp_sq_frm,0)
-      call file_open(ffitf)
+      ! Open file to write to
+      call file_init(fitf,name_output,ftyp_sq_frm,0)
+      call file_open(fitf)
 
-      ! read in input formula
+      ! Read in input formula
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist,.true.)
 
       if (iprlvl.gt.0) then
         write(lulog,*) 'Translating ',trim(f_input%label),
      &                 ' formulae into ITF algo code'
-        write(lulog,*) 'Code written to file: ',trim(ffitf%name)
+        write(lulog,*) 'Code written to file: ',trim(fitf%name)
       end if
 
-      call print_itf(ffitf%unit,flist,op_info)
+      ! Translate formula list into ITF code
+      call print_itf(fitf%unit,flist,op_info)
 
-      write(ffitf%unit,*) "Hello world"
-
-      call file_close_keep(ffitf)
-
+      ! Close file
+      call file_close_keep(fitf)
       call dealloc_formula_list(flist)
       
       return

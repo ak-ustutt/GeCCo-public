@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_itf(itflog,fl_item,op_info)
+      subroutine print_itf(itflog,fl_head,op_info)
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
@@ -14,7 +14,7 @@
       integer, intent(in) ::
      &     itflog
       type(formula_item), intent(in), target ::
-     &     fl_item
+     &     fl_head
       type(operator_info), intent(in) ::
      &     op_info
       logical ::
@@ -22,8 +22,9 @@
       integer ::
      &     inter=0    ! Counter of intermediates
       type(formula_item), pointer ::
+     &     fl_item,  ! Current formula_item
      &     next_item,  ! Next formula_item
-     &     prev_item  ! Next formula_item
+     &     prev_item  ! Previous formula_item
       integer ::
      &     nops(4,2)  ! Matrix of index info
       character(len=maxlen_bc_label) ::
@@ -44,13 +45,16 @@
       type(itf_tensor) ::
      &     itf1, itf2, itf3
 
-      write(itflog,*) "from print_itf()"
+      ! Point to start of linked list
+      fl_item=>fl_head
 
+      ! Loop over formula_items
+      do
       select case(fl_item%command)
       case(command_end_of_formula)
 !        write(itflog,*) '[END]'
       case(command_set_target_init)
-        write(itflog,*) '[INIT TARGET]',fl_item%target
+!        write(itflog,*) '[INIT TARGET]',fl_item%target
       case(command_set_target_update)
         write(itflog,*) '[SET TARGET]',fl_item%target
       case(command_new_intermediate)
@@ -86,9 +90,9 @@
      &       fl_item%target
         call prt_bcontr(itflog,fl_item%bcontr)
       case(command_add_bc)
-        write(itflog,*) '[CONTRACT][ADD]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[CONTRACT][ADD]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
 
 
         ! Get index for current contraction
@@ -143,9 +147,9 @@
         call prt_bcontr(itflog,fl_item%bcontr)
         call prt_reorder(itflog,fl_item%reo)
       case(command_bc)
-        write(itflog,*) '[CONTRACT]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[CONTRACT]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)
@@ -229,5 +233,10 @@
         write(itflog,*) 'unknown command ',fl_item%command,
      &       fl_item%target
       end select
+
+      if (.not.associated(fl_item%next)) exit
+      fl_item=>fl_item%next
+
+      end do
       
       end
