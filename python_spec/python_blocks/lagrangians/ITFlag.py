@@ -136,4 +136,5 @@ OPTIMIZE({
 # Translate optmised formulae into ITF algo code
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'gecco.itfaa'})
+        OUTPUT:'gecco.itfaa',
+        TITLE:'gecco.formulae'})

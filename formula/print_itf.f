@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine print_itf(itflog,fl_head,op_info)
+      subroutine print_itf(itflog,fl_head,op_info,print_form,formlog)
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
@@ -12,11 +12,14 @@
       include 'def_itf_tensor.h'
 
       integer, intent(in) ::
-     &     itflog
+     &     itflog,
+     &     formlog
       type(formula_item), intent(in), target ::
      &     fl_head
       type(operator_info), intent(in) ::
      &     op_info
+      logical, intent(in) ::
+     &     print_form        ! Print to optional formulae file
       logical ::
      &     long
       integer ::
@@ -32,7 +35,8 @@
      &     contract_next='>', ! Name of tensors involved in the contraction
      &     rename_tensor
       integer ::
-     &     i,j      ! loop indcies
+     &     i,j,      ! loop indcies
+     &     idx=1     ! Dummy argument to call print_form_item2()
       character(len=8) ::
      &     istr1='        ',         ! Operator 1 index
      &     istr2='        ',         ! Operator 2 index
@@ -233,6 +237,10 @@
         write(itflog,*) 'unknown command ',fl_item%command,
      &       fl_item%target
       end select
+
+      if (print_form) then
+        call print_form_item2(formlog,'LONG',idx,fl_item,op_info)
+      end if
 
       if (.not.associated(fl_item%next)) exit
       fl_item=>fl_item%next

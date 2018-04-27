@@ -704,14 +704,10 @@
      &     a3='    ',
      &     a4='    '
       character(len=4), dimension(8) ::
-      ! x_array(1:4) = creation operators (par/val/hol/f12)
-      ! x_array(5:8) = annhilation operators (par/val/hol/f12)
      &     t1_array,    ! Operator 1 array
      &     c_array,     ! Contraction index array
      &     e1_array,    ! External index of operator 1 array
      &     e2_array     ! External index of operator 2 array
-      integer, dimension(3) ::
-     &     idx_type     ! Info about index convention
       integer, parameter ::
      &     t_amp = 0,       ! [apij] (aacc)
      &     ham   = 1        ! [abip]
@@ -723,19 +719,28 @@
       itf1%idx='        '
       itf1%idx='        '
 
+      ! Tensor number
+      itf1%t_numb=1
+      itf2%t_numb=2
+      itf3%t_numb=3
+
       ! Set index convention
-      idx_type=(/ 0, 0, 0 /)
-      do i=1, len(tensor_ham)
-          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
-              idx_type(1)=1
-          end if
-          if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=1
-          end if
-          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=1
-          end if
-      end do
+      ! For now, don't bother
+!      idx_type=(/ 0, 0, 0 /)
+!      do i=1, len(tensor_ham)
+!          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
+!              idx_type(1)=1
+!          end if
+!          if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
+!              idx_type(2)=1
+!          end if
+!          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
+!              idx_type(3)=1
+!          end if
+!      end do
+      itf1%idx_convention=0
+      itf2%idx_convention=0
+      itf3%idx_convention=0
 
       ! Get occuation info
       do i = 1, 1 ! Just the first block
@@ -915,7 +920,7 @@
 
       ! Construct final index strings
       ! Operator 1
-      select case(idx_type(1))
+      select case(itf1%idx_convention)
       case(ham)
        ! Hamiltonian/integral convention
        itf1%idx=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(5)))//
@@ -928,10 +933,19 @@
      &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
       end select
 
+       itf1%ncops=len(trim(adjustl(t1_array(1)))//
+     &          trim(adjustl(t1_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7))))
+       itf1%naops=len(trim(adjustl(t1_array(1)))//
+     &          trim(adjustl(t1_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7))))
+
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
-      select case(idx_type(2))
+      select case(itf2%idx_convention)
       case(ham)
        itf2%idx=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
      &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
@@ -951,13 +965,21 @@
       itf2%c_ops=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
      &           trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
      &           trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))
+      itf2%ncops=len(trim(adjustl(e2_array(1)))//
+     &           trim(adjustl(c_array(5)))//
+     &           trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+     &           trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7))))
 
       itf2%a_ops=trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
      &           trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
      &           trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      itf2%naops=len(trim(adjustl(e2_array(5)))//
+     &           trim(adjustl(c_array(1)))//
+     &           trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+     &           trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3))))
 
       ! Result
-      select case(idx_type(3))
+      select case(itf3%idx_convention)
       case(ham)
        itf3%idx=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
      &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
@@ -975,14 +997,22 @@
       end select
 
       itf3%c_ops=trim(adjustl(e1_array(1)))//
-     &           trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e2_array(1)))//
      &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
      &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))
+      itf3%ncops=len(trim(adjustl(e1_array(1)))//
+     &          trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3))))
 
       itf3%a_ops=trim(adjustl(e1_array(5)))//
      &          trim(adjustl(e2_array(5)))//
      &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
      &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
+      itf3%naops=len(trim(adjustl(e1_array(5)))//
+     &          trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7))))
 
       itf1%name=contr_info%label_op1
       itf2%name=contr_info%label_op2

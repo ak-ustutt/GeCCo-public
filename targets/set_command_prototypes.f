@@ -367,6 +367,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'OUTPUT',1,tgt_info,
      &     val_str='stdout',req=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'TITLE',1,tgt_info,
+     &     val_str='stdout',req=.false.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,

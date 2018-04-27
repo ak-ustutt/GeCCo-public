@@ -689,7 +689,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LABEL',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),OLD)
         call get_arg('OUTPUT',rule,tgt_info,val_str=title)
-        call form_itf(form_pnt,title,op_info)
+        call get_arg('TITLE',rule,tgt_info,val_str=title2,
+     &          success=arg_there)
+        if (.not.arg_there) title2='##not_set##'
+        call form_itf(form_pnt,title,title2,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

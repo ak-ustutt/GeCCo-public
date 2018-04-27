@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_output,op_info)
+      subroutine form_itf(f_input,name_out,form_out,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -16,22 +16,35 @@
      &     ntest = 00
 
       character(len=*), intent(in) ::
-     &     name_output
+     &     name_out,
+     &     form_out
       type(formula), intent(inout) ::
      &     f_input
       type(operator_info), intent(in) ::
      &     op_info
 
       type(filinf) ::
-     &     fitf
+     &     fitf,
+     &     fform
       type(formula_item) ::
      &     flist
+      logical ::
+     &     print_form
+
+      print_form=form_out.ne.'##not_set##'
 
       call write_title(lulog,wst_section,'Translating formula to ITF')
 
       ! Open file to write to
-      call file_init(fitf,name_output,ftyp_sq_frm,0)
+      call file_init(fitf,name_out,ftyp_sq_frm,0)
       call file_open(fitf)
+
+      if (print_form) then
+        ! Open optional formulae file
+        call file_init(fform,form_out,ftyp_sq_frm,0)
+        call file_open(fform)
+        write(fform%unit,*) "Generated formulae"
+      end if
 
       ! Read in input formula
       call init_formula(flist)
@@ -44,11 +57,16 @@
       end if
 
       ! Translate formula list into ITF code
-      call print_itf(fitf%unit,flist,op_info)
+      call print_itf(fitf%unit,flist,op_info,print_form,fform%unit)
 
       ! Close file
       call file_close_keep(fitf)
       call dealloc_formula_list(flist)
+
+      if (print_form) then
+        write(fform%unit,*) "End formulae"
+        call file_close_keep(fform)
+      end if
       
       return
       end
