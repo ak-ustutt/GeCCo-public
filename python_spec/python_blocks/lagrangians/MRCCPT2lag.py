@@ -468,6 +468,7 @@ else:
 
 third_ord_terms = ['_CI', '_CC', '_CC0', '_CCa', '_CCb', '_CC_higherO', '_CC_pureV']
 #third_ord_terms = ['_CI', '_CC']
+#third_ord_terms = ['_CI']
 #third_ord_terms = ['_CCb']
 
 if third_ord_energy:

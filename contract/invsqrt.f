@@ -1281,7 +1281,6 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
-            print *, "to test or not to test0"
             call spinsym_traf(2,rdim,
      &                        scratch_tmp1,
      &                        flmap(idxst:idxnd,3),nsing,
@@ -1297,7 +1296,6 @@ c dbgend
      &             ndim, idxst, idxnd,
      &             ndim, idxst, idxnd,
      &             scratch_tmp1)
-              print *, "to test or not to test1"
               call spinsym_traf(2,rdim,
      &                          scratch_tmp1,
      &                          flmap(idxst:idxnd,3),nsing,
@@ -1310,7 +1308,6 @@ c dbgend
               deallocate(sing2,trip2)
             end if
             if (get_u) then
-            print *, "to test or not to test2"
               ! partial undo of pre-diagonalization: Upre*U
             call extract_submatrix_h(scratch3,
      &           ndim, idxst, idxnd,
@@ -1329,7 +1326,6 @@ c dbgend
             deallocate(sing,trip)
 
           else if (lmodspc) then
-            print *, "to test or not to test4"
 
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
