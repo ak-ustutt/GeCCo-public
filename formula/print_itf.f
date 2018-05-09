@@ -179,9 +179,9 @@
         call prt_bcontr(itflog,fl_item%bcontr)
         call prt_reorder(itflog,fl_item%reo)
       case(command_bc)
-!        write(itflog,*) '[CONTRACT]',
-!     &       fl_item%target
-!        call prt_bcontr(itflog,fl_item%bcontr)
+        write(itflog,*) '[CONTRACT]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3)

@@ -6,7 +6,8 @@ def print_inter(prev_lines):
             load_ten="load "
             if "STIN" not in inter_words[2]:
                 load_ten=load_ten + inter_words[2].split('*',1)[-1] + " "
-            if "STIN" not in inter_words[3]:
+            if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
+                # Do not load if an intermediate or if the same as previous loaded tensor
                 load_ten=load_ten + inter_words[3].split('*',1)[-1] 
             print(load_ten, file=out)
         print(prev_lines[i].strip(), file=out)
@@ -14,7 +15,7 @@ def print_inter(prev_lines):
             drop_ten="drop "
             if "STIN" not in inter_words[2]:
                 drop_ten=drop_ten + inter_words[2].split('*',1)[-1] + " "
-            if "STIN" not in inter_words[3]:
+            if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
                 drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
             print(drop_ten, file=out)
 
