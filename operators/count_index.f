@@ -13,14 +13,14 @@
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
 
-      nops(1,1)=iocc(1,1)
-      nops(2,1)=iocc(2,1)
-      nops(3,1)=iocc(3,1)
-      nops(4,1)=iocc(4,1)
-      nops(1,2)=iocc(1,2)
-      nops(2,2)=iocc(2,2)
-      nops(3,2)=iocc(3,2)
-      nops(4,2)=iocc(4,2)
+      nops(1,1)=nops(1,1) + iocc(1,1)
+      nops(2,1)=nops(2,1) + iocc(2,1)
+      nops(3,1)=nops(3,1) + iocc(3,1)
+      nops(4,1)=nops(4,1) + iocc(4,1)
+      nops(1,2)=nops(1,2) + iocc(1,2)
+      nops(2,2)=nops(2,2) + iocc(2,2)
+      nops(3,2)=nops(3,2) + iocc(3,2)
+      nops(4,2)=nops(4,2) + iocc(4,2)
 
       return
       end
@@ -335,11 +335,11 @@
       end if
 
       ! Print the ITF line
-      if (interm_res) then
-          write(lulog,*) a_line
-      end if
-
-      write(lulog,*) l_line
+!      if (interm_res) then
+!          write(lulog,*) a_line
+!      end if
+!
+!      write(lulog,*) l_line
 
       if (fact.lt.0.0) then
           itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] -= '//
@@ -355,7 +355,7 @@
 
       write(lulog,*) trim(itf_line)
 
-      write(lulog,*) d_line
+!      write(lulog,*) d_line
 
       interm_res=.false.
       interm_t1=.false.
@@ -435,20 +435,31 @@
           end if
       end do
 
+      t1=0
+      c=0
+      e1=0
+      e2=0
+
       ! Get occuation info
-      do i = 1, 1 ! Just the first block
+      do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_op1(1:,1:,i),
      &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,t1)
+      end do
+      do i = 1, contr_info%n_cnt
         call count_index(i,
      &     contr_info%occ_cnt(1:,1:,i),
      &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,c)
+      end do
+      do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_ex1(1:,1:,i),
      &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
         call count_index(i,
      &     contr_info%occ_ex2(1:,1:,i),
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
@@ -743,19 +754,25 @@
       itf3%idx_convention=0
 
       ! Get occuation info
-      do i = 1, 1 ! Just the first block
+      do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_op1(1:,1:,i),
      &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,t1)
+      end do
+      do i = 1, contr_info%n_cnt
         call count_index(i,
      &     contr_info%occ_cnt(1:,1:,i),
      &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,c)
+      end do
+      do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_ex1(1:,1:,i),
      &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
         call count_index(i,
      &     contr_info%occ_ex2(1:,1:,i),
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
@@ -1025,6 +1042,261 @@
       itf1%fact=contr_info%fact
       itf2%fact=contr_info%fact
       itf3%fact=1
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine tensor_idx(contr_info,itf1,itf2,itf3)
+*----------------------------------------------------------------------*
+!     
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_tensor.h'
+      
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Inofrmation about binary contraction
+!      type(itf_tensor), intent(inout)  ::
+!     &     itf1,       ! Operator 1 index
+!     &     itf2,       ! Operator 2 index
+!     &     itf3        ! Result index
+      character(len=index_len) ::
+     &     itf1, itf2, itf3
+      integer ::
+     &     t1(4,2),      ! Occupations of operator 1
+     &     c(4,2),       ! Occupations of contraction index
+     &     e1(4,2),      ! Occupations of external index 1
+     &     e2(4,2)       ! Occupations of external index 2
+      integer ::
+     &     i,j
+      character, dimension(4) ::
+     &     hol=(/ 'i','j','k','l' /),
+     &     par=(/ 'a','b','c','d' /)
+      character, dimension(8) ::
+     &     val=(/ 'p','q','r','s','t','u','v','w' /)
+      character(len=4) ::
+     &     c1='    ',    ! Workspace to assign index before array
+     &     c2='    ',
+     &     c3='    ',
+     &     c4='    ',
+     &     a1='    ',
+     &     a2='    ',
+     &     a3='    ',
+     &     a4='    '
+      character(len=4), dimension(8) ::
+     &     t1_array,    ! Operator 1 array
+     &     c_array,     ! Contraction index array
+     &     e1_array,    ! External index of operator 1 array
+     &     e2_array     ! External index of operator 2 array
+      integer, parameter ::
+     &     t_amp = 0,       ! [apij] (aacc)
+     &     ham   = 1        ! [abip]
+      character(len=20), dimension(4) ::
+     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
+
+
+      ! Get occuation info
+      do i = 1, 1   ! Just one block for now
+        call count_index(i,
+     &     contr_info%occ_op1(1:,1:,i),
+     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,t1)
+        call count_index(i,
+     &     contr_info%occ_cnt(1:,1:,i),
+     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,c)
+        call count_index(i,
+     &     contr_info%occ_ex1(1:,1:,i),
+     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+        call count_index(i,
+     &     contr_info%occ_ex2(1:,1:,i),
+     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
+      
+
+      ! Order in ITF usually follows: apij
+      ! Defualt [ccaa] as in the case of T[abij]
+
+      ! Assign t1 (tensor 1)
+      ! Creations first
+      do i=1, t1(2,1)
+          c1(i:)=par(i)
+          ! Below doesn't work...
+          !t1_array(1)(i:)=par(i)
+      end do
+      t1_array(1)=c1
+      do i=1, t1(3,1)
+          c2(i:)=val(i)
+      end do
+      t1_array(2)=c2
+      do i=1, t1(1,1)
+          c3(i:)=hol(i)
+      end do
+      t1_array(3)=c3
+
+      ! Annhilators second
+      do i=1, t1(2,2)
+          a1(i:)=par(i+t1(2,1))
+      end do
+      t1_array(5)=a1
+      do i=1, t1(3,2)
+          a2(i:)=val(i+t1(3,1))
+      end do
+      t1_array(6)=a2
+      do i=1, t1(1,2)
+          a3(i:)=hol(i+t1(1,1))
+      end do
+      t1_array(7)=a3
+
+      c1='    '
+      c2='    '
+      c3='    '
+      a1='    '
+      a2='    '
+      a3='    '
+      
+      
+      ! Assign c (contracted by)
+      ! These will be assigned as above
+      do i=1, c(2,1)
+          c1(i:)=par(i)
+      end do
+      c_array(1)=c1
+      do i=1, c(3,1)
+          c2(i:)=val(i)
+      end do
+      c_array(2)=c2
+      do i=1, c(1,1)
+          c3(i:)=hol(i)
+      end do
+      c_array(3)=c3
+
+      ! Need to to be shifted so to match assignment of t1 above
+      do i=1, c(2,2)
+          a1(i:)=par(i+t1(2,1))
+      end do
+      c_array(5)=a1
+      do i=1, c(3,2)
+          a2(i:)=val(i+t1(3,1))
+      end do
+      c_array(6)=a2
+      do i=1, c(1,2)
+          a3(i:)=hol(i+t1(1,1))
+      end do
+      c_array(7)=a3
+
+      c1='    '
+      c2='    '
+      c3='    '
+      a1='    '
+      a2='    '
+      a3='    '
+
+
+      ! Assign e1 (external indicies of t1)
+      do i=1, e1(2,1)
+          c1(i:)=par(i)
+      end do
+      e1_array(1)=c1
+      do i=1, e1(3,1)
+          c2(i:)=val(i)
+      end do
+      e1_array(2)=c2
+      do i=1, e1(1,1)
+          c3(i:)=hol(i)
+      end do
+      e1_array(3)=c3
+
+      ! Need to to be shifted so to match assignment of t1 above
+      do i=1, e1(2,2)
+          a1(i:)=par(i+t1(2,1))
+      end do
+      e1_array(5)=a1
+      do i=1, e1(3,2)
+          a2(i:)=val(i+t1(3,1))
+      end do
+      e1_array(6)=a2
+      do i=1, e1(1,2)
+          a3(i:)=hol(i+t1(1,1))
+      end do
+      e1_array(7)=a3
+
+      c1='    '
+      c2='    '
+      c3='    '
+      a1='    '
+      a2='    '
+      a3='    '
+
+
+      ! Assign e2 (external indicies of t2)
+      ! Needs to be shifted so it's different from e1
+      ! Needs to be shifted so it's different from c
+      do i=1, e2(2,1)
+          c1(i:)=par(i+e1(2,1)+e1(2,2)+c(2,1)+c(2,2))
+      end do
+      e2_array(1)=c1
+      do i=1, e2(3,1)
+          c2(i:)=val(i+e1(3,1)+e1(3,2)+c(3,1)+c(3,2))
+      end do
+      e2_array(2)=c2
+      do i=1, e2(1,1)
+          c3(i:)=hol(i+e1(1,1)+e1(1,2)+c(1,1)+c(1,2))
+      end do
+      e2_array(3)=c3
+
+      do i=1, e2(2,2)
+          a1(i:)=par(i+e2(2,1)+e1(2,1)+e1(2,2)+c(2,1)+c(2,2))
+      end do
+      e2_array(5)=a1
+      do i=1, e2(3,2)
+          a2(i:)=val(i+e2(3,1)+e1(3,1)+e1(3,2)+c(3,1)+c(3,2))
+      end do
+      e2_array(6)=a2
+      do i=1, e2(1,2)
+          a3(i:)=hol(i+e2(1,1)+e1(1,1)+e1(1,2)+c(1,1)+c(1,2))
+      end do
+      e2_array(7)=a3
+      
+      c1='    '
+      c2='    '
+      c3='    '
+      a1='    '
+      a2='    '
+      a3='    '
+
+
+
+      ! Construct final index strings
+      ! Operator 1
+       itf1=trim(adjustl(t1_array(1)))//
+     &          trim(adjustl(t1_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
+
+      ! Operator 2
+      ! c_array annhilations correspond to t2 creations and vice versa
+       itf2=trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      
+      ! Result
+       itf3=trim(adjustl(e1_array(1)))//
+     &          trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
 
       return
       end

@@ -5,7 +5,9 @@
       character(len=maxlen_bc_label) ::
      &     name                 ! Name of tensor
       character(len=index_len) ::
-     &     idx                  ! Index string, for now only rank 2 and 4
+     &     idx,                 ! Index string, for now only rank 2 and 4
+     &     next_idx,            ! Next result index string
+     &     prev_idx             ! Previous result index string
       character(len=index_len) ::
      &     c_ops,               ! Array of creation operators
      &     a_ops                ! Array of annihilation operators
