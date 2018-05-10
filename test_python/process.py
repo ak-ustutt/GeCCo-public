@@ -21,18 +21,34 @@ def print_inter(prev_lines):
 
 def print_result(line, words):
     # Load tensors
-    if "STIN" not in words[2]:
-        print("load ", words[2].split('*',1)[-1], file=out)
-    if "STIN" not in words[3]:
-        print("load ", words[3].split('*',1)[-1], file=out)
+    if "STIN" not in words[2] or "STIN" not in words[3]:
+        load_ten="load "
+        if "STIN" not in words[2]:
+            #print("load ", words[2].split('*',1)[-1], file=out)
+            load_ten=load_ten + words[2].split('*',1)[-1]
+        if "STIN" not in words[2] and "STIN" not in words[3]:
+            load_ten=load_ten + ", "
+        if "STIN" not in words[3]:
+            #print("load ", words[3].split('*',1)[-1], file=out)
+            load_ten=load_ten + words[3].split('*',1)[-1]
+
+        print(load_ten, file=out)
 
     print(line.strip(), file=out)
 
     # Drop tensors
-    if "STIN" not in words[3]:
-        print("drop ", words[3].split('*',1)[-1], file=out)
-    if "STIN" not in words[2]:
-        print("drop ", words[2].split('*',1)[-1], file=out)
+    if "STIN" not in words[2] or "STIN" not in words[3]:
+        drop_ten="drop "
+        if "STIN" not in words[3]:
+            #print("drop ", words[3].split('*',1)[-1], file=out)
+            drop_ten=drop_ten + words[3].split('*',1)[-1]
+        if "STIN" not in words[3] and "STIN" not in words[2]:
+            drop_ten=drop_ten + ", "
+        if "STIN" not in words[2]:
+            #print("drop ", words[2].split('*',1)[-1], file=out)
+            drop_ten=drop_ten + words[2].split('*',1)[-1]
+
+        print(drop_ten, file=out)
 
 
 

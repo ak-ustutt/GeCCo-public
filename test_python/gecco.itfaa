@@ -46,3 +46,4 @@
  .O2g[qi] += STIN0001[pi] C0[qp]
  .STIN0001[rp] += C0[pq] C0[rq]
  .O2g[pqsi] -= H[ipqr] STIN0001[rs]
+ .O2g[pqsi] -= H[ipqr] C0[rs]
