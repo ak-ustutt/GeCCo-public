@@ -105,7 +105,7 @@
 
 
         ! Get index for current contraction
-        call assign_index(fl_item%bcontr,istr1,istr2,istr3)
+        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
 
         call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
 !        prev_item2=>fl_item%prev
@@ -179,12 +179,12 @@
         call prt_bcontr(itflog,fl_item%bcontr)
         call prt_reorder(itflog,fl_item%reo)
       case(command_bc)
-        write(itflog,*) '[CONTRACT]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[CONTRACT]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call assign_index(fl_item%bcontr,istr1,istr2,istr3)
+        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.

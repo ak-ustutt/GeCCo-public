@@ -365,7 +365,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine assign_index(contr_info,istr1,istr2,istr3)
+      subroutine assign_index(contr_info,istr1,istr2,istr3,lulog)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -376,6 +376,8 @@
       
       type(binary_contr), intent(in) ::
      &     contr_info   ! Inofrmation about binary contraction
+      integer, intent(in) ::
+     &     lulog        ! Debug delete
       character(len=8), intent(inout)  ::
      &     istr1,       ! Operator 1 index
      &     istr2,       ! Operator 2 index
@@ -507,43 +509,6 @@
       a1='    '
       a2='    '
       a3='    '
-      
-      
-      ! Assign c (contracted by)
-      ! These will be assigned as above
-      do i=1, c(2,1)
-          c1(i:)=par(i)
-      end do
-      c_array(1)=c1
-      do i=1, c(3,1)
-          c2(i:)=val(i)
-      end do
-      c_array(2)=c2
-      do i=1, c(1,1)
-          c3(i:)=hol(i)
-      end do
-      c_array(3)=c3
-
-      ! Need to to be shifted so to match assignment of t1 above
-      do i=1, c(2,2)
-          a1(i:)=par(i+t1(2,1))
-      end do
-      c_array(5)=a1
-      do i=1, c(3,2)
-          a2(i:)=val(i+t1(3,1))
-      end do
-      c_array(6)=a2
-      do i=1, c(1,2)
-          a3(i:)=hol(i+t1(1,1))
-      end do
-      c_array(7)=a3
-
-      c1='    '
-      c2='    '
-      c3='    '
-      a1='    '
-      a2='    '
-      a3='    '
 
 
       ! Assign e1 (external indicies of t1)
@@ -580,6 +545,61 @@
       a1='    '
       a2='    '
       a3='    '
+      
+      !write(lulog,*) e1(1,1)
+      !write(lulog,*) e1(2,1)
+      !write(lulog,*) e1(3,1)
+      !write(lulog,*) e1(1,2)
+      !write(lulog,*) e1(2,2)
+      !write(lulog,*) e1(3,2)
+      
+      ! Assign c (contracted by)
+      ! These need to be shifted, so as not to match e1
+      do i=1, c(2,1)
+          c1(i:)=par(i+e1(2,1)+e1(2,2))
+      end do
+      c_array(1)=c1
+      do i=1, c(3,1)
+          c2(i:)=val(i+e1(3,1)+e1(3,2))
+      end do
+      c_array(2)=c2
+      do i=1, c(1,1)
+          c3(i:)=hol(i+e1(1,1)+e1(1,2))
+      end do
+      c_array(3)=c3
+
+      do i=1, c(2,2)
+          a1(i:)=par(i+c(2,1)+e1(2,1)+e1(2,2))
+      end do
+      c_array(5)=a1
+      do i=1, c(3,2)
+          a2(i:)=val(i+c(3,1)+e1(3,1)+e1(3,2))
+      end do
+      c_array(6)=a2
+      do i=1, c(1,2)
+          a3(i:)=hol(i+c(1,1)+e1(1,1)+e1(1,2))
+      end do
+      c_array(7)=a3
+
+      c1='    '
+      c2='    '
+      c3='    '
+      a1='    '
+      a2='    '
+      a3='    '
+
+!      do i=1, c(2,2)
+!          a1(i:)=par(i+t1(2,1))
+!      end do
+!      c_array(5)=a1
+!      do i=1, c(3,2)
+!          a2(i:)=val(i+t1(3,1))
+!      end do
+!      c_array(6)=a2
+!      do i=1, c(1,2)
+!          a3(i:)=hol(i+t1(1,1))
+!      end do
+!      c_array(7)=a3
 
 
       ! Assign e2 (external indicies of t2)

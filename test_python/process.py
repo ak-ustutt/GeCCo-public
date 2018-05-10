@@ -5,18 +5,18 @@ def print_inter(prev_lines):
         if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
             load_ten="load "
             if "STIN" not in inter_words[2]:
-                load_ten=load_ten + inter_words[2].split('*',1)[-1] + " "
+                load_ten=load_ten + inter_words[2].split('*',1)[-1]
             if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
                 # Do not load if an intermediate or if the same as previous loaded tensor
-                load_ten=load_ten + inter_words[3].split('*',1)[-1] 
+                load_ten=load_ten + ", " + inter_words[3].split('*',1)[-1] 
             print(load_ten, file=out)
         print(prev_lines[i].strip(), file=out)
         if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
             drop_ten="drop "
-            if "STIN" not in inter_words[2]:
-                drop_ten=drop_ten + inter_words[2].split('*',1)[-1] + " "
-            if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
+            if "STIN" not in inter_words[3]:
                 drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
+            if "STIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
+                drop_ten=drop_ten + ", " + inter_words[2].split('*',1)[-1]
             print(drop_ten, file=out)
 
 def print_result(line, words):
@@ -47,7 +47,11 @@ prev_generic=[]     # Previous generic result
 declare_res=[]      # Global list of result tensors
 declare_name=[]     # Global of just result tensor names
 declare_index=[]    # Global list of result indices
+
 declare_inter=[]    # Global list of intermediates
+declare_inter_index=[]    # Global list of intermediates
+declare_inter_name=[]    # Global list of intermediates
+
 declare_ten=[]
 declare_ten_index=[]
 declare_ten_name=[]
@@ -137,7 +141,38 @@ for line in f:
         prev_inter.append(words[0].replace('.',''))
         if words[0].replace('.','') not in declare_inter:
             # Add intermedate to global list
-            declare_inter.append(words[0].replace('.',''))
+            index=list(words[0][words[0].find("[")+1:words[0].find("]")])
+    
+            generic=[]
+            for i in range (0,len(index)):
+                for j in range(0,len(particle)):
+                    if index[i] in particle[j]:
+                        generic.append('e')
+            for i in range (0,len(index)):
+                for j in range(0,len(valence)):
+                    if index[i] in valence[j]:
+                        generic.append('a')
+            for i in range (0,len(index)):
+                for j in range(0,len(hole)):
+                    if index[i] in hole[j]:
+                        generic.append('c')
+    
+            declared=False
+            for i in range(0, len(declare_inter)):
+                if words[0].split('[',1)[0].replace('.','') == declare_inter_name[i]:
+                    if generic == declare_inter_index[i]:
+                        # Generic index must be at same position as name it belongs to - dangerous! 
+                        # Load previous tensor
+                        declared=True
+                        break
+                else:
+                    continue
+    
+            if not declared:
+                # Add result to global list
+                declare_inter.append(words[0].replace('.',''))
+                declare_inter_index.append(generic)
+                declare_inter_name.append(words[0].split('[',1)[0].replace('.',''))
 
     else:
         # Convert to generic index
