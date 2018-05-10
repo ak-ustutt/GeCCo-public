@@ -250,7 +250,7 @@
 
       character(len=maxlen_bc_label), intent(in) ::
      &     res, t1, t2           ! Name of tensors involved in the contraction
-      character(len=4), intent(in) ::
+      character(len=8), intent(in) ::
      &     idx1, idx2, idx3      ! Index strings
       integer, intent(in) ::
      &     inter,                ! Intermediate number involved in contraction
@@ -394,16 +394,16 @@
      &     par=(/ 'a','b','c','d' /)
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
-      character(len=4) ::
-     &     c1='    ',    ! Workspace to assign index before array
-     &     c2='    ',
-     &     c3='    ',
-     &     c4='    ',
-     &     a1='    ',
-     &     a2='    ',
-     &     a3='    ',
-     &     a4='    '
-      character(len=4), dimension(8) ::
+      character(len=8) ::
+     &     c1='        ',    ! Workspace to assign index before array
+     &     c2='        ',
+     &     c3='        ',
+     &     c4='        ',
+     &     a1='        ',
+     &     a2='        ',
+     &     a3='        ',
+     &     a4='        '
+      character(len=8), dimension(8) ::
       ! x_array(1:4) = creation operators (par/val/hol/f12)
       ! x_array(5:8) = annhilation operators (par/val/hol/f12)
      &     t1_array,    ! Operator 1 array
@@ -503,12 +503,12 @@
       end do
       t1_array(7)=a3
 
-      c1='    '
-      c2='    '
-      c3='    '
-      a1='    '
-      a2='    '
-      a3='    '
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
 
 
       ! Assign e1 (external indicies of t1)
@@ -539,12 +539,12 @@
       end do
       e1_array(7)=a3
 
-      c1='    '
-      c2='    '
-      c3='    '
-      a1='    '
-      a2='    '
-      a3='    '
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
       
       !write(lulog,*) e1(1,1)
       !write(lulog,*) e1(2,1)
@@ -581,12 +581,12 @@
       end do
       c_array(7)=a3
 
-      c1='    '
-      c2='    '
-      c3='    '
-      a1='    '
-      a2='    '
-      a3='    '
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
 
 !      do i=1, c(2,2)
 !          a1(i:)=par(i+t1(2,1))
@@ -631,12 +631,12 @@
       end do
       e2_array(7)=a3
       
-      c1='    '
-      c2='    '
-      c3='    '
-      a1='    '
-      a2='    '
-      a3='    '
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
 
 
       ! Construct final index strings
@@ -692,7 +692,7 @@
      &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
      &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
       end select
-      
+
       return
       end
 

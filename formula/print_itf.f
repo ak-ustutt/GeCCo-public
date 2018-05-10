@@ -86,8 +86,8 @@
 !        end if
 
       case(command_del_intermediate)
-        write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
-        write(itflog,'(2x,a)') trim(fl_item%label)
+!        write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
+!        write(itflog,'(2x,a)') trim(fl_item%label)
       case(command_add_contribution)
         write(itflog,*) '[CONTR]',fl_item%target
       case(command_add_intm)
@@ -247,13 +247,24 @@
         call clear_index(istr1,istr2, istr3)
 
       case(command_bc_reo)
-        write(itflog,*) '[CONTRACT][REORDER]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
-        call prt_reorder(itflog,fl_item%reo)
+!        write(itflog,*) '[CONTRACT][REORDER]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
+!        call prt_reorder(itflog,fl_item%reo)
+
+        ! Get index for current contraction
+        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+
+        call print_itf_line(fl_item%bcontr%label_res,
+     &                      fl_item%bcontr%label_op1,
+     &                      fl_item%bcontr%label_op2, 
+     &                      fl_item%bcontr%fact,
+     &                      istr1, istr2, istr3, inter, itflog)
+
+        call clear_index(istr1,istr2, istr3)
       case(command_reorder)
-        write(itflog,*) '[REORDER]',fl_item%target
-        call prt_reorder(itflog,fl_item%reo)
+!        write(itflog,*) '[REORDER]',fl_item%target
+!        call prt_reorder(itflog,fl_item%reo)
       case(command_add_reo)
         write(itflog,*) '[REORDER][ADD]',
      &       fl_item%target

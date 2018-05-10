@@ -6,17 +6,21 @@ def print_inter(prev_lines):
             load_ten="load "
             if "STIN" not in inter_words[2]:
                 load_ten=load_ten + inter_words[2].split('*',1)[-1]
+            if "STIN" not in inter_words[2] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1] and "STIN" not in inter_words[3]:
+                load_ten=load_ten + ", "
             if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
                 # Do not load if an intermediate or if the same as previous loaded tensor
-                load_ten=load_ten + ", " + inter_words[3].split('*',1)[-1] 
+                load_ten=load_ten + inter_words[3].split('*',1)[-1] 
             print(load_ten, file=out)
         print(prev_lines[i].strip(), file=out)
         if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
             drop_ten="drop "
             if "STIN" not in inter_words[3]:
                 drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
+            if "STIN" not in inter_words[3] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1] and "STIN" not in inter_words[2]:
+                drop_ten=drop_ten + ", "
             if "STIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
-                drop_ten=drop_ten + ", " + inter_words[2].split('*',1)[-1]
+                drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
             print(drop_ten, file=out)
 
 def print_result(line, words):
@@ -24,12 +28,10 @@ def print_result(line, words):
     if "STIN" not in words[2] or "STIN" not in words[3]:
         load_ten="load "
         if "STIN" not in words[2]:
-            #print("load ", words[2].split('*',1)[-1], file=out)
             load_ten=load_ten + words[2].split('*',1)[-1]
-        if "STIN" not in words[2] and "STIN" not in words[3]:
+        if "STIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1] and "STIN" not in words[3]:
             load_ten=load_ten + ", "
-        if "STIN" not in words[3]:
-            #print("load ", words[3].split('*',1)[-1], file=out)
+        if "STIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
             load_ten=load_ten + words[3].split('*',1)[-1]
 
         print(load_ten, file=out)
@@ -40,12 +42,10 @@ def print_result(line, words):
     if "STIN" not in words[2] or "STIN" not in words[3]:
         drop_ten="drop "
         if "STIN" not in words[3]:
-            #print("drop ", words[3].split('*',1)[-1], file=out)
             drop_ten=drop_ten + words[3].split('*',1)[-1]
-        if "STIN" not in words[3] and "STIN" not in words[2]:
+        if "STIN" not in words[3] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1] and "STIN" not in words[2]:
             drop_ten=drop_ten + ", "
-        if "STIN" not in words[2]:
-            #print("drop ", words[2].split('*',1)[-1], file=out)
+        if "STIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
             drop_ten=drop_ten + words[2].split('*',1)[-1]
 
         print(drop_ten, file=out)
@@ -160,18 +160,30 @@ for line in f:
             index=list(words[0][words[0].find("[")+1:words[0].find("]")])
     
             generic=[]
+#            for i in range (0,len(index)):
+#                for j in range(0,len(particle)):
+#                    if index[i] in particle[j]:
+#                        generic.append('e')
+#            for i in range (0,len(index)):
+#                for j in range(0,len(valence)):
+#                    if index[i] in valence[j]:
+#                        generic.append('a')
+#            for i in range (0,len(index)):
+#                for j in range(0,len(hole)):
+#                    if index[i] in hole[j]:
+#                        generic.append('c')
+
             for i in range (0,len(index)):
                 for j in range(0,len(particle)):
                     if index[i] in particle[j]:
                         generic.append('e')
-            for i in range (0,len(index)):
                 for j in range(0,len(valence)):
                     if index[i] in valence[j]:
                         generic.append('a')
-            for i in range (0,len(index)):
                 for j in range(0,len(hole)):
                     if index[i] in hole[j]:
                         generic.append('c')
+
     
             declared=False
             for i in range(0, len(declare_inter)):
