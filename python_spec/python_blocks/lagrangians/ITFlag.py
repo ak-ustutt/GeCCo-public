@@ -17,6 +17,7 @@ heading('Defining the icMRCC Lagrangian used in ITF translator')
 depend('DEF_T2g')
 depend('DEF_LAM2g')
 depend('DEF_O2g')
+depend('GAM0_CALC')
 
 DEF_SCALAR({
         LABEL:'MRCC_LAG'})
@@ -121,6 +122,10 @@ print("res_type: ", keywords.get('method.ITF.res_type'))
 LAG_E.set_rule()
 LAG_A2.set_rule()
 
+FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_LAG_A2',
+        INTERM:'FORM_GAM0'})
 
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A2',
