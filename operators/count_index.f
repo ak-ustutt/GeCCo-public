@@ -527,15 +527,15 @@
 
       ! Need to to be shifted so to match assignment of t1 above
       do i=1, e1(2,2)
-          a1(i:)=par(i+t1(2,1))
+          a1(i:)=par(i+e1(2,1))
       end do
       e1_array(5)=a1
       do i=1, e1(3,2)
-          a2(i:)=val(i+t1(3,1))
+          a2(i:)=val(i+e1(3,1))
       end do
       e1_array(6)=a2
       do i=1, e1(1,2)
-          a3(i:)=hol(i+t1(1,1))
+          a3(i:)=hol(i+e1(1,1))
       end do
       e1_array(7)=a3
 
