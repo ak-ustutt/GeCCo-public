@@ -776,7 +776,7 @@
      &     r1b(2)
       integer ::
      &     sum_c1,sum_c2,sum_a1,sum_a2,
-     &     i,j,k,l,
+     &     i,j,k,l,m,n,
      &     s1a(2),
      &     s1b(2),
      &     s2a(2),
@@ -784,7 +784,8 @@
      &     shift1a,
      &     shift1b,
      &     shift2a,
-     &     shift2b
+     &     shift2b,
+     &     second_idx
 
       ! Check if not antisym over different verticies
 
@@ -854,180 +855,379 @@
 
       ! Working in index groups, set abab (1212) index to individual tensor
       ! index groups. Ordering of spins doesn't matter, only overall Sz.
-      shift1a=1
-      shift1b=1
+!      shift1a=1
+!      shift1b=1
+!      do i=1, 2
+!         if (r1a(1)==t1a(i)) then
+!            s1a(shift1a)=1
+!            shift1a=shift1a+1
+!         end if
+!         if (r1a(1)==t1b(i)) then
+!            s1b(shift1b)=1
+!            shift1b=shift1b+1
+!         end if
+!    
+!         if (r1a(2)==t1a(i)) then
+!            s1a(shift1a)=2
+!            shift1a=shift1a+1
+!         end if
+!         if (r1a(2)==t1b(i)) then
+!            s1b(shift1b)=2
+!            shift1b=shift1b+1
+!         end if
+!    
+!    
+!         if (r1b(1)==t1a(i)) then
+!            s1a(shift1a)=1
+!            shift1a=shift1a+1
+!         end if
+!         if (r1b(1)==t1b(i)) then
+!            s1b(shift1b)=1
+!            shift1b=shift1b+1
+!         end if
+!    
+!         if (r1b(2)==t1a(i)) then
+!            s1a(shift1a)=2
+!            shift1a=shift1a+1
+!         end if
+!         if (r1b(2)==t1b(i)) then
+!            s1b(shift1b)=2
+!            shift1b=shift1b+1
+!         end if
+!      end do
+!
+!      shift2a=1
+!      shift2b=1
+!      do i=1, 2
+!         if (r1a(1)==t2a(i)) then
+!            s2a(shift2a)=1
+!            shift2a=shift2a+1
+!         end if
+!         if (r1a(1)==t2b(i)) then
+!            s2b(shift2b)=1
+!            shift2b=shift2b+1
+!         end if
+!    
+!         if (r1a(2)==t2a(i)) then
+!            s2a(shift2a)=2
+!            shift2a=shift2a+1
+!         end if
+!         if (r1a(2)==t2b(i)) then
+!            s2b(shift2b)=2
+!            shift2b=shift2b+1
+!         end if
+!    
+!    
+!         if (r1b(1)==t2a(i)) then
+!            s2a(shift2a)=1
+!            shift2a=shift2a+1
+!         end if
+!         if (r1b(1)==t2b(i)) then
+!            s2b(shift2b)=1
+!            shift2b=shift2b+1
+!         end if
+!    
+!         if (r1b(2)==t2a(i)) then
+!            s2a(shift2a)=2
+!            shift2a=shift2a+1
+!         end if
+!         if (r1b(2)==t2b(i)) then
+!            s2b(shift2b)=2
+!            shift2b=shift2b+1
+!         end if
+!      end do
+!
+!      write(lulog,*) "s1a: ", s1a
+!      write(lulog,*) "s1b: ", s1b
+!      write(lulog,*)
+!      write(lulog,*) "s2a: ", s2a
+!      write(lulog,*) "s2b: ", s2b
+!      write(lulog,*)
+!      write(lulog,*)
+
+!      ! Check if need to sum over contraction indicies in the first
+!      ! index group. Assuming rank of both tensors==2
+!      if (shift1a<2) then
+!         select case (3-shift1a)
+!            case(2)
+!               ! Loop over two contraction indicies
+!               ! If both contraction indicies are in this index group,
+!               ! then s1b is fully determined already (need some error
+!               ! checks in case not!)
+!               do i=1, 2
+!                  s1a(shift1a)=i
+!                  ! Apply same spin to t2 index groups
+!                  ! Check which index group has the same summation index
+!                  if (any(t2a==t1a)) then
+!                     s2a(shift2a)=i
+!                  end if
+!                  if (any(t2b==t1a)) then
+!                     s2b(shift2b)=i
+!                  end if
+!                  do j=1, 2
+!                     s1a(shift1a+1)=j
+!                     if (any(t2a==t1a)) then
+!                        s2a(shift2a+1)=j
+!                     end if
+!                     if (any(t2b==t1a)) then
+!                        s2b(shift2b+1)=j
+!                     end if
+!                     ! Only pick out spin cases with correct Sz
+!                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
+!     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
+!                        write(lulog,*) "s1a: ", s1a
+!                        write(lulog,*) "s1b: ", s1b
+!                        write(lulog,*)
+!                        write(lulog,*) "s2a: ", s2a
+!                        write(lulog,*) "s2b: ", s2b
+!                        write(lulog,*)
+!                        write(lulog,*)
+!                     end if
+!                  end do
+!               end do
+!            case(1)
+!               ! First index group contains one contraction index
+!               do i=1, 2
+!                  s1a(shift1a)=i
+!                  if (any(t2a==t1a)) then
+!                     s2a(shift2a)=i
+!                  end if
+!                  if (any(t2b==t1a)) then
+!                     s2b(shift2b)=i
+!                  end if
+!                  do j=1, 2
+!                     ! Summ over remaining index in second index group
+!                     s1b(shift1b)=j
+!                     if (any(t2a==t1b)) then
+!                        s2a(shift2a)=i
+!                     end if
+!                     if (any(t2b==t1b)) then
+!                        s2b(shift2b)=i
+!                     end if
+!                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
+!     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
+!                        write(lulog,*) "s1a: ", s1a
+!                        write(lulog,*) "s1b: ", s1b
+!                        write(lulog,*)
+!                        write(lulog,*) "s2a: ", s2a
+!                        write(lulog,*) "s2b: ", s2b
+!                        write(lulog,*)
+!                        write(lulog,*)
+!                     end if
+!                  end do
+!               end do
+!         end select
+!      end if
+!
+!      ! Check for sum in the second index group
+!      if (shift1b<2) then
+!         select case (3-shift1b)
+!            case(2)
+!               do i=1, 2
+!                  s1b(shift1b)=i
+!                  if (t2a(1)==t1b(1) .or. t2a(2)==t1b(1)) then
+!                     s2a(shift2a)=i
+!                  end if
+!                  if (t2b(1)==t1b(1) .or. t2b(2)==t1b(1)) then
+!                     !write(lulog,*) "t2b ", t2b
+!                     !write(lulog,*) "t1b ", t1b
+!                     !write(lulog,*) "s2b ", s2b
+!                     s2b(shift2b)=i
+!                     !write(lulog,*) "s2b ", s2b
+!                     !write(lulog,*)
+!                  end if
+!                  do j=1, 2
+!                     !write(lulog,*) "hello1 ", s2b
+!                     s1b(shift1b+1)=j
+!                     !write(lulog,*) "hello2 ", s2b
+!                     if (t2a(1)==t1b(2) .or. t2a(2)==t1b(2)) then
+!                        !write(lulog,*) "hello3 ", s2b
+!                        write(lulog,*) "s2a ", s2a, shift2a+1
+!                        s2a(shift2a+1)=j
+!                        !write(lulog,*) "s2a ", s2a
+!                        !write(lulog,*) "hello4 ", s2b
+!                     end if
+!                     if (t2b(1)==t1b(2) .or. t2b(2)==t1b(2)) then
+!                        !write(lulog,*) "hello5 ", s2b
+!                        s2b(shift2b+1)=j
+!                        !write(lulog,*) "hello6 ", s2b
+!                     end if
+!!                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
+!!     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
+!                        write(lulog,*) "s1a: ", s1a
+!                        write(lulog,*) "s1b: ", s1b
+!                        write(lulog,*)
+!                        write(lulog,*) "s2a: ", s2a
+!                        write(lulog,*) "s2b: ", s2b
+!                        write(lulog,*)
+!                        write(lulog,*)
+!!                     end if
+!                  end do
+!               end do
+!         end select
+!      end if
+
       do i=1, 2
          if (r1a(1)==t1a(i)) then
-            s1a(shift1a)=1
-            shift1a=shift1a+1
+            s1a(i)=1
          end if
          if (r1a(1)==t1b(i)) then
-            s1b(shift1b)=1
-            shift1b=shift1b+1
+            s1b(i)=1
          end if
     
          if (r1a(2)==t1a(i)) then
-            s1a(shift1a)=2
-            shift1a=shift1a+1
+            s1a(i)=2
          end if
          if (r1a(2)==t1b(i)) then
-            s1b(shift1b)=2
-            shift1b=shift1b+1
+            s1b(i)=2
          end if
     
     
          if (r1b(1)==t1a(i)) then
-            s1a(shift1a)=1
-            shift1a=shift1a+1
+            s1a(i)=1
          end if
          if (r1b(1)==t1b(i)) then
-            s1b(shift1b)=1
-            shift1b=shift1b+1
+            s1b(i)=1
          end if
     
          if (r1b(2)==t1a(i)) then
-            s1a(shift1a)=2
-            shift1a=shift1a+1
+            s1a(i)=2
          end if
          if (r1b(2)==t1b(i)) then
-            s1b(shift1b)=2
-            shift1b=shift1b+1
+            s1b(i)=2
          end if
       end do
 
-      shift2a=1
-      shift2b=1
       do i=1, 2
          if (r1a(1)==t2a(i)) then
-            s2a(shift2a)=1
-            shift2a=shift2a+1
+            s2a(i)=1
          end if
          if (r1a(1)==t2b(i)) then
-            s2b(shift2b)=1
-            shift2b=shift2b+1
+            s2b(i)=1
          end if
     
          if (r1a(2)==t2a(i)) then
-            s2a(shift2a)=2
-            shift2a=shift2a+1
+            s2a(i)=2
          end if
          if (r1a(2)==t2b(i)) then
-            s2b(shift2b)=2
-            shift2b=shift2b+1
+            s2b(i)=2
          end if
     
     
          if (r1b(1)==t2a(i)) then
-            s2a(shift2a)=1
-            shift2a=shift2a+1
+            s2a(i)=1
          end if
          if (r1b(1)==t2b(i)) then
-            s2b(shift2b)=1
-            shift2b=shift2b+1
+            s2b(i)=1
          end if
     
          if (r1b(2)==t2a(i)) then
-            s2a(shift2a)=2
-            shift2a=shift2a+1
+            s2a(i)=2
          end if
          if (r1b(2)==t2b(i)) then
-            s2b(shift2b)=2
-            shift2b=shift2b+1
+            s2b(i)=2
          end if
       end do
 
-      write(lulog,*) "s1a: ", s1a
       write(lulog,*) "s1b: ", s1b
+      write(lulog,*) "s1a: ", s1a
       write(lulog,*)
-      write(lulog,*) "s2a: ", s2a
       write(lulog,*) "s2b: ", s2b
+      write(lulog,*) "s2a: ", s2a
       write(lulog,*)
       write(lulog,*)
 
-      ! Check if need to sum over contraction indicies in the first
-      ! index group
-      if (shift1a<2) then
-         select case (3-shift1a)
-            case(2)
-               ! Loop over two contraction indicies
-               ! If both contraction indicies are in this index group,
-               ! then s1b is fully determined already (need some error
-               ! checks in case not!)
-               do i=1, 2
-                  s1a(shift1a)=i
-                  ! Apply same spin to t2 index groups
-                  ! Check which index group has the same summation index
-                  if (any(t2a==t1a)) then
-                     s2a(shift2a)=i
+      do i=1, size(s1a)
+         if (s1a(i)==0) then
+            do j=1, 2
+               s1a(i)=j
+               ! Find index in second tensor
+               do m=1, size(t2a)
+                  if (t2a(m)==t1a(i)) then
+                     s2a(m)=j
+                  else if (t2b(m)==t1a(i)) then
+                     s2b(m)=j
                   end if
-                  if (any(t2b==t1a)) then
-                     s2b(shift2b)=i
-                  end if
-                  do j=1, 2
-                     s1a(shift1a+1)=j
-                     if (any(t2a==t1a)) then
-                        s2a(shift2a+1)=j
-                     end if
-                     if (any(t2b==t1a)) then
-                        s2b(shift2b+1)=j
-                     end if
-                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
-     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
-                        write(lulog,*) "s1a: ", s1a
-                        write(lulog,*) "s1b: ", s1b
-                        write(lulog,*)
-                        write(lulog,*) "s2a: ", s2a
-                        write(lulog,*) "s2b: ", s2b
-                        write(lulog,*)
-                        write(lulog,*)
-                     end if
-                  end do
                end do
-         end select
-      end if
+               ! Check if second index is 0
+               do k=i, size(s1a)
+                  if (s1a(k)==0) then
+                     do l=1, 2
+                        s1a(k)=l
+                        ! Find index in second tensor
+                        do n=1, size(t2a)
+                           if (t2a(n)==t1a(k)) then
+                              s2a(n)=l
+                           else if (t2b(n)==t1a(k)) then
+                              s2b(n)=l
+                           end if
+                        end do
+                        write(lulog,*) "s1b: ", s1b
+                        write(lulog,*) "s1a: ", s1a
+                        write(lulog,*)
+                        write(lulog,*) "s2b: ", s2b
+                        write(lulog,*) "s2a: ", s2a
+                        write(lulog,*)
+                        write(lulog,*)
+                     end do
+                  end if
+               end do ! Check if second index is 0
+            end do ! Loop over a/b for first index
+         end if ! Check for first 0 index
+      end do
 
-      if (shift1b<2) then
-         select case (3-shift1b)
-            case(2)
-               ! Loop over two contraction indicies
-               do i=1, 2
-                  s1b(shift1b)=i
-!                  if (t2a(1)==t1b(1) .or. t2a(1)==t1b(2) .or.
-!     &                t2a(2)==t1b(1) .or. t2a(2)==t1b(2)) then
-                  if (any(t2a==t1b)) then
-                     s2a(shift2a)=i
+      second_idx=0
+      ! Check for unassigned indices in second index group
+      do i=1, size(s1b)
+         if (s1b(i)==0) then
+            do j=1, 2
+               write(lulog,*) "i,j ", i,j
+               s1b(i)=j
+               ! Find index in second tensor
+               do m=1, size(t2a)
+                  if (t2a(m)==t1b(i)) then
+                     s2a(m)=j
+                  else if (t2b(m)==t1b(i)) then
+                     s2b(m)=j
                   end if
-!                  if (t2b(1)==t1b(1) .or. t2b(1)==t1b(2) .or.
-!     &                t2b(2)==t1b(1) .or. t2b(2)==t1b(2)) then
-                  if (any(t2b==t1b)) then
-                     s2b(shift2b)=i
-                  end if
-                  do j=1, 2
-                     s1b(shift1b+1)=j
-!                     if (t2a(1)==t1b(1) .or. t2a(1)==t1b(2) .or.
-!     &                   t2a(2)==t1b(1) .or. t2a(2)==t1b(2)) then
-                     if (any(t2a==t1b)) then
-                        s2a(shift2a+1)=j
-                     end if
-!                     if (t2b(1)==t1b(1) .or. t2b(1)==t1b(2) .or.
-!     &                   t2b(2)==t1b(1) .or. t2b(2)==t1b(2)) then
-                     if (any(t2b==t1b)) then
-                        s2b(shift2b+1)=j
-                     end if
-                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
-     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
-                        write(lulog,*) "s1a: ", s1a
-                        write(lulog,*) "s1b: ", s1b
-                        write(lulog,*)
-                        write(lulog,*) "s2a: ", s2a
-                        write(lulog,*) "s2b: ", s2b
-                        write(lulog,*)
-                        write(lulog,*)
-                     end if
-                  end do
                end do
-         end select
-      end if
+               ! Check if second index is 0
+               do k=i, size(s1b)
+                  if (s1b(k)==0 .or. second_idx>0
+     &                .and. k==second_idx) then
+                     ! If this is second time, s1b(k)/=0, so need to
+                     ! remeber where contraction index was
+                     ! Doubt this will work for rank 6 tensors...
+                     if (second_idx==0) then
+                        second_idx=k
+                     end if
+                     do l=1, 2
+                        write(lulog,*) "k,l ", k,l
+                        write(lulog,*) "k,l ", second_idx,l
+                        s1b(second_idx)=l
+                        ! Find index in second tensor
+                        do n=1, size(t2a)
+                           if (t2a(n)==t1b(second_idx)) then
+                              s2a(n)=l
+                           else if (t2b(n)==t1b(second_idx)) then
+                              s2b(n)=l
+                           end if
+                        end do
+                        write(lulog,*) "s1b: ", s1b
+                        write(lulog,*) "s1a: ", s1a
+                        write(lulog,*)
+                        write(lulog,*) "s2b: ", s2b
+                        write(lulog,*) "s2a: ", s2a
+                        write(lulog,*)
+                        write(lulog,*)
+                     end do
+                  end if
+               end do ! Check if second index is 0
+            end do ! Loop over a/b for first index
+         end if ! Check for first 0 index
+      end do
+
+
 
 
 
