@@ -99,15 +99,14 @@
      &       fl_item%target
         call prt_bcontr(itflog,fl_item%bcontr)
       case(command_add_bc)
-!        write(itflog,*) '[CONTRACT][ADD]',
-!     &       fl_item%target
-!        call prt_bcontr(itflog,fl_item%bcontr)
-
+        write(itflog,*) '[CONTRACT][ADD]',
+     &       fl_item%target
+        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
 
-        call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
+!        call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
 !        prev_item2=>fl_item%prev
 !        next_item2=>fl_item%next
 !        if (next_item2%command.eq.2) then !Expand to other cases
@@ -190,7 +189,7 @@
         ! belongs to the next block.
         ! So end current block, start new block and print intermediate
         ! line.
-        next_item=>fl_item%next
+!        next_item=>fl_item%next
 !        if (next_item%command.eq.8) then
 !            ! command_add_bc
 !

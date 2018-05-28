@@ -140,7 +140,7 @@
       end function
 
 *----------------------------------------------------------------------*
-      subroutine spin_sum_index(itf1, itf2, itf3, lulog)
+      subroutine spin_sum_index(istr1, istr2, istr3, lulog)
 *----------------------------------------------------------------------*
 !     Spin sum index and produce resulting binary contractions
 *----------------------------------------------------------------------*
@@ -148,23 +148,72 @@
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
-      include 'def_itf_tensor.h'
 
-      type(itf_tensor), intent(in) ::
-     &    itf1, itf2, itf3          ! Op1, op2, res
+      character(len=8), intent(in) ::
+     &    istr1, istr2, istr3          ! Op1, op2, res
       integer, intent(in) ::
      &    lulog
       integer ::
-     &    i
+     &    r1, r2, r3,               ! rank
+     &    e1, e2, e3, e4,              ! external indicies
+     &    c1, c2,                   ! contraction indicies
+     &    i,j,k,l,m,n,
+     &    extern
 
-      if (itf3%rank.eq.2) then
-          ! Just one case, all alpha == all beta
-          do i=1, len(itf1%idx)
-          end do
+      r1=len(trim(istr1))
+      r2=len(trim(istr2))
+      r3=4
+      extern=2
+
+      if (r3.eq.4) then
+         e1=1
+         do i=0, 1
+            e2=1
+            e1=e1+i
+            do j=0, 1
+               e3=1
+               e2=e2+j
+               do k=0, 1
+                  e4=1
+                  e3=e3+k
+                  do l=0, 1
+                     e4=e4+l
+                     !write(lulog,*) "hello", e1, e2, e3, e4
+                     if (e1==1 .and. e2==1 .and. e3==2 .and. e4==2) then
+                        c1=1
+                        do m=0, 1
+                           c2=1
+                           c1=c1+m
+                           do n=0, 1
+                              c2=c2+n
+                              select case(extern)
+                                 case(0)
+                                    if (mod(e1+e2+e3+e4,2)==0) then
+                                       write(lulog,*) "A"
+                                       write(lulog,*) "B ", e1, e2, e3,
+     &                                                 e4
+                                    end if
+                                 case(2)
+                                    if (mod(e1+e2+c1+c2,2)==0) then
+                                       write(lulog,*) "A ", e1, e2,
+     &                                                c1,
+     &                                                c2
+                                       write(lulog,*) "B ", e3, e4, c1,
+     &                                                c2
+                                    end if
+                               end select
+                           end do
+                        end do
+                     end if
+                  end do
+               end do
+            end do
+         end do
       end if
-      
+
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine construct_tensor(res, op1, op2, istr1, istr2, istr3,
@@ -427,13 +476,14 @@
       idx_type=(/ 0, 0, 0 /)
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
-              idx_type(1)=1
+              ! Use default convention for now
+              idx_type(1)=0
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=1
+              idx_type(2)=0
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=1
+              idx_type(3)=0
           end if
       end do
 
@@ -692,6 +742,294 @@
      &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
      &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
       end select
+
+
+      call permute_tensors(e1,e2,c,istr1,istr2,istr3,lulog)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine permute_tensors(e1,e2,c,istr1,istr2,istr3,lulog)
+*----------------------------------------------------------------------*
+!     
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      character(len=8), intent(in)  ::
+     &     istr1,       ! Operator 1 index
+     &     istr2,       ! Operator 2 index
+     &     istr3        ! Result index
+      integer, intent(in) ::
+     &     e1(4,2),      ! Occupations of external index 1
+     &     e2(4,2),      ! Occupations of external index 2
+     &     c(4,2)
+      integer, intent(in) ::
+     &     lulog
+      character(len=1) ::
+     &     t1a(2),   ! First group of first tensor
+     &     t1b(2),   ! Second group of first tensor
+     &     t2a(2),
+     &     t2b(2),
+     &     r1a(2),
+     &     r1b(2)
+      integer ::
+     &     sum_c1,sum_c2,sum_a1,sum_a2,
+     &     i,j,k,l,
+     &     s1a(2),
+     &     s1b(2),
+     &     s2a(2),
+     &     s2b(2),
+     &     shift1a,
+     &     shift1b,
+     &     shift2a,
+     &     shift2b
+
+      ! Check if not antisym over different verticies
+
+      ! For rank 4. Rank 2 and 0 don't need antisymetrising
+      if (len(trim(istr3))==2 .or. len(trim(istr3))==0 .or.
+     &    len(trim(istr3))==6) then
+         return
+      end if
+
+      ! Don't care about tensor products now
+      if (len(trim(istr3))==4 .and. len(trim(istr1))==2 .and.
+     &    len(trim(istr2))==2) then
+         return
+      end if
+
+      s1a=0
+      s1b=0
+      s2a=0
+      s2b=0
+
+      if (len(trim(istr1))==4) then
+         t1a(1)=istr1(1:1)
+         t1a(2)=istr1(2:2)
+         t1b(1)=istr1(3:3)
+         t1b(2)=istr1(4:4)
+      else if (len(trim(istr1))==2) then
+         t1a(1)=istr1(1:1)
+         t1b(1)=istr1(2:2)
+      end if
+
+      t2a(1)=istr2(1:1)
+      t2a(2)=istr2(2:2)
+      t2b(1)=istr2(3:3)
+      t2b(2)=istr2(4:4)
+
+      r1a(1)=istr3(1:1)
+      r1a(2)=istr3(2:2)
+      r1b(1)=istr3(3:3)
+      r1b(2)=istr3(4:4)
+
+      sum_c1=0
+      sum_c2=0
+      sum_a1=0
+      sum_a2=0
+
+      do i=1, 4
+         sum_c1=sum_c1+e1(i,1)
+         sum_c2=sum_c2+e2(i,1)
+         sum_a1=sum_a1+e1(i,2)
+         sum_a2=sum_a2+e2(i,2)
+      end do
+      
+      if (sum_c1/=2 .and. sum_c2/=2) then
+         if (sum_c1+sum_c2==2) then
+            write(lulog,*) "permute creations! (1-P)"
+         end if
+      end if
+
+      if (sum_a1/=2 .and. sum_a2/=2) then
+         if (sum_a1+sum_a2==2) then
+            write(lulog,*) "permute annhilations! (1-P)"
+         end if
+      end if
+      
+
+      ! Sum over contraction creation
+
+      ! Working in index groups, set abab (1212) index to individual tensor
+      ! index groups. Ordering of spins doesn't matter, only overall Sz.
+      shift1a=1
+      shift1b=1
+      do i=1, 2
+         if (r1a(1)==t1a(i)) then
+            s1a(shift1a)=1
+            shift1a=shift1a+1
+         end if
+         if (r1a(1)==t1b(i)) then
+            s1b(shift1b)=1
+            shift1b=shift1b+1
+         end if
+    
+         if (r1a(2)==t1a(i)) then
+            s1a(shift1a)=2
+            shift1a=shift1a+1
+         end if
+         if (r1a(2)==t1b(i)) then
+            s1b(shift1b)=2
+            shift1b=shift1b+1
+         end if
+    
+    
+         if (r1b(1)==t1a(i)) then
+            s1a(shift1a)=1
+            shift1a=shift1a+1
+         end if
+         if (r1b(1)==t1b(i)) then
+            s1b(shift1b)=1
+            shift1b=shift1b+1
+         end if
+    
+         if (r1b(2)==t1a(i)) then
+            s1a(shift1a)=2
+            shift1a=shift1a+1
+         end if
+         if (r1b(2)==t1b(i)) then
+            s1b(shift1b)=2
+            shift1b=shift1b+1
+         end if
+      end do
+
+      shift2a=1
+      shift2b=1
+      do i=1, 2
+         if (r1a(1)==t2a(i)) then
+            s2a(shift2a)=1
+            shift2a=shift2a+1
+         end if
+         if (r1a(1)==t2b(i)) then
+            s2b(shift2b)=1
+            shift2b=shift2b+1
+         end if
+    
+         if (r1a(2)==t2a(i)) then
+            s2a(shift2a)=2
+            shift2a=shift2a+1
+         end if
+         if (r1a(2)==t2b(i)) then
+            s2b(shift2b)=2
+            shift2b=shift2b+1
+         end if
+    
+    
+         if (r1b(1)==t2a(i)) then
+            s2a(shift2a)=1
+            shift2a=shift2a+1
+         end if
+         if (r1b(1)==t2b(i)) then
+            s2b(shift2b)=1
+            shift2b=shift2b+1
+         end if
+    
+         if (r1b(2)==t2a(i)) then
+            s2a(shift2a)=2
+            shift2a=shift2a+1
+         end if
+         if (r1b(2)==t2b(i)) then
+            s2b(shift2b)=2
+            shift2b=shift2b+1
+         end if
+      end do
+
+      write(lulog,*) "s1a: ", s1a
+      write(lulog,*) "s1b: ", s1b
+      write(lulog,*)
+      write(lulog,*) "s2a: ", s2a
+      write(lulog,*) "s2b: ", s2b
+      write(lulog,*)
+      write(lulog,*)
+
+      ! Check if need to sum over contraction indicies in the first
+      ! index group
+      if (shift1a<2) then
+         select case (3-shift1a)
+            case(2)
+               ! Loop over two contraction indicies
+               ! If both contraction indicies are in this index group,
+               ! then s1b is fully determined already (need some error
+               ! checks in case not!)
+               do i=1, 2
+                  s1a(shift1a)=i
+                  ! Apply same spin to t2 index groups
+                  ! Check which index group has the same summation index
+                  if (any(t2a==t1a)) then
+                     s2a(shift2a)=i
+                  end if
+                  if (any(t2b==t1a)) then
+                     s2b(shift2b)=i
+                  end if
+                  do j=1, 2
+                     s1a(shift1a+1)=j
+                     if (any(t2a==t1a)) then
+                        s2a(shift2a+1)=j
+                     end if
+                     if (any(t2b==t1a)) then
+                        s2b(shift2b+1)=j
+                     end if
+                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
+     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
+                        write(lulog,*) "s1a: ", s1a
+                        write(lulog,*) "s1b: ", s1b
+                        write(lulog,*)
+                        write(lulog,*) "s2a: ", s2a
+                        write(lulog,*) "s2b: ", s2b
+                        write(lulog,*)
+                        write(lulog,*)
+                     end if
+                  end do
+               end do
+         end select
+      end if
+
+      if (shift1b<2) then
+         select case (3-shift1b)
+            case(2)
+               ! Loop over two contraction indicies
+               do i=1, 2
+                  s1b(shift1b)=i
+!                  if (t2a(1)==t1b(1) .or. t2a(1)==t1b(2) .or.
+!     &                t2a(2)==t1b(1) .or. t2a(2)==t1b(2)) then
+                  if (any(t2a==t1b)) then
+                     s2a(shift2a)=i
+                  end if
+!                  if (t2b(1)==t1b(1) .or. t2b(1)==t1b(2) .or.
+!     &                t2b(2)==t1b(1) .or. t2b(2)==t1b(2)) then
+                  if (any(t2b==t1b)) then
+                     s2b(shift2b)=i
+                  end if
+                  do j=1, 2
+                     s1b(shift1b+1)=j
+!                     if (t2a(1)==t1b(1) .or. t2a(1)==t1b(2) .or.
+!     &                   t2a(2)==t1b(1) .or. t2a(2)==t1b(2)) then
+                     if (any(t2a==t1b)) then
+                        s2a(shift2a+1)=j
+                     end if
+!                     if (t2b(1)==t1b(1) .or. t2b(1)==t1b(2) .or.
+!     &                   t2b(2)==t1b(1) .or. t2b(2)==t1b(2)) then
+                     if (any(t2b==t1b)) then
+                        s2b(shift2b+1)=j
+                     end if
+                     if (modulo(sum(s1b)+sum(s1a),2)==0 .and.
+     &                   modulo(sum(s2b)+sum(s2a),2)==0) then
+                        write(lulog,*) "s1a: ", s1a
+                        write(lulog,*) "s1b: ", s1b
+                        write(lulog,*)
+                        write(lulog,*) "s2a: ", s2a
+                        write(lulog,*) "s2b: ", s2b
+                        write(lulog,*)
+                        write(lulog,*)
+                     end if
+                  end do
+               end do
+         end select
+      end if
+
+
 
       return
       end
