@@ -775,13 +775,13 @@
      &     r1a(2),
      &     r1b(2)
       integer ::
-     &     i,j,k,l,m,n,
+     &     i,j,k,l,m,n,o,p,q,
      &     sum_c1,sum_c2,sum_a1,sum_a2,
      &     s1a(2),
      &     s1b(2),
      &     s2a(2),
      &     s2b(2),
-     &     second_idx
+     &     second_idx,third_idx
 
       ! Check if not antisym over different verticies
 
@@ -948,6 +948,7 @@
          end if
       end do
 
+      ! Index assigned from result
       write(lulog,*) "s1b: ", s1b
       write(lulog,*) "s1a: ", s1a
       write(lulog,*)
@@ -957,7 +958,8 @@
       write(lulog,*)
 
       second_idx=0
-      ! Check for unassigned indices in second index group
+      third_idx=0
+      ! Check for unassigned indices in first index group
       do i=1, size(s1a)
          if (s1a(i)==0) then
             do j=1, 2
@@ -990,13 +992,44 @@
                               s2b(n)=l
                            end if
                         end do
-                        write(lulog,*) "s1b: ", s1b
-                        write(lulog,*) "s1a: ", s1a
-                        write(lulog,*)
-                        write(lulog,*) "s2b: ", s2b
-                        write(lulog,*) "s2a: ", s2a
-                        write(lulog,*)
-                        write(lulog,*)
+                        ! Check if contraction indicies in second index
+                        ! group
+                        if (any(s1b==0)) then
+                           do o=1, size(s1b)
+                              if (s1b(k)==0 .or. third_idx>0
+     &                            .and. o==third_idx) then
+                                 if (third_idx==0) then
+                                    third_idx=o
+                                 end if
+                                 do p=1, 2
+                                    s1b(third_idx)=p
+                                    do q=1, size(t2a)
+                                       if (t2a(q)==t1b(third_idx)) then
+                                          s2a(q)=l
+                                       else if (t2b(q)==t1a(third_idx))
+     &                                 then
+                                          s2b(q)=l
+                                       end if
+                                    end do
+                                    write(lulog,*) "s1b: ", s1b
+                                    write(lulog,*) "s1a: ", s1a
+                                    write(lulog,*)
+                                    write(lulog,*) "s2b: ", s2b
+                                    write(lulog,*) "s2a: ", s2a
+                                    write(lulog,*)
+                                    write(lulog,*)
+                                 end do
+                              end if
+                           end do
+                        else   
+                           write(lulog,*) "s1b: ", s1b
+                           write(lulog,*) "s1a: ", s1a
+                           write(lulog,*)
+                           write(lulog,*) "s2b: ", s2b
+                           write(lulog,*) "s2a: ", s2a
+                           write(lulog,*)
+                           write(lulog,*)
+                        end if
                      end do
                   else if (any(s1a/=0) .and. k==2) then
                      ! No more contraction indicies, print out result
@@ -1017,6 +1050,8 @@
 
       second_idx=0
       ! Check for unassigned indices in second index group
+      ! This assumes both contraction indices are in the second index
+      ! group, above loops check the remaing two cases
       do i=1, size(s1b)
          if (s1b(i)==0) then
             do j=1, 2
@@ -1073,10 +1108,6 @@
             end do ! Loop over a/b for first index
          end if ! Check for first 0 index
       end do
-
-
-
-
 
       return
       end
