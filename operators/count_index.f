@@ -775,16 +775,12 @@
      &     r1a(2),
      &     r1b(2)
       integer ::
-     &     sum_c1,sum_c2,sum_a1,sum_a2,
      &     i,j,k,l,m,n,
+     &     sum_c1,sum_c2,sum_a1,sum_a2,
      &     s1a(2),
      &     s1b(2),
      &     s2a(2),
      &     s2b(2),
-     &     shift1a,
-     &     shift1b,
-     &     shift2a,
-     &     shift2b,
      &     second_idx
 
       ! Check if not antisym over different verticies
@@ -805,26 +801,61 @@
       s1b=0
       s2a=0
       s2b=0
+      t1a=''
+      t1b=''
+      t2a=''
+      t2b=''
+      r1a=''
+      r1b=''
 
-      if (len(trim(istr1))==4) then
+      if (len(trim(istr1))==4 .and. len(trim(istr2))==4) then
          t1a(1)=istr1(1:1)
          t1a(2)=istr1(2:2)
          t1b(1)=istr1(3:3)
          t1b(2)=istr1(4:4)
-      else if (len(trim(istr1))==2) then
+
+         t2a(1)=istr2(1:1)
+         t2a(2)=istr2(2:2)
+         t2b(1)=istr2(3:3)
+         t2b(2)=istr2(4:4)
+      else if (len(trim(istr1))==4 .and. len(trim(istr2))==2) then
          t1a(1)=istr1(1:1)
-         t1b(1)=istr1(2:2)
+         t1a(2)=istr1(2:2)
+         t1b(1)=istr1(3:3)
+         t1b(2)=istr1(4:4)
+
+         t2a(1)=istr2(1:1)
+         t2b(1)=istr2(2:2)
+      else if (len(trim(istr1))==2 .and. len(trim(istr2))==4) then
+         ! Swap t1 and t2 if t1=rank 2
+         t2a(1)=istr1(1:1)
+         t2b(1)=istr1(2:2)
+
+         t1a(1)=istr2(1:1)
+         t1a(2)=istr2(2:2)
+         t1b(1)=istr2(3:3)
+         t1b(2)=istr2(4:4)
+      else if (len(trim(istr1))==4 .and. len(trim(istr2))==0) then
+         t1a(1)=istr1(1:1)
+         t1a(2)=istr1(2:2)
+         t1b(1)=istr1(3:3)
+         t1b(2)=istr1(4:4)
+      else if (len(trim(istr1))==0 .and. len(trim(istr2))==4) then
+         t2a(1)=istr2(1:1)
+         t2a(2)=istr2(2:2)
+         t2b(1)=istr2(3:3)
+         t2b(2)=istr2(4:4)
       end if
 
-      t2a(1)=istr2(1:1)
-      t2a(2)=istr2(2:2)
-      t2b(1)=istr2(3:3)
-      t2b(2)=istr2(4:4)
-
-      r1a(1)=istr3(1:1)
-      r1a(2)=istr3(2:2)
-      r1b(1)=istr3(3:3)
-      r1b(2)=istr3(4:4)
+      if (len(trim(istr3))==4) then
+         r1a(1)=istr3(1:1)
+         r1a(2)=istr3(2:2)
+         r1b(1)=istr3(3:3)
+         r1b(2)=istr3(4:4)
+      else if (len(trim(istr3))==2) then
+         r1a(1)=istr3(1:1)
+         r1b(2)=istr3(2:2)
+      end if
 
       sum_c1=0
       sum_c2=0
@@ -967,6 +998,17 @@
                         write(lulog,*)
                         write(lulog,*)
                      end do
+                  else if (any(s1a/=0) .and. k==2) then
+                     ! No more contraction indicies, print out result
+                     ! Only prints if k==2, ie. at end of k loop, won't
+                     ! work for rank 6 tensors
+                     write(lulog,*) "s1b: ", s1b
+                     write(lulog,*) "s1a: ", s1a
+                     write(lulog,*)
+                     write(lulog,*) "s2b: ", s2b
+                     write(lulog,*) "s2a: ", s2a
+                     write(lulog,*)
+                     write(lulog,*)
                   end if
                end do ! Check if second index is 0
             end do ! Loop over a/b for first index
@@ -1015,6 +1057,17 @@
                         write(lulog,*)
                         write(lulog,*)
                      end do
+                  else if (any(s1b/=0) .and. k==2) then
+                     ! No more contraction indicies, print out result
+                     ! Only prints if k==2, ie. at end of k loop, won't
+                     ! work for rank 6 tensors
+                     write(lulog,*) "s1b: ", s1b
+                     write(lulog,*) "s1a: ", s1a
+                     write(lulog,*)
+                     write(lulog,*) "s2b: ", s2b
+                     write(lulog,*) "s2a: ", s2a
+                     write(lulog,*)
+                     write(lulog,*)
                   end if
                end do ! Check if second index is 0
             end do ! Loop over a/b for first index
