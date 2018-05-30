@@ -786,7 +786,7 @@
       ! Check if not antisym over different verticies
 
       ! For rank 4. Rank 2 and 0 don't need antisymetrising
-      if (len(trim(istr3))==2 .or. len(trim(istr3))==0 .or.
+      if (len(trim(istr3))==0 .or.
      &    len(trim(istr3))==6) then
          return
       end if
@@ -819,6 +819,7 @@
          t2b(1)=istr2(3:3)
          t2b(2)=istr2(4:4)
       else if (len(trim(istr1))==4 .and. len(trim(istr2))==2) then
+         ! Takes care of rank 4 and rank 2 result
          t1a(1)=istr1(1:1)
          t1a(2)=istr1(2:2)
          t1b(1)=istr1(3:3)
@@ -827,7 +828,9 @@
          t2a(1)=istr2(1:1)
          t2b(1)=istr2(2:2)
       else if (len(trim(istr1))==2 .and. len(trim(istr2))==4) then
-         ! Swap t1 and t2 if t1=rank 2
+         ! Swap t1 and t2 if t1=rank 2. Only going to sum over
+         ! contraction indices of t1.
+         ! Takes care of rank 4 and rank 2 result
          t2a(1)=istr1(1:1)
          t2b(1)=istr1(2:2)
 
@@ -841,10 +844,23 @@
          t1b(1)=istr1(3:3)
          t1b(2)=istr1(4:4)
       else if (len(trim(istr1))==0 .and. len(trim(istr2))==4) then
-         t2a(1)=istr2(1:1)
-         t2a(2)=istr2(2:2)
-         t2b(1)=istr2(3:3)
-         t2b(2)=istr2(4:4)
+         ! Swap t1 and t2 if t1=rank 0
+         t1a(1)=istr2(1:1)
+         t1a(2)=istr2(2:2)
+         t1b(1)=istr2(3:3)
+         t1b(2)=istr2(4:4)
+      else if (len(trim(istr1))==2 .and. len(trim(istr2))==2 
+     &         .and. len(trim(istr3))==2) then
+         ! Don't need to spin sum
+         return
+      else if (len(trim(istr1))==0 .and. len(trim(istr2))==2
+     &         .and. len(trim(istr3))==2) then
+         ! Don't need to spin sum
+         return
+      else if (len(trim(istr1))==2 .and. len(trim(istr2))==0 
+     &         .and. len(trim(istr3))==2) then
+         ! Don't need to spin sum
+         return
       end if
 
       if (len(trim(istr3))==4) then
@@ -854,7 +870,7 @@
          r1b(2)=istr3(4:4)
       else if (len(trim(istr3))==2) then
          r1a(1)=istr3(1:1)
-         r1b(2)=istr3(2:2)
+         r1b(1)=istr3(2:2)
       end if
 
       sum_c1=0
@@ -871,13 +887,13 @@
       
       if (sum_c1/=2 .and. sum_c2/=2) then
          if (sum_c1+sum_c2==2) then
-            write(lulog,*) "permute creations! (1-P)"
+            write(lulog,*) "permute creations! 0.5*(1-P)"
          end if
       end if
 
       if (sum_a1/=2 .and. sum_a2/=2) then
          if (sum_a1+sum_a2==2) then
-            write(lulog,*) "permute annhilations! (1-P)"
+            write(lulog,*) "permute annhilations! 0.5*(1-P)"
          end if
       end if
       
@@ -887,63 +903,63 @@
       ! Working in index groups, set abab (1212) index to individual tensor
       ! index groups. Ordering of spins doesn't matter, only overall Sz.
       do i=1, 2
-         if (r1a(1)==t1a(i)) then
+         if (r1a(1)==t1a(i) .and. r1a(1)/='') then
             s1a(i)=1
          end if
-         if (r1a(1)==t1b(i)) then
+         if (r1a(1)==t1b(i) .and. r1a(1)/='') then
             s1b(i)=1
          end if
     
-         if (r1a(2)==t1a(i)) then
+         if (r1a(2)==t1a(i) .and. r1a(2)/='') then
             s1a(i)=2
          end if
-         if (r1a(2)==t1b(i)) then
+         if (r1a(2)==t1b(i) .and. r1a(2)/='') then
             s1b(i)=2
          end if
     
     
-         if (r1b(1)==t1a(i)) then
+         if (r1b(1)==t1a(i) .and. r1b(1)/='') then
             s1a(i)=1
          end if
-         if (r1b(1)==t1b(i)) then
+         if (r1b(1)==t1b(i) .and. r1b(1)/='') then
             s1b(i)=1
          end if
     
-         if (r1b(2)==t1a(i)) then
+         if (r1b(2)==t1a(i) .and. r1b(2)/='') then
             s1a(i)=2
          end if
-         if (r1b(2)==t1b(i)) then
+         if (r1b(2)==t1b(i) .and. r1b(2)/='') then
             s1b(i)=2
          end if
       end do
 
       do i=1, 2
-         if (r1a(1)==t2a(i)) then
+         if (r1a(1)==t2a(i) .and. r1a(1)/='') then
             s2a(i)=1
          end if
-         if (r1a(1)==t2b(i)) then
+         if (r1a(1)==t2b(i) .and. r1a(1)/='') then
             s2b(i)=1
          end if
     
-         if (r1a(2)==t2a(i)) then
+         if (r1a(2)==t2a(i) .and. r1a(2)/='') then
             s2a(i)=2
          end if
-         if (r1a(2)==t2b(i)) then
+         if (r1a(2)==t2b(i) .and. r1a(2)/='') then
             s2b(i)=2
          end if
     
     
-         if (r1b(1)==t2a(i)) then
+         if (r1b(1)==t2a(i) .and. r1b(1)/='') then
             s2a(i)=1
          end if
-         if (r1b(1)==t2b(i)) then
+         if (r1b(1)==t2b(i) .and. r1b(1)/='') then
             s2b(i)=1
          end if
     
-         if (r1b(2)==t2a(i)) then
+         if (r1b(2)==t2a(i) .and. r1b(2)/='') then
             s2a(i)=2
          end if
-         if (r1b(2)==t2b(i)) then
+         if (r1b(2)==t2b(i) .and. r1b(2)/='') then
             s2b(i)=2
          end if
       end do
@@ -957,6 +973,7 @@
       write(lulog,*)
       write(lulog,*)
 
+      if (sum(s1a)<=sum(s1b)) then
       second_idx=0
       third_idx=0
       ! Check for unassigned indices in first index group
@@ -994,9 +1011,9 @@
                         end do
                         ! Check if contraction indicies in second index
                         ! group
-                        if (any(s1b==0)) then
+                        if (any(s1b==0) .or. third_idx>0) then
                            do o=1, size(s1b)
-                              if (s1b(k)==0 .or. third_idx>0
+                              if (s1b(o)==0 .or. third_idx>0
      &                            .and. o==third_idx) then
                                  if (third_idx==0) then
                                     third_idx=o
@@ -1005,10 +1022,10 @@
                                     s1b(third_idx)=p
                                     do q=1, size(t2a)
                                        if (t2a(q)==t1b(third_idx)) then
-                                          s2a(q)=l
-                                       else if (t2b(q)==t1a(third_idx))
+                                          s2a(q)=p
+                                       else if (t2b(q)==t1b(third_idx))
      &                                 then
-                                          s2b(q)=l
+                                          s2b(q)=p
                                        end if
                                     end do
                                     write(lulog,*) "s1b: ", s1b
@@ -1048,7 +1065,9 @@
          end if ! Check for first 0 index
       end do
 
+      else
       second_idx=0
+      third_idx=0
       ! Check for unassigned indices in second index group
       ! This assumes both contraction indices are in the second index
       ! group, above loops check the remaing two cases
@@ -1084,13 +1103,51 @@
                               s2b(n)=l
                            end if
                         end do
-                        write(lulog,*) "s1b: ", s1b
-                        write(lulog,*) "s1a: ", s1a
-                        write(lulog,*)
-                        write(lulog,*) "s2b: ", s2b
-                        write(lulog,*) "s2a: ", s2a
-                        write(lulog,*)
-                        write(lulog,*)
+                        ! Check if contraction indicies in second index
+                        ! group
+                        if (any(s1a==0) .or. third_idx>0) then
+                           do o=1, size(s1a)
+                              if (s1a(o)==0 .or. third_idx>0
+     &                            .and. o==third_idx) then
+                                 if (third_idx==0) then
+                                    third_idx=o
+                                 end if
+                                 do p=1, 2
+                                    s1a(third_idx)=p
+                                    do q=1, size(t2a)
+                                       if (t2a(q)==t1a(third_idx)) then
+                                          s2a(q)=p
+                                       else if (t2b(q)==t1a(third_idx))
+     &                                 then
+                                          s2b(q)=p
+                                       end if
+                                    end do
+                                    write(lulog,*) "s1b: ", s1b
+                                    write(lulog,*) "s1a: ", s1a
+                                    write(lulog,*)
+                                    write(lulog,*) "s2b: ", s2b
+                                    write(lulog,*) "s2a: ", s2a
+                                    write(lulog,*)
+                                    write(lulog,*)
+                                 end do
+                              end if
+                           end do
+                        else   
+                           write(lulog,*) "s1b: ", s1b
+                           write(lulog,*) "s1a: ", s1a
+                           write(lulog,*)
+                           write(lulog,*) "s2b: ", s2b
+                           write(lulog,*) "s2a: ", s2a
+                           write(lulog,*)
+                           write(lulog,*)
+                        end if
+                        !write(lulog,*) "s1b: ", s1b
+                        !write(lulog,*) "s1a: ", s1a
+                        !write(lulog,*)
+                        !write(lulog,*) "s2b: ", s2b
+                        !write(lulog,*) "s2a: ", s2a
+                        !write(lulog,*)
+                        !write(lulog,*)
                      end do
                   else if (any(s1b/=0) .and. k==2) then
                      ! No more contraction indicies, print out result
@@ -1109,8 +1166,11 @@
          end if ! Check for first 0 index
       end do
 
+      end if
+
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine itf_tensor_init(contr_info,itf1,itf2,itf3)
