@@ -781,7 +781,8 @@
      &     s1b(2),
      &     s2a(2),
      &     s2b(2),
-     &     second_idx,third_idx
+     &     second_idx,third_idx,
+     &     zero_a,zero_b
 
       ! Check if not antisym over different verticies
 
@@ -973,7 +974,20 @@
       write(lulog,*)
       write(lulog,*)
 
-      if (sum(s1a)<=sum(s1b)) then
+      ! The sum will start with the index group with the most unassigned
+      ! contraction indcies (0s)
+      zero_a=0
+      zero_b=0
+      do i=1, size(s1a)
+         if (s1a(i)==0) then
+            zero_a=zero_a+1
+         end if
+         if (s1b(i)==0) then
+            zero_b=zero_b+1
+         end if
+      end do
+
+      if (zero_a>=zero_b) then
       second_idx=0
       third_idx=0
       ! Check for unassigned indices in first index group
@@ -1046,6 +1060,34 @@
                            write(lulog,*) "s2a: ", s2a
                            write(lulog,*)
                            write(lulog,*)
+                        end if
+                     end do
+                  else if (zero_a==1 .and. zero_b==1) then
+                     ! Case where one contraction over s1a and s1b
+                     do o=1, size(s1b)
+                        if (s1b(o)==0 .or. third_idx>0
+     &                      .and. o==third_idx) then
+                           if (third_idx==0) then
+                              third_idx=o
+                           end if
+                           do p=1, 2
+                              s1b(third_idx)=p
+                              do q=1, size(t2a)
+                                 if (t2a(q)==t1b(third_idx)) then
+                                    s2a(q)=p
+                                 else if (t2b(q)==t1b(third_idx))
+     &                           then
+                                    s2b(q)=p
+                                 end if
+                              end do
+                              write(lulog,*) "s1b: ", s1b
+                              write(lulog,*) "s1a: ", s1a
+                              write(lulog,*)
+                              write(lulog,*) "s2b: ", s2b
+                              write(lulog,*) "s2a: ", s2a
+                              write(lulog,*)
+                              write(lulog,*)
+                           end do
                         end if
                      end do
                   else if (any(s1a/=0) .and. k==2) then
@@ -1132,7 +1174,7 @@
                                  end do
                               end if
                            end do
-                        else   
+                        else
                            write(lulog,*) "s1b: ", s1b
                            write(lulog,*) "s1a: ", s1a
                            write(lulog,*)
@@ -1141,13 +1183,38 @@
                            write(lulog,*)
                            write(lulog,*)
                         end if
-                        !write(lulog,*) "s1b: ", s1b
-                        !write(lulog,*) "s1a: ", s1a
-                        !write(lulog,*)
-                        !write(lulog,*) "s2b: ", s2b
-                        !write(lulog,*) "s2a: ", s2a
-                        !write(lulog,*)
-                        !write(lulog,*)
+                     end do
+!                  else if (any(s1a==0) .and. .not. (any(s1b==0))
+!     &                     .or. third_idx>0 .and.
+!     &                     .not. (any(s1b==0))) then
+                   else if (zero_a==1 .and. zero_b==1) then
+                     ! Case where one contraction over s1a and s1b
+                     do o=1, size(s1a)
+                        if (s1a(o)==0 .or. third_idx>0
+     &                      .and. o==third_idx) then
+                           if (third_idx==0) then
+                              third_idx=o
+                           end if
+                           do p=1, 2
+                              s1a(third_idx)=p
+                              do q=1, size(t2a)
+                                 if (t2a(q)==t1a(third_idx)) then
+                                    s2a(q)=p
+                                 else if (t2b(q)==t1a(third_idx))
+     &                           then
+                                    s2b(q)=p
+                                 end if
+                              end do
+                              write(lulog,*) "hello"
+                              write(lulog,*) "s1b: ", s1b
+                              write(lulog,*) "s1a: ", s1a
+                              write(lulog,*)
+                              write(lulog,*) "s2b: ", s2b
+                              write(lulog,*) "s2a: ", s2a
+                              write(lulog,*)
+                              write(lulog,*)
+                           end do
+                        end if
                      end do
                   else if (any(s1b/=0) .and. k==2) then
                      ! No more contraction indicies, print out result
