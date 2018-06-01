@@ -775,20 +775,19 @@
      &     r1a(2),
      &     r1b(2)
       integer ::
-     &     i,j,k,l,m,n,o,p,q,
+     &     i,j,k,l,m,n,o,p,q,r,s,
      &     sum_c1,sum_c2,sum_a1,sum_a2,
      &     s1a(2),
      &     s1b(2),
      &     s2a(2),
      &     s2b(2),
-     &     second_idx,third_idx,
+     &     second_idx,third_idx,fourth_idx,
      &     zero_a,zero_b
 
       ! Check if not antisym over different verticies
 
       ! For rank 4. Rank 2 and 0 don't need antisymetrising
-      if (len(trim(istr3))==0 .or.
-     &    len(trim(istr3))==6) then
+      if (len(trim(istr3))==6) then
          return
       end if
 
@@ -860,6 +859,14 @@
          return
       else if (len(trim(istr1))==2 .and. len(trim(istr2))==0 
      &         .and. len(trim(istr3))==2) then
+         ! Don't need to spin sum
+         return
+      else if (len(trim(istr1))==2 .and. len(trim(istr2))==2
+     &         .and. len(trim(istr3))==0) then
+         ! Don't need to spin sum
+         return
+      else if (len(trim(istr1))==0 .and. len(trim(istr2))==0
+     &         .and. len(trim(istr3))==0) then
          ! Don't need to spin sum
          return
       end if
@@ -990,6 +997,7 @@
       if (zero_a>=zero_b) then
       second_idx=0
       third_idx=0
+      fourth_idx=0
       ! Check for unassigned indices in first index group
       do i=1, size(s1a)
          if (s1a(i)==0) then
@@ -1042,6 +1050,23 @@
                                           s2b(q)=p
                                        end if
                                     end do
+                        if (any(s1b==0) .or. fourth_idx>0) then
+                           do q=1, size(s1b)
+                              if (s1b(q)==0 .or. fourth_idx>0
+     &                            .and. q==fourth_idx) then
+                                 if (fourth_idx==0) then
+                                    fourth_idx=q
+                                 end if
+                                 do r=1, 2
+                                    s1b(fourth_idx)=r
+                                    do s=1, size(t2a)
+                                       if (t2a(s)==t1b(fourth_idx)) then
+                                          s2a(s)=r
+                                       else if (t2b(s)==t1b(fourth_idx))
+     &                                 then
+                                          s2b(s)=r
+                                       end if
+                                    end do
                                     write(lulog,*) "s1b: ", s1b
                                     write(lulog,*) "s1a: ", s1a
                                     write(lulog,*)
@@ -1052,7 +1077,21 @@
                                  end do
                               end if
                            end do
-                        else   
+                        else if (.not. any(s1b==0) .and. fourth_idx==0)
+     &                           then
+                           write(lulog,*) "s1b: ", s1b
+                           write(lulog,*) "s1a: ", s1a
+                           write(lulog,*)
+                           write(lulog,*) "s2b: ", s2b
+                           write(lulog,*) "s2a: ", s2a
+                           write(lulog,*)
+                           write(lulog,*)
+                        end if
+                                 end do
+                              end if
+                           end do
+                        else if (.not. any(s1b==0) .and. third_idx==0)
+     &                           then 
                            write(lulog,*) "s1b: ", s1b
                            write(lulog,*) "s1a: ", s1a
                            write(lulog,*)
@@ -1090,10 +1129,11 @@
                            end do
                         end if
                      end do
-                  else if (any(s1a/=0) .and. k==2) then
+                  else if (.not. any(s1a==0) .and. second_idx==0) then
                      ! No more contraction indicies, print out result
                      ! Only prints if k==2, ie. at end of k loop, won't
                      ! work for rank 6 tensors
+                     write(lulog,*) "hello"
                      write(lulog,*) "s1b: ", s1b
                      write(lulog,*) "s1a: ", s1a
                      write(lulog,*)
@@ -1237,7 +1277,6 @@
 
       return
       end
-
 
 *----------------------------------------------------------------------*
       subroutine itf_tensor_init(contr_info,itf1,itf2,itf3)
