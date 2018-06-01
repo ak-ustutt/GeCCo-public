@@ -783,6 +783,8 @@
      &     s2b(2),
      &     second_idx,third_idx,fourth_idx,
      &     zero_a,zero_b
+      logical ::
+     &     logi ! Debug delete
 
       ! Check if not antisym over different verticies
 
@@ -995,6 +997,323 @@
       end do
 
       if (zero_a>=zero_b) then
+         logi=.true.
+         call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
+     &                 zero_b,logi,lulog)
+!      second_idx=0
+!      third_idx=0
+!      fourth_idx=0
+!      ! Check for unassigned indices in first index group
+!      do i=1, size(s1a)
+!         if (s1a(i)==0) then
+!            do j=1, 2
+!               s1a(i)=j
+!               ! Find index in second tensor
+!               do m=1, size(t2a)
+!                  if (t2a(m)==t1a(i)) then
+!                     s2a(m)=j
+!                  else if (t2b(m)==t1a(i)) then
+!                     s2b(m)=j
+!                  end if
+!               end do
+!               ! Check if second index is 0
+!               do k=i, size(s1a)
+!                  if (s1a(k)==0 .or. second_idx>0
+!     &                .and. k==second_idx) then
+!                     ! If this is second time, s1a(k)/=0, so need to
+!                     ! remeber where contraction index was
+!                     ! Doubt this will work for rank 6 tensors...
+!                     if (second_idx==0) then
+!                        second_idx=k
+!                     end if
+!                     do l=1, 2
+!                        s1a(second_idx)=l
+!                        ! Find index in second tensor
+!                        do n=1, size(t2a)
+!                           if (t2a(n)==t1a(second_idx)) then
+!                              s2a(n)=l
+!                           else if (t2b(n)==t1a(second_idx)) then
+!                              s2b(n)=l
+!                           end if
+!                        end do
+!                        ! Check if contraction indicies in second index
+!                        ! group
+!                        if (any(s1b==0) .or. third_idx>0) then
+!                           do o=1, size(s1b)
+!                              if (s1b(o)==0 .or. third_idx>0
+!     &                            .and. o==third_idx) then
+!                                 if (third_idx==0) then
+!                                    third_idx=o
+!                                 end if
+!                                 do p=1, 2
+!                                    s1b(third_idx)=p
+!                                    do q=1, size(t2a)
+!                                       if (t2a(q)==t1b(third_idx)) then
+!                                          s2a(q)=p
+!                                       else if (t2b(q)==t1b(third_idx))
+!     &                                 then
+!                                          s2b(q)=p
+!                                       end if
+!                                    end do
+!                        if (any(s1b==0) .or. fourth_idx>0) then
+!                           do q=1, size(s1b)
+!                              if (s1b(q)==0 .or. fourth_idx>0
+!     &                            .and. q==fourth_idx) then
+!                                 if (fourth_idx==0) then
+!                                    fourth_idx=q
+!                                 end if
+!                                 do r=1, 2
+!                                    s1b(fourth_idx)=r
+!                                    do s=1, size(t2a)
+!                                       if (t2a(s)==t1b(fourth_idx)) then
+!                                          s2a(s)=r
+!                                       else if (t2b(s)==t1b(fourth_idx))
+!     &                                 then
+!                                          s2b(s)=r
+!                                       end if
+!                                    end do
+!                                    write(lulog,*) "s1b: ", s1b
+!                                    write(lulog,*) "s1a: ", s1a
+!                                    write(lulog,*)
+!                                    write(lulog,*) "s2b: ", s2b
+!                                    write(lulog,*) "s2a: ", s2a
+!                                    write(lulog,*)
+!                                    write(lulog,*)
+!                                 end do
+!                              end if
+!                           end do
+!                        else if (.not. any(s1b==0) .and. fourth_idx==0)
+!     &                           then
+!                           write(lulog,*) "s1b: ", s1b
+!                           write(lulog,*) "s1a: ", s1a
+!                           write(lulog,*)
+!                           write(lulog,*) "s2b: ", s2b
+!                           write(lulog,*) "s2a: ", s2a
+!                           write(lulog,*)
+!                           write(lulog,*)
+!                        end if
+!                                 end do
+!                              end if
+!                           end do
+!                        else if (.not. any(s1b==0) .and. third_idx==0)
+!     &                           then 
+!                           write(lulog,*) "s1b: ", s1b
+!                           write(lulog,*) "s1a: ", s1a
+!                           write(lulog,*)
+!                           write(lulog,*) "s2b: ", s2b
+!                           write(lulog,*) "s2a: ", s2a
+!                           write(lulog,*)
+!                           write(lulog,*)
+!                        end if
+!                     end do
+!                  else if (zero_a==1 .and. zero_b==1) then
+!                     ! Case where one contraction over s1a and s1b
+!                     do o=1, size(s1b)
+!                        if (s1b(o)==0 .or. third_idx>0
+!     &                      .and. o==third_idx) then
+!                           if (third_idx==0) then
+!                              third_idx=o
+!                           end if
+!                           do p=1, 2
+!                              s1b(third_idx)=p
+!                              do q=1, size(t2a)
+!                                 if (t2a(q)==t1b(third_idx)) then
+!                                    s2a(q)=p
+!                                 else if (t2b(q)==t1b(third_idx))
+!     &                           then
+!                                    s2b(q)=p
+!                                 end if
+!                              end do
+!                              write(lulog,*) "s1b: ", s1b
+!                              write(lulog,*) "s1a: ", s1a
+!                              write(lulog,*)
+!                              write(lulog,*) "s2b: ", s2b
+!                              write(lulog,*) "s2a: ", s2a
+!                              write(lulog,*)
+!                              write(lulog,*)
+!                           end do
+!                        end if
+!                     end do
+!                  else if (.not. any(s1a==0) .and. second_idx==0) then
+!                     ! No more contraction indicies, print out result
+!                     ! Only prints if k==2, ie. at end of k loop, won't
+!                     ! work for rank 6 tensors
+!                     write(lulog,*) "hello"
+!                     write(lulog,*) "s1b: ", s1b
+!                     write(lulog,*) "s1a: ", s1a
+!                     write(lulog,*)
+!                     write(lulog,*) "s2b: ", s2b
+!                     write(lulog,*) "s2a: ", s2a
+!                     write(lulog,*)
+!                     write(lulog,*)
+!                  end if
+!               end do ! Check if second index is 0
+!            end do ! Loop over a/b for first index
+!         end if ! Check for first 0 index
+!      end do
+
+      else
+         logi=.false.
+         call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
+     &                 zero_a,logi,lulog)
+!      second_idx=0
+!      third_idx=0
+!      ! Check for unassigned indices in second index group
+!      ! This assumes both contraction indices are in the second index
+!      ! group, above loops check the remaing two cases
+!      do i=1, size(s1b)
+!         if (s1b(i)==0) then
+!            do j=1, 2
+!               s1b(i)=j
+!               ! Find index in second tensor
+!               do m=1, size(t2a)
+!                  if (t2a(m)==t1b(i)) then
+!                     s2a(m)=j
+!                  else if (t2b(m)==t1b(i)) then
+!                     s2b(m)=j
+!                  end if
+!               end do
+!               ! Check if second index is 0
+!               do k=i, size(s1b)
+!                  if (s1b(k)==0 .or. second_idx>0
+!     &                .and. k==second_idx) then
+!                     ! If this is second time, s1b(k)/=0, so need to
+!                     ! remeber where contraction index was
+!                     ! Doubt this will work for rank 6 tensors...
+!                     if (second_idx==0) then
+!                        second_idx=k
+!                     end if
+!                     do l=1, 2
+!                        s1b(second_idx)=l
+!                        ! Find index in second tensor
+!                        do n=1, size(t2a)
+!                           if (t2a(n)==t1b(second_idx)) then
+!                              s2a(n)=l
+!                           else if (t2b(n)==t1b(second_idx)) then
+!                              s2b(n)=l
+!                           end if
+!                        end do
+!                        ! Check if contraction indicies in second index
+!                        ! group
+!                        if (any(s1a==0) .or. third_idx>0) then
+!                           do o=1, size(s1a)
+!                              if (s1a(o)==0 .or. third_idx>0
+!     &                            .and. o==third_idx) then
+!                                 if (third_idx==0) then
+!                                    third_idx=o
+!                                 end if
+!                                 do p=1, 2
+!                                    s1a(third_idx)=p
+!                                    do q=1, size(t2a)
+!                                       if (t2a(q)==t1a(third_idx)) then
+!                                          s2a(q)=p
+!                                       else if (t2b(q)==t1a(third_idx))
+!     &                                 then
+!                                          s2b(q)=p
+!                                       end if
+!                                    end do
+!                                    write(lulog,*) "s1b: ", s1b
+!                                    write(lulog,*) "s1a: ", s1a
+!                                    write(lulog,*)
+!                                    write(lulog,*) "s2b: ", s2b
+!                                    write(lulog,*) "s2a: ", s2a
+!                                    write(lulog,*)
+!                                    write(lulog,*)
+!                                 end do
+!                              end if
+!                           end do
+!                        else
+!                           write(lulog,*) "s1b: ", s1b
+!                           write(lulog,*) "s1a: ", s1a
+!                           write(lulog,*)
+!                           write(lulog,*) "s2b: ", s2b
+!                           write(lulog,*) "s2a: ", s2a
+!                           write(lulog,*)
+!                           write(lulog,*)
+!                        end if
+!                     end do
+!!                  else if (any(s1a==0) .and. .not. (any(s1b==0))
+!!     &                     .or. third_idx>0 .and.
+!!     &                     .not. (any(s1b==0))) then
+!                   else if (zero_a==1 .and. zero_b==1) then
+!                     ! Case where one contraction over s1a and s1b
+!                     do o=1, size(s1a)
+!                        if (s1a(o)==0 .or. third_idx>0
+!     &                      .and. o==third_idx) then
+!                           if (third_idx==0) then
+!                              third_idx=o
+!                           end if
+!                           do p=1, 2
+!                              s1a(third_idx)=p
+!                              do q=1, size(t2a)
+!                                 if (t2a(q)==t1a(third_idx)) then
+!                                    s2a(q)=p
+!                                 else if (t2b(q)==t1a(third_idx))
+!     &                           then
+!                                    s2b(q)=p
+!                                 end if
+!                              end do
+!                              write(lulog,*) "hello"
+!                              write(lulog,*) "s1b: ", s1b
+!                              write(lulog,*) "s1a: ", s1a
+!                              write(lulog,*)
+!                              write(lulog,*) "s2b: ", s2b
+!                              write(lulog,*) "s2a: ", s2a
+!                              write(lulog,*)
+!                              write(lulog,*)
+!                           end do
+!                        end if
+!                     end do
+!                  else if (any(s1b/=0) .and. k==2) then
+!                     ! No more contraction indicies, print out result
+!                     ! Only prints if k==2, ie. at end of k loop, won't
+!                     ! work for rank 6 tensors
+!                     write(lulog,*) "s1b: ", s1b
+!                     write(lulog,*) "s1a: ", s1a
+!                     write(lulog,*)
+!                     write(lulog,*) "s2b: ", s2b
+!                     write(lulog,*) "s2a: ", s2a
+!                     write(lulog,*)
+!                     write(lulog,*)
+!                  end if
+!               end do ! Check if second index is 0
+!            end do ! Loop over a/b for first index
+!         end if ! Check for first 0 index
+!      end do
+
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
+     &                    zero_b,logi,lulog)
+*----------------------------------------------------------------------*
+!     Spin sum
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      integer, intent(inout) ::
+     &     s1a(2),
+     &     s1b(2),
+     &     s2a(2),
+     &     s2b(2)
+      character(len=1), intent(in) ::
+     &     t1a(2),   ! First group of first tensor
+     &     t1b(2),   ! Second group of first tensor
+     &     t2a(2),
+     &     t2b(2)
+      integer, intent(in) ::
+     &     zero_a,zero_b,
+     &     lulog
+      logical, intent(in) ::
+     &     logi      ! Debug delete
+      integer ::
+     &     i,j,k,l,m,n,o,p,q,r,s,
+     &     second_idx,third_idx,fourth_idx
+
       second_idx=0
       third_idx=0
       fourth_idx=0
@@ -1012,6 +1331,7 @@
                   end if
                end do
                ! Check if second index is 0
+               if (any(s1a==0) .or. second_idx>0) then
                do k=i, size(s1a)
                   if (s1a(k)==0 .or. second_idx>0
      &                .and. k==second_idx) then
@@ -1051,54 +1371,90 @@
                                        end if
                                     end do
                         if (any(s1b==0) .or. fourth_idx>0) then
-                           do q=1, size(s1b)
-                              if (s1b(q)==0 .or. fourth_idx>0
-     &                            .and. q==fourth_idx) then
-                                 if (fourth_idx==0) then
-                                    fourth_idx=q
-                                 end if
-                                 do r=1, 2
-                                    s1b(fourth_idx)=r
-                                    do s=1, size(t2a)
-                                       if (t2a(s)==t1b(fourth_idx)) then
-                                          s2a(s)=r
-                                       else if (t2b(s)==t1b(fourth_idx))
-     &                                 then
-                                          s2b(s)=r
-                                       end if
-                                    end do
-                                    write(lulog,*) "s1b: ", s1b
-                                    write(lulog,*) "s1a: ", s1a
-                                    write(lulog,*)
-                                    write(lulog,*) "s2b: ", s2b
-                                    write(lulog,*) "s2a: ", s2a
-                                    write(lulog,*)
-                                    write(lulog,*)
-                                 end do
-                              end if
-                           end do
+                           call sum_index(s1b,s1a,s2a,s2b,t1b,t1a,t2a,
+     &                                    t2b,logi,lulog,fourth_idx)
+!                           do q=1, size(s1b)
+!                              if (s1b(q)==0 .or. fourth_idx>0
+!     &                            .and. q==fourth_idx) then
+!                                 if (fourth_idx==0) then
+!                                    fourth_idx=q
+!                                 end if
+!                                 do r=1, 2
+!                                    s1b(fourth_idx)=r
+!                                    do s=1, size(t2a)
+!                                       if (t2a(s)==t1b(fourth_idx)) then
+!                                          s2a(s)=r
+!                                       else if (t2b(s)==t1b(fourth_idx))
+!     &                                 then
+!                                          s2b(s)=r
+!                                       end if
+!                                    end do
+!                                    if (logi) then
+!                                    write(lulog,*) "s1b: ", s1b
+!                                    write(lulog,*) "s1a: ", s1a
+!                                    write(lulog,*)
+!                                    write(lulog,*) "s2b: ", s2b
+!                                    write(lulog,*) "s2a: ", s2a
+!                                    write(lulog,*)
+!                                    write(lulog,*)
+!                                    else
+!                                    write(lulog,*) "s1b: ", s1b
+!                                    write(lulog,*) "s1a: ", s1a
+!                                    write(lulog,*)
+!                                    write(lulog,*) "s2b: ", s2b
+!                                    write(lulog,*) "s2a: ", s2a
+!                                    write(lulog,*)
+!                                    write(lulog,*)
+!                                    end if
+!                                 end do
+!                              end if
+!                           end do
                         else if (.not. any(s1b==0) .and. fourth_idx==0)
      &                           then
-                           write(lulog,*) "s1b: ", s1b
-                           write(lulog,*) "s1a: ", s1a
-                           write(lulog,*)
-                           write(lulog,*) "s2b: ", s2b
-                           write(lulog,*) "s2a: ", s2a
-                           write(lulog,*)
-                           write(lulog,*)
+                           call print_spin_case(s1b,s1a,s2a,s2b,logi,
+     &                                          lulog)
+                           !if (logi) then
+                           !write(lulog,*) "s1b: ", s1b
+                           !write(lulog,*) "s1a: ", s1a
+                           !write(lulog,*)
+                           !write(lulog,*) "s2b: ", s2b
+                           !write(lulog,*) "s2a: ", s2a
+                           !write(lulog,*)
+                           !write(lulog,*)
+                           !else
+                           !write(lulog,*) "s1b: ", s1a
+                           !write(lulog,*) "s1a: ", s1b
+                           !write(lulog,*)
+                           !write(lulog,*) "s2b: ", s2a
+                           !write(lulog,*) "s2a: ", s2b
+                           !write(lulog,*)
+                           !write(lulog,*)
+                           !end if
                         end if
                                  end do
                               end if
                            end do
                         else if (.not. any(s1b==0) .and. third_idx==0)
      &                           then 
-                           write(lulog,*) "s1b: ", s1b
-                           write(lulog,*) "s1a: ", s1a
-                           write(lulog,*)
-                           write(lulog,*) "s2b: ", s2b
-                           write(lulog,*) "s2a: ", s2a
-                           write(lulog,*)
-                           write(lulog,*)
+                           call print_spin_case(s1a,s1b,s2a,s2b,
+     &                                          .not.logi,lulog)
+                           !if (logi) then
+                           !write(lulog,*) "s1b: ", s1b
+                           !write(lulog,*) "s1a: ", s1a
+                           !write(lulog,*)
+                           !write(lulog,*) "s2b: ", s2b
+                           !write(lulog,*) "s2a: ", s2a
+                           !write(lulog,*)
+                           !write(lulog,*)
+                           !else
+                           !write(lulog,*) "s1b: ", s1a
+                           !write(lulog,*) "s1a: ", s1b
+                           !write(lulog,*)
+                           !write(lulog,*) "s2b: ", s2a
+                           !write(lulog,*) "s2a: ", s2b
+                           !write(lulog,*)
+                           !write(lulog,*)
+                           !end if
                         end if
                      end do
                   else if (zero_a==1 .and. zero_b==1) then
@@ -1119,6 +1475,7 @@
                                     s2b(q)=p
                                  end if
                               end do
+                              if (logi) then
                               write(lulog,*) "s1b: ", s1b
                               write(lulog,*) "s1a: ", s1a
                               write(lulog,*)
@@ -1126,14 +1483,25 @@
                               write(lulog,*) "s2a: ", s2a
                               write(lulog,*)
                               write(lulog,*)
+                              else
+                              write(lulog,*) "s1b: ", s1a
+                              write(lulog,*) "s1a: ", s1b
+                              write(lulog,*)
+                              write(lulog,*) "s2b: ", s2a
+                              write(lulog,*) "s2a: ", s2b
+                              write(lulog,*)
+                              write(lulog,*)
+                              end if
                            end do
                         end if
                      end do
+                  end if
+               end do ! Check if second index is 0
                   else if (.not. any(s1a==0) .and. second_idx==0) then
                      ! No more contraction indicies, print out result
                      ! Only prints if k==2, ie. at end of k loop, won't
                      ! work for rank 6 tensors
-                     write(lulog,*) "hello"
+                     if (logi) then
                      write(lulog,*) "s1b: ", s1b
                      write(lulog,*) "s1a: ", s1a
                      write(lulog,*)
@@ -1141,142 +1509,141 @@
                      write(lulog,*) "s2a: ", s2a
                      write(lulog,*)
                      write(lulog,*)
-                  end if
-               end do ! Check if second index is 0
-            end do ! Loop over a/b for first index
-         end if ! Check for first 0 index
-      end do
-
-      else
-      second_idx=0
-      third_idx=0
-      ! Check for unassigned indices in second index group
-      ! This assumes both contraction indices are in the second index
-      ! group, above loops check the remaing two cases
-      do i=1, size(s1b)
-         if (s1b(i)==0) then
-            do j=1, 2
-               s1b(i)=j
-               ! Find index in second tensor
-               do m=1, size(t2a)
-                  if (t2a(m)==t1b(i)) then
-                     s2a(m)=j
-                  else if (t2b(m)==t1b(i)) then
-                     s2b(m)=j
-                  end if
-               end do
-               ! Check if second index is 0
-               do k=i, size(s1b)
-                  if (s1b(k)==0 .or. second_idx>0
-     &                .and. k==second_idx) then
-                     ! If this is second time, s1b(k)/=0, so need to
-                     ! remeber where contraction index was
-                     ! Doubt this will work for rank 6 tensors...
-                     if (second_idx==0) then
-                        second_idx=k
+                     else
+                     write(lulog,*) "s1b: ", s1a
+                     write(lulog,*) "s1a: ", s1b
+                     write(lulog,*)
+                     write(lulog,*) "s2b: ", s2a
+                     write(lulog,*) "s2a: ", s2b
+                     write(lulog,*)
+                     write(lulog,*)
                      end if
-                     do l=1, 2
-                        s1b(second_idx)=l
-                        ! Find index in second tensor
-                        do n=1, size(t2a)
-                           if (t2a(n)==t1b(second_idx)) then
-                              s2a(n)=l
-                           else if (t2b(n)==t1b(second_idx)) then
-                              s2b(n)=l
-                           end if
-                        end do
-                        ! Check if contraction indicies in second index
-                        ! group
-                        if (any(s1a==0) .or. third_idx>0) then
-                           do o=1, size(s1a)
-                              if (s1a(o)==0 .or. third_idx>0
-     &                            .and. o==third_idx) then
-                                 if (third_idx==0) then
-                                    third_idx=o
-                                 end if
-                                 do p=1, 2
-                                    s1a(third_idx)=p
-                                    do q=1, size(t2a)
-                                       if (t2a(q)==t1a(third_idx)) then
-                                          s2a(q)=p
-                                       else if (t2b(q)==t1a(third_idx))
-     &                                 then
-                                          s2b(q)=p
-                                       end if
-                                    end do
-                                    write(lulog,*) "s1b: ", s1b
-                                    write(lulog,*) "s1a: ", s1a
-                                    write(lulog,*)
-                                    write(lulog,*) "s2b: ", s2b
-                                    write(lulog,*) "s2a: ", s2a
-                                    write(lulog,*)
-                                    write(lulog,*)
-                                 end do
-                              end if
-                           end do
-                        else
-                           write(lulog,*) "s1b: ", s1b
-                           write(lulog,*) "s1a: ", s1a
-                           write(lulog,*)
-                           write(lulog,*) "s2b: ", s2b
-                           write(lulog,*) "s2a: ", s2a
-                           write(lulog,*)
-                           write(lulog,*)
-                        end if
-                     end do
-!                  else if (any(s1a==0) .and. .not. (any(s1b==0))
-!     &                     .or. third_idx>0 .and.
-!     &                     .not. (any(s1b==0))) then
-                   else if (zero_a==1 .and. zero_b==1) then
-                     ! Case where one contraction over s1a and s1b
-                     do o=1, size(s1a)
-                        if (s1a(o)==0 .or. third_idx>0
-     &                      .and. o==third_idx) then
-                           if (third_idx==0) then
-                              third_idx=o
-                           end if
-                           do p=1, 2
-                              s1a(third_idx)=p
-                              do q=1, size(t2a)
-                                 if (t2a(q)==t1a(third_idx)) then
-                                    s2a(q)=p
-                                 else if (t2b(q)==t1a(third_idx))
-     &                           then
-                                    s2b(q)=p
-                                 end if
-                              end do
-                              write(lulog,*) "hello"
-                              write(lulog,*) "s1b: ", s1b
-                              write(lulog,*) "s1a: ", s1a
-                              write(lulog,*)
-                              write(lulog,*) "s2b: ", s2b
-                              write(lulog,*) "s2a: ", s2a
-                              write(lulog,*)
-                              write(lulog,*)
-                           end do
-                        end if
-                     end do
-                  else if (any(s1b/=0) .and. k==2) then
-                     ! No more contraction indicies, print out result
-                     ! Only prints if k==2, ie. at end of k loop, won't
-                     ! work for rank 6 tensors
-                     write(lulog,*) "s1b: ", s1b
-                     write(lulog,*) "s1a: ", s1a
-                     write(lulog,*)
-                     write(lulog,*) "s2b: ", s2b
-                     write(lulog,*) "s2a: ", s2a
-                     write(lulog,*)
-                     write(lulog,*)
                   end if
-               end do ! Check if second index is 0
             end do ! Loop over a/b for first index
          end if ! Check for first 0 index
       end do
 
-      end if
+      ! loop check for 0
+      !  if 0
+      !  |loop 1, 2
+      !  | loop check for 0
+      !  |  if 0
+      !  |   loop 1, 2
+      !  |  else
+      !  |   print
+      !  else
+      !   print
 
       return
       end
+
+*----------------------------------------------------------------------*
+      subroutine sum_index(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,logi,lulog,
+     &                     idx)
+*----------------------------------------------------------------------*
+!     Sum index of spn index group
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      integer, intent(inout) ::
+     &     s1a(2),
+     &     s1b(2),
+     &     s2a(2),
+     &     s2b(2),
+     &     idx
+      character(len=1), intent(in) ::
+     &     t1a(2),   ! First group of first tensor
+     &     t1b(2),   ! Second group of first tensor
+     &     t2a(2),
+     &     t2b(2)
+      integer, intent(in) ::
+     &     lulog
+      logical, intent(in) ::
+     &     logi      ! Debug delete
+      integer ::
+     &     q,r,s
+
+       do q=1, size(s1a)
+          if (s1a(q)==0 .or. idx>0
+     &        .and. q==idx) then
+             if (idx==0) then
+                idx=q
+             end if
+             do r=1, 2
+                s1a(idx)=r
+                do s=1, size(t2a)
+                   if (t2a(s)==t1a(idx)) then
+                      s2a(s)=r
+                   else if (t2b(s)==t1a(idx))
+     &             then
+                      s2b(s)=r
+                   end if
+                end do
+                call print_spin_case(s1a,s1b,s2a,s2b,logi,lulog)
+                !if (logi) then
+                !write(lulog,*) "s1b: ", s1b
+                !write(lulog,*) "s1a: ", s1a
+                !write(lulog,*)
+                !write(lulog,*) "s2b: ", s2b
+                !write(lulog,*) "s2a: ", s2a
+                !write(lulog,*)
+                !write(lulog,*)
+                !else
+                !write(lulog,*) "s1b: ", s1b
+                !write(lulog,*) "s1a: ", s1a
+                !write(lulog,*)
+                !write(lulog,*) "s2b: ", s2b
+                !write(lulog,*) "s2a: ", s2a
+                !write(lulog,*)
+                !write(lulog,*)
+                !end if
+             end do
+          end if
+       end do
+
+       return
+       end
+
+*----------------------------------------------------------------------*
+      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,lulog)
+*----------------------------------------------------------------------*
+!     Print spin case
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      integer, intent(in) ::
+     &     s1a(2),
+     &     s1b(2),
+     &     s2a(2),
+     &     s2b(2)
+      integer, intent(in) ::
+     &     lulog
+      logical, intent(in) ::
+     &     logi      ! Debug delete
+
+       ! Pick out specific spin cases here
+       if (logi) then
+          write(lulog,*) "s1b: ", s1b
+          write(lulog,*) "s1a: ", s1a
+          write(lulog,*)
+          write(lulog,*) "s2b: ", s2b
+          write(lulog,*) "s2a: ", s2a
+          write(lulog,*)
+          write(lulog,*)
+       else
+          write(lulog,*) "s1b: ", s1b
+          write(lulog,*) "s1a: ", s1a
+          write(lulog,*)
+          write(lulog,*) "s2b: ", s2b
+          write(lulog,*) "s2a: ", s2a
+          write(lulog,*)
+          write(lulog,*)
+       end if
+
+       return
+       end
 
 *----------------------------------------------------------------------*
       subroutine itf_tensor_init(contr_info,itf1,itf2,itf3)
