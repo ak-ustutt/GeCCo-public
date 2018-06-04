@@ -1067,7 +1067,7 @@
                 end if
                 do p=1, 2
                  s1b(third_idx)=p
-                 call find_idx(s2a,s2b,t1b,t2a,t2b,third_idx,l)
+                 call find_idx(s2a,s2b,t1b,t2a,t2b,third_idx,p)
 
                  ! Check for fourth contraction index
                  if (any(s1b==0) .or. fourth_idx>0) then
@@ -1158,22 +1158,28 @@
      &     logi      ! Debug delete
 
        ! Pick out specific spin cases here
-       if (logi) then
-          write(lulog,*) "s1b: ", s1b
-          write(lulog,*) "s1a: ", s1a
-          write(lulog,*)
-          write(lulog,*) "s2b: ", s2b
-          write(lulog,*) "s2a: ", s2a
-          write(lulog,*)
-          write(lulog,*)
-       else
-          write(lulog,*) "s1b: ", s1b
-          write(lulog,*) "s1a: ", s1a
-          write(lulog,*)
-          write(lulog,*) "s2b: ", s2b
-          write(lulog,*) "s2a: ", s2a
-          write(lulog,*)
-          write(lulog,*)
+       if (sum(s1a)==sum(s1b) .and.
+     &     sum(s2a)==sum(s2b)) then
+         if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
+     &       modulo(sum(s2a)+sum(s2b),2)==0) then
+            if (logi) then
+               write(lulog,*) "s1b: ", s1b
+               write(lulog,*) "s1a: ", s1a
+               write(lulog,*)
+               write(lulog,*) "s2b: ", s2b
+               write(lulog,*) "s2a: ", s2a
+               write(lulog,*)
+               write(lulog,*)
+            else
+               write(lulog,*) "s1b: ", s1b
+               write(lulog,*) "s1a: ", s1a
+               write(lulog,*)
+               write(lulog,*) "s2b: ", s2b
+               write(lulog,*) "s2a: ", s2a
+               write(lulog,*)
+               write(lulog,*)
+            end if
+         end if
        end if
 
        return
