@@ -589,7 +589,7 @@
      &     r1a(2),
      &     r1b(2)
       integer ::
-     &     i,j,k,l,m,n,o,p,q,r,s,
+     &     i,j,      ! Loop index
      &     sum_c1,sum_c2,sum_a1,sum_a2,
      &     s1a(2),
      &     s1b(2),
@@ -600,16 +600,17 @@
       logical ::
      &     logi ! Debug delete
 
-      ! For rank 4. Rank 2 and 0 don't need antisymetrising
-      if (len(trim(item%idx3))==6) then
-         return
-      end if
-
       ! Don't care about tensor products now
       if (len(trim(item%idx3))==4 .and. len(trim(item%idx1))==2 .and.
      &    len(trim(item%idx2))==2) then
+         call print_itf_line(item,.false.,.false.)
+         return
+      else if (item%inter(3)) then
+         ! Don't spin sum intermediate results
+         call print_itf_line(item,.false.,.false.)
          return
       end if
+         
 
       s1a=0
       s1b=0
@@ -622,6 +623,7 @@
       r1a=''
       r1b=''
 
+      ! Check the spin case
       if (len(trim(item%idx1))==4 .and. len(trim(item%idx2))==4) then
          t1a(1)=item%idx1(1:1)
          t1a(2)=item%idx1(2:2)
