@@ -105,6 +105,11 @@
 
         ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+        call assign_spin(istr1,istr2,istr3,
+     &                   fl_item%bcontr%label_res,
+     &                   fl_item%bcontr%label_op1,
+     &                   fl_item%bcontr%label_op2,
+     &                   fl_item%bcontr%fact,inter,itflog)
 
 !        call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
 !        prev_item2=>fl_item%prev
@@ -161,11 +166,11 @@
 !            end if
 !        end if
 
-        call print_itf_line(fl_item%bcontr%label_res,
-     &                      fl_item%bcontr%label_op1,
-     &                      fl_item%bcontr%label_op2, 
-     &                      fl_item%bcontr%fact,
-     &                      istr1, istr2, istr3, inter, itflog)
+!        call print_itf_line(fl_item%bcontr%label_res,
+!     &                      fl_item%bcontr%label_op1,
+!     &                      fl_item%bcontr%label_op2, 
+!     &                      fl_item%bcontr%fact,
+!     &                      istr1, istr2, istr3, inter, itflog)
         call clear_index(istr1,istr2, istr3)
 
         ! Update previous results for use next time around
@@ -184,6 +189,11 @@
 
         ! Assuming that this is called only after NEW INTERMEDIATE
         call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+        call assign_spin(istr1,istr2,istr3,
+     &                   fl_item%bcontr%label_res,
+     &                   fl_item%bcontr%label_op1,
+     &                   fl_item%bcontr%label_op2,
+     &                   fl_item%bcontr%fact,inter,itflog)
 
         ! If old result does not equal the next result, then the intermediate
         ! belongs to the next block.
@@ -232,11 +242,11 @@
 !            end if
 !        end if
 
-        call print_itf_line(fl_item%bcontr%label_res,
-     &                      fl_item%bcontr%label_op1,
-     &                      fl_item%bcontr%label_op2,
-     &                      fl_item%bcontr%fact,
-     &                      istr1, istr2, istr3, inter, itflog)
+!        call print_itf_line(fl_item%bcontr%label_res,
+!     &                      fl_item%bcontr%label_op1,
+!     &                      fl_item%bcontr%label_op2,
+!     &                      fl_item%bcontr%fact,
+!     &                      istr1, istr2, istr3, inter, itflog)
 !        call construct_tensor(fl_item%bcontr%label_res,
 !     &                      fl_item%bcontr%label_op1,
 !     &                      fl_item%bcontr%label_op2,
@@ -253,12 +263,17 @@
 
         ! Get index for current contraction
         call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+        call assign_spin(istr1,istr2,istr3,
+     &                   fl_item%bcontr%label_res,
+     &                   fl_item%bcontr%label_op1,
+     &                   fl_item%bcontr%label_op2,
+     &                   fl_item%bcontr%fact,inter,itflog)
 
-        call print_itf_line(fl_item%bcontr%label_res,
-     &                      fl_item%bcontr%label_op1,
-     &                      fl_item%bcontr%label_op2, 
-     &                      fl_item%bcontr%fact,
-     &                      istr1, istr2, istr3, inter, itflog)
+!        call print_itf_line(fl_item%bcontr%label_res,
+!     &                      fl_item%bcontr%label_op1,
+!     &                      fl_item%bcontr%label_op2, 
+!     &                      fl_item%bcontr%fact,
+!     &                      istr1, istr2, istr3, inter, itflog)
 
         call clear_index(istr1,istr2, istr3)
       case(command_reorder)

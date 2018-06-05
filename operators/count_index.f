@@ -140,82 +140,6 @@
       end function
 
 *----------------------------------------------------------------------*
-      subroutine spin_sum_index(istr1, istr2, istr3, lulog)
-*----------------------------------------------------------------------*
-!     Spin sum index and produce resulting binary contractions
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      character(len=8), intent(in) ::
-     &    istr1, istr2, istr3          ! Op1, op2, res
-      integer, intent(in) ::
-     &    lulog
-      integer ::
-     &    r1, r2, r3,               ! rank
-     &    e1, e2, e3, e4,              ! external indicies
-     &    c1, c2,                   ! contraction indicies
-     &    i,j,k,l,m,n,
-     &    extern
-
-      r1=len(trim(istr1))
-      r2=len(trim(istr2))
-      r3=4
-      extern=2
-
-      if (r3.eq.4) then
-         e1=1
-         do i=0, 1
-            e2=1
-            e1=e1+i
-            do j=0, 1
-               e3=1
-               e2=e2+j
-               do k=0, 1
-                  e4=1
-                  e3=e3+k
-                  do l=0, 1
-                     e4=e4+l
-                     !write(lulog,*) "hello", e1, e2, e3, e4
-                     if (e1==1 .and. e2==1 .and. e3==2 .and. e4==2) then
-                        c1=1
-                        do m=0, 1
-                           c2=1
-                           c1=c1+m
-                           do n=0, 1
-                              c2=c2+n
-                              select case(extern)
-                                 case(0)
-                                    if (mod(e1+e2+e3+e4,2)==0) then
-                                       write(lulog,*) "A"
-                                       write(lulog,*) "B ", e1, e2, e3,
-     &                                                 e4
-                                    end if
-                                 case(2)
-                                    if (mod(e1+e2+c1+c2,2)==0) then
-                                       write(lulog,*) "A ", e1, e2,
-     &                                                c1,
-     &                                                c2
-                                       write(lulog,*) "B ", e3, e4, c1,
-     &                                                c2
-                                    end if
-                               end select
-                           end do
-                        end do
-                     end if
-                  end do
-               end do
-            end do
-         end do
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
       subroutine construct_tensor(res, op1, op2, istr1, istr2, istr3,
      &                            itf1, itf2, itf3, factor, lulog)
 *----------------------------------------------------------------------*
@@ -258,36 +182,8 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine recursive_formular_item(fl_item,lulog)
-*----------------------------------------------------------------------*
-!
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h'
-      include 'def_contraction.h'
-      include 'def_formula_item.h'
-
-      type(formula_item), intent(in), target ::
-     &     fl_item
-      integer, intent(in) ::
-     &     lulog
-      type(formula_item), pointer ::
-     &     next_item,  ! Next formula_item
-     &     next2_item  ! Next formula_item
-
-      next_item=>fl_item%next
-      write(lulog,*) "WHAT: ", next_item%command
-      next2_item=>next_item%next
-      write(lulog,*) "WHAT2: ", next2_item%command
-
-      return
-      end
-
-*----------------------------------------------------------------------*
       subroutine print_itf_line(res, t1, t2, fact, idx1, idx2,
-     &                          idx3, inter, lulog)
+     &                          idx3, inter,s1,s2, lulog)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -306,10 +202,13 @@
      &     lulog                 ! File to write to
       real(8), intent(in) ::
      &     fact                ! Factor associated with binary contraction
+      logical, intent(in) ::
+     &     s1,s2
 
       character(len=maxlen_bc_label) ::
      &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
-     &     ires, it1, it2           ! Name of tensors + index
+     &     ires, it1, it2,          ! Name of tensors + index
+     &     sres, st1, st2           ! Name of spin summed tensors + index
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=50) ::
@@ -349,6 +248,23 @@
 
       ! Change names of specific tensors
       nres=rename_tensor(nres)
+      
+      ! Spin summ
+      if (s1) then
+         ! Pure spin
+         st1='('//trim(adjustl(nt1))//'['//trim(idx1)//']'//
+     &       '-'//trim(adjustl(nt1))//'['//trim(idx1)//']'//')'
+      else
+         st1=trim(adjustl(nt1))//'['//trim(idx1)//']'
+      end if
+
+      if (s2) then
+         ! Pure spin
+         st2='('//trim(adjustl(nt2))//'['//trim(idx2)//']'//
+     &       '-'//trim(adjustl(nt2))//'['//trim(idx2)//']'//')'
+      else
+         st2=trim(adjustl(nt2))//'['//trim(idx2)//']'
+      end if
 
       ires=trim(adjustl(nres))//'['//trim(idx3)//']'
       it1=trim(adjustl(nt1))//'['//trim(idx1)//']'
@@ -390,16 +306,28 @@
 !
 !      write(lulog,*) l_line
 
+!      if (fact.lt.0.0) then
+!          itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] -= '//
+!     &        trim(sfact_star)//
+!     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
+!     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+!      else
+!          itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
+!     &        trim(sfact_star)//
+!     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
+!     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+!      end if
+
       if (fact.lt.0.0) then
           itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] -= '//
      &        trim(sfact_star)//
-     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
-     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+     &        trim(adjustl(st1))//
+     &        trim(adjustl(st2))
       else
           itf_line='.'//trim(adjustl(nres))//'['//trim(idx3)//'] += '//
      &        trim(sfact_star)//
-     &        trim(adjustl(nt1))//'['//trim(idx1)//'] '//
-     &        trim(adjustl(nt2))//'['//trim(idx2)//']'
+     &        trim(adjustl(st1))//
+     &        trim(adjustl(st2))
       end if
 
       write(lulog,*) trim(itf_line)
@@ -767,6 +695,76 @@
      &     c(4,2)
       integer, intent(in) ::
      &     lulog
+      integer ::
+     &     i,
+     &     sum_c1,sum_c2,sum_a1,sum_a2
+      logical ::
+     &     logi ! Debug delete
+
+      ! Check if not antisym over different verticies
+
+      ! For rank 4. Rank 2,6 and 0 don't need antisymetrising
+      if (len(trim(istr3))==2 .or. len(trim(istr3))==6
+     &    .or. len(trim(istr3))==0) then
+         return
+      end if
+
+      ! Don't care about tensor products now
+      if (len(trim(istr3))==4 .and. len(trim(istr1))==2 .and.
+     &    len(trim(istr2))==2) then
+         return
+      end if
+
+      sum_c1=0
+      sum_c2=0
+      sum_a1=0
+      sum_a2=0
+
+      do i=1, 4
+         sum_c1=sum_c1+e1(i,1)
+         sum_c2=sum_c2+e2(i,1)
+         sum_a1=sum_a1+e1(i,2)
+         sum_a2=sum_a2+e2(i,2)
+      end do
+      
+      if (sum_c1/=2 .and. sum_c2/=2) then
+         if (sum_c1+sum_c2==2) then
+            write(lulog,*) "permute creations! 0.5*(1-P)"
+         end if
+      end if
+
+      if (sum_a1/=2 .and. sum_a2/=2) then
+         if (sum_a1+sum_a2==2) then
+            write(lulog,*) "permute annhilations! 0.5*(1-P)"
+         end if
+      end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine assign_spin(istr1,istr2,istr3,res,t1,t2,fact,inter,
+     &                       lulog)
+*----------------------------------------------------------------------*
+!    Assign spin to tensors, then sum remaining contraction indicies 
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      character(len=8), intent(in)  ::
+     &     istr1,       ! Operator 1 index
+     &     istr2,       ! Operator 2 index
+     &     istr3        ! Result index
+      integer, intent(in) ::
+     &     lulog,
+     &     inter                ! Intermediate number involved in contraction
+      character(len=maxlen_bc_label), intent(in) ::
+     &     res, t1, t2           ! Name of tensors involved in the contraction
+      real(8), intent(in) ::
+     &     fact                ! Factor associated with binary contraction
       character(len=1) ::
      &     t1a(2),   ! First group of first tensor
      &     t1b(2),   ! Second group of first tensor
@@ -785,8 +783,6 @@
      &     zero_a,zero_b
       logical ::
      &     logi ! Debug delete
-
-      ! Check if not antisym over different verticies
 
       ! For rank 4. Rank 2 and 0 don't need antisymetrising
       if (len(trim(istr3))==6) then
@@ -854,22 +850,37 @@
       else if (len(trim(istr1))==2 .and. len(trim(istr2))==2 
      &         .and. len(trim(istr3))==2) then
          ! Don't need to spin sum
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
          return
       else if (len(trim(istr1))==0 .and. len(trim(istr2))==2
      &         .and. len(trim(istr3))==2) then
-         ! Don't need to spin sum
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
          return
       else if (len(trim(istr1))==2 .and. len(trim(istr2))==0 
      &         .and. len(trim(istr3))==2) then
-         ! Don't need to spin sum
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
          return
       else if (len(trim(istr1))==2 .and. len(trim(istr2))==2
      &         .and. len(trim(istr3))==0) then
-         ! Don't need to spin sum
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
          return
       else if (len(trim(istr1))==0 .and. len(trim(istr2))==0
      &         .and. len(trim(istr3))==0) then
-         ! Don't need to spin sum
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
+         return
+      else if (len(trim(istr1))==6 .or. len(trim(istr2))==4) then
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
+         return
+      else
+         write(lulog,*) "Error, can't determine spin case!"
+         call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                       istr3,inter,.false.,.false.,lulog)
          return
       end if
 
@@ -883,95 +894,38 @@
          r1b(1)=istr3(2:2)
       end if
 
-      sum_c1=0
-      sum_c2=0
-      sum_a1=0
-      sum_a2=0
-
-      do i=1, 4
-         sum_c1=sum_c1+e1(i,1)
-         sum_c2=sum_c2+e2(i,1)
-         sum_a1=sum_a1+e1(i,2)
-         sum_a2=sum_a2+e2(i,2)
-      end do
-      
-      if (sum_c1/=2 .and. sum_c2/=2) then
-         if (sum_c1+sum_c2==2) then
-            write(lulog,*) "permute creations! 0.5*(1-P)"
-         end if
-      end if
-
-      if (sum_a1/=2 .and. sum_a2/=2) then
-         if (sum_a1+sum_a2==2) then
-            write(lulog,*) "permute annhilations! 0.5*(1-P)"
-         end if
-      end if
-      
-
-      ! Sum over contraction creation
-
       ! Working in index groups, set abab (1212) index to individual tensor
-      ! index groups. Ordering of spins doesn't matter, only overall Sz.
+      ! index groups.
       do i=1, 2
-         if (r1a(1)==t1a(i) .and. r1a(1)/='') then
-            s1a(i)=1
-         end if
-         if (r1a(1)==t1b(i) .and. r1a(1)/='') then
-            s1b(i)=1
-         end if
+         do j=1, 2
+            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
+               s1a(i)=j
+            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
+               s1b(i)=j
+            end if
     
-         if (r1a(2)==t1a(i) .and. r1a(2)/='') then
-            s1a(i)=2
-         end if
-         if (r1a(2)==t1b(i) .and. r1a(2)/='') then
-            s1b(i)=2
-         end if
-    
-    
-         if (r1b(1)==t1a(i) .and. r1b(1)/='') then
-            s1a(i)=1
-         end if
-         if (r1b(1)==t1b(i) .and. r1b(1)/='') then
-            s1b(i)=1
-         end if
-    
-         if (r1b(2)==t1a(i) .and. r1b(2)/='') then
-            s1a(i)=2
-         end if
-         if (r1b(2)==t1b(i) .and. r1b(2)/='') then
-            s1b(i)=2
-         end if
+            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
+               s1a(i)=j
+            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
+               s1b(i)=j
+            end if
+         end do
       end do
 
       do i=1, 2
-         if (r1a(1)==t2a(i) .and. r1a(1)/='') then
-            s2a(i)=1
-         end if
-         if (r1a(1)==t2b(i) .and. r1a(1)/='') then
-            s2b(i)=1
-         end if
+         do j=1, 2
+            if (r1a(j)==t2a(i) .and. r1a(j)/='') then
+               s2a(i)=j
+            else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
+               s2b(i)=j
+            end if
     
-         if (r1a(2)==t2a(i) .and. r1a(2)/='') then
-            s2a(i)=2
-         end if
-         if (r1a(2)==t2b(i) .and. r1a(2)/='') then
-            s2b(i)=2
-         end if
-    
-    
-         if (r1b(1)==t2a(i) .and. r1b(1)/='') then
-            s2a(i)=1
-         end if
-         if (r1b(1)==t2b(i) .and. r1b(1)/='') then
-            s2b(i)=1
-         end if
-    
-         if (r1b(2)==t2a(i) .and. r1b(2)/='') then
-            s2a(i)=2
-         end if
-         if (r1b(2)==t2b(i) .and. r1b(2)/='') then
-            s2b(i)=2
-         end if
+            if (r1b(j)==t2a(i) .and. r1b(j)/='') then
+               s2a(i)=j
+            else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
+               s2b(i)=j
+            end if
+         end do
       end do
 
       ! Index assigned from result
@@ -999,11 +953,13 @@
       if (zero_a>=zero_b) then
          logi=.true.
          call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-     &                 zero_b,logi,lulog)
+     &                 zero_b,logi,res,t1,t2,fact,inter,
+     &                 istr1,istr2,istr3,lulog)
       else
          logi=.false.
          call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
-     &                 zero_a,logi,lulog)
+     &                 zero_a,logi,res,t1,t2,fact,inter,
+     &                 istr1,istr2,istr3,lulog)
       end if
 
       return
@@ -1011,12 +967,16 @@
 
 *----------------------------------------------------------------------*
       subroutine spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-     &                    zero_b,logi,lulog)
+     &                    zero_b,logi,
+     &                    res,t1,t2,fact,inter,istr1,istr2,istr3,lulog)
 *----------------------------------------------------------------------*
 !     Spin sum
 *----------------------------------------------------------------------*
 
       implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
 
       integer, intent(inout) ::
      &     s1a(2),
@@ -1030,7 +990,16 @@
      &     t2b(2)
       integer, intent(in) ::
      &     zero_a,zero_b,
-     &     lulog
+     &     lulog,
+     &     inter                ! Intermediate number involved in contraction
+      character(len=maxlen_bc_label), intent(in) ::
+     &     res, t1, t2           ! Name of tensors involved in the contraction
+      real(8), intent(in) ::
+     &     fact                ! Factor associated with binary contraction
+      character(len=8), intent(in)  ::
+     &     istr1,       ! Operator 1 index
+     &     istr2,       ! Operator 2 index
+     &     istr3        ! Result index
       logical, intent(in) ::
      &     logi      ! Debug delete
       integer ::
@@ -1083,13 +1052,17 @@
      &                             fourth_idx,r)
                      ! Print result, sum over four indicies
                      call print_spin_case(s1b,s1a,s2a,
-     &                                    s2b,logi,lulog)
+     &                                    s2b,logi,res,t1,t2,
+     &                                    istr1,istr2,istr3,
+     &                                    fact,inter,lulog)
                     end do
                    end if
                   end do
                  else if (.not. any(s1b==0) .and. fourth_idx==0) then
                   ! Print result, sum over three indicies
-                  call print_spin_case(s1b,s1a,s2a,s2b,logi,lulog)
+                  call print_spin_case(s1b,s1a,s2a,s2b,logi,res,
+     &                                 t1,t2,fact,inter,
+     &                                 istr1,istr2,istr3,lulog)
                  end if
 
                 end do
@@ -1097,7 +1070,9 @@
               end do
              else if (.not. any(s1b==0) .and. third_idx==0) then 
               ! Print result, sum over two indicies
-              call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,lulog)
+              call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,res,
+     &                             t1,t2,fact,inter,
+     &                             istr1,istr2,istr3,lulog)
              end if
             end do
            end if
@@ -1113,13 +1088,17 @@
             do p=1, 2
              s1b(third_idx)=p
              call find_idx(s2a,s2b,t1b,t2a,t2b,third_idx,p)
-             call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,lulog)
+             call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,res,
+     &                            t1,t2,fact,inter,
+     &                            istr1,istr2,istr3,lulog)
             end do
            end if
           end do
          else if (.not. any(s1a==0) .and. second_idx==0) then
           ! Print result, sum over one indicies
-          call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,lulog)
+          call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+     &                         res,t1,t2,fact,inter,
+     &                         istr1,istr2,istr3,lulog)
          end if
         end do ! Loop over a/b for first index
        end if ! Check for first 0 index
@@ -1140,12 +1119,17 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,lulog)
+      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,
+     &                           res,t1,t2,fact,inter,
+     &                           istr1,istr2,istr3,lulog)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
 
       implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
 
       integer, intent(in) ::
      &     s1a(2),
@@ -1153,15 +1137,50 @@
      &     s2a(2),
      &     s2b(2)
       integer, intent(in) ::
-     &     lulog
+     &     lulog,
+     &     inter                ! Intermediate number involved in contraction
+      character(len=maxlen_bc_label), intent(in) ::
+     &     res, t1, t2           ! Name of tensors involved in the contraction
+      real(8), intent(in) ::
+     &     fact                ! Factor associated with binary contraction
+      character(len=8), intent(in)  ::
+     &     istr1,       ! Operator 1 index
+     &     istr2,       ! Operator 2 index
+     &     istr3        ! Result index
       logical, intent(in) ::
      &     logi      ! Debug delete
+      logical ::
+     &     s1,       ! True if tensor 1 is mixed spin
+     &     s2        ! True if tensor 2 is mixed spin
 
+       s1=.true.
+       s2=.true.
        ! Pick out specific spin cases here
        if (sum(s1a)==sum(s1b) .and.
      &     sum(s2a)==sum(s2b)) then
          if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
      &       modulo(sum(s2a)+sum(s2b),2)==0) then
+
+            ! Doesn't work for rank 6 tensors yet...
+            if (len(trim(istr1))==2 .or.
+     &          len(trim(istr1))==0) then
+               s1=.false.
+            else if (s1a(1)/=s1a(2)) then
+               s1=.false.
+            else if (s1a(1)==s1a(2)) then
+               ! Pure spin
+               s1=.true.
+            end if
+
+            if (len(trim(istr2))==2 .or.
+     &          len(trim(istr2))==0) then
+               s2=.false.
+            else if (s2a(1)/=s2a(2)) then
+               s2=.false.
+            else if (s2a(1)==s2a(2)) then
+               s2=.true.
+            end if
+
             if (logi) then
                write(lulog,*) "s1b: ", s1b
                write(lulog,*) "s1a: ", s1a
@@ -1179,6 +1198,9 @@
                write(lulog,*)
                write(lulog,*)
             end if
+
+            call print_itf_line(res,t1,t2,fact,istr1,istr2,
+     &                          istr3,inter,s1,s2,lulog)
          end if
        end if
 
