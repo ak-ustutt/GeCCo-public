@@ -9,7 +9,7 @@
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
-      include 'def_itf_tensor.h'
+      include 'def_itf_contr.h'
 
       integer, intent(in) ::
      &     itflog,
@@ -48,10 +48,8 @@
      &     nstr3='        ',         ! Next result index
      &     contract_next_index='        ',         ! Next CONTRACT result index
      &     prev_str3='>       '      ! Previous result index
-      type(itf_tensor) ::
-     &     itf1, itf2, itf3,
-     &     p1, p2, p3,
-     &     n1, n2, n3
+      type(itf_contr) ::
+     &     itf_item
 
       ! Point to start of linked list
       fl_item=>fl_head
@@ -96,14 +94,18 @@
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Get index for current contraction
-        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
-        call assign_spin(istr1,istr2,istr3,
-     &                   fl_item%bcontr%label_res,
-     &                   fl_item%bcontr%label_op1,
-     &                   fl_item%bcontr%label_op2,
-     &                   fl_item%bcontr%fact,inter,itflog)
+        ! call ift_contr_init()
+        !   -> call assign_index() + other things
+        ! Send object to assign spin
+        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+        call assign_spin(itf_item)
+!        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+!        call assign_spin(istr1,istr2,istr3,
+!     &                   fl_item%bcontr%label_res,
+!     &                   fl_item%bcontr%label_op1,
+!     &                   fl_item%bcontr%label_op2,
+!     &                   fl_item%bcontr%fact,inter,itflog)
 
-!        call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
         call clear_index(istr1,istr2, istr3)
 
 
@@ -118,12 +120,14 @@
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
         ! Assuming that this is called only after NEW INTERMEDIATE
-        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
-        call assign_spin(istr1,istr2,istr3,
-     &                   fl_item%bcontr%label_res,
-     &                   fl_item%bcontr%label_op1,
-     &                   fl_item%bcontr%label_op2,
-     &                   fl_item%bcontr%fact,inter,itflog)
+!        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+!        call assign_spin(istr1,istr2,istr3,
+!     &                   fl_item%bcontr%label_res,
+!     &                   fl_item%bcontr%label_op1,
+!     &                   fl_item%bcontr%label_op2,
+!     &                   fl_item%bcontr%fact,inter,itflog)
+        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+        call assign_spin(itf_item)
 
         call clear_index(istr1,istr2, istr3)
 
@@ -135,12 +139,14 @@
 !        call prt_reorder(itflog,fl_item%reo)
 
         ! Get index for current contraction
-        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
-        call assign_spin(istr1,istr2,istr3,
-     &                   fl_item%bcontr%label_res,
-     &                   fl_item%bcontr%label_op1,
-     &                   fl_item%bcontr%label_op2,
-     &                   fl_item%bcontr%fact,inter,itflog)
+!        call assign_index(fl_item%bcontr,istr1,istr2,istr3,itflog)
+!        call assign_spin(istr1,istr2,istr3,
+!     &                   fl_item%bcontr%label_res,
+!     &                   fl_item%bcontr%label_op1,
+!     &                   fl_item%bcontr%label_op2,
+!     &                   fl_item%bcontr%fact,inter,itflog)
+        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+        call assign_spin(itf_item)
 
         call clear_index(istr1,istr2, istr3)
 
