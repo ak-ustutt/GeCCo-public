@@ -77,14 +77,6 @@
 
         inter=inter+1
 
-!        prev_item=>fl_item%prev
-!        if (prev_item%command.eq.8) then
-!            write(itflog,*) "PREV res: ", prev_item%bcontr%label_res
-!        end if
-!        if (prev_item%command.eq.0) then
-!            write(itflog,*) "PREV res: ", prev_item%target
-!        end if
-
       case(command_del_intermediate)
 !        write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
 !        write(itflog,'(2x,a)') trim(fl_item%label)
@@ -112,69 +104,7 @@
      &                   fl_item%bcontr%fact,inter,itflog)
 
 !        call itf_tensor_init(fl_item%bcontr,itf1,itf2,itf3)
-!        prev_item2=>fl_item%prev
-!        next_item2=>fl_item%next
-!        if (next_item2%command.eq.2) then !Expand to other cases
-!          call tensor_idx(next_item2%bcontr,itf1%next_idx,
-!     &                    itf2%next_idx,itf3%next_idx)
-!        end if
-!        if (prev_item2%command.eq.10 .and.
-!     &      contr_no.ne.0) then                     !Expand to other cases
-!          call tensor_idx(prev_item2%bcontr,itf1%prev_idx,
-!     &                    itf2%prev_idx,itf3%prev_idx)
-!        end if
-!        write(itflog,*) "prev target:   ", prev_item2%target
-!        write(itflog,*) "curr target:   ", fl_item%target
-!        write(itflog,*) "next target:   ", next_item2%target
-!
-!        write(itflog,*) "prev command:   ", fl_item%prev%command
-!        write(itflog,*) "curr command:   ", fl_item%prev%command
-!        write(itflog,*) "next command:   ", fl_item%next%command
-!        write(itflog,*) "prev index:     ", itf3%prev_idx
-!        write(itflog,*) "current index:  ", itf3%idx
-!        write(itflog,*) "next index:     ", itf3%next_idx
-        
-
-        !write(itflog,*) "current index ", istr3
-        !write(itflog,*) "previous index ", prev_str3
-        !write(itflog,*) "contract next ", contract_next
-        !write(itflog,*) "contract next index ", contract_next_index
-
-        ! Check if still part of old block (ie. old result == new result)
-        ! Check result name and result index
-!        if (trim(old_res).ne.trim(fl_item%bcontr%label_res) .or.
-!     &      trim(istr3).ne.trim(prev_str3)) then
-!            ! Check if still part of the old block (ie. if the next
-!            ! result from the previous CONTRACT case == new result)
-!            ! This checks if a new intermediate is part of the new block
-!            if (trim(fl_item%bcontr%label_res).ne.trim(contract_next)
-!     &      .or. trim(istr3).ne.trim(contract_next_index)) then
-!                ! Store result using previous result index string,
-!                ! stored when wrote alloc
-!                if (old_res.ne.'>') then
-!                    write(itflog,*) "store ",
-!     &              trim(rename_tensor(old_res)), "[",
-!     &                             trim(contract_next_index), "]"
-!                end if
-!                write(itflog,*) 
-!                write(itflog,*) "alloc ",
-!     &          trim(rename_tensor(fl_item%bcontr%label_res)),
-!     &                         "[", trim(istr3), "]"
-!                prev_str3=istr3
-!                ! Update info from CONTRACT ADD
-!                contract_next_index=prev_str3
-!            end if
-!        end if
-
-!        call print_itf_line(fl_item%bcontr%label_res,
-!     &                      fl_item%bcontr%label_op1,
-!     &                      fl_item%bcontr%label_op2, 
-!     &                      fl_item%bcontr%fact,
-!     &                      istr1, istr2, istr3, inter, itflog)
         call clear_index(istr1,istr2, istr3)
-
-        ! Update previous results for use next time around
-        old_res=fl_item%bcontr%label_res
 
 
       case(command_add_bc_reo)
@@ -195,65 +125,8 @@
      &                   fl_item%bcontr%label_op2,
      &                   fl_item%bcontr%fact,inter,itflog)
 
-        ! If old result does not equal the next result, then the intermediate
-        ! belongs to the next block.
-        ! So end current block, start new block and print intermediate
-        ! line.
-!        next_item=>fl_item%next
-!        if (next_item%command.eq.8) then
-!            ! command_add_bc
-!
-!            ! Assign index of next_item
-!            call assign_index(next_item%bcontr,nstr1,nstr2,nstr3)
-!            call itf_tensor_init(next_item%bcontr,itf1,itf2,itf3,itflog)
-!
-!            ! Check if name and index are same as previous result
-!            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
-!     &          trim(istr3).ne.trim(prev_str3))
-!     &      then
-!                ! Store the tensor, use previous result index stored
-!                ! when wrote alloc
-!                if (old_res.ne.'>') then
-!                    write(itflog,*) "store ",
-!     &              trim(rename_tensor(old_res)), "[",
-!     &                             trim(prev_str3), "]"
-!                end if
-!                write(itflog,*)
-!!                prev_str3=istr3
-!            end if
-!            ! Update varible for use in CONTRACT ADD
-!            contract_next=next_item%bcontr%label_res
-!            contract_next_index=nstr3
-!        end if
-!
-!        ! Assume that this is called after NEW INTERMEDIATE
-!        ! We need to allocate memory for next result, this should be
-!        ! done before the memory is allocated for the intermediate.
-!        ! So result tensor is allocated even if ITF block starts by
-!        ! constructing intermediate
-!        if (next_item%command.eq.8) then
-!            ! Do this unless the result is the same as the previous result
-!            if (trim(next_item%bcontr%label_res).ne.trim(old_res) .or.
-!     &          trim(istr3).ne.trim(prev_str3)) then
-!               write(itflog,*) "alloc ",
-!     &         trim(rename_tensor(next_item%bcontr%label_res)),
-!     &                        "[",trim(nstr3),"]"
-!               prev_str3=istr3
-!            end if
-!        end if
-
-!        call print_itf_line(fl_item%bcontr%label_res,
-!     &                      fl_item%bcontr%label_op1,
-!     &                      fl_item%bcontr%label_op2,
-!     &                      fl_item%bcontr%fact,
-!     &                      istr1, istr2, istr3, inter, itflog)
-!        call construct_tensor(fl_item%bcontr%label_res,
-!     &                      fl_item%bcontr%label_op1,
-!     &                      fl_item%bcontr%label_op2,
-!     &                      istr1, istr2, istr3,
-!     &                      itf1, itf2, itf3,
-!     &                      fl_item%bcontr%fact, itflog)
         call clear_index(istr1,istr2, istr3)
+
 
       case(command_bc_reo)
 !        write(itflog,*) '[CONTRACT][REORDER]',
@@ -269,13 +142,9 @@
      &                   fl_item%bcontr%label_op2,
      &                   fl_item%bcontr%fact,inter,itflog)
 
-!        call print_itf_line(fl_item%bcontr%label_res,
-!     &                      fl_item%bcontr%label_op1,
-!     &                      fl_item%bcontr%label_op2, 
-!     &                      fl_item%bcontr%fact,
-!     &                      istr1, istr2, istr3, inter, itflog)
-
         call clear_index(istr1,istr2, istr3)
+
+
       case(command_reorder)
 !        write(itflog,*) '[REORDER]',fl_item%target
 !        call prt_reorder(itflog,fl_item%reo)
