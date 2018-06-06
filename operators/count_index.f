@@ -177,7 +177,7 @@
       include 'def_itf_contr.h'
       
       type(binary_contr), intent(in) ::
-     &     contr_info   ! Inofrmation about binary contraction
+     &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
      &     item
       integer ::
@@ -493,7 +493,7 @@
       end select
 
 
-      call permute_tensors(e1,e2,c,item)
+      !call permute_tensors(e1,e2,c,item)
 
       return
       end
@@ -547,7 +547,7 @@
          sum_a1=sum_a1+e1(i,2)
          sum_a2=sum_a2+e2(i,2)
       end do
-      
+
       if (sum_c1/=2 .and. sum_c2/=2) then
          if (sum_c1+sum_c2==2) then
             write(item%logfile,*) "permute creations! 0.5*(1-P)"
@@ -559,6 +559,118 @@
             write(item%logfile,*) "permute annhilations! 0.5*(1-P)"
          end if
       end if
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine permute_tensors2(contr_info,perm_array,lulog)
+*----------------------------------------------------------------------*
+!     
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Information about binary contraction
+      integer, intent(inout) ::
+     &     perm_array(4)
+      integer, intent(in) ::
+     &     lulog
+
+      integer ::
+     &     e1(4,2),      ! Occupations of external index 1
+     &     e2(4,2),      ! Occupations of external index 2
+     &     c(4,2)
+      integer ::
+     &     i,
+     &     sum_c1,sum_c2,sum_a1,sum_a2,
+     &     shift
+
+      ! Check if not antisym over different verticies
+      ! Check for tensor products
+      e1=0
+      e2=0
+      c=0
+
+      ! Get occuation info
+      do i = 1, contr_info%n_cnt
+        call count_index(i,
+     &     contr_info%occ_cnt(1:,1:,i),
+     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,c)
+      end do
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_ex1(1:,1:,i),
+     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_ex2(1:,1:,i),
+     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
+
+      if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==2) then
+         return
+      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==0) then
+         return
+      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==6) then
+         return
+      end if
+
+      sum_c1=0
+      sum_c2=0
+      sum_a1=0
+      sum_a2=0
+
+      do i=1, 4
+         ! Sum creation ops
+         sum_c1=sum_c1+e1(i,1)
+         sum_c2=sum_c2+e2(i,1)
+
+         ! Summ annhilation ops
+         sum_a1=sum_a1+e1(i,2)
+         sum_a2=sum_a2+e2(i,2)
+      end do
+
+      shift=1
+      ! If sum==2, then both indicies come from same operator, therefore
+      ! it doesn't need anti-symm
+      if (sum_c1/=2 .and. sum_c2/=2) then
+         if (sum_c1+sum_c2==2) then
+            write(lulog,*) "permute creations! 0.5*(1-P)"
+            perm_array(shift)=1
+            shift=shift+1
+            perm_array(shift)=2
+            shift=shift+1
+         end if
+      end if
+
+      if (sum_a1/=2 .and. sum_a2/=2) then
+         if (sum_a1+sum_a2==2) then
+            write(lulog,*) "permute annhilations! 0.5*(1-P)"
+            if (shift>2) then
+               ! (1-P)*(1-P)
+               perm_array(shift)=3
+               shift=shift+1
+               perm_array(shift)=4
+               shift=shift+1
+            else
+               perm_array(shift)=1
+               shift=shift+1
+               perm_array(shift)=3
+               shift=shift+1
+            end if
+         end if
+      end if
+
+      write(lulog,*) "perm_array ", perm_array
 
       return
       end

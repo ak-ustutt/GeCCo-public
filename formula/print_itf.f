@@ -27,7 +27,8 @@
      &     fl_item   ! Current formula_item
       integer ::
      &     i,j,      ! loop indcies
-     &     contr_no
+     &     contr_no,
+     &     perm_array(4)
       type(itf_contr) ::
      &     itf_item
 
@@ -73,9 +74,26 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
-        call assign_spin(itf_item)
+        ! Get permutaion factors, in an array
+        ! Loop over array, send factor to init
+        ! Spin sum
+        ! Repeat for all permutaion factors
 
+        perm_array=0
+        call permute_tensors2(fl_item%bcontr,perm_array,itflog)
+        if (perm_array(1)==0) then
+           ! No permutations
+           call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+           call assign_spin(itf_item)
+        else
+           do i=1, size(perm_array)
+              ! Loop over permuation cases and send seperatley to
+              ! assign_spin
+              call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+              call assign_spin(itf_item)
+              if (perm_array(i+1)==0) exit
+           end do
+        end if
 
       case(command_add_bc_reo)
         write(itflog,*) '[CONTRACT][REORDER][ADD]',
