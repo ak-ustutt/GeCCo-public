@@ -453,7 +453,6 @@
      &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
       end select
 
-
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
@@ -472,6 +471,77 @@
      &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
      &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
       end select
+
+!      write(item%logfile,*) "Permute: ", item%permute
+!      select case(item%permute)
+!      case(1)
+!      ! [apij] (aacc), ie. T[abij]
+!      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
+!     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+!     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
+!
+!      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
+!     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+!      case(2)
+!      ! Permute creations
+!       item%idx1=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
+!     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(7)))
+!
+!      item%idx2=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(7)))//
+!     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+!      case(3)
+!       item%idx1=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(3)))//
+!     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))
+!
+!      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
+!     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(3)))
+!      case(4)
+!       item%idx1=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
+!     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))
+!
+!      item%idx2=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(6)))//
+!     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(7)))//
+!     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(3)))
+!      case default
+!      write(item%logfile,*) "Error, could not determine permutation"
+!      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
+!     &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
+!     &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
+!       item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+!     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
+!     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
+!     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))//
+!     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
+!     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))
+!      end select
+
       
 
       ! Result
@@ -491,7 +561,6 @@
      &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
      &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
       end select
-
 
       !call permute_tensors(e1,e2,c,item)
 
@@ -624,53 +693,65 @@
          return
       end if
 
-      sum_c1=0
-      sum_c2=0
-      sum_a1=0
-      sum_a2=0
+      if (e1(1,1)+e2(1,1)==2 .and. e1(3,2)+e2(3,2)==2 .or.
+     &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2 .or.
+     &    e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2) then
+         
+         write(lulog,*) "hello ", e1(1,1)+e2(1,1), e1(3,2)+e2(3,2)
+         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(3,2)+e2(3,2)
+         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(1,2)+e2(1,2)
 
-      do i=1, 4
-         ! Sum creation ops
-         sum_c1=sum_c1+e1(i,1)
-         sum_c2=sum_c2+e2(i,1)
+         sum_c1=0
+         sum_c2=0
+         sum_a1=0
+         sum_a2=0
 
-         ! Summ annhilation ops
-         sum_a1=sum_a1+e1(i,2)
-         sum_a2=sum_a2+e2(i,2)
-      end do
+         do i=1, 4
+            ! Sum creation ops
+            sum_c1=sum_c1+e1(i,1)
+            sum_c2=sum_c2+e2(i,1)
 
-      shift=1
-      ! If sum==2, then both indicies come from same operator, therefore
-      ! it doesn't need anti-symm
-      if (sum_c1/=2 .and. sum_c2/=2) then
-         if (sum_c1+sum_c2==2) then
-            write(lulog,*) "permute creations! 0.5*(1-P)"
-            perm_array(shift)=1
-            shift=shift+1
-            perm_array(shift)=2
-            shift=shift+1
-         end if
-      end if
+            ! Summ annhilation ops
+            sum_a1=sum_a1+e1(i,2)
+            sum_a2=sum_a2+e2(i,2)
+         end do
 
-      if (sum_a1/=2 .and. sum_a2/=2) then
-         if (sum_a1+sum_a2==2) then
-            write(lulog,*) "permute annhilations! 0.5*(1-P)"
-            if (shift>2) then
-               ! (1-P)*(1-P)
-               perm_array(shift)=3
-               shift=shift+1
-               perm_array(shift)=4
-               shift=shift+1
-            else
+         shift=1
+         ! If sum==2, then both indicies come from same operator, therefore
+         ! it doesn't need anti-symm
+         if (sum_c1/=2 .and. sum_c2/=2) then
+            if (sum_c1+sum_c2==2) then
+               write(lulog,*) "permute creations! 0.5*(1-P)"
                perm_array(shift)=1
                shift=shift+1
-               perm_array(shift)=3
+               perm_array(shift)=2
                shift=shift+1
             end if
          end if
-      end if
 
-      write(lulog,*) "perm_array ", perm_array
+         if (sum_a1/=2 .and. sum_a2/=2) then
+            if (sum_a1+sum_a2==2) then
+               write(lulog,*) "permute annhilations! 0.5*(1-P)"
+               if (shift>2) then
+                  ! (1-P)*(1-P)
+                  perm_array(shift)=3
+                  shift=shift+1
+                  perm_array(shift)=4
+                  shift=shift+1
+               else
+                  perm_array(shift)=1
+                  shift=shift+1
+                  perm_array(shift)=3
+                  shift=shift+1
+               end if
+            end if
+         end if
+
+         write(lulog,*) "perm_array ", perm_array
+
+      else
+         return
+      end if
 
       return
       end
@@ -1137,7 +1218,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,itf_item,lulog)
+      subroutine itf_contr_init(contr_info,itf_item,perm,lulog)
 *----------------------------------------------------------------------*
 !    Initalise 
 *----------------------------------------------------------------------*
@@ -1152,18 +1233,24 @@
       type(itf_contr), intent(inout) ::
      &     itf_item
       integer, intent(in) ::
+     &     perm,
      &     lulog
+      ! This should be in a 'constructor'
 
       ! Assign output file
       itf_item%logfile=lulog
+
+      ! Assign permutation number
+      if (perm==0) then
+         itf_item%permute=1
+      else
+         itf_item%permute=perm
+      end if
 
       ! Assign labels
       itf_item%label_t1=contr_info%label_op1
       itf_item%label_t2=contr_info%label_op2
       itf_item%label_res=contr_info%label_res
-
-      ! Assign index string
-      call assign_index(contr_info,itf_item)
 
       ! Assign rank
       call itf_rank(itf_item%idx1,itf_item%rank1)
@@ -1177,6 +1264,9 @@
       call check_inter(itf_item%label_t1,itf_item%inter(1))
       call check_inter(itf_item%label_t2,itf_item%inter(2))
       call check_inter(itf_item%label_res,itf_item%inter(3))
+
+      ! Assign index string
+      call assign_index(contr_info,itf_item)
 
       return
       end

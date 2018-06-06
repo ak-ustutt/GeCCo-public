@@ -79,21 +79,26 @@
         ! Spin sum
         ! Repeat for all permutaion factors
 
-        perm_array=0
-        call permute_tensors2(fl_item%bcontr,perm_array,itflog)
-        if (perm_array(1)==0) then
-           ! No permutations
-           call itf_contr_init(fl_item%bcontr,itf_item,itflog)
-           call assign_spin(itf_item)
-        else
-           do i=1, size(perm_array)
-              ! Loop over permuation cases and send seperatley to
-              ! assign_spin
-              call itf_contr_init(fl_item%bcontr,itf_item,itflog)
-              call assign_spin(itf_item)
-              if (perm_array(i+1)==0) exit
-           end do
-        end if
+!        perm_array=0
+!        call permute_tensors2(fl_item%bcontr,perm_array,itflog)
+!        if (perm_array(1)==0) then
+!           ! No permutations
+!           call itf_contr_init(fl_item%bcontr,itf_item,perm_array(1),
+!     &                         itflog)
+!           call assign_spin(itf_item)
+!        else
+!           do i=1, size(perm_array)
+!              ! Loop over permuation cases and send seperatley to
+!              ! assign_spin
+!              call itf_contr_init(fl_item%bcontr,itf_item,perm_array(i),
+!     &                            itflog)
+!              call assign_spin(itf_item)
+!              if (perm_array(i+1)==0) exit
+!           end do
+!        end if
+
+        call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
+        call assign_spin(itf_item)
 
       case(command_add_bc_reo)
         write(itflog,*) '[CONTRACT][REORDER][ADD]',
@@ -105,7 +110,7 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+        call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
         call assign_spin(itf_item)
 
 
@@ -115,7 +120,7 @@
 !        call prt_bcontr(itflog,fl_item%bcontr)
 !        call prt_reorder(itflog,fl_item%reo)
 
-        call itf_contr_init(fl_item%bcontr,itf_item,itflog)
+        call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
         call assign_spin(itf_item)
 
 
