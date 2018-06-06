@@ -166,7 +166,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine assign_index(contr_info,istr1,istr2,istr3,lulog)
+      subroutine assign_index(contr_info,item)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -174,15 +174,12 @@
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
+      include 'def_itf_contr.h'
       
       type(binary_contr), intent(in) ::
      &     contr_info   ! Inofrmation about binary contraction
-      integer, intent(in) ::
-     &     lulog        ! Debug delete
-      character(len=8), intent(inout)  ::
-     &     istr1,       ! Operator 1 index
-     &     istr2,       ! Operator 2 index
-     &     istr3        ! Result index
+      type(itf_contr), intent(inout) ::
+     &     item
       integer ::
      &     t1(4,2),      ! Occupations of operator 1
      &     c(4,2),       ! Occupations of contraction index
@@ -220,9 +217,9 @@
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
 
 
-      istr1='        '
-      istr2='        '
-      istr3='        '
+      !istr1='        '
+      !istr2='        '
+      !istr3='        '
 
       ! Set index convention
       idx_type=(/ 0, 0, 0 /)
@@ -445,13 +442,13 @@
       ! Operator 1
       select case(idx_type(1))
       case(ham)
-          ! Hamiltonian/integral convention
-          istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(5)))//
+      ! Hamiltonian/integral convention
+      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(5)))//
      &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(7)))//
      &          trim(adjustl(t1_array(2)))//trim(adjustl(t1_array(6)))
       case default
-          ! [apij] (aacc), ie. T[abij]
-          istr1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
+      ! [apij] (aacc), ie. T[abij]
+      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(t1_array(2)))//
      &          trim(adjustl(t1_array(3)))//trim(adjustl(t1_array(5)))//
      &          trim(adjustl(t1_array(6)))//trim(adjustl(t1_array(7)))
       end select
@@ -461,14 +458,14 @@
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-          istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+       item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
      &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
      &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
      &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))//
      &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
      &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))
       case default
-          istr2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
+      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
      &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
      &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
      &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
@@ -480,14 +477,14 @@
       ! Result
       select case(idx_type(3))
       case(ham)
-          istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
      &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
      &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
      &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))//
      &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
      &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))
       case default
-          istr3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
      &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
      &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
      &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
@@ -496,29 +493,29 @@
       end select
 
 
-      call permute_tensors(e1,e2,c,istr1,istr2,istr3,lulog)
+      call permute_tensors(e1,e2,c,item)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine permute_tensors(e1,e2,c,istr1,istr2,istr3,lulog)
+      subroutine permute_tensors(e1,e2,c,item)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
 
       implicit none
 
-      character(len=8), intent(in)  ::
-     &     istr1,       ! Operator 1 index
-     &     istr2,       ! Operator 2 index
-     &     istr3        ! Result index
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
       integer, intent(in) ::
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),      ! Occupations of external index 2
      &     c(4,2)
-      integer, intent(in) ::
-     &     lulog
+      type(itf_contr), intent(inout) ::
+     &     item
       integer ::
      &     i,
      &     sum_c1,sum_c2,sum_a1,sum_a2
@@ -528,14 +525,14 @@
       ! Check if not antisym over different verticies
 
       ! For rank 4. Rank 2,6 and 0 don't need antisymetrising
-      if (len(trim(istr3))==2 .or. len(trim(istr3))==6
-     &    .or. len(trim(istr3))==0) then
+      if (len(trim(item%idx3))==2 .or. len(trim(item%idx3))==6
+     &    .or. len(trim(item%idx3))==0) then
          return
       end if
 
       ! Don't care about tensor products now
-      if (len(trim(istr3))==4 .and. len(trim(istr1))==2 .and.
-     &    len(trim(istr2))==2) then
+      if (len(trim(item%idx3))==4 .and. len(trim(item%idx1))==2 .and.
+     &    len(trim(item%idx2))==2) then
          return
       end if
 
@@ -553,13 +550,13 @@
       
       if (sum_c1/=2 .and. sum_c2/=2) then
          if (sum_c1+sum_c2==2) then
-            write(lulog,*) "permute creations! 0.5*(1-P)"
+            write(item%logfile,*) "permute creations! 0.5*(1-P)"
          end if
       end if
 
       if (sum_a1/=2 .and. sum_a2/=2) then
          if (sum_a1+sum_a2==2) then
-            write(lulog,*) "permute annhilations! 0.5*(1-P)"
+            write(item%logfile,*) "permute annhilations! 0.5*(1-P)"
          end if
       end if
 
@@ -1045,24 +1042,21 @@
       integer, intent(in) ::
      &     lulog
 
+      ! Assign output file
+      itf_item%logfile=lulog
+
       ! Assign labels
       itf_item%label_t1=contr_info%label_op1
       itf_item%label_t2=contr_info%label_op2
       itf_item%label_res=contr_info%label_res
 
       ! Assign index string
-      call assign_index(contr_info,itf_item%idx1,
-     &                  itf_item%idx2,
-     &                  itf_item%idx3,
-     &                  lulog)
+      call assign_index(contr_info,itf_item)
 
       ! Assign rank
       call itf_rank(itf_item%idx1,itf_item%rank1)
       call itf_rank(itf_item%idx2,itf_item%rank2)
       call itf_rank(itf_item%idx3,itf_item%rank3)
-
-      ! Assign file
-      itf_item%logfile=lulog
 
       ! Assign factor
       itf_item%fact=contr_info%fact
