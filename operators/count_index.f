@@ -1001,17 +1001,24 @@
 
       integer ::
      &     i,j,k,l,m,n,o,p,q,r,s,
-     &     second_idx,third_idx,fourth_idx
+     &     second_idx,third_idx,fourth_idx,
+     &     first_idx
 
+      first_idx=0
       second_idx=0
       third_idx=0
       fourth_idx=0
+
       ! Check for first unassigned index
+      if (any(s1a==0) .or. first_idx>0) then
       do i=1, size(s1a)
-       if (s1a(i)==0) then
+       if (s1a(i)==0 .or. first_idx>0 .and. i==first_idx) then
+        if (first_idx==0) then
+         first_idx=i
+        end if
         do j=1, 2
-         s1a(i)=j
-         call find_idx(s2a,s2b,t1a,t2a,t2b,i,j)
+         s1a(first_idx)=j
+         call find_idx(s2a,s2b,t1a,t2a,t2b,first_idx,j)
 
          ! Check for second index
          if (any(s1a==0) .or. second_idx>0) then
@@ -1094,6 +1101,12 @@
         end do ! Loop over a/b for first index
        end if ! Check for first 0 index
       end do
+      else if (.not. any(s1a==0) .and. first_idx==0) then
+       ! Print result, sum over no index
+       call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+     &                      item)
+      end if
+      
 
       ! loop check for 0
       !  if 0
