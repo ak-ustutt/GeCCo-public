@@ -13,15 +13,22 @@
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
 
+      ! Creation operators
+      ! Particle, ijkl
       nops(1,1)=nops(1,1) + iocc(1,1)
+      ! Hole, abcd
       nops(2,1)=nops(2,1) + iocc(2,1)
+      ! Valence, pqrs
       nops(3,1)=nops(3,1) + iocc(3,1)
+      ! Explicit, x
       nops(4,1)=nops(4,1) + iocc(4,1)
+
+      ! Annhilation operators
       nops(1,2)=nops(1,2) + iocc(1,2)
       nops(2,2)=nops(2,2) + iocc(2,2)
       nops(3,2)=nops(3,2) + iocc(3,2)
       nops(4,2)=nops(4,2) + iocc(4,2)
-
+      
       return
       end
 
@@ -161,6 +168,269 @@
       end if
 
       write(item%logfile,*) trim(itf_line)
+      write(item%logfile,*) "---------------------------------------"
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine assign_index2(contr_info,item)
+*----------------------------------------------------------------------*
+!     
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+      
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Information about binary contraction
+      type(itf_contr), intent(inout) ::
+     &     item
+      integer ::
+     &     c(4,2),       ! Occupations of contraction index
+     &     e1(4,2),      ! Occupations of external index 1
+     &     e2(4,2)       ! Occupations of external index 2
+      integer ::
+     &     i,j
+      character, dimension(4) ::
+     &     hol=(/ 'i','j','k','l' /),
+     &     par=(/ 'a','b','c','d' /)
+      character, dimension(8) ::
+     &     val=(/ 'p','q','r','s','t','u','v','w' /)
+      character(len=8) ::
+     &     c1='        ',    ! Workspace to assign index before array
+     &     c2='        ',
+     &     c3='        ',
+     &     c4='        ',
+     &     a1='        ',
+     &     a2='        ',
+     &     a3='        ',
+     &     a4='        '
+      character(len=8), dimension(8) ::
+      ! x_array(1:4) = creation operators (par/val/hol/f12)
+      ! x_array(5:8) = annhilation operators (par/val/hol/f12)
+     &     c_array,     ! Contraction index array
+     &     e1_array,    ! External index of operator 1 array
+     &     e2_array     ! External index of operator 2 array
+      integer, dimension(3) ::
+     &     idx_type     ! Info about index convention
+      integer, parameter ::
+     &     t_amp = 0,       ! [apij] (aacc)
+     &     ham   = 1        ! [abip]
+      character(len=20), dimension(4) ::
+     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
+
+
+      ! Set index convention
+      idx_type=(/ 0, 0, 0 /)
+      do i=1, len(tensor_ham)
+          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
+              ! Use default convention for now
+              idx_type(1)=0
+          end if
+          if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
+              idx_type(2)=0
+          end if
+          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
+              idx_type(3)=0
+          end if
+      end do
+
+      c=0
+      e1=0
+      e2=0
+
+      ! Get occuation info
+      do i = 1, contr_info%n_cnt
+        call count_index(i,
+     &     contr_info%occ_cnt(1:,1:,i),
+     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,c)
+      end do
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_ex1(1:,1:,i),
+     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_ex2(1:,1:,i),
+     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
+      
+
+      ! Order in ITF usually follows: apij
+      ! Defualt [ccaa] as in the case of T[abij]
+
+      ! Assign e1 (external indicies of t1)
+      do i=1, e1(2,1)
+          c1(i:)=par(i)
+      end do
+      e1_array(1)=c1
+      do i=1, e1(3,1)
+          c2(i:)=val(i)
+      end do
+      e1_array(2)=c2
+      do i=1, e1(1,1)
+          c3(i:)=hol(i)
+      end do
+      e1_array(3)=c3
+
+      ! Need to to be shifted to not match assignment of creations above
+      do i=1, e1(2,2)
+          a1(i:)=par(i+e1(2,1))
+      end do
+      e1_array(5)=a1
+      do i=1, e1(3,2)
+          a2(i:)=val(i+e1(3,1))
+      end do
+      e1_array(6)=a2
+      do i=1, e1(1,2)
+          a3(i:)=hol(i+e1(1,1))
+      end do
+      e1_array(7)=a3
+
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
+
+      ! Shifted so as not to match e1 index
+      do i=1, e2(2,1)
+          c1(i:)=par(i+e1(2,1)+e1(2,2))
+      end do
+      e2_array(1)=c1
+      do i=1, e2(3,1)
+          c2(i:)=val(i+e1(3,1)+e1(3,2))
+      end do
+      e2_array(2)=c2
+      do i=1, e2(1,1)
+          c3(i:)=hol(i+e1(1,1)+e1(1,2))
+      end do
+      e2_array(3)=c3
+
+      ! Shifted so as not to match e1 index or above creations
+      do i=1, e2(2,2)
+          a1(i:)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
+      end do
+      e2_array(5)=a1
+      do i=1, e2(3,2)
+          a2(i:)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
+      end do
+      e2_array(6)=a2
+      do i=1, e2(1,2)
+          a3(i:)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
+      end do
+      e2_array(7)=a3
+      
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
+      
+      
+      ! Assign c (contracted by)
+      ! These need to be shifted, so as not to match e1 or c2
+      do i=1, c(2,1)
+          c1(i:)=par(i+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2))
+      end do
+      c_array(1)=c1
+      do i=1, c(3,1)
+          c2(i:)=val(i+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2))
+      end do
+      c_array(2)=c2
+      do i=1, c(1,1)
+          c3(i:)=hol(i+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2))
+      end do
+      c_array(3)=c3
+
+      ! Final shift so as not to match above creations
+      do i=1, c(2,2)
+          a1(i:)=par(i+c(2,1)+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2))
+      end do
+      c_array(5)=a1
+      do i=1, c(3,2)
+          a2(i:)=val(i+c(3,1)+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2))
+      end do
+      c_array(6)=a2
+      do i=1, c(1,2)
+          a3(i:)=hol(i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2))
+      end do
+      c_array(7)=a3
+
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
+
+
+      ! Construct final index strings
+      ! Operator 1
+      select case(idx_type(1))
+      case(ham)
+      ! Hamiltonian/integral convention
+      item%idx1=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(7)))
+      case default
+      ! [apij] (aacc), ie. T[abij]
+      item%idx1=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(7)))
+      end select
+
+      ! Operator 2
+      ! c_array annhilations correspond to t2 creations and vice versa
+      select case(idx_type(2))
+      case(ham)
+      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))
+      case default
+      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      end select
+
+      ! Result
+      select case(idx_type(3))
+      case(ham)
+      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))
+      case default
+      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
+     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
+     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
+     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
+     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
+     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
+      end select
 
       return
       end
@@ -685,6 +955,9 @@
      &     contr_info%ngas,contr_info%nspin,e2)
       end do
 
+      ! C: |i|a|p|x|
+      ! A: |i|a|p|x|
+
       if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==2) then
          return
       else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==0) then
@@ -693,13 +966,17 @@
          return
       end if
 
-      if (e1(1,1)+e2(1,1)==2 .and. e1(3,2)+e2(3,2)==2 .or.
-     &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2 .or.
-     &    e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2) then
+      write(lulog,*) "e1+e2 ", sum(sum(e1,dim=1))+sum(sum(e2,dim=1))
+      write(lulog,*) "e1 ", e1
+      write(lulog,*) "e2 ", e2
+
+      if (e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
+     &    e1(3,1)+e2(3,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
+     &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2) then
          
-         write(lulog,*) "hello ", e1(1,1)+e2(1,1), e1(3,2)+e2(3,2)
-         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(3,2)+e2(3,2)
          write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(1,2)+e2(1,2)
+         write(lulog,*) "hello ", e1(3,1)+e2(3,1), e1(1,2)+e2(1,2)
+         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(3,2)+e2(3,2)
 
          sum_c1=0
          sum_c2=0
@@ -715,6 +992,11 @@
             sum_a1=sum_a1+e1(i,2)
             sum_a2=sum_a2+e2(i,2)
          end do
+
+         write(lulog,*) "sum_c1: ", sum_c1
+         write(lulog,*) "sum_c2: ", sum_c1
+         write(lulog,*) "sum_a1: ", sum_c1
+         write(lulog,*) "sum_c1: ", sum_c1
 
          shift=1
          ! If sum==2, then both indicies come from same operator, therefore
@@ -996,18 +1278,22 @@
      &     zero_a,zero_b
       logical, intent(in) ::
      &     logi      ! Debug delete
-      type(itf_contr) ::
+      type(itf_contr), intent(in) ::
      &     item
 
       integer ::
      &     i,j,k,l,m,n,o,p,q,r,s,
      &     second_idx,third_idx,fourth_idx,
      &     first_idx
+      logical ::
+     &     eloop     ! Check if at least one spin case is printed out
 
       first_idx=0
       second_idx=0
       third_idx=0
       fourth_idx=0
+
+      eloop=.false.
 
       ! Check for first unassigned index
       if (any(s1a==0) .or. first_idx>0) then
@@ -1056,14 +1342,14 @@
      &                             fourth_idx,r)
                      ! Print result, sum over four indicies
                      call print_spin_case(s1b,s1a,s2a,
-     &                                    s2b,logi,item)
+     &                                    s2b,logi,eloop,item)
                     end do
                    end if
                   end do
                  else if (.not. any(s1b==0) .and. fourth_idx==0) then
                   ! Print result, sum over three indicies
                   call print_spin_case(s1b,s1a,s2a,s2b,logi,
-     &                                 item)
+     &                                 eloop,item)
                  end if
 
                 end do
@@ -1072,7 +1358,7 @@
              else if (.not. any(s1b==0) .and. third_idx==0) then 
               ! Print result, sum over two indicies
               call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
-     &                             item)
+     &                             eloop,item)
              end if
             end do
            end if
@@ -1089,14 +1375,14 @@
              s1b(third_idx)=p
              call find_idx(s2a,s2b,t1b,t2a,t2b,third_idx,p)
              call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
-     &                            item)
+     &                            eloop,item)
             end do
            end if
           end do
          else if (.not. any(s1a==0) .and. second_idx==0) then
           ! Print result, sum over one indicies
           call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
-     &                         item)
+     &                         eloop,item)
          end if
         end do ! Loop over a/b for first index
        end if ! Check for first 0 index
@@ -1104,7 +1390,7 @@
       else if (.not. any(s1a==0) .and. first_idx==0) then
        ! Print result, sum over no index
        call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
-     &                      item)
+     &                      eloop,item)
       end if
       
 
@@ -1119,11 +1405,15 @@
       !  else
       !   print
 
+      if (.not. eloop) then
+        write(item%logfile,*) "Error, didn't print out spin case"
+      end if
+
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,item)
+      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,eloop,item)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
@@ -1141,6 +1431,8 @@
      &     s2b(2)
       logical, intent(in) ::
      &     logi      ! Debug delete
+      logical, intent(inout) ::
+     &     eloop     ! Check if at least one spin case is printed out
       type(itf_contr), intent(inout) ::
      &     item
       logical ::
@@ -1192,8 +1484,10 @@
             end if
 
             call print_itf_line(item,s1,s2)
+            eloop=.true.
          end if
        end if
+
 
        return
        end
@@ -1279,7 +1573,8 @@
       call check_inter(itf_item%label_res,itf_item%inter(3))
 
       ! Assign index string
-      call assign_index(contr_info,itf_item)
+      !call assign_index(contr_info,itf_item)
+      call assign_index2(contr_info,itf_item)
 
       return
       end

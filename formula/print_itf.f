@@ -96,6 +96,8 @@
 !              if (perm_array(i+1)==0) exit
 !           end do
 !        end if
+        perm_array=0
+        !call permute_tensors2(fl_item%bcontr,perm_array,itflog)
 
         call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
         call assign_spin(itf_item)
@@ -110,6 +112,8 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
+        perm_array=0
+        !call permute_tensors2(fl_item%bcontr,perm_array,itflog)
         call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
         call assign_spin(itf_item)
 
