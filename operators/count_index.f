@@ -386,7 +386,7 @@
          ! Permute annhilations
          do i=1, size(t1_array)/2
             t1_array(i)=e1_array(i)
-            t1_array(i+5)=e2_array(i+5)
+            t1_array(i+4)=e2_array(i+5)
             t2_array(i)=e2_array(i)
             t2_array(i+5)=e1_array(i+5)
          end do
@@ -1407,6 +1407,7 @@
 
       if (.not. eloop) then
         write(item%logfile,*) "Error, didn't print out spin case"
+        call print_itf_line(item,.false.,.false.)
       end if
 
       return
