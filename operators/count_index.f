@@ -88,6 +88,33 @@
       end function
 
 *----------------------------------------------------------------------*
+      subroutine t_index(idx,tidx)
+*----------------------------------------------------------------------*
+!     Transpose ITF index string, abij => abji
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=index_len), intent(in) ::
+     &     idx       ! ITF index string
+      character(len=index_len), intent(inout) ::
+     &     tidx      ! Transpose of ITF index string
+
+      character(len=1) ::
+     &     tmp
+
+      tidx=idx
+      tmp=idx(3:3)
+      tidx(3:3)=idx(4:4)
+      tidx(4:4)=tmp
+      
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine print_itf_line(item,s1,s2)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
@@ -108,6 +135,8 @@
      &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
      &     ires, it1, it2,          ! Name of tensors + index
      &     sres, st1, st2           ! Name of spin summed tensors + index
+      character(len=index_len) ::
+     &     tidx1, tidx2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=50) ::
@@ -137,16 +166,20 @@
       ! Spin summ
       if (s1) then
          ! Pure spin
+         tidx1=''
+         call t_index(item%idx1,tidx1)
          st1='('//trim(adjustl(nt1))//'['//trim(item%idx1)//']'//
-     &       '-'//trim(adjustl(nt1))//'['//trim(item%idx1)//']'//')'
+     &       '-'//trim(adjustl(nt1))//'['//trim(tidx1)//']'//')'
       else
          st1=trim(adjustl(nt1))//'['//trim(item%idx1)//']'
       end if
 
       if (s2) then
          ! Pure spin
+         tidx2=''
+         call t_index(item%idx2,tidx2)
          st2='('//trim(adjustl(nt2))//'['//trim(item%idx2)//']'//
-     &       '-'//trim(adjustl(nt2))//'['//trim(item%idx2)//']'//')'
+     &       '-'//trim(adjustl(nt2))//'['//trim(tidx2)//']'//')'
       else
          st2=trim(adjustl(nt2))//'['//trim(item%idx2)//']'
       end if
