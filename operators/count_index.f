@@ -191,7 +191,7 @@
       integer ::
      &     c(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
-     &     e2(4,2)       ! Occupations of external index 2
+     &     e2(4,2)      ! Occupations of external index 2
       integer ::
      &     i,j
       character, dimension(4) ::
@@ -213,7 +213,9 @@
       ! x_array(5:8) = annhilation operators (par/val/hol/f12)
      &     c_array,     ! Contraction index array
      &     e1_array,    ! External index of operator 1 array
-     &     e2_array     ! External index of operator 2 array
+     &     e2_array,    ! External index of operator 2 array
+     &     t1_array,
+     &     t2_array
       integer, dimension(3) ::
      &     idx_type     ! Info about index convention
       integer, parameter ::
@@ -335,8 +337,38 @@
       a1='        '
       a2='        '
       a3='        '
-      
-      
+
+      ! Permute indicies to get antisymm tensors
+      if (item%permute==1) then
+         ! No permutations
+         do i=1, size(t1_array)
+            t1_array(i)=e1_array(i)
+            t2_array(i)=e2_array(i)
+         end do
+      else if (item%permute==2) then
+         ! Permute creations
+         do i=1, size(t1_array)/2
+            t1_array(i)=e2_array(i)
+            t1_array(i+4)=e1_array(i+4)
+            t2_array(i)=e1_array(i)
+            t2_array(i+4)=e2_array(i+4)
+         end do
+      else if (item%permute==3) then
+         ! Permute annhilations
+         do i=1, size(t1_array)/2
+            t1_array(i)=e1_array(i)
+            t1_array(i+5)=e2_array(i+5)
+            t2_array(i)=e2_array(i)
+            t2_array(i+5)=e1_array(i+5)
+         end do
+      else if (item%permute==4) then
+         ! Permute creations and annhilations
+         do i=1, size(t1_array)
+            t1_array(i)=e2_array(i)
+            t2_array(i)=e1_array(i)
+         end do
+      end if
+
       ! Assign c (contracted by)
       ! These need to be shifted, so as not to match e1 or c2
       do i=1, c(2,1)
@@ -379,39 +411,39 @@
       select case(idx_type(1))
       case(ham)
       ! Hamiltonian/integral convention
-      item%idx1=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(7)))
+      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))
       case default
       ! [apij] (aacc), ie. T[abij]
-      item%idx1=trim(adjustl(e1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(e1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(e1_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(e1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(e1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(e1_array(7)))//trim(adjustl(c_array(7)))
+      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))
       end select
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(6)))
+      item%idx2=trim(adjustl(t2_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t2_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t2_array(3)))//trim(adjustl(c_array(3)))//
+     &          trim(adjustl(t2_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(t2_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t2_array(6)))//trim(adjustl(c_array(6)))
       case default
-      item%idx2=trim(adjustl(e2_array(1)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(e2_array(2)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(e2_array(3)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(e2_array(5)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(e2_array(6)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(e2_array(7)))//trim(adjustl(c_array(3)))
+      item%idx2=trim(adjustl(t2_array(1)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t2_array(2)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(t2_array(3)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(t2_array(5)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t2_array(6)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t2_array(7)))//trim(adjustl(c_array(3)))
       end select
 
       ! Result
@@ -838,72 +870,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine permute_tensors(e1,e2,c,item)
-*----------------------------------------------------------------------*
-!     
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      integer, intent(in) ::
-     &     e1(4,2),      ! Occupations of external index 1
-     &     e2(4,2),      ! Occupations of external index 2
-     &     c(4,2)
-      type(itf_contr), intent(inout) ::
-     &     item
-      integer ::
-     &     i,
-     &     sum_c1,sum_c2,sum_a1,sum_a2
-      logical ::
-     &     logi ! Debug delete
-
-      ! Check if not antisym over different verticies
-
-      ! For rank 4. Rank 2,6 and 0 don't need antisymetrising
-      if (len(trim(item%idx3))==2 .or. len(trim(item%idx3))==6
-     &    .or. len(trim(item%idx3))==0) then
-         return
-      end if
-
-      ! Don't care about tensor products now
-      if (len(trim(item%idx3))==4 .and. len(trim(item%idx1))==2 .and.
-     &    len(trim(item%idx2))==2) then
-         return
-      end if
-
-      sum_c1=0
-      sum_c2=0
-      sum_a1=0
-      sum_a2=0
-
-      do i=1, 4
-         sum_c1=sum_c1+e1(i,1)
-         sum_c2=sum_c2+e2(i,1)
-         sum_a1=sum_a1+e1(i,2)
-         sum_a2=sum_a2+e2(i,2)
-      end do
-
-      if (sum_c1/=2 .and. sum_c2/=2) then
-         if (sum_c1+sum_c2==2) then
-            write(item%logfile,*) "permute creations! 0.5*(1-P)"
-         end if
-      end if
-
-      if (sum_a1/=2 .and. sum_a2/=2) then
-         if (sum_a1+sum_a2==2) then
-            write(item%logfile,*) "permute annhilations! 0.5*(1-P)"
-         end if
-      end if
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine permute_tensors2(contr_info,perm_array,lulog)
+      subroutine permute_tensors(contr_info,perm_array,lulog)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -931,6 +898,8 @@
 
       ! Check if not antisym over different verticies
       ! Check for tensor products
+      ! Not going to antisymm intermediates...
+      ! The intermediates can have eeaa structure
       e1=0
       e2=0
       c=0
@@ -966,18 +935,14 @@
          return
       end if
 
-      write(lulog,*) "e1+e2 ", sum(sum(e1,dim=1))+sum(sum(e2,dim=1))
-      write(lulog,*) "e1 ", e1
-      write(lulog,*) "e2 ", e2
+      !write(lulog,*) "e1+e2 ", sum(sum(e1,dim=1))+sum(sum(e2,dim=1))
+      !write(lulog,*) "e1 ", e1
+      !write(lulog,*) "e2 ", e2
 
       if (e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
      &    e1(3,1)+e2(3,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
      &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2) then
          
-         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(1,2)+e2(1,2)
-         write(lulog,*) "hello ", e1(3,1)+e2(3,1), e1(1,2)+e2(1,2)
-         write(lulog,*) "hello ", e1(2,1)+e2(2,1), e1(3,2)+e2(3,2)
-
          sum_c1=0
          sum_c2=0
          sum_a1=0
