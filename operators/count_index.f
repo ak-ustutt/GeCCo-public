@@ -117,11 +117,15 @@
      &     a_line,             ! Line of ITF code
      &     s_line              ! Line of ITF code
       character(len=25) ::
-     &     sfact='                         ',             ! String representation of factor
-     &     sfact_star='                         '              ! String representation of factor formatted for output
+     &     sfact,             ! String representation of factor
+     &     sfact_star         ! String representation of factor formatted for output
       character(len=maxlen_bc_label) ::
      &     rename_tensor
+      integer ::
+     &     i
 
+      sfact='                         '
+      sfact_star='                         '
       ! Remove these...
       nres=item%label_res
       nt1=item%label_t1
@@ -151,7 +155,13 @@
       if (item%fact.ne.1.0) then
           if (item%fact.ne.-1.0) then
               write(sfact,*) item%fact
-              sfact_star=' '//trim(sfact)//'*'
+              do i=1, len(sfact)
+                 ! Start after decimal point
+                 if (sfact(i:i)=='0' .or. sfact(i:i)=='-') then
+                    sfact(i:i)=' '
+                 end if
+              end do
+              sfact_star=trim(adjustl(sfact))//'*'
           end if
       end if
 
@@ -223,7 +233,8 @@
      &     ham   = 1        ! [abip]
       character(len=20), dimension(4) ::
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
-
+      real(8) ::
+     &     tmp_fact
 
       ! Set index convention
       idx_type=(/ 0, 0, 0 /)
@@ -338,13 +349,26 @@
       a2='        '
       a3='        '
 
+      tmp_fact=item%fact
+
       ! Permute indicies to get antisymm tensors
-      if (item%permute==1) then
+      if (item%permute==0) then
          ! No permutations
          do i=1, size(t1_array)
             t1_array(i)=e1_array(i)
             t2_array(i)=e2_array(i)
          end do
+      else if (item%permute==1) then
+         ! No permutations, but get a factor
+         do i=1, size(t1_array)
+            t1_array(i)=e1_array(i)
+            t2_array(i)=e2_array(i)
+         end do
+         if (item%perm4) then
+            item%fact=tmp_fact*-0.25
+         else
+            item%fact=tmp_fact*-0.5
+         end if
       else if (item%permute==2) then
          ! Permute creations
          do i=1, size(t1_array)/2
@@ -353,6 +377,11 @@
             t2_array(i)=e1_array(i)
             t2_array(i+4)=e2_array(i+4)
          end do
+         if (item%perm4) then
+            item%fact=tmp_fact*-0.25
+         else
+            item%fact=tmp_fact*-0.5
+         end if
       else if (item%permute==3) then
          ! Permute annhilations
          do i=1, size(t1_array)/2
@@ -361,12 +390,18 @@
             t2_array(i)=e2_array(i)
             t2_array(i+5)=e1_array(i+5)
          end do
+         if (item%perm4) then
+            item%fact=tmp_fact*-0.25
+         else
+            item%fact=tmp_fact*-0.5
+         end if
       else if (item%permute==4) then
          ! Permute creations and annhilations
          do i=1, size(t1_array)
             t1_array(i)=e2_array(i)
             t2_array(i)=e1_array(i)
          end do
+         item%fact=tmp_fact*0.25
       end if
 
       ! Assign c (contracted by)
@@ -1490,7 +1525,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,itf_item,perm,lulog)
+      subroutine itf_contr_init(contr_info,itf_item,perm,antis,lulog)
 *----------------------------------------------------------------------*
 !    Initalise 
 *----------------------------------------------------------------------*
@@ -1506,6 +1541,7 @@
      &     itf_item
       integer, intent(in) ::
      &     perm,
+     &     antis,
      &     lulog
       ! This should be in a 'constructor'
 
@@ -1513,11 +1549,8 @@
       itf_item%logfile=lulog
 
       ! Assign permutation number
-      if (perm==0) then
-         itf_item%permute=1
-      else
-         itf_item%permute=perm
-      end if
+      itf_item%permute=perm
+      itf_item%perm4=antis
 
       ! Assign labels
       itf_item%label_t1=contr_info%label_op1
