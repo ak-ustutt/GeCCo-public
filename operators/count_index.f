@@ -188,18 +188,18 @@
 
       character(len=maxlen_bc_label) ::
      &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
-     &     ires, it1, it2,          ! Name of tensors + index
-     &     sres, st1, st2           ! Name of spin summed tensors + index
+     &     ires, it1, it2          ! Name of tensors + index
       character(len=index_len) ::
      &     tidx1, tidx2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
-      character(len=50) ::
+      character(len=70) ::
      &     itf_line,             ! Line of ITF code
      &     d_line,             ! Line of ITF code
      &     l_line,             ! Line of ITF code
      &     a_line,             ! Line of ITF code
-     &     s_line              ! Line of ITF code
+     &     s_line,             ! Line of ITF code
+     &     st1, st2           ! Name of spin summed tensors + index
       character(len=25) ::
      &     sfact,             ! String representation of factor
      &     sfact_star         ! String representation of factor formatted for output
