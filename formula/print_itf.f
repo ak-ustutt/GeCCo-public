@@ -12,27 +12,20 @@
       include 'def_itf_contr.h'
 
       integer, intent(in) ::
-     &     itflog,
-     &     formlog
+     &     itflog,            ! Output file for ITF algo code
+     &     formlog            ! Output of GeCco formulae
       type(formula_item), intent(in), target ::
-     &     fl_head
+     &     fl_head            ! Linked list of formulae
       type(operator_info), intent(in) ::
      &     op_info
       logical, intent(in) ::
      &     print_form        ! Print to optional formulae file
 
-      integer ::
-     &     inter=0    ! Counter of intermediates
       type(formula_item), pointer ::
      &     fl_item   ! Current formula_item
       integer ::
-     &     i,j,      ! loop indcies
-     &     contr_no,
-     &     perm_array(4)
-      type(itf_contr) ::
-     &     itf_item
-      logical ::
-     &     antisymm=.false.   ! True if need to add another factor 0.5
+     &     i,j,      ! Loop indcies
+     &     contr_no  ! Counter of contrations
 
       ! Point to start of linked list
       fl_item=>fl_head
@@ -55,9 +48,6 @@
 !     &                        trim(fl_item%parent2)
 !        write(itflog,'(2x,"incore: ",i2)') fl_item%incore
 !        call print_op_occ(itflog,fl_item%interm)
-
-        inter=inter+1
-
       case(command_del_intermediate)
 !        write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
 !        write(itflog,'(2x,a)') trim(fl_item%label)
@@ -76,37 +66,7 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        ! Get permutaion factors, in an array
-        ! Loop over array, send factor to init
-        ! Spin sum
-        ! Repeat for all permutaion factors
-
-        perm_array=0
-        call permute_tensors(fl_item%bcontr,perm_array,itflog)
-        do i=1, size(perm_array)
-           if (perm_array(i)==4) then
-              antisymm=.true.
-           end if
-        end do
-
-        if (perm_array(1)==0) then
-           ! No permutations
-           call itf_contr_init(fl_item%bcontr,itf_item,perm_array(1),
-     &                         antisymm,itflog)
-           call assign_spin(itf_item)
-        else
-           do i=1, size(perm_array)
-              ! Loop over permuation cases and send seperatley to
-              ! assign_spin
-              call itf_contr_init(fl_item%bcontr,itf_item,perm_array(i),
-     &                            antisymm,itflog)
-              call assign_spin(itf_item)
-              if (perm_array(i+1)==0) exit
-           end do
-        end if
-
-!        call itf_contr_init(fl_item%bcontr,itf_item,1,itflog)
-!        call assign_spin(itf_item)
+        call bcontr_to_itf(fl_item%bcontr,itflog)
 
       case(command_add_bc_reo)
         write(itflog,*) '[CONTRACT][REORDER][ADD]',
@@ -118,10 +78,7 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        call itf_contr_init(fl_item%bcontr,itf_item,0,
-     &                      antisymm,itflog)
-        call assign_spin(itf_item)
-
+        call bcontr_to_itf(fl_item%bcontr,itflog)
 
       case(command_bc_reo)
 !        write(itflog,*) '[CONTRACT][REORDER]',
@@ -129,10 +86,7 @@
 !        call prt_bcontr(itflog,fl_item%bcontr)
 !        call prt_reorder(itflog,fl_item%reo)
 
-        call itf_contr_init(fl_item%bcontr,itf_item,0,
-     &                      antisymm,itflog)
-        call assign_spin(itf_item)
-
+        call bcontr_to_itf(fl_item%bcontr,itflog)
 
       case(command_reorder)
 !        write(itflog,*) '[REORDER]',fl_item%target

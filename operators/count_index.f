@@ -33,6 +33,61 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine bcontr_to_itf(contr_info,itflog)
+*----------------------------------------------------------------------*
+!     Take GeCco binary contraction and produce ITF algo code.
+!     Includes antisymmetry of residual equations and spin summation.
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr_info      ! Inofrmation about binary contraction
+      integer, intent(in) ::
+     &     itflog          ! Output file
+
+      type(itf_contr) ::
+     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+      integer ::
+     &    perm_array(4),   ! Info of antisymmetrisation permutation factors
+     &    i                ! Loop index
+      logical ::
+     &    antisymm=.false. ! Include extra permuation factors for (1-P_ab)(1-P_ij)
+
+      ! Initalise permutation factors to 0 == no permutation
+      perm_array=0
+      ! Determine if result needs antisymmetrising
+      call permute_tensors(contr_info,perm_array,itflog)
+      do i=1, size(perm_array)
+         if (perm_array(i)==4) then
+            ! Add extra permtation factos
+            antisymm=.true.
+         end if
+      end do
+
+      if (perm_array(1)==0) then
+         ! No permutations
+         call itf_contr_init(contr_info,itf_item,perm_array(1),
+     &                       antisymm,itflog)
+         call assign_spin(itf_item)
+      else
+         do i=1, size(perm_array)
+            ! Loop over permuation cases and send seperatley to
+            ! assign_spin
+            call itf_contr_init(contr_info,itf_item,perm_array(i),
+     &                          antisymm,itflog)
+            call assign_spin(itf_item)
+            if (perm_array(i+1)==0) exit
+         end do
+      end if
+      
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine remove_whitespace(string)
 *----------------------------------------------------------------------*
 !     Remove whitespace inbetween string
