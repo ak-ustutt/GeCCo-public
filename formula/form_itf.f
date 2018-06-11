@@ -30,6 +30,8 @@
      &     flist
       logical ::
      &     print_form
+      integer ::
+     &     e      ! Exit satatus from python
 
       print_form=form_out.ne.'##not_set##'
 
@@ -67,6 +69,10 @@
         write(fform%unit,*) "End formulae"
         call file_close_keep(fform)
       end if
+
+      ! Process ITF lines with external python script
+!      call execute_command_line("python3 ../test_python/process.py",
+!     &                          exitstat=e)
       
       return
       end

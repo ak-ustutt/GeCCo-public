@@ -848,8 +848,9 @@
      &         .and. len(trim(item%idx3))==0) then
          call print_itf_line(item,.false.,.false.)
          return
-      else if (len(trim(item%idx1))==6 .or.
-     &         len(trim(item%idx2))==4) then
+      else if (item%rank3==4 .and.
+     &         item%rank1==6 .or. item%rank2==6) then
+         write(item%logfile,*) "hello"
          call print_itf_line(item,.false.,.false.)
          return
       else
@@ -1125,8 +1126,8 @@
      &     s1,       ! True if tensor 1 is mixed spin
      &     s2        ! True if tensor 2 is mixed spin
 
-       s1=.true.
-       s2=.true.
+       s1=.false.
+       s2=.false.
        ! Pick out specific spin cases here
        if (sum(s1a)==sum(s1b) .and.
      &     sum(s2a)==sum(s2b)) then
@@ -1138,7 +1139,7 @@
                s1=.false.
             else if (s1a(1)/=s1a(2)) then
                s1=.false.
-            else if (s1a(1)==s1a(2)) then
+            else if (s1a(1)==s1a(2) .and. s1a(1)/=0) then
                ! Pure spin
                s1=.true.
             end if
@@ -1147,7 +1148,7 @@
                s2=.false.
             else if (s2a(1)/=s2a(2)) then
                s2=.false.
-            else if (s2a(1)==s2a(2)) then
+            else if (s2a(1)==s2a(2) .and. s2a(1)/=0) then
                s2=.true.
             end if
 
@@ -1169,6 +1170,8 @@
                write(item%logfile,*)
             end if
 
+            write(item%logfile,*) "s1: ", s1
+            write(item%logfile,*) "s2: ", s2
             call print_itf_line(item,s1,s2)
             eloop=.true.
          end if
