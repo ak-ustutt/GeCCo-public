@@ -60,13 +60,15 @@
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
       ! Determine if result needs antisymmetrising
-      call permute_tensors(contr_info,perm_array,itflog)
-      do i=1, size(perm_array)
-         if (perm_array(i)==4) then
-            ! Add extra permtation factos
-            antisymm=.true.
-         end if
-      end do
+      !call permute_tensors(contr_info,perm_array,itflog)
+      !do i=1, size(perm_array)
+      !   if (perm_array(i)==4) then
+      !      ! Add extra permtation factos
+      !      antisymm=.true.
+      !   end if
+      !end do
+      ! Skip antisymmetrising each contraction and antisymm the complete
+      ! tensor at the end
 
       if (perm_array(1)==0) then
          ! No permutations
@@ -1170,8 +1172,6 @@
                write(item%logfile,*)
             end if
 
-            write(item%logfile,*) "s1: ", s1
-            write(item%logfile,*) "s2: ", s2
             call print_itf_line(item,s1,s2)
             eloop=.true.
          end if
@@ -1261,6 +1261,7 @@
 
       ! Assign index string
       call assign_index(contr_info,itf_item)
+
 
       return
       end
