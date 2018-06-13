@@ -164,9 +164,9 @@
      &     tmp
 
       tidx=idx
-      tmp=idx(3:3)
-      tidx(3:3)=idx(4:4)
-      tidx(4:4)=tmp
+      tmp=idx(1:1)
+      tidx(1:1)=idx(2:2)
+      tidx(2:2)=tmp
       
       return
       end
@@ -1124,6 +1124,7 @@
      &     eloop     ! Check if at least one spin case is printed out
       type(itf_contr), intent(inout) ::
      &     item
+
       logical ::
      &     s1,       ! True if tensor 1 is mixed spin
      &     s2        ! True if tensor 2 is mixed spin
@@ -1163,8 +1164,8 @@
                write(item%logfile,*)
                write(item%logfile,*)
             else
-               write(item%logfile,*) "s1b: ", s1b
-               write(item%logfile,*) "s1a: ", s1a
+               write(item%logfile,*) "s1b: ", s1a
+               write(item%logfile,*) "s1a: ", s1b
                write(item%logfile,*)
                write(item%logfile,*) "s2b: ", s2b
                write(item%logfile,*) "s2a: ", s2a
@@ -1246,11 +1247,6 @@
       itf_item%label_t2=contr_info%label_op2
       itf_item%label_res=contr_info%label_res
 
-      ! Assign rank
-      call itf_rank(itf_item%idx1,itf_item%rank1)
-      call itf_rank(itf_item%idx2,itf_item%rank2)
-      call itf_rank(itf_item%idx3,itf_item%rank3)
-
       ! Assign factor
       itf_item%fact=contr_info%fact
 
@@ -1262,6 +1258,10 @@
       ! Assign index string
       call assign_index(contr_info,itf_item)
 
+      ! Assign rank
+      call itf_rank(itf_item%idx1,itf_item%rank1)
+      call itf_rank(itf_item%idx2,itf_item%rank2)
+      call itf_rank(itf_item%idx3,itf_item%rank3)
 
       return
       end
@@ -1290,7 +1290,7 @@
 *----------------------------------------------------------------------*
       subroutine check_inter(label,intermediate)
 *----------------------------------------------------------------------*
-!    Initalise 
+!    Check if tensor is an intermediate
 *----------------------------------------------------------------------*
 
       implicit none

@@ -62,9 +62,9 @@
      &       fl_item%target
         call prt_bcontr(itflog,fl_item%bcontr)
       case(command_add_bc)
-        write(itflog,*) '[CONTRACT][ADD]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[CONTRACT][ADD]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
 
         call bcontr_to_itf(fl_item%bcontr,itflog)
 
@@ -74,17 +74,17 @@
         call prt_bcontr(itflog,fl_item%bcontr)
         call prt_reorder(itflog,fl_item%reo)
       case(command_bc)
-        write(itflog,*) '[CONTRACT]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[CONTRACT]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
 
         call bcontr_to_itf(fl_item%bcontr,itflog)
 
       case(command_bc_reo)
-        write(itflog,*) '[CONTRACT][REORDER]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
-        call prt_reorder(itflog,fl_item%reo)
+!        write(itflog,*) '[CONTRACT][REORDER]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
+!        call prt_reorder(itflog,fl_item%reo)
 
         call bcontr_to_itf(fl_item%bcontr,itflog)
 

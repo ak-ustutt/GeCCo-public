@@ -110,6 +110,13 @@ if keywords.is_keyword_set('method.ITF.res_type'):
         LAG_A2.append(_L2_refexp("[[[[[[H,T2g],T2g],T2g],T2g],T2g],T2g]"))
         LAG_A2.append(_L2_refexp("[[[[[[[H,T2g],T2g],T2g],T2g],T2g],T2g],T2g]"))
         LAG_A2.append(_L2_refexp("[[[[[[[[H,T2g],T2g],T2g],T2g],T2g],T2g],T2g],T2g]"))
+    elif(keywords.get('method.ITF.res_type') == '9'):
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                           IDX_SV   :[1   ,2   ,3, 4, 5],
+                           CONNECT:[3,4, 4,2],
+                           LABEL_DESCR:["2,,V,P","3,,VV,VP","4,,PP,VV"],
+                           AVOID:[2,3]})
     else:
         raise Exception(i_am+": unrecognised value for res_type, must be {1,2,3,4,5,6,7,8}")
 else:
