@@ -1128,9 +1128,25 @@
       logical ::
      &     s1,       ! True if tensor 1 is mixed spin
      &     s2        ! True if tensor 2 is mixed spin
+      integer ::
+     &     r1,r2
 
        s1=.false.
        s2=.false.
+
+      ! Determine rank; may have swapped t1 and t2 to move larger tensor
+      ! to t1
+      if (item%rank1==2 .and. item%rank2==4) then
+         r1=item%rank2
+         r2=item%rank1
+      else if (item%rank1==0 .and. item%rank2==4) then
+         r1=item%rank2
+         r2=item%rank1
+      else
+         r1=item%rank1
+         r2=item%rank2
+      end if
+
        ! Pick out specific spin cases here
        if (sum(s1a)==sum(s1b) .and.
      &     sum(s2a)==sum(s2b)) then
@@ -1138,7 +1154,7 @@
      &       modulo(sum(s2a)+sum(s2b),2)==0) then
 
             ! Doesn't work for rank 6 tensors yet...
-            if (item%rank1==2 .or. item%rank1==0) then
+            if (r1==2 .or. r1==0) then
                s1=.false.
             else if (s1a(1)/=s1a(2)) then
                s1=.false.
@@ -1147,13 +1163,30 @@
                s1=.true.
             end if
 
-            if (item%rank2==2 .or. item%rank2==0) then
+            if (r2==2 .or. r2==0) then
                s2=.false.
             else if (s2a(1)/=s2a(2)) then
                s2=.false.
             else if (s2a(1)==s2a(2) .and. s2a(1)/=0) then
                s2=.true.
             end if
+
+!            if (item%rank1==2 .or. item%rank1==0) then
+!               s1=.false.
+!            else if (s1a(1)/=s1a(2)) then
+!               s1=.false.
+!            else if (s1a(1)==s1a(2) .and. s1a(1)/=0) then
+!               ! Pure spin
+!               s1=.true.
+!            end if
+!
+!            if (item%rank2==2 .or. item%rank2==0) then
+!               s2=.false.
+!            else if (s2a(1)/=s2a(2)) then
+!               s2=.false.
+!            else if (s2a(1)==s2a(2) .and. s2a(1)/=0) then
+!               s2=.true.
+!            end if
 
             if (logi) then
                write(item%logfile,*) "s1b: ", s1b
@@ -1173,7 +1206,14 @@
                write(item%logfile,*)
             end if
 
-            call print_itf_line(item,s1,s2)
+            if (item%rank1==2 .and. item%rank2==4 .or.
+     &          item%rank1==0 .and. item%rank2==4) then
+               ! t1 and t2 were swapped in summation
+               call print_itf_line(item,s2,s1)
+            else 
+               call print_itf_line(item,s1,s2)
+            end if
+
             eloop=.true.
          end if
        end if
