@@ -51,6 +51,47 @@ def print_result(line, words):
         print(drop_ten, file=out)
 
 
+def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
+    hole=['i','j','k','l']
+    particle=['a','b','c','d']
+    valence=['p','q','r','s','t','u','v','w']
+
+    if word.split('*',1)[-1] not in declare_ten and "STIN" not in word:
+        index=list(word[word.find("[")+1:word.find("]")])
+
+        generic=[]
+        for i in range (0,len(index)):
+            for j in range(0,len(particle)):
+                if index[i] in particle[j]:
+                    generic.append('e')
+        for i in range (0,len(index)):
+            for j in range(0,len(valence)):
+                if index[i] in valence[j]:
+                    generic.append('a')
+        for i in range (0,len(index)):
+            for j in range(0,len(hole)):
+                if index[i] in hole[j]:
+                    generic.append('c')
+
+        declared=False
+        for i in range(0, len(declare_ten)):
+            if word.split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
+                if generic == declare_ten_index[i]:
+                    # Generic index must be at same position as name it belongs to - dangerous!
+                    # Load previous tensor
+                    declared=True
+                    break
+            else:
+                continue
+
+        if not declared:
+            # Add result to global list
+            declare_ten.append(word.split('*',1)[-1])
+            declare_ten_index.append(generic)
+            declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
+
+
+
 
 import argparse
 
@@ -114,78 +155,83 @@ for line in f:
         words[2]=words[2].replace('(','')
         words[3]=words[5]
 
-    # Add contracted tensors to global list
-    if words[2].split('*',1)[-1] not in declare_ten and "STIN" not in words[2]:
-        index=list(words[2][words[2].find("[")+1:words[2].find("]")])
+    # Check if first tensor needs to be declared
+    add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+    # Check if second tensor needs to be declared
+    add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
 
-        generic=[]
-        for i in range (0,len(index)):
-            for j in range(0,len(particle)):
-                if index[i] in particle[j]:
-                    generic.append('e')
-        for i in range (0,len(index)):
-            for j in range(0,len(valence)):
-                if index[i] in valence[j]:
-                    generic.append('a')
-        for i in range (0,len(index)):
-            for j in range(0,len(hole)):
-                if index[i] in hole[j]:
-                    generic.append('c')
-
-        declared=False
-        for i in range(0, len(declare_ten)):
-            if words[2].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
-                if generic == declare_ten_index[i]:
-                    # Generic index must be at same position as name it belongs to - dangerous! 
-                    # Load previous tensor
-                    declared=True
-                    break
-            else:
-                continue
-
-        if not declared:
-            # Add result to global list
-            declare_ten.append(words[2].split('*',1)[-1])
-            declare_ten_index.append(generic)
-            declare_ten_name.append(words[2].split('[',1)[0].split('*',1)[-1])
-
+#    # Add contracted tensors to global list
+#    if words[2].split('*',1)[-1] not in declare_ten and "STIN" not in words[2]:
+#        index=list(words[2][words[2].find("[")+1:words[2].find("]")])
+#
+#        generic=[]
+#        for i in range (0,len(index)):
+#            for j in range(0,len(particle)):
+#                if index[i] in particle[j]:
+#                    generic.append('e')
+#        for i in range (0,len(index)):
+#            for j in range(0,len(valence)):
+#                if index[i] in valence[j]:
+#                    generic.append('a')
+#        for i in range (0,len(index)):
+#            for j in range(0,len(hole)):
+#                if index[i] in hole[j]:
+#                    generic.append('c')
+#
+#        declared=False
+#        for i in range(0, len(declare_ten)):
+#            if words[2].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
+#                if generic == declare_ten_index[i]:
+#                    # Generic index must be at same position as name it belongs to - dangerous! 
+#                    # Load previous tensor
+#                    declared=True
+#                    break
+#            else:
+#                continue
+#
+#        if not declared:
+#            # Add result to global list
+#            declare_ten.append(words[2].split('*',1)[-1])
+#            declare_ten_index.append(generic)
+#            declare_ten_name.append(words[2].split('[',1)[0].split('*',1)[-1])
+#
 #    elif words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
 #        declare_ten.append(words[3].split('*',1)[-1])
-
-    if words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
-        # Check if tensor has been declared already, or is an intermediate
-        index=list(words[3][words[3].find("[")+1:words[3].find("]")])
-
-        generic=[]
-        for i in range (0,len(index)):
-            for j in range(0,len(particle)):
-                if index[i] in particle[j]:
-                    generic.append('e')
-        for i in range (0,len(index)):
-            for j in range(0,len(valence)):
-                if index[i] in valence[j]:
-                    generic.append('a')
-        for i in range (0,len(index)):
-            for j in range(0,len(hole)):
-                if index[i] in hole[j]:
-                    generic.append('c')
-
-        declared=False
-        for i in range(0, len(declare_ten)):
-            if words[3].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
-                if generic == declare_ten_index[i]:
-                    # Generic index must be at same position as name it belongs to - dangerous! 
-                    # Load previous tensor
-                    declared=True
-                    break
-            else:
-                continue
-
-        if not declared:
-            # Add result to global list
-            declare_ten.append(words[3].split('*',1)[-1])
-            declare_ten_index.append(generic)
-            declare_ten_name.append(words[3].split('[',1)[0].split('*',1)[-1])
+#
+#    if words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
+#        # Check if tensor has been declared already, or is an intermediate
+#        index=list(words[3][words[3].find("[")+1:words[3].find("]")])
+#
+#        generic=[]
+#        for i in range (0,len(index)):
+#            for j in range(0,len(particle)):
+#                if index[i] in particle[j]:
+#                    generic.append('e')
+#        for i in range (0,len(index)):
+#            for j in range(0,len(valence)):
+#                if index[i] in valence[j]:
+#                    generic.append('a')
+#        for i in range (0,len(index)):
+#            for j in range(0,len(hole)):
+#                if index[i] in hole[j]:
+#                    generic.append('c')
+#
+#        declared=False
+#        for i in range(0, len(declare_ten)):
+#            if words[3].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
+#                if generic == declare_ten_index[i]:
+#                    # Generic index must be at same position as name it belongs to - dangerous! 
+#                    # Load previous tensor
+#                    declared=True
+#                    break
+#            else:
+#                continue
+#
+#        if not declared:
+#            # Add result to global list
+#            declare_ten.append(words[3].split('*',1)[-1])
+#            declare_ten_index.append(generic)
+#            declare_ten_name.append(words[3].split('[',1)[0].split('*',1)[-1])
 
     if "STIN" in words[0]:
         # Check if contraction forms and intermediate
