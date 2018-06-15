@@ -12,34 +12,34 @@
       include 'def_formula_item.h'
       include 'mdef_formula_info.h'
 
-      integer, parameter ::
-     &     ntest = 00
-
       character(len=*), intent(in) ::
-     &     name_out,
-     &     form_out
+     &     name_out,    ! Output file name for ITF algo code
+     &     form_out     ! Output file name for GeCco formulae code
       type(formula), intent(inout) ::
      &     f_input
       type(operator_info), intent(in) ::
      &     op_info
 
       type(filinf) ::
-     &     fitf,
-     &     fform
+     &     fline,       ! Temporary file which contrains ITF binary contractions
+     &     fitf,        ! File for ITF algo code
+     &     fform        ! File for GeCco formulae
       type(formula_item) ::
-     &     flist
+     &     flist        ! Linked list of binary contractions
       logical ::
-     &     print_form
+     &     print_form   ! If true, outputs GeCco formulae to file
       integer ::
-     &     e      ! Exit satatus from python
+     &     e            ! Exit satatus from python
+      character(len=100) ::
+     &     exe_line     ! Line for shell to execute
 
       print_form=form_out.ne.'##not_set##'
 
       call write_title(lulog,wst_section,'Translating formula to ITF')
 
-      ! Open file to write to
-      call file_init(fitf,name_out,ftyp_sq_frm,0)
-      call file_open(fitf)
+      ! Open tmp binary contraction file
+      call file_init(fline,'bcontr.tmp',ftyp_sq_frm,0)
+      call file_open(fline)
 
       if (print_form) then
         ! Open optional formulae file
@@ -55,14 +55,26 @@
       if (iprlvl.gt.0) then
         write(lulog,*) 'Translating ',trim(f_input%label),
      &                 ' formulae into ITF algo code'
-        write(lulog,*) 'Code written to file: ',trim(fitf%name)
+        write(lulog,*) ' Binary contractions written to: ',
+     &                 trim(fline%name)
       end if
 
-      ! Translate formula list into ITF code
-      call print_itf(fitf%unit,flist,op_info,print_form,fform%unit)
+      ! Translate formula list into ITF binary contractions
+      call print_itf(fline%unit,flist,op_info,print_form,fform%unit)
 
-      ! Close file
-      call file_close_keep(fitf)
+      ! Process ITF lines with python script
+      ! Don't need to inialise the file, the python script takes care of
+      ! that
+      write(lulog,*) ' ITF algo file written to:       ',
+     &               trim(name_out)
+
+      exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
+     &          //trim(fline%name)//' -o '//name_out
+      call execute_command_line(trim(exe_line),exitstat=e)
+
+      ! Close binary contraction file
+      call file_close_keep(fline)
+      ! Deallocat link list
       call dealloc_formula_list(flist)
 
       if (print_form) then
@@ -70,9 +82,5 @@
         call file_close_keep(fform)
       end if
 
-      ! Process ITF lines with external python script
-!      call execute_command_line("python3 ../test_python/process.py",
-!     &                          exitstat=e)
-      
       return
       end

@@ -226,7 +226,7 @@
          tidx1=''
          call t_index(item%idx1,tidx1)
          st1='('//trim(adjustl(nt1))//'['//trim(item%idx1)//']'//
-     &       '-'//trim(adjustl(nt1))//'['//trim(tidx1)//']'//')'
+     &       ' - '//trim(adjustl(nt1))//'['//trim(tidx1)//']'//')'
       else
          st1=trim(adjustl(nt1))//'['//trim(item%idx1)//']'
       end if
@@ -236,7 +236,7 @@
          tidx2=''
          call t_index(item%idx2,tidx2)
          st2='('//trim(adjustl(nt2))//'['//trim(item%idx2)//']'//
-     &       '-'//trim(adjustl(nt2))//'['//trim(tidx2)//']'//')'
+     &       ' - '//trim(adjustl(nt2))//'['//trim(tidx2)//']'//')'
       else
          st2=trim(adjustl(nt2))//'['//trim(item%idx2)//']'
       end if
@@ -258,17 +258,17 @@
       if (item%fact.lt.0.0) then
           itf_line='.'//trim(adjustl(nres))//'['//trim(item%idx3)//
      &        '] -= '//trim(sfact_star)//
-     &        trim(adjustl(st1))//
+     &        trim(adjustl(st1))//' '//
      &        trim(adjustl(st2))
       else
           itf_line='.'//trim(adjustl(nres))//'['//trim(item%idx3)//
      &        '] += '//trim(sfact_star)//
-     &        trim(adjustl(st1))//
+     &        trim(adjustl(st1))//' '//
      &        trim(adjustl(st2))
       end if
 
       write(item%logfile,*) trim(itf_line)
-      write(item%logfile,*) "---------------------------------------"
+      !write(item%logfile,*) "---------------------------------------"
 
       return
       end
@@ -852,7 +852,6 @@
          return
       else if (item%rank3==4 .and.
      &         item%rank1==6 .or. item%rank2==6) then
-         write(item%logfile,*) "hello"
          call print_itf_line(item,.false.,.false.)
          return
       else
@@ -906,13 +905,14 @@
       end do
 
       ! Index assigned from result
-      write(item%logfile,*) "s1b: ", s1b
-      write(item%logfile,*) "s1a: ", s1a
-      write(item%logfile,*)
-      write(item%logfile,*) "s2b: ", s2b
-      write(item%logfile,*) "s2a: ", s2a
-      write(item%logfile,*)
-      write(item%logfile,*)
+      ! Debug
+      !write(item%logfile,*) "s1b: ", s1b
+      !write(item%logfile,*) "s1a: ", s1a
+      !write(item%logfile,*)
+      !write(item%logfile,*) "s2b: ", s2b
+      !write(item%logfile,*) "s2a: ", s2a
+      !write(item%logfile,*)
+      !write(item%logfile,*)
 
       ! The sum will start with the index group with the most unassigned
       ! contraction indcies (0s)
@@ -1188,23 +1188,24 @@
 !               s2=.true.
 !            end if
 
-            if (logi) then
-               write(item%logfile,*) "s1b: ", s1b
-               write(item%logfile,*) "s1a: ", s1a
-               write(item%logfile,*)
-               write(item%logfile,*) "s2b: ", s2b
-               write(item%logfile,*) "s2a: ", s2a
-               write(item%logfile,*)
-               write(item%logfile,*)
-            else
-               write(item%logfile,*) "s1b: ", s1a
-               write(item%logfile,*) "s1a: ", s1b
-               write(item%logfile,*)
-               write(item%logfile,*) "s2b: ", s2b
-               write(item%logfile,*) "s2a: ", s2a
-               write(item%logfile,*)
-               write(item%logfile,*)
-            end if
+!            DEBUG
+!            if (logi) then
+!               write(item%logfile,*) "s1b: ", s1b
+!               write(item%logfile,*) "s1a: ", s1a
+!               write(item%logfile,*)
+!               write(item%logfile,*) "s2b: ", s2b
+!               write(item%logfile,*) "s2a: ", s2a
+!               write(item%logfile,*)
+!               write(item%logfile,*)
+!            else
+!               write(item%logfile,*) "s1b: ", s1a
+!               write(item%logfile,*) "s1a: ", s1b
+!               write(item%logfile,*)
+!               write(item%logfile,*) "s2b: ", s2b
+!               write(item%logfile,*) "s2a: ", s2a
+!               write(item%logfile,*)
+!               write(item%logfile,*)
+!            end if
 
             if (item%rank1==2 .and. item%rank2==4 .or.
      &          item%rank1==0 .and. item%rank2==4) then

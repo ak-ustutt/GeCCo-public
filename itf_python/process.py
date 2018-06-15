@@ -52,8 +52,30 @@ def print_result(line, words):
 
 
 
-f=open("gecco.itfaa","r")
-out=open("code.itfaa", "w+")
+import argparse
+
+parser = argparse.ArgumentParser(
+                description="""Process ITF binary contraction file and output ITF algo file
+                """,
+                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('-i','--input',default=None,help='ITF binary contraction file')
+parser.add_argument('-o','--output',default=None,help='ITF algo file')
+args = parser.parse_args()
+
+if args.input is None:
+    print("Error in python ITF processor: Must provide input file")
+    exit(1)
+if args.output is None:
+    print("Error in python ITF processor: Must provide output file")
+    exit(1)
+
+inp = args.input
+outp = args.output
+
+#f=open("gecco.itfaa","r")
+#out=open(outp, "w+")
+f=open(inp,"r")
+out=open(outp, "w+")
 
 prev_lines=[]       # Previous intermediate lines which belong to next result block
 prev_inter=[]       # List of previous intemediates, used to alloc/drop
@@ -78,6 +100,19 @@ valence=['p','q','r','s','t','u','v','w']
 
 for line in f:
     words=line.split()
+
+    # Check if brackets in the binary contraction
+    if '(' in words[2] and words[5]:
+        # Arrange tensors so they are in positions 2 and 3
+        words[2]=words[2].replace('(','')
+        words[3]=words[5].replace('(','')
+    elif '(' in words[3]:
+        # Brackets for second tensor
+        words[3]=words[3].replace('(','')
+    elif '(' in words[2] :
+        # Brackets for first tensor
+        words[2]=words[2].replace('(','')
+        words[3]=words[5]
 
     # Add contracted tensors to global list
     if words[2].split('*',1)[-1] not in declare_ten and "STIN" not in words[2]:
@@ -118,6 +153,7 @@ for line in f:
 #        declare_ten.append(words[3].split('*',1)[-1])
 
     if words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
+        # Check if tensor has been declared already, or is an intermediate
         index=list(words[3][words[3].find("[")+1:words[3].find("]")])
 
         generic=[]
@@ -315,11 +351,11 @@ out.close()
 f.close()
 
 # Open and write file again so as to prepend the declaration of tensors
-f2=open("code.itfaa", "r")
+f2=open(outp, "r")
 tmp=f2.read()
 f2.close()
 
-f2=open("code.itfaa", "w")
+f2=open(outp, "w")
 # Declare tensros and index-spaces
 print("---- decl", file=f2)
 print("index-space: pqrstuvw , Active    , a", file=f2)
