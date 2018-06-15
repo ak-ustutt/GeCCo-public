@@ -52,26 +52,11 @@ def print_result(line, words):
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
-    hole=['i','j','k','l']
-    particle=['a','b','c','d']
-    valence=['p','q','r','s','t','u','v','w']
-
     if word.split('*',1)[-1] not in declare_ten and "STIN" not in word:
         index=list(word[word.find("[")+1:word.find("]")])
 
-        generic=[]
-        for i in range (0,len(index)):
-            for j in range(0,len(particle)):
-                if index[i] in particle[j]:
-                    generic.append('e')
-        for i in range (0,len(index)):
-            for j in range(0,len(valence)):
-                if index[i] in valence[j]:
-                    generic.append('a')
-        for i in range (0,len(index)):
-            for j in range(0,len(hole)):
-                if index[i] in hole[j]:
-                    generic.append('c')
+        # Construct generic index
+        generic=generic_index(index)
 
         declared=False
         for i in range(0, len(declare_ten)):
@@ -89,6 +74,26 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
             declare_ten.append(word.split('*',1)[-1])
             declare_ten_index.append(generic)
             declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
+
+
+def generic_index(index):
+    # Construct generic index representation of specific tensor index
+    # Used to check if tensors index the same space, even if they have
+    # different indices
+
+    hole=['i','j','k','l']
+    particle=['a','b','c','d']
+    valence=['p','q','r','s','t','u','v','w']
+
+    gen=[]
+    for i in range (0,len(index)):
+        if index[i] in particle:
+            gen.append('e')
+        if index[i] in valence:
+            gen.append('a')
+        if index[i] in hole:
+            gen.append('c')
+    return gen
 
 
 
@@ -113,8 +118,6 @@ if args.output is None:
 inp = args.input
 outp = args.output
 
-#f=open("gecco.itfaa","r")
-#out=open(outp, "w+")
 f=open(inp,"r")
 out=open(outp, "w+")
 
@@ -135,103 +138,44 @@ declare_ten=[]
 declare_ten_index=[]
 declare_ten_name=[]
 
-hole=['i','j','k','l']
-particle=['a','b','c','d']
-valence=['p','q','r','s','t','u','v','w']
-
 for line in f:
     words=line.split()
 
     # Check if brackets in the binary contraction
-    if '(' in words[2] and words[5]:
+    if '(' in words[2] and '(' in words[5]:
+        # Check if first tensor needs to be declared
+        add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+        # Check if second tensor needs to be declared
+        add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+
         # Arrange tensors so they are in positions 2 and 3
         words[2]=words[2].replace('(','')
         words[3]=words[5].replace('(','')
     elif '(' in words[3]:
+        # Check if first tensor needs to be declared
+        add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+
         # Brackets for second tensor
         words[3]=words[3].replace('(','')
     elif '(' in words[2] :
+        # Check if first tensor needs to be declared
+        add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
+
         # Brackets for first tensor
         words[2]=words[2].replace('(','')
         words[3]=words[5]
-
-    # Check if first tensor needs to be declared
-    add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-    # Check if second tensor needs to be declared
-    add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
-
-#    # Add contracted tensors to global list
-#    if words[2].split('*',1)[-1] not in declare_ten and "STIN" not in words[2]:
-#        index=list(words[2][words[2].find("[")+1:words[2].find("]")])
-#
-#        generic=[]
-#        for i in range (0,len(index)):
-#            for j in range(0,len(particle)):
-#                if index[i] in particle[j]:
-#                    generic.append('e')
-#        for i in range (0,len(index)):
-#            for j in range(0,len(valence)):
-#                if index[i] in valence[j]:
-#                    generic.append('a')
-#        for i in range (0,len(index)):
-#            for j in range(0,len(hole)):
-#                if index[i] in hole[j]:
-#                    generic.append('c')
-#
-#        declared=False
-#        for i in range(0, len(declare_ten)):
-#            if words[2].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
-#                if generic == declare_ten_index[i]:
-#                    # Generic index must be at same position as name it belongs to - dangerous! 
-#                    # Load previous tensor
-#                    declared=True
-#                    break
-#            else:
-#                continue
-#
-#        if not declared:
-#            # Add result to global list
-#            declare_ten.append(words[2].split('*',1)[-1])
-#            declare_ten_index.append(generic)
-#            declare_ten_name.append(words[2].split('[',1)[0].split('*',1)[-1])
-#
-#    elif words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
-#        declare_ten.append(words[3].split('*',1)[-1])
-#
-#    if words[3].split('*',1)[-1] not in declare_ten and "STIN" not in words[3]:
-#        # Check if tensor has been declared already, or is an intermediate
-#        index=list(words[3][words[3].find("[")+1:words[3].find("]")])
-#
-#        generic=[]
-#        for i in range (0,len(index)):
-#            for j in range(0,len(particle)):
-#                if index[i] in particle[j]:
-#                    generic.append('e')
-#        for i in range (0,len(index)):
-#            for j in range(0,len(valence)):
-#                if index[i] in valence[j]:
-#                    generic.append('a')
-#        for i in range (0,len(index)):
-#            for j in range(0,len(hole)):
-#                if index[i] in hole[j]:
-#                    generic.append('c')
-#
-#        declared=False
-#        for i in range(0, len(declare_ten)):
-#            if words[3].split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
-#                if generic == declare_ten_index[i]:
-#                    # Generic index must be at same position as name it belongs to - dangerous! 
-#                    # Load previous tensor
-#                    declared=True
-#                    break
-#            else:
-#                continue
-#
-#        if not declared:
-#            # Add result to global list
-#            declare_ten.append(words[3].split('*',1)[-1])
-#            declare_ten_index.append(generic)
-#            declare_ten_name.append(words[3].split('[',1)[0].split('*',1)[-1])
+    else:
+        # No brackets
+        # Check if first tensor needs to be declared
+        add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+        # Check if second tensor needs to be declared
+        add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
 
     if "STIN" in words[0]:
         # Check if contraction forms and intermediate
@@ -241,31 +185,7 @@ for line in f:
             # Add intermedate to global list
             index=list(words[0][words[0].find("[")+1:words[0].find("]")])
     
-            generic=[]
-#            for i in range (0,len(index)):
-#                for j in range(0,len(particle)):
-#                    if index[i] in particle[j]:
-#                        generic.append('e')
-#            for i in range (0,len(index)):
-#                for j in range(0,len(valence)):
-#                    if index[i] in valence[j]:
-#                        generic.append('a')
-#            for i in range (0,len(index)):
-#                for j in range(0,len(hole)):
-#                    if index[i] in hole[j]:
-#                        generic.append('c')
-
-            for i in range (0,len(index)):
-                for j in range(0,len(particle)):
-                    if index[i] in particle[j]:
-                        generic.append('e')
-                for j in range(0,len(valence)):
-                    if index[i] in valence[j]:
-                        generic.append('a')
-                for j in range(0,len(hole)):
-                    if index[i] in hole[j]:
-                        generic.append('c')
-
+            generic=generic_index(index)
     
             declared=False
             for i in range(0, len(declare_inter)):
@@ -290,20 +210,7 @@ for line in f:
         # + Load instead of alloc
         index=list(words[0][words[0].find("[")+1:words[0].find("]")])
 
-        generic=[]
-        for i in range (0,len(index)):
-            for j in range(0,len(particle)):
-                if index[i] in particle[j]:
-                    generic.append('e')
-        for i in range (0,len(index)):
-            for j in range(0,len(valence)):
-                if index[i] in valence[j]:
-                    generic.append('a')
-        for i in range (0,len(index)):
-            for j in range(0,len(hole)):
-                if index[i] in hole[j]:
-                    generic.append('c')
-
+        generic=generic_index(index)
 
         if words[0] != prev_res and generic != prev_generic:
             # Next result is different from previous, so close off block
@@ -411,18 +318,22 @@ print("index-space: abcd     , External  , e", file=f2)
 print("index-space: mno      , Internal  , i", file=f2)
 print(file=f2)
 
+# Print out tensors used in contractions
 for i in range(0, len(declare_ten)):
     print("tensor: ", declare_ten[i], file=f2)
 
+# Print of result tensors
 print(file=f2)
 for i in range(0, len(declare_res)):
     print("tensor: ", declare_res[i], file=f2)
 
+# Print out intermediates
 print(file=f2)
 print("// Intermediates", file=f2)
 for i in range(0, len(declare_inter)):
     print("tensor: %-20s, !Create{type:disk}" % (declare_inter[i]), file=f2)
 
+# Print out code blocks
 print(file=f2)
 print('---- code("Test")', file=f2)
 f2.write(tmp)

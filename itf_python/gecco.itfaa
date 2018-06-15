@@ -27,4 +27,4 @@
  .STIN0001[pi] += H[pq] T2g[qi]
  .O2g[pqri] += GAM0[pqrs] STIN0001[si]
  .STIN0001[pi] += T2g[pi] GAM0[]
- .O2g[abij] += (H[acik] - H[caik]) (STIN0001[cbkj] - STIN0001[bckj])
+ .O2g[abij] += (H[aick] - H[iack]) (STIN0001[cbkj] - STIN0001[bckj])

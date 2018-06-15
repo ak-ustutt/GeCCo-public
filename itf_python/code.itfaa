@@ -15,7 +15,8 @@ tensor:  H[ij]
 tensor:  T2g[pj]
 tensor:  GAM0[si]
 tensor:  H[pq]
-tensor:  H[acik]
+tensor:  H[aick]
+tensor:  H[iack]
 
 tensor:  O2g[ai]
 tensor:  O2g[apqi]
@@ -177,9 +178,9 @@ alloc STIN0001[pi]
 load T2g[pi], GAM0[]
 .STIN0001[pi] += T2g[pi] GAM0[]
 drop GAM0[], T2g[pi]
-load H[acik]
-.O2g[abij] += (H[acik] - H[caik]) (STIN0001[cbkj] - STIN0001[bckj])
-drop H[acik]
+load H[aick]
+.O2g[abij] += (H[aick] - H[iack]) (STIN0001[cbkj] - STIN0001[bckj])
+drop H[aick]
 drop STIN0001[pi]
 store O2g[abij]
 
