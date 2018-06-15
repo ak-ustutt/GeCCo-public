@@ -54,7 +54,7 @@ store O2g[aq]
 alloc  O2g[aqrs]
 load H[ap], GAM0[qprs]
 .O2g[aqrs] += H[ap] (GAM0[qprs] - GAM0[pqrs])
-drop GAM0[qprs], H[ap]
+load GAM0[pqrs], GAM0[qprs], H[ap]
 store O2g[aqrs]
 
 alloc  O2g[pi]
@@ -72,7 +72,7 @@ load GAM0[pq], H[ir]
 drop H[ir], GAM0[pq]
 load GAM0[pqrs], H[is]
 .O2g[pqri] += (GAM0[pqrs] - GAM0[qprs]) H[is]
-drop H[is], GAM0[pqrs]
+load H[is], GAM0[qprs], GAM0[pqrs]
 store O2g[pqri]
 
 load O2g[pi]
@@ -109,7 +109,7 @@ load H[ij], T2g[pj]
 drop T2g[pj], H[ij]
 load GAM0[si]
 .O2g[pqri] += GAM0[si] (STIN0001[pqrs] - STIN0001[qprs])
-drop GAM0[si]
+load GAM0[si]
 drop STIN0001[pi]
 store O2g[pqri]
 
@@ -178,9 +178,9 @@ alloc STIN0001[pi]
 load T2g[pi], GAM0[]
 .STIN0001[pi] += T2g[pi] GAM0[]
 drop GAM0[], T2g[pi]
-load H[aick]
+load H[aick], H[iack]
 .O2g[abij] += (H[aick] - H[iack]) (STIN0001[cbkj] - STIN0001[bckj])
-drop H[aick]
+load H[iack]H[aick]
 drop STIN0001[pi]
 store O2g[abij]
 
