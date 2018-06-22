@@ -60,9 +60,12 @@ if keywords.is_keyword_set('method.ITF.en_type'):
         LAG_E.append(_refexp("[[H,T2g],T2g]"))
         LAG_E.append(_refexp("[[[H,T2g],T2g],T2g]"))
         LAG_E.append(_refexp("[[[[H,T2g],T2g],T2g],T2g]"))
+    elif(keywords.get('method.ITF.en_type') == '9'):
+        LAG_E.set_rule()
     else:
         raise Exception(i_am+": unrecognised value for en_type, must be {1,2,3,4}")
 else:
+    # Default to linear
     LAG_E.append(_refexp("[H,T2g]"))
 
 if keywords.is_keyword_set('method.ITF.res_type'):
@@ -111,12 +114,13 @@ if keywords.is_keyword_set('method.ITF.res_type'):
         LAG_A2.append(_L2_refexp("[[[[[[[H,T2g],T2g],T2g],T2g],T2g],T2g],T2g]"))
         LAG_A2.append(_L2_refexp("[[[[[[[[H,T2g],T2g],T2g],T2g],T2g],T2g],T2g],T2g]"))
     elif(keywords.get('method.ITF.res_type') == '9'):
-        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG',
+        # Must set.rule() before use of EXPAND_OP_PRODUCT
+        LAG_A2.set_rule()
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                            OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                           IDX_SV   :[1   ,2   ,3, 4, 5],
-                           CONNECT:[3,4, 4,2],
-                           LABEL_DESCR:["2,,V,P","3,,VV,VP","4,,PP,VV"],
-                           AVOID:[2,3]})
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,HH,PP, 3,,PP,HH, 4,,PP,HH"]})
     else:
         raise Exception(i_am+": unrecognised value for res_type, must be {1,2,3,4,5,6,7,8}")
 else:
@@ -126,8 +130,11 @@ print("en_type: ", keywords.get('method.ITF.en_type'))
 print("res_type: ", keywords.get('method.ITF.res_type'))
 
 
-LAG_E.set_rule()
-LAG_A2.set_rule()
+if (keywords.get('method.ITF.en_type') != '9'):
+    LAG_E.set_rule()
+
+if (keywords.get('method.ITF.res_type') != '9'):
+    LAG_A2.set_rule()
 
 FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
@@ -144,6 +151,7 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_E']})
 
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 # Translate optmised formulae into ITF algo code
 TRANSLATE_ITF({

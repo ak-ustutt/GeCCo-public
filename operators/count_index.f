@@ -204,7 +204,8 @@
      &     st1, st2           ! Name of spin summed tensors + index
       character(len=25) ::
      &     sfact,             ! String representation of factor
-     &     sfact_star         ! String representation of factor formatted for output
+     &     sfact_star,        ! String representation of factor formatted for output
+     &     s_idx              ! Spin index used to group lines
       character(len=maxlen_bc_label) ::
      &     rename_tensor
       integer ::
@@ -255,13 +256,18 @@
           end if
       end if
 
+      ! Write spin index to string
+      write(s_idx,*) item%spin_idx
+
       if (item%fact.lt.0.0) then
-          itf_line='.'//trim(adjustl(nres))//'['//trim(item%idx3)//
+          itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
+     &        '['//trim(item%idx3)//
      &        '] -= '//trim(sfact_star)//
      &        trim(adjustl(st1))//' '//
      &        trim(adjustl(st2))
       else
-          itf_line='.'//trim(adjustl(nres))//'['//trim(item%idx3)//
+          itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
+     7        '['//trim(item%idx3)//
      &        '] += '//trim(sfact_star)//
      &        trim(adjustl(st1))//' '//
      &        trim(adjustl(st2))
@@ -967,7 +973,7 @@
      &     zero_a,zero_b
       logical, intent(in) ::
      &     logi      ! Debug delete
-      type(itf_contr), intent(in) ::
+      type(itf_contr), intent(inout) ::
      &     item
 
       integer ::
@@ -983,6 +989,7 @@
       fourth_idx=0
 
       eloop=.false.
+      item%spin_idx=1
 
       ! Check for first unassigned index
       if (any(s1a==0) .or. first_idx>0) then
@@ -1171,23 +1178,6 @@
                s2=.true.
             end if
 
-!            if (item%rank1==2 .or. item%rank1==0) then
-!               s1=.false.
-!            else if (s1a(1)/=s1a(2)) then
-!               s1=.false.
-!            else if (s1a(1)==s1a(2) .and. s1a(1)/=0) then
-!               ! Pure spin
-!               s1=.true.
-!            end if
-!
-!            if (item%rank2==2 .or. item%rank2==0) then
-!               s2=.false.
-!            else if (s2a(1)/=s2a(2)) then
-!               s2=.false.
-!            else if (s2a(1)==s2a(2) .and. s2a(1)/=0) then
-!               s2=.true.
-!            end if
-
 !            DEBUG
 !            if (logi) then
 !               write(item%logfile,*) "s1b: ", s1b
@@ -1216,6 +1206,7 @@
             end if
 
             eloop=.true.
+            item%spin_idx=item%spin_idx+1
          end if
        end if
 

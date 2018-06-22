@@ -468,7 +468,8 @@ for line in f:
 
             if not loaded:
                 # Add result to global list and alloc new result
-                declare_res.append(words[0].replace('.',''))
+                #declare_res.append(words[0].replace('.',''))
+                declare_res.append(words[0].split('.',1)[1])
                 declare_index.append(generic)
                 declare_name.append(words[0].split('[',1)[0].replace('.',''))
                 print("alloc ", words[0].replace('.',''), file=out)
@@ -561,6 +562,26 @@ print(file=f2)
 print('---- code("Test")', file=f2)
 f2.write(tmp)
 print(file=f2)
+
+# Symmetrise tensors
+if "O2g[abij]" in declare_res:
+    print("load O2g[abij]", file=f2)
+    print(".Og2[abij] += O2g[baji]", file=f2)
+    print("store O2g[abij]", file=f2)
+    print(file=f2)
+
+if "O2g[pqij]" in declare_res:
+    print("load O2g[pqij]", file=f2)
+    print(".Og2[pqij] += O2g[qpji]", file=f2)
+    print("store O2g[pqij]", file=f2)
+    print(file=f2)
+
+if "O2g[abpq]" in declare_res:
+    print("load O2g[abpq]", file=f2)
+    print(".Og2[abpq] += O2g[baqp]", file=f2)
+    print("store O2g[abpq]", file=f2)
+    print(file=f2)
+
 print("---- end", file=f2)
 
 f2.close()
