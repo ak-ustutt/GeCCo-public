@@ -333,6 +333,7 @@ cmh      end do
      &       'formula does not provide an update for all residuals')
       end do
 
+      ! FIXME: no explicit referenc to list names
       idxmel = idx_mel_list("ME_C0",op_info)
       if (idxmel.GT.0)
      &     mel_C0 => op_info%mel_arr(idxmel)%mel
@@ -364,6 +365,7 @@ c     &       ff_trv,ff_h_trv,
 
         if (multistate.and.
      &       (opti_info%optref.eq.-1.or.opti_info%optref.eq.-2)) then ! save the just calculated ME_C0 in ME_C0_1
+         ! FIXME: no explicit reference to list names
          idxmel = idx_mel_list("ME_C0_1",op_info)
          mel_pnt => op_info%mel_arr(idxmel)%mel
          call list_copy(mel_C0,mel_pnt,.false.)
@@ -473,6 +475,7 @@ c     &       ff_trv,ff_h_trv,
             idx_eff = idx
            end if
 
+           ! FIXME: No explicit reference to list names
            if (spinadapt.gt.0.and.refproj.eq.0) then
              call solve_evp('SPP',1,ndx_eff,idx_eff,
      &            'ME_C0',trim(dia_label),'A_C0',
@@ -512,6 +515,7 @@ c     &       ff_trv,ff_h_trv,
           end if
           
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
+              ! FIXME: No explicit reference to list names
               idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
               mel_pnt => op_info%mel_arr(idxmel)%mel
             call list_copy(mel_C0,mel_pnt,.false.)
