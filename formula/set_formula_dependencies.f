@@ -50,7 +50,9 @@
       end if
 
       error = .false.
-      op2list => op_info%op2list 
+      op2list => op_info%op2list
+! first pass: determine dimensions of the lists
+      ! second pass: allocate lists
       do ipass = 1, 2
         if (ntest.ge.100) write(lulog,*) 'pass: ',ipass
         fl_ptr => flist
@@ -95,7 +97,14 @@
             iptr_last = 0
             sorted = .false.
             if (ipass.eq.2) then
-              ! store targets (converted to list indices)
+! store targets (converted to list indices)
+               if (ntest .ge.100)then
+                  write (lulog,*) "found target",
+     &                 op_info%op_arr(fl_ptr%target)%op%name
+                  write (lulog,*) "found target list",
+     &                 op_info%mel_arr(op2list(fl_ptr%target))
+     &                 %mel%label
+               end if 
               idxlist(itarget) = op2list(fl_ptr%target)
             end if
           case(command_add_contribution)

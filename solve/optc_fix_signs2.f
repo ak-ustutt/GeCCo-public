@@ -16,7 +16,7 @@
       include 'def_optimize_info.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
 
       integer, intent(in) ::
      &     irecvec

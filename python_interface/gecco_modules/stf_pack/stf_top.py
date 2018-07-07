@@ -8,7 +8,7 @@ Allows to create formula objects and to set them as multiple EXPAND_OP_PRODUCT f
 \version 1.19 tested,
 """
 from python_interface.gecco_interface import * # This is an extension to the gecco interface. 
-                              # it relies on the functions provided there 
+                                               # it relies on the functions provided there 
 import copy # to produce deepcopys of objects
 import re #support for Regular expressions
 import itertools as it # some iterators
@@ -71,7 +71,7 @@ from operators import Vertex
 
 
 
-#for unit testing ensures that all functionality (besides set_rule) can be tested even when gecco_interface is not imported
+#for easier testing ensures that all functionality can be tested even when gecco_interface is not imported (because the import statemen is commented out. It should still fail if you try to use stf without a working gecco_interface in normal use)
 _g_argument_names=[
               'LABEL', 
               'OP_RES',
@@ -108,7 +108,7 @@ class _Logger(object):
     def clear(self):
         self.events=[]
 
-#used to detect if gecco_interface is loaded otherwise testmode is assumed
+#used to detect if gecco_interface is loaded otherwise testmode is assumed (for when you simply comment out the import statement to test this module)
 try:
     LABEL
 except NameError:
@@ -122,21 +122,6 @@ except NameError:
         exec("def {name}(dictionary):\n"\
              "    logger.log('{name}', dictionary)"\
              .format(name=name))
-
-try:
-    keywords #keywords is defined in gecco_interface
-except NameError:
-    #gecco_interface not loaded make mock up
-    for i in _g_argument_names:
-        exec(i +"='"+i+"'" )
-    def quit_error(msg):
-        print msg
-
-    logger=_Logger()
-    for name in _g_required_functions:
-        exec("def {name}(dictionary):\n"\
-             "    logger.log('{name}', dictionary)".\
-             format(name=name))
 else:
     if( keywords.is_keyword_set("method.unit_test") ):
         logger=_Logger()
@@ -146,7 +131,11 @@ else:
                  "    logger.log('{name}', dictionary)".\
                  format(name=name))
 
-        
+#----------------------------------------------------------------------------------------
+#global parameters
+#----------------------------------------------------------------------------------------
+#Note: parameters NEVER CHANGE!
+
 _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 
 #----------------------------------------------------------------------------------------
@@ -250,17 +239,20 @@ class _OPProduct(object):
     ##@param other a tuple of the form (fac,fac_inv) with the preset factors
     def add_prefac(self,other):
         """ adds anothers fac and fac_inv to selfs"""
-        facs=other.arguments[FAC],other.arguments[FAC_INV]
-        facs_own=self.arguments[FAC],self.arguments[FAC_INV]
-        self.arguments[FAC],self.arguments[FAC_INV]=self._add_ratios(facs_own,facs)
+        facs = other.arguments[FAC],other.arguments[FAC_INV]
+        facs_own = self.arguments[FAC],self.arguments[FAC_INV]
+        self.arguments[FAC],self.arguments[FAC_INV] = self._add_ratios(facs_own,facs)
 
 #-------------------------------------------------------------------------
 # data transformation methods, independent of self
         
     ##@param facs1 a tuple of the form (fac,fac_inv)
-    #@param facs2 a tuple of the form (fac,fac_inv) 
+    #@param facs2 a tuple of the form (fac,fac_inv)
+    #@return fac1,fac1_inv + fac2/fac2_inv
     def _add_rations(self, facs1, facs2):
-        """adds two ratios """
+        """adds two ratios 
+
+        """
         fac1,fac1_inv=facs1
         fac2,fac2_inv=facs2
         ##\TODO normalize result of addition
@@ -293,7 +285,7 @@ class _OPProduct(object):
     ##@return list of OP-names
     def _OPs_to_string(self, OPs):
         """converts all OPs to their Name(without primes)"""
-        #removal of primes is done in Vertex
+        #ASSUMTION: removal of primes is done in Vertex
         return [str(x) for x in OPs]
 
     ##@param OPs1 list of OPs
@@ -349,8 +341,6 @@ class _Bracket(_AbstractBracket):
     def __init__(self, string):
         self._set_members()
         self.process_string(string)
-        self.extract()
-        self.sum_OP_Products()
 
     def sum_OP_Products(self,other=_AltBracket()):
         OPProd_list=self.OP_products+other.OP_products
@@ -368,6 +358,7 @@ class _Bracket(_AbstractBracket):
 
     def extract(self):
         self.OP_products= [_OPProduct(x) for x in  self.content.extract()]
+        self.sum_OP_Products()
 
     ##@param string an _InputString pointing to the start of the numerical
     #prefactor or start of the bracket
@@ -461,7 +452,9 @@ class _Bracket(_AbstractBracket):
 
     ##@param OPProd_list List of OPProducts
     def _sum_prod_list(self, OPProd_list):
-        """sums the OPProducts of a list
+        """sums the OPProducts of a list and collapses redundant ones
+
+        this is an optimization, as it avoids having to remove all redundancies in the backend
         """
         ran =xrange(-len(OPProd_list),0,1) 
         for i in ran:
