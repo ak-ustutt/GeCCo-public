@@ -194,7 +194,7 @@ for i_state in range(1, n_states+1):
         SUM_TERMS({LABEL_IN:'F_' + heff_ij_op, LABEL_RES:'F_' + heff_ij_op})
 
         # dbg
-        PRINT_FORMULA({LABEL:'F_' + heff_ij_op, MODE:'SHORT'})
+        #PRINT_FORMULA({LABEL:'F_' + heff_ij_op, MODE:'SHORT'})
         #ABORT({})
         # dbg
 
@@ -239,7 +239,7 @@ for i_state in range(1, n_states+1):
 SUM_TERMS({LABEL_IN: lag_label, LABEL_RES: lag_label})
 
 # dbg
-PRINT_FORMULA({LABEL: lag_label, MODE:'SHORT'})
+#PRINT_FORMULA({LABEL: lag_label, MODE:'SHORT'})
 #ABORT({})
 # dbg
 
