@@ -76,6 +76,8 @@
       ! different field strengths while ignoring the relaxation effect
       ! of metric matrix (To check the analytic values of properties)
 
+      ! FIXME: The routines should not assume any naming
+      ! conventions. 
       ! ME_C00 has the initial C0 copied
        if (fix_met)
      &  call assign_me_list('ME_C00','C0',op_info)
@@ -198,6 +200,7 @@ c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
      &               13,.false.)  ! dirty: reo vtx. 1 --> 3
       end if
 
+      ! FIXME: No assumptions on list names here (DIAxxxxx,ME_FREF,...)
       if (prcupdate) then
         ! first add inactive elements?
         call get_argument_value('method.MR','prc_type',
