@@ -69,6 +69,8 @@
             write(lulog,'(70("="))')
           end if
           fl_tgt_current => fl_tgt_current%next
+          if (fl_tgt_current%command.eq.command_end_of_formula)
+     &                                             exit tgt_loop
         end if
 
         iterm = iterm+1
