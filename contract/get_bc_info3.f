@@ -355,12 +355,20 @@ c          write(lulog,*) 'njoined_op1op2, njoined_res: ',
 c     &                    njoined_op1op2, njoined_res
 c          call quit(1,'get_bc_info3','trap 1')
 c        end if
-        if (mst_op1op2.ne.info_vtx(1,1))
-     &       call quit(1,'get_bc_info3','trap 2')
+        if (mst_op1op2.ne.info_vtx(1,1)) then
+          write(lulog,*)'Inconsistency:'
+          write(lulog,*)'mst_op(1:2):   ',mst_op(1:2),' -> ',mst_op1op2
+          write(lulog,*)'info_vtx(1,1): ',info_vtx(1,1)
+          write(lulog,*)'Possible reason: '//
+     &         'Inconsistently defined spin states of ME lists!'
+          call quit(1,'get_bc_info3','trap 2')
+        end if
         if (gamt_op1op2.ne.info_vtx(2,1)) then
           write(lulog,*)'Inconsistency: '
           write(lulog,*)'gamt_op(1:2): ',gamt_op(1:2),' -> ',gamt_op1op2
           write(lulog,*)'info_vtx(2,1): ',info_vtx(2,1)
+          write(lulog,*)'Possible reason: '//
+     &         'Inconsistently defined IRREPs of ME lists!'
           call quit(1,'get_bc_info3','trap 3')
         end if
         tra_op1op2 = contr%dagger 

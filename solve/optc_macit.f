@@ -238,6 +238,9 @@ c dbg
                do i_spc = 1,nspecial
                 call mel_adv_state(me_special(i_spc)%mel,n_states)
                end do
+               !FIXME: explicit reference to name lists should not
+               !       occur! applies for any occurence of ME_... in
+               !       this file!
                idx = idx_mel_list('ME_DENS',op_info) ! quick & dirty
                call mel_adv_state(op_info%mel_arr(idx)%mel,n_states)
                idx = idx_mel_list('ME_C0',op_info) ! quick & dirty -> one can pass another "me_spacial", just to advance the states...

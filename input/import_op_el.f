@@ -239,7 +239,11 @@ c     &                                str_info,orb_info)
         ! what to import?
         select case(trim(op_label))
         case ('H_INT')
-          call import_hamint_molpro(mel_target,str_info,orb_info)
+          anti = .true.
+          call import_hamint_molpro(mel_target,anti,str_info,orb_info)
+        case ('Hnox_INT')
+          anti = .false.
+          call import_hamint_molpro(mel_target,anti,str_info,orb_info)
 
         case default
         ! Integrals for general one-electron operators
