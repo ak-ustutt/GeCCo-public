@@ -84,6 +84,7 @@
      &     PRINT_MEL*9        = 'PRINT_MEL',
      &     PUSH_RESULT*11     = 'PUSH_RESULT',
      &     PRINT_MEL_INFO_*14 = 'PRINT_MEL_INFO',
+     &     PRINT_OP_OCC_*12   = 'PRINT_OP_OCC',
      &     ANALYZE_MEL*11     = 'ANALYZE_MEL',
      &     PRINT_*5           = 'PRINT',
      &     SET_MEL*7          = 'SET_MEL',

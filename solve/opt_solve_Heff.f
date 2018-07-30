@@ -87,6 +87,8 @@
       call get_argument_value('method.MRCC','Heff_symm',
      &     lval=Heff_symm)
       
+      ! FIXME: Explicit reference to list names hinders use in general
+      ! user codes ..
       idxmel = idx_mel_list("ME_C0_bar",op_info)
       mel_C0_bar => op_info%mel_arr(idxmel)%mel
 

@@ -75,6 +75,8 @@
       call get_argument_value('method.MRCC','assume_orth',
      &     lval=assume_orth)
       
+      ! FIXME: Explicit reference to list names hinders use in general
+      ! user codes ...
       idxmel = idx_mel_list("ME_C0",op_info)
       mel_C0 => op_info%mel_arr(idxmel)%mel
 

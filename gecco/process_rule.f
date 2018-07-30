@@ -1088,6 +1088,17 @@ c dbg
         call print_mel_info(luout,mel_pnt)
 
 *----------------------------------------------------------------------*
+      case(PRINT_OP_OCC_)
+*----------------------------------------------------------------------*
+
+        call get_arg('LABEL',rule,tgt_info,val_label=label)
+
+        if (form_test) return
+
+        call get_op(op_pnt,label,OLD)
+        call print_op_occ(luout,op_pnt)
+
+*----------------------------------------------------------------------*
       case(PRINT_)
 *----------------------------------------------------------------------*
 
