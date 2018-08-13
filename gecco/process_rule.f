@@ -1030,6 +1030,7 @@ c dbg
         call get_arg('EXPECTED',rule,tgt_info,val_rl8=fac(2))
 
         if (form_test) return
+        if (len_trim(mode).LT.5) mode = mode(:5)//'F20.12'
 
         call get_mel(mel_pnt,label,OLD)
         call print_list(title,mel_pnt,mode,fac(1),fac(2),

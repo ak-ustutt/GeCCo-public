@@ -60,8 +60,8 @@
       implicit none
       include 'stdunit.h'
       character(len=7),dimension(8),parameter::
-     &     type_array=(/"logical","integer","unknown","real",
-     &     "unknown","unknown","unknown","string"/)
+     &     type_array=(/"logical","integer","unknown","real   ",
+     &     "unknown","unknown","unknown","string "/)
       integer, parameter ::
      &     ntest=00
       character(len=17),parameter ::
