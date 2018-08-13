@@ -1022,6 +1022,9 @@ c dbgend
      &               val_log=(/.false./))
       end if
 c dbg
+c      call set_rule2('DEF_ME_Dinv',PRINT_MEL_INFO_,tgt_info)
+c      call set_arg('DEF_ME_Dinv',PRINT_MEL_INFO_,'LIST',1,tgt_info,
+c     &               val_label=(/'ME_Dinv'/))
 c      call form_parameters(-1,parameters,2,
 c     &     'Square root of inverse density matrix :',0,'LIST')
 c      labels(1) = 'DEF_ME_Dinv'
