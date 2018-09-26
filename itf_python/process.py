@@ -11,8 +11,11 @@ def print_inter(prev_lines):
             if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
                 # Do not load if an intermediate or if the same as previous loaded tensor
                 load_ten=load_ten + inter_words[3].split('*',1)[-1] 
+
             print(load_ten, file=out)
+
         print(prev_lines[i].strip(), file=out)
+
         if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
             drop_ten="drop "
             if "STIN" not in inter_words[3]:
@@ -21,37 +24,13 @@ def print_inter(prev_lines):
                 drop_ten=drop_ten + ", "
             if "STIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
                 drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
+
             print(drop_ten, file=out)
 
 def print_result(line, words):
-#    # Load tensors
-#    if "STIN" not in words[2] or "STIN" not in words[3]:
-#        load_ten="load "
-#        if "STIN" not in words[2]:
-#            load_ten=load_ten + words[2].split('*',1)[-1]
-#        if "STIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1] and "STIN" not in words[3]:
-#            load_ten=load_ten + ", "
-#        if "STIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
-#            load_ten=load_ten + words[3].split('*',1)[-1]
-#
-#        print(load_ten, file=out)
-#
-#    print(line.strip(), file=out)
-#
-#    # Drop tensors
-#    if "STIN" not in words[2] or "STIN" not in words[3]:
-#        drop_ten="drop "
-#        if "STIN" not in words[3]:
-#            drop_ten=drop_ten + words[3].split('*',1)[-1]
-#        if "STIN" not in words[3] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1] and "STIN" not in words[2]:
-#            drop_ten=drop_ten + ", "
-#        if "STIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
-#            drop_ten=drop_ten + words[2].split('*',1)[-1]
-#
-#        print(drop_ten, file=out)
+    # Load, contract, drop tensors involved with result tensors
 
-
-    # Load tensors
+    # Load tensors, cases depend on how many tensors are on the right
     if len(words)<=4:
 
         if "STIN" not in words[2] or "STIN" not in words[3]:
@@ -370,8 +349,31 @@ declare_ten=[]
 declare_ten_index=[]
 declare_ten_name=[]
 
+begin=False
+end=False
+old_spin_iter=[]
+
 for line in f:
     words=line.split()
+
+    if (words[0]=='BEGIN'):
+        # BEGIN marks the begining of a spin summed series of contractions
+        begin=True
+        end=False
+        continue
+
+    if (words[0]=='END'):
+        # END marks the end of a spin summed series of contractions
+
+        if old_spin_iter and begin:
+            print("drop ", end="", flush=True, file=out)
+            print(*list(reversed(old_spin_iter)),sep=", ", file=out)
+
+        old_spin_iter=[]
+
+        end=True
+        begin=False
+        continue
 
     # Check if brackets in the binary contraction
     if '(' in words[2] and '(' in words[5]:
@@ -425,6 +427,7 @@ for line in f:
                 if words[0].split('[',1)[0].replace('.','') == declare_inter_name[i]:
                     if generic == declare_inter_index[i]:
                         # Generic index must be at same position as name it belongs to - dangerous! 
+                        # TODO: use dict
                         # Load previous tensor
                         declared=True
                         break
@@ -510,10 +513,16 @@ for line in f:
             # Print result line
             print_result(line, words)
 
-            # Drop intermediates if needed
-            if prev_inter:
+            # Drop intermediates if needed, don't drop if needed again in
+            # the next contraction which is part of the same spin summed family
+            if prev_inter and not begin:
                 print("drop ", end="", flush=True, file=out)
                 print(*list(reversed(prev_inter)),sep=", ", file=out)
+
+            # Store intermediate so as to drop at the end of spin summed family
+            if begin and not end:
+                if not old_spin_iter:
+                    old_spin_iter=prev_inter
 
             prev_res=words[0]
             prev_lines=[]
@@ -521,6 +530,7 @@ for line in f:
 
         # Update generic index for next line
         prev_generic=generic
+
 
 # Close off final result block
 print("store", prev_res.replace('.',''), file=out)

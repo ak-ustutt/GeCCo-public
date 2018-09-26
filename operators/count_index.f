@@ -257,7 +257,9 @@
       end if
 
       ! Write spin index to string
-      write(s_idx,*) item%spin_idx
+      ! Probably not needed...
+      !write(s_idx,*) item%spin_idx
+      s_idx=''
 
       if (item%fact.lt.0.0) then
           itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
@@ -1105,6 +1107,10 @@
         write(item%logfile,*) "Error, didn't print out spin case"
       end if
 
+      if (eloop) then
+        write(item%logfile,*) "END"
+      end if
+
       return
       end
 
@@ -1196,6 +1202,8 @@
 !               write(item%logfile,*)
 !               write(item%logfile,*)
 !            end if
+
+            if (eloop==.false.) write(item%logfile,*) 'BEGIN'
 
             if (item%rank1==2 .and. item%rank2==4 .or.
      &          item%rank1==0 .and. item%rank2==4) then

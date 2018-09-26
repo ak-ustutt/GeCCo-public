@@ -1351,11 +1351,12 @@ c     &     'Density matrix :',0,'LIST')
 c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
 c     &     'ME_D',1,0,
 c     &     parameters,2,tgt_info)
-c      call form_parameters(-1,parameters,2,
-c     &     'RDMs :',0,'LIST')
-c      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
-c     &     'ME_DENS',1,0,
-c     &     parameters,2,tgt_info)
+      call form_parameters(-1,parameters,2,
+     &     'RDMs :',0,'LIST')
+      call set_rule('EVAL_D',ttype_opme,PRINT_MEL,
+     &     'ME_DENS',1,0,
+     &     parameters,2,tgt_info)
+c      call set_rule2('EVAL_D',ABORT,tgt_info)
 c dbgend
       if(multistate)then
        call set_rule2('EVAL_D',ADV_STATE,tgt_info)

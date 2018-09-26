@@ -18,7 +18,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 500
       character(len=*),parameter::
      &     i_am="invsqrt_mat"
       real(8), parameter ::
