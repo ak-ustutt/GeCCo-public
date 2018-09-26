@@ -155,52 +155,30 @@ def print_result(line, words):
                         drop_ten=drop_ten + t3
 
             elif '(' in words[3]:
-                #t3=words[2].split('*',1)[-1]
-                #t2=words[3].split('*',1)[-1].replace('(','')
-                #t1=words[5].split('*',1)[-1].replace(')','')
-
-                #index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
-                #index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
-
-                ## Brackets for second tensor
-                ## Better way to do this???
-                #if "STIN" not in t1:
-                #    drop_ten=drop_ten + t1
-                #if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
-                #    drop_ten=drop_ten + ", "
-                #if "STIN" not in t2 and t1 != t2:
-                #    drop_ten=drop_ten + t2
-                ##if "STIN" not in t2 and t2 != t3 and \
-                ##   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
-                #if "STIN" not in t2 and t2 != t3 and \
-                #   t1 != t3 and "STIN" not in t3:
-                #    # Need to compare generic index
-                #    if generic_index(index3)!=generic_index(index5):
-                #        drop_ten=drop_ten + ", "
-                #if "STIN" not in t3 and t2 != t3 and t1 != t3:
-                #    if generic_index(index3)!=generic_index(index5):
-                #        drop_ten=drop_ten + t3
+                t3=words[2].split('*',1)[-1]
+                t2=words[3].split('*',1)[-1].replace('(','')
+                t1=words[5].split('*',1)[-1].replace(')','')
 
                 index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
                 index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
 
                 # Brackets for second tensor
-                # Better way to do this???
-                if "STIN" not in words[5]:
-                    drop_ten=drop_ten + words[5].split('*',1)[-1].replace(')','')
-                if "STIN" not in words[5] and words[5].split('*',1)[-1].replace(')','') != words[3].split('*',1)[-1].replace('(','') and "STIN" not in words[3]:
+                if "STIN" not in t1:
+                    drop_ten=drop_ten + t1
+                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                     # Need to compare generic index as well
                     if generic_index(index3)!=generic_index(index5):
                         drop_ten=drop_ten + ", "
-                if "STIN" not in words[3] and words[5].split('*',1)[-1].replace(')','') != words[3].split('*',1)[-1].replace('(',''):
+                if "STIN" not in t2 and t1 != t2:
                     if generic_index(index3)!=generic_index(index5):
-                        drop_ten=drop_ten + words[3].split('*',1)[-1].replace('(','')
-                if "STIN" not in words[3] and words[3].split('*',1)[-1].replace('(','') != words[2].split('*',1)[-1] and \
-                   "STIN" not in words[5] and words[5].split('*',1)[-1].replace(')','') != words[2].split('*',1)[-1] and "STIN" not in words[5]:
+                        drop_ten=drop_ten + t2
+                if "STIN" not in t2 and t2 != t3 and \
+                   t1 != t3 and "STIN" not in t3:
+                #if "STIN" not in t2 and t2 != t3 and \
+                #   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
                     drop_ten=drop_ten + ", "
-                if "STIN" not in words[2] and words[3].split('*',1)[-1].replace('(','') != words[2].split('*',1)[-1] and \
-                    words[5].split('*',1)[-1].replace(')','') != words[2].split('*',1)[-1]:
-                    drop_ten=drop_ten + words[2].split('*',1)[-1]
+                if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                    drop_ten=drop_ten + t3
             else:
                 print("Error in bracket determination")
                 exit(1)
