@@ -91,26 +91,31 @@ def print_result(line, words):
                     load_ten=load_ten + t3
 
             elif '(' in words[3]:
+                t1=words[2].split('*',1)[-1]
+                t2=words[3].split('*',1)[-1].replace('(','')
+                t3=words[5].split('*',1)[-1].replace(')','')
+
                 index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
                 index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
 
                 # Brackets for second tensor
                 # Better way to do this???
-                if "STIN" not in words[2]:
-                    load_ten=load_ten + words[2].split('*',1)[-1]
-                if "STIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1].replace('(','') and "STIN" not in words[3]:
-                    # Need to compare generic index as well
+                if "STIN" not in t1:
+                    load_ten=load_ten + t1
+                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                     load_ten=load_ten + ", "
-                if "STIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1].replace('(',''):
-                    load_ten=load_ten + words[3].split('*',1)[-1].replace('(','')
-                if "STIN" not in words[3] and words[3].split('*',1)[-1].replace('(','') != words[5].split('*',1)[-1].replace(')','') and \
-                   "STIN" not in words[2] and words[2].split('*',1)[-1] != words[5].split('*',1)[-1].replace(')','') and "STIN" not in words[5]:
+                if "STIN" not in t2 and t1 != t2:
+                    load_ten=load_ten + t2
+                #if "STIN" not in t2 and t2 != t3 and \
+                #   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+                if "STIN" not in t2 and t2 != t3 and \
+                   t1 != t3 and "STIN" not in t3:
+                    # Need to compare generic index
                     if generic_index(index3)!=generic_index(index5):
                         load_ten=load_ten + ", "
-                if "STIN" not in words[5].replace(')','') and words[3].split('*',1)[-1].replace('(','') != words[5].split('*',1)[-1].replace(')','') and \
-                    words[2].split('*',1)[-1] != words[5].split('*',1)[-1].replace(')',''):
+                if "STIN" not in t3 and t2 != t3 and t1 != t3:
                     if generic_index(index3)!=generic_index(index5):
-                        load_ten=load_ten + words[5].split('*',1)[-1].replace(')','')
+                        load_ten=load_ten + t3
             else:
                 print("Error in bracket determination")
                 exit(1)
@@ -150,6 +155,32 @@ def print_result(line, words):
                         drop_ten=drop_ten + t3
 
             elif '(' in words[3]:
+                #t3=words[2].split('*',1)[-1]
+                #t2=words[3].split('*',1)[-1].replace('(','')
+                #t1=words[5].split('*',1)[-1].replace(')','')
+
+                #index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
+                #index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
+
+                ## Brackets for second tensor
+                ## Better way to do this???
+                #if "STIN" not in t1:
+                #    drop_ten=drop_ten + t1
+                #if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+                #    drop_ten=drop_ten + ", "
+                #if "STIN" not in t2 and t1 != t2:
+                #    drop_ten=drop_ten + t2
+                ##if "STIN" not in t2 and t2 != t3 and \
+                ##   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+                #if "STIN" not in t2 and t2 != t3 and \
+                #   t1 != t3 and "STIN" not in t3:
+                #    # Need to compare generic index
+                #    if generic_index(index3)!=generic_index(index5):
+                #        drop_ten=drop_ten + ", "
+                #if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                #    if generic_index(index3)!=generic_index(index5):
+                #        drop_ten=drop_ten + t3
+
                 index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
                 index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
 
@@ -576,19 +607,19 @@ print(file=f2)
 # Symmetrise tensors
 if "O2g[abij]" in declare_res:
     print("load O2g[abij]", file=f2)
-    print(".Og2[abij] += O2g[baji]", file=f2)
+    print(".O2g[abij] += O2g[baji]", file=f2)
     print("store O2g[abij]", file=f2)
     print(file=f2)
 
 if "O2g[pqij]" in declare_res:
     print("load O2g[pqij]", file=f2)
-    print(".Og2[pqij] += O2g[qpji]", file=f2)
+    print(".O2g[pqij] += O2g[qpji]", file=f2)
     print("store O2g[pqij]", file=f2)
     print(file=f2)
 
 if "O2g[abpq]" in declare_res:
     print("load O2g[abpq]", file=f2)
-    print(".Og2[abpq] += O2g[baqp]", file=f2)
+    print(".O2g[abpq] += O2g[baqp]", file=f2)
     print("store O2g[abpq]", file=f2)
     print(file=f2)
 
