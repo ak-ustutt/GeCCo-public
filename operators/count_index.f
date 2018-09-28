@@ -136,7 +136,7 @@
       character(len=maxlen_bc_label) ::
      &    rename_tensor
 
-      if (trim(string).eq.'OMG') then
+      if (trim(string).eq.'O2g') then
           rename_tensor='R'
       else
           rename_tensor=trim(string)

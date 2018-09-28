@@ -569,12 +569,19 @@ print(file=f2)
 
 # Print out tensors used in contractions
 for i in range(0, len(declare_ten)):
-    print("tensor: ", declare_ten[i], file=f2)
+    print("tensor:", declare_ten[i], file=f2)
 
 # Print of result tensors
+declare_res.sort(key=len)
 print(file=f2)
 for i in range(0, len(declare_res)):
-    print("tensor: ", declare_res[i], file=f2)
+    if ("R[" in declare_res[i]):
+        index=list(declare_res[i][declare_res[i].find("[")+1:declare_res[i].find("]")])
+        generic=generic_index(index)
+        declare_res[i] = declare_res[i][:1] + ":" + "".join(generic) + declare_res[i][1:]\
+                         + ",  " + declare_res[i][:1] + ":" + "".join(generic)
+
+    print("tensor:", declare_res[i], file=f2)
 
 # Declare density and overlap tensors
 if (olap>0):
@@ -587,6 +594,15 @@ if (olap>0):
     print("tensor: Dm1H[pp]      , DHm1",file=f2)
     print("tensor: Dm2H[pppp]    , DHm2",file=f2)
     print("tensor: Dm3H[pppppp]  , DHm3",file=f2)
+    print(file=f2)
+
+    print("// Non-disk density matrix drivers",file=f2)
+    print("// Can be loaded, but can not be stored.",file=f2)
+    print("// spec:<Ref|+-+-|Ref> means that Dm2X[pqrs] = <Ref|E^p_q R^r_s|Ref>",file=f2)
+    print("tensor: Dm2X[pppp]   , !Create{type:cc-drv; spec:<Ref|+-+-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm3X[pppppp] , !Create{type:cc-drv; spec:<Ref|+-+-+-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm2HX[pppp]   , !Create{type:cc-drv; spec:<Ref|/+/-/+/-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm3HX[pppppp] , !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep:0;}",file=f2)
     print(file=f2)
 
     print("// Delta tensors",file=f2)
@@ -623,22 +639,22 @@ f2.write(tmp)
 print(file=f2)
 
 # Symmetrise tensors
-if "O2g[abij]" in declare_res:
-    print("load O2g[abij]", file=f2)
-    print(".O2g[abij] += O2g[baji]", file=f2)
-    print("store O2g[abij]", file=f2)
+if "R[abij]" in declare_res:
+    print("load R[abij]", file=f2)
+    print(".R[abij] += R[baji]", file=f2)
+    print("store R[abij]", file=f2)
     print(file=f2)
 
-if "O2g[pqij]" in declare_res:
-    print("load O2g[pqij]", file=f2)
-    print(".O2g[pqij] += O2g[qpji]", file=f2)
-    print("store O2g[pqij]", file=f2)
+if "R[pqij]" in declare_res:
+    print("load R[pqij]", file=f2)
+    print(".R[pqij] += R[qpji]", file=f2)
+    print("store R[pqij]", file=f2)
     print(file=f2)
 
-if "O2g[abpq]" in declare_res:
-    print("load O2g[abpq]", file=f2)
-    print(".O2g[abpq] += O2g[baqp]", file=f2)
-    print("store O2g[abpq]", file=f2)
+if "R[abpq]" in declare_res:
+    print("load R[abpq]", file=f2)
+    print(".R[abpq] += R[baqp]", file=f2)
+    print("store R[abpq]", file=f2)
     print(file=f2)
 
 # Print out code needed to evaluate the overlap matrix
