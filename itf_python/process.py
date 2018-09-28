@@ -319,6 +319,7 @@ def generic_index(index):
 
 
 import argparse
+import datetime
 
 parser = argparse.ArgumentParser(
                 description="""Process ITF binary contraction file and output ITF algo file
@@ -558,27 +559,59 @@ tmp=f2.read()
 f2.close()
 
 f2=open(outp, "w")
-# Declare tensros and index-spaces
+
+print("// This ITF algo file was created using the GeCCo ITF translator", file=f2)
+print("// Author: J.A. Black", file=f2)
+print(file=f2)
+now = datetime.datetime.now()
+print("// Created on:", now.strftime("%d-%m-%Y %H:%M"), file=f2)
+print(file=f2)
+
+# Declare tensors and index-spaces
 print("---- decl", file=f2)
-print("index-space: pqrstuvw , Active    , a", file=f2)
-print("index-space: ijkl     , Closed    , c", file=f2)
-print("index-space: gh       , ClosedF   , f", file=f2)
-print("index-space: abcd     , External  , e", file=f2)
-print("index-space: mno      , Internal  , i", file=f2)
+if (olap==0):
+    print("index-space: ijkl     , Closed    , c", file=f2)
+    print("index-space: abcd     , External  , e", file=f2)
+    print("index-space: I  , ConfigI0  , I", file=f2)
+else:
+    print("index-space: pqrstuvw , Active    , a", file=f2)
+    print("index-space: ijkl     , Closed    , c", file=f2)
+    print("index-space: gh       , ClosedF   , f", file=f2)
+    print("index-space: abcd     , External  , e", file=f2)
+    print("index-space: mno      , Internal  , i", file=f2)
+    print(file=f2)
+    print("index-space: I  , ConfigI0  , I", file=f2)
+
 print(file=f2)
 
 # Print out tensors used in contractions
+# For now, delcare them on disk
+declare_ten.sort()
+declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
-    print("tensor:", declare_ten[i], file=f2)
+    if ("T[" in declare_ten[i]): continue
+    print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
+
+print(file=f2)
+print("// Amplitude tensors", file=f2)
+for i in range(0, len(declare_ten)):
+    if ("T[" in declare_ten[i]):
+        index=list(declare_ten[i][declare_ten[i].find("[")+1:declare_ten[i].find("]")])
+        generic=generic_index(index)
+        declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:] \
+                         + ",  " + declare_ten[i][:1] + ":" + "".join(generic)
+        print("tensor:", declare_ten[i], file=f2)
 
 # Print of result tensors
 declare_res.sort(key=len)
 print(file=f2)
+print("// Residual tensors", file=f2)
+print("tensor: R[I],  R:I", file=f2)
 for i in range(0, len(declare_res)):
     if ("R[" in declare_res[i]):
         index=list(declare_res[i][declare_res[i].find("[")+1:declare_res[i].find("]")])
         generic=generic_index(index)
-        declare_res[i] = declare_res[i][:1] + ":" + "".join(generic) + declare_res[i][1:]\
+        declare_res[i] = declare_res[i][:1] + ":" + "".join(generic) + declare_res[i][1:] \
                          + ",  " + declare_res[i][:1] + ":" + "".join(generic)
 
     print("tensor:", declare_res[i], file=f2)

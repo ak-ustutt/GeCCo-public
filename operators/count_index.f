@@ -138,6 +138,8 @@
 
       if (trim(string).eq.'O2g') then
           rename_tensor='R'
+      else if (trim(string).eq.'T2g') then
+          rename_tensor='T'
       else
           rename_tensor=trim(string)
       end if
@@ -220,6 +222,8 @@
 
       ! Change names of specific tensors
       nres=rename_tensor(nres)
+      nt1=rename_tensor(nt1)
+      nt2=rename_tensor(nt2)
       
       ! Spin summ
       if (s1) then
