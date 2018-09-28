@@ -12,9 +12,9 @@ def print_inter(prev_lines):
                 # Do not load if an intermediate or if the same as previous loaded tensor
                 load_ten=load_ten + inter_words[3].split('*',1)[-1] 
 
-            print(load_ten, file=out)
+            print_line(load_ten)
 
-        print(prev_lines[i].strip(), file=out)
+        print_line(prev_lines[i])
 
         if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
             drop_ten="drop "
@@ -25,7 +25,29 @@ def print_inter(prev_lines):
             if "STIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
                 drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
 
-            print(drop_ten, file=out)
+            print_line(drop_ten)
+
+
+def print_line(line):
+    # Print binary contraction line
+
+    # Need to replace residual and amplitude (R and T) tensor names
+    # with there names defined in C++, ie. R:eecc
+    words=line.split()
+    if ("R[" in line):
+        for i in range(0, len(words)):
+            if ("R[" in words[i]):
+                words[i] = words[i].replace("R[", "R:" + "".join(generic_index(words[i])) + "[")
+
+    if ("T[" in line):
+        for i in range(0, len(words)):
+            if ("T[" in words[i]):
+                words[i] = words[i].replace("T[", "T:" + "".join(generic_index(words[i])) + "[")
+
+    line = " ".join(words)
+
+    print(line.strip(), file=out)
+
 
 def print_result(line, words):
     # Load, contract, drop tensors involved with result tensors
@@ -42,9 +64,9 @@ def print_result(line, words):
             if "STIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
                 load_ten=load_ten + words[3].split('*',1)[-1]
 
-            print(load_ten, file=out)
+            print_line(load_ten)
 
-        print(line.strip(), file=out)
+        print_line(line)
 
         # Drop tensors
         if "STIN" not in words[2] or "STIN" not in words[3]:
@@ -56,7 +78,7 @@ def print_result(line, words):
             if "STIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
                 drop_ten=drop_ten + words[2].split('*',1)[-1]
 
-            print(drop_ten, file=out)
+            print_line(drop_ten)
 
     elif len(words)==6:
 
@@ -113,9 +135,9 @@ def print_result(line, words):
                 print("Error in bracket determination")
                 exit(1)
 
-            print(load_ten, file=out)
+            print_line(load_ten)
 
-        print(line.strip(), file=out)
+        print_line(line)
 
         # Drop tensors
         if "STIN" not in words:
@@ -168,7 +190,7 @@ def print_result(line, words):
                 print("Error in bracket determination")
                 exit(1)
 
-            print(drop_ten, file=out)
+            print_line(drop_ten)
 
     elif len(words)>6:
         # Line contains two brackets, may have to load more than two tensors
@@ -203,10 +225,9 @@ def print_result(line, words):
                 if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + t4
 
-            print(load_ten, file=out)
+            print_line(load_ten)
 
-        print(line.strip(), file=out)
-
+        print_line(line)
 
         # Drop tensors
         if "STIN" not in words:
@@ -240,7 +261,7 @@ def print_result(line, words):
                 if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + t4
 
-            print(drop_ten, file=out)
+            print_line(drop_ten)
 
 
 
@@ -327,16 +348,16 @@ prev_res='#####'    # Result of previous line
 prev_generic=[]     # Previous generic result
 
 declare_res=[]      # Global list of result tensors
-declare_name=[]     # Global of just result tensor names
 declare_index=[]    # Global list of result indices
+declare_name=[]     # Global of just result tensor names
 
 declare_inter=[]        # Global list of intermediates
 declare_inter_index=[]  # Global list of intermediates
 declare_inter_name=[]   # Global list of intermediates
 
-declare_ten=[]
-declare_ten_index=[]
-declare_ten_name=[]
+declare_ten=[]          # Global list of tensors involved in binary contractions
+declare_ten_index=[]    # Global list of tensor indicies
+declare_ten_name=[]     # Global list of tensor names
 
 # Spin summed family = One or more equations the arise from the spin summation
 # proccedure on one result tensor contraction line
@@ -374,27 +395,16 @@ for line in f:
         # Check if second tensor needs to be declared
         add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
         add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-
-        # Arrange tensors so they are in positions 2 and 3
-#        words[2]=words[2].replace('(','')
-#        words[3]=words[5].replace('(','')
     elif '(' in words[3]:
         # Check if first tensor needs to be declared
         add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
         add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
         add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-
-        # Brackets for second tensor
-#        words[3]=words[3].replace('(','')
     elif '(' in words[2] :
         # Check if first tensor needs to be declared
         add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
         add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
         add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
-
-        # Brackets for first tensor
-#        words[2]=words[2].replace('(','')
-#        words[3]=words[5]
     else:
         # No brackets
         # Check if first tensor needs to be declared
