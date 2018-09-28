@@ -350,17 +350,19 @@ declare_res=[]      # Global list of result tensors
 declare_name=[]     # Global of just result tensor names
 declare_index=[]    # Global list of result indices
 
-declare_inter=[]    # Global list of intermediates
-declare_inter_index=[]    # Global list of intermediates
-declare_inter_name=[]    # Global list of intermediates
+declare_inter=[]        # Global list of intermediates
+declare_inter_index=[]  # Global list of intermediates
+declare_inter_name=[]   # Global list of intermediates
 
 declare_ten=[]
 declare_ten_index=[]
 declare_ten_name=[]
 
-begin=False
-end=False
-old_spin_iter=[]
+# Spin summed family = One or more equations the arise from the spin summation
+# proccedure on one result tensor contraction line
+begin=False         # Marks the start of a spin summed family of contractions
+end=False           # Marks the end of a spin summed family of contractions
+old_spin_iter=[]    # Stores list of intermediates used throughout the spin summed family
 
 for line in f:
     words=line.split()
@@ -436,7 +438,7 @@ for line in f:
                 if words[0].split('[',1)[0].replace('.','') == declare_inter_name[i]:
                     if generic == declare_inter_index[i]:
                         # Generic index must be at same position as name it belongs to - dangerous! 
-                        # TODO: use dict
+                        # TODO: use dict instead of declare_index and declare_name
                         # Load previous tensor
                         declared=True
                         break
@@ -570,6 +572,23 @@ print(file=f2)
 for i in range(0, len(declare_res)):
     print("tensor: ", declare_res[i], file=f2)
 
+# Print overlap tensors
+print(file=f2)
+print("// Overlap tensors labeled by the exciation class",file=f2)
+print("tensor: S1:I1[pp]     , S1:I1",file=f2)
+print("tensor: S2:I1[pppppp] , S2:I1",file=f2)
+print("tensor: S3:I1[pppp]   , S3:I1",file=f2)
+print("tensor: S1:I2[pppp]   , S1:I2",file=f2)
+print("tensor: S1:S0[pp]     , S1:S0",file=f2)
+print("tensor: S2:S0[pppppp] , S2:S0",file=f2)
+print("tensor: S3:S0[pppp]   , S3:S0",file=f2)
+print("tensor: S2:S1[pppp]   , S2:S1",file=f2)
+print("tensor: S3:S1[pp]     , S3:S1",file=f2)
+print("tensor: S1:S2[pp]     , S1:S2",file=f2)
+print("tensor: S1:P0[pppp]   , S1:P0",file=f2)
+print("tensor: S1:P1[pp]     , S1:P1",file=f2)
+print(file=f2)
+
 # Print out intermediates
 print(file=f2)
 print("// Intermediates", file=f2)
@@ -578,7 +597,7 @@ for i in range(0, len(declare_inter)):
 
 # Print out code blocks
 print(file=f2)
-print('---- code("Test")', file=f2)
+print('---- code("MRCC_Residual")', file=f2)
 f2.write(tmp)
 print(file=f2)
 
@@ -600,6 +619,106 @@ if "O2g[abpq]" in declare_res:
     print(".O2g[abpq] += O2g[baqp]", file=f2)
     print("store O2g[abpq]", file=f2)
     print(file=f2)
+
+# TODO: Keyword to code code for multref methods
+# Print out code needed to evaluate the overlap matrix
+print(file=f2)
+print('---- code("icMRCC_SBlock")',file=f2)
+print("// Set up overlap metric, ready to construct X used",file=f2)
+print("// in sequential orthogonalisation",file=f2)
+print("",file=f2)
+print("// I1",file=f2)
+print("alloc S1:I1[pq]",file=f2)
+print("load IccIcc1H[pq]",file=f2)
+print(".S1:I1[pq] := IccIcc1H[pq]",file=f2)
+print("drop IccIcc1H[pq]",file=f2)
+print("store S1:I1[pq]",file=f2)
+print("",file=f2)
+print("alloc S2:I1[pqrstu]",file=f2)
+print("load IccIcc3[pppppp], IccIcc2[pppp], IccIcc1[pp], deltaaa[pp]",file=f2)
+print(".S2:I1[pqrstu] := IccIcc3[pqrstu]",file=f2)
+print(".S2:I1[pqrstu] -= deltaaa[pt] IccIcc2[rqsu]",file=f2)
+print(".S2:I1[pqrstu] += deltaaa[pu] IccIcc2[rqst]",file=f2)
+print(".S2:I1[pqrstu] += deltaaa[qt] IccIcc2[rpsu]",file=f2)
+print(".S2:I1[pqrstu] -= deltaaa[qu] IccIcc2[rpst]",file=f2)
+print("alloc delta4[pppp]",file=f2)
+print(".delta4[pqtu] += deltaaa[pt] deltaaa[qu]",file=f2)
+print(".S2:I1[pqrstu] += delta4[pqtu] IccIcc1[rs]",file=f2)
+print(".S2:I1[pqrstu] -= delta4[qptu] IccIcc1[rs]",file=f2)
+print("drop delta4[pppp]",file=f2)
+print("drop deltaaa[pp], IccIcc1[pp], IccIcc2[pppp], IccIcc3[pppppp]",file=f2)
+print("store S2:I1[pqrstu]",file=f2)
+print("",file=f2)
+print("alloc S3:I1[pqrs]",file=f2)
+print("load IccIcc2[pppp], IccIcc1[pp], deltaaa[pp]",file=f2)
+print(".S3:I1[pqrs] -= IccIcc2[qprs]",file=f2)
+print(".S3:I1[pqrs] -= deltaaa[pr] IccIcc1[qs]",file=f2)
+print(".S3:I1[pqrs] += deltaaa[ps] IccIcc1[qr]",file=f2)
+print("drop deltaaa[pp], IccIcc1[pp], IccIcc2[pppp]",file=f2)
+print("store S3:I1[pqrs]",file=f2)
+print("",file=f2)
+print("// I2",file=f2)
+print("alloc S1:I2[pqrs]",file=f2)
+print("load IccIcc2H[pppp]",file=f2)
+print(".S1:I2[pqrs] := IccIcc2H[pqrs]",file=f2)
+print("drop IccIcc2H[pppp]",file=f2)
+print("store S1:I2[pqrs]",file=f2)
+print("",file=f2)
+print("// S0",file=f2)
+print("alloc S1:S0[pq]",file=f2)
+print("load IccIcc1[pp]",file=f2)
+print(".S1:S0[pq] := IccIcc1[pq]",file=f2)
+print("drop IccIcc1[pp]",file=f2)
+print("store S1:S0[pq]",file=f2)
+print("",file=f2)
+print("alloc S2:S0[pqrstu]",file=f2)
+print("load IccIcc3[pppppp], IccIcc2[pppp], deltaaa[pp]",file=f2)
+print(".S2:S0[pqrstu] -= IccIcc3[pqrstu]",file=f2)
+print(".S2:S0[pqrstu] += deltaaa[pu] IccIcc2[qrst]",file=f2)
+print("drop deltaaa[pp], IccIcc2[pppp], IccIcc3[pppppp]",file=f2)
+print("store S2:S0[pqrstu]",file=f2)
+print("",file=f2)
+print("alloc S3:S0[pqrs]",file=f2)
+print("load IccIcc2[pppp]",file=f2)
+print(".S3:S0[pqrs] := IccIcc2[pqsr]",file=f2)
+print("drop IccIcc2[pppp]",file=f2)
+print("store S3:S0[pqrs]",file=f2)
+print("",file=f2)
+print("// S1",file=f2)
+print("alloc S2:S1[pqrs]",file=f2)
+print("load IccIcc2[pppp], IccIcc1[pp], deltaaa[pp]",file=f2)
+print(".S2:S1[pqrs] -= IccIcc2[qprs]",file=f2)
+print(".S2:S1[pqrs] += deltaaa[ps] IccIcc1[qr]",file=f2)
+print("drop deltaaa[pp], IccIcc1[pp], IccIcc2[pppp]",file=f2)
+print("store S2:S1[pqrs]",file=f2)
+print("",file=f2)
+print("alloc S3:S1[pq]",file=f2)
+print("load IccIcc1[pp]",file=f2)
+print(".S3:S1[pq] := IccIcc1[qp]",file=f2)
+print("drop IccIcc1[pp]",file=f2)
+print("store S3:S1[pq]",file=f2)
+print("",file=f2)
+print("// S2",file=f2)
+print("alloc S1:S2[pq]",file=f2)
+print("load IccIcc1H[pq]",file=f2)
+print(".S1:S2[pq] := IccIcc1H[pq]",file=f2)
+print("drop IccIcc1H[pq]",file=f2)
+print("store S1:S2[pq]",file=f2)
+print("",file=f2)
+print("// P0",file=f2)
+print("alloc S1:P0[pqrs]",file=f2)
+print("load IccIcc2[pppp]",file=f2)
+print(".S1:P0[pqrs] := IccIcc2[pqrs]",file=f2)
+print("drop IccIcc2[pppp]",file=f2)
+print("store S1:P0[pqrs]",file=f2)
+print("",file=f2)
+print("// P1",file=f2)
+print("alloc S1:P1[pq]",file=f2)
+print("load IccIcc1[pp]",file=f2)
+print(".S1:P1[pq] := IccIcc1[pq]",file=f2)
+print("drop IccIcc1[pp]",file=f2)
+print("store S1:P1[pq]",file=f2)
+print(file=f2)
 
 print("---- end", file=f2)
 
