@@ -68,10 +68,6 @@ def print_result(line, words):
                 t2=words[4].split('*',1)[-1].replace(')','')
                 t3=words[5].split('*',1)[-1]
 
-                # Will need to compare generic index
-                index2=list(words[2][words[2].find("[")+1:words[2].find("]")])
-                index4=list(words[4][words[4].find("[")+1:words[4].find("]")])
-
 
                 # Brackets for first tensor
                 # Better way to do this???
@@ -79,10 +75,10 @@ def print_result(line, words):
                     load_ten=load_ten + t1
                 if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                     # Need to compare generic index as well
-                    if generic_index(index2)!=generic_index(index4):
+                    if generic_index(words[2])!=generic_index(words[4]):
                         load_ten=load_ten + ", "
                 if "STIN" not in t2 and t1 != t2:
-                    if generic_index(index2)!=generic_index(index4):
+                    if generic_index(words[2])!=generic_index(words[4]):
                         load_ten=load_ten + t2
                 if "STIN" not in t2 and t2 != t3 and \
                    "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
@@ -94,9 +90,6 @@ def print_result(line, words):
                 t1=words[2].split('*',1)[-1]
                 t2=words[3].split('*',1)[-1].replace('(','')
                 t3=words[5].split('*',1)[-1].replace(')','')
-
-                index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
-                index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
 
                 # Brackets for second tensor
                 # Better way to do this???
@@ -111,10 +104,10 @@ def print_result(line, words):
                 if "STIN" not in t2 and t2 != t3 and \
                    t1 != t3 and "STIN" not in t3:
                     # Need to compare generic index
-                    if generic_index(index3)!=generic_index(index5):
+                    if generic_index(words[3])!=generic_index(words[5]):
                         load_ten=load_ten + ", "
                 if "STIN" not in t3 and t2 != t3 and t1 != t3:
-                    if generic_index(index3)!=generic_index(index5):
+                    if generic_index(words[3])!=generic_index(words[5]):
                         load_ten=load_ten + t3
             else:
                 print("Error in bracket determination")
@@ -132,11 +125,6 @@ def print_result(line, words):
                 t2=words[4].split('*',1)[-1].replace(')','')
                 t1=words[5].split('*',1)[-1]
 
-                # Will need to compare generic index
-                index2=list(words[2][words[2].find("[")+1:words[2].find("]")])
-                index4=list(words[4][words[4].find("[")+1:words[4].find("]")])
-
-
                 # Brackets for first tensor
                 # Better way to do this???
                 if "STIN" not in t1:
@@ -148,10 +136,10 @@ def print_result(line, words):
                     drop_ten=drop_ten + t2
                 if "STIN" not in t2 and t2 != t3 and "STIN" not in t3 \
                    and t1 != t3:
-                    if generic_index(index2)!=generic_index(index4):
+                    if generic_index(words[2])!=generic_index(words[4]):
                         drop_ten=drop_ten + ", "
                 if "STIN" not in t3 and t2 != t3 and t1 != t3:
-                    if generic_index(index2)!=generic_index(index4):
+                    if generic_index(words[2])!=generic_index(words[4]):
                         drop_ten=drop_ten + t3
 
             elif '(' in words[3]:
@@ -159,18 +147,15 @@ def print_result(line, words):
                 t2=words[3].split('*',1)[-1].replace('(','')
                 t1=words[5].split('*',1)[-1].replace(')','')
 
-                index3=list(words[3][words[3].find("[")+1:words[3].find("]")])
-                index5=list(words[5][words[5].find("[")+1:words[5].find("]")])
-
                 # Brackets for second tensor
                 if "STIN" not in t1:
                     drop_ten=drop_ten + t1
                 if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                     # Need to compare generic index as well
-                    if generic_index(index3)!=generic_index(index5):
+                    if generic_index(words[3])!=generic_index(words[5]):
                         drop_ten=drop_ten + ", "
                 if "STIN" not in t2 and t1 != t2:
-                    if generic_index(index3)!=generic_index(index5):
+                    if generic_index(words[3])!=generic_index(words[5]):
                         drop_ten=drop_ten + t2
                 if "STIN" not in t2 and t2 != t3 and \
                    t1 != t3 and "STIN" not in t3:
@@ -195,20 +180,14 @@ def print_result(line, words):
 
             load_ten="load "
 
-            # Will need to compare generic index
-            index1=list(words[2][words[2].find("[")+1:words[2].find("]")])
-            index2=list(words[4][words[4].find("[")+1:words[4].find("]")])
-            index3=list(words[5][words[5].find("[")+1:words[5].find("]")])
-            index4=list(words[7][words[7].find("[")+1:words[7].find("]")])
-
             if "STIN" not in t1:
                 load_ten=load_ten + t1
             if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                 # Need to compare generic index as well
-                if generic_index(index1)!=generic_index(index2):
+                if generic_index(words[2])!=generic_index(words[4]):
                     load_ten=load_ten + ", "
             if "STIN" not in t2 and t1 != t2:
-                if generic_index(index1)!=generic_index(index2):
+                if generic_index(words[2])!=generic_index(words[4]):
                     load_ten=load_ten + t2
             if "STIN" not in t2 and t2 != t3 and \
                "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
@@ -217,11 +196,11 @@ def print_result(line, words):
                 load_ten=load_ten + t3
             if "STIN" not in t1 and "STIN" not in t2 and "STIN" not in t3 and "STIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(index3)!=generic_index(index4):
+                if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + ", "
             if "STIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(index3)!=generic_index(index4):
+                if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + t4
 
             print(load_ten, file=out)
@@ -238,20 +217,14 @@ def print_result(line, words):
 
             drop_ten="drop "
 
-            # Will need to compare generic index
-            index4=list(words[2][words[2].find("[")+1:words[2].find("]")])
-            index3=list(words[4][words[4].find("[")+1:words[4].find("]")])
-            index2=list(words[5][words[5].find("[")+1:words[5].find("]")])
-            index1=list(words[7][words[7].find("[")+1:words[7].find("]")])
-
             if "STIN" not in t1:
                 drop_ten=drop_ten + t1
             if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
                 # Need to compare generic index as well
-                if generic_index(index1)!=generic_index(index2):
+                if generic_index(words[7])!=generic_index(words[5]):
                     drop_ten=drop_ten + ", "
             if "STIN" not in t2 and t1 != t2:
-                if generic_index(index1)!=generic_index(index2):
+                if generic_index(words[7])!=generic_index(words[5]):
                     drop_ten=drop_ten + t2
             if "STIN" not in t2 and t2 != t3 and \
                "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
@@ -260,11 +233,11 @@ def print_result(line, words):
                 drop_ten=drop_ten + t3
             if "STIN" not in t1 and "STIN" not in t2 and "STIN" not in t3 and "STIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(index3)!=generic_index(index4):
+                if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + ", "
             if "STIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(index3)!=generic_index(index4):
+                if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + t4
 
             print(drop_ten, file=out)
@@ -276,7 +249,7 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
         index=list(word[word.find("[")+1:word.find("]")])
 
         # Construct generic index
-        generic=generic_index(index)
+        generic=generic_index(word)
 
         declared=False
         for i in range(0, len(declare_ten)):
@@ -296,10 +269,12 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
             declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
 
 
-def generic_index(index):
+def generic_index(tensor):
     # Construct generic index representation of specific tensor index
     # Used to check if tensors index the same space, even if they have
     # different indices
+        
+    index=list(tensor[tensor.find("[")+1:tensor.find("]")])
 
     hole=['i','j','k','l']
     particle=['a','b','c','d']
@@ -434,9 +409,7 @@ for line in f:
         prev_inter.append(words[0].replace('.',''))
         if words[0].replace('.','') not in declare_inter:
             # Add intermedate to global list
-            index=list(words[0][words[0].find("[")+1:words[0].find("]")])
-    
-            generic=generic_index(index)
+            generic=generic_index(words[0])
     
             declared=False
             for i in range(0, len(declare_inter)):
@@ -460,9 +433,8 @@ for line in f:
         # Convert to generic index
         # Compare generic indicies to see if belongs in same block
         # + Load instead of alloc
-        index=list(words[0][words[0].find("[")+1:words[0].find("]")])
 
-        generic=generic_index(index)
+        generic=generic_index(words[0])
 
         if words[0] != prev_res and generic != prev_generic:
             # Next result is different from previous, so close off block
@@ -596,8 +568,7 @@ print(file=f2)
 print("// Amplitude tensors", file=f2)
 for i in range(0, len(declare_ten)):
     if ("T[" in declare_ten[i]):
-        index=list(declare_ten[i][declare_ten[i].find("[")+1:declare_ten[i].find("]")])
-        generic=generic_index(index)
+        generic=generic_index(declare_ten[i])
         declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:] \
                          + ",  " + declare_ten[i][:1] + ":" + "".join(generic)
         print("tensor:", declare_ten[i], file=f2)
@@ -609,8 +580,7 @@ print("// Residual tensors", file=f2)
 print("tensor: R[I],  R:I", file=f2)
 for i in range(0, len(declare_res)):
     if ("R[" in declare_res[i]):
-        index=list(declare_res[i][declare_res[i].find("[")+1:declare_res[i].find("]")])
-        generic=generic_index(index)
+        generic=generic_index(declare_res[i])
         declare_res[i] = declare_res[i][:1] + ":" + "".join(generic) + declare_res[i][1:] \
                          + ",  " + declare_res[i][:1] + ":" + "".join(generic)
 
