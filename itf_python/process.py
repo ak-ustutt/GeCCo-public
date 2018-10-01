@@ -584,7 +584,10 @@ declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
     if ("T[" in declare_ten[i]): continue
-    print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
+    if ("[]" in declare_ten[i]):
+        print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
+    else:
+        print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
 
 print(file=f2)
 print("// Amplitude tensors", file=f2)
