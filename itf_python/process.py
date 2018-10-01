@@ -450,10 +450,14 @@ for line in f:
             # Next result is different from previous, so close off block
 
             if prev_res != '#####':
+                # Add generic index to residual tensor name
+                if ("R[" in prev_res):
+                    prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
+
                 print("store", prev_res.replace('.',''), file=out)
                 print(file=out)
 
-            # Check whether to load previously allocated tensor, or load it back from memory
+            # Check whether to load previously allocated tensor
             # To load, the tensor name and generic index associated with it must be equal
             loaded=False
             for i in range(0, len(declare_name)):
@@ -461,7 +465,11 @@ for line in f:
                     if generic == declare_index[i]:
                         # Generic index must be at same position as name it belongs to - dangerous! 
                         # Load previous tensor
-                        print("load", words[0].replace('.',''), file=out)
+                        tmp_res=words[0]
+                        if ("R[" in words[0]):
+                            tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+
+                        print("load", tmp_res.replace('.',''), file=out)
                         loaded=True
                         break
                 else:
@@ -469,11 +477,15 @@ for line in f:
 
             if not loaded:
                 # Add result to global list and alloc new result
-                #declare_res.append(words[0].replace('.',''))
                 declare_res.append(words[0].split('.',1)[1])
                 declare_index.append(generic)
                 declare_name.append(words[0].split('[',1)[0].replace('.',''))
-                print("alloc ", words[0].replace('.',''), file=out)
+
+                # Add generic index to residual tensor name, ie. R:eecc
+                tmp_res=words[0]
+                if ("R[" in words[0]):
+                    tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                print("alloc", tmp_res.replace('.',''), file=out)
                 
 
             # Alloc intermediates if needed
