@@ -25,7 +25,8 @@
       include 'routes.h'
 
       integer, parameter ::
-     &     ntest =  00
+     &     ntest =  00,
+     &     mxlabels = 200
 
       type(target_info), intent(inout) ::
      &     tgt_info
@@ -60,7 +61,7 @@
      &     pt_lag_corr
       character(len_target_name) ::
      &     dia_label, dia_label2, dia_label_2,
-     &     labels(20), c_st, c_st_2
+     &     labels(mxlabels), c_st, c_st_2
       character(len_command_par) ::
      &     parameters(3)
       character(len=64) ::
@@ -4381,7 +4382,7 @@ c      call set_dependency('FOPT_OMG','DEF_ME_1v',tgt_info)
      &             val_label=(/'FOPT_OMG'/))
 
 c     Intermediates in Lagrangian optimization
-      labels(1:20)(1:len_target_name) = ' '
+      labels(1:mxlabels)(1:len_target_name) = ' '
       ndef = 0
 c     Heff for multistate
       if(MS_coupled.and.multistate.and.mrcc_type.NE."BW") then
@@ -4436,13 +4437,15 @@ c        labels(ndef+2) = 'F_INT_T2H'
         ndef = ndef + 1!3
 c dbg
       end if
+      if (ndef.gt.mxlabels) 
+     &   call quit(1,'set_ic_mrcc_targets','increase mxlabels (1)')
 
       if (ndef.gt.0)
      &     call set_arg('FOPT_OMG',OPTIMIZE,'INTERM',ndef,tgt_info,
      &     val_label=labels(1:ndef))
 
       ! Formulas to be optimized
-      labels(1:20)(1:len_target_name) = ' '
+      labels(1:mxlabels)(1:len_target_name) = ' '
       ndef = 0
       if (maxcum.gt.0.or.densmix.gt.0d0) then
         call set_dependency('FOPT_OMG','DEF_ME_DENS',tgt_info)
@@ -4554,6 +4557,8 @@ c dbg
         ndef = ndef + 1
        end do
       end if
+      if (ndef.gt.mxlabels) 
+     &   call quit(1,'set_ic_mrcc_targets','increase mxlabels (2)')
       call set_arg('FOPT_OMG',OPTIMIZE,'LABELS_IN',ndef,tgt_info,
      &             val_label=labels(1:ndef))
 !      call set_rule2('FOPT_OMG',ABORT,tgt_info)
@@ -4784,7 +4789,7 @@ c dbgend
       call set_rule2('MRCC_PT_OPT',OPTIMIZE,tgt_info)
       call set_arg('MRCC_PT_OPT',OPTIMIZE,'LABEL_OPT',1,tgt_info,
      &             val_label=(/'MRCC_PT_OPT'/))
-      labels(1:20)(1:len_target_name) = ' '
+      labels(1:mxlabels)(1:len_target_name) = ' '
       ndef = 0
       if (densmix.gt.0d0) then
         call set_dependency('MRCC_PT_OPT','DEF_ME_DENS',tgt_info)
