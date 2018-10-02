@@ -594,9 +594,9 @@ print("// Amplitude tensors", file=f2)
 for i in range(0, len(declare_ten)):
     if ("T[" in declare_ten[i]):
         generic=generic_index(declare_ten[i])
-        declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:] \
+        tmp_ten = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:] \
                          + ",  " + declare_ten[i][:1] + ":" + "".join(generic)
-        print("tensor:", declare_ten[i], file=f2)
+        print("tensor:", tmp_ten, file=f2)
 
 # Print of result tensors
 declare_res.sort(key=len)
@@ -660,6 +660,21 @@ for i in range(0, len(declare_inter)):
     print("tensor: %-20s, !Create{type:disk}" % (declare_inter[i]), file=f2)
 
 # Print out code blocks
+# Need to initalise the amplitudes first
+print(file=f2)
+print(file=f2)
+print('---- code("MRCC_Init_Amplitudes")',file=f2)
+for i in range(0, len(declare_ten)):
+    if ("T[" in declare_ten[i]):
+        generic=generic_index(declare_ten[i])
+        declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
+
+        print("alloc", declare_ten[i], file=f2)
+        print("store", declare_ten[i], file=f2)
+print(file=f2)
+
+
+# Print out residual equations
 print(file=f2)
 print(file=f2)
 print('---- code("MRCC_Residual")', file=f2)
