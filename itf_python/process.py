@@ -703,8 +703,8 @@ if "R[abpq]" in declare_res:
 # Print out code needed to evaluate the overlap matrix
 if (olap>0):
     print(file=f2)
-    print("// Set up 3rd order denisty and hole tensors")
-    print("// This is taken from the cic code")
+    print("// Set up 3rd order denisty and hole tensors",file=f2)
+    print("// This is taken from the cic code",file=f2)
     print('---- code("FormDm3OnDisk")',file=f2)
     print("// <E^pqr_stu> += <E^p_s E^q_t R^r_u>",file=f2)
     print("//             -= delta_rs <E^pq_ut>",file=f2)

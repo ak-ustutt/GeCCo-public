@@ -33,7 +33,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine bcontr_to_itf(contr_info,itflog)
+      subroutine command_to_itf(contr_info,itflog,command)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -41,13 +41,16 @@
 
       implicit none
       include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
       type(binary_contr), intent(in) ::
      &     contr_info      ! Inofrmation about binary contraction
       integer, intent(in) ::
-     &     itflog          ! Output file
+     &     itflog,         ! Output file
+     &     command         ! Type of formula item command, ie. contraction, copy etc.
 
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
@@ -70,20 +73,28 @@
       ! Skip antisymmetrising each contraction and antisymm the complete
       ! tensor at the end
 
-      if (perm_array(1)==0) then
-         ! No permutations
-         call itf_contr_init(contr_info,itf_item,perm_array(1),
-     &                       antisymm,itflog)
-         call assign_spin(itf_item)
+      if (command==command_add_intm .or. command==command_cp_intm) then
+         ! For [ADD] and [COPY] cases
+         call itf_contr_init(contr_info,itf_item,perm_array(i),
+     &                       antisymm,command,itflog)
+         call print_itf_line(itf_item,.false.,.false.)
       else
-         do i=1, size(perm_array)
-            ! Loop over permuation cases and send seperatley to
-            ! assign_spin
-            call itf_contr_init(contr_info,itf_item,perm_array(i),
-     &                          antisymm,itflog)
+         ! For other binary contractions
+         if (perm_array(1)==0) then
+            ! No permutations
+            call itf_contr_init(contr_info,itf_item,perm_array(1),
+     &                          antisymm,command,itflog)
             call assign_spin(itf_item)
-            if (perm_array(i+1)==0) exit
-         end do
+         else
+            do i=1, size(perm_array)
+               ! Loop over permuation cases and send seperatley to
+               ! assign_spin
+               call itf_contr_init(contr_info,itf_item,perm_array(i),
+     &                             antisymm,command,itflog)
+               call assign_spin(itf_item)
+               if (perm_array(i+1)==0) exit
+            end do
+         end if
       end if
       
       return
@@ -136,7 +147,7 @@
       character(len=maxlen_bc_label) ::
      &    rename_tensor
 
-      if (trim(string).eq.'O2g') then
+      if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
           rename_tensor='R'
       else if (trim(string).eq.'T2g') then
           rename_tensor='T'
@@ -182,7 +193,9 @@
       implicit none
 
       include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(in) ::
@@ -204,6 +217,8 @@
      &     a_line,             ! Line of ITF code
      &     s_line,             ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
+      character(len=2) ::
+     &     equal_op           ! ITF operator; ie. +=, -=, :=
       character(len=25) ::
      &     sfact,             ! String representation of factor
      &     sfact_star,        ! String representation of factor formatted for output
@@ -243,7 +258,13 @@
          st2='('//trim(adjustl(nt2))//'['//trim(item%idx2)//']'//
      &       ' - '//trim(adjustl(nt2))//'['//trim(tidx2)//']'//')'
       else
-         st2=trim(adjustl(nt2))//'['//trim(item%idx2)//']'
+         if (item%command==command_add_intm .or.
+     &       item%command==command_cp_intm) then
+            ! Don't need second operator for [ADD] or [COPY]
+            st2=''
+         else
+            st2=trim(adjustl(nt2))//'['//trim(item%idx2)//']'
+         end if
       end if
 
       ! Convert factor to string, ignore if 1.0 or -1.0
@@ -265,22 +286,147 @@
       !write(s_idx,*) item%spin_idx
       s_idx=''
 
+      equal_op='  '
       if (item%fact.lt.0.0) then
-          itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
-     &        '['//trim(item%idx3)//
-     &        '] -= '//trim(sfact_star)//
-     &        trim(adjustl(st1))//' '//
-     &        trim(adjustl(st2))
+         equal_op='-='
+      else if (item%command==command_cp_intm) then
+         equal_op=':='
       else
-          itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
-     7        '['//trim(item%idx3)//
-     &        '] += '//trim(sfact_star)//
-     &        trim(adjustl(st1))//' '//
-     &        trim(adjustl(st2))
+         equal_op='+='
       end if
 
+       itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
+     &     '['//trim(item%idx3)//
+     &     '] '//equal_op//' '//trim(sfact_star)//
+     &     trim(adjustl(st1))//' '//
+     &     trim(adjustl(st2))
+
       write(item%logfile,*) trim(itf_line)
-      !write(item%logfile,*) "---------------------------------------"
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine assign_add_index(contr_info,item)
+*----------------------------------------------------------------------*
+!     
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+      
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Information about binary contraction
+      type(itf_contr), intent(inout) ::
+     &     item
+      integer ::
+     &     o1(4,2)      ! Occupations of first tensor
+      integer ::
+     &     i,j
+      character, dimension(4) ::
+     &     hol=(/ 'i','j','k','l' /),
+     &     par=(/ 'a','b','c','d' /)
+      character, dimension(8) ::
+     &     val=(/ 'p','q','r','s','t','u','v','w' /)
+      character(len=8) ::
+     &     c1='        ',    ! Workspace to assign index before array
+     &     c2='        ',
+     &     c3='        ',
+     &     c4='        ',
+     &     a1='        ',
+     &     a2='        ',
+     &     a3='        ',
+     &     a4='        '
+      character(len=8), dimension(8) ::
+     &     o1_array     ! Index of operator 1
+      integer, dimension(3) ::
+     &     idx_type     ! Info about index convention
+      integer, parameter ::
+     &     t_amp = 0,       ! [apij] (aacc)
+     &     ham   = 1        ! [abip]
+      character(len=20), dimension(4) ::
+     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
+      real(8) ::
+     &     tmp_fact
+
+      ! Set index convention
+      idx_type=(/ 0, 0, 0 /)
+      do i=1, len(tensor_ham)
+          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
+              ! Use default convention for now
+              idx_type(1)=0
+          end if
+          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
+              idx_type(3)=0
+          end if
+      end do
+
+      o1=0
+
+      ! Get occuation info
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_op1(1:,1:,i),
+     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,o1)
+      end do
+
+      ! Order in ITF usually follows: apij
+      ! Defualt [ccaa] as in the case of T[abij]
+
+      ! Assign e1 (external indicies of t1)
+      do i=1, o1(2,1)
+          c1(i:)=par(i)
+      end do
+      o1_array(1)=c1
+      do i=1, o1(3,1)
+          c2(i:)=val(i)
+      end do
+      o1_array(2)=c2
+      do i=1, o1(1,1)
+          c3(i:)=hol(i)
+      end do
+      o1_array(3)=c3
+
+      ! Need to to be shifted to not match assignment of creations above
+      do i=1, o1(2,2)
+          a1(i:)=par(i+o1(2,1))
+      end do
+      o1_array(5)=a1
+      do i=1, o1(3,2)
+          a2(i:)=val(i+o1(3,1))
+      end do
+      o1_array(6)=a2
+      do i=1, o1(1,2)
+          a3(i:)=hol(i+o1(1,1))
+      end do
+      o1_array(7)=a3
+
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
+
+      ! Construct final index strings
+      ! Operator 1
+      select case(idx_type(1))
+      case(ham)
+      ! Hamiltonian/integral convention
+      item%idx1=trim(adjustl(o1_array(1)))//trim(adjustl(o1_array(2)))//
+     &          trim(adjustl(o1_array(3)))//trim(adjustl(o1_array(5)))//
+     &          trim(adjustl(o1_array(6)))//trim(adjustl(o1_array(7)))
+      case default
+      ! [apij] (aacc), ie. T[abij]
+      item%idx1=trim(adjustl(o1_array(1)))//trim(adjustl(o1_array(2)))//
+     &          trim(adjustl(o1_array(3)))//trim(adjustl(o1_array(5)))//
+     &          trim(adjustl(o1_array(6)))//trim(adjustl(o1_array(7)))
+      end select
+
+      item%idx3=item%idx1
 
       return
       end
@@ -1259,36 +1405,48 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,itf_item,perm,antis,lulog)
+      subroutine itf_contr_init(contr_info,itf_item,perm,antis,comm,
+     &                          lulog)
 *----------------------------------------------------------------------*
 !    Initalise 
 *----------------------------------------------------------------------*
 
       implicit none
       include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
       
       type(binary_contr), intent(in) ::
      &     contr_info   ! Inofrmation about binary contraction
       type(itf_contr), intent(inout) ::
-     &     itf_item
+     &     itf_item     ! Object which holds information necessary to print out an ITF algo line
       integer, intent(in) ::
-     &     perm,
+     &     perm,        ! Permuation information
      &     antis,
-     &     lulog
+     &     comm,        ! formula_item command
+     &     lulog        ! Output file
       ! This should be in a 'constructor'
 
       ! Assign output file
       itf_item%logfile=lulog
 
+      ! Assign command type
+      itf_item%command=comm
+
       ! Assign permutation number
-      itf_item%permute=perm
-      itf_item%perm4=antis
+      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+         itf_item%permute=perm
+         itf_item%perm4=antis
+      end if
 
       ! Assign labels
       itf_item%label_t1=contr_info%label_op1
-      itf_item%label_t2=contr_info%label_op2
+      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+         ! Operator 2 does not exist in [ADD] or [COPY]
+         itf_item%label_t2=contr_info%label_op2
+      end if
       itf_item%label_res=contr_info%label_res
 
       ! Assign factor
@@ -1296,15 +1454,25 @@
 
       ! Check if an intermediate
       call check_inter(itf_item%label_t1,itf_item%inter(1))
-      call check_inter(itf_item%label_t2,itf_item%inter(2))
+      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+         call check_inter(itf_item%label_t2,itf_item%inter(2))
+      end if
       call check_inter(itf_item%label_res,itf_item%inter(3))
 
       ! Assign index string
-      call assign_index(contr_info,itf_item)
+      if (comm==command_cp_intm .or. comm==command_add_intm) then
+         ! For [ADD] and [COPY]
+         call assign_add_index(contr_info,itf_item)
+      else
+         ! For other contractions
+         call assign_index(contr_info,itf_item)
+      end if
 
       ! Assign rank
       call itf_rank(itf_item%idx1,itf_item%rank1)
-      call itf_rank(itf_item%idx2,itf_item%rank2)
+      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+         call itf_rank(itf_item%idx2,itf_item%rank2)
+      end if
       call itf_rank(itf_item%idx3,itf_item%rank3)
 
       return

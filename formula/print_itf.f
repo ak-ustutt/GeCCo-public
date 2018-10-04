@@ -54,19 +54,26 @@
       case(command_add_contribution)
         write(itflog,*) '[CONTR]',fl_item%target
       case(command_add_intm)
-        write(itflog,*) '[ADD]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[ADD]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
+
+        call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
+
       case(command_cp_intm)
-        write(itflog,*) '[COPY]',
-     &       fl_item%target
-        call prt_bcontr(itflog,fl_item%bcontr)
+!        write(itflog,*) '[COPY]',
+!     &       fl_item%target
+!        call prt_bcontr(itflog,fl_item%bcontr)
+
+        ! Assume that copy means alloc, then :=
+        call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
+
       case(command_add_bc)
 !        write(itflog,*) '[CONTRACT][ADD]',
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        call bcontr_to_itf(fl_item%bcontr,itflog)
+        call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
 
       case(command_add_bc_reo)
         write(itflog,*) '[CONTRACT][REORDER][ADD]',
@@ -78,7 +85,7 @@
 !     &       fl_item%target
 !        call prt_bcontr(itflog,fl_item%bcontr)
 
-        call bcontr_to_itf(fl_item%bcontr,itflog)
+        call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
 
       case(command_bc_reo)
 !        write(itflog,*) '[CONTRACT][REORDER]',
@@ -86,7 +93,7 @@
 !        call prt_bcontr(itflog,fl_item%bcontr)
 !        call prt_reorder(itflog,fl_item%reo)
 
-        call bcontr_to_itf(fl_item%bcontr,itflog)
+        call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
 
       case(command_reorder)
 !        write(itflog,*) '[REORDER]',fl_item%target
