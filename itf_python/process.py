@@ -2,30 +2,45 @@ def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
     for i in range(0, len(prev_lines)):
         inter_words=prev_lines[i].split()
-        if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
-            load_ten="load "
-            if "STIN" not in inter_words[2]:
-                load_ten=load_ten + inter_words[2].split('*',1)[-1]
-            if "STIN" not in inter_words[2] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1] and "STIN" not in inter_words[3]:
-                load_ten=load_ten + ", "
-            if "STIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
-                # Do not load if an intermediate or if the same as previous loaded tensor
-                load_ten=load_ten + inter_words[3].split('*',1)[-1] 
 
-            print_line(load_ten)
+        if len(inter_words)==3:
+            if "TIN" not in inter_words[2]:
+                load_ten="load " + inter_words[2].split('*',1)[-1]
 
-        print_line(prev_lines[i])
+                print_line(load_ten)
 
-        if "STIN" not in inter_words[2] or "STIN" not in inter_words[3]:
-            drop_ten="drop "
-            if "STIN" not in inter_words[3]:
-                drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
-            if "STIN" not in inter_words[3] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1] and "STIN" not in inter_words[2]:
-                drop_ten=drop_ten + ", "
-            if "STIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
-                drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
+            print_line(prev_lines[i])
 
-            print_line(drop_ten)
+            if "TIN" not in inter_words[2]:
+                drop_ten="drop " + inter_words[2].split('*',1)[-1]
+
+                print_line(drop_ten)
+
+        else:
+            if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
+                load_ten="load "
+                if "TIN" not in inter_words[2]:
+                    load_ten=load_ten + inter_words[2].split('*',1)[-1]
+                if "TIN" not in inter_words[2] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1] and "TIN" not in inter_words[3]:
+                    load_ten=load_ten + ", "
+                if "TIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
+                    # Do not load if an intermediate or if the same as previous loaded tensor
+                    load_ten=load_ten + inter_words[3].split('*',1)[-1]
+
+                print_line(load_ten)
+
+            print_line(prev_lines[i])
+
+            if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
+                drop_ten="drop "
+                if "TIN" not in inter_words[3]:
+                    drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
+                if "TIN" not in inter_words[3] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1] and "TIN" not in inter_words[2]:
+                    drop_ten=drop_ten + ", "
+                if "TIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
+                    drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
+
+                print_line(drop_ten)
 
 
 def print_line(line):
@@ -53,15 +68,31 @@ def print_result(line, words):
     # Load, contract, drop tensors involved with result tensors
 
     # Load tensors, cases depend on how many tensors are on the right
-    if len(words)<=4:
+    if len(words)==3:
 
-        if "STIN" not in words[2] or "STIN" not in words[3]:
+        # Either a simple adding or copying case
+        if "TIN" not in words[2]:
+            load_ten="load " + words[2].split('*',1)[-1]
+
+            print_line(load_ten)
+
+        print_line(line)
+
+        # Drop tensors
+        if "TIN" not in words[2]:
+            drop_ten="drop " +  words[2].split('*',1)[-1]
+
+            print_line(drop_ten)
+
+    elif len(words)==4:
+
+        if "TIN" not in words[2] or "TIN" not in words[3]:
             load_ten="load "
-            if "STIN" not in words[2]:
+            if "TIN" not in words[2]:
                 load_ten=load_ten + words[2].split('*',1)[-1]
-            if "STIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1] and "STIN" not in words[3]:
+            if "TIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1] and "TIN" not in words[3]:
                 load_ten=load_ten + ", "
-            if "STIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
+            if "TIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
                 load_ten=load_ten + words[3].split('*',1)[-1]
 
             print_line(load_ten)
@@ -69,13 +100,13 @@ def print_result(line, words):
         print_line(line)
 
         # Drop tensors
-        if "STIN" not in words[2] or "STIN" not in words[3]:
+        if "TIN" not in words[2] or "TIN" not in words[3]:
             drop_ten="drop "
-            if "STIN" not in words[3]:
+            if "TIN" not in words[3]:
                 drop_ten=drop_ten + words[3].split('*',1)[-1]
-            if "STIN" not in words[3] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1] and "STIN" not in words[2]:
+            if "TIN" not in words[3] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1] and "TIN" not in words[2]:
                 drop_ten=drop_ten + ", "
-            if "STIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
+            if "TIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
                 drop_ten=drop_ten + words[2].split('*',1)[-1]
 
             print_line(drop_ten)
@@ -83,7 +114,7 @@ def print_result(line, words):
     elif len(words)==6:
 
         # Line contains brackets, may have to load more than two tensors
-        if "STIN" not in words:
+        if "TIN" not in words:
             load_ten="load "
             if '(' in words[2]:
                 t1=words[2].split('*',1)[-1].replace('(','')
@@ -93,19 +124,19 @@ def print_result(line, words):
 
                 # Brackets for first tensor
                 # Better way to do this???
-                if "STIN" not in t1:
+                if "TIN" not in t1:
                     load_ten=load_ten + t1
-                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                     # Need to compare generic index as well
                     if generic_index(words[2])!=generic_index(words[4]):
                         load_ten=load_ten + ", "
-                if "STIN" not in t2 and t1 != t2:
+                if "TIN" not in t2 and t1 != t2:
                     if generic_index(words[2])!=generic_index(words[4]):
                         load_ten=load_ten + t2
-                if "STIN" not in t2 and t2 != t3 and \
-                   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+                if "TIN" not in t2 and t2 != t3 and \
+                   "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
                     load_ten=load_ten + ", "
-                if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                if "TIN" not in t3 and t2 != t3 and t1 != t3:
                     load_ten=load_ten + t3
 
             elif '(' in words[3]:
@@ -115,20 +146,20 @@ def print_result(line, words):
 
                 # Brackets for second tensor
                 # Better way to do this???
-                if "STIN" not in t1:
+                if "TIN" not in t1:
                     load_ten=load_ten + t1
-                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                     load_ten=load_ten + ", "
-                if "STIN" not in t2 and t1 != t2:
+                if "TIN" not in t2 and t1 != t2:
                     load_ten=load_ten + t2
-                #if "STIN" not in t2 and t2 != t3 and \
-                #   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
-                if "STIN" not in t2 and t2 != t3 and \
-                   t1 != t3 and "STIN" not in t3:
+                #if "TIN" not in t2 and t2 != t3 and \
+                #   "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
+                if "TIN" not in t2 and t2 != t3 and \
+                   t1 != t3 and "TIN" not in t3:
                     # Need to compare generic index
                     if generic_index(words[3])!=generic_index(words[5]):
                         load_ten=load_ten + ", "
-                if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                if "TIN" not in t3 and t2 != t3 and t1 != t3:
                     if generic_index(words[3])!=generic_index(words[5]):
                         load_ten=load_ten + t3
             else:
@@ -140,7 +171,7 @@ def print_result(line, words):
         print_line(line)
 
         # Drop tensors
-        if "STIN" not in words:
+        if "TIN" not in words:
             drop_ten="drop "
             if '(' in words[2]:
                 t3=words[2].split('*',1)[-1].replace('(','')
@@ -149,18 +180,18 @@ def print_result(line, words):
 
                 # Brackets for first tensor
                 # Better way to do this???
-                if "STIN" not in t1:
+                if "TIN" not in t1:
                     drop_ten=drop_ten + t1
-                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                     # Need to compare generic index as well
                     drop_ten=drop_ten + ", "
-                if "STIN" not in t2 and t1 != t2:
+                if "TIN" not in t2 and t1 != t2:
                     drop_ten=drop_ten + t2
-                if "STIN" not in t2 and t2 != t3 and "STIN" not in t3 \
+                if "TIN" not in t2 and t2 != t3 and "TIN" not in t3 \
                    and t1 != t3:
                     if generic_index(words[2])!=generic_index(words[4]):
                         drop_ten=drop_ten + ", "
-                if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                if "TIN" not in t3 and t2 != t3 and t1 != t3:
                     if generic_index(words[2])!=generic_index(words[4]):
                         drop_ten=drop_ten + t3
 
@@ -170,21 +201,21 @@ def print_result(line, words):
                 t1=words[5].split('*',1)[-1].replace(')','')
 
                 # Brackets for second tensor
-                if "STIN" not in t1:
+                if "TIN" not in t1:
                     drop_ten=drop_ten + t1
-                if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                     # Need to compare generic index as well
                     if generic_index(words[3])!=generic_index(words[5]):
                         drop_ten=drop_ten + ", "
-                if "STIN" not in t2 and t1 != t2:
+                if "TIN" not in t2 and t1 != t2:
                     if generic_index(words[3])!=generic_index(words[5]):
                         drop_ten=drop_ten + t2
-                if "STIN" not in t2 and t2 != t3 and \
-                   t1 != t3 and "STIN" not in t3:
-                #if "STIN" not in t2 and t2 != t3 and \
-                #   "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+                if "TIN" not in t2 and t2 != t3 and \
+                   t1 != t3 and "TIN" not in t3:
+                #if "TIN" not in t2 and t2 != t3 and \
+                #   "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
                     drop_ten=drop_ten + ", "
-                if "STIN" not in t3 and t2 != t3 and t1 != t3:
+                if "TIN" not in t3 and t2 != t3 and t1 != t3:
                     drop_ten=drop_ten + t3
             else:
                 print("Error in bracket determination")
@@ -194,7 +225,7 @@ def print_result(line, words):
 
     elif len(words)>6:
         # Line contains two brackets, may have to load more than two tensors
-        if "STIN" not in words:
+        if "TIN" not in words:
             t1=words[2].split('*',1)[-1].replace('(','')
             t2=words[4].split('*',1)[-1].replace(')','')
             t3=words[5].split('*',1)[-1].replace('(','')
@@ -202,25 +233,25 @@ def print_result(line, words):
 
             load_ten="load "
 
-            if "STIN" not in t1:
+            if "TIN" not in t1:
                 load_ten=load_ten + t1
-            if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+            if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                 # Need to compare generic index as well
                 if generic_index(words[2])!=generic_index(words[4]):
                     load_ten=load_ten + ", "
-            if "STIN" not in t2 and t1 != t2:
+            if "TIN" not in t2 and t1 != t2:
                 if generic_index(words[2])!=generic_index(words[4]):
                     load_ten=load_ten + t2
-            if "STIN" not in t2 and t2 != t3 and \
-               "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+            if "TIN" not in t2 and t2 != t3 and \
+               "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
                 load_ten=load_ten + ", "
-            if "STIN" not in t3 and t2 != t3 and t1 != t3:
+            if "TIN" not in t3 and t2 != t3 and t1 != t3:
                 load_ten=load_ten + t3
-            if "STIN" not in t1 and "STIN" not in t2 and "STIN" not in t3 and "STIN" not in t4 and \
+            if "TIN" not in t1 and "TIN" not in t2 and "TIN" not in t3 and "TIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
                 if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + ", "
-            if "STIN" not in t4 and \
+            if "TIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
                 if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + t4
@@ -230,7 +261,7 @@ def print_result(line, words):
         print_line(line)
 
         # Drop tensors
-        if "STIN" not in words:
+        if "TIN" not in words:
             t4=words[2].split('*',1)[-1].replace('(','')
             t3=words[4].split('*',1)[-1].replace(')','')
             t2=words[5].split('*',1)[-1].replace('(','')
@@ -238,25 +269,25 @@ def print_result(line, words):
 
             drop_ten="drop "
 
-            if "STIN" not in t1:
+            if "TIN" not in t1:
                 drop_ten=drop_ten + t1
-            if "STIN" not in t1 and t1 != t2 and "STIN" not in t2:
+            if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
                 # Need to compare generic index as well
                 if generic_index(words[7])!=generic_index(words[5]):
                     drop_ten=drop_ten + ", "
-            if "STIN" not in t2 and t1 != t2:
+            if "TIN" not in t2 and t1 != t2:
                 if generic_index(words[7])!=generic_index(words[5]):
                     drop_ten=drop_ten + t2
-            if "STIN" not in t2 and t2 != t3 and \
-               "STIN" not in t1 and t1 != t3 and "STIN" not in t3:
+            if "TIN" not in t2 and t2 != t3 and \
+               "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
                 drop_ten=drop_ten + ", "
-            if "STIN" not in t3 and t2 != t3 and t1 != t3:
+            if "TIN" not in t3 and t2 != t3 and t1 != t3:
                 drop_ten=drop_ten + t3
-            if "STIN" not in t1 and "STIN" not in t2 and "STIN" not in t3 and "STIN" not in t4 and \
+            if "TIN" not in t1 and "TIN" not in t2 and "TIN" not in t3 and "TIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
                 if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + ", "
-            if "STIN" not in t4 and \
+            if "TIN" not in t4 and \
                t1 != t4 and t2 != t4 and t3 != t4:
                 if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + t4
@@ -266,7 +297,7 @@ def print_result(line, words):
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
-    if word.split('*',1)[-1] not in declare_ten and "STIN" not in word:
+    if word.split('*',1)[-1] not in declare_ten and "TIN" not in word:
         index=list(word[word.find("[")+1:word.find("]")])
 
         # Construct generic index
@@ -338,6 +369,7 @@ if args.output is None:
 inp = args.input
 outp = args.output
 olap = args.overlap
+olap = 0
 
 f=open(inp,"r")
 out=open(outp, "w+")
@@ -388,35 +420,50 @@ for line in f:
         continue
 
     # Check if brackets in the binary contraction
-    if '(' in words[2] and '(' in words[5]:
-        # Check if first tensor needs to be declared
-        add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-        # Check if second tensor needs to be declared
-        add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-    elif '(' in words[3]:
-        # Check if first tensor needs to be declared
+    if (len(words)>=4):
+        if '(' in words[2] and '(' in words[5]:
+            # Check if first tensor needs to be declared
+            add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+            # Check if second tensor needs to be declared
+            add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+        elif '(' in words[3]:
+            # Check if first tensor needs to be declared
+            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+        elif '(' in words[2] :
+            # Check if first tensor needs to be declared
+            add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+            add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
+        else:
+            # No brackets
+            # Check if first tensor needs to be declared
+            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+            # Check if second tensor needs to be declared
+            add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
+    elif (len(words)==3):
+        # Simple add or assign line
         add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-    elif '(' in words[2] :
-        # Check if first tensor needs to be declared
-        add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
-    else:
-        # No brackets
-        # Check if first tensor needs to be declared
-        add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-        # Check if second tensor needs to be declared
-        add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
 
 
-    if "STIN" in words[0]:
+    if "TIN" in words[0]:
         # Check if contraction forms and intermediate
         prev_lines.append(line)
-        prev_inter.append(words[0].replace('.',''))
+
+        # Add intermediate name to prev_inter list, this is then used to alloc/drop intermediate
+        # tensors. Hack(?) used to avoid adding the an intermediate to the list if it has already
+        # been added. This is no longer safe if two intermediates need to be allocated, have the
+        # same name, yet a different index. I assume this will not happen.
+        if len(prev_inter)==0:
+            prev_inter.append(words[0].replace('.',''))
+        else:
+            for i in range(0, len(prev_inter)):
+                if words[0].split('[',1)[0].replace('.','') not in prev_inter[i].split('[',1)[0].replace('.',''):
+                    prev_inter.append(words[0].replace('.',''))
+
         if words[0].replace('.','') not in declare_inter:
             # Add intermedate to global list
             generic=generic_index(words[0])
@@ -566,7 +613,6 @@ print("---- decl", file=f2)
 if (olap==0):
     print("index-space: ijkl     , Closed    , c", file=f2)
     print("index-space: abcd     , External  , e", file=f2)
-    print("index-space: I  , ConfigI0  , I", file=f2)
 else:
     print("index-space: pqrstuvw , Active    , a", file=f2)
     print("index-space: ijkl     , Closed    , c", file=f2)
@@ -602,7 +648,7 @@ for i in range(0, len(declare_ten)):
 declare_res.sort(key=len)
 print(file=f2)
 print("// Residual tensors", file=f2)
-print("tensor: R[I],  R:I", file=f2)
+if (olap): print("tensor: R[I],  R:I", file=f2)
 for i in range(0, len(declare_res)):
     if ("R[" in declare_res[i]):
         generic=generic_index(declare_res[i])
@@ -657,13 +703,16 @@ if (olap>0):
 print(file=f2)
 print("// Intermediates", file=f2)
 for i in range(0, len(declare_inter)):
-    print("tensor: %-20s, !Create{type:disk}" % (declare_inter[i]), file=f2)
+    if ("[]" in declare_inter[i]):
+        print("tensor: %-20s, !Create{type:scalar}" % (declare_inter[i]), file=f2)
+    else:
+        print("tensor: %-20s, !Create{type:disk}" % (declare_inter[i]), file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first
 print(file=f2)
 print(file=f2)
-print('---- code("MRCC_Init_Amplitudes")',file=f2)
+print('---- code("Init_Amplitudes")',file=f2)
 for i in range(0, len(declare_ten)):
     if ("T[" in declare_ten[i]):
         generic=generic_index(declare_ten[i])
@@ -671,13 +720,11 @@ for i in range(0, len(declare_ten)):
 
         print("alloc", declare_ten[i], file=f2)
         print("store", declare_ten[i], file=f2)
-print(file=f2)
-
 
 # Print out residual equations
 print(file=f2)
 print(file=f2)
-print('---- code("MRCC_Residual")', file=f2)
+print('---- code("Residual")', file=f2)
 f2.write(tmp)
 print(file=f2)
 

@@ -149,7 +149,7 @@
 
       if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
           rename_tensor='R'
-      else if (trim(string).eq.'T2g') then
+      else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
           rename_tensor='T'
       else
           rename_tensor=trim(string)
