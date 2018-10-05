@@ -131,7 +131,7 @@
       end
 
 *----------------------------------------------------------------------*
-      pure function rename_tensor(string)
+      pure function rename_tensor(string, rank)
 *----------------------------------------------------------------------*
 !     Rename tensor acording to taste 
 !     This should be expanded to rename all tensors so they correspond
@@ -144,6 +144,8 @@
 
       character(len=maxlen_bc_label), intent(in) ::
      &    string
+      integer, intent(in) ::
+     &    rank          ! Rank of tensor
       character(len=maxlen_bc_label) ::
      &    rename_tensor
 
@@ -151,6 +153,15 @@
           rename_tensor='R'
       else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
           rename_tensor='T'
+      else if (trim(string).eq.'H') then
+          if (rank==2) then
+             rename_tensor='f'
+          else
+             rename_tensor='K'
+          end if
+      else if (trim(string).eq.'ECCD' .or. trim(string).eq.'MRCC_LAG')
+     & then
+          rename_tensor='ECC'
       else
           rename_tensor=trim(string)
       end if
@@ -236,9 +247,9 @@
       nt2=item%label_t2
 
       ! Change names of specific tensors
-      nres=rename_tensor(nres)
-      nt1=rename_tensor(nt1)
-      nt2=rename_tensor(nt2)
+      nres=rename_tensor(nres, item%rank3)
+      nt1=rename_tensor(nt1, item%rank1)
+      nt2=rename_tensor(nt2, item%rank2)
       
       ! Spin summ
       if (s1) then

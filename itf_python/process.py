@@ -59,6 +59,16 @@ def print_line(line):
             if ("T[" in words[i]):
                 words[i] = words[i].replace("T[", "T:" + "".join(generic_index(words[i])) + "[")
 
+    if ("K[" in line):
+        for i in range(0, len(words)):
+            if ("K[" in words[i]):
+                words[i] = words[i].replace("K[", "K:" + "".join(generic_index(words[i])) + "[")
+
+    if ("f[" in line):
+        for i in range(0, len(words)):
+            if ("f[" in words[i]):
+                words[i] = words[i].replace("f[", "f:" + "".join(generic_index(words[i])) + "[")
+
     line = " ".join(words)
 
     print(line.strip(), file=out)
@@ -343,6 +353,21 @@ def generic_index(tensor):
     return gen
 
 
+def declare_existing_tensors(declare_list, name, tensor, energy=False):
+    k=1
+    c=":"
+    if (energy):
+        k=3
+        c=""
+
+    print(file=f2)
+    print("// " + name, file=f2)
+    for i in range(0, len(declare_list)):
+        if (tensor+"[" in declare_list[i]):
+            generic=generic_index(declare_list[i])
+            tmp_ten = declare_list[i][:k] + c + "".join(generic) + declare_list[i][k:] \
+                             + ",  " + declare_list[i][:k] + c + "".join(generic)
+            print("tensor:", tmp_ten, file=f2)
 
 
 import argparse
@@ -629,33 +654,19 @@ print(file=f2)
 declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
-    if ("T[" in declare_ten[i]): continue
+    if ("T[" in declare_ten[i] or "K[" in declare_ten[i] or "f[" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
         print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
 
-print(file=f2)
-print("// Amplitude tensors", file=f2)
-for i in range(0, len(declare_ten)):
-    if ("T[" in declare_ten[i]):
-        generic=generic_index(declare_ten[i])
-        tmp_ten = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:] \
-                         + ",  " + declare_ten[i][:1] + ":" + "".join(generic)
-        print("tensor:", tmp_ten, file=f2)
-
-# Print of result tensors
-declare_res.sort(key=len)
-print(file=f2)
-print("// Residual tensors", file=f2)
+# Print already existing tensor, ie. don't need !Create{type:disk}
+declare_existing_tensors(declare_ten, "Integral tensors", "K")
+declare_existing_tensors(declare_ten, "Fock tensors", "f")
+declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (olap): print("tensor: R[I],  R:I", file=f2)
-for i in range(0, len(declare_res)):
-    if ("R[" in declare_res[i]):
-        generic=generic_index(declare_res[i])
-        declare_res[i] = declare_res[i][:1] + ":" + "".join(generic) + declare_res[i][1:] \
-                         + ",  " + declare_res[i][:1] + ":" + "".join(generic)
-
-    print("tensor:", declare_res[i], file=f2)
+declare_existing_tensors(declare_res, "Residual tensors", "R")
+declare_existing_tensors(declare_res, "Energy", "ECC", True)
 
 # Declare density and overlap tensors
 if (olap>0):
@@ -730,21 +741,21 @@ print(file=f2)
 
 # Symmetrise tensors
 if "R[abij]" in declare_res:
-    print("load R[abij]", file=f2)
-    print(".R[abij] += R[baji]", file=f2)
-    print("store R[abij]", file=f2)
+    print("load R:eecc[abij]", file=f2)
+    print(".R:eecc[abij] += R:eecc[baji]", file=f2)
+    print("store R:eecc[abij]", file=f2)
     print(file=f2)
 
 if "R[pqij]" in declare_res:
-    print("load R[pqij]", file=f2)
-    print(".R[pqij] += R[qpji]", file=f2)
-    print("store R[pqij]", file=f2)
+    print("load R:aacc[pqij]", file=f2)
+    print(".R:aacc[pqij] += R:aacc[qpji]", file=f2)
+    print("store R:aacc[pqij]", file=f2)
     print(file=f2)
 
 if "R[abpq]" in declare_res:
-    print("load R[abpq]", file=f2)
-    print(".R[abpq] += R[baqp]", file=f2)
-    print("store R[abpq]", file=f2)
+    print("load R:eeaa[abpq]", file=f2)
+    print(".R:eeaa[abpq] += R:eeaa[baqp]", file=f2)
+    print("store R:eeaa[abpq]", file=f2)
     print(file=f2)
 
 # Print out code needed to evaluate the overlap matrix
