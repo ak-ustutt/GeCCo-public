@@ -366,7 +366,7 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
         if (tensor+"[" in declare_list[i]):
             generic=generic_index(declare_list[i])
             tmp_ten = declare_list[i][:k] + c + "".join(generic) + declare_list[i][k:] \
-                             + ",  " + declare_list[i][:k] + c + "".join(generic)
+                             + ", " + declare_list[i][:k] + c + "".join(generic)
             print("tensor:", tmp_ten, file=f2)
 
 
@@ -666,7 +666,14 @@ declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (olap): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
-declare_existing_tensors(declare_res, "Energy", "ECC", True)
+declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
+
+if (olap==0):
+    # Tensors needed in CCD
+    print("tensor: EMp2[], EMp2     // MP2 energy, Hylleraas functional", file=f2)
+    print("tensor: EDi2[], EDi2     // Direct 2nd order energy", file=f2)
+    print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
+    print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
 
 # Declare density and overlap tensors
 if (olap>0):
@@ -715,22 +722,54 @@ print(file=f2)
 print("// Intermediates", file=f2)
 for i in range(0, len(declare_inter)):
     if ("[]" in declare_inter[i]):
-        print("tensor: %-20s, !Create{type:scalar}" % (declare_inter[i]), file=f2)
+        print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
-        print("tensor: %-20s, !Create{type:disk}" % (declare_inter[i]), file=f2)
+        print("tensor: %-18s !Create{type:plain}" % (declare_inter[i] + ","), file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first
 print(file=f2)
 print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
-for i in range(0, len(declare_ten)):
-    if ("T[" in declare_ten[i]):
-        generic=generic_index(declare_ten[i])
-        declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
+if (olap>0):
+    for i in range(0, len(declare_ten)):
+        if ("T[" in declare_ten[i]):
+            generic=generic_index(declare_ten[i])
+            declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
 
-        print("alloc", declare_ten[i], file=f2)
-        print("store", declare_ten[i], file=f2)
+            print("alloc", declare_ten[i], file=f2)
+            print("store", declare_ten[i], file=f2)
+else:
+    # Initalise amplitudes using MP2
+    print("alloc EMp2[], Nrm2[]", file=f2)
+    print("for [i,j]:", file=f2)
+    print("   alloc T:eecc[abij]", file=f2)
+    print("   load K:eecc[**ij]", file=f2)
+    print("   .T:eecc[abij] -= K:eecc[abij]", file=f2)
+    print("   denom-scale T:eecc[abij], [1,1,0,0]", file=f2)
+    print("   .EMp2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
+    print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]", file=f2)
+    print("   drop K:eecc[**ij]", file=f2)
+    print("   store T:eecc[**ij]", file=f2)
+    print("store Nrm2[], EMp2[]", file=f2)
+
+# Print out amplitude update
+if (olap==0):
+    # Update for CCD
+    print(file=f2)
+    print(file=f2)
+    print('---- code("Update_Amplitudes")',file=f2)
+    print("alloc EDi2[], Nrm2[], Var2[]", file=f2)
+    print("for [i,j]:", file=f2)
+    print("   load T:eecc[abij], R:eecc[abij], K:eecc[abij]", file=f2)
+    print("   denom-scale R:eecc[abij], [1,1,0,0]", file=f2)
+    print("   .Var2 += R:eecc[abij] R:eecc[abij]", file=f2)
+    print("   .T:eecc[abij] -= R:eecc[abij]", file=f2)
+    print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
+    print("   drop K:eecc[abij], R:eecc[abij]", file=f2)
+    print("   .Nrm2 += (2.0*T:eecc[abij]-T:eecc[baij]) T:eecc[abij]", file=f2)
+    print("   store T:eecc[abij]", file=f2)
+    print("store Var2[], Nrm2[], EDi2[]", file=f2)
 
 # Print out residual equations
 print(file=f2)
