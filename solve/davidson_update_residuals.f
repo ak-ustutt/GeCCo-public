@@ -31,7 +31,7 @@
       type(me_list_array),intent(in):: !lists change, array doesn't
      &     me_res(*)
 
-      real(8),intent(out)::
+      real(8),intent(inout)::
      &     xnrm(nroots,nlists)
       
       real(8),intent(inout)::
