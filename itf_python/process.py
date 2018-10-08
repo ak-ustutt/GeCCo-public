@@ -847,7 +847,7 @@ if (olap>0):
 
     print(file=f2)
     print(file=f2)
-    print('---- code("icMRCC_SBlock")',file=f2)
+    print('---- code("MRCC_SBlock")',file=f2)
     print("// Set up overlap metric, ready to construct X used",file=f2)
     print("// in sequential orthogonalisation",file=f2)
     print("",file=f2)
