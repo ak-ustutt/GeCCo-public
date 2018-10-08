@@ -719,9 +719,9 @@ c dbg
      &       call print_step_results(iter,
      &       xrsnrm, xeig,nroots, nopt)
 
-      
       end do opt_loop
 
+      
       if(nrequest.eq.0)then
          write(lulog,'(x,a,i5,a)')
      &        'CONVERGED IN ',iter,' ITERATIONS'
@@ -733,7 +733,6 @@ c dbg
          call warn('linear solver', 'NO CONVERGENCE OBTAINED')
       end if
       
-
       do iopt = 1, nopt
 
 
@@ -752,44 +751,44 @@ c dbg
          write(fname,'("metort_",i3.3)') iopt
          call me_ensure_deleted(fname,op_info)
 
-        call assign_me_list(label_opt(iopt),
-     &                      me_opt(iopt)%mel%op%name,op_info)
+         call assign_me_list(label_opt(iopt),
+     &        me_opt(iopt)%mel%op%name,op_info)
 
 
 
 
 c        ! solution vector has been updated (if we had some iteration)
+         
+         call touch_file_rec(me_opt(iopt)%mel%fhand)
 
-        call touch_file_rec(me_opt(iopt)%mel%fhand)
-
-        if (home_in) then
-! home in on root with largest overlap with prior solution
-           ifree = mem_setmark('solve_evp.home_in')
-           ifree = mem_alloc_real(xoverlap,nroots,'xoverlap')
-           ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
-           ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
-           xresmax = 0d0
-           do iroot = 1, nroots
-              xoverlap(iroot) = da_ddot(me_home(1)%mel%fhand,1,
-     &                                me_opt(iopt)%mel%fhand,iroot,
+         if (home_in) then
+!     home in on root with largest overlap with prior solution
+            ifree = mem_setmark('solve_evp.home_in')
+            ifree = mem_alloc_real(xoverlap,nroots,'xoverlap')
+            ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),'xbuf1')
+            ifree = mem_alloc_real(xbuf2,opti_info%nwfpar(iopt),'xbuf2')
+            xresmax = 0d0
+            do iroot = 1, nroots
+               xoverlap(iroot) = da_ddot(me_home(1)%mel%fhand,1,
+     &              me_opt(iopt)%mel%fhand,iroot,
      &                                opti_info%nwfpar(iopt),
      &                                xbuf1,xbuf2,
-     &                                opti_info%nwfpar(iopt))
-              xoverlap(iroot) = abs(xoverlap(iroot))
-              if (xoverlap(iroot).gt.xresmax) then
-                 idx = iroot
-              xresmax = xoverlap(iroot)
-           end if
+     &              opti_info%nwfpar(iopt))
+               xoverlap(iroot) = abs(xoverlap(iroot))
+               if (xoverlap(iroot).gt.xresmax) then
+                  idx = iroot
+                  xresmax = xoverlap(iroot)
+               end if
 c     dbg
 c     print *,'root / overlap: ',iroot,xoverlap(iroot)
 c dbgend
-          end do
-          ifree = mem_flushmark()
-          if (idx.ne.targ_root) then
-            write(lulog,'(a,i4,a,f8.4)')
-     &            'Homing in on root ',idx,' with overlap ',xresmax
-            ! Interchange this record and the current record
-            ! and leave everything else unchanged (a bit dirty)
+            end do
+            ifree = mem_flushmark()
+            if (idx.ne.targ_root) then
+               write(lulog,'(a,i4,a,f8.4)')
+     &              'Homing in on root ',idx,' with overlap ',xresmax
+! Interchange this record and the current record
+! and leave everything else unchanged (a bit dirty)
             call switch_mel_record(me_opt(iopt)%mel,targ_root)
             call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
             call switch_mel_record(me_opt(iopt)%mel,idx)
@@ -826,7 +825,13 @@ c dbgend
      &     me_vort, me_mvort, me_res)
       deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,
      &     ff_scr,ff_ext)
-      deallocate(xrsnrm)
+
+!     not freeing xrsnrm is a memory leak.
+!     but deallocating it results in a double free error.
+!     I suspect an implicit reallocation somwhere with an incorrect intent(out)
+
+!     deallocate(xrsnrm) 
+ 
       call dealloc_formula_list(fl_mvp)
       do jdx = 1, nspcfrm
          call dealloc_formula_list(fl_spc(jdx))
