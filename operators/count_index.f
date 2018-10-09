@@ -1,3 +1,72 @@
+      module itf_utils
+         implicit none
+      contains
+*----------------------------------------------------------------------*
+      function trimal(str1) result(str2)
+*----------------------------------------------------------------------*
+!     trim() and adjustl() a string
+*----------------------------------------------------------------------*
+      implicit none
+
+      character(len=*), intent(in) ::
+     &     str1
+      character(len=:), allocatable ::
+     &     str2
+      
+      str2 = trim(adjustl(str1))
+
+      end function trimal
+
+*----------------------------------------------------------------------*
+      pure function rename_tensor(string, rank)
+*----------------------------------------------------------------------*
+!     Rename tensor acording to taste 
+!     This should be expanded to rename all tensors so they correspond
+!     with the ITF algo file
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      character(len=maxlen_bc_label), intent(in) ::
+     &    string
+      integer, intent(in) ::
+     &    rank          ! Rank of tensor
+      character(len=maxlen_bc_label) ::
+     &    rename_tensor
+
+      if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
+          rename_tensor='R'
+      else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
+          rename_tensor='T'
+      else if (trim(string).eq.'H') then
+          if (rank==2) then
+             rename_tensor='f'
+          else
+             rename_tensor='K'
+          end if
+      else if (trim(string).eq.'GAM0') then
+          if (rank==2) then
+             rename_tensor='Dm1'
+          else if (rank==4) then
+             rename_tensor='Dm2'
+          else if (rank==6) then
+             rename_tensor='Dm3'
+          else
+             rename_tensor='Dm'
+          end if
+      else if (trim(string).eq.'ECCD' .or. trim(string).eq.'MRCC_LAG')
+     & then
+          rename_tensor='ECC'
+      else
+          rename_tensor=trim(string)
+      end if
+
+      end function
+
+      end module itf_utils
+
 *----------------------------------------------------------------------*
       subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
 *----------------------------------------------------------------------*
@@ -101,84 +170,6 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine remove_whitespace(string)
-*----------------------------------------------------------------------*
-!     Remove whitespace inbetween string
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      character(len=8), intent(inout) ::
-     &     string   ! IFT index string with whitespaces
-      character(len=8) ::
-     &     tmp      ! Tempory holder of index
-      integer ::
-     &     i,j      ! Loop index
-
-      tmp='    '
-      j=0
-
-      do i=1, len(string)
-        if(string(i:i).ne.' ') then
-          j=j+1
-          tmp(j:j)=string(i:i)
-        endif
-      enddo
- 
-      string=tmp
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      pure function rename_tensor(string, rank)
-*----------------------------------------------------------------------*
-!     Rename tensor acording to taste 
-!     This should be expanded to rename all tensors so they correspond
-!     with the ITF algo file
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      character(len=maxlen_bc_label), intent(in) ::
-     &    string
-      integer, intent(in) ::
-     &    rank          ! Rank of tensor
-      character(len=maxlen_bc_label) ::
-     &    rename_tensor
-
-      if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
-          rename_tensor='R'
-      else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
-          rename_tensor='T'
-      else if (trim(string).eq.'H') then
-          if (rank==2) then
-             rename_tensor='f'
-          else
-             rename_tensor='K'
-          end if
-      else if (trim(string).eq.'GAM0') then
-          if (rank==2) then
-             rename_tensor='Dm1'
-          else if (rank==4) then
-             rename_tensor='Dm2'
-          else if (rank==6) then
-             rename_tensor='Dm3'
-          else
-             rename_tensor='Dm'
-          end if
-      else if (trim(string).eq.'ECCD' .or. trim(string).eq.'MRCC_LAG')
-     & then
-          rename_tensor='ECC'
-      else
-          rename_tensor=trim(string)
-      end if
-
-      end function
-
-*----------------------------------------------------------------------*
       subroutine t_index(idx,tidx)
 *----------------------------------------------------------------------*
 !     Transpose ITF index string, abij => abji
@@ -211,8 +202,8 @@
 !     Print line of ITF code
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
-
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
@@ -244,8 +235,6 @@
      &     sfact,             ! String representation of factor
      &     sfact_star,        ! String representation of factor formatted for output
      &     s_idx              ! Spin index used to group lines
-      character(len=maxlen_bc_label) ::
-     &     rename_tensor
       integer ::
      &     i
 
@@ -333,6 +322,7 @@
 !     
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -437,14 +427,14 @@
       select case(idx_type(1))
       case(ham)
       ! Hamiltonian/integral convention
-      item%idx1=trim(adjustl(o1_array(1)))//trim(adjustl(o1_array(2)))//
-     &          trim(adjustl(o1_array(3)))//trim(adjustl(o1_array(5)))//
-     &          trim(adjustl(o1_array(6)))//trim(adjustl(o1_array(7)))
+      item%idx1=trimal(o1_array(1))//trimal(o1_array(2))//
+     &          trimal(o1_array(3))//trimal(o1_array(5))//
+     &          trimal(o1_array(6))//trimal(o1_array(7))
       case default
       ! [apij] (aacc), ie. T[abij]
-      item%idx1=trim(adjustl(o1_array(1)))//trim(adjustl(o1_array(2)))//
-     &          trim(adjustl(o1_array(3)))//trim(adjustl(o1_array(5)))//
-     &          trim(adjustl(o1_array(6)))//trim(adjustl(o1_array(7)))
+      item%idx1=trimal(o1_array(1))//trimal(o1_array(2))//
+     &          trimal(o1_array(3))//trimal(o1_array(5))//
+     &          trimal(o1_array(6))//trimal(o1_array(7))
       end select
 
       item%idx3=item%idx1
@@ -452,26 +442,6 @@
       return
       end
 
-      module itf_utils
-         implicit none
-      contains
-*----------------------------------------------------------------------*
-      function trimal(str1) result(str2)
-*----------------------------------------------------------------------*
-!     trim() and adjustl() a string
-*----------------------------------------------------------------------*
-      implicit none
-
-      character(len=*), intent(in) ::
-     &     str1
-      character(len=:), allocatable ::
-     &     str2
-      
-      str2 = trim(adjustl(str1))
-
-      end function trimal
-
-      end module itf_utils
 
 *----------------------------------------------------------------------*
       subroutine assign_index(contr_info,item)
@@ -807,6 +777,7 @@
 !     Arrange index letters into correct order according to convention 
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -836,38 +807,21 @@
          num = t1
       end if
 
-!      select case(ttype)
-!      case(ham)
-!     item_idx=trim(adjustl(arr1(num(1))))//trim(adjustl(arr2(num(1))))//
-!     &        trim(adjustl(arr1(num(2))))//trim(adjustl(arr2(num(2))))//
-!     &        trim(adjustl(arr1(num(3))))//trim(adjustl(arr2(num(3))))//
-!     &        trim(adjustl(arr1(num(4))))//trim(adjustl(arr2(num(4))))//
-!     &        trim(adjustl(arr1(num(5))))//trim(adjustl(arr2(num(5))))//
-!     &        trim(adjustl(arr1(num(6))))//trim(adjustl(arr2(num(6))))
-!      case default
-!     item_idx=trim(adjustl(arr1(num(1))))//trim(adjustl(arr2(num(1))))//
-!     &        trim(adjustl(arr1(num(2))))//trim(adjustl(arr2(num(2))))//
-!     &        trim(adjustl(arr1(num(3))))//trim(adjustl(arr2(num(3))))//
-!     &        trim(adjustl(arr1(num(4))))//trim(adjustl(arr2(num(4))))//
-!     &        trim(adjustl(arr1(num(5))))//trim(adjustl(arr2(num(5))))//
-!     &        trim(adjustl(arr1(num(6))))//trim(adjustl(arr2(num(6))))
-!      end select
-
       select case(ttype)
       case(ham)
-      item_idx=trim(adjustl(arr1(5)))//trim(adjustl(arr2(5)))//
-     &         trim(adjustl(arr1(6)))//trim(adjustl(arr2(6)))//
-     &         trim(adjustl(arr1(7)))//trim(adjustl(arr2(7)))//
-     &         trim(adjustl(arr1(1)))//trim(adjustl(arr2(1)))//
-     &         trim(adjustl(arr1(2)))//trim(adjustl(arr2(2)))//
-     &         trim(adjustl(arr1(3)))//trim(adjustl(arr2(3)))
+      item_idx=trimal(arr1(5))//trimal(arr2(5))//
+     &         trimal(arr1(6))//trimal(arr2(6))//
+     &         trimal(arr1(7))//trimal(arr2(7))//
+     &         trimal(arr1(1))//trimal(arr2(1))//
+     &         trimal(arr1(2))//trimal(arr2(2))//
+     &         trimal(arr1(3))//trimal(arr2(3))
       case default
-      item_idx=trim(adjustl(arr1(1)))//trim(adjustl(arr2(1)))//
-     &         trim(adjustl(arr1(2)))//trim(adjustl(arr2(2)))//
-     &         trim(adjustl(arr1(3)))//trim(adjustl(arr2(3)))//
-     &         trim(adjustl(arr1(5)))//trim(adjustl(arr2(5)))//
-     &         trim(adjustl(arr1(6)))//trim(adjustl(arr2(6)))//
-     &         trim(adjustl(arr1(7)))//trim(adjustl(arr2(7)))
+      item_idx=trimal(arr1(1))//trimal(arr2(1))//
+     &         trimal(arr1(2))//trimal(arr2(2))//
+     &         trimal(arr1(3))//trimal(arr2(3))//
+     &         trimal(arr1(5))//trimal(arr2(5))//
+     &         trimal(arr1(6))//trimal(arr2(6))//
+     &         trimal(arr1(7))//trimal(arr2(7))
       end select
 
       return
@@ -1608,6 +1562,7 @@
 !    Initalise 
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -1618,7 +1573,7 @@
       integer, intent(inout) ::
      &     nrank
 
-      nrank=len(trim(adjustl(idx)))
+      nrank=len(trimal(idx))
 
       return
       end
