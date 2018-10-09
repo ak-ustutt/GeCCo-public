@@ -80,6 +80,10 @@ def print_result(line, words):
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
 
+        # This line adds the reference energy to the correlation energy
+        # So we can skip it
+        if ("ECC[]" in words[0] and "K[]" in words[2]): return
+
         # Either a simple adding or copying case
         if "TIN" not in words[2]:
             load_ten="load " + words[2].split('*',1)[-1]
@@ -471,7 +475,9 @@ for line in f:
             add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
     elif (len(words)==3):
         # Simple add or assign line
-        add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+        if ("K[]" not in words[2]):
+            # Don't want to declare a tensor for the reference energy
+            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
 
 
     if "TIN" in words[0]:

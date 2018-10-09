@@ -159,6 +159,16 @@
           else
              rename_tensor='K'
           end if
+      else if (trim(string).eq.'GAM0') then
+          if (rank==2) then
+             rename_tensor='Dm1'
+          else if (rank==4) then
+             rename_tensor='Dm2'
+          else if (rank==6) then
+             rename_tensor='Dm3'
+          else
+             rename_tensor='Dm'
+          end if
       else if (trim(string).eq.'ECCD' .or. trim(string).eq.'MRCC_LAG')
      & then
           rename_tensor='ECC'
@@ -500,13 +510,13 @@
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
               ! Use default convention for now
-              idx_type(1)=0
+              idx_type(1)=1
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=0
+              idx_type(2)=1
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=0
+              idx_type(3)=1
           end if
       end do
 
@@ -701,16 +711,17 @@
 
 
       ! Construct final index strings
+      ! TODO: Make this a function
       ! Operator 1
       select case(idx_type(1))
       case(ham)
       ! Hamiltonian/integral convention
-      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
+      item%idx1=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
      &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))
+     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
       case default
       ! [apij] (aacc), ie. T[abij]
       item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
@@ -725,12 +736,12 @@
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trim(adjustl(t2_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t2_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t2_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(t2_array(7)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(t2_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t2_array(6)))//trim(adjustl(c_array(6)))
+      item%idx2=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
       case default
       item%idx2=trim(adjustl(t2_array(1)))//trim(adjustl(c_array(5)))//
      &          trim(adjustl(t2_array(2)))//trim(adjustl(c_array(6)))//
@@ -743,12 +754,12 @@
       ! Result
       select case(idx_type(3))
       case(ham)
-      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
-     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
-     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
-     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))//
-     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
-     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))
+      item%idx3=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
+     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
+     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
+     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
+     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
+     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
       case default
       item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
      &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
