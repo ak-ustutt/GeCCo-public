@@ -216,18 +216,13 @@
      &     s1,s2
 
       character(len=maxlen_bc_label) ::
-     &     nres, nt1, nt2,          ! Name of tensors involved in the contraction
-     &     ires, it1, it2          ! Name of tensors + index
+     &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=index_len) ::
      &     tidx1, tidx2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=70) ::
-     &     itf_line,             ! Line of ITF code
-     &     d_line,             ! Line of ITF code
-     &     l_line,             ! Line of ITF code
-     &     a_line,             ! Line of ITF code
-     &     s_line,             ! Line of ITF code
+     &     itf_line,          ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
       character(len=2) ::
      &     equal_op           ! ITF operator; ie. +=, -=, :=
@@ -238,25 +233,18 @@
       integer ::
      &     i
 
-      sfact='                         '
-      sfact_star='                         '
-      ! Remove these...
-      nres=item%label_res
-      nt1=item%label_t1
-      nt2=item%label_t2
-
       ! Change names of specific tensors
-      nres=rename_tensor(nres, item%rank3)
-      nt1=rename_tensor(nt1, item%rank1)
-      nt2=rename_tensor(nt2, item%rank2)
+      nres=rename_tensor(item%label_res, item%rank3)
+      nt1=rename_tensor(item%label_t1, item%rank1)
+      nt2=rename_tensor(item%label_t2, item%rank2)
       
       ! Spin summ
       if (s1) then
          ! Pure spin
          tidx1=''
          call t_index(item%idx1,tidx1)
-         st1='('//trim(adjustl(nt1))//'['//trim(item%idx1)//']'//
-     &       ' - '//trim(adjustl(nt1))//'['//trim(tidx1)//']'//')'
+         st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//
+     &       ' - '//trimal(nt1)//'['//trim(tidx1)//']'//')'
       else
          st1=trim(adjustl(nt1))//'['//trim(item%idx1)//']'
       end if
@@ -278,6 +266,8 @@
       end if
 
       ! Convert factor to string, ignore if 1.0 or -1.0
+      sfact=''
+      sfact_star=''
       if (item%fact.ne.1.0) then
           if (item%fact.ne.-1.0) then
               write(sfact,*) item%fact
@@ -287,7 +277,7 @@
                     sfact(i:i)=' '
                  end if
               end do
-              sfact_star=trim(adjustl(sfact))//'*'
+              sfact_star=trimal(sfact)//'*'
           end if
       end if
 
@@ -305,11 +295,9 @@
          equal_op='+='
       end if
 
-       itf_line=trim(adjustl(s_idx))//'.'//trim(adjustl(nres))//
-     &     '['//trim(item%idx3)//
-     &     '] '//equal_op//' '//trim(sfact_star)//
-     &     trim(adjustl(st1))//' '//
-     &     trim(adjustl(st2))
+       itf_line=trimal(s_idx)//'.'//trimal(nres)//
+     &     '['//trim(item%idx3)//'] '//equal_op//' '//
+     &     trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
       write(item%logfile,*) trim(itf_line)
 
