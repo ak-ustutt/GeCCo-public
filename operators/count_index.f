@@ -452,12 +452,34 @@
       return
       end
 
+      module itf_utils
+         implicit none
+      contains
+*----------------------------------------------------------------------*
+      function trimal(str1) result(str2)
+*----------------------------------------------------------------------*
+!     trim() and adjustl() a string
+*----------------------------------------------------------------------*
+      implicit none
+
+      character(len=*), intent(in) ::
+     &     str1
+      character(len=:), allocatable ::
+     &     str2
+      
+      str2 = trim(adjustl(str1))
+
+      end function trimal
+
+      end module itf_utils
+
 *----------------------------------------------------------------------*
       subroutine assign_index(contr_info,item)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -716,61 +738,141 @@
       select case(idx_type(1))
       case(ham)
       ! Hamiltonian/integral convention
-      item%idx1=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
+      item%idx1=trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))//
+     &          trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))
       case default
       ! [apij] (aacc), ie. T[abij]
-      item%idx1=trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))//
-     &          trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))
+      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))//
+     &          trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))
       end select
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
+      item%idx2=trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))//
+     &          trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))
       case default
-      item%idx2=trim(adjustl(t2_array(1)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t2_array(2)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t2_array(3)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(t2_array(5)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t2_array(6)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t2_array(7)))//trim(adjustl(c_array(3)))
+      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
+     &          trimal(t2_array(2))//trimal(c_array(6))//
+     &          trimal(t2_array(3))//trimal(c_array(7))//
+     &          trimal(t2_array(5))//trimal(c_array(1))//
+     &          trimal(t2_array(6))//trimal(c_array(2))//
+     &          trimal(t2_array(7))//trimal(c_array(3))
       end select
 
       ! Result
       select case(idx_type(3))
       case(ham)
-      item%idx3=trim(adjustl(t1_array(5)))//trim(adjustl(c_array(5)))//
-     &          trim(adjustl(t1_array(6)))//trim(adjustl(c_array(6)))//
-     &          trim(adjustl(t1_array(7)))//trim(adjustl(c_array(7)))//
-     &          trim(adjustl(t1_array(1)))//trim(adjustl(c_array(1)))//
-     &          trim(adjustl(t1_array(2)))//trim(adjustl(c_array(2)))//
-     &          trim(adjustl(t1_array(3)))//trim(adjustl(c_array(3)))
+      item%idx3=trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))//
+     &          trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))
       case default
-      item%idx3=trim(adjustl(e1_array(1)))//trim(adjustl(e2_array(1)))//
-     &          trim(adjustl(e1_array(2)))//trim(adjustl(e2_array(2)))//
-     &          trim(adjustl(e1_array(3)))//trim(adjustl(e2_array(3)))//
-     &          trim(adjustl(e1_array(5)))//trim(adjustl(e2_array(5)))//
-     &          trim(adjustl(e1_array(6)))//trim(adjustl(e2_array(6)))//
-     &          trim(adjustl(e1_array(7)))//trim(adjustl(e2_array(7)))
+      item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
+     &          trimal(e1_array(2))//trimal(e2_array(2))//
+     &          trimal(e1_array(3))//trimal(e2_array(3))//
+     &          trimal(e1_array(5))//trimal(e2_array(5))//
+     &          trimal(e1_array(6))//trimal(e2_array(6))//
+     &          trimal(e1_array(7))//trimal(e2_array(7))
+      end select
+
+      !call
+      !index_convention(t1_array,c_array,idx_type(1),item%idx1,.true.)
+      !call
+      !index_convention(t2_array,c_array,idx_type(2),item%idx2,.false.)
+      !call
+      !index_convention(e1_array,e2_array,idx_type(3),item%idx3,.true.)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine index_convention(arr1,arr2,ttype,item_idx,tensor1)
+*----------------------------------------------------------------------*
+!     Arrange index letters into correct order according to convention 
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=8), dimension(8), intent(in) ::
+     &     arr1,     ! Contraction index array
+     &     arr2
+      integer, intent(in) ::
+     &     ttype    ! Info about index convention
+      logical, intent(in) ::
+     &     tensor1
+      character(len=index_len), intent(inout) ::
+     &     item_idx
+
+      integer, parameter ::
+     &     t_amp = 0,       ! [apij] (aacc)
+     &     ham   = 1        ! [abip]
+      integer, dimension(6) ::
+     &     t1 = (/ 1, 2, 3, 5, 6, 7 /),
+     &     t2 = (/ 5, 6, 7, 1, 2, 3 /),
+     &     num
+
+      if (.not. tensor1) then
+         num = t2
+      else
+         num = t1
+      end if
+
+!      select case(ttype)
+!      case(ham)
+!     item_idx=trim(adjustl(arr1(num(1))))//trim(adjustl(arr2(num(1))))//
+!     &        trim(adjustl(arr1(num(2))))//trim(adjustl(arr2(num(2))))//
+!     &        trim(adjustl(arr1(num(3))))//trim(adjustl(arr2(num(3))))//
+!     &        trim(adjustl(arr1(num(4))))//trim(adjustl(arr2(num(4))))//
+!     &        trim(adjustl(arr1(num(5))))//trim(adjustl(arr2(num(5))))//
+!     &        trim(adjustl(arr1(num(6))))//trim(adjustl(arr2(num(6))))
+!      case default
+!     item_idx=trim(adjustl(arr1(num(1))))//trim(adjustl(arr2(num(1))))//
+!     &        trim(adjustl(arr1(num(2))))//trim(adjustl(arr2(num(2))))//
+!     &        trim(adjustl(arr1(num(3))))//trim(adjustl(arr2(num(3))))//
+!     &        trim(adjustl(arr1(num(4))))//trim(adjustl(arr2(num(4))))//
+!     &        trim(adjustl(arr1(num(5))))//trim(adjustl(arr2(num(5))))//
+!     &        trim(adjustl(arr1(num(6))))//trim(adjustl(arr2(num(6))))
+!      end select
+
+      select case(ttype)
+      case(ham)
+      item_idx=trim(adjustl(arr1(5)))//trim(adjustl(arr2(5)))//
+     &         trim(adjustl(arr1(6)))//trim(adjustl(arr2(6)))//
+     &         trim(adjustl(arr1(7)))//trim(adjustl(arr2(7)))//
+     &         trim(adjustl(arr1(1)))//trim(adjustl(arr2(1)))//
+     &         trim(adjustl(arr1(2)))//trim(adjustl(arr2(2)))//
+     &         trim(adjustl(arr1(3)))//trim(adjustl(arr2(3)))
+      case default
+      item_idx=trim(adjustl(arr1(1)))//trim(adjustl(arr2(1)))//
+     &         trim(adjustl(arr1(2)))//trim(adjustl(arr2(2)))//
+     &         trim(adjustl(arr1(3)))//trim(adjustl(arr2(3)))//
+     &         trim(adjustl(arr1(5)))//trim(adjustl(arr2(5)))//
+     &         trim(adjustl(arr1(6)))//trim(adjustl(arr2(6)))//
+     &         trim(adjustl(arr1(7)))//trim(adjustl(arr2(7)))
       end select
 
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine permute_tensors(contr_info,perm_array,lulog)

@@ -766,37 +766,37 @@ if (olap==0):
     print(file=f2)
     print(file=f2)
     print('---- code("Update_Amplitudes")',file=f2)
-    print("// Update doubles",file=f2
-    print("alloc ECC[], EDi2[], Nrm2[], Var2[]",file=f2
-    print("for [i,j]:",file=f2
-    print("   load R:eecc[**ij]",file=f2
-    print("   // L1 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2
-    print("   alloc L1[**ij]",file=f2
-    print("   .L1[**ij] += R:eecc[**ij]",file=f2
-    print("   denom-scale L1[**ij], [1,1,0,0]",file=f2
-    print("",file=f2
-    print("   load K:eecc[**ij]",file=f2
-    print("   // Compute Hylleraas-functional-like energy",file=f2
-    print("   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}",file=f2
-    print("   load T:eecc[**ij]",file=f2
-    print("   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])",file=f2
-    print("   drop T:eecc[**ij]",file=f2
-    print("   .ECC -= (2.0*L1[abij] - L1[baij]) R:eecc[abij]",file=f2
-    print("   .Var2 += (2.0*L1[abij] - L1[baij]) L1[abij]",file=f2
-    print("",file=f2
-    print("   // Update T:eecc",file=f2
-    print("   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}",file=f2
-    print("   load T:eecc[**ij]",file=f2
-    print("   .T:eecc[abij] -= L1[abij]",file=f2
-    print("",file=f2
-    print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2
-    print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2
-    print("   store T:eecc[**ij]",file=f2
-    print("   drop K:eecc[**ij]",file=f2
-    print("",file=f2
-    print("   drop L1[**ij]",file=f2
-    print("   drop R:eecc[**ij]",file=f2
-    print("store Var2[], Nrm2[], EDi2[], ECC[]",file=f2
+    print("// Update doubles",file=f2)
+    print("alloc ECC[], EDi2[], Nrm2[], Var2[]",file=f2)
+    print("for [i,j]:",file=f2)
+    print("   load R:eecc[**ij]",file=f2)
+    print("   // L1 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2)
+    print("   alloc L1[**ij]",file=f2)
+    print("   .L1[**ij] += R:eecc[**ij]",file=f2)
+    print("   denom-scale L1[**ij], [1,1,0,0]",file=f2)
+    print("",file=f2)
+    print("   load K:eecc[**ij]",file=f2)
+    print("   // Compute Hylleraas-functional-like energy",file=f2)
+    print("   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}",file=f2)
+    print("   load T:eecc[**ij]",file=f2)
+    print("   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])",file=f2)
+    print("   drop T:eecc[**ij]",file=f2)
+    print("   .ECC -= (2.0*L1[abij] - L1[baij]) R:eecc[abij]",file=f2)
+    print("   .Var2 += (2.0*L1[abij] - L1[baij]) L1[abij]",file=f2)
+    print("",file=f2)
+    print("   // Update T:eecc",file=f2)
+    print("   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}",file=f2)
+    print("   load T:eecc[**ij]",file=f2)
+    print("   .T:eecc[abij] -= L1[abij]",file=f2)
+    print("",file=f2)
+    print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2)
+    print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2)
+    print("   store T:eecc[**ij]",file=f2)
+    print("   drop K:eecc[**ij]",file=f2)
+    print("",file=f2)
+    print("   drop L1[**ij]",file=f2)
+    print("   drop R:eecc[**ij]",file=f2)
+    print("store Var2[], Nrm2[], EDi2[], ECC[]",file=f2)
 
 # Print out residual equations
 print(file=f2)
