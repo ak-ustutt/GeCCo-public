@@ -731,6 +731,9 @@ for i in range(0, len(declare_inter)):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
         print("tensor: %-18s !Create{type:plain}" % (declare_inter[i] + ","), file=f2)
+if (olap==0):
+    print(file=f2)
+    print("tensor: L1[abij],          !Create{type:plain}", file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first

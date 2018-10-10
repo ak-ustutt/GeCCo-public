@@ -691,7 +691,6 @@
 
 
       ! Construct final index strings
-      ! TODO: Make this a function
       ! Operator 1
       select case(idx_type(1))
       case(ham)
@@ -749,18 +748,18 @@
      &          trimal(e1_array(7))//trimal(e2_array(7))
       end select
 
-      !call
-      !index_convention(t1_array,c_array,idx_type(1),item%idx1,.true.)
-      !call
-      !index_convention(t2_array,c_array,idx_type(2),item%idx2,.false.)
-      !call
-      !index_convention(e1_array,e2_array,idx_type(3),item%idx3,.true.)
+!      call index_convention(t1_array,c_array,idx_type(1),
+!     &                      item%idx1,.true.,.true.)
+!      call index_convention(t2_array,c_array,idx_type(2),
+!     &                      item%idx2,.true.,.false.)
+!      call index_convention(e1_array,e2_array,idx_type(3),
+!     &                      item%idx3,.true.,.true.)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine index_convention(arr1,arr2,ttype,item_idx,tensor1)
+      subroutine index_convention(arr1,arr2,ttype,item_idx,t1,t2)
 *----------------------------------------------------------------------*
 !     Arrange index letters into correct order according to convention 
 *----------------------------------------------------------------------*
@@ -777,7 +776,7 @@
       integer, intent(in) ::
      &     ttype    ! Info about index convention
       logical, intent(in) ::
-     &     tensor1
+     &     t1, t2
       character(len=index_len), intent(inout) ::
      &     item_idx
 
@@ -785,31 +784,37 @@
      &     t_amp = 0,       ! [apij] (aacc)
      &     ham   = 1        ! [abip]
       integer, dimension(6) ::
-     &     t1 = (/ 1, 2, 3, 5, 6, 7 /),
-     &     t2 = (/ 5, 6, 7, 1, 2, 3 /),
+     &     a1 = (/ 1, 2, 3, 5, 6, 7 /),
+     &     a2 = (/ 5, 6, 7, 1, 2, 3 /),
      &     num
 
-      if (.not. tensor1) then
-         num = t2
-      else
+      if (t1) then
          num = t1
+      else
+         num = t2
+      end if
+
+      if (t2) then
+         num = t1
+      else
+         num = t2
       end if
 
       select case(ttype)
       case(ham)
-      item_idx=trimal(arr1(5))//trimal(arr2(5))//
-     &         trimal(arr1(6))//trimal(arr2(6))//
-     &         trimal(arr1(7))//trimal(arr2(7))//
-     &         trimal(arr1(1))//trimal(arr2(1))//
-     &         trimal(arr1(2))//trimal(arr2(2))//
-     &         trimal(arr1(3))//trimal(arr2(3))
+      item_idx=trimal(arr1(num(4)))//trimal(arr2(num(4)))//
+     &         trimal(arr1(num(5)))//trimal(arr2(num(5)))//
+     &         trimal(arr1(num(6)))//trimal(arr2(num(6)))//
+     &         trimal(arr1(num(1)))//trimal(arr2(num(1)))//
+     &         trimal(arr1(num(2)))//trimal(arr2(num(2)))//
+     &         trimal(arr1(num(3)))//trimal(arr2(num(3)))
       case default
-      item_idx=trimal(arr1(1))//trimal(arr2(1))//
-     &         trimal(arr1(2))//trimal(arr2(2))//
-     &         trimal(arr1(3))//trimal(arr2(3))//
-     &         trimal(arr1(5))//trimal(arr2(5))//
-     &         trimal(arr1(6))//trimal(arr2(6))//
-     &         trimal(arr1(7))//trimal(arr2(7))
+      item_idx=trimal(arr1(num(1)))//trimal(arr2(num(1)))//
+     &         trimal(arr1(num(2)))//trimal(arr2(num(2)))//
+     &         trimal(arr1(num(3)))//trimal(arr2(num(3)))//
+     &         trimal(arr1(num(4)))//trimal(arr2(num(4)))//
+     &         trimal(arr1(num(5)))//trimal(arr2(num(5)))//
+     &         trimal(arr1(num(6)))//trimal(arr2(num(6)))
       end select
 
       return
