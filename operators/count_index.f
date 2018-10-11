@@ -1,4 +1,8 @@
+*----------------------------------------------------------------------*
       module itf_utils
+*----------------------------------------------------------------------*
+!     Contins functions used throughout the code
+*----------------------------------------------------------------------*
          implicit none
       contains
 *----------------------------------------------------------------------*
@@ -246,22 +250,22 @@
          st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//
      &       ' - '//trimal(nt1)//'['//trim(tidx1)//']'//')'
       else
-         st1=trim(adjustl(nt1))//'['//trim(item%idx1)//']'
+         st1=trimal(nt1)//'['//trim(item%idx1)//']'
       end if
 
       if (s2) then
          ! Pure spin
          tidx2=''
          call t_index(item%idx2,tidx2)
-         st2='('//trim(adjustl(nt2))//'['//trim(item%idx2)//']'//
-     &       ' - '//trim(adjustl(nt2))//'['//trim(tidx2)//']'//')'
+         st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//
+     &       ' - '//trimal(nt2)//'['//trim(tidx2)//']'//')'
       else
          if (item%command==command_add_intm .or.
      &       item%command==command_cp_intm) then
             ! Don't need second operator for [ADD] or [COPY]
             st2=''
          else
-            st2=trim(adjustl(nt2))//'['//trim(item%idx2)//']'
+            st2=trimal(nt2)//'['//trim(item%idx2)//']'
          end if
       end if
 
@@ -695,12 +699,12 @@
       select case(idx_type(1))
       case(ham)
       ! Hamiltonian/integral convention
-      item%idx1=trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
+      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(3))//trimal(c_array(3))//
      &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(1))//trimal(c_array(1))//
      &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))
+     &          trimal(t1_array(6))//trimal(c_array(6))
       case default
       ! [apij] (aacc), ie. T[abij]
       item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
@@ -715,12 +719,12 @@
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
+      item%idx2=trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(3))//trimal(c_array(3))//
      &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(1))//trimal(c_array(1))//
      &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))
+     &          trimal(t1_array(6))//trimal(c_array(6))
       case default
       item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
      &          trimal(t2_array(2))//trimal(c_array(6))//
@@ -733,12 +737,12 @@
       ! Result
       select case(idx_type(3))
       case(ham)
-      item%idx3=trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
+      item%idx3=trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(3))//trimal(c_array(3))//
      &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(1))//trimal(c_array(1))//
      &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))
+     &          trimal(t1_array(6))//trimal(c_array(6))
       case default
       item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
      &          trimal(e1_array(2))//trimal(e2_array(2))//

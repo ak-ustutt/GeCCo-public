@@ -42,6 +42,13 @@ def print_inter(prev_lines):
 
                 print_line(drop_ten)
 
+def change_line_names(name, line, words):
+    # Add generic index to tensor name
+
+    if (name+"[" in line):
+        for i in range(0, len(words)):
+            if (name+"[" in words[i]):
+                words[i] = words[i].replace(name, name + ":" + "".join(generic_index(words[i])) + "[")
 
 def print_line(line):
     # Print binary contraction line
@@ -49,25 +56,11 @@ def print_line(line):
     # Need to replace residual and amplitude (R and T) tensor names
     # with there names defined in C++, ie. R:eecc
     words=line.split()
-    if ("R[" in line):
-        for i in range(0, len(words)):
-            if ("R[" in words[i]):
-                words[i] = words[i].replace("R[", "R:" + "".join(generic_index(words[i])) + "[")
 
-    if ("T[" in line):
-        for i in range(0, len(words)):
-            if ("T[" in words[i]):
-                words[i] = words[i].replace("T[", "T:" + "".join(generic_index(words[i])) + "[")
-
-    if ("K[" in line):
-        for i in range(0, len(words)):
-            if ("K[" in words[i]):
-                words[i] = words[i].replace("K[", "K:" + "".join(generic_index(words[i])) + "[")
-
-    if ("f[" in line):
-        for i in range(0, len(words)):
-            if ("f[" in words[i]):
-                words[i] = words[i].replace("f[", "f:" + "".join(generic_index(words[i])) + "[")
+    change_line_names("R", line, words)
+    change_line_names("T", line, words)
+    change_line_names("K", line, words)
+    change_line_names("f", line, words)
 
     line = " ".join(words)
 
@@ -676,7 +669,6 @@ declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
 if (olap==0):
     # Tensors needed in CCD
-    print("tensor: EMp2[], EMp2     // MP2 energy, Hylleraas functional", file=f2)
     print("tensor: EDi2[], EDi2     // Direct 2nd order energy", file=f2)
     print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
     print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
@@ -750,17 +742,17 @@ if (olap>0):
             print("store", declare_ten[i], file=f2)
 else:
     # Initalise amplitudes using MP2
-    print("alloc EMp2[], Nrm2[]", file=f2)
+    print("alloc ECC[], Nrm2[]", file=f2)
     print("for [i,j]:", file=f2)
     print("   alloc T:eecc[abij]", file=f2)
     print("   load K:eecc[**ij]", file=f2)
     print("   .T:eecc[abij] -= K:eecc[abij]", file=f2)
     print("   denom-scale T:eecc[abij], [1,1,0,0]", file=f2)
-    print("   .EMp2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
+    print("   .ECC[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
     print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]", file=f2)
     print("   drop K:eecc[**ij]", file=f2)
     print("   store T:eecc[**ij]", file=f2)
-    print("store Nrm2[], EMp2[]", file=f2)
+    print("store Nrm2[], ECC[]", file=f2)
 
 # Print out amplitude update
 # For single-reference methods, this also calculates the energy
