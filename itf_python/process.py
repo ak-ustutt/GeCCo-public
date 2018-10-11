@@ -7,14 +7,14 @@ def print_inter(prev_lines):
             if "TIN" not in inter_words[2]:
                 load_ten="load " + inter_words[2].split('*',1)[-1]
 
-                print_line(load_ten)
+                print(load_ten.strip(), file=out)
 
-            print_line(prev_lines[i])
+            print(prev_lines[i].strip(), file=out)
 
             if "TIN" not in inter_words[2]:
                 drop_ten="drop " + inter_words[2].split('*',1)[-1]
 
-                print_line(drop_ten)
+                print(drop_ten.strip(), file=out)
 
         else:
             if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
@@ -27,9 +27,9 @@ def print_inter(prev_lines):
                     # Do not load if an intermediate or if the same as previous loaded tensor
                     load_ten=load_ten + inter_words[3].split('*',1)[-1]
 
-                print_line(load_ten)
+                print(load_ten.strip(), file=out)
 
-            print_line(prev_lines[i])
+            print(prev_lines[i].strip(), file=out)
 
             if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
                 drop_ten="drop "
@@ -40,7 +40,8 @@ def print_inter(prev_lines):
                 if "TIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
                     drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
 
-                print_line(drop_ten)
+                print(drop_ten.strip(), file=out)
+
 
 def change_line_names(name, line, words):
     # Add generic index to tensor name
@@ -48,48 +49,50 @@ def change_line_names(name, line, words):
     if (name+"[" in line):
         for i in range(0, len(words)):
             if (name+"[" in words[i]):
-                words[i] = words[i].replace(name, name + ":" + "".join(generic_index(words[i])) + "[")
+                words[i] = words[i].replace(name, name + ":" + "".join(generic_index(words[i])))
 
-def print_line(line):
-    # Print binary contraction line
+
+def change_line(line_o):
+    # Add generic index to tensors within a line, return a new string
 
     # Need to replace residual and amplitude (R and T) tensor names
     # with there names defined in C++, ie. R:eecc
-    words=line.split()
-
-    change_line_names("R", line, words)
-    change_line_names("T", line, words)
-    change_line_names("K", line, words)
-    change_line_names("f", line, words)
-
+    words=line_o.split()
+    change_line_names("R", line_o, words)
+    change_line_names("T", line_o, words)
+    change_line_names("K", line_o, words)
+    change_line_names("f", line_o, words)
     line = " ".join(words)
+    return line
 
-    print(line.strip(), file=out)
 
-
-def print_result(line, words):
+def print_result(line):
     # Load, contract, drop tensors involved with result tensors
+
+    # Change tensor names within the line
+    #line = change_line(line_o) 
+    words=line.split()
 
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
 
         # This line adds the reference energy to the correlation energy
         # So we can skip it
-        if ("ECC[]" in words[0] and "K[]" in words[2]): return
+        if ("ECC[]" in words[0] and "K:[]" in words[2]): return
 
         # Either a simple adding or copying case
         if "TIN" not in words[2]:
             load_ten="load " + words[2].split('*',1)[-1]
 
-            print_line(load_ten)
+            print(load_ten.strip(), file=out)
 
-        print_line(line)
+        print(line.strip(), file=out)
 
         # Drop tensors
         if "TIN" not in words[2]:
             drop_ten="drop " +  words[2].split('*',1)[-1]
 
-            print_line(drop_ten)
+            print(drop_ten.strip(), file=out)
 
     elif len(words)==4:
 
@@ -102,9 +105,9 @@ def print_result(line, words):
             if "TIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
                 load_ten=load_ten + words[3].split('*',1)[-1]
 
-            print_line(load_ten)
+            print(load_ten.strip(), file=out)
 
-        print_line(line)
+        print(line.strip(), file=out)
 
         # Drop tensors
         if "TIN" not in words[2] or "TIN" not in words[3]:
@@ -116,7 +119,7 @@ def print_result(line, words):
             if "TIN" not in words[2] and words[3].split('*',1)[-1] != words[2].split('*',1)[-1]:
                 drop_ten=drop_ten + words[2].split('*',1)[-1]
 
-            print_line(drop_ten)
+            print(drop_ten.strip(), file=out)
 
     elif len(words)==6:
 
@@ -173,9 +176,9 @@ def print_result(line, words):
                 print("Error in bracket determination")
                 exit(1)
 
-            print_line(load_ten)
+            print(load_ten.strip(), file=out)
 
-        print_line(line)
+        print(line.strip(), file=out)
 
         # Drop tensors
         if "TIN" not in words:
@@ -228,7 +231,7 @@ def print_result(line, words):
                 print("Error in bracket determination")
                 exit(1)
 
-            print_line(drop_ten)
+            print(drop_ten.strip(), file=out)
 
     elif len(words)>6:
         # Line contains two brackets, may have to load more than two tensors
@@ -263,9 +266,9 @@ def print_result(line, words):
                 if generic_index(words[5])!=generic_index(words[7]):
                     load_ten=load_ten + t4
 
-            print_line(load_ten)
+            print(load_ten.strip(), file=out)
 
-        print_line(line)
+        print(line.strip(), file=out)
 
         # Drop tensors
         if "TIN" not in words:
@@ -299,7 +302,7 @@ def print_result(line, words):
                 if generic_index(words[4])!=generic_index(words[2]):
                     drop_ten=drop_ten + t4
 
-            print_line(drop_ten)
+            print(drop_ten.strip(), file=out)
 
 
 
@@ -360,13 +363,17 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
     print(file=f2)
     print("// " + name, file=f2)
     for i in range(0, len(declare_list)):
-        if (tensor+"[" in declare_list[i]):
-            generic=generic_index(declare_list[i])
-            tmp_ten = declare_list[i][:k] + c + "".join(generic) + declare_list[i][k:] \
-                             + ", " + declare_list[i][:k] + c + "".join(generic)
-            print("tensor:", tmp_ten, file=f2)
+        if (tensor+":" in declare_list[i]):
+            #generic=generic_index(declare_list[i])
+            #tmp_ten = declare_list[i][:k] + c + "".join(generic) + declare_list[i][k:] \
+            #                 + ", " + declare_list[i][:k] + c + "".join(generic)
+
+            print("tensor:", declare_list[i], file=f2)
 
 
+# =========================================================================================
+# Main program starts here
+# =========================================================================================
 import argparse
 import datetime
 
@@ -413,13 +420,22 @@ declare_ten=[]          # Global list of tensors involved in binary contractions
 declare_ten_index=[]    # Global list of tensor indicies
 declare_ten_name=[]     # Global list of tensor names
 
+prev_K4E_lines={0:"start"}
+K4E_count=1
+
 # Spin summed family = One or more equations the arise from the spin summation
 # proccedure on one result tensor contraction line
 begin=False         # Marks the start of a spin summed family of contractions
 end=False           # Marks the end of a spin summed family of contractions
 old_spin_iter=[]    # Stores list of intermediates used throughout the spin summed family
 
-for line in f:
+for line_o in f:
+
+    if ("Error" in line_o):
+        print("Error in translating GeCCo code to ITF, check bcontr.tmp file for more details", file=out)
+        quit()
+
+    line = change_line(line_o)
     words=line.split()
 
     if (words[0]=='BEGIN'):
@@ -440,6 +456,27 @@ for line in f:
         end=True
         begin=False
         continue
+
+    # Catch 4-external integrals
+    if ("K:eeee" in line):
+        for j in prev_K4E_lines:
+            if (line==prev_K4E_lines[j]):
+                # Already printed this line, just change name
+                for i in range(0, len(words)):
+                    if ("K:eeee" in words[i]):
+                        words[i] = words[i][:1] + "4E" + str(j) + words[i][1:]
+
+
+        if (line not in prev_K4E_lines.values()): 
+            for i in range(0, len(words)):
+                if ("K:eeee" in words[i]):
+                    words[i] = words[i][:1] + "4E" + str(K4E_count) + words[i][1:]
+            prev_K4E_lines.update({K4E_count:line})
+            K4E_count=K4E_count+1
+
+        print("// Replacing line with 4-external integrals", file=out)
+        print("// ", line, file=out)
+        line = " ".join(words)
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
@@ -468,7 +505,7 @@ for line in f:
             add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
     elif (len(words)==3):
         # Simple add or assign line
-        if ("K[]" not in words[2]):
+        if ("K:[]" not in words[2]):
             # Don't want to declare a tensor for the reference energy
             add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
 
@@ -568,7 +605,7 @@ for line in f:
             print_inter(prev_lines)
 
             # Print result line
-            print_result(line, words)
+            print_result(line)
 
             # Drop intermediates if needed
             if prev_inter:
@@ -592,7 +629,7 @@ for line in f:
             print_inter(prev_lines)
 
             # Print result line
-            print_result(line, words)
+            print_result(line)
 
             # Drop intermediates if needed, don't drop if needed again in
             # the next contraction which is part of the same spin summed family
@@ -653,7 +690,7 @@ print(file=f2)
 declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
-    if ("T[" in declare_ten[i] or "K[" in declare_ten[i] or "f[" in declare_ten[i]): continue
+    if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
@@ -661,6 +698,7 @@ for i in range(0, len(declare_ten)):
 
 # Print already existing tensor, ie. don't need !Create{type:disk}
 declare_existing_tensors(declare_ten, "Integral tensors", "K")
+declare_existing_tensors(declare_ten, "Special integral tensors", "K4E")
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (olap): print("tensor: R[I],  R:I", file=f2)

@@ -494,13 +494,13 @@
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
               ! Use default convention for now
-              idx_type(1)=1
+              idx_type(1)=0
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=1
+              idx_type(2)=0
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=1
+              idx_type(3)=0
           end if
       end do
 
@@ -1330,6 +1330,9 @@
 
       if (.not. eloop) then
         write(item%logfile,*) "Error, didn't print out spin case"
+        write(item%logfile,*) "Result: ", item%label_res, item%idx3
+        write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
+        write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
       end if
 
       if (eloop) then
