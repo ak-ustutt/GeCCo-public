@@ -313,8 +313,8 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
         index=list(word[word.find("[")+1:word.find("]")])
 
         # Construct generic index
-        #generic=generic_index(word)
-        generic = word.split(':',1)[1].split('[',1)[0]
+        generic = generic_index(word)
+        #generic = word.split(':',1)[1].split('[',1)[0]
 
         declared=False
         for i in range(0, len(declare_ten)):
@@ -355,7 +355,6 @@ def generic_index(tensor):
             gen.append('c')
     return gen
 
-
 def declare_existing_tensors(declare_list, name, tensor, energy=False):
     c=":"
     if (energy):
@@ -373,19 +372,18 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
 # =========================================================================================
 # Main program starts here
 # =========================================================================================
-import argparse
-import datetime
-import time
+import argparse     # Parse arguments
+import datetime     # Get tima and date
+import time         # For timings
 
+# Parse arguments from gecco
 parser = argparse.ArgumentParser(
                 description="""Process ITF binary contraction file and output ITF algo file
                 """,
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-i','--input',default=None,help='ITF binary contraction file')
 parser.add_argument('-o','--output',default=None,help='ITF algo file')
-# s = 0: Single-reference, no need for overlap tensors in algo file
-#     1: Multireference, print out all overlap tensors
-parser.add_argument('-s','--overlap',default=1,help='Overlap tensors needed for a specific mrcc calculation')
+parser.add_argument('-s','--overlap',default=1,help='0: single-reference; >0: multireference')
 args = parser.parse_args()
 
 if args.input is None:
@@ -400,9 +398,12 @@ outp = args.output
 olap = args.overlap
 olap = 0
 
+# Open bcontr.tmp file to read from
 f=open(inp,"r")
+# Open first output file
 out=open(outp, "w+")
 
+# Declare lists needed in program
 prev_lines=[]       # Previous intermediate lines which belong to next result block
 prev_inter=[]       # List of previous intemediates, used to alloc/drop
 prev_res='#####'    # Result of previous line
@@ -429,17 +430,21 @@ begin=False         # Marks the start of a spin summed family of contractions
 end=False           # Marks the end of a spin summed family of contractions
 old_spin_iter=[]    # Stores list of intermediates used throughout the spin summed family
 
+# Read each line of bcontr.tmp and process it
 for line_o in f:
 
     if ("Error" in line_o):
         print("Error in translating GeCCo code to ITF, check bcontr.tmp file for more details", file=out)
         quit()
 
+    # Change names of external tensors (add : + generic index to name)
     line = change_line(line_o)
     words=line.split()
 
+    # Check for spin summed block
     if (words[0]=='BEGIN'):
         # BEGIN marks the begining of a spin summed series of contractions
+
         begin=True
         end=False
         continue
@@ -452,31 +457,37 @@ for line_o in f:
             print(*list(reversed(old_spin_iter)),sep=", ", file=out)
 
         old_spin_iter=[]
-
         end=True
         begin=False
         continue
 
-    # Catch 4-external integrals
+    # Catch 4-external integrals and replace line with K4E intermediate
+    # Note: this might not be general enough to handle all cases
+    # ie. with brackets
     if ("K:eeee" in line):
         for j in prev_K4E_lines:
             if (line==prev_K4E_lines[j]):
                 # Already printed this line, just change name
                 for i in range(0, len(words)):
                     if ("K:eeee" in words[i]):
-                        words[i] = words[i][:1] + "4E" + str(j) + words[i][1:]
+                        words[i] = "K4E" + str(j) + ":eecc[abij]"
+                        words[2] = words[i]
+                words = words[:3]
 
 
         if (line not in prev_K4E_lines.values()): 
             for i in range(0, len(words)):
                 if ("K:eeee" in words[i]):
-                    words[i] = words[i][:1] + "4E" + str(K4E_count) + words[i][1:]
+                    words[i] = "K4E" + str(K4E_count) + ":eecc[abij]"
+                    words[2] = words[i]
+            words = words[:3]
             prev_K4E_lines.update({K4E_count:line})
             K4E_count=K4E_count+1
 
         print("// Replacing line with 4-external integrals", file=out)
         print("// ", line, file=out)
         line = " ".join(words)
+
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
@@ -510,6 +521,7 @@ for line_o in f:
             add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
 
 
+    # Process the line, print it out and decide what to alloc/load/drop/store
     if "TIN" in words[0]:
         # Check if contraction forms and intermediate
         prev_lines.append(line)
@@ -681,7 +693,7 @@ else:
     print("index-space: abcd    , External, e", file=f2)
     print("index-space: mno     , Internal, i", file=f2)
     print(file=f2)
-    print("index-space: I  , ConfigI0  , I", file=f2)
+    print("index-space: I       , ConfigI0, I", file=f2)
 
 print(file=f2)
 
@@ -690,7 +702,8 @@ print(file=f2)
 declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
-    if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]): continue
+    if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
+        or "Dm" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
@@ -698,7 +711,7 @@ for i in range(0, len(declare_ten)):
 
 # Print already existing tensor, ie. don't need !Create{type:disk}
 declare_existing_tensors(declare_ten, "Integral tensors", "K")
-declare_existing_tensors(declare_ten, "Special integral tensors", "K4E")
+declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (olap): print("tensor: R[I],  R:I", file=f2)
@@ -716,41 +729,41 @@ if (olap>0):
     print(file=f2)
     print("// Resuced density tensors (Icc-Icc coupling-coefficients)",file=f2)
     print("// these are created on C++ side in CreateMrciTensors method",file=f2)
-    print("tensor: Dm1[pp]       , DDm1",file=f2)
-    print("tensor: Dm2[pppp]     , DDm2",file=f2)
-    print("tensor: Dm3[pppppp]   , DDm3",file=f2)
-    print("tensor: Dm1H[pp]      , DHm1",file=f2)
-    print("tensor: Dm2H[pppp]    , DHm2",file=f2)
-    print("tensor: Dm3H[pppppp]  , DHm3",file=f2)
+    print("tensor: Dm1[pp],         DDm1",file=f2)
+    print("tensor: Dm2[pppp],       DDm2",file=f2)
+    print("tensor: Dm3[pppppp],     DDm3",file=f2)
+    print("tensor: Dm1H[pp],        DHm1",file=f2)
+    print("tensor: Dm2H[pppp],      DHm2",file=f2)
+    print("tensor: Dm3H[pppppp],    DHm3",file=f2)
     print(file=f2)
 
     print("// Non-disk density matrix drivers",file=f2)
     print("// Can be loaded, but can not be stored.",file=f2)
     print("// spec:<Ref|+-+-|Ref> means that Dm2X[pqrs] = <Ref|E^p_q R^r_s|Ref>",file=f2)
-    print("tensor: Dm2X[pppp]   , !Create{type:cc-drv; spec:<Ref|+-+-|Ref>; irrep:0;}",file=f2)
-    print("tensor: Dm3X[pppppp] , !Create{type:cc-drv; spec:<Ref|+-+-+-|Ref>; irrep:0;}",file=f2)
-    print("tensor: Dm2HX[pppp]   , !Create{type:cc-drv; spec:<Ref|/+/-/+/-|Ref>; irrep:0;}",file=f2)
-    print("tensor: Dm3HX[pppppp] , !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm2X[pppp],      !Create{type:cc-drv; spec:<Ref|+-+-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm3X[pppppp],    !Create{type:cc-drv; spec:<Ref|+-+-+-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm2HX[pppp],     !Create{type:cc-drv; spec:<Ref|/+/-/+/-|Ref>; irrep:0;}",file=f2)
+    print("tensor: Dm3HX[pppppp],   !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep:0;}",file=f2)
     print(file=f2)
 
     print("// Delta tensors",file=f2)
-    print("tensor: deltaaa[pq]   , DeltaActAct",file=f2)
-    print("tensor: delta4[pppp]  , !Create{type:plain}, Delta4  // Intermediate rank4 delta tensor",file=f2)
+    print("tensor: deltaaa[pq],      DeltaActAct",file=f2)
+    print("tensor: delta4[pppp],     !Create{type:plain}, Delta4  // Intermediate rank4 delta tensor",file=f2)
     print(file=f2)
 
     print("// Overlap tensors labeled by the exciation class",file=f2)
-    print("tensor: S1:I1[pp]     , S1:I1",file=f2)
-    print("tensor: S2:I1[pppppp] , S2:I1",file=f2)
-    print("tensor: S3:I1[pppp]   , S3:I1",file=f2)
-    print("tensor: S1:I2[pppp]   , S1:I2",file=f2)
-    print("tensor: S1:S0[pp]     , S1:S0",file=f2)
-    print("tensor: S2:S0[pppppp] , S2:S0",file=f2)
-    print("tensor: S3:S0[pppp]   , S3:S0",file=f2)
-    print("tensor: S2:S1[pppp]   , S2:S1",file=f2)
-    print("tensor: S3:S1[pp]     , S3:S1",file=f2)
-    print("tensor: S1:S2[pp]     , S1:S2",file=f2)
-    print("tensor: S1:P0[pppp]   , S1:P0",file=f2)
-    print("tensor: S1:P1[pp]     , S1:P1",file=f2)
+    print("tensor: S1:I1[pp],       S1:I1",file=f2)
+    print("tensor: S2:I1[pppppp],   S2:I1",file=f2)
+    print("tensor: S3:I1[pppp],     S3:I1",file=f2)
+    print("tensor: S1:I2[pppp],     S1:I2",file=f2)
+    print("tensor: S1:S0[pp],       S1:S0",file=f2)
+    print("tensor: S2:S0[pppppp],   S2:S0",file=f2)
+    print("tensor: S3:S0[pppp],     S3:S0",file=f2)
+    print("tensor: S2:S1[pppp],     S2:S1",file=f2)
+    print("tensor: S3:S1[pp],       S3:S1",file=f2)
+    print("tensor: S1:S2[pp],       S1:S2",file=f2)
+    print("tensor: S1:P0[pppp],     S1:P0",file=f2)
+    print("tensor: S1:P1[pp],       S1:P1",file=f2)
     print(file=f2)
 
 # Print out intermediates
