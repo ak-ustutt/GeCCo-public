@@ -307,11 +307,14 @@ def print_result(line):
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
+    # Add tensor to global lists, so it can be declared at the start of the algo file
+
     if word.split('*',1)[-1] not in declare_ten and "TIN" not in word:
         index=list(word[word.find("[")+1:word.find("]")])
 
         # Construct generic index
-        generic=generic_index(word)
+        #generic=generic_index(word)
+        generic = word.split(':',1)[1].split('[',1)[0]
 
         declared=False
         for i in range(0, len(declare_ten)):
@@ -372,6 +375,7 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
 # =========================================================================================
 import argparse
 import datetime
+import time
 
 parser = argparse.ArgumentParser(
                 description="""Process ITF binary contraction file and output ITF algo file
