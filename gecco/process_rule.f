@@ -692,7 +692,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title2,
      &          success=arg_there)
         if (.not.arg_there) title2='##not_set##'
-        call form_itf(form_pnt,title,title2,op_info)
+        call get_arg('MULTI',rule,tgt_info,val_log=multi)
+        call form_itf(form_pnt,title,title2,multi,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

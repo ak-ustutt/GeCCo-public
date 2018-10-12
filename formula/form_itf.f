@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_out,form_out,op_info)
+      subroutine form_itf(f_input,name_out,form_out,multi,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -27,11 +27,14 @@
       type(formula_item) ::
      &     flist        ! Linked list of binary contractions
       logical ::
-     &     print_form   ! If true, outputs GeCco formulae to file
+     &     print_form,  ! If true, outputs GeCco formulae to file
+     &     multi        ! Flag which is passed to python processer, false if a single-ref calculation
       integer ::
      &     e            ! Exit satatus from python
       character(len=100) ::
      &     exe_line     ! Line for shell to execute
+      character(len=1) ::
+     &     singlr       ! 0: single-reference; >0: multireference
 
       print_form=form_out.ne.'##not_set##'
 
@@ -62,6 +65,13 @@
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,op_info,print_form,fform%unit)
 
+      ! Is this a single-refenece or a multireferecne calculation?
+      if (.not. multi) then
+         singlr = '0'
+      else
+         singlr = '1'
+      endif
+
       ! Process ITF lines with python script
       ! Don't need to inialise the file, the python script takes care of
       ! that
@@ -69,7 +79,9 @@
      &               trim(name_out)
 
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
-     &          //trim(fline%name)//' -o '//name_out
+     &          //trim(fline%name)//' -o '//trim(name_out)
+     &          //' -s '//singlr
+      write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
 
       ! Close binary contraction file

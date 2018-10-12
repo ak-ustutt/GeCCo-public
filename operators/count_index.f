@@ -57,6 +57,8 @@
              rename_tensor='Dm2'
           else if (rank==6) then
              rename_tensor='Dm3'
+          !else if (rank==0)
+          !   rename_tensor=''
           else
              rename_tensor='Dm'
           end if
@@ -151,6 +153,10 @@
          call itf_contr_init(contr_info,itf_item,perm_array(i),
      &                       antisymm,command,itflog)
          call print_itf_line(itf_item,.false.,.false.)
+!      else if (GAM0)
+!         call itf_contr_init(contr_info,itf_item,perm_array(i),
+!     &                       antisymm,command,itflog)
+!         call print_itf_line(itf_item,.false.,.false.)
       else
          ! For other binary contractions
          if (perm_array(1)==0) then

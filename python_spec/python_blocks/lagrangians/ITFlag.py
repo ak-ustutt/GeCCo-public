@@ -157,4 +157,5 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:'gecco.itfaa',
-        TITLE:'gecco.formulae'})
+        TITLE:'gecco.formulae',
+        MULTI:True})

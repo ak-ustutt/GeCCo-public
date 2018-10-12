@@ -395,8 +395,7 @@ if args.output is None:
 
 inp = args.input
 outp = args.output
-olap = args.overlap
-olap = 0
+olap = int(args.overlap)
 
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
