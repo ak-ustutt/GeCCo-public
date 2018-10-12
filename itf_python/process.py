@@ -346,29 +346,25 @@ def generic_index(tensor):
     for i in range (0,len(index)):
         if index[i] in particle:
             gen.append('e')
-        if index[i] in valence:
+        elif index[i] in valence:
             gen.append('a')
-        if index[i] in hole:
+        elif index[i] in hole:
             gen.append('c')
     return gen
 
 
 def declare_existing_tensors(declare_list, name, tensor, energy=False):
-    k=1
     c=":"
     if (energy):
-        k=3
         c=""
 
     print(file=f2)
     print("// " + name, file=f2)
     for i in range(0, len(declare_list)):
-        if (tensor+":" in declare_list[i]):
-            #generic=generic_index(declare_list[i])
-            #tmp_ten = declare_list[i][:k] + c + "".join(generic) + declare_list[i][k:] \
-            #                 + ", " + declare_list[i][:k] + c + "".join(generic)
+        if (tensor + c in declare_list[i]):
+            tmp_ten = declare_list[i] + ", " + declare_list[i].split('[',1)[0]
 
-            print("tensor:", declare_list[i], file=f2)
+            print("tensor:", tmp_ten, file=f2)
 
 
 # =========================================================================================
@@ -672,14 +668,14 @@ print(file=f2)
 # Declare tensors and index-spaces
 print("---- decl", file=f2)
 if (olap==0):
-    print("index-space: ijkl     , Closed    , c", file=f2)
-    print("index-space: abcd     , External  , e", file=f2)
+    print("index-space: ijkl, Closed  , c", file=f2)
+    print("index-space: abcd, External, e", file=f2)
 else:
-    print("index-space: pqrstuvw , Active    , a", file=f2)
-    print("index-space: ijkl     , Closed    , c", file=f2)
-    print("index-space: gh       , ClosedF   , f", file=f2)
-    print("index-space: abcd     , External  , e", file=f2)
-    print("index-space: mno      , Internal  , i", file=f2)
+    print("index-space: pqrstuvw, Active  , a", file=f2)
+    print("index-space: ijkl    , Closed  , c", file=f2)
+    print("index-space: gh      , ClosedF , f", file=f2)
+    print("index-space: abcd    , External, e", file=f2)
+    print("index-space: mno     , Internal, i", file=f2)
     print(file=f2)
     print("index-space: I  , ConfigI0  , I", file=f2)
 
