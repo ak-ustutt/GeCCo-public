@@ -500,13 +500,13 @@
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
               ! Use default convention for now
-              idx_type(1)=0
+              idx_type(1)=1
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=0
+              idx_type(2)=1
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=0
+              idx_type(3)=1
           end if
       end do
 

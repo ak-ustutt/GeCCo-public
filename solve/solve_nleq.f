@@ -48,7 +48,7 @@ c dbgend
       include 'mdef_target_info.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
       character(len=*),parameter::
      &     i_am = "solve_nleq"
       

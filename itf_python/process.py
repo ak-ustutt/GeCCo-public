@@ -685,6 +685,7 @@ print("---- decl", file=f2)
 if (olap==0):
     print("index-space: ijkl, Closed  , c", file=f2)
     print("index-space: abcd, External, e", file=f2)
+    print("index-space: CD, Core, C", file=f2)
 else:
     print("index-space: pqrstuvw, Active  , a", file=f2)
     print("index-space: ijkl    , Closed  , c", file=f2)
@@ -719,9 +720,17 @@ declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
 if (olap==0):
     # Tensors needed in CCD
+    print("tensor: ERef[], ERef     // Reference energy", file=f2)
     print("tensor: EDi2[], EDi2     // Direct 2nd order energy", file=f2)
     print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
     print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
+    print(file=f2)
+    print("// Tensors needed to calculate the reference energy", file=f2)
+    print("tensor: f:CC[CC],   f:CC", file=f2)
+    print("tensor: CoreH[ii],  h:cc", file=f2)
+    print("tensor: CoreH[CC],  h:CC", file=f2)
+    print("tensor: Delta[ii],  Delta", file=f2)
+    print("tensor: DeltaC[CC], DeltaC", file=f2)
 
 # Declare density and overlap tensors
 if (olap>0):
@@ -803,6 +812,26 @@ else:
     print("   drop K:eecc[**ij]", file=f2)
     print("   store T:eecc[**ij]", file=f2)
     print("store Nrm2[], ECC[]", file=f2)
+
+# Calculate the reference energy for single-reference methods
+if (olap==0):
+    print("", file=f2)
+    print("", file=f2)
+    print('---- code ("Ref_Energy")', file=f2)
+    print("", file=f2)
+    print("alloc ERef[]", file=f2)
+    print("// Closed-shell contribution", file=f2)
+    print("load f:cc[ii], CoreH[ii], Delta[ii]", file=f2)
+    print(".ERef += f:cc[ij] Delta[ij]", file=f2)
+    print(".ERef += CoreH[ij] Delta[ij]", file=f2)
+    print("drop Delta, CoreH, f:cc", file=f2)
+    print("", file=f2)
+    print("// Core contribution", file=f2)
+    print("load f:CC[CC], CoreH[CC], DeltaC[CC]", file=f2)
+    print(".ERef += f:CC[CD] DeltaC[CD]", file=f2)
+    print(".ERef += CoreH[CD] DeltaC[CD]", file=f2)
+    print("drop DeltaC, CoreH, f:CC", file=f2)
+    print("store ERef[]", file=f2)
 
 # Print out amplitude update
 # For single-reference methods, this also calculates the energy
