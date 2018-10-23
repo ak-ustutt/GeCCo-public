@@ -1,3 +1,36 @@
+class itf_line:
+    """
+    A line of ITF algo code
+
+    Member data
+        line:   Complete line of ITF code
+        parts:  Line split into seperate elements
+        output: Name of output file
+    """
+
+    def __init__(self, line, output):
+        """ Return new itf_line object"""
+        self.line = line
+        self.parts = line.split()
+        self.output = output
+
+    def rename_line(self):
+        """Add generic index to tensors within a line"""
+        # Need to replace residual and amplitude (R and T) tensor names
+        # with there names defined in C++, ie. R:eecc
+        names = ["R", "T", "K", "f"]
+        for i in range(0, len(names)):
+            self.rename_line_names(names[i])
+        self.line = " ".join(self.parts)
+
+    def rename_line_names(self, name):
+        """Add generic index to tensor name"""
+        if (name+"[" in self.line):
+            for i in range(0, len(self.parts)):
+                if (name+"[" in self.parts[i]):
+                    self.parts[i] = self.parts[i].replace(name, name + ":" + "".join(generic_index(self.parts[i])))
+
+
 def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
     for i in range(0, len(prev_lines)):
@@ -435,6 +468,9 @@ for line_o in f:
     if ("Error" in line_o):
         print("Error in translating GeCCo code to ITF, check bcontr.tmp file for more details", file=out)
         quit()
+
+    tensor_line = itf_line(line_o, out)
+    tensor_line.rename_line()
 
     # Change names of external tensors (add : + generic index to name)
     line = change_line(line_o)

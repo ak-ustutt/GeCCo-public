@@ -1767,7 +1767,7 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
      &                                   cinfo_op2a(1,2),
      &                   idxmsc_dis_c,idxmsex2dis_a,
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
-     &                   strmap_info,nsym,str_info%ngraph)                    
+     &                   strmap_info,nsym,str_info%ngraph)
 
 c                    call atim_cs(cpu0,sys0)                    
 
