@@ -270,8 +270,8 @@ c     &               'buffered files are not yet debugged')
             if (me_in%off_op_gmox(iblk_in)%ndis(igamc,idxmsc).gt.1)
      &           idxdis_in =
      &               idx_msgmdst2(.true.,
-     &                iblk_in,idxmsa,igama,
-     &                occ_csub,idxmsdis_c,gamdis_c,ncblk,
+     &                iblk_in,idxmsc,igamc,                ! use C here!!
+     &                occ_csub,idxmsdis_c,gamdis_c,ncblk,  ! C and A swapped
      &                occ_asub,idxmsdis_a,gamdis_a,nablk,
      &                .true.,dis_map_c,dis_map_a,me_in,ngam)
 
