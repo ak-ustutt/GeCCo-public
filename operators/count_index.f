@@ -131,22 +131,24 @@
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    perm_array(4),   ! Info of antisymmetrisation permutation factors
+     &    perm_case,       ! 1: permute C, 2: permute A, 3: permute C and A
      &    i                ! Loop index
       logical ::
      &    antisymm=.false. ! Include extra permuation factors for (1-P_ab)(1-P_ij)
 
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
+      perm_case=0
       ! Determine if result needs antisymmetrising
-      !call permute_tensors(contr_info,perm_array,itflog)
-      !do i=1, size(perm_array)
-      !   if (perm_array(i)==4) then
-      !      ! Add extra permtation factos
-      !      antisymm=.true.
-      !   end if
-      !end do
-      ! Skip antisymmetrising each contraction and antisymm the complete
-      ! tensor at the end
+      ! TODO: Remove perm_array, do not permute intermedites
+      call permute_tensors(contr_info,perm_array,itflog,perm_case)
+      do i=1, size(perm_array)
+         if (perm_array(i)==4) then
+            ! Add extra permtation factos
+            !antisymm=.true.
+            ! Not needed anymore!
+         end if
+      end do
 
       if (command==command_add_intm .or. command==command_cp_intm) then
          ! For [ADD] and [COPY] cases
@@ -159,7 +161,8 @@
 !         call print_itf_line(itf_item,.false.,.false.)
       else
          ! For other binary contractions
-         if (perm_array(1)==0) then
+         !if (perm_array(1)==0) then
+         if (perm_case==0) then
             ! No permutations
             call itf_contr_init(contr_info,itf_item,perm_array(1),
      &                          antisymm,command,itflog)
@@ -168,6 +171,8 @@
             do i=1, size(perm_array)
                ! Loop over permuation cases and send seperatley to
                ! assign_spin
+!               call itf_contr_init(contr_info,itf_item,perm_array(i),
+!     &                             antisymm,command,itflog)
                call itf_contr_init(contr_info,itf_item,perm_array(i),
      &                             antisymm,command,itflog)
                call assign_spin(itf_item)
@@ -357,8 +362,6 @@
      &     ham   = 1        ! [abip]
       character(len=20), dimension(4) ::
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
-      real(8) ::
-     &     tmp_fact
 
       ! Set index convention
       idx_type=(/ 0, 0, 0 /)
@@ -492,8 +495,6 @@
      &     ham   = 1        ! [abip]
       character(len=20), dimension(4) ::
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
-      real(8) ::
-     &     tmp_fact
 
       ! Set index convention
       idx_type=(/ 0, 0, 0 /)
@@ -608,26 +609,50 @@
       a2='        '
       a3='        '
 
-      tmp_fact=item%fact
+!      ! Permute indicies to get antisymm tensors
+!      if (item%permute==0) then
+!         ! No permutations
+!         do i=1, size(t1_array)
+!            t1_array(i)=e1_array(i)
+!            t2_array(i)=e2_array(i)
+!         end do
+!      else if (item%permute==1) then
+!         ! No permutations, but get a factor
+!         do i=1, size(t1_array)
+!            t1_array(i)=e1_array(i)
+!            t2_array(i)=e2_array(i)
+!         end do
+!      else if (item%permute==2) then
+!         ! Permute creations
+!         do i=1, size(t1_array)/2
+!            t1_array(i)=e2_array(i)
+!            t1_array(i+4)=e1_array(i+4)
+!            t2_array(i)=e1_array(i)
+!            t2_array(i+4)=e2_array(i+4)
+!         end do
+!      else if (item%permute==3) then
+!         ! Permute annhilations
+!         do i=1, size(t1_array)/2
+!            t1_array(i)=e1_array(i)
+!            t1_array(i+4)=e2_array(i+4)
+!            t2_array(i)=e2_array(i)
+!            t2_array(i+4)=e1_array(i+4)
+!         end do
+!      else if (item%permute==4) then
+!         ! Permute creations and annhilations
+!         do i=1, size(t1_array)
+!            t1_array(i)=e2_array(i)
+!            t2_array(i)=e1_array(i)
+!         end do
+!      end if
 
       ! Permute indicies to get antisymm tensors
-      if (item%permute==0) then
+      if (item%permute==0 .or. item%permute==1) then
          ! No permutations
          do i=1, size(t1_array)
             t1_array(i)=e1_array(i)
             t2_array(i)=e2_array(i)
          end do
-      else if (item%permute==1) then
-         ! No permutations, but get a factor
-         do i=1, size(t1_array)
-            t1_array(i)=e1_array(i)
-            t2_array(i)=e2_array(i)
-         end do
-         if (item%perm4) then
-            item%fact=tmp_fact*-0.25
-         else
-            item%fact=tmp_fact*-0.5
-         end if
       else if (item%permute==2) then
          ! Permute creations
          do i=1, size(t1_array)/2
@@ -636,11 +661,6 @@
             t2_array(i)=e1_array(i)
             t2_array(i+4)=e2_array(i+4)
          end do
-         if (item%perm4) then
-            item%fact=tmp_fact*-0.25
-         else
-            item%fact=tmp_fact*-0.5
-         end if
       else if (item%permute==3) then
          ! Permute annhilations
          do i=1, size(t1_array)/2
@@ -649,19 +669,14 @@
             t2_array(i)=e2_array(i)
             t2_array(i+4)=e1_array(i+4)
          end do
-         if (item%perm4) then
-            item%fact=tmp_fact*-0.25
-         else
-            item%fact=tmp_fact*-0.5
-         end if
       else if (item%permute==4) then
          ! Permute creations and annhilations
          do i=1, size(t1_array)
             t1_array(i)=e2_array(i)
             t2_array(i)=e1_array(i)
          end do
-         item%fact=tmp_fact*0.25
       end if
+
 
       ! Assign c (contracted by)
       ! These need to be shifted, so as not to match e1 or c2
@@ -832,7 +847,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine permute_tensors(contr_info,perm_array,lulog)
+      subroutine permute_tensors(contr_info,perm_array,lulog,perm_case)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -845,7 +860,8 @@
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       integer, intent(inout) ::
-     &     perm_array(4)
+     &     perm_array(4),
+     &     perm_case
       integer, intent(in) ::
      &     lulog
 
@@ -920,43 +936,45 @@
             sum_a2=sum_a2+e2(i,2)
          end do
 
-         write(lulog,*) "sum_c1: ", sum_c1
-         write(lulog,*) "sum_c2: ", sum_c1
-         write(lulog,*) "sum_a1: ", sum_c1
-         write(lulog,*) "sum_c1: ", sum_c1
+         !write(lulog,*) "sum_c1: ", sum_c1
+         !write(lulog,*) "sum_c2: ", sum_c1
+         !write(lulog,*) "sum_a1: ", sum_c1
+         !write(lulog,*) "sum_c1: ", sum_c1
 
          shift=1
          ! If sum==2, then both indicies come from same operator, therefore
          ! it doesn't need anti-symm
          if (sum_c1/=2 .and. sum_c2/=2) then
             if (sum_c1+sum_c2==2) then
-               write(lulog,*) "permute creations! 0.5*(1-P)"
+               !write(lulog,*) "permute creations!"
                perm_array(shift)=1
                shift=shift+1
                perm_array(shift)=2
                shift=shift+1
+               perm_case=1
             end if
          end if
 
          if (sum_a1/=2 .and. sum_a2/=2) then
             if (sum_a1+sum_a2==2) then
-               write(lulog,*) "permute annhilations! 0.5*(1-P)"
+               !write(lulog,*) "permute annhilations!"
                if (shift>2) then
-                  ! (1-P)*(1-P)
-                  perm_array(shift)=3
+                  ! P(ab)P(ij)
+                  !perm_array(shift)=3
+                  !shift=shift+1
+                  ! TODO: overwirtie 2 for now - mess!
+                  perm_array(shift-1)=4
                   shift=shift+1
-                  perm_array(shift)=4
-                  shift=shift+1
+                  perm_case=3
                else
                   perm_array(shift)=1
                   shift=shift+1
                   perm_array(shift)=3
                   shift=shift+1
+                  perm_case=2
                end if
             end if
          end if
-
-         write(lulog,*) "perm_array ", perm_array
 
       else
          return
