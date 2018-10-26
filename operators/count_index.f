@@ -130,51 +130,42 @@
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
-     &    perm_array(4),   ! Info of antisymmetrisation permutation factors
-     &    perm_case,       ! 1: permute C, 2: permute A, 3: permute C and A
+     &    perm_array(4),   ! Info of permutation factors
      &    i                ! Loop index
       logical ::
-     &    antisymm=.false. ! Include extra permuation factors for (1-P_ab)(1-P_ij)
+     &    inter            ! True if result is an intermediate
 
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
-      perm_case=0
-      ! Determine if result needs antisymmetrising
-      ! TODO: Remove perm_array, do not permute intermedites
-      call permute_tensors(contr_info,perm_array,itflog,perm_case)
-      do i=1, size(perm_array)
-         if (perm_array(i)==4) then
-            ! Add extra permtation factos
-            !antisymm=.true.
-            ! Not needed anymore!
-         end if
-      end do
+      ! Determine if result needs permuting
+      ! TODO: Do not permute intermedites
+      call check_inter(contr_info%label_res,inter)
+      if (.not.inter) then
+         call permute_tensors(contr_info,perm_array,itflog)
+      end if
 
       if (command==command_add_intm .or. command==command_cp_intm) then
          ! For [ADD] and [COPY] cases
-         call itf_contr_init(contr_info,itf_item,perm_array(i),
-     &                       antisymm,command,itflog)
+         call itf_contr_init(contr_info,itf_item,perm_array(1),
+     &                       command,itflog)
          call print_itf_line(itf_item,.false.,.false.)
 !      else if (GAM0)
 !         call itf_contr_init(contr_info,itf_item,perm_array(i),
-!     &                       antisymm,command,itflog)
+!     &                       command,itflog)
 !         call print_itf_line(itf_item,.false.,.false.)
       else
          ! For other binary contractions
-         !if (perm_array(1)==0) then
-         if (perm_case==0) then
+         if (perm_array(1)==0) then
             ! No permutations
             call itf_contr_init(contr_info,itf_item,perm_array(1),
-     &                          antisymm,command,itflog)
+     &                          command,itflog)
             call assign_spin(itf_item)
          else
             do i=1, size(perm_array)
                ! Loop over permuation cases and send seperatley to
                ! assign_spin
-!               call itf_contr_init(contr_info,itf_item,perm_array(i),
-!     &                             antisymm,command,itflog)
                call itf_contr_init(contr_info,itf_item,perm_array(i),
-     &                             antisymm,command,itflog)
+     &                             command,itflog)
                call assign_spin(itf_item)
                if (perm_array(i+1)==0) exit
             end do
@@ -847,7 +838,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine permute_tensors(contr_info,perm_array,lulog,perm_case)
+      subroutine permute_tensors(contr_info,perm_array,lulog)
 *----------------------------------------------------------------------*
 !     
 *----------------------------------------------------------------------*
@@ -860,8 +851,7 @@
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       integer, intent(inout) ::
-     &     perm_array(4),
-     &     perm_case
+     &     perm_array(4)
       integer, intent(in) ::
      &     lulog
 
@@ -951,7 +941,6 @@
                shift=shift+1
                perm_array(shift)=2
                shift=shift+1
-               perm_case=1
             end if
          end if
 
@@ -965,13 +954,11 @@
                   ! TODO: overwirtie 2 for now - mess!
                   perm_array(shift-1)=4
                   shift=shift+1
-                  perm_case=3
                else
                   perm_array(shift)=1
                   shift=shift+1
                   perm_array(shift)=3
                   shift=shift+1
-                  perm_case=2
                end if
             end if
          end if
@@ -1507,7 +1494,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,itf_item,perm,antis,comm,
+      subroutine itf_contr_init(contr_info,itf_item,perm,comm,
      &                          lulog)
 *----------------------------------------------------------------------*
 !    Initalise 
@@ -1526,7 +1513,6 @@
      &     itf_item     ! Object which holds information necessary to print out an ITF algo line
       integer, intent(in) ::
      &     perm,        ! Permuation information
-     &     antis,
      &     comm,        ! formula_item command
      &     lulog        ! Output file
       ! This should be in a 'constructor'
@@ -1540,7 +1526,6 @@
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
          itf_item%permute=perm
-         itf_item%perm4=antis
       end if
 
       ! Assign labels

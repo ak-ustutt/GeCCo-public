@@ -21,8 +21,7 @@
      &     spin_idx=0,          ! Groups spin summed lines together
      &     command              ! Type of contraction, borrowed from formula_item
       logical ::
-     &     inter(3)=.false.,    ! True if result is intermediate
-     &     perm4=.false.        ! True if 0.25*(1-P_ab)(1-P_ij)
+     &     inter(3)=.false.     ! True if result is intermediate
       real(8) ::
      &     fact                 ! Factor
       end type itf_contr
