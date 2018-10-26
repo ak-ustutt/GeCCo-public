@@ -757,6 +757,7 @@ declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 if (olap==0):
     # Tensors needed in CCD
     print("tensor: ERef[], ERef     // Reference energy", file=f2)
+    print("tensor: EMp2[], EMp2     // MP2 energy", file=f2)
     print("tensor: EDi2[], EDi2     // Direct 2nd order energy", file=f2)
     print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
     print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
@@ -837,24 +838,24 @@ if (olap>0):
             print("store", declare_ten[i], file=f2)
 else:
     # Initalise amplitudes using MP2
-    print("alloc ECC[], Nrm2[]", file=f2)
+    print("// Using MP2 amplitudes for starting guess", file=f2)
+    print("alloc EMp2[], Nrm2[]", file=f2)
     print("for [i,j]:", file=f2)
     print("   alloc T:eecc[abij]", file=f2)
     print("   load K:eecc[**ij]", file=f2)
     print("   .T:eecc[abij] -= K:eecc[abij]", file=f2)
     print("   denom-scale T:eecc[abij], [1,1,0,0]", file=f2)
-    print("   .ECC[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
+    print("   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
     print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]", file=f2)
     print("   drop K:eecc[**ij]", file=f2)
     print("   store T:eecc[**ij]", file=f2)
-    print("store Nrm2[], ECC[]", file=f2)
+    print("store Nrm2[], EMp2[]", file=f2)
 
 # Calculate the reference energy for single-reference methods
 if (olap==0):
     print("", file=f2)
     print("", file=f2)
     print('---- code ("Ref_Energy")', file=f2)
-    print("", file=f2)
     print("alloc ERef[]", file=f2)
     print("// Closed-shell contribution", file=f2)
     print("load f:cc[ii], CoreH[ii], Delta[ii]", file=f2)

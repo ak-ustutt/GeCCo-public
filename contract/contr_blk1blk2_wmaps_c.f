@@ -34,7 +34,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 1000
 
       ! ngastp_op1op2a: number of non-zero entries in A occ of Op1Op2
       ! etc. for op1, op2
