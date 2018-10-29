@@ -1346,7 +1346,11 @@
         write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
       end if
 
-      if (eloop) then
+      ! Mark the end of the spin summed block, if we will print a
+      ! permutation of this line next (ie. permute==1) then we will not
+      ! end the block just yet. This will save load/drop calls for the
+      ! same tensors
+      if (eloop .and. item%permute /= 1) then
         write(item%logfile,*) "END"
       end if
 
@@ -1442,7 +1446,12 @@
 !               write(item%logfile,*)
 !            end if
 
-            if (eloop==.false.) write(item%logfile,*) 'BEGIN'
+            ! Mark the start of the spin summed block, if the current
+            ! line is a permutation of the previous line (ie. permute >1)
+            ! then we should not begin a new block
+            if (eloop==.false. .and. .not. (item%permute > 1)) then
+               write(item%logfile,*) 'BEGIN'
+            end if
 
             if (item%rank1==2 .and. item%rank2==4 .or.
      &          item%rank1==0 .and. item%rank2==4) then
@@ -1608,6 +1617,14 @@
       ! The leading '-' is replaced with a whitespace
       if (label(1:1).eq.'_') then
          label(1:1)=' '
+         intermediate=.true.
+      else
+         intermediate=.false.
+      end if
+
+      ! Intermediates are also called like below
+      if (scan(label, "STIN")>0 .or.
+     &    scan(label, "LTIN")>0) then
          intermediate=.true.
       else
          intermediate=.false.
