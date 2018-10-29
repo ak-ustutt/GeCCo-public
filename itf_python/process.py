@@ -465,10 +465,6 @@ old_spin_iter=[]    # Stores list of intermediates used throughout the spin summ
 # Read each line of bcontr.tmp and process it
 for line_o in f:
 
-    if ("Error" in line_o):
-        print("Error in translating GeCCo code to ITF, check bcontr.tmp file for more details", file=out)
-        quit()
-
     tensor_line = itf_line(line_o, out)
     tensor_line.rename_line()
 
@@ -505,7 +501,12 @@ for line_o in f:
                 # Already printed this line, just change name
                 for i in range(0, len(words)):
                     if ("K:eeee" in words[i]):
-                        words[i] = "K4E" + str(j) + ":eecc[abij]"
+                        if ("*" in words[i]):
+                            # There is a factor which we should retain
+                            words[i] = words[i].split("*",1)[0] + "*" + "K4E" + str(j) + ":eecc[abij]"
+                        else:
+                            words[i] = "K4E" + str(j) + ":eecc[abij]"
+
                         words[2] = words[i]
                 words = words[:3]
 
@@ -513,7 +514,12 @@ for line_o in f:
         if (line not in prev_K4E_lines.values()): 
             for i in range(0, len(words)):
                 if ("K:eeee" in words[i]):
-                    words[i] = "K4E" + str(K4E_count) + ":eecc[abij]"
+                    if ("*" in words[i]):
+                        # There is a factor which we should retain
+                        words[i] = words[i].split("*",1)[0] + "*" + "K4E" + str(K4E_count) + ":eecc[abij]"
+                    else:
+                        words[i] = "K4E" + str(K4E_count) + ":eecc[abij]"
+
                     words[2] = words[i]
             words = words[:3]
             prev_K4E_lines.update({K4E_count:line})

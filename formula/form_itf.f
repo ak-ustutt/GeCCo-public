@@ -78,8 +78,15 @@
       write(lulog,*) ' ITF algo file written to:       ',
      &               trim(name_out)
 
+      ! Quick and dirty scan through tmp binary contraction file to
+      ! find if any repeated lines can be replaced by a factor
+      exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
+     &          //trim(fline%name)//' -o bcontr2.tmp'
+      write(lulog,*) "Executing: ", exe_line
+      call execute_command_line(trim(exe_line),exitstat=e)
+
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
-     &          //trim(fline%name)//' -o '//trim(name_out)
+     &          //'bcontr2.tmp -o '//trim(name_out)
      &          //' -s '//singlr
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
