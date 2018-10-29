@@ -50,8 +50,8 @@ for line in f1:
     if (old_line != "" or old_line != "BEGIN" or old_line != "END"):
         if (factor > 1.0):
             words = old_line.split()
-            # TODO: check if factor already there...
-            # if simplify to 1.0, dont print
+            # Check if factor already there...
+            # If factor simplifies to 1.0, dont print
             if ("*" in words[2]):
                 wordsf = words[2].split("*",1)
                 factor = factor * float(wordsf[0])
