@@ -23,6 +23,10 @@
 
       type(formula_item), pointer ::
      &     fl_item   ! Current formula_item
+      type(itf_intermediate) ::
+     &     inter_head
+      type(itf_intermediate), pointer ::
+     &     inter_item
       integer ::
      &     i,j,      ! Loop indcies
      &     contr_no  ! Counter of contrations

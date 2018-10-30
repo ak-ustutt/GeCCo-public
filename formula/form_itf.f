@@ -85,11 +85,21 @@
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
 
+      if (e > 0) then
+         write(lulog,*) "Error in executing simplify.py"
+         call quit(1,'Please check the bcontr.tmp file')
+      end if
+
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
      &          //'bcontr2.tmp -o '//trim(name_out)
      &          //' -s '//singlr
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
+
+      if (e > 0) then
+         write(lulog,*) "Error in executing process.py"
+         call quit(1,'Please check the bcontr2.tmp file')
+      end if
 
       ! Close binary contraction file
       call file_close_keep(fline)

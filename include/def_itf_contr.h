@@ -25,3 +25,29 @@
       real(8) ::
      &     fact                 ! Factor
       end type itf_contr
+
+
+      type itf_intermediate_spin
+      ! Link list of possible spin cases of intermediates used in an itf_contr
+
+      type(itf_contr) ::
+     &     inter_contr                  ! Spin summed binary contraction
+      integer ::
+     &     spin_case(index_len)         ! Spin case of result, ie. [1111] = all alpha
+
+      type(itf_intermediate_spin), pointer ::
+     &     next_spin_inter => null()    ! Pointer to the next spin case
+
+      end type itf_intermediate_spin
+
+
+      type itf_intermediate
+      ! Link list of intermediates used in an itf_contr, ie. I1, I2, I3...
+
+      type(itf_intermediate_spin) ::
+     &     inter_contr_spin             ! Linked list of spin summed cases of a specific intermediate
+
+      type(itf_intermediate), pointer ::
+     &     next_inter => null()         ! Pointer to next intermediate
+
+      end type itf_intermediate
