@@ -1,6 +1,18 @@
       integer, parameter ::
      &     index_len = 8        ! Length of index string
 
+      type spin_cases
+
+      character(len=maxlen_bc_label) ::
+     &     name    
+      integer, dimension(4,6) ::
+     &     cases                ! matrix containing possible spin cases each row is a different case
+      integer ::
+     &     ncase = 1
+
+      end type spin_cases
+
+
       type itf_contr
       ! Object that holds information needed to define a line in an ITF algo file
 
@@ -24,30 +36,42 @@
      &     inter(3)=.false.     ! True if result is intermediate
       real(8) ::
      &     fact                 ! Factor
+      integer ::
+     &     spin_case(index_len) ! Spin case of result, ie. [1111] = all alpha
+
+      type(spin_cases), pointer ::
+     &     inter_spins(:) => null()
+      integer ::
+     &     ninter = 0
+
       end type itf_contr
 
 
+      type itf_spin_parts
+
+      type(itf_contr), pointer ::
+     &     spin_parts(:) => null()
+
+      end type itf_spin_parts
+
+
       type itf_intermediate_spin
-      ! Link list of possible spin cases of intermediates used in an itf_contr
+      ! Container of possible spin cases of intermediates used in an itf_contr
 
-      type(itf_contr) ::
-     &     inter_contr                  ! Spin summed binary contraction
-      integer ::
-     &     spin_case(index_len)         ! Spin case of result, ie. [1111] = all alpha
-
-      type(itf_intermediate_spin), pointer ::
-     &     next_spin_inter => null()    ! Pointer to the next spin case
+      type(itf_spin_parts), pointer ::
+     &     spin_case(:) => null()               ! Spin summed binary contraction
+      character(len=maxlen_bc_label) ::
+     &     name                         ! Name of intermediate
 
       end type itf_intermediate_spin
 
 
       type itf_intermediate
-      ! Link list of intermediates used in an itf_contr, ie. I1, I2, I3...
+      ! Container of intermediates used in an itf_contr, ie. I1, I2, I3...
 
-      type(itf_intermediate_spin) ::
-     &     inter_contr_spin             ! Linked list of spin summed cases of a specific intermediate
-
-      type(itf_intermediate), pointer ::
-     &     next_inter => null()         ! Pointer to next intermediate
+      type(itf_intermediate_spin), pointer ::
+     &     interm(:) => null()             ! Array of spin summed cases of a specific intermediate
+      integer ::
+     &     size
 
       end type itf_intermediate

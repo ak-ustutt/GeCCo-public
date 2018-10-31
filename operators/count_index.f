@@ -74,6 +74,29 @@
       end module itf_utils
 
 *----------------------------------------------------------------------*
+      subroutine line_error(error,item)
+*----------------------------------------------------------------------*
+!     Print error message in the itf logfile
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=100), intent(in) ::
+     &     error 
+      type(itf_contr), intent(in) ::
+     &     item
+
+      write(item%logfile,*) "ERROR: "//error
+      write(item%logfile,*) "Result: ", item%label_res, item%idx3
+      write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
+      write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
 *----------------------------------------------------------------------*
 !     Count index of operator
@@ -138,7 +161,6 @@
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
       ! Determine if result needs permuting
-      ! TODO: Do not permute intermedites
       call check_inter(contr_info%label_res,inter)
       if (.not.inter) then
          call permute_tensors(contr_info,perm_array,itflog)
@@ -149,10 +171,6 @@
          call itf_contr_init(contr_info,itf_item,perm_array(1),
      &                       command,itflog)
          call print_itf_line(itf_item,.false.,.false.)
-!      else if (GAM0)
-!         call itf_contr_init(contr_info,itf_item,perm_array(i),
-!     &                       command,itflog)
-!         call print_itf_line(itf_item,.false.,.false.)
       else
          ! For other binary contractions
          if (perm_array(1)==0) then
@@ -172,6 +190,53 @@
          end if
       end if
       
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine intermediate_to_itf(contr_info,itflog,command)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
+      include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr_info      ! Inofrmation about binary contraction
+      integer, intent(in) ::
+     &     itflog,         ! Output file
+     &     command         ! Type of formula item command, ie. contraction, copy etc.
+
+      type(itf_contr) ::
+     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+      integer ::
+     &    perm_array(4),   ! Info of permutation factors
+     &    i
+
+      perm_array=0
+
+      call itf_contr_init(contr_info,itf_item,perm_array(1),
+     &                    command,itflog)
+
+      ! Allocate space to store information about intermediates and
+      ! their spin cases.
+      allocate(itf_item%inter_spins(2))
+      !do i = 1, 5
+      !   allocate(itf_item%inter_spins(i)%cases(6))
+      !end do
+
+      call assign_spin(itf_item)
+
+      !do i = 1, 5
+      !   deallocate(itf_item%inter_spins(i)%cases)
+      !end do
+      deallocate(itf_item%inter_spins)
+
       return
       end
 
@@ -1340,10 +1405,7 @@
       !   print
 
       if (.not. eloop) then
-        write(item%logfile,*) "Error, didn't print out spin case"
-        write(item%logfile,*) "Result: ", item%label_res, item%idx3
-        write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
-        write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
+        call line_error("Didn't print out spin case", item)
       end if
 
       ! Mark the end of the spin summed block, if we will print a
@@ -1385,7 +1447,7 @@
      &     s1,       ! True if tensor 1 is mixed spin
      &     s2        ! True if tensor 2 is mixed spin
       integer ::
-     &     r1,r2
+     &     r1,r2,i,shift
 
        s1=.false.
        s2=.false.
@@ -1427,24 +1489,83 @@
                s2=.true.
             end if
 
-!            DEBUG
-!            if (logi) then
-!               write(item%logfile,*) "s1b: ", s1b
-!               write(item%logfile,*) "s1a: ", s1a
-!               write(item%logfile,*)
-!               write(item%logfile,*) "s2b: ", s2b
-!               write(item%logfile,*) "s2a: ", s2a
-!               write(item%logfile,*)
-!               write(item%logfile,*)
-!            else
-!               write(item%logfile,*) "s1b: ", s1a
-!               write(item%logfile,*) "s1a: ", s1b
-!               write(item%logfile,*)
-!               write(item%logfile,*) "s2b: ", s2b
-!               write(item%logfile,*) "s2a: ", s2a
-!               write(item%logfile,*)
-!               write(item%logfile,*)
-!            end if
+            !DEBUG
+            !if (logi) then
+            !   write(item%logfile,*) "s1b: ", s1b
+            !   write(item%logfile,*) "s1a: ", s1a
+            !   write(item%logfile,*)
+            !   write(item%logfile,*) "s2b: ", s2b
+            !   write(item%logfile,*) "s2a: ", s2a
+            !   write(item%logfile,*)
+            !   write(item%logfile,*)
+            !else
+            !   write(item%logfile,*) "s1b: ", s1a
+            !   write(item%logfile,*) "s1a: ", s1b
+            !   write(item%logfile,*)
+            !   write(item%logfile,*) "s2b: ", s2b
+            !   write(item%logfile,*) "s2a: ", s2a
+            !   write(item%logfile,*)
+            !   write(item%logfile,*)
+            !end if
+
+            ! Check if we have to deal with intermediates
+            ! TODO: what if there are two intermediates on one line??
+            if (associated(item%inter_spins)) then
+               shift = item%inter_spins(1)%ncase
+               ! Check if the first tensor is an intermediate
+               if (scan(item%label_t1, "STIN")>0) then
+                  write(item%logfile,*) "hello2"
+                  item%inter_spins(1)%name=item%label_t1
+
+                  if (item%rank1==2 .and. item%rank2==4 .or.
+     &                item%rank1==0 .and. item%rank2==4) then
+                     ! t1 and t2 were swapped in summation
+                     do i=1, 2
+                        item%inter_spins(1)%cases(i,shift)=s2a(i)
+                        item%inter_spins(1)%cases(i+2,shift)=s2b(i)
+                     end do
+                  else 
+                     do i=1, 2
+                        item%inter_spins(1)%cases(i,shift)=s1a(i)
+                        item%inter_spins(1)%cases(i+2,shift)=s1b(i)
+                     end do
+                  end if
+
+               ! Check if the second tensor is an intermediate
+               else if (scan(item%label_t2, "STIN")>0) then
+                  write(item%logfile,*) "hello2"
+                  item%inter_spins(1)%name=item%label_t2
+
+                  if (item%rank1==2 .and. item%rank2==4 .or.
+     &                item%rank1==0 .and. item%rank2==4) then
+                     ! t1 and t2 were swapped in summation
+                     do i=1, 2
+                        item%inter_spins(1)%cases(i,shift)=s2a(i)
+                        item%inter_spins(1)%cases(i+2,shift)=s2b(i)
+                     end do
+                  else 
+                     do i=1, 2
+                        item%inter_spins(1)%cases(i,shift)=s1a(i)
+                        item%inter_spins(1)%cases(i+2,shift)=s1b(i)
+                     end do
+                  end if
+
+               ! Something went wrong...
+               else
+                  call line_error("Expected to find
+     &            intermediate when spin summing residual",
+     &            item)
+               end if
+
+               do i=1, 4
+                  write(item%logfile,*) "SC ",
+     &            item%inter_spins(1)%cases(i,shift)
+               end do
+
+               write(item%logfile,*) "Name: ", item%inter_spins(1)%name
+               item%inter_spins(1)%ncase = item%inter_spins(1)%ncase + 1
+            end if
+
 
             ! Mark the start of the spin summed block, if the current
             ! line is a permutation of the previous line (ie. permute >1)
