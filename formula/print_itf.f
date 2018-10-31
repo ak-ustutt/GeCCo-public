@@ -25,8 +25,8 @@
      &     fl_item,   ! Current formula_item
      &     inter_start,
      &     res_start
-      type(spin_cases) ::
-     &     spin_inters
+      type(spin_cases), dimension(4) ::
+     &     spin_inters  ! Array of intermeidates with associated spin cases
       type(itf_intermediate), pointer ::
      &     inter
       type(itf_intermediate_spin), pointer ::
@@ -108,7 +108,41 @@
 
          end do
 
-         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command)
+         ! We want to build an array of intermediate names and their
+         ! various spin cases here, for now each line only depends on 1
+         ! intermediate, so spin_inters(1) is all we need.
+         ! TODO: fix this
+         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
+     &                            spin_inters)
+         write(itflog,*) "Hi: ", spin_inters(1)%cases
+         write(itflog,*) "Hi2: ", spin_inters(1)%name
+
+         ! Go back to inter_start and look for the intermediates
+         fl_item => inter_start
+         
+         do
+            if (fl_item%bcontr%label_res == spin_inters(1)%name) then
+               !call check_inter(fl_item%bcontr%label_res,logic) 
+               exit
+            end if
+            fl_item => fl_item%next
+         end do
+
+         ! Need to check if they depend on any other intermediates
+         ! subroutine to check
+         ! call intermediate_to_itf() to update spin_inters
+         ! back to do loop and repeat with new name
+
+         ! Once we have the complete spin_inters array - this contains
+         ! all the info for all the intermediates used in the future
+         ! residual. So now we can spin summ these and print them out, +
+         ! change there names STIN001_aaaa
+         ! Then print out the residual
+
+         ! Check if next residual needs intermdiates and which spin
+         ! cases are needed.
+         ! Exit if next resdiual is different or a new intermediate is
+         ! declared
 
 
       else

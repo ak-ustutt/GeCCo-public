@@ -71,6 +71,32 @@
 
       end function
 
+*----------------------------------------------------------------------*
+      pure function check_inter(label)
+*----------------------------------------------------------------------*
+!    Check if tensor is an intermediate
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+      
+      character(len=maxlen_bc_label), intent(in) ::
+     &     label
+      logical ::
+     &     check_inter
+
+      ! Assume these are the names of intermediates
+      if (scan(label, "STIN")>0 .or.
+     &    scan(label, "LTIN")>0) then
+         check_inter=.true.
+      else
+         check_inter=.false.
+      end if
+
+      end function
+
       end module itf_utils
 
 *----------------------------------------------------------------------*
@@ -137,7 +163,9 @@
 !     Includes antisymmetry of residual equations and spin summation.
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
+
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
@@ -161,7 +189,8 @@
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
       ! Determine if result needs permuting
-      call check_inter(contr_info%label_res,inter)
+      !call check_inter(contr_info%label_res,inter)
+      inter = check_inter(contr_info%label_res)
       if (.not.inter) then
          call permute_tensors(contr_info,perm_array,itflog)
       end if
@@ -194,7 +223,8 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine intermediate_to_itf(contr_info,itflog,command)
+      subroutine intermediate_to_itf(contr_info,itflog,command,
+     &                               spin_inters)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -211,6 +241,8 @@
       integer, intent(in) ::
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
+      type(spin_cases), dimension(4) ::
+     &     spin_inters
 
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
@@ -235,6 +267,8 @@
       !do i = 1, 5
       !   deallocate(itf_item%inter_spins(i)%cases)
       !end do
+      ! TODO: handle multiple intermediates
+      spin_inters(1)=itf_item%inter_spins(1)
       deallocate(itf_item%inter_spins)
 
       return
@@ -1627,10 +1661,12 @@
       subroutine itf_contr_init(contr_info,itf_item,perm,comm,
      &                          lulog)
 *----------------------------------------------------------------------*
-!    Initalise 
+!    Initalise ITF contraction object
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
+
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
@@ -1670,11 +1706,17 @@
       itf_item%fact=contr_info%fact
 
       ! Check if an intermediate
-      call check_inter(itf_item%label_t1,itf_item%inter(1))
+      !call check_inter(itf_item%label_t1,itf_item%inter(1))
+      !if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+      !   call check_inter(itf_item%label_t2,itf_item%inter(2))
+      !end if
+      !call check_inter(itf_item%label_res,itf_item%inter(3))
+
+      itf_item%inter(1) = check_inter(itf_item%label_t1)
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         call check_inter(itf_item%label_t2,itf_item%inter(2))
+         itf_item%inter(2) = check_inter(itf_item%label_t2)
       end if
-      call check_inter(itf_item%label_res,itf_item%inter(3))
+      itf_item%inter(3) = check_inter(itf_item%label_res)
 
       ! Assign index string
       if (comm==command_cp_intm .or. comm==command_add_intm) then
@@ -1717,39 +1759,39 @@
       return
       end
 
-*----------------------------------------------------------------------*
-      subroutine check_inter(label,intermediate)
-*----------------------------------------------------------------------*
-!    Check if tensor is an intermediate
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-      
-      character(len=maxlen_bc_label), intent(inout) ::
-     &     label
-      logical, intent(inout) ::
-     &     intermediate
-
-      ! If first character of the label is '_' then the tensor is
-      ! defined as an intermedate
-      ! The leading '-' is replaced with a whitespace
-      if (label(1:1).eq.'_') then
-         label(1:1)=' '
-         intermediate=.true.
-      else
-         intermediate=.false.
-      end if
-
-      ! Intermediates are also called like below
-      if (scan(label, "STIN")>0 .or.
-     &    scan(label, "LTIN")>0) then
-         intermediate=.true.
-      else
-         intermediate=.false.
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine check_inter(label,intermediate)
+!*----------------------------------------------------------------------*
+!!    Check if tensor is an intermediate
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!      
+!      character(len=maxlen_bc_label), intent(inout) ::
+!     &     label
+!      logical, intent(inout) ::
+!     &     intermediate
+!
+!      ! If first character of the label is '_' then the tensor is
+!      ! defined as an intermedate
+!      ! The leading '-' is replaced with a whitespace
+!      if (label(1:1).eq.'_') then
+!         label(1:1)=' '
+!         intermediate=.true.
+!      else
+!         intermediate=.false.
+!      end if
+!
+!      ! Intermediates are also called like below
+!      if (scan(label, "STIN")>0 .or.
+!     &    scan(label, "LTIN")>0) then
+!         intermediate=.true.
+!      else
+!         intermediate=.false.
+!      end if
+!
+!      return
+!      end
