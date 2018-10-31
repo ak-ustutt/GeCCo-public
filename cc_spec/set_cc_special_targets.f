@@ -207,6 +207,8 @@ C     &     parameters,2,tgt_info)
      &  '             list_e="E0(CC)",form=OMG_CC_OPT,mode=DIA)',
      &  '  PRINT_MEL(list="E0(CC)",comment="Final CC energy",',
      &  '            format="SCAL F20.12")',
+     &  '  PUSH_RESULT(list="E0(CC)",comment="CC",',
+     &  '            format="SCAL F24.14")',
      &  ')'],tgt_info)
 
       return
