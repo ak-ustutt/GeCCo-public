@@ -1,8 +1,35 @@
 *----------------------------------------------------------------------*
+      pure function check_inter(label)
+*----------------------------------------------------------------------*
+!    Check if tensor is an intermediate
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+      
+      character(len=maxlen_bc_label), intent(in) ::
+     &     label
+      logical ::
+     &     check_inter
+
+      ! Assume these are the names of intermediates
+      if (index(label, "STIN")>0 .or.
+     &    index(label, "LTIN")>0) then
+         check_inter=.true.
+      else
+         check_inter=.false.
+      end if
+
+      end function
+
+*----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,op_info,print_form,formlog)
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
+      !use itf_utils copied above from module
       implicit none
 
       include 'opdim.h'
@@ -34,6 +61,8 @@
       integer ::
      &     i,j,      ! Loop indcies
      &     contr_no  ! Counter of contrations
+      logical ::
+     &     check_inter
 
       ! Point to start of linked list
       fl_item=>fl_head
@@ -90,6 +119,7 @@
 
          ! New idea, recursive search back along the list
          ! Mark point where intermediates start
+         write(itflog,*) "Starting intermediate search"
          if (.not.associated(fl_item%next)) exit
          inter_start => fl_item%next
 
@@ -100,13 +130,20 @@
             fl_item => fl_item%next
 
             if(associated(fl_item%interm)) cycle
-            if(.not.associated(fl_item%next)) exit
+            if(.not.associated(fl_item%next)) then
+               write(itflog,*) "ERROR: intermediate was declared, but
+     &                          not used!"
+               exit
+            end if
             if(scan(fl_item%bcontr%label_res, "STIN")==0) then
-               res_start => fl_item%next
+               write(itflog,*) "Found next result"
+               res_start => fl_item
                exit
             end if
 
          end do
+
+         write(itflog,*) "res_start ", res_start%bcontr%label_res
 
          ! We want to build an array of intermediate names and their
          ! various spin cases here, for now each line only depends on 1
@@ -114,18 +151,35 @@
          ! TODO: fix this
          call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
      &                            spin_inters)
-         write(itflog,*) "Hi: ", spin_inters(1)%cases
-         write(itflog,*) "Hi2: ", spin_inters(1)%name
+         write(itflog,*) "spin_cases: ", spin_inters(1)%cases
+         write(itflog,*) "name: ", spin_inters(1)%name
 
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
          
          do
             if (fl_item%bcontr%label_res == spin_inters(1)%name) then
-               !call check_inter(fl_item%bcontr%label_res,logic) 
+               if (check_inter(fl_item%bcontr%label_op1) .or.
+     &             check_inter(fl_item%bcontr%label_op2)) then
+                  write(itflog,*) "scan: ",
+     &            index(fl_item%bcontr%label_op1, "STIN")
+                  write(itflog,*) "scan: ",
+     &            index(fl_item%bcontr%label_op2, "STIN")
+                  call intermediate_to_itf(fl_item%bcontr,itflog,
+     &                               fl_item%command,spin_inters)
+                  fl_item => inter_start
+               else
+                  fl_item => fl_item%next
+               end if
+            else
+               fl_item => fl_item%next
+            end if
+
+            if (associated(fl_item,res_start)) then
+               write(itflog,*) "Found the end"
+               fl_item => res_start
                exit
             end if
-            fl_item => fl_item%next
          end do
 
          ! Need to check if they depend on any other intermediates

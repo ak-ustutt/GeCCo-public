@@ -43,6 +43,8 @@
      &     inter_spins(:) => null()
       integer ::
      &     ninter = 0
+      logical ::
+     &     print_line = .true.
 
       end type itf_contr
 

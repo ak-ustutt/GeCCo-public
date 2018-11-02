@@ -69,6 +69,8 @@
           rename_tensor=trim(string)
       end if
 
+      if (rename_tensor(1:1)=='_') rename_tensor(1:1)=''
+
       end function
 
 *----------------------------------------------------------------------*
@@ -88,8 +90,8 @@
      &     check_inter
 
       ! Assume these are the names of intermediates
-      if (scan(label, "STIN")>0 .or.
-     &    scan(label, "LTIN")>0) then
+      if (index(label, "STIN")>0 .or.
+     &    index(label, "LTIN")>0) then
          check_inter=.true.
       else
          check_inter=.false.
@@ -262,7 +264,11 @@
       !   allocate(itf_item%inter_spins(i)%cases(6))
       !end do
 
+      ! Do not want to print out the lines while gatheing info about
+      ! intermediates
+      itf_item%print_line = .false.
       call assign_spin(itf_item)
+      itf_item%print_line = .true.
 
       !do i = 1, 5
       !   deallocate(itf_item%inter_spins(i)%cases)
@@ -342,7 +348,7 @@
       nres=rename_tensor(item%label_res, item%rank3)
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
-      
+
       ! Spin summ
       if (s1) then
          ! Pure spin
@@ -1108,10 +1114,10 @@
      &    len(trim(item%idx2))==2) then
          call print_itf_line(item,.false.,.false.)
          return
-      else if (item%inter(3)) then
-         ! Don't spin sum intermediate results
-         call print_itf_line(item,.false.,.false.)
-         return
+      !else if (item%inter(3)) then
+      !   ! Don't spin sum intermediate results
+      !   call print_itf_line(item,.false.,.false.)
+      !   return
       end if
          
 
@@ -1446,7 +1452,7 @@
       ! permutation of this line next (ie. permute==1) then we will not
       ! end the block just yet. This will save load/drop calls for the
       ! same tensors
-      if (eloop .and. item%permute /= 1) then
+      if (eloop .and. item%permute /= 1 .and. item%print_line) then
         write(item%logfile,*) "END"
       end if
 
@@ -1547,8 +1553,9 @@
             if (associated(item%inter_spins)) then
                shift = item%inter_spins(1)%ncase
                ! Check if the first tensor is an intermediate
-               if (scan(item%label_t1, "STIN")>0) then
+               if (item%inter(1)) then
                   write(item%logfile,*) "hello2"
+                  write(item%logfile,*) "hello2", item%label_t1
                   item%inter_spins(1)%name=item%label_t1
 
                   if (item%rank1==2 .and. item%rank2==4 .or.
@@ -1566,8 +1573,9 @@
                   end if
 
                ! Check if the second tensor is an intermediate
-               else if (scan(item%label_t2, "STIN")>0) then
+               else if (item%inter(2)) then
                   write(item%logfile,*) "hello2"
+                  write(item%logfile,*) "hello2", item%label_t2
                   item%inter_spins(1)%name=item%label_t2
 
                   if (item%rank1==2 .and. item%rank2==4 .or.
@@ -1601,19 +1609,22 @@
             end if
 
 
-            ! Mark the start of the spin summed block, if the current
-            ! line is a permutation of the previous line (ie. permute >1)
-            ! then we should not begin a new block
-            if (eloop==.false. .and. .not. (item%permute > 1)) then
-               write(item%logfile,*) 'BEGIN'
-            end if
+            ! Print the spin summed line
+            if (item%print_line) then
+               ! Mark the start of the spin summed block, if the current
+               ! line is a permutation of the previous line (ie. permute >1)
+               ! then we should not begin a new block
+               if (eloop==.false. .and. .not. (item%permute > 1)) then
+                  write(item%logfile,*) 'BEGIN'
+               end if
 
-            if (item%rank1==2 .and. item%rank2==4 .or.
-     &          item%rank1==0 .and. item%rank2==4) then
-               ! t1 and t2 were swapped in summation
-               call print_itf_line(item,s2,s1)
-            else 
-               call print_itf_line(item,s1,s2)
+               if (item%rank1==2 .and. item%rank2==4 .or.
+     &             item%rank1==0 .and. item%rank2==4) then
+                  ! t1 and t2 were swapped in summation
+                  call print_itf_line(item,s2,s1)
+               else 
+                  call print_itf_line(item,s1,s2)
+               end if
             end if
 
             eloop=.true.
