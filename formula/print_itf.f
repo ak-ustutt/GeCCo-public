@@ -63,6 +63,8 @@
      &     contr_no  ! Counter of contrations
       logical ::
      &     check_inter
+      integer ::
+     &     tmp_case(4)
 
       ! Point to start of linked list
       fl_item=>fl_head
@@ -93,6 +95,7 @@
 
 
       ! Loop over formula_items, end of the list points to NULL
+      ! TODO: get rid of possible infinite loops!
       do while (associated(fl_item%next))
 
       
@@ -157,14 +160,15 @@
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
          
+         ! Need to check if they depend on any other intermediates
+         ! subroutine to check
+         ! call intermediate_to_itf() to update spin_inters
+         ! back to do loop and repeat with new name
+         ! TODO: actually do this...
          do
             if (fl_item%bcontr%label_res == spin_inters(1)%name) then
                if (check_inter(fl_item%bcontr%label_op1) .or.
      &             check_inter(fl_item%bcontr%label_op2)) then
-                  write(itflog,*) "scan: ",
-     &            index(fl_item%bcontr%label_op1, "STIN")
-                  write(itflog,*) "scan: ",
-     &            index(fl_item%bcontr%label_op2, "STIN")
                   call intermediate_to_itf(fl_item%bcontr,itflog,
      &                               fl_item%command,spin_inters)
                   fl_item => inter_start
@@ -182,16 +186,49 @@
             end if
          end do
 
-         ! Need to check if they depend on any other intermediates
-         ! subroutine to check
-         ! call intermediate_to_itf() to update spin_inters
-         ! back to do loop and repeat with new name
-
          ! Once we have the complete spin_inters array - this contains
          ! all the info for all the intermediates used in the future
          ! residual. So now we can spin summ these and print them out, +
          ! change there names STIN001_aaaa
          ! Then print out the residual
+         fl_item => inter_start
+         ! TODO: Loop over intermediates
+         ! We want to loop over all lines of intermediate, before doing
+         ! another/ printing the next spin case. I_aaaa, then I_abab
+
+         ! Loop over 6 possible spin cases
+         ! For each spin case of an intermediate, we want to loop though
+         ! the list and print out all the lines which contribute
+
+         do i = 1, spin_inters(1)%ncase
+            do ! Loop through the list
+               if (fl_item%bcontr%label_res == spin_inters(1)%name) then
+                  ! Send off specific spin case to be summed and printed
+                  do j = 1, 4
+                     tmp_case(j) = spin_inters(1)%cases(j,i)
+                  end do
+                  call intermediate2_to_itf(fl_item%bcontr,itflog,
+     &                               fl_item%command,tmp_case)
+               end if
+
+               ! Move onto next item and repeat
+               fl_item => fl_item%next 
+
+               if (associated(fl_item,res_start)) then
+                  write(itflog,*) "Finished one spin summed inter block"
+                  ! Go back to start and print out remaing spin cases +
+                  ! reapeat
+                  fl_item => inter_start
+                  exit
+               end if
+            end do
+         end do
+
+         ! Spin summ and print residual which uses the above
+         ! intermediates
+         fl_item => res_start
+         call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
+
 
          ! Check if next residual needs intermdiates and which spin
          ! cases are needed.

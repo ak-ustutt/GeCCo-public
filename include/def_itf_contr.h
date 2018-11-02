@@ -8,7 +8,7 @@
       integer, dimension(4,6) ::
      &     cases                ! matrix containing possible spin cases each row is a different case
       integer ::
-     &     ncase = 1
+     &     ncase = 0
 
       end type spin_cases
 
@@ -37,7 +37,7 @@
       real(8) ::
      &     fact                 ! Factor
       integer ::
-     &     spin_case(index_len) ! Spin case of result, ie. [1111] = all alpha
+     &     spin_case(4) ! Spin case of result, ie. [1111] = all alpha
 
       type(spin_cases), pointer ::
      &     inter_spins(:) => null()
@@ -48,6 +48,12 @@
 
       end type itf_contr
 
+
+
+
+
+
+      ! TODO: Get rid of below...
 
       type itf_spin_parts
 

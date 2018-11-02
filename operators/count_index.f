@@ -281,6 +281,62 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine intermediate2_to_itf(contr_info,itflog,command,
+     &                               spin_case)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
+      include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr_info      ! Inofrmation about binary contraction
+      integer, intent(in) ::
+     &     itflog,         ! Output file
+     &     command         ! Type of formula item command, ie. contraction, copy etc.
+      integer, intent(in) ::
+     &     spin_case(4)
+
+      type(itf_contr) ::
+     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+      integer ::
+     &    perm_array(4),   ! Info of permutation factors
+     &    i,j
+      character(len=4) ::
+     &    spin_name
+
+      perm_array=0
+
+      call itf_contr_init(contr_info,itf_item,perm_array(1),
+     &                    command,itflog)
+
+      itf_item%spin_case = spin_case
+
+      ! Change intermediate name to reflect spin case
+      j = 1
+      spin_name = ''
+      do i=1, 4
+         if (spin_case(i) == 1) then
+            spin_name(j:j) = 'a'
+            j = j + 1
+         else if (spin_case(i) == 2) then
+            spin_name(j:j) = 'b'
+            j = j + 1
+         end if
+      end do
+
+      itf_item%label_res = trim(itf_item%label_res)//trim(spin_name)
+      call assign_spin(itf_item)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine t_index(idx,tidx)
 *----------------------------------------------------------------------*
 !     Transpose ITF index string, abij => abji
@@ -1114,12 +1170,7 @@
      &    len(trim(item%idx2))==2) then
          call print_itf_line(item,.false.,.false.)
          return
-      !else if (item%inter(3)) then
-      !   ! Don't spin sum intermediate results
-      !   call print_itf_line(item,.false.,.false.)
-      !   return
       end if
-         
 
       s1a=0
       s1b=0
@@ -1221,6 +1272,52 @@
 
       ! Working in index groups, set abab (1212) index to individual tensor
       ! index groups.
+      write(item%logfile,*)
+      write(item%logfile,*) "assign_spin: ", item%spin_case
+
+      ! Have an array of spins, if index are the same, give it this
+      ! value in corresponding array
+      if (item%inter(3) .and. .not.item%rank3 == 2) then
+      do i=1, 2
+         do j=1, 2
+            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
+               s1a(i) = item%spin_case(j)
+            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
+               s1b(i) = item%spin_case(j)
+            end if
+    
+            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
+               s1a(i) = item%spin_case(j+2)
+            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
+               s1b(i) = item%spin_case(j+2)
+            end if
+         end do
+      end do
+
+      do i=1, 2
+         do j=1, 2
+            if (r1a(j)==t2a(i) .and. r1a(j)/='') then
+               s2a(i) = item%spin_case(j)
+            else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
+               s2b(i) = item%spin_case(j)
+            end if
+    
+            if (r1b(j)==t2a(i) .and. r1b(j)/='') then
+               s2a(i) = item%spin_case(j+2)
+            else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
+               s2b(i) = item%spin_case(j+2)
+            end if
+         end do
+      end do
+      write(item%logfile,*) "s1b: ", s1b
+      write(item%logfile,*) "s1a: ", s1a
+      write(item%logfile,*)
+      write(item%logfile,*) "s2b: ", s2b
+      write(item%logfile,*) "s2a: ", s2a
+      write(item%logfile,*)
+      write(item%logfile,*)
+
+      else
       do i=1, 2
          do j=1, 2
             if (r1a(j)==t1a(i) .and. r1a(j)/='') then
@@ -1252,6 +1349,7 @@
             end if
          end do
       end do
+      end if
 
       ! Index assigned from result
       ! Debug
@@ -1551,7 +1649,7 @@
             ! Check if we have to deal with intermediates
             ! TODO: what if there are two intermediates on one line??
             if (associated(item%inter_spins)) then
-               shift = item%inter_spins(1)%ncase
+               shift = item%inter_spins(1)%ncase + 1
                ! Check if the first tensor is an intermediate
                if (item%inter(1)) then
                   write(item%logfile,*) "hello2"
