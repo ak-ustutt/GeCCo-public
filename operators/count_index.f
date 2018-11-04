@@ -1145,6 +1145,32 @@
       end
 
 *----------------------------------------------------------------------*
+      subroutine index_to_groups(cov,contv,index,half_rank)
+*----------------------------------------------------------------------*
+!     Asign index to covarient and contravarient groups
+*----------------------------------------------------------------------*
+      implicit none
+
+      integer, intent(in) ::
+     &     half_rank         ! Rank of tensor divided by 2
+      character(len=1), intent(inout) ::
+     &     cov(half_rank),      ! Covarient indicies
+     &     contv(half_rank)    ! Contravarient indicies
+      character(len=*), intent(in) ::
+     &     index       ! ITF tensor index
+
+      integer ::
+     &     i            ! Loop index
+
+      do i = 1, half_rank
+         cov(i) = index(i:i)
+         contv(i) = index(i+half_rank:i+half_rank)
+      end do
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine assign_spin(item)
 *----------------------------------------------------------------------*
 !    Assign spin to tensors, then sum remaining contraction indicies 
@@ -1178,9 +1204,25 @@
       logical ::
      &     logi ! Debug delete
 
-      ! Don't care about tensor products now
-      if (len(trim(item%idx3))==4 .and. len(trim(item%idx1))==2 .and.
-     &    len(trim(item%idx2))==2) then
+      ! There are certain cases that don't need to be spin summed
+      ! because the spin summed line is the same as the non-spin summed
+      ! line.
+      if (item%rank1 + item%rank2 + item%rank3 == 4) then
+         ! This covers all cases where we have two rank-2 tensors
+         ! + one rank-0 tensor somewhere on a line
+         call print_itf_line(item,.false.,.false.)
+         return
+      else if (item%rank1 + item%rank2 + item%rank3 == 0) then
+         ! Scalar contributions
+         call print_itf_line(item,.false.,.false.)
+         return
+      else if (item%rank3==6 .or. item%rank1==6 .or. item%rank2==6) then
+         ! Don't care about higher rank contractions for now...
+         call print_itf_line(item,.false.,.false.)
+         return
+      else if (item%rank3==4 .and. item%rank1==2
+     &         .and. item%rank2==2) then
+         ! Don't care about tensor products now
          call print_itf_line(item,.false.,.false.)
          return
       end if
@@ -1196,92 +1238,17 @@
       r1a=''
       r1b=''
 
-      ! Check the spin case
-      if (len(trim(item%idx1))==4 .and. len(trim(item%idx2))==4) then
-         t1a(1)=item%idx1(1:1)
-         t1a(2)=item%idx1(2:2)
-         t1b(1)=item%idx1(3:3)
-         t1b(2)=item%idx1(4:4)
-
-         t2a(1)=item%idx2(1:1)
-         t2a(2)=item%idx2(2:2)
-         t2b(1)=item%idx2(3:3)
-         t2b(2)=item%idx2(4:4)
-      else if (len(trim(item%idx1))==4 .and. 
-     &         len(trim(item%idx2))==2) then
-         ! Takes care of rank 4 and rank 2 result
-         t1a(1)=item%idx1(1:1)
-         t1a(2)=item%idx1(2:2)
-         t1b(1)=item%idx1(3:3)
-         t1b(2)=item%idx1(4:4)
-
-         t2a(1)=item%idx2(1:1)
-         t2b(1)=item%idx2(2:2)
-      else if (len(trim(item%idx1))==2 .and.
-     &         len(trim(item%idx2))==4) then
-         ! Swap t1 and t2 if t1=rank 2. Only going to sum over
-         ! contraction indices of t1.
-         ! Takes care of rank 4 and rank 2 result
-         t2a(1)=item%idx1(1:1)
-         t2b(1)=item%idx1(2:2)
-
-         t1a(1)=item%idx2(1:1)
-         t1a(2)=item%idx2(2:2)
-         t1b(1)=item%idx2(3:3)
-         t1b(2)=item%idx2(4:4)
-      else if (len(trim(item%idx1))==4 .and.
-     &         len(trim(item%idx2))==0) then
-         t1a(1)=item%idx1(1:1)
-         t1a(2)=item%idx1(2:2)
-         t1b(1)=item%idx1(3:3)
-         t1b(2)=item%idx1(4:4)
-      else if (len(trim(item%idx1))==0 .and.
-     &         len(trim(item%idx2))==4) then
-         ! Swap t1 and t2 if t1=rank 0
-         t1a(1)=item%idx2(1:1)
-         t1a(2)=item%idx2(2:2)
-         t1b(1)=item%idx2(3:3)
-         t1b(2)=item%idx2(4:4)
-      else if (len(trim(item%idx1))==2 .and. len(trim(item%idx2))==2 
-     &         .and. len(trim(item%idx3))==2) then
-         ! Don't need to spin sum
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (len(trim(item%idx1))==0 .and. len(trim(item%idx2))==2
-     &         .and. len(trim(item%idx3))==2) then
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (len(trim(item%idx1))==2 .and. len(trim(item%idx2))==0 
-     &         .and. len(trim(item%idx3))==2) then
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (len(trim(item%idx1))==2 .and. len(trim(item%idx2))==2
-     &         .and. len(trim(item%idx3))==0) then
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (len(trim(item%idx1))==0 .and. len(trim(item%idx2))==0
-     &         .and. len(trim(item%idx3))==0) then
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (item%rank3==4 .and.
-     &         item%rank1==6 .or. item%rank2==6) then
-         call print_itf_line(item,.false.,.false.)
-         return
+      ! Start by splitting the index into covarient and contravarient
+      ! groups
+      if (item%rank1 >= item%rank2) then
+         call index_to_groups(t1a,t1b,item%idx1,item%rank1/2)
+         call index_to_groups(t2a,t2b,item%idx2,item%rank2/2)
       else
-         write(item%logfile,*) "Error, can't determine spin case!"
-         call print_itf_line(item,.false.,.false.)
-         return
+         call index_to_groups(t2a,t2b,item%idx1,item%rank1/2)
+         call index_to_groups(t1a,t1b,item%idx2,item%rank2/2)
       end if
 
-      if (len(trim(item%idx3))==4) then
-         r1a(1)=item%idx3(1:1)
-         r1a(2)=item%idx3(2:2)
-         r1b(1)=item%idx3(3:3)
-         r1b(2)=item%idx3(4:4)
-      else if (len(trim(item%idx3))==2) then
-         r1a(1)=item%idx3(1:1)
-         r1b(1)=item%idx3(2:2)
-      end if
+      call index_to_groups(r1a,r1b,item%idx3,item%rank3/2)
 
       ! Working in index groups, set abab (1212) index to individual tensor
       ! index groups.
