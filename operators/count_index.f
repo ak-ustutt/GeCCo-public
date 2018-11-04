@@ -404,6 +404,13 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
+      ! Add intermediate spin strings to names
+      if (item%inter(1)) then
+         nt1 = trim(nt1)//trim(item%inter1)
+      else if (item%inter(2)) then
+         nt2 = trim(nt2)//trim(item%inter2)
+      end if
+
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       if (s1 .and. .not.item%inter(1)) then
@@ -1531,6 +1538,9 @@
      &     s2        ! True if tensor 2 is mixed spin
       integer ::
      &     r1,r2,i,shift
+      character(len=index_len) ::
+     &     spin_name
+
 
        s1=.false.
        s2=.false.
@@ -1588,6 +1598,74 @@
             !   write(item%logfile,*)
             !   write(item%logfile,*)
             !end if
+
+
+            ! Change name of intermediates involved in a result line
+            spin_name = '        '
+            if (item%inter(1)) then
+               if (item%swapped) then
+                  do i = 1, item%rank1/2
+                     if (s2a(i)==1) then
+                        spin_name(i:i) = 'a'
+                     else if (s2a(i)==2) then
+                        spin_name(i:i) = 'b'
+                     end if
+
+                     if (s2b(i)==1) then
+                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
+                     else if (s2b(i)==2) then
+                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
+                     end if
+                  end do
+               else
+                  do i = 1, item%rank1/2
+                     if (s1a(i)==1) then
+                        spin_name(i:i) = 'a'
+                     else if (s1a(i)==2) then
+                        spin_name(i:i) = 'b'
+                     end if
+
+                     if (s1b(i)==1) then
+                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
+                     else if (s1b(i)==2) then
+                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
+                     end if
+                  end do
+               end if
+               item%inter1 = spin_name
+
+            else if (item%inter(2)) then
+               if (item%swapped) then
+                  do i = 1, item%rank2/2
+                     if (s1a(i)==1) then
+                        spin_name(i:i) = 'a'
+                     else if (s1a(i)==2) then
+                        spin_name(i:i) = 'b'
+                     end if
+
+                     if (s1b(i)==1) then
+                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
+                     else if (s1b(i)==2) then
+                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
+                     end if
+                  end do
+               else
+                  do i = 1, item%rank2/2
+                     if (s2a(i)==1) then
+                        spin_name(i:i) = 'a'
+                     else if (s2a(i)==2) then
+                        spin_name(i:i) = 'b'
+                     end if
+
+                     if (s2b(i)==1) then
+                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
+                     else if (s2b(i)==2) then
+                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
+                     end if
+                  end do
+               end if
+               item%inter2 = spin_name
+            end if
 
             ! Check if we have to deal with intermediates
             ! TODO: what if there are two intermediates on one line??
