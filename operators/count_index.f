@@ -454,6 +454,7 @@
       !write(s_idx,*) item%spin_idx
       s_idx=''
 
+      ! Deterime what the contraction operator looks like
       equal_op='  '
       if (item%fact.lt.0.0) then
          equal_op='-='
@@ -463,10 +464,21 @@
          equal_op='+='
       end if
 
+      ! Need to include factor if permuting
+      if (item%permute>1) then
+         if (equal_op=='+=') then
+            equal_op='-='
+         else if (equal_op=='-=') then
+            equal_op='+='
+         end if
+      end if
+
+       ! Construct complete itf algo line from the above parts
        itf_line=trimal(s_idx)//'.'//trimal(nres)//
      &     '['//trim(item%idx3)//'] '//equal_op//' '//
      &     trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
+      ! Print it to bcontr.tmp
       write(item%logfile,*) trim(itf_line)
 
       return
@@ -1610,7 +1622,7 @@
          if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
      &       modulo(sum(s2a)+sum(s2b),2)==0) then
 
-            ! Doesn't work for rank 6 tensors yet...
+            ! TODO: Doesn't work for rank 6 tensors yet...
             if (r1==2 .or. r1==0) then
                s1=.false.
             else if (s1a(1)/=s1a(2)) then
@@ -1738,7 +1750,7 @@
 *----------------------------------------------------------------------*
       subroutine find_idx(s2a,s2b,t1,t2a,t2b,idx,j)
 *----------------------------------------------------------------------*
-!    Find corresponding index in second tenor 
+!     Find corresponding index in second tenor 
 *----------------------------------------------------------------------*
 
       implicit none
@@ -1771,7 +1783,7 @@
       subroutine itf_contr_init(contr_info,itf_item,perm,comm,
      &                          lulog)
 *----------------------------------------------------------------------*
-!    Initalise ITF contraction object
+!     Initalise ITF contraction object
 *----------------------------------------------------------------------*
 
       use itf_utils
