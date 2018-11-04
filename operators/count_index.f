@@ -377,7 +377,7 @@
       include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
-      type(itf_contr), intent(in) ::
+      type(itf_contr), intent(inout) ::
      &     item
       logical, intent(in) ::
      &     s1,s2
@@ -392,7 +392,7 @@
      &     itf_line,          ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
       character(len=2) ::
-     &     equal_op           ! ITF operator; ie. +=, -=, :=
+     &     equal_op           ! ITF contraction operator; ie. +=, -=, :=
       character(len=25) ::
      &     sfact,             ! String representation of factor
      &     sfact_star         ! String representation of factor formatted for output
@@ -404,12 +404,35 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
-      ! Add intermediate spin strings to names
-      if (item%inter(1)) then
-         nt1 = trim(nt1)//trim(item%inter1)
-      else if (item%inter(2)) then
-         nt2 = trim(nt2)//trim(item%inter2)
+      ! When permuting, the intermediate name will flip spin. We need it
+      ! to be the same as the previously declared intermediates, so this
+      ! flips it back.
+      ! TODO: is there a better way of avoiding this problem?
+      if (item%permute>1) then
+         if (item%inter(1)) then
+            do i = 1, item%rank1
+               if (item%inter1(i:i)=='a') then
+                  item%inter1(i:i)='b'
+               else if (item%inter1(i:i)=='b') then
+                  item%inter1(i:i)='a'
+               end if
+            end do
+         end if
+
+         if (item%inter(2)) then
+            do i = 1, item%rank2
+               if (item%inter2(i:i)=='a') then
+                  item%inter2(i:i)='b'
+               else if (item%inter2(i:i)=='b') then
+                  item%inter2(i:i)='a'
+               end if
+            end do
+         end if
       end if
+
+      ! Add intermediate spin strings to names
+      if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
+      if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
@@ -1256,12 +1279,6 @@
       ! Get result index
       call index_to_groups(r1a,r1b,item%idx3,item%rank3/2)
 
-      ! Working in index groups, set abab (1212) index to individual tensor
-      ! index groups.
-
-      write(item%logfile,*)
-      write(item%logfile,*) "assign_spin: ", item%spin_case
-
       ! Each result has a specific spin case, ie. for rank-2 we just
       ! need the aa case, for rank-4 we need abab. So find the external
       ! indicies in the contraction tensors and set their spins. For
@@ -1675,8 +1692,8 @@
 
                ! Check if the first tensor is an intermediate
                if (item%inter(1)) then
-                  write(item%logfile,*) "hello2"
-                  write(item%logfile,*) "hello2", item%label_t1
+                  !write(item%logfile,*)
+                  !write(item%logfile,*) "intermeiate", item%label_t1
                   item%inter_spins(1)%name=item%label_t1
 
                   if (item%swapped) then
@@ -1694,8 +1711,8 @@
 
                ! Check if the second tensor is an intermediate
                else if (item%inter(2)) then
-                  write(item%logfile,*) "hello2"
-                  write(item%logfile,*) "hello2", item%label_t2
+                  !write(item%logfile,*)
+                  !write(item%logfile,*) "intermediate", item%label_t2
                   item%inter_spins(1)%name=item%label_t2
 
                   if (item%swapped) then
@@ -1718,10 +1735,10 @@
      &            item)
                end if
 
-               do i=1, 4
-                  write(item%logfile,*) "SC ",
-     &            item%inter_spins(1)%cases(i,shift)
-               end do
+!               do i=1, 4
+!                  write(item%logfile,*) "SC ",
+!     &            item%inter_spins(1)%cases(i,shift)
+!               end do
 
                write(item%logfile,*) "Name: ", item%inter_spins(1)%name
                item%inter_spins(1)%ncase = item%inter_spins(1)%ncase + 1
