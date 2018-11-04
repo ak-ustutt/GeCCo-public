@@ -405,8 +405,9 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
-      ! Spin summ
-      if (s1) then
+      ! Change tensor to spatial orbital quantity, unless it is an
+      ! intermediate
+      if (s1 .and. .not.item%inter(1)) then
          ! Pure spin
          tidx1=''
          call t_index(item%idx1,tidx1)
@@ -416,7 +417,7 @@
          st1=trimal(nt1)//'['//trim(item%idx1)//']'
       end if
 
-      if (s2) then
+      if (s2 .and. .not.item%inter(2)) then
          ! Pure spin
          tidx2=''
          call t_index(item%idx2,tidx2)
