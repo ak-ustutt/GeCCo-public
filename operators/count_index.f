@@ -99,6 +99,32 @@
 
       end function
 
+*----------------------------------------------------------------------*
+      pure function t_index(index)
+*----------------------------------------------------------------------*
+!     Transpose ITF index string, abij => abji
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=index_len), intent(in) ::
+     &     index       ! ITF index string
+      character(len=index_len) ::
+     &     t_index      ! Transpose of ITF index string
+
+      character(len=1) ::
+     &     tmp
+
+      t_index=index
+      tmp=index(1:1)
+      t_index(1:1)=index(2:2)
+      t_index(2:2)=tmp
+      
+      end function
+
       end module itf_utils
 
 *----------------------------------------------------------------------*
@@ -337,33 +363,6 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine t_index(idx,tidx)
-*----------------------------------------------------------------------*
-!     Transpose ITF index string, abij => abji
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=index_len), intent(in) ::
-     &     idx       ! ITF index string
-      character(len=index_len), intent(inout) ::
-     &     tidx      ! Transpose of ITF index string
-
-      character(len=1) ::
-     &     tmp
-
-      tidx=idx
-      tmp=idx(1:1)
-      tidx(1:1)=idx(2:2)
-      tidx(2:2)=tmp
-      
-      return
-      end
-
-*----------------------------------------------------------------------*
       subroutine print_itf_line(item,s1,s2)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
@@ -384,8 +383,6 @@
 
       character(len=maxlen_bc_label) ::
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
-      character(len=index_len) ::
-     &     tidx1, tidx2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=70) ::
@@ -438,20 +435,16 @@
       ! intermediate
       if (s1 .and. .not.item%inter(1)) then
          ! Pure spin
-         tidx1=''
-         call t_index(item%idx1,tidx1)
          st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//
-     &       ' - '//trimal(nt1)//'['//trim(tidx1)//']'//')'
+     &       ' - '//trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
       else
          st1=trimal(nt1)//'['//trim(item%idx1)//']'
       end if
 
       if (s2 .and. .not.item%inter(2)) then
          ! Pure spin
-         tidx2=''
-         call t_index(item%idx2,tidx2)
          st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//
-     &       ' - '//trimal(nt2)//'['//trim(tidx2)//']'//')'
+     &       ' - '//trimal(nt2)//'['//trim(t_index(item%idx2))//']'//')'
       else
          if (item%command==command_add_intm .or.
      &       item%command==command_cp_intm) then
