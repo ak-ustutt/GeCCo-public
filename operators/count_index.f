@@ -395,8 +395,7 @@
      &     equal_op           ! ITF operator; ie. +=, -=, :=
       character(len=25) ::
      &     sfact,             ! String representation of factor
-     &     sfact_star,        ! String representation of factor formatted for output
-     &     s_idx              ! Spin index used to group lines
+     &     sfact_star         ! String representation of factor formatted for output
       integer ::
      &     i
 
@@ -449,11 +448,6 @@
           end if
       end if
 
-      ! Write spin index to string
-      ! Probably not needed...
-      !write(s_idx,*) item%spin_idx
-      s_idx=''
-
       ! Deterime what the contraction operator looks like
       equal_op='  '
       if (item%fact.lt.0.0) then
@@ -474,7 +468,7 @@
       end if
 
        ! Construct complete itf algo line from the above parts
-       itf_line=trimal(s_idx)//'.'//trimal(nres)//
+       itf_line='.'//trimal(nres)//
      &     '['//trim(item%idx3)//'] '//equal_op//' '//
      &     trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
@@ -1200,7 +1194,8 @@
      &     s2a(2),
      &     s2b(2),
      &     second_idx,third_idx,fourth_idx,
-     &     zero_a,zero_b
+     &     zero_a,zero_b,
+     &     result_spin(4) ! Spin case of result
       logical ::
      &     logi ! Debug delete
 
@@ -1244,92 +1239,63 @@
          call index_to_groups(t1a,t1b,item%idx1,item%rank1/2)
          call index_to_groups(t2a,t2b,item%idx2,item%rank2/2)
       else
+         ! Swapping tensors, so the largest rank tensor is now in t1a
+         ! and t1b
          call index_to_groups(t2a,t2b,item%idx1,item%rank1/2)
          call index_to_groups(t1a,t1b,item%idx2,item%rank2/2)
+         item%swapped = .true.
       end if
 
+      ! Get result index
       call index_to_groups(r1a,r1b,item%idx3,item%rank3/2)
 
       ! Working in index groups, set abab (1212) index to individual tensor
       ! index groups.
+
       write(item%logfile,*)
       write(item%logfile,*) "assign_spin: ", item%spin_case
 
-      ! Have an array of spins, if index are the same, give it this
-      ! value in corresponding array
-      if (item%inter(3) .and. .not.item%rank3 == 2) then
-      do i=1, 2
-         do j=1, 2
-            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
-               s1a(i) = item%spin_case(j)
-            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
-               s1b(i) = item%spin_case(j)
-            end if
-    
-            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
-               s1a(i) = item%spin_case(j+2)
-            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
-               s1b(i) = item%spin_case(j+2)
-            end if
-         end do
-      end do
-
-      do i=1, 2
-         do j=1, 2
-            if (r1a(j)==t2a(i) .and. r1a(j)/='') then
-               s2a(i) = item%spin_case(j)
-            else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
-               s2b(i) = item%spin_case(j)
-            end if
-    
-            if (r1b(j)==t2a(i) .and. r1b(j)/='') then
-               s2a(i) = item%spin_case(j+2)
-            else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
-               s2b(i) = item%spin_case(j+2)
-            end if
-         end do
-      end do
-      write(item%logfile,*) "s1b: ", s1b
-      write(item%logfile,*) "s1a: ", s1a
-      write(item%logfile,*)
-      write(item%logfile,*) "s2b: ", s2b
-      write(item%logfile,*) "s2a: ", s2a
-      write(item%logfile,*)
-      write(item%logfile,*)
-
+      ! Each result has a specific spin case, ie. for rank-2 we just
+      ! need the aa case, for rank-4 we need abab. So find the external
+      ! indicies in the contraction tensors and set their spins. For
+      ! certain intermedites we may need different cases, so set
+      ! result_spin accordingly.
+      if (item%inter(3)) then
+         result_spin = item%spin_case
       else
-      do i=1, 2
-         do j=1, 2
-            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
-               s1a(i)=j
-            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
-               s1b(i)=j
-            end if
-    
-            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
-               s1a(i)=j
-            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
-               s1b(i)=j
-            end if
-         end do
-      end do
+         ! abab
+         result_spin = (/ 1, 2, 1, 2 /)
+      end if
 
       do i=1, 2
          do j=1, 2
+            ! Assign spin of first tensor
+            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
+               s1a(i) = result_spin(j)
+            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
+               s1b(i) = result_spin(j)
+            end if
+    
+            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
+               s1a(i) = result_spin(j+2)
+            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
+               s1b(i) = result_spin(j+2)
+            end if
+
+            ! Assign spin of second tensor
             if (r1a(j)==t2a(i) .and. r1a(j)/='') then
-               s2a(i)=j
+               s2a(i) = result_spin(j)
             else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
-               s2b(i)=j
+               s2b(i) = result_spin(j)
             end if
     
             if (r1b(j)==t2a(i) .and. r1b(j)/='') then
-               s2a(i)=j
+               s2a(i) = result_spin(j+2)
             else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
-               s2b(i)=j
+               s2b(i) = result_spin(j+2)
             end if
          end do
       end do
-      end if
 
       ! Index assigned from result
       ! Debug
@@ -1410,7 +1376,6 @@
       fourth_idx=0
 
       eloop=.false.
-      item%spin_idx=1
 
       ! Check for first unassigned index
       if (any(s1a==0) .or. first_idx>0) then
@@ -1696,8 +1661,9 @@
                   write(item%logfile,*) 'BEGIN'
                end if
 
-               if (item%rank1==2 .and. item%rank2==4 .or.
-     &             item%rank1==0 .and. item%rank2==4) then
+!               if (item%rank1==2 .and. item%rank2==4 .or.
+!     &             item%rank1==0 .and. item%rank2==4) then
+               if (item%swapped) then
                   ! t1 and t2 were swapped in summation
                   call print_itf_line(item,s2,s1)
                else 
@@ -1706,7 +1672,6 @@
             end if
 
             eloop=.true.
-            item%spin_idx=item%spin_idx+1
          end if
        end if
 

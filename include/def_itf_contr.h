@@ -30,10 +30,10 @@
      &     rank3,               ! Rank of result tensor
      &     logfile,             ! File to print to
      &     permute,             ! 0,1,2,3: permutation cases
-     &     spin_idx=0,          ! Groups spin summed lines together
      &     command              ! Type of contraction, borrowed from formula_item
       logical ::
-     &     inter(3)=.false.     ! True if result is intermediate
+     &     inter(3) = .false.,  ! True if result is intermediate
+     &     swapped = .false.    ! True is t1 and t2 were swapped during spin summation
       real(8) ::
      &     fact                 ! Factor
       integer ::
