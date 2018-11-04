@@ -1537,16 +1537,14 @@
 
       ! Determine rank; may have swapped t1 and t2 to move larger tensor
       ! to t1
-      if (item%rank1==2 .and. item%rank2==4) then
-         r1=item%rank2
-         r2=item%rank1
-      else if (item%rank1==0 .and. item%rank2==4) then
-         r1=item%rank2
-         r2=item%rank1
+      if (item%swapped) then
+         r1 = item%rank2
+         r2 = item%rank1
       else
-         r1=item%rank1
-         r2=item%rank2
+         r1 = item%rank1
+         r2 = item%rank2
       end if
+
 
        ! Pick out specific spin cases here
        if (sum(s1a)==sum(s1b) .and.
@@ -1594,15 +1592,16 @@
             ! Check if we have to deal with intermediates
             ! TODO: what if there are two intermediates on one line??
             if (associated(item%inter_spins)) then
+
                shift = item%inter_spins(1)%ncase + 1
+
                ! Check if the first tensor is an intermediate
                if (item%inter(1)) then
                   write(item%logfile,*) "hello2"
                   write(item%logfile,*) "hello2", item%label_t1
                   item%inter_spins(1)%name=item%label_t1
 
-                  if (item%rank1==2 .and. item%rank2==4 .or.
-     &                item%rank1==0 .and. item%rank2==4) then
+                  if (item%swapped) then
                      ! t1 and t2 were swapped in summation
                      do i=1, 2
                         item%inter_spins(1)%cases(i,shift)=s2a(i)
@@ -1621,8 +1620,7 @@
                   write(item%logfile,*) "hello2", item%label_t2
                   item%inter_spins(1)%name=item%label_t2
 
-                  if (item%rank1==2 .and. item%rank2==4 .or.
-     &                item%rank1==0 .and. item%rank2==4) then
+                  if (item%swapped) then
                      ! t1 and t2 were swapped in summation
                      do i=1, 2
                         item%inter_spins(1)%cases(i,shift)=s2a(i)
@@ -1661,8 +1659,6 @@
                   write(item%logfile,*) 'BEGIN'
                end if
 
-!               if (item%rank1==2 .and. item%rank2==4 .or.
-!     &             item%rank1==0 .and. item%rank2==4) then
                if (item%swapped) then
                   ! t1 and t2 were swapped in summation
                   call print_itf_line(item,s2,s1)
