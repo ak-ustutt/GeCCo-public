@@ -284,11 +284,9 @@
      &                    command,itflog)
 
       ! Allocate space to store information about intermediates and
-      ! their spin cases.
+      ! their spin cases. Only allocate 2 objects as there can only be
+      ! at most two intermediates on a line
       allocate(itf_item%inter_spins(2))
-      !do i = 1, 5
-      !   allocate(itf_item%inter_spins(i)%cases(6))
-      !end do
 
       ! Do not want to print out the lines while gatheing info about
       ! intermediates
@@ -296,11 +294,14 @@
       call assign_spin(itf_item)
       itf_item%print_line = .true.
 
-      !do i = 1, 5
-      !   deallocate(itf_item%inter_spins(i)%cases)
-      !end do
-      ! TODO: handle multiple intermediates
-      spin_inters(1)=itf_item%inter_spins(1)
+      if (itf_item%ninter == 0) call line_error("Couldn't find
+     &                              intermediate", itf_item)
+
+      ! Copy information back to array in print_itf()
+      do i = 1, itf_item%ninter
+         spin_inters(i)=itf_item%inter_spins(i)
+      end do
+
       deallocate(itf_item%inter_spins)
 
       return
@@ -1547,7 +1548,8 @@
      &     s1,       ! True if tensor 1 is mixed spin
      &     s2        ! True if tensor 2 is mixed spin
       integer ::
-     &     r1,r2,i,shift
+     &     r1,r2,i,shift,
+     &     ishift
       character(len=index_len) ::
      &     spin_name
 
@@ -1681,51 +1683,53 @@
             ! TODO: what if there are two intermediates on one line??
             if (associated(item%inter_spins)) then
 
-               shift = item%inter_spins(1)%ncase + 1
+               ! Number of intermediates
+               ishift = 0
 
                ! Check if the first tensor is an intermediate
                if (item%inter(1)) then
+                  ishift = ishift + 1
+                  ! Number of spin cases
+                  shift = item%inter_spins(ishift)%ncase + 1
                   !write(item%logfile,*)
                   !write(item%logfile,*) "intermeiate", item%label_t1
-                  item%inter_spins(1)%name=item%label_t1
+                  item%inter_spins(ishift)%name=item%label_t1
 
                   if (item%swapped) then
                      ! t1 and t2 were swapped in summation
                      do i=1, 2
-                        item%inter_spins(1)%cases(i,shift)=s2a(i)
-                        item%inter_spins(1)%cases(i+2,shift)=s2b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
                      end do
                   else 
                      do i=1, 2
-                        item%inter_spins(1)%cases(i,shift)=s1a(i)
-                        item%inter_spins(1)%cases(i+2,shift)=s1b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
                      end do
                   end if
+               end if
 
                ! Check if the second tensor is an intermediate
-               else if (item%inter(2)) then
+               if (item%inter(2)) then
+                  ishift = ishift + 1
+                  ! Number of spin cases
+                  shift = item%inter_spins(ishift)%ncase + 1
                   !write(item%logfile,*)
                   !write(item%logfile,*) "intermediate", item%label_t2
-                  item%inter_spins(1)%name=item%label_t2
+                  item%inter_spins(ishift)%name=item%label_t2
 
                   if (item%swapped) then
                      ! t1 and t2 were swapped in summation
                      do i=1, 2
-                        item%inter_spins(1)%cases(i,shift)=s2a(i)
-                        item%inter_spins(1)%cases(i+2,shift)=s2b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
                      end do
                   else 
                      do i=1, 2
-                        item%inter_spins(1)%cases(i,shift)=s1a(i)
-                        item%inter_spins(1)%cases(i+2,shift)=s1b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
                      end do
                   end if
-
-               ! Something went wrong...
-               else
-                  call line_error("Expected to find
-     &            intermediate when spin summing residual",
-     &            item)
                end if
 
 !               do i=1, 4
@@ -1734,7 +1738,14 @@
 !               end do
 
                write(item%logfile,*) "Name: ", item%inter_spins(1)%name
-               item%inter_spins(1)%ncase = item%inter_spins(1)%ncase + 1
+               ! Update number of spin cases for each different
+               ! intermediate
+               do i = 1, ishift
+                  item%inter_spins(ishift)%ncase = 
+     &                              item%inter_spins(ishift)%ncase + 1
+               end do
+
+               item%ninter = ishift
             end if
 
 
