@@ -462,13 +462,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &               str_info,orb_info)
               end do
             end if
-
-            call frm_sched(xret,fl_rhs_mvp,depend,0,0,
-     &           .true.,.false.,op_info,str_info,strmap_info,orb_info)
-
+ 
+            ! the following lines are 
+            ! now moved in front of frm_sched so that dependencies 
+            ! are evaluated correctly
             do iopt = 1, nopt
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
+
+            call frm_sched(xret,fl_rhs_mvp,depend,0,0,
+     &           .true.,.false.,op_info,str_info,strmap_info,orb_info)
 
             ! apply sign-fix (if needed)
             do iopt = 1, nopt
