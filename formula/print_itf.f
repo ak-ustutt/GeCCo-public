@@ -51,7 +51,8 @@
       type(formula_item), pointer ::
      &     fl_item,   ! Current formula_item
      &     inter_start,
-     &     res_start
+     &     res_start,
+     &     summed_inter
       type(spin_cases), dimension(4) ::
      &     spin_inters  ! Array of intermeidates with associated spin cases
       type(itf_intermediate), pointer ::
@@ -62,9 +63,12 @@
      &     i,j,      ! Loop indcies
      &     contr_no  ! Counter of contrations
       logical ::
-     &     check_inter
+     &     check_inter,
+     &     more_inter,
+     &     finished_inter
       integer ::
-     &     tmp_case(4)
+     &     tmp_case(4),
+     &     ninter
 
       ! Point to start of linked list
       fl_item=>fl_head
@@ -149,40 +153,76 @@
          write(itflog,*) "res_start ", res_start%bcontr%label_res
 
          ! We want to build an array of intermediate names and their
-         ! various spin cases here, for now each line only depends on 1
-         ! intermediate, so spin_inters(1) is all we need.
-         ! TODO: fix this
+         ! various spin cases here
+         ninter = 0
          call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
-     &                            spin_inters)
-         write(itflog,*) "spin_cases: ", spin_inters(1)%cases
-         write(itflog,*) "name: ", spin_inters(1)%name
+     &                            spin_inters, ninter)
+
+         do i = 1, ninter
+            write(itflog,*) "spin_cases: ", spin_inters(ninter)%cases
+            write(itflog,*) "name: ", spin_inters(ninter)%name
+         end do
 
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
+         ! Marker needs to be set to where we have already check for
+         ! intermediates
+         summed_inter => res_start
+         finished_inter = .false.
          
-         ! Need to check if they depend on any other intermediates
-         ! subroutine to check
-         ! call intermediate_to_itf() to update spin_inters
-         ! back to do loop and repeat with new name
-         ! TODO: actually do this...
-         do
-            if (fl_item%bcontr%label_res == spin_inters(1)%name) then
+
+         ! Recursive search through list to get all information about
+         ! every intermediate used to produce a result
+         do while (.not.finished_inter)
+            ! Check if infomation about the intermediate is needed, all required
+            ! intermediates are stored in spin_inters
+            do i = 1, ninter
+               if (fl_item%bcontr%label_res == spin_inters(i)%name)
+     &                      more_inter = .true.
+            end do
+
+            !if (fl_item%bcontr%label_res == spin_inters(1)%name) then
+            ! If the intermediate is needed, check if it depends on any
+            ! intermediates + find out their names/ spin cases
+            if (more_inter) then
                if (check_inter(fl_item%bcontr%label_op1) .or.
      &             check_inter(fl_item%bcontr%label_op2)) then
                   call intermediate_to_itf(fl_item%bcontr,itflog,
-     &                               fl_item%command,spin_inters)
+     &                               fl_item%command,spin_inters,ninter)
+
+                  ! Mark the position of the previously checked
+                  ! intermediates
+                  summed_inter => fl_item
+
+                  ! Move back to the start and start search for next
+                  ! intermediate
                   fl_item => inter_start
                else
+                  ! If it doesn't have any intermediates, move onto the
+                  ! next item
                   fl_item => fl_item%next
+
+                  ! If the next item is has reached the begining of the
+                  ! previously summed intermediate, then we need to
+                  ! break out this loop.
+                  if (associated(fl_item,summed_inter)) finished_inter =
+     &                                                     .true.
                end if
             else
+               ! If the interemediate isn't needed, move onto the next
+               ! item
                fl_item => fl_item%next
+               if (associated(fl_item,summed_inter)) finished_inter =
+     &                                                  .true.
             end if
 
+            more_inter = .false.
+
+            ! Check we haven't reached the residual result
             if (associated(fl_item,res_start)) then
                write(itflog,*) "Found the end"
                fl_item => res_start
-               exit
+               finished_inter = .true.
             end if
          end do
 

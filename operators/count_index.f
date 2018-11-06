@@ -252,7 +252,7 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate_to_itf(contr_info,itflog,command,
-     &                               spin_inters)
+     &                               spin_inters,n_inter)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -269,6 +269,8 @@
       integer, intent(in) ::
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
+      integer, intent(inout) ::
+     &     n_inter         ! Overall number of intermediates needed by result
       type(spin_cases), dimension(4) ::
      &     spin_inters
 
@@ -297,10 +299,14 @@
       if (itf_item%ninter == 0) call line_error("Couldn't find
      &                              intermediate", itf_item)
 
+
       ! Copy information back to array in print_itf()
       do i = 1, itf_item%ninter
-         spin_inters(i)=itf_item%inter_spins(i)
+         spin_inters(i+n_inter)=itf_item%inter_spins(i)
       end do
+
+      ! Overall number of intermediates used to index spin_inters
+      n_inter = n_inter + itf_item%ninter
 
       deallocate(itf_item%inter_spins)
 
