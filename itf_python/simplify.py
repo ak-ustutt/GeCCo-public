@@ -40,6 +40,12 @@ for line in f1:
         print("Error in translating GeCCo code to ITF, check bcontr.tmp file for more details", file=f2)
         quit()
 
+    # Remove unwanted lines before process.py
+    # Removes the reference energy
+    if ("ECC[]" in line and "K[]" in line): continue
+    # Removes the CASSCF energy
+    if ("ECC[]" in line and "Dm[]" in line): continue
+
     # If the current line is the same as the precceding line, increment a factor
     # + do not print out the line
     if (line == old_line):

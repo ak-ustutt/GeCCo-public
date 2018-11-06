@@ -109,10 +109,6 @@ def print_result(line):
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
 
-        # This line adds the reference energy to the correlation energy
-        # So we can skip it
-        if ("ECC[]" in words[0] and "K:[]" in words[2]): return
-
         # Either a simple adding or copying case
         if "TIN" not in words[2]:
             load_ten="load " + words[2].split('*',1)[-1]
