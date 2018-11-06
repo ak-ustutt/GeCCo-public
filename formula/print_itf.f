@@ -60,7 +60,7 @@
       type(itf_intermediate_spin), pointer ::
      &     spin
       integer ::
-     &     i,j,      ! Loop indcies
+     &     i,j,k,     ! Loop indcies
      &     contr_no  ! Counter of contrations
       logical ::
      &     check_inter,
@@ -71,8 +71,8 @@
      &     ninter
 
       ! Point to start of linked list
-      fl_item=>fl_head
-      contr_no=0
+      fl_item => fl_head
+      contr_no = 0
 
       !nullify(inter_head)
       !allocate(inter_head)
@@ -90,10 +90,10 @@
       !end do
       !deallocate(inter_head)
 
-      allocate(inter)
-      allocate(inter%interm(20))
-      inter%size=0
-      j=1
+      !allocate(inter)
+      !allocate(inter%interm(20))
+      !inter%size=0
+      !j=1
       
 
 
@@ -154,6 +154,8 @@
 
          ! We want to build an array of intermediate names and their
          ! various spin cases here
+         ! Global variable ninter is the number of intermediates which
+         ! we need to deal with
          ninter = 0
          call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
      &                            spin_inters, ninter)
@@ -229,38 +231,39 @@
          ! Once we have the complete spin_inters array - this contains
          ! all the info for all the intermediates used in the future
          ! residual. So now we can spin summ these and print them out, +
-         ! change there names STIN001_aaaa
-         ! Then print out the residual
+         ! change there names STIN001aaaa, then print out the residual
          fl_item => inter_start
-         ! TODO: Loop over intermediates
+
+         ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
          ! another/ printing the next spin case. I_aaaa, then I_abab
+         do k = 1, ninter
+            ! Loop over the number of spin cases for an intermediate
+            ! For each spin case of an intermediate, we want to loop though
+            ! the list and print out all the lines which contribute
+            do i = 1, spin_inters(k)%ncase
+               do ! Loop through the list
+                  if (fl_item%bcontr%label_res == spin_inters(k)%name)
+     &            then
+                     ! Send off specific spin case to be summed and printed
+                     do j = 1, 4
+                        tmp_case(j) = spin_inters(k)%cases(j,i)
+                     end do
+                     call intermediate2_to_itf(fl_item%bcontr,itflog,
+     &                                      fl_item%command,tmp_case)
+                  end if
 
-         ! Loop over 6 possible spin cases
-         ! For each spin case of an intermediate, we want to loop though
-         ! the list and print out all the lines which contribute
+                  ! Move onto next item and repeat
+                  fl_item => fl_item%next 
 
-         do i = 1, spin_inters(1)%ncase
-            do ! Loop through the list
-               if (fl_item%bcontr%label_res == spin_inters(1)%name) then
-                  ! Send off specific spin case to be summed and printed
-                  do j = 1, 4
-                     tmp_case(j) = spin_inters(1)%cases(j,i)
-                  end do
-                  call intermediate2_to_itf(fl_item%bcontr,itflog,
-     &                               fl_item%command,tmp_case)
-               end if
-
-               ! Move onto next item and repeat
-               fl_item => fl_item%next 
-
-               if (associated(fl_item,res_start)) then
-                  write(itflog,*) "Finished one spin summed inter block"
-                  ! Go back to start and print out remaing spin cases +
-                  ! reapeat
-                  fl_item => inter_start
-                  exit
-               end if
+                  if (associated(fl_item,res_start)) then
+                     write(itflog,*) "Finished one spin inter block"
+                     ! Go back to start and print out remaing spin cases +
+                     ! reapeat
+                     fl_item => inter_start
+                     exit
+                  end if
+               end do
             end do
          end do
 
@@ -364,25 +367,24 @@
       end if
 
       ! Check if at the end of the list, if not, point to the next item
-      !if (.not.associated(fl_item%next)) exit
-      fl_item=>fl_item%next
+      fl_item => fl_item%next
 
       ! Count the number of terms
-      contr_no=contr_no+1
+      contr_no = contr_no+1
 
       ! Deallocated spin cases of an intermediate
-      if (inter%size /= 0 .and. .not.associated(fl_item%interm)) then
-         do i = 1, inter%size
-            deallocate(inter%interm(i)%spin_case)
-         end do
-         j = 1
-         inter%size = 0
-      end if
+      !if (inter%size /= 0 .and. .not.associated(fl_item%interm)) then
+      !   do i = 1, inter%size
+      !      deallocate(inter%interm(i)%spin_case)
+      !   end do
+      !   j = 1
+      !   inter%size = 0
+      !end if
 
       end do
 
 
-      deallocate(inter%interm)
-      deallocate(inter)
+      !deallocate(inter%interm)
+      !deallocate(inter)
 
       end
