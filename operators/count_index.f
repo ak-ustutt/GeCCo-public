@@ -175,7 +175,7 @@
       ! Explicit, x
       nops(4,1)=nops(4,1) + iocc(4,1)
 
-      ! Annhilation operators
+      ! Annhilation operators as above
       nops(1,2)=nops(1,2) + iocc(1,2)
       nops(2,2)=nops(2,2) + iocc(2,2)
       nops(3,2)=nops(3,2) + iocc(3,2)
@@ -661,14 +661,14 @@
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
       character(len=8) ::
-     &     c1='        ',    ! Workspace to assign index before array
-     &     c2='        ',
-     &     c3='        ',
-     &     c4='        ',
-     &     a1='        ',
-     &     a2='        ',
-     &     a3='        ',
-     &     a4='        '
+     &     c1,    ! Workspace to assign index before array
+     &     c2,
+     &     c3,
+     &     c4,
+     &     a1,
+     &     a2,
+     &     a3,
+     &     a4
       character(len=8), dimension(8) ::
       ! x_array(1:4) = creation operators (par/val/hol/f12)
       ! x_array(5:8) = annhilation operators (par/val/hol/f12)
@@ -689,20 +689,25 @@
       idx_type=(/ 0, 0, 0 /)
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
-              ! Use default convention for now
-              idx_type(1)=1
+              idx_type(1)=0
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=1
+              idx_type(2)=0
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=1
+              idx_type(3)=0
           end if
       end do
 
       c=0
       e1=0
       e2=0
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
 
       ! Get occuation info
       do i = 1, contr_info%n_cnt
@@ -798,42 +803,6 @@
       a2='        '
       a3='        '
 
-!      ! Permute indicies to get antisymm tensors
-!      if (item%permute==0) then
-!         ! No permutations
-!         do i=1, size(t1_array)
-!            t1_array(i)=e1_array(i)
-!            t2_array(i)=e2_array(i)
-!         end do
-!      else if (item%permute==1) then
-!         ! No permutations, but get a factor
-!         do i=1, size(t1_array)
-!            t1_array(i)=e1_array(i)
-!            t2_array(i)=e2_array(i)
-!         end do
-!      else if (item%permute==2) then
-!         ! Permute creations
-!         do i=1, size(t1_array)/2
-!            t1_array(i)=e2_array(i)
-!            t1_array(i+4)=e1_array(i+4)
-!            t2_array(i)=e1_array(i)
-!            t2_array(i+4)=e2_array(i+4)
-!         end do
-!      else if (item%permute==3) then
-!         ! Permute annhilations
-!         do i=1, size(t1_array)/2
-!            t1_array(i)=e1_array(i)
-!            t1_array(i+4)=e2_array(i+4)
-!            t2_array(i)=e2_array(i)
-!            t2_array(i+4)=e1_array(i+4)
-!         end do
-!      else if (item%permute==4) then
-!         ! Permute creations and annhilations
-!         do i=1, size(t1_array)
-!            t1_array(i)=e2_array(i)
-!            t2_array(i)=e1_array(i)
-!         end do
-!      end if
 
       ! Permute indicies to get antisymm tensors
       if (item%permute==0 .or. item%permute==1) then
@@ -896,13 +865,21 @@
       end do
       c_array(7)=a3
 
-      c1='        '
-      c2='        '
-      c3='        '
-      a1='        '
-      a2='        '
-      a3='        '
-
+      ! Check if K[ijab] -> K[abij]
+      e1 = 0
+      e2 = 0
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_op1(1:,1:,i),
+     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_op2(1:,1:,i),
+     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
 
       ! Construct final index strings
       ! Operator 1
@@ -917,42 +894,63 @@
      &          trimal(t1_array(6))//trimal(c_array(6))
       case default
       ! [apij] (aacc), ie. T[abij]
+      ! Creations first, annhilations second
+
+      if (e1(1,1)==e1(2,2)) then
+      item%idx1=trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))//
+     &          trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))
+      else
       item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
      &          trimal(t1_array(2))//trimal(c_array(2))//
      &          trimal(t1_array(3))//trimal(c_array(3))//
      &          trimal(t1_array(5))//trimal(c_array(5))//
      &          trimal(t1_array(6))//trimal(c_array(6))//
      &          trimal(t1_array(7))//trimal(c_array(7))
+      end if
       end select
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(3))//trimal(c_array(3))//
-     &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(6))//trimal(c_array(6))
+      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
+     &          trimal(t2_array(5))//trimal(c_array(1))//
+     &          trimal(t2_array(3))//trimal(c_array(7))//
+     &          trimal(t2_array(7))//trimal(c_array(3))//
+     &          trimal(t2_array(2))//trimal(c_array(6))//
+     &          trimal(t2_array(6))//trimal(c_array(2))
       case default
+
+      if (e2(1,1)==e2(2,2)) then
+      item%idx2=trimal(t2_array(5))//trimal(c_array(1))//
+     &          trimal(t2_array(6))//trimal(c_array(2))//
+     &          trimal(t2_array(7))//trimal(c_array(3))//
+     &          trimal(t2_array(1))//trimal(c_array(5))//
+     &          trimal(t2_array(2))//trimal(c_array(6))//
+     &          trimal(t2_array(3))//trimal(c_array(7))
+      else
       item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
      &          trimal(t2_array(2))//trimal(c_array(6))//
      &          trimal(t2_array(3))//trimal(c_array(7))//
      &          trimal(t2_array(5))//trimal(c_array(1))//
      &          trimal(t2_array(6))//trimal(c_array(2))//
      &          trimal(t2_array(7))//trimal(c_array(3))
+      end if
       end select
 
       ! Result
       select case(idx_type(3))
       case(ham)
-      item%idx3=trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(3))//trimal(c_array(3))//
-     &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(6))//trimal(c_array(6))
+      item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
+     &          trimal(e1_array(5))//trimal(e2_array(5))//
+     &          trimal(e1_array(3))//trimal(e2_array(3))//
+     &          trimal(e1_array(7))//trimal(e2_array(7))//
+     &          trimal(e1_array(2))//trimal(e2_array(2))//
+     &          trimal(e1_array(6))//trimal(e2_array(6))
       case default
       item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
      &          trimal(e1_array(2))//trimal(e2_array(2))//
