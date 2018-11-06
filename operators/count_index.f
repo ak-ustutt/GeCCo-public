@@ -689,10 +689,10 @@
       idx_type=(/ 0, 0, 0 /)
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
-              idx_type(1)=0
+              idx_type(1)=1
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
-              idx_type(2)=0
+              idx_type(2)=1
           end if
           if (contr_info%label_res.eq.trim(tensor_ham(i))) then
               idx_type(3)=0
@@ -865,38 +865,21 @@
       end do
       c_array(7)=a3
 
+
+      ! Construct final index strings
+      ! Operator 1
+      select case(idx_type(1))
+      case(ham)
       ! Check if K[ijab] -> K[abij]
       e1 = 0
-      e2 = 0
+      ! Hamiltonian/integral convention
       do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_op1(1:,1:,i),
      &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e1)
       end do
-      do i = 1, contr_info%nj_op2
-        call count_index(i,
-     &     contr_info%occ_op2(1:,1:,i),
-     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e2)
-      end do
-
-      ! Construct final index strings
-      ! Operator 1
-      select case(idx_type(1))
-      case(ham)
-      ! Hamiltonian/integral convention
-      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(3))//trimal(c_array(3))//
-     &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(6))//trimal(c_array(6))
-      case default
-      ! [apij] (aacc), ie. T[abij]
-      ! Creations first, annhilations second
-
-      if (e1(1,1)==e1(2,2)) then
+      if (e1(1,1)==2 .and. e1(2,2)==2) then
       item%idx1=trimal(t1_array(5))//trimal(c_array(5))//
      &          trimal(t1_array(6))//trimal(c_array(6))//
      &          trimal(t1_array(7))//trimal(c_array(7))//
@@ -911,21 +894,29 @@
      &          trimal(t1_array(6))//trimal(c_array(6))//
      &          trimal(t1_array(7))//trimal(c_array(7))
       end if
+      case default
+      ! [apij] (aacc), ie. T[abij]
+      ! Creations first, annhilations second
+      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
+     &          trimal(t1_array(2))//trimal(c_array(2))//
+     &          trimal(t1_array(3))//trimal(c_array(3))//
+     &          trimal(t1_array(5))//trimal(c_array(5))//
+     &          trimal(t1_array(6))//trimal(c_array(6))//
+     &          trimal(t1_array(7))//trimal(c_array(7))
       end select
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
-     &          trimal(t2_array(5))//trimal(c_array(1))//
-     &          trimal(t2_array(3))//trimal(c_array(7))//
-     &          trimal(t2_array(7))//trimal(c_array(3))//
-     &          trimal(t2_array(2))//trimal(c_array(6))//
-     &          trimal(t2_array(6))//trimal(c_array(2))
-      case default
-
-      if (e2(1,1)==e2(2,2)) then
+      e2 = 0
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_op2(1:,1:,i),
+     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
+      if (e2(1,1)==2 .and. e2(2,2)==2) then
       item%idx2=trimal(t2_array(5))//trimal(c_array(1))//
      &          trimal(t2_array(6))//trimal(c_array(2))//
      &          trimal(t2_array(7))//trimal(c_array(3))//
@@ -940,6 +931,13 @@
      &          trimal(t2_array(6))//trimal(c_array(2))//
      &          trimal(t2_array(7))//trimal(c_array(3))
       end if
+      case default
+      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
+     &          trimal(t2_array(2))//trimal(c_array(6))//
+     &          trimal(t2_array(3))//trimal(c_array(7))//
+     &          trimal(t2_array(5))//trimal(c_array(1))//
+     &          trimal(t2_array(6))//trimal(c_array(2))//
+     &          trimal(t2_array(7))//trimal(c_array(3))
       end select
 
       ! Result
