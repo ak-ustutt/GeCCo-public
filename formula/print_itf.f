@@ -50,83 +50,36 @@
 
       type(formula_item), pointer ::
      &     fl_item,   ! Current formula_item
-     &     inter_start,
-     &     res_start,
-     &     summed_inter
+     &     inter_start,    ! Mark start of intermediate search
+     &     res_start,      ! Mark end of intermediate search
+     &     summed_inter    ! Mark intermediate points in intermediate search
       type(spin_cases), dimension(4) ::
      &     spin_inters  ! Array of intermeidates with associated spin cases
-      type(itf_intermediate), pointer ::
-     &     inter
-      type(itf_intermediate_spin), pointer ::
-     &     spin
       integer ::
      &     i,j,k,     ! Loop indcies
      &     contr_no  ! Counter of contrations
       logical ::
-     &     check_inter,
-     &     more_inter,
-     &     finished_inter
+     &     check_inter,    ! Need to use itf module instead
+     &     more_inter,     ! Check if more intermediates are needed
+     &     finished_inter  ! Check if finished recursive intermediate search
       integer ::
      &     tmp_case(4),
-     &     ninter
+     &     ninter       ! Number of intermediates found in recursive search
 
       ! Point to start of linked list
       fl_item => fl_head
       contr_no = 0
 
-      !nullify(inter_head)
-      !allocate(inter_head)
-      !inter_head%val=0
-
-      !tmp_inter => inter_head
-      !i = 1
-      !do j=0, 4
-      !   write(itflog,*) "Value: ", tmp_inter%val
-      !   allocate(inter_next)
-      !   inter_next%val = i
-      !   tmp_inter%next_inter=>inter_next
-      !   i = i + 1
-      !   tmp_inter = inter_next
-      !end do
-      !deallocate(inter_head)
-
-      !allocate(inter)
-      !allocate(inter%interm(20))
-      !inter%size=0
-      !j=1
-      
-
-
 
       ! Loop over formula_items, end of the list points to NULL
-      ! TODO: get rid of possible infinite loops!
       do while (associated(fl_item%next))
-
       
+      ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
-!         ! if fl_item%interm == true, then the next item in the list
-!         ! will be the intermediate contraction; so move to the next
-!         ! item in the list
-!         if (.not.associated(fl_item%next)) exit
-!         fl_item=>fl_item%next
-!
-!         allocate(inter%interm(j)%spin_case(6))
-!         inter%size = j
-!         j = j + 1
-!         ! Set up index of intermediate
-!         ! Spin summ for all cases and store results
-!         ! continue until we hit the next result
-!         ! Then assign index and spin sume result
-!         ! See which interemdiates are needed
-!         ! Then print the interediates, then the result
-!         ! dellocate inter%interm array
-!         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
-!     &                            inter%interm(j))
 
-
-         ! New idea, recursive search back along the list
+         ! Recursive search back along the list.
          ! Mark point where intermediates start
-         write(itflog,*) "Starting intermediate search"
+!         write(itflog,*) "Starting intermediate search"
          if (.not.associated(fl_item%next)) exit
          inter_start => fl_item%next
 
@@ -138,19 +91,19 @@
 
             if(associated(fl_item%interm)) cycle
             if(.not.associated(fl_item%next)) then
-               write(itflog,*) "ERROR: intermediate was declared, but
-     &                          not used!"
+!               write(itflog,*) "ERROR: intermediate was declared, but
+!     &                          not used!"
                exit
             end if
             if(scan(fl_item%bcontr%label_res, "STIN")==0) then
-               write(itflog,*) "Found next result"
+!               write(itflog,*) "Found next result"
                res_start => fl_item
                exit
             end if
 
          end do
 
-         write(itflog,*) "res_start ", res_start%bcontr%label_res
+!         write(itflog,*) "res_start ", res_start%bcontr%label_res
 
          ! We want to build an array of intermediate names and their
          ! various spin cases here
@@ -160,10 +113,10 @@
          call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
      &                            spin_inters, ninter)
 
-         do i = 1, ninter
-            write(itflog,*) "spin_cases: ", spin_inters(ninter)%cases
-            write(itflog,*) "name: ", spin_inters(ninter)%name
-         end do
+!         do i = 1, ninter
+!            write(itflog,*) "spin_cases: ", spin_inters(ninter)%cases
+!            write(itflog,*) "name: ", spin_inters(ninter)%name
+!         end do
 
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
@@ -222,7 +175,7 @@
 
             ! Check we haven't reached the residual result
             if (associated(fl_item,res_start)) then
-               write(itflog,*) "Found the end"
+!               write(itflog,*) "Found the end"
                fl_item => res_start
                finished_inter = .true.
             end if
@@ -257,7 +210,7 @@
                   fl_item => fl_item%next 
 
                   if (associated(fl_item,res_start)) then
-                     write(itflog,*) "Finished one spin inter block"
+!                     write(itflog,*) "Finished one spin inter block"
                      ! Go back to start and print out remaing spin cases +
                      ! reapeat
                      fl_item => inter_start
@@ -273,11 +226,11 @@
          call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
 
 
+         ! Not needed for now, but maybe in the future:
          ! Check if next residual needs intermdiates and which spin
          ! cases are needed.
          ! Exit if next resdiual is different or a new intermediate is
-         ! declared
-
+         ! declared. 
 
       else
          ! Not an intermediate, so select the correct command case
@@ -372,19 +325,7 @@
       ! Count the number of terms
       contr_no = contr_no+1
 
-      ! Deallocated spin cases of an intermediate
-      !if (inter%size /= 0 .and. .not.associated(fl_item%interm)) then
-      !   do i = 1, inter%size
-      !      deallocate(inter%interm(i)%spin_case)
-      !   end do
-      !   j = 1
-      !   inter%size = 0
-      !end if
-
       end do
 
-
-      !deallocate(inter%interm)
-      !deallocate(inter)
-
+      return
       end

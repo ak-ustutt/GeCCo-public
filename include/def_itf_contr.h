@@ -2,13 +2,15 @@
      &     index_len = 8        ! Length of index string
 
       type spin_cases
+      ! Hold information about a tensor and the spin summed cases which need to be
+      ! printed
 
       character(len=maxlen_bc_label) ::
-     &     name    
+     &     name                 ! Name of tensor    
       integer, dimension(4,6) ::
-     &     cases                ! matrix containing possible spin cases each row is a different case
+     &     cases                ! Matrix containing possible spin cases each row is a different case
       integer ::
-     &     ncase = 0
+     &     ncase = 0            ! Number of different spin cases
 
       end type spin_cases
 
@@ -42,46 +44,10 @@
      &     spin_case(4) ! Spin case of result, ie. [1111] = all alpha
 
       type(spin_cases), pointer ::
-     &     inter_spins(:) => null()
+     &     inter_spins(:) => null()     ! Array of intermediates + spin cases
       integer ::
-     &     ninter = 0
+     &     ninter = 0                   ! Number of intermediates used in a contraction
       logical ::
-     &     print_line = .true.
+     &     print_line = .true.          ! Should this line be printed
 
       end type itf_contr
-
-
-
-
-
-
-      ! TODO: Get rid of below...
-
-      type itf_spin_parts
-
-      type(itf_contr), pointer ::
-     &     spin_parts(:) => null()
-
-      end type itf_spin_parts
-
-
-      type itf_intermediate_spin
-      ! Container of possible spin cases of intermediates used in an itf_contr
-
-      type(itf_spin_parts), pointer ::
-     &     spin_case(:) => null()               ! Spin summed binary contraction
-      character(len=maxlen_bc_label) ::
-     &     name                         ! Name of intermediate
-
-      end type itf_intermediate_spin
-
-
-      type itf_intermediate
-      ! Container of intermediates used in an itf_contr, ie. I1, I2, I3...
-
-      type(itf_intermediate_spin), pointer ::
-     &     interm(:) => null()             ! Array of spin summed cases of a specific intermediate
-      integer ::
-     &     size
-
-      end type itf_intermediate

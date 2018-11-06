@@ -1743,7 +1743,7 @@
 !     &            item%inter_spins(1)%cases(i,shift)
 !               end do
 
-               write(item%logfile,*) "Name: ", item%inter_spins(1)%name
+!               write(item%logfile,*) "Name: ", item%inter_spins(1)%name
                ! Update number of spin cases for each different
                ! intermediate
                do i = 1, ishift
