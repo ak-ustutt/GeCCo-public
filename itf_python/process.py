@@ -324,7 +324,11 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
 
 
 def rename_integrals(line):
-    # Rename K -> J and permute indicies
+    # Rename K -> J and permute indicies to [eecc]
+    # Molpro stores integrals in two sets of arrays: K and J. Not to be confused with the exchange
+    # and Coulomb integrals of HF theory; there is no relationship.
+    # For integrals like K_{ak}^{ic} = K_{ac}^{ik}, these are store on the K arrays.
+    # For integrals K_{ka}^{ic}, these are store on the J arrays.
 
     words = line.split()
     for i in range(0, len(words)):
