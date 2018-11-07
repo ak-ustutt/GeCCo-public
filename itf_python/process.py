@@ -324,6 +324,7 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
 
 
 def rename_integrals(line):
+    # Rename K -> J and permute indicies
 
     words = line.split()
     for i in range(0, len(words)):
@@ -420,6 +421,7 @@ for line_o in f:
     # but also change name to J[eecc]
     if ("K:ceec" in line or "K:ecec" in line):
         line = rename_integrals(line)
+        words=line.split()
 
     # Check for spin summed block
     if (words[0]=='BEGIN'):
@@ -694,14 +696,15 @@ declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
     if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
-        or "Dm" in declare_ten[i]): continue
+        or "Dm" in declare_ten[i] or "J:" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
         print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
 
 # Print already existing tensor, ie. don't need !Create{type:disk}
-declare_existing_tensors(declare_ten, "Integral tensors", "K")
+declare_existing_tensors(declare_ten, "K-integral tensors", "K")
+declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
