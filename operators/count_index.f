@@ -876,11 +876,13 @@
      &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
      &        contr_info%ngas,contr_info%nspin,e1)
          end do
+
          if (e1(1,1)==2 .and. e1(2,2)==2) then
             conv = (/ 5, 6, 7, 1, 2, 3 /)
          else
             conv = (/ 3, 1, 2, 5, 6, 7 /)
          end if
+
       case default
          conv = (/ 1, 2, 3, 5, 6, 7 /)
       end select
@@ -897,6 +899,7 @@
      &        contr_info%rst_op2(1:,1:,1:,1:,1:,i),
      &        contr_info%ngas,contr_info%nspin,e2)
          end do
+
          if (e2(1,1)==2 .and. e2(2,2)==2) then
             conv =  (/ 5, 6, 7, 1, 2, 3 /)
             conv2 = (/ 1, 2, 3, 5, 6, 7 /)
@@ -904,6 +907,7 @@
             conv =  (/ 3, 1, 2, 5, 6, 7 /)
             conv2 = (/ 5, 6, 7, 3, 1, 2 /)
          end if
+
       case default
          conv =  (/ 1, 2, 3, 5, 6, 7 /)
          conv2 = (/ 5, 6, 7, 1, 2, 3 /)
