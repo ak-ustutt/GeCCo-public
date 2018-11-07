@@ -661,14 +661,8 @@
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
       character(len=8) ::
-     &     c1,    ! Workspace to assign index before array
-     &     c2,
-     &     c3,
-     &     c4,
-     &     a1,
-     &     a2,
-     &     a3,
-     &     a4
+     &     c1, c2, c3, c4,  ! Workspace
+     &     a1, a2, a3, a4
       character(len=8), dimension(8) ::
       ! x_array(1:4) = creation operators (par/val/hol/f12)
       ! x_array(5:8) = annhilation operators (par/val/hol/f12)
@@ -677,25 +671,24 @@
      &     e2_array,    ! External index of operator 2 array
      &     t1_array,
      &     t2_array
-      integer, dimension(3) ::
+      integer, dimension(2) ::
      &     idx_type     ! Info about index convention
       integer, parameter ::
      &     t_amp = 0,       ! [apij] (aacc)
      &     ham   = 1        ! [abip]
       character(len=20), dimension(4) ::
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
+      integer ::
+     &     conv(6), conv2(6)  ! Index convention arrays
 
       ! Set index convention
-      idx_type=(/ 0, 0, 0 /)
+      idx_type=(/ 0, 0 /)
       do i=1, len(tensor_ham)
           if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
               idx_type(1)=1
           end if
           if (contr_info%label_op2.eq.trim(tensor_ham(i))) then
               idx_type(2)=1
-          end if
-          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=0
           end if
       end do
 
@@ -866,110 +859,66 @@
       c_array(7)=a3
 
 
-      ! Construct final index strings
+      ! Construct final index strings. For different tensors, there are
+      ! different orders in which to place the operators. We pick out
+      ! these cases and set a conv(ention) array to give the order.
+      ! Order of letters in x_array: a, p, i, x
+
       ! Operator 1
       select case(idx_type(1))
       case(ham)
-      ! Check if K[ijab] -> K[abij]
-      e1 = 0
-      ! Hamiltonian/integral convention
-      do i = 1, contr_info%nj_op1
-        call count_index(i,
-     &     contr_info%occ_op1(1:,1:,i),
-     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      if (e1(1,1)==2 .and. e1(2,2)==2) then
-      item%idx1=trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
-     &          trimal(t1_array(7))//trimal(c_array(7))//
-     &          trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))
-      else
-      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))//
-     &          trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
-     &          trimal(t1_array(7))//trimal(c_array(7))
-      end if
+         ! Hamiltonian/integral convention
+         ! Check if K[ijab] -> K[abij]
+         e1 = 0
+         do i = 1, contr_info%nj_op1
+           call count_index(i,
+     &        contr_info%occ_op1(1:,1:,i),
+     &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,e1)
+         end do
+         if (e1(1,1)==2 .and. e1(2,2)==2) then
+            conv = (/ 5, 6, 7, 1, 2, 3 /)
+         else
+            conv = (/ 3, 1, 2, 5, 6, 7 /)
+         end if
       case default
-      ! [apij] (aacc), ie. T[abij]
-      ! Creations first, annhilations second
-      item%idx1=trimal(t1_array(1))//trimal(c_array(1))//
-     &          trimal(t1_array(2))//trimal(c_array(2))//
-     &          trimal(t1_array(3))//trimal(c_array(3))//
-     &          trimal(t1_array(5))//trimal(c_array(5))//
-     &          trimal(t1_array(6))//trimal(c_array(6))//
-     &          trimal(t1_array(7))//trimal(c_array(7))
+         conv = (/ 1, 2, 3, 5, 6, 7 /)
       end select
+      call index_convention(t1_array,c_array,item%idx1,conv,conv)
 
       ! Operator 2
       ! c_array annhilations correspond to t2 creations and vice versa
       select case(idx_type(2))
       case(ham)
-      e2 = 0
-      do i = 1, contr_info%nj_op2
-        call count_index(i,
-     &     contr_info%occ_op2(1:,1:,i),
-     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e2)
-      end do
-      if (e2(1,1)==2 .and. e2(2,2)==2) then
-      item%idx2=trimal(t2_array(5))//trimal(c_array(1))//
-     &          trimal(t2_array(6))//trimal(c_array(2))//
-     &          trimal(t2_array(7))//trimal(c_array(3))//
-     &          trimal(t2_array(1))//trimal(c_array(5))//
-     &          trimal(t2_array(2))//trimal(c_array(6))//
-     &          trimal(t2_array(3))//trimal(c_array(7))
-      else
-      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
-     &          trimal(t2_array(2))//trimal(c_array(6))//
-     &          trimal(t2_array(3))//trimal(c_array(7))//
-     &          trimal(t2_array(5))//trimal(c_array(1))//
-     &          trimal(t2_array(6))//trimal(c_array(2))//
-     &          trimal(t2_array(7))//trimal(c_array(3))
-      end if
+         e2 = 0
+         do i = 1, contr_info%nj_op2
+           call count_index(i,
+     &        contr_info%occ_op2(1:,1:,i),
+     &        contr_info%rst_op2(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,e2)
+         end do
+         if (e2(1,1)==2 .and. e2(2,2)==2) then
+            conv =  (/ 5, 6, 7, 1, 2, 3 /)
+            conv2 = (/ 1, 2, 3, 5, 6, 7 /)
+         else
+            conv =  (/ 3, 1, 2, 5, 6, 7 /)
+            conv2 = (/ 5, 6, 7, 3, 1, 2 /)
+         end if
       case default
-      item%idx2=trimal(t2_array(1))//trimal(c_array(5))//
-     &          trimal(t2_array(2))//trimal(c_array(6))//
-     &          trimal(t2_array(3))//trimal(c_array(7))//
-     &          trimal(t2_array(5))//trimal(c_array(1))//
-     &          trimal(t2_array(6))//trimal(c_array(2))//
-     &          trimal(t2_array(7))//trimal(c_array(3))
+         conv =  (/ 1, 2, 3, 5, 6, 7 /)
+         conv2 = (/ 5, 6, 7, 1, 2, 3 /)
       end select
+      call index_convention(t2_array,c_array,item%idx2,conv,conv2)
 
       ! Result
-      select case(idx_type(3))
-      case(ham)
-      item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
-     &          trimal(e1_array(5))//trimal(e2_array(5))//
-     &          trimal(e1_array(3))//trimal(e2_array(3))//
-     &          trimal(e1_array(7))//trimal(e2_array(7))//
-     &          trimal(e1_array(2))//trimal(e2_array(2))//
-     &          trimal(e1_array(6))//trimal(e2_array(6))
-      case default
-      item%idx3=trimal(e1_array(1))//trimal(e2_array(1))//
-     &          trimal(e1_array(2))//trimal(e2_array(2))//
-     &          trimal(e1_array(3))//trimal(e2_array(3))//
-     &          trimal(e1_array(5))//trimal(e2_array(5))//
-     &          trimal(e1_array(6))//trimal(e2_array(6))//
-     &          trimal(e1_array(7))//trimal(e2_array(7))
-      end select
-
-!      call index_convention(t1_array,c_array,idx_type(1),
-!     &                      item%idx1,.true.,.true.)
-!      call index_convention(t2_array,c_array,idx_type(2),
-!     &                      item%idx2,.true.,.false.)
-!      call index_convention(e1_array,e2_array,idx_type(3),
-!     &                      item%idx3,.true.,.true.)
+      conv = (/ 1, 2, 3, 5, 6, 7 /)
+      call index_convention(e1_array,e2_array,item%idx3,conv,conv)
 
       return
       end
 
 *----------------------------------------------------------------------*
-      subroutine index_convention(arr1,arr2,ttype,item_idx,t1,t2)
+      subroutine index_convention(arr1,arr2,item_idx,conv,conv2)
 *----------------------------------------------------------------------*
 !     Arrange index letters into correct order according to convention 
 *----------------------------------------------------------------------*
@@ -981,51 +930,20 @@
       include 'def_itf_contr.h'
 
       character(len=8), dimension(8), intent(in) ::
-     &     arr1,     ! Contraction index array
+     &     arr1,        ! Index array
      &     arr2
       integer, intent(in) ::
-     &     ttype    ! Info about index convention
-      logical, intent(in) ::
-     &     t1, t2
+     &     conv(6),
+     &     conv2(6)     ! TODO: Make this optional? Could get it to work...
       character(len=index_len), intent(inout) ::
      &     item_idx
 
-      integer, parameter ::
-     &     t_amp = 0,       ! [apij] (aacc)
-     &     ham   = 1        ! [abip]
-      integer, dimension(6) ::
-     &     a1 = (/ 1, 2, 3, 5, 6, 7 /),
-     &     a2 = (/ 5, 6, 7, 1, 2, 3 /),
-     &     num
-
-      if (t1) then
-         num = t1
-      else
-         num = t2
-      end if
-
-      if (t2) then
-         num = t1
-      else
-         num = t2
-      end if
-
-      select case(ttype)
-      case(ham)
-      item_idx=trimal(arr1(num(4)))//trimal(arr2(num(4)))//
-     &         trimal(arr1(num(5)))//trimal(arr2(num(5)))//
-     &         trimal(arr1(num(6)))//trimal(arr2(num(6)))//
-     &         trimal(arr1(num(1)))//trimal(arr2(num(1)))//
-     &         trimal(arr1(num(2)))//trimal(arr2(num(2)))//
-     &         trimal(arr1(num(3)))//trimal(arr2(num(3)))
-      case default
-      item_idx=trimal(arr1(num(1)))//trimal(arr2(num(1)))//
-     &         trimal(arr1(num(2)))//trimal(arr2(num(2)))//
-     &         trimal(arr1(num(3)))//trimal(arr2(num(3)))//
-     &         trimal(arr1(num(4)))//trimal(arr2(num(4)))//
-     &         trimal(arr1(num(5)))//trimal(arr2(num(5)))//
-     &         trimal(arr1(num(6)))//trimal(arr2(num(6)))
-      end select
+      item_idx=trimal(arr1(conv(1)))//trimal(arr2(conv2(1)))//
+     &         trimal(arr1(conv(2)))//trimal(arr2(conv2(2)))//
+     &         trimal(arr1(conv(3)))//trimal(arr2(conv2(3)))//
+     &         trimal(arr1(conv(4)))//trimal(arr2(conv2(4)))//
+     &         trimal(arr1(conv(5)))//trimal(arr2(conv2(5)))//
+     &         trimal(arr1(conv(6)))//trimal(arr2(conv2(6)))
 
       return
       end

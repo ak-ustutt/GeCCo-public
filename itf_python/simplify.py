@@ -82,5 +82,9 @@ for line in f1:
 
     old_line = line
 
+# Print the last reamining line of the file
+print(old_line, end="", flush=True, file=f2)
+
+# Clsoe the files
 f1.close()
 f2.close()
