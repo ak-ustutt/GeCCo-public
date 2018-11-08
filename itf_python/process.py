@@ -33,47 +33,47 @@ class itf_line:
 
 def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
+    # Loop over previously stored lines
     for i in range(0, len(prev_lines)):
-        inter_words=prev_lines[i].split()
-
-        if len(inter_words)==3:
-            if "TIN" not in inter_words[2]:
-                load_ten="load " + inter_words[2].split('*',1)[-1]
-
-                print(load_ten.strip(), file=out)
-
-            print(prev_lines[i].strip(), file=out)
-
-            if "TIN" not in inter_words[2]:
-                drop_ten="drop " + inter_words[2].split('*',1)[-1]
-
-                print(drop_ten.strip(), file=out)
-
-        else:
-            if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
-                load_ten="load "
-                if "TIN" not in inter_words[2]:
-                    load_ten=load_ten + inter_words[2].split('*',1)[-1]
-                if "TIN" not in inter_words[2] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1] and "TIN" not in inter_words[3]:
-                    load_ten=load_ten + ", "
-                if "TIN" not in inter_words[3] and inter_words[3].split('*',1)[-1] != inter_words[2].split('*',1)[-1]:
-                    # Do not load if an intermediate or if the same as previous loaded tensor
-                    load_ten=load_ten + inter_words[3].split('*',1)[-1]
-
-                print(load_ten.strip(), file=out)
-
-            print(prev_lines[i].strip(), file=out)
-
-            if "TIN" not in inter_words[2] or "TIN" not in inter_words[3]:
-                drop_ten="drop "
-                if "TIN" not in inter_words[3]:
-                    drop_ten=drop_ten + inter_words[3].split('*',1)[-1]
-                if "TIN" not in inter_words[3] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1] and "TIN" not in inter_words[2]:
-                    drop_ten=drop_ten + ", "
-                if "TIN" not in inter_words[2] and inter_words[2].split('*',1)[-1] != inter_words[3].split('*',1)[-1]:
-                    drop_ten=drop_ten + inter_words[2].split('*',1)[-1]
-
-                print(drop_ten.strip(), file=out)
+        print_result(prev_lines[i])
+#        inter_words=prev_lines[i].split()
+#
+#        if len(inter_words)==3:
+#            if "TIN" not in inter_words[2]:
+#                load_ten="load " + inter_words[2].split('*',1)[-1]
+#
+#                print(load_ten.strip(), file=out)
+#
+#            print(prev_lines[i].strip(), file=out)
+#
+#            # Drop tensors
+#            print_drop_tensors(load_ten)
+#
+#        else:
+#            t1 = inter_words[2].split('*',1)[-1]
+#            t2 = inter_words[3].split('*',1)[-1]
+#
+#            inter1 = False
+#            inter2 = False
+#            # True if not an intermediate
+#            if "TIN" not in inter_words[2]: inter1 = True
+#            if "TIN" not in inter_words[3]: inter2 = True
+#
+#            
+#            if inter1 or inter2:
+#                load_ten="load "
+#                if inter1:
+#                    load_ten=load_ten + t1
+#                if inter1 and t1 != t2 and inter2:
+#                    load_ten=load_ten + ", "
+#                if inter2 and t1 != t2:
+#                    load_ten=load_ten + t2
+#
+#                print(load_ten.strip(), file=out)
+#
+#            print(prev_lines[i].strip(), file=out)
+#
+#            print_drop_tensors(load_ten)
 
 
 def change_line_names(name, line, words):
@@ -114,8 +114,6 @@ def print_drop_tensors(load_tensors):
 def print_result(line):
     # Load, contract, drop tensors involved with result tensors
 
-    # Change tensor names within the line
-    #line = change_line(line_o) 
     words=line.split()
 
     # Load tensors, cases depend on how many tensors are on the right
@@ -135,14 +133,24 @@ def print_result(line):
 
     elif len(words)==4:
 
-        if "TIN" not in words[2] or "TIN" not in words[3]:
-            load_ten="load "
-            if "TIN" not in words[2]:
-                load_ten=load_ten + words[2].split('*',1)[-1]
-            if "TIN" not in words[2] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1] and "TIN" not in words[3]:
-                load_ten=load_ten + ", "
-            if "TIN" not in words[3] and words[2].split('*',1)[-1] != words[3].split('*',1)[-1]:
-                load_ten=load_ten + words[3].split('*',1)[-1]
+        # Normal binary tensor contraction
+        t1=words[2].split('*',1)[-1]
+        t2=words[3].split('*',1)[-1]
+
+        inter1 = False
+        inter2 = False
+        # True if not an intermediate
+        if "TIN" not in words[2]: inter1 = True
+        if "TIN" not in words[3]: inter2 = True
+
+        if inter1 or inter2:
+            load_ten = "load "
+            if inter1:
+                load_ten = load_ten + t1
+            if inter1 and t1 != t2 and inter2:
+                load_ten = load_ten + ", "
+            if inter2 and t1 != t2:
+                load_ten = load_ten + t2
 
             print(load_ten.strip(), file=out)
 
@@ -161,25 +169,35 @@ def print_result(line):
                 t2=words[4].split('*',1)[-1].replace(')','')
                 t3=words[5].split('*',1)[-1]
 
+                inter1 = False
+                inter2 = False
+                inter3 = False
+                # True if not an intermediate
+                if "TIN" not in words[2]: inter1 = True
+                if "TIN" not in words[4]: inter2 = True
+                if "TIN" not in words[5]: inter3 = True
+
+                gen1 = generic_index(words[2])
+                gen2 = generic_index(words[4])
+
                 # Brackets for first tensor
-                # Better way to do this???
-                if "TIN" not in t1:
+                if inter1:
                     load_ten=load_ten + t1
-                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
+                if inter1 and t1 != t2 and inter2:
                     # Need to compare generic index as well
-                    if generic_index(words[2])!=generic_index(words[4]):
+                    if gen1 != gen2:
                         load_ten=load_ten + ", "
-                    elif generic_index(words[2])==generic_index(words[4]) and t1.split(':',1)[0] != t2.split(':',1)[0]:
+                    elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+                        # Tensors have the same generic index, but different names (K and J integrals)
                         load_ten=load_ten + ", "
-                if "TIN" not in t2 and t1 != t2:
-                    if generic_index(words[2])!=generic_index(words[4]):
+                if inter2 and t1 != t2:
+                    if gen1 != gen2:
                         load_ten=load_ten + t2
-                    elif generic_index(words[2])==generic_index(words[4]) and t1.split(':',1)[0] != t2.split(':',1)[0]:
+                    elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
                         load_ten=load_ten + t2
-                if "TIN" not in t2 and t2 != t3 and \
-                   "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
+                if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
                     load_ten=load_ten + ", "
-                if "TIN" not in t3 and t2 != t3 and t1 != t3:
+                if inter3 and t2 != t3 and t1 != t3:
                     load_ten=load_ten + t3
 
             elif '(' in words[3]:
@@ -187,25 +205,33 @@ def print_result(line):
                 t2=words[3].split('*',1)[-1].replace('(','')
                 t3=words[5].split('*',1)[-1].replace(')','')
 
+                inter1 = False
+                inter2 = False
+                inter3 = False
+                # True if not an intermediate
+                if "TIN" not in words[2]: inter1 = True
+                if "TIN" not in words[3]: inter2 = True
+                if "TIN" not in words[5]: inter3 = True
+
+                gen1 = generic_index(words[2])
+                gen2 = generic_index(words[3])
+
                 # Brackets for second tensor
-                # Better way to do this???
-                if "TIN" not in t1:
+                if inter1:
                     load_ten=load_ten + t1
-                if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
+                if inter1 and t1 != t2 and inter2:
                     load_ten=load_ten + ", "
-                if "TIN" not in t2 and t1 != t2:
+                if inter2 and t1 != t2:
                     load_ten=load_ten + t2
-                if "TIN" not in t2 and t2 != t3 and \
-                   t1 != t3 and "TIN" not in t3:
-                    # Need to compare generic index
-                    if generic_index(words[3])!=generic_index(words[5]):
+                if inter2 and t2 != t3 and t1 != t3 and inter3:
+                    if gen1 != gen2:
                         load_ten=load_ten + ", "
-                    elif generic_index(words[3])==generic_index(words[5]) and t2.split(':',1)[0] != t3.split(':',1)[0]:
+                    elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
                         load_ten=load_ten + ", "
-                if "TIN" not in t3 and t2 != t3 and t1 != t3:
-                    if generic_index(words[3])!=generic_index(words[5]):
+                if inter3 and t2 != t3 and t1 != t3:
+                    if gen1 != gen2:
                         load_ten=load_ten + t3
-                    elif generic_index(words[3])==generic_index(words[5]) and t2.split(':',1)[0] != t3.split(':',1)[0]:
+                    elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
                         load_ten=load_ten + t3
             else:
                 print("Error in bracket determination")
@@ -227,29 +253,49 @@ def print_result(line):
             t3=words[5].split('*',1)[-1].replace('(','')
             t4=words[7].split('*',1)[-1].replace(')','')
 
+            gen1 = generic_index(words[2])
+            gen2 = generic_index(words[4])
+            gen3 = generic_index(words[5])
+            gen4 = generic_index(words[7])
+
+            inter1 = False
+            inter2 = False
+            inter3 = False
+            inter4 = False
+            # True if not an intermediate
+            if "TIN" not in words[2]: inter1 = True
+            if "TIN" not in words[4]: inter2 = True
+            if "TIN" not in words[5]: inter3 = True
+            if "TIN" not in words[7]: inter4 = True
+
             load_ten="load "
 
-            if "TIN" not in t1:
+            if inter1:
                 load_ten=load_ten + t1
-            if "TIN" not in t1 and t1 != t2 and "TIN" not in t2:
+            if inter1 and t1 != t2 and inter2:
                 # Need to compare generic index as well
-                if generic_index(words[2])!=generic_index(words[4]):
+                if gen1 != gen2:
                     load_ten=load_ten + ", "
-            if "TIN" not in t2 and t1 != t2:
-                if generic_index(words[2])!=generic_index(words[4]):
+                elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+                    load_ten=load_ten + ", "
+            if inter2 and t1 != t2:
+                if gen1 != gen2:
                     load_ten=load_ten + t2
-            if "TIN" not in t2 and t2 != t3 and \
-               "TIN" not in t1 and t1 != t3 and "TIN" not in t3:
+                elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+                    load_ten=load_ten + t2
+            if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
                 load_ten=load_ten + ", "
-            if "TIN" not in t3 and t2 != t3 and t1 != t3:
+            if inter3 and t2 != t3 and t1 != t3:
                 load_ten=load_ten + t3
-            if "TIN" not in t1 and "TIN" not in t2 and "TIN" not in t3 and "TIN" not in t4 and \
-               t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(words[5])!=generic_index(words[7]):
+            if inter1 and inter2 and inter3 and inter4 and t1 != t4 and t2 != t4 and t3 != t4:
+                if gen3 != gen4:
                     load_ten=load_ten + ", "
-            if "TIN" not in t4 and \
-               t1 != t4 and t2 != t4 and t3 != t4:
-                if generic_index(words[5])!=generic_index(words[7]):
+                elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
+                    load_ten=load_ten + ", "
+            if inter4 and t1 != t4 and t2 != t4 and t3 != t4:
+                if gen3 != gen4:
+                    load_ten=load_ten + t4
+                elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
                     load_ten=load_ten + t4
 
             print(load_ten.strip(), file=out)
