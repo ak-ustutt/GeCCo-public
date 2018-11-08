@@ -137,12 +137,13 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=100), intent(in) ::
+      character(len=100), intent(inout) ::
      &     error 
       type(itf_contr), intent(in) ::
      &     item
 
-      write(item%logfile,*) "ERROR: "//error
+      write(item%logfile,*) "ERROR: ", trim(error)
+      write(item%logfile,*)
       write(item%logfile,*) "Result: ", item%label_res, item%idx3
       write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
       write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
@@ -297,12 +298,13 @@
       itf_item%print_line = .true.
 
       if (itf_item%ninter == 0) call line_error("Couldn't find
-     &                              intermediate", itf_item)
+     & intermediate", itf_item)
 
 
       ! Copy information back to array in print_itf()
       do i = 1, itf_item%ninter
          spin_inters(i+n_inter)=itf_item%inter_spins(i)
+!         write(itf_item%logfile,*) "INER SPIN: ",itf_item%inter_spins(i)
       end do
 
       ! Overall number of intermediates used to index spin_inters
@@ -353,15 +355,19 @@
       ! Change intermediate name to reflect spin case
       j = 1
       spin_name = ''
-      do i=1, 4
-         if (spin_case(i) == 1) then
+
+      do i = 1, size(spin_case)
+         if (spin_case(i)==1) then
             spin_name(j:j) = 'a'
             j = j + 1
-         else if (spin_case(i) == 2) then
+         else if (spin_case(i)==2) then
             spin_name(j:j) = 'b'
             j = j + 1
          end if
       end do
+
+!      write(itf_item%logfile,*) "NAME: ", spin_name
+!      write(itf_item%logfile,*) "NAME: ", spin_case
 
       itf_item%label_res = trim(itf_item%label_res)//trim(spin_name)
       call assign_spin(itf_item)
@@ -1608,6 +1614,9 @@
                item%inter2 = spin_name
             end if
 
+!            write(item%logfile,*) "SPIN1: ", item%inter1
+!            write(item%logfile,*) "SPIN2: ", item%inter2
+
             ! Check if we have to deal with intermediates
             ! TODO: what if there are two intermediates on one line??
             if (associated(item%inter_spins)) then
@@ -1650,13 +1659,13 @@
                   if (item%swapped) then
                      ! t1 and t2 were swapped in summation
                      do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
                      end do
                   else 
                      do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
+                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
+                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
                      end do
                   end if
                end if
@@ -1811,6 +1820,9 @@
          call itf_rank(itf_item%idx2,itf_item%rank2)
       end if
       call itf_rank(itf_item%idx3,itf_item%rank3)
+
+      itf_item%inter1 = '        '
+      itf_item%inter2 = '        '
 
       return
       end

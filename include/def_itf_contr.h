@@ -8,7 +8,7 @@
       character(len=maxlen_bc_label) ::
      &     name                 ! Name of tensor    
       integer, dimension(4,6) ::
-     &     cases                ! Matrix containing possible spin cases each row is a different case
+     &     cases = 0                ! Matrix containing possible spin cases each row is a different case
       integer ::
      &     ncase = 0            ! Number of different spin cases
 
@@ -26,8 +26,8 @@
      &     idx1,                ! First tensor index string
      &     idx2,                ! Second tensor index string
      &     idx3,                ! Result tensor index string
-     &     inter1,                ! Result tensor index string
-     &     inter2                 ! Result tensor index string
+     &     inter1,              ! Result tensor index string
+     &     inter2               ! Result tensor index string
       integer ::
      &     rank1,               ! Rank of first tensor
      &     rank2,               ! Rank of second tensor

@@ -77,6 +77,24 @@
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
 
+         !do i = 1, 4
+         !   spin_inters(i)%cases = 0
+         !end do
+
+!         do i = 1, ninter
+!            write(itflog,*) "=============================="
+!            write(itflog,*) "NCASE1: ", spin_inters(i)%ncase
+!            write(itflog,*) "NAME: ", spin_inters(i)%name
+!            do j = 1, spin_inters(i)%ncase
+!               do k = 1, 4
+!                  write(itflog,*) "spin_inters: ",
+!     &                spin_inters(i)%cases(k,j)
+!               end do
+!               write(itflog,*) "------------------------------"
+!            end do
+!            write(itflog,*) "=============================="
+!         end do
+
          ! Recursive search back along the list.
          ! Mark point where intermediates start
 !         write(itflog,*) "Starting intermediate search"
@@ -114,8 +132,17 @@
      &                            spin_inters, ninter)
 
 !         do i = 1, ninter
-!            write(itflog,*) "spin_cases: ", spin_inters(ninter)%cases
-!            write(itflog,*) "name: ", spin_inters(ninter)%name
+!            write(itflog,*) "=============================="
+!            write(itflog,*) "NCASE2: ", spin_inters(i)%ncase
+!            write(itflog,*) "NAME: ", spin_inters(i)%name
+!            do j = 1, spin_inters(i)%ncase
+!               do k = 1, 4
+!                  write(itflog,*) "spin_inters: ",
+!     &                spin_inters(i)%cases(k,j)
+!               end do
+!               write(itflog,*) "------------------------------"
+!            end do
+!            write(itflog,*) "=============================="
 !         end do
 
          ! Go back to inter_start and look for the intermediates
@@ -187,6 +214,21 @@
          ! change there names STIN001aaaa, then print out the residual
          fl_item => inter_start
 
+!         do i = 1, ninter
+!            write(itflog,*) "=============================="
+!            write(itflog,*) "NCASE: ", spin_inters(i)%ncase
+!            write(itflog,*) "NAME: ", spin_inters(i)%name
+!            do j = 1, spin_inters(i)%ncase
+!               do k = 1, 4
+!                  write(itflog,*) "spin_inters: ",
+!     &                spin_inters(i)%cases(k,j)
+!               end do
+!               write(itflog,*) "------------------------------"
+!            end do
+!            write(itflog,*) "=============================="
+!         end do
+
+
          ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
          ! another/ printing the next spin case. I_aaaa, then I_abab
@@ -202,6 +244,7 @@
                      do j = 1, 4
                         tmp_case(j) = spin_inters(k)%cases(j,i)
                      end do
+!                     write(itflog,*) "TMP FILE: ", tmp_case
                      call intermediate2_to_itf(fl_item%bcontr,itflog,
      &                                      fl_item%command,tmp_case)
                   end if
