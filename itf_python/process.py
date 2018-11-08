@@ -575,9 +575,14 @@ for line_o in f:
         if len(prev_inter)==0:
             prev_inter.append(words[0].replace('.',''))
         else:
+            found = False
             for i in range(0, len(prev_inter)):
-                if words[0].split('[',1)[0].replace('.','') not in prev_inter[i].split('[',1)[0].replace('.',''):
-                    prev_inter.append(words[0].replace('.',''))
+                if words[0].split('[',1)[0].replace('.','') in prev_inter[i].split('[',1)[0].replace('.',''):
+                    found = True
+
+            if (not found):
+                prev_inter.append(words[0].replace('.',''))
+
 
         if words[0].replace('.','') not in declare_inter:
             # Add intermedate to global list
