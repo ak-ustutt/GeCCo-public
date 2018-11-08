@@ -97,7 +97,7 @@
 
          ! Recursive search back along the list.
          ! Mark point where intermediates start
-!         write(itflog,*) "Starting intermediate search"
+         write(itflog,*) "Starting intermediate search"
          if (.not.associated(fl_item%next)) exit
          inter_start => fl_item%next
 
@@ -202,7 +202,7 @@
 
             ! Check we haven't reached the residual result
             if (associated(fl_item,res_start)) then
-!               write(itflog,*) "Found the end"
+               write(itflog,*) "Found the end"
                fl_item => res_start
                finished_inter = .true.
             end if

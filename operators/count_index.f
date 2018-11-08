@@ -137,16 +137,17 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=100), intent(inout) ::
+      character(len=*), intent(in) ::
      &     error 
       type(itf_contr), intent(in) ::
      &     item
 
-      write(item%logfile,*) "ERROR: ", trim(error)
-      write(item%logfile,*)
+      write(item%logfile,*) "ERROR: ", error
+      write(item%logfile,*) "================================="
       write(item%logfile,*) "Result: ", item%label_res, item%idx3
       write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
       write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
+      write(item%logfile,*)
 
       return
       end
@@ -294,6 +295,10 @@
       ! Do not want to print out the lines while gatheing info about
       ! intermediates
       itf_item%print_line = .false.
+
+      ! Need to catch lines which don't need to be spin summed
+      ! call assign_simple_spin
+
       call assign_spin(itf_item)
       itf_item%print_line = .true.
 
@@ -311,6 +316,23 @@
       n_inter = n_inter + itf_item%ninter
 
       deallocate(itf_item%inter_spins)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine assign_simple_spin(item)
+*----------------------------------------------------------------------*
+!     Assign spin to simple cases using logic conditions
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &    item
+
 
       return
       end
