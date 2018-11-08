@@ -1155,6 +1155,11 @@
          ! + one rank-0 tensor somewhere on a line
          call print_itf_line(item,.false.,.false.)
          return
+      else if (item%rank1 + item%rank2 + item%rank3 == 6) then
+         ! This covers all cases where we have two rank-2 tensors
+         ! + one rank-0 tensor somewhere on a line
+         call print_itf_line(item,.false.,.false.)
+         return
       else if (item%rank1 + item%rank2 + item%rank3 == 0) then
          ! Scalar contributions
          call print_itf_line(item,.false.,.false.)
@@ -1430,7 +1435,7 @@
       !   print
 
       if (.not. eloop) then
-        call line_error("Didn't print out spin case", item)
+         call line_error("Didn't print out spin case", item)
       end if
 
       ! Mark the end of the spin summed block, if we will print a
