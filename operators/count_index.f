@@ -125,6 +125,8 @@
       
       end function
 
+
+
       end module itf_utils
 
 *----------------------------------------------------------------------*
@@ -258,6 +260,7 @@
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
+      use itf_utils
 
       implicit none
       include 'opdim.h'
@@ -281,6 +284,8 @@
       integer ::
      &    perm_array(4),   ! Info of permutation factors
      &    i
+      logical ::
+     &    summed
 
       perm_array=0
 
@@ -297,9 +302,10 @@
       itf_item%print_line = .false.
 
       ! Need to catch lines which don't need to be spin summed
-      ! call assign_simple_spin
+      call assign_simple_spin(itf_item, summed)
+      if (.not. summed) call assign_spin(itf_item)
+       
 
-      call assign_spin(itf_item)
       itf_item%print_line = .true.
 
       if (itf_item%ninter == 0) call line_error("Couldn't find
@@ -320,10 +326,12 @@
       return
       end
 
+
 *----------------------------------------------------------------------*
-      subroutine assign_simple_spin(item)
+      subroutine assign_simple_spin(item, summed)
 *----------------------------------------------------------------------*
 !     Assign spin to simple cases using logic conditions
+!     This avoid the spin sum routine
 *----------------------------------------------------------------------*
       implicit none
       include 'opdim.h'
@@ -332,10 +340,58 @@
 
       type(itf_contr), intent(inout) ::
      &    item
+      logical, intent(inout) ::
+     &    summed
 
+      integer ::
+     &    i,j
+
+
+      summed = .false.
+
+!      if (item%rank3 == 2 .and. item%rank1 + item%rank2 == 2 .or.
+      if (item%rank3 + item%rank1 + item%rank2 == 4 .or.
+     &    item%rank3 + item%rank1 + item%rank2 == 6) then
+         j = 1
+         do i = 1, 2
+            if (item%inter(i)) then
+               ! Only need the aa case
+               item%inter_spins(j)%cases(:,j) = (/ 1, 0, 1, 0 /)
+               item%inter_spins(j)%ncase = 1
+               if (i == 1) item%inter_spins(j)%name = item%label_t1
+               if (i == 2) item%inter_spins(j)%name = item%label_t2
+               item%ninter = item%ninter + 1
+               j = j + 1
+            end if
+         end do
+
+         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+         summed = .true.
+      else if (item%rank3 + item%rank1 + item%rank2 == 0) then
+         ! Do nothing for scalar tensors
+         write(item%logfile,*) item%label_res
+         write(item%logfile,*) item%label_t1
+         write(item%logfile,*) item%label_t2
+         j = 1
+         do i = 1, 2
+            if (item%inter(i)) then
+               ! Only need the aa case
+               item%inter_spins(j)%cases(:,j) = (/ 0, 0, 0, 0 /)
+               item%inter_spins(j)%ncase = 1
+               if (i == 1) item%inter_spins(j)%name = item%label_t1
+               if (i == 2) item%inter_spins(j)%name = item%label_t2
+               item%ninter = item%ninter + 1
+               j = j + 1
+            end if
+         end do
+
+         write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+         summed = .true.
+      end if
 
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine intermediate2_to_itf(contr_info,itflog,command,
@@ -430,7 +486,7 @@
      &     sfact_star         ! String representation of factor formatted for output
       integer ::
      &     i
-
+      
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
       nt1=rename_tensor(item%label_t1, item%rank1)
@@ -1140,6 +1196,7 @@
       return
       end
 
+
 *----------------------------------------------------------------------*
       subroutine assign_spin(item)
 *----------------------------------------------------------------------*
@@ -1181,11 +1238,30 @@
       if (item%rank1 + item%rank2 + item%rank3 == 4) then
          ! This covers all cases where we have two rank-2 tensors
          ! + one rank-0 tensor somewhere on a line
+
+         ! If the line involves an intermediate, then we must add the
+         ! spin name to the intermedite name. For all these cases, this
+         ! is spimple
+         if (item%inter(1)) then
+            item%label_t1 = trim(item%label_t1)//'aa'
+         else if (item%inter(2)) then
+            item%label_t2 = trim(item%label_t2)//'aa'
+         end if
+
+         ! The spin case is the line itself and wont contain any other
+         ! terms, so mark the start and end
          call print_itf_line(item,.false.,.false.)
+
          return
       else if (item%rank1 + item%rank2 + item%rank3 == 6) then
-         ! This covers all cases where we have two rank-2 tensors
-         ! + one rank-0 tensor somewhere on a line
+         ! This covers all cases where we have three rank-2 tensors
+
+         if (item%inter(1)) then
+            item%label_t1 = trim(item%label_t1)//'aa'
+         else if (item%inter(2)) then
+            item%label_t2 = trim(item%label_t2)//'aa'
+         end if
+
          call print_itf_line(item,.false.,.false.)
          return
       else if (item%rank1 + item%rank2 + item%rank3 == 0) then
@@ -1733,6 +1809,7 @@
 
        return
        end
+
 
 *----------------------------------------------------------------------*
       subroutine find_idx(s2a,s2b,t1,t2a,t2b,idx,j)

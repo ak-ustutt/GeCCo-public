@@ -48,13 +48,17 @@
       logical, intent(in) ::
      &     print_form        ! Print to optional formulae file
 
+      integer, parameter ::
+     &     MAXINT = 4        ! Maximum number of intermediates that contribute to a result
+
       type(formula_item), pointer ::
      &     fl_item,   ! Current formula_item
      &     inter_start,    ! Mark start of intermediate search
      &     res_start,      ! Mark end of intermediate search
      &     summed_inter    ! Mark intermediate points in intermediate search
-      type(spin_cases), dimension(4) ::
-     &     spin_inters  ! Array of intermeidates with associated spin cases
+      type(spin_cases), dimension(MAXINT) ::
+     &     spin_inters , ! Array of intermeidates with associated spin cases
+     &     ospin_inters  ! Numerically ordered array of intermeidates with associated spin cases
       integer ::
      &     i,j,k,     ! Loop indcies
      &     contr_no  ! Counter of contrations
@@ -65,6 +69,8 @@
       integer ::
      &     tmp_case(4),
      &     ninter       ! Number of intermediates found in recursive search
+      character ::
+     &     ch           ! Scratch
 
       ! Point to start of linked list
       fl_item => fl_head
@@ -152,15 +158,21 @@
          summed_inter => res_start
          finished_inter = .false.
          
+         if (ninter>1) write(itflog,*) "MORE THAN 2 INTERS"
 
          ! Recursive search through list to get all information about
          ! every intermediate used to produce a result
          do while (.not.finished_inter)
+
             ! Check if infomation about the intermediate is needed, all required
             ! intermediates are stored in spin_inters
             do i = 1, ninter
                if (fl_item%bcontr%label_res == spin_inters(i)%name)
      &                      more_inter = .true.
+               write(itflog,*) "HELLO1"
+               write(itflog,*) fl_item%bcontr%label_op1
+               write(itflog,*) fl_item%bcontr%label_op2
+               write(itflog,*) "HELLO2"
             end do
 
             !if (fl_item%bcontr%label_res == spin_inters(1)%name) then
@@ -182,13 +194,16 @@
                else
                   ! If it doesn't have any intermediates, move onto the
                   ! next item
+                  write(itflog,*) "HELLO3"
                   fl_item => fl_item%next
+                  write(itflog,*) "HELLO4"
 
                   ! If the next item is has reached the begining of the
                   ! previously summed intermediate, then we need to
                   ! break out this loop.
                   if (associated(fl_item,summed_inter)) finished_inter =
      &                                                     .true.
+                  write(itflog,*) "HELLO5"
                end if
             else
                ! If the interemediate isn't needed, move onto the next
@@ -198,12 +213,20 @@
      &                                                  .true.
             end if
 
+
             more_inter = .false.
+
+            if (associated(fl_item%interm)) then
+               write(itflog,*) "HELLO6"
+               fl_item => fl_item%next
+               if (associated(fl_item,summed_inter)) finished_inter =
+     &                                                  .true.
+            end if
 
             ! Check we haven't reached the residual result
             if (associated(fl_item,res_start)) then
                write(itflog,*) "Found the end"
-               fl_item => res_start
+               !fl_item => res_start
                finished_inter = .true.
             end if
          end do
@@ -228,6 +251,20 @@
 !            write(itflog,*) "=============================="
 !         end do
 
+         ! Numerically order spin_inters, so 001 intermediate is printed
+         ! out first, then 002. This is important because intermediates
+         ! may depend on previous intermediates
+         do i = 1, MAXINT
+            write(ch, '(I1)') i
+            do j = 1, ninter
+               if (scan(ch, spin_inters(j)%name)) then
+                  ospin_inters(i) = spin_inters(j)
+               end if
+            end do
+         end do
+
+!         write(itflog,*) "SPIN_INTER: ", spin_inters
+!         write(itflog,*) "OSPIN_INTER: ", ospin_inters
 
          ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
@@ -236,15 +273,24 @@
             ! Loop over the number of spin cases for an intermediate
             ! For each spin case of an intermediate, we want to loop though
             ! the list and print out all the lines which contribute
-            do i = 1, spin_inters(k)%ncase
+            do i = 1, ospin_inters(k)%ncase
                do ! Loop through the list
-                  if (fl_item%bcontr%label_res == spin_inters(k)%name)
+
+                  write(itflog,*) "HELLO10"
+                  write(itflog,*) fl_item%bcontr%label_op1
+                  write(itflog,*) fl_item%bcontr%label_op2
+                  write(itflog,*) ospin_inters(k)%name, "   ", k
+                  write(itflog,*) "HELLO11"
+                  if (fl_item%bcontr%label_res == ospin_inters(k)%name)
      &            then
                      ! Send off specific spin case to be summed and printed
                      do j = 1, 4
-                        tmp_case(j) = spin_inters(k)%cases(j,i)
+                        tmp_case(j) = ospin_inters(k)%cases(j,i)
                      end do
 !                     write(itflog,*) "TMP FILE: ", tmp_case
+
+                     write(itflog,*) "HELLO12"
+                     ! Print out intermediate line
                      call intermediate2_to_itf(fl_item%bcontr,itflog,
      &                                      fl_item%command,tmp_case)
                   end if
@@ -252,10 +298,16 @@
                   ! Move onto next item and repeat
                   fl_item => fl_item%next 
 
+                  if (associated(fl_item%interm)) then
+                     write(itflog,*) "HELLO7"
+                     fl_item => fl_item%next
+                  end if
+
                   if (associated(fl_item,res_start)) then
 !                     write(itflog,*) "Finished one spin inter block"
                      ! Go back to start and print out remaing spin cases +
                      ! reapeat
+                     write(itflog,*) "HELLO13"
                      fl_item => inter_start
                      exit
                   end if
