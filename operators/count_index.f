@@ -276,14 +276,15 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
      &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(4) ::
+      type(spin_cases), dimension(4), intent(inout) ::
      &     spin_inters
 
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    perm_array(4),   ! Info of permutation factors
-     &    i
+     &    tmp_case(4),
+     &    i,j,k
       logical ::
      &    summed
 
@@ -301,9 +302,68 @@
       ! intermediates
       itf_item%print_line = .false.
 
+
       ! Need to catch lines which don't need to be spin summed
       call assign_simple_spin(itf_item, summed)
-      if (.not. summed) call assign_spin(itf_item)
+
+!      ! Need to set spin result for intermediate that depends on
+!      ! another intermediate
+!      if (itf_item%inter(3)) then
+!
+!         if (.not. summed) then
+!            do i = 1, MAXINT
+!               write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
+!               if (itf_item%label_res == spin_inters(i)%name) then
+!                  do k = 1, spin_inters(i)%ncase
+!                     do j = 1, 4
+!                        tmp_case(j) = spin_inters(i)%cases(j,k)
+!                     end do
+!                     itf_item%spin_case = tmp_case
+!                     write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
+!                     write(itf_item%logfile,*) "FUCK2: ", tmp_case
+!
+!                     call assign_spin(itf_item)
+!                  end do
+!               end if
+!            end do
+!         end if
+!      else
+!         ! Result is not an intermediate, ie. its a residual, so lets find
+!         ! out what spin intermediates it needs.
+!         if (.not. summed) call assign_spin(itf_item)
+!      end if
+
+      ! Need to set spin result for intermediate that depends on
+      ! another intermediate
+      if (.not. summed) then
+
+         if (itf_item%inter(3)) then
+            do i = 1, MAXINT
+               write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
+               if (itf_item%label_res == spin_inters(i)%name) then
+                  do k = 1, spin_inters(i)%ncase
+                     do j = 1, 4
+                        tmp_case(j) = spin_inters(i)%cases(j,k)
+                     end do
+                     itf_item%spin_case = tmp_case
+                     write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
+                     write(itf_item%logfile,*) "FUCK2: ", tmp_case
+
+                     call assign_spin(itf_item)
+                  end do
+               end if
+            end do
+         else
+            ! Result is not an intermediate, ie. its a residual, so lets find
+            ! out what spin intermediates it needs.
+            call assign_spin(itf_item)
+         end if
+      end if
+
+
+      ! Need to catch lines which don't need to be spin summed
+      !call assign_simple_spin(itf_item, summed)
+      !if (.not. summed) call assign_spin(itf_item)
        
 
       itf_item%print_line = .true.
@@ -315,7 +375,7 @@
       ! Copy information back to array in print_itf()
       do i = 1, itf_item%ninter
          spin_inters(i+n_inter)=itf_item%inter_spins(i)
-!         write(itf_item%logfile,*) "INER SPIN: ",itf_item%inter_spins(i)
+         !write(itf_item%logfile,*) "INER SPIN: ",itf_item%inter_spins(i)
       end do
 
       ! Overall number of intermediates used to index spin_inters
@@ -385,7 +445,7 @@
             end if
          end do
 
-         write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
          summed = .true.
       end if
 
@@ -428,6 +488,7 @@
       call itf_contr_init(contr_info,itf_item,perm_array(1),
      &                    command,itflog)
 
+      ! Set overall spin case of result
       itf_item%spin_case = spin_case
 
       ! Change intermediate name to reflect spin case
@@ -1318,6 +1379,8 @@
          result_spin = (/ 1, 2, 1, 2 /)
       end if
 
+!      write(item%logfile,*) "RESULT_SPIN: ", result_spin
+
       do i=1, 2
          do j=1, 2
             ! Assign spin of first tensor
@@ -1599,6 +1662,14 @@
          r1 = item%rank1
          r2 = item%rank2
       end if
+
+      !write(item%logfile,*) "s1b: ", s1b
+      !write(item%logfile,*) "s1a: ", s1a
+      !write(item%logfile,*)
+      !write(item%logfile,*) "s2b: ", s2b
+      !write(item%logfile,*) "s2a: ", s2a
+      !write(item%logfile,*)
+      !write(item%logfile,*)
 
 
        ! Pick out specific spin cases here

@@ -1,5 +1,6 @@
       integer, parameter ::
-     &     index_len = 8        ! Length of index string
+     &     index_len = 8,       ! Length of index string
+     &     MAXINT = 4           ! Maximum number of intermediates that contribute to a result
 
       type spin_cases
       ! Hold information about a tensor and the spin summed cases which need to be

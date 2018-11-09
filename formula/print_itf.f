@@ -48,8 +48,8 @@
       logical, intent(in) ::
      &     print_form        ! Print to optional formulae file
 
-      integer, parameter ::
-     &     MAXINT = 4        ! Maximum number of intermediates that contribute to a result
+!      integer, parameter ::
+!     &     MAXINT = 4        ! Maximum number of intermediates that contribute to a result
 
       type(formula_item), pointer ::
      &     fl_item,   ! Current formula_item
@@ -158,8 +158,6 @@
          summed_inter => res_start
          finished_inter = .false.
          
-         if (ninter>1) write(itflog,*) "MORE THAN 2 INTERS"
-
          ! Recursive search through list to get all information about
          ! every intermediate used to produce a result
          do while (.not.finished_inter)
@@ -181,6 +179,9 @@
             if (more_inter) then
                if (check_inter(fl_item%bcontr%label_op1) .or.
      &             check_inter(fl_item%bcontr%label_op2)) then
+
+                  ! TODO: When we check for other intermediates, need
+                  ! to know which spin cases to pick out!
                   call intermediate_to_itf(fl_item%bcontr,itflog,
      &                               fl_item%command,spin_inters,ninter)
 
