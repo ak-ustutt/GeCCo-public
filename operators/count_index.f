@@ -276,7 +276,7 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
      &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(4), intent(inout) ::
+      type(spin_cases), dimension(MAXINT), intent(inout) ::
      &     spin_inters
 
       type(itf_contr) ::
@@ -306,48 +306,18 @@
       ! Need to catch lines which don't need to be spin summed
       call assign_simple_spin(itf_item, summed)
 
-!      ! Need to set spin result for intermediate that depends on
-!      ! another intermediate
-!      if (itf_item%inter(3)) then
-!
-!         if (.not. summed) then
-!            do i = 1, MAXINT
-!               write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
-!               if (itf_item%label_res == spin_inters(i)%name) then
-!                  do k = 1, spin_inters(i)%ncase
-!                     do j = 1, 4
-!                        tmp_case(j) = spin_inters(i)%cases(j,k)
-!                     end do
-!                     itf_item%spin_case = tmp_case
-!                     write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
-!                     write(itf_item%logfile,*) "FUCK2: ", tmp_case
-!
-!                     call assign_spin(itf_item)
-!                  end do
-!               end if
-!            end do
-!         end if
-!      else
-!         ! Result is not an intermediate, ie. its a residual, so lets find
-!         ! out what spin intermediates it needs.
-!         if (.not. summed) call assign_spin(itf_item)
-!      end if
-
       ! Need to set spin result for intermediate that depends on
       ! another intermediate
       if (.not. summed) then
 
          if (itf_item%inter(3)) then
             do i = 1, MAXINT
-               write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
                if (itf_item%label_res == spin_inters(i)%name) then
                   do k = 1, spin_inters(i)%ncase
                      do j = 1, 4
                         tmp_case(j) = spin_inters(i)%cases(j,k)
                      end do
                      itf_item%spin_case = tmp_case
-                     write(itf_item%logfile,*) "FUCK1: ", spin_inters(i)
-                     write(itf_item%logfile,*) "FUCK2: ", tmp_case
 
                      call assign_spin(itf_item)
                   end do
@@ -360,16 +330,17 @@
          end if
       end if
 
-
-      ! Need to catch lines which don't need to be spin summed
-      !call assign_simple_spin(itf_item, summed)
-      !if (.not. summed) call assign_spin(itf_item)
-       
-
       itf_item%print_line = .true.
 
+      ! TODO: Ignore rank 6 cases and tensor product cases for now...
+      if (itf_item%rank3 /= 4 .and. itf_item%rank1 /= 2 .and.
+     &    itf_item%rank2 /= 2) then
+      if (itf_item%rank3 == 6 .or. itf_item%rank1 == 6 .or.
+     &    itf_item%rank2 == 6) then
       if (itf_item%ninter == 0) call line_error("Couldn't find
      & intermediate", itf_item)
+      end if
+      end if
 
 
       ! Copy information back to array in print_itf()
