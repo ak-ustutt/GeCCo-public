@@ -35,7 +35,7 @@ def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
     # Loop over previously stored lines
 
-    for i in xrange(0, len(prev_lines)):
+    for i in range(0, len(prev_lines)):
         print_result(prev_lines[i])
 
 
@@ -712,7 +712,7 @@ print(file=f2)
 # For now, delcare them on disk
 declare_ten.sort()
 declare_ten.sort(key=len)
-for i in xrange(0, len(declare_ten)):
+for i in range(0, len(declare_ten)):
     if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
         or "Dm" in declare_ten[i] or "J:" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
@@ -790,7 +790,7 @@ if (olap>0):
 # Print out intermediates
 print(file=f2)
 print("// Intermediates", file=f2)
-for i in xrange(0, len(declare_inter)):
+for i in range(0, len(declare_inter)):
     if ("[]" in declare_inter[i]):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
@@ -805,7 +805,7 @@ print(file=f2)
 print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
 if (olap>0):
-    for i in xrange(0, len(declare_ten)):
+    for i in range(0, len(declare_ten)):
         if ("T[" in declare_ten[i]):
             generic=generic_index(declare_ten[i])
             declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
