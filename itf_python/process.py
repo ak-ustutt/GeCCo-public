@@ -34,46 +34,9 @@ class itf_line:
 def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
     # Loop over previously stored lines
-    for i in range(0, len(prev_lines)):
+
+    for i in xrange(0, len(prev_lines)):
         print_result(prev_lines[i])
-#        inter_words=prev_lines[i].split()
-#
-#        if len(inter_words)==3:
-#            if "TIN" not in inter_words[2]:
-#                load_ten="load " + inter_words[2].split('*',1)[-1]
-#
-#                print(load_ten.strip(), file=out)
-#
-#            print(prev_lines[i].strip(), file=out)
-#
-#            # Drop tensors
-#            print_drop_tensors(load_ten)
-#
-#        else:
-#            t1 = inter_words[2].split('*',1)[-1]
-#            t2 = inter_words[3].split('*',1)[-1]
-#
-#            inter1 = False
-#            inter2 = False
-#            # True if not an intermediate
-#            if "TIN" not in inter_words[2]: inter1 = True
-#            if "TIN" not in inter_words[3]: inter2 = True
-#
-#            
-#            if inter1 or inter2:
-#                load_ten="load "
-#                if inter1:
-#                    load_ten=load_ten + t1
-#                if inter1 and t1 != t2 and inter2:
-#                    load_ten=load_ten + ", "
-#                if inter2 and t1 != t2:
-#                    load_ten=load_ten + t2
-#
-#                print(load_ten.strip(), file=out)
-#
-#            print(prev_lines[i].strip(), file=out)
-#
-#            print_drop_tensors(load_ten)
 
 
 def change_line_names(name, line, words):
@@ -749,7 +712,7 @@ print(file=f2)
 # For now, delcare them on disk
 declare_ten.sort()
 declare_ten.sort(key=len)
-for i in range(0, len(declare_ten)):
+for i in xrange(0, len(declare_ten)):
     if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
         or "Dm" in declare_ten[i] or "J:" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
@@ -827,7 +790,7 @@ if (olap>0):
 # Print out intermediates
 print(file=f2)
 print("// Intermediates", file=f2)
-for i in range(0, len(declare_inter)):
+for i in xrange(0, len(declare_inter)):
     if ("[]" in declare_inter[i]):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
@@ -842,7 +805,7 @@ print(file=f2)
 print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
 if (olap>0):
-    for i in range(0, len(declare_ten)):
+    for i in xrange(0, len(declare_ten)):
         if ("T[" in declare_ten[i]):
             generic=generic_index(declare_ten[i])
             declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
