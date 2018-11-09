@@ -400,9 +400,6 @@
          summed = .true.
       else if (item%rank3 + item%rank1 + item%rank2 == 0) then
          ! Do nothing for scalar tensors
-         write(item%logfile,*) item%label_res
-         write(item%logfile,*) item%label_t1
-         write(item%logfile,*) item%label_t2
          j = 1
          do i = 1, 2
             if (item%inter(i)) then
