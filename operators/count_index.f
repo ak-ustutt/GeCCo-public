@@ -220,9 +220,10 @@
 
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
+
       ! Determine if result needs permuting
-      !call check_inter(contr_info%label_res,inter)
       inter = check_inter(contr_info%label_res)
+
       if (.not.inter) then
          call permute_tensors(contr_info,perm_array,itflog)
       end if
@@ -602,13 +603,13 @@
       end if
 
       ! Need to include factor if permuting
-      if (item%permute>1) then
-         if (equal_op=='+=') then
-            equal_op='-='
-         else if (equal_op=='-=') then
-            equal_op='+='
-         end if
-      end if
+      !if (item%permute>1) then
+      !   if (equal_op=='+=') then
+      !      equal_op='-='
+      !   else if (equal_op=='-=') then
+      !      equal_op='+='
+      !   end if
+      !end if
 
        ! Construct complete itf algo line from the above parts
        itf_line='.'//trimal(nres)//
@@ -783,7 +784,8 @@
      &     e1_array,    ! External index of operator 1 array
      &     e2_array,    ! External index of operator 2 array
      &     t1_array,
-     &     t2_array
+     &     t2_array,
+     &     tmp1_array, tmp2_array
       integer, dimension(2) ::
      &     idx_type     ! Info about index convention
       integer, parameter ::
@@ -938,6 +940,20 @@
          do i=1, size(t1_array)
             t1_array(i)=e2_array(i)
             t2_array(i)=e1_array(i)
+         end do
+      else if (item%permute==5) then
+        ! P(ab), then P(abij)
+         do i=1, size(t1_array)/2
+            t1_array(i)=e2_array(i)
+            t1_array(i+4)=e1_array(i+4)
+            t2_array(i)=e1_array(i)
+            t2_array(i+4)=e2_array(i+4)
+         end do
+         tmp1_array = t1_array
+         tmp2_array = t2_array
+         do i=1, size(t1_array)
+            t1_array(i)=tmp2_array(i)
+            t2_array(i)=tmp1_array(i)
          end do
       end if
 
@@ -1177,11 +1193,13 @@
             if (sum_a1+sum_a2==2) then
                !write(lulog,*) "permute annhilations!"
                if (shift>2) then
+                  ! P(ab), then P(abij)
+                  ! When we have (1-P(ab))(1-P(ij)) then we only need to
+                  ! generate 1 + P(ab), then P(abij)(1 + P(ab))
+                  perm_array(shift)=5
+                  shift=shift+1
                   ! P(ab)P(ij)
-                  !perm_array(shift)=3
-                  !shift=shift+1
-                  ! TODO: overwirtie 2 for now - mess!
-                  perm_array(shift-1)=4
+                  perm_array(shift)=4
                   shift=shift+1
                else
                   perm_array(shift)=1
