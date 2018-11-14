@@ -36,6 +36,9 @@
       character(len=1) ::
      &     singlr       ! 0: single-reference; >0: multireference
 
+      real(8) ::
+     &     cpu, sys, wall, cpu0, sys0, wall0   ! Timing variables
+
       print_form=form_out.ne.'##not_set##'
 
       call write_title(lulog,wst_section,'Translating formula to ITF')
@@ -62,8 +65,15 @@
      &                 trim(fline%name)
       end if
 
+      ! Set time variables
+      call atim_csw(cpu0,sys0,wall0)
+
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,op_info,print_form,fform%unit)
+
+      call atim_csw(cpu,sys,wall)
+      call prtim(lulog,'Time to process formulae',
+     &           cpu-cpu0,sys-sys0,wall-wall0)
 
       ! Is this a single-refenece or a multireferecne calculation?
       if (.not. multi) then
@@ -80,10 +90,16 @@
 
       ! Quick and dirty scan through tmp binary contraction file to
       ! find if any repeated lines can be replaced by a factor
+      call atim_csw(cpu0,sys0,wall0)
+
       exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
      &          //trim(fline%name)//' -o bcontr2.tmp'
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
+
+      call atim_csw(cpu,sys,wall)
+      call prtim(lulog,'Time to simplify ITF code',
+     &           cpu-cpu0,sys-sys0,wall-wall0)
 
       if (e > 0) then
          write(lulog,*) "Error in executing simplify.py"
@@ -91,11 +107,17 @@
       end if
 
       ! Main ITF algo file processing
+      call atim_csw(cpu0,sys0,wall0)
+
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
      &          //'bcontr2.tmp -o '//trim(name_out)
      &          //' -s '//singlr
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
+
+      call atim_csw(cpu,sys,wall)
+      call prtim(lulog,'Time to create ITF algo file',
+     &           cpu-cpu0,sys-sys0,wall-wall0)
 
       if (e > 0) then
          write(lulog,*) "Error in executing process.py"
@@ -103,10 +125,16 @@
       end if
 
       ! Quick and dirty scan to remove unnecessary load and drop lines
+      call atim_csw(cpu0,sys0,wall0)
+
       exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
      &          //trim(name_out)
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
+
+      call atim_csw(cpu,sys,wall)
+      call prtim(lulog,'Time to reduce ITF algo file',
+     &           cpu-cpu0,sys-sys0,wall-wall0)
 
       if (e > 0) then
          write(lulog,*) "Error in executing reduce.py"
