@@ -204,7 +204,7 @@
       include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
-      type(binary_contr), intent(in) ::
+      type(binary_contr), intent(inout) ::
      &     contr_info      ! Inofrmation about binary contraction
       integer, intent(in) ::
      &     itflog,         ! Output file
@@ -217,6 +217,8 @@
      &    i                ! Loop index
       logical ::
      &    inter            ! True if result is an intermediate
+      character(len=maxlen_bc_label) ::
+     &    old_name
 
       ! Initalise permutation factors to 0 == no permutation
       perm_array=0
@@ -228,6 +230,22 @@
          call permute_tensors(contr_info,perm_array,itflog)
       end if
 
+      ! If the perm_array doesn't contain any zeros, then we should
+      ! introduce an interemediate which collects half of the different
+      ! permutation cases, then do:
+      ! .R[abij] += I[abij]
+      ! .R[abij] += I[baji]
+      ! So save old name and replace it with a new one
+      if (.not. any(perm_array == 0)) then
+         old_name = contr_info%label_res
+         contr_info%label_res = "ITIN001"
+         itf_item%symm = .true.
+         ! Only need non permuted, and permute ij
+         perm_array = (/ 1, 2, 0, 0 /)
+      end if
+
+      ! Pick out specific commands, form the itf_contr object, spin sum
+      ! and print out contraction line
       if (command==command_add_intm .or. command==command_cp_intm) then
          ! For [ADD] and [COPY] cases
          call itf_contr_init(contr_info,itf_item,perm_array(1),
@@ -249,6 +267,11 @@
                call assign_spin(itf_item)
                if (perm_array(i+1)==0) exit
             end do
+
+            ! If created a perm intermedite, print the symmetrised lines
+            if (itf_item%symm) then
+               call print_symmetrise(old_name,itf_item)
+            end if
          end if
       end if
       
@@ -1141,7 +1164,7 @@
 *----------------------------------------------------------------------*
       subroutine permute_tensors(contr_info,perm_array,lulog)
 *----------------------------------------------------------------------*
-!     
+!     Find permutation case 
 *----------------------------------------------------------------------*
 
       implicit none
@@ -1652,7 +1675,7 @@
       ! end the block just yet. This will save load/drop calls for the
       ! same tensors
       if (eloop .and. item%permute /= 1 .and. item%print_line) then
-        write(item%logfile,*) "END"
+         if (.not. item%symm) write(item%logfile,*) "END"
       end if
 
       return
@@ -2035,6 +2058,53 @@
 
       itf_item%inter1 = '        '
       itf_item%inter2 = '        '
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_symmetrise(result, item)
+*----------------------------------------------------------------------*
+!    Initalise 
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=maxlen_bc_label), intent(inout) ::
+     &     result
+      type(itf_contr), intent(in) ::
+     &     item
+
+      character(len=70) ::
+     &     line
+      character(len=index_len) ::
+     &     tindex
+      character(len=maxlen_bc_label) ::
+     &     new
+     
+      new = rename_tensor(result, item%rank3)
+
+      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+     &       trim(item%label_res)//'['//trim(item%idx3)//']'
+      write(item%logfile,*) trim(line)
+
+      tindex = ' '
+      tindex(1:1) = item%idx3(2:2)
+      tindex(2:2) = item%idx3(1:1)
+      tindex(3:3) = item%idx3(4:4)
+      tindex(4:4) = item%idx3(3:3)
+
+      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+     &       trim(item%label_res)//'['//trimal(tindex)//']'
+      write(item%logfile,*) trim(line)
+
+      ! Mark end of spin block
+      write(item%logfile,*) 'END'
 
       return
       end

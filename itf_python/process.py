@@ -91,7 +91,8 @@ def print_result(line):
         print(line.strip(), file=out)
 
         # Drop tensors
-        print_drop_tensors(load_ten)
+        if "TIN" not in words[2]:
+            print_drop_tensors(load_ten)
 
 
     elif len(words)==4:
