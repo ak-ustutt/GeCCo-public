@@ -795,6 +795,7 @@
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
       integer ::
      &     conv(6), conv2(6)  ! Index convention arrays
+      character(len=4) :: tmp
 
       ! Set index convention
       idx_type=(/ 0, 0 /)
@@ -1043,6 +1044,13 @@
       end select
       call index_convention(t2_array,c_array,item%idx2,conv,conv2)
 
+      !write(item%logfile,*) "INDEX1 ", item%idx1
+      !write(item%logfile,*) "INDEX2 ", item%idx2
+      !call correct_index(item%idx1)
+      !call correct_index(item%idx2)
+      !write(item%logfile,*) "INDEX1 ", item%idx1
+      !write(item%logfile,*) "INDEX2 ", item%idx2
+
       ! Result
       conv = (/ 1, 2, 3, 5, 6, 7 /)
       call index_convention(e1_array,e2_array,item%idx3,conv,conv)
@@ -1077,6 +1085,54 @@
      &         trimal(arr1(conv(4)))//trimal(arr2(conv2(4)))//
      &         trimal(arr1(conv(5)))//trimal(arr2(conv2(5)))//
      &         trimal(arr1(conv(6)))//trimal(arr2(conv2(6)))
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine correct_index(item_idx)
+*----------------------------------------------------------------------*
+!     Arrange index letters into correct order according to convention 
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=index_len), intent(inout) ::
+     &     item_idx
+
+      character(len=4) ::
+     &     tmp
+
+      tmp = item_idx
+      if (len(trim(item_idx)) == 4) then
+
+!      if (item_idx(1:1) > item_idx(2:2) .and. 
+!     &    item_idx(2:2) /= 'b') then
+!
+!         item_idx(1:1) = item_idx(2:2)
+!         item_idx(2:2) = tmp(1:1)
+!      end if
+!      if (item_idx(3:3) < item_idx(4:4) .and. 
+!     &    item_idx(3:3) /= 'i') then
+!         item_idx(3:3) = item_idx(4:4)
+!         item_idx(4:4) = tmp(3:3)
+!      end if
+
+      if (item_idx(1:1) == 'b') then
+         item_idx(1:1) = item_idx(2:2)
+         item_idx(2:2) = tmp(1:1)
+      end if
+
+      if (item_idx(3:3) == 'j') then
+         item_idx(3:3) = item_idx(4:4)
+         item_idx(4:4) = tmp(3:3)
+      end if
+
+      end if
 
       return
       end
