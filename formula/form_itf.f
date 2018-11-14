@@ -90,6 +90,7 @@
          call quit(1,'Please check the bcontr.tmp file')
       end if
 
+      ! Main ITF algo file processing
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
      &          //'bcontr2.tmp -o '//trim(name_out)
      &          //' -s '//singlr
@@ -99,6 +100,26 @@
       if (e > 0) then
          write(lulog,*) "Error in executing process.py"
          call quit(1,'Please check the bcontr2.tmp file')
+      end if
+
+      ! Quick and dirty scan to remove unnecessary load and drop lines
+      exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
+     &          //trim(name_out)
+      write(lulog,*) "Executing: ", exe_line
+      call execute_command_line(trim(exe_line),exitstat=e)
+
+      if (e > 0) then
+         write(lulog,*) "Error in executing reduce.py"
+         call quit(1,'Please check the ITF algo file')
+      end if
+
+      exe_line='mv tmp.itfaa '//trim(name_out)
+      write(lulog,*) "Executing: ", exe_line
+      call execute_command_line(trim(exe_line),exitstat=e)
+
+      if (e > 0) then
+         write(lulog,*) "Error in renaming files"
+         call quit(1,'Please check the ITF algo file')
       end if
 
       ! Close binary contraction file
