@@ -806,7 +806,7 @@
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
       integer ::
      &     conv(6), conv2(6)  ! Index convention arrays
-      character(len=4) :: tmp
+      character(len=4) :: tmp, ntmp
 
       ! Set index convention
       idx_type=(/ 0, 0 /)
@@ -1034,9 +1034,40 @@
       !write(item%logfile,*) "INDEX1 ", item%idx1
       !write(item%logfile,*) "INDEX2 ", item%idx2
 
-      ! Result
       conv = (/ 1, 2, 3, 5, 6, 7 /)
-      call index_convention(e1_array,e2_array,item%idx3,conv,conv)
+      call index_convention(e1_array,e2_array,tmp,conv,conv)
+
+!      write(item%logfile,*) "TMP ", tmp
+!      write(item%logfile,*) "1 ", item%idx1
+!      write(item%logfile,*) "2 ", item%idx2
+!      do i = 1, len(tmp)
+!         do j = 1, len(item%idx2)
+!            if (tmp(i:i) == item%idx2(j:j)) then
+!               write(item%logfile,*) "HELLO2 ", j
+!               ntmp(j:j) = item%idx2(j:j)
+!            end if
+!         end do
+!      end do
+!
+!      do i = 1, len(tmp)
+!         do j = 1, len(item%idx1)
+!            if (tmp(i:i) == item%idx1(j:j)) then
+!               write(item%logfile,*) "HELLO1 ", j
+!            end if
+!         end do
+!      end do
+!
+!      write(item%logfile,*) "E1 ", e1_array
+!      write(item%logfile,*) "E2 ", e2_array
+
+      ! Result
+      !conv = (/ 1, 2, 3, 5, 6, 7 /)
+      conv = (/ 1, 2, 3, 5, 6, 7 /)
+      if (len(trim(item%idx1)) < len(trim(item%idx2))) then
+         call index_convention(e2_array,e1_array,item%idx3,conv,conv)
+      else 
+         call index_convention(e1_array,e2_array,item%idx3,conv,conv)
+      end if
 
       return
       end
