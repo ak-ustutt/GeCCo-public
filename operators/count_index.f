@@ -264,6 +264,9 @@
                ! for (1-Pij)(1-Pab), we need to generate one of these
                ! permutaions before symmetrising
                call itf_contr_init(contr_info,itf_item,i,command,itflog)
+
+               ! Mutliply factor by -1.0 due to permutation
+               if (i == 2) itf_item%fact = itf_item%fact * -1.0
                call assign_spin(itf_item)
             end do
 
