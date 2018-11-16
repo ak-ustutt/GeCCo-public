@@ -126,7 +126,6 @@
       end function
 
 
-
       end module itf_utils
 
 *----------------------------------------------------------------------*
@@ -266,7 +265,19 @@
                call itf_contr_init(contr_info,itf_item,i,command,itflog)
 
                ! Mutliply factor by -1.0 due to permutation
-               if (i == 2) itf_item%fact = itf_item%fact * -1.0
+               if (i == 2) then
+                  itf_item%fact = itf_item%fact * -1.0
+
+                  ! Need to transpose by tensors after permutation, to
+                  ! avoid symmetry problem when using (1 + Pabij)
+                  !write(itf_item%logfile,*) "IDX1 ", itf_item%idx1
+                  !write(itf_item%logfile,*) "IDX2 ", itf_item%idx2
+                  itf_item%idx1 = t_index(itf_item%idx1)
+                  itf_item%idx2 = t_index(itf_item%idx2)
+                  !write(itf_item%logfile,*) "IDX1 ", itf_item%idx1
+                  !write(itf_item%logfile,*) "IDX2 ", itf_item%idx2
+               end if
+
                call assign_spin(itf_item)
             end do
 
@@ -937,10 +948,15 @@
       else if (item%permute==2) then
          ! Permute creations
          do i=1, size(t1_array)/2
-            t1_array(i)=e2_array(i)
-            t1_array(i+4)=e1_array(i+4)
-            t2_array(i)=e1_array(i)
-            t2_array(i+4)=e2_array(i+4)
+            !t1_array(i)=e2_array(i)
+            !t1_array(i+4)=e1_array(i+4)
+            !t2_array(i)=e1_array(i)
+            !t2_array(i+4)=e2_array(i+4)
+
+            t1_array(i)=e1_array(i)
+            t1_array(i+4)=e2_array(i+4)
+            t2_array(i)=e2_array(i)
+            t2_array(i+4)=e1_array(i+4)
          end do
       end if
 
