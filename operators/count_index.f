@@ -270,12 +270,8 @@
 
                   ! Need to transpose by tensors after permutation, to
                   ! avoid symmetry problem when using (1 + Pabij)
-                  !write(itf_item%logfile,*) "IDX1 ", itf_item%idx1
-                  !write(itf_item%logfile,*) "IDX2 ", itf_item%idx2
                   itf_item%idx1 = t_index(itf_item%idx1)
                   itf_item%idx2 = t_index(itf_item%idx2)
-                  !write(itf_item%logfile,*) "IDX1 ", itf_item%idx1
-                  !write(itf_item%logfile,*) "IDX2 ", itf_item%idx2
                end if
 
                call assign_spin(itf_item)
@@ -285,7 +281,7 @@
             call print_symmetrise(old_name,itf_item)
          end if
       end if
-      
+
       return
       end
 
@@ -821,6 +817,7 @@
       integer ::
      &     conv(6), conv2(6)  ! Index convention arrays
       character(len=4) :: tmp, ntmp
+      real(4) :: factor
 
       ! Set index convention
       idx_type=(/ 0, 0 /)
@@ -862,7 +859,23 @@
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e2)
       end do
-      
+
+      ! Figure out factor from equivalent lines
+      factor = 1.0
+      do j = 1, 2
+         do i = 1, 4
+            if (c(i,j) == 0) cycle
+            if (mod(c(i,j),2) == 0) then
+               factor = factor * (1.0/real(c(i,j)))
+               !write(item%logfile,*) "FACT ", 1.0/c(i,j)
+            end if
+         end do
+      end do 
+      !write(item%logfile,*) "FACT ", item%fact
+      !write(item%logfile,*) "FACTOR ", factor
+      !write(item%logfile,*) "FACTOR ", item%fact * factor
+      item%fact = item%fact * factor
+
 
       ! Order in ITF usually follows: apij
       ! Defualt [ccaa] as in the case of T[abij]

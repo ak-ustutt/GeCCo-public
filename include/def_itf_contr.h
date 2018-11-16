@@ -40,7 +40,7 @@
      &     inter(3) = .false.,  ! True if result is intermediate
      &     swapped = .false.,   ! True is t1 and t2 were swapped during spin summation
      &     symm = .false.       ! True if going to symmetrise result
-      real(8) ::
+      real(4) ::
      &     fact                 ! Factor
       integer ::
      &     spin_case(4) ! Spin case of result, ie. [1111] = all alpha
