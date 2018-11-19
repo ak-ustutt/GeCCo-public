@@ -311,7 +311,7 @@
 
          if (print_form) then
             fl_item => inter_start
-            do while (associated(fl_item, res_start))
+            do while (.not.associated(fl_item, res_start))
                call print_form_item2(formlog,'LONG',contr_no,fl_item,
      &                               op_info)
                fl_item => fl_item%next
