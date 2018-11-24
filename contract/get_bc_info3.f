@@ -1,4 +1,4 @@
-      subroutine get_bc_info3(bc_sign,possible,
+      subroutine get_bc_info3(bc_sign,bc_sign_itf,possible,
      &     idx_op,iblk_op,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
@@ -27,7 +27,7 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(in), target ::
      &     contr_in
@@ -57,7 +57,7 @@
      &     irestr_vtx_red(2,orb_info%ngas,2,2,*),
      &     info_vtx_red(2,*)
       real(8), intent(out) ::
-     &     bc_sign
+     &     bc_sign, bc_sign_itf
       logical, intent(out) ::
      &     tra_op1, tra_op2, tra_op1op2
       integer, intent(out) ::
@@ -82,7 +82,7 @@
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx, iblk, idxnew_op1op2,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
-     &     len_list, nvtx_red, sh_sign, cnt_sign, ireo, jreo
+     &     len_list, nvtx_red, sh_sign, cnt_sign, itf_sign, ireo, jreo
 
       integer, pointer ::
      &     ireo_vtx_no(:), ireo_vtx_on(:),
@@ -273,7 +273,8 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
 
       if (update_idxintm) idxintm = idxintm-1
 
-      call reduce_contr2(sh_sign,cnt_sign,iocc_op1op2,njoined_op1op2,
+      call reduce_contr2(sh_sign,cnt_sign,itf_sign,
+     &     iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo_after_contr,
      &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
@@ -441,6 +442,7 @@ c        end if
      &           allowed_contr(contr,arc_list(1:len_list),len_list)
 
       bc_sign = dble(cnt_sign)
+      bc_sign_itf = dble(itf_sign)
 
       deallocate(arc_list)
       deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)
@@ -462,6 +464,7 @@ c        end if
         write(lulog,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
      &                                                       gamt_op1op2
         write(lulog,*) 'sign: ',bc_sign
+        write(lulog,*) 'sign (ITF): ',bc_sign_itf
         if (.not.self) write(lulog,*) 'op1, op2, op1op2:'
         if (     self) write(lulog,*) 'op1, tr(op1):'
         call wrt_occ_n(lulog,iocc_op1,njoined_op(1))

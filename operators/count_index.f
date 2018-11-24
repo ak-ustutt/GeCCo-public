@@ -2027,8 +2027,12 @@
       end if
       itf_item%label_res=contr_info%label_res
 
-      ! Assign factor
-      itf_item%fact=contr_info%fact
+      ! Assign factor --- use special ITF factor
+      ! the ITF factor is closer to the value expected from standard
+      ! diagram rules, but still some care has to be taken when translating
+      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+      itf_item%fact=contr_info%fact_itf
 
       ! Check if an intermediate
       !call check_inter(itf_item%label_t1,itf_item%inter(1))

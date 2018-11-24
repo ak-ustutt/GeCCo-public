@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine reduce_contr2(sh_sign,new_sign,
+      subroutine reduce_contr2(sh_sign,new_sign,itf_sign,
      &     iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo0,
      &     ivtx_op1op2,nvtx_red,
@@ -45,7 +45,7 @@
      &     njoined_res, idxnew_op1op2, isvtx1, isvtx2, nlist,
      &     arc_list(nlist), ld_mmap
       integer, intent(out) ::
-     &     sh_sign, new_sign,
+     &     sh_sign, new_sign, itf_sign,
      &     nvtx_red,
      &     njoined_op1op2,
      &     iocc_op1op2(ngastp,2,*),
@@ -63,7 +63,7 @@
 
       integer ::
      &     nvtx, nvtx_new, nvtx_op1op2, nvtx_cnt, ivtx, idx,
-     &     merge_sign, cnt_sign, nj_tmp
+     &     merge_sign, cnt_sign, nj_tmp, merge_sign_itf
 
       integer, external ::
      &     idxlist
@@ -151,7 +151,7 @@ c      print *,'isvtx1, isvtx2: ',isvtx1, isvtx2
 c dbg
       ! merge (=symmetrize) contracted vertices, if possible
       call topo_merge_vtxs2(ireo2,nvtx_new,nvtx_op1op2,
-     &                     merge_sign,
+     &                     merge_sign,merge_sign_itf,
      &                     topo,xlines,nvtx,njoined_res,
      &                     svertex_reo,isvtx1,isvtx2,
      &                     vtx_list_reo,nvtx_cnt)
@@ -164,6 +164,8 @@ c dbg
 
       if (ntest.ge.100)
      &     write(lulog,*) 'merge_sign = ',merge_sign
+      if (ntest.ge.100)
+     &     write(lulog,*) 'merge_sign_itf = ',merge_sign_itf
 
       if (ntest.ge.1000) then
         write(lulog,*) 'nvtx, nvtx_new, nvtx_cnt, nvtx_op1op2: ',
@@ -260,6 +262,7 @@ cmh        contr_red is already initialized and possibly non-zero!
       end if
 
       new_sign = sh_sign*cnt_sign*merge_sign
+      itf_sign = sh_sign*cnt_sign*merge_sign_itf
 
       if (ntest.ge.100)
      &     write(lulog,*) 'new_sign = ',new_sign

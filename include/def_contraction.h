@@ -93,7 +93,9 @@ c
       integer ::
      &     n_operands, n_cnt
       real(8) ::
-     &     fact
+     &     fact, fact_itf
+!                fact_itf is corrected for different merge convention
+!                (should give the "standard" sign from diagram rules)
       character(len=maxlen_bc_label) ::
      &     label_res, label_op1, label_op2
       integer ::

@@ -63,7 +63,7 @@ c      iblk_op   = contr%vertex(1)%iblk_op
      &                                   idxblk:idxblk-1+nj_op)
 
       call store_bc(fl_item,
-     &     contr%fac,
+     &     contr%fac,contr%fac,
      &     label_res,label_op,'---',
      &     iblk_res,iblk_op,idummy,
      &     tra_res,tra_op,ldummy,

@@ -67,7 +67,7 @@
         bcontr%nj_op1 = nj_op1
         bcontr%nj_op2 = nj_op2
         
-        read(lu,end=100) bcontr%fact,
+        read(lu,end=100) bcontr%fact,bcontr%fact_itf,
      &       lenlab1,bcontr%label_res(1:lenlab1),
      &       lenlab2,bcontr%label_op1(1:lenlab2),
      &       lenlab3,bcontr%label_op2(1:lenlab3),
@@ -123,7 +123,7 @@
         lenlab1 = len_trim(bcontr%label_res)
         lenlab2 = len_trim(bcontr%label_op1)
         lenlab3 = len_trim(bcontr%label_op2)
-        write(lu,err=200) bcontr%fact,
+        write(lu,err=200) bcontr%fact,bcontr%fact_itf,
      &       lenlab1,bcontr%label_res(1:lenlab1),
      &       lenlab2,bcontr%label_op1(1:lenlab2),
      &       lenlab3,bcontr%label_op2(1:lenlab3),

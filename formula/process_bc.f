@@ -84,7 +84,7 @@
       character(len=len_opname) ::
      &     label, label1, label2, label_reo
       real(8) ::
-     &     fact
+     &     fact, fact_itf
       integer ::
      &     nvtx, narc, ngas, nsym, idum, target, command,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
@@ -148,7 +148,7 @@
      &     tra_op1, tra_op2, tra_op1op2, tra_reo, tra_ori,
      &     reo_op1op2, reo_other, reo_before
       real(8) ::
-     &     flops, xmemtot, xmemblk, bc_sign, factor
+     &     flops, xmemtot, xmemblk, bc_sign, bc_sign_itf, factor
 
       integer, external ::
      &     idxlist, int_expand, int_pack, maxxlvl_op
@@ -177,7 +177,7 @@
       call init_reo_info(reo_info)
 
       ! extract BC
-      call get_bc_info3(bc_sign,possible,
+      call get_bc_info3(bc_sign,bc_sign_itf,possible,
      &     idxop,iblkop,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
@@ -503,12 +503,14 @@ c     &        'operator with zero length?')
           end if
           fl_pnt => fl_pnt%next
           fact = bc_sign
+          fact_itf = bc_sign_itf
           iblkop1op2 = 1
           command = command_bc
           if (reo_op1op2) command = command_bc_reo
         else
           label = op_arr(contr%idx_res)%op%name
           fact = bc_sign*contr%fac
+          fact_itf = bc_sign_itf*contr%fac
           iblkop1op2 = contr%iblk_res
           command = command_add_bc
           if (reo_op1op2) command = command_add_bc_reo
@@ -516,7 +518,7 @@ c     &        'operator with zero length?')
           
         call new_formula_item(fl_pnt,command,target)
         call store_bc(fl_pnt,
-     &       fact,
+     &       fact,fact_itf,
      &       label,label1,label2,
      &       iblkop1op2,iblkop(1),iblkop(2),
      &       tra_op1op2,tra_op1,tra_op2,

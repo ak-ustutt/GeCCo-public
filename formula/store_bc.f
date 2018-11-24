@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine store_bc(fl_item,
-     &       fact,
+     &       fact,fact_itf,
      &       label12,label1,label2,
      &       iblk12,iblk1,iblk2,
      &       tra12,tra1,tra2,
@@ -33,7 +33,7 @@
       type(orbinf), intent(in) ::
      &     orb_info
       real(8) ::
-     &     fact
+     &     fact, fact_itf  ! corrected factor for ITF post-proc.
       character(len=*), intent(in) ::
      &     label12,label1,label2
       integer, intent(in) ::
@@ -71,6 +71,7 @@
       if (label2(1:3).ne.'---') n_operands = 2
 
       fl_item%bcontr%fact = fact
+      fl_item%bcontr%fact_itf = fact_itf
       fl_item%bcontr%n_operands = n_operands
       fl_item%bcontr%n_cnt     = nj_cnt
       fl_item%bcontr%ngas      = ngas
