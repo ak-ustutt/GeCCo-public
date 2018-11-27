@@ -68,7 +68,8 @@
      &     finished_inter  ! Check if finished recursive intermediate search
       integer ::
      &     tmp_case(4),
-     &     ninter       ! Number of intermediates found in recursive search
+     &     ninter,       ! Number of intermediates found in recursive search
+     &     shift         ! Used to store sequentially
       character ::
      &     ch           ! Scratch
 
@@ -130,8 +131,10 @@
          ! Global variable ninter is the number of intermediates which
          ! we need to deal with
          ninter = 0
-         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
-     &                            spin_inters, ninter)
+!         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
+!     &                            spin_inters, ninter)
+         call find_spin_intermediate(fl_item%bcontr,itflog,
+     &                       fl_item%command,spin_inters, ninter)
 
 !         do i = 1, ninter
 !            write(itflog,*) "=============================="
@@ -176,7 +179,7 @@
                   ! to know which spin cases to pick out! This is done
                   ! in the subroutine call
                   call intermediate_to_itf(fl_item%bcontr,itflog,
-     &                               fl_item%command,spin_inters,ninter)
+     &                           fl_item%command,spin_inters,ninter,1)
 
                   ! Mark the position of the previously checked
                   ! intermediates
@@ -244,17 +247,20 @@
          ! Numerically order spin_inters, so 001 intermediate is printed
          ! out first, then 002. This is important because intermediates
          ! may depend on previous intermediates
+         shift = 0
          do i = 1, MAXINT
             write(ch, '(I1)') i
             do j = 1, ninter
                if (scan(ch, spin_inters(j)%name)) then
-                  ospin_inters(i) = spin_inters(j)
+                  ospin_inters(i+shift) = spin_inters(j)
+                  shift = shift + 1
                end if
             end do
          end do
 
-!         write(itflog,*) "SPIN_INTER: ", spin_inters
-!         write(itflog,*) "OSPIN_INTER: ", ospin_inters
+         !write(itflog,*) "SPIN_INTER: ", spin_inters
+         !write(itflog,*) "OSPIN_INTER: ", ospin_inters
+         !write(itflog,*) "NINTER: ", ninter
 
          ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
@@ -266,17 +272,18 @@
             do i = 1, ospin_inters(k)%ncase
                do ! Loop through the list
 
-                  if (fl_item%bcontr%label_res == ospin_inters(k)%name)
-     &            then
+                  if (fl_item%bcontr%label_res == ospin_inters(k)%name
+     &                .or. scan('P', ospin_inters(k)%name)) then
                      ! Send off specific spin case to be summed and printed
                      do j = 1, 4
                         tmp_case(j) = ospin_inters(k)%cases(j,i)
                      end do
-!                     write(itflog,*) "TMP FILE: ", tmp_case
+                     !write(itflog,*) "TMP FILE: ", tmp_case
 
                      ! Print out intermediate line
                      call intermediate2_to_itf(fl_item%bcontr,itflog,
-     &                                      fl_item%command,tmp_case)
+     &                                      fl_item%command,
+     &                                  ospin_inters(k)%name,tmp_case)
                   end if
 
                   ! Move onto next item and repeat

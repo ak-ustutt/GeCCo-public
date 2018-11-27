@@ -91,7 +91,8 @@
 
       ! Assume these are the names of intermediates
       if (index(label, "STIN")>0 .or.
-     &    index(label, "LTIN")>0) then
+     &    index(label, "LTIN")>0 .or.
+     &    index(label, "PTIN")>0) then
          check_inter=.true.
       else
          check_inter=.false.
@@ -100,7 +101,7 @@
       end function
 
 *----------------------------------------------------------------------*
-      pure function t_index(index)
+      pure function t_index(index, upper)
 *----------------------------------------------------------------------*
 !     Transpose ITF index string, abij => abji
 *----------------------------------------------------------------------*
@@ -112,16 +113,33 @@
 
       character(len=index_len), intent(in) ::
      &     index       ! ITF index string
+      logical, optional, intent(in) ::
+     &     upper
       character(len=index_len) ::
      &     t_index      ! Transpose of ITF index string
 
       character(len=1) ::
      &     tmp
+      logical ::
+     &     contra
+
+      if (present(upper)) then
+         contra = upper
+      else
+         contra = .false.
+      end if
 
       t_index=index
-      tmp=index(1:1)
-      t_index(1:1)=index(2:2)
-      t_index(2:2)=tmp
+
+      if (contra) then
+         tmp=index(3:3)
+         t_index(3:3)=index(4:4)
+         t_index(4:4)=tmp
+      else 
+         tmp=index(1:1)
+         t_index(1:1)=index(2:2)
+         t_index(2:2)=tmp
+      end if
       
       end function
 
@@ -287,7 +305,7 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate_to_itf(contr_info,itflog,command,
-     &                               spin_inters,n_inter)
+     &                               spin_inters,n_inter,permute)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -309,6 +327,8 @@
      &     n_inter         ! Overall number of intermediates needed by result
       type(spin_cases), dimension(MAXINT), intent(inout) ::
      &     spin_inters
+      integer, intent(inout) ::
+     &     permute         ! 2 = Need to permute index
 
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
@@ -321,8 +341,20 @@
 
       perm_array=0
 
-      call itf_contr_init(contr_info,itf_item,perm_array(1),
+!      call itf_contr_init(contr_info,itf_item,perm_array(1),
+!     &                    command,itflog)
+      call itf_contr_init(contr_info,itf_item,permute,
      &                    command,itflog)
+
+      !! Mutliply factor by -1.0 due to permutation
+      if (permute == 2) then
+         itf_item%fact = itf_item%fact * -1.0
+
+         ! Need to transpose by tensors after permutation, to
+         ! avoid symmetry problem when using (1 + Pabij)
+         itf_item%idx1 = t_index(itf_item%idx1)
+         itf_item%idx2 = t_index(itf_item%idx2)
+      end if
 
       ! Allocate space to store information about intermediates and
       ! their spin cases. Only allocate 2 objects as there can only be
@@ -384,6 +416,65 @@
       n_inter = n_inter + itf_item%ninter
 
       deallocate(itf_item%inter_spins)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine find_spin_intermediate(contr_info,itflog,command,
+     &                                  spin_inters,n_inter)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+      use itf_utils
+
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
+      include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr_info      ! Inofrmation about binary contraction
+      integer, intent(in) ::
+     &     itflog,         ! Output file
+     &     command         ! Type of formula item command, ie. contraction, copy etc.
+      integer, intent(inout) ::
+     &     n_inter         ! Overall number of intermediates needed by result
+      type(spin_cases), dimension(MAXINT), intent(inout) ::
+     &     spin_inters
+
+      integer ::
+     &    perm_case,   ! Info of permutation factors
+     &    i                ! Loop index
+      logical ::
+     &    inter            ! True if result is an intermediate
+      character(len=maxlen_bc_label) ::
+     &    old_name
+
+
+      ! Initalise permutation factors to 0 == no permutation
+      perm_case = 0
+
+      ! Determine if result needs permuting
+      inter = check_inter(contr_info%label_res)
+
+      if (.not.inter) then
+         call permute_tensors(contr_info,perm_case,itflog)
+      end if
+
+      if (perm_case == 0) then
+         ! No permutations
+         call intermediate_to_itf(contr_info,itflog,command,
+     &                            spin_inters,n_inter,1)
+      else
+         do i=1, perm_case
+            call intermediate_to_itf(contr_info,itflog,command,
+     &                               spin_inters,n_inter,i)
+         end do
+      end if
 
       return
       end
@@ -454,11 +545,12 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate2_to_itf(contr_info,itflog,command,
-     &                               spin_case)
+     &                               label,spin_case)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
@@ -473,18 +565,21 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
      &     spin_case(4)
+      character(len=maxlen_bc_label), intent(in) ::
+     &     label
 
       type(itf_contr) ::
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
-     &    perm_array(4),   ! Info of permutation factors
+     &    perm_case,
      &    i,j
       character(len=4) ::
      &    spin_name
 
-      perm_array=0
 
-      call itf_contr_init(contr_info,itf_item,perm_array(1),
+      perm_case = 0
+
+      call itf_contr_init(contr_info,itf_item,perm_case,
      &                    command,itflog)
 
       ! Set overall spin case of result
@@ -506,6 +601,18 @@
 
 !      write(itf_item%logfile,*) "NAME: ", spin_name
 !      write(itf_item%logfile,*) "NAME: ", spin_case
+!      write(itf_item%logfile,*) "NAME: ", itf_item%idx3
+!      write(itf_item%logfile,*) "NAME: ", itf_item%idx1
+!      write(itf_item%logfile,*) "NAME: ", itf_item%idx2
+
+      ! If an intermediate arises as the result of a permutation, we
+      ! need to create this new intermeidate. This requires the
+      ! transpose
+      if (scan('P', label)) then
+         itf_item%idx3 = t_index(itf_item%idx3)
+         itf_item%idx2 = t_index(itf_item%idx2)
+         itf_item%idx1 = t_index(itf_item%idx1,.true.)
+      end if
 
       itf_item%label_res = trim(itf_item%label_res)//trim(spin_name)
       call assign_spin(itf_item)
@@ -555,26 +662,37 @@
       ! When permuting, the intermediate name will flip spin. We need it
       ! to be the same as the previously declared intermediates, so this
       ! flips it back.
-      ! TODO: is there a better way of avoiding this problem?
-      if (item%permute>1) then
-         if (item%inter(1)) then
-            do i = 1, item%rank1
-               if (item%inter1(i:i)=='a') then
-                  item%inter1(i:i)='b'
-               else if (item%inter1(i:i)=='b') then
-                  item%inter1(i:i)='a'
-               end if
-            end do
-         end if
+      ! TODO: Is this needed anymore, new permutation intermediate uses
+      ! its own spin label
+      !if (item%permute>1) then
+      !   if (item%inter(1)) then
+      !      do i = 1, item%rank1
+      !         if (item%inter1(i:i)=='a') then
+      !            item%inter1(i:i)='b'
+      !         else if (item%inter1(i:i)=='b') then
+      !            item%inter1(i:i)='a'
+      !         end if
+      !      end do
+      !   end if
 
-         if (item%inter(2)) then
-            do i = 1, item%rank2
-               if (item%inter2(i:i)=='a') then
-                  item%inter2(i:i)='b'
-               else if (item%inter2(i:i)=='b') then
-                  item%inter2(i:i)='a'
-               end if
-            end do
+      !   if (item%inter(2)) then
+      !      do i = 1, item%rank2
+      !         if (item%inter2(i:i)=='a') then
+      !            item%inter2(i:i)='b'
+      !         else if (item%inter2(i:i)=='b') then
+      !            item%inter2(i:i)='a'
+      !         end if
+      !      end do
+      !   end if
+      !end if
+
+      if (item%permute>1) then
+         if (item%inter(1) .or. item%inter(2)) then
+            ! Because we take the transpose of the spin orbial eqns twice,
+            ! we retain the negative sign from the permutation. This is
+            ! only a problem when we define a new spin intermediate
+            ! which results from the permutation of a result line
+            item%fact = item%fact * -1.0
          end if
       end if
 
@@ -949,7 +1067,6 @@
       a1='        '
       a2='        '
       a3='        '
-
 
       ! Permute indicies to get antisymm tensors
       if (item%permute==0 .or. item%permute==1) then
@@ -1868,7 +1985,14 @@
                   shift = item%inter_spins(ishift)%ncase + 1
                   !write(item%logfile,*)
                   !write(item%logfile,*) "intermeiate", item%label_t1
-                  item%inter_spins(ishift)%name=item%label_t1
+
+                  ! For now, if intermeidiate is part of a permutation
+                  ! line, then we add a P to its name
+                  if (item%permute == 2) then
+                  item%inter_spins(ishift)%name=trim(item%label_t1)//'P'
+                  else 
+                     item%inter_spins(ishift)%name=item%label_t1
+                  end if
 
                   if (item%swapped) then
                      ! t1 and t2 were swapped in summation
@@ -1891,7 +2015,11 @@
                   shift = item%inter_spins(ishift)%ncase + 1
                   !write(item%logfile,*)
                   !write(item%logfile,*) "intermediate", item%label_t2
-                  item%inter_spins(ishift)%name=item%label_t2
+                  if (item%permute == 2) then
+                     item%inter_spins(ishift)%name=item%label_t2//'P'
+                  else 
+                     item%inter_spins(ishift)%name=item%label_t2
+                  end if
 
                   if (item%swapped) then
                      ! t1 and t2 were swapped in summation
