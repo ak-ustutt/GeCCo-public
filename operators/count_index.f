@@ -2155,15 +2155,6 @@
       end if
       itf_item%label_res=contr_info%label_res
 
-      ! Assign factor --- use special ITF factor
-      ! the ITF factor is closer to the value expected from standard
-      ! diagram rules, but still some care has to be taken when translating
-      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
-      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      itf_item%fact=contr_info%fact_itf
-
-      ! Account for negative sign as explained from above...
-      call integral_fact(contr_info,itf_item%fact)
 
       ! Check if an intermediate
       !call check_inter(itf_item%label_t1,itf_item%inter(1))
@@ -2177,6 +2168,20 @@
          itf_item%inter(2) = check_inter(itf_item%label_t2)
       end if
       itf_item%inter(3) = check_inter(itf_item%label_res)
+
+      ! Assign factor --- use special ITF factor
+      ! the ITF factor is closer to the value expected from standard
+      ! diagram rules, but still some care has to be taken when translating
+      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+      if (itf_item%inter(3)) then !TODO: This is a hack!!!
+         itf_item%fact=contr_info%fact
+      else 
+         itf_item%fact=contr_info%fact_itf
+      end if
+
+      ! Account for negative sign as explained from above...
+      call integral_fact(contr_info,itf_item%fact)
 
       ! Assign index string
       if (comm==command_cp_intm .or. comm==command_add_intm) then
