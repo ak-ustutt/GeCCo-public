@@ -2162,6 +2162,9 @@
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
       itf_item%fact=contr_info%fact_itf
 
+      ! Account for negative sign as explained from above...
+      call integral_fact(contr_info,itf_item%fact)
+
       ! Check if an intermediate
       !call check_inter(itf_item%label_t1,itf_item%inter(1))
       !if (comm/=command_cp_intm .or. comm/=command_add_intm) then
@@ -2193,6 +2196,54 @@
 
       itf_item%inter1 = '        '
       itf_item%inter2 = '        '
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine integral_fact(contr,fact)
+*----------------------------------------------------------------------*
+!     Check if negative factor needs to be applied due to the different
+!     storeage of the <aj||bi> integrals
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      type(binary_contr), intent(in) ::
+     &     contr   ! Inofrmation about binary contraction
+      real, intent(inout) ::
+     &     fact
+
+      integer ::
+     &     i,
+     &     c(4,2)
+
+
+      c = 0
+
+      if (contr%label_op1 == 'H') then
+         do i = 1, contr%n_cnt
+           call count_index(i,
+     &        contr%occ_op1(1:,1:,i),
+     &        contr%rst_op1(1:,1:,1:,1:,1:,i),
+     &        contr%ngas,contr%nspin,c)
+         end do
+      else
+         do i = 1, contr%n_cnt
+           call count_index(i,
+     &        contr%occ_op2(1:,1:,i),
+     &        contr%rst_op2(1:,1:,1:,1:,1:,i),
+     &        contr%ngas,contr%nspin,c)
+         end do
+      end if
+
+      if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
+     &   then
+            fact = fact * -1.0
+      end if
 
       return
       end
