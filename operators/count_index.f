@@ -118,8 +118,6 @@
       character(len=index_len) ::
      &     t_index      ! Transpose of ITF index string
 
-      character(len=1) ::
-     &     tmp
       logical ::
      &     contra
 
@@ -132,13 +130,11 @@
       t_index=index
 
       if (contra) then
-         tmp=index(3:3)
          t_index(3:3)=index(4:4)
-         t_index(4:4)=tmp
+         t_index(4:4)=index(3:3)
       else 
-         tmp=index(1:1)
          t_index(1:1)=index(2:2)
-         t_index(2:2)=tmp
+         t_index(2:2)=index(1:1)
       end if
       
       end function
