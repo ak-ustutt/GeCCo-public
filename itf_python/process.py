@@ -357,6 +357,28 @@ def rename_integrals(line):
             tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[1:2] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
+        if ("f:ce" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[1:2] + tmp[0:1]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[1:2] + tmp2[0:1]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
+        if ("K:cecc" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[1:2] + tmp[0:1] + tmp[2:3] + tmp[3:4]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[1:2] + tmp2[0:1] + tmp2[2:3] + tmp2[3:4]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
+        if ("K:ccec" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[2:3] + tmp2[0:1] + tmp2[1:2] + tmp2[3:4]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
+
     line = " ".join(words)
     return line
 
@@ -437,7 +459,7 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ecec" in line):
+    if ("K:ceec" in line or "K:ecec" in line or "f:ce" in line or "K:cecc" in line or "K:ccec" in line):
         line = rename_integrals(line)
         words=line.split()
 
