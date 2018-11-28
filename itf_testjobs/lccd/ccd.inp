@@ -1,0 +1,8 @@
+general
+ print=10
+orb_space
+ shell type=closed,def=(1,0,0,0,1,0,0,0)
+calculate
+ interfaces file=/home/black/programs/GeCCo/itf_testjobs/lccd/my_targets.py
+ solve conv=1d-10
+ routes auto_opt=F,use_tr=F
