@@ -735,11 +735,23 @@ if (multi): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
 declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
+# Check if we have singles amplitudes
+singles = False
+for i in range(0, len(declare_ten)):
+    if ("T:ec" in declare_ten[i]):
+        singles = True
+    break
+
 if (not multi):
     # Tensors needed in CCD
     print("tensor: ERef[], ERef     // Reference energy", file=f2)
+    if (singles):
+        print("tensor: EMp1[], EMp1     // MP2 energy", file=f2)
+        print("tensor: EDi1[], EDi1     // Direct 1st order energy", file=f2)
+        print("tensor: Nrm1[], Nrm1     // Singles amplitude norm", file=f2)
+        print("tensor: Var1[], Var1     // Singles residual norm", file=f2)
     print("tensor: EMp2[], EMp2     // MP2 energy", file=f2)
-    print("tensor: EDi2[], EDi2     // Direct 2nd order energy", file=f2)
+    print("tensor: EDi2[], EDi2     // Direct 1st order energy", file=f2)
     print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
     print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
     print(file=f2)
@@ -800,9 +812,13 @@ for i in range(0, len(declare_inter)):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
         print("tensor: %-18s !Create{type:plain}" % (declare_inter[i] + ","), file=f2)
+
+# Intermediates needed in single-reference amp update
 if (not multi):
     print(file=f2)
-    print("tensor: L1[abij],          !Create{type:plain}", file=f2)
+    if (singles):
+        print("tensor: L1[ai],            !Create{type:plain}", file=f2)
+    print("tensor: L2[abij],          !Create{type:plain}", file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first
@@ -820,6 +836,16 @@ if (multi):
 else:
     # Initalise amplitudes using MP2
     print("// Using MP2 amplitudes for starting guess", file=f2)
+    if (singles):
+        print("alloc T:ec[ai], EMp1[], Nrm1[]", file=f2)
+        print("load f:ec[ai]", file=f2)
+        print(".T:ec[ai] -= f:ec[ai]", file=f2)
+        print("denom-scale T:ec[ai], [1,0]", file=f2)
+        print(".EMp1[] += T:ec[ai] f:ec[ai]", file=f2)
+        print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
+        print("drop f:ec[ai]", file=f2)
+        print("store Nrm1[], EMp1[], T:ec[ai]", file=f2)
+        print("", file=f2)
     print("alloc EMp2[], Nrm2[]", file=f2)
     print("for [i,j]:", file=f2)
     print("   alloc T:eecc[abij]", file=f2)
@@ -854,39 +880,63 @@ if (not multi):
 # Print out amplitude update
 # For single-reference methods, this also calculates the energy
 if (not multi):
-    # Update for CCD
     print(file=f2)
     print(file=f2)
     print('---- code("Update_Amplitudes")',file=f2)
+    if (singles):
+        print("// Update singles", file=f2)
+        print("load R:ec[ai]", file=f2)
+        print("// L1 = R^i_a/D^i_a; D^i_a = e_a-e_i", file=f2)
+        print("alloc L1[ai]", file=f2)
+        print(".L1[ai] += R:ec[ai]", file=f2)
+        print("denom-scale L1[ai], [1,0]", file=f2)
+        print("", file=f2)
+        print("alloc EMp1[], EDi1[], Nrm1[], Var1[]", file=f2)
+        print("load T:ec[ai], f:ec[ai]", file=f2)
+        print("// Compute Hylleraas-functional-like energy", file=f2)
+        print("// 2 T^i_a f^i_a + 2 (T^i_a-R^i_a/D^i_a) R^i_a", file=f2)
+        print(".EMp1[] += 2.0*T:ec[ai] (f:ec[ai] + R:ec[ai])", file=f2)
+        print(".EMp1[] -= 2.0*L1[ai] R:ec[ai]", file=f2)
+        print("// Update T:ec",file=f2)
+        print("// T^i_a = T^i_a-R^i_a/D^i_a",file=f2)
+        print(".T:ec[ai] -= L1[ai]", file=f2)
+        print(".EDi1[] += 2.0*T:ec[ai] f:ec[ai]", file=f2)
+        print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
+        print(".Var1[] += 2.0*L1[ai] L1[ai]", file=f2)
+        print("drop f:ec[ai], T:ec[ai]", file=f2)
+        print("store Var1[], Nrm1[], EDi1[], EMp1[]", file=f2)
+        print("", file=f2)
+        print("drop L1[ai], R:ec[ai]", file=f2)
+        print("", file=f2)
     print("// Update doubles",file=f2)
     print("alloc ECC[], EDi2[], Nrm2[], Var2[]",file=f2)
     print("for [i,j]:",file=f2)
     print("   load R:eecc[**ij]",file=f2)
-    print("   // L1 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2)
-    print("   alloc L1[**ij]",file=f2)
-    print("   .L1[**ij] += R:eecc[**ij]",file=f2)
-    print("   denom-scale L1[**ij], [1,1,0,0]",file=f2)
+    print("   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2)
+    print("   alloc L2[**ij]",file=f2)
+    print("   .L2[**ij] += R:eecc[**ij]",file=f2)
+    print("   denom-scale L2[**ij], [1,1,0,0]",file=f2)
     print("",file=f2)
     print("   load K:eecc[**ij]",file=f2)
     print("   // Compute Hylleraas-functional-like energy",file=f2)
-    print("   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}",file=f2)
+    print("   // \\tilde{T}^{ij}_{ab} K{ij}_{ab} + \\tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}",file=f2)
     print("   load T:eecc[**ij]",file=f2)
     print("   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])",file=f2)
     print("   drop T:eecc[**ij]",file=f2)
-    print("   .ECC -= (2.0*L1[abij] - L1[baij]) R:eecc[abij]",file=f2)
-    print("   .Var2 += (2.0*L1[abij] - L1[baij]) L1[abij]",file=f2)
+    print("   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]",file=f2)
+    print("   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]",file=f2)
     print("",file=f2)
     print("   // Update T:eecc",file=f2)
     print("   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}",file=f2)
     print("   load T:eecc[**ij]",file=f2)
-    print("   .T:eecc[abij] -= L1[abij]",file=f2)
+    print("   .T:eecc[abij] -= L2[abij]",file=f2)
     print("",file=f2)
     print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2)
     print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2)
     print("   store T:eecc[**ij]",file=f2)
     print("   drop K:eecc[**ij]",file=f2)
     print("",file=f2)
-    print("   drop L1[**ij]",file=f2)
+    print("   drop L2[**ij]",file=f2)
     print("   drop R:eecc[**ij]",file=f2)
     print("store Var2[], Nrm2[], EDi2[], ECC[]",file=f2)
 

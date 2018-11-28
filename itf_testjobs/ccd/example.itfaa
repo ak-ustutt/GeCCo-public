@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 27-11-2018 17:50
+// Created on: 28-11-2018 13:58
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -33,7 +33,7 @@ tensor: R:eecc[abij], R:eecc
 tensor: ECC[], ECC
 tensor: ERef[], ERef     // Reference energy
 tensor: EMp2[], EMp2     // MP2 energy
-tensor: EDi2[], EDi2     // Direct 2nd order energy
+tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
 
@@ -54,7 +54,7 @@ tensor: STIN0001aaaa[biaj], !Create{type:plain}
 tensor: STIN0001abba[biaj], !Create{type:plain}
 tensor: STIN0001baab[ibaj], !Create{type:plain}
 
-tensor: L1[abij],          !Create{type:plain}
+tensor: L2[abij],          !Create{type:plain}
 
 
 ---- code("Init_Amplitudes")
@@ -93,31 +93,31 @@ store ERef[]
 alloc ECC[], EDi2[], Nrm2[], Var2[]
 for [i,j]:
    load R:eecc[**ij]
-   // L1 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
-   alloc L1[**ij]
-   .L1[**ij] += R:eecc[**ij]
-   denom-scale L1[**ij], [1,1,0,0]
+   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
+   alloc L2[**ij]
+   .L2[**ij] += R:eecc[**ij]
+   denom-scale L2[**ij], [1,1,0,0]
 
    load K:eecc[**ij]
    // Compute Hylleraas-functional-like energy
-   // 	ilde{T}^{ij}_{ab} K{ij}_{ab} + 	ilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
+   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
    load T:eecc[**ij]
    .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
    drop T:eecc[**ij]
-   .ECC -= (2.0*L1[abij] - L1[baij]) R:eecc[abij]
-   .Var2 += (2.0*L1[abij] - L1[baij]) L1[abij]
+   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
+   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
 
    // Update T:eecc
    // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}
    load T:eecc[**ij]
-   .T:eecc[abij] -= L1[abij]
+   .T:eecc[abij] -= L2[abij]
 
    .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
    .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
    store T:eecc[**ij]
    drop K:eecc[**ij]
 
-   drop L1[**ij]
+   drop L2[**ij]
    drop R:eecc[**ij]
 store Var2[], Nrm2[], EDi2[], ECC[]
 
