@@ -42,7 +42,11 @@
 
       if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
           rename_tensor='R'
+      else if (trim(string).eq.'O1') then
+          rename_tensor='R'
       else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
+          rename_tensor='T'
+      else if (trim(string).eq.'T1') then
           rename_tensor='T'
       else if (trim(string).eq.'H') then
           if (rank==2) then

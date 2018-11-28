@@ -375,7 +375,10 @@ parser = argparse.ArgumentParser(
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-i','--input',default=None,help='ITF binary contraction file')
 parser.add_argument('-o','--output',default=None,help='ITF algo file')
-parser.add_argument('-s','--overlap',default=1,help='0: single-reference; >0: multireference')
+#parser.add_argument('-m','--multi',type=bool,default=True,help='False: single-reference; True: multireference')
+parser.add_argument('--multi',dest='multi',action='store_true')
+parser.add_argument('--no-multi',dest='multi',action='store_false')
+parser.set_defaults(multi=True)
 args = parser.parse_args()
 
 if args.input is None:
@@ -387,7 +390,7 @@ if args.output is None:
 
 inp = args.input
 outp = args.output
-olap = int(args.overlap)
+multi = args.multi
 
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
@@ -695,7 +698,7 @@ print(file=f2)
 
 # Declare tensors and index-spaces
 print("---- decl", file=f2)
-if (olap==0):
+if (not multi):
     print("index-space: ijkl, Closed  , c", file=f2)
     print("index-space: abcd, External, e", file=f2)
     print("index-space: CD, Core, C", file=f2)
@@ -728,11 +731,11 @@ declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
-if (olap): print("tensor: R[I],  R:I", file=f2)
+if (multi): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
 declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
-if (olap==0):
+if (not multi):
     # Tensors needed in CCD
     print("tensor: ERef[], ERef     // Reference energy", file=f2)
     print("tensor: EMp2[], EMp2     // MP2 energy", file=f2)
@@ -748,7 +751,7 @@ if (olap==0):
     print("tensor: DeltaC[CC], DeltaC", file=f2)
 
 # Declare density and overlap tensors
-if (olap>0):
+if (multi):
     print(file=f2)
     print("// Resuced density tensors (Icc-Icc coupling-coefficients)",file=f2)
     print("// these are created on C++ side in CreateMrciTensors method",file=f2)
@@ -797,7 +800,7 @@ for i in range(0, len(declare_inter)):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
         print("tensor: %-18s !Create{type:plain}" % (declare_inter[i] + ","), file=f2)
-if (olap==0):
+if (not multi):
     print(file=f2)
     print("tensor: L1[abij],          !Create{type:plain}", file=f2)
 
@@ -806,7 +809,7 @@ if (olap==0):
 print(file=f2)
 print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
-if (olap>0):
+if (multi):
     for i in range(0, len(declare_ten)):
         if ("T[" in declare_ten[i]):
             generic=generic_index(declare_ten[i])
@@ -830,7 +833,7 @@ else:
     print("store Nrm2[], EMp2[]", file=f2)
 
 # Calculate the reference energy for single-reference methods
-if (olap==0):
+if (not multi):
     print("", file=f2)
     print("", file=f2)
     print('---- code ("Ref_Energy")', file=f2)
@@ -850,7 +853,7 @@ if (olap==0):
 
 # Print out amplitude update
 # For single-reference methods, this also calculates the energy
-if (olap==0):
+if (not multi):
     # Update for CCD
     print(file=f2)
     print(file=f2)
@@ -914,7 +917,7 @@ if "R[abpq]" in declare_res:
     print(file=f2)
 
 # Print out code needed to evaluate the overlap matrix
-if (olap>0):
+if (multi):
     print(file=f2)
     print("// Set up 3rd order denisty and hole tensors",file=f2)
     print("// This is taken from the cic code",file=f2)

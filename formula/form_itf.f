@@ -33,8 +33,8 @@
      &     e            ! Exit satatus from python
       character(len=100) ::
      &     exe_line     ! Line for shell to execute
-      character(len=1) ::
-     &     singlr       ! 0: single-reference; >0: multireference
+      character(len=10) ::
+     &     flag         ! set the --multi option for the python script
 
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0   ! Timing variables
@@ -77,9 +77,9 @@
 
       ! Is this a single-refenece or a multireferecne calculation?
       if (.not. multi) then
-         singlr = '0'
+         flag = '--no-multi'
       else
-         singlr = '1'
+         flag = '--multi'
       endif
 
       ! Process ITF lines with python script
@@ -111,7 +111,7 @@
 
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
      &          //'bcontr2.tmp -o '//trim(name_out)
-     &          //' -s '//singlr
+     &          //' '//trim(flag)
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
 
