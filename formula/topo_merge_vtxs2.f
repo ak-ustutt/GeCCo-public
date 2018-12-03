@@ -184,7 +184,7 @@ c dbg
      &             sign_merge(occ_to,occ_fr,n_enclosed,reversed) 
               ! for ITF: sign for interchanging I0A J0A:
               if (mod(sum(occ_to(1:ngastp,2))*
-     &                sum(occ_to(1:ngastp,2)),2).eq.1) 
+     &                sum(occ_fr(1:ngastp,2)),2).eq.1) 
      &            itf_sign = -itf_sign
 
 c dbg
