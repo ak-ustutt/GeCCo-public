@@ -2174,11 +2174,7 @@
       ! diagram rules, but still some care has to be taken when translating
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      if (itf_item%inter(3)) then !TODO: This is a hack!!!
-         itf_item%fact=contr_info%fact
-      else 
-         itf_item%fact=contr_info%fact_itf
-      end if
+      itf_item%fact=contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,itf_item%fact)
