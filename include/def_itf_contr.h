@@ -54,3 +54,17 @@
      &     print_line = .true.          ! Should this line be printed
 
       end type itf_contr
+
+
+
+      type tensor_slot
+
+      character, pointer ::
+     &     cre(:) => null(),        ! Array of creation slots
+     &     ann(:) => null()
+
+      integer ::
+     &     cslots,                  ! Number of creation slots
+     &     aslots
+
+      end type tensor_slot
