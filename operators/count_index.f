@@ -90,6 +90,7 @@
       
       character(len=maxlen_bc_label), intent(in) ::
      &     label
+
       logical ::
      &     check_inter
 
@@ -103,6 +104,34 @@
       end if
 
       end function
+
+
+*----------------------------------------------------------------------*
+      pure function check_int(label)
+*----------------------------------------------------------------------*
+!    Check if tensor is an integral
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      !include 'def_itf_contr.h'
+      
+      character(len=maxlen_bc_label), intent(in) ::
+     &     label
+
+      logical ::
+     &     check_int
+
+      ! Assume these are the names of intermediates
+      if (index(label, "H")>0) then
+         check_int=.true.
+      else
+         check_int=.false.
+      end if
+
+      end function
+
 
 *----------------------------------------------------------------------*
       pure function t_index(index, upper)
@@ -1509,25 +1538,28 @@
          call index_convention(e1_array,e2_array,item%idx3,conv,conv)
       end if
 
-
       ! Need to corrrect index for R[ai]; the a and i must be in the
       ! same slot
       ! This should be considered as a hack....
-      if (.not. item%inter(3) .and. len(trim(item%idx3)) == 2) then
-      if (len(trim(item%idx1))==4 .and. len(trim(item%idx2))==4) then
-      if (trim(item%label_t1)/='H' .and. trim(item%label_t2)/='H') then
+      if (len(trim(item%idx3)) == 2) then
+      if (len(trim(item%idx1)) + len(trim(item%idx2))/=4) then
+      if (.not. item%int(1)) then
+
          j = 0
          k = 0
-         do i = 1, 4
+
+         do i = 1, len(trim(item%idx1))
             if (item%idx3(1:1) == item%idx1(i:i)) then
                j = i
             end if
-            if (item%idx3(1:1) == item%idx2(i:i)) then
-               j = i
-            end if
-
             if (item%idx3(2:2) == item%idx1(i:i)) then
                k = i
+            end if
+         end do
+
+         do i = 1, len(trim(item%idx2))
+            if (item%idx3(1:1) == item%idx2(i:i)) then
+               j = i
             end if
             if (item%idx3(2:2) == item%idx2(i:i)) then
                k = i
@@ -1535,9 +1567,11 @@
          end do
 
          if (mod(j+k,2)>0) then
-            if (item%inter(1)) then
+            if (item%inter(1) .and. len(trim(item%idx2))==4) then
                item%idx2 = t_index(item%idx2)
-            else if (item%inter(2)) then
+            else if (item%inter(2) .and. len(trim(item%idx1))==4) then
+               item%idx1 = t_index(item%idx1)
+            else
                item%idx1 = t_index(item%idx1)
             end if
          end if
@@ -2499,6 +2533,13 @@
          itf_item%inter(2) = check_inter(itf_item%label_t2)
       end if
       itf_item%inter(3) = check_inter(itf_item%label_res)
+
+      ! Check if an integral
+      itf_item%int(1) = check_int(itf_item%label_t1)
+      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+         itf_item%int(2) = check_int(itf_item%label_t2)
+      end if
+      itf_item%int(3) = .false.
 
       ! Assign factor --- use special ITF factor
       ! the ITF factor is closer to the value expected from standard

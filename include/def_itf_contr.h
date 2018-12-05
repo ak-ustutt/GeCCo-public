@@ -37,7 +37,8 @@
      &     permute,             ! 0,1,2,3: permutation cases
      &     command              ! Type of contraction, borrowed from formula_item
       logical ::
-     &     inter(3) = .false.,  ! True if result is intermediate
+     &     inter(3) = .false.,  ! True if tensor is an intermediate
+     &     int(3) = .false.,    ! True if tensor is an integral
      &     swapped = .false.,   ! True is t1 and t2 were swapped during spin summation
      &     symm = .false.       ! True if going to symmetrise result
       real(4) ::

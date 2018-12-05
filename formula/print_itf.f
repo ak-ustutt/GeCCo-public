@@ -247,9 +247,9 @@
          ! Numerically order spin_inters, so 001 intermediate is printed
          ! out first, then 002. This is important because intermediates
          ! may depend on previous intermediates
-         shift = 0
          do i = 1, MAXINT
             write(ch, '(I1)') i
+            shift = 0
             do j = 1, ninter
                if (scan(ch, spin_inters(j)%name)) then
                   ospin_inters(i+shift) = spin_inters(j)
