@@ -1,0 +1,248 @@
+// This ITF algo file was created using the GeCCo ITF translator
+// Author: J.A. Black
+
+// Created on: 07-12-2018 11:02
+
+---- decl
+index-space: ijkl, Closed  , c
+index-space: abcd, External, e
+index-space: CD, Core, C
+
+
+// K-integral tensors
+tensor: K:cccc[klij], K:cccc
+tensor: K:eccc[bjki], K:eccc
+tensor: K:eecc[baji], K:eecc
+
+// J-integral tensors
+tensor: J:eecc[abji], J:eecc
+
+// Special integral tensors
+tensor: K4E1:eecc[abij], K4E1:eecc
+
+// Fock tensors
+tensor: f:cc[ji], f:cc
+tensor: f:ec[ai], f:ec
+tensor: f:ee[ab], f:ee
+
+// Amplitude tensors
+tensor: T:ec[aj], T:ec
+tensor: T:eecc[abij], T:eecc
+
+// Residual tensors
+tensor: R:ec[ai], R:ec
+tensor: R:eecc[abij], R:eecc
+
+// Energy and DIIS scalars
+tensor: ECC[], ECC
+tensor: ERef[], ERef     // Reference energy
+tensor: EMp1[], EMp1     // MP2 energy
+tensor: EDi1[], EDi1     // Direct 1st order energy
+tensor: Nrm1[], Nrm1     // Singles amplitude norm
+tensor: Var1[], Var1     // Singles residual norm
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: EDi2[], EDi2     // Direct 1st order energy
+tensor: Nrm2[], Nrm2     // Doubles amplitude norm
+tensor: Var2[], Var2     // Doubles residual norm
+
+// Tensors needed to calculate the reference energy
+tensor: f:CC[CC],   f:CC
+tensor: CoreH[ii],  h:cc
+tensor: CoreH[CC],  h:CC
+tensor: Delta[ii],  Delta
+tensor: DeltaC[CC], DeltaC
+
+// Intermediates
+tensor: ITIN[abij],        !Create{type:plain}
+
+tensor: L1[ai],            !Create{type:plain}
+tensor: L2[abij],          !Create{type:plain}
+
+
+---- code("Init_Amplitudes")
+// Using MP2 amplitudes for starting guess
+alloc T:ec[ai], EMp1[], Nrm1[]
+load f:ec[ai]
+.T:ec[ai] -= f:ec[ai]
+denom-scale T:ec[ai], [1,0]
+.EMp1[] += T:ec[ai] f:ec[ai]
+.Nrm1[] += 2.0*T:ec[ai] T:ec[ai]
+drop f:ec[ai]
+store Nrm1[], EMp1[], T:ec[ai]
+
+alloc EMp2[], Nrm2[]
+for [i,j]:
+   alloc T:eecc[abij]
+   load K:eecc[**ij]
+   .T:eecc[abij] -= K:eecc[abij]
+   denom-scale T:eecc[abij], [1,1,0,0]
+   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   drop K:eecc[**ij]
+   store T:eecc[**ij]
+store Nrm2[], EMp2[]
+
+
+---- code ("Ref_Energy")
+alloc ERef[]
+// Closed-shell contribution
+load f:cc[ii], CoreH[ii], Delta[ii]
+.ERef += f:cc[ij] Delta[ij]
+.ERef += CoreH[ij] Delta[ij]
+drop Delta, CoreH, f:cc
+
+// Core contribution
+load f:CC[CC], CoreH[CC], DeltaC[CC]
+.ERef += f:CC[CD] DeltaC[CD]
+.ERef += CoreH[CD] DeltaC[CD]
+drop DeltaC, CoreH, f:CC
+store ERef[]
+
+
+---- code("Update_Amplitudes")
+// Update singles
+load R:ec[ai]
+// L1 = R^i_a/D^i_a; D^i_a = e_a-e_i
+alloc L1[ai]
+.L1[ai] += R:ec[ai]
+denom-scale L1[ai], [1,0]
+
+alloc ECC[], EDi1[], Nrm1[], Var1[]
+load T:ec[ai], f:ec[ai]
+// Compute Hylleraas-functional-like energy
+// 2 T^i_a f^i_a + 2 (T^i_a-R^i_a/D^i_a) R^i_a
+.ECC[] += 2.0*T:ec[ai] (f:ec[ai] + R:ec[ai])
+.ECC[] -= 2.0*L1[ai] R:ec[ai]
+// Update T:ec
+// T^i_a = T^i_a-R^i_a/D^i_a
+.T:ec[ai] -= L1[ai]
+.EDi1[] += 2.0*T:ec[ai] f:ec[ai]
+.Nrm1[] += 2.0*T:ec[ai] T:ec[ai]
+.Var1[] += 2.0*L1[ai] L1[ai]
+drop f:ec[ai]
+store T:ec[ai]
+store Var1[], Nrm1[], EDi1[], ECC[]
+
+drop L1[ai], R:ec[ai]
+
+// Update doubles
+load ECC[]
+alloc EDi2[], Nrm2[], Var2[]
+for [i,j]:
+   load R:eecc[**ij]
+   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
+   alloc L2[**ij]
+   .L2[**ij] += R:eecc[**ij]
+   denom-scale L2[**ij], [1,1,0,0]
+
+   load K:eecc[**ij]
+   // Compute Hylleraas-functional-like energy
+   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
+   load T:eecc[**ij]
+   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
+   drop T:eecc[**ij]
+   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
+   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
+
+   // Update T:eecc
+   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}
+   load T:eecc[**ij]
+   .T:eecc[abij] -= L2[abij]
+
+   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   store T:eecc[**ij]
+   drop K:eecc[**ij]
+
+   drop L2[**ij]
+   drop R:eecc[**ij]
+store Var2[], Nrm2[], EDi2[], ECC[]
+
+
+---- code("Residual")
+alloc R:ec[ai]
+load f:ec[ai]
+.R:ec[ai] += f:ec[ai]
+drop f:ec[ai]
+load f:cc[ji], T:ec[aj]
+.R:ec[ai] -= f:cc[ji] T:ec[aj]
+drop T:ec[aj], f:cc[ji]
+load f:ee[ab], T:ec[bi]
+.R:ec[ai] += f:ee[ab] T:ec[bi]
+drop T:ec[bi], f:ee[ab]
+load K:eecc[baji], J:eecc[abji], T:ec[bj]
+.R:ec[ai] += (K:eecc[baji] - J:eecc[abji]) T:ec[bj]
+drop T:ec[bj], J:eecc[abji], K:eecc[baji]
+load K:eecc[baji], T:ec[bj]
+.R:ec[ai] += K:eecc[baji] T:ec[bj]
+drop T:ec[bj], K:eecc[baji]
+load f:ec[bj], T:eecc[abij]
+.R:ec[ai] += f:ec[bj] (T:eecc[abij] - T:eecc[baij])
+.R:ec[ai] += f:ec[bj] T:eecc[abij]
+drop T:eecc[abij], f:ec[bj]
+load K:eccc[bjki], T:eecc[abjk]
+.R:ec[ai] -= .5*(K:eccc[bjki] - K:eccc[bkji]) (T:eecc[abjk] - T:eecc[bajk])
+.R:ec[ai] -= K:eccc[bjki] T:eecc[abjk]
+drop T:eecc[abjk], K:eccc[bjki]
+store R:ec[ai]
+
+alloc R:eecc[abij]
+load K:eecc[abij]
+.R:eecc[abij] += K:eecc[abij]
+drop K:eecc[abij]
+alloc ITIN[abij]
+load K:eccc[akij], T:ec[bk]
+.ITIN[abij] -= K:eccc[akij] T:ec[bk]
+drop T:ec[bk], K:eccc[akij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+alloc ITIN[abji]
+load f:cc[ki], T:eecc[abjk]
+.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
+drop T:eecc[abjk], f:cc[ki]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
+alloc ITIN[baij]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[baij] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+load K:cccc[klij], T:eecc[abkl]
+.R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
+drop T:eecc[abkl], K:cccc[klij]
+alloc ITIN[abij]
+load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
+.ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
+drop T:eecc[bcjk], J:eecc[acki], K:eecc[caki]
+load K:eecc[caki], T:eecc[bcjk]
+.ITIN[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
+drop T:eecc[bcjk], K:eecc[caki]
+load J:eecc[ackj], T:eecc[cbik]
+.ITIN[abij] -= J:eecc[ackj] T:eecc[cbik]
+drop T:eecc[cbik], J:eecc[ackj]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+// Replacing line with 4-external integrals
+//  .R:eecc[abij] += K:eeee[abcd] T:eecc[cdij]
+load K4E1:eecc[abij]
+.R:eecc[abij] += K4E1:eecc[abij]
+drop K4E1:eecc[abij]
+store R:eecc[abij]
+
+alloc ECC[]
+load K:eecc[abij], T:eecc[abij]
+.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += K:eecc[abij] T:eecc[abij]
+.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+drop T:eecc[abij], K:eecc[abij]
+load f:ec[ai], T:ec[ai]
+.ECC[] += f:ec[ai] T:ec[ai]
+drop T:ec[ai], f:ec[ai]
+store ECC[]
+
+---- end
