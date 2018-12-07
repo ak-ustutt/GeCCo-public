@@ -1,0 +1,177 @@
+// This ITF algo file was created using the GeCCo ITF translator
+// Author: J.A. Black
+
+// Created on: 07-12-2018 12:17
+
+---- decl
+index-space: ijkl, Closed  , c
+index-space: abcd, External, e
+index-space: CD, Core, C
+
+
+// K-integral tensors
+tensor: K:eecc[abij], K:eecc
+
+// J-integral tensors
+tensor: J:eecc[acki], J:eecc
+
+// Special integral tensors
+
+// Fock tensors
+tensor: f:cc[ki], f:cc
+tensor: f:ee[ac], f:ee
+
+// Amplitude tensors
+tensor: T:eecc[abjk], T:eecc
+
+// Residual tensors
+tensor: R:eecc[abij], R:eecc
+
+// Energy and DIIS scalars
+tensor: ECC[], ECC
+tensor: ERef[], ERef     // Reference energy
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: EDi2[], EDi2     // Direct 1st order energy
+tensor: Nrm2[], Nrm2     // Doubles amplitude norm
+tensor: Var2[], Var2     // Doubles residual norm
+
+// Tensors needed to calculate the reference energy
+tensor: f:CC[CC],   f:CC
+tensor: CoreH[ii],  h:cc
+tensor: CoreH[CC],  h:CC
+tensor: Delta[ii],  Delta
+tensor: DeltaC[CC], DeltaC
+
+// Intermediates
+tensor: ITIN[abji],        !Create{type:plain}
+tensor: STIN0001aaaa[biaj], !Create{type:plain}
+tensor: STIN0001abba[biaj], !Create{type:plain}
+tensor: STIN0001baab[ibaj], !Create{type:plain}
+
+tensor: L2[abij],          !Create{type:plain}
+
+
+---- code("Init_Amplitudes")
+// Using MP2 amplitudes for starting guess
+alloc EMp2[], Nrm2[]
+for [i,j]:
+   alloc T:eecc[abij]
+   load K:eecc[**ij]
+   .T:eecc[abij] -= K:eecc[abij]
+   denom-scale T:eecc[abij], [1,1,0,0]
+   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   drop K:eecc[**ij]
+   store T:eecc[**ij]
+store Nrm2[], EMp2[]
+
+
+---- code ("Ref_Energy")
+alloc ERef[]
+// Closed-shell contribution
+load f:cc[ii], CoreH[ii], Delta[ii]
+.ERef += f:cc[ij] Delta[ij]
+.ERef += CoreH[ij] Delta[ij]
+drop Delta, CoreH, f:cc
+
+// Core contribution
+load f:CC[CC], CoreH[CC], DeltaC[CC]
+.ERef += f:CC[CD] DeltaC[CD]
+.ERef += CoreH[CD] DeltaC[CD]
+drop DeltaC, CoreH, f:CC
+store ERef[]
+
+
+---- code("Update_Amplitudes")
+// Update doubles
+alloc ECC[], EDi2[], Nrm2[], Var2[]
+for [i,j]:
+   load R:eecc[**ij]
+   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
+   alloc L2[**ij]
+   .L2[**ij] += R:eecc[**ij]
+   denom-scale L2[**ij], [1,1,0,0]
+
+   load K:eecc[**ij]
+   // Compute Hylleraas-functional-like energy
+   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
+   load T:eecc[**ij]
+   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
+   drop T:eecc[**ij]
+   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
+   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
+
+   // Update T:eecc
+   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}
+   load T:eecc[**ij]
+   .T:eecc[abij] -= L2[abij]
+
+   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   store T:eecc[**ij]
+   drop K:eecc[**ij]
+
+   drop L2[**ij]
+   drop R:eecc[**ij]
+store Var2[], Nrm2[], EDi2[], ECC[]
+
+
+---- code("Residual")
+alloc R:eecc[abij]
+load K:eecc[abij]
+.R:eecc[abij] += K:eecc[abij]
+drop K:eecc[abij]
+alloc ITIN[abji]
+load f:cc[ki], T:eecc[abjk]
+.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
+drop T:eecc[abjk], f:cc[ki]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
+alloc ITIN[baij]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[baij] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc ITIN[abij]
+load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
+.ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
+drop T:eecc[bcjk], J:eecc[acki], K:eecc[caki]
+load K:eecc[caki], T:eecc[bcjk]
+.ITIN[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
+drop T:eecc[bcjk], K:eecc[caki]
+load J:eecc[ackj], T:eecc[cbik]
+.ITIN[abij] -= J:eecc[ackj] T:eecc[cbik]
+drop T:eecc[cbik], J:eecc[ackj]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+alloc STIN0001aaaa[biaj], STIN0001abba[biaj], STIN0001baab[ibaj], ITIN[abij]
+load K:eecc[acik], T:eecc[bcjk]
+.STIN0001aaaa[biaj] -= (K:eecc[acik] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[biaj] -= K:eecc[acik] T:eecc[bcjk]
+.STIN0001abba[biaj] -= K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001abba[biaj] -= (K:eecc[acik] - K:eecc[caik]) T:eecc[bcjk]
+.STIN0001baab[ibaj] -= K:eecc[acki] T:eecc[cbjk]
+drop T:eecc[cbjk], K:eecc[acki]
+load T:eecc[bcjk]
+.ITIN[abij] -= .5*STIN0001aaaa[akci] T:eecc[bcjk]
+.ITIN[abij] -= .5*STIN0001abba[akci] (T:eecc[bcjk] - T:eecc[cbjk])
+.ITIN[abij] -= .5*STIN0001baab[kacj] T:eecc[cbik]
+drop T:eecc[cbik]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij], STIN0001baab[ibaj], STIN0001abba[biaj], STIN0001aaaa[biaj]
+store R:eecc[abij]
+
+alloc ECC[]
+load K:eecc[abij], T:eecc[abij]
+.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += K:eecc[abij] T:eecc[abij]
+.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+drop T:eecc[abij], K:eecc[abij]
+store ECC[]
+
+---- end

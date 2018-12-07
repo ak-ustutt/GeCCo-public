@@ -1,5 +1,6 @@
 general
  print=10
+ form_test=T
 orb_space
  shell type=closed,def=(1,0,0,0,1,0,0,0)
 calculate
