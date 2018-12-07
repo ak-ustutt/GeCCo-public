@@ -178,8 +178,8 @@ def print_result(line):
                 if "TIN" not in words[3]: inter2 = True
                 if "TIN" not in words[5]: inter3 = True
 
-                gen1 = generic_index(words[2])
-                gen2 = generic_index(words[3])
+                gen1 = generic_index(words[3])
+                gen2 = generic_index(words[5])
 
                 # Brackets for second tensor
                 if inter1:
