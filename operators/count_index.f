@@ -1001,7 +1001,8 @@
       integer ::
      &     c(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
-     &     e2(4,2)      ! Occupations of external index 2
+     &     e2(4,2),     ! Occupations of external index 2
+     &     e3(4,2)      ! Occupations of external index 2
       integer ::
      &     i,j,k
       character, dimension(4) ::
@@ -1037,50 +1038,59 @@
       type(tensor_slot) ::
      &     op1, op2, ep1, ep2, cp1, cp2
 
-!      e1 = 0
-!      do i = 1, contr_info%nj_op1
-!        call count_index(i,
-!     &     contr_info%occ_op1(1:,1:,i),
-!     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      call construct_slot(e1,op1)
-!
-!      e1 = 0
-!      do i = 1, contr_info%nj_op2
-!        call count_index(i,
-!     &     contr_info%occ_op2(1:,1:,i),
-!     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      call construct_slot(e1,op2)
-!
-!      e1 = 0
-!      do i = 1, contr_info%nj_op1
-!        call count_index(i,
-!     &     contr_info%occ_ex1(1:,1:,i),
-!     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      call construct_slot(e1,ep1)
-!
-!      e1 = 0
-!      do i = 1, contr_info%nj_op2
-!        call count_index(i,
-!     &     contr_info%occ_ex2(1:,1:,i),
-!     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      call construct_slot(e1,ep2)
-!
-!      e1 = 0
-!      do i = 1, contr_info%n_cnt
-!        call count_index(i,
-!     &     contr_info%occ_cnt(1:,1:,i),
-!     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      call construct_slot(e1,cp1)
+      e1 = 0
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_op1(1:,1:,i),
+     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,op1)
+
+      e1 = 0
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_op2(1:,1:,i),
+     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,op2)
+
+      e1 = 0
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_ex1(1:,1:,i),
+     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,ep1)
+
+      e1 = 0
+      do i = 1, contr_info%nj_op2
+        call count_index(i,
+     &     contr_info%occ_ex2(1:,1:,i),
+     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,ep2)
+
+      e1 = 0
+      do i = 1, contr_info%n_cnt
+        call count_index(i,
+     &     contr_info%occ_cnt(1:,1:,i),
+     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,cp1)
+
+      e1 = 0
+      do i = 1, contr_info%nj_res
+        call count_index(i,
+     &     contr_info%occ_res(1:,1:,i),
+     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      call construct_slot(e1,cp2)
 
 
 
@@ -1100,6 +1110,7 @@
       c=0
       e1=0
       e2=0
+      e3=0
       c1='        '
       c2='        '
       c3='        '
@@ -1126,6 +1137,12 @@
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e2)
       end do
+      do i = 1, contr_info%nj_res
+        call count_index(i,
+     &     contr_info%occ_res(1:,1:,i),
+     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e3)
+      end do
 
       ! Figure out factor from equivalent lines
       factor = 1.0
@@ -1144,173 +1161,206 @@
       item%fact = item%fact * factor
 
 
+      if (ep1%cslots /= 0) then
+         j = 1
+         do i=1, e1(2,1)
+             ep1%cre(i) = par(i)
+             j = j + 1
+         end do
+         do i=1, e1(3,1)
+             ep1%cre(j)=val(i)
+             j = j + 1
+         end do
+         do i=1, e1(1,1)
+             ep1%cre(j)=hol(i)
+             j = j + 1
+         end do
+      end if
 
-!      if (ep1%cslots /= 0) then
-!         j = 1
-!         do i=1, e1(2,1)
-!             ep1%cre(i) = par(i)
-!             j = j + 1
-!         end do
-!         do i=1, e1(3,1)
-!             ep1%cre(j)=val(i)
-!             j = j + 1
-!         end do
-!         do i=1, e1(1,1)
-!             ep1%cre(j)=hol(i)
-!             j = j + 1
-!         end do
-!      end if
-!
-!      if (ep1%aslots /= 0) then
-!         j = 1
-!         do i=1, e1(2,2)
-!             ep1%ann(i) = par(i+e1(2,1))
-!             j = j + 1
-!         end do
-!         do i=1, e1(3,2)
-!             ep1%ann(j)=val(i+e1(3,1))
-!             j = j + 1
-!         end do
-!         do i=1, e1(1,2)
-!             ep1%ann(j)=hol(i+e1(1,1))
-!             j = j + 1
-!         end do
-!      end if
-!
-!      if (ep2%cslots /= 0) then
-!         j = 1
-!         do i=1, e2(2,1)
-!             ep2%cre(i)=par(i+e1(2,1)+e1(2,2))
-!             j = j + 1
-!         end do
-!         do i=1, e2(3,1)
-!             ep2%cre(j)=val(i+e1(3,1)+e1(3,2))
-!             j = j + 1
-!         end do
-!         do i=1, e2(1,1)
-!             ep2%cre(j)=hol(i+e1(1,1)+e1(1,2))
-!             j = j + 1
-!         end do
-!      end if
-!
-!      if (ep2%aslots /= 0) then
-!         j = 1
-!         do i=1, e2(2,2)
-!             ep2%ann(i)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
-!             j = j + 1
-!         end do
-!         do i=1, e2(3,2)
-!             ep2%ann(j)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
-!             j = j + 1
-!         end do
-!         do i=1, e2(1,2)
-!             ep2%ann(j)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
-!             j = j + 1
-!         end do
-!      end if
-!
-!
+      if (ep1%aslots /= 0) then
+         j = 1
+         do i=1, e1(2,2)
+             ep1%ann(i) = par(i+e1(2,1))
+             j = j + 1
+         end do
+         do i=1, e1(3,2)
+             ep1%ann(j)=val(i+e1(3,1))
+             j = j + 1
+         end do
+         do i=1, e1(1,2)
+             ep1%ann(j)=hol(i+e1(1,1))
+             j = j + 1
+         end do
+      end if
+
+      if (ep2%cslots /= 0) then
+         j = 1
+         do i=1, e2(2,1)
+             ep2%cre(i)=par(i+e1(2,1)+e1(2,2))
+             j = j + 1
+         end do
+         do i=1, e2(3,1)
+             ep2%cre(j)=val(i+e1(3,1)+e1(3,2))
+             j = j + 1
+         end do
+         do i=1, e2(1,1)
+             ep2%cre(j)=hol(i+e1(1,1)+e1(1,2))
+             j = j + 1
+         end do
+      end if
+
+      if (ep2%aslots /= 0) then
+         j = 1
+         do i=1, e2(2,2)
+             ep2%ann(i)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
+             j = j + 1
+         end do
+         do i=1, e2(3,2)
+             ep2%ann(j)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
+             j = j + 1
+         end do
+         do i=1, e2(1,2)
+             ep2%ann(j)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
+             j = j + 1
+         end do
+      end if
+
+
 !      write(item%logfile,*) "EP1 ", ep1%cre, ep1%cslots
 !      write(item%logfile,*) "EP1 ", ep1%ann, ep1%aslots
 !      write(item%logfile,*) "EP2 ", ep2%cre, ep2%cslots
 !      write(item%logfile,*) "EP2 ", ep2%ann, ep2%aslots
-!
-!
-!
-!      if (cp1%cslots /= 0) then
-!         j = 1
-!         do i=1, c(2,1)
-!            k=i+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
-!            cp1%cre(i) = par(k)
-!            j = j + 1
-!         end do
-!         do i=1, c(3,1)
-!            k=i+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)   
-!            cp1%cre(j)=val(k)
-!            j = j + 1
-!         end do
-!         do i=1, c(1,1)
-!            k=i+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
-!            cp1%cre(j)=hol(k)
-!            j = j + 1
-!         end do
-!      end if
-!
-!      if (cp1%aslots /= 0) then
-!         j = 1
-!         do i=1, c(2,2)
-!            k=i+c(2,1)+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
-!            cp1%ann(i) = par(k)
-!            j = j + 1
-!         end do
-!         do i=1, c(3,2)
-!            k=i+c(3,1)+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)
-!            cp1%ann(j)=val(k)
-!            j = j + 1
-!         end do
-!         do i=1, c(1,2)
-!            k=i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
-!            cp1%ann(j)=hol(k)
-!            j = j + 1
-!         end do
-!      end if
-!
-!
-!      if (ep1%cslots /=0) then
-!         do i = 1, ep1%cslots
-!            op1%cre(i) = ep1%cre(i)
-!         end do
-!      end if
-!      if (ep1%aslots /=0) then
-!         do i = 1, ep1%aslots
-!            op1%ann(i) = ep1%ann(i)
-!         end do
-!      end if
-!
-!      if (ep2%cslots /=0) then
-!         do i = 1, ep2%cslots
-!            op2%cre(i) = ep2%cre(i)
-!         end do
-!      end if
-!      if (ep2%aslots /=0) then
-!         do i = 1, ep2%aslots
-!            op2%ann(i) = ep2%ann(i)
-!         end do
-!      end if
-!
-!
-!      if (cp1%cslots /=0) then
-!         do i = 1, cp1%cslots
-!            op1%cre(i+ep1%cslots) = cp1%cre(i)
-!         end do
-!      end if
-!      if (cp1%aslots /=0) then
-!         do i = 1, cp1%aslots
-!            op1%ann(i+ep1%aslots) = cp1%ann(i)
-!         end do
-!      end if
-!
-!      if (cp1%aslots /=0) then
-!         do i = 1, cp1%aslots
-!            op2%cre(i+ep2%cslots) = cp1%ann(i)
-!         end do
-!      end if
-!      if (cp1%cslots /=0) then
-!         do i = 1, cp1%cslots
-!            op2%ann(i+ep2%aslots) = cp1%cre(i)
-!         end do
-!      end if
-!
-!      ! Just use op1 and op2???
-!
-!      write(item%logfile,*) "OP1 ", op1%ann, op1%cre, op1%aslots
+
+
+
+      if (cp1%cslots /= 0) then
+         j = 1
+         do i=1, c(2,1)
+            k=i+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
+            cp1%cre(i) = par(k)
+            j = j + 1
+         end do
+         do i=1, c(3,1)
+            k=i+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)   
+            cp1%cre(j)=val(k)
+            j = j + 1
+         end do
+         do i=1, c(1,1)
+            k=i+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
+            cp1%cre(j)=hol(k)
+            j = j + 1
+         end do
+      end if
+
+      if (cp1%aslots /= 0) then
+         j = 1
+         do i=1, c(2,2)
+            k=i+c(2,1)+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
+            cp1%ann(i) = par(k)
+            j = j + 1
+         end do
+         do i=1, c(3,2)
+            k=i+c(3,1)+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)
+            cp1%ann(j)=val(k)
+            j = j + 1
+         end do
+         do i=1, c(1,2)
+            k=i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
+            cp1%ann(j)=hol(k)
+            j = j + 1
+         end do
+      end if
+
+
+      if (ep1%cslots /=0) then
+         do i = 1, ep1%cslots
+            op1%cre(i) = ep1%cre(i)
+         end do
+      end if
+      if (ep1%aslots /=0) then
+         do i = 1, ep1%aslots
+            op1%ann(i) = ep1%ann(i)
+         end do
+      end if
+
+      if (ep2%cslots /=0) then
+         do i = 1, ep2%cslots
+            op2%cre(i) = ep2%cre(i)
+         end do
+      end if
+      if (ep2%aslots /=0) then
+         do i = 1, ep2%aslots
+            op2%ann(i) = ep2%ann(i)
+         end do
+      end if
+
+
+      if (cp1%cslots /=0) then
+         do i = 1, cp1%cslots
+            op1%cre(i+ep1%cslots) = cp1%cre(i)
+         end do
+      end if
+      if (cp1%aslots /=0) then
+         do i = 1, cp1%aslots
+            op1%ann(i+ep1%aslots) = cp1%ann(i)
+         end do
+      end if
+
+      if (cp1%aslots /=0) then
+         do i = 1, cp1%aslots
+            op2%cre(i+ep2%cslots) = cp1%ann(i)
+         end do
+      end if
+      if (cp1%cslots /=0) then
+         do i = 1, cp1%cslots
+            op2%ann(i+ep2%aslots) = cp1%cre(i)
+         end do
+      end if
+
+
+      if (cp2%cslots /= 0) then
+         j = 1
+         do i=1, e3(2,1)
+             cp2%cre(i) = par(i)
+             j = j + 1
+         end do
+         do i=1, e3(3,1)
+             cp2%cre(j)=val(i)
+             j = j + 1
+         end do
+         do i=1, e3(1,1)
+             cp2%cre(j)=hol(i)
+             j = j + 1
+         end do
+      end if
+
+      if (cp2%aslots /= 0) then
+         j = 1
+         do i=1, e3(2,2)
+             cp2%ann(i) = par(i+e3(2,1))
+             j = j + 1
+         end do
+         do i=1, e3(3,2)
+             cp2%ann(j)=val(i+e3(3,1))
+             j = j + 1
+         end do
+         do i=1, e3(1,2)
+             cp2%ann(j)=hol(i+e3(1,1))
+             j = j + 1
+         end do
+      end if
+
+      ! Just use op1 and op2???
+!      write(item%logfile,*) "RES ", cp2%cre, cp2%ann, cp2%cslots
+!      write(item%logfile,*) "OP1 ", op1%cre, op1%ann, op1%aslots
 !      write(item%logfile,*) "OP2 ", op2%cre, op2%ann, op2%cslots
-!
-!      call desctruct_slot(op1)
-!      call desctruct_slot(op2)
-!      call desctruct_slot(ep1)
-!      call desctruct_slot(ep2)
-!      call desctruct_slot(cp1)
+
+      call desctruct_slot(op1)
+      call desctruct_slot(op2)
+      call desctruct_slot(ep1)
+      call desctruct_slot(ep2)
+      call desctruct_slot(cp1)
+      call desctruct_slot(cp2)
 
 
 
@@ -1504,9 +1554,9 @@
       !write(item%logfile,*) "INDEX1 ", item%idx1
       !write(item%logfile,*) "INDEX2 ", item%idx2
 
-      conv = (/ 1, 2, 3, 5, 6, 7 /)
-      call index_convention(e1_array,e2_array,tmp,conv,conv)
-
+!      conv = (/ 1, 2, 3, 5, 6, 7 /)
+!      call index_convention(e1_array,e2_array,tmp,conv,conv)
+!
 !      write(item%logfile,*) "TMP ", tmp
 !      write(item%logfile,*) "1 ", item%idx1
 !      write(item%logfile,*) "2 ", item%idx2
@@ -1530,6 +1580,11 @@
 !      write(item%logfile,*) "E1 ", e1_array
 !      write(item%logfile,*) "E2 ", e2_array
 
+
+
+
+
+
       ! Result, problems occur rank 2 tensors...
       conv = (/ 1, 2, 3, 5, 6, 7 /)
       if (len(trim(item%idx1)) < len(trim(item%idx2))) then
@@ -1537,6 +1592,17 @@
       else 
          call index_convention(e1_array,e2_array,item%idx3,conv,conv)
       end if
+
+
+      ! Need to correct index and check indicies are correctly paired
+      ! together
+
+
+      !call correct_index_pairs(item)
+
+
+
+      
 
       ! Need to corrrect index for R[ai]; the a and i must be in the
       ! same slot
@@ -1585,6 +1651,164 @@
 
       return
       end
+
+*----------------------------------------------------------------------*
+      subroutine correct_index_pairs(item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+      
+      type(itf_contr), intent(inout) ::
+     &     item
+
+      character(len=1) ::
+     &     p1(2),p2(2),p3(2)
+      character(len=:), allocatable ::
+     &     pair_list(:,:)
+
+      integer :: length, pairs, rank1, rank2, rank3, i,j
+      logical :: found
+
+      rank3 = (len(trim(item%idx3))/2)
+      if (rank3 == 0) return
+      rank1 = (len(trim(item%idx1))/2)
+      rank2 = (len(trim(item%idx2))/2)
+
+      length = 1
+      pairs = (len(trim(item%idx1)) + len(trim(item%idx2))) / 2
+
+
+      allocate(character(length) :: pair_list(pairs,2))
+      
+      pair_list = ' '
+
+      do i = 1, rank1
+         pair_list(i,2) = item%idx1(i:i)
+         pair_list(i,1) = item%idx1(rank1+i:rank1+i)
+      end do
+
+      do i = 1, rank2
+         pair_list(i+rank1,2) = item%idx2(i:i)
+         pair_list(i+rank1,1) = item%idx2(rank2+i:rank2+i)
+      end do
+
+      write(item%logfile,*) "PAIR LIST "
+      do i = 1, 2
+         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
+      end do
+
+      p1(1) = item%idx3(1:1)
+      p1(2) = item%idx3(rank3+1:rank3+1)
+      p2 = p1
+
+      write(item%logfile,*) "PAIR ", p1
+
+      found = .false.
+      ! TODO: check top row as well
+      do i = 1, pairs
+         if (p1(1) == pair_list(i,2)) then
+            p1(1) = pair_list(i,1)
+            write(item%logfile,*) "FOUND ", p1(1)
+            do j = 1, pairs
+               write(item%logfile,*) pair_list(j,2)
+               if (p1(1) == pair_list(j,2) .and.
+     &             p1(2) == pair_list(j,1)) then
+                  p1(1) = pair_list(j,1)
+               end if
+               if (p1(1)==p1(2)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+            exit
+         end if
+      end do
+
+      if (.not. found) then
+      p1 = p2
+      do i = 1, pairs
+         if (p1(1) == pair_list(i,2)) then
+            p1(1) = pair_list(i,1)
+            write(item%logfile,*) "FOUND ", p1(1)
+            do j = 1, pairs
+               write(item%logfile,*) pair_list(j,1)
+               if (p1(1) == pair_list(j,1) .and.
+     &             p1(2) == pair_list(j,2)) then
+                  p1(1) = pair_list(j,2)
+               end if
+               if (p1(1)==p1(2)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+            exit
+         end if
+      end do
+      end if
+
+      if (.not. found) then
+      p1 = p2
+      do i = 1, pairs
+         if (p1(1) == pair_list(i,1)) then
+            p1(1) = pair_list(i,2)
+            write(item%logfile,*) "FOUND ", p1(1)
+            do j = 1, pairs
+               write(item%logfile,*) pair_list(j,2)
+               write(item%logfile,*) p1
+               if (p1(1) == pair_list(j,2) .and. 
+     &             p1(2) == pair_list(j,1)) then
+                  p1(1) = pair_list(j,1)
+               end if
+               if (p1(1)==p1(2)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+            exit
+         end if
+      end do
+      end if
+
+      if (.not. found) then
+      p1 = p2
+      do i = 1, pairs
+         if (p1(1) == pair_list(i,1)) then
+            p1(1) = pair_list(i,2)
+            write(item%logfile,*) "FOUND ", p1(1)
+            do j = 1, pairs
+               write(item%logfile,*) pair_list(j,1)
+               write(item%logfile,*) p1
+               if (p1(1) == pair_list(j,1) .and. 
+     &             p1(2) == pair_list(j,2)) then
+                  p1(1) = pair_list(j,2)
+               end if
+               if (p1(1)==p1(2)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+            exit
+         end if
+      end do
+      end if
+
+      if (found) write(item%logfile,*) "GOOD ", p1
+      if (.not. found) write(item%logfile,*) "Transpose ", p1
+      write(item%logfile,*) item%idx3, item%idx1, item%idx2
+      write(item%logfile,*)
+
+      deallocate(pair_list)
+
+
+      return
+      end
+
 
 *----------------------------------------------------------------------*
       subroutine index_convention(arr1,arr2,item_idx,conv,conv2)
