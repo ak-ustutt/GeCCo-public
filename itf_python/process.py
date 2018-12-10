@@ -62,7 +62,7 @@ def change_line(line_o):
     return line
 
 
-def print_drop_tensors(load_tensors):
+def print_drop_tensors(load_tensors, indent=False):
     # Just reverse the load_ten line for drop_ten
     load_split = load_tensors.replace(',','').split()
     drop_tensors = "drop "
@@ -71,13 +71,19 @@ def print_drop_tensors(load_tensors):
         if (i != 1):
             drop_tensors = drop_tensors + ", "
 
-    print(drop_tensors.strip(), file=out)
+    if (indent):
+        print("\t"+drop_tensors.rstrip(), file=out)
+    else:
+        print(drop_tensors.rstrip(), file=out)
 
 
-def print_result(line):
+def print_result(line, indent=False):
     # Load, contract, drop tensors involved with result tensors
 
     words=line.split()
+
+    if (indent):
+        line = "\t" + line
 
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
@@ -108,7 +114,11 @@ def print_result(line):
         if "TIN" not in words[3]: inter2 = True
 
         if inter1 or inter2:
-            load_ten = "load "
+            if (indent):
+                load_ten = "\tload "
+            else:
+                load_ten = "load "
+
             if inter1:
                 load_ten = load_ten + t1
             if inter1 and t1 != t2 and inter2:
@@ -116,19 +126,23 @@ def print_result(line):
             if inter2 and t1 != t2:
                 load_ten = load_ten + t2
 
-            print(load_ten.strip(), file=out)
+            print(load_ten.rstrip(), file=out)
 
-        print(line.strip(), file=out)
+        print(line.rstrip(), file=out)
 
         # Drop tensors
         if inter1 or inter2:
-            print_drop_tensors(load_ten)
+            print_drop_tensors(load_ten, indent)
 
     elif len(words)==6:
 
         # Line contains brackets, may have to load more than two tensors
         if "TIN" not in words:
-            load_ten="load "
+            if (indent):
+                load_ten="\tload "
+            else:
+                load_ten="load "
+
             if '(' in words[2]:
                 t1=words[2].split('*',1)[-1].replace('(','')
                 t2=words[4].split('*',1)[-1].replace(')','')
@@ -202,12 +216,12 @@ def print_result(line):
                 print("Error in bracket determination")
                 exit(1)
 
-            print(load_ten.strip(), file=out)
+            print(load_ten.rstrip(), file=out)
 
-        print(line.strip(), file=out)
+        print(line.rstrip(), file=out)
 
         # Print out tensors we need to drop
-        print_drop_tensors(load_ten)
+        print_drop_tensors(load_ten, indent)
 
 
     elif len(words)>6:
@@ -233,7 +247,10 @@ def print_result(line):
             if "TIN" not in words[5]: inter3 = True
             if "TIN" not in words[7]: inter4 = True
 
-            load_ten="load "
+            if (indent):
+                load_ten="\tload "
+            else:
+                load_ten="load "
 
             if inter1:
                 load_ten=load_ten + t1
@@ -263,11 +280,11 @@ def print_result(line):
                 elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
                     load_ten=load_ten + t4
 
-            print(load_ten.strip(), file=out)
+            print(load_ten.rstrip(), file=out)
 
-        print(line.strip(), file=out)
+        print(line.rstrip(), file=out)
 
-        print_drop_tensors(load_ten)
+        print_drop_tensors(load_ten, indent)
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
@@ -296,6 +313,20 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
             declare_ten.append(word.split('*',1)[-1])
             declare_ten_index.append(generic)
             declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
+
+
+def print_loop(line, words):
+    global tab
+    tab = False
+    if ("K:eeec" in line):
+        for i in range(0, len(words)):
+            if ("K:eeec" in words[i]):
+                tmp = words[i].split('[',1)[1].split(']',1)[0]
+                idx = tmp[3:4]
+                loop = "for ["+idx+"]:"
+                print(loop, file=out)
+                tab = True
+                break
 
 
 def generic_index(tensor):
@@ -378,6 +409,20 @@ def rename_integrals(line):
             tmp2 = tmp2[2:3] + tmp2[0:1] + tmp2[1:2] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
+        if ("K:ceee" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[1:2] + tmp[2:3] + tmp[3:4] + tmp[0:1]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[1:2] + tmp2[2:3] + tmp2[3:4] + tmp2[0:1]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
+        if ("K:ecee" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
 
     line = " ".join(words)
     return line
@@ -440,6 +485,8 @@ declare_ten_name=[]     # Global list of tensor names
 prev_K4E_lines={0:"start"}
 K4E_count=1
 
+tab = False
+
 # Spin summed family = One or more equations the arise from the spin summation
 # proccedure on one result tensor contraction line
 begin=False         # Marks the start of a spin summed family of contractions
@@ -459,7 +506,7 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ecec" in line or "f:ce" in line or "K:cecc" in line or "K:ccec" in line):
+    if ("K:ceec" in line or "K:ecec" in line or "f:ce" in line or "K:cecc" in line or "K:ccec" in line or "K:ceee" in line or "K:ecee" in line):
         line = rename_integrals(line)
         words=line.split()
 
@@ -643,7 +690,6 @@ for line_o in f:
                 if ("R[" in words[0]):
                     tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
                 print("alloc", tmp_res.replace('.',''), file=out)
-                
 
             # Alloc intermediates if needed
             if prev_inter:
@@ -669,6 +715,10 @@ for line_o in f:
         else:
             # Still within the same result block
 
+            # Print loop for 3-external integrals
+            if (begin and not end):
+                print_loop(line, words)
+
             # Alloc intermediates if needed
             if prev_inter:
                 print("alloc ", end="", flush=True, file=out)
@@ -678,7 +728,7 @@ for line_o in f:
             print_inter(prev_lines)
 
             # Print result line
-            print_result(line)
+            print_result(line, tab)
 
             # Drop intermediates if needed, don't drop if needed again in
             # the next contraction which is part of the same spin summed family
