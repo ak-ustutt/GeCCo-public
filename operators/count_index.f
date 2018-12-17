@@ -1005,9 +1005,14 @@
      &     e3(4,2)      ! Occupations of external index 2
       integer ::
      &     i,j,k
+      character, dimension(3) ::
+     &    chol=(/ 'k','l','m' /)
       character, dimension(4) ::
      &     hol=(/ 'i','j','k','l' /),
-     &     par=(/ 'a','b','c','d' /)
+     &     par=(/ 'a','b','c','d' /),
+     &     cpar=(/ 'c','d','e','f' /),
+     &     val2=(/ 'p','q','r','s' /),
+     &     cval2=(/ 'r','s','t','u' /)
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
       character(len=8) ::
@@ -1226,11 +1231,43 @@
       end if
 
 
-!      write(item%logfile,*) "EP1 ", ep1%cre, ep1%cslots
 !      write(item%logfile,*) "EP1 ", ep1%ann, ep1%aslots
-!      write(item%logfile,*) "EP2 ", ep2%cre, ep2%cslots
+!      write(item%logfile,*) "EP1 ", ep1%cre, ep1%cslots
 !      write(item%logfile,*) "EP2 ", ep2%ann, ep2%aslots
+!      write(item%logfile,*) "EP2 ", ep2%cre, ep2%cslots
+!      write(item%logfile,*)
 
+!      if (cp1%cslots /= 0) then
+!         j = 1
+!         do i=1, c(2,1)
+!            cp1%cre(i) = cpar(i)
+!            j = j + 1
+!         end do
+!         do i=1, c(3,1)
+!            cp1%cre(j)=cval2(i)
+!            j = j + 1
+!         end do
+!         do i=1, c(1,1)
+!            cp1%cre(j)=chol(i)
+!            j = j + 1
+!         end do
+!      end if
+!
+!      if (cp1%aslots /= 0) then
+!         j = 1
+!         do i=1, c(2,2)
+!            cp1%ann(i) = cpar(i)
+!            j = j + 1
+!         end do
+!         do i=1, c(3,2)
+!            cp1%ann(j)= cval2(i)
+!            j = j + 1
+!         end do
+!         do i=1, c(1,2)
+!            cp1%ann(j)= chol(i)
+!            j = j + 1
+!         end do
+!      end if
 
 
       if (cp1%cslots /= 0) then
@@ -1350,10 +1387,123 @@
          end do
       end if
 
-      ! Just use op1 and op2???
-!      write(item%logfile,*) "RES ", cp2%cre, cp2%ann, cp2%cslots
-!      write(item%logfile,*) "OP1 ", op1%cre, op1%ann, op1%aslots
-!      write(item%logfile,*) "OP2 ", op2%cre, op2%ann, op2%cslots
+
+!      if (ep1%cslots + ep1%aslots > 0 .and.
+!     &    ep2%cslots + ep2%aslots > 0) then
+!         write(item%logfile,*) "pair on different ops, need contrac"
+!      else
+!         write(item%logfile,*) "pair on same ops, no contrac"
+!      end if
+!
+!      ! Just use op1 and op2???
+!      write(item%logfile,*) "RES ", cp2%ann, cp2%aslots
+!      write(item%logfile,*) "RES ", cp2%cre, cp2%cslots
+!      write(item%logfile,*) "OP1 ", op1%ann, op1%aslots
+!      write(item%logfile,*) "OP1 ", op1%cre, op1%cslots
+!      write(item%logfile,*) "OP2 ", op2%ann, op2%aslots
+!      write(item%logfile,*) "OP2 ", op2%cre, op2%cslots
+
+!!!      ! Need to think about multiple contraction pairs
+!!!      write(item%logfile,*) "RES ", cp1%ann, cp1%aslots
+!!!      write(item%logfile,*) "RES ", cp1%cre, cp1%cslots
+!!!      cp1%pair(1) = ' '
+!!!      cp1%pair(2) = ' '
+!!!      if (cp1%cslots/=0 .or. cp1%aslots/=0) then
+!!!      if (cp1%cslots + cp1%aslots > 1) then
+!!!      do i = 1, cp1%cslots
+!!!         if (cp1%cre(i) /= ' ') then
+!!!            cp1%pair(1) = cp1%cre(i)
+!!!            cp1%cre(i) = ' '
+!!!!            cp1%cslots = cp1%cslots - 1
+!!!            exit
+!!!         end if
+!!!      end do
+!!!      do i = 1, cp1%aslots
+!!!         if (cp1%ann(i) /= ' ') then
+!!!            cp1%pair(2) = cp1%ann(i)
+!!!            cp1%ann(i) = ' '
+!!!!            cp1%aslots = cp1%aslots - 1
+!!!            exit
+!!!         end if
+!!!      end do
+!!!
+!!!      write(item%logfile,*) "Pair ", cp1%pair
+!!!      end if
+!!!      end if
+!!!
+!!!      write(item%logfile,*) "RES ", cp1%ann, cp1%aslots
+!!!      write(item%logfile,*) "RES ", cp1%cre, cp1%cslots
+!!!
+!!!      ! Check if external index on different op1s
+!!!      if (ep1%cslots + ep1%aslots > 0 .and.
+!!!     &    ep2%cslots + ep2%cslots > 0) then
+!!!
+!!!         write(item%logfile,*) "EP1 ", ep1%ann, ep1%aslots
+!!!         write(item%logfile,*) "EP1 ", ep1%cre, ep1%cslots
+!!!         write(item%logfile,*) "EP2 ", ep2%ann, ep2%aslots
+!!!         write(item%logfile,*) "EP2 ", ep2%cre, ep2%cslots
+!!!
+!!!         ! If they are, assign a contraction index
+!!!         cp1%pair2(1) = ' '
+!!!         cp1%pair2(2) = ' '
+!!!         if (ep1%cslots > ep2%cslots) then
+!!!         do i = 1, ep1%cslots
+!!!            if (ep1%cre(i) /= ' ') then
+!!!               cp1%pair2(1) = ep1%cre(i)
+!!!               ep1%cre(i) = ' '
+!!!               ep1%cslots = ep1%cslots - 1
+!!!               exit
+!!!            end if
+!!!         end do
+!!!         do i = 1, ep2%aslots
+!!!            if (ep2%ann(i) /= ' ') then
+!!!               cp1%pair2(2) = ep2%ann(i)
+!!!               ep2%ann(i) = ' '
+!!!               ep2%aslots = ep2%aslots - 1
+!!!               exit
+!!!            end if
+!!!         end do
+!!!
+!!!         else
+!!!         do i = 1, ep2%cslots
+!!!            if (ep2%cre(i) /= ' ') then
+!!!               cp1%pair2(1) = ep2%cre(i)
+!!!               ep2%cre(i) = ' '
+!!!               ep2%cslots = ep2%cslots - 1
+!!!               exit
+!!!            end if
+!!!         end do
+!!!         do i = 1, ep1%aslots
+!!!            if (ep1%ann(i) /= ' ') then
+!!!               cp1%pair2(2) = ep1%ann(i)
+!!!               ep1%ann(i) = ' '
+!!!               ep1%aslots = ep1%aslots - 1
+!!!               exit
+!!!            end if
+!!!         end do
+!!!         write(item%logfile,*) "External Pair ", cp1%pair2
+!!!         end if
+!!!
+!!!         ! Assign a contraction index to the external pair
+!!!         cp1%contract = ' '
+!!!         if (ep1%aslots > 0) then
+!!!            write(item%logfile,*) "Hello1"
+!!!            do i = 1, cp1%cslots
+!!!               if (cp1%cre(i) /= ' ') then
+!!!                  cp1%contract = cp1%cre(i)
+!!!               end if
+!!!            end do
+!!!         else
+!!!            write(item%logfile,*) "Hello2"
+!!!            do i = 1, cp1%aslots
+!!!               if (cp1%ann(i) /= ' ') then
+!!!                  cp1%contract = cp1%ann(i)
+!!!               end if
+!!!            end do
+!!!         end if
+!!!         write(item%logfile,*) "Contraction ", cp1%contract
+!!!
+!!!      end if
 
       call desctruct_slot(op1)
       call desctruct_slot(op2)
@@ -1496,6 +1646,9 @@
       ! different orders in which to place the operators. We pick out
       ! these cases and set a conv(ention) array to give the order.
       ! Order of letters in x_array: a, p, i, x
+      !write(item%logfile,*) "T1 array", t1_array
+      !write(item%logfile,*) "C array", c_array
+      !write(item%logfile,*) "T2 array", t2_array
 
       ! Operator 1
       select case(idx_type(1))
@@ -1698,25 +1851,25 @@
          pair_list(i+rank1,1) = item%idx2(rank2+i:rank2+i)
       end do
 
-      write(item%logfile,*) "PAIR LIST "
-      do i = 1, 2
-         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
-      end do
+!      write(item%logfile,*) "PAIR LIST "
+!      do i = 1, 2
+!         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
+!      end do
 
       p1(1) = item%idx3(1:1)
       p1(2) = item%idx3(rank3+1:rank3+1)
       p2 = p1
 
-      write(item%logfile,*) "PAIR ", p1
+      !write(item%logfile,*) "PAIR ", p1
 
       found = .false.
       ! TODO: check top row as well
       do i = 1, pairs
          if (p1(1) == pair_list(i,2)) then
             p1(1) = pair_list(i,1)
-            write(item%logfile,*) "FOUND ", p1(1)
+            !write(item%logfile,*) "FOUND ", p1(1)
             do j = 1, pairs
-               write(item%logfile,*) pair_list(j,2)
+               !write(item%logfile,*) pair_list(j,2)
                if (p1(1) == pair_list(j,2) .and.
      &             p1(2) == pair_list(j,1)) then
                   p1(1) = pair_list(j,1)
@@ -1735,9 +1888,9 @@
       do i = 1, pairs
          if (p1(1) == pair_list(i,2)) then
             p1(1) = pair_list(i,1)
-            write(item%logfile,*) "FOUND ", p1(1)
+            !write(item%logfile,*) "FOUND ", p1(1)
             do j = 1, pairs
-               write(item%logfile,*) pair_list(j,1)
+               !write(item%logfile,*) pair_list(j,1)
                if (p1(1) == pair_list(j,1) .and.
      &             p1(2) == pair_list(j,2)) then
                   p1(1) = pair_list(j,2)
@@ -1757,10 +1910,10 @@
       do i = 1, pairs
          if (p1(1) == pair_list(i,1)) then
             p1(1) = pair_list(i,2)
-            write(item%logfile,*) "FOUND ", p1(1)
+            !write(item%logfile,*) "FOUND ", p1(1)
             do j = 1, pairs
-               write(item%logfile,*) pair_list(j,2)
-               write(item%logfile,*) p1
+               !write(item%logfile,*) pair_list(j,2)
+               !write(item%logfile,*) p1
                if (p1(1) == pair_list(j,2) .and. 
      &             p1(2) == pair_list(j,1)) then
                   p1(1) = pair_list(j,1)
@@ -1780,10 +1933,10 @@
       do i = 1, pairs
          if (p1(1) == pair_list(i,1)) then
             p1(1) = pair_list(i,2)
-            write(item%logfile,*) "FOUND ", p1(1)
+            !write(item%logfile,*) "FOUND ", p1(1)
             do j = 1, pairs
-               write(item%logfile,*) pair_list(j,1)
-               write(item%logfile,*) p1
+               !write(item%logfile,*) pair_list(j,1)
+               !write(item%logfile,*) p1
                if (p1(1) == pair_list(j,1) .and. 
      &             p1(2) == pair_list(j,2)) then
                   p1(1) = pair_list(j,2)
@@ -1798,10 +1951,27 @@
       end do
       end if
 
-      if (found) write(item%logfile,*) "GOOD ", p1
-      if (.not. found) write(item%logfile,*) "Transpose ", p1
-      write(item%logfile,*) item%idx3, item%idx1, item%idx2
-      write(item%logfile,*)
+      !if (found) write(item%logfile,*) "GOOD ", p1
+      !if (.not. found) write(item%logfile,*) "Transpose ", p1
+      !write(item%logfile,*) item%idx3, item%idx1, item%idx2
+      !write(item%logfile,*)
+      if (.not. found) then
+      if (rank1 > rank2) then
+         !write(item%logfile,*) item%idx3, t_index(item%idx1), item%idx2
+         item%idx1 = t_index(item%idx1)
+      else if (rank2 > rank1) then
+         !write(item%logfile,*) item%idx3, item%idx1, t_index(item%idx2)
+         item%idx2 = t_index(item%idx2)
+      else
+         !write(item%logfile,*) item%idx3,item%idx1,t_index(item%idx2)
+         if (item%int(1)) then
+            item%idx1 = t_index(item%idx1)
+         else
+            item%idx2 = t_index(item%idx2)
+         end if
+      end if
+      end if
+
 
       deallocate(pair_list)
 

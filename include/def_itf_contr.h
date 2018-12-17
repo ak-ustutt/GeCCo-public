@@ -64,8 +64,35 @@
      &     cre(:) => null(),        ! Array of creation slots
      &     ann(:) => null()
 
+      character(len=1) ::
+     &     contract,
+     &     pair(2), pair2(2)
+
       integer ::
      &     cslots,                  ! Number of creation slots
      &     aslots
 
       end type tensor_slot
+
+
+!      type pair_list
+!
+!      type(pair), pointer ::
+!     &     plist(:) => null()
+!
+!      end type pair_list
+
+
+      type pair
+
+      character(len=1) ::
+     &     pindex(2),
+     &     link
+
+      integer ::
+     &     ops(2)
+
+      logical ::
+     &     linked = .false.
+
+      end type pair
