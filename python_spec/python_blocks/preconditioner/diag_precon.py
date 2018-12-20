@@ -150,7 +150,8 @@ DEF_ME_LIST({
         OPERATOR:'PRECON',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1})
+        AB_SYM:0}) # AB not well defined for orthog. basis!
+#        AB_SYM:+1})
 
 #extract preconditioner 
 PRECONDITIONER({
@@ -170,7 +171,6 @@ SCALE_COPY({
         MODE:'prc_thresh'})
 
 debug_MEL('ME_PRECON2g')
-
 
 #----------------------------------------------------------
 #Preconditioner for T1

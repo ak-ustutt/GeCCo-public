@@ -1,4 +1,8 @@
-#single entry file 
+"""single entry file for all methods implemented in Python
+
+Hystory:
+Arne Bargholz, January 2016 - Creation
+"""
 
 import sys,os
 import traceback
@@ -20,6 +24,10 @@ try:
         print "begin setting MRCC2 targets"
         import python_blocks.MRCC2
 
+    if ( keywords.is_keyword_set("method.MRCC_new") ):
+        print "begin setting icMRCC targets"
+        import python_blocks.icMRCC
+
     if ( keywords.is_keyword_set("method.MRCCPT2") ):
         print "begin setting MRCCPT2 targets"
         import python_blocks.MRCCPT2
@@ -36,6 +44,14 @@ try:
         print "begin setting SC targets"
         import python_blocks.singles_correction
 
+    if ( keywords.is_keyword_set("method.MRCC_new") ):
+        print "begin setting icMRCC targets"
+        import python_blocks.icMRCC
+
+    if ( keywords.is_keyword_set("method.MRCCPT2") ):
+        print "begin setting MRCCPT2 targets"
+        import python_blocks.MRCCPT2
+
     print ("end of python_start\n"+"-"*50)
 
 except Exception as ex:
@@ -47,7 +63,7 @@ except Exception as ex:
     print "  Type:  " + str(exc_type)
     print "  Traceback:"
     for tb in traceback.extract_tb(exc_traceback):
-        print "    " + str(tb)
+        print "    in {0}, line {1:d}: {2}, {3}".format(tb[0], tb[1], str(tb[2]), tb[3])
     print
     flog.close()
 

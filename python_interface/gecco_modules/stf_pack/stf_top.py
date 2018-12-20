@@ -439,6 +439,30 @@ class _Bracket(_AbstractBracket):
                 else:
                     prod.arguments['AVOID'] = new_avoid
 
+    def connect(self, op_str1, op_str2):
+        """Make the Expand op product impose connnect between the two operators
+
+        Does not return anything, just set the connect in the product, if the two operators
+        are present
+        """
+        op1 = Vertex(op_str1)
+        op2 = Vertex(op_str2)
+
+        for prod in self.OP_products:
+            try:
+                av1 = prod.arguments['IDX_SV'][prod.index(op1)]
+                av2 = prod.arguments['IDX_SV'][prod.index(op2)]
+                new_connect = [av1, av2]
+            except:
+                new_connect = None
+
+            if new_connect is not None:
+                if 'CONNECT' in prod.arguments:
+                    prod.arguments['CONNECT'].extend(new_connect)
+                else:
+                    prod.arguments['CONNECT'] = new_connect
+
+
     def show(self,form_dic={}):
         return self.set_rule(form_dic,settle=False)
 
@@ -550,13 +574,26 @@ class _Formula( _FormulaStringRepUtil):
         Use after extracting, because extract overwrites this.
         """
         if (len(ops)%2 != 0):
-            raise MissingArgumentError("Pleas, give an even number of operators in the avoid list")
-            
+            raise MissingArgumentError("Please, give an even number of operators in the avoid list")
         for bracket in self._content:
             i = 0
             while i < len(ops):
                 bracket.avoid(ops[i],ops[i+1])
                 i += 2
+
+    def set_connect(self, ops):
+        """Set connect to the brackets in the formula.
+
+        Use after extracting, because extract overwrites this.
+        """
+        if (len(ops)%2 != 0):
+            raise MissingArgumentError("Please, give an even number of operators in the connect list")
+        for bracket in self._content:
+            i = 0
+            while i < len(ops):
+                bracket.connect(ops[i],ops[i+1])
+                i += 2
+
 
     def extract(self):
         """triggers the extraction of the deeper layers"""
@@ -595,12 +632,13 @@ class _Formula( _FormulaStringRepUtil):
         return combine_dicts(special_dict,self.arguments)
 
     #Append functionality
-    def _append(self,other,avoid=None):
+    def _append(self,other,avoid=None,connect=None):
         """Appends another formula body either from _Formula or from a string.
 
         @parameter other either a formula (only the body is appended) 
         or a  string representing a formula body
         @parameter avoid a list of two operators to be avoided in the expand_op_product
+        @parameter connect a list of two operators to be connected in the expand_op_product
         """
         if isinstance(other, _Formula):
             self._content+=other._content
@@ -615,6 +653,8 @@ class _Formula( _FormulaStringRepUtil):
             interm.extract()
             if avoid is not None:
                 interm.set_avoid(avoid)
+            if connect is not None:
+                interm.set_connect(connect)
             self._append(interm)
         elif isinstance(other,list):
             for member in other:
@@ -622,16 +662,18 @@ class _Formula( _FormulaStringRepUtil):
         else:
             raise NotImplementedError
 
-    def append(self,other,avoid=None):
+    def append(self,other,avoid=None,connect=None):
         """Appending a string or a formula
 
         @parameter other either a formula  
         or a  string representing a formula body
         @parameter avoid a list of two operators
         to be avoided in the expand_op_product
+        @parameter connect a list of two operators
+        to be conected in the expand_op_product
         """
         try:
-            self._append(other,avoid)
+            self._append(other,avoid,connect)
         except ExpFormError as ex:
             quit_error(ex.msg)
 

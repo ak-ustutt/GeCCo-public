@@ -336,7 +336,8 @@ c dbg
 c      call set_rule2('F_DENS0',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_DENS0',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_DENS0'/))
-c      call set_rule2('F_DENS0',ABORT,tgt_info)
+c      call set_arg('F_DENS0',PRINT_FORMULA,'MODE',1,tgt_info,
+c     &     val_str='SHORT')
 c dbgend
 
       ! precursor for density expression in terms of cumulants

@@ -2271,6 +2271,8 @@ c dbg
 c      call set_rule2('F_E(MRCC)tr',PRINT_FORMULA,tgt_info)
 c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'LABEL',1,tgt_info,
 c     &     val_label=(/'F_E(MRCC)tr'/))
+c      call set_arg('F_E(MRCC)tr',PRINT_FORMULA,'MODE',1,tgt_info,
+c     &     val_str='SHORT')
 c      call set_rule2('F_E(MRCC)tr',ABORT,tgt_info)
 c dbgend
 
@@ -2403,9 +2405,9 @@ c     &       val_label=(/f_ht/))
      &       val_label=(/f_ht0to/))
         call set_arg(f_ht0to,DEF_FORMULA,'FORMULA',1,tgt_info,
      &       val_str=form_str(1:len_form))
-        call set_rule2(f_ht0to,PRINT_FORMULA,tgt_info)
-        call set_arg(f_ht0to,PRINT_FORMULA,'LABEL',1,tgt_info,
-     &       val_label=(/f_ht0to/))
+c        call set_rule2(f_ht0to,PRINT_FORMULA,tgt_info)
+c        call set_arg(f_ht0to,PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &       val_label=(/f_ht0to/))
       end do
 
       call add_target2('F_TT',.false.,tgt_info)
@@ -2465,9 +2467,9 @@ c     &       val_label=(/f_ht/))
         end do
        end do
       end do
-      call set_rule2('F_TT',PRINT_FORMULA,tgt_info)
-      call set_arg('F_TT',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_TT'/))
+c      call set_rule2('F_TT',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_TT',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_TT'/))
 
 c dbg
 c      ! transformed multireference CC norm
@@ -3101,9 +3103,9 @@ c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'LABEL_DESCR',1,
 c     &             tgt_info,val_label=(/'2,,[VP][VP],[HV][HV]'/))
 c      call set_arg('F_INT_HT2',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
 c     &             val_int=(/2,3/))
-      call set_rule2('F_INT_HT2',PRINT_FORMULA,tgt_info)
-      call set_arg('F_INT_HT2',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &             val_label=(/'F_INT_HT2'/))
+c      call set_rule2('F_INT_HT2',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_INT_HT2',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &             val_label=(/'F_INT_HT2'/))
 
       call add_target2('F_INT_T2H',.false.,tgt_info)
       call set_dependency('F_INT_T2H','H',tgt_info)
@@ -3126,9 +3128,9 @@ c     &             val_int=(/2,3/))
      &             val_label=(/'2,,[VP][VP],[HV][HV]'/))
       call set_arg('F_INT_T2H',EXPAND_OP_PRODUCT,'CONNECT',2,tgt_info,
      &             val_int=(/2,3/))
-      call set_rule2('F_INT_T2H',PRINT_FORMULA,tgt_info)
-      call set_arg('F_INT_T2H',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &             val_label=(/'F_INT_T2H'/))
+c      call set_rule2('F_INT_T2H',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_INT_T2H',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &             val_label=(/'F_INT_T2H'/))
 
       ! Norm and 1-density
       call add_target2('F_INT_D',.false.,tgt_info)
@@ -3169,9 +3171,9 @@ c     &             val_label=(/'F_INT_D'/))
       call set_arg('F_T(2)red',DEF_MRCC_INTM,'TITLE',1,tgt_info,
      &     val_str='Redundant part of T(2)')
 c dbg
-      call set_rule2('F_T(2)red',PRINT_FORMULA,tgt_info)
-      call set_arg('F_T(2)red',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_T(2)red'/))
+c      call set_rule2('F_T(2)red',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_T(2)red',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_T(2)red'/))
 c dbgend
       call add_target2('F_T(3)red',.false.,tgt_info)
       call set_dependency('F_T(3)red','T(3)red',tgt_info)
@@ -3206,9 +3208,9 @@ c dbgend
      &       val_int=(/remblk(i_cls)/))
       end do
 c dbg
-      call set_rule2('F_T(3)red',PRINT_FORMULA,tgt_info)
-      call set_arg('F_T(3)red',PRINT_FORMULA,'LABEL',1,tgt_info,
-     &     val_label=(/'F_T(3)red'/))
+c      call set_rule2('F_T(3)red',PRINT_FORMULA,tgt_info)
+c      call set_arg('F_T(3)red',PRINT_FORMULA,'LABEL',1,tgt_info,
+c     &     val_label=(/'F_T(3)red'/))
 c dbgend
 
       ! Spin "expectation value"
