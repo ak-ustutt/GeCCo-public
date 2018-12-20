@@ -13,7 +13,7 @@
       include 'def_dependency_info.h'
 
       integer, parameter ::
-     &     ntest = 0000
+     &     ntest = 00
 
       integer, intent(in) ::
      &     idx_res
