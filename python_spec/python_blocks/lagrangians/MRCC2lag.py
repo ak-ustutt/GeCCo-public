@@ -1,6 +1,7 @@
 
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
+import ref_relaxation
 
 i_am="MRCC2lag.py"
 
@@ -374,25 +375,7 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_PT_LAG2',
         LABELS_IN:['FORM_GAM0','FORM_PT_LAG_Amp2','FORM_PT_LAG_Amp1','FORM_PT_LAG']})
 
-#----------------------------------------------------------------------
-# formula for reference relaxiation  
-new_target("FOPT_OMG_C0")
-depend("DEF_FORM_PT_LAG2")
 
-depend("DEF_A_C0")
-
-
-
-DERIVATIVE({
-    LABEL_IN:'FORM_PT_LAG_E',
-    LABEL_RES:'FORM_A_C0',
-    OP_RES:'A_C0',
-    OP_DERIV:'C0^+'})
-
-debug_FORM('FORM_A_C0')
-
-OPTIMIZE({
-        LABEL_OPT:'FOPT_OMG_C0',
-        LABELS_IN:'FORM_A_C0'})
-
+#-----
+ref_relaxation.make_form_for_optref_minus3('FORM_PT_LAG_E', 'DEF_FORM_PT_LAG2')
 

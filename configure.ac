@@ -141,7 +141,13 @@ AC_OUTPUT
 # Configure FoX: 
 # Hacky: to be improved TODO improve this
 
-cd ./FoX-4.1.2 ; ./configure FCFLAGS="-g -i8";cd ..
+cd ./FoX-4.1.2 ;
+if test "x$FC" = "xgfortran"; then
+ ./configure FCFLAGS="-g -fdefault-integer-8";
+else
+ ./configure FCFLAGS="-g -i8";
+fi
+cd ..
 
 ARCH=$host_cpu-$host_os-$FC
 cp make.config make.config.$ARCH

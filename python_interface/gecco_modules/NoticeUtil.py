@@ -6,32 +6,43 @@ if keywords.is_keyword_set('general.print'):
 else:
     ntest = 0
 
-def _print_str(string):
+def _print_str(string, out_log="L"):
     """ Wrapper for PRINT """
-    PRINT({'STRING':string})
+    PRINT({'STRING':string,'OUTPUT':out_log})
 
-def comment(string):
-    """Easy way to print comments."""
-    _print_str("# " + string)
+def comment(string, out_log="L"):
+    """Easy way to print comments.
 
-def heading(string):
-    """Easy way to print headings for a target."""
-    _print_str("===== " + string + " =====")
+    @param out_log   "L" for log file (default), "O" for out file, "B" for both
+    """
+    _print_str("# " + string, out_log)
 
-def notice(arg_name,arg_val="",printlvl=0): 
+def heading(string, out_log="L"):
+    """Easy way to print headings for a target.
+
+    @param out_log   "L" for log file (default), "O" for out file, "B" for both
+    """
+    _print_str("===== " + string + " =====", out_log)
+
+def notice(arg_name, arg_val="", printlvl=0, out_log="L"): 
     """ For notifications of used input values
 
     will print a notification of the form 
     arg_name  : arg_val (type of arg_val)
-    @param arg_name argument name
-    @param arg_val argument value 
-    """
-    _print_str(arg_name+" :  "+str(arg_val)+"("+str(type(arg_val))+")")   
 
-def mark(string,printlvl=0):
-    """To set marks for the tests"""
+    @param arg_name  argument name
+    @param arg_val   argument value 
+    @param out_log   "L" for log file (default), "O" for out file, "B" for both
+    """
+    _print_str(arg_name+" :  "+str(arg_val)+"("+str(type(arg_val))+")", out_log)
+
+def mark(string, printlvl=0, out_log="L"):
+    """To set marks for the tests
+
+    @param out_log   "L" for log file (default), "O" for out file, "B" for both
+    """
     if (ntest >= printlvl):
-        _print_str("Mark: "+string)
+        _print_str("Mark: "+string, out_log)
 
 #Debug functions
 def debug_MEL(label,only_this=False,nthresh=100,info_only=False):

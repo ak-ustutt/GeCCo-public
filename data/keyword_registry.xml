@@ -307,7 +307,7 @@
           <argument length="1" name="connected" status="A" type="1" value="true">
             <!--Toggle connected expression for H0 matrix-->
           </argument>
-        </keyword>
+        <argument length="10" name="ampl_type" status="A" type="8" value="PT2"><!--The type of amplitude equations--></argument></keyword>
         <keyword name="truncate" status="A">
           <argument length="1" name="trunc_type" status="A" type="2" value="0"/>
         </keyword>
@@ -337,7 +337,7 @@
         <keyword name="unit_test" status="A">
           <argument length="256" name="tests" status="A" type="8"/>
         </keyword>
-      </keyword>
+      <keyword name="MRCC_new" status="A"/></keyword>
       <keyword name="calculate" status="A">
         <keyword name="check" status="A">
           <keyword name="formulae" status="A"/>

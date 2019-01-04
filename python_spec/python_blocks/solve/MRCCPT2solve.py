@@ -12,7 +12,7 @@ depend('EVAL_E0')
 depend('DEF_FORM_PT_LAG')
 depend('BUILD_PRECON')
 
-debug_MEL('PRECON_LST')
+debug_MEL('ME_PRECON2g')
 
 #SOLVE_NLEQ uses FOPT_T2_orth for both transformations and needs X_TRM_LIST_DAG also bound to that opperator
 
@@ -53,4 +53,4 @@ else:
 
 PRINT_MEL({LIST:'PT_LAG_LST',COMMENT:'MRCCPT2 energy',FORMAT:'SCAL F24.14'})
 
-PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCCPT2", FORMAT:"SCAL F24.14"})
+PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"icMRPT2", FORMAT:"SCAL F24.14"})

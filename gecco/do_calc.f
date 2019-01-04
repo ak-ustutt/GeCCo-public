@@ -97,6 +97,9 @@
       ! ME-lists
       ifree = mem_setmark(me_list_def)
 
+!      print*,"YAA 1"
+!      stop
+
       !  formulae:
       ifree = mem_setmark(formula_def)
       call init_formula_info(form_info)
