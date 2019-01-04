@@ -3063,7 +3063,7 @@
       write(item%logfile,*) trim(line)
 
       ! Mark end of spin block
-      write(item%logfile,*) 'END'
+      write(item%logfile,*) 'END '
 
       return
       end
