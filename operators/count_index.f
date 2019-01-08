@@ -16,7 +16,7 @@
      &     str1
       character(len=:), allocatable ::
      &     str2
-      
+
       str2 = trim(adjustl(str1))
 
       end function trimal
@@ -24,7 +24,7 @@
 *----------------------------------------------------------------------*
       pure function rename_tensor(string, rank)
 *----------------------------------------------------------------------*
-!     Rename tensor acording to taste 
+!     Rename tensor acording to taste
 !     This should be expanded to rename all tensors so they correspond
 !     with the ITF algo file
 *----------------------------------------------------------------------*
@@ -87,7 +87,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       character(len=maxlen_bc_label), intent(in) ::
      &     label
 
@@ -116,7 +116,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       !include 'def_itf_contr.h'
-      
+
       character(len=maxlen_bc_label), intent(in) ::
      &     label
 
@@ -165,11 +165,11 @@
       if (contra) then
          t_index(3:3)=index(4:4)
          t_index(4:4)=index(3:3)
-      else 
+      else
          t_index(1:1)=index(2:2)
          t_index(2:2)=index(1:1)
       end if
-      
+
       end function
 
 
@@ -186,7 +186,7 @@
       include 'def_itf_contr.h'
 
       character(len=*), intent(in) ::
-     &     error 
+     &     error
       type(itf_contr), intent(in) ::
      &     item
 
@@ -230,7 +230,7 @@
       nops(2,2)=nops(2,2) + iocc(2,2)
       nops(3,2)=nops(3,2) + iocc(3,2)
       nops(4,2)=nops(4,2) + iocc(4,2)
-      
+
       return
       end
 
@@ -682,7 +682,7 @@
      &     sfact_star         ! String representation of factor formatted for output
       integer ::
      &     i
-      
+
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
       nt1=rename_tensor(item%label_t1, item%rank1)
@@ -793,7 +793,7 @@
 *----------------------------------------------------------------------*
       subroutine assign_add_index(contr_info,item)
 *----------------------------------------------------------------------*
-!     
+!
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -801,7 +801,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
@@ -925,7 +925,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       integer, intent(in) ::
      &     occ_array(4,2)
       type(tensor_slot), intent(inout) ::
@@ -937,8 +937,8 @@
       do i = 1, 4
          j = j + occ_array(i,1)
       end do
-      
-      allocate(slot%cre(j)) 
+
+      allocate(slot%cre(j))
       slot%cslots = j
 
       do i = 1, j
@@ -950,7 +950,7 @@
          j = j +occ_array(i,2)
       end do
 
-      allocate(slot%ann(j)) 
+      allocate(slot%ann(j))
       slot%aslots = j
 
       do i = 1, j
@@ -971,7 +971,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       type(tensor_slot), intent(inout) ::
      &     slot
 
@@ -985,7 +985,7 @@
 *----------------------------------------------------------------------*
       subroutine assign_index(contr_info,item)
 *----------------------------------------------------------------------*
-!     Assign an letter index to each tensor in a line     
+!     Assign an letter index to each tensor in a line
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -993,7 +993,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
@@ -1002,9 +1002,12 @@
      &     c(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),     ! Occupations of external index 2
-     &     e3(4,2)      ! Occupations of external index 2
+     &     e3(4,2),     ! Occupations of external index 2
+     &     nc(4,2),       ! Copies of above but in different order
+     &     ne1(4,2),      ! Copies
+     &     ne2(4,2)     ! Copies
       integer ::
-     &     i,j,k
+     &     i,j,k,l,ii
       character, dimension(3) ::
      &    chol=(/ 'k','l','m' /)
       character, dimension(4) ::
@@ -1015,6 +1018,9 @@
      &     cval2=(/ 'r','s','t','u' /)
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
+      character, dimension(16) ::
+     &     ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
+     &            'u','v','w' /)
       character(len=8) ::
      &     c1, c2, c3, c4,  ! Workspace
      &     a1, a2, a3, a4
@@ -1038,64 +1044,82 @@
      &     conv(6), conv2(6)  ! Index convention arrays
       character(len=4) :: tmp, ntmp
       real(4) :: factor
-
+      type(pair) ::  test1
+      integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
+      integer :: i1, i2 ! Search creation or annihilation first
+      integer :: nc1, nc2, n1, n2, n3 ! Used to design generic function
+      integer :: nloop ! Number of contraction loops
+      logical :: found
+      type(pair_list) :: p_list
       ! Try new index assigment
-      type(tensor_slot) ::
-     &     op1, op2, ep1, ep2, cp1, cp2
+!      type(tensor_slot) ::
+!     &     op1, op2, ep1, ep2, cp1, cp2
 
-      e1 = 0
-      do i = 1, contr_info%nj_op1
-        call count_index(i,
-     &     contr_info%occ_op1(1:,1:,i),
-     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,op1)
 
-      e1 = 0
-      do i = 1, contr_info%nj_op2
-        call count_index(i,
-     &     contr_info%occ_op2(1:,1:,i),
-     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,op2)
 
-      e1 = 0
-      do i = 1, contr_info%nj_op1
-        call count_index(i,
-     &     contr_info%occ_ex1(1:,1:,i),
-     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,ep1)
 
-      e1 = 0
-      do i = 1, contr_info%nj_op2
-        call count_index(i,
-     &     contr_info%occ_ex2(1:,1:,i),
-     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,ep2)
+      e1_array = '        '
+      e2_array = '        '
+      t1_array = '        '
+      t2_array = '        '
+      c_array = '        '
 
-      e1 = 0
-      do i = 1, contr_info%n_cnt
-        call count_index(i,
-     &     contr_info%occ_cnt(1:,1:,i),
-     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,cp1)
 
-      e1 = 0
-      do i = 1, contr_info%nj_res
-        call count_index(i,
-     &     contr_info%occ_res(1:,1:,i),
-     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      call construct_slot(e1,cp2)
+
+      ! Initalize tensor slots (old idea)
+!      e1 = 0
+!      do i = 1, contr_info%nj_op1
+!        call count_index(i,
+!     &     contr_info%occ_op1(1:,1:,i),
+!     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,op1)
+!
+!      e1 = 0
+!      do i = 1, contr_info%nj_op2
+!        call count_index(i,
+!     &     contr_info%occ_op2(1:,1:,i),
+!     &     contr_info%rst_op2(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,op2)
+!
+!      e1 = 0
+!      do i = 1, contr_info%nj_op1
+!        call count_index(i,
+!     &     contr_info%occ_ex1(1:,1:,i),
+!     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,ep1)
+!
+!      e1 = 0
+!      do i = 1, contr_info%nj_op2
+!        call count_index(i,
+!     &     contr_info%occ_ex2(1:,1:,i),
+!     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,ep2)
+!
+!      e1 = 0
+!      do i = 1, contr_info%n_cnt
+!        call count_index(i,
+!     &     contr_info%occ_cnt(1:,1:,i),
+!     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,cp1)
+!
+!      e1 = 0
+!      do i = 1, contr_info%nj_res
+!        call count_index(i,
+!     &     contr_info%occ_res(1:,1:,i),
+!     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      call construct_slot(e1,cp2)
 
 
 
@@ -1159,84 +1183,84 @@
                !write(item%logfile,*) "FACT ", 1.0/c(i,j)
             end if
          end do
-      end do 
+      end do
       !write(item%logfile,*) "FACT ", item%fact
       !write(item%logfile,*) "FACTOR ", factor
       !write(item%logfile,*) "FACTOR ", item%fact * factor
       item%fact = item%fact * factor
 
 
-      if (ep1%cslots /= 0) then
-         j = 1
-         do i=1, e1(2,1)
-             ep1%cre(i) = par(i)
-             j = j + 1
-         end do
-         do i=1, e1(3,1)
-             ep1%cre(j)=val(i)
-             j = j + 1
-         end do
-         do i=1, e1(1,1)
-             ep1%cre(j)=hol(i)
-             j = j + 1
-         end do
-      end if
-
-      if (ep1%aslots /= 0) then
-         j = 1
-         do i=1, e1(2,2)
-             ep1%ann(i) = par(i+e1(2,1))
-             j = j + 1
-         end do
-         do i=1, e1(3,2)
-             ep1%ann(j)=val(i+e1(3,1))
-             j = j + 1
-         end do
-         do i=1, e1(1,2)
-             ep1%ann(j)=hol(i+e1(1,1))
-             j = j + 1
-         end do
-      end if
-
-      if (ep2%cslots /= 0) then
-         j = 1
-         do i=1, e2(2,1)
-             ep2%cre(i)=par(i+e1(2,1)+e1(2,2))
-             j = j + 1
-         end do
-         do i=1, e2(3,1)
-             ep2%cre(j)=val(i+e1(3,1)+e1(3,2))
-             j = j + 1
-         end do
-         do i=1, e2(1,1)
-             ep2%cre(j)=hol(i+e1(1,1)+e1(1,2))
-             j = j + 1
-         end do
-      end if
-
-      if (ep2%aslots /= 0) then
-         j = 1
-         do i=1, e2(2,2)
-             ep2%ann(i)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
-             j = j + 1
-         end do
-         do i=1, e2(3,2)
-             ep2%ann(j)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
-             j = j + 1
-         end do
-         do i=1, e2(1,2)
-             ep2%ann(j)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
-             j = j + 1
-         end do
-      end if
-
-
+!      if (ep1%cslots /= 0) then
+!         j = 1
+!         do i=1, e1(2,1)
+!             ep1%cre(i) = par(i)
+!             j = j + 1
+!         end do
+!         do i=1, e1(3,1)
+!             ep1%cre(j)=val(i)
+!             j = j + 1
+!         end do
+!         do i=1, e1(1,1)
+!             ep1%cre(j)=hol(i)
+!             j = j + 1
+!         end do
+!      end if
+!
+!      if (ep1%aslots /= 0) then
+!         j = 1
+!         do i=1, e1(2,2)
+!             ep1%ann(i) = par(i+e1(2,1))
+!             j = j + 1
+!         end do
+!         do i=1, e1(3,2)
+!             ep1%ann(j)=val(i+e1(3,1))
+!             j = j + 1
+!         end do
+!         do i=1, e1(1,2)
+!             ep1%ann(j)=hol(i+e1(1,1))
+!             j = j + 1
+!         end do
+!      end if
+!
+!      if (ep2%cslots /= 0) then
+!         j = 1
+!         do i=1, e2(2,1)
+!             ep2%cre(i)=par(i+e1(2,1)+e1(2,2))
+!             j = j + 1
+!         end do
+!         do i=1, e2(3,1)
+!             ep2%cre(j)=val(i+e1(3,1)+e1(3,2))
+!             j = j + 1
+!         end do
+!         do i=1, e2(1,1)
+!             ep2%cre(j)=hol(i+e1(1,1)+e1(1,2))
+!             j = j + 1
+!         end do
+!      end if
+!
+!      if (ep2%aslots /= 0) then
+!         j = 1
+!         do i=1, e2(2,2)
+!             ep2%ann(i)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
+!             j = j + 1
+!         end do
+!         do i=1, e2(3,2)
+!             ep2%ann(j)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
+!             j = j + 1
+!         end do
+!         do i=1, e2(1,2)
+!             ep2%ann(j)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
+!             j = j + 1
+!         end do
+!      end if
+!
+!
 !      write(item%logfile,*) "EP1 ", ep1%ann, ep1%aslots
 !      write(item%logfile,*) "EP1 ", ep1%cre, ep1%cslots
 !      write(item%logfile,*) "EP2 ", ep2%ann, ep2%aslots
 !      write(item%logfile,*) "EP2 ", ep2%cre, ep2%cslots
 !      write(item%logfile,*)
-
+!
 !      if (cp1%cslots /= 0) then
 !         j = 1
 !         do i=1, c(2,1)
@@ -1270,122 +1294,122 @@
 !      end if
 
 
-      if (cp1%cslots /= 0) then
-         j = 1
-         do i=1, c(2,1)
-            k=i+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
-            cp1%cre(i) = par(k)
-            j = j + 1
-         end do
-         do i=1, c(3,1)
-            k=i+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)   
-            cp1%cre(j)=val(k)
-            j = j + 1
-         end do
-         do i=1, c(1,1)
-            k=i+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
-            cp1%cre(j)=hol(k)
-            j = j + 1
-         end do
-      end if
-
-      if (cp1%aslots /= 0) then
-         j = 1
-         do i=1, c(2,2)
-            k=i+c(2,1)+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
-            cp1%ann(i) = par(k)
-            j = j + 1
-         end do
-         do i=1, c(3,2)
-            k=i+c(3,1)+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)
-            cp1%ann(j)=val(k)
-            j = j + 1
-         end do
-         do i=1, c(1,2)
-            k=i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
-            cp1%ann(j)=hol(k)
-            j = j + 1
-         end do
-      end if
-
-
-      if (ep1%cslots /=0) then
-         do i = 1, ep1%cslots
-            op1%cre(i) = ep1%cre(i)
-         end do
-      end if
-      if (ep1%aslots /=0) then
-         do i = 1, ep1%aslots
-            op1%ann(i) = ep1%ann(i)
-         end do
-      end if
-
-      if (ep2%cslots /=0) then
-         do i = 1, ep2%cslots
-            op2%cre(i) = ep2%cre(i)
-         end do
-      end if
-      if (ep2%aslots /=0) then
-         do i = 1, ep2%aslots
-            op2%ann(i) = ep2%ann(i)
-         end do
-      end if
-
-
-      if (cp1%cslots /=0) then
-         do i = 1, cp1%cslots
-            op1%cre(i+ep1%cslots) = cp1%cre(i)
-         end do
-      end if
-      if (cp1%aslots /=0) then
-         do i = 1, cp1%aslots
-            op1%ann(i+ep1%aslots) = cp1%ann(i)
-         end do
-      end if
-
-      if (cp1%aslots /=0) then
-         do i = 1, cp1%aslots
-            op2%cre(i+ep2%cslots) = cp1%ann(i)
-         end do
-      end if
-      if (cp1%cslots /=0) then
-         do i = 1, cp1%cslots
-            op2%ann(i+ep2%aslots) = cp1%cre(i)
-         end do
-      end if
-
-
-      if (cp2%cslots /= 0) then
-         j = 1
-         do i=1, e3(2,1)
-             cp2%cre(i) = par(i)
-             j = j + 1
-         end do
-         do i=1, e3(3,1)
-             cp2%cre(j)=val(i)
-             j = j + 1
-         end do
-         do i=1, e3(1,1)
-             cp2%cre(j)=hol(i)
-             j = j + 1
-         end do
-      end if
-
-      if (cp2%aslots /= 0) then
-         j = 1
-         do i=1, e3(2,2)
-             cp2%ann(i) = par(i+e3(2,1))
-             j = j + 1
-         end do
-         do i=1, e3(3,2)
-             cp2%ann(j)=val(i+e3(3,1))
-             j = j + 1
-         end do
-         do i=1, e3(1,2)
-             cp2%ann(j)=hol(i+e3(1,1))
-             j = j + 1
-         end do
-      end if
+!      if (cp1%cslots /= 0) then
+!         j = 1
+!         do i=1, c(2,1)
+!            k=i+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
+!            cp1%cre(i) = par(k)
+!            j = j + 1
+!         end do
+!         do i=1, c(3,1)
+!            k=i+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)
+!            cp1%cre(j)=val(k)
+!            j = j + 1
+!         end do
+!         do i=1, c(1,1)
+!            k=i+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
+!            cp1%cre(j)=hol(k)
+!            j = j + 1
+!         end do
+!      end if
+!
+!      if (cp1%aslots /= 0) then
+!         j = 1
+!         do i=1, c(2,2)
+!            k=i+c(2,1)+e1(2,1)+e1(2,2)+e2(2,1)+e2(2,2)
+!            cp1%ann(i) = par(k)
+!            j = j + 1
+!         end do
+!         do i=1, c(3,2)
+!            k=i+c(3,1)+e1(3,1)+e1(3,2)+e2(3,1)+e2(3,2)
+!            cp1%ann(j)=val(k)
+!            j = j + 1
+!         end do
+!         do i=1, c(1,2)
+!            k=i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2)
+!            cp1%ann(j)=hol(k)
+!            j = j + 1
+!         end do
+!      end if
+!
+!
+!      if (ep1%cslots /=0) then
+!         do i = 1, ep1%cslots
+!            op1%cre(i) = ep1%cre(i)
+!         end do
+!      end if
+!      if (ep1%aslots /=0) then
+!         do i = 1, ep1%aslots
+!            op1%ann(i) = ep1%ann(i)
+!         end do
+!      end if
+!
+!      if (ep2%cslots /=0) then
+!         do i = 1, ep2%cslots
+!            op2%cre(i) = ep2%cre(i)
+!         end do
+!      end if
+!      if (ep2%aslots /=0) then
+!         do i = 1, ep2%aslots
+!            op2%ann(i) = ep2%ann(i)
+!         end do
+!      end if
+!
+!
+!      if (cp1%cslots /=0) then
+!         do i = 1, cp1%cslots
+!            op1%cre(i+ep1%cslots) = cp1%cre(i)
+!         end do
+!      end if
+!      if (cp1%aslots /=0) then
+!         do i = 1, cp1%aslots
+!            op1%ann(i+ep1%aslots) = cp1%ann(i)
+!         end do
+!      end if
+!
+!      if (cp1%aslots /=0) then
+!         do i = 1, cp1%aslots
+!            op2%cre(i+ep2%cslots) = cp1%ann(i)
+!         end do
+!      end if
+!      if (cp1%cslots /=0) then
+!         do i = 1, cp1%cslots
+!            op2%ann(i+ep2%aslots) = cp1%cre(i)
+!         end do
+!      end if
+!
+!
+!      if (cp2%cslots /= 0) then
+!         j = 1
+!         do i=1, e3(2,1)
+!             cp2%cre(i) = par(i)
+!             j = j + 1
+!         end do
+!         do i=1, e3(3,1)
+!             cp2%cre(j)=val(i)
+!             j = j + 1
+!         end do
+!         do i=1, e3(1,1)
+!             cp2%cre(j)=hol(i)
+!             j = j + 1
+!         end do
+!      end if
+!
+!      if (cp2%aslots /= 0) then
+!         j = 1
+!         do i=1, e3(2,2)
+!             cp2%ann(i) = par(i+e3(2,1))
+!             j = j + 1
+!         end do
+!         do i=1, e3(3,2)
+!             cp2%ann(j)=val(i+e3(3,1))
+!             j = j + 1
+!         end do
+!         do i=1, e3(1,2)
+!             cp2%ann(j)=hol(i+e3(1,1))
+!             j = j + 1
+!         end do
+!      end if
 
 
 !      if (ep1%cslots + ep1%aslots > 0 .and.
@@ -1505,12 +1529,12 @@
 !!!
 !!!      end if
 
-      call desctruct_slot(op1)
-      call desctruct_slot(op2)
-      call desctruct_slot(ep1)
-      call desctruct_slot(ep2)
-      call desctruct_slot(cp1)
-      call desctruct_slot(cp2)
+!      call desctruct_slot(op1)
+!      call desctruct_slot(op2)
+!      call desctruct_slot(ep1)
+!      call desctruct_slot(ep2)
+!      call desctruct_slot(cp1)
+!      call desctruct_slot(cp2)
 
 
 
@@ -1518,30 +1542,43 @@
       ! Defualt [ccaa] as in the case of T[abij]
 
       ! Assign e1 (external indicies of t1)
+      shift = 1
       do i=1, e1(2,1)
           c1(i:)=par(i)
+          test1%pindex(shift) = par(i)
+          shift = shift + 1
       end do
       e1_array(1)=c1
       do i=1, e1(3,1)
           c2(i:)=val(i)
+          test1%pindex(shift) = val(i)
+          shift = shift + 1
       end do
       e1_array(2)=c2
       do i=1, e1(1,1)
           c3(i:)=hol(i)
+          test1%pindex(shift) = hol(i)
+          shift = shift + 1
       end do
       e1_array(3)=c3
 
       ! Need to to be shifted to not match assignment of creations above
       do i=1, e1(2,2)
           a1(i:)=par(i+e1(2,1))
+          test1%pindex(shift) = par(i)
+          shift = shift + 1
       end do
       e1_array(5)=a1
       do i=1, e1(3,2)
           a2(i:)=val(i+e1(3,1))
+          test1%pindex(shift) = val(i)
+          shift = shift + 1
       end do
       e1_array(6)=a2
       do i=1, e1(1,2)
           a3(i:)=hol(i+e1(1,1))
+          test1%pindex(shift) = hol(i)
+          shift = shift + 1
       end do
       e1_array(7)=a3
 
@@ -1557,31 +1594,43 @@
       ! Shifted so as not to match e1 index
       do i=1, e2(2,1)
           c1(i:)=par(i+e1(2,1)+e1(2,2))
+          test1%pindex(shift) = c1(i:)
+          shift = shift + 1
       end do
       e2_array(1)=c1
       do i=1, e2(3,1)
           c2(i:)=val(i+e1(3,1)+e1(3,2))
+          test1%pindex(shift) = c2(i:)
+          shift = shift + 1
       end do
       e2_array(2)=c2
       do i=1, e2(1,1)
           c3(i:)=hol(i+e1(1,1)+e1(1,2))
+          test1%pindex(shift) = c3(i:)
+          shift = shift + 1
       end do
       e2_array(3)=c3
 
       ! Shifted so as not to match e1 index or above creations
       do i=1, e2(2,2)
           a1(i:)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
+          test1%pindex(shift) = a1(i:)
+          shift = shift + 1
       end do
       e2_array(5)=a1
       do i=1, e2(3,2)
           a2(i:)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
+          test1%pindex(shift) = a2(i:)
+          shift = shift + 1
       end do
       e2_array(6)=a2
       do i=1, e2(1,2)
           a3(i:)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
+          test1%pindex(shift) = a2(i:)
+          shift = shift + 1
       end do
       e2_array(7)=a3
-      
+
       c1='        '
       c2='        '
       c3='        '
@@ -1640,6 +1689,381 @@
           a3(i:)=hol(i+c(1,1)+e1(1,1)+e1(1,2)+e2(1,1)+e2(1,2))
       end do
       c_array(7)=a3
+
+
+
+
+!======================================================================
+      ! Start new idea for index (Jan 2019)
+!======================================================================
+      write(item%logfile,*) "E1:", e1_array
+      write(item%logfile,*) "E2:", e2_array
+      write(item%logfile,*) "C: ", c_array
+      test1%pindex = ' '
+
+      ! Allocate pair list, at most 8 pairs
+      allocate(p_list%plist(8))
+      do i = 1, 8
+         p_list%plist(i)%pindex = ''
+         p_list%plist(i)%link = ''
+      end do
+
+      ! Move occupation arrays to canonical order, p/h/v
+      nc(1,1) = c(2,1)
+      nc(2,1) = c(1,1)
+      nc(3,1) = c(3,1)
+      nc(4,1) = c(4,1)
+
+      nc(1,2) = c(2,2)
+      nc(2,2) = c(1,2)
+      nc(3,2) = c(3,2)
+      nc(4,2) = c(4,2)
+
+      ne1(1,1) = e1(2,1)
+      ne1(2,1) = e1(1,1)
+      ne1(3,1) = e1(3,1)
+      ne1(4,1) = e1(4,1)
+
+      ne1(1,2) = e1(2,2)
+      ne1(2,2) = e1(1,2)
+      ne1(3,2) = e1(3,2)
+      ne1(4,2) = e1(4,2)
+
+      ne2(1,1) = e2(2,1)
+      ne2(2,1) = e2(1,1)
+      ne2(3,1) = e2(3,1)
+      ne2(4,1) = e2(4,1)
+
+      ne2(1,2) = e2(2,2)
+      ne2(2,2) = e2(1,2)
+      ne2(3,2) = e2(3,2)
+      ne2(4,2) = e2(4,2)
+
+
+      ! Find out number of creation/annihilation operators per operator
+      ncre1 = 0
+      ncre2 = 0
+      nann1 = 0
+      nann2 = 0
+      ncre3 = 0
+      nann3 = 0
+      do i = 1, 4
+         ncre1 = ncre1 + ne1(i,1)
+         ncre2 = ncre2 + ne2(i,1)
+         nann1 = nann1 + ne1(i,2)
+         nann2 = nann2 + ne2(i,2)
+         ncre3 = ncre3 + nc(i,1)
+         nann3 = nann3 + nc(i,2)
+      end do
+
+      write(item%logfile,*) "ncre1: ", ncre1
+      write(item%logfile,*) "nann1: ", nann1
+      write(item%logfile,*) "ncre2: ", ncre2
+      write(item%logfile,*) "nann2: ", nann2
+      write(item%logfile,*) "ncre3: ", ncre3
+      write(item%logfile,*) "nann3: ", nann3
+
+
+      ! Assign contraction loops
+      ! Need to look for creations/annihilation first...
+
+      ! Search the creation ops or annihilation ops first?
+      if (ncre3 >= nann3) then
+         ! Loop through creations first
+         i1 = 1
+         i2 = 2
+      else
+         ! Loop through annihilation first
+         i1 = 2
+         i2 = 1
+      end if
+
+      ! Pair list shift (shift pair)
+      sp = 1
+
+      do while (ncre3 /= 0 .and. nann3 /= 0)
+         do i=1, 3
+            shift = 1
+            do j=1, nc(i,i1)
+               ii = 1+(4*(i-1))+ne1(i,1)+ne1(i,2)+ne2(i,1)+ne2(i,2)+sp-1
+               ! Need extra shift if annihilator
+               if (i1 == 2) ii = ii + nc(k,1)
+
+               p_list%plist(sp)%pindex(shift) = ind(ii)
+               shift = shift + 1
+
+               if (i1 == 2) then
+                  nann3 = nann3 - 1
+               else
+                  ncre3 = ncre3 - 1
+               end if
+
+               ! Mark which operator this index belongs to
+               ! Contraction index always wrt the first operator
+               p_list%plist(sp)%ops(1) = 1
+!               write(item%logfile,*) "WHAT: ", ii, ind(ii)
+
+               ! Look for matching operator
+               do k=1, 3
+                  do l=1, nc(k,i2)
+                     ii = 1+(4*(k-1))+ne1(k,1)+ne1(k,2)+
+     &                    ne2(k,1)+ne2(k,2) + sp-1
+                     ! Need extra shift if annihilator
+                     if (i1 == 1) ii = ii + nc(k,1)
+
+                     p_list%plist(sp)%pindex(shift) = ind(ii)
+
+                     if (i1 == 2) then
+                        ncre3 = ncre3 - 1
+                     else
+                        nann3 = nann3 - 1
+                     end if
+
+                     p_list%plist(sp)%linked = .false.
+                     p_list%plist(sp)%ops(2) = 1
+                     write(item%logfile,*) "WHAT: ", ii, ind(ii)
+
+                     ! Found a pair, so increment pair list index
+                     sp = sp + 1
+                     exit
+                  end do
+               end do
+
+               ! A pair loop has been found so exit
+               exit
+            end do
+            ! Can't match creation or annihilation so exit
+            write(item%logfile,*) "ncre3: ", ncre3, "nann3", nann3
+            if (ncre3 == 0 .or. nann3 == 0) exit
+         end do
+      end do
+
+      ! Set number of contraction loops
+      nloop = sp-1
+
+      do i = 1, nloop
+      write(item%logfile,*) "contraction loop: ", p_list%plist(i)%pindex
+      end do
+
+
+      ! Match external pairs, either to external ops on the same
+      ! operator, or to external ops on the second operator
+      if (ncre1 + nann1 >= ncre2 + nann2 .and. ncre1 + nann1 /= 0) then
+         if (ncre1 >= nann1) then
+            ! Loop through creations first
+            i1 = 1
+            i2 = 2
+            n1 = nann1
+            n2 = nann2
+            n3 = ncre1
+         else
+            ! Loop through annihilation first
+            i1 = 2
+            i2 = 1
+            n1 = ncre1
+            n2 = ncre2
+            n3 = nann1
+         end if
+
+         do i=1, 3
+            shift = 1
+            do j=1, ne1(i,i1)
+               ii = 1+(4*(i-1))
+               ! Need extra shift if this is annihilator
+               if (i1 == 2) ii = ii + ne1(k,1)
+               p_list%plist(sp)%pindex(shift) = ind(ii)
+               p_list%plist(sp)%ops(1) = 1
+               shift = shift + 1
+
+               if (i1 == 2) then
+                  nann1 = nann1 - 1
+               else
+                  ncre1 = ncre1 - 1
+               end if
+
+               ! Look for matching operator
+               if (n1>0) then
+                  ! Look on the same (first) operator
+                  do k=1, 3
+                     do l=1, ne1(k,i2)
+                        ii = 1+(4*(k-1))
+                        ! Need to shift extra places if this is
+                        ! annihilation ops
+                        if (i1 == 1) ii = ii + ne1(k,1)
+
+                        p_list%plist(sp)%pindex(shift) = ind(ii)
+
+                        if (i1 == 2) then
+                            ncre1 = ncre1 - 1
+                        else
+                            nann1 = nann1 - 1
+                        end if
+
+                        p_list%plist(sp)%linked = .false.
+                        p_list%plist(sp)%ops(2) = 1
+
+                        ! Found a pair, so increment pair list index
+                        sp = sp + 1
+                        exit
+                     end do
+                  end do
+               else if (n2 > 0) then
+                  ! Look on the second operator
+                  do k=1, 3
+                     do l=1, ne2(k,i2)
+                        ii = 1+(4*(k-1))+ne1(k,i1)+ne1(k,i2)
+                        ! Need to shift for annihilation
+                        if (i1 == 1) ii = ii + ne2(k,1)
+
+                        p_list%plist(sp)%pindex(shift) = ind(ii)
+
+                        if (i1 == 2) then
+                            ncre2 = ncre2 - 1
+                        else
+                            nann2 = nann2 - 1
+                        end if
+
+                        p_list%plist(sp)%linked = .true.
+                        p_list%plist(sp)%ops(2) = 2
+
+                        ! Found a pair, so increment pair list index
+                        sp = sp + 1
+                        exit
+                     end do
+                  end do
+               else
+                  ! No ops of opposite type to match...
+                  call line_error("Particle number not conserving",item)
+               end if
+
+               ! A pair loop has been found so exit
+               exit
+            end do
+            ! Can't match creation or annihilation so exit
+            if (n3 == 0) exit
+         end do
+
+      ! If the second operator has more ops, then search from there
+      else if (ncre2 + nann2 /= 0)then
+
+         if (ncre1 >= nann1) then
+            ! Loop through creations first
+            i1 = 1
+            i2 = 2
+            n1 = nann2
+            n2 = ncre1
+            n3 = ncre2
+         else
+            ! Loop through annihilation first
+            i1 = 2
+            i2 = 1
+            n1 = ncre2
+            n2 = nann1
+            n3 = nann2
+         end if
+
+         do i=1, 3
+            shift = 1
+
+            ! Search second operator
+            do j=1, ne2(i,i1)
+               ii = 1+(4*(i-1))+ne1(i,i1)+ne1(i,i2)
+
+               ! Need extra shift if annihilator
+               if (i1 == 2) ii = ii + ne2(k,1)
+
+               p_list%plist(sp)%pindex(shift) = ind(ii)
+               p_list%plist(sp)%ops(1) = 2
+               shift = shift + 1
+
+               if (i1 == 2) then
+                  nann2 = nann2 - 1
+               else
+                  ncre2 = ncre2 - 1
+               end if
+
+               ! Look for matching operator
+               if (n1>0) then
+                  ! Look on the same (second) operator
+                  do k=1, 3
+                     do l=1, ne2(k,i2)
+                        ii = 1+(4*(k-1))+ne1(i,i1)+ne1(i,i2)
+
+                        ! Need extra shift if annihilator
+                        if (i1 == 1) ii = ii + ne2(k,1)
+
+                        p_list%plist(sp)%pindex(shift) = ind(ii)
+
+                        if (i1 == 2) then
+                            ncre2 = ncre2 - 1
+                        else
+                            nann2 = nann2 - 1
+                        end if
+
+                        p_list%plist(sp)%linked = .false.
+                        p_list%plist(sp)%ops(2) = 2
+
+                        ! Found a pair, so increment pair list index
+                        sp = sp + 1
+                        exit
+                     end do
+                  end do
+               else if (n2 > 0) then
+                  ! Look on the first operator
+                  do k=1, 3
+                     do l=1, ne1(k,i2)
+                        ii = 1+(4*(k-1))
+
+                        ! Need to shift for annihilation
+                        if (i1 == 1) ii = ii + ne1(k,1)
+
+                        p_list%plist(sp)%pindex(shift) = ind(ii)
+
+                        if (i1 == 2) then
+                            ncre1 = ncre1 - 1
+                        else
+                            nann1 = nann1 - 1
+                        end if
+
+                        p_list%plist(sp)%linked = .true.
+                        p_list%plist(sp)%ops(2) = 1
+
+                        ! Found a pair, so increment pair list index
+                        sp = sp + 1
+                        exit
+                     end do
+                  end do
+               else
+                  ! No ops of opposite type to match...
+                  call line_error("Particle number not conserving",item)
+               end if
+
+               ! A pair loop has been found so exit
+               exit
+            end do
+            ! Can't match creation or annihilation so exit
+            if (n3 == 0) exit
+         end do
+      end if
+
+      do i = nloop+1, sp-1
+         write(item%logfile,*) "externals: ", p_list%plist(i)%pindex
+         if (p_list%plist(i)%linked) then
+            write(item%logfile,*) "link: ", p_list%plist(i)%link
+         end if
+      end do
+
+
+      deallocate(p_list%plist)
+
+
+!======================================================================
+      ! End new idea for index (Jan 2019)
+!======================================================================
+
+
+
+
 
 
       ! Construct final index strings. For different tensors, there are
@@ -1742,7 +2166,7 @@
       conv = (/ 1, 2, 3, 5, 6, 7 /)
       if (len(trim(item%idx1)) < len(trim(item%idx2))) then
          call index_convention(e2_array,e1_array,item%idx3,conv,conv)
-      else 
+      else
          call index_convention(e1_array,e2_array,item%idx3,conv,conv)
       end if
 
@@ -1755,7 +2179,7 @@
 
 
 
-      
+
 
       ! Need to corrrect index for R[ai]; the a and i must be in the
       ! same slot
@@ -1805,185 +2229,185 @@
       return
       end
 
-*----------------------------------------------------------------------*
-      subroutine correct_index_pairs(item)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine correct_index_pairs(item)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-      
-      type(itf_contr), intent(inout) ::
-     &     item
-
-      character(len=1) ::
-     &     p1(2),p2(2),p3(2)
-      character(len=:), allocatable ::
-     &     pair_list(:,:)
-
-      integer :: length, pairs, rank1, rank2, rank3, i,j
-      logical :: found
-
-      rank3 = (len(trim(item%idx3))/2)
-      if (rank3 == 0) return
-      rank1 = (len(trim(item%idx1))/2)
-      rank2 = (len(trim(item%idx2))/2)
-
-      length = 1
-      pairs = (len(trim(item%idx1)) + len(trim(item%idx2))) / 2
-
-
-      allocate(character(length) :: pair_list(pairs,2))
-      
-      pair_list = ' '
-
-      do i = 1, rank1
-         pair_list(i,2) = item%idx1(i:i)
-         pair_list(i,1) = item%idx1(rank1+i:rank1+i)
-      end do
-
-      do i = 1, rank2
-         pair_list(i+rank1,2) = item%idx2(i:i)
-         pair_list(i+rank1,1) = item%idx2(rank2+i:rank2+i)
-      end do
-
-!      write(item%logfile,*) "PAIR LIST "
-!      do i = 1, 2
-!         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &     item
+!
+!      character(len=1) ::
+!     &     p1(2),p2(2),p3(2)
+!      character(len=:), allocatable ::
+!     &     pair_list(:,:)
+!
+!      integer :: length, pairs, rank1, rank2, rank3, i,j
+!      logical :: found
+!
+!      rank3 = (len(trim(item%idx3))/2)
+!      if (rank3 == 0) return
+!      rank1 = (len(trim(item%idx1))/2)
+!      rank2 = (len(trim(item%idx2))/2)
+!
+!      length = 1
+!      pairs = (len(trim(item%idx1)) + len(trim(item%idx2))) / 2
+!
+!
+!      allocate(character(length) :: pair_list(pairs,2))
+!
+!      pair_list = ' '
+!
+!      do i = 1, rank1
+!         pair_list(i,2) = item%idx1(i:i)
+!         pair_list(i,1) = item%idx1(rank1+i:rank1+i)
 !      end do
-
-      p1(1) = item%idx3(1:1)
-      p1(2) = item%idx3(rank3+1:rank3+1)
-      p2 = p1
-
-      !write(item%logfile,*) "PAIR ", p1
-
-      found = .false.
-      ! TODO: check top row as well
-      do i = 1, pairs
-         if (p1(1) == pair_list(i,2)) then
-            p1(1) = pair_list(i,1)
-            !write(item%logfile,*) "FOUND ", p1(1)
-            do j = 1, pairs
-               !write(item%logfile,*) pair_list(j,2)
-               if (p1(1) == pair_list(j,2) .and.
-     &             p1(2) == pair_list(j,1)) then
-                  p1(1) = pair_list(j,1)
-               end if
-               if (p1(1)==p1(2)) then
-                  found = .true.
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-
-      if (.not. found) then
-      p1 = p2
-      do i = 1, pairs
-         if (p1(1) == pair_list(i,2)) then
-            p1(1) = pair_list(i,1)
-            !write(item%logfile,*) "FOUND ", p1(1)
-            do j = 1, pairs
-               !write(item%logfile,*) pair_list(j,1)
-               if (p1(1) == pair_list(j,1) .and.
-     &             p1(2) == pair_list(j,2)) then
-                  p1(1) = pair_list(j,2)
-               end if
-               if (p1(1)==p1(2)) then
-                  found = .true.
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-      end if
-
-      if (.not. found) then
-      p1 = p2
-      do i = 1, pairs
-         if (p1(1) == pair_list(i,1)) then
-            p1(1) = pair_list(i,2)
-            !write(item%logfile,*) "FOUND ", p1(1)
-            do j = 1, pairs
-               !write(item%logfile,*) pair_list(j,2)
-               !write(item%logfile,*) p1
-               if (p1(1) == pair_list(j,2) .and. 
-     &             p1(2) == pair_list(j,1)) then
-                  p1(1) = pair_list(j,1)
-               end if
-               if (p1(1)==p1(2)) then
-                  found = .true.
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-      end if
-
-      if (.not. found) then
-      p1 = p2
-      do i = 1, pairs
-         if (p1(1) == pair_list(i,1)) then
-            p1(1) = pair_list(i,2)
-            !write(item%logfile,*) "FOUND ", p1(1)
-            do j = 1, pairs
-               !write(item%logfile,*) pair_list(j,1)
-               !write(item%logfile,*) p1
-               if (p1(1) == pair_list(j,1) .and. 
-     &             p1(2) == pair_list(j,2)) then
-                  p1(1) = pair_list(j,2)
-               end if
-               if (p1(1)==p1(2)) then
-                  found = .true.
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-      end if
-
-      !if (found) write(item%logfile,*) "GOOD ", p1
-      !if (.not. found) write(item%logfile,*) "Transpose ", p1
-      !write(item%logfile,*) item%idx3, item%idx1, item%idx2
-      !write(item%logfile,*)
-      if (.not. found) then
-      if (rank1 > rank2) then
-         !write(item%logfile,*) item%idx3, t_index(item%idx1), item%idx2
-         item%idx1 = t_index(item%idx1)
-      else if (rank2 > rank1) then
-         !write(item%logfile,*) item%idx3, item%idx1, t_index(item%idx2)
-         item%idx2 = t_index(item%idx2)
-      else
-         !write(item%logfile,*) item%idx3,item%idx1,t_index(item%idx2)
-         if (item%int(1)) then
-            item%idx1 = t_index(item%idx1)
-         else
-            item%idx2 = t_index(item%idx2)
-         end if
-      end if
-      end if
-
-
-      deallocate(pair_list)
-
-
-      return
-      end
+!
+!      do i = 1, rank2
+!         pair_list(i+rank1,2) = item%idx2(i:i)
+!         pair_list(i+rank1,1) = item%idx2(rank2+i:rank2+i)
+!      end do
+!
+!!      write(item%logfile,*) "PAIR LIST "
+!!      do i = 1, 2
+!!         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
+!!      end do
+!
+!      p1(1) = item%idx3(1:1)
+!      p1(2) = item%idx3(rank3+1:rank3+1)
+!      p2 = p1
+!
+!      !write(item%logfile,*) "PAIR ", p1
+!
+!      found = .false.
+!      ! TODO: check top row as well
+!      do i = 1, pairs
+!         if (p1(1) == pair_list(i,2)) then
+!            p1(1) = pair_list(i,1)
+!            !write(item%logfile,*) "FOUND ", p1(1)
+!            do j = 1, pairs
+!               !write(item%logfile,*) pair_list(j,2)
+!               if (p1(1) == pair_list(j,2) .and.
+!     &             p1(2) == pair_list(j,1)) then
+!                  p1(1) = pair_list(j,1)
+!               end if
+!               if (p1(1)==p1(2)) then
+!                  found = .true.
+!                  exit
+!               end if
+!            end do
+!            exit
+!         end if
+!      end do
+!
+!      if (.not. found) then
+!      p1 = p2
+!      do i = 1, pairs
+!         if (p1(1) == pair_list(i,2)) then
+!            p1(1) = pair_list(i,1)
+!            !write(item%logfile,*) "FOUND ", p1(1)
+!            do j = 1, pairs
+!               !write(item%logfile,*) pair_list(j,1)
+!               if (p1(1) == pair_list(j,1) .and.
+!     &             p1(2) == pair_list(j,2)) then
+!                  p1(1) = pair_list(j,2)
+!               end if
+!               if (p1(1)==p1(2)) then
+!                  found = .true.
+!                  exit
+!               end if
+!            end do
+!            exit
+!         end if
+!      end do
+!      end if
+!
+!      if (.not. found) then
+!      p1 = p2
+!      do i = 1, pairs
+!         if (p1(1) == pair_list(i,1)) then
+!            p1(1) = pair_list(i,2)
+!            !write(item%logfile,*) "FOUND ", p1(1)
+!            do j = 1, pairs
+!               !write(item%logfile,*) pair_list(j,2)
+!               !write(item%logfile,*) p1
+!               if (p1(1) == pair_list(j,2) .and.
+!     &             p1(2) == pair_list(j,1)) then
+!                  p1(1) = pair_list(j,1)
+!               end if
+!               if (p1(1)==p1(2)) then
+!                  found = .true.
+!                  exit
+!               end if
+!            end do
+!            exit
+!         end if
+!      end do
+!      end if
+!
+!      if (.not. found) then
+!      p1 = p2
+!      do i = 1, pairs
+!         if (p1(1) == pair_list(i,1)) then
+!            p1(1) = pair_list(i,2)
+!            !write(item%logfile,*) "FOUND ", p1(1)
+!            do j = 1, pairs
+!               !write(item%logfile,*) pair_list(j,1)
+!               !write(item%logfile,*) p1
+!               if (p1(1) == pair_list(j,1) .and.
+!     &             p1(2) == pair_list(j,2)) then
+!                  p1(1) = pair_list(j,2)
+!               end if
+!               if (p1(1)==p1(2)) then
+!                  found = .true.
+!                  exit
+!               end if
+!            end do
+!            exit
+!         end if
+!      end do
+!      end if
+!
+!      !if (found) write(item%logfile,*) "GOOD ", p1
+!      !if (.not. found) write(item%logfile,*) "Transpose ", p1
+!      !write(item%logfile,*) item%idx3, item%idx1, item%idx2
+!      !write(item%logfile,*)
+!      if (.not. found) then
+!      if (rank1 > rank2) then
+!         !write(item%logfile,*) item%idx3, t_index(item%idx1), item%idx2
+!         item%idx1 = t_index(item%idx1)
+!      else if (rank2 > rank1) then
+!         !write(item%logfile,*) item%idx3, item%idx1, t_index(item%idx2)
+!         item%idx2 = t_index(item%idx2)
+!      else
+!         !write(item%logfile,*) item%idx3,item%idx1,t_index(item%idx2)
+!         if (item%int(1)) then
+!            item%idx1 = t_index(item%idx1)
+!         else
+!            item%idx2 = t_index(item%idx2)
+!         end if
+!      end if
+!      end if
+!
+!
+!      deallocate(pair_list)
+!
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
       subroutine index_convention(arr1,arr2,item_idx,conv,conv2)
 *----------------------------------------------------------------------*
-!     Arrange index letters into correct order according to convention 
+!     Arrange index letters into correct order according to convention
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -2014,7 +2438,7 @@
 *----------------------------------------------------------------------*
       subroutine correct_index(item_idx)
 *----------------------------------------------------------------------*
-!     Arrange index letters into correct order according to convention 
+!     Arrange index letters into correct order according to convention
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -2032,13 +2456,13 @@
       tmp = item_idx
       if (len(trim(item_idx)) == 4) then
 
-!      if (item_idx(1:1) > item_idx(2:2) .and. 
+!      if (item_idx(1:1) > item_idx(2:2) .and.
 !     &    item_idx(2:2) /= 'b') then
 !
 !         item_idx(1:1) = item_idx(2:2)
 !         item_idx(2:2) = tmp(1:1)
 !      end if
-!      if (item_idx(3:3) < item_idx(4:4) .and. 
+!      if (item_idx(3:3) < item_idx(4:4) .and.
 !     &    item_idx(3:3) /= 'i') then
 !         item_idx(3:3) = item_idx(4:4)
 !         item_idx(4:4) = tmp(3:3)
@@ -2063,7 +2487,7 @@
 *----------------------------------------------------------------------*
       subroutine permute_tensors(contr_info,perm_case,lulog)
 *----------------------------------------------------------------------*
-!     Find permutation case 
+!     Find permutation case
 *----------------------------------------------------------------------*
 
       implicit none
@@ -2130,7 +2554,7 @@
       if (e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
      &    e1(3,1)+e2(3,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
      &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2) then
-         
+
          sum_c1=0
          sum_c2=0
          sum_a1=0
@@ -2205,7 +2629,7 @@
 *----------------------------------------------------------------------*
       subroutine assign_spin(item)
 *----------------------------------------------------------------------*
-!    Assign spin to tensors, then sum remaining contraction indicies 
+!    Assign spin to tensors, then sum remaining contraction indicies
 *----------------------------------------------------------------------*
 
       implicit none
@@ -2333,7 +2757,7 @@
             else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
                s1b(i) = result_spin(j)
             end if
-    
+
             if (r1b(j)==t1a(i) .and. r1b(j)/='') then
                s1a(i) = result_spin(j+2)
             else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
@@ -2346,7 +2770,7 @@
             else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
                s2b(i) = result_spin(j)
             end if
-    
+
             if (r1b(j)==t2a(i) .and. r1b(j)/='') then
                s2a(i) = result_spin(j+2)
             else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
@@ -2495,7 +2919,7 @@
                 end do
                end if
               end do
-             else if (.not. any(s1b==0) .and. third_idx==0) then 
+             else if (.not. any(s1b==0) .and. third_idx==0) then
               ! Print result, sum over two indicies
               call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
      &                             eloop,item)
@@ -2532,7 +2956,7 @@
        call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
      &                      eloop,item)
       end if
-      
+
 
       ! loop check for 0
       !  if 0
@@ -2749,7 +3173,7 @@
                   ! line, then we add a P to its name
                   if (item%permute == 2) then
                   item%inter_spins(ishift)%name=trim(item%label_t1)//'P'
-                  else 
+                  else
                      item%inter_spins(ishift)%name=item%label_t1
                   end if
 
@@ -2759,7 +3183,7 @@
                         item%inter_spins(ishift)%cases(i,shift)=s2a(i)
                         item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
                      end do
-                  else 
+                  else
                      do i=1, 2
                         item%inter_spins(ishift)%cases(i,shift)=s1a(i)
                         item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
@@ -2776,7 +3200,7 @@
                   !write(item%logfile,*) "intermediate", item%label_t2
                   if (item%permute == 2) then
                      item%inter_spins(ishift)%name=item%label_t2//'P'
-                  else 
+                  else
                      item%inter_spins(ishift)%name=item%label_t2
                   end if
 
@@ -2786,7 +3210,7 @@
                         item%inter_spins(ishift)%cases(i,shift)=s1a(i)
                         item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
                      end do
-                  else 
+                  else
                      do i=1, 2
                         item%inter_spins(ishift)%cases(i,shift)=s2a(i)
                         item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
@@ -2803,7 +3227,7 @@
                ! Update number of spin cases for each different
                ! intermediate
                do i = 1, ishift
-                  item%inter_spins(ishift)%ncase = 
+                  item%inter_spins(ishift)%ncase =
      &                              item%inter_spins(ishift)%ncase + 1
                end do
 
@@ -2823,7 +3247,7 @@
                if (item%swapped) then
                   ! t1 and t2 were swapped in summation
                   call print_itf_line(item,s2,s1)
-               else 
+               else
                   call print_itf_line(item,s1,s2)
                end if
             end if
@@ -2840,7 +3264,7 @@
 *----------------------------------------------------------------------*
       subroutine find_idx(s2a,s2b,t1,t2a,t2b,idx,j)
 *----------------------------------------------------------------------*
-!     Find corresponding index in second tenor 
+!     Find corresponding index in second tenor
 *----------------------------------------------------------------------*
 
       implicit none
@@ -2884,13 +3308,13 @@
       include 'def_contraction.h'
       include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
-      
+
       type(binary_contr), intent(in) ::
-     &     contr_info   ! Inofrmation about binary contraction
+     &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
      &     itf_item     ! Object which holds information necessary to print out an ITF algo line
       integer, intent(in) ::
-     &     perm,        ! Permuation information
+     &     perm,        ! Permutation information
      &     comm,        ! formula_item command
      &     lulog        ! Output file
       ! This should be in a 'constructor'
@@ -3025,7 +3449,7 @@
 *----------------------------------------------------------------------*
       subroutine print_symmetrise(result, item)
 *----------------------------------------------------------------------*
-!    Initalise 
+!    Initalise
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -3045,7 +3469,7 @@
      &     tindex
       character(len=maxlen_bc_label) ::
      &     new
-     
+
       new = rename_tensor(result, item%rank3)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
@@ -3071,7 +3495,7 @@
 *----------------------------------------------------------------------*
       subroutine itf_rank(idx,nrank)
 *----------------------------------------------------------------------*
-!    Initalise 
+!    Initalise
 *----------------------------------------------------------------------*
 
       use itf_utils

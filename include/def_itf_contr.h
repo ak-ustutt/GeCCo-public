@@ -75,12 +75,13 @@
       end type tensor_slot
 
 
-!      type pair_list
-!
-!      type(pair), pointer ::
-!     &     plist(:) => null()
-!
-!      end type pair_list
+
+      type pair_list
+
+      type(pair), pointer ::
+     &     plist(:) => null()
+
+      end type pair_list
 
 
       type pair
