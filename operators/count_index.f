@@ -1007,7 +1007,7 @@
      &     ne1(4,2),      ! Copies
      &     ne2(4,2)     ! Copies
       integer ::
-     &     i,j,k,l,ii
+     &     i,j,k,l,m,n,ii
       character, dimension(3) ::
      &    chol=(/ 'k','l','m' /)
       character, dimension(4) ::
@@ -1782,12 +1782,13 @@
       sp = 1
 
       do while (ncre3 /= 0 .and. nann3 /= 0)
+         ! Loop over P/H/V
          do i=1, 3
             shift = 1
             do j=1, nc(i,i1)
                ii = 1+(4*(i-1))+ne1(i,1)+ne1(i,2)+ne2(i,1)+ne2(i,2)+sp-1
                ! Need extra shift if annihilator
-               if (i1 == 2) ii = ii + nc(k,1)
+               if (i1 == 2) ii = ii + nc(i,1)
 
                p_list%plist(sp)%pindex(shift) = ind(ii)
                shift = shift + 1
@@ -1870,7 +1871,7 @@
             do j=1, ne1(i,i1)
                ii = 1+(4*(i-1))
                ! Need extra shift if this is annihilator
-               if (i1 == 2) ii = ii + ne1(k,1)
+               if (i1 == 2) ii = ii + ne1(i,1)
                p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%ops(1) = 1
                shift = shift + 1
@@ -1906,6 +1907,8 @@
                         sp = sp + 1
                         exit
                      end do
+                     !TODO: this is a problem, next to exit when found
+                     !pair
                   end do
                else if (n2 > 0) then
                   ! Look on the second operator
@@ -1923,10 +1926,29 @@
                             nann2 = nann2 - 1
                         end if
 
-                        p_list%plist(sp)%linked = .true.
                         p_list%plist(sp)%ops(2) = 2
 
-                        ! Found a pair, so increment pair list index
+                        ! We need to link the external indices on two
+                        ! different operators with a contraction index
+                        p_list%plist(sp)%linked = .true.
+                        do m=1, 3
+                           do n=1, nc(m,i2)
+         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop
+                              ! Need to shift for annihilation
+                              if (i1 == 1) ii = ii + nc(m,1)
+
+                              p_list%plist(sp)%link = ind(ii)
+
+                              if (i1 == 2) then
+                                  ncre3 = ncre3 - 1
+                              else
+                                  nann3 = nann3 - 1
+                              end if
+                              exit
+                           end do
+                        end do
+
+                        ! Found a pair + made a link, so increment pair list index
                         sp = sp + 1
                         exit
                      end do
@@ -1940,6 +1962,7 @@
                exit
             end do
             ! Can't match creation or annihilation so exit
+            write(item%logfile,*) "NLOOP: ", nloop, "SP: ", sp-1
             if (n3 == 0) exit
          end do
 
@@ -1964,13 +1987,12 @@
 
          do i=1, 3
             shift = 1
-
             ! Search second operator
             do j=1, ne2(i,i1)
                ii = 1+(4*(i-1))+ne1(i,i1)+ne1(i,i2)
 
                ! Need extra shift if annihilator
-               if (i1 == 2) ii = ii + ne2(k,1)
+               if (i1 == 2) ii = ii + ne2(i,1)
 
                p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%ops(1) = 2
@@ -2025,8 +2047,27 @@
                             nann1 = nann1 - 1
                         end if
 
-                        p_list%plist(sp)%linked = .true.
                         p_list%plist(sp)%ops(2) = 1
+
+                        ! We need to link the external indices on two
+                        ! different operators with a contraction index
+                        p_list%plist(sp)%linked = .true.
+                        do m=1, 3
+                           do n=1, nc(m,i2)
+         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop
+                              ! Need to shift for annihilation
+                              if (i1 == 1) ii = ii + nc(m,1)
+
+                              p_list%plist(sp)%link = ind(ii)
+
+                              if (i1 == 2) then
+                                  ncre3 = ncre3 - 1
+                              else
+                                  nann3 = nann3 - 1
+                              end if
+                              exit
+                           end do
+                        end do
 
                         ! Found a pair, so increment pair list index
                         sp = sp + 1
@@ -2042,6 +2083,7 @@
                exit
             end do
             ! Can't match creation or annihilation so exit
+            write(item%logfile,*) "NLOOP: ", nloop, "SP: ", sp-1
             if (n3 == 0) exit
          end do
       end if
