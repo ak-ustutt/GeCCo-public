@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       module itf_utils
 *----------------------------------------------------------------------*
-!     Contins functions used throughout the code
+!     Contains functions used throughout the code
 *----------------------------------------------------------------------*
          implicit none
       contains
@@ -80,7 +80,7 @@
 *----------------------------------------------------------------------*
       pure function check_inter(label)
 *----------------------------------------------------------------------*
-!    Check if tensor is an intermediate
+!     Check if tensor is an intermediate
 *----------------------------------------------------------------------*
 
       implicit none
@@ -109,7 +109,7 @@
 *----------------------------------------------------------------------*
       pure function check_int(label)
 *----------------------------------------------------------------------*
-!    Check if tensor is an integral
+!     Check if tensor is an integral
 *----------------------------------------------------------------------*
 
       implicit none
@@ -375,7 +375,7 @@
       call itf_contr_init(contr_info,itf_item,permute,
      &                    command,itflog)
 
-      !! Mutliply factor by -1.0 due to permutation
+      !! Multiply factor by -1.0 due to permutation
       if (permute == 2) then
          itf_item%fact = itf_item%fact * -1.0
 
@@ -390,7 +390,7 @@
       ! at most two intermediates on a line
       allocate(itf_item%inter_spins(2))
 
-      ! Do not want to print out the lines while gatheing info about
+      ! Do not want to print out the lines while gathering info about
       ! intermediates
       itf_item%print_line = .false.
 
@@ -1042,7 +1042,8 @@
      &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
       integer ::
      &     conv(6), conv2(6)  ! Index convention arrays
-      character(len=4) :: tmp, ntmp
+      character(len=1) :: tmp ! Used in swapping pairs around
+      integer :: ntmp
       real(4) :: factor
       type(pair) ::  test1
       integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
@@ -1846,9 +1847,12 @@
       write(item%logfile,*) "contraction loop: ", p_list%plist(i)%pindex
       end do
 
+      ! TODO: need some sort of shift that keeps track of which index
+      ! has been used....
 
       ! Match external pairs, either to external ops on the same
       ! operator, or to external ops on the second operator
+      do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
       if (ncre1 + nann1 >= ncre2 + nann2 .and. ncre1 + nann1 /= 0) then
          if (ncre1 >= nann1) then
             ! Loop through creations first
@@ -1869,7 +1873,9 @@
          do i=1, 3
             shift = 1
             do j=1, ne1(i,i1)
-               ii = 1+(4*(i-1))
+               ! Need sp-1-nloop to shift index so they aren't the same
+               ! after a loop
+               ii = 1+(4*(i-1)) + (sp-1-nloop)
                ! Need extra shift if this is annihilator
                if (i1 == 2) ii = ii + ne1(i,1)
                p_list%plist(sp)%pindex(shift) = ind(ii)
@@ -1887,7 +1893,7 @@
                   ! Look on the same (first) operator
                   do k=1, 3
                      do l=1, ne1(k,i2)
-                        ii = 1+(4*(k-1))
+                        ii = 1+(4*(k-1)) + (sp-1-nloop)
                         ! Need to shift extra places if this is
                         ! annihilation ops
                         if (i1 == 1) ii = ii + ne1(k,1)
@@ -1914,7 +1920,8 @@
                   ! Look on the second operator
                   do k=1, 3
                      do l=1, ne2(k,i2)
-                        ii = 1+(4*(k-1))+ne1(k,i1)+ne1(k,i2)
+                        ii = 1+(4*(k-1))+ne1(k,i1)+ne1(k,i2) +
+     &                       (sp-1 - nloop)
                         ! Need to shift for annihilation
                         if (i1 == 1) ii = ii + ne2(k,1)
 
@@ -1968,6 +1975,7 @@
 
       ! If the second operator has more ops, then search from there
       else if (ncre2 + nann2 /= 0)then
+         write(item%logfile,*) "HELLO"
 
          if (ncre1 >= nann1) then
             ! Loop through creations first
@@ -2009,7 +2017,8 @@
                   ! Look on the same (second) operator
                   do k=1, 3
                      do l=1, ne2(k,i2)
-                        ii = 1+(4*(k-1))+ne1(i,i1)+ne1(i,i2)
+                        ii = 1+(4*(k-1))+ne1(i,i1)+ne1(i,i2) +
+     &                       (sp-1 - nloop)
 
                         ! Need extra shift if annihilator
                         if (i1 == 1) ii = ii + ne2(k,1)
@@ -2034,7 +2043,7 @@
                   ! Look on the first operator
                   do k=1, 3
                      do l=1, ne1(k,i2)
-                        ii = 1+(4*(k-1))
+                        ii = 1+(4*(k-1)) + (sp-1 - nloop)
 
                         ! Need to shift for annihilation
                         if (i1 == 1) ii = ii + ne1(k,1)
@@ -2083,17 +2092,53 @@
                exit
             end do
             ! Can't match creation or annihilation so exit
-            write(item%logfile,*) "NLOOP: ", nloop, "SP: ", sp-1
             if (n3 == 0) exit
          end do
       end if
+      end do   ! do while loop
+
+
+
+      ! We now have list of pairs + which ops they belong to and any
+      ! contraction indices linking external indices on different
+      ! operators
+      ! Now we must assign them to ITF index string, in the correct
+      ! positions
+
+      ! First arrange the result index made from external indices only
+      ! TODO: Construct a canonical order for index, so intermediate
+      ! indices match in the result and use
+
+      ! For now the smaller letter should be on the left
+      ! TODO: This won't work when we have pqrstu ...
+      do i = nloop+1, sp-1
+         if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
+            tmp = p_list%plist(i)%pindex(1)
+            p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
+            p_list%plist(i)%pindex(2) = tmp
+            ntmp = p_list%plist(i)%ops(1)
+            p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
+            p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
+         end if
+      end do
 
       do i = nloop+1, sp-1
          write(item%logfile,*) "externals: ", p_list%plist(i)%pindex
          if (p_list%plist(i)%linked) then
             write(item%logfile,*) "link: ", p_list%plist(i)%link
          end if
+         write(item%logfile,*) "ops: ", p_list%plist(i)%ops
       end do
+
+      ! TODO: change these variables c1, just using now for convince
+      ! (sp-1-nloop)*2 is the rank of the result tensor, ie. the number
+      ! of external pairs multiplied by 2
+      c1 = '        '
+      do i = nloop+1, sp-1
+         c1(i:i) = p_list%plist(i)%pindex(1)
+         c1(i+(sp-1-nloop):i+(sp-1-nloop)) = p_list%plist(i)%pindex(2)
+      end do
+      write(item%logfile,*) "RESULT: ", trimal(c1)
 
 
       deallocate(p_list%plist)
@@ -2110,7 +2155,7 @@
 
       ! Construct final index strings. For different tensors, there are
       ! different orders in which to place the operators. We pick out
-      ! these cases and set a conv(ention) array to give the order.
+      ! these cases and set a convention) array to give the order.
       ! Order of letters in x_array: a, p, i, x
       !write(item%logfile,*) "T1 array", t1_array
       !write(item%logfile,*) "C array", c_array
