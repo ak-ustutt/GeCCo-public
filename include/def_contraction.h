@@ -1,4 +1,4 @@
-! need to include before: opdim.h      
+! need to include before: opdim.h
       integer, parameter ::
      &     ld_inffac = 5,
      &     max_vtx_group = 10
@@ -16,7 +16,7 @@
 c      type cntr_proto_arc
 c
 c         integer ::
-c     &      link_group(max_vtx_group,2)   
+c     &      link_group(max_vtx_group,2)
 c                       ! list of verticex groups to be contracted
 c         integer ::
 c     &      occ_cnt_min(ngastp,2),  minimum
@@ -24,7 +24,7 @@ c     &      occ_cnt_max(ngastp,2)
 c      end type cntr_arc
 c
       type cntr_vtx
- 
+
         integer ::  ! type of operator defining vertex
      &     idx_op,  !  index
      &     iblk_op  !  block (super vertices: compound vertex/block index)
@@ -36,13 +36,13 @@ c
       type contraction
 
         integer ::     ! type of result:
-     &     idx_res,    ! index of operator type (0 for scalar) 
+     &     idx_res,    ! index of operator type (0 for scalar)
      &     iblk_res    ! block of operator type (0 for scalar)
         logical ::
-     &     dagger      ! the result must be transposed 
+     &     dagger      ! the result must be transposed
                        ! (intended for formal purposes)
 
-        real(8) ::     
+        real(8) ::
      &       fac       ! prefactor
 
         integer ::
@@ -83,7 +83,7 @@ c
 *	intermediate1, ... further numbers (n+1,...)
 *	result             0
 *----------------------------------------------------------------------*
-        
+
       end type contraction
 
       integer, parameter ::

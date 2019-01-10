@@ -1045,13 +1045,16 @@
       character(len=1) :: tmp ! Used in swapping pairs around
       integer :: ntmp
       real(4) :: factor
+
       type(pair) ::  test1
       integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
       integer :: i1, i2 ! Search creation or annihilation first
       integer :: nc1, nc2, n1, n2, n3 ! Used to design generic function
       integer :: nloop ! Number of contraction loops
+      integer :: r1, r2 ! Ranks of tensors
+      integer :: ext1, ext2 ! External index shifts
       logical :: found
-      type(pair_list) :: p_list
+      type(pair_list) :: p_list, t1_list, t2_list
       ! Try new index assigment
 !      type(tensor_slot) ::
 !     &     op1, op2, ep1, ep2, cp1, cp2
@@ -1703,10 +1706,20 @@
       test1%pindex = ' '
 
       ! Allocate pair list, at most 8 pairs
+      ! TODO: make this a constant - maybe from include file
       allocate(p_list%plist(8))
+      allocate(t1_list%plist(4))
+      allocate(t2_list%plist(4))
+
       do i = 1, 8
          p_list%plist(i)%pindex = ''
          p_list%plist(i)%link = ''
+      end do
+      do i = 1, 4
+         t1_list%plist(i)%pindex = ''
+         t1_list%plist(i)%link = ''
+         t2_list%plist(i)%pindex = ''
+         t2_list%plist(i)%link = ''
       end do
 
       ! Move occupation arrays to canonical order, p/h/v
@@ -1763,6 +1776,12 @@
       write(item%logfile,*) "nann2: ", nann2
       write(item%logfile,*) "ncre3: ", ncre3
       write(item%logfile,*) "nann3: ", nann3
+
+      ! Set ranks of tensors
+      r1 = ncre1 + nann1 + ncre3 + nann3
+      r2 = ncre2 + nann2 + ncre3 + nann3
+      write(item%logfile,*) "r1: ", r1
+      write(item%logfile,*) "r2: ", r2
 
 
       ! Assign contraction loops
@@ -1913,8 +1932,8 @@
                         sp = sp + 1
                         exit
                      end do
-                     !TODO: this is a problem, next to exit when found
-                     !pair
+                     !TODO: this is a problem, need to exit when found
+                     !pair. Need some sort of logical
                   end do
                else if (n2 > 0) then
                   ! Look on the second operator
@@ -2105,22 +2124,53 @@
       ! Now we must assign them to ITF index string, in the correct
       ! positions
 
+
+
+
       ! First arrange the result index made from external indices only
       ! TODO: Construct a canonical order for index, so intermediate
       ! indices match in the result and use
+      ! TODO: Do not construct canonical order for integrals - need to
+      ! pick them out
+      ! TODO: This won't work when we have pqrstu ...
+
+      ! IDEA: Create two pair_lists for op1 and op2
+      ! Create list with just letters which belong to that op AND no
+      ! links (they now belong to each op)
+      ! Now have two lists to order with only the indices that belong to
+      ! that op
+      ! Swap between pairs
+      ! Swap between pair_lists, using first index as a guide
+      ! Thereby get canonical order but maintain index pairs
+      ! Don't do this for integrals - need to be picked out in python
+      ! to determine if they are K or J
 
       ! For now the smaller letter should be on the left
-      ! TODO: This won't work when we have pqrstu ...
-      do i = nloop+1, sp-1
-         if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
-            tmp = p_list%plist(i)%pindex(1)
-            p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
-            p_list%plist(i)%pindex(2) = tmp
-            ntmp = p_list%plist(i)%ops(1)
-            p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
-            p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
-         end if
-      end do
+      !do i = 1, sp-1
+      !   if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
+      !      tmp = p_list%plist(i)%pindex(1)
+      !      p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
+      !      p_list%plist(i)%pindex(2) = tmp
+      !      ntmp = p_list%plist(i)%ops(1)
+      !      p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
+      !      p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
+      !   end if
+      !end do
+      !
+      !do i = 1, sp-1
+      !   if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
+      !      tmp = p_list%plist(i)%pindex(1)
+      !      p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
+      !      p_list%plist(i)%pindex(2) = tmp
+      !      ntmp = p_list%plist(i)%ops(1)
+      !      p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
+      !      p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
+      !   end if
+      !end do
+
+
+
+
 
       do i = nloop+1, sp-1
          write(item%logfile,*) "externals: ", p_list%plist(i)%pindex
@@ -2130,6 +2180,9 @@
          write(item%logfile,*) "ops: ", p_list%plist(i)%ops
       end do
 
+
+      ! Create ITF index strings from pair lists
+      ! Result tensor first
       ! TODO: change these variables c1, just using now for convince
       ! (sp-1-nloop)*2 is the rank of the result tensor, ie. the number
       ! of external pairs multiplied by 2
@@ -2138,9 +2191,74 @@
          c1(i:i) = p_list%plist(i)%pindex(1)
          c1(i+(sp-1-nloop):i+(sp-1-nloop)) = p_list%plist(i)%pindex(2)
       end do
+
+      ! Insert externals into the two tensors
+      c2 = '        '
+      c3 = '        '
+      ext1 = 1
+      ext2 = 1
+      do i = nloop+1, sp-1
+         if (p_list%plist(i)%ops(1)==1) then
+            ! Index belongs on the first tensor
+            c2(i:i) = p_list%plist(i)%pindex(1)
+            if (p_list%plist(i)%linked) then
+               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
+            else
+               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(2)
+            end if
+            ext1 = ext1 + 1
+
+            if (p_list%plist(i)%ops(2)==2) then
+               ! Second index belongs on second tensor
+               c3(i:i) = p_list%plist(i)%pindex(2)
+               if (p_list%plist(i)%linked) then
+                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
+               else
+                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(1)
+               end if
+               ext2 = ext2 + 1
+            end if
+         else
+            ! Index belongs on the second tensor
+            c3(i:i) = p_list%plist(i)%pindex(1)
+            if (p_list%plist(i)%linked) then
+               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
+            else
+               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(2)
+            end if
+            ext2 = ext2 + 1
+
+            if (p_list%plist(i)%ops(2)==1) then
+               c2(i:i) = p_list%plist(i)%pindex(2)
+               if (p_list%plist(i)%linked) then
+                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
+               else
+                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(1)
+               end if
+               ext1 = ext1 + 1
+            end if
+         end if
+      end do
+
+      ! Insert contraction indices into the two tensors
+      do i = 1, nloop
+         c2(i+ext1:i+ext1) = p_list%plist(i)%pindex(1)
+         c2(i+ext1+(r1/2):i+ext1+(r1/2)) = p_list%plist(i)%pindex(2)
+
+         c3(i+ext2:i+ext2) = p_list%plist(i)%pindex(2)
+         c3(i+ext2+(r2/2):i+ext2+(r2/2)) = p_list%plist(i)%pindex(1)
+      end do
+
+
+
+
       write(item%logfile,*) "RESULT: ", trimal(c1)
+      write(item%logfile,*) "T1: ", trimal(c2)
+      write(item%logfile,*) "T2: ", trimal(c3)
 
 
+      deallocate(t2_list%plist)
+      deallocate(t1_list%plist)
       deallocate(p_list%plist)
 
 
@@ -2689,7 +2807,7 @@
 *----------------------------------------------------------------------*
       subroutine index_to_groups(cov,contv,index,half_rank)
 *----------------------------------------------------------------------*
-!     Asign index to covarient and contravarient groups
+!     Assign index to covariant and contravarient groups
 *----------------------------------------------------------------------*
       implicit none
 
@@ -2716,7 +2834,7 @@
 *----------------------------------------------------------------------*
       subroutine assign_spin(item)
 *----------------------------------------------------------------------*
-!    Assign spin to tensors, then sum remaining contraction indicies
+!     Assign spin to tensors, then sum remaining contraction indices
 *----------------------------------------------------------------------*
 
       implicit none
@@ -3384,7 +3502,7 @@
       subroutine itf_contr_init(contr_info,itf_item,perm,comm,
      &                          lulog)
 *----------------------------------------------------------------------*
-!     Initalise ITF contraction object
+!     Initialise ITF contraction object
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -3483,7 +3601,7 @@
       subroutine integral_fact(contr,fact)
 *----------------------------------------------------------------------*
 !     Check if negative factor needs to be applied due to the different
-!     storeage of the <aj||bi> integrals
+!     storage of the <aj||bi> integrals
 *----------------------------------------------------------------------*
 
       implicit none
@@ -3491,7 +3609,7 @@
       include 'def_contraction.h'
 
       type(binary_contr), intent(in) ::
-     &     contr   ! Inofrmation about binary contraction
+     &     contr   ! Information about binary contraction
       real, intent(inout) ::
      &     fact
 
@@ -3523,7 +3641,7 @@
             fact = fact * -1.0
       end if
 
-      ! Catch three external intergals
+      ! Catch three external integrals
       if (c(1,1) + c(1,2)==3)
      &   then
             fact = fact * -1.0
@@ -3536,7 +3654,7 @@
 *----------------------------------------------------------------------*
       subroutine print_symmetrise(result, item)
 *----------------------------------------------------------------------*
-!    Initalise
+!
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -3582,9 +3700,11 @@
 *----------------------------------------------------------------------*
       subroutine itf_rank(idx,nrank)
 *----------------------------------------------------------------------*
-!    Initalise
+!     Calculate rank of tensor
 *----------------------------------------------------------------------*
 
+      ! TODO: Possibly set rank in assign_index - so don't need this...
+      !       Also think about assign_add_index
       use itf_utils
       implicit none
       include 'opdim.h'
