@@ -1026,7 +1026,7 @@
      &     a1, a2, a3, a4
       character(len=8), dimension(8) ::
       ! x_array(1:4) = creation operators (par/val/hol/f12)
-      ! x_array(5:8) = annhilation operators (par/val/hol/f12)
+      ! x_array(5:8) = annihilation operators (par/val/hol/f12)
      &     c_array,     ! Contraction index array
      &     e1_array,    ! External index of operator 1 array
      &     e2_array,    ! External index of operator 2 array
@@ -1053,8 +1053,8 @@
       integer :: nloop ! Number of contraction loops
       integer :: r1, r2 ! Ranks of tensors
       integer :: ext1, ext2 ! External index shifts
-      logical :: found
-      type(pair_list) :: p_list, t1_list, t2_list
+      logical :: found, sort
+      type(pair_list) :: p_list, t1_list, t2_list, r_list, tmp_list
       ! Try new index assigment
 !      type(tensor_slot) ::
 !     &     op1, op2, ep1, ep2, cp1, cp2
@@ -1706,10 +1706,12 @@
       test1%pindex = ' '
 
       ! Allocate pair list, at most 8 pairs
-      ! TODO: make this a constant - maybe from include file
+      ! TODO: allocate based on ranks of tensors
       allocate(p_list%plist(8))
       allocate(t1_list%plist(4))
       allocate(t2_list%plist(4))
+      allocate(r_list%plist(4))
+      allocate(tmp_list%plist(4))
 
       do i = 1, 8
          p_list%plist(i)%pindex = ''
@@ -1720,6 +1722,8 @@
          t1_list%plist(i)%link = ''
          t2_list%plist(i)%pindex = ''
          t2_list%plist(i)%link = ''
+         tmp_list%plist(i)%pindex = ''
+         tmp_list%plist(i)%link = ''
       end do
 
       ! Move occupation arrays to canonical order, p/h/v
@@ -1988,7 +1992,7 @@
                exit
             end do
             ! Can't match creation or annihilation so exit
-            write(item%logfile,*) "NLOOP: ", nloop, "SP: ", sp-1
+            !write(item%logfile,*) "NLOOP: ", nloop, "SP: ", sp-1
             if (n3 == 0) exit
          end do
 
@@ -2132,7 +2136,6 @@
       ! indices match in the result and use
       ! TODO: Do not construct canonical order for integrals - need to
       ! pick them out
-      ! TODO: This won't work when we have pqrstu ...
 
       ! IDEA: Create two pair_lists for op1 and op2
       ! Create list with just letters which belong to that op AND no
@@ -2145,40 +2148,160 @@
       ! Don't do this for integrals - need to be picked out in python
       ! to determine if they are K or J
 
-      ! For now the smaller letter should be on the left
-      !do i = 1, sp-1
-      !   if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
-      !      tmp = p_list%plist(i)%pindex(1)
-      !      p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
-      !      p_list%plist(i)%pindex(2) = tmp
-      !      ntmp = p_list%plist(i)%ops(1)
-      !      p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
-      !      p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
-      !   end if
-      !end do
-      !
-      !do i = 1, sp-1
-      !   if (p_list%plist(i)%pindex(1) > p_list%plist(i)%pindex(2)) then
-      !      tmp = p_list%plist(i)%pindex(1)
-      !      p_list%plist(i)%pindex(1) = p_list%plist(i)%pindex(2)
-      !      p_list%plist(i)%pindex(2) = tmp
-      !      ntmp = p_list%plist(i)%ops(1)
-      !      p_list%plist(i)%ops(1) = p_list%plist(i)%ops(2)
-      !      p_list%plist(i)%ops(2) = p_list%plist(i)%ops(1)
-      !   end if
-      !end do
+      ! Create pair lists for each tensor
+      shift = 1
+      do i = 1, sp-1
+         if (p_list%plist(i)%ops(1) == 1) then
+            ! Add to t1_list + think about link
+            t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
 
+            if (p_list%plist(i)%linked) then
+             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%link
+            else
+             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+            end if
 
+            t1_list%plist(shift)%linked = .false.
+            t1_list%plist(shift)%ops = 1
+            shift = shift + 1
+         else if (p_list%plist(i)%ops(2) == 1) then
+            ! Add to t1_list + think about link
+            t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
 
+            if (p_list%plist(i)%linked) then
+             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%link
+            else
+             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+            end if
 
-
-      do i = nloop+1, sp-1
-         write(item%logfile,*) "externals: ", p_list%plist(i)%pindex
-         if (p_list%plist(i)%linked) then
-            write(item%logfile,*) "link: ", p_list%plist(i)%link
+            t1_list%plist(shift)%linked = .false.
+            t1_list%plist(shift)%ops = 1
+            shift = shift + 1
          end if
-         write(item%logfile,*) "ops: ", p_list%plist(i)%ops
       end do
+
+      shift = 1
+      do i = 1, sp-1
+         if (p_list%plist(i)%ops(1) == 2) then
+            ! Add to t1_list + think about link
+            t2_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+
+            if (p_list%plist(i)%linked) then
+             t2_list%plist(shift)%pindex(2) = p_list%plist(i)%link
+            else
+             t2_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+            end if
+
+            t2_list%plist(shift)%linked = .false.
+            t2_list%plist(shift)%ops = 1
+            shift = shift + 1
+         else if (p_list%plist(i)%ops(2) == 2) then
+            ! Add to t1_list + think about link
+            t2_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+
+            if (p_list%plist(i)%linked) then
+             t2_list%plist(shift)%pindex(1) = p_list%plist(i)%link
+            else
+             t2_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+            end if
+
+            t2_list%plist(shift)%linked = .false.
+            t2_list%plist(shift)%ops = 1
+            shift = shift + 1
+         end if
+      end do
+
+
+
+      ! Swap between pairs to canonical order
+      ! TODO: will not work with pqrstu...
+      do i = 1, r1/2
+       if (.not. item%int(1)) then
+       if (t1_list%plist(i)%pindex(1) > t1_list%plist(i)%pindex(2)) then
+            tmp = t1_list%plist(i)%pindex(1)
+            t1_list%plist(i)%pindex(1) = t1_list%plist(i)%pindex(2)
+            t1_list%plist(i)%pindex(2) = tmp
+         end if
+       end if
+      end do
+
+      do i = 1, r2/2
+       if (.not. item%int(2)) then
+       if (t2_list%plist(i)%pindex(1) > t2_list%plist(i)%pindex(2)) then
+            tmp = t2_list%plist(i)%pindex(1)
+            t2_list%plist(i)%pindex(1) = t2_list%plist(i)%pindex(2)
+            t2_list%plist(i)%pindex(2) = tmp
+         end if
+       end if
+      end do
+
+
+      ! Sort index pairs into order with bubble sort
+      ! If only 1 pair, then this is be skipped
+      ! TODO: Dont need all of tmp_list
+!      do i = 1, r1/2
+!         write(item%logfile,*) "T1 LIST: ", t1_list%plist(i)%pindex
+!      end do
+!      do i = 1, r2/2
+!         write(item%logfile,*) "T2 LIST: ", t1_list%plist(i)%pindex
+!      end do
+
+      ! Sort out the first tensor
+      if (r1 > 2 .and. .not.item%int(1)) then
+      sort = .true.
+      do while (sort)
+      sort = .false.
+      do i = 1, r1/2
+         if (i == (r1/2)) exit
+         if (t1_list%plist(i+1)%pindex(1) < t1_list%plist(i)%pindex(1))
+     &      then
+            tmp_list%plist(1) = t1_list%plist(i)
+            t1_list%plist(i) = t1_list%plist(i+1)
+            t1_list%plist(i+1) = tmp_list%plist(1)
+            sort = .true.
+         end if
+      end do
+      end do
+      end if
+
+      ! Sort out the second tensor
+      if (r2 > 2 .and. .not.item%int(2)) then
+      sort = .true.
+      do while (sort)
+      sort = .false.
+      do i = 1, r2/2
+         if (i == (r2/2)) exit
+         if (t2_list%plist(i+1)%pindex(1) < t2_list%plist(i)%pindex(1))
+     &      then
+            tmp_list%plist(1) = t2_list%plist(i)
+            t2_list%plist(i) = t2_list%plist(i+1)
+            t2_list%plist(i+1) = tmp_list%plist(1)
+            sort = .true.
+         end if
+      end do
+      end do
+      end if
+
+
+!      do i = 1, r1/2
+!         write(item%logfile,*) "NEW T1 LIST: ", t1_list%plist(i)%pindex
+!      end do
+!      do i = 1, r2/2
+!         write(item%logfile,*) "NEW T2 LIST: ", t2_list%plist(i)%pindex
+!      end do
+
+
+
+
+
+
+!      do i = nloop+1, sp-1
+!         write(item%logfile,*) "externals: ", p_list%plist(i)%pindex
+!         if (p_list%plist(i)%linked) then
+!            write(item%logfile,*) "link: ", p_list%plist(i)%link
+!         end if
+!         write(item%logfile,*) "ops: ", p_list%plist(i)%ops
+!      end do
 
 
       ! Create ITF index strings from pair lists
@@ -2252,14 +2375,17 @@
 
 
 
+      write(item%logfile,*) "=============================="
       write(item%logfile,*) "RESULT: ", trimal(c1)
       write(item%logfile,*) "T1: ", trimal(c2)
       write(item%logfile,*) "T2: ", trimal(c3)
+      write(item%logfile,*) "=============================="
 
 
-      deallocate(t2_list%plist)
-      deallocate(t1_list%plist)
       deallocate(p_list%plist)
+      deallocate(t1_list%plist)
+      deallocate(t2_list%plist)
+      deallocate(tmp_list%plist)
 
 
 !======================================================================
