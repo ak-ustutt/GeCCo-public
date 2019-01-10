@@ -1005,7 +1005,8 @@
      &     e3(4,2),     ! Occupations of external index 2
      &     nc(4,2),       ! Copies of above but in different order
      &     ne1(4,2),      ! Copies
-     &     ne2(4,2)     ! Copies
+     &     ne2(4,2),    ! Copies
+     &     nr(4,2)    ! Copies of result ops
       integer ::
      &     i,j,k,l,m,n,ii
       character, dimension(3) ::
@@ -1048,10 +1049,11 @@
 
       type(pair) ::  test1
       integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
+      integer :: ncre4, nann4 ! Number of ops in result tensor
       integer :: i1, i2 ! Search creation or annihilation first
       integer :: nc1, nc2, n1, n2, n3 ! Used to design generic function
       integer :: nloop ! Number of contraction loops
-      integer :: r1, r2 ! Ranks of tensors
+      integer :: r1, r2, r3 ! Ranks of tensors
       integer :: ext1, ext2 ! External index shifts
       logical :: found, sort
       type(pair_list) :: p_list, t1_list, t2_list, r_list, tmp_list
@@ -1722,6 +1724,8 @@
          t1_list%plist(i)%link = ''
          t2_list%plist(i)%pindex = ''
          t2_list%plist(i)%link = ''
+         r_list%plist(i)%pindex = ''
+         r_list%plist(i)%link = ''
          tmp_list%plist(i)%pindex = ''
          tmp_list%plist(i)%link = ''
       end do
@@ -1757,6 +1761,16 @@
       ne2(3,2) = e2(3,2)
       ne2(4,2) = e2(4,2)
 
+      nr(1,1) = e3(2,1)
+      nr(2,1) = e3(1,1)
+      nr(3,1) = e3(3,1)
+      nr(4,1) = e3(4,1)
+
+      nr(1,2) = e3(2,2)
+      nr(2,2) = e3(1,2)
+      nr(3,2) = e3(3,2)
+      nr(4,2) = e3(4,2)
+
 
       ! Find out number of creation/annihilation operators per operator
       ncre1 = 0
@@ -1765,6 +1779,8 @@
       nann2 = 0
       ncre3 = 0
       nann3 = 0
+      ncre4 = 0
+      nann4 = 0
       do i = 1, 4
          ncre1 = ncre1 + ne1(i,1)
          ncre2 = ncre2 + ne2(i,1)
@@ -1772,20 +1788,24 @@
          nann2 = nann2 + ne2(i,2)
          ncre3 = ncre3 + nc(i,1)
          nann3 = nann3 + nc(i,2)
+         ncre4 = ncre4 + nr(i,1)
+         nann4 = nann4 + nr(i,2)
       end do
 
-      write(item%logfile,*) "ncre1: ", ncre1
-      write(item%logfile,*) "nann1: ", nann1
-      write(item%logfile,*) "ncre2: ", ncre2
-      write(item%logfile,*) "nann2: ", nann2
-      write(item%logfile,*) "ncre3: ", ncre3
-      write(item%logfile,*) "nann3: ", nann3
+!      write(item%logfile,*) "ncre1: ", ncre1
+!      write(item%logfile,*) "nann1: ", nann1
+!      write(item%logfile,*) "ncre2: ", ncre2
+!      write(item%logfile,*) "nann2: ", nann2
+!      write(item%logfile,*) "ncre3: ", ncre3
+!      write(item%logfile,*) "nann3: ", nann3
 
       ! Set ranks of tensors
       r1 = ncre1 + nann1 + ncre3 + nann3
       r2 = ncre2 + nann2 + ncre3 + nann3
+      r3 = ncre4 + nann4
       write(item%logfile,*) "r1: ", r1
       write(item%logfile,*) "r2: ", r2
+      write(item%logfile,*) "r3: ", r3
 
 
       ! Assign contraction loops
@@ -2211,6 +2231,13 @@
          end if
       end do
 
+      ! Create pair list for result tensor, only need external index
+      shift = 1
+      do i = nloop+1, sp-1
+         r_list%plist(shift) = p_list%plist(i)
+         shift = shift + 1
+      end do
+
 
 
       ! Swap between pairs to canonical order
@@ -2234,6 +2261,17 @@
          end if
        end if
       end do
+
+      do i = 1, r3/2
+       if (.not. item%int(3)) then
+       if (r_list%plist(i)%pindex(1) > r_list%plist(i)%pindex(2)) then
+            tmp = r_list%plist(i)%pindex(1)
+            r_list%plist(i)%pindex(1) = r_list%plist(i)%pindex(2)
+            r_list%plist(i)%pindex(2) = tmp
+         end if
+       end if
+      end do
+
 
 
       ! Sort index pairs into order with bubble sort
@@ -2282,6 +2320,46 @@
       end do
       end if
 
+      ! Sort out the second tensor
+      if (r3 > 2 .and. .not.item%int(3)) then
+      sort = .true.
+      do while (sort)
+      sort = .false.
+      do i = 1, r3/2
+         if (i == (r3/2)) exit
+         if (r_list%plist(i+1)%pindex(1) < r_list%plist(i)%pindex(1))
+     &      then
+            tmp_list%plist(1) = r_list%plist(i)
+            r_list%plist(i) = r_list%plist(i+1)
+            r_list%plist(i+1) = tmp_list%plist(1)
+            sort = .true.
+         end if
+      end do
+      end do
+      end if
+
+      ! Insert ordered lists into ITF index strings
+      ! TODO: change these variables c1, just using now for convince
+      c1 = '        '
+      c2 = '        '
+      c3 = '        '
+
+      do i = 1, r1/2
+         c1(i:i) = t1_list%plist(i)%pindex(1)
+         c1(i+(r1/2):i+(r1/2)) = t1_list%plist(i)%pindex(2)
+      end do
+      do i = 1, r2/2
+         c2(i:i) = t2_list%plist(i)%pindex(1)
+         c2(i+(r2/2):i+(r2/2)) = t2_list%plist(i)%pindex(2)
+      end do
+      do i = 1, r3/2
+         c3(i:i) = r_list%plist(i)%pindex(1)
+         c3(i+(r3/2):i+(r3/2)) = r_list%plist(i)%pindex(2)
+      end do
+
+
+
+
 
 !      do i = 1, r1/2
 !         write(item%logfile,*) "NEW T1 LIST: ", t1_list%plist(i)%pindex
@@ -2306,85 +2384,86 @@
 
       ! Create ITF index strings from pair lists
       ! Result tensor first
-      ! TODO: change these variables c1, just using now for convince
       ! (sp-1-nloop)*2 is the rank of the result tensor, ie. the number
       ! of external pairs multiplied by 2
-      c1 = '        '
-      do i = nloop+1, sp-1
-         c1(i:i) = p_list%plist(i)%pindex(1)
-         c1(i+(sp-1-nloop):i+(sp-1-nloop)) = p_list%plist(i)%pindex(2)
-      end do
 
-      ! Insert externals into the two tensors
-      c2 = '        '
-      c3 = '        '
-      ext1 = 1
-      ext2 = 1
-      do i = nloop+1, sp-1
-         if (p_list%plist(i)%ops(1)==1) then
-            ! Index belongs on the first tensor
-            c2(i:i) = p_list%plist(i)%pindex(1)
-            if (p_list%plist(i)%linked) then
-               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
-            else
-               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(2)
-            end if
-            ext1 = ext1 + 1
-
-            if (p_list%plist(i)%ops(2)==2) then
-               ! Second index belongs on second tensor
-               c3(i:i) = p_list%plist(i)%pindex(2)
-               if (p_list%plist(i)%linked) then
-                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
-               else
-                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(1)
-               end if
-               ext2 = ext2 + 1
-            end if
-         else
-            ! Index belongs on the second tensor
-            c3(i:i) = p_list%plist(i)%pindex(1)
-            if (p_list%plist(i)%linked) then
-               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
-            else
-               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(2)
-            end if
-            ext2 = ext2 + 1
-
-            if (p_list%plist(i)%ops(2)==1) then
-               c2(i:i) = p_list%plist(i)%pindex(2)
-               if (p_list%plist(i)%linked) then
-                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
-               else
-                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(1)
-               end if
-               ext1 = ext1 + 1
-            end if
-         end if
-      end do
-
-      ! Insert contraction indices into the two tensors
-      do i = 1, nloop
-         c2(i+ext1:i+ext1) = p_list%plist(i)%pindex(1)
-         c2(i+ext1+(r1/2):i+ext1+(r1/2)) = p_list%plist(i)%pindex(2)
-
-         c3(i+ext2:i+ext2) = p_list%plist(i)%pindex(2)
-         c3(i+ext2+(r2/2):i+ext2+(r2/2)) = p_list%plist(i)%pindex(1)
-      end do
+!      c1 = '        '
+!      do i = nloop+1, sp-1
+!         c1(i:i) = p_list%plist(i)%pindex(1)
+!         c1(i+(sp-1-nloop):i+(sp-1-nloop)) = p_list%plist(i)%pindex(2)
+!      end do
+!
+!      ! Insert externals into the two tensors
+!      c2 = '        '
+!      c3 = '        '
+!      ext1 = 1
+!      ext2 = 1
+!      do i = nloop+1, sp-1
+!         if (p_list%plist(i)%ops(1)==1) then
+!            ! Index belongs on the first tensor
+!            c2(i:i) = p_list%plist(i)%pindex(1)
+!            if (p_list%plist(i)%linked) then
+!               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
+!            else
+!               c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(2)
+!            end if
+!            ext1 = ext1 + 1
+!
+!            if (p_list%plist(i)%ops(2)==2) then
+!               ! Second index belongs on second tensor
+!               c3(i:i) = p_list%plist(i)%pindex(2)
+!               if (p_list%plist(i)%linked) then
+!                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
+!               else
+!                  c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(1)
+!               end if
+!               ext2 = ext2 + 1
+!            end if
+!         else
+!            ! Index belongs on the second tensor
+!            c3(i:i) = p_list%plist(i)%pindex(1)
+!            if (p_list%plist(i)%linked) then
+!               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%link
+!            else
+!               c3(i+(r2/2):i+(r2/2)) = p_list%plist(i)%pindex(2)
+!            end if
+!            ext2 = ext2 + 1
+!
+!            if (p_list%plist(i)%ops(2)==1) then
+!               c2(i:i) = p_list%plist(i)%pindex(2)
+!               if (p_list%plist(i)%linked) then
+!                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%link
+!               else
+!                  c2(i+(r1/2):i+(r1/2)) = p_list%plist(i)%pindex(1)
+!               end if
+!               ext1 = ext1 + 1
+!            end if
+!         end if
+!      end do
+!
+!      ! Insert contraction indices into the two tensors
+!      do i = 1, nloop
+!         c2(i+ext1:i+ext1) = p_list%plist(i)%pindex(1)
+!         c2(i+ext1+(r1/2):i+ext1+(r1/2)) = p_list%plist(i)%pindex(2)
+!
+!         c3(i+ext2:i+ext2) = p_list%plist(i)%pindex(2)
+!         c3(i+ext2+(r2/2):i+ext2+(r2/2)) = p_list%plist(i)%pindex(1)
+!      end do
 
 
 
 
       write(item%logfile,*) "=============================="
-      write(item%logfile,*) "RESULT: ", trimal(c1)
-      write(item%logfile,*) "T1: ", trimal(c2)
-      write(item%logfile,*) "T2: ", trimal(c3)
+      write(item%logfile,*) "RESULT: ", trimal(c3)
+      write(item%logfile,*) "T1: ", trimal(c1)
+      write(item%logfile,*) "T2: ", trimal(c2)
       write(item%logfile,*) "=============================="
 
 
       deallocate(p_list%plist)
       deallocate(t1_list%plist)
       deallocate(t2_list%plist)
+      deallocate(r_list%plist)
       deallocate(tmp_list%plist)
 
 
