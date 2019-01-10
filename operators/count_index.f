@@ -1865,7 +1865,11 @@
                      end if
 
                      p_list%plist(sp)%linked = .false.
-                     p_list%plist(sp)%ops(2) = 1
+                     ! Ultimately contraction indices belong on both
+                     ! tensors, but marking these for both the first
+                     ! and second tensor helps to pick them out in the
+                     ! code below
+                     p_list%plist(sp)%ops(2) = 2
                      write(item%logfile,*) "WHAT: ", ii, ind(ii)
 
                      ! Found a pair, so increment pair list index
