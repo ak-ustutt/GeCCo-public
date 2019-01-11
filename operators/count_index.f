@@ -1056,7 +1056,7 @@
       integer :: ext1, ext2 ! External index shifts
       logical :: found, sort
       type(pair_list) :: p_list, t1_list, t2_list, r_list, tmp_list
-      integer, dimension(3) :: t_shift
+      integer, dimension(3) :: t_shift, c_shift
       ! Try new index assigment
 !      type(tensor_slot) ::
 !     &     op1, op2, ep1, ep2, cp1, cp2
@@ -1876,8 +1876,8 @@
 
       ! Match external pairs, either to external ops on the same
       ! operator, or to external ops on the second operator
-      ! TODO: Need to shift the contraction indices as well...
       t_shift = 0
+      c_shift = 0
       do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
 !      if (ncre1 + nann1 >= ncre2 + nann2 .and. ncre1 + nann1 /= 0) then
       if (ncre1 + nann1 /= 0) then
@@ -1976,7 +1976,8 @@
                         p_list%plist(sp)%linked = .true.
                         do m=1, 3
                            do n=1, nc(m,i2)
-         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop
+         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop+
+     &        c_shift(m)
                               ! Need to shift for annihilation
                               if (i1 == 1) ii = ii + nc(m,1)
 
@@ -1987,6 +1988,9 @@
                               else
                                   nann3 = nann3 - 1
                               end if
+
+                              c_shift(m) = c_shift(m) + 1
+
                               exit
                            end do
                         end do
@@ -2106,7 +2110,8 @@
                         p_list%plist(sp)%linked = .true.
                         do m=1, 3
                            do n=1, nc(m,i2)
-         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop
+         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop+
+     &        c_shift(m)
                               ! Need to shift for annihilation
                               if (i1 == 1) ii = ii + nc(m,1)
 
@@ -2117,6 +2122,9 @@
                               else
                                   nann3 = nann3 - 1
                               end if
+
+                              c_shift(m) = c_shift(m)
+
                               exit
                            end do
                         end do
