@@ -1047,7 +1047,6 @@
       integer :: ntmp
       real(4) :: factor
 
-      type(pair) ::  test1
       integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
       integer :: ncre4, nann4 ! Number of ops in result tensor
       integer :: i1, i2 ! Search creation or annihilation first
@@ -1552,19 +1551,16 @@
       shift = 1
       do i=1, e1(2,1)
           c1(i:)=par(i)
-          test1%pindex(shift) = par(i)
           shift = shift + 1
       end do
       e1_array(1)=c1
       do i=1, e1(3,1)
           c2(i:)=val(i)
-          test1%pindex(shift) = val(i)
           shift = shift + 1
       end do
       e1_array(2)=c2
       do i=1, e1(1,1)
           c3(i:)=hol(i)
-          test1%pindex(shift) = hol(i)
           shift = shift + 1
       end do
       e1_array(3)=c3
@@ -1572,19 +1568,16 @@
       ! Need to to be shifted to not match assignment of creations above
       do i=1, e1(2,2)
           a1(i:)=par(i+e1(2,1))
-          test1%pindex(shift) = par(i)
           shift = shift + 1
       end do
       e1_array(5)=a1
       do i=1, e1(3,2)
           a2(i:)=val(i+e1(3,1))
-          test1%pindex(shift) = val(i)
           shift = shift + 1
       end do
       e1_array(6)=a2
       do i=1, e1(1,2)
           a3(i:)=hol(i+e1(1,1))
-          test1%pindex(shift) = hol(i)
           shift = shift + 1
       end do
       e1_array(7)=a3
@@ -1601,19 +1594,16 @@
       ! Shifted so as not to match e1 index
       do i=1, e2(2,1)
           c1(i:)=par(i+e1(2,1)+e1(2,2))
-          test1%pindex(shift) = c1(i:)
           shift = shift + 1
       end do
       e2_array(1)=c1
       do i=1, e2(3,1)
           c2(i:)=val(i+e1(3,1)+e1(3,2))
-          test1%pindex(shift) = c2(i:)
           shift = shift + 1
       end do
       e2_array(2)=c2
       do i=1, e2(1,1)
           c3(i:)=hol(i+e1(1,1)+e1(1,2))
-          test1%pindex(shift) = c3(i:)
           shift = shift + 1
       end do
       e2_array(3)=c3
@@ -1621,19 +1611,16 @@
       ! Shifted so as not to match e1 index or above creations
       do i=1, e2(2,2)
           a1(i:)=par(i+e2(2,1)+e1(2,1)+e1(2,2))
-          test1%pindex(shift) = a1(i:)
           shift = shift + 1
       end do
       e2_array(5)=a1
       do i=1, e2(3,2)
           a2(i:)=val(i+e2(3,1)+e1(3,1)+e1(3,2))
-          test1%pindex(shift) = a2(i:)
           shift = shift + 1
       end do
       e2_array(6)=a2
       do i=1, e2(1,2)
           a3(i:)=hol(i+e2(1,1)+e1(1,1)+e1(1,2))
-          test1%pindex(shift) = a2(i:)
           shift = shift + 1
       end do
       e2_array(7)=a3
@@ -1703,33 +1690,9 @@
 !======================================================================
       ! Start new idea for index (Jan 2019)
 !======================================================================
-      write(item%logfile,*) "E1:", e1_array
-      write(item%logfile,*) "E2:", e2_array
-      write(item%logfile,*) "C: ", c_array
-      test1%pindex = ' '
-
-      ! Allocate pair list, at most 8 pairs
-      ! TODO: allocate based on ranks of tensors
-      allocate(p_list%plist(8))
-      allocate(t1_list%plist(4))
-      allocate(t2_list%plist(4))
-      allocate(r_list%plist(4))
-      allocate(tmp_list%plist(4))
-
-      do i = 1, 8
-         p_list%plist(i)%pindex = ''
-         p_list%plist(i)%link = ''
-      end do
-      do i = 1, 4
-         t1_list%plist(i)%pindex = ''
-         t1_list%plist(i)%link = ''
-         t2_list%plist(i)%pindex = ''
-         t2_list%plist(i)%link = ''
-         r_list%plist(i)%pindex = ''
-         r_list%plist(i)%link = ''
-         tmp_list%plist(i)%pindex = ''
-         tmp_list%plist(i)%link = ''
-      end do
+!      write(item%logfile,*) "E1:", e1_array
+!      write(item%logfile,*) "E2:", e2_array
+!      write(item%logfile,*) "C: ", c_array
 
       ! Move occupation arrays to canonical order, p/h/v
       nc(1,1) = c(2,1)
@@ -1793,20 +1756,37 @@
          nann4 = nann4 + nr(i,2)
       end do
 
-!      write(item%logfile,*) "ncre1: ", ncre1
-!      write(item%logfile,*) "nann1: ", nann1
-!      write(item%logfile,*) "ncre2: ", ncre2
-!      write(item%logfile,*) "nann2: ", nann2
-!      write(item%logfile,*) "ncre3: ", ncre3
-!      write(item%logfile,*) "nann3: ", nann3
-
       ! Set ranks of tensors
+      ! TODO: this should be in a subroutine which sets item%rank to
+      ! these values
       r1 = ncre1 + nann1 + ncre3 + nann3
       r2 = ncre2 + nann2 + ncre3 + nann3
       r3 = ncre4 + nann4
-      write(item%logfile,*) "r1: ", r1
-      write(item%logfile,*) "r2: ", r2
-      write(item%logfile,*) "r3: ", r3
+
+      ! Allocate pair list, at most 8 pairs
+      allocate(p_list%plist(r1+r2))
+      allocate(t1_list%plist(r1))
+      allocate(t2_list%plist(r2))
+      allocate(r_list%plist(r3))
+      allocate(tmp_list%plist(1))
+
+      do i = 1, r1+r2
+         p_list%plist(i)%pindex = ''
+         p_list%plist(i)%link = ''
+      end do
+      do i = 1, r1
+         t1_list%plist(i)%pindex = ''
+         t1_list%plist(i)%link = ''
+      end do
+      do i = 1, r2
+         t2_list%plist(i)%pindex = ''
+         t2_list%plist(i)%link = ''
+      end do
+      do i = 1, r3
+         r_list%plist(i)%pindex = ''
+         r_list%plist(i)%link = ''
+      end do
+
 
 
       ! Assign contraction loops
@@ -1847,7 +1827,6 @@
                ! Mark which operator this index belongs to
                ! Contraction index always wrt the first operator
                p_list%plist(sp)%ops(1) = 1
-!               write(item%logfile,*) "WHAT: ", ii, ind(ii)
 
                ! Look for matching operator
                do k=1, 3
@@ -1871,7 +1850,6 @@
                      ! and second tensor helps to pick them out in the
                      ! code below
                      p_list%plist(sp)%ops(2) = 2
-                     write(item%logfile,*) "WHAT: ", ii, ind(ii)
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
@@ -1883,7 +1861,7 @@
                exit
             end do
             ! Can't match creation or annihilation so exit
-            write(item%logfile,*) "ncre3: ", ncre3, "nann3", nann3
+            !write(item%logfile,*) "ncre3: ", ncre3, "nann3", nann3
             if (ncre3 == 0 .or. nann3 == 0) exit
          end do
       end do
@@ -1891,15 +1869,14 @@
       ! Set number of contraction loops
       nloop = sp-1
 
-      do i = 1, nloop
-      write(item%logfile,*) "contraction loop: ", p_list%plist(i)%pindex
-      end do
+!      do i = 1, nloop
+!      write(item%logfile,*) "contraction loop: ", p_list%plist(i)%pindex
+!      end do
 
-      ! TODO: need some sort of shift that keeps track of which index
-      ! has been used....
 
       ! Match external pairs, either to external ops on the same
       ! operator, or to external ops on the second operator
+      ! TODO: Need to shift the contraction indices as well...
       t_shift = 0
       do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
 !      if (ncre1 + nann1 >= ncre2 + nann2 .and. ncre1 + nann1 /= 0) then
@@ -2085,7 +2062,6 @@
                         !if (i1 == 1) ii = ii + ne2(k,1)
 
                         p_list%plist(sp)%pindex(shift) = ind(ii)
-                        write(item%logfile,*) "index ", ind(ii)
 
                         if (i1 == 2) then
                             ncre2 = ncre2 - 1
@@ -2173,10 +2149,7 @@
       ! positions
 
 
-
-
       ! First arrange the result index made from external indices only
-      ! TODO: Construct canonical order for f ints
 
       ! IDEA: Create two pair_lists for op1 and op2
       ! Create list with just letters which belong to that op AND no
@@ -2262,9 +2235,11 @@
 
 
       ! Swap between pairs to canonical order
+      ! Don't do this for integrals, apart from the rank 2 fock
+      ! integrals
       ! TODO: will not work with pqrstu...
       do i = 1, r1/2
-       if (.not. item%int(1)) then
+       if (.not. item%int(1) .or. item%int(1) .and. r1 == 2) then
        if (t1_list%plist(i)%pindex(1) > t1_list%plist(i)%pindex(2)) then
             tmp = t1_list%plist(i)%pindex(1)
             t1_list%plist(i)%pindex(1) = t1_list%plist(i)%pindex(2)
@@ -2274,7 +2249,7 @@
       end do
 
       do i = 1, r2/2
-       if (.not. item%int(2)) then
+       if (.not. item%int(2) .or. item%int(2) .and. r2 == 2) then
        if (t2_list%plist(i)%pindex(1) > t2_list%plist(i)%pindex(2)) then
             tmp = t2_list%plist(i)%pindex(1)
             t2_list%plist(i)%pindex(1) = t2_list%plist(i)%pindex(2)
@@ -2283,21 +2258,19 @@
        end if
       end do
 
+      ! Result tensor is never an integral so don't need to check
       do i = 1, r3/2
-       if (.not. item%int(3)) then
        if (r_list%plist(i)%pindex(1) > r_list%plist(i)%pindex(2)) then
             tmp = r_list%plist(i)%pindex(1)
             r_list%plist(i)%pindex(1) = r_list%plist(i)%pindex(2)
             r_list%plist(i)%pindex(2) = tmp
          end if
-       end if
       end do
 
 
 
       ! Sort index pairs into order with bubble sort
       ! If only 1 pair, then this is be skipped
-      ! TODO: Dont need all of tmp_list
 !      do i = 1, r1/2
 !         write(item%logfile,*) "T1 LIST: ", t1_list%plist(i)%pindex
 !      end do
@@ -3918,7 +3891,7 @@
       write(item%logfile,*) trim(line)
 
       ! Mark end of spin block
-      write(item%logfile,*) 'END '
+      write(item%logfile,*) 'END'
 
       return
       end
