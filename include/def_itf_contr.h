@@ -7,7 +7,7 @@
       ! printed
 
       character(len=maxlen_bc_label) ::
-     &     name                 ! Name of tensor    
+     &     name                 ! Name of tensor
       integer, dimension(4,6) ::
      &     cases = 0                ! Matrix containing possible spin cases each row is a different case
       integer ::

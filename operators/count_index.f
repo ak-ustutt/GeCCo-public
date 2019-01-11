@@ -1805,6 +1805,9 @@
 
       ! Pair list shift (shift pair)
       sp = 1
+      ! Found = true if a matching index has been found
+      ! TODO: this needs to be thought about
+      found = .false.
 
       do while (ncre3 /= 0 .and. nann3 /= 0)
          ! Loop over P/H/V
@@ -1815,7 +1818,8 @@
                ! Need extra shift if annihilator
                if (i1 == 2) ii = ii + nc(i,1)
 
-               p_list%plist(sp)%pindex(shift) = ind(ii)
+               !p_list%plist(sp)%pindex(shift) = ind(ii)
+               p_list%plist(sp)%pindex(i1) = ind(ii)
                shift = shift + 1
 
                if (i1 == 2) then
@@ -1826,7 +1830,8 @@
 
                ! Mark which operator this index belongs to
                ! Contraction index always wrt the first operator
-               p_list%plist(sp)%ops(1) = 1
+               !p_list%plist(sp)%ops(1) = 1
+               p_list%plist(sp)%ops(i1) = 1
 
                ! Look for matching operator
                do k=1, 3
@@ -1836,7 +1841,8 @@
                      ! Need extra shift if annihilator
                      if (i1 == 1) ii = ii + nc(k,1)
 
-                     p_list%plist(sp)%pindex(shift) = ind(ii)
+                     !p_list%plist(sp)%pindex(shift) = ind(ii)
+                     p_list%plist(sp)%pindex(i2) = ind(ii)
 
                      if (i1 == 2) then
                         ncre3 = ncre3 - 1
@@ -1849,7 +1855,8 @@
                      ! tensors, but marking these for both the first
                      ! and second tensor helps to pick them out in the
                      ! code below
-                     p_list%plist(sp)%ops(2) = 2
+                     !p_list%plist(sp)%ops(2) = 2
+                     p_list%plist(sp)%ops(i2) = 2
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
@@ -1883,6 +1890,10 @@
       if (ncre1 + nann1 /= 0) then
          if (ncre1 >= nann1) then
             ! Loop through creations first
+            ! IMPORTANT: i1 and i2 label creation/annihilation
+            ! operators, pindex always leads with the creation, so the
+            ! indices must be placed in their correct position. So use
+            ! i1 and i2 to do this
             i1 = 1
             i2 = 2
             n1 = nann1
@@ -1906,8 +1917,10 @@
                ii = 1+(4*(i-1)) + t_shift(i)
                ! Need extra shift if this is annihilator
                !if (i1 == 2) ii = ii + ne1(i,1)
-               p_list%plist(sp)%pindex(shift) = ind(ii)
-               p_list%plist(sp)%ops(1) = 1
+               !p_list%plist(sp)%pindex(shift) = ind(ii)
+               p_list%plist(sp)%pindex(i1) = ind(ii)
+               !p_list%plist(sp)%ops(1) = 1
+               p_list%plist(sp)%ops(i1) = 1
                shift = shift + 1
 
                if (i1 == 2) then
@@ -1929,7 +1942,8 @@
                         ! annihilation ops
                         !if (i1 == 1) ii = ii + ne1(k,1)
 
-                        p_list%plist(sp)%pindex(shift) = ind(ii)
+                        !p_list%plist(sp)%pindex(shift) = ind(ii)
+                        p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
                             ncre1 = ncre1 - 1
@@ -1940,7 +1954,8 @@
                         t_shift(k) = t_shift(k) + 1
 
                         p_list%plist(sp)%linked = .false.
-                        p_list%plist(sp)%ops(2) = 1
+                        !p_list%plist(sp)%ops(2) = 1
+                        p_list%plist(sp)%ops(i2) = 1
 
                         ! Found a pair, so increment pair list index
                         sp = sp + 1
@@ -1948,6 +1963,7 @@
                      end do
                      !TODO: this is a problem, need to exit when found
                      !pair. Need some sort of logical
+                     !if (found) then exit
                   end do
                else if (n2 > 0) then
                   ! Look on the second operator
@@ -1959,7 +1975,8 @@
                         ! Need to shift for annihilation
                         !if (i1 == 1) ii = ii + ne2(k,1)
 
-                        p_list%plist(sp)%pindex(shift) = ind(ii)
+                        !p_list%plist(sp)%pindex(shift) = ind(ii)
+                        p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
                             ncre2 = ncre2 - 1
@@ -1969,7 +1986,8 @@
 
                         t_shift(k) = t_shift(k) + 1
 
-                        p_list%plist(sp)%ops(2) = 2
+                        !p_list%plist(sp)%ops(2) = 2
+                        p_list%plist(sp)%ops(i2) = 2
 
                         ! We need to link the external indices on two
                         ! different operators with a contraction index
@@ -2041,8 +2059,10 @@
                ! Need extra shift if annihilator
                !if (i1 == 2) ii = ii + ne2(i,1)
 
-               p_list%plist(sp)%pindex(shift) = ind(ii)
-               p_list%plist(sp)%ops(1) = 2
+               !p_list%plist(sp)%pindex(shift) = ind(ii)
+               p_list%plist(sp)%pindex(i1) = ind(ii)
+               !p_list%plist(sp)%ops(1) = 2
+               p_list%plist(sp)%ops(i1) = 2
                shift = shift + 1
 
                if (i1 == 2) then
@@ -2065,7 +2085,8 @@
                         ! Need extra shift if annihilator
                         !if (i1 == 1) ii = ii + ne2(k,1)
 
-                        p_list%plist(sp)%pindex(shift) = ind(ii)
+                        !p_list%plist(sp)%pindex(shift) = ind(ii)
+                        p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
                             ncre2 = ncre2 - 1
@@ -2076,7 +2097,8 @@
                         t_shift(k) = t_shift(k) + 1
 
                         p_list%plist(sp)%linked = .false.
-                        p_list%plist(sp)%ops(2) = 2
+                        !p_list%plist(sp)%ops(2) = 2
+                        p_list%plist(sp)%ops(i2) = 2
 
                         ! Found a pair, so increment pair list index
                         sp = sp + 1
@@ -2093,7 +2115,8 @@
                         ! Need to shift for annihilation
                         !if (i1 == 1) ii = ii + ne1(k,1)
 
-                        p_list%plist(sp)%pindex(shift) = ind(ii)
+                        !p_list%plist(sp)%pindex(shift) = ind(ii)
+                        p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
                             ncre1 = ncre1 - 1
@@ -2103,7 +2126,8 @@
 
                         t_shift(k) = t_shift(k) + 1
 
-                        p_list%plist(sp)%ops(2) = 1
+                        !p_list%plist(sp)%ops(2) = 1
+                        p_list%plist(sp)%ops(i2) = 1
 
                         ! We need to link the external indices on two
                         ! different operators with a contraction index
@@ -2148,6 +2172,14 @@
       end if
       end do   ! do while loop
 
+      do i = 1, r1+r2
+         write(item%logfile,*) p_list%plist(i)%pindex(1)
+         write(item%logfile,*) p_list%plist(i)%ops(1)
+         write(item%logfile,*) p_list%plist(i)%pindex(2)
+         write(item%logfile,*) p_list%plist(i)%ops(2)
+         write(item%logfile,*) p_list%plist(i)%link
+      end do
+
 
 
       ! We now have list of pairs + which ops they belong to and any
@@ -2171,6 +2203,11 @@
       ! to determine if they are K or J
 
       ! Create pair lists for each tensor
+      ! When constructing these pair lists, the contraction index
+      ! goes first, then any pairs with one contraction index (ie.
+      ! pairs), then externals. This is to make sure the slot
+      ! configurations are consistent when declaring, then using
+      ! intermediates. This may not work for every case....
       shift = 1
       do i = 1, sp-1
          if (p_list%plist(i)%ops(1) == 1) then
@@ -2200,6 +2237,15 @@
             t1_list%plist(shift)%ops = 1
             shift = shift + 1
          end if
+      end do
+
+      write(item%logfile,*) "T1 ARRAY--------------------"
+      do i = 1, r1
+         write(item%logfile,*) t1_list%plist(i)%pindex(1)
+         write(item%logfile,*) t1_list%plist(i)%ops(1)
+         write(item%logfile,*) t1_list%plist(i)%pindex(2)
+         write(item%logfile,*) t1_list%plist(i)%ops(2)
+         write(item%logfile,*) t1_list%plist(i)%link
       end do
 
       shift = 1
@@ -2240,6 +2286,14 @@
          shift = shift + 1
       end do
 
+      write(item%logfile,*) "R ARRAY--------------------"
+      do i = 1, r3
+         write(item%logfile,*) r_list%plist(i)%pindex(1)
+         write(item%logfile,*) r_list%plist(i)%ops(1)
+         write(item%logfile,*) r_list%plist(i)%pindex(2)
+         write(item%logfile,*) r_list%plist(i)%ops(2)
+      end do
+
 
 
       ! Swap between pairs to canonical order
@@ -2248,31 +2302,37 @@
       ! TODO: will not work with pqrstu...
       do i = 1, r1/2
        if (.not. item%int(1) .or. item%int(1) .and. r1 == 2) then
+          if (.not. item%inter(1)) then
        if (t1_list%plist(i)%pindex(1) > t1_list%plist(i)%pindex(2)) then
             tmp = t1_list%plist(i)%pindex(1)
             t1_list%plist(i)%pindex(1) = t1_list%plist(i)%pindex(2)
             t1_list%plist(i)%pindex(2) = tmp
+         end if
          end if
        end if
       end do
 
       do i = 1, r2/2
        if (.not. item%int(2) .or. item%int(2) .and. r2 == 2) then
+       if (.not. item%inter(2)) then
        if (t2_list%plist(i)%pindex(1) > t2_list%plist(i)%pindex(2)) then
             tmp = t2_list%plist(i)%pindex(1)
             t2_list%plist(i)%pindex(1) = t2_list%plist(i)%pindex(2)
             t2_list%plist(i)%pindex(2) = tmp
          end if
        end if
+       end if
       end do
 
       ! Result tensor is never an integral so don't need to check
       do i = 1, r3/2
+       if (.not. item%inter(3)) then
        if (r_list%plist(i)%pindex(1) > r_list%plist(i)%pindex(2)) then
             tmp = r_list%plist(i)%pindex(1)
             r_list%plist(i)%pindex(1) = r_list%plist(i)%pindex(2)
             r_list%plist(i)%pindex(2) = tmp
          end if
+        end if
       end do
 
 
@@ -2287,7 +2347,7 @@
 !      end do
 
       ! Sort out the first tensor
-      if (r1 > 2 .and. .not.item%int(1)) then
+      if (r1 > 2 .and. .not.item%int(1) .and. .not. item%inter(1)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2304,8 +2364,9 @@
       end do
       end if
 
+
       ! Sort out the second tensor
-      if (r2 > 2 .and. .not.item%int(2)) then
+      if (r2 > 2 .and. .not.item%int(2) .and. .not. item%inter(2)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2323,7 +2384,7 @@
       end if
 
       ! Sort out the second tensor
-      if (r3 > 2 .and. .not.item%int(3)) then
+      if (r3 > 2 .and. .not.item%int(3) .and. .not. item%inter(3)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2462,6 +2523,8 @@
       write(item%logfile,*) "=============================="
 
 
+
+
       deallocate(p_list%plist)
       deallocate(t1_list%plist)
       deallocate(t2_list%plist)
@@ -2571,9 +2634,16 @@
 
 
 
+      !======================================
+      ! Stick the new strings over the old ones...
+!      item%idx1 = trimal(c1)
+!      item%idx2 = trimal(c2)
+!      item%idx3 = trimal(c3)
+
+      !======================================
 
 
-
+      ! Replacing with new code (Jan 2019)
       ! Result, problems occur rank 2 tensors...
       conv = (/ 1, 2, 3, 5, 6, 7 /)
       if (len(trim(item%idx1)) < len(trim(item%idx2))) then
@@ -2593,6 +2663,7 @@
 
 
 
+      ! Replacing with new code (Jan 2019)
       ! Need to corrrect index for R[ai]; the a and i must be in the
       ! same slot
       ! This should be considered as a hack....
