@@ -1342,7 +1342,7 @@
       ! If the second operator has more ops, then search from there
       else if (ncre2 + nann2 /= 0)then
 
-         if (ncre1 >= nann1) then
+         if (ncre2 >= nann2) then
             ! Loop through creations first
             i1 = 1
             i2 = 2
@@ -1549,6 +1549,174 @@
 
       return
       end
+
+
+!*----------------------------------------------------------------------*
+!      subroutine find_pairs(p_list, t_list, place, npairs)
+!*----------------------------------------------------------------------*
+!!     Find external pairs in a binary contraction. Assign a contraction
+!!     index if they are on different tensors.
+!!     TODO: merge creation loops into this???
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(pair_list), intent(in) ::
+!     &   p_list            ! Complete pair list for binary contraction
+!      type(pair_list), intent(inout) ::
+!     &   t_list            ! Pair list for specific tensor
+!      integer, intent(in) ::
+!     &   place,            ! Tensor place in binary contraction: {1,2,3}
+!     &   npairs            ! Number of pairs in binary contraction
+!
+!      integer ::
+!     &   s,                ! Index to help placement of pairs
+!     &   i                 ! Loop index
+!
+!      ! Loop through creations first
+!      ! IMPORTANT: i1 and i2 label creation/annihilation
+!      ! operators, pindex always has a creation in position 1, so the
+!      ! indices must be placed in their correct position.
+!      if (ncre1 >= nann1) then
+!         i1 = 1
+!         i2 = 2
+!         n1 = nann1
+!         n2 = nann2
+!         n3 = ncre1
+!      else
+!         ! Loop through annihilation first
+!         i1 = 2
+!         i2 = 1
+!         n1 = ncre1
+!         n2 = ncre2
+!         n3 = nann1
+!      end if
+!
+!         if (ncre1 >= nann1) then
+!            ! Loop through creations first
+!            i1 = 1
+!            i2 = 2
+!            n1 = nann2
+!            n2 = ncre1
+!            n3 = ncre2
+!         else
+!            ! Loop through annihilation first
+!            i1 = 2
+!            i2 = 1
+!            n1 = ncre2
+!            n2 = nann1
+!            n3 = nann2
+!         end if
+!
+!      do i=1, 4
+!         shift = 1
+!         do j=1, e1(i,i1)
+!            ii = 1+(4*(i-1)) + t_shift(i)
+!            p_list%plist(sp)%pindex(i1) = ind(ii)
+!
+!            p_list%plist(sp)%ops(i1) = 1
+!            shift = shift + 1
+!
+!            if (i1 == 2) then
+!               nann1 = nann1 - 1
+!            else
+!               ncre1 = ncre1 - 1
+!            end if
+!
+!            t_shift(i) = t_shift(i) + 1
+!
+!            ! Look for matching operator
+!            if (n1>0) then
+!               ! Look on the same (first) operator
+!               do k=1, 4
+!                  do l=1, e1(k,i2)
+!                     ii = 1+(4*(k-1)) + t_shift(k)
+!
+!                     p_list%plist(sp)%pindex(i2) = ind(ii)
+!
+!                     if (i1 == 2) then
+!                         ncre1 = ncre1 - 1
+!                     else
+!                         nann1 = nann1 - 1
+!                     end if
+!
+!                     t_shift(k) = t_shift(k) + 1
+!
+!                     p_list%plist(sp)%linked = .false.
+!                     p_list%plist(sp)%ops(i2) = 1
+!
+!                     ! Found a pair, so increment pair list index
+!                     sp = sp + 1
+!                     exit
+!                  end do
+!                  !TODO: this is a problem, need to exit when found
+!                  !pair. Need some sort of logical
+!                  !if (found) then exit
+!               end do
+!            else if (n2 > 0) then
+!               ! Look on the second operator
+!               do k=1, 4
+!                  do l=1, e2(k,i2)
+!                     ii = 1+(4*(k-1))+t_shift(k)
+!
+!                     p_list%plist(sp)%pindex(i2) = ind(ii)
+!
+!                     if (i1 == 2) then
+!                         ncre2 = ncre2 - 1
+!                     else
+!                         nann2 = nann2 - 1
+!                     end if
+!
+!                     t_shift(k) = t_shift(k) + 1
+!
+!                     p_list%plist(sp)%ops(i2) = 2
+!
+!                     ! We need to link the external indices on two
+!                     ! different operators with a contraction index
+!                     p_list%plist(sp)%linked = .true.
+!                     do m=1, 3
+!                        do n=1, c(m,i2)
+!      ii = 1+(4*(m-1))+e1(m,i1)+e1(m,i2)+e2(m,i1)+e2(m,i2)+nloop+
+!     &     c_shift(m)
+!                           ! Need to shift for annihilation
+!                           if (i1 == 1) ii = ii + c(m,1)
+!
+!                           p_list%plist(sp)%link = ind(ii)
+!
+!                           if (i1 == 2) then
+!                               ncre3 = ncre3 - 1
+!                           else
+!                               nann3 = nann3 - 1
+!                           end if
+!
+!                           c_shift(m) = c_shift(m) + 1
+!
+!                           exit
+!                        end do
+!                     end do
+!
+!                     ! Found a pair + made a link, so increment pair list index
+!                     sp = sp + 1
+!                     exit
+!                  end do
+!               end do
+!            else
+!               ! No ops of opposite type to match...
+!               call line_error("Particle number not conserving",item)
+!            end if
+!
+!            ! A pair loop has been found so exit
+!            exit
+!         end do
+!         ! Can't match creation or annihilation so exit
+!         if (n3 == 0) exit
+!      end do
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
