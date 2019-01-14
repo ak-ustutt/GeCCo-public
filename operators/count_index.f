@@ -2745,14 +2745,6 @@
       !======================================
       ! Stick the new strings over the old ones...
 
-      ! Need to swap first creation on t1 with first creation on t2
-      ! TODO: Need to do this properly
-      !if (item%permute==2) then
-      !   tmp = c1(3:3)
-      !   c1(3:3) = c2(3:3)
-      !   c2(3:3) = tmp
-      !end if
-
       item%idx1 = trimal(c1)
       item%idx2 = trimal(c2)
       item%idx3 = trimal(c3)

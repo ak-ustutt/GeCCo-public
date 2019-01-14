@@ -12,7 +12,7 @@ for dir in */; do
     gecco.x ccd.inp > ccd.out
 
     echo "Results for icmrcc_${dir}:"
-    #diff icmrcc_${dir}.itfaa example.itfaa
+    diff icmrcc_${dir}.itfaa example.itfaa
 
     echo "Molpro results:"
     cp icmrcc_${dir}.itfaa $MOLPRO/src/algo/
