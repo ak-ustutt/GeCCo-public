@@ -24,7 +24,7 @@
 *----------------------------------------------------------------------*
       pure function rename_tensor(string, rank)
 *----------------------------------------------------------------------*
-!     Rename tensor acording to taste
+!     Rename tensor according to taste
 !     This should be expanded to rename all tensors so they correspond
 !     with the ITF algo file
 *----------------------------------------------------------------------*
@@ -228,6 +228,41 @@
       ! Annhilation operators as above
       nops(1,2)=nops(1,2) + iocc(1,2)
       nops(2,2)=nops(2,2) + iocc(2,2)
+      nops(3,2)=nops(3,2) + iocc(3,2)
+      nops(4,2)=nops(4,2) + iocc(4,2)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
+*----------------------------------------------------------------------*
+!     As above, but in a different order
+!     TODO: merge above to this
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+
+      integer, intent(in) ::
+     &     iocc(ngastp,2), ngas, nspin,
+     &     irstr(2,ngas,2,2,nspin), idx
+      integer, intent(inout) ::
+     &     nops(4,2)                     ! Matrix of index info
+
+      ! Creation operators
+      ! Hole, abcd
+      nops(1,1)=nops(1,1) + iocc(2,1)
+      ! Particle, ijkl
+      nops(2,1)=nops(2,1) + iocc(1,1)
+      ! Valence, pqrs
+      nops(3,1)=nops(3,1) + iocc(3,1)
+      ! Explicit, x
+      nops(4,1)=nops(4,1) + iocc(4,1)
+
+      ! Annhilation operators as above
+      nops(1,2)=nops(1,2) + iocc(2,2)
+      nops(2,2)=nops(2,2) + iocc(1,2)
       nops(3,2)=nops(3,2) + iocc(3,2)
       nops(4,2)=nops(4,2) + iocc(4,2)
 
@@ -1002,11 +1037,7 @@
      &     c(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),     ! Occupations of external index 2
-     &     e3(4,2),     ! Occupations of external index 2
-     &     nc(4,2),       ! Copies of above but in different order
-     &     ne1(4,2),      ! Copies
-     &     ne2(4,2),    ! Copies
-     &     nr(4,2)    ! Copies of result ops
+     &     e3(4,2)      ! Occupations of external index 2
       integer ::
      &     i,j,k,l,m,n,ii
       character, dimension(3) ::
@@ -1063,25 +1094,25 @@
 
       ! Get occupation info
       do i = 1, contr_info%n_cnt
-        call count_index(i,
+        call count_index2(i,
      &     contr_info%occ_cnt(1:,1:,i),
      &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,c)
       end do
       do i = 1, contr_info%nj_op1
-        call count_index(i,
+        call count_index2(i,
      &     contr_info%occ_ex1(1:,1:,i),
      &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e1)
       end do
       do i = 1, contr_info%nj_op2
-        call count_index(i,
+        call count_index2(i,
      &     contr_info%occ_ex2(1:,1:,i),
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e2)
       end do
       do i = 1, contr_info%nj_res
-        call count_index(i,
+        call count_index2(i,
      &     contr_info%occ_res(1:,1:,i),
      &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e3)
@@ -1099,49 +1130,6 @@
       end do
       item%fact = item%fact * factor
 
-
-      ! Move occupation arrays to canonical order, p/h/v
-      nc(1,1) = c(2,1)
-      nc(2,1) = c(1,1)
-      nc(3,1) = c(3,1)
-      nc(4,1) = c(4,1)
-
-      nc(1,2) = c(2,2)
-      nc(2,2) = c(1,2)
-      nc(3,2) = c(3,2)
-      nc(4,2) = c(4,2)
-
-      ne1(1,1) = e1(2,1)
-      ne1(2,1) = e1(1,1)
-      ne1(3,1) = e1(3,1)
-      ne1(4,1) = e1(4,1)
-
-      ne1(1,2) = e1(2,2)
-      ne1(2,2) = e1(1,2)
-      ne1(3,2) = e1(3,2)
-      ne1(4,2) = e1(4,2)
-
-      ne2(1,1) = e2(2,1)
-      ne2(2,1) = e2(1,1)
-      ne2(3,1) = e2(3,1)
-      ne2(4,1) = e2(4,1)
-
-      ne2(1,2) = e2(2,2)
-      ne2(2,2) = e2(1,2)
-      ne2(3,2) = e2(3,2)
-      ne2(4,2) = e2(4,2)
-
-      nr(1,1) = e3(2,1)
-      nr(2,1) = e3(1,1)
-      nr(3,1) = e3(3,1)
-      nr(4,1) = e3(4,1)
-
-      nr(1,2) = e3(2,2)
-      nr(2,2) = e3(1,2)
-      nr(3,2) = e3(3,2)
-      nr(4,2) = e3(4,2)
-
-
       ! Find out number of creation/annihilation operators per operator
       ncre1 = 0
       ncre2 = 0
@@ -1152,14 +1140,14 @@
       ncre4 = 0
       nann4 = 0
       do i = 1, 4
-         ncre1 = ncre1 + ne1(i,1)
-         ncre2 = ncre2 + ne2(i,1)
-         nann1 = nann1 + ne1(i,2)
-         nann2 = nann2 + ne2(i,2)
-         ncre3 = ncre3 + nc(i,1)
-         nann3 = nann3 + nc(i,2)
-         ncre4 = ncre4 + nr(i,1)
-         nann4 = nann4 + nr(i,2)
+         ncre1 = ncre1 + e1(i,1)
+         ncre2 = ncre2 + e2(i,1)
+         nann1 = nann1 + e1(i,2)
+         nann2 = nann2 + e2(i,2)
+         ncre3 = ncre3 + c(i,1)
+         nann3 = nann3 + c(i,2)
+         ncre4 = ncre4 + e3(i,1)
+         nann4 = nann4 + e3(i,2)
       end do
 
       ! Set ranks of tensors
@@ -1168,6 +1156,10 @@
       r1 = ncre1 + nann1 + ncre3 + nann3
       r2 = ncre2 + nann2 + ncre3 + nann3
       r3 = ncre4 + nann4
+
+      item%rank1 = r1
+      item%rank2 = r2
+      item%rank3 = r3
 
       ! Allocate pair list, at most 8 pairs
       allocate(p_list%plist(r1+r2))
@@ -1219,10 +1211,10 @@
          ! Loop over P/H/V
          do i=1, 3
             shift = 1
-            do j=1, nc(i,i1)
-               ii = 1+(4*(i-1))+ne1(i,1)+ne1(i,2)+ne2(i,1)+ne2(i,2)+sp-1
+            do j=1, c(i,i1)
+               ii = 1+(4*(i-1))+e1(i,1)+e1(i,2)+e2(i,1)+e2(i,2)+sp-1
                ! Need extra shift if annihilator
-               if (i1 == 2) ii = ii + nc(i,1)
+               if (i1 == 2) ii = ii + c(i,1)
 
                !p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%pindex(i1) = ind(ii)
@@ -1241,11 +1233,11 @@
 
                ! Look for matching operator
                do k=1, 3
-                  do l=1, nc(k,i2)
-                     ii = 1+(4*(k-1))+ne1(k,1)+ne1(k,2)+
-     &                    ne2(k,1)+ne2(k,2) + sp-1
+                  do l=1, c(k,i2)
+                     ii = 1+(4*(k-1))+e1(k,1)+e1(k,2)+
+     &                    e2(k,1)+e2(k,2) + sp-1
                      ! Need extra shift if annihilator
-                     if (i1 == 1) ii = ii + nc(k,1)
+                     if (i1 == 1) ii = ii + c(k,1)
 
                      !p_list%plist(sp)%pindex(shift) = ind(ii)
                      p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1311,13 +1303,13 @@
 
          do i=1, 3
             shift = 1
-            do j=1, ne1(i,i1)
+            do j=1, e1(i,i1)
                ! Need sp-1-nloop to shift index so they aren't the same
                ! after a loop
                !ii = 1+(4*(i-1)) + (sp-1-nloop)
                ii = 1+(4*(i-1)) + t_shift(i)
                ! Need extra shift if this is annihilator
-               !if (i1 == 2) ii = ii + ne1(i,1)
+               !if (i1 == 2) ii = ii + e1(i,1)
                !p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%pindex(i1) = ind(ii)
                !p_list%plist(sp)%ops(1) = 1
@@ -1336,12 +1328,12 @@
                if (n1>0) then
                   ! Look on the same (first) operator
                   do k=1, 3
-                     do l=1, ne1(k,i2)
+                     do l=1, e1(k,i2)
                         !ii = 1+(4*(k-1)) + (sp-1-nloop)
                         ii = 1+(4*(k-1)) + t_shift(k)
                         ! Need to shift extra places if this is
                         ! annihilation ops
-                        !if (i1 == 1) ii = ii + ne1(k,1)
+                        !if (i1 == 1) ii = ii + e1(k,1)
 
                         !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1369,12 +1361,12 @@
                else if (n2 > 0) then
                   ! Look on the second operator
                   do k=1, 3
-                     do l=1, ne2(k,i2)
-!                        ii = 1+(4*(k-1))+ne1(k,i1)+ne1(k,i2)
+                     do l=1, e2(k,i2)
+!                        ii = 1+(4*(k-1))+e1(k,i1)+e1(k,i2)
 !     &                      + (sp-1 - nloop)
                         ii = 1+(4*(k-1))+t_shift(k)
                         ! Need to shift for annihilation
-                        !if (i1 == 1) ii = ii + ne2(k,1)
+                        !if (i1 == 1) ii = ii + e2(k,1)
 
                         !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1394,11 +1386,11 @@
                         ! different operators with a contraction index
                         p_list%plist(sp)%linked = .true.
                         do m=1, 3
-                           do n=1, nc(m,i2)
-         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop+
+                           do n=1, c(m,i2)
+         ii = 1+(4*(m-1))+e1(m,i1)+e1(m,i2)+e2(m,i1)+e2(m,i2)+nloop+
      &        c_shift(m)
                               ! Need to shift for annihilation
-                              if (i1 == 1) ii = ii + nc(m,1)
+                              if (i1 == 1) ii = ii + c(m,1)
 
                               p_list%plist(sp)%link = ind(ii)
 
@@ -1453,12 +1445,12 @@
          do i=1, 3
             shift = 1
             ! Search second operator
-            do j=1, ne2(i,i1)
-               !ii = 1+(4*(i-1))+ne1(i,i1)+ne1(i,i2) + (sp-1 - nloop)
+            do j=1, e2(i,i1)
+               !ii = 1+(4*(i-1))+e1(i,i1)+e1(i,i2) + (sp-1 - nloop)
                ii = 1+(4*(i-1))+t_shift(i)
 
                ! Need extra shift if annihilator
-               !if (i1 == 2) ii = ii + ne2(i,1)
+               !if (i1 == 2) ii = ii + e2(i,1)
 
                !p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%pindex(i1) = ind(ii)
@@ -1478,13 +1470,13 @@
                if (n1>0) then
                   ! Look on the same (second) operator
                   do k=1, 3
-                     do l=1, ne2(k,i2)
-!                        ii = 1+(4*(k-1))+ne1(i,i1)+ne1(i,i2)
+                     do l=1, e2(k,i2)
+!                        ii = 1+(4*(k-1))+e1(i,i1)+e1(i,i2)
 !     &                       + (sp-1 - nloop)
                         ii = 1+(4*(k-1))+t_shift(k)
 
                         ! Need extra shift if annihilator
-                        !if (i1 == 1) ii = ii + ne2(k,1)
+                        !if (i1 == 1) ii = ii + e2(k,1)
 
                         !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1509,12 +1501,12 @@
                else if (n2 > 0) then
                   ! Look on the first operator
                   do k=1, 3
-                     do l=1, ne1(k,i2)
+                     do l=1, e1(k,i2)
                         !ii = 1+(4*(k-1)) + (sp-1 - nloop)
                         ii = 1+(4*(k-1)) + t_shift(k)
 
                         ! Need to shift for annihilation
-                        !if (i1 == 1) ii = ii + ne1(k,1)
+                        !if (i1 == 1) ii = ii + e1(k,1)
 
                         !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1534,11 +1526,11 @@
                         ! different operators with a contraction index
                         p_list%plist(sp)%linked = .true.
                         do m=1, 3
-                           do n=1, nc(m,i2)
-         ii = 1+(4*(m-1))+ne1(m,i1)+ne1(m,i2)+ne2(m,i1)+ne2(m,i2)+nloop+
+                           do n=1, c(m,i2)
+         ii = 1+(4*(m-1))+e1(m,i1)+e1(m,i2)+e2(m,i1)+e2(m,i2)+nloop+
      &        c_shift(m)
                               ! Need to shift for annihilation
-                              if (i1 == 1) ii = ii + nc(m,1)
+                              if (i1 == 1) ii = ii + c(m,1)
 
                               p_list%plist(sp)%link = ind(ii)
 
@@ -2979,11 +2971,9 @@
          call assign_index(contr_info,itf_item)
       end if
 
-      ! Assign rank
+      !! Assign rank
+      ! TODO: move this to corresponding assign_sum_index
       call itf_rank(itf_item%idx1,itf_item%rank1)
-      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         call itf_rank(itf_item%idx2,itf_item%rank2)
-      end if
       call itf_rank(itf_item%idx3,itf_item%rank3)
 
       itf_item%inter1 = '        '
