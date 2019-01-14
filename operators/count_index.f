@@ -1540,11 +1540,7 @@
       ! Create a pair list for T1, T2 and the result tensor. This will
       ! allow manipulation of indices on different tensor without
       ! interfering with each other
-
-      ! Construct T1 pair list
       call make_pair_list(p_list, t1_list, 1, sp-1)
-
-      ! Construct T2 pair list
       call make_pair_list(p_list, t2_list, 2, sp-1)
 
       ! Create pair list for result tensor, only need external index
@@ -1568,45 +1564,15 @@
       end if
 
 
-      ! Swap between pairs to canonical order
-      ! Don't do this for integrals, apart from the rank 2 fock
-      ! integrals, or intermediates. So only for amplitudes and fock
+      ! Swap between creation and annihilation operators to make sure
+      ! external ops are before internal. This is important for the
+      ! amplitudes and fock tensors, as these require a specific order of
+      ! indices. Integrals and intermediates are ignored by this
+      ! subroutine
       ! TODO: will not work with pqrstu...
-      do i = 1, r1/2
-       if (.not. item%int(1) .or. item%int(1) .and. r1 == 2) then
-          if (.not. item%inter(1)) then
-       if (t1_list%plist(i)%pindex(1) > t1_list%plist(i)%pindex(2)) then
-            tmp = t1_list%plist(i)%pindex(1)
-            t1_list%plist(i)%pindex(1) = t1_list%plist(i)%pindex(2)
-            t1_list%plist(i)%pindex(2) = tmp
-         end if
-         end if
-       end if
-      end do
-
-      do i = 1, r2/2
-       if (.not. item%int(2) .or. item%int(2) .and. r2 == 2) then
-       if (.not. item%inter(2)) then
-       if (t2_list%plist(i)%pindex(1) > t2_list%plist(i)%pindex(2)) then
-            tmp = t2_list%plist(i)%pindex(1)
-            t2_list%plist(i)%pindex(1) = t2_list%plist(i)%pindex(2)
-            t2_list%plist(i)%pindex(2) = tmp
-         end if
-       end if
-       end if
-      end do
-
-      ! Result tensor is never an integral so don't need to check
-      do i = 1, r3/2
-       if (.not. item%inter(3)) then
-       if (r_list%plist(i)%pindex(1) > r_list%plist(i)%pindex(2)) then
-            tmp = r_list%plist(i)%pindex(1)
-            r_list%plist(i)%pindex(1) = r_list%plist(i)%pindex(2)
-            r_list%plist(i)%pindex(2) = tmp
-         end if
-        end if
-      end do
-
+      call swap_index(t1_list, r1, item%int(1), item%inter(1))
+      call swap_index(t2_list, r2, item%int(2), item%inter(2))
+      call swap_index(r_list, r3, item%int(3), item%inter(3))
 
 
       ! Sort index pairs into order with bubble sort
@@ -1758,6 +1724,52 @@
             s = s + 1
          end if
       end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine swap_index(list, rank, integral, inter)
+*----------------------------------------------------------------------*
+!     Swap creation/annihilation operators around in pair index to make
+!     sure that the external slots come before the internal. This is
+!     needed because tensors need to be defined as T[eecc] and f[ec].
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(pair_list), intent(inout) ::
+     &   list              ! Complete pair list for a tensor
+      integer, intent(in) ::
+     &   rank              ! Rank of tensor
+      logical, intent(in) ::
+     &   integral,
+     &   inter
+
+      character(len=1) ::
+     &   tmp               ! Temporary holder for index
+      integer ::
+     &   i                 ! Loop index
+
+
+      ! If the tensor is a rank-4 integral or an intermediate,
+      ! creation/annihilation order is important, so these are skipped
+      if (.not. integral .or. integral .and. rank == 2) then
+         if (.not. inter) then
+            do i = 1, rank/2
+               if (list%plist(i)%pindex(1) >
+     &                                     list%plist(i)%pindex(2)) then
+                  tmp = list%plist(i)%pindex(1)
+                  list%plist(i)%pindex(1) = list%plist(i)%pindex(2)
+                  list%plist(i)%pindex(2) = tmp
+               end if
+            end do
+         end if
+      end if
 
       return
       end
