@@ -311,7 +311,7 @@
                ! permutaions before symmetrising
                call itf_contr_init(contr_info,itf_item,i,command,itflog)
 
-               ! Mutliply factor by -1.0 due to permutation
+               ! Multiply factor by -1.0 due to permutation
                if (i == 2) then
                   itf_item%fact = itf_item%fact * -1.0
 
@@ -2172,13 +2172,13 @@
       end if
       end do   ! do while loop
 
-      do i = 1, r1+r2
-         write(item%logfile,*) p_list%plist(i)%pindex(1)
-         write(item%logfile,*) p_list%plist(i)%ops(1)
-         write(item%logfile,*) p_list%plist(i)%pindex(2)
-         write(item%logfile,*) p_list%plist(i)%ops(2)
-         write(item%logfile,*) p_list%plist(i)%link
-      end do
+!      do i = 1, r1+r2
+!         write(item%logfile,*) p_list%plist(i)%pindex(1)
+!         write(item%logfile,*) p_list%plist(i)%ops(1)
+!         write(item%logfile,*) p_list%plist(i)%pindex(2)
+!         write(item%logfile,*) p_list%plist(i)%ops(2)
+!         write(item%logfile,*) p_list%plist(i)%link
+!      end do
 
 
 
@@ -2208,6 +2208,8 @@
       ! pairs), then externals. This is to make sure the slot
       ! configurations are consistent when declaring, then using
       ! intermediates. This may not work for every case....
+      ! DON'T THINK THIS WILL WORK FOR EVERY CASE
+      shift = 1
       shift = 1
       do i = 1, sp-1
          if (p_list%plist(i)%ops(1) == 1) then
@@ -2239,14 +2241,87 @@
          end if
       end do
 
-      write(item%logfile,*) "T1 ARRAY--------------------"
-      do i = 1, r1
-         write(item%logfile,*) t1_list%plist(i)%pindex(1)
-         write(item%logfile,*) t1_list%plist(i)%ops(1)
-         write(item%logfile,*) t1_list%plist(i)%pindex(2)
-         write(item%logfile,*) t1_list%plist(i)%ops(2)
-         write(item%logfile,*) t1_list%plist(i)%link
-      end do
+!      ! Assign contraction loops first for T1
+!      do i = 1, nloop
+!         if (p_list%plist(i)%ops(1) == 1) then
+!            ! Add to t1_list + think about link
+!            t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+!            t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+!
+!            t1_list%plist(shift)%linked = .false.
+!            t1_list%plist(shift)%ops = 1
+!            shift = shift + 1
+!
+!         else if (p_list%plist(i)%ops(2) == 1) then
+!            ! Add to t1_list + think about link
+!            t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+!            t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+!
+!            t1_list%plist(shift)%linked = .false.
+!            t1_list%plist(shift)%ops = 1
+!            shift = shift + 1
+!         end if
+!      end do
+!
+!      ! Now assign linked indices
+!      do i = nloop+1, sp-1
+!         if (p_list%plist(i)%ops(1) == 1) then
+!
+!            if (p_list%plist(i)%linked) then
+!             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+!             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%link
+!             t1_list%plist(shift)%linked = .false.
+!             t1_list%plist(shift)%ops = 1
+!             shift = shift + 1
+!            end if
+!
+!         else if (p_list%plist(i)%ops(2) == 1) then
+!
+!            if (p_list%plist(i)%linked) then
+!             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+!             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%link
+!             t1_list%plist(shift)%linked = .false.
+!             t1_list%plist(shift)%ops = 1
+!             shift = shift + 1
+!            end if
+!
+!         end if
+!      end do
+!
+!      ! Now remaining external indices
+!      do i = nloop+1, sp-1
+!         if (p_list%plist(i)%ops(1) == 1) then
+!
+!            if (.not. p_list%plist(i)%linked) then
+!             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+!             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+!             t1_list%plist(shift)%linked = .false.
+!             t1_list%plist(shift)%ops = 1
+!             shift = shift + 1
+!            end if
+!
+!         else if (p_list%plist(i)%ops(2) == 1) then
+!
+!            if (.not. p_list%plist(i)%linked) then
+!             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
+!             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
+!             t1_list%plist(shift)%linked = .false.
+!             t1_list%plist(shift)%ops = 1
+!             shift = shift + 1
+!            end if
+!
+!         end if
+!      end do
+
+
+!      write(item%logfile,*) "T1 ARRAY--------------------"
+!      do i = 1, r1
+!         write(item%logfile,*) t1_list%plist(i)%pindex(1)
+!         write(item%logfile,*) t1_list%plist(i)%ops(1)
+!         write(item%logfile,*) t1_list%plist(i)%pindex(2)
+!         write(item%logfile,*) t1_list%plist(i)%ops(2)
+!         write(item%logfile,*) t1_list%plist(i)%link
+!      end do
 
       shift = 1
       do i = 1, sp-1
@@ -2286,19 +2361,47 @@
          shift = shift + 1
       end do
 
-      write(item%logfile,*) "R ARRAY--------------------"
-      do i = 1, r3
-         write(item%logfile,*) r_list%plist(i)%pindex(1)
-         write(item%logfile,*) r_list%plist(i)%ops(1)
-         write(item%logfile,*) r_list%plist(i)%pindex(2)
-         write(item%logfile,*) r_list%plist(i)%ops(2)
-      end do
+!      write(item%logfile,*) "R ARRAY--------------------"
+!      do i = 1, r3
+!         write(item%logfile,*) r_list%plist(i)%pindex(1)
+!         write(item%logfile,*) r_list%plist(i)%ops(1)
+!         write(item%logfile,*) r_list%plist(i)%pindex(2)
+!         write(item%logfile,*) r_list%plist(i)%ops(2)
+!      end do
 
+!      write(item%logfile,*) "T1 ARRAY--------------------"
+!      do i = 1, r1
+!         write(item%logfile,*) t1_list%plist(i)%pindex(1)
+!         write(item%logfile,*) t1_list%plist(i)%ops(1)
+!         write(item%logfile,*) t1_list%plist(i)%pindex(2)
+!         write(item%logfile,*) t1_list%plist(i)%ops(2)
+!      end do
+!
+!      write(item%logfile,*) "T2 ARRAY--------------------"
+!      do i = 1, r1
+!         write(item%logfile,*) t2_list%plist(i)%pindex(1)
+!         write(item%logfile,*) t2_list%plist(i)%ops(1)
+!         write(item%logfile,*) t2_list%plist(i)%pindex(2)
+!         write(item%logfile,*) t2_list%plist(i)%ops(2)
+!      end do
+
+
+      ! TODO: Do all index permutations here (move stuff from
+      ! command_to_ift)
+      if (item%permute == 2) then
+         ! Need to swap annihilation operators between tensors:
+         ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
+
+         t1_list%plist(nloop+1)%pindex(2) =
+     &                               p_list%plist(nloop+2)%pindex(2)
+         t2_list%plist(nloop+1)%pindex(2) =
+     &                               p_list%plist(nloop+1)%pindex(2)
+      end if
 
 
       ! Swap between pairs to canonical order
       ! Don't do this for integrals, apart from the rank 2 fock
-      ! integrals
+      ! integrals, or intermediates. So only for amplitudes and fock
       ! TODO: will not work with pqrstu...
       do i = 1, r1/2
        if (.not. item%int(1) .or. item%int(1) .and. r1 == 2) then
@@ -2347,7 +2450,8 @@
 !      end do
 
       ! Sort out the first tensor
-      if (r1 > 2 .and. .not.item%int(1) .and. .not. item%inter(1)) then
+      !if (r1 > 2 .and. .not.item%int(1) .and. .not. item%inter(1)) then
+      if (r1 > 2 .and. .not.item%int(1)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2366,7 +2470,8 @@
 
 
       ! Sort out the second tensor
-      if (r2 > 2 .and. .not.item%int(2) .and. .not. item%inter(2)) then
+      !if (r2 > 2 .and. .not.item%int(2) .and. .not. item%inter(2)) then
+      if (r2 > 2 .and. .not.item%int(2)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2383,8 +2488,9 @@
       end do
       end if
 
-      ! Sort out the second tensor
-      if (r3 > 2 .and. .not.item%int(3) .and. .not. item%inter(3)) then
+      ! Sort out result tensor
+      !if (r3 > 2 .and. .not.item%int(3) .and. .not. item%inter(3)) then
+      if (r3 > 2 .and. .not.item%int(3)) then
       sort = .true.
       do while (sort)
       sort = .false.
@@ -2400,6 +2506,8 @@
       end do
       end do
       end if
+
+
 
       ! Insert ordered lists into ITF index strings
       ! TODO: change these variables c1, just using now for convince
@@ -2516,11 +2624,11 @@
 
 
 
-      write(item%logfile,*) "=============================="
-      write(item%logfile,*) "RESULT: ", trimal(c3)
-      write(item%logfile,*) "T1: ", trimal(c1)
-      write(item%logfile,*) "T2: ", trimal(c2)
-      write(item%logfile,*) "=============================="
+!      write(item%logfile,*) "=============================="
+!      write(item%logfile,*) "RESULT: ", trimal(c3)
+!      write(item%logfile,*) "T1: ", trimal(c1)
+!      write(item%logfile,*) "T2: ", trimal(c2)
+!      write(item%logfile,*) "=============================="
 
 
 
@@ -2636,75 +2744,84 @@
 
       !======================================
       ! Stick the new strings over the old ones...
-!      item%idx1 = trimal(c1)
-!      item%idx2 = trimal(c2)
-!      item%idx3 = trimal(c3)
+
+      ! Need to swap first creation on t1 with first creation on t2
+      ! TODO: Need to do this properly
+      !if (item%permute==2) then
+      !   tmp = c1(3:3)
+      !   c1(3:3) = c2(3:3)
+      !   c2(3:3) = tmp
+      !end if
+
+      item%idx1 = trimal(c1)
+      item%idx2 = trimal(c2)
+      item%idx3 = trimal(c3)
 
       !======================================
 
 
-      ! Replacing with new code (Jan 2019)
-      ! Result, problems occur rank 2 tensors...
-      conv = (/ 1, 2, 3, 5, 6, 7 /)
-      if (len(trim(item%idx1)) < len(trim(item%idx2))) then
-         call index_convention(e2_array,e1_array,item%idx3,conv,conv)
-      else
-         call index_convention(e1_array,e2_array,item%idx3,conv,conv)
-      end if
-
-
-      ! Need to correct index and check indicies are correctly paired
-      ! together
-
-
-      !call correct_index_pairs(item)
-
-
-
-
-
-      ! Replacing with new code (Jan 2019)
-      ! Need to corrrect index for R[ai]; the a and i must be in the
-      ! same slot
-      ! This should be considered as a hack....
-      if (len(trim(item%idx3)) == 2) then
-      if (len(trim(item%idx1)) + len(trim(item%idx2))/=4) then
-      if (.not. item%int(1)) then
-
-         j = 0
-         k = 0
-
-         do i = 1, len(trim(item%idx1))
-            if (item%idx3(1:1) == item%idx1(i:i)) then
-               j = i
-            end if
-            if (item%idx3(2:2) == item%idx1(i:i)) then
-               k = i
-            end if
-         end do
-
-         do i = 1, len(trim(item%idx2))
-            if (item%idx3(1:1) == item%idx2(i:i)) then
-               j = i
-            end if
-            if (item%idx3(2:2) == item%idx2(i:i)) then
-               k = i
-            end if
-         end do
-
-         if (mod(j+k,2)>0) then
-            if (item%inter(1) .and. len(trim(item%idx2))==4) then
-               item%idx2 = t_index(item%idx2)
-            else if (item%inter(2) .and. len(trim(item%idx1))==4) then
-               item%idx1 = t_index(item%idx1)
-            else
-               item%idx1 = t_index(item%idx1)
-            end if
-         end if
-
-      end if
-      end if
-      end if
+!      ! Replacing with new code (Jan 2019)
+!      ! Result, problems occur rank 2 tensors...
+!      conv = (/ 1, 2, 3, 5, 6, 7 /)
+!      if (len(trim(item%idx1)) < len(trim(item%idx2))) then
+!         call index_convention(e2_array,e1_array,item%idx3,conv,conv)
+!      else
+!         call index_convention(e1_array,e2_array,item%idx3,conv,conv)
+!      end if
+!
+!
+!      ! Need to correct index and check indicies are correctly paired
+!      ! together
+!
+!
+!      !call correct_index_pairs(item)
+!
+!
+!
+!
+!
+!      ! Replacing with new code (Jan 2019)
+!      ! Need to corrrect index for R[ai]; the a and i must be in the
+!      ! same slot
+!      ! This should be considered as a hack....
+!      if (len(trim(item%idx3)) == 2) then
+!      if (len(trim(item%idx1)) + len(trim(item%idx2))/=4) then
+!      if (.not. item%int(1)) then
+!
+!         j = 0
+!         k = 0
+!
+!         do i = 1, len(trim(item%idx1))
+!            if (item%idx3(1:1) == item%idx1(i:i)) then
+!               j = i
+!            end if
+!            if (item%idx3(2:2) == item%idx1(i:i)) then
+!               k = i
+!            end if
+!         end do
+!
+!         do i = 1, len(trim(item%idx2))
+!            if (item%idx3(1:1) == item%idx2(i:i)) then
+!               j = i
+!            end if
+!            if (item%idx3(2:2) == item%idx2(i:i)) then
+!               k = i
+!            end if
+!         end do
+!
+!         if (mod(j+k,2)>0) then
+!            if (item%inter(1) .and. len(trim(item%idx2))==4) then
+!               item%idx2 = t_index(item%idx2)
+!            else if (item%inter(2) .and. len(trim(item%idx1))==4) then
+!               item%idx1 = t_index(item%idx1)
+!            else
+!               item%idx1 = t_index(item%idx1)
+!            end if
+!         end if
+!
+!      end if
+!      end if
+!      end if
 
 
 
