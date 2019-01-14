@@ -1161,13 +1161,14 @@
       item%rank2 = r2
       item%rank3 = r3
 
-      ! Allocate pair list, at most 8 pairs
+      ! Allocate pair list according to ranks of tensors
       allocate(p_list%plist(r1+r2))
       allocate(t1_list%plist(r1))
       allocate(t2_list%plist(r2))
       allocate(r_list%plist(r3))
       allocate(tmp_list%plist(1))
 
+      ! Initialise all pair indices
       do i = 1, r1+r2
          p_list%plist(i)%pindex = ''
          p_list%plist(i)%link = ''
@@ -1186,40 +1187,46 @@
       end do
 
 
+      ! To start, we pair off contraction loops
 
-      ! Assign contraction loops
-      ! Need to look for creations/annihilation first...
-
-      ! Search the creation ops or annihilation ops first?
-      if (ncre3 >= nann3) then
-         ! Loop through creations first
-         i1 = 1
-         i2 = 2
-      else
-         ! Loop through annihilation first
-         i1 = 2
-         i2 = 1
-      end if
-
-      ! Pair list shift (shift pair)
+      ! Pair list index (shift pair)
       sp = 1
       ! Found = true if a matching index has been found
       ! TODO: this needs to be thought about
       found = .false.
 
+      ! Keep searching until all paired loops are found (ie. the number
+      ! of creation or annihilation operators becomes 0)
       do while (ncre3 /= 0 .and. nann3 /= 0)
-         ! Loop over P/H/V
-         do i=1, 3
+         ! Need to start the search with the largest number of operators;
+         ! check to start the search with the creation or annihilation
+         ! operators first.
+         ! i1 and i2 allow us to index the creation or annihilation
+         ! operators
+         if (ncre3 >= nann3) then
+            ! Loop through creation first
+            i1 = 1
+            i2 = 2
+         else
+            ! Loop through annihilation first
+            i1 = 2
+            i2 = 1
+         end if
+
+         ! Loop over P/H/V/X
+         do i=1, 4
             shift = 1
             do j=1, c(i,i1)
                ii = 1+(4*(i-1))+e1(i,1)+e1(i,2)+e2(i,1)+e2(i,2)+sp-1
+
                ! Need extra shift if annihilator
                if (i1 == 2) ii = ii + c(i,1)
 
-               !p_list%plist(sp)%pindex(shift) = ind(ii)
+               ! Assign index letter to pair list
                p_list%plist(sp)%pindex(i1) = ind(ii)
                shift = shift + 1
 
+               ! Decrease number of annihilation or creation operators
                if (i1 == 2) then
                   nann3 = nann3 - 1
                else
@@ -1227,19 +1234,17 @@
                end if
 
                ! Mark which operator this index belongs to
-               ! Contraction index always wrt the first operator
-               !p_list%plist(sp)%ops(1) = 1
+               ! Contraction index always w.r.t the first operator
                p_list%plist(sp)%ops(i1) = 1
 
                ! Look for matching operator
-               do k=1, 3
+               do k=1, 4
                   do l=1, c(k,i2)
-                     ii = 1+(4*(k-1))+e1(k,1)+e1(k,2)+
-     &                    e2(k,1)+e2(k,2) + sp-1
-                     ! Need extra shift if annihilator
+                     ii = 1+(4*(k-1))+e1(k,1)+e1(k,2)+e2(k,1)+e2(k,2)
+     &                    +sp-1
+
                      if (i1 == 1) ii = ii + c(k,1)
 
-                     !p_list%plist(sp)%pindex(shift) = ind(ii)
                      p_list%plist(sp)%pindex(i2) = ind(ii)
 
                      if (i1 == 2) then
@@ -1253,7 +1258,6 @@
                      ! tensors, but marking these for both the first
                      ! and second tensor helps to pick them out in the
                      ! code below
-                     !p_list%plist(sp)%ops(2) = 2
                      p_list%plist(sp)%ops(i2) = 2
 
                      ! Found a pair, so increment pair list index
@@ -1261,12 +1265,10 @@
                      exit
                   end do
                end do
-
                ! A pair loop has been found so exit
                exit
             end do
-            ! Can't match creation or annihilation so exit
-            !write(item%logfile,*) "ncre3: ", ncre3, "nann3", nann3
+            ! Can't pair creation or annihilation so exit
             if (ncre3 == 0 .or. nann3 == 0) exit
          end do
       end do
@@ -1279,14 +1281,13 @@
       t_shift = 0
       c_shift = 0
       do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
-!      if (ncre1 + nann1 >= ncre2 + nann2 .and. ncre1 + nann1 /= 0) then
       if (ncre1 + nann1 /= 0) then
+
+         ! Loop through creations first
+         ! IMPORTANT: i1 and i2 label creation/annihilation
+         ! operators, pindex always has a creation in position 1, so the
+         ! indices must be placed in their correct position.
          if (ncre1 >= nann1) then
-            ! Loop through creations first
-            ! IMPORTANT: i1 and i2 label creation/annihilation
-            ! operators, pindex always leads with the creation, so the
-            ! indices must be placed in their correct position. So use
-            ! i1 and i2 to do this
             i1 = 1
             i2 = 2
             n1 = nann1
@@ -1301,18 +1302,12 @@
             n3 = nann1
          end if
 
-         do i=1, 3
+         do i=1, 4
             shift = 1
             do j=1, e1(i,i1)
-               ! Need sp-1-nloop to shift index so they aren't the same
-               ! after a loop
-               !ii = 1+(4*(i-1)) + (sp-1-nloop)
                ii = 1+(4*(i-1)) + t_shift(i)
-               ! Need extra shift if this is annihilator
-               !if (i1 == 2) ii = ii + e1(i,1)
-               !p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%pindex(i1) = ind(ii)
-               !p_list%plist(sp)%ops(1) = 1
+
                p_list%plist(sp)%ops(i1) = 1
                shift = shift + 1
 
@@ -1327,15 +1322,10 @@
                ! Look for matching operator
                if (n1>0) then
                   ! Look on the same (first) operator
-                  do k=1, 3
+                  do k=1, 4
                      do l=1, e1(k,i2)
-                        !ii = 1+(4*(k-1)) + (sp-1-nloop)
                         ii = 1+(4*(k-1)) + t_shift(k)
-                        ! Need to shift extra places if this is
-                        ! annihilation ops
-                        !if (i1 == 1) ii = ii + e1(k,1)
 
-                        !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
@@ -1347,7 +1337,6 @@
                         t_shift(k) = t_shift(k) + 1
 
                         p_list%plist(sp)%linked = .false.
-                        !p_list%plist(sp)%ops(2) = 1
                         p_list%plist(sp)%ops(i2) = 1
 
                         ! Found a pair, so increment pair list index
@@ -1360,15 +1349,10 @@
                   end do
                else if (n2 > 0) then
                   ! Look on the second operator
-                  do k=1, 3
+                  do k=1, 4
                      do l=1, e2(k,i2)
-!                        ii = 1+(4*(k-1))+e1(k,i1)+e1(k,i2)
-!     &                      + (sp-1 - nloop)
                         ii = 1+(4*(k-1))+t_shift(k)
-                        ! Need to shift for annihilation
-                        !if (i1 == 1) ii = ii + e2(k,1)
 
-                        !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
@@ -1379,7 +1363,6 @@
 
                         t_shift(k) = t_shift(k) + 1
 
-                        !p_list%plist(sp)%ops(2) = 2
                         p_list%plist(sp)%ops(i2) = 2
 
                         ! We need to link the external indices on two
@@ -1442,19 +1425,13 @@
             n3 = nann2
          end if
 
-         do i=1, 3
+         do i=1, 4
             shift = 1
             ! Search second operator
             do j=1, e2(i,i1)
-               !ii = 1+(4*(i-1))+e1(i,i1)+e1(i,i2) + (sp-1 - nloop)
                ii = 1+(4*(i-1))+t_shift(i)
 
-               ! Need extra shift if annihilator
-               !if (i1 == 2) ii = ii + e2(i,1)
-
-               !p_list%plist(sp)%pindex(shift) = ind(ii)
                p_list%plist(sp)%pindex(i1) = ind(ii)
-               !p_list%plist(sp)%ops(1) = 2
                p_list%plist(sp)%ops(i1) = 2
                shift = shift + 1
 
@@ -1469,16 +1446,10 @@
                ! Look for matching operator
                if (n1>0) then
                   ! Look on the same (second) operator
-                  do k=1, 3
+                  do k=1, 4
                      do l=1, e2(k,i2)
-!                        ii = 1+(4*(k-1))+e1(i,i1)+e1(i,i2)
-!     &                       + (sp-1 - nloop)
                         ii = 1+(4*(k-1))+t_shift(k)
 
-                        ! Need extra shift if annihilator
-                        !if (i1 == 1) ii = ii + e2(k,1)
-
-                        !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
@@ -1490,7 +1461,6 @@
                         t_shift(k) = t_shift(k) + 1
 
                         p_list%plist(sp)%linked = .false.
-                        !p_list%plist(sp)%ops(2) = 2
                         p_list%plist(sp)%ops(i2) = 2
 
                         ! Found a pair, so increment pair list index
@@ -1500,15 +1470,10 @@
                   end do
                else if (n2 > 0) then
                   ! Look on the first operator
-                  do k=1, 3
+                  do k=1, 4
                      do l=1, e1(k,i2)
-                        !ii = 1+(4*(k-1)) + (sp-1 - nloop)
                         ii = 1+(4*(k-1)) + t_shift(k)
 
-                        ! Need to shift for annihilation
-                        !if (i1 == 1) ii = ii + e1(k,1)
-
-                        !p_list%plist(sp)%pindex(shift) = ind(ii)
                         p_list%plist(sp)%pindex(i2) = ind(ii)
 
                         if (i1 == 2) then
@@ -1519,7 +1484,6 @@
 
                         t_shift(k) = t_shift(k) + 1
 
-                        !p_list%plist(sp)%ops(2) = 1
                         p_list%plist(sp)%ops(i2) = 1
 
                         ! We need to link the external indices on two
@@ -1593,7 +1557,6 @@
       ! configurations are consistent when declaring, then using
       ! intermediates. This may not work for every case....
       ! DON'T THINK THIS WILL WORK FOR EVERY CASE
-      shift = 1
       shift = 1
       do i = 1, sp-1
          if (p_list%plist(i)%ops(1) == 1) then

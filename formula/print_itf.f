@@ -8,7 +8,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
-      
+
       character(len=maxlen_bc_label), intent(in) ::
      &     label
       logical ::
@@ -80,7 +80,7 @@
 
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
-      
+
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
 
@@ -156,7 +156,7 @@
          ! intermediates
          summed_inter => res_start
          finished_inter = .false.
-         
+
          ! Recursive search through list to get all information about
          ! every intermediate used to produce a result
          do while (.not.finished_inter)
@@ -287,7 +287,7 @@
                   end if
 
                   ! Move onto next item and repeat
-                  fl_item => fl_item%next 
+                  fl_item => fl_item%next
 
                   if (associated(fl_item%interm)) then
                      fl_item => fl_item%next
@@ -314,7 +314,7 @@
          ! Check if next residual needs intermdiates and which spin
          ! cases are needed.
          ! Exit if next resdiual is different or a new intermediate is
-         ! declared. 
+         ! declared.
 
          if (print_form) then
             fl_item => inter_start
