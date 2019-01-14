@@ -1536,7 +1536,6 @@
       ! Now they must be assigned to an ITF index string for each tensor,
       ! in the correct positions
 
-
       ! Create a pair list for T1, T2 and the result tensor. This will
       ! allow manipulation of indices on different tensor without
       ! interfering with each other
@@ -1575,67 +1574,14 @@
       call swap_index(r_list, r3, item%int(3), item%inter(3))
 
 
-      ! Sort index pairs into order with bubble sort
-      ! If only 1 pair, then this is be skipped
-
-      ! Sort out the first tensor
-      !if (r1 > 2 .and. .not.item%int(1) .and. .not. item%inter(1)) then
-      if (r1 > 2 .and. .not.item%int(1)) then
-      sort = .true.
-      do while (sort)
-      sort = .false.
-      do i = 1, r1/2
-         if (i == (r1/2)) exit
-         if (t1_list%plist(i+1)%pindex(1) < t1_list%plist(i)%pindex(1))
-     &      then
-            tmp_list%plist(1) = t1_list%plist(i)
-            t1_list%plist(i) = t1_list%plist(i+1)
-            t1_list%plist(i+1) = tmp_list%plist(1)
-            sort = .true.
-         end if
-      end do
-      end do
-      end if
-
-
-      ! Sort out the second tensor
-      !if (r2 > 2 .and. .not.item%int(2) .and. .not. item%inter(2)) then
-      if (r2 > 2 .and. .not.item%int(2)) then
-      sort = .true.
-      do while (sort)
-      sort = .false.
-      do i = 1, r2/2
-         if (i == (r2/2)) exit
-         if (t2_list%plist(i+1)%pindex(1) < t2_list%plist(i)%pindex(1))
-     &      then
-            tmp_list%plist(1) = t2_list%plist(i)
-            t2_list%plist(i) = t2_list%plist(i+1)
-            t2_list%plist(i+1) = tmp_list%plist(1)
-            sort = .true.
-         end if
-      end do
-      end do
-      end if
-
-      ! Sort out result tensor
-      !if (r3 > 2 .and. .not.item%int(3) .and. .not. item%inter(3)) then
-      if (r3 > 2 .and. .not.item%int(3)) then
-      sort = .true.
-      do while (sort)
-      sort = .false.
-      do i = 1, r3/2
-         if (i == (r3/2)) exit
-         if (r_list%plist(i+1)%pindex(1) < r_list%plist(i)%pindex(1))
-     &      then
-            tmp_list%plist(1) = r_list%plist(i)
-            r_list%plist(i) = r_list%plist(i+1)
-            r_list%plist(i+1) = tmp_list%plist(1)
-            sort = .true.
-         end if
-      end do
-      end do
-      end if
-
+      ! Sort index pairs into order with bubble sort. If only 1 pair,
+      ! then this is skipped. This is important to assure consistent use
+      ! of indices for the declaration and use of an intermediate (the
+      ! slot structure must be the same when it is constructed and when
+      ! it is used)
+      call swap_pairs(t1_list, r1, item%int(1))
+      call swap_pairs(t2_list, r2, item%int(2))
+      call swap_pairs(r_list, r3, item%int(3))
 
 
       ! Insert ordered lists into ITF index strings
@@ -1656,17 +1602,17 @@
          s3(i+(r3/2):i+(r3/2)) = r_list%plist(i)%pindex(2)
       end do
 
+      ! Assign an ITF index string to each tensor
+      item%idx1 = trim(s1)
+      item%idx2 = trim(s2)
+      item%idx3 = trim(s3)
+
       ! Release memory for pair lists
       deallocate(p_list%plist)
       deallocate(t1_list%plist)
       deallocate(t2_list%plist)
       deallocate(r_list%plist)
       deallocate(tmp_list%plist)
-
-      ! Assign an ITF index string to each tensor
-      item%idx1 = trim(s1)
-      item%idx2 = trim(s2)
-      item%idx3 = trim(s3)
 
       return
       end
@@ -1776,84 +1722,136 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine index_convention(arr1,arr2,item_idx,conv,conv2)
+      subroutine swap_pairs(list, rank, integral)
 *----------------------------------------------------------------------*
-!     Arrange index letters into correct order according to convention
+!     Swap pairs of indices within a pair list using bubble sort.
 *----------------------------------------------------------------------*
 
-      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=8), dimension(8), intent(in) ::
-     &     arr1,        ! Index array
-     &     arr2
+      type(pair_list), intent(inout) ::
+     &   list              ! Complete pair list for a tensor
       integer, intent(in) ::
-     &     conv(6),
-     &     conv2(6)     ! TODO: Make this optional? Could get it to work...
-      character(len=index_len), intent(inout) ::
-     &     item_idx
+     &   rank              ! Rank of tensor
+      logical, intent(in) ::
+     &   integral
 
-      item_idx=trimal(arr1(conv(1)))//trimal(arr2(conv2(1)))//
-     &         trimal(arr1(conv(2)))//trimal(arr2(conv2(2)))//
-     &         trimal(arr1(conv(3)))//trimal(arr2(conv2(3)))//
-     &         trimal(arr1(conv(4)))//trimal(arr2(conv2(4)))//
-     &         trimal(arr1(conv(5)))//trimal(arr2(conv2(5)))//
-     &         trimal(arr1(conv(6)))//trimal(arr2(conv2(6)))
+      type(pair_list) ::
+     &   tmp_list          ! Temporary holder for pair list
+      logical ::
+     &   sort              ! True is list has been sorted
+      integer ::
+     &   i                 ! Loop index
+
+      allocate(tmp_list%plist(1))
+
+      ! Skip if there is only one pair, or if this is an integral
+      if (rank > 2 .and. .not. integral) then
+         sort = .true.
+         do while (sort)
+            sort = .false.
+            do i = 1, rank/2
+               if (i == rank/2) exit
+
+               if (list%plist(i+1)%pindex(1) <
+     &                                     list%plist(i)%pindex(1)) then
+                  tmp_list%plist(1) = list%plist(i)
+                  list%plist(i) = list%plist(i+1)
+                  list%plist(i+1) = tmp_list%plist(1)
+                  sort = .true.
+               end if
+            end do
+         end do
+      end if
+
+      deallocate(tmp_list%plist)
 
       return
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine correct_index(item_idx)
-*----------------------------------------------------------------------*
-!     Arrange index letters into correct order according to convention
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=index_len), intent(inout) ::
-     &     item_idx
-
-      character(len=4) ::
-     &     tmp
-
-      tmp = item_idx
-      if (len(trim(item_idx)) == 4) then
-
-!      if (item_idx(1:1) > item_idx(2:2) .and.
-!     &    item_idx(2:2) /= 'b') then
+!*----------------------------------------------------------------------*
+!      subroutine index_convention(arr1,arr2,item_idx,conv,conv2)
+!*----------------------------------------------------------------------*
+!!     Arrange index letters into correct order according to convention
+!*----------------------------------------------------------------------*
 !
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=8), dimension(8), intent(in) ::
+!     &     arr1,        ! Index array
+!     &     arr2
+!      integer, intent(in) ::
+!     &     conv(6),
+!     &     conv2(6)     ! TODO: Make this optional? Could get it to work...
+!      character(len=index_len), intent(inout) ::
+!     &     item_idx
+!
+!      item_idx=trimal(arr1(conv(1)))//trimal(arr2(conv2(1)))//
+!     &         trimal(arr1(conv(2)))//trimal(arr2(conv2(2)))//
+!     &         trimal(arr1(conv(3)))//trimal(arr2(conv2(3)))//
+!     &         trimal(arr1(conv(4)))//trimal(arr2(conv2(4)))//
+!     &         trimal(arr1(conv(5)))//trimal(arr2(conv2(5)))//
+!     &         trimal(arr1(conv(6)))//trimal(arr2(conv2(6)))
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine correct_index(item_idx)
+!*----------------------------------------------------------------------*
+!!     Arrange index letters into correct order according to convention
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=index_len), intent(inout) ::
+!     &     item_idx
+!
+!      character(len=4) ::
+!     &     tmp
+!
+!      tmp = item_idx
+!      if (len(trim(item_idx)) == 4) then
+!
+!!      if (item_idx(1:1) > item_idx(2:2) .and.
+!!     &    item_idx(2:2) /= 'b') then
+!!
+!!         item_idx(1:1) = item_idx(2:2)
+!!         item_idx(2:2) = tmp(1:1)
+!!      end if
+!!      if (item_idx(3:3) < item_idx(4:4) .and.
+!!     &    item_idx(3:3) /= 'i') then
+!!         item_idx(3:3) = item_idx(4:4)
+!!         item_idx(4:4) = tmp(3:3)
+!!      end if
+!
+!      if (item_idx(1:1) == 'b') then
 !         item_idx(1:1) = item_idx(2:2)
 !         item_idx(2:2) = tmp(1:1)
 !      end if
-!      if (item_idx(3:3) < item_idx(4:4) .and.
-!     &    item_idx(3:3) /= 'i') then
+!
+!      if (item_idx(3:3) == 'j') then
 !         item_idx(3:3) = item_idx(4:4)
 !         item_idx(4:4) = tmp(3:3)
 !      end if
-
-      if (item_idx(1:1) == 'b') then
-         item_idx(1:1) = item_idx(2:2)
-         item_idx(2:2) = tmp(1:1)
-      end if
-
-      if (item_idx(3:3) == 'j') then
-         item_idx(3:3) = item_idx(4:4)
-         item_idx(4:4) = tmp(3:3)
-      end if
-
-      end if
-
-      return
-      end
+!
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
