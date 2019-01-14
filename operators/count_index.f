@@ -1530,94 +1530,22 @@
       end do   ! do while loop
 
 
-      ! We now have list of pairs + which ops they belong to and any
+      ! We now have list of pairs and which ops they belong to + any
       ! contraction indices linking external indices on different
-      ! operators
-      ! Now we must assign them to ITF index string, in the correct
-      ! positions
+      ! operators.
+      ! Now they must be assigned to an ITF index string for each tensor,
+      ! in the correct positions
 
 
-      ! First arrange the result index made from external indices only
+      ! Create a pair list for T1, T2 and the result tensor. This will
+      ! allow manipulation of indices on different tensor without
+      ! interfering with each other
 
-      ! IDEA: Create two pair_lists for op1 and op2
-      ! Create list with just letters which belong to that op AND no
-      ! links (they now belong to each op)
-      ! Now have two lists to order with only the indices that belong to
-      ! that op
-      ! Swap between pairs
-      ! Swap between pair_lists, using first index as a guide
-      ! Thereby get canonical order but maintain index pairs
-      ! Don't do this for integrals - need to be picked out in python
-      ! to determine if they are K or J
+      ! Construct T1 pair list
+      call make_pair_list(p_list, t1_list, 1, sp-1)
 
-      ! Create pair lists for each tensor
-      ! When constructing these pair lists, the contraction index
-      ! goes first, then any pairs with one contraction index (ie.
-      ! pairs), then externals. This is to make sure the slot
-      ! configurations are consistent when declaring, then using
-      ! intermediates. This may not work for every case....
-      ! DON'T THINK THIS WILL WORK FOR EVERY CASE
-      shift = 1
-      do i = 1, sp-1
-         if (p_list%plist(i)%ops(1) == 1) then
-            ! Add to t1_list + think about link
-            t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
-
-            if (p_list%plist(i)%linked) then
-             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%link
-            else
-             t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
-            end if
-
-            t1_list%plist(shift)%linked = .false.
-            t1_list%plist(shift)%ops = 1
-            shift = shift + 1
-         else if (p_list%plist(i)%ops(2) == 1) then
-            ! Add to t1_list + think about link
-            t1_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
-
-            if (p_list%plist(i)%linked) then
-             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%link
-            else
-             t1_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
-            end if
-
-            t1_list%plist(shift)%linked = .false.
-            t1_list%plist(shift)%ops = 1
-            shift = shift + 1
-         end if
-      end do
-
-      shift = 1
-      do i = 1, sp-1
-         if (p_list%plist(i)%ops(1) == 2) then
-            ! Add to t1_list + think about link
-            t2_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
-
-            if (p_list%plist(i)%linked) then
-             t2_list%plist(shift)%pindex(2) = p_list%plist(i)%link
-            else
-             t2_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
-            end if
-
-            t2_list%plist(shift)%linked = .false.
-            t2_list%plist(shift)%ops = 1
-            shift = shift + 1
-         else if (p_list%plist(i)%ops(2) == 2) then
-            ! Add to t1_list + think about link
-            t2_list%plist(shift)%pindex(2) = p_list%plist(i)%pindex(2)
-
-            if (p_list%plist(i)%linked) then
-             t2_list%plist(shift)%pindex(1) = p_list%plist(i)%link
-            else
-             t2_list%plist(shift)%pindex(1) = p_list%plist(i)%pindex(1)
-            end if
-
-            t2_list%plist(shift)%linked = .false.
-            t2_list%plist(shift)%ops = 1
-            shift = shift + 1
-         end if
-      end do
+      ! Construct T2 pair list
+      call make_pair_list(p_list, t2_list, 2, sp-1)
 
       ! Create pair list for result tensor, only need external index
       shift = 1
@@ -1625,14 +1553,6 @@
          r_list%plist(shift) = p_list%plist(i)
          shift = shift + 1
       end do
-
-!      write(item%logfile,*) "T1 ARRAY--------------------"
-!      do i = 1, r1
-!         write(item%logfile,*) t1_list%plist(i)%pindex(1)
-!         write(item%logfile,*) t1_list%plist(i)%ops(1)
-!         write(item%logfile,*) t1_list%plist(i)%pindex(2)
-!         write(item%logfile,*) t1_list%plist(i)%ops(2)
-!      end do
 
 
       ! TODO: Do all index permutations here (move stuff from
@@ -1785,179 +1705,62 @@
       return
       end
 
-!*----------------------------------------------------------------------*
-!      subroutine correct_index_pairs(item)
-!*----------------------------------------------------------------------*
-!!
-!*----------------------------------------------------------------------*
-!
-!      use itf_utils
-!      implicit none
-!      include 'opdim.h'
-!      include 'def_contraction.h'
-!      include 'def_itf_contr.h'
-!
-!      type(itf_contr), intent(inout) ::
-!     &     item
-!
-!      character(len=1) ::
-!     &     p1(2),p2(2),p3(2)
-!      character(len=:), allocatable ::
-!     &     pair_list(:,:)
-!
-!      integer :: length, pairs, rank1, rank2, rank3, i,j
-!      logical :: found
-!
-!      rank3 = (len(trim(item%idx3))/2)
-!      if (rank3 == 0) return
-!      rank1 = (len(trim(item%idx1))/2)
-!      rank2 = (len(trim(item%idx2))/2)
-!
-!      length = 1
-!      pairs = (len(trim(item%idx1)) + len(trim(item%idx2))) / 2
-!
-!
-!      allocate(character(length) :: pair_list(pairs,2))
-!
-!      pair_list = ' '
-!
-!      do i = 1, rank1
-!         pair_list(i,2) = item%idx1(i:i)
-!         pair_list(i,1) = item%idx1(rank1+i:rank1+i)
-!      end do
-!
-!      do i = 1, rank2
-!         pair_list(i+rank1,2) = item%idx2(i:i)
-!         pair_list(i+rank1,1) = item%idx2(rank2+i:rank2+i)
-!      end do
-!
-!!      write(item%logfile,*) "PAIR LIST "
-!!      do i = 1, 2
-!!         write(item%logfile,*) (pair_list(j,i), j=1,pairs)
-!!      end do
-!
-!      p1(1) = item%idx3(1:1)
-!      p1(2) = item%idx3(rank3+1:rank3+1)
-!      p2 = p1
-!
-!      !write(item%logfile,*) "PAIR ", p1
-!
-!      found = .false.
-!      ! TODO: check top row as well
-!      do i = 1, pairs
-!         if (p1(1) == pair_list(i,2)) then
-!            p1(1) = pair_list(i,1)
-!            !write(item%logfile,*) "FOUND ", p1(1)
-!            do j = 1, pairs
-!               !write(item%logfile,*) pair_list(j,2)
-!               if (p1(1) == pair_list(j,2) .and.
-!     &             p1(2) == pair_list(j,1)) then
-!                  p1(1) = pair_list(j,1)
-!               end if
-!               if (p1(1)==p1(2)) then
-!                  found = .true.
-!                  exit
-!               end if
-!            end do
-!            exit
-!         end if
-!      end do
-!
-!      if (.not. found) then
-!      p1 = p2
-!      do i = 1, pairs
-!         if (p1(1) == pair_list(i,2)) then
-!            p1(1) = pair_list(i,1)
-!            !write(item%logfile,*) "FOUND ", p1(1)
-!            do j = 1, pairs
-!               !write(item%logfile,*) pair_list(j,1)
-!               if (p1(1) == pair_list(j,1) .and.
-!     &             p1(2) == pair_list(j,2)) then
-!                  p1(1) = pair_list(j,2)
-!               end if
-!               if (p1(1)==p1(2)) then
-!                  found = .true.
-!                  exit
-!               end if
-!            end do
-!            exit
-!         end if
-!      end do
-!      end if
-!
-!      if (.not. found) then
-!      p1 = p2
-!      do i = 1, pairs
-!         if (p1(1) == pair_list(i,1)) then
-!            p1(1) = pair_list(i,2)
-!            !write(item%logfile,*) "FOUND ", p1(1)
-!            do j = 1, pairs
-!               !write(item%logfile,*) pair_list(j,2)
-!               !write(item%logfile,*) p1
-!               if (p1(1) == pair_list(j,2) .and.
-!     &             p1(2) == pair_list(j,1)) then
-!                  p1(1) = pair_list(j,1)
-!               end if
-!               if (p1(1)==p1(2)) then
-!                  found = .true.
-!                  exit
-!               end if
-!            end do
-!            exit
-!         end if
-!      end do
-!      end if
-!
-!      if (.not. found) then
-!      p1 = p2
-!      do i = 1, pairs
-!         if (p1(1) == pair_list(i,1)) then
-!            p1(1) = pair_list(i,2)
-!            !write(item%logfile,*) "FOUND ", p1(1)
-!            do j = 1, pairs
-!               !write(item%logfile,*) pair_list(j,1)
-!               !write(item%logfile,*) p1
-!               if (p1(1) == pair_list(j,1) .and.
-!     &             p1(2) == pair_list(j,2)) then
-!                  p1(1) = pair_list(j,2)
-!               end if
-!               if (p1(1)==p1(2)) then
-!                  found = .true.
-!                  exit
-!               end if
-!            end do
-!            exit
-!         end if
-!      end do
-!      end if
-!
-!      !if (found) write(item%logfile,*) "GOOD ", p1
-!      !if (.not. found) write(item%logfile,*) "Transpose ", p1
-!      !write(item%logfile,*) item%idx3, item%idx1, item%idx2
-!      !write(item%logfile,*)
-!      if (.not. found) then
-!      if (rank1 > rank2) then
-!         !write(item%logfile,*) item%idx3, t_index(item%idx1), item%idx2
-!         item%idx1 = t_index(item%idx1)
-!      else if (rank2 > rank1) then
-!         !write(item%logfile,*) item%idx3, item%idx1, t_index(item%idx2)
-!         item%idx2 = t_index(item%idx2)
-!      else
-!         !write(item%logfile,*) item%idx3,item%idx1,t_index(item%idx2)
-!         if (item%int(1)) then
-!            item%idx1 = t_index(item%idx1)
-!         else
-!            item%idx2 = t_index(item%idx2)
-!         end if
-!      end if
-!      end if
-!
-!
-!      deallocate(pair_list)
-!
-!
-!      return
-!      end
+
+*----------------------------------------------------------------------*
+      subroutine make_pair_list(p_list, t_list, place, npairs)
+*----------------------------------------------------------------------*
+!     Construct a pair list for a specific tensor from the pair list of
+!     the complete binary contraction
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(pair_list), intent(in) ::
+     &   p_list            ! Complete pair list for binary contraction
+      type(pair_list), intent(inout) ::
+     &   t_list            ! Pair list for specific tensor
+      integer, intent(in) ::
+     &   place,            ! Tensor place in binary contraction: {1,2,3}
+     &   npairs            ! Number of pairs in binary contraction
+
+      integer ::
+     &   s,                ! Index to help placement of pairs
+     &   i                 ! Loop index
+
+      s = 1
+      do i = 1, npairs
+         if (p_list%plist(i)%ops(1) == place) then
+            t_list%plist(s)%pindex(1) = p_list%plist(i)%pindex(1)
+
+            if (p_list%plist(i)%linked) then
+               t_list%plist(s)%pindex(2) = p_list%plist(i)%link
+            else
+               t_list%plist(s)%pindex(2) = p_list%plist(i)%pindex(2)
+            end if
+
+            t_list%plist(s)%linked = .false.
+            t_list%plist(s)%ops = place
+            s = s + 1
+         else if (p_list%plist(i)%ops(2) == place) then
+            t_list%plist(s)%pindex(2) = p_list%plist(i)%pindex(2)
+
+            if (p_list%plist(i)%linked) then
+               t_list%plist(s)%pindex(1) = p_list%plist(i)%link
+            else
+               t_list%plist(s)%pindex(1) = p_list%plist(i)%pindex(1)
+            end if
+
+            t_list%plist(s)%linked = .false.
+            t_list%plist(s)%ops = place
+            s = s + 1
+         end if
+      end do
+
+      return
+      end
 
 
 *----------------------------------------------------------------------*
@@ -1990,6 +1793,7 @@
 
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine correct_index(item_idx)
