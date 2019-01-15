@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 07-12-2018 12:17
+// Created on: 15-01-2019 09:35
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -18,11 +18,11 @@ tensor: J:eecc[acki], J:eecc
 // Special integral tensors
 
 // Fock tensors
-tensor: f:cc[ki], f:cc
+tensor: f:cc[ik], f:cc
 tensor: f:ee[ac], f:ee
 
 // Amplitude tensors
-tensor: T:eecc[abjk], T:eecc
+tensor: T:eecc[abkj], T:eecc
 
 // Residual tensors
 tensor: R:eecc[abij], R:eecc
@@ -43,10 +43,10 @@ tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
 // Intermediates
-tensor: ITIN[abji],        !Create{type:plain}
-tensor: STIN0001aaaa[biaj], !Create{type:plain}
-tensor: STIN0001abba[biaj], !Create{type:plain}
-tensor: STIN0001baab[ibaj], !Create{type:plain}
+tensor: ITIN[abij],        !Create{type:plain}
+tensor: STIN0001aaaa[bija], !Create{type:plain}
+tensor: STIN0001abab[bija], !Create{type:plain}
+tensor: STIN0001baba[ibja], !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 
@@ -121,20 +121,20 @@ alloc R:eecc[abij]
 load K:eecc[abij]
 .R:eecc[abij] += K:eecc[abij]
 drop K:eecc[abij]
-alloc ITIN[abji]
-load f:cc[ki], T:eecc[abjk]
-.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
-drop T:eecc[abjk], f:cc[ki]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji]
-alloc ITIN[baij]
-load f:ee[ac], T:eecc[bcij]
-.ITIN[baij] += f:ee[ac] T:eecc[bcij]
-drop T:eecc[bcij], f:ee[ac]
-.R:eecc[baij] += ITIN[baij]
-.R:eecc[baij] += ITIN[abji]
-drop ITIN[baij]
+alloc ITIN[abij]
+load f:cc[ik], T:eecc[abkj]
+.ITIN[abij] -= f:cc[ik] T:eecc[abkj]
+drop T:eecc[abkj], f:cc[ik]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+alloc ITIN[abij]
+load f:ee[ac], T:eecc[bcji]
+.ITIN[abij] += f:ee[ac] T:eecc[bcji]
+drop T:eecc[bcji], f:ee[ac]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
 alloc ITIN[abij]
 load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
 .ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
@@ -148,29 +148,29 @@ drop T:eecc[cbik], J:eecc[ackj]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc STIN0001aaaa[biaj], STIN0001abba[biaj], STIN0001baab[ibaj], ITIN[abij]
-load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[biaj] -= (K:eecc[acik] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001aaaa[biaj] -= K:eecc[acik] T:eecc[bcjk]
-.STIN0001abba[biaj] -= K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001abba[biaj] -= (K:eecc[acik] - K:eecc[caik]) T:eecc[bcjk]
-.STIN0001baab[ibaj] -= K:eecc[acki] T:eecc[cbjk]
+alloc STIN0001aaaa[bija], STIN0001abab[bija], STIN0001baba[ibja], ITIN[abij]
+load K:eecc[caki], T:eecc[bcjk]
+.STIN0001aaaa[bija] -= (K:eecc[caki] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[bija] -= K:eecc[caki] T:eecc[bcjk]
+.STIN0001abab[bija] -= K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001abab[bija] -= (K:eecc[caki] - K:eecc[caik]) T:eecc[bcjk]
+.STIN0001baba[ibja] -= K:eecc[acki] T:eecc[cbjk]
 drop T:eecc[cbjk], K:eecc[acki]
 load T:eecc[bcjk]
-.ITIN[abij] -= .5*STIN0001aaaa[akci] T:eecc[bcjk]
-.ITIN[abij] -= .5*STIN0001abba[akci] (T:eecc[bcjk] - T:eecc[cbjk])
-.ITIN[abij] -= .5*STIN0001baab[kacj] T:eecc[cbik]
+.ITIN[abij] -= .5*STIN0001aaaa[akic] T:eecc[bcjk]
+.ITIN[abij] -= .5*STIN0001abab[akic] (T:eecc[bcjk] - T:eecc[cbjk])
+.ITIN[abij] -= .5*STIN0001baba[kajc] T:eecc[cbik]
 drop T:eecc[cbik]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baab[ibaj], STIN0001abba[biaj], STIN0001aaaa[biaj]
+drop ITIN[abij], STIN0001baba[ibja], STIN0001abab[bija], STIN0001aaaa[bija]
 store R:eecc[abij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
-.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .25*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 .ECC[] += K:eecc[abij] T:eecc[abij]
-.ECC[] += .25*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .25*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 drop T:eecc[abij], K:eecc[abij]
 store ECC[]
 

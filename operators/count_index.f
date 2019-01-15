@@ -1068,23 +1068,23 @@
       allocate(t2_list%plist(r2))
       allocate(r_list%plist(r3))
 
-      ! Initialise all pair indices
-      do i = 1, r1+r2
-         p_list%plist(i)%pindex = ''
-         p_list%plist(i)%link = ''
-      end do
-      do i = 1, r1
-         t1_list%plist(i)%pindex = ''
-         t1_list%plist(i)%link = ''
-      end do
-      do i = 1, r2
-         t2_list%plist(i)%pindex = ''
-         t2_list%plist(i)%link = ''
-      end do
-      do i = 1, r3
-         r_list%plist(i)%pindex = ''
-         r_list%plist(i)%link = ''
-      end do
+!      ! Initialise all pair indices
+!      do i = 1, r1+r2
+!         p_list%plist(i)%pindex = ''
+!         p_list%plist(i)%link = ''
+!      end do
+!      do i = 1, r1
+!         t1_list%plist(i)%pindex = ''
+!         t1_list%plist(i)%link = ''
+!      end do
+!      do i = 1, r2
+!         t2_list%plist(i)%pindex = ''
+!         t2_list%plist(i)%link = ''
+!      end do
+!      do i = 1, r3
+!         r_list%plist(i)%pindex = ''
+!         r_list%plist(i)%link = ''
+!      end do
 
 
       ! To start, we pair off contraction loops
@@ -1097,6 +1097,7 @@
 
       ! Keep searching until all paired loops are found (ie. the number
       ! of creation or annihilation operators becomes 0)
+      c_shift = 0
       do while (ncre3 /= 0 .and. nann3 /= 0)
          ! Need to start the search with the largest number of operators;
          ! check to start the search with the creation or annihilation
