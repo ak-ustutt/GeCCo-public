@@ -2,9 +2,12 @@
      &     index_len = 8,       ! Length of index string
      &     MAXINT = 4           ! Maximum number of intermediates that contribute to a result
 
+*----------------------------------------------------------------------*
       type spin_cases
-      ! Hold information about a tensor and the spin summed cases which need to be
-      ! printed
+*----------------------------------------------------------------------*
+!     Hold information about a tensor and the spin summed cases which need to be
+!     printed
+*----------------------------------------------------------------------*
 
       character(len=maxlen_bc_label) ::
      &     name                 ! Name of tensor
@@ -16,8 +19,11 @@
       end type spin_cases
 
 
+*----------------------------------------------------------------------*
       type itf_contr
-      ! Object that holds information needed to define a line in an ITF algo file
+*----------------------------------------------------------------------*
+!     Object that holds information needed to define a line in an ITF algo file
+*----------------------------------------------------------------------*
 
       character(len=maxlen_bc_label) ::
      &     label_t1,            ! Name of first tensor in the contraction
@@ -57,26 +63,11 @@
       end type itf_contr
 
 
-
-      type tensor_slot
-
-      character, pointer ::
-     &     cre(:) => null(),        ! Array of creation slots
-     &     ann(:) => null()
-
-      character(len=1) ::
-     &     contract,
-     &     pair(2), pair2(2)
-
-      integer ::
-     &     cslots,                  ! Number of creation slots
-     &     aslots
-
-      end type tensor_slot
-
-
-
+*----------------------------------------------------------------------*
       type pair_list
+*----------------------------------------------------------------------*
+!     List of index paris
+*----------------------------------------------------------------------*
 
       type(pair), pointer ::
      &     plist(:) => null()
@@ -84,16 +75,20 @@
       end type pair_list
 
 
+*----------------------------------------------------------------------*
       type pair
+*----------------------------------------------------------------------*
+!     Paired index
+*----------------------------------------------------------------------*
 
       character(len=1) ::
-     &     pindex(2),
-     &     link
+     &     pindex(2),           ! Holds index pair, creation op in (1), annihilation in (2)
+     &     link                 ! If external indices appear on different tensors, need a contraction index to link them
 
       integer ::
-     &     ops(2)
+     &     ops(2)               ! Information on which tensor the index belogns
 
       logical ::
-     &     linked = .false.
+     &     linked = .false.     ! Doesn't need a linking index
 
       end type pair
