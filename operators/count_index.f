@@ -200,45 +200,11 @@
       return
       end
 
+
 *----------------------------------------------------------------------*
       subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
 *----------------------------------------------------------------------*
-!     Count index of operator
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-
-      integer, intent(in) ::
-     &     iocc(ngastp,2), ngas, nspin,
-     &     irstr(2,ngas,2,2,nspin), idx
-      integer, intent(inout) ::
-     &     nops(4,2)                     ! Matrix of index info
-
-      ! Creation operators
-      ! Particle, ijkl
-      nops(1,1)=nops(1,1) + iocc(1,1)
-      ! Hole, abcd
-      nops(2,1)=nops(2,1) + iocc(2,1)
-      ! Valence, pqrs
-      nops(3,1)=nops(3,1) + iocc(3,1)
-      ! Explicit, x
-      nops(4,1)=nops(4,1) + iocc(4,1)
-
-      ! Annhilation operators as above
-      nops(1,2)=nops(1,2) + iocc(1,2)
-      nops(2,2)=nops(2,2) + iocc(2,2)
-      nops(3,2)=nops(3,2) + iocc(3,2)
-      nops(4,2)=nops(4,2) + iocc(4,2)
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
-*----------------------------------------------------------------------*
-!     As above, but in a different order
-!     TODO: merge above to this
+!     Return array with number of operators of each type
 *----------------------------------------------------------------------*
 
       implicit none
@@ -260,7 +226,7 @@
       ! Explicit, x
       nops(4,1)=nops(4,1) + iocc(4,1)
 
-      ! Annhilation operators as above
+      ! Annihilation operators as above
       nops(1,2)=nops(1,2) + iocc(2,2)
       nops(2,2)=nops(2,2) + iocc(1,2)
       nops(3,2)=nops(3,2) + iocc(3,2)
@@ -876,7 +842,7 @@
       a3='        '
 
       ! Assign o1 (external indices of t1)
-      do i=1, o1(2,1)
+      do i=1, o1(1,1)
           c1(i:)=par(i)
       end do
       o1_array(1)=c1
@@ -884,22 +850,22 @@
           c2(i:)=val(i)
       end do
       o1_array(2)=c2
-      do i=1, o1(1,1)
+      do i=1, o1(2,1)
           c3(i:)=hol(i)
       end do
       o1_array(3)=c3
 
       ! Need to to be shifted to not match assignment of creations above
-      do i=1, o1(2,2)
-          a1(i:)=par(i+o1(2,1))
+      do i=1, o1(1,2)
+          a1(i:)=par(i+o1(1,1))
       end do
       o1_array(5)=a1
       do i=1, o1(3,2)
           a2(i:)=val(i+o1(3,1))
       end do
       o1_array(6)=a2
-      do i=1, o1(1,2)
-          a3(i:)=hol(i+o1(1,1))
+      do i=1, o1(2,2)
+          a3(i:)=hol(i+o1(2,1))
       end do
       o1_array(7)=a3
 
@@ -972,25 +938,25 @@
 
       ! Get occupation info
       do i = 1, contr_info%n_cnt
-        call count_index2(i,
+        call count_index(i,
      &     contr_info%occ_cnt(1:,1:,i),
      &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,c)
       end do
       do i = 1, contr_info%nj_op1
-        call count_index2(i,
+        call count_index(i,
      &     contr_info%occ_ex1(1:,1:,i),
      &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e1)
       end do
       do i = 1, contr_info%nj_op2
-        call count_index2(i,
+        call count_index(i,
      &     contr_info%occ_ex2(1:,1:,i),
      &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e2)
       end do
       do i = 1, contr_info%nj_res
-        call count_index2(i,
+        call count_index(i,
      &     contr_info%occ_res(1:,1:,i),
      &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e3)
@@ -1596,9 +1562,9 @@
 
       perm_case = 0
 
-      if (e1(2,1)+e2(2,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
-     &    e1(3,1)+e2(3,1)==2 .and. e1(1,2)+e2(1,2)==2 .or.
-     &    e1(2,1)+e2(2,1)==2 .and. e1(3,2)+e2(3,2)==2) then
+      if (e1(1,1)+e2(1,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
+     &    e1(3,1)+e2(3,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
+     &    e1(1,1)+e2(1,1)==2 .and. e1(3,2)+e2(3,2)==2) then
 
          sum_c1=0
          sum_c2=0
@@ -1610,12 +1576,12 @@
             sum_c1=sum_c1+e1(i,1)
             sum_c2=sum_c2+e2(i,1)
 
-            ! Summ annhilation ops
+            ! Sum annihilation ops
             sum_a1=sum_a1+e1(i,2)
             sum_a2=sum_a2+e2(i,2)
          end do
 
-         ! If sum==2, then both indicies come from same operator, therefore
+         ! If sum==2, then both indices come from same operator, therefore
          ! it doesn't need symmetrised
          if (sum_c1/=2 .and. sum_c2/=2) then
             if (sum_c1+sum_c2==2) then
@@ -2474,8 +2440,8 @@
             fact = fact * -1.0
       end if
 
-      ! Catch three external integrals
-      if (c(1,1) + c(1,2)==3)
+      ! Catch three internal integrals
+      if (c(2,1) + c(2,2)==3)
      &   then
             fact = fact * -1.0
       end if
