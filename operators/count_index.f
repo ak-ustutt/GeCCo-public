@@ -962,31 +962,45 @@
       include 'def_itf_contr.h'
 
       type(binary_contr), intent(in) ::
-     &     contr_info   ! Information about binary contraction
+     &   contr_info     ! Information about binary contraction
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item           ! ITF binary contraction
 
       integer ::
-     &     c(4,2),       ! Occupations of contraction index
-     &     e1(4,2),      ! Occupations of external index 1
-     &     e2(4,2),     ! Occupations of external index 2
-     &     e3(4,2)      ! Occupations of external index 2
-      integer ::
-     &     i,j,k,l,ii
+     &   c(4,2),        ! Operator numbers of contraction index
+     &   e1(4,2),       ! Operator numbers of external index 1
+     &   e2(4,2),       ! Operator numbers of external index 2
+     &   e3(4,2),       ! Operator numbers of result index
+     &   i, j, k, l,    ! Loop index
+     &   ii,            ! Letter index
+     &   nloop,         ! Number of contraction loops
+     &   i1, i2,        ! Search creation or annihilation first
+     &   shift,         ! List shift
+     &   sp,            ! Pair list shift
+     &   r1, r2, r3     ! Ranks of tensors
       character, dimension(16) ::
-     &     ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
-     &            'u','v','w' /)
+     &   ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
+     &          'u','v','w' /)   ! Letters for index string
       character(len=index_len) ::
-     &     s1, s2, s3  ! Workspace
-      real(4) :: factor
-      integer :: shift, sp
-      integer :: i1, i2 ! Search creation or annihilation first
-      integer :: nloop ! Number of contraction loops
-      integer :: r1, r2, r3 ! Ranks of tensors
-      logical :: found, sort
-      type(pair_list) :: p_list, t1_list, t2_list, r_list
-      integer, dimension(4) :: t_shift, c_shift
-      integer, dimension(2) :: cops, e1ops, e2ops, e3ops
+     &     s1, s2, s3   ! Tmp ITF index strings
+      real(4) ::
+     &   factor         ! Factor from equivalent lines
+      logical ::
+     &   found,         ! True if found pairing index
+     &   sort           ! Used in bubble sort
+      type(pair_list) ::
+     &   p_list,        ! Complete list of pairs in binary contraction
+     &   t1_list,       ! List of pairs in first tensor (T1)
+     &   t2_list,       ! List of pairs in second tensor (T2)
+     &   r_list         ! List of pairs in result tensor
+      integer, dimension(4) ::
+     &   t_shift,       ! Index shift for external indices
+     &   c_shift        ! Index shift for contraction indices
+      integer, dimension(2) ::
+     &   cops,          ! Number of creation/annihilation contraction operators
+     &   e1ops,         ! Number of C/A external T1 operators
+     &   e2ops,         ! Number of C/A external T2 operators
+     &   e3ops          ! Total number of external operators
 
       c=0
       e1=0
@@ -1053,7 +1067,6 @@
       allocate(t1_list%plist(r1))
       allocate(t2_list%plist(r2))
       allocate(r_list%plist(r3))
-
 
       ! To start, we pair off contraction loops
       ! Pair list index (shift pair)
@@ -1254,7 +1267,6 @@
 *----------------------------------------------------------------------*
 !     Find external pairs in a binary contraction. Assign a contraction
 !     index if they are on different tensors.
-!     TODO: merge creation loops into this???
 *----------------------------------------------------------------------*
 
       implicit none
