@@ -1103,7 +1103,7 @@
 
          ! Loop over P/H/V/X
          do i = 1, 4
-            do j = 1, cc(i,i1)
+            do j = 1, c(i,i1)
                ii = 1+(4*(i-1)) + c_shift(i)
 
                ! Assign index letter to pair list
@@ -1121,11 +1121,11 @@
                end if
 
                c_shift(i) = c_shift(i) + 1
-               cc(i,i1) = cc(i,i1) - 1
+               c(i,i1) = c(i,i1) - 1
 
                ! Look for matching operator
                do k = 1, 4
-                  do l = 1, cc(k,i2)
+                  do l = 1, c(k,i2)
                      ii = 1+(4*(k-1)) + c_shift(k)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1143,7 +1143,7 @@
                      end if
 
                      c_shift(k) = c_shift(k) + 1
-                     cc(k,i2) = cc(k,i2) - 1
+                     c(k,i2) = c(k,i2) - 1
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
@@ -1156,7 +1156,6 @@
                if (found) exit
             end do
             ! Can't pair creation or annihilation so exit
-            !if (ncre3 == 0 .or. nann3 == 0) exit
             if (found) exit
          end do
       end do
@@ -1297,7 +1296,7 @@
      &   nann2,            ! Number of annihilation ops for the other tensor
      &   nann3,            ! Number of contraction annihilation ops
      &   sp               ! Pair list shift index
-      integer, intent(in) ::
+      integer, intent(inout) ::
      &   tensor,           ! Label T1 or T2
      &   e1(4,2),          ! External index occupations for a tensor
      &   e2(4,2),          ! External index occupations the other tensor
@@ -1364,6 +1363,7 @@
             end if
 
             t_shift(i) = t_shift(i) + 1
+            e1(i,i1) = e1(i,i1) - 1
 
             ! Look for matching operator
             if (n1 > 0) then
@@ -1382,6 +1382,7 @@
                      end if
 
                      t_shift(k) = t_shift(k) + 1
+                     e1(k,i2) = e1(k,i2) - 1
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
@@ -1407,6 +1408,7 @@
                      end if
 
                      t_shift(k) = t_shift(k) + 1
+                     e2(k,i2) = e2(k,i2) - 1
 
                      ! We need to link the external indices on two
                      ! different operators with a contraction index
@@ -1423,6 +1425,7 @@
                            end if
 
                            c_shift(m) = c_shift(m) + 1
+                           c(m,i2) = c(m,i2) - 1
 
                            sp = sp + 1
                            found = .true.
