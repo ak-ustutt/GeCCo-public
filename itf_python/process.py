@@ -334,7 +334,7 @@ def generic_index(tensor):
     # Construct generic index representation of specific tensor index
     # Used to check if tensors index the same space, even if they have
     # different indices
-        
+
     index=list(tensor[tensor.find("[")+1:tensor.find("]")])
 
     hole=['i','j','k','l']
@@ -382,7 +382,6 @@ def rename_integrals(line):
             tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        # TODO: Maybe rearrange in the index in fortran - will be faster
         if ("K:ccee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[2:3] + tmp[3:4] + tmp[0:1] + tmp[1:2]
@@ -397,27 +396,6 @@ def rename_integrals(line):
             tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[1:2] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        # TODO: wont need this as the index is arranged in fortran
-        if ("f:ce" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[0:1]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[0:1]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        if ("K:cecc" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[0:1] + tmp[2:3] + tmp[3:4]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[0:1] + tmp2[2:3] + tmp2[3:4]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-#        if ("K:ccec" in words[i]):
-#            tmp = words[i].split('[',1)[1].split(']',1)[0]
-#            tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
-#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-#            tmp2 = tmp2[2:3] + tmp2[0:1] + tmp2[1:2] + tmp2[3:4]
-#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
         if ("K:ccec" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
@@ -434,9 +412,9 @@ def rename_integrals(line):
 
         if ("K:ecee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
+            tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
+            tmp2 = tmp2[0:1] + tmp2[3:4] + tmp2[2:3] + tmp2[1:2]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
 
@@ -522,7 +500,7 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "f:ce" in line or "K:cecc" in line or "K:ccec" in line or "K:ceee" in line or "K:ecee" in line):
+    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:cecc" in line or "K:ccec" in line or "K:ceee" in line or "K:ecee" in line):
         line = rename_integrals(line)
         words=line.split()
 
@@ -565,7 +543,7 @@ for line_o in f:
                 words = words[:3]
 
 
-        if (line not in prev_K4E_lines.values()): 
+        if (line not in prev_K4E_lines.values()):
             for i in range(0, len(words)):
                 if ("K:eeee" in words[i]):
                     if ("*" in words[i]):
@@ -640,19 +618,19 @@ for line_o in f:
         if words[0].replace('.','') not in declare_inter:
             # Add intermedate to global list
             generic=generic_index(words[0])
-    
+
             declared=False
             for i in range(0, len(declare_inter)):
                 if words[0].split('[',1)[0].replace('.','') == declare_inter_name[i]:
                     if generic == declare_inter_index[i]:
-                        # Generic index must be at same position as name it belongs to - dangerous! 
+                        # Generic index must be at same position as name it belongs to - dangerous!
                         # TODO: use dict instead of declare_index and declare_name
                         # Load previous tensor
                         declared=True
                         break
                 else:
                     continue
-    
+
             if not declared:
                 # Add result to global list
                 declare_inter.append(words[0].replace('.',''))
@@ -683,7 +661,7 @@ for line_o in f:
             for i in range(0, len(declare_name)):
                 if words[0].split('[',1)[0].replace('.','') == declare_name[i]:
                     if generic == declare_index[i]:
-                        # Generic index must be at same position as name it belongs to - dangerous! 
+                        # Generic index must be at same position as name it belongs to - dangerous!
                         # Load previous tensor
                         tmp_res=words[0]
                         if ("R[" in words[0]):
