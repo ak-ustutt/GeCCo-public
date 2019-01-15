@@ -986,7 +986,7 @@
       integer :: r1, r2, r3 ! Ranks of tensors
       logical :: found, sort
       type(pair_list) :: p_list, t1_list, t2_list, r_list
-      integer, dimension(3) :: t_shift, c_shift
+      integer, dimension(4) :: t_shift, c_shift
 
       c=0
       e1=0
@@ -1068,27 +1068,8 @@
       allocate(t2_list%plist(r2))
       allocate(r_list%plist(r3))
 
-!      ! Initialise all pair indices
-!      do i = 1, r1+r2
-!         p_list%plist(i)%pindex = ''
-!         p_list%plist(i)%link = ''
-!      end do
-!      do i = 1, r1
-!         t1_list%plist(i)%pindex = ''
-!         t1_list%plist(i)%link = ''
-!      end do
-!      do i = 1, r2
-!         t2_list%plist(i)%pindex = ''
-!         t2_list%plist(i)%link = ''
-!      end do
-!      do i = 1, r3
-!         r_list%plist(i)%pindex = ''
-!         r_list%plist(i)%link = ''
-!      end do
-
 
       ! To start, we pair off contraction loops
-
       ! Pair list index (shift pair)
       sp = 1
       ! Found = true if a matching index has been found
@@ -1097,7 +1078,12 @@
 
       ! Keep searching until all paired loops are found (ie. the number
       ! of creation or annihilation operators becomes 0)
-      c_shift = 0
+
+      ! Set letter shift values for contraction indices
+      do i = 1, 4
+         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
+      end do
+
       do while (ncre3 /= 0 .and. nann3 /= 0)
          ! Need to start the search with the largest number of operators;
          ! check to start the search with the creation or annihilation
@@ -1117,10 +1103,7 @@
          ! Loop over P/H/V/X
          do i = 1, 4
             do j = 1, c(i,i1)
-               ii = 1+(4*(i-1))+e1(i,1)+e1(i,2)+e2(i,1)+e2(i,2)+sp-1
-
-               ! Need extra shift if annihilator
-               if (i1 == 2) ii = ii + c(i,1)
+               ii = 1+(4*(i-1)) + c_shift(i)
 
                ! Assign index letter to pair list
                p_list%plist(sp)%pindex(i1) = ind(ii)
@@ -1136,13 +1119,12 @@
                   ncre3 = ncre3 - 1
                end if
 
+               c_shift(i) = c_shift(i) + 1
+
                ! Look for matching operator
                do k = 1, 4
                   do l = 1, c(k,i2)
-                     ii = 1+(4*(k-1))+e1(k,1)+e1(k,2)+e2(k,1)+e2(k,2)
-     &                    +sp-1
-
-                     if (i1 == 1) ii = ii + c(k,1)
+                     ii = 1+(4*(k-1)) + c_shift(k)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
                      p_list%plist(sp)%linked = .false.
@@ -1157,6 +1139,8 @@
                      else
                         nann3 = nann3 - 1
                      end if
+
+                     c_shift(k) = c_shift(k) + 1
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
