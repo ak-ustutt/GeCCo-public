@@ -953,10 +953,9 @@
 *----------------------------------------------------------------------*
       subroutine assign_index(contr_info,item)
 *----------------------------------------------------------------------*
-!     Assign an letter index to each tensor in a line
+!     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
 
-      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -966,58 +965,27 @@
      &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
      &     item
+
       integer ::
      &     c(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),     ! Occupations of external index 2
      &     e3(4,2)      ! Occupations of external index 2
       integer ::
-     &     i,j,k,l,m,n,ii
-      character, dimension(3) ::
-     &    chol=(/ 'k','l','m' /)
-      character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),
-     &     par=(/ 'a','b','c','d' /),
-     &     cpar=(/ 'c','d','e','f' /),
-     &     val2=(/ 'p','q','r','s' /),
-     &     cval2=(/ 'r','s','t','u' /)
-      character, dimension(8) ::
-     &     val=(/ 'p','q','r','s','t','u','v','w' /)
+     &     i,j,k,l,ii
       character, dimension(16) ::
      &     ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
      &            'u','v','w' /)
       character(len=index_len) ::
-     &     s1, s2, s3, c4,  ! Workspace
-     &     a1, a2, a3, a4
-      character(len=8), dimension(8) ::
-     &     c_array,     ! Contraction index array
-     &     e1_array,    ! External index of operator 1 array
-     &     e2_array,    ! External index of operator 2 array
-     &     t1_array,
-     &     t2_array,
-     &     tmp1_array, tmp2_array
-      integer, dimension(2) ::
-     &     idx_type     ! Info about index convention
-      integer, parameter ::
-     &     t_amp = 0,       ! [apij] (aacc)
-     &     ham   = 1        ! [abip]
-      character(len=20), dimension(4) ::
-     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
-      integer ::
-     &     conv(6), conv2(6)  ! Index convention arrays
-      character(len=1) :: tmp ! Used in swapping pairs around
-      integer :: ntmp
+     &     s1, s2, s3  ! Workspace
       real(4) :: factor
-
       integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
       integer :: ncre4, nann4 ! Number of ops in result tensor
       integer :: i1, i2 ! Search creation or annihilation first
-      integer :: nc1, nc2, n1, n2, n3 ! Used to design generic function
       integer :: nloop ! Number of contraction loops
       integer :: r1, r2, r3 ! Ranks of tensors
-      integer :: ext1, ext2 ! External index shifts
       logical :: found, sort
-      type(pair_list) :: p_list, t1_list, t2_list, r_list, tmp_list
+      type(pair_list) :: p_list, t1_list, t2_list, r_list
       integer, dimension(3) :: t_shift, c_shift
 
       c=0
@@ -1099,7 +1067,6 @@
       allocate(t1_list%plist(r1))
       allocate(t2_list%plist(r2))
       allocate(r_list%plist(r3))
-      allocate(tmp_list%plist(1))
 
       ! Initialise all pair indices
       do i = 1, r1+r2
@@ -1147,9 +1114,8 @@
          end if
 
          ! Loop over P/H/V/X
-         do i=1, 4
-            shift = 1
-            do j=1, c(i,i1)
+         do i = 1, 4
+            do j = 1, c(i,i1)
                ii = 1+(4*(i-1))+e1(i,1)+e1(i,2)+e2(i,1)+e2(i,2)+sp-1
 
                ! Need extra shift if annihilator
@@ -1157,7 +1123,10 @@
 
                ! Assign index letter to pair list
                p_list%plist(sp)%pindex(i1) = ind(ii)
-               shift = shift + 1
+
+               ! Mark which operator this index belongs to
+               ! Contraction index always w.r.t the first operator
+               p_list%plist(sp)%ops(i1) = 1
 
                ! Decrease number of annihilation or creation operators
                if (i1 == 2) then
@@ -1166,32 +1135,27 @@
                   ncre3 = ncre3 - 1
                end if
 
-               ! Mark which operator this index belongs to
-               ! Contraction index always w.r.t the first operator
-               p_list%plist(sp)%ops(i1) = 1
-
                ! Look for matching operator
-               do k=1, 4
-                  do l=1, c(k,i2)
+               do k = 1, 4
+                  do l = 1, c(k,i2)
                      ii = 1+(4*(k-1))+e1(k,1)+e1(k,2)+e2(k,1)+e2(k,2)
      &                    +sp-1
 
                      if (i1 == 1) ii = ii + c(k,1)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
-
-                     if (i1 == 2) then
-                        ncre3 = ncre3 - 1
-                     else
-                        nann3 = nann3 - 1
-                     end if
-
                      p_list%plist(sp)%linked = .false.
                      ! Ultimately contraction indices belong on both
                      ! tensors, but marking these for both the first
                      ! and second tensor helps to pick them out in the
                      ! code below
                      p_list%plist(sp)%ops(i2) = 2
+
+                     if (i1 == 2) then
+                        ncre3 = ncre3 - 1
+                     else
+                        nann3 = nann3 - 1
+                     end if
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
@@ -1314,7 +1278,6 @@
       deallocate(t1_list%plist)
       deallocate(t2_list%plist)
       deallocate(r_list%plist)
-      deallocate(tmp_list%plist)
 
       return
       end
