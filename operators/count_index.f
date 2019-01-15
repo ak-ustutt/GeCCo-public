@@ -968,6 +968,7 @@
 
       integer ::
      &     c(4,2),       ! Occupations of contraction index
+     &     cc(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),     ! Occupations of external index 2
      &     e3(4,2)      ! Occupations of external index 2
@@ -1072,9 +1073,6 @@
       ! To start, we pair off contraction loops
       ! Pair list index (shift pair)
       sp = 1
-      ! Found = true if a matching index has been found
-      ! TODO: this needs to be thought about
-      found = .false.
 
       ! Keep searching until all paired loops are found (ie. the number
       ! of creation or annihilation operators becomes 0)
@@ -1083,6 +1081,7 @@
       do i = 1, 4
          c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
       end do
+      cc = c
 
       do while (ncre3 /= 0 .and. nann3 /= 0)
          ! Need to start the search with the largest number of operators;
@@ -1100,9 +1099,11 @@
             i2 = 1
          end if
 
+         found = .false.
+
          ! Loop over P/H/V/X
          do i = 1, 4
-            do j = 1, c(i,i1)
+            do j = 1, cc(i,i1)
                ii = 1+(4*(i-1)) + c_shift(i)
 
                ! Assign index letter to pair list
@@ -1120,10 +1121,11 @@
                end if
 
                c_shift(i) = c_shift(i) + 1
+               cc(i,i1) = cc(i,i1) - 1
 
                ! Look for matching operator
                do k = 1, 4
-                  do l = 1, c(k,i2)
+                  do l = 1, cc(k,i2)
                      ii = 1+(4*(k-1)) + c_shift(k)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
@@ -1141,18 +1143,21 @@
                      end if
 
                      c_shift(k) = c_shift(k) + 1
+                     cc(k,i2) = cc(k,i2) - 1
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
+                     found = .true.
                      exit
                   end do
-                  !exit
+                  ! A pair has been found, so exit
+                  if (found) exit
                end do
-               ! A pair loop has been found so exit
-               exit
+               if (found) exit
             end do
             ! Can't pair creation or annihilation so exit
-            if (ncre3 == 0 .or. nann3 == 0) exit
+            !if (ncre3 == 0 .or. nann3 == 0) exit
+            if (found) exit
          end do
       end do
 
@@ -1304,8 +1309,10 @@
      &   item              ! ITF binary contraction info
 
       character, dimension(16) ::
-     &     ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
-     &            'u','v','w' /)       ! Index letters
+     &   ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
+     &          'u','v','w' /)       ! Index letters
+      logical ::
+     &   found
       integer ::
      &   opp_tensor,       ! Label opposite tensor to 'tensor'
      &   i1, i2,           ! Label annihilation/creation index
@@ -1339,6 +1346,8 @@
          n2 = ncre2
          n3 = nann1
       end if
+
+      found = .false.
 
       ! Start main search loop
       do i = 1, 4
@@ -1376,11 +1385,10 @@
 
                      ! Found a pair, so increment pair list index
                      sp = sp + 1
+                     found = .true.
                      exit
                   end do
-                  !TODO: this is a problem, need to exit when found
-                  !pair. Need some sort of logical
-                  !if (found) then exit
+                  if (found) exit
                end do
 
             else if (n2 > 0) then
@@ -1416,25 +1424,24 @@
 
                            c_shift(m) = c_shift(m) + 1
 
+                           sp = sp + 1
+                           found = .true.
                            exit
                         end do
+                        if (found) exit
                      end do
-
-                     ! Found a pair + made a link, so increment pair list index
-                     sp = sp + 1
-                     exit
+                     if (found) exit
                   end do
+                  if (found) exit
                end do
             else
                ! No ops of opposite type to match...
                call line_error("Particle number not conserving",item)
             end if
-
             ! A pair loop has been found so exit
-            exit
+            if (found) exit
          end do
-         ! Can't match creation or annihilation so exit
-         if (n3 == 0) exit
+         if (found) exit
       end do
 
       return
