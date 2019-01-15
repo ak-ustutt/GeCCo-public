@@ -1146,6 +1146,7 @@
                      sp = sp + 1
                      exit
                   end do
+                  !exit
                end do
                ! A pair loop has been found so exit
                exit
@@ -1161,22 +1162,20 @@
       ! Match external pairs, either to external ops on the same
       ! operator, or to external ops on the second operator
       t_shift = 0
-      c_shift = 0
-
       do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
          if (ncre1 + nann1 /= 0) then
             ! Search on first tensor
             call find_pairs(p_list, ncre1, ncre2, ncre3, nann1, nann2,
-     &                      nann3, sp, nloop, 1, e1, e2, c,
-     &                      t_shift, c_shift, item)
+     &                      nann3, sp, 1, e1, e2, c, t_shift, c_shift,
+     &                      item)
 
          else if (ncre2 + nann2 /= 0)then
             ! Search on second tensor
             ! Note the number of creation/annihilation ops has been
             ! switched
             call find_pairs(p_list, ncre2, ncre1, ncre3, nann2, nann1,
-     &                      nann3, sp, nloop, 2, e2, e1, c,
-     &                      t_shift, c_shift, item)
+     &                      nann3, sp, 2, e2, e1, c, t_shift, c_shift,
+     &                      item)
          end if
       end do
 
@@ -1270,7 +1269,7 @@
 
 *----------------------------------------------------------------------*
       subroutine find_pairs(list, ncre1, ncre2, ncre3, nann1, nann2,
-     &                      nann3, sp, nloop, tensor, e1, e2, c,
+     &                      nann3, sp, tensor, e1, e2, c,
      &                      t_shift, c_shift, item)
 *----------------------------------------------------------------------*
 !     Find external pairs in a binary contraction. Assign a contraction
@@ -1292,8 +1291,7 @@
      &   nann1,            ! Number of annihilation ops for a tensor
      &   nann2,            ! Number of annihilation ops for the other tensor
      &   nann3,            ! Number of contraction annihilation ops
-     &   sp,               ! Pair list shift index
-     &   nloop             ! Number of contraction loops
+     &   sp               ! Pair list shift index
       integer, intent(in) ::
      &   tensor,           ! Label T1 or T2
      &   e1(4,2),          ! External index occupations for a tensor
@@ -1406,11 +1404,8 @@
                      ! different operators with a contraction index
                      do m=1, 3
                         do n=1, c(m,i2)
-                           ii = 1+(4*(m-1))+e1(m,i1)+e1(m,i2)+e2(m,i1)+
-     &                          e2(m,i2)+nloop+c_shift(m)
+                            ii = 1+(4*(m-1)) + c_shift(m)
 
-                           ! Need to shift for annihilation
-                           if (i1 == 1) ii = ii + c(m,1)
                            list%plist(sp)%link = ind(ii)
 
                            if (i1 == 2) then
