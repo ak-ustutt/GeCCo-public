@@ -825,7 +825,8 @@
 *----------------------------------------------------------------------*
       subroutine assign_add_index(contr_info,item)
 *----------------------------------------------------------------------*
-!
+!     Simple ITF index assignment for lines that only contain a result
+!     and a tensor, ie. COPY and ADD lines. Don't need to pair indices.
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -837,50 +838,25 @@
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
-     &     item
+     &     item         ! ITF binary contraction
+
       integer ::
-     &     o1(4,2)      ! Occupations of first tensor
-      integer ::
-     &     i,j
+     &     o1(4,2),     ! Operator numbers of the first tensor (T1)
+     &     i            ! Loop index
       character, dimension(4) ::
      &     hol=(/ 'i','j','k','l' /),
      &     par=(/ 'a','b','c','d' /)
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
-      character(len=8) ::
-     &     c1='        ',    ! Workspace to assign index before array
-     &     c2='        ',
-     &     c3='        ',
-     &     c4='        ',
-     &     a1='        ',
-     &     a2='        ',
-     &     a3='        ',
-     &     a4='        '
-      character(len=8), dimension(8) ::
+      character(len=index_len) ::
+     &     c1, c2, c3,
+     &     a1, a2, a3
+      character(len=index_len), dimension(8) ::
      &     o1_array     ! Index of operator 1
-      integer, dimension(3) ::
-     &     idx_type     ! Info about index convention
-      integer, parameter ::
-     &     t_amp = 0,       ! [apij] (aacc)
-     &     ham   = 1        ! [abip]
-      character(len=20), dimension(4) ::
-     &     tensor_ham=(/ 'H', 'INT_D', 'INT_HH', 'INT_PP' /)  ! Tensor names to use ham index convention
-
-      ! Set index convention
-      idx_type=(/ 0, 0, 0 /)
-      do i=1, len(tensor_ham)
-          if (contr_info%label_op1.eq.trim(tensor_ham(i))) then
-              ! Use default convention for now
-              idx_type(1)=0
-          end if
-          if (contr_info%label_res.eq.trim(tensor_ham(i))) then
-              idx_type(3)=0
-          end if
-      end do
 
       o1=0
 
-      ! Get occuation info
+      ! Get occupation info
       do i = 1, contr_info%nj_op1
         call count_index(i,
      &     contr_info%occ_op1(1:,1:,i),
@@ -888,10 +864,14 @@
      &     contr_info%ngas,contr_info%nspin,o1)
       end do
 
-      ! Order in ITF usually follows: apij
-      ! Defualt [ccaa] as in the case of T[abij]
+      c1='        '
+      c2='        '
+      c3='        '
+      a1='        '
+      a2='        '
+      a3='        '
 
-      ! Assign e1 (external indicies of t1)
+      ! Assign o1 (external indices of t1)
       do i=1, o1(2,1)
           c1(i:)=par(i)
       end do
@@ -919,27 +899,9 @@
       end do
       o1_array(7)=a3
 
-      c1='        '
-      c2='        '
-      c3='        '
-      a1='        '
-      a2='        '
-      a3='        '
-
-      ! Construct final index strings
-      ! Operator 1
-      select case(idx_type(1))
-      case(ham)
-      ! Hamiltonian/integral convention
       item%idx1=trimal(o1_array(1))//trimal(o1_array(2))//
      &          trimal(o1_array(3))//trimal(o1_array(5))//
      &          trimal(o1_array(6))//trimal(o1_array(7))
-      case default
-      ! [apij] (aacc), ie. T[abij]
-      item%idx1=trimal(o1_array(1))//trimal(o1_array(2))//
-     &          trimal(o1_array(3))//trimal(o1_array(5))//
-     &          trimal(o1_array(6))//trimal(o1_array(7))
-      end select
 
       item%idx3=item%idx1
 
