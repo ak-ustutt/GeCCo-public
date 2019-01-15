@@ -864,6 +864,10 @@
      &     contr_info%ngas,contr_info%nspin,o1)
       end do
 
+      ! Assign ranks of tensors
+      call itf_rank(o1, o1, item%rank1, .true.)
+      item%rank3 = item%rank1
+
       c1='        '
       c2='        '
       c3='        '
@@ -936,8 +940,7 @@
      &   nloop,         ! Number of contraction loops
      &   i1, i2,        ! Search creation or annihilation first
      &   shift,         ! List shift
-     &   sp,            ! Pair list shift
-     &   r1, r2, r3     ! Ranks of tensors
+     &   sp             ! Pair list shift
       character, dimension(16) ::
      &   ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
      &          'u','v','w' /)   ! Letters for index string
@@ -1017,21 +1020,15 @@
       e3ops = sum(e3, dim=1)
 
       ! Set ranks of tensors
-      ! TODO: this should be in a subroutine which sets item%rank to
-      ! these values
-      r1 = sum(e1ops) + sum(cops)
-      r2 = sum(e2ops) + sum(cops)
-      r3 = sum(e3ops)
-
-      item%rank1 = r1
-      item%rank2 = r2
-      item%rank3 = r3
+      call itf_rank(e1, c, item%rank1, .false.)
+      call itf_rank(e2, c, item%rank2, .false.)
+      call itf_rank(e3, c, item%rank3, .true.)
 
       ! Allocate pair list according to ranks of tensors
-      allocate(p_list%plist(r1+r2))
-      allocate(t1_list%plist(r1))
-      allocate(t2_list%plist(r2))
-      allocate(r_list%plist(r3))
+      allocate(p_list%plist(item%rank1+item%rank2))
+      allocate(t1_list%plist(item%rank1))
+      allocate(t2_list%plist(item%rank2))
+      allocate(r_list%plist(item%rank3))
 
       ! To start, we pair off contraction loops
       ! Pair list index (shift pair)
@@ -1177,9 +1174,9 @@
       ! indices. Integrals and intermediates are ignored by this
       ! subroutine
       ! TODO: will not work with pqrstu...
-      call swap_index(t1_list, r1, item%int(1), item%inter(1))
-      call swap_index(t2_list, r2, item%int(2), item%inter(2))
-      call swap_index(r_list, r3, item%int(3), item%inter(3))
+      call swap_index(t1_list, item%rank1, item%int(1), item%inter(1))
+      call swap_index(t2_list, item%rank2, item%int(2), item%inter(2))
+      call swap_index(r_list, item%rank3, item%int(3), item%inter(3))
 
 
       ! Sort index pairs into order with bubble sort. If only 1 pair,
@@ -1187,9 +1184,9 @@
       ! of indices for the declaration and use of an intermediate (the
       ! slot structure must be the same when it is constructed and when
       ! it is used)
-      call swap_pairs(t1_list, r1, item%int(1))
-      call swap_pairs(t2_list, r2, item%int(2))
-      call swap_pairs(r_list, r3, item%int(3))
+      call swap_pairs(t1_list, item%rank1, item%int(1))
+      call swap_pairs(t2_list, item%rank2, item%int(2))
+      call swap_pairs(r_list, item%rank3, item%int(3))
 
 
       ! Insert ordered lists into ITF index strings
@@ -1197,17 +1194,20 @@
       s2 = '        '
       s3 = '        '
 
-      do i = 1, r1/2
+      do i = 1, item%rank1/2
          s1(i:i) = t1_list%plist(i)%pindex(1)
-         s1(i+(r1/2):i+(r1/2)) = t1_list%plist(i)%pindex(2)
+         s1(i+(item%rank1/2):i+(item%rank1/2)) =
+     &                                        t1_list%plist(i)%pindex(2)
       end do
-      do i = 1, r2/2
+      do i = 1, item%rank2/2
          s2(i:i) = t2_list%plist(i)%pindex(1)
-         s2(i+(r2/2):i+(r2/2)) = t2_list%plist(i)%pindex(2)
+         s2(i+(item%rank2/2):i+(item%rank2/2)) =
+     &                                        t2_list%plist(i)%pindex(2)
       end do
-      do i = 1, r3/2
+      do i = 1, item%rank3/2
          s3(i:i) = r_list%plist(i)%pindex(1)
-         s3(i+(r3/2):i+(r3/2)) = r_list%plist(i)%pindex(2)
+         s3(i+(item%rank3/2):i+(item%rank3/2)) =
+     &                                         r_list%plist(i)%pindex(2)
       end do
 
       ! Assign an ITF index string to each tensor
@@ -2414,7 +2414,7 @@
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,itf_item%fact)
 
-      ! Assign index string
+      ! Assign index string. Tensor ranks are also set here
       if (comm==command_cp_intm .or. comm==command_add_intm) then
          ! For [ADD] and [COPY]
          call assign_add_index(contr_info,itf_item)
@@ -2422,11 +2422,6 @@
          ! For other contractions
          call assign_index(contr_info,itf_item)
       end if
-
-      !! Assign rank
-      ! TODO: move this to corresponding assign_sum_index
-      call itf_rank(itf_item%idx1,itf_item%rank1)
-      call itf_rank(itf_item%idx3,itf_item%rank3)
 
       itf_item%inter1 = '        '
       itf_item%inter2 = '        '
@@ -2535,26 +2530,32 @@
       return
       end
 
+
 *----------------------------------------------------------------------*
-      subroutine itf_rank(idx,nrank)
+      subroutine itf_rank(ops1, ops2, rank, flag)
 *----------------------------------------------------------------------*
 !     Calculate rank of tensor
 *----------------------------------------------------------------------*
 
-      ! TODO: Possibly set rank in assign_index - so don't need this...
-      !       Also think about assign_add_index
-      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=index_len), intent(in) ::
-     &     idx
+      integer, intent(in) ::
+     &   ops1(4,2),
+     &   ops2(4,2)
       integer, intent(inout) ::
-     &     nrank
+     &   rank
+      logical, intent(in) ::
+     &   flag
 
-      nrank=len(trimal(idx))
+      if (flag) then
+         ! Only use the first occupation array to calculate the rank
+         rank = sum(sum(ops1, dim=1))
+      else
+         rank = sum(sum(ops1, dim=1)) + sum(sum(ops2, dim=1))
+      end if
 
       return
       end
