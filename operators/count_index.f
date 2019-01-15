@@ -979,8 +979,7 @@
       character(len=index_len) ::
      &     s1, s2, s3  ! Workspace
       real(4) :: factor
-      integer :: shift, sp, ncre1, nann1, ncre2, nann2, ncre3, nann3
-      integer :: ncre4, nann4 ! Number of ops in result tensor
+      integer :: shift, sp
       integer :: i1, i2 ! Search creation or annihilation first
       integer :: nloop ! Number of contraction loops
       integer :: r1, r2, r3 ! Ranks of tensors
@@ -1033,45 +1032,17 @@
       item%fact = item%fact * factor
 
       ! Find out number of creation/annihilation operators per operator
-      ncre1 = 0
-      ncre2 = 0
-      nann1 = 0
-      nann2 = 0
-      ncre3 = 0
-      nann3 = 0
-      ncre4 = 0
-      nann4 = 0
-      do i = 1, 4
-         ncre1 = ncre1 + e1(i,1)
-         ncre2 = ncre2 + e2(i,1)
-         nann1 = nann1 + e1(i,2)
-         nann2 = nann2 + e2(i,2)
-         ncre3 = ncre3 + c(i,1)
-         nann3 = nann3 + c(i,2)
-         ncre4 = ncre4 + e3(i,1)
-         nann4 = nann4 + e3(i,2)
-      end do
-
       cops = sum(c, dim=1)
       e1ops = sum(e1, dim=1)
       e2ops = sum(e2, dim=1)
       e3ops = sum(e3, dim=1)
 
-
       ! Set ranks of tensors
       ! TODO: this should be in a subroutine which sets item%rank to
       ! these values
-      !hr1 = ncre1 + nann1 + ncre3 + nann3
-      !hr2 = ncre2 + nann2 + ncre3 + nann3
-      !hr3 = ncre4 + nann4
-
       r1 = sum(e1ops) + sum(cops)
       r2 = sum(e2ops) + sum(cops)
       r3 = sum(e3ops)
-
-      !write(item%logfile,*) "r1 ", r1
-      !write(item%logfile,*) "r2 ", r2
-      !write(item%logfile,*) "r3 ", r3
 
       item%rank1 = r1
       item%rank2 = r2
@@ -1170,22 +1141,17 @@
       ! Match external pairs, either to external ops on the same
       ! operator, or to external ops on the second operator
       t_shift = 0
-      !do while (ncre1 + nann1 /= 0 .or. ncre2 + nann2 /= 0)
       do while (sum(e1ops) /= 0 .or. sum(e2ops) /= 0)
-         !if (ncre1 + nann1 /= 0) then
          if (sum(e1ops) /= 0) then
             ! Search on first tensor
-            call find_pairs(p_list, ncre1, ncre2, ncre3, nann1, nann2,
-     &                      nann3, sp, 1, e1, e2, c, t_shift, c_shift,
+            call find_pairs(p_list, sp, 1, e1, e2, c, t_shift, c_shift,
      &                      e1ops, e2ops, item)
 
-         !else if (ncre2 + nann2 /= 0)then
          else if (sum(e2ops) /= 0)then
             ! Search on second tensor
             ! Note the number of creation/annihilation ops has been
             ! switched
-            call find_pairs(p_list, ncre2, ncre1, ncre3, nann2, nann1,
-     &                      nann3, sp, 2, e2, e1, c, t_shift, c_shift,
+            call find_pairs(p_list, sp, 2, e2, e1, c, t_shift, c_shift,
      &                      e2ops, e1ops, item)
          end if
 
@@ -1283,9 +1249,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine find_pairs(list, ncre1, ncre2, ncre3, nann1, nann2,
-     &                      nann3, sp, tensor, e1, e2, c,
-     &                      t_shift, c_shift, e1ops, e2ops, item)
+      subroutine find_pairs(list, sp, tensor, e1, e2, c, t_shift,
+     &                      c_shift, e1ops, e2ops, item)
 *----------------------------------------------------------------------*
 !     Find external pairs in a binary contraction. Assign a contraction
 !     index if they are on different tensors.
@@ -1300,12 +1265,6 @@
       type(pair_list), intent(inout) ::
      &   list              ! Complete pair list for binary contraction
       integer, intent(inout) ::
-     &   ncre1,            ! Number of creation ops for a tensor
-     &   ncre2,            ! Number of creation ops for the other tensor
-     &   ncre3,            ! Number of contraction creation ops
-     &   nann1,            ! Number of annihilation ops for a tensor
-     &   nann2,            ! Number of annihilation ops for the other tensor
-     &   nann3,            ! Number of contraction annihilation ops
      &   sp               ! Pair list shift index
       integer, intent(inout) ::
      &   tensor,           ! Label T1 or T2
@@ -1329,7 +1288,7 @@
       integer ::
      &   opp_tensor,       ! Label opposite tensor to 'tensor'
      &   i1, i2,           ! Label annihilation/creation index
-     &   n1, n2, n3,       ! Label occupations
+     &   n1, n2,           ! Label occupations
      &   ii,               ! Letter index
      &   i,j,k,l,m,n       ! Loop indices
 
@@ -1344,28 +1303,18 @@
       ! i1 and i2 label creation/annihilation
       ! operators, pindex always has a creation in position 1, so the
       ! indices must be placed in their correct position.
-      !if (ncre1 >= nann1) then
       if (e1ops(1) >= e1ops(2)) then
          ! Loop through creations first
          i1 = 1
          i2 = 2
-         !n1 = nann1
-         !n2 = nann2
-         !n3 = ncre1
          n1 = e1ops(2)
          n2 = e2ops(2)
-         n3 = e1ops(1)
       else
          ! Loop through annihilation first
          i1 = 2
          i2 = 1
-         !n1 = ncre1
-         !n2 = ncre2
-         !n3 = nann1
-
          n1 = e1ops(1)
          n2 = e2ops(1)
-         n3 = nann1
       end if
 
       found = .false.
@@ -1377,12 +1326,6 @@
             ii = 1+(4*(i-1)) + t_shift(i)
             list%plist(sp)%pindex(i1) = ind(ii)
             list%plist(sp)%ops(i1) = tensor
-
-!            if (i1 == 2) then
-!               nann1 = nann1 - 1
-!            else
-!               ncre1 = ncre1 - 1
-!            end if
 
             t_shift(i) = t_shift(i) + 1
             e1(i,i1) = e1(i,i1) - 1
@@ -1396,12 +1339,6 @@
                      list%plist(sp)%pindex(i2) = ind(ii)
                      list%plist(sp)%linked = .false.
                      list%plist(sp)%ops(i2) = tensor
-
-!                     if (i1 == 2) then
-!                         ncre1 = ncre1 - 1
-!                     else
-!                         nann1 = nann1 - 1
-!                     end if
 
                      t_shift(k) = t_shift(k) + 1
                      e1(k,i2) = e1(k,i2) - 1
@@ -1423,12 +1360,6 @@
                      list%plist(sp)%ops(i2) = opp_tensor
                      list%plist(sp)%linked = .true.
 
-!                     if (i1 == 2) then
-!                         ncre2 = ncre2 - 1
-!                     else
-!                         nann2 = nann2 - 1
-!                     end if
-
                      t_shift(k) = t_shift(k) + 1
                      e2(k,i2) = e2(k,i2) - 1
 
@@ -1439,12 +1370,6 @@
                             ii = 1+(4*(m-1)) + c_shift(m)
 
                            list%plist(sp)%link = ind(ii)
-
-!                           if (i1 == 2) then
-!                               ncre3 = ncre3 - 1
-!                           else
-!                               nann3 = nann3 - 1
-!                           end if
 
                            c_shift(m) = c_shift(m) + 1
                            c(m,i2) = c(m,i2) - 1
