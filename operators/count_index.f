@@ -968,7 +968,6 @@
 
       integer ::
      &     c(4,2),       ! Occupations of contraction index
-     &     cc(4,2),       ! Occupations of contraction index
      &     e1(4,2),      ! Occupations of external index 1
      &     e2(4,2),     ! Occupations of external index 2
      &     e3(4,2)      ! Occupations of external index 2
@@ -988,6 +987,7 @@
       logical :: found, sort
       type(pair_list) :: p_list, t1_list, t2_list, r_list
       integer, dimension(4) :: t_shift, c_shift
+      integer, dimension(2) :: cops, e1ops, e2ops, e3ops
 
       c=0
       e1=0
@@ -1052,6 +1052,8 @@
          nann4 = nann4 + e3(i,2)
       end do
 
+      cops = sum(c, dim=1)
+
       ! Set ranks of tensors
       ! TODO: this should be in a subroutine which sets item%rank to
       ! these values
@@ -1081,15 +1083,14 @@
       do i = 1, 4
          c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
       end do
-      cc = c
 
-      do while (ncre3 /= 0 .and. nann3 /= 0)
+      do while (cops(1) /= 0 .and. cops(2) /= 0)
          ! Need to start the search with the largest number of operators;
          ! check to start the search with the creation or annihilation
          ! operators first.
          ! i1 and i2 allow us to index the creation or annihilation
          ! operators
-         if (ncre3 >= nann3) then
+         if (cops(1) >= cops(2)) then
             ! Loop through creation first
             i1 = 1
             i2 = 2
@@ -1113,14 +1114,10 @@
                ! Contraction index always w.r.t the first operator
                p_list%plist(sp)%ops(i1) = 1
 
-               ! Decrease number of annihilation or creation operators
-               if (i1 == 2) then
-                  nann3 = nann3 - 1
-               else
-                  ncre3 = ncre3 - 1
-               end if
-
+               ! Increase index letter shift
                c_shift(i) = c_shift(i) + 1
+
+               ! Decrease number of annihilation or creation operators
                c(i,i1) = c(i,i1) - 1
 
                ! Look for matching operator
@@ -1135,13 +1132,6 @@
                      ! and second tensor helps to pick them out in the
                      ! code below
                      p_list%plist(sp)%ops(i2) = 2
-
-                     if (i1 == 2) then
-                        ncre3 = ncre3 - 1
-                     else
-                        nann3 = nann3 - 1
-                     end if
-
                      c_shift(k) = c_shift(k) + 1
                      c(k,i2) = c(k,i2) - 1
 
@@ -1158,6 +1148,8 @@
             ! Can't pair creation or annihilation so exit
             if (found) exit
          end do
+         ! Check how many operators are left to assign
+         cops = sum(c,dim=1)
       end do
 
       ! Set number of contraction loops
