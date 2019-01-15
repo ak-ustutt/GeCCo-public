@@ -287,7 +287,7 @@
       include 'def_itf_contr.h'
 
       type(binary_contr), intent(inout) ::
-     &     contr_info      ! Inofrmation about binary contraction
+     &     contr_info      ! Information about binary contraction
       integer, intent(in) ::
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
@@ -303,7 +303,7 @@
       character(len=maxlen_bc_label) ::
      &    old_name
 
-      ! Initalise permutation factors to 0 == no permutation
+      ! Initialise permutation factors to 0 == no permutation
       perm_case = 0
 
       ! Determine if result needs permuting
@@ -314,7 +314,7 @@
       end if
 
       ! If the perm_array doesn't contain any zeros, then we should
-      ! introduce an interemediate which collects half of the different
+      ! introduce an intermediate which collects half of the different
       ! permutation cases, then do:
       ! .R[abij] += I[abij]
       ! .R[abij] += I[baji]
@@ -340,16 +340,13 @@
             call assign_spin(itf_item)
          else
             do i=1, perm_case
-               ! Loop over permuation cases and send seperatley to
+               ! Loop over permutation cases and send separately to
                ! assign_spin. For most cases this is just one, however
                ! for (1-Pij)(1-Pab), we need to generate one of these
-               ! permutaions before symmetrising
+               ! permutations before symmetrising
                call itf_contr_init(contr_info,itf_item,i,command,itflog)
 
-               ! Multiply factor by -1.0 due to permutation
                if (i == 2) then
-                  itf_item%fact = itf_item%fact * -1.0
-
                   ! Need to transpose by tensors after permutation, to
                   ! avoid symmetry problem when using (1 + Pabij)
                   itf_item%idx1 = t_index(itf_item%idx1)
@@ -359,7 +356,7 @@
                call assign_spin(itf_item)
             end do
 
-            ! If created a perm intermedite, print the symmetrised lines
+            ! If created a perm intermediate, print the symmetrised lines
             call print_symmetrise(old_name,itf_item)
          end if
       end if
@@ -956,6 +953,7 @@
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -1044,6 +1042,11 @@
          end do
       end do
       item%fact = item%fact * factor
+
+      ! Multiply factor by -1.0 due to permutation
+      if (item%permute == 2) then
+         item%fact = item%fact * -1.0
+      end if
 
       ! Find out number of creation/annihilation operators per operator
       cops = sum(c, dim=1)
@@ -1194,8 +1197,6 @@
       end do
 
 
-      ! TODO: Do all index permutations here (move stuff from
-      ! command_to_ift)
       if (item%permute == 2) then
          ! Need to swap annihilation operators between tensors:
          ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
@@ -1204,6 +1205,7 @@
      &                               p_list%plist(nloop+2)%pindex(2)
          t2_list%plist(nloop+1)%pindex(2) =
      &                               p_list%plist(nloop+1)%pindex(2)
+         ! Final permutations are made in command_to_itf
       end if
 
 
@@ -1591,7 +1593,7 @@
      &     i,
      &     sum_c1,sum_c2,sum_a1,sum_a2
 
-      ! Check if not antisym over different verticies
+      ! Check if not antisym over different vertices
       ! Check for tensor products
       ! Not going to antisymm intermediates...
       ! The intermediates can have eeaa structure
@@ -1599,7 +1601,7 @@
       e2=0
       c=0
 
-      ! Get occuation info
+      ! Get occupation info
       do i = 1, contr_info%n_cnt
         call count_index(i,
      &     contr_info%occ_cnt(1:,1:,i),
