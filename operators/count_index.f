@@ -901,6 +901,8 @@
      &   e1(4,2),       ! Operator numbers of external index 1
      &   e2(4,2),       ! Operator numbers of external index 2
      &   e3(4,2),       ! Operator numbers of result index
+     &   e4(4,2),       ! Operator numbers of result index
+     &   e5(4,2),       ! Operator numbers of result index
      &   i, j, k, l,    ! Loop index
      &   ii,            ! Letter index
      &   nloop,         ! Number of contraction loops
@@ -936,6 +938,9 @@
       e2=0
       e3=0
 
+      e4=0
+      e5=0
+
       ! Get occupation info
       do i = 1, contr_info%n_cnt
         call count_index(i,
@@ -961,6 +966,14 @@
      &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
      &     contr_info%ngas,contr_info%nspin,e3)
       end do
+
+      do i = 1, contr_info%nj_op1
+        call count_index(i,
+     &     contr_info%occ_op1(1:,1:,i),
+     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e4)
+      end do
+      e5 = e3
 
       ! Figure out factor from equivalent lines
       factor = 1.0
@@ -1150,9 +1163,10 @@
       ! of indices for the declaration and use of an intermediate (the
       ! slot structure must be the same when it is constructed and when
       ! it is used)
-      call swap_pairs(t1_list, item%rank1, item%int(1))
-      call swap_pairs(t2_list, item%rank2, item%int(2))
-      call swap_pairs(r_list, item%rank3, item%int(3))
+      call swap_pairs(t1_list, item%rank1, item%int(1), e4)
+      e4 = 0
+      call swap_pairs(t2_list, item%rank2, item%int(2), e4)
+      call swap_pairs(r_list, item%rank3, item%int(3), e5)
 
 
       ! Insert ordered lists into ITF index strings
@@ -1444,7 +1458,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine swap_pairs(list, rank, integral)
+      subroutine swap_pairs(list, rank, integral, e4)
 *----------------------------------------------------------------------*
 !     Swap pairs of indices within a pair list using bubble sort.
 *----------------------------------------------------------------------*
@@ -1460,6 +1474,8 @@
      &   rank              ! Rank of tensor
       logical, intent(in) ::
      &   integral
+      integer, intent(in) ::
+     &   e4(4,2)
 
       type(pair_list) ::
      &   tmp_list          ! Temporary holder for pair list
@@ -1471,6 +1487,27 @@
       allocate(tmp_list%plist(1))
 
       ! Skip if there is only one pair, or if this is an integral
+      if (e4(1,2) > e4(1,1)) then
+      if (rank > 2 .and. .not. integral) then
+         sort = .true.
+         do while (sort)
+            sort = .false.
+            do i = 1, rank/2
+               if (i == rank/2) exit
+
+               if (list%plist(i+1)%pindex(2) <
+     &                                     list%plist(i)%pindex(2)) then
+                  tmp_list%plist(1) = list%plist(i)
+                  list%plist(i) = list%plist(i+1)
+                  list%plist(i+1) = tmp_list%plist(1)
+                  sort = .true.
+               end if
+            end do
+         end do
+      end if
+      else
+      ! The case where there is an intermediate with particle
+      ! annihilation operators
       if (rank > 2 .and. .not. integral) then
          sort = .true.
          do while (sort)
@@ -1488,6 +1525,10 @@
             end do
          end do
       end if
+      end if
+
+      ! If there are more particle annihilation operators, such as in an
+      ! intermediate, then the pairs should be sorted according to these
 
       deallocate(tmp_list%plist)
 
