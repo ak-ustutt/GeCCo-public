@@ -47,7 +47,7 @@
      &     int(3) = .false.,    ! True if tensor is an integral
      &     swapped = .false.,   ! True is t1 and t2 were swapped during spin summation
      &     symm = .false.       ! True if going to symmetrise result
-      real(4) ::
+      real(8) ::
      &     fact                 ! Factor
       integer ::
      &     spin_case(4) ! Spin case of result, ie. [1111] = all alpha

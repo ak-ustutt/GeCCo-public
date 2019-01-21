@@ -754,22 +754,42 @@
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
       sfact_star=''
-      if (item%fact.ne.1.0) then
-          if (item%fact.ne.-1.0) then
-              write(sfact,*) item%fact
-              do i=1, len(sfact)
-                 ! Start after decimal point
-                 if (sfact(i:i)=='0' .or. sfact(i:i)=='-') then
-                    sfact(i:i)=' '
-                 end if
-              end do
-              sfact_star=trimal(sfact)//'*'
-          end if
+      if (item%fact /= 1.0d+0 .and. item%fact /= -1.0d+0) then
+            write(sfact,*) item%fact
+
+            if (item%fact < 0.0d+0) then
+               do i = 1, len(sfact)
+                  if (sfact(i:i) == '-') then
+                     ! Remove leading negative sign
+                     sfact(i:i) = ''
+                     exit
+                  end if
+               end do
+            end if
+
+            do i=1, len(sfact)
+               ! Remove leading zero
+               if (sfact(i:i) == '0') then
+                  sfact(i:i)=''
+               else if (sfact(i:i) == '.') then
+                  exit
+               end if
+            end do
+
+            do i=len(sfact), 1, -1
+               ! Remove trailing zeros
+               if (sfact(i:i) == '0' .or. sfact(i:i) == ' ') then
+                  sfact(i:i) = ''
+               else
+                  exit
+               end if
+            end do
+            sfact_star=trimal(sfact)//'*'
       end if
 
-      ! Deterime what the contraction operator looks like
+      ! Determine what the contraction operator looks like
       equal_op='  '
-      if (item%fact.lt.0.0) then
+      if (item%fact < 0.0d+0) then
          equal_op='-='
       else if (item%command==command_cp_intm) then
          equal_op=':='
@@ -914,7 +934,7 @@
      &          'u','v','w' /)   ! Letters for index string
       character(len=index_len) ::
      &     s1, s2, s3   ! Tmp ITF index strings
-      real(4) ::
+      real(8) ::
      &   factor         ! Factor from equivalent lines
       logical ::
      &   found,         ! True if found pairing index
@@ -976,12 +996,12 @@
       e5 = e3
 
       ! Figure out factor from equivalent lines
-      factor = 1.0
+      factor = 1.0d+0
       do j = 1, 2
          do i = 1, 4
             if (c(i,j) == 0) cycle
             if (mod(c(i,j),2) == 0) then
-               factor = factor * (1.0/real(c(i,j)))
+               factor = factor * (1.0d+0/real(c(i,j),8))
             end if
          end do
       end do
@@ -989,7 +1009,7 @@
 
       ! Multiply factor by -1.0 due to permutation
       if (item%permute == 2) then
-         item%fact = item%fact * -1.0
+         item%fact = item%fact * -1.0d+0
       end if
 
       ! Find out number of creation/annihilation operators per operator
@@ -2450,7 +2470,7 @@
 
       type(binary_contr), intent(in) ::
      &     contr   ! Information about binary contraction
-      real, intent(inout) ::
+      real(8), intent(inout) ::
      &     fact
 
       integer ::
@@ -2478,13 +2498,13 @@
 
       if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
      &   then
-            fact = fact * -1.0
+            fact = fact * -1.0d+0
       end if
 
       ! Catch three internal integrals
       if (c(2,1) + c(2,2)==3)
      &   then
-            fact = fact * -1.0
+            fact = fact * -1.0d+0
       end if
 
       return
