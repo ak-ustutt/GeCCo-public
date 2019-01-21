@@ -715,7 +715,7 @@
 
       if (item%permute>1) then
          if (item%inter(1) .or. item%inter(2)) then
-            ! Because we take the transpose of the spin orbial eqns twice,
+            ! Because we take the transpose of the spin orbital eqns twice,
             ! we retain the negative sign from the permutation. This is
             ! only a problem when we define a new spin intermediate
             ! which results from the permutation of a result line

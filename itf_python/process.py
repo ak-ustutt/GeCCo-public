@@ -373,6 +373,8 @@ def rename_integrals(line):
     # For integrals like K_{ak}^{ic} = K_{ac}^{ik}, these are store on the K arrays.
     # For integrals K_{ka}^{ic}, these are store on the J arrays.
 
+    second = False
+
     words = line.split()
     for i in range(0, len(words)):
         if ("K:ceec" in words[i]):
@@ -401,14 +403,25 @@ def rename_integrals(line):
             tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
             tmp2 = tmp2[0:1] + tmp2[3:4] + tmp2[2:3] + tmp2[1:2]
+            #words[i] = "(" + words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1] + " + J:" + tmp2 + "[" + tmp + "])"
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         if ("K:ccec" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+            if (second):
+                tmp = words[i].split('[',1)[1].split(']',1)[0]
+                tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
+                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+                words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+                second = False
+            else:
+                tmp = words[i].split('[',1)[1].split(']',1)[0]
+                tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
+                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+                words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+                second = True
+
 
         if ("K:ceee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
