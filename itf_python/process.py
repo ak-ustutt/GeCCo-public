@@ -322,14 +322,19 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
 
 def print_loop(line, words):
     global tab
+    global old_loop
+
     tab = False
     if ("K:eeec" in line):
         for i in range(0, len(words)):
             if ("K:eeec" in words[i]):
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
+                # TODO: get rid of this variable
                 idx = tmp[3:4]
                 loop = "for ["+idx+"]:"
-                print(loop, file=out)
+                if (loop != old_loop):
+                    print(loop, file=out)
+                old_loop = loop
                 tab = True
                 break
 
@@ -514,7 +519,8 @@ declare_ten_name=[]     # Global list of tensor names
 prev_K4E_lines={0:"start"}
 K4E_count=1
 
-tab = False
+tab = False         # True if codes need to be indented with '    '
+old_loop = ''       # Stores value of the previous for[x] loop, used so as not to repeat the for loop
 
 # Spin summed family = One or more equations the arise from the spin summation
 # proccedure on one result tensor contraction line
@@ -774,6 +780,10 @@ for line_o in f:
             prev_res=words[0]
             prev_lines=[]
             prev_inter=[]
+
+            if (end):
+                # End of spin block, need to clear for loop
+                old_loop = ''
 
         # Update generic index for next line
         prev_generic=generic
