@@ -35,11 +35,13 @@ class itf_line:
 def print_inter(prev_lines):
     # Load, contract, drop tensors involved with intermediates
     # Loop over previously stored lines
+    global tab
 
     for i in range(0, len(prev_lines)):
         words = prev_lines[i].split()
         print_loop(prev_lines[i], words)
         print_result(prev_lines[i], tab)
+    tab = False
 
 
 def change_line_names(name, line, words):
@@ -742,10 +744,6 @@ for line_o in f:
         else:
             # Still within the same result block
 
-            # Print loop for 3-external integrals
-            if (begin and not end):
-                print_loop(line, words)
-
             # Alloc intermediates if needed
             if prev_inter:
                 print("alloc ", end="", flush=True, file=out)
@@ -753,6 +751,10 @@ for line_o in f:
 
             # Print intermediates and load/drop relavant tensors
             print_inter(prev_lines)
+
+            # Print loop for 3-external integrals
+            if (begin and not end):
+                print_loop(line, words)
 
             # Print result line
             print_result(line, tab)
