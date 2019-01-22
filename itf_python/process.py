@@ -406,6 +406,7 @@ def rename_integrals(line):
             #words[i] = "(" + words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1] + " + J:" + tmp2 + "[" + tmp + "])"
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
+        # 3 internal integrals
         if ("K:ccec" in words[i]):
             if (second):
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
@@ -423,18 +424,19 @@ def rename_integrals(line):
                 second = True
 
 
+        # 3 external integrals
         if ("K:ceee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[2:3] + tmp[3:4] + tmp[0:1]
+            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[2:3] + tmp2[3:4] + tmp2[0:1]
+            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         if ("K:ecee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
+            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[3:4] + tmp2[2:3] + tmp2[1:2]
+            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
 
@@ -743,6 +745,7 @@ for line_o in f:
 
             # Print result line
             print_result(line, tab)
+            tab = False
 
             # Drop intermediates if needed, don't drop if needed again in
             # the next contraction which is part of the same spin summed family
