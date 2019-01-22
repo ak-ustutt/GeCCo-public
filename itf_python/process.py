@@ -37,7 +37,9 @@ def print_inter(prev_lines):
     # Loop over previously stored lines
 
     for i in range(0, len(prev_lines)):
-        print_result(prev_lines[i])
+        words = prev_lines[i].split()
+        print_loop(prev_lines[i], words)
+        print_result(prev_lines[i], tab)
 
 
 def change_line_names(name, line, words):
@@ -73,7 +75,7 @@ def print_drop_tensors(load_tensors, indent=False):
             drop_tensors = drop_tensors + ", "
 
     if (indent):
-        print("\t"+drop_tensors.rstrip(), file=out)
+        print("    "+drop_tensors.rstrip(), file=out)
     else:
         print(drop_tensors.rstrip(), file=out)
 
@@ -84,7 +86,7 @@ def print_result(line, indent=False):
     words=line.split()
 
     if (indent):
-        line = "\t" + line
+        line = "    " + line
 
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
@@ -116,7 +118,7 @@ def print_result(line, indent=False):
 
         if inter1 or inter2:
             if (indent):
-                load_ten = "\tload "
+                load_ten = "    load "
             else:
                 load_ten = "load "
 
@@ -140,7 +142,7 @@ def print_result(line, indent=False):
         # Line contains brackets, may have to load more than two tensors
         if "TIN" not in words:
             if (indent):
-                load_ten="\tload "
+                load_ten="    load "
             else:
                 load_ten="load "
 
@@ -249,7 +251,7 @@ def print_result(line, indent=False):
             if "TIN" not in words[7]: inter4 = True
 
             if (indent):
-                load_ten="\tload "
+                load_ten="    load "
             else:
                 load_ten="load "
 
@@ -439,6 +441,13 @@ def rename_integrals(line):
             tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
+        if ("K:eece" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[0:1] + tmp[1:2] + tmp[3:4] + tmp[2:3]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[0:1] + tmp2[1:2] + tmp2[3:4] + tmp2[2:3]
+            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
 
     line = " ".join(words)
     return line
@@ -522,7 +531,7 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ceee" in line or "K:ecee" in line):
+    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line):
         line = rename_integrals(line)
         words=line.split()
 
