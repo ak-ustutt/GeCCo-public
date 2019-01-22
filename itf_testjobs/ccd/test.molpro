@@ -1,3 +1,4 @@
+ibank=1
 gthresh,orbital=1d-10,energy=1d-9
 geom={he;he,1,1.0}
 basis,vdz
