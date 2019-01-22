@@ -329,9 +329,7 @@ def print_loop(line, words):
         for i in range(0, len(words)):
             if ("K:eeec" in words[i]):
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
-                # TODO: get rid of this variable
-                idx = tmp[3:4]
-                loop = "for ["+idx+"]:"
+                loop = "for ["+tmp[3:4]+"]:"
                 if (loop != old_loop):
                     print(loop, file=out)
                 old_loop = loop
