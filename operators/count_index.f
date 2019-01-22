@@ -754,7 +754,7 @@
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
       sfact_star=''
-      if (item%fact /= 1.0d+0 .and. item%fact /= -1.0d+0) then
+      if (abs(abs(item%fact) - 1.0d+0) > 1.0d-15) then
             write(sfact,*) item%fact
 
             if (item%fact < 0.0d+0) then
