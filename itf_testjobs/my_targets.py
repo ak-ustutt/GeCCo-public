@@ -31,6 +31,7 @@ form_l1.append("<T1^+*(1/6)*[[[H,T1],T1],T1]>")
 form_l1.append("<T2^+*[H,T1]>")
 form_l1.append("<T2^+*[H,T2]>")
 form_l1.append("<T2^+*(1/2)*[[H,T2],T2]>")
+form_l1.append("<T2^+*(1/24)*[[[[H,T1],T1],T1],T1]>")
 # Above works
 
 # Trouble with one term...
@@ -49,17 +50,18 @@ EXPAND_OP_PRODUCT({LABEL:'CCD_FORM',NEW:False,OP_RES:'LCCD',FAC:1.0,
                    IDX_SV   :[1,2,3],
                    LABEL_DESCR:["1,2,HH,","1,3,,P","2,3,H,","1,4,,P","2,4,H,"]})
 
+# 4ext
+#EXPAND_OP_PRODUCT({LABEL:'CCD_FORM',NEW:False,OP_RES:'LCCD',FAC:1.0,
+#                   OPERATORS:['T2^+','H','T1','T1'],
+#                   IDX_SV   :[1,2,3],
+#                   LABEL_DESCR:["1,2,,PP","1,3,H,","2,3,,P","1,4,H,","2,4,,P"]})
+
 # This one doesn't work
 #EXPAND_OP_PRODUCT({LABEL:'CCD_FORM',NEW:False,OP_RES:'LCCD',FAC:1.0,
 #                   OPERATORS:['T2^+','H','T1','T1'],
 #                   IDX_SV   :[1,2,3],
 #                   LABEL_DESCR:["1,2,H,P","1,3,H,","2,3,,P","1,4,,P","2,4,H,"]})
 
-# 3ext
-#EXPAND_OP_PRODUCT({LABEL:'CCD_FORM',NEW:False,OP_RES:'LCCD',FAC:1.0,
-#                   OPERATORS:['T2^+','H','T1','T1'],
-#                   IDX_SV   :[1,2,3],
-#                   LABEL_DESCR:["1,2,,PP","1,3,H,","2,3,,P","1,4,H,","2,4,,P"]})
 
 # [[H,T2],T1]
 # 3 ext
@@ -74,25 +76,12 @@ EXPAND_OP_PRODUCT({LABEL:'CCD_FORM',NEW:False,OP_RES:'LCCD',FAC:1.0,
 #                   LABEL_DESCR:["1,3,H,PP","2,3,H,","1,4,H,","2,4,,P"]})
 
 
-
-
-# 3 external integrals
-EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'LCCD',FAC:1.0,
-                   OPERATORS:['T1^+','H','T1','T1'],
-                   IDX_SV   :[1,2,3,4],
-                   LABEL_DESCR:["1,2,,P","1,3,H,","2,3,,P","2,4,H,P"]})
-
 #### Test term involving K and J in T2+ [H,T2]
 ###EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:False,OP_RES:'LCCD',FAC:1.0,
 ###                   OPERATORS:['T2^+','H','T2'],
 ###                   IDX_SV   :[1,2,3],
 ###                   LABEL_DESCR:["1,2,H,P","1,3,H,P","2,3,H,P"]})
 
-#### Test term involving 3 internal integral in T1+ [H,T2]
-###EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:False,OP_RES:'LCCD',FAC:1.0,
-###                   OPERATORS:['T1^+','H','T2'],
-###                   IDX_SV   :[1,2,3],
-###                   LABEL_DESCR:["1,2,H,","1,3,,P","2,3,HH,P"]})
 
 # Four external
 #EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:False,OP_RES:'LCCD',FAC:1.0,
@@ -123,7 +112,7 @@ EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'LCCD',FAC:1.0,
 
 
 PRINT_FORMULA({LABEL:'CCD_FORM',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'Ext3',MODE:'SHORT'})
+#PRINT_FORMULA({LABEL:'Ext3',MODE:'SHORT'})
 
 #FACTOR_OUT({LABEL_RES:'CCD_FORM',LABEL_IN:'CCD_FORM',INTERM:'Ext3'})
 PRINT_FORMULA({LABEL:'CCD_FORM',MODE:'SHORT'})
@@ -203,6 +192,7 @@ SOLVE_NLEQ({LIST_OPT:['ME_T1','ME_T2'],
 
 export_targets();
 
+
 # 3 ext integrals
 #EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'LCCD',FAC:1.0,
 #                   OPERATORS:['T1^+','H','T2'],
@@ -213,3 +203,8 @@ export_targets();
 #                   OPERATORS:['T2^+','H','T1'],
 #                   IDX_SV   :[1,2,3],
 #                   LABEL_DESCR:["1,2,H,PP","1,3,H,","2,3,,P"]})
+
+#EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'LCCD',FAC:1.0,
+#                   OPERATORS:['T1^+','H','T1','T1'],
+#                   IDX_SV   :[1,2,3,4],
+#                   LABEL_DESCR:["1,2,,P","1,3,H,","2,3,,P","2,4,H,P"]})

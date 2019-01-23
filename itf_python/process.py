@@ -414,8 +414,10 @@ def rename_integrals(line):
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         # 3 internal integrals
+        # Pairing as above (1+3, 2+4)
         if ("K:ccec" in words[i]):
             if (second):
+                # Second integral in the line, so must be the 'transpose', ie. J:eccc
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
                 tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
                 tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -549,6 +551,7 @@ for line_o in f:
 
         begin=True
         end=False
+        old_loop = ''
         continue
 
     if (words[0]=='END'):
@@ -778,10 +781,6 @@ for line_o in f:
             prev_res=words[0]
             prev_lines=[]
             prev_inter=[]
-
-            if (end):
-                # End of spin block, need to clear for loop
-                old_loop = ''
 
         # Update generic index for next line
         prev_generic=generic
