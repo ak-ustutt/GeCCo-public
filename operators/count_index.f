@@ -482,7 +482,7 @@
      &    old_name
 
 
-      ! Initalise permutation factors to 0 == no permutation
+      ! Initialise permutation factors to 0 == no permutation
       perm_case = 0
 
       ! Determine if result needs permuting
@@ -633,7 +633,7 @@
 !      write(itf_item%logfile,*) "NAME: ", itf_item%idx2
 
       ! If an intermediate arises as the result of a permutation, we
-      ! need to create this new intermeidate. This requires the
+      ! need to create this new intermediate. This requires the
       ! transpose
       if (scan('P', label)) then
          itf_item%idx3 = t_index(itf_item%idx3)
@@ -1265,8 +1265,10 @@
      &   opp_tensor,       ! Label opposite tensor to 'tensor'
      &   i1, i2,           ! Label annihilation/creation index
      &   n1, n2,           ! Label occupations
+     &   start,            ! Labels P/H/V/X to look for pairs
      &   ii,               ! Letter index
-     &   i,j,k,l,m,n       ! Loop indices
+     &   i,j,k,l,m,n,      ! Loop indices
+     &   nops(4)
 
 
       ! Decide which tensors we are dealing with (T1 or T2)
@@ -1295,8 +1297,31 @@
 
       found = .false.
 
+      ! Change i = 2, to start loop at hole index, create pair, then
+      ! change back to i = 1 on next call, continue as normal till every
+      ! index gone
+      ! Have i = start, start set to be 1, 2, 3, 4 based on what the
+      ! largest number of possible loops
+      nops(1) = e1(1,i1) + e1(2,i2) + e1(3,i2) + e1(4,i2)
+      nops(2) = e1(2,i1) + e1(1,i2) + e1(3,i2) + e1(4,i2)
+      nops(3) = e1(3,i1) + e1(1,i2) + e1(2,i2) + e1(4,i2)
+      nops(4) = e1(4,i1) + e1(1,i2) + e1(2,i2) + e1(3,i2)
+
+      ! By default, always start pairing from particle index
+      start = 1
+      do i = 2, size(nops)
+         if (nops(start) < nops(i)) then
+            start = i
+         end if
+      end do
+
+      !write(11,*) " NOPS ", nops
+      !write(11,*) "start ", start
+
+
       ! Start main search loop
-      do i = 1, 4
+      !do i = 1, 4
+      do i = start, 4
          do j = 1, e1(i,i1)
             ! Search for first operator
             ii = 1+(4*(i-1)) + t_shift(i)
@@ -1341,7 +1366,7 @@
 
                      ! We need to link the external indices on two
                      ! different operators with a contraction index
-                     do m=1, 3
+                     do m=1, 4
                         do n=1, c(m,i2)
                             ii = 1+(4*(m-1)) + c_shift(m)
 
@@ -2239,9 +2264,9 @@
                   ! Number of spin cases
                   shift = item%inter_spins(ishift)%ncase + 1
                   !write(item%logfile,*)
-                  !write(item%logfile,*) "intermeiate", item%label_t1
+                  !write(item%logfile,*) "intermediate", item%label_t1
 
-                  ! For now, if intermeidiate is part of a permutation
+                  ! For now, if intermediate is part of a permutation
                   ! line, then we add a P to its name
                   if (item%permute == 2) then
                   item%inter_spins(ishift)%name=trim(item%label_t1)//'P'
