@@ -637,7 +637,10 @@
       ! transpose
       if (scan('P', label)) then
          itf_item%idx3 = t_index(itf_item%idx3)
-         itf_item%idx2 = t_index(itf_item%idx2)
+         if (itf_item%rank2 > 2) then
+            ! Don't need to permute T[ai] etc.
+            itf_item%idx2 = t_index(itf_item%idx2)
+         end if
          itf_item%idx1 = t_index(itf_item%idx1,.true.)
       end if
 
