@@ -425,6 +425,8 @@ for _icnt in range (0,_ncnt):
                               'ME_R_mu'+_extnsn] ,
                        ISTATE:i})
             EVALUATE({FORM:'FOPT_SR'+_extnsn})
+            debug_MEL('ME_R1_q'+_extnsn )
+            debug_MEL('ME_R2g_q'+_extnsn )
             debug_MEL('ME_R_mu'+_extnsn )
             debug_MEL('ME_AR_rspns_mu'+_extnsn )
 
