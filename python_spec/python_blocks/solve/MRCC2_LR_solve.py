@@ -378,7 +378,10 @@ for _icnt in range (0,_ncnt):
                      MIN_REC:1,MAX_REC:_no_root})
 ##
 
-        _op_list={'AR1_rspns_q':[_isym_r,_ms_r,_msc_r],
+        _op_list={'R1_q':[_isym_r,_ms_r,_msc_r],
+                  'R2g_q':[_isym_r,_ms_r,_msc_r],
+                  'R_mu':[_isym+1,_ms_0,_msc],
+                  'AR1_rspns_q':[_isym_r,_ms_r,_msc_r],
                   'AR2g_rspns_q':[_isym_r,_ms_r,_msc_r],
                   'AR_rspns_mu':[_isym+1,_ms_0,_msc],
                   'SR1_rspns_q':[_isym_r,_ms_r,_msc_r],
@@ -422,6 +425,8 @@ for _icnt in range (0,_ncnt):
                               'ME_R_mu'+_extnsn] ,
                        ISTATE:i})
             EVALUATE({FORM:'FOPT_SR'+_extnsn})
+            debug_MEL('ME_R1_q'+_extnsn )
+            debug_MEL('ME_R2g_q'+_extnsn )
             debug_MEL('ME_R_mu'+_extnsn )
             debug_MEL('ME_AR_rspns_mu'+_extnsn )
 

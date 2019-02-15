@@ -26,7 +26,9 @@
           write(luout,'(x,"run ends at ",a,"   host: ",a)')
      &     trim(date),trim(host)
        end if
+#if defined(__INTEL_COMPILER)
        call tracebackqq()
+#endif // if __INTEL_COMPILER
         stop 'error exit'
       else
         write(lulog,'(/x,"INTERNAL ERROR IN <",a,">: ",a/)') rout,str
@@ -38,7 +40,9 @@
      &     trim(date),trim(host)
         end if
 c dbg
+#if defined(__INTEL_COMPILER)
         call tracebackqq()
+#endif // if __INTEL_COMPILER
 c dbg
         stop 'internal error exit'
       end if

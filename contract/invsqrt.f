@@ -195,14 +195,8 @@ c dbgend
       ca_occ => op_inp%ica_occ
       graphs => str_info%g
 
-      ms_fix = .false.
-      if(mel_inp%fix_vertex_ms.or.mel_inv%fix_vertex_ms
-     &   .or.mel_u%fix_vertex_ms)then
-        ms_fix = mel_inp%fix_vertex_ms.and.mel_inv%fix_vertex_ms
-     &           .and.mel_u%fix_vertex_ms
-        if(.not.ms_fix) call quit(1,'invsqrt',
-     &                            'fix ms or not?')
-      endif
+
+      ms_fix = fix_ms_h(mel_inp, mel_inv, mel_u)
 
       ! Check whether files are buffered.
       bufin = .false.
@@ -302,7 +296,7 @@ c dbgend
         ex2occ_cls(iexc_cls) = tocc_cls
 
         if (iprint.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
-        
+
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
@@ -1872,6 +1866,63 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
       return
       contains
+
+!-----------------------------------------------------------------------!
+!!    determines if the ms symmetry is fixed.   
+!!
+!!
+!-----------------------------------------------------------------------!
+      function compare_iocc_cls(occ_descr, occ_def, njoined )
+      integer, parameter ::
+     &     maxdef = 64
+      logical ::
+     &     compare_iocc_cls
+      character(len=*), intent(in) ::
+     &     occ_descr
+      integer,intent(in)::
+     &     njoined
+      integer::
+     &     occ_def(ngastp,2,njoined)
+      integer ::
+     &     occ_def_cmp(ngastp,2,maxdef)
+      logical, external ::
+     &     iocc_equal_n
+      integer::
+     &     nocc_cmp,iocc_cmp
+      
+      call process_occ_descr(occ_def_cmp,
+     &     nocc_cmp,occ_descr,njoined,maxdef)
+      do iocc_cmp = 1,nocc_cmp
+         if(iocc_equal_n(
+     &        occ_def_cmp(1,1,(iocc_cmp-1)*njoined+1),.false.,
+     &        occ_def(1,1,1),.false.,njoined))then
+            compare_iocc_cls=.true.
+         end if
+      end do
+      compare_iocc_cls=.false.
+      
+      end function
+!----------------------------------------------------------------------- !
+!!    determines if the ms symmetry is fixed.   
+!!
+!!
+!-----------------------------------------------------------------------!
+      function fix_ms_h(mel_inp, mel_inv, mel_u)
+      implicit none
+      logical ::
+     &    fix_ms_h
+      type(me_list),intent(in)::
+     &     mel_inp, mel_inv, mel_u
+ 
+      fix_ms_h = .false.
+      if(mel_inp%fix_vertex_ms.or.mel_inv%fix_vertex_ms
+     &   .or.mel_u%fix_vertex_ms)then
+        fix_ms_h = mel_inp%fix_vertex_ms.and.mel_inv%fix_vertex_ms
+     &           .and.mel_u%fix_vertex_ms
+        if(.not.fix_ms_h) call quit(1,'invsqrt',
+     &                              'fix ms or not?')
+      endif
+      end function
 !-----------------------------------------------------------------------!
 !!    tries to guess the cluster operator for the singular value histogramm
 !!
