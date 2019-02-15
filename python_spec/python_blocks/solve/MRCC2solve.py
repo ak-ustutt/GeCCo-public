@@ -53,6 +53,8 @@ debug_FORM('FORM_T1_orth')
 
 debug_FORM('FORM_T2_orth')
 
+PRINT_MEL_INFO({LIST:'ME_T1'})
+PRINT_MEL_INFO({LIST:'ME_T2g'})
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],
@@ -125,6 +127,9 @@ depend("FOPT_OMG_C0")
 ASSIGN_ME2OP({
         LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM'})
+
+PRINT_MEL_INFO({LIST:'ME_T1'})
+PRINT_MEL_INFO({LIST:'ME_T2g'})
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],
