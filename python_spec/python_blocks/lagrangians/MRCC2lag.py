@@ -32,14 +32,19 @@ if hamiltonian not in known_hamiltonians :
 
 new_target('DEF_FORM_PT_LAG2')
 
-depend('DEF_T2g')
-depend('DEF_T1')
+depend('DEF_T')
+#depend('DEF_T2g')
+#depend('DEF_T1')
 
-depend('DEF_LAM2g')
-depend('DEF_LAM1')
+depend('DEF_LAM')
+#depend('DEF_LAM2g')
+#depend('DEF_LAM1')
 
-depend('DEF_O2g')
-depend('DEF_O1')
+depend('DEF_O')
+#depend('DEF_O2g')
+#depend('DEF_O1')
+
+depend('DEF_ToX')
 
 depend('GAM0_CALC')
 depend('MakeRefState')
@@ -69,6 +74,9 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'PT_LAG_A2'})
 
+DEF_SCALAR({
+        LABEL:'PT_LAG_A'})
+
 
 
 
@@ -79,37 +87,37 @@ def create_lag_E(label, OP_res, maxcom, MRCCSD_mode = False):
     if maxcom >= 1 :
         LAG_E +=  "<C0^+*("\
                       "H"\
-                      "+(H*T1)"\
-                      "+(H*T2g)"\
+                      "+(H*To0)"\
+                      "+(H*To1)"\
                   ")*C0>"
     if maxcom >= 2 :
         LAG_E += "<C0^+*("\
-                      "1/2((H*T1)*T1)"\
-                      "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
+                      "1/2((H*To0)*To0)"\
+                      "+1/2((H*To1)*To0)+1/2((H*To0)*To1)"\
                  ")*C0>"
         if MRCCSD_mode:
             LAG_E += "<C0^+*("\
-                         "1/2((H*T2g)*T2g)"\
+                         "1/2((H*To1)*To1)"\
                      ")*C0>"
     if maxcom >= 3 :
         if MRCCSD_mode:
             LAG_E += "<C0^+*("\
-                         "1/6( ( ( H*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )"\
+                         "1/6( ( ( H*(To0+To1) )*(To0+To1) )*(To0+To1) )"\
                      ")*C0>"
         else:
             LAG_E += "<C0^+*("\
-                         "1/6(((H*T1)*T1)*T1)"\
-                         "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
+                         "1/6(((H*To0)*To0)*To0)"\
+                         "+1/6(((H*To1)*To0)*To0)+1/6(((H*To0)*To1)*To0)+1/6(((H*To0)*To0)*To1)"\
                      ")*C0>"
     if maxcom >= 4 :
         if MRCCSD_mode:
             LAG_E += "<C0^+*("\
-                         "1/24( ( ( ( H*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )*(T1+T2g) )"\
+                         "1/24( ( ( ( H*(To0+To1) )*(To0+To1) )*(To0+To1) )*(To0+To1) )"\
                      ")*C0>"
         else:
             LAG_E += "<C0^+*("\
-                          "1/24((((H*T1)*T1)*T1)*T1)"\
-                          "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
+                          "1/24((((H*To0)*To0)*To0)*To0)"\
+                          "+ 1/24((((H*To1)*To0)*To0)*To0) + 1/24((((H*To0)*To1)*To0)*To0) + 1/24((((H*To0)*To0)*To1)*To0) + 1/24((((H*To0)*To0)*To0)*To1)"\
                      ")*C0>"             
     if not 0<maxcom<5 :
         raise Exception("MRCC2 unknown maxcommutator for energy\nmaxcom="+str(maxcom))
@@ -119,41 +127,41 @@ def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False):
     LAG_A1  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
     if maxcom >= 1 :
-        LAG_A1 +=  "<C0^+*(LAM1)*("\
+        LAG_A1 +=  "<C0^+*(LAMo0)*("\
                       "H"\
-                      "+[H,T1]"\
-                      "+[H,T2g]"\
+                      "+[H,To0]"\
+                      "+[H,To1]"\
                   ")*C0>"
     if maxcom >= 2 :
-        LAG_A1 += "<C0^+*(LAM1)*("\
-                      "1/2[[H,T1],T1]"\
-                      "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
+        LAG_A1 += "<C0^+*(LAMo0)*("\
+                      "1/2[[H,To0],To0]"\
+                      "+1/2[[H,To1],To0]+1/2[[H,To0],To1]"\
                   ")*C0>"
         if MRCCSD_mode:
-            LAG_A1 += "<C0^+*(LAM1)*("\
-                          "1/2[[H,T2g],T2g]"\
+            LAG_A1 += "<C0^+*(LAMo0)*("\
+                          "1/2[[H,To1],To1]"\
                       ")*C0>"
           
     if maxcom >= 3 :
         if MRCCSD_mode:
-            LAG_A1 += "<C0^+*(LAM1)*("\
-                         "1/6[[[H,T1+T2g],T1+T2g],T1+T2g]"\
+            LAG_A1 += "<C0^+*(LAMo0)*("\
+                         "1/6[[[H,To0+To1],To0+To1],To0+To1]"\
                       ")*C0>"
 
         else:
-            LAG_A1 += "<C0^+*(LAM1)*("\
-                          "1/6[[[H,T1],T1],T1]"\
-                          "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
+            LAG_A1 += "<C0^+*(LAMo0)*("\
+                          "1/6[[[H,To0],To0],To0]"\
+                          "+1/6[[[H,To1],To0],To0]+1/6[[[H,To0],To1],To0]+1/6[[[H,To0],To0],To1]"\
                       ")*C0>"
     if maxcom >= 4 :
         if MRCCSD_mode:
-            LAG_A1 += "<C0^+*(LAM1)*("\
-                          "1/24[[[[H,T1+T2g],T1+T2g],T1+T2g],T1+T2g]"\
+            LAG_A1 += "<C0^+*(LAMo0)*("\
+                          "1/24[[[[H,To0+To1],To0+To1],To0+To1],To0+To1]"\
                       ")*C0>"             
         else:
-            LAG_A1 += "<C0^+*(LAM1)*("\
-                          "1/24[[[[H,T1],T1],T1],T1]"\
-                          "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
+            LAG_A1 += "<C0^+*(LAMo0)*("\
+                          "1/24[[[[H,To0],To0],To0],To0]"\
+                          "+ 1/24[[[[H,To1],To0],To0],To0] + 1/24[[[[H,To0],To1],To0],To0] + 1/24[[[[H,To0],To0],To1],To0] + 1/24[[[[H,To0],To0],To0],To1]"\
                      ")*C0>"             
     if not 0<maxcom<5 :
         raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
@@ -163,45 +171,45 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
     LAG_A2  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
     #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
     if maxcom >= 1 :
-        LAG_A2 +=  "<C0^+*(LAM2g)*("\
+        LAG_A2 +=  "<C0^+*(LAMo1)*("\
                       "H"\
-                      "+[H,T1]"\
+                      "+[H,To0]"\
                   ")*C0>"
     if hamiltonian=="DYALL":
-        LAG_A2.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
+        LAG_A2.append("<C0^+*(LAMo1)*([HAM_D,To1])*C0>")
     elif hamiltonian=="REPT":
-        LAG_A2.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
+        LAG_A2.append("<C0^+*(LAMo1)*([REPT_HAM,To1])*C0>")
     elif hamiltonian=="F_EFF":
-        LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
+        LAG_A2.append("<C0^+*(LAMo1)*([FOCK_EFF,To1])*C0>")
     elif hamiltonian=="FULL":
-        LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+        LAG_A2.append("<C0^+*(LAMo1)*([H,To1])*C0>")
         
     if maxcom >= 2 :
         if MRCCSD_mode:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/2[[H,T1+T2g],T1+T2g]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/2[[H,To0+To1],To0+To1]"\
                       ")*C0>"
         else:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/2[[H,T1],T1]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/2[[H,To0],To0]"\
                       ")*C0>"
     if maxcom >= 3 :
         if MRCCSD_mode:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/6[[[H,T1+T2g],T1+T2g],T1+T2g]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/6[[[H,To0+To1],To0+To1],To0+To1]"\
                       ")*C0>"
         else:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/6[[[H,T1],T1],T1]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/6[[[H,To0],To0],To0]"\
                       ")*C0>"
     if maxcom >= 4 :
         if MRCCSD_mode:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/24[[[[H,T1+T2g],T1+T2g],T1+T2g],T1+T2g]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/24[[[[H,To0+To1],To0+To1],To0+To1],To0+To1]"\
                       ")*C0>"
         else:
-            LAG_A2 += "<C0^+*(LAM2g)*("\
-                          "1/24[[[[H,T1],T1],T1],T1]"\
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/24[[[[H,To0],To0],To0],To0]"\
                       ")*C0>"             
     if not 0<maxcom<5 :
         raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
@@ -214,90 +222,37 @@ create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en, MRCCSD_mode).set_rule()
 create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1, MRCCSD_mode).set_rule()
 create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian, MRCCSD_mode).set_rule()
 
+# joint A1 and A2 into a single expansion
+DEF_FORMULA({LABEL:'FORM_PT_LAG_A_RAW',FORMULA:'PT_LAG_A=PT_LAG_A1+PT_LAG_A2'})
+EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW',
+        INTERM:['FORM_PT_LAG_A1_RAW','FORM_PT_LAG_A2_RAW']})
 
+# -> replace by actual T and LAM operators ...
+EXPAND({LABEL_IN:'FORM_PT_LAG_E',
+        LABEL_RES:'FORM_PT_LAG_E',
+        INTERM:'FORM_To0'})
+PRINT({STRING:'E formula after replacing To0'})
+debug_FORM('FORM_PT_LAG_E',only_this=True)
 
-# if lag_type >= 1 :
-#     LAG_E +=  "<C0^+*("\
-#                     "H"\
-#                     "+(H*T1)"\
-#                     "+(H*T2g)"\
-#                 ")*C0>"
-#     LAG_A1 += "<C0^+*(LAM1)*("\
-#                     "H"\
-#                     "+[H,T1]"\
-#                     "+[H,T2g]"\
-#               ")*C0>"
-              
-#     LAG_A2 += "<C0^+*(LAM2g)*("\
-#                     "H"\
-#                     "+[H,T1]"\
-#               ")*C0>"      
-              
-#     if hamiltonian=="DYALL":
-#         LAG_A2.append("<C0^+*(LAM2g)*([HAM_D,T2g])*C0>")
-#     elif hamiltonian=="REPT":
-#         LAG_A2.append("<C0^+*(LAM2g)*([REPT_HAM,T2g])*C0>")
-#     elif hamiltonian=="F_EFF":
-#         LAG_A2.append("<C0^+*(LAM2g)*([FOCK_EFF,T2g])*C0>")
-#     elif hamiltonian=="FULL":
-#         LAG_A2.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+EXPAND({LABEL_IN:'FORM_PT_LAG_E',
+        LABEL_RES:'FORM_PT_LAG_E',
+        INTERM:'FORM_To1'})
+PRINT({STRING:'E formula after replacing To1'})
+debug_FORM('FORM_PT_LAG_E',only_this=True)
 
-# if lag_type >= 2 :
-# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-#     LAG_E +="<C0^+*("\
-#                     "1/2((H*T1)*T1)"\
-#                     "+1/2((H*T2g)*T1)+1/2((H*T1)*T2g)"\
-#             ")*C0>"
-
-#     LAG_A1 += "<C0^+*(LAM1)*("\
-#                     "1/2[[H,T1],T1]"\
-#                     "+1/2[[H,T2g],T1]+1/2[[H,T1],T2g]"\
-#               ")*C0>"
-
-#     LAG_A2 += "<C0^+*(LAM2g)*("\
-#                     "1/2[[H,T1],T1]"\
-#               ")*C0>"             
-
-# if lag_type >= 3 :
-# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-#     LAG_E += "<C0^+*("\
-#                     "1/6(((H*T1)*T1)*T1)"\
-#                     "+1/6(((H*T2g)*T1)*T1)+1/6(((H*T1)*T2g)*T1)+1/6(((H*T1)*T1)*T2g)"\
-#              ")*C0>"
-          
-#     LAG_A1 += "<C0^+*(LAM1)*("\
-#                     "1/6[[[H,T1],T1],T1]"\
-#                     "+1/6[[[H,T2g],T1],T1]+1/6[[[H,T1],T2g],T1]+1/6[[[H,T1],T1],T2g]"\
-#               ")*C0>"
-
-#     LAG_A2 += "<C0^+*(LAM2g)*("\
-#                     "1/6[[[H,T1],T1],T1]"\
-#               ")*C0>"             
-
-# if lag_type >= 4 :
-# #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
-# #these terms where not included in SRCC2
-#     LAG_E += "<C0^+*("\
-#                     "1/24((((H*T1)*T1)*T1)*T1)"\
-#                     "+ 1/24((((H*T2g)*T1)*T1)*T1) + 1/24((((H*T1)*T2g)*T1)*T1) + 1/24((((H*T1)*T1)*T2g)*T1) + 1/24((((H*T1)*T1)*T1)*T2g)"\
-#              ")*C0>"             
-
-#     LAG_A1 += "<C0^+*(LAM1)*("\
-#                     "1/24[[[[H,T1],T1],T1],T1]"\
-#                     "+ 1/24[[[[H,T2g],T1],T1],T1] + 1/24[[[[H,T1],T2g],T1],T1] + 1/24[[[[H,T1],T1],T2g],T1] + 1/24[[[[H,T1],T1],T1],T2g]"\
-#               ")*C0>"
-
-#     LAG_A2 += "<C0^+*(LAM2g)*("\
-#                     "1/24[[[[H,T1],T1],T1],T1]"\
-#               ")*C0>"
-# if not 0<lag_type<5 :
-#     raise Exception("MRCC2 unknown lagrangian type\nlag_type="+str(lag_type))
-
-
-# LAG_E.set_rule()
-# LAG_A1.set_rule()
-# LAG_A2.set_rule()
-
+EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW',
+        INTERM:'FORM_To0'})
+EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW',
+        INTERM:'FORM_To1'})
+EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW',
+        INTERM:'FORM_LAMo0'})
+EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW',
+        INTERM:'FORM_LAMo1'})
 
 REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_E",
                  LABEL_IN:"FORM_PT_LAG_E"})
@@ -320,44 +275,29 @@ SUM_TERMS({
         LABEL_IN:'FORM_PT_LAG_INT',
         LABEL_RES:'FORM_PT_LAG'})
 
-debug_FORM('FORM_PT_LAG')
-
-
-
-FACTOR_OUT({
-        LABEL_IN:'FORM_PT_LAG_A1_RAW',
-        LABEL_RES:'FORM_PT_LAG_A1_INT',
-        INTERM:'FORM_GAM0'})
-
-SUM_TERMS({
-        LABEL_IN:'FORM_PT_LAG_A1_INT',
-        LABEL_RES:'FORM_PT_LAG_A1'})
-
-debug_FORM('FORM_PT_LAG_A1')
+debug_FORM('FORM_PT_LAG',only_this=True)
 
 
 FACTOR_OUT({
-        LABEL_IN:'FORM_PT_LAG_A2_RAW',
-        LABEL_RES:'FORM_PT_LAG_A2_INT',
+        LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_INT',
         INTERM:'FORM_GAM0'})
 
 SUM_TERMS({
-        LABEL_IN:'FORM_PT_LAG_A2_INT',
-        LABEL_RES:'FORM_PT_LAG_A2'})
+        LABEL_IN:'FORM_PT_LAG_A_INT',
+        LABEL_RES:'FORM_PT_LAG_A'})
 
-debug_FORM('FORM_PT_LAG_A2')
-
-
+debug_FORM('FORM_PT_LAG_A',only_this=True)
 
 
 
 #Make the Derivative with respect to LAM  
-DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A1',
+DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         LABEL_RES:'FORM_PT_LAG_Amp1',
         OP_RES:'O1',
         OP_DERIV:'LAM1'})
 
-DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A2',
+DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         LABEL_RES:'FORM_PT_LAG_Amp2',
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'})
