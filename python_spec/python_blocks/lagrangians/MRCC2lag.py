@@ -233,13 +233,13 @@ EXPAND({LABEL_IN:'FORM_PT_LAG_E',
         LABEL_RES:'FORM_PT_LAG_E',
         INTERM:'FORM_To0'})
 PRINT({STRING:'E formula after replacing To0'})
-debug_FORM('FORM_PT_LAG_E',only_this=True)
+debug_FORM('FORM_PT_LAG_E')
 
 EXPAND({LABEL_IN:'FORM_PT_LAG_E',
         LABEL_RES:'FORM_PT_LAG_E',
         INTERM:'FORM_To1'})
 PRINT({STRING:'E formula after replacing To1'})
-debug_FORM('FORM_PT_LAG_E',only_this=True)
+debug_FORM('FORM_PT_LAG_E')
 
 EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_PT_LAG_A_RAW',
@@ -275,7 +275,7 @@ SUM_TERMS({
         LABEL_IN:'FORM_PT_LAG_INT',
         LABEL_RES:'FORM_PT_LAG'})
 
-debug_FORM('FORM_PT_LAG',only_this=True)
+debug_FORM('FORM_PT_LAG')
 
 
 FACTOR_OUT({
@@ -287,7 +287,7 @@ SUM_TERMS({
         LABEL_IN:'FORM_PT_LAG_A_INT',
         LABEL_RES:'FORM_PT_LAG_A'})
 
-debug_FORM('FORM_PT_LAG_A',only_this=True)
+debug_FORM('FORM_PT_LAG_A')
 
 
 
