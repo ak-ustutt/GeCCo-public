@@ -25,6 +25,7 @@ if keywords.is_keyword_set('method.MR.maxexc'):
 if (minexc==1 and maxexc==2):
   t1_shape='V,H|P,V|P,H'
   t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
+  t2ps_shape='V,H|VV,VH|P,V|PV,VV|P,H|PV,HV' #pseudo-doubles
   to0_shape=t1_shape
   to1_shape=t2g_shape
   to0_frm='To0=T1'
@@ -42,6 +43,7 @@ if (minexc==1 and maxexc==2):
 elif (minexc==2 and maxexc==2):  
   t2g_shape='VV,VH|VV,HH|PV,VV|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
   t1_shape=',' # just to not leave it undefined
+  t2ps_shape=',' # just to not leave it undefined
   useT1=False
   to0_shape=t1_shape
   to1_shape=t2g_shape
@@ -97,6 +99,11 @@ DEF_OP_FROM_OCC({
         LABEL:'To0',
         DESCR:to0_shape})
 
+# pseudo-doubles
+DEF_OP_FROM_OCC({
+        LABEL:'T2ps',
+        DESCR:t2ps_shape})
+
 DEF_OP_FROM_OCC({
         LABEL:'To1',
         DESCR:to1_shape})
@@ -106,12 +113,17 @@ DEF_FORMULA({LABEL:'FORM_To1',FORMULA:to1_frm})
 
 CLONE_OPERATOR({
         LABEL:'LAMo0',
-        TEMPLATE:'To0  ',
+        TEMPLATE:'To0',
+        ADJOINT:True})
+
+CLONE_OPERATOR({
+        LABEL:'LAM2ps',
+        TEMPLATE:'T2ps',
         ADJOINT:True})
 
 CLONE_OPERATOR({
         LABEL:'LAMo1',
-        TEMPLATE:'To1  ',
+        TEMPLATE:'To1',
         ADJOINT:True})
 
 DEF_FORMULA({LABEL:'FORM_LAMo0',FORMULA:lamo0_frm})

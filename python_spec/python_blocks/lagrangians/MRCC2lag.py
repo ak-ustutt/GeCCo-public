@@ -17,6 +17,9 @@ maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
 
 MRCCSD_mode = keywords.is_keyword_set('method.MRCC2.MRCCSD_mode')
 
+# TODO set here lin_psD from keyword (integer)
+lin_psD = 0
+
 known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')
 hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
@@ -123,9 +126,12 @@ def create_lag_E(label, OP_res, maxcom, MRCCSD_mode = False):
         raise Exception("MRCC2 unknown maxcommutator for energy\nmaxcom="+str(maxcom))
     return LAG_E
 
-def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False):
-    LAG_A1  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
-    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False, lin_psD = 0):
+    LAG_A1  = stf.GenForm(label=label, OP_res=OP_res) # residual part of the lagrangian
+    if lin_psD > 0 and maxcom > 2 :
+         raise Exception("linearized pseudo doubles not yet implemented for maxcom > 2!")
+    if lin_psD > 0 and MRCCSD_mode :
+         raise Exception("contradictory flags: lin_psD and MRCCSD_mode")
     if maxcom >= 1 :
         LAG_A1 +=  "<C0^+*(LAMo0)*("\
                       "H"\
@@ -133,15 +139,37 @@ def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False):
                       "+[H,To1]"\
                   ")*C0>"
     if maxcom >= 2 :
-        LAG_A1 += "<C0^+*(LAMo0)*("\
+        if lin_psD == 0:
+            LAG_A1 += "<C0^+*(LAMo0)*("\
                       "1/2[[H,To0],To0]"\
                       "+1/2[[H,To1],To0]+1/2[[H,To0],To1]"\
+                  ")*C0>"
+        elif lin_psD == 1:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                      "1/2[[H,To0],To0]"\
+                      "+1/2[[H,To1],To0]+1/2[[H,To0],To1]"\
+                  ")*C0>"
+            LAG_A1 += "<C0^+*(LAM2ps)*("\
+                      " 1/2[[H,T1],T1]"\
+                      "+1/2[[H,T2ps],T1]+1/2[[H,T1],T2ps]"\
+                      "+1/2[[H,To1],T1]+1/2[[H,T1],To1]"\
+                  ")*C0>"
+        elif lin_psD == 2:
+            LAG_A1 += "<C0^+*(LAM1)*("\
+                      " 1/2[[H,T1],T1]"\
+                      "+1/2[[H,T1],T2ps]+1/2[[H,T2ps],T1]"\
+                      "+1/2[[H,T1],To1]+1/2[[H,To1],T1]"\
+                  ")*C0>"
+            LAG_A1 += "<C0^+*(LAM2ps)*("\
+                      " 1/2[[H,T1],T1]"\
+                      "+1/2[[H,T2ps],T1]+1/2[[H,T1],T2ps]"\
+                      "+1/2[[H,To1],T1]+1/2[[H,T1],To1]"\
                   ")*C0>"
         if MRCCSD_mode:
             LAG_A1 += "<C0^+*(LAMo0)*("\
                           "1/2[[H,To1],To1]"\
                       ")*C0>"
-          
+  
     if maxcom >= 3 :
         if MRCCSD_mode:
             LAG_A1 += "<C0^+*(LAMo0)*("\
@@ -167,9 +195,12 @@ def create_lag_A1(label, OP_res, maxcom, MRCCSD_mode = False):
         raise Exception("MRCC2 unknown lagrangian type\nmaxcom="+str(maxcom))
     return LAG_A1
 
-def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
-    LAG_A2  = stf.GenForm(label=label, OP_res=OP_res) # energy part of the lagrangian
-    #no commutator necessary since T*H has open hole or particle lines (if T is not purely active)
+def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False, lin_psD = 0):
+    LAG_A2  = stf.GenForm(label=label, OP_res=OP_res) # residual part of the lagrangian
+    if lin_psD > 0 and maxcom > 2 :
+         raise Exception("linearized pseudo doubles not yet implemented for maxcom > 2!")
+    if lin_psD > 0 and MRCCSD_mode :
+         raise Exception("contradictory flags: lin_psD and MRCCSD_mode")
     if maxcom >= 1 :
         LAG_A2 +=  "<C0^+*(LAMo1)*("\
                       "H"\
@@ -189,10 +220,15 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
             LAG_A2 += "<C0^+*(LAMo1)*("\
                           "1/2[[H,To0+To1],To0+To1]"\
                       ")*C0>"
-        else:
+        elif lin_psD == 0:
             LAG_A2 += "<C0^+*(LAMo1)*("\
                           "1/2[[H,To0],To0]"\
                       ")*C0>"
+        elif lin_psD >= 1:
+            LAG_A2 += "<C0^+*(LAMo1)*("\
+                          "1/2[[H,T1],T1]"\
+                      ")*C0>"
+
     if maxcom >= 3 :
         if MRCCSD_mode:
             LAG_A2 += "<C0^+*(LAMo1)*("\
@@ -219,8 +255,8 @@ def create_lag_A2(label, OP_res, maxcom, hamiltonian, MRCCSD_mode = False):
 
     
 create_lag_E("FORM_PT_LAG_E", "PT_LAG", maxcom_en, MRCCSD_mode).set_rule()
-create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1, MRCCSD_mode).set_rule()
-create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian, MRCCSD_mode).set_rule()
+create_lag_A1("FORM_PT_LAG_A1_RAW", "PT_LAG_A1", maxcom_res1, MRCCSD_mode, lin_psD).set_rule()
+create_lag_A2("FORM_PT_LAG_A2_RAW", "PT_LAG_A2", maxcom_res2, hamiltonian, MRCCSD_mode, lin_psD).set_rule()
 
 # joint A1 and A2 into a single expansion
 DEF_FORMULA({LABEL:'FORM_PT_LAG_A_RAW',FORMULA:'PT_LAG_A=PT_LAG_A1+PT_LAG_A2'})
@@ -232,15 +268,19 @@ EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
 EXPAND({LABEL_IN:'FORM_PT_LAG_E',
         LABEL_RES:'FORM_PT_LAG_E',
         INTERM:'FORM_To0'})
-PRINT({STRING:'E formula after replacing To0'})
 debug_FORM('FORM_PT_LAG_E')
 
 EXPAND({LABEL_IN:'FORM_PT_LAG_E',
         LABEL_RES:'FORM_PT_LAG_E',
         INTERM:'FORM_To1'})
-PRINT({STRING:'E formula after replacing To1'})
 debug_FORM('FORM_PT_LAG_E')
 
+REPLACE({LABEL_RES:'FORM_PT_LAG_A_RAW',
+         LABEL_IN:'FORM_PT_LAG_A_RAW',
+         OP_LIST:['T2ps','T2g']})
+REPLACE({LABEL_RES:'FORM_PT_LAG_A_RAW',
+         LABEL_IN:'FORM_PT_LAG_A_RAW',
+         OP_LIST:['LAM2ps','LAM2g']})
 EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_PT_LAG_A_RAW',
         INTERM:'FORM_To0'})
@@ -253,6 +293,11 @@ EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
 EXPAND({LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_PT_LAG_A_RAW',
         INTERM:'FORM_LAMo1'})
+SUM_TERMS({
+        LABEL_IN:'FORM_PT_LAG_A_RAW',
+        LABEL_RES:'FORM_PT_LAG_A_RAW'})
+debug_FORM('FORM_PT_LAG_A_RAW',only_this=True)
+
 
 REORDER_FORMULA({LABEL_RES:"FORM_PT_LAG_E",
                  LABEL_IN:"FORM_PT_LAG_E"})

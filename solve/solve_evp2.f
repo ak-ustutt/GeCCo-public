@@ -479,10 +479,9 @@
         end do
         call init_guess_gen(guess_gen, max(1000,4*nroots),
      &       me_dia, me_vort, nopt,
-     &       op_info,str_info,strmap_info, orb_info)
+     &       op_info,str_info,strmap_info, orb_info, opti_info)
         iroot = 1
         trial_gen_loop: do while(iroot .le.nroots)
-
         do iopt = 1,nopt
           call switch_mel_record(me_vort(iopt)%mel,iroot)
           call zeroop(me_vort(iopt)%mel)
@@ -499,22 +498,22 @@
               call set_blks(me_vort(iopt)%mel,
      &             "P,H|P,V|V,H|V,V",0d0)
            end if
-          call transform_back_wrap(fl_mvp,depend,
+           call transform_back_wrap(fl_mvp,depend,
      &         me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
      &         trf_nrm,
      &         iopt,nspecial,
      &         me_trv(iopt)%mel,
      &         op_info, str_info, strmap_info, orb_info, opti_info)
 ! guess vectors of wrong spin symmetry and twinned guess vectors will be discarded
-            if (should_discard_vector_h(trf_nrm, nopt,nroots,
+           if (should_discard_vector_h(trf_nrm, nopt,nroots,
      &           iroot,xnrm2,me_trv, opti_info) )then
               cycle trial_gen_loop
-            else
+           else
               xnrm2(iroot) = trf_nrm**2
-            end if
            end if
+        end if
 
-           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
      &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
      &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
              call  spin_proj_h(opti_info%typ_prc(iopt),
@@ -533,9 +532,9 @@
              else
                xnrm2(iroot) = xnrm**2
              end if
-           end if
+        end if
 ! Assumption: If the controlflow reaches here, a new guess vector was created
-           iroot = iroot +1
+        iroot = iroot +1
        end do trial_gen_loop
        call del_guess_gen(guess_gen)
       endif
