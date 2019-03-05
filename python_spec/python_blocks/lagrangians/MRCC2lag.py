@@ -17,8 +17,9 @@ maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
 
 MRCCSD_mode = keywords.is_keyword_set('method.MRCC2.MRCCSD_mode')
 
-# TODO set here lin_psD from keyword (integer)
-lin_psD = 0
+
+lin_psD = keywords.get('method.MRCC2.lin_psD')
+lin_psD = int(lin_psD) if lin_psD is not None else 0
 
 known_hamiltonians=["DYALL","REPT","F_EFF","FULL"]
 hamiltonian = keywords.get('method.MRCC2.hamiltonian')

@@ -13,6 +13,11 @@ spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 
+shift_terms = False
+if keywords.is_keyword_set('method.MRCC2.shift_terms'):
+    shift_terms=True if keywords.get('method.MRCC2.shift_terms') == 'T' else False
+
+
 #-----------------------------------------------------------------#
 # operators associated with T
 #-----------------------------------------------------------------#
@@ -33,7 +38,7 @@ if (minexc==1 and maxexc==2):
   lamo0_frm='LAMo0=LAM1'
   lamo1_frm='LAMo1=LAM2g'
   useT1=True
-  if (False): # modified CC2 definition: TODO - introduce a keyword
+  if (shift_terms):
       to0_shape='V,H|VV,VH|P,V|PV,VV|P,H|PV,HV'
       to1_shape='VV,HH|PV,HH|PP,VV|PP,HV|PP,HH'
       to0_frm='To0=T1+T2g'
