@@ -291,9 +291,18 @@
           </keyword>
           <argument length="1" name="lagrangian" status="A" type="2" value="0">
             <!--type of lagrangian-->
+          </argument>
+          <argument length="1" name="metric" status="A" type="2" value="0">
+            <!--commutators in metric-->
+          </argument>
+	    <argument length="1" name="maxcom_m1" status="A" type="2" value="0"/>
+	    <argument length="1" name="maxcom_m2" status="A" type="2" value="0"/>
+            <argument length="1" name="shift_terms" type="1" value="false"/>
+            <argument length="1" name="lin_psD" status="A" type="2" value="0" >
+              <!-- order to which pseudo doubles are introduced-->
+	    </argument>
 	    <argument length="1" name="maxcom_res" status="A" type="2" value="0"/>
             <argument length="1" name="maxcom_en" status="A" type="2" value="0"/>
-          </argument>
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
             <!--the unperturbed hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) or "FULL" (full hamiltonian perturbation is 0) -->
           </argument>

@@ -158,8 +158,6 @@ PRECONDITIONER({
         LIST_PRC:'ME_PRECON2g',
         LIST_INP:'FOCK_EFF_INACT_LST'})
 
-debug_MEL('ME_PRECON2g')
-
 EXTRACT_DIAG({
         LIST_RES:'ME_PRECON2g',
         LIST_IN:'A_TRF_LST',
@@ -185,7 +183,7 @@ if (useT1):
         OPERATOR:'PRECON1',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1})
+        AB_SYM:0})
 
   #extract preconditioner 
   PRECONDITIONER({

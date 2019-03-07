@@ -3,7 +3,7 @@
 *----------------------------------------------------------------------*
       subroutine init_guess_gen(guess_gen, maxtrials,
      &     me_diag, me_trv, nopt,
-     &     op_info,str_info,strmap_info,orb_info)
+     &     op_info,str_info,strmap_info,orb_info,opti_info)
 *----------------------------------------------------------------------*
       
       implicit none
@@ -14,6 +14,7 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_orbinf.h'
+      include 'def_optimize_info.h'
       
       type(guess_generator),intent(out)::
      &     guess_gen
@@ -39,6 +40,9 @@
      &     str_info
       type(strmapinf), intent(in) ::
      &     strmap_info
+      type(optimize_info), intent(in) ::
+     &     opti_info
+
 
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'entered init_guess_gen')
@@ -57,6 +61,9 @@
      &       idxlist(1:maxtrials,iopt),
      &       maxtrials,me_diag(iopt)%mel)
         ntrials(iopt) = min(maxtrials,me_diag(iopt)%mel%len_op)
+cak -- quick fix -> ignore vecs if the singles get zeroed out
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc) 
+     &       ntrials(iopt) = 0
       end do
       if (nopt .gt.1 )then
         call merge_min_lists(

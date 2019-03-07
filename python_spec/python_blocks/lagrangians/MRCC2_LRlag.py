@@ -12,12 +12,20 @@ MRCCSD_mode = keywords.is_keyword_set("method.MRCC2.MRCCSD_mode")
 lagrangian = keywords.get('method.MRCC2.lagrangian')
 lag_type = int(lagrangian) if lagrangian is not None else 4
 
-lagrangian = keywords.get('method.MRCC2.maxcom_en')
-maxcom_en = int(lagrangian) if lagrangian is not None else lag_type
-lagrangian = keywords.get('method.MRCC2.maxcom_res1')
-maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
-lagrangian = keywords.get('method.MRCC2.maxcom_res2')
-maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
+metric = keywords.get('method.MRCC2.metric')
+met_type = int(metric) if metric is not None else lag_type
+
+metric = keywords.get('method.MRCC2.maxcom_m1')
+maxcom_m1 = int(metric) if metric is not None else met_type
+metric = keywords.get('method.MRCC2.maxcom_m2')
+maxcom_m2 = int(metric) if metric is not None else met_type
+
+#lagrangian = keywords.get('method.MRCC2.maxcom_en')
+#maxcom_en = int(lagrangian) if lagrangian is not None else lag_type
+#lagrangian = keywords.get('method.MRCC2.maxcom_res1')
+#maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
+#lagrangian = keywords.get('method.MRCC2.maxcom_res2')
+#maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
 
 
 
@@ -26,7 +34,7 @@ new_target("DEF_FORM_AR_RSPNS_q")
 depend("DEF_FORM_PT_LAG2")
 depend('DEF_RESPONSE_OPs')
 
-DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A1_RAW',
+DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_AR1_RSPNS_q_INT',
         OP_RES:'O1',
         OP_DERIV:'LAM1'
@@ -48,7 +56,7 @@ SUM_TERMS({
 debug_FORM("FORM_AR1_RSPNS_q")
 
 DERIVATIVE({
-        LABEL_IN:'FORM_PT_LAG_A2_RAW',
+        LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_AR2g_RSPNS_q_INT',
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'
@@ -143,7 +151,7 @@ def MRCC2_T1_metric( label, OP_res, maxcom):
     return SR1
 
 metric_creator = MRCCSD_T1_metric if MRCCSD_mode else MRCC2_T1_metric
-metric_creator("FORM_SR1t","Scal_S1",lag_type).set_rule()
+metric_creator("FORM_SR1t","Scal_S1",maxcom_m1).set_rule()
 
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS1_q',
@@ -156,7 +164,7 @@ DERIVATIVE({LABEL_RES:'FORM_S1',
             OP_RES:'SR1_rspns_q',
             OP_DERIV:['LAM1']})
 
-debug_FORM("FORM_S1")
+debug_FORM("FORM_S1",only_this=True)
 
 def MRCCSD_T2_metric(label, OP_res, maxcom):
     SR2=stf.GenForm(label=label, OP_res=OP_res)
@@ -194,7 +202,7 @@ def MRCC2_T2_metric(label, OP_res, maxcom):
 
 
 metric_creator = MRCCSD_T2_metric if MRCCSD_mode else MRCC2_T2_metric
-metric_creator("FORM_SR2t","Scal_S2",lag_type).set_rule()
+metric_creator("FORM_SR2t","Scal_S2",maxcom_m2).set_rule()
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS2_q',
                 LABEL_IN:'FORM_SR2t',
@@ -209,7 +217,7 @@ DERIVATIVE({LABEL_RES:'FORM_S2g',
 
 
 
-debug_FORM("FORM_S2g")
+debug_FORM("FORM_S2g",only_this=True)
 
 
 
