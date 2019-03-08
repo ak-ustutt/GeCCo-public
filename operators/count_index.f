@@ -1758,8 +1758,6 @@
      &     second_idx,third_idx,fourth_idx,
      &     zero_a,zero_b,
      &     result_spin(4) ! Spin case of result
-      logical ::
-     &     logi ! Debug delete
 
       ! There are certain cases that don't need to be spin summed
       ! because the spin summed line is the same as the non-spin summed
@@ -1903,13 +1901,11 @@
       end do
 
       if (zero_a>=zero_b) then
-         logi=.true.
          call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-     &                 zero_b,logi,item)
+     &                 zero_b,item)
       else
-         logi=.false.
          call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
-     &                 zero_a,logi,item)
+     &                 zero_a,item)
       end if
 
       return
@@ -1917,7 +1913,7 @@
 
 *----------------------------------------------------------------------*
       subroutine spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-     &                    zero_b,logi,item)
+     &                    zero_b,item)
 *----------------------------------------------------------------------*
 !     Spin sum
 *----------------------------------------------------------------------*
@@ -1940,8 +1936,6 @@
      &     t2b(2)
       integer, intent(in) ::
      &     zero_a,zero_b
-      logical, intent(in) ::
-     &     logi      ! Debug delete
       type(itf_contr), intent(inout) ::
      &     item
 
@@ -2006,13 +2000,13 @@
      &                             fourth_idx,r)
                      ! Print result, sum over four indicies
                      call print_spin_case(s1b,s1a,s2a,
-     &                                    s2b,logi,eloop,item)
+     &                                    s2b,eloop,item)
                     end do
                    end if
                   end do
                  else if (.not. any(s1b==0) .and. fourth_idx==0) then
                   ! Print result, sum over three indicies
-                  call print_spin_case(s1b,s1a,s2a,s2b,logi,
+                  call print_spin_case(s1b,s1a,s2a,s2b,
      &                                 eloop,item)
                  end if
 
@@ -2021,7 +2015,7 @@
               end do
              else if (.not. any(s1b==0) .and. third_idx==0) then
               ! Print result, sum over two indicies
-              call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+              call print_spin_case(s1a,s1b,s2a,s2b,
      &                             eloop,item)
              end if
             end do
@@ -2038,14 +2032,14 @@
             do p=1, 2
              s1b(third_idx)=p
              call find_idx(s2a,s2b,t1b,t2a,t2b,third_idx,p)
-             call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+             call print_spin_case(s1a,s1b,s2a,s2b,
      &                            eloop,item)
             end do
            end if
           end do
          else if (.not. any(s1a==0) .and. second_idx==0) then
           ! Print result, sum over one indicies
-          call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+          call print_spin_case(s1a,s1b,s2a,s2b,
      &                         eloop,item)
          end if
         end do ! Loop over a/b for first index
@@ -2053,7 +2047,7 @@
       end do
       else if (.not. any(s1a==0) .and. first_idx==0) then
        ! Print result, sum over no index
-       call print_spin_case(s1a,s1b,s2a,s2b,.not.logi,
+       call print_spin_case(s1a,s1b,s2a,s2b,
      &                      eloop,item)
       end if
 
@@ -2085,7 +2079,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case(s1a,s1b,s2a,s2b,logi,eloop,item)
+      subroutine print_spin_case(s1a,s1b,s2a,s2b,eloop,item)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
@@ -2101,8 +2095,6 @@
      &     s1b(2),
      &     s2a(2),
      &     s2b(2)
-      logical, intent(in) ::
-     &     logi      ! Debug delete
       logical, intent(inout) ::
      &     eloop     ! Check if at least one spin case is printed out
       type(itf_contr), intent(inout) ::
@@ -2118,8 +2110,8 @@
      &     spin_name
 
 
-       s1=.false.
-       s2=.false.
+      s1=.false.
+      s2=.false.
 
       ! Determine rank; may have swapped t1 and t2 to move larger tensor
       ! to t1
@@ -2141,8 +2133,8 @@
 
 
        ! Pick out specific spin cases here
-       if (sum(s1a)==sum(s1b) .and.
-     &     sum(s2a)==sum(s2b)) then
+      if (sum(s1a)==sum(s1b) .and.
+     &    sum(s2a)==sum(s2b)) then
          if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
      &       modulo(sum(s2a)+sum(s2b),2)==0) then
 
@@ -2164,108 +2156,21 @@
                s2=.true.
             end if
 
-            !DEBUG
-            !if (logi) then
-            !   write(item%logfile,*) "s1b: ", s1b
-            !   write(item%logfile,*) "s1a: ", s1a
-            !   write(item%logfile,*)
-            !   write(item%logfile,*) "s2b: ", s2b
-            !   write(item%logfile,*) "s2a: ", s2a
-            !   write(item%logfile,*)
-            !   write(item%logfile,*)
-            !else
-            !   write(item%logfile,*) "s1b: ", s1a
-            !   write(item%logfile,*) "s1a: ", s1b
-            !   write(item%logfile,*)
-            !   write(item%logfile,*) "s2b: ", s2b
-            !   write(item%logfile,*) "s2a: ", s2a
-            !   write(item%logfile,*)
-            !   write(item%logfile,*)
-            !end if
+            if (item%inter(1)) then
+               if (item%swapped) then
+                  call inter_spin_name(s2a,s2b,item%rank1/2,item%inter1)
+               else
+                  call inter_spin_name(s1a,s1b,item%rank1/2,item%inter1)
+               end if
+            end if
 
-      if (item%inter(1)) then
-         if (item%swapped) then
-            call inter_spin_name(s2a, s2b, item%rank1/2, item%inter1)
-         else
-            call inter_spin_name(s1a, s1b, item%rank1/2, item%inter1)
-         end if
-      end if
-
-      if (item%inter(2)) then
-         if (item%swapped) then
-            ! TODO: Is the rank correct here, should it be rank1??
-            call inter_spin_name(s1a, s1b, item%rank2/2, item%inter2)
-         else
-            call inter_spin_name(s2a, s2b, item%rank2/2, item%inter2)
-         end if
-      end if
-
-      !      ! Change name of intermediates involved in a result line
-      !      spin_name = '        '
-      !      if (item%inter(1)) then
-      !         if (item%swapped) then
-      !            do i = 1, item%rank1/2
-      !               if (s2a(i)==1) then
-      !                  spin_name(i:i) = 'a'
-      !               else if (s2a(i)==2) then
-      !                  spin_name(i:i) = 'b'
-      !               end if
-
-      !               if (s2b(i)==1) then
-      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
-      !               else if (s2b(i)==2) then
-      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
-      !               end if
-      !            end do
-      !         else
-      !            do i = 1, item%rank1/2
-      !               if (s1a(i)==1) then
-      !                  spin_name(i:i) = 'a'
-      !               else if (s1a(i)==2) then
-      !                  spin_name(i:i) = 'b'
-      !               end if
-
-      !               if (s1b(i)==1) then
-      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
-      !               else if (s1b(i)==2) then
-      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
-      !               end if
-      !            end do
-      !         end if
-      !         item%inter1 = spin_name
-
-      !      else if (item%inter(2)) then
-      !         if (item%swapped) then
-      !            do i = 1, item%rank2/2
-      !               if (s1a(i)==1) then
-      !                  spin_name(i:i) = 'a'
-      !               else if (s1a(i)==2) then
-      !                  spin_name(i:i) = 'b'
-      !               end if
-
-      !               if (s1b(i)==1) then
-      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
-      !               else if (s1b(i)==2) then
-      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
-      !               end if
-      !            end do
-      !         else
-      !            do i = 1, item%rank2/2
-      !               if (s2a(i)==1) then
-      !                  spin_name(i:i) = 'a'
-      !               else if (s2a(i)==2) then
-      !                  spin_name(i:i) = 'b'
-      !               end if
-
-      !               if (s2b(i)==1) then
-      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
-      !               else if (s2b(i)==2) then
-      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
-      !               end if
-      !            end do
-      !         end if
-      !         item%inter2 = spin_name
-      !      end if
+            if (item%inter(2)) then
+               if (item%swapped) then
+                  call inter_spin_name(s1a,s1b,item%rank2/2,item%inter2)
+               else
+                  call inter_spin_name(s2a,s2b,item%rank2/2,item%inter2)
+               end if
+            end if
 
 !            write(item%logfile,*) "SPIN1: ", item%inter1
 !            write(item%logfile,*) "SPIN2: ", item%inter2
@@ -2334,12 +2239,6 @@
                   end if
                end if
 
-!               do i=1, 4
-!                  write(item%logfile,*) "SC ",
-!     &            item%inter_spins(1)%cases(i,shift)
-!               end do
-
-!               write(item%logfile,*) "Name: ", item%inter_spins(1)%name
                ! Update number of spin cases for each different
                ! intermediate
                do i = 1, ishift
@@ -2349,7 +2248,6 @@
 
                item%ninter = ishift
             end if
-
 
             ! Print the spin summed line
             if (item%print_line) then
@@ -2394,15 +2292,14 @@
      &   sb(2),      ! Spin info
      &   h_rank      ! Rank/2
       character(len=index_len), intent(inout) ::
-     &   label
+     &   label       ! Spin name of intermediate
 
       character(len=index_len) ::
      &   spin_name
       integer ::
      &   i
 
-
-      spin_name = '        '
+      spin_name = ''
 
       do i = 1, h_rank
          if (sa(i)==1) then
