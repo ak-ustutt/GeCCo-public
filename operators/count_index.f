@@ -2183,73 +2183,89 @@
             !   write(item%logfile,*)
             !end if
 
+      if (item%inter(1)) then
+         if (item%swapped) then
+            call inter_spin_name(s2a, s2b, item%rank1/2, item%inter1)
+         else
+            call inter_spin_name(s1a, s1b, item%rank1/2, item%inter1)
+         end if
+      end if
 
-            ! Change name of intermediates involved in a result line
-            spin_name = '        '
-            if (item%inter(1)) then
-               if (item%swapped) then
-                  do i = 1, item%rank1/2
-                     if (s2a(i)==1) then
-                        spin_name(i:i) = 'a'
-                     else if (s2a(i)==2) then
-                        spin_name(i:i) = 'b'
-                     end if
+      if (item%inter(2)) then
+         if (item%swapped) then
+            ! TODO: Is the rank correct here, should it be rank1??
+            call inter_spin_name(s1a, s1b, item%rank2/2, item%inter2)
+         else
+            call inter_spin_name(s2a, s2b, item%rank2/2, item%inter2)
+         end if
+      end if
 
-                     if (s2b(i)==1) then
-                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
-                     else if (s2b(i)==2) then
-                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
-                     end if
-                  end do
-               else
-                  do i = 1, item%rank1/2
-                     if (s1a(i)==1) then
-                        spin_name(i:i) = 'a'
-                     else if (s1a(i)==2) then
-                        spin_name(i:i) = 'b'
-                     end if
+      !      ! Change name of intermediates involved in a result line
+      !      spin_name = '        '
+      !      if (item%inter(1)) then
+      !         if (item%swapped) then
+      !            do i = 1, item%rank1/2
+      !               if (s2a(i)==1) then
+      !                  spin_name(i:i) = 'a'
+      !               else if (s2a(i)==2) then
+      !                  spin_name(i:i) = 'b'
+      !               end if
 
-                     if (s1b(i)==1) then
-                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
-                     else if (s1b(i)==2) then
-                        spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
-                     end if
-                  end do
-               end if
-               item%inter1 = spin_name
+      !               if (s2b(i)==1) then
+      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
+      !               else if (s2b(i)==2) then
+      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
+      !               end if
+      !            end do
+      !         else
+      !            do i = 1, item%rank1/2
+      !               if (s1a(i)==1) then
+      !                  spin_name(i:i) = 'a'
+      !               else if (s1a(i)==2) then
+      !                  spin_name(i:i) = 'b'
+      !               end if
 
-            else if (item%inter(2)) then
-               if (item%swapped) then
-                  do i = 1, item%rank2/2
-                     if (s1a(i)==1) then
-                        spin_name(i:i) = 'a'
-                     else if (s1a(i)==2) then
-                        spin_name(i:i) = 'b'
-                     end if
+      !               if (s1b(i)==1) then
+      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'a'
+      !               else if (s1b(i)==2) then
+      !                  spin_name(i+item%rank1/2:i+item%rank1/2) = 'b'
+      !               end if
+      !            end do
+      !         end if
+      !         item%inter1 = spin_name
 
-                     if (s1b(i)==1) then
-                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
-                     else if (s1b(i)==2) then
-                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
-                     end if
-                  end do
-               else
-                  do i = 1, item%rank2/2
-                     if (s2a(i)==1) then
-                        spin_name(i:i) = 'a'
-                     else if (s2a(i)==2) then
-                        spin_name(i:i) = 'b'
-                     end if
+      !      else if (item%inter(2)) then
+      !         if (item%swapped) then
+      !            do i = 1, item%rank2/2
+      !               if (s1a(i)==1) then
+      !                  spin_name(i:i) = 'a'
+      !               else if (s1a(i)==2) then
+      !                  spin_name(i:i) = 'b'
+      !               end if
 
-                     if (s2b(i)==1) then
-                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
-                     else if (s2b(i)==2) then
-                        spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
-                     end if
-                  end do
-               end if
-               item%inter2 = spin_name
-            end if
+      !               if (s1b(i)==1) then
+      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
+      !               else if (s1b(i)==2) then
+      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
+      !               end if
+      !            end do
+      !         else
+      !            do i = 1, item%rank2/2
+      !               if (s2a(i)==1) then
+      !                  spin_name(i:i) = 'a'
+      !               else if (s2a(i)==2) then
+      !                  spin_name(i:i) = 'b'
+      !               end if
+
+      !               if (s2b(i)==1) then
+      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'a'
+      !               else if (s2b(i)==2) then
+      !                  spin_name(i+item%rank2/2:i+item%rank2/2) = 'b'
+      !               end if
+      !            end do
+      !         end if
+      !         item%inter2 = spin_name
+      !      end if
 
 !            write(item%logfile,*) "SPIN1: ", item%inter1
 !            write(item%logfile,*) "SPIN2: ", item%inter2
@@ -2359,6 +2375,53 @@
 
        return
        end
+
+
+*----------------------------------------------------------------------*
+      subroutine inter_spin_name(sa,sb,h_rank,label)
+*----------------------------------------------------------------------*
+!     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   sa(2),      ! Spin info
+     &   sb(2),      ! Spin info
+     &   h_rank      ! Rank/2
+      character(len=index_len), intent(inout) ::
+     &   label
+
+      character(len=index_len) ::
+     &   spin_name
+      integer ::
+     &   i
+
+
+      spin_name = '        '
+
+      do i = 1, h_rank
+         if (sa(i)==1) then
+            spin_name(i:i) = 'a'
+         else if (sa(i)==2) then
+            spin_name(i:i) = 'b'
+         end if
+
+         if (sb(i)==1) then
+            spin_name(i+h_rank:i+h_rank) = 'a'
+         else if (sb(i)==2) then
+            spin_name(i+h_rank:i+h_rank) = 'b'
+         end if
+      end do
+
+      label = spin_name
+
+      return
+      end
 
 
 *----------------------------------------------------------------------*

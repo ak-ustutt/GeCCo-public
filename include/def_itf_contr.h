@@ -33,8 +33,8 @@
      &     idx1,                ! First tensor index string
      &     idx2,                ! Second tensor index string
      &     idx3,                ! Result tensor index string
-     &     inter1,              ! Result tensor index string
-     &     inter2               ! Result tensor index string
+     &     inter1,              ! Intermediate spin name (ie. abab or aaaa)
+     &     inter2               ! Intermediate spin name (ie. abab or aaaa)
       integer ::
      &     rank1,               ! Rank of first tensor
      &     rank2,               ! Rank of second tensor
