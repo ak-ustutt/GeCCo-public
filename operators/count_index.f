@@ -2175,67 +2175,24 @@
 !            write(item%logfile,*) "SPIN1: ", item%inter1
 !            write(item%logfile,*) "SPIN2: ", item%inter2
 
-            ! Check if we have to deal with intermediates
-            ! TODO: what if there are two intermediates on one line??
+            ! Check if we are searching for intermediates
             if (associated(item%inter_spins)) then
 
                ! Number of intermediates
                ishift = 0
 
-               ! Check if the first tensor is an intermediate
                if (item%inter(1)) then
-                  ishift = ishift + 1
-                  ! Number of spin cases
-                  shift = item%inter_spins(ishift)%ncase + 1
-                  !write(item%logfile,*)
-                  !write(item%logfile,*) "intermediate", item%label_t1
-
-                  ! For now, if intermediate is part of a permutation
-                  ! line, then we add a P to its name
-                  if (item%permute == 2) then
-                  item%inter_spins(ishift)%name=trim(item%label_t1)//'P'
-                  else
-                     item%inter_spins(ishift)%name=item%label_t1
-                  end if
-
                   if (item%swapped) then
-                     ! t1 and t2 were swapped in summation
-                     do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
-                     end do
+                 call inter_spin_case(s2a,s2b,item%label_t1,ishift,item)
                   else
-                     do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
-                     end do
+                 call inter_spin_case(s1a,s1b,item%label_t1,ishift,item)
                   end if
                end if
-
-               ! Check if the second tensor is an intermediate
                if (item%inter(2)) then
-                  ishift = ishift + 1
-                  ! Number of spin cases
-                  shift = item%inter_spins(ishift)%ncase + 1
-                  !write(item%logfile,*)
-                  !write(item%logfile,*) "intermediate", item%label_t2
-                  if (item%permute == 2) then
-                     item%inter_spins(ishift)%name=item%label_t2//'P'
-                  else
-                     item%inter_spins(ishift)%name=item%label_t2
-                  end if
-
                   if (item%swapped) then
-                     ! t1 and t2 were swapped in summation
-                     do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s1a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
-                     end do
+                 call inter_spin_case(s1a,s1b,item%label_t2,ishift,item)
                   else
-                     do i=1, 2
-                        item%inter_spins(ishift)%cases(i,shift)=s2a(i)
-                        item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
-                     end do
+                 call inter_spin_case(s2a,s2b,item%label_t2,ishift,item)
                   end if
                end if
 
@@ -2248,6 +2205,80 @@
 
                item%ninter = ishift
             end if
+
+      !      ! Check if we have to deal with intermediates
+      !      ! TODO: what if there are two intermediates on one line??
+      !      if (associated(item%inter_spins)) then
+
+      !         ! Number of intermediates
+      !         ishift = 0
+
+      !         ! Check if the first tensor is an intermediate
+      !         if (item%inter(1)) then
+      !            ishift = ishift + 1
+      !            ! Number of spin cases
+      !            shift = item%inter_spins(ishift)%ncase + 1
+      !            !write(item%logfile,*)
+      !            !write(item%logfile,*) "intermediate", item%label_t1
+
+      !            ! For now, if intermediate is part of a permutation
+      !            ! line, then we add a P to its name
+      !            if (item%permute == 2) then
+      !            item%inter_spins(ishift)%name=trim(item%label_t1)//'P'
+      !            else
+      !               item%inter_spins(ishift)%name=item%label_t1
+      !            end if
+
+      !            if (item%swapped) then
+      !               ! t1 and t2 were swapped in summation
+      !               do i=1, 2
+      !                  item%inter_spins(ishift)%cases(i,shift)=s2a(i)
+      !                  item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
+      !               end do
+      !            else
+      !               do i=1, 2
+      !                  item%inter_spins(ishift)%cases(i,shift)=s1a(i)
+      !                  item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
+      !               end do
+      !            end if
+      !         end if
+
+      !         ! Check if the second tensor is an intermediate
+      !         if (item%inter(2)) then
+      !            ishift = ishift + 1
+      !            ! Number of spin cases
+      !            shift = item%inter_spins(ishift)%ncase + 1
+      !            !write(item%logfile,*)
+      !            !write(item%logfile,*) "intermediate", item%label_t2
+      !            if (item%permute == 2) then
+      !               item%inter_spins(ishift)%name=item%label_t2//'P'
+      !            else
+      !               item%inter_spins(ishift)%name=item%label_t2
+      !            end if
+
+      !            if (item%swapped) then
+      !               ! t1 and t2 were swapped in summation
+      !               do i=1, 2
+      !                  item%inter_spins(ishift)%cases(i,shift)=s1a(i)
+      !                  item%inter_spins(ishift)%cases(i+2,shift)=s1b(i)
+      !               end do
+      !            else
+      !               do i=1, 2
+      !                  item%inter_spins(ishift)%cases(i,shift)=s2a(i)
+      !                  item%inter_spins(ishift)%cases(i+2,shift)=s2b(i)
+      !               end do
+      !            end if
+      !         end if
+
+      !         ! Update number of spin cases for each different
+      !         ! intermediate
+      !         do i = 1, ishift
+      !            item%inter_spins(ishift)%ncase =
+     &!                              item%inter_spins(ishift)%ncase + 1
+      !         end do
+
+      !         item%ninter = ishift
+      !      end if
 
             ! Print the spin summed line
             if (item%print_line) then
@@ -2316,6 +2347,57 @@
       end do
 
       label = spin_name
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine inter_spin_case(sa,sb,label,ishift,item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   sa(2),
+     &   sb(2)
+      integer, intent(inout) ::
+     &   ishift      ! Index number of intermediates
+      character(len=maxlen_bc_label), intent(inout) ::
+     &   label
+      type(itf_contr), intent(inout) ::
+     &   item
+
+      integer ::
+     &   i,
+     &   shift
+
+      ! TODO: Call inter_spin_name in this subroutine
+      ! TODO: swapped s1 and s2 so don't have to check all the time!
+
+      ishift = ishift + 1
+
+      ! Number of spin cases
+      shift = item%inter_spins(ishift)%ncase + 1
+
+      ! For now, if intermediate is part of a permutation
+      ! line, then we add a P to its name
+      if (item%permute == 2) then
+      item%inter_spins(ishift)%name=trim(label)//'P'
+      else
+         item%inter_spins(ishift)%name=label
+      end if
+
+      do i=1, 2
+         item%inter_spins(ishift)%cases(i,shift)=sa(i)
+         item%inter_spins(ishift)%cases(i+2,shift)=sb(i)
+      end do
 
       return
       end
