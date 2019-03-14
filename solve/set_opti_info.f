@@ -3,7 +3,7 @@
      &     mode,nopt,nroot,mel_opt,prc_str)
 *----------------------------------------------------------------------*
       implicit none
-      
+
       include 'def_optimize_info.h'
       include 'ifc_input.h'
       include 'ifc_memman.h'
@@ -81,7 +81,7 @@
      &       ival=opti_info%micifac)
         opti_info%maxmicit = opti_info%maxmacit*opti_info%micifac
 
-        if (is_argument_set('calculate.solve.non_linear','conv').gt.0) 
+        if (is_argument_set('calculate.solve.non_linear','conv').gt.0)
      &    then
           call get_argument_value('calculate.solve.non_linear','conv',
      &         xval=opti_info%thrgrd(1))
@@ -94,13 +94,13 @@
      &       str=str)
         call uppcas(str)
         select case(trim(str))
-        case('PERT') 
+        case('PERT')
           opti_info%mode_nleq = mode_nleq_pert
           opti_info%norder = 1
-        case('DIIS') 
+        case('DIIS')
           opti_info%mode_nleq = mode_nleq_diis
           opti_info%norder = 1
-        case('ASSJ','RLE') 
+        case('ASSJ','RLE')
           opti_info%mode_nleq = mode_nleq_assj
           opti_info%norder = 1
         case default
@@ -162,16 +162,16 @@
      &       str=str)
         call uppcas(str)
         select case(trim(str(1:8)))
-        case('CONJGRAD') 
+        case('CONJGRAD')
           opti_info%mode_leq = mode_leq_conjg
           opti_info%norder = 1
-        case('SUBSPACE') 
+        case('SUBSPACE')
           opti_info%mode_leq = mode_leq_subsp
           opti_info%norder = 1
         case default
           call quit(0,'set_opti_info','invalid method: '//trim(str))
         end select
-     
+
         ! set shift
         opti_info%shift = mel_opt(1)%mel%frequency
         do iopt = 2,nopt
@@ -180,7 +180,7 @@
      &                 ,'shift associated with solution '//
      &                'vectors must be identical for all of them')
         end do
- 
+
       else if (mode.eq.3) then
 
         if (is_argument_set('calculate.solve.eigen','maxiter').gt.0)
@@ -206,7 +206,7 @@
      &       str=str)
         call uppcas(str)
         select case(trim(str(1:8)))
-        case('DAVIDSON') 
+        case('DAVIDSON')
           opti_info%mode_evp = mode_leq_subsp
           opti_info%norder = 1
         case default
@@ -215,7 +215,7 @@
 
         call get_argument_value('calculate.solve.eigen','resume',
      &       lval=opti_info%resume)
-      
+
       else
         call quit(1,'set_opti_info','illegal value of mode')
       end if
@@ -224,17 +224,17 @@
       ioff = 0
       do iopt = 1, nopt
         select case(prc_str(ioff+1:ioff+3))
-        case('DIA') 
+        case('DIA')
           opti_info%typ_prc(iopt) = optinf_prc_file
         case('BLK')
           opti_info%typ_prc(iopt) = optinf_prc_blocked
         case('MIX')
           opti_info%typ_prc(iopt) = optinf_prc_mixed
-        case('TRF') 
+        case('TRF')
           opti_info%typ_prc(iopt) = optinf_prc_traf
-        case('TR0') 
+        case('TR0')
           opti_info%typ_prc(iopt) = optinf_prc_traf_spc
-        case('IH0') 
+        case('IH0')
           opti_info%typ_prc(iopt) = optinf_prc_invH0
         case('NRM')
           opti_info%typ_prc(iopt) = optinf_prc_norm
@@ -244,6 +244,10 @@
           opti_info%typ_prc(iopt) = optinf_prc_prj
         case('SRP')
           opti_info%typ_prc(iopt) = optinf_prc_spinrefp
+        case('   ')
+          call quit(1,'set_opti_info','cannot use string: '//
+     &         trim(prc_str)//', have you set a preconditioner for each'
+     &         //' operator?')
         case default
           call quit(1,'set_opti_info','cannot interpret string: '//
      &         trim(prc_str))
