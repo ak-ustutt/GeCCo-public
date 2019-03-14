@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 21-01-2019 16:28
+// Created on: 14-03-2019 11:29
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -13,6 +13,7 @@ index-space: CD, Core, C
 tensor: K:cccc[klij], K:cccc
 tensor: K:eccc[bkji], K:eccc
 tensor: K:eecc[baji], K:eecc
+tensor: K:eeec[acbj], K:eeec
 
 // J-integral tensors
 tensor: J:eccc[bkji], J:eccc
@@ -187,6 +188,11 @@ drop T:eecc[abkj], J:eccc[bkji], K:eccc[bkji]
 load K:eccc[bkji], T:eecc[abkj]
 .R:ec[ai] -= K:eccc[bkji] T:eecc[abkj]
 drop T:eecc[abkj], K:eccc[bkji]
+for [j]:
+    load K:eeec[acbj], T:eecc[bcji]
+    .R:ec[ai] += .5*(K:eeec[acbj] - K:eeec[abcj]) (T:eecc[bcji] - T:eecc[cbji])
+    .R:ec[ai] += K:eeec[acbj] T:eecc[bcji]
+    drop T:eecc[bcji], K:eeec[acbj]
 store R:ec[ai]
 
 alloc R:eecc[abij]
@@ -197,6 +203,14 @@ alloc ITIN[abij]
 load K:eccc[akij], T:ec[bk]
 .ITIN[abij] -= K:eccc[akij] T:ec[bk]
 drop T:ec[bk], K:eccc[akij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+alloc ITIN[abij]
+for [i]:
+    load K:eeec[bcai], T:ec[cj]
+    .ITIN[abij] += K:eeec[bcai] T:ec[cj]
+    drop T:ec[cj], K:eeec[bcai]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]

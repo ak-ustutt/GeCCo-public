@@ -3,10 +3,12 @@ gthresh,orbital=1d-10,energy=1d-9
 geom={he;he,1,1.0}
 basis,vdz
 rhf
+{ccsd,cpp_prog=CCSD}
 {mrcic,cpp_prog=MRCC,cc_method=lccsd}
 e = energy
 
-eold = -4.80487553
+!eold = -4.80487553
+eold =  -4.80378703
 
 dele = max(abs(e-eold))
 if(dele.gt.1e-8) then
