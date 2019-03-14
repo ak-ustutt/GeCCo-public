@@ -20,6 +20,18 @@
 
 
 *----------------------------------------------------------------------*
+      type spin_info
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      integer, pointer ::
+     &     spin(:,:) => null()
+
+      end type spin_info
+
+
+*----------------------------------------------------------------------*
       type itf_contr
 *----------------------------------------------------------------------*
 !     Object that holds information needed to define a line in an ITF algo file
@@ -59,6 +71,8 @@
      &     ninter = 0                   ! Number of intermediates used in a contraction
       logical ::
      &     print_line = .true.          ! Should this line be printed
+      type(spin_info) ::
+     &     t_spin(3)
 
       end type itf_contr
 

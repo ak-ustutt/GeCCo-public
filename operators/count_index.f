@@ -175,6 +175,34 @@
 
       end module itf_utils
 
+
+*----------------------------------------------------------------------*
+      subroutine print_spin(spins, rank, label, logfile)
+*----------------------------------------------------------------------*
+!     Print spin of a tensor
+*----------------------------------------------------------------------*
+      implicit none
+
+      integer, intent(in) ::
+     &   spins(2,*),
+     &   rank,
+     &   logfile
+      character(len=*), intent(in) ::
+     &   label
+
+      integer ::
+     &   i
+
+      write(logfile,*) "SPIN OF ", trim(label)
+      write(logfile,*) "================================="
+      write(logfile,*) (spins(2,i), i=1, rank/2)
+      write(logfile,*) (spins(1,i), i=1, rank/2)
+      write(logfile,*)
+
+      return
+      end
+
+
 *----------------------------------------------------------------------*
       subroutine line_error(error,item)
 *----------------------------------------------------------------------*
@@ -327,6 +355,9 @@
          end if
       end if
 
+      ! Deallocate memroy used when construcitng itf_item
+      call itf_deinit(itf_item)
+
       return
       end
 
@@ -443,6 +474,9 @@
       n_inter = n_inter + itf_item%ninter
 
       deallocate(itf_item%inter_spins)
+
+      ! Deallocate memroy used when construcitng itf_item
+      call itf_deinit(itf_item)
 
       return
       end
@@ -1747,7 +1781,13 @@
      &     t2a(2),
      &     t2b(2),
      &     r1a(2),
-     &     r1b(2)
+     &     r1b(2),
+     &     nt1a(4),   ! First group of first tensor
+     &     nt1b(4),   ! Second group of first tensor
+     &     nt2a(4),
+     &     nt2b(4),
+     &     nr1a(4),
+     &     nr1b(4)
       integer ::
      &     i,j,      ! Loop index
      &     sum_c1,sum_c2,sum_a1,sum_a2,
@@ -1757,7 +1797,8 @@
      &     s2b(2),
      &     second_idx,third_idx,fourth_idx,
      &     zero_a,zero_b,
-     &     result_spin(4) ! Spin case of result
+     &     result_spin(4), ! Spin case of result
+     &     result_spin2(index_len) ! Spin case of result
 
       ! There are certain cases that don't need to be spin summed
       ! because the spin summed line is the same as the non-spin summed
@@ -1795,10 +1836,10 @@
          ! Scalar contributions
          call print_itf_line(item,.false.,.false.)
          return
-      else if (item%rank3==6 .or. item%rank1==6 .or. item%rank2==6) then
-         ! Don't care about higher rank contractions for now...
-         call print_itf_line(item,.false.,.false.)
-         return
+      !else if (item%rank3==6 .or. item%rank1==6 .or. item%rank2==6) then
+      !   ! Don't care about higher rank contractions for now...
+      !   call print_itf_line(item,.false.,.false.)
+      !   return
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
          ! Don't care about tensor products now
@@ -1845,7 +1886,6 @@
          result_spin = (/ 1, 2, 1, 2 /)
       end if
 
-!      write(item%logfile,*) "RESULT_SPIN: ", result_spin
 
       do i=1, 2
          do j=1, 2
@@ -1899,6 +1939,90 @@
             zero_b=zero_b+1
          end if
       end do
+
+
+
+      ! New spin stuff March 2019 ===================================
+      nt1a=''
+      nt1b=''
+      nt2a=''
+      nt2b=''
+      nr1a=''
+      nr1b=''
+      if (item%rank1 >= item%rank2) then
+         call index_to_groups(nt1a,nt1b,item%idx1,item%rank1/2)
+         call index_to_groups(nt2a,nt2b,item%idx2,item%rank2/2)
+      else
+         ! Swapping tensors, so the largest rank tensor is now in t1a
+         ! and t1b
+         call index_to_groups(nt2a,nt2b,item%idx1,item%rank1/2)
+         call index_to_groups(nt1a,nt1b,item%idx2,item%rank2/2)
+         item%swapped = .true.
+      end if
+      call index_to_groups(nr1a,nr1b,item%idx3,item%rank3/2)
+
+      result_spin2 = 0
+      select case (item%rank3)
+         case(2)
+            item%t_spin(3)%spin(1,1) = 1
+            item%t_spin(3)%spin(2,1) = 1
+         case(4)
+            item%t_spin(3)%spin(1,1) = 1
+            item%t_spin(3)%spin(1,2) = 2
+            item%t_spin(3)%spin(2,1) = 1
+            item%t_spin(3)%spin(2,2) = 2
+         case(6)
+            do i=1, 3
+               item%t_spin(3)%spin(1,i) = 1
+               item%t_spin(3)%spin(2,i) = 1
+            end do
+      end select
+
+      call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
+
+      ! TODO: Factor these loops
+      do i=1, item%rank1/2
+         do j=1, item%rank3/2
+
+            ! Assign spin of first tensor
+            if (nr1a(j)==nt1a(i) .and. nr1a(j)/='') then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (nr1a(j)==nt1b(i) .and. nr1a(j)/='') then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (nr1b(j)==nt1a(i) .and. nr1b(j)/='') then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (nr1b(j)==nt1b(i) .and. nr1b(j)/='') then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+
+         end do
+      end do
+
+      do i=1, item%rank2/2
+         do j=1, item%rank3/2
+
+            ! Assign spin of first tensor
+            if (nr1a(j)==nt2a(i) .and. nr1a(j)/='') then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (nr1a(j)==nt2b(i) .and. nr1a(j)/='') then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (nr1b(j)==nt2a(i) .and. nr1b(j)/='') then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (nr1b(j)==nt2b(i) .and. nr1b(j)/='') then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+
+         end do
+      end do
+
+      call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+      call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+
+      ! End new code =============================================
 
       if (zero_a>=zero_b) then
          call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
@@ -2338,7 +2462,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,itf_item,perm,comm,
+      subroutine itf_contr_init(contr_info,item,perm,comm,
      &                          lulog)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
@@ -2356,7 +2480,7 @@
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
-     &     itf_item     ! Object which holds information necessary to print out an ITF algo line
+     &     item     ! Object which holds information necessary to print out an ITF algo line
       integer, intent(in) ::
      &     perm,        ! Permutation information
      &     comm,        ! formula_item command
@@ -2364,66 +2488,98 @@
       ! This should be in a 'constructor'
 
       ! Assign output file
-      itf_item%logfile=lulog
+      item%logfile=lulog
 
       ! Assign command type
-      itf_item%command=comm
+      item%command=comm
 
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         itf_item%permute=perm
+         item%permute=perm
       end if
 
       ! Assign labels
-      itf_item%label_t1=contr_info%label_op1
+      item%label_t1=contr_info%label_op1
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
          ! Operator 2 does not exist in [ADD] or [COPY]
-         itf_item%label_t2=contr_info%label_op2
+         item%label_t2=contr_info%label_op2
       end if
-      itf_item%label_res=contr_info%label_res
+      item%label_res=contr_info%label_res
 
 
       ! Check if an intermediate
-      !call check_inter(itf_item%label_t1,itf_item%inter(1))
+      !call check_inter(item%label_t1,item%inter(1))
       !if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-      !   call check_inter(itf_item%label_t2,itf_item%inter(2))
+      !   call check_inter(item%label_t2,item%inter(2))
       !end if
-      !call check_inter(itf_item%label_res,itf_item%inter(3))
+      !call check_inter(item%label_res,item%inter(3))
 
-      itf_item%inter(1) = check_inter(itf_item%label_t1)
+      item%inter(1) = check_inter(item%label_t1)
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         itf_item%inter(2) = check_inter(itf_item%label_t2)
+         item%inter(2) = check_inter(item%label_t2)
       end if
-      itf_item%inter(3) = check_inter(itf_item%label_res)
+      item%inter(3) = check_inter(item%label_res)
 
       ! Check if an integral
-      itf_item%int(1) = check_int(itf_item%label_t1)
+      item%int(1) = check_int(item%label_t1)
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         itf_item%int(2) = check_int(itf_item%label_t2)
+         item%int(2) = check_int(item%label_t2)
       end if
-      itf_item%int(3) = .false.
+      item%int(3) = .false.
 
       ! Assign factor --- use special ITF factor
       ! the ITF factor is closer to the value expected from standard
       ! diagram rules, but still some care has to be taken when translating
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      itf_item%fact=contr_info%fact_itf
+      item%fact=contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
-      call integral_fact(contr_info,itf_item%fact)
+      call integral_fact(contr_info,item%fact)
 
       ! Assign index string. Tensor ranks are also set here
       if (comm==command_cp_intm .or. comm==command_add_intm) then
          ! For [ADD] and [COPY]
-         call assign_add_index(contr_info,itf_item)
+         call assign_add_index(contr_info,item)
       else
          ! For other contractions
-         call assign_index(contr_info,itf_item)
+         call assign_index(contr_info,item)
       end if
 
-      itf_item%inter1 = '        '
-      itf_item%inter2 = '        '
+      item%inter1 = ''
+      item%inter2 = ''
+
+      allocate(item%t_spin(1)%spin(2, item%rank1/2))
+      allocate(item%t_spin(2)%spin(2, item%rank2/2))
+      allocate(item%t_spin(3)%spin(2, item%rank3/2))
+
+      item%t_spin(1)%spin = 0
+      item%t_spin(2)%spin = 0
+      item%t_spin(3)%spin = 0
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine itf_deinit(item)
+*----------------------------------------------------------------------*
+!     Deinitialise ITF contraction object
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &     item     ! Object which holds information necessary to print out an ITF algo line
+
+      deallocate(item%t_spin(1)%spin)
+      deallocate(item%t_spin(2)%spin)
+      deallocate(item%t_spin(3)%spin)
 
       return
       end
