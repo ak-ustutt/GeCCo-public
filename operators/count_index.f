@@ -1832,13 +1832,6 @@
       hr2 = item%rank2/2
       hr3 = item%rank3/2
 
-      if (item%rank2 > item%rank1) then
-         ! Swapping tensors, so the largest rank tensor is now in t1a
-         ! and t1b
-         ! TODO: possibly don't need this logical anymore...
-         item%swapped = .true.
-      end if
-
       ! Assign spin to indicies on the result tensor
       ! TODO: spin_case is only len 4
       if (item%inter(3)) then
@@ -2168,6 +2161,7 @@
       end do
 
       ! Pick out specific spin cases here
+      ! TODO: make this work for rank 6 tensors
       if (sum(s1a)==sum(s1b) .and.
      &    sum(s2a)==sum(s2b)) then
          if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
@@ -2186,7 +2180,6 @@
 !            write(11,*) "NEW S2a ", s2a(1), s2a(2)
 !            write(11,*) "NEW S2b ", s2b(1), s2b(2)
 
-            ! T1 and T2 may have been swapped, swap them back again
             ! TODO: ts2a is only size 2...
             do i = 1, size(item%t_spin(1)%spin,2)
                ts1a(i) = item%t_spin(1)%spin(1,i)
