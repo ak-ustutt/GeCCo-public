@@ -1776,32 +1776,12 @@
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item
 
-!      character(len=1) ::
-!     &     t1a(index_len),   ! First group of first tensor
-!     &     t1b(index_len),   ! Second group of first tensor
-!     &     t2a(index_len),
-!     &     t2b(index_len),
-!     &     r1a(index_len),
-!     &     r1b(index_len)
-!     &     nt1a(index_len),   ! First group of first tensor
-!     &     nt1b(index_len),   ! Second group of first tensor
-!     &     nt2a(index_len),
-!     &     nt2b(index_len),
-!     &     nr1a(index_len),
-!     &     nr1b(index_len)
       integer ::
-     &     i,j,      ! Loop index
-     &     sum_c1,sum_c2,sum_a1,sum_a2,
-     &     s1a(2),
-     &     s1b(2),
-     &     s2a(2),
-     &     s2b(2),
-     &     second_idx,third_idx,fourth_idx,
-     &     zero_a,zero_b,
-     &     result_spin(4), ! Spin case of result
-     &   hr1, hr2, hr3
+     &   i,j,              ! Loop index
+     &   result_spin(4),   ! Spin case of result
+     &   hr1, hr2, hr3     ! Half tensor ranks
 
       ! There are certain cases that don't need to be spin summed
       ! because the spin summed line is the same as the non-spin summed
@@ -1846,109 +1826,8 @@
          return
       end if
 
-!      s1a=0
-!      s1b=0
-!      s2a=0
-!      s2b=0
-!      t1a=''
-!      t1b=''
-!      t2a=''
-!      t2b=''
-!      r1a=''
-!      r1b=''
-!
-!      ! Start by splitting the index into covarient and contravarient
-!      ! groups
-!      if (item%rank1 >= item%rank2) then
-!         call index_to_groups(t1a,t1b,item%idx1,item%rank1/2)
-!         call index_to_groups(t2a,t2b,item%idx2,item%rank2/2)
-!      else
-!         ! Swapping tensors, so the largest rank tensor is now in t1a
-!         ! and t1b
-!         call index_to_groups(t2a,t2b,item%idx1,item%rank1/2)
-!         call index_to_groups(t1a,t1b,item%idx2,item%rank2/2)
-!         item%swapped = .true.
-!      end if
-!
-!      ! Get result index
-!      call index_to_groups(r1a,r1b,item%idx3,item%rank3/2)
-!
-!      ! Each result has a specific spin case, ie. for rank-2 we just
-!      ! need the aa case, for rank-4 we need abab. So find the external
-!      ! indicies in the contraction tensors and set their spins. For
-!      ! certain intermedites we may need different cases, so set
-!      ! result_spin accordingly.
-!      if (item%inter(3)) then
-!         result_spin = item%spin_case
-!      else
-!         ! abab
-!         result_spin = (/ 1, 2, 1, 2 /)
-!      end if
-!
-!
-!      do i=1, 2
-!         do j=1, 2
-!            ! Assign spin of first tensor
-!            if (r1a(j)==t1a(i) .and. r1a(j)/='') then
-!               s1a(i) = result_spin(j)
-!            else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
-!               s1b(i) = result_spin(j)
-!            end if
-!
-!            if (r1b(j)==t1a(i) .and. r1b(j)/='') then
-!               s1a(i) = result_spin(j+2)
-!            else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
-!               s1b(i) = result_spin(j+2)
-!            end if
-!
-!            ! Assign spin of second tensor
-!            if (r1a(j)==t2a(i) .and. r1a(j)/='') then
-!               s2a(i) = result_spin(j)
-!            else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
-!               s2b(i) = result_spin(j)
-!            end if
-!
-!            if (r1b(j)==t2a(i) .and. r1b(j)/='') then
-!               s2a(i) = result_spin(j+2)
-!            else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
-!               s2b(i) = result_spin(j+2)
-!            end if
-!         end do
-!      end do
-!
-!      ! Index assigned from result
-!      ! Debug
-!      !write(item%logfile,*) "s1b: ", s1b
-!      !write(item%logfile,*) "s1a: ", s1a
-!      !write(item%logfile,*)
-!      !write(item%logfile,*) "s2b: ", s2b
-!      !write(item%logfile,*) "s2a: ", s2a
-!      !write(item%logfile,*)
-!      !write(item%logfile,*)
-!
-!      ! The sum will start with the index group with the most unassigned
-!      ! contraction indcies (0s)
-!      zero_a=0
-!      zero_b=0
-!      do i=1, size(s1a)
-!         if (s1a(i)==0) then
-!            zero_a=zero_a+1
-!         end if
-!         if (s1b(i)==0) then
-!            zero_b=zero_b+1
-!         end if
-!      end do
 
-
-
-      ! New spin stuff March 2019 ===================================
-!      t1a=''
-!      t1b=''
-!      t2a=''
-!      t2b=''
-!      r1a=''
-!      r1b=''
-
+      ! Calculate half ranks for use in indexing letter index strings
       hr1 = item%rank1/2
       hr2 = item%rank2/2
       hr3 = item%rank3/2
@@ -1956,14 +1835,11 @@
       if (item%rank2 > item%rank1) then
          ! Swapping tensors, so the largest rank tensor is now in t1a
          ! and t1b
+         ! TODO: possibly don't need this logical anymore...
          item%swapped = .true.
       end if
 
-      ! TODO: Is this needed?
-!      call index_to_groups(t1a,t1b,item%idx1,item%rank1/2)
-!      call index_to_groups(t2a,t2b,item%idx2,item%rank2/2)
-!      call index_to_groups(r1a,r1b,item%idx3,item%rank3/2)
-
+      ! Assign spin to indicies on the result tensor
       ! TODO: spin_case is only len 4
       if (item%inter(3)) then
          do i=1, size(item%spin_case)/2
@@ -1975,15 +1851,18 @@
       else
          select case (item%rank3)
             case(2)
+               ! aa
                item%t_spin(3)%spin(1,1) = 1
                item%t_spin(3)%spin(2,1) = 1
             case(4)
+               ! abab
                item%t_spin(3)%spin(1,1) = 1
                item%t_spin(3)%spin(1,2) = 2
                item%t_spin(3)%spin(2,1) = 1
                item%t_spin(3)%spin(2,2) = 2
             case(6)
                do i=1, 3
+                  ! aaaaaa
                   item%t_spin(3)%spin(1,i) = 1
                   item%t_spin(3)%spin(2,i) = 1
                end do
@@ -1992,20 +1871,10 @@
 
       !call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
 
-      do i=1, hr1
-         do j=1, hr3
+      ! Assign spin of external indicies to T1 and T2
+      do j=1, hr3
+         do i=1, hr1
             ! Assign spin of first tensor
-            !if (r1a(j)==t1a(i) .and. r1a(j)/='') then
-            !   item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
-            !else if (r1a(j)==t1b(i) .and. r1a(j)/='') then
-            !   item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
-            !end if
-
-            !if (r1b(j)==t1a(i) .and. r1b(j)/='') then
-            !   item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
-            !else if (r1b(j)==t1b(i) .and. r1b(j)/='') then
-            !   item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
-            !end if
             if (item%idx3(j:j)==item%idx1(i:i)) then
                item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
             else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
@@ -2018,22 +1887,9 @@
                item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
             end if
          end do
-      end do
 
-      do i=1, hr2
-         do j=1, hr3
+         do i=1, hr2
             ! Assign spin of second tensor
-            !if (r1a(j)==t2a(i) .and. r1a(j)/='') then
-            !   item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
-            !else if (r1a(j)==t2b(i) .and. r1a(j)/='') then
-            !   item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
-            !end if
-
-            !if (r1b(j)==t2a(i) .and. r1b(j)/='') then
-            !   item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
-            !else if (r1b(j)==t2b(i) .and. r1b(j)/='') then
-            !   item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
-            !end if
             if (item%idx3(j:j)==item%idx2(i:i)) then
                item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
             else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
@@ -2051,17 +1907,9 @@
       !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
       !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
 
+      ! Sum over the remaining contraction indicies and print out the
+      ! line
       call spin_index(item, item%contri)
-
-      ! End new code =============================================
-
-!      if (zero_a>=zero_b) then
-!         call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-!     &                 zero_b,item)
-!      else
-!         call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
-!     &                 zero_a,item)
-!      end if
 
       return
       end
