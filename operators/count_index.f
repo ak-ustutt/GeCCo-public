@@ -1967,22 +1967,33 @@
       end if
       call index_to_groups(nr1a,nr1b,item%idx3,item%rank3/2)
 
+      ! TODO: don't need result_spin2...
+      ! TODO: spin_case is only len 4
       result_spin2 = 0
-      select case (item%rank3)
-         case(2)
-            item%t_spin(3)%spin(1,1) = 1
-            item%t_spin(3)%spin(2,1) = 1
-         case(4)
-            item%t_spin(3)%spin(1,1) = 1
-            item%t_spin(3)%spin(1,2) = 2
-            item%t_spin(3)%spin(2,1) = 1
-            item%t_spin(3)%spin(2,2) = 2
-         case(6)
-            do i=1, 3
-               item%t_spin(3)%spin(1,i) = 1
-               item%t_spin(3)%spin(2,i) = 1
-            end do
-      end select
+      if (item%inter(3)) then
+         do i=1, size(item%spin_case)/2
+            if (item%spin_case(i) == 0) exit
+            item%t_spin(3)%spin(1,i) = item%spin_case(i)
+            item%t_spin(3)%spin(2,i) =
+     &                  item%spin_case(i+size(item%spin_case)/2)
+         end do
+      else
+         select case (item%rank3)
+            case(2)
+               item%t_spin(3)%spin(1,1) = 1
+               item%t_spin(3)%spin(2,1) = 1
+            case(4)
+               item%t_spin(3)%spin(1,1) = 1
+               item%t_spin(3)%spin(1,2) = 2
+               item%t_spin(3)%spin(2,1) = 1
+               item%t_spin(3)%spin(2,2) = 2
+            case(6)
+               do i=1, 3
+                  item%t_spin(3)%spin(1,i) = 1
+                  item%t_spin(3)%spin(2,i) = 1
+               end do
+         end select
+      end if
 
       !call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
 
@@ -2239,14 +2250,14 @@
       end do
 
 
-               write(11,*) "NEW SPIN: "
-               if (item%swapped) then
-              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
-              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
-               else
-              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
-              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
-               end if
+!               write(11,*) "NEW SPIN: "
+!               if (item%swapped) then
+!              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+!              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+!               else
+!              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+!              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+!               end if
 
 
 
@@ -2295,18 +2306,29 @@
      &   ts1a(2), ts2a(2), ts1b(2), ts2b(2) ! Store re-swapped spin info
       character(len=index_len) ::
      &   spin_name
-      integer, pointer ::
-     &   s1a(:),
-     &   s1b(:),
-     &   s2a(:),
-     &   s2b(:)
+!      integer, pointer ::
+!     &   s1a(:),
+!     &   s1b(:),
+!     &   s2a(:),
+!     &   s2b(:)
+      integer ::
+     &   s1a(2),
+     &   s1b(2),
+     &   s2a(2),
+     &   s2b(2)
 
-      allocate(s1a(size(item%t_spin(1)%spin,2)))
-      allocate(s1b(size(item%t_spin(1)%spin,2)))
-      allocate(s2a(size(item%t_spin(2)%spin,2)))
-      allocate(s2b(size(item%t_spin(2)%spin,2)))
+      s1a=0
+      s1b=0
+      s2a=0
+      s2b=0
+
+!      allocate(s1a(size(item%t_spin(1)%spin,2)))
+!      allocate(s1b(size(item%t_spin(1)%spin,2)))
+!      allocate(s2a(size(item%t_spin(2)%spin,2)))
+!      allocate(s2b(size(item%t_spin(2)%spin,2)))
 
       ! TODO: for now place new structures into old ones...
+      !       should just use %spin
       do i = 1, size(item%t_spin(1)%spin,2)
          s1a(i) = item%t_spin(1)%spin(1,i)
          s1b(i) = item%t_spin(1)%spin(2,i)
@@ -2330,18 +2352,46 @@
             ts2a=0
             ts2b=0
 
+!            write(11,*) "NEW S1a ", s1a(1), s1a(2)
+!            write(11,*) "NEW S1b ", s1b(1), s1b(2)
+!            write(11,*) "NEW S2a ", s2a(1), s2a(2)
+!            write(11,*) "NEW S2b ", s2b(1), s2b(2)
+
             ! T1 and T2 may have been swapped, swap them back again
+            ! TODO: do we need to swap??
+            ! TODO: ts2a is only size 2...
             !if (item%swapped) then
-            !   ts1a=s2a
-            !   ts1b=s2b
-            !   ts2a=s1a
-            !   ts2b=s1b
+            !   !ts1a=s2a
+            !   !ts1b=s2b
+            !   !ts2a=s1a
+            !   !ts2b=s1b
+            !   do i = 1, size(item%t_spin(1)%spin,2)
+            !      ts2a(i) = item%t_spin(1)%spin(1,i)
+            !      ts2b(i) = item%t_spin(1)%spin(2,i)
+            !   end do
+            !   do i = 1, size(item%t_spin(2)%spin,2)
+            !      ts1a(i) = item%t_spin(2)%spin(1,i)
+            !      ts1b(i) = item%t_spin(2)%spin(2,i)
+            !   end do
             !else
-               ts1a=s1a
-               ts1b=s1b
-               ts2a=s2a
-               ts2b=s2b
+               !ts1a=s1a
+               !ts1b=s1b
+               !ts2a=s2a
+               !ts2b=s2b
+               do i = 1, size(item%t_spin(1)%spin,2)
+                  ts1a(i) = item%t_spin(1)%spin(1,i)
+                  ts1b(i) = item%t_spin(1)%spin(2,i)
+               end do
+               do i = 1, size(item%t_spin(2)%spin,2)
+                  ts2a(i) = item%t_spin(2)%spin(1,i)
+                  ts2b(i) = item%t_spin(2)%spin(2,i)
+               end do
             !end if
+
+!            write(11,*) "NEW tS1a ", ts1a(1), ts1a(2)
+!            write(11,*) "NEW tS1b ", ts1b(1), ts1b(2)
+!            write(11,*) "NEW tS2a ", ts2a(1), ts2a(2)
+!            write(11,*) "NEW tS2b ", ts2b(1), ts2b(2)
 
             ! TODO: Doesn't work for rank 6 tensors yet...
             if (item%rank1==2 .or. item%rank1==0) then
@@ -2412,10 +2462,10 @@
          end if
       end if
 
-      deallocate(s1a)
-      deallocate(s1b)
-      deallocate(s2a)
-      deallocate(s2b)
+!      deallocate(s1a)
+!      deallocate(s1b)
+!      deallocate(s2a)
+!      deallocate(s2b)
 
       return
       end
@@ -2634,6 +2684,11 @@
             ts2a=0
             ts2b=0
 
+            write(11,*) "S1a ", s1a(1), s1a(2)
+            write(11,*) "S1b ", s1b(1), s1b(2)
+            write(11,*) "S2a ", s2a(1), s2a(2)
+            write(11,*) "S2b ", s2b(1), s2b(2)
+
             ! T1 and T2 may have been swapped, swap them back again
             if (item%swapped) then
                ts1a=s2a
@@ -2646,6 +2701,11 @@
                ts2a=s2a
                ts2b=s2b
             end if
+
+            write(11,*) "tS1a ", ts1a(1), ts1a(2)
+            write(11,*) "tS1b ", ts1b(1), ts1b(2)
+            write(11,*) "tS2a ", ts2a(1), ts2a(2)
+            write(11,*) "tS2b ", ts2b(1), ts2b(2)
 
             ! TODO: Doesn't work for rank 6 tensors yet...
             if (item%rank1==2 .or. item%rank1==0) then
