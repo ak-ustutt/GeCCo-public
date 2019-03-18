@@ -1909,14 +1909,14 @@
 
       ! Sum over the remaining contraction indicies and print out the
       ! line
-      call spin_index(item, item%contri)
+      call spin_index(item)
 
       return
       end
 
 
 *----------------------------------------------------------------------*
-      subroutine spin_index(item, c_index)
+      subroutine spin_index(item)
 *----------------------------------------------------------------------*
 !     Find contraction index used in spin summation
 *----------------------------------------------------------------------*
@@ -1929,28 +1929,22 @@
 
       type(itf_contr), intent(inout) ::
      &     item
-      integer, intent(in) ::
-     &   c_index        ! Number of contraction indicies
 
       type(twodarray), pointer ::
      &   poss(:,:) => null()
       integer ::
      &   i, j, k, l, m, n, shift,
-     &   i1, i2, i3, i4, i5, i6, i7, i8,
-     &   i9, i10, i11, i12, i13, i14, i15, i16,
-     &   zero_a, zero_b,
+     &   i1, i2, i3, i4,
      &   z1, z2, r1, r2
       character(len=index_len) ::
      &   str1, str2
       logical ::
      &   eloop
 
-
-      ! TODO: c_index in item
-      allocate(poss(2,c_index))
+      allocate(poss(2,item%contri))
 
       ! Largest tensor goes first
-      if (item%swapped) then
+      if (item%rank2 > item%rank1) then
          z1 = 2
          z2 = 1
          r1 = item%rank2/2
@@ -1966,6 +1960,7 @@
          str2 = item%idx2
       end if
 
+      ! Get position information of contraction indicies
       shift = 1
       do i=1, size(item%t_spin(z1)%spin,2)
          if (item%t_spin(z1)%spin(1,i) == 0) then
@@ -2014,7 +2009,7 @@
       end do
 
 
-      ! TODO: Generalise this???
+      ! Main spin summation loop
       shift = shift - 1
       eloop = .false.
       do i = 1, 2
@@ -2025,40 +2020,66 @@
          item%t_spin(z1)%spin(i1, i2) = i
          item%t_spin(z2)%spin(i3, i4) = i
          if (shift <= 1) then
-            call print_spin_case2(item,eloop)
+            call print_spin_case(item,eloop)
          end if
          if (shift > 1) then
             do j = 1, 2
-               i5 = poss(1,2)%elements(1)
-               i6 = poss(1,2)%elements(2)
-               i7 = poss(2,2)%elements(1)
-               i8 = poss(2,2)%elements(2)
-               item%t_spin(z1)%spin(i5, i6) = j
-               item%t_spin(z2)%spin(i7, i8) = j
+               i1 = poss(1,2)%elements(1)
+               i2 = poss(1,2)%elements(2)
+               i3 = poss(2,2)%elements(1)
+               i4 = poss(2,2)%elements(2)
+               item%t_spin(z1)%spin(i1, i2) = j
+               item%t_spin(z2)%spin(i3, i4) = j
                if (shift <= 2) then
-                  call print_spin_case2(item,eloop)
+                  call print_spin_case(item,eloop)
                end if
                if (shift > 2) then
                   do k = 1, 2
-                     i9  = poss(1,3)%elements(1)
-                     i10 = poss(1,3)%elements(2)
-                     i11 = poss(2,3)%elements(1)
-                     i12 = poss(2,3)%elements(2)
-                     item%t_spin(z1)%spin(i9, i10) = k
-                     item%t_spin(z2)%spin(i11, i12) = k
+                     i1 = poss(1,3)%elements(1)
+                     i2 = poss(1,3)%elements(2)
+                     i3 = poss(2,3)%elements(1)
+                     i4 = poss(2,3)%elements(2)
+                     item%t_spin(z1)%spin(i1, i2) = k
+                     item%t_spin(z2)%spin(i3, i4) = k
                      if (shift <= 3) then
-                        call print_spin_case2(item,eloop)
+                        call print_spin_case(item,eloop)
                      end if
                      if (shift > 3) then
                         do l = 1, 2
-                           i13 = poss(1,4)%elements(1)
-                           i14 = poss(1,4)%elements(2)
-                           i15 = poss(2,4)%elements(1)
-                           i16 = poss(2,4)%elements(2)
-                           item%t_spin(z1)%spin(i13, i14) = l
-                           item%t_spin(z2)%spin(i15, i16) = l
+                           i1 = poss(1,4)%elements(1)
+                           i2 = poss(1,4)%elements(2)
+                           i3 = poss(2,4)%elements(1)
+                           i4 = poss(2,4)%elements(2)
+                           item%t_spin(z1)%spin(i1, i2) = l
+                           item%t_spin(z2)%spin(i3, i4) = l
                            if (shift <= 4) then
-                              call print_spin_case2(item,eloop)
+                              call print_spin_case(item,eloop)
+                           end if
+                           if (shift > 4) then
+                              do m = 1, 2
+                                 i1 = poss(1,5)%elements(1)
+                                 i2 = poss(1,5)%elements(2)
+                                 i3 = poss(2,5)%elements(1)
+                                 i4 = poss(2,5)%elements(2)
+                                 item%t_spin(z1)%spin(i1, i2) = m
+                                 item%t_spin(z2)%spin(i3, i4) = m
+                                 if (shift <= 5) then
+                                    call print_spin_case(item,eloop)
+                                 end if
+                                 if (shift > 5) then
+                                    do n = 1, 2
+                                       i1 = poss(1,6)%elements(1)
+                                       i2 = poss(1,6)%elements(2)
+                                       i3 = poss(2,6)%elements(1)
+                                       i4 = poss(2,6)%elements(2)
+                                       item%t_spin(z1)%spin(i1, i2) = n
+                                       item%t_spin(z2)%spin(i3, i4) = n
+                                       if (shift <= 6) then
+                                        call print_spin_case(item,eloop)
+                                       end if
+                                    end do
+                                 end if
+                              end do
                            end if
                         end do
                      end if
@@ -2087,7 +2108,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case2(item,eloop)
+      subroutine print_spin_case(item,eloop)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
