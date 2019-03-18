@@ -1060,6 +1060,9 @@
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
 
+      ! Set number of contraction indicies, used later on
+      item%contri = sum(sum(c, dim=1))
+
       ! Allocate pair list according to ranks of tensors
       allocate(p_list%plist(item%rank1+item%rank2))
       allocate(t1_list%plist(item%rank1))
@@ -1782,12 +1785,12 @@
      &     t2b(2),
      &     r1a(2),
      &     r1b(2),
-     &     nt1a(4),   ! First group of first tensor
-     &     nt1b(4),   ! Second group of first tensor
-     &     nt2a(4),
-     &     nt2b(4),
-     &     nr1a(4),
-     &     nr1b(4)
+     &     nt1a(index_len),   ! First group of first tensor
+     &     nt1b(index_len),   ! Second group of first tensor
+     &     nt2a(index_len),
+     &     nt2b(index_len),
+     &     nr1a(index_len),
+     &     nr1b(index_len)
       integer ::
      &     i,j,      ! Loop index
      &     sum_c1,sum_c2,sum_a1,sum_a2,
@@ -1949,14 +1952,17 @@
       nt2b=''
       nr1a=''
       nr1b=''
+      ! TODO: Is this needed?
       if (item%rank1 >= item%rank2) then
          call index_to_groups(nt1a,nt1b,item%idx1,item%rank1/2)
          call index_to_groups(nt2a,nt2b,item%idx2,item%rank2/2)
       else
          ! Swapping tensors, so the largest rank tensor is now in t1a
          ! and t1b
-         call index_to_groups(nt2a,nt2b,item%idx1,item%rank1/2)
-         call index_to_groups(nt1a,nt1b,item%idx2,item%rank2/2)
+         call index_to_groups(nt1a,nt1b,item%idx1,item%rank1/2)
+         call index_to_groups(nt2a,nt2b,item%idx2,item%rank2/2)
+         !call index_to_groups(nt2a,nt2b,item%idx1,item%rank1/2)
+         !call index_to_groups(nt1a,nt1b,item%idx2,item%rank2/2)
          item%swapped = .true.
       end if
       call index_to_groups(nr1a,nr1b,item%idx3,item%rank3/2)
@@ -1978,7 +1984,7 @@
             end do
       end select
 
-      call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
+      !call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
 
       ! TODO: Factor these loops
       do i=1, item%rank1/2
@@ -2003,7 +2009,7 @@
       do i=1, item%rank2/2
          do j=1, item%rank3/2
 
-            ! Assign spin of first tensor
+            ! Assign spin of second tensor
             if (nr1a(j)==nt2a(i) .and. nr1a(j)/='') then
                item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
             else if (nr1a(j)==nt2b(i) .and. nr1a(j)/='') then
@@ -2019,18 +2025,397 @@
          end do
       end do
 
-      call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
-      call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+
+      !write(11,*) "SIZE1 ", size(item%t_spin(1)%spin,1)
+      !write(11,*) "SIZE1 ", size(item%t_spin(1)%spin,2)
+      !write(11,*) "SHAPE1 ", shape(item%t_spin(1)%spin)
+      call spin_index(item, item%contri)
 
       ! End new code =============================================
 
-      if (zero_a>=zero_b) then
-         call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
-     &                 zero_b,item)
+!      if (zero_a>=zero_b) then
+!         call spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
+!     &                 zero_b,item)
+!      else
+!         call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
+!     &                 zero_a,item)
+!      end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine spin_index(item, c_index)
+*----------------------------------------------------------------------*
+!     Find contraction index used in spin summation
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+!      integer, intent(inout), dimension(:,:) ::
+!     &   spin1,
+!     &   spin2
+      type(itf_contr), intent(inout) ::
+     &     item
+      integer, intent(in) ::
+     &   c_index        ! Number of contraction indicies
+
+      type(twodarray), pointer ::
+     &   poss(:,:) => null()
+      integer ::
+     &   i, j, k, l, m, n, shift,
+     &   i1, i2, i3, i4, i5, i6, i7, i8,
+     &   i9, i10, i11, i12, i13, i14, i15, i16,
+     &   zero_a, zero_b,
+     &   z1, z2, r1, r2
+      character(len=index_len) ::
+     &   str1, str2
+      logical ::
+     &   eloop
+
+
+      ! TODO: c_index in item
+      allocate(poss(2,c_index))
+!      do i = 1, 2
+!         do j = 1, c_index
+!            poss(i,j)%elements=0
+!         end do
+!      end do
+!
+!      write(11,*) "OLD POSS", (poss(1,i)%elements, " and ",
+!     &            poss(2,i)%elements, i=1, c_index)
+
+      ! TODO: Find out the one with most zeros...
+      if (item%swapped) then
+         z1 = 2
+         z2 = 1
+         r1 = item%rank2/2
+         r2 = item%rank1/2
+         str1 = item%idx2
+         str2 = item%idx1
       else
-         call spin_sum(s1b,s1a,s2a,s2b,t1b,t1a,t2a,t2b,zero_b,
-     &                 zero_a,item)
+         z1 = 1
+         z2 = 2
+         r1 = item%rank1/2
+         r2 = item%rank2/2
+         str1 = item%idx1
+         str2 = item%idx2
       end if
+
+!      write(11,*) "SIZE1 ", size(item%t_spin(z1)%spin,1)
+!      write(11,*) "SIZE1 ", size(item%t_spin(z1)%spin,2)
+!      write(11,*) "SHAPE1 ", shape(item%t_spin(z1)%spin)
+!      write(11,*) "SIZE2 ", size(item%t_spin(z2)%spin,1)
+!      write(11,*) "SIZE2 ", size(item%t_spin(z2)%spin,2)
+!      write(11,*) "SHAPE2 ", shape(item%t_spin(z2)%spin)
+!      write(11,*) "C_INDEX: ", c_index
+
+      shift = 1
+      do i=1, size(item%t_spin(z1)%spin,2)
+         if (item%t_spin(z1)%spin(1,i) == 0) then
+!            write(11,*) "hello1 ", str1(i:i)
+            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (item%idx1(i:i) ==
+!     &             item%idx2(j+item%rank2/2:j+item%rank2/2)) then
+               if (str1(i:i) ==
+     &                     str2(j+r2:j+r2)) then
+!                  write(11,*) "found: ", item%idx1(i:i),
+!     &                        item%idx2(j+item%rank2/2:j+item%rank2/2)
+                  poss(1,shift)%elements(1) = 1
+                  poss(1,shift)%elements(2) = i
+                  poss(2,shift)%elements(1) = 2
+                  poss(2,shift)%elements(2) = j
+                  shift = shift + 1
+               end if
+            end do
+            do j=1, size(item%t_spin(z2)%spin,2)
+               if (str1(i:i) ==
+     &                     str2(j:j)) then
+                  poss(1,shift)%elements(1) = 1
+                  poss(1,shift)%elements(2) = i
+                  poss(2,shift)%elements(1) = 1
+                  poss(2,shift)%elements(2) = j
+                  shift = shift + 1
+               end if
+            end do
+         end if
+      end do
+
+      do i=1, size(item%t_spin(z1)%spin,2)
+         if (item%t_spin(z1)%spin(2,i) == 0) then
+!            write(11,*) "hello2 ", str1(i+r1:i+r1)
+            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (item%idx1(i+item%rank1/2:i+item%rank1/2) ==
+!     &             item%idx2(j:j)) then
+!               write(11,*) "hello2 ", str2(j:j)
+               if (str1(i+r1:i+r1) ==
+     &               str2(j:j)) then
+!                  write(11,*) "found: ",
+!     &                        item%idx1(i+item%rank1/2:i+item%rank1/2),
+!     &                        item%idx2(j:j)
+                  poss(1,shift)%elements(1) = 2
+                  poss(1,shift)%elements(2) = i
+                  poss(2,shift)%elements(1) = 1
+                  poss(2,shift)%elements(2) = j
+                  shift = shift + 1
+               end if
+            end do
+            do j=1, size(item%t_spin(z2)%spin,2)
+!               write(11,*) "hello2 ", str2(j+r2:j+r2)
+               if (str1(i+r1:i+r1) ==
+     &               str2(j+r2:j+r2)) then
+                  poss(1,shift)%elements(1) = 2
+                  poss(1,shift)%elements(2) = i
+                  poss(2,shift)%elements(1) = 2
+                  poss(2,shift)%elements(2) = j
+                  shift = shift + 1
+               end if
+            end do
+         end if
+      end do
+!      write(11,*) "SHIFT: ", shift
+
+!      write(11,*) "POSS", (poss(1,i)%elements, " and ",
+!     &            poss(2,i)%elements, i=1, shift-1)
+
+      shift = shift - 1
+      eloop = .false.
+      do i = 1, 2
+         i1 = poss(1,1)%elements(1)
+         i2 = poss(1,1)%elements(2)
+         i3 = poss(2,1)%elements(1)
+         i4 = poss(2,1)%elements(2)
+         item%t_spin(z1)%spin(i1, i2) = i
+         item%t_spin(z2)%spin(i3, i4) = i
+         if (shift <= 1) then
+            call print_spin_case2(item,eloop)
+         end if
+         if (shift > 1) then
+            do j = 1, 2
+               i5 = poss(1,2)%elements(1)
+               i6 = poss(1,2)%elements(2)
+               i7 = poss(2,2)%elements(1)
+               i8 = poss(2,2)%elements(2)
+               item%t_spin(z1)%spin(i5, i6) = j
+               item%t_spin(z2)%spin(i7, i8) = j
+               if (shift <= 2) then
+                  call print_spin_case2(item,eloop)
+               end if
+               if (shift > 2) then
+                  do k = 1, 2
+                     i9  = poss(1,3)%elements(1)
+                     i10 = poss(1,3)%elements(2)
+                     i11 = poss(2,3)%elements(1)
+                     i12 = poss(2,3)%elements(2)
+                     item%t_spin(z1)%spin(i9, i10) = k
+                     item%t_spin(z2)%spin(i11, i12) = k
+                     if (shift <= 3) then
+                        call print_spin_case2(item,eloop)
+                     end if
+                     if (shift > 3) then
+                        do l = 1, 2
+                           i13 = poss(1,4)%elements(1)
+                           i14 = poss(1,4)%elements(2)
+                           i15 = poss(2,4)%elements(1)
+                           i16 = poss(2,4)%elements(2)
+                           item%t_spin(z1)%spin(i13, i14) = l
+                           item%t_spin(z2)%spin(i15, i16) = l
+                           if (shift <= 4) then
+                              call print_spin_case2(item,eloop)
+                           end if
+                        end do
+                     end if
+                  end do
+               end if
+            end do
+         end if
+      end do
+
+
+               write(11,*) "NEW SPIN: "
+               if (item%swapped) then
+              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+               else
+              call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+              call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+               end if
+
+
+
+      if (.not. eloop) then
+         call line_error("Didn't print out spin case", item)
+      end if
+
+      ! Mark the end of the spin summed block, if we will print a
+      ! permutation of this line next (ie. permute==1) then we will not
+      ! end the block just yet. This will save load/drop calls for the
+      ! same tensors
+      if (eloop .and. item%permute /= 1 .and. item%print_line) then
+         if (.not. item%symm) write(item%logfile,*) "END"
+      end if
+
+      deallocate(poss)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_spin_case2(item,eloop)
+*----------------------------------------------------------------------*
+!     Print spin case
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &   item
+      logical, intent(inout) ::
+     &   eloop     ! Check if at least one spin case is printed out
+
+      logical ::
+     &   s1,       ! True if tensor 1 is mixed spin
+     &   s2        ! True if tensor 2 is mixed spin
+      integer ::
+     &   i,
+     &   shift,   ! Index number of different spin cases for an intermediate
+     &   ishift,  ! Index number of intermediates on a line
+     &   ts1a(2), ts2a(2), ts1b(2), ts2b(2) ! Store re-swapped spin info
+      character(len=index_len) ::
+     &   spin_name
+      integer, pointer ::
+     &   s1a(:),
+     &   s1b(:),
+     &   s2a(:),
+     &   s2b(:)
+
+      allocate(s1a(size(item%t_spin(1)%spin,2)))
+      allocate(s1b(size(item%t_spin(1)%spin,2)))
+      allocate(s2a(size(item%t_spin(2)%spin,2)))
+      allocate(s2b(size(item%t_spin(2)%spin,2)))
+
+      ! TODO: for now place new structures into old ones...
+      do i = 1, size(item%t_spin(1)%spin,2)
+         s1a(i) = item%t_spin(1)%spin(1,i)
+         s1b(i) = item%t_spin(1)%spin(2,i)
+      end do
+      do i = 1, size(item%t_spin(2)%spin,2)
+         s2a(i) = item%t_spin(2)%spin(1,i)
+         s2b(i) = item%t_spin(2)%spin(2,i)
+      end do
+
+      ! Pick out specific spin cases here
+      if (sum(s1a)==sum(s1b) .and.
+     &    sum(s2a)==sum(s2b)) then
+         if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
+     &       modulo(sum(s2a)+sum(s2b),2)==0) then
+
+            s1=.false.
+            s2=.false.
+
+            ts1a=0
+            ts1b=0
+            ts2a=0
+            ts2b=0
+
+            ! T1 and T2 may have been swapped, swap them back again
+            !if (item%swapped) then
+            !   ts1a=s2a
+            !   ts1b=s2b
+            !   ts2a=s1a
+            !   ts2b=s1b
+            !else
+               ts1a=s1a
+               ts1b=s1b
+               ts2a=s2a
+               ts2b=s2b
+            !end if
+
+            ! TODO: Doesn't work for rank 6 tensors yet...
+            if (item%rank1==2 .or. item%rank1==0) then
+               s1=.false.
+            else if (ts1a(1)/=ts1a(2)) then
+               s1=.false.
+            else if (ts1a(1)==ts1a(2) .and. ts1a(1)/=0) then
+               ! Pure spin
+               s1=.true.
+            end if
+
+            if (item%rank2==2 .or. item%rank2==0) then
+               s2=.false.
+            else if (ts2a(1)/=ts2a(2)) then
+               s2=.false.
+            else if (ts2a(1)==ts2a(2) .and. ts2a(1)/=0) then
+               s2=.true.
+            end if
+
+            ! Append spin name to intermediate label (i.e. STIN001abab)
+            if (item%inter(1)) then
+               call inter_spin_name(ts1a,ts1b,item%rank1/2,item%inter1)
+            end if
+
+            if (item%inter(2)) then
+               call inter_spin_name(ts2a,ts2b,item%rank2/2,item%inter2)
+            end if
+
+
+            ! Check if we are searching for intermediates
+            if (associated(item%inter_spins)) then
+
+               ! Number of intermediates
+               ishift = 0
+
+               if (item%inter(1)) then
+               call inter_spin_case(ts1a,ts1b,item%label_t1,ishift,item)
+               end if
+
+               if (item%inter(2)) then
+               call inter_spin_case(ts2a,ts2b,item%label_t2,ishift,item)
+               end if
+
+               ! Update number of spin cases for each different
+               ! intermediate
+               do i = 1, ishift
+                  item%inter_spins(ishift)%ncase =
+     &                              item%inter_spins(ishift)%ncase + 1
+               end do
+
+               item%ninter = ishift
+            end if
+
+
+            ! Print the spin summed line
+            if (item%print_line) then
+               ! Mark the start of the spin summed block, if the current
+               ! line is a permutation of the previous line (ie. permute >1)
+               ! then we should not begin a new block
+               if (eloop==.false. .and. .not. (item%permute > 1)) then
+                  write(item%logfile,*) 'BEGIN'
+               end if
+
+               call print_itf_line(item,s1,s2)
+            end if
+
+            eloop=.true.
+         end if
+      end if
+
+      deallocate(s1a)
+      deallocate(s1b)
+      deallocate(s2a)
+      deallocate(s2b)
 
       return
       end
@@ -2536,6 +2921,9 @@
 
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,item%fact)
+
+      ! Inialise number of contraction indicies
+      item%contri = 0
 
       ! Assign index string. Tensor ranks are also set here
       if (comm==command_cp_intm .or. comm==command_add_intm) then

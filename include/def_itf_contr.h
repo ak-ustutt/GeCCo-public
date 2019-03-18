@@ -20,6 +20,18 @@
 
 
 *----------------------------------------------------------------------*
+      type twodarray
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      integer ::
+     &     elements(2)
+
+      end type twodarray
+
+
+*----------------------------------------------------------------------*
       type spin_info
 *----------------------------------------------------------------------*
 !
@@ -53,7 +65,8 @@
      &     rank3,               ! Rank of result tensor
      &     logfile,             ! File to print to
      &     permute,             ! 0,1,2,3: permutation cases
-     &     command              ! Type of contraction, borrowed from formula_item
+     &     command,             ! Type of contraction, borrowed from formula_item
+     &     contri               ! Number of contraction indices in a line
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral
