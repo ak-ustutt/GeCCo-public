@@ -2128,28 +2128,8 @@
      &   ishift  ! Index number of intermediates on a line
       character(len=index_len) ::
      &   spin_name
-!      integer, pointer ::
-!     &   s1a(:),
-!     &   s1b(:),
-!     &   s2a(:),
-!     &   s2b(:)
       integer ::
-     &   s1a(2),
-     &   s1b(2),
-     &   s2a(2),
-     &   s2b(2),
      &   sum1a, sum1b, sum2a, sum2b
-
-      s1a=0
-      s1b=0
-      s2a=0
-      s2b=0
-
-      ! TODO: allocate space for higher rank tensors
-!      allocate(s1a(size(item%t_spin(1)%spin,2)))
-!      allocate(s1b(size(item%t_spin(1)%spin,2)))
-!      allocate(s2a(size(item%t_spin(2)%spin,2)))
-!      allocate(s2b(size(item%t_spin(2)%spin,2)))
 
       ! Sum the spins of the covarient and contravarient indicies
       sum1a = 0
@@ -2165,26 +2145,10 @@
          sum2b = sum2b + item%t_spin(2)%spin(2,i)
       end do
 
-      ! TODO: for now place new structures into old ones...
-      !       should just use %spin
-      do i = 1, size(item%t_spin(1)%spin,2)
-         s1a(i) = item%t_spin(1)%spin(1,i)
-         s1b(i) = item%t_spin(1)%spin(2,i)
-      end do
-      do i = 1, size(item%t_spin(2)%spin,2)
-         s2a(i) = item%t_spin(2)%spin(1,i)
-         s2b(i) = item%t_spin(2)%spin(2,i)
-      end do
-
       ! Pick out specific spin cases here
       if (sum1a==sum1b .and. sum2a==sum2b) then
          if (modulo(sum1a+sum1b,2)==0 .and.
      &           modulo(sum2a+sum2b,2)==0) then
-
-!            write(11,*) "NEW S1a ", s1a(1), s1a(2)
-!            write(11,*) "NEW S1b ", s1b(1), s1b(2)
-!            write(11,*) "NEW S2a ", s2a(1), s2a(2)
-!            write(11,*) "NEW S2b ", s2b(1), s2b(2)
 
             ! Decide if tensor is mixed spin
             contains1 = .false.
@@ -2223,11 +2187,13 @@
 
             ! Append spin name to intermediate label (i.e. STIN001abab)
             if (item%inter(1)) then
-               call inter_spin_name(s1a,s1b,item%rank1/2,item%inter1)
+               call inter_spin_name(item%t_spin(1)%spin,
+     &                                 item%rank1/2,item%inter1)
             end if
 
             if (item%inter(2)) then
-               call inter_spin_name(s2a,s2b,item%rank2/2,item%inter2)
+               call inter_spin_name(item%t_spin(2)%spin,
+     &                                 item%rank2/2,item%inter2)
             end if
 
 
@@ -2238,11 +2204,13 @@
                ishift = 0
 
                if (item%inter(1)) then
-               call inter_spin_case(s1a,s1b,item%label_t1,ishift,item)
+                  call inter_spin_case(item%t_spin(1)%spin,item%rank1/2,
+     &                                 item%label_t1,ishift,item)
                end if
 
                if (item%inter(2)) then
-               call inter_spin_case(s2a,s2b,item%label_t2,ishift,item)
+                  call inter_spin_case(item%t_spin(2)%spin,item%rank2/2,
+     &                                  item%label_t2,ishift,item)
                end if
 
                ! Update number of spin cases for each different
@@ -2271,13 +2239,9 @@
          end if
       end if
 
-!      deallocate(s1a)
-!      deallocate(s1b)
-!      deallocate(s2a)
-!      deallocate(s2b)
-
       return
       end
+
 
 !*----------------------------------------------------------------------*
 !      subroutine spin_sum(s1a,s1b,s2a,s2b,t1a,t1b,t2a,t2b,zero_a,
@@ -2590,7 +2554,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine inter_spin_name(sa,sb,h_rank,label)
+      subroutine inter_spin_name(spin,hrank,label)
 *----------------------------------------------------------------------*
 !     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
 *----------------------------------------------------------------------*
@@ -2602,11 +2566,10 @@
       include 'def_itf_contr.h'
 
       integer, intent(in) ::
-     &   sa(2),      ! Spin info
-     &   sb(2),      ! Spin info
-     &   h_rank      ! Rank/2
+     &   hrank,            ! Rank/2
+     &   spin(2,hrank)    ! Spin info
       character(len=index_len), intent(inout) ::
-     &   label       ! Spin name of intermediate
+     &   label             ! Spin name of intermediate
 
       character(len=index_len) ::
      &   spin_name
@@ -2615,17 +2578,17 @@
 
       spin_name = ''
 
-      do i = 1, h_rank
-         if (sa(i)==1) then
+      do i = 1, hrank
+         if (spin(1,i)==1) then
             spin_name(i:i) = 'a'
-         else if (sa(i)==2) then
+         else if (spin(1,i)==2) then
             spin_name(i:i) = 'b'
          end if
 
-         if (sb(i)==1) then
-            spin_name(i+h_rank:i+h_rank) = 'a'
-         else if (sb(i)==2) then
-            spin_name(i+h_rank:i+h_rank) = 'b'
+         if (spin(2,i)==1) then
+            spin_name(i+hrank:i+hrank) = 'a'
+         else if (spin(2,i)==2) then
+            spin_name(i+hrank:i+hrank) = 'b'
          end if
       end do
 
@@ -2636,7 +2599,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine inter_spin_case(sa,sb,label,ishift,item)
+      subroutine inter_spin_case(spin,hrank,label,ishift,item)
 *----------------------------------------------------------------------*
 !     Determine intermediate spin cases and save info to item
 *----------------------------------------------------------------------*
@@ -2648,8 +2611,8 @@
       include 'def_itf_contr.h'
 
       integer, intent(in) ::
-     &   sa(2),
-     &   sb(2)
+     &   hrank,       ! Half rank
+     &   spin(2,hrank)
       integer, intent(inout) ::
      &   ishift      ! Index number of intermediates
       character(len=maxlen_bc_label), intent(inout) ::
@@ -2675,8 +2638,8 @@
       end if
 
       do i=1, 2
-         item%inter_spins(ishift)%cases(i,shift)=sa(i)
-         item%inter_spins(ishift)%cases(i+2,shift)=sb(i)
+         item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
+         item%inter_spins(ishift)%cases(i+2,shift)=spin(2,i)
       end do
 
       return
