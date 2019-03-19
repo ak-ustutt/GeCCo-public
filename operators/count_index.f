@@ -456,11 +456,11 @@
       ! TODO: Ignore rank 6 cases and tensor product cases for now...
       if (itf_item%rank3 /= 4 .and. itf_item%rank1 /= 2 .and.
      &    itf_item%rank2 /= 2) then
-      if (itf_item%rank3 == 6 .or. itf_item%rank1 == 6 .or.
-     &    itf_item%rank2 == 6) then
+!      if (itf_item%rank3 == 6 .or. itf_item%rank1 == 6 .or.
+!     &    itf_item%rank2 == 6) then
       if (itf_item%ninter == 0) call line_error("Couldn't find
      & intermediate", itf_item)
-      end if
+!      end if
       end if
 
 
@@ -2119,12 +2119,13 @@
 
       logical ::
      &   s1,       ! True if tensor 1 is mixed spin
-     &   s2        ! True if tensor 2 is mixed spin
+     &   s2,       ! True if tensor 2 is mixed spin
+     &   contains1,
+     &   contains2
       integer ::
      &   i,
      &   shift,   ! Index number of different spin cases for an intermediate
-     &   ishift,  ! Index number of intermediates on a line
-     &   ts1a(2), ts2a(2), ts1b(2), ts2b(2) ! Store re-swapped spin info
+     &   ishift  ! Index number of intermediates on a line
       character(len=index_len) ::
      &   spin_name
 !      integer, pointer ::
@@ -2136,7 +2137,8 @@
      &   s1a(2),
      &   s1b(2),
      &   s2a(2),
-     &   s2b(2)
+     &   s2b(2),
+     &   sum1a, sum1b, sum2a, sum2b
 
       s1a=0
       s1b=0
@@ -2148,6 +2150,20 @@
 !      allocate(s1b(size(item%t_spin(1)%spin,2)))
 !      allocate(s2a(size(item%t_spin(2)%spin,2)))
 !      allocate(s2b(size(item%t_spin(2)%spin,2)))
+
+      ! Sum the spins of the covarient and contravarient indicies
+      sum1a = 0
+      sum1b = 0
+      sum2a = 0
+      sum2b = 0
+      do i = 1, size(item%t_spin(1)%spin,2)
+         sum1a = sum1a + item%t_spin(1)%spin(1,i)
+         sum1b = sum1b + item%t_spin(1)%spin(2,i)
+      end do
+      do i = 1, size(item%t_spin(2)%spin,2)
+         sum2a = sum2a + item%t_spin(2)%spin(1,i)
+         sum2b = sum2b + item%t_spin(2)%spin(2,i)
+      end do
 
       ! TODO: for now place new structures into old ones...
       !       should just use %spin
@@ -2161,60 +2177,57 @@
       end do
 
       ! Pick out specific spin cases here
-      ! TODO: make this work for rank 6 tensors
-      if (sum(s1a)==sum(s1b) .and.
-     &    sum(s2a)==sum(s2b)) then
-         if (modulo(sum(s1a)+sum(s1b),2)==0 .and.
-     &       modulo(sum(s2a)+sum(s2b),2)==0) then
-
-            s1=.false.
-            s2=.false.
-
-            ts1a=0
-            ts1b=0
-            ts2a=0
-            ts2b=0
+      if (sum1a==sum1b .and. sum2a==sum2b) then
+         if (modulo(sum1a+sum1b,2)==0 .and.
+     &           modulo(sum2a+sum2b,2)==0) then
 
 !            write(11,*) "NEW S1a ", s1a(1), s1a(2)
 !            write(11,*) "NEW S1b ", s1b(1), s1b(2)
 !            write(11,*) "NEW S2a ", s2a(1), s2a(2)
 !            write(11,*) "NEW S2b ", s2b(1), s2b(2)
 
-            ! TODO: ts2a is only size 2...
-            do i = 1, size(item%t_spin(1)%spin,2)
-               ts1a(i) = item%t_spin(1)%spin(1,i)
-               ts1b(i) = item%t_spin(1)%spin(2,i)
-            end do
-            do i = 1, size(item%t_spin(2)%spin,2)
-               ts2a(i) = item%t_spin(2)%spin(1,i)
-               ts2b(i) = item%t_spin(2)%spin(2,i)
-            end do
-
-            ! TODO: Doesn't work for rank 6 tensors yet...
-            if (item%rank1==2 .or. item%rank1==0) then
-               s1=.false.
-            else if (ts1a(1)/=ts1a(2)) then
-               s1=.false.
-            else if (ts1a(1)==ts1a(2) .and. ts1a(1)/=0) then
-               ! Pure spin
-               s1=.true.
+            ! Decide if tensor is mixed spin
+            contains1 = .false.
+            contains2 = .false.
+            s1 = .false.
+            if (item%rank1>2) then
+               do i = 1, size(item%t_spin(1)%spin,2)
+                  if (item%t_spin(1)%spin(1,i)==1) then
+                     contains1 = .true.
+                  end if
+                  if (item%t_spin(1)%spin(1,i)==2) then
+                     contains2 = .true.
+                  end if
+               end do
+               if (contains1 .neqv. contains2) then
+                  s1 = .true.
+               end if
             end if
 
-            if (item%rank2==2 .or. item%rank2==0) then
-               s2=.false.
-            else if (ts2a(1)/=ts2a(2)) then
-               s2=.false.
-            else if (ts2a(1)==ts2a(2) .and. ts2a(1)/=0) then
-               s2=.true.
+            contains1 = .false.
+            contains2 = .false.
+            s2 = .false.
+            if (item%rank2>2) then
+               do i = 1, size(item%t_spin(2)%spin,2)
+                  if (item%t_spin(2)%spin(1,i)==1) then
+                     contains1 = .true.
+                  end if
+                  if (item%t_spin(2)%spin(1,i)==2) then
+                     contains2 = .true.
+                  end if
+               end do
+               if (contains1 .neqv. contains2) then
+                  s2 = .true.
+               end if
             end if
 
             ! Append spin name to intermediate label (i.e. STIN001abab)
             if (item%inter(1)) then
-               call inter_spin_name(ts1a,ts1b,item%rank1/2,item%inter1)
+               call inter_spin_name(s1a,s1b,item%rank1/2,item%inter1)
             end if
 
             if (item%inter(2)) then
-               call inter_spin_name(ts2a,ts2b,item%rank2/2,item%inter2)
+               call inter_spin_name(s2a,s2b,item%rank2/2,item%inter2)
             end if
 
 
@@ -2225,11 +2238,11 @@
                ishift = 0
 
                if (item%inter(1)) then
-               call inter_spin_case(ts1a,ts1b,item%label_t1,ishift,item)
+               call inter_spin_case(s1a,s1b,item%label_t1,ishift,item)
                end if
 
                if (item%inter(2)) then
-               call inter_spin_case(ts2a,ts2b,item%label_t2,ishift,item)
+               call inter_spin_case(s2a,s2b,item%label_t2,ishift,item)
                end if
 
                ! Update number of spin cases for each different
@@ -2241,7 +2254,6 @@
 
                item%ninter = ishift
             end if
-
 
             ! Print the spin summed line
             if (item%print_line) then
