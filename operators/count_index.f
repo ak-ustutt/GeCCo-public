@@ -138,7 +138,7 @@
 *----------------------------------------------------------------------*
       pure function t_index(index, upper)
 *----------------------------------------------------------------------*
-!     Transpose ITF index string, abij => abji
+!     Cycle co/contravarient tensor index: abcijk => cabijk
 *----------------------------------------------------------------------*
 
       implicit none
@@ -170,6 +170,85 @@
       else
          t_index(1:1)=index(2:2)
          t_index(2:2)=index(1:1)
+      end if
+
+      end function
+
+
+*----------------------------------------------------------------------*
+      recursive function c_index(idx, n) result(cidx)
+*----------------------------------------------------------------------*
+!     Cycle covarient tensor index: abcijk => cabijk
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   n        ! Number of cycles
+      character(len=index_len), intent(in) ::
+     &   idx      ! ITF index string
+
+      character(len=index_len) ::
+     &   cidx
+      character(len=index_len) ::
+     &   tmp
+
+      !TODO: only works for rank 6
+      if (n == 0) then
+         cidx = idx
+      else
+         tmp = idx
+         tmp(1:1) = idx(3:3)
+         tmp(2:2) = idx(1:1)
+         tmp(3:3) = idx(2:2)
+         cidx = c_index(tmp, n-1)
+      end if
+
+      end function c_index
+
+
+*----------------------------------------------------------------------*
+      pure function f_index(index, hrank, upper)
+*----------------------------------------------------------------------*
+!     Flip co/contravarient tensor index: abcijk => acbijk
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(*), intent(in) ::
+     &     index       ! ITF index string
+      integer, intent(in) ::
+     &   hrank          ! Half rank
+      logical, optional, intent(in) ::
+     &     upper
+      character(hrank) ::
+     &     f_index      ! Transpose of ITF index string
+
+      logical ::
+     &     contra
+
+      if (present(upper)) then
+         contra = upper
+      else
+         contra = .false.
+      end if
+
+      f_index=index
+
+      ! TODO: Make this more general than t_index
+      if (contra) then
+         f_index(3:3)=index(4:4)
+         f_index(4:4)=index(3:3)
+      else
+         f_index(1:1)=index(2:2)
+         f_index(2:2)=index(1:1)
       end if
 
       end function
@@ -709,7 +788,7 @@
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
-      character(len=70) ::
+      character(len=264) ::
      &     itf_line,          ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
       character(len=2) ::
@@ -770,16 +849,37 @@
       ! intermediate
       if (s1 .and. .not.item%inter(1)) then
          ! Pure spin
-         st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//
-     &       ' - '//trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
+         select case (item%rank1)
+            case (4)
+               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
+     &              trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
+            case (6)
+               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
+     &              trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
+            case default
+               call line_error("Could not determine tensor rank",item)
+         end select
       else
          st1=trimal(nt1)//'['//trim(item%idx1)//']'
       end if
 
       if (s2 .and. .not.item%inter(2)) then
          ! Pure spin
-         st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//
-     &       ' - '//trimal(nt2)//'['//trim(t_index(item%idx2))//']'//')'
+         select case (item%rank2)
+            case (4)
+               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
+     &              trimal(nt2)//'['//trim(t_index(item%idx2))//']'//')'
+            case (6)
+              st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' + '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' + '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' + '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,3))//']'//' - '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' - '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' - '//
+     &        trimal(nt2)//'['//trim(c_index(item%idx2,3))//']'//')'
+            case default
+               call line_error("Could not determine tensor rank",item)
+         end select
       else
          if (item%command==command_add_intm .or.
      &       item%command==command_cp_intm) then
@@ -842,7 +942,7 @@
      &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
       ! Print it to bcontr.tmp
-      write(item%logfile,*) trim(itf_line)
+      write(item%logfile,'(a)') trim(itf_line)
 
       return
       end
@@ -1845,6 +1945,7 @@
          end do
       else
          select case (item%rank3)
+            case(0)
             case(2)
                ! aa
                item%t_spin(3)%spin(1,1) = 1
@@ -1861,6 +1962,8 @@
                   item%t_spin(3)%spin(1,i) = 1
                   item%t_spin(3)%spin(2,i) = 1
                end do
+            case default
+               call line_error("Could not determine tensor rank",item)
          end select
       end if
 
