@@ -48,6 +48,8 @@
           rename_tensor='T'
       else if (trim(string).eq.'T1') then
           rename_tensor='T'
+      else if (trim(string).eq.'T3') then
+          rename_tensor='T'
       else if (trim(string).eq.'H') then
           if (rank==2) then
              rename_tensor='f'
@@ -966,9 +968,9 @@
      &   i1, i2,        ! Search creation or annihilation first
      &   shift,         ! List shift
      &   sp             ! Pair list shift
-      character, dimension(16) ::
-     &   ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
-     &          'u','v','w' /)   ! Letters for index string
+      character, dimension(21) ::
+     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
+     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
       character(len=index_len) ::
      &     s1, s2, s3   ! Tmp ITF index strings
       real(8) ::
@@ -1102,7 +1104,7 @@
          ! Loop over P/H/V/X
          do i = 1, 4
             do j = 1, c(i,i1)
-               ii = 1+(4*(i-1)) + c_shift(i)
+               ii = 1+(7*(i-1)) + c_shift(i)
 
                ! Assign index letter to pair list
                p_list%plist(sp)%pindex(i1) = ind(ii)
@@ -1120,7 +1122,7 @@
                ! Look for matching operator
                do k = 1, 4
                   do l = 1, c(k,i2)
-                     ii = 1+(4*(k-1)) + c_shift(k)
+                     ii = 1+(7*(k-1)) + c_shift(k)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
                      p_list%plist(sp)%linked = .false.
@@ -1296,9 +1298,9 @@
       type(itf_contr), intent(in) ::
      &   item              ! ITF binary contraction info
 
-      character, dimension(16) ::
-     &   ind=(/ 'a','b','c','d','i','j','k','l','p','q','r','s','t',
-     &          'u','v','w' /)       ! Index letters
+      character, dimension(21) ::
+     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
+     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
       logical ::
      &   found
       integer ::
@@ -1364,7 +1366,7 @@
       do i = start, 4
          do j = 1, e1(i,i1)
             ! Search for first operator
-            ii = 1+(4*(i-1)) + t_shift(i)
+            ii = 1+(7*(i-1)) + t_shift(i)
             list%plist(sp)%pindex(i1) = ind(ii)
             list%plist(sp)%ops(i1) = tensor
 
@@ -1376,7 +1378,7 @@
                ! Look on the same tensor
                do k = 1, 4
                   do l = 1, e1(k,i2)
-                     ii = 1+(4*(k-1)) + t_shift(k)
+                     ii = 1+(7*(k-1)) + t_shift(k)
                      list%plist(sp)%pindex(i2) = ind(ii)
                      list%plist(sp)%linked = .false.
                      list%plist(sp)%ops(i2) = tensor
@@ -1396,7 +1398,7 @@
                ! Look on the opposite tensor
                do k = 1, 4
                   do l = 1, e2(k,i2)
-                     ii = 1+(4*(k-1))+t_shift(k)
+                     ii = 1+(7*(k-1))+t_shift(k)
                      list%plist(sp)%pindex(i2) = ind(ii)
                      list%plist(sp)%ops(i2) = opp_tensor
                      list%plist(sp)%linked = .true.
@@ -1408,7 +1410,7 @@
                      ! different operators with a contraction index
                      do m=1, 4
                         do n=1, c(m,i2)
-                            ii = 1+(4*(m-1)) + c_shift(m)
+                            ii = 1+(7*(m-1)) + c_shift(m)
 
                            list%plist(sp)%link = ind(ii)
 
@@ -2367,6 +2369,7 @@
 
       ! Assign command type
       item%command=comm
+!      write(11,*) "WHAT ", contr_info%label_op1, contr_info%label_op2
 
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
@@ -2383,12 +2386,6 @@
 
 
       ! Check if an intermediate
-      !call check_inter(item%label_t1,item%inter(1))
-      !if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-      !   call check_inter(item%label_t2,item%inter(2))
-      !end if
-      !call check_inter(item%label_res,item%inter(3))
-
       item%inter(1) = check_inter(item%label_t1)
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
          item%inter(2) = check_inter(item%label_t2)

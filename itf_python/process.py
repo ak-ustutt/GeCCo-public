@@ -344,9 +344,9 @@ def generic_index(tensor):
 
     index=list(tensor[tensor.find("[")+1:tensor.find("]")])
 
-    hole=['i','j','k','l']
-    particle=['a','b','c','d']
-    valence=['p','q','r','s','t','u','v','w']
+    hole     = ['i','j','k','l','m','n','o']
+    particle = ['a','b','c','d','e','f','g']
+    valence  = ['p','q','r','s','t','u','v']
 
     gen=[]
     for i in range (0,len(index)):
