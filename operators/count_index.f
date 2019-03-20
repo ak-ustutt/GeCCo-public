@@ -183,16 +183,16 @@
       include 'def_itf_contr.h'
 
       character(*), intent(in) ::
-     &     index       ! ITF index string
+     &   index          ! ITF index string
       integer, intent(in) ::
      &   hrank          ! Half rank
       logical, optional, intent(in) ::
-     &     upper
+     &   upper          ! Flip contravarient index
       character(hrank*2) ::
-     &     f_index      ! Transpose of ITF index string
+     &   f_index        ! Transpose of ITF index string
 
       logical ::
-     &     contra
+     &   contra
 
       if (present(upper)) then
          contra = upper
@@ -202,7 +202,6 @@
 
       f_index=index
 
-      ! TODO: Make this more general than t_index
       if (contra) then
          f_index(hrank-1+hrank:hrank-1+hrank)=
      &                                index(hrank+hrank:hrank+hrank)
@@ -426,7 +425,7 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
      &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(MAXINT), intent(inout) ::
+      type(spin_cases), dimension(maxint), intent(inout) ::
      &     spin_inters
       integer, intent(inout) ::
      &     permute         ! 2 = Need to permute index
@@ -2429,6 +2428,7 @@
          item%inter_spins(ishift)%name=label
       end if
 
+      ! TODO: this looks suspicous...
       do i=1, 2
          item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
          item%inter_spins(ishift)%cases(i+2,shift)=spin(2,i)
