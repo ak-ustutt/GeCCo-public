@@ -228,7 +228,7 @@
      &   hrank          ! Half rank
       logical, optional, intent(in) ::
      &     upper
-      character(hrank) ::
+      character(hrank*2) ::
      &     f_index      ! Transpose of ITF index string
 
       logical ::
@@ -244,11 +244,13 @@
 
       ! TODO: Make this more general than t_index
       if (contra) then
-         f_index(3:3)=index(4:4)
-         f_index(4:4)=index(3:3)
+         f_index(hrank-1+hrank:hrank-1+hrank)=
+     &                                index(hrank+hrank:hrank+hrank)
+         f_index(hrank+hrank:hrank+hrank)=
+     &                                index(hrank-1+hrank:hrank-1+hrank)
       else
-         f_index(1:1)=index(2:2)
-         f_index(2:2)=index(1:1)
+         f_index(hrank-1:hrank-1)=index(hrank:hrank)
+         f_index(hrank:hrank)=index(hrank-1:hrank-1)
       end if
 
       end function
@@ -845,6 +847,7 @@
       if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
       if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
 
+      ! TODO: Merge these as they are basicially the same
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       if (s1 .and. .not.item%inter(1)) then
@@ -852,31 +855,52 @@
          select case (item%rank1)
             case (4)
                st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-     &              trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
+     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
+     &              ']'//')'
             case (6)
-               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-     &              trimal(nt1)//'['//trim(t_index(item%idx1))//']'//')'
+              st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' + '//
+     &        trimal(nt1)//'['//trim(c_index(item%idx1,1))//']'//' + '//
+     &        trimal(nt1)//'['//trim(c_index(item%idx1,2))//']'//' - '//
+     &   trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//']'//' - '//
+     &        trimal(nt1)//'['//
+     &        f_index(c_index(item%idx1,1),item%rank1/2)//']'//' - '//
+     &        trimal(nt1)//'['//
+     &        f_index(c_index(item%idx1,2),item%rank1/2)//']'//')'
             case default
                call line_error("Could not determine tensor rank",item)
          end select
       else
-         st1=trimal(nt1)//'['//trim(item%idx1)//']'
+         select case (item%rank1)
+            case (0)
+               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+            case (2)
+               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+            case (4)
+               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+            case (6)
+               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
+     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
+     &              ']'//')'
+            case default
+               call line_error("Could not determine tensor rank",item)
+         end select
       end if
 
       if (s2 .and. .not.item%inter(2)) then
          ! Pure spin
          select case (item%rank2)
             case (4)
-               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
-     &              trimal(nt2)//'['//trim(t_index(item%idx2))//']'//')'
+             st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
+     &       trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//')'
             case (6)
               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' + '//
      &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' + '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' + '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,3))//']'//' - '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' - '//
      &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' - '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,3))//']'//')'
+     &   trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//' - '//
+     &        trimal(nt2)//'['//
+     &        f_index(c_index(item%idx2,1),item%rank2/2)//']'//' - '//
+     &        trimal(nt2)//'['//
+     &        f_index(c_index(item%idx2,2),item%rank2/2)//']'//')'
             case default
                call line_error("Could not determine tensor rank",item)
          end select
@@ -886,7 +910,20 @@
             ! Don't need second operator for [ADD] or [COPY]
             st2=''
          else
-            st2=trimal(nt2)//'['//trim(item%idx2)//']'
+         select case (item%rank2)
+            case (0)
+               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+            case (2)
+               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+            case (4)
+               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+            case (6)
+               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
+     &              trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//
+     &              ']'//')'
+            case default
+               call line_error("Could not determine tensor rank",item)
+         end select
          end if
       end if
 
