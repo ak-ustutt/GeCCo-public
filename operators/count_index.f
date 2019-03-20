@@ -136,46 +136,6 @@
 
 
 *----------------------------------------------------------------------*
-      pure function t_index(index, upper)
-*----------------------------------------------------------------------*
-!     Cycle co/contravarient tensor index: abcijk => cabijk
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=index_len), intent(in) ::
-     &     index       ! ITF index string
-      logical, optional, intent(in) ::
-     &     upper
-      character(len=index_len) ::
-     &     t_index      ! Transpose of ITF index string
-
-      logical ::
-     &     contra
-
-      if (present(upper)) then
-         contra = upper
-      else
-         contra = .false.
-      end if
-
-      t_index=index
-
-      if (contra) then
-         t_index(3:3)=index(4:4)
-         t_index(4:4)=index(3:3)
-      else
-         t_index(1:1)=index(2:2)
-         t_index(2:2)=index(1:1)
-      end if
-
-      end function
-
-
-*----------------------------------------------------------------------*
       recursive function c_index(idx, n) result(cidx)
 *----------------------------------------------------------------------*
 !     Cycle covarient tensor index: abcijk => cabijk
@@ -426,8 +386,8 @@
                if (i == 2) then
                   ! Need to transpose by tensors after permutation, to
                   ! avoid symmetry problem when using (1 + Pabij)
-                  itf_item%idx1 = t_index(itf_item%idx1)
-                  itf_item%idx2 = t_index(itf_item%idx2)
+                  itf_item%idx1=f_index(itf_item%idx1,itf_item%rank1/2)
+                  itf_item%idx2=f_index(itf_item%idx2,itf_item%rank2/2)
                end if
 
                call assign_spin(itf_item)
@@ -493,8 +453,8 @@
 
          ! Need to transpose by tensors after permutation, to
          ! avoid symmetry problem when using (1 + Pabij)
-         itf_item%idx1 = t_index(itf_item%idx1)
-         itf_item%idx2 = t_index(itf_item%idx2)
+         itf_item%idx1 = f_index(itf_item%idx1,itf_item%rank1/2)
+         itf_item%idx2 = f_index(itf_item%idx2,itf_item%rank2/2)
       end if
 
       ! Allocate space to store information about intermediates and
@@ -753,12 +713,12 @@
       ! need to create this new intermediate. This requires the
       ! transpose
       if (scan('P', label)) then
-         itf_item%idx3 = t_index(itf_item%idx3)
+         itf_item%idx3 = f_index(itf_item%idx3, itf_item%rank3/2)
          if (itf_item%rank2 > 2) then
             ! Don't need to permute T[ai] etc.
-            itf_item%idx2 = t_index(itf_item%idx2)
+            itf_item%idx2 = f_index(itf_item%idx2, itf_item%rank2/2)
          end if
-         itf_item%idx1 = t_index(itf_item%idx1,.true.)
+         itf_item%idx1 = f_index(itf_item%idx1,itf_item%rank1/2,.true.)
       end if
 
       itf_item%label_res = trim(itf_item%label_res)//trim(spin_name)
