@@ -495,14 +495,11 @@
 
       itf_item%print_line = .true.
 
-      ! TODO: Ignore rank 6 cases and tensor product cases for now...
+      ! TODO: Ignore tensor product cases for now...
       if (itf_item%rank3 /= 4 .and. itf_item%rank1 /= 2 .and.
      &    itf_item%rank2 /= 2) then
-!      if (itf_item%rank3 == 6 .or. itf_item%rank1 == 6 .or.
-!     &    itf_item%rank2 == 6) then
-      if (itf_item%ninter == 0) call line_error("Couldn't find
-     & intermediate", itf_item)
-!      end if
+         if (itf_item%ninter == 0) call line_error("Couldn't find
+     &                                    intermediate", itf_item)
       end if
 
 
@@ -809,82 +806,92 @@
       ! TODO: Merge these as they are basicially the same
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
-      if (s1 .and. .not.item%inter(1)) then
-         ! Pure spin
-         select case (item%rank1)
-            case (4)
-               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
-     &              ']'//')'
-            case (6)
-              st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' + '//
-     &        trimal(nt1)//'['//trim(c_index(item%idx1,1))//']'//' + '//
-     &        trimal(nt1)//'['//trim(c_index(item%idx1,2))//']'//' - '//
-     &   trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//']'//' - '//
-     &        trimal(nt1)//'['//
-     &        f_index(c_index(item%idx1,1),item%rank1/2)//']'//' - '//
-     &        trimal(nt1)//'['//
-     &        f_index(c_index(item%idx1,2),item%rank1/2)//']'//')'
-            case default
-               call line_error("Could not determine tensor rank",item)
-         end select
-      else
-         select case (item%rank1)
-            case (0)
-               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-            case (2)
-               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-            case (4)
-               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-            case (6)
-               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
-     &              ']'//')'
-            case default
-               call line_error("Could not determine tensor rank",item)
-         end select
-      end if
+!      call spatial_string(item%binary,item%idx1,nt1,st1,s1,item%inter(1)
+!     &                   ,item%rank1,1,item%logfile)
+!      call spatial_string(item%binary,item%idx2,nt2,st2,s2,item%inter(2)
+!     &                   ,item%rank2,2,item%logfile)
 
-      if (s2 .and. .not.item%inter(2)) then
-         ! Pure spin
-         select case (item%rank2)
-            case (4)
-             st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
-     &       trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//')'
-            case (6)
-              st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' + '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' + '//
-     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' - '//
-     &   trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//' - '//
-     &        trimal(nt2)//'['//
-     &        f_index(c_index(item%idx2,1),item%rank2/2)//']'//' - '//
-     &        trimal(nt2)//'['//
-     &        f_index(c_index(item%idx2,2),item%rank2/2)//']'//')'
-            case default
-               call line_error("Could not determine tensor rank",item)
-         end select
-      else
-         if (item%command==command_add_intm .or.
-     &       item%command==command_cp_intm) then
-            ! Don't need second operator for [ADD] or [COPY]
-            st2=''
-         else
-         select case (item%rank2)
-            case (0)
-               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-            case (2)
-               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-            case (4)
-               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-            case (6)
-               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
-     &              trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//
-     &              ']'//')'
-            case default
-               call line_error("Could not determine tensor rank",item)
-         end select
-         end if
-      end if
+      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
+     &                    1,item%binary,item%logfile)
+      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
+     &                    2,item%binary,item%logfile)
+
+!      if (s1 .and. .not.item%inter(1)) then
+!         ! Pure spin
+!         select case (item%rank1)
+!            case (4)
+!               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
+!     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
+!     &              ']'//')'
+!            case (6)
+!              st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' + '//
+!     &        trimal(nt1)//'['//trim(c_index(item%idx1,1))//']'//' + '//
+!     &        trimal(nt1)//'['//trim(c_index(item%idx1,2))//']'//' - '//
+!     &   trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//']'//' - '//
+!     &        trimal(nt1)//'['//
+!     &        f_index(c_index(item%idx1,1),item%rank1/2)//']'//' - '//
+!     &        trimal(nt1)//'['//
+!     &        f_index(c_index(item%idx1,2),item%rank1/2)//']'//')'
+!            case default
+!               call line_error("Could not determine tensor rank",item)
+!         end select
+!      else
+!         select case (item%rank1)
+!            case (0)
+!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+!            case (2)
+!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+!            case (4)
+!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
+!            case (6)
+!               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
+!     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
+!     &              ']'//')'
+!            case default
+!               call line_error("Could not determine tensor rank",item)
+!         end select
+!      end if
+!
+!      if (s2 .and. .not.item%inter(2)) then
+!         ! Pure spin
+!         select case (item%rank2)
+!            case (4)
+!             st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
+!     &       trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//')'
+!            case (6)
+!              st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' + '//
+!     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' + '//
+!     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' - '//
+!     &   trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//' - '//
+!     &        trimal(nt2)//'['//
+!     &        f_index(c_index(item%idx2,1),item%rank2/2)//']'//' - '//
+!     &        trimal(nt2)//'['//
+!     &        f_index(c_index(item%idx2,2),item%rank2/2)//']'//')'
+!            case default
+!               call line_error("Could not determine tensor rank",item)
+!         end select
+!      else
+!         if (item%command==command_add_intm .or.
+!     &       item%command==command_cp_intm) then
+!            ! Don't need second operator for [ADD] or [COPY]
+!            st2=''
+!         else
+!         select case (item%rank2)
+!            case (0)
+!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+!            case (2)
+!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+!            case (4)
+!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
+!            case (6)
+!               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
+!     &              trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//
+!     &              ']'//')'
+!            case default
+!               call line_error("Could not determine tensor rank",item)
+!         end select
+!         end if
+!      end if
 
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
@@ -942,6 +949,85 @@
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine
+     &    spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,lulog)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      use itf_utils
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=264), intent(inout) ::
+     &   st          ! Name of spin summed tensors + index
+      character(len=index_len), intent(in) ::
+     &   idx         ! Index of tensor
+      character(len=maxlen_bc_label), intent(in) ::
+     &   nt          ! Name of tensors involved in the contraction
+      logical, intent(in) ::
+     &   spin,       ! True if pure spin
+     &   inter,      ! True if an intermediate
+     &   binary      ! True if a binary contraction
+      integer, intent(in) ::
+     &   rank,       ! Rank of tensor
+     &   tensor,     ! T1 or T2
+     &   lulog       ! Logfile
+
+      integer ::
+     &   hrank       ! Half rank
+
+      hrank = rank / 2
+
+      if (spin .and. .not.inter) then
+         ! Pure spin
+         select case (rank)
+            case (4)
+               st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &            trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+            case (6)
+               st='('//trimal(nt)//'['//trim(idx)//']'//' + '//
+     &            trimal(nt)//'['//trim(c_index(idx,1))//']'//' + '//
+     &            trimal(nt)//'['//trim(c_index(idx,2))//']'//' - '//
+     &            trimal(nt)//'['//f_index(idx,hrank)//']'//' - '//
+     &            trimal(nt)//'['//
+     &            f_index(c_index(idx,1),hrank)//']'//' - '//
+     &            trimal(nt)//'['//
+     &            f_index(c_index(idx,2),hrank)//']'//')'
+            case default
+               write(lulog,*) "ERROR: Couldn't determine rank"
+         end select
+      else
+         if (tensor==2 .and. .not.binary) then
+            ! Don't need second operator for [ADD] or [COPY]
+            st=''
+            return
+         else
+         select case (rank)
+            case (0)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (2)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (4)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (6)
+               st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+            case default
+               write(lulog,*) "ERROR: Couldn't determine rank"
+         end select
+         end if
+      end if
+
+      return
+      end
+
 
 *----------------------------------------------------------------------*
       subroutine assign_add_index(contr_info,item)
@@ -2469,7 +2555,12 @@
 
       ! Assign command type
       item%command=comm
-!      write(11,*) "WHAT ", contr_info%label_op1, contr_info%label_op2
+
+      ! Check if binary contraction or not
+      if (comm==command_add_intm .or. comm==command_cp_intm) then
+         item%binary = .false.
+      end if
+
 
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then

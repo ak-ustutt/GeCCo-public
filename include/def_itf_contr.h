@@ -70,7 +70,8 @@
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral
-     &     symm = .false.       ! True if going to symmetrise result
+     &     symm = .false.,      ! True if going to symmetrise result
+     &     binary = .true.
       real(8) ::
      &     fact                 ! Factor
       integer ::
