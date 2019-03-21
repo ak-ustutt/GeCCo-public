@@ -803,95 +803,12 @@
       if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
       if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
 
-      ! TODO: Merge these as they are basicially the same
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
-!      call spatial_string(item%binary,item%idx1,nt1,st1,s1,item%inter(1)
-!     &                   ,item%rank1,1,item%logfile)
-!      call spatial_string(item%binary,item%idx2,nt2,st2,s2,item%inter(2)
-!     &                   ,item%rank2,2,item%logfile)
-
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
      &                    1,item%binary,item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
      &                    2,item%binary,item%logfile)
-
-!      if (s1 .and. .not.item%inter(1)) then
-!         ! Pure spin
-!         select case (item%rank1)
-!            case (4)
-!               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-!     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
-!     &              ']'//')'
-!            case (6)
-!              st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' + '//
-!     &        trimal(nt1)//'['//trim(c_index(item%idx1,1))//']'//' + '//
-!     &        trimal(nt1)//'['//trim(c_index(item%idx1,2))//']'//' - '//
-!     &   trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//']'//' - '//
-!     &        trimal(nt1)//'['//
-!     &        f_index(c_index(item%idx1,1),item%rank1/2)//']'//' - '//
-!     &        trimal(nt1)//'['//
-!     &        f_index(c_index(item%idx1,2),item%rank1/2)//']'//')'
-!            case default
-!               call line_error("Could not determine tensor rank",item)
-!         end select
-!      else
-!         select case (item%rank1)
-!            case (0)
-!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-!            case (2)
-!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-!            case (4)
-!               st1=trimal(nt1)//'['//trim(item%idx1)//']'
-!            case (6)
-!               st1='('//trimal(nt1)//'['//trim(item%idx1)//']'//' - '//
-!     &              trimal(nt1)//'['//f_index(item%idx1,item%rank1/2)//
-!     &              ']'//')'
-!            case default
-!               call line_error("Could not determine tensor rank",item)
-!         end select
-!      end if
-!
-!      if (s2 .and. .not.item%inter(2)) then
-!         ! Pure spin
-!         select case (item%rank2)
-!            case (4)
-!             st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
-!     &       trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//')'
-!            case (6)
-!              st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' + '//
-!     &        trimal(nt2)//'['//trim(c_index(item%idx2,1))//']'//' + '//
-!     &        trimal(nt2)//'['//trim(c_index(item%idx2,2))//']'//' - '//
-!     &   trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//']'//' - '//
-!     &        trimal(nt2)//'['//
-!     &        f_index(c_index(item%idx2,1),item%rank2/2)//']'//' - '//
-!     &        trimal(nt2)//'['//
-!     &        f_index(c_index(item%idx2,2),item%rank2/2)//']'//')'
-!            case default
-!               call line_error("Could not determine tensor rank",item)
-!         end select
-!      else
-!         if (item%command==command_add_intm .or.
-!     &       item%command==command_cp_intm) then
-!            ! Don't need second operator for [ADD] or [COPY]
-!            st2=''
-!         else
-!         select case (item%rank2)
-!            case (0)
-!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-!            case (2)
-!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-!            case (4)
-!               st2=trimal(nt2)//'['//trim(item%idx2)//']'
-!            case (6)
-!               st2='('//trimal(nt2)//'['//trim(item%idx2)//']'//' - '//
-!     &              trimal(nt2)//'['//f_index(item%idx2,item%rank2/2)//
-!     &              ']'//')'
-!            case default
-!               call line_error("Could not determine tensor rank",item)
-!         end select
-!         end if
-!      end if
 
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
@@ -952,10 +869,10 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine
-     &    spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,lulog)
+      subroutine spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,
+     &                          lulog)
 *----------------------------------------------------------------------*
-!     Print line of ITF code
+!     Construct spatial tensor representation
 *----------------------------------------------------------------------*
 
       use itf_utils
