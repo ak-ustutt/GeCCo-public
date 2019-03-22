@@ -434,7 +434,6 @@
      &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    perm_array(4),   ! Info of permutation factors
-     &    tmp_case(4),
      &    i,j,k
       logical ::
      &    summed
@@ -477,16 +476,15 @@
             do i = 1, MAXINT
                if (itf_item%label_res == spin_inters(i)%name) then
                   do k = 1, spin_inters(i)%ncase
-                     ! TODO: Get rid of tmp case
-                     ! TODO: This code is repeated in print_itf.f
-                     do j = 1, 4
-                        tmp_case(j) = spin_inters(i)%cases(j,k)
-                     end do
-                     itf_item%spin_case = tmp_case
 
+                     ! TODO: This code is repeated in print_itf.f
+                     ! TODO: this wont work with rank 6. Need to
+                     ! overhall intermediate search for rank 6...
                      do j = 1, itf_item%rank3/2
-                        itf_item%i_spin%spin(1,j) = tmp_case(j)
-                        itf_item%i_spin%spin(2,j) = tmp_case(j+2)
+                        itf_item%i_spin%spin(1,j) =
+     &                                       spin_inters(i)%cases(j,k)
+                        itf_item%i_spin%spin(2,j) =
+     &                                       spin_inters(i)%cases(j+2,k)
                      end do
 
                      call assign_spin(itf_item)
@@ -690,8 +688,6 @@
      &                    command,itflog)
 
       ! Set overall spin case of result
-      item%spin_case = spin_case
-
       do i = 1, item%rank3/2
          item%i_spin%spin(1,i) = spin_case(i)
          item%i_spin%spin(2,i) = spin_case(i+2)
@@ -1951,12 +1947,6 @@
       ! Assign spin to indicies on the result tensor
       ! TODO: spin_case is only len 4
       if (item%inter(3)) then
-!         do i=1, size(item%spin_case)/2
-!            if (item%spin_case(i) == 0) exit
-!            item%t_spin(3)%spin(1,i) = item%spin_case(i)
-!            item%t_spin(3)%spin(2,i) =
-!     &                  item%spin_case(i+size(item%spin_case)/2)
-!         end do
          item%t_spin(3)%spin = item%i_spin%spin
       else
          select case (item%rank3)

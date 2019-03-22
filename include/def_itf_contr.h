@@ -74,8 +74,6 @@
      &     binary = .true.
       real(8) ::
      &     fact                 ! Factor
-      integer ::
-     &     spin_case(4) ! Spin case of result, ie. [1111] = all alpha
 
       ! Objects needed in the search for intermediates
       type(spin_cases), pointer ::
