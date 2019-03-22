@@ -477,10 +477,17 @@
             do i = 1, MAXINT
                if (itf_item%label_res == spin_inters(i)%name) then
                   do k = 1, spin_inters(i)%ncase
+                     ! TODO: Get rid of tmp case
+                     ! TODO: This code is repeated in print_itf.f
                      do j = 1, 4
                         tmp_case(j) = spin_inters(i)%cases(j,k)
                      end do
                      itf_item%spin_case = tmp_case
+
+                     do j = 1, itf_item%rank3/2
+                        itf_item%i_spin%spin(1,j) = tmp_case(j)
+                        itf_item%i_spin%spin(2,j) = tmp_case(j+2)
+                     end do
 
                      call assign_spin(itf_item)
                   end do
@@ -669,59 +676,67 @@
      &     label
 
       type(itf_contr) ::
-     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+     &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    perm_case,
-     &    i,j
+     &    i, j, k
       character(len=4) ::
      &    spin_name
 
 
       perm_case = 0
 
-      call itf_contr_init(contr_info,itf_item,perm_case,
+      call itf_contr_init(contr_info,item,perm_case,
      &                    command,itflog)
 
       ! Set overall spin case of result
-      itf_item%spin_case = spin_case
+      item%spin_case = spin_case
 
-      ! Change intermediate name to reflect spin case
-      j = 1
-      spin_name = ''
-
-      do i = 1, size(spin_case)
-         if (spin_case(i)==1) then
-            spin_name(j:j) = 'a'
-            j = j + 1
-         else if (spin_case(i)==2) then
-            spin_name(j:j) = 'b'
-            j = j + 1
-         end if
+      do i = 1, item%rank3/2
+         item%i_spin%spin(1,i) = spin_case(i)
+         item%i_spin%spin(2,i) = spin_case(i+2)
       end do
 
-!      write(itf_item%logfile,*) "NAME: ", spin_name
-!      write(itf_item%logfile,*) "NAME: ", spin_case
-!      write(itf_item%logfile,*) "NAME: ", itf_item%idx3
-!      write(itf_item%logfile,*) "NAME: ", itf_item%idx1
-!      write(itf_item%logfile,*) "NAME: ", itf_item%idx2
+      ! Change intermediate name to reflect spin case
+      spin_name = ''
+      j = 1
+      do k = 1, 2
+         do i = 1, item%rank3/2
+            if (item%i_spin%spin(k,i)==1) then
+               spin_name(j:j) = 'a'
+               j = j + 1
+            else if (item%i_spin%spin(k,i)==2) then
+               spin_name(j:j) = 'b'
+               j = j + 1
+            end if
+         end do
+      end do
+
+
+!      write(item%logfile,*) "NAME: ", spin_name
+!      write(item%logfile,*) "NAME: ", spin_case
+!      write(item%logfile,*) "NAME: ", item%idx3
+!      write(item%logfile,*) "NAME: ", item%idx1
+!      write(item%logfile,*) "NAME: ", item%idx2
 
       ! If an intermediate arises as the result of a permutation, we
       ! need to create this new intermediate. This requires the
       ! transpose
       if (scan('P', label)) then
-         itf_item%idx3 = f_index(itf_item%idx3, itf_item%rank3/2)
-         if (itf_item%rank2 > 2) then
+         item%idx3 = f_index(item%idx3, item%rank3/2)
+         if (item%rank2 > 2) then
             ! Don't need to permute T[ai] etc.
-            itf_item%idx2 = f_index(itf_item%idx2, itf_item%rank2/2)
+            item%idx2 = f_index(item%idx2, item%rank2/2)
          end if
-         itf_item%idx1 = f_index(itf_item%idx1,itf_item%rank1/2,.true.)
+         item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
       end if
 
-      itf_item%label_res = trim(itf_item%label_res)//trim(spin_name)
-      call assign_spin(itf_item)
+      item%label_res = trim(item%label_res)//trim(spin_name)
+      call assign_spin(item)
 
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine print_itf_line(item,s1,s2)
@@ -1936,12 +1951,13 @@
       ! Assign spin to indicies on the result tensor
       ! TODO: spin_case is only len 4
       if (item%inter(3)) then
-         do i=1, size(item%spin_case)/2
-            if (item%spin_case(i) == 0) exit
-            item%t_spin(3)%spin(1,i) = item%spin_case(i)
-            item%t_spin(3)%spin(2,i) =
-     &                  item%spin_case(i+size(item%spin_case)/2)
-         end do
+!         do i=1, size(item%spin_case)/2
+!            if (item%spin_case(i) == 0) exit
+!            item%t_spin(3)%spin(1,i) = item%spin_case(i)
+!            item%t_spin(3)%spin(2,i) =
+!     &                  item%spin_case(i+size(item%spin_case)/2)
+!         end do
+         item%t_spin(3)%spin = item%i_spin%spin
       else
          select case (item%rank3)
             case(0)
@@ -2540,6 +2556,10 @@
       item%t_spin(2)%spin = 0
       item%t_spin(3)%spin = 0
 
+      if (item%inter(3)) then
+         allocate(item%i_spin%spin(2, item%rank3/2))
+      end if
+
       return
       end
 
@@ -2563,6 +2583,10 @@
       deallocate(item%t_spin(1)%spin)
       deallocate(item%t_spin(2)%spin)
       deallocate(item%t_spin(3)%spin)
+
+      if (item%inter(3)) then
+         deallocate(item%i_spin%spin)
+      end if
 
       return
       end

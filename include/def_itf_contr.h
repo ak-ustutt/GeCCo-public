@@ -85,7 +85,8 @@
       logical ::
      &     print_line = .true.          ! Should this line be printed
       type(spin_info) ::
-     &     t_spin(3)
+     &     t_spin(3),                   ! Spin info of result, t1 and t2 tensors
+     &     i_spin                       ! Spin info of an intermediate
 
       end type itf_contr
 
