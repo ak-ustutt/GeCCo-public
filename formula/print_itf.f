@@ -69,7 +69,8 @@
       integer ::
      &     tmp_case(4),
      &     ninter,       ! Number of intermediates found in recursive search
-     &     shift         ! Used to store sequentially
+     &     shift,        ! Used to store sequentially
+     &     perm
       character ::
      &     ch           ! Scratch
 
@@ -83,6 +84,9 @@
 
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
+
+         ! Initalise permutation case
+         perm = 0
 
 !         do i = 1, ninter
 !            write(itflog,*) "=============================="
@@ -112,8 +116,8 @@
 
             if(associated(fl_item%interm)) cycle
             if(.not.associated(fl_item%next)) then
-!               write(itflog,*) "ERROR: intermediate was declared, but
-!     &                          not used!"
+               write(itflog,*) "ERROR: intermediate was declared, but
+     &                          not used!"
                exit
             end if
             if(scan(fl_item%bcontr%label_res, "STIN")==0) then
@@ -131,11 +135,14 @@
          ! Global variable ninter is the number of intermediates which
          ! we need to deal with
          ninter = 0
-!         call intermediate_to_itf(fl_item%bcontr,itflog,fl_item%command,
-!     &                            spin_inters, ninter)
-         call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                       fl_item%command,spin_inters, ninter)
 
+         ! TODO: Send this an perm integer, send it to call below
+         ! then if (inter .and. perm>0) then permute, see if need extra
+         ! permute. If so, set permute == 2...
+         call find_spin_intermediate(fl_item%bcontr,itflog,
+     &                       fl_item%command,spin_inters, ninter,perm)
+
+         ! TODO: Make this a subroutine above
 !         do i = 1, ninter
 !            write(itflog,*) "=============================="
 !            write(itflog,*) "NCASE2: ", spin_inters(i)%ncase
@@ -178,8 +185,10 @@
                   ! When we check for other intermediates, need
                   ! to know which spin cases to pick out! This is done
                   ! in the subroutine call
-                  call intermediate_to_itf(fl_item%bcontr,itflog,
-     &                           fl_item%command,spin_inters,ninter,1)
+!                  call intermediate_to_itf(fl_item%bcontr,itflog,
+!     &                           fl_item%command,spin_inters,ninter,1)
+                   call find_spin_intermediate(fl_item%bcontr,itflog,
+     &                          fl_item%command,spin_inters,ninter,perm)
 
                   ! Mark the position of the previously checked
                   ! intermediates
@@ -282,8 +291,8 @@
 
                      ! Print out intermediate line
                      call intermediate2_to_itf(fl_item%bcontr,itflog,
-     &                                      fl_item%command,
-     &                                  ospin_inters(k)%name,tmp_case)
+     &                     fl_item%command,ospin_inters(k)%name,
+     &                     tmp_case,perm)
                   end if
 
                   ! Move onto next item and repeat
