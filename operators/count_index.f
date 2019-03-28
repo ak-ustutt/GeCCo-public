@@ -202,6 +202,8 @@
 
       f_index=index
 
+      if (hrank==1) return
+
       if (contra) then
          f_index(hrank-1+hrank:hrank-1+hrank)=
      &                                index(hrank+hrank:hrank+hrank)
@@ -1862,6 +1864,9 @@
       else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==0) then
          return
       else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==6) then
+         return
+      else if (sum(sum(c,dim=1))==0) then
+         ! Get rid of tensor products
          return
       end if
 
