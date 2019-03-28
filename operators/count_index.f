@@ -2019,6 +2019,10 @@
          ! Scalar contributions
          call print_itf_line(item,.false.,.false.)
          return
+      else if (item%rank1 == 0 .or. item%rank2 ==0) then
+         ! Tensor multiplied by a scalar
+         call print_itf_line(item,.false.,.false.)
+         return
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
          ! Don't care about tensor products now
