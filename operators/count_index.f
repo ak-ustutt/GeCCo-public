@@ -1273,8 +1273,21 @@
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
 
+      if (item%rank1 == 0 .and. item%rank2 == 0) then
+         item%idx1 = ''
+         item%idx2 = ''
+         item%idx3 = ''
+         return
+      end if
+
       ! Set number of contraction indicies, used later on
       item%contri = sum(sum(c, dim=1))
+
+!      write(10,*) "e1 ", e1
+!      write(10,*) "e2 ", e2
+!      write(10,*) "e3 ", e3
+!      write(10,*) "c ", c
+!      write(10,*) "cops ", cops(1), cops(2)
 
       ! Allocate pair list according to ranks of tensors
       allocate(p_list%plist(item%rank1/2+item%rank2/2))
@@ -1293,6 +1306,53 @@
       do i = 1, 4
          c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
       end do
+
+      if (sum(e1ops)==0 .and. sum(e2ops)==0 .and.
+     &    cops(1) /= cops(2)) then
+         ! If there are no external indicies + uneven number of
+         ! creation/annhilation ops
+         if (cops(1) >= cops(2)) then
+            i1 = 1
+            i2 = 1
+         else
+            i1 = 2
+            i2 = 2
+         end if
+
+         do while (cops(1) +  cops(2) /= 0)
+            write(item%logfile,*) "Hello"
+
+            found = .false.
+            do i = 1, 4
+               do j = 1, c(i,i1)
+                  ii = 1+(7*(i-1)) + c_shift(i)
+                  p_list%plist(sp)%pindex(1) = ind(ii)
+                  p_list%plist(sp)%ops(1) = 1
+                  c_shift(i) = c_shift(i) + 1
+                  c(i,i1) = c(i,i1) - 1
+
+                  do k = 1, 4
+                     do l = 1, c(k,i2)
+                        ii = 1+(7*(k-1)) + c_shift(k)
+                        p_list%plist(sp)%pindex(2) = ind(ii)
+                        p_list%plist(sp)%linked = .false.
+                        p_list%plist(sp)%ops(2) = 2
+                        c_shift(k) = c_shift(k) + 1
+                        c(k,i2) = c(k,i2) - 1
+                        sp = sp + 1
+                        found = .true.
+                        exit
+                     end do
+                     if (found) exit
+                  end do
+                  if (found) exit
+               end do
+               if (found) exit
+            end do
+            cops = sum(c,dim=1)
+         end do
+      end if
+
 
       do while (cops(1) /= 0 .and. cops(2) /= 0)
          ! Need to start the search with the largest number of operators;
@@ -1464,6 +1524,8 @@
       item%idx1 = trim(s1)
       item%idx2 = trim(s2)
       item%idx3 = trim(s3)
+
+!      call print_plist(p_list, item%rank1/2+item%rank2/2, "test", 10)
 
       ! Release memory for pair lists
       deallocate(p_list%plist)
