@@ -241,7 +241,42 @@
       write(logfile,*) "================================="
       write(logfile,*) (spins(2,i), i=1, rank/2)
       write(logfile,*) (spins(1,i), i=1, rank/2)
-      write(logfile,*)
+      write(logfile,*) "================================="
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_plist(p_list, size, label, logfile)
+*----------------------------------------------------------------------*
+!     Print spin of a tensor
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(pair_list), intent(in) ::
+     &   p_list
+      integer, intent(in) ::
+     &   size,
+     &   logfile
+      character(len=*), intent(in) ::
+     &   label
+
+      integer ::
+     &   i
+
+      write(logfile,*) "P_list: ", label
+      write(logfile,*) "=============================="
+      do i = 1, size
+      write(logfile,*) p_list%plist(i)%pindex(1), p_list%plist(i)%ops(1)
+      write(logfile,*) p_list%plist(i)%pindex(2), p_list%plist(i)%ops(2)
+      write(logfile,*) p_list%plist(i)%link
+      write(logfile,*) "---------------------------"
+      end do
+      write(logfile,*) "=============================="
 
       return
       end
@@ -1372,37 +1407,6 @@
          shift = shift + 1
       end do
 
-      ! TODO: make this a subroutine
-      !write(10,*) "=============================="
-      !write(10,*) "P_list"
-      !do i = 1, item%rank1 + item%rank2
-      !   write(10,*) p_list%plist(i)%pindex(1), p_list%plist(i)%ops(1)
-      !   write(10,*) p_list%plist(i)%pindex(2), p_list%plist(i)%ops(2)
-      !   write(10,*) p_list%plist(i)%link
-      !   write(10,*) "---------------------------"
-      !end do
-      !write(10,*) "=============================="
-
-      !write(10,*) "=============================="
-      !write(10,*) "t1_list"
-      !do i = 1, item%rank1
-      !   write(10,*) t1_list%plist(i)%pindex(1), t1_list%plist(i)%ops(1)
-      !   write(10,*) t1_list%plist(i)%pindex(2), t1_list%plist(i)%ops(2)
-      !   write(10,*) t1_list%plist(i)%link
-      !   write(10,*) "---------------------------"
-      !end do
-      !write(10,*) "=============================="
-
-      !write(10,*) "=============================="
-      !write(10,*) "t2_list"
-      !do i = 1, item%rank2
-      !   write(10,*) t2_list%plist(i)%pindex(1), t2_list%plist(i)%ops(1)
-      !   write(10,*) t2_list%plist(i)%pindex(2), t2_list%plist(i)%ops(2)
-      !   write(10,*) t2_list%plist(i)%link
-      !   write(10,*) "---------------------------"
-      !end do
-      !write(10,*) "=============================="
-
       if (item%permute == 2) then
          if (item%rank1 /= 2 .and. item%rank2 /= 2) then
          ! Need to swap annihilation operators between tensors:
@@ -1415,7 +1419,6 @@
          ! Final permutations are made in command_to_itf
          end if
       end if
-
 
       ! Swap between creation and annihilation operators to make sure
       ! external ops are before internal. This is important for the
