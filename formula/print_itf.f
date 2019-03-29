@@ -121,14 +121,12 @@
                exit
             end if
             if(scan(fl_item%bcontr%label_res, "STIN")==0) then
-!               write(itflog,*) "Found next result"
+               !write(itflog,*) "Found next result"
                res_start => fl_item
                exit
             end if
 
          end do
-
-!         write(itflog,*) "res_start ", res_start%bcontr%label_res
 
          ! We want to build an array of intermediate names and their
          ! various spin cases here
@@ -325,6 +323,7 @@
          ! Exit if next resdiual is different or a new intermediate is
          ! declared.
 
+         ! TODO: There is a bug when printing formulae with icmrcc_11
          if (print_form) then
             fl_item => inter_start
             do while (.not.associated(fl_item, res_start))

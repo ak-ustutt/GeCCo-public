@@ -288,6 +288,8 @@
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
 
+      integer :: i,j
+
       ! Creation operators
       ! Hole, abcd
       nops(1,1)=nops(1,1) + iocc(2,1)
@@ -1240,6 +1242,7 @@
       item%contri = sum(sum(c, dim=1))
 
       ! Allocate pair list according to ranks of tensors
+      ! TODO: maybe allocate later with number of external + contri??
       allocate(p_list%plist(item%rank1+item%rank2))
       allocate(t1_list%plist(item%rank1))
       allocate(t2_list%plist(item%rank2))
@@ -1369,8 +1372,39 @@
          shift = shift + 1
       end do
 
+      ! TODO: make this a subroutine
+      !write(10,*) "=============================="
+      !write(10,*) "P_list"
+      !do i = 1, item%rank1 + item%rank2
+      !   write(10,*) p_list%plist(i)%pindex(1), p_list%plist(i)%ops(1)
+      !   write(10,*) p_list%plist(i)%pindex(2), p_list%plist(i)%ops(2)
+      !   write(10,*) p_list%plist(i)%link
+      !   write(10,*) "---------------------------"
+      !end do
+      !write(10,*) "=============================="
+
+      !write(10,*) "=============================="
+      !write(10,*) "t1_list"
+      !do i = 1, item%rank1
+      !   write(10,*) t1_list%plist(i)%pindex(1), t1_list%plist(i)%ops(1)
+      !   write(10,*) t1_list%plist(i)%pindex(2), t1_list%plist(i)%ops(2)
+      !   write(10,*) t1_list%plist(i)%link
+      !   write(10,*) "---------------------------"
+      !end do
+      !write(10,*) "=============================="
+
+      !write(10,*) "=============================="
+      !write(10,*) "t2_list"
+      !do i = 1, item%rank2
+      !   write(10,*) t2_list%plist(i)%pindex(1), t2_list%plist(i)%ops(1)
+      !   write(10,*) t2_list%plist(i)%pindex(2), t2_list%plist(i)%ops(2)
+      !   write(10,*) t2_list%plist(i)%link
+      !   write(10,*) "---------------------------"
+      !end do
+      !write(10,*) "=============================="
 
       if (item%permute == 2) then
+         if (item%rank1 /= 2 .and. item%rank2 /= 2) then
          ! Need to swap annihilation operators between tensors:
          ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
 
@@ -1379,6 +1413,7 @@
          t2_list%plist(nloop+1)%pindex(2) =
      &                               p_list%plist(nloop+1)%pindex(2)
          ! Final permutations are made in command_to_itf
+         end if
       end if
 
 
@@ -1392,7 +1427,6 @@
       call swap_index(t2_list, item%rank2, item%int(2), item%inter(2))
       call swap_index(r_list, item%rank3, item%int(3), item%inter(3))
 
-
       ! Sort index pairs into order with bubble sort. If only 1 pair,
       ! then this is skipped. This is important to assure consistent use
       ! of indices for the declaration and use of an intermediate (the
@@ -1402,7 +1436,6 @@
       e4 = 0
       call swap_pairs(t2_list, item%rank2, item%int(2), e4)
       call swap_pairs(r_list, item%rank3, item%int(3), e5)
-
 
       ! Insert ordered lists into ITF index strings
       s1 = '        '
@@ -2138,6 +2171,14 @@
 
       allocate(poss(2,item%contri))
 
+      !write(10,*) "========================"
+      !do i = 1, 2
+      !   do j = 1, item%contri
+      !      write(10,*) "DEBUG1 poss: ", poss(i,j)%elements
+      !   end do
+      !end do
+      !write(10,*) "========================"
+
       ! Largest tensor goes first
       if (item%rank2 > item%rank1) then
          z1 = 2
@@ -2154,6 +2195,9 @@
          str1 = item%idx1
          str2 = item%idx2
       end if
+
+      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
+      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
 
       ! Get position information of contraction indicies
       shift = 1
@@ -2207,6 +2251,15 @@
       ! Main spin summation loop
       shift = shift - 1
       eloop = .false.
+
+      !write(10,*) "========================"
+      !do i = 1, 2
+      !   do j = 1, item%contri
+      !      write(10,*) "DEBUG1 poss: ", poss(i,j)%elements
+      !   end do
+      !end do
+      !write(10,*) "========================"
+
       do i = 1, 2
          i1 = poss(1,1)%elements(1)
          i2 = poss(1,1)%elements(2)
@@ -2698,13 +2751,21 @@
       c = 0
 
       if (contr%label_op1 == 'H') then
+         !TODO: Why looping over n_cnt????? probably want to loop over
+         !      number of vertices for each operator
          do i = 1, contr%n_cnt
+            !write(10,*) "n_cnt ", contr%n_cnt
+            !write(10,*) "occ_op1 ", contr%occ_op1(1:,1:,i)
+            !write(10,*) "rst_op1 ", contr%rst_op1(1:,1:,1:,1:,1:,i)
            call count_index(i,
      &        contr%occ_op1(1:,1:,i),
      &        contr%rst_op1(1:,1:,1:,1:,1:,i),
      &        contr%ngas,contr%nspin,c)
          end do
-      else if (contr%label_op2 == 'H') then
+      end if
+      if (contr%label_op2 == 'H') then
+         !TODO: Why looping over n_cnt????? probably want to loop over
+         !      number of vertices for each operator
          do i = 1, contr%n_cnt
            call count_index(i,
      &        contr%occ_op2(1:,1:,i),
