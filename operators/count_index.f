@@ -2250,6 +2250,9 @@
          end if
       end do
 
+      if (shift == 1) then
+         call line_error("Didn't find contraction index", item)
+      end if
 
       ! Main spin summation loop
       shift = shift - 1
