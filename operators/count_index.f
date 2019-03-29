@@ -1277,11 +1277,10 @@
       item%contri = sum(sum(c, dim=1))
 
       ! Allocate pair list according to ranks of tensors
-      ! TODO: maybe allocate later with number of external + contri??
-      allocate(p_list%plist(item%rank1+item%rank2))
-      allocate(t1_list%plist(item%rank1))
-      allocate(t2_list%plist(item%rank2))
-      allocate(r_list%plist(item%rank3))
+      allocate(p_list%plist(item%rank1/2+item%rank2/2))
+      allocate(t1_list%plist(item%rank1/2))
+      allocate(t2_list%plist(item%rank2/2))
+      allocate(r_list%plist(item%rank3/2))
 
       ! To start, we pair off contraction loops
       ! Pair list index (shift pair)
@@ -2173,14 +2172,6 @@
      &   eloop
 
       allocate(poss(2,item%contri))
-
-      !write(10,*) "========================"
-      !do i = 1, 2
-      !   do j = 1, item%contri
-      !      write(10,*) "DEBUG1 poss: ", poss(i,j)%elements
-      !   end do
-      !end do
-      !write(10,*) "========================"
 
       ! Largest tensor goes first
       if (item%rank2 > item%rank1) then
