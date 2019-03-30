@@ -1307,51 +1307,51 @@
          c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
       end do
 
-      if (sum(e1ops)==0 .and. sum(e2ops)==0 .and.
-     &    cops(1) /= cops(2)) then
-         ! If there are no external indicies + uneven number of
-         ! creation/annhilation ops
-         if (cops(1) >= cops(2)) then
-            i1 = 1
-            i2 = 1
-         else
-            i1 = 2
-            i2 = 2
-         end if
-
-         do while (cops(1) +  cops(2) /= 0)
-            write(item%logfile,*) "Hello"
-
-            found = .false.
-            do i = 1, 4
-               do j = 1, c(i,i1)
-                  ii = 1+(7*(i-1)) + c_shift(i)
-                  p_list%plist(sp)%pindex(1) = ind(ii)
-                  p_list%plist(sp)%ops(1) = 1
-                  c_shift(i) = c_shift(i) + 1
-                  c(i,i1) = c(i,i1) - 1
-
-                  do k = 1, 4
-                     do l = 1, c(k,i2)
-                        ii = 1+(7*(k-1)) + c_shift(k)
-                        p_list%plist(sp)%pindex(2) = ind(ii)
-                        p_list%plist(sp)%linked = .false.
-                        p_list%plist(sp)%ops(2) = 2
-                        c_shift(k) = c_shift(k) + 1
-                        c(k,i2) = c(k,i2) - 1
-                        sp = sp + 1
-                        found = .true.
-                        exit
-                     end do
-                     if (found) exit
-                  end do
-                  if (found) exit
-               end do
-               if (found) exit
-            end do
-            cops = sum(c,dim=1)
-         end do
-      end if
+!      if (sum(e1ops)==0 .and. sum(e2ops)==0 .and.
+!     &    cops(1) /= cops(2) .or.
+!     &   sum(e1ops)==0 .and. sum(e2ops)==2 .and. c(3,2)==2) then
+!         ! If there are no external indicies + uneven number of
+!         ! creation/annhilation ops
+!         if (cops(1) >= cops(2)) then
+!            i1 = 1
+!            i2 = 1
+!         else
+!            i1 = 2
+!            i2 = 2
+!         end if
+!
+!         do while (cops(1) +  cops(2) /= 0)
+!
+!            found = .false.
+!            do i = 1, 4
+!               do j = 1, c(i,i1)
+!                  ii = 1+(7*(i-1)) + c_shift(i)
+!                  p_list%plist(sp)%pindex(1) = ind(ii)
+!                  p_list%plist(sp)%ops(1) = 1
+!                  c_shift(i) = c_shift(i) + 1
+!                  c(i,i1) = c(i,i1) - 1
+!
+!                  do k = 1, 4
+!                     do l = 1, c(k,i2)
+!                        ii = 1+(7*(k-1)) + c_shift(k)
+!                        p_list%plist(sp)%pindex(2) = ind(ii)
+!                        p_list%plist(sp)%linked = .false.
+!                        p_list%plist(sp)%ops(2) = 2
+!                        c_shift(k) = c_shift(k) + 1
+!                        c(k,i2) = c(k,i2) - 1
+!                        sp = sp + 1
+!                        found = .true.
+!                        exit
+!                     end do
+!                     if (found) exit
+!                  end do
+!                  if (found) exit
+!               end do
+!               if (found) exit
+!            end do
+!            cops = sum(c,dim=1)
+!         end do
+!      end if
 
 
       do while (cops(1) /= 0 .and. cops(2) /= 0)
@@ -1525,8 +1525,6 @@
       item%idx2 = trim(s2)
       item%idx3 = trim(s3)
 
-!      call print_plist(p_list, item%rank1/2+item%rank2/2, "test", 10)
-
       ! Release memory for pair lists
       deallocate(p_list%plist)
       deallocate(t1_list%plist)
@@ -1627,10 +1625,6 @@
          end if
       end do
 
-      !write(11,*) " NOPS ", nops
-      !write(11,*) "start ", start
-
-
       ! Start main search loop
       !do i = 1, 4
       do i = start, 4
@@ -1663,6 +1657,26 @@
                   end do
                   if (found) exit
                end do
+
+!            else if (n1 == 0 .and. n2 == 0 .and. e1ops(2) /= 0) then
+!               ! Picking out odd cases...
+!               do k = 1, 4
+!                  do l = 1, e1(k,i1)
+!                     ii = 1+(7*(k-1)) + t_shift(k)
+!                     list%plist(sp)%pindex(i2) = ind(ii)
+!                     list%plist(sp)%linked = .false.
+!                     list%plist(sp)%ops(i2) = tensor
+!
+!                     t_shift(k) = t_shift(k) + 1
+!                     e1(k,i1) = e1(k,i1) - 1
+!
+!                     ! Found a pair, so increment pair list index
+!                     sp = sp + 1
+!                     found = .true.
+!                     exit
+!                  end do
+!                  if (found) exit
+!               end do
 
             else if (n2 > 0) then
                ! Look on the opposite tensor
@@ -1700,6 +1714,38 @@
             else
                ! No ops of opposite type to match...
                call line_error("Particle number not conserving",item)
+!               do k = 1, 4
+!                  do l = 1, e2(k,i1)
+!                     ii = 1+(7*(k-1))+t_shift(k)
+!                     list%plist(sp)%pindex(i2) = ind(ii)
+!                     list%plist(sp)%ops(i2) = opp_tensor
+!                     list%plist(sp)%linked = .true.
+!
+!                     t_shift(k) = t_shift(k) + 1
+!                     e2(k,i1) = e2(k,i1) - 1
+!
+!                     ! We need to link the external indices on two
+!                     ! different operators with a contraction index
+!                     do m=1, 4
+!                        do n=1, c(m,i1)
+!                        write(10,*) "Hello2"
+!                            ii = 1+(7*(m-1)) + c_shift(m)
+!
+!                           list%plist(sp)%link = ind(ii)
+!
+!                           c_shift(m) = c_shift(m) + 1
+!                           c(m,i1) = c(m,i1) - 1
+!
+!                           sp = sp + 1
+!                           found = .true.
+!                           exit
+!                        end do
+!                        if (found) exit
+!                     end do
+!                     if (found) exit
+!                  end do
+!                  if (found) exit
+!               end do
             end if
             ! A pair loop has been found so exit
             if (found) exit

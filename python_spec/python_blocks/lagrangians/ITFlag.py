@@ -137,6 +137,11 @@ if (keywords.get('method.ITF.res_type') != '9'):
     LAG_A2.set_rule()
 
 FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_E',
+        LABEL_RES:'FORM_MRCC_LAG_E',
+        INTERM:'FORM_GAM0'})
+
+FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'FORM_GAM0'})
