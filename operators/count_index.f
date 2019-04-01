@@ -606,13 +606,6 @@
          if(contr_info%perm(i)) perm_case = perm_case + 1
       end do
 
-      ! Determine if result needs permuting
-      !inter = check_inter(contr_info%label_res)
-
-      !if (.not.inter) then
-      !   call permute_tensors(contr_info,perm_case,itflog)
-      !end if
-
       if (perm_case == 0) then
          ! No permutations
          call intermediate_to_itf(contr_info,itflog,command,
@@ -623,10 +616,6 @@
      &                               spin_inters,n_inter,i)
          end do
       end if
-
-      !if (perm==0) then
-      !   perm = perm_case
-      !end if
 
       return
       end
@@ -723,39 +712,11 @@
       type(itf_contr) ::
      &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
-     &    perm_case,
      &    i, j, k, l
       character(len=4) ::
      &    spin_name
 
 
-      !perm_case = 0
-      !   do i = 1, ngaspt
-      !      if(contr_info%perm(i)) perm_case = perm_case + 1
-      !   end do
-      ! TODO: Check if perm is already 1
-      !       check for extra permuation case of inter
-      !       make case for only k_ai^bj
-      !       loop below over permuation cases
-
-      ! TODO: this looks like a mess...
-      !if (perm == 1) then
-      !   !call permute_tensors(contr_info,perm_case,itflog)
-
-      !   do i = 1, 4
-      !      if(contr_info%perm(i)) perm_case = perm_case + 1
-      !   end do
-
-      !   if (perm + perm_case > 1) then
-      !      perm_case = perm-1 + perm_case
-      !   else
-      !      perm_case = 0
-      !   end if
-      !end if
-
-      !write(11,*) "perm case ", perm_case
-
-      !if (perm_case == 0) then
       call itf_contr_init(contr_info,item,0,
      &                    command,itflog)
 
@@ -780,13 +741,6 @@
          end do
       end do
 
-
-!      write(item%logfile,*) "NAME: ", spin_name
-!      write(item%logfile,*) "NAME: ", spin_case
-!      write(item%logfile,*) "NAME: ", item%idx3
-!      write(item%logfile,*) "NAME: ", item%idx1
-!      write(item%logfile,*) "NAME: ", item%idx2
-
       ! If an intermediate arises as the result of a permutation, we
       ! need to create this new intermediate. This requires the
       ! transpose
@@ -801,51 +755,6 @@
 
       item%label_res = trim(item%label_res)//trim(spin_name)
       call assign_spin(item)
-
-!      else
-!
-!      do l = 1, perm_case
-!      call itf_contr_init(contr_info,item,l,
-!     &                    command,itflog)
-!
-!      ! Set overall spin case of result
-!      do i = 1, item%rank3/2
-!         item%i_spin%spin(1,i) = spin_case(i)
-!         item%i_spin%spin(2,i) = spin_case(i+2)
-!      end do
-!
-!      ! Change intermediate name to reflect spin case
-!      spin_name = ''
-!      j = 1
-!      do k = 1, 2
-!         do i = 1, item%rank3/2
-!            if (item%i_spin%spin(k,i)==1) then
-!               spin_name(j:j) = 'a'
-!               j = j + 1
-!            else if (item%i_spin%spin(k,i)==2) then
-!               spin_name(j:j) = 'b'
-!               j = j + 1
-!            end if
-!         end do
-!      end do
-!
-!      ! If an intermediate arises as the result of a permutation, we
-!      ! need to create this new intermediate. This requires the
-!      ! transpose
-!      if (scan('P', label)) then
-!         item%idx3 = f_index(item%idx3, item%rank3/2)
-!         if (item%rank2 > 2) then
-!            ! Don't need to permute T[ai] etc.
-!            item%idx2 = f_index(item%idx2, item%rank2/2)
-!         end if
-!         item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
-!      end if
-!
-!      item%label_res = trim(item%label_res)//trim(spin_name)
-!      call assign_spin(item)
-!      end do
-!
-!      end if
 
       return
       end
