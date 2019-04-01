@@ -66,7 +66,10 @@
      &     logfile,             ! File to print to
      &     permute,             ! 0,1,2,3: permutation cases
      &     command,             ! Type of contraction, borrowed from formula_item
-     &     contri               ! Number of contraction indices in a line
+     &     contri,              ! Number of contraction indices in a line
+     &     nops1(ngastp),
+     &     nops2(ngastp),
+     &     nops3(ngastp)
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral

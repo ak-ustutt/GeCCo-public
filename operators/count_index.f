@@ -368,13 +368,14 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
 
       type(itf_contr) ::
-     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+     &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
 !     &    perm_array(4),   ! Info of permutation factors
      &    perm_case,   ! Info of permutation factors
-     &    i                ! Loop index
+     &    i, j                ! Loop index
       logical ::
-     &    inter            ! True if result is an intermediate
+     &    inter,           ! True if result is an intermediate
+     &    found
       character(len=maxlen_bc_label) ::
      &    old_name
 
@@ -403,46 +404,62 @@
       if (perm_case > 0) then
          old_name = contr_info%label_res
          contr_info%label_res = "ITIN"
-         itf_item%symm = .true.
+         item%symm = .true.
       end if
 
       ! Pick out specific commands, form the itf_contr object, spin sum
       ! and print out contraction line
       if (command==command_add_intm .or. command==command_cp_intm) then
          ! For [ADD] and [COPY] cases
-         call itf_contr_init(contr_info,itf_item,0,command,itflog)
-         call print_itf_line(itf_item,.false.,.false.)
+         call itf_contr_init(contr_info,item,0,command,itflog)
+         call print_itf_line(item,.false.,.false.)
       else
          ! For other binary contractions
          if (perm_case == 0) then
             ! No permutations
-            call itf_contr_init(contr_info,itf_item,0,command,itflog)
-            call assign_spin(itf_item)
+            call itf_contr_init(contr_info,item,0,command,itflog)
+            call assign_spin(item)
          else
             do i=1, perm_case
                ! Loop over permutation cases and send separately to
                ! assign_spin. For most cases this is just one, however
                ! for (1-Pij)(1-Pab), we need to generate one of these
                ! permutations before symmetrising
-               call itf_contr_init(contr_info,itf_item,i,command,itflog)
+               call itf_contr_init(contr_info,item,i,command,itflog)
 
                if (i == 2) then
                   ! Need to transpose by tensors after permutation, to
                   ! avoid symmetry problem when using (1 + Pabij)
-                  itf_item%idx1=f_index(itf_item%idx1,itf_item%rank1/2)
-                  itf_item%idx2=f_index(itf_item%idx2,itf_item%rank2/2)
+                  ! If the intermediate has three internal/external
+                  ! indicies, then permute the covarient index
+                  if (item%inter(1)) then
+                     found = .false.
+                     do j = 1, ngastp
+                        if (item%nops1(j) > 2) then
+                        item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                        found = .true.
+                        exit
+                        end if
+                     end do
+                     if (.not.found) then
+                        item%idx1=f_index(item%idx1,item%rank1/2)
+                     end if
+                  else
+                     item%idx1=f_index(item%idx1,item%rank1/2)
+                  end if
+                  item%idx2=f_index(item%idx2,item%rank2/2)
                end if
 
-               call assign_spin(itf_item)
+               call assign_spin(item)
             end do
 
             ! If created a perm intermediate, print the symmetrised lines
-            call print_symmetrise(old_name,itf_item)
+            call print_symmetrise(old_name,item)
          end if
       end if
 
-      ! Deallocate memroy used when construcitng itf_item
-      call itf_deinit(itf_item)
+      ! Deallocate memroy used when construcitng item
+      call itf_deinit(item)
 
       return
       end
@@ -715,6 +732,8 @@
      &    i, j, k, l
       character(len=4) ::
      &    spin_name
+      logical ::
+     &   found
 
 
       call itf_contr_init(contr_info,item,0,
@@ -745,12 +764,29 @@
       ! need to create this new intermediate. This requires the
       ! transpose
       if (scan('P', label)) then
-         item%idx3 = f_index(item%idx3, item%rank3/2)
-         if (item%rank2 > 2) then
-            ! Don't need to permute T[ai] etc.
-            item%idx2 = f_index(item%idx2, item%rank2/2)
+
+         found = .false.
+         do j = 1, ngastp
+            if (item%nops3(j) > 2) then
+               ! If there are 3 external/internal indcies, don't need to
+               ! permute index, but do need to permute spin_name
+               do k = 1, len(spin_name)
+                  if (spin_name(k:k)=='a') then
+                     spin_name(k:k)='b'
+                  else if (spin_name(k:k)=='b') then
+                     spin_name(k:k)='a'
+                  end if
+               end do
+               found = .true.
+               exit
+            end if
+         end do
+         if (.not.found) then
+            item%idx3=f_index(item%idx3,item%rank3/2)
          end if
+
          item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+         item%idx2 = f_index(item%idx2, item%rank2/2)
       end if
 
       item%label_res = trim(item%label_res)//trim(spin_name)
@@ -1197,6 +1233,11 @@
       call itf_rank(e1, c, item%rank1, .false.)
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
+
+      ! Set number of indcies
+      item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
+      item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
+      item%nops3 = sum(e3, dim=2)
 
       if (item%rank1 == 0 .and. item%rank2 == 0) then
          item%idx1 = ''
