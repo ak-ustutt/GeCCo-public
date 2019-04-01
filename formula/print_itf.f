@@ -69,8 +69,7 @@
       integer ::
      &     tmp_case(4),
      &     ninter,       ! Number of intermediates found in recursive search
-     &     shift,        ! Used to store sequentially
-     &     perm
+     &     shift         ! Used to store sequentially
       character ::
      &     ch           ! Scratch
 
@@ -83,9 +82,6 @@
 
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
-
-         ! Initalise permutation case
-         perm = 0
 
 !         do i = 1, ninter
 !            write(itflog,*) "=============================="
@@ -133,11 +129,8 @@
          ! we need to deal with
          ninter = 0
 
-         ! TODO: Send this an perm integer, send it to call below
-         ! then if (inter .and. perm>0) then permute, see if need extra
-         ! permute. If so, set permute == 2...
          call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                       fl_item%command,spin_inters, ninter,perm)
+     &                       fl_item%command,spin_inters, ninter)
 
          ! TODO: Make this a subroutine above
 !         do i = 1, ninter
@@ -185,7 +178,7 @@
 !                  call intermediate_to_itf(fl_item%bcontr,itflog,
 !     &                           fl_item%command,spin_inters,ninter,1)
                    call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                          fl_item%command,spin_inters,ninter,perm)
+     &                          fl_item%command,spin_inters,ninter)
 
                   ! Mark the position of the previously checked
                   ! intermediates
@@ -289,7 +282,7 @@
                      ! Print out intermediate line
                      call intermediate2_to_itf(fl_item%bcontr,itflog,
      &                     fl_item%command,ospin_inters(k)%name,
-     &                     tmp_case,perm)
+     &                     tmp_case)
                   end if
 
                   ! Move onto next item and repeat

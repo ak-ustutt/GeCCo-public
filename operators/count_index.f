@@ -378,19 +378,21 @@
       character(len=maxlen_bc_label) ::
      &    old_name
 
-      !do i = 1, 4
-      !   if(contr_info%perm(i)) write(itflog,*) "permute ", i
-      !end do
-
-      ! Initialise permutation factors to 0 == no permutation
+      ! Initialise permutation factors:
+      ! 0 == no permutation
+      ! 1 == (1-Pxy)
+      ! 2 == (1-Pxy)(1-Pvw) = (1+Pxy) in spatial orbitals
       perm_case = 0
+      do i = 1, ngastp
+         if(contr_info%perm(i)) perm_case = perm_case + 1
+      end do
 
       ! Determine if result needs permuting
-      inter = check_inter(contr_info%label_res)
+      !inter = check_inter(contr_info%label_res)
 
-      if (.not.inter) then
-         call permute_tensors(contr_info,perm_case,itflog)
-      end if
+      !if (.not.inter) then
+      !   call permute_tensors(contr_info,perm_case,itflog)
+      !end if
 
       ! If the perm_array doesn't contain any zeros, then we should
       ! introduce an intermediate which collects half of the different
@@ -403,7 +405,6 @@
          contr_info%label_res = "ITIN"
          itf_item%symm = .true.
       end if
-
 
       ! Pick out specific commands, form the itf_contr object, spin sum
       ! and print out contraction line
@@ -567,7 +568,7 @@
 
 *----------------------------------------------------------------------*
       subroutine find_spin_intermediate(contr_info,itflog,command,
-     &                                  spin_inters,n_inter,perm)
+     &                                  spin_inters,n_inter)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -586,8 +587,6 @@
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
-     &     perm
-      integer, intent(inout) ::
      &     n_inter         ! Overall number of intermediates needed by result
       type(spin_cases), dimension(MAXINT), intent(inout) ::
      &     spin_inters
@@ -603,13 +602,16 @@
 
       ! Initialise permutation factors to 0 == no permutation
       perm_case = 0
+      do i = 1, ngastp
+         if(contr_info%perm(i)) perm_case = perm_case + 1
+      end do
 
       ! Determine if result needs permuting
-      inter = check_inter(contr_info%label_res)
+      !inter = check_inter(contr_info%label_res)
 
-      if (.not.inter) then
-         call permute_tensors(contr_info,perm_case,itflog)
-      end if
+      !if (.not.inter) then
+      !   call permute_tensors(contr_info,perm_case,itflog)
+      !end if
 
       if (perm_case == 0) then
          ! No permutations
@@ -622,9 +624,9 @@
          end do
       end if
 
-      if (perm==0) then
-         perm = perm_case
-      end if
+      !if (perm==0) then
+      !   perm = perm_case
+      !end if
 
       return
       end
@@ -695,7 +697,7 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate2_to_itf(contr_info,itflog,command,
-     &                               label,spin_case,perm)
+     &                               label,spin_case)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -712,8 +714,7 @@
      &     contr_info      ! Inofrmation about binary contraction
       integer, intent(in) ::
      &     itflog,         ! Output file
-     &     command,        ! Type of formula item command, ie. contraction, copy etc.
-     &     perm
+     &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
      &     spin_case(4)
       character(len=maxlen_bc_label), intent(in) ::
@@ -728,23 +729,34 @@
      &    spin_name
 
 
-      perm_case = 0
+      !perm_case = 0
+      !   do i = 1, ngaspt
+      !      if(contr_info%perm(i)) perm_case = perm_case + 1
+      !   end do
       ! TODO: Check if perm is already 1
       !       check for extra permuation case of inter
       !       make case for only k_ai^bj
       !       loop below over permuation cases
 
-      if (perm == 1) then
-         call permute_tensors(contr_info,perm_case,itflog)
-         if (perm + perm_case > 1) then
-            perm_case = perm + perm_case
-         else
-            perm_case = 0
-         end if
-      end if
+      ! TODO: this looks like a mess...
+      !if (perm == 1) then
+      !   !call permute_tensors(contr_info,perm_case,itflog)
 
-      if (perm_case == 0) then
-      call itf_contr_init(contr_info,item,perm_case,
+      !   do i = 1, 4
+      !      if(contr_info%perm(i)) perm_case = perm_case + 1
+      !   end do
+
+      !   if (perm + perm_case > 1) then
+      !      perm_case = perm-1 + perm_case
+      !   else
+      !      perm_case = 0
+      !   end if
+      !end if
+
+      !write(11,*) "perm case ", perm_case
+
+      !if (perm_case == 0) then
+      call itf_contr_init(contr_info,item,0,
      &                    command,itflog)
 
       ! Set overall spin case of result
@@ -790,50 +802,50 @@
       item%label_res = trim(item%label_res)//trim(spin_name)
       call assign_spin(item)
 
-      else
-
-      do l = 1, perm_case
-      call itf_contr_init(contr_info,item,l,
-     &                    command,itflog)
-
-      ! Set overall spin case of result
-      do i = 1, item%rank3/2
-         item%i_spin%spin(1,i) = spin_case(i)
-         item%i_spin%spin(2,i) = spin_case(i+2)
-      end do
-
-      ! Change intermediate name to reflect spin case
-      spin_name = ''
-      j = 1
-      do k = 1, 2
-         do i = 1, item%rank3/2
-            if (item%i_spin%spin(k,i)==1) then
-               spin_name(j:j) = 'a'
-               j = j + 1
-            else if (item%i_spin%spin(k,i)==2) then
-               spin_name(j:j) = 'b'
-               j = j + 1
-            end if
-         end do
-      end do
-
-      ! If an intermediate arises as the result of a permutation, we
-      ! need to create this new intermediate. This requires the
-      ! transpose
-      if (scan('P', label)) then
-         item%idx3 = f_index(item%idx3, item%rank3/2)
-         if (item%rank2 > 2) then
-            ! Don't need to permute T[ai] etc.
-            item%idx2 = f_index(item%idx2, item%rank2/2)
-         end if
-         item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
-      end if
-
-      item%label_res = trim(item%label_res)//trim(spin_name)
-      call assign_spin(item)
-      end do
-
-      end if
+!      else
+!
+!      do l = 1, perm_case
+!      call itf_contr_init(contr_info,item,l,
+!     &                    command,itflog)
+!
+!      ! Set overall spin case of result
+!      do i = 1, item%rank3/2
+!         item%i_spin%spin(1,i) = spin_case(i)
+!         item%i_spin%spin(2,i) = spin_case(i+2)
+!      end do
+!
+!      ! Change intermediate name to reflect spin case
+!      spin_name = ''
+!      j = 1
+!      do k = 1, 2
+!         do i = 1, item%rank3/2
+!            if (item%i_spin%spin(k,i)==1) then
+!               spin_name(j:j) = 'a'
+!               j = j + 1
+!            else if (item%i_spin%spin(k,i)==2) then
+!               spin_name(j:j) = 'b'
+!               j = j + 1
+!            end if
+!         end do
+!      end do
+!
+!      ! If an intermediate arises as the result of a permutation, we
+!      ! need to create this new intermediate. This requires the
+!      ! transpose
+!      if (scan('P', label)) then
+!         item%idx3 = f_index(item%idx3, item%rank3/2)
+!         if (item%rank2 > 2) then
+!            ! Don't need to permute T[ai] etc.
+!            item%idx2 = f_index(item%idx2, item%rank2/2)
+!         end if
+!         item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+!      end if
+!
+!      item%label_res = trim(item%label_res)//trim(spin_name)
+!      call assign_spin(item)
+!      end do
+!
+!      end if
 
       return
       end
@@ -1844,144 +1856,144 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine permute_tensors(contr_info,perm_case,lulog)
-*----------------------------------------------------------------------*
-!     Find permutation case
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info   ! Information about binary contraction
-      integer, intent(inout) ::
-     &     perm_case
-      integer, intent(in) ::
-     &     lulog
-
-      integer ::
-     &     e1(4,2),      ! Occupations of external index 1
-     &     e2(4,2),      ! Occupations of external index 2
-     &     c(4,2)
-      integer ::
-     &     i,
-     &     sum_c1,sum_c2,sum_a1,sum_a2
-      logical ::
-     &   inter
-
-      ! Check if not antisym over different vertices
-      ! Check for tensor products
-      ! Not going to antisymm intermediates...
-      ! The intermediates can have eeaa structure
-      e1=0
-      e2=0
-      c=0
-
-      ! TODO: Hack to get correct permuations for terms with inters
-      inter = check_inter(contr_info%label_res)
-
-      ! Get occupation info
-      do i = 1, contr_info%n_cnt
-        call count_index(i,
-     &     contr_info%occ_cnt(1:,1:,i),
-     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,c)
-      end do
-      do i = 1, contr_info%nj_op1
-        call count_index(i,
-     &     contr_info%occ_ex1(1:,1:,i),
-     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      do i = 1, contr_info%nj_op2
-        call count_index(i,
-     &     contr_info%occ_ex2(1:,1:,i),
-     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e2)
-      end do
-
-      ! C: |a|i|p|x|
-      ! A: |a|i|p|x|
-
-      if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==2) then
-         return
-      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==0) then
-         return
-      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==6) then
-         return
-      else if (sum(sum(c,dim=1))==0) then
-         ! Get rid of tensor products
-         return
-      end if
-
-      perm_case = 0
-
-!      if (e1(1,1)+e2(1,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
-!     &    e1(3,1)+e2(3,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
-!     &    e1(1,1)+e2(1,1)==2 .and. e1(3,2)+e2(3,2)==2) then
-      if (e1(1,1)+e2(1,1)==2 .or. e1(1,2)+e2(1,2)==2 .or.
-     &    e1(2,1)+e2(2,1)==2 .or. e1(2,2)+e2(2,2)==2 .or.
-     &    e1(3,1)+e2(3,1)==2 .or. e1(3,2)+e2(3,2)==2) then
-
-         sum_c1=0
-         sum_c2=0
-         sum_a1=0
-         sum_a2=0
-
-
-         do i=1, 4
-            ! Sum creation ops
-            sum_c1=sum_c1+e1(i,1)
-            sum_c2=sum_c2+e2(i,1)
-
-            ! Sum annihilation ops
-            sum_a1=sum_a1+e1(i,2)
-            sum_a2=sum_a2+e2(i,2)
-         end do
-
-         !TODO: Need to detect case (1-P(ab))(1-P(ij)) for
-         !      K_ci^ka T_j^c T_k^b
-         ! Need to distinguish between P(ab) and P(ij)
-         ! logical(2)? If both true get perm_case = 2
-         ! Keep track of this quantaty in item when searching for
-         ! intermediates, if both become true, then we need an extra
-         ! permute
-
-         ! If sum==2, then both indices come from same operator, therefore
-         ! it doesn't need symmetrised
-         if (sum_c1/=2 .and. sum_c2/=2) then
-            if (sum_c1+sum_c2==2) then
-               if (inter) then
-                  return
-               else
-                  perm_case = 1
-               end if
-            end if
-         end if
-
-         if (sum_a1/=2 .and. sum_a2/=2) then
-            if (sum_a1+sum_a2==2) then
-               if (perm_case == 1) then
-                  ! P(ab), then P(abij)
-                  ! When we have (1-P(ab))(1-P(ij)) then we only need to
-                  ! generate 1 + P(ab)
-                  perm_case = 2
-               else
-                  perm_case = 1
-               end if
-            end if
-         end if
-
-      else
-         return
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine permute_tensors(contr_info,perm_case,lulog)
+!*----------------------------------------------------------------------*
+!!     Find permutation case
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!
+!      type(binary_contr), intent(in) ::
+!     &     contr_info   ! Information about binary contraction
+!      integer, intent(inout) ::
+!     &     perm_case
+!      integer, intent(in) ::
+!     &     lulog
+!
+!      integer ::
+!     &     e1(4,2),      ! Occupations of external index 1
+!     &     e2(4,2),      ! Occupations of external index 2
+!     &     c(4,2)
+!      integer ::
+!     &     i,
+!     &     sum_c1,sum_c2,sum_a1,sum_a2
+!      logical ::
+!     &   inter
+!
+!      ! Check if not antisym over different vertices
+!      ! Check for tensor products
+!      ! Not going to antisymm intermediates...
+!      ! The intermediates can have eeaa structure
+!      e1=0
+!      e2=0
+!      c=0
+!
+!      ! TODO: Hack to get correct permuations for terms with inters
+!      inter = check_inter(contr_info%label_res)
+!
+!      ! Get occupation info
+!      do i = 1, contr_info%n_cnt
+!        call count_index(i,
+!     &     contr_info%occ_cnt(1:,1:,i),
+!     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,c)
+!      end do
+!      do i = 1, contr_info%nj_op1
+!        call count_index(i,
+!     &     contr_info%occ_ex1(1:,1:,i),
+!     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      do i = 1, contr_info%nj_op2
+!        call count_index(i,
+!     &     contr_info%occ_ex2(1:,1:,i),
+!     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e2)
+!      end do
+!
+!      ! C: |a|i|p|x|
+!      ! A: |a|i|p|x|
+!
+!      if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==2) then
+!         return
+!      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==0) then
+!         return
+!      else if ((sum(sum(e1,dim=1))+sum(sum(e2,dim=1)))==6) then
+!         return
+!      else if (sum(sum(c,dim=1))==0) then
+!         ! Get rid of tensor products
+!         return
+!      end if
+!
+!      perm_case = 0
+!
+!!      if (e1(1,1)+e2(1,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
+!!     &    e1(3,1)+e2(3,1)==2 .and. e1(2,2)+e2(2,2)==2 .or.
+!!     &    e1(1,1)+e2(1,1)==2 .and. e1(3,2)+e2(3,2)==2) then
+!      if (e1(1,1)+e2(1,1)==2 .or. e1(1,2)+e2(1,2)==2 .or.
+!     &    e1(2,1)+e2(2,1)==2 .or. e1(2,2)+e2(2,2)==2 .or.
+!     &    e1(3,1)+e2(3,1)==2 .or. e1(3,2)+e2(3,2)==2) then
+!
+!         sum_c1=0
+!         sum_c2=0
+!         sum_a1=0
+!         sum_a2=0
+!
+!
+!         do i=1, 4
+!            ! Sum creation ops
+!            sum_c1=sum_c1+e1(i,1)
+!            sum_c2=sum_c2+e2(i,1)
+!
+!            ! Sum annihilation ops
+!            sum_a1=sum_a1+e1(i,2)
+!            sum_a2=sum_a2+e2(i,2)
+!         end do
+!
+!         !TODO: Need to detect case (1-P(ab))(1-P(ij)) for
+!         !      K_ci^ka T_j^c T_k^b
+!         ! Need to distinguish between P(ab) and P(ij)
+!         ! logical(2)? If both true get perm_case = 2
+!         ! Keep track of this quantaty in item when searching for
+!         ! intermediates, if both become true, then we need an extra
+!         ! permute
+!
+!         ! If sum==2, then both indices come from same operator, therefore
+!         ! it doesn't need symmetrised
+!         if (sum_c1/=2 .and. sum_c2/=2) then
+!            if (sum_c1+sum_c2==2) then
+!               if (inter) then
+!                  return
+!               else
+!                  perm_case = 1
+!               end if
+!            end if
+!         end if
+!
+!         if (sum_a1/=2 .and. sum_a2/=2) then
+!            if (sum_a1+sum_a2==2) then
+!               if (perm_case == 1) then
+!                  ! P(ab), then P(abij)
+!                  ! When we have (1-P(ab))(1-P(ij)) then we only need to
+!                  ! generate 1 + P(ab)
+!                  perm_case = 2
+!               else
+!                  perm_case = 1
+!               end if
+!            end if
+!         end if
+!
+!      else
+!         return
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
