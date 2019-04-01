@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine rw_bcontr_kernel(irw,lu,bcontr)
 *----------------------------------------------------------------------*
-*     read/write contraction from/to lu 
+*     read/write contraction from/to lu
 *----------------------------------------------------------------------*
 
       implicit none
@@ -66,7 +66,7 @@
         bcontr%nj_res = nj_res
         bcontr%nj_op1 = nj_op1
         bcontr%nj_op2 = nj_op2
-        
+
         read(lu,end=100) bcontr%fact,bcontr%fact_itf,
      &       lenlab1,bcontr%label_res(1:lenlab1),
      &       lenlab2,bcontr%label_op1(1:lenlab2),
@@ -74,7 +74,8 @@
      &       bcontr%iblk_res,bcontr%iblk_op1,bcontr%iblk_op2,
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
-     &       bcontr%occ_op1,bcontr%rst_op1
+     &       bcontr%occ_op1,bcontr%rst_op1,
+     &       bcontr%perm
 
         ! extra records
         if (n_operands.eq.2)
@@ -130,8 +131,9 @@
      &       bcontr%iblk_res,bcontr%iblk_op1,bcontr%iblk_op2,
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
-     &       bcontr%occ_op1,bcontr%rst_op1
-        
+     &       bcontr%occ_op1,bcontr%rst_op1,
+     &       bcontr%perm
+
         ! extra records
         if (n_operands.eq.2)
      &       write(lu,err=200) bcontr%occ_op2,bcontr%rst_op2

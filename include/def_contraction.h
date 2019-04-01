@@ -83,7 +83,6 @@ c
 *	intermediate1, ... further numbers (n+1,...)
 *	result             0
 *----------------------------------------------------------------------*
-
       end type contraction
 
       integer, parameter ::
@@ -103,7 +102,8 @@ c
      &     nj_res, nj_op1, nj_op2,
      &     ngas, nspin
       logical ::
-     &     tra_res, tra_op1, tra_op2
+     &     tra_res, tra_op1, tra_op2,
+     &     perm(ngastp)
       integer, pointer ::
      &     occ_res(:,:,:),
      &     occ_op1(:,:,:),

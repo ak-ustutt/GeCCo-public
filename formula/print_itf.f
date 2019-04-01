@@ -78,7 +78,6 @@
       fl_item => fl_head
       contr_no = 0
 
-
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
@@ -323,7 +322,6 @@
          ! Exit if next resdiual is different or a new intermediate is
          ! declared.
 
-         ! TODO: There is a bug when printing formulae with icmrcc_11
          if (print_form) then
             fl_item => inter_start
             do while (.not.associated(fl_item, res_start))

@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine init_bcontr(bcontr)
 *----------------------------------------------------------------------*
-*     initialize all pointers 
+*     initialize all pointers
 *----------------------------------------------------------------------*
       implicit none
 
@@ -13,7 +13,8 @@
 
       bcontr%n_operands = 0
       bcontr%n_cnt = 0
-      
+      bcontr%perm = .false.
+
       bcontr%occ_res => null()
       bcontr%occ_op1 => null()
       bcontr%occ_op2 => null()
@@ -30,6 +31,6 @@
       bcontr%merge_op2 => null()
       bcontr%merge_op1op2 => null()
       bcontr%merge_op2op1 => null()
-      
+
       return
       end

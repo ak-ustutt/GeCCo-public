@@ -378,6 +378,10 @@
       character(len=maxlen_bc_label) ::
      &    old_name
 
+      !do i = 1, 4
+      !   if(contr_info%perm(i)) write(itflog,*) "permute ", i
+      !end do
+
       ! Initialise permutation factors to 0 == no permutation
       perm_case = 0
 
@@ -2751,6 +2755,7 @@
 
       integer ::
      &     i,
+     &   loop,
      &     c(4,2)
 
 
@@ -2758,11 +2763,11 @@
 
       if (contr%label_op1 == 'H') then
          !TODO: Why looping over n_cnt????? probably want to loop over
-         !      number of vertices for each operator
+         !      number of blocks for each operator
          do i = 1, contr%n_cnt
-            !write(10,*) "n_cnt ", contr%n_cnt
-            !write(10,*) "occ_op1 ", contr%occ_op1(1:,1:,i)
-            !write(10,*) "rst_op1 ", contr%rst_op1(1:,1:,1:,1:,1:,i)
+!            write(10,*) "n_cnt ", contr%n_cnt
+!            write(10,*) "occ_op1 ", contr%occ_op1(1:,1:,i)
+!            write(10,*) "rst_op1 ", contr%rst_op1(1:,1:,1:,1:,1:,i)
            call count_index(i,
      &        contr%occ_op1(1:,1:,i),
      &        contr%rst_op1(1:,1:,1:,1:,1:,i),

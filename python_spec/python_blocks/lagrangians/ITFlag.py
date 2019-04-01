@@ -161,6 +161,6 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 # Translate optmised formulae into ITF algo code
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'icmrcc_11.itfaa',
-        #TITLE:'icmrcc_11.formulae',
+        OUTPUT:'icmrcc_icmrccsd_11.itfaa',
+        TITLE:'icmrcc_icmrccsd_11.formulae',
         MULTI:True})
