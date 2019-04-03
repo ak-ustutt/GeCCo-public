@@ -518,7 +518,7 @@
 
       !! Multiply factor by -1.0 due to permutation
       if (permute == 2) then
-         itf_item%fact = itf_item%fact * -1.0
+         itf_item%fact = itf_item%fact * -1.0d+0
 
          ! Need to transpose by tensors after permutation, to
          ! avoid symmetry problem when using (1 + Pabij)
@@ -883,7 +883,7 @@
             ! we retain the negative sign from the permutation. This is
             ! only a problem when we define a new spin intermediate
             ! which results from the permutation of a result line
-            item%fact = item%fact * -1.0
+            item%fact = item%fact * -1.0d+0
          end if
       end if
 
