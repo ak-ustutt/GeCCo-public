@@ -377,7 +377,10 @@
      &    inter,           ! True if result is an intermediate
      &    found
       character(len=maxlen_bc_label) ::
-     &    old_name
+     &    old_name,
+     &    old_inter
+      character(len=index_len) ::
+     &    old_idx
 
       ! Initialise permutation factors:
       ! 0 == no permutation
@@ -448,8 +451,19 @@
                      item%idx1=f_index(item%idx1,item%rank1/2)
                   end if
                   item%idx2=f_index(item%idx2,item%rank2/2)
+
+                  ! Sometimes, the permuation intermediate goes into the
+                  ! same intermediate as the non-permuation one.
+                  ! This means there will be a factor of 2, so need to
+                  ! get rid of this
+                  if (trim(old_inter)==trim(item%label_t1) .and.
+     &                trim(old_idx)==trim(item%idx1)) then
+                     exit
+                  end if
                end if
 
+               old_inter = trim(item%label_t1)
+               old_idx = trim(item%idx1)
                call assign_spin(item)
             end do
 
@@ -777,6 +791,7 @@
                      spin_name(k:k)='a'
                   end if
                end do
+               item%idx3=f_index(item%idx3,item%rank3/2,.true.)
                found = .true.
                exit
             end if
@@ -1145,6 +1160,8 @@
      &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
       character(len=index_len) ::
      &     s1, s2, s3   ! Tmp ITF index strings
+      character(len=1) ::
+     &   tmp
       real(8) ::
      &   factor         ! Factor from equivalent lines
       logical ::
@@ -1385,13 +1402,35 @@
          shift = shift + 1
       end do
 
+      ! TODO: tidy this!
       if (item%permute == 2) then
-         if (item%rank1 /= 2 .and. item%rank2 /= 2) then
+         !if (item%rank1 /= 2 .and. item%rank2 /= 2) then
          ! Need to swap annihilation operators between tensors:
          ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
 
+         if (item%rank1 /= 2) then
+!       call print_plist(p_list, item%rank1/2+item%rank2/2, "p_list", 11)
+!       call print_plist(t1_list, item%rank1/2, "t1_list", 11)
+!         write(11,*) "pindex ", t1_list%plist(nloop+1)%pindex(2)
+!         write(11,*) "pindex ", p_list%plist(nloop+2)%pindex(2)
+         if (p_list%plist(nloop+2)%ops(2)==1) then
+            ! External indices belong on same tensor
+            tmp = p_list%plist(nloop+1)%pindex(2)
+!            write(11,*) "TMP ", tmp
          t1_list%plist(nloop+1)%pindex(2) =
      &                               p_list%plist(nloop+2)%pindex(2)
+         t1_list%plist(nloop+2)%pindex(2) = tmp
+         else
+         t1_list%plist(nloop+1)%pindex(2) =
+     &                               p_list%plist(nloop+2)%pindex(2)
+         end if
+
+         else
+         t1_list%plist(nloop+1)%pindex(2) =
+     &                               p_list%plist(nloop+2)%pindex(2)
+         end if
+
+         if (item%rank2 /= 2) then
          t2_list%plist(nloop+1)%pindex(2) =
      &                               p_list%plist(nloop+1)%pindex(2)
          ! Final permutations are made in command_to_itf
@@ -2792,6 +2831,7 @@
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
       write(item%logfile,*) trim(line)
 
+      ! TODO: replace with f_index
       tindex = ' '
       tindex(1:1) = item%idx3(2:2)
       tindex(2:2) = item%idx3(1:1)
