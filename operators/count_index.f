@@ -452,6 +452,16 @@
                   end if
                   item%idx2=f_index(item%idx2,item%rank2/2)
 
+                  ! Whenever we tranpose a tensor, we intoroduce a sign
+                  ! chage
+                  ! No sign due to the tranpose of idx1 which defines an
+                  ! intermeidate. Extra signs to to tranpose of tensors
+                  ! which define intermediates are included in the
+                  ! intermediate line
+                  if (item%permute==2) then
+                     if (item%rank2>2) item%fact = item%fact * -1.0d+0
+                  end if
+
                   ! Sometimes, the permuation intermediate goes into the
                   ! same intermediate as the non-permuation one.
                   ! This means there will be a factor of 2, so need to
@@ -482,7 +492,7 @@
       subroutine intermediate_to_itf(contr_info,itflog,command,
      &                               spin_inters,n_inter,permute)
 *----------------------------------------------------------------------*
-!
+!     Search for intermediates, doesn't print out line
 *----------------------------------------------------------------------*
       use itf_utils
 
@@ -516,12 +526,13 @@
       call itf_contr_init(contr_info,itf_item,permute,
      &                    command,itflog)
 
-      !! Multiply factor by -1.0 due to permutation
       if (permute == 2) then
-         itf_item%fact = itf_item%fact * -1.0d+0
-
          ! Need to transpose by tensors after permutation, to
          ! avoid symmetry problem when using (1 + Pabij)
+         ! When we transpose tensors, we get a sign change, however
+         ! here, we are just searching for intermediates and don't care
+         ! about the final sign - that will come when the intermediate
+         ! is printed out
          itf_item%idx1 = f_index(itf_item%idx1,itf_item%rank1/2)
          itf_item%idx2 = f_index(itf_item%idx2,itf_item%rank2/2)
       end if
@@ -719,7 +730,7 @@
       subroutine intermediate2_to_itf(contr_info,itflog,command,
      &                               label,spin_case)
 *----------------------------------------------------------------------*
-!
+!     Actually print out the intermediate lines
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -777,6 +788,7 @@
       ! If an intermediate arises as the result of a permutation, we
       ! need to create this new intermediate. This requires the
       ! transpose
+      ! TODO: use a flag in itf_contr
       if (scan('P', label)) then
 
          found = .false.
@@ -802,6 +814,16 @@
 
          item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
          item%idx2 = f_index(item%idx2, item%rank2/2)
+
+
+         ! This factor is from (1-Pij)
+         item%fact = item%fact * -1.0d+0
+
+         ! These factors come from permutations in order to match up
+         ! indcices in final intermediate
+         if (item%rank1>2) item%fact = item%fact * -1.0d+0
+         if (item%rank2>2) item%fact = item%fact * -1.0d+0
+
       end if
 
       item%label_res = trim(item%label_res)//trim(spin_name)
@@ -877,15 +899,18 @@
       !   end if
       !end if
 
-      if (item%permute>1) then
-         if (item%inter(1) .or. item%inter(2)) then
-            ! Because we take the transpose of the spin orbital eqns twice,
-            ! we retain the negative sign from the permutation. This is
-            ! only a problem when we define a new spin intermediate
-            ! which results from the permutation of a result line
-            item%fact = item%fact * -1.0d+0
-         end if
-      end if
+      !write(11,*) "sign1 ", item%fact
+      !if (item%permute>1) then
+      !   if (item%inter(1) .or. item%inter(2)) then
+      !      write(11,*) "hello"
+      !      ! Because we take the transpose of the spin orbital eqns twice,
+      !      ! we retain the negative sign from the permutation. This is
+      !      ! only a problem when we define a new spin intermediate
+      !      ! which results from the permutation of a result line
+      !      ! TODO: this sign should be combined in the STIN line
+      !      !item%fact = item%fact * -1.0d+0
+      !   end if
+      !end if
 
       ! Add intermediate spin strings to names
       if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
@@ -1235,10 +1260,12 @@
       end do
       item%fact = item%fact * factor
 
-      ! Multiply factor by -1.0 due to permutation
-      if (item%permute == 2) then
-         item%fact = item%fact * -1.0d+0
-      end if
+      !! Multiply factor by -1.0 due to permutation
+      !if (item%permute == 2) then
+      !   write(11,*) "hello 2"
+      !   ! TODO: This should be combined into the STIN line
+      !   !item%fact = item%fact * -1.0d+0
+      !end if
 
       ! Find out number of creation/annihilation operators per operator
       cops = sum(c, dim=1)
@@ -2792,9 +2819,8 @@
       end if
 
       ! Catch three internal integrals
-      if (c(2,1) + c(2,2)==3)
-     &   then
-            fact = fact * -1.0d+0
+      if (c(2,1) + c(2,2)==3) then
+         fact = fact * -1.0d+0
       end if
 
       return
