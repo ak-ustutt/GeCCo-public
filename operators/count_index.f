@@ -808,6 +808,15 @@
                exit
             end if
          end do
+
+         do j = 1, ngastp
+            ! Need to catach three internal integrals which result from a
+            ! permuation and mark them. process.py will turn KP -> J
+            if (item%nops1(j) > 2) then
+               item%label_t1 = 'KP'
+            end if
+         end do
+
          if (.not.found) then
             item%idx3=f_index(item%idx3,item%rank3/2)
          end if
@@ -823,6 +832,7 @@
          ! indcices in final intermediate
          if (item%rank1>2) item%fact = item%fact * -1.0d+0
          if (item%rank2>2) item%fact = item%fact * -1.0d+0
+
 
       end if
 
@@ -2810,7 +2820,6 @@
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
       write(item%logfile,*) trim(line)
 
-      ! TODO: replace with f_index
       tindex = ' '
       tindex(1:1) = item%idx3(2:2)
       tindex(2:2) = item%idx3(1:1)
