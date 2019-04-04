@@ -872,46 +872,6 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
-      ! When permuting, the intermediate name will flip spin. We need it
-      ! to be the same as the previously declared intermediates, so this
-      ! flips it back.
-      ! TODO: Is this needed anymore, new permutation intermediate uses
-      ! its own spin label
-      !if (item%permute>1) then
-      !   if (item%inter(1)) then
-      !      do i = 1, item%rank1
-      !         if (item%inter1(i:i)=='a') then
-      !            item%inter1(i:i)='b'
-      !         else if (item%inter1(i:i)=='b') then
-      !            item%inter1(i:i)='a'
-      !         end if
-      !      end do
-      !   end if
-
-      !   if (item%inter(2)) then
-      !      do i = 1, item%rank2
-      !         if (item%inter2(i:i)=='a') then
-      !            item%inter2(i:i)='b'
-      !         else if (item%inter2(i:i)=='b') then
-      !            item%inter2(i:i)='a'
-      !         end if
-      !      end do
-      !   end if
-      !end if
-
-      !write(11,*) "sign1 ", item%fact
-      !if (item%permute>1) then
-      !   if (item%inter(1) .or. item%inter(2)) then
-      !      write(11,*) "hello"
-      !      ! Because we take the transpose of the spin orbital eqns twice,
-      !      ! we retain the negative sign from the permutation. This is
-      !      ! only a problem when we define a new spin intermediate
-      !      ! which results from the permutation of a result line
-      !      ! TODO: this sign should be combined in the STIN line
-      !      !item%fact = item%fact * -1.0d+0
-      !   end if
-      !end if
-
       ! Add intermediate spin strings to names
       if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
       if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
@@ -1259,13 +1219,6 @@
          end do
       end do
       item%fact = item%fact * factor
-
-      !! Multiply factor by -1.0 due to permutation
-      !if (item%permute == 2) then
-      !   write(11,*) "hello 2"
-      !   ! TODO: This should be combined into the STIN line
-      !   !item%fact = item%fact * -1.0d+0
-      !end if
 
       ! Find out number of creation/annihilation operators per operator
       cops = sum(c, dim=1)
