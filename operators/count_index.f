@@ -202,7 +202,7 @@
 
       f_index=index
 
-      if (hrank==1) return
+      if (hrank==1 .or. hrank==0) return
 
       if (contra) then
          f_index(hrank-1+hrank:hrank-1+hrank)=
@@ -461,6 +461,7 @@
                   if (item%permute==2) then
                      if (item%rank2>2) item%fact = item%fact * -1.0d+0
                   end if
+                  !write(11,*) "index flip fact: ", item%fact
 
                   ! Sometimes, the permuation intermediate goes into the
                   ! same intermediate as the non-permuation one.
@@ -1392,39 +1393,40 @@
          shift = shift + 1
       end do
 
-      ! TODO: tidy this!
+      ! Only need to permuate anhliation ops amoungst themselves,
+      ! this is the case whenerever we have (1-Pyx)(1-Pvw). For two rank
+      ! 4 tensors, this is straight forward. When there is a rank 2 and
+      ! rank 4, can't swap the rank 2, so have to swapped both
+      ! annhilations on the rank 4 tensor
       if (item%permute == 2) then
-         !if (item%rank1 /= 2 .and. item%rank2 /= 2) then
          ! Need to swap annihilation operators between tensors:
          ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
 
          if (item%rank1 /= 2) then
-!       call print_plist(p_list, item%rank1/2+item%rank2/2, "p_list", 11)
-!       call print_plist(t1_list, item%rank1/2, "t1_list", 11)
-!         write(11,*) "pindex ", t1_list%plist(nloop+1)%pindex(2)
-!         write(11,*) "pindex ", p_list%plist(nloop+2)%pindex(2)
-         if (p_list%plist(nloop+2)%ops(2)==1) then
-            ! External indices belong on same tensor
-            tmp = p_list%plist(nloop+1)%pindex(2)
-!            write(11,*) "TMP ", tmp
-         t1_list%plist(nloop+1)%pindex(2) =
-     &                               p_list%plist(nloop+2)%pindex(2)
-         t1_list%plist(nloop+2)%pindex(2) = tmp
-         else
-         t1_list%plist(nloop+1)%pindex(2) =
-     &                               p_list%plist(nloop+2)%pindex(2)
-         end if
-
-         else
-         t1_list%plist(nloop+1)%pindex(2) =
-     &                               p_list%plist(nloop+2)%pindex(2)
+            if (p_list%plist(nloop+2)%ops(2)==1) then
+               ! External indices belong on same tensor
+               tmp = p_list%plist(nloop+1)%pindex(2)
+               t1_list%plist(nloop+1)%pindex(2) =
+     &                                   p_list%plist(nloop+2)%pindex(2)
+               t1_list%plist(nloop+2)%pindex(2) = tmp
+            else
+               t1_list%plist(nloop+1)%pindex(2) =
+     &                                   p_list%plist(nloop+2)%pindex(2)
+            end if
          end if
 
          if (item%rank2 /= 2) then
-         t2_list%plist(nloop+1)%pindex(2) =
-     &                               p_list%plist(nloop+1)%pindex(2)
-         ! Final permutations are made in command_to_itf
+            if (p_list%plist(nloop+1)%ops(2)==2) then
+               tmp = p_list%plist(nloop+1)%pindex(2)
+               t2_list%plist(nloop+1)%pindex(2) =
+     &                                   p_list%plist(nloop+2)%pindex(2)
+               t2_list%plist(nloop+2)%pindex(2) = tmp
+            else
+               t2_list%plist(nloop+1)%pindex(2) =
+     &                                   p_list%plist(nloop+1)%pindex(2)
+            end if
          end if
+
       end if
 
       ! Swap between creation and annihilation operators to make sure
@@ -2177,6 +2179,12 @@
 
       allocate(poss(2,item%contri))
 
+      !do i = 1, 2
+      !   do j = 1, item%contri
+      !      poss(i,j)%elements = 0
+      !   end do
+      !end do
+
       ! Largest tensor goes first
       if (item%rank2 > item%rank1) then
          z1 = 2
@@ -2194,8 +2202,8 @@
          str2 = item%idx2
       end if
 
-      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
-      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 10)
+      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 10)
 
       ! Get position information of contraction indicies
       shift = 1
@@ -2665,9 +2673,13 @@
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
       item%fact=contr_info%fact_itf
+      !write(11,*) "diag fact: ", contr_info%fact
+      !write(11,*) "itf fact: ", contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,item%fact)
+
+      !write(11,*) "integral fact: ", item%fact
 
       ! Inialise number of contraction indicies
       item%contri = 0
@@ -2779,11 +2791,13 @@
       if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
      &   then
             fact = fact * -1.0d+0
+            !write(11,*) "Changing the factor ", fact
       end if
 
       ! Catch three internal integrals
       if (c(2,1) + c(2,2)==3) then
          fact = fact * -1.0d+0
+         !write(11,*) "3 internal"
       end if
 
       return
