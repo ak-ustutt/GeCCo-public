@@ -302,7 +302,7 @@
       write(item%logfile,*) "Result: ", item%label_res, item%idx3
       write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
       write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
-      write(item%logfile,*) 
+      write(item%logfile,*)
 
       return
       end
@@ -490,7 +490,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine intermediate_to_itf(contr_info,itflog,command,
+      subroutine intermediate_spin_info(contr_info,itflog,command,
      &                               spin_inters,n_inter,permute)
 *----------------------------------------------------------------------*
 !     Search for intermediates, doesn't print out line
@@ -649,11 +649,11 @@
 
       if (perm_case == 0) then
          ! No permutations
-         call intermediate_to_itf(contr_info,itflog,command,
+         call intermediate_spin_info(contr_info,itflog,command,
      &                            spin_inters,n_inter,1)
       else
          do i=1, perm_case
-            call intermediate_to_itf(contr_info,itflog,command,
+            call intermediate_spin_info(contr_info,itflog,command,
      &                               spin_inters,n_inter,i)
          end do
       end if
@@ -730,7 +730,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine intermediate2_to_itf(contr_info,itflog,command,
+      subroutine intermediate_to_itf(contr_info,itflog,command,
      &                               label,spin_case)
 *----------------------------------------------------------------------*
 !     Actually print out the intermediate lines

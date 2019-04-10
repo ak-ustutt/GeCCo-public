@@ -283,7 +283,7 @@
                      !write(itflog,*) "TMP FILE: ", tmp_case
 
                      ! Print out intermediate line
-                     call intermediate2_to_itf(fl_item%bcontr,itflog,
+                     call intermediate_to_itf(fl_item%bcontr,itflog,
      &                     fl_item%command,ospin_inters(k)%name,
      &                     tmp_case)
                   end if
