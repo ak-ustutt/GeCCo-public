@@ -24,13 +24,60 @@
 
       end function
 
+
+*----------------------------------------------------------------------*
+      subroutine print_inter_spin_cases(spin_inters, ninter, label,
+     &                                  logfile)
+*----------------------------------------------------------------------*
+!     Print out intermediate spin cases
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(spin_cases), dimension(MAXINT), intent(in) ::
+     &     spin_inters
+      integer, intent(in) ::
+     &   ninter,
+     &   logfile
+      character(len=*) ::
+     &   label
+
+      integer ::
+     &   i, j, k
+
+      if (ninter==0) return
+
+      write(logfile,*) "=============================="
+      write(logfile,*) "TITLE: ", trim(label)
+
+      do i = 1, ninter
+         write(logfile,*) "=============================="
+         write(logfile,*) "NCASE: ", spin_inters(i)%ncase
+         write(logfile,*) "NAME: ", trim(spin_inters(i)%name)
+         do j = 1, spin_inters(i)%ncase
+            write(logfile,*) "Spin:"
+            write(logfile,'(4i2)')
+     &                        (spin_inters(i)%cases(k,j),k=1,INDEX_LEN)
+            write(logfile,*) "------------------------------"
+         end do
+         write(logfile,*) "=============================="
+      end do
+      write(logfile,*)
+
+      return
+      end
+
+
 *----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,op_info,print_form,formlog)
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
       ! TODO: fix this...
-      !use itf_utils copied above from module
+      !use itf_utils !copied above from module
       implicit none
 
       include 'opdim.h'
@@ -48,9 +95,6 @@
      &     op_info
       logical, intent(in) ::
      &     print_form        ! Print to optional formulae file
-
-!      integer, parameter ::
-!     &     MAXINT = 4        ! Maximum number of intermediates that contribute to a result
 
       type(formula_item), pointer ::
      &     fl_item,   ! Current formula_item
@@ -83,20 +127,6 @@
 
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
-
-!         do i = 1, ninter
-!            write(itflog,*) "=============================="
-!            write(itflog,*) "NCASE1: ", spin_inters(i)%ncase
-!            write(itflog,*) "NAME: ", spin_inters(i)%name
-!            do j = 1, spin_inters(i)%ncase
-!               do k = 1, 4
-!                  write(itflog,*) "spin_inters: ",
-!     &                spin_inters(i)%cases(k,j)
-!               end do
-!               write(itflog,*) "------------------------------"
-!            end do
-!            write(itflog,*) "=============================="
-!         end do
 
          ! Recursive search back along the list.
          ! Mark point where intermediates start
@@ -132,21 +162,6 @@
 
          call find_spin_intermediate(fl_item%bcontr,itflog,
      &                       fl_item%command,spin_inters, ninter)
-
-         ! TODO: Make this a subroutine above
-!         do i = 1, ninter
-!            write(itflog,*) "=============================="
-!            write(itflog,*) "NCASE2: ", spin_inters(i)%ncase
-!            write(itflog,*) "NAME: ", spin_inters(i)%name
-!            do j = 1, spin_inters(i)%ncase
-!               do k = 1, 4
-!                  write(itflog,*) "spin_inters: ",
-!     &                spin_inters(i)%cases(k,j)
-!               end do
-!               write(itflog,*) "------------------------------"
-!            end do
-!            write(itflog,*) "=============================="
-!         end do
 
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
@@ -230,19 +245,6 @@
          ! change there names STIN001aaaa, then print out the residual
          fl_item => inter_start
 
-!         do i = 1, ninter
-!            write(itflog,*) "=============================="
-!            write(itflog,*) "NCASE: ", spin_inters(i)%ncase
-!            write(itflog,*) "NAME: ", spin_inters(i)%name
-!            do j = 1, spin_inters(i)%ncase
-!               do k = 1, 4
-!                  write(itflog,*) "spin_inters: ",
-!     &                spin_inters(i)%cases(k,j)
-!               end do
-!               write(itflog,*) "------------------------------"
-!            end do
-!            write(itflog,*) "=============================="
-!         end do
 
          ! Numerically order spin_inters, so 001 intermediate is printed
          ! out first, then 002. This is important because intermediates

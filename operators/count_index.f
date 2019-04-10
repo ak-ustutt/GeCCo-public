@@ -302,7 +302,7 @@
       write(item%logfile,*) "Result: ", item%label_res, item%idx3
       write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
       write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
-      write(item%logfile,*)
+      write(item%logfile,*) 
 
       return
       end
