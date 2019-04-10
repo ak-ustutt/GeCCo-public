@@ -1,6 +1,7 @@
       integer, parameter ::
      &     index_len = 8,       ! Length of index string
-     &     maxint = 4           ! Maximum number of intermediates that contribute to a result
+     &     maxint = 4,          ! Maximum number of intermediates that contribute to a result
+     &     max_spin_cases = 6   ! Maximum number of intermediates that contribute to a result
 
 *----------------------------------------------------------------------*
       type spin_cases
@@ -11,7 +12,7 @@
 
       character(len=maxlen_bc_label) ::
      &     name                 ! Name of tensor
-      integer, dimension(4,6) ::
+      integer, dimension(INDEX_LEN,MAX_SPIN_CASES) ::
      &     cases = 0                ! Matrix containing possible spin cases each row is a different case
       integer ::
      &     ncase = 0            ! Number of different spin cases

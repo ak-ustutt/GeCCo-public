@@ -67,7 +67,7 @@
      &     more_inter,     ! Check if more intermediates are needed
      &     finished_inter  ! Check if finished recursive intermediate search
       integer ::
-     &     tmp_case(4),
+     &     tmp_case(INDEX_LEN),
      &     ninter,       ! Number of intermediates found in recursive search
      &     shift         ! Used to store sequentially
       character ::
@@ -274,7 +274,7 @@
                   if (fl_item%bcontr%label_res == ospin_inters(k)%name
      &                .or. scan('P', ospin_inters(k)%name)) then
                      ! Send off specific spin case to be summed and printed
-                     do j = 1, 4
+                     do j = 1, INDEX_LEN
                         tmp_case(j) = ospin_inters(k)%cases(j,i)
                      end do
                      !write(itflog,*) "TMP FILE: ", tmp_case

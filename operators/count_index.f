@@ -567,7 +567,7 @@
                         itf_item%i_spin%spin(1,j) =
      &                                       spin_inters(i)%cases(j,k)
                         itf_item%i_spin%spin(2,j) =
-     &                                       spin_inters(i)%cases(j+2,k)
+     &                             spin_inters(i)%cases(j+INDEX_LEN/2,k)
                      end do
 
                      call assign_spin(itf_item)
@@ -693,7 +693,10 @@
          do i = 1, 2
             if (item%inter(i)) then
                ! Only need the aa case
-               item%inter_spins(j)%cases(:,j) = (/ 1, 0, 1, 0 /)
+!               item%inter_spins(j)%cases(:,j) = (/ 1, 0, 1, 0 /)
+               item%inter_spins(j)%cases(:,j) = 0
+               item%inter_spins(j)%cases(1,j) = 1
+               item%inter_spins(j)%cases(1+INDEX_LEN/2,j) = 1
                item%inter_spins(j)%ncase = 1
                if (i == 1) item%inter_spins(j)%name = item%label_t1
                if (i == 2) item%inter_spins(j)%name = item%label_t2
@@ -710,7 +713,8 @@
          do i = 1, 2
             if (item%inter(i)) then
                ! Only need the aa case
-               item%inter_spins(j)%cases(:,j) = (/ 0, 0, 0, 0 /)
+               !item%inter_spins(j)%cases(:,j) = (/ 0, 0, 0, 0 /)
+               item%inter_spins(j)%cases(:,j) = 0
                item%inter_spins(j)%ncase = 1
                if (i == 1) item%inter_spins(j)%name = item%label_t1
                if (i == 2) item%inter_spins(j)%name = item%label_t2
@@ -748,7 +752,7 @@
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
-     &     spin_case(4)
+     &     spin_case(INDEX_LEN)
       character(len=maxlen_bc_label), intent(in) ::
      &     label
 
@@ -756,7 +760,7 @@
      &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    i, j, k, l
-      character(len=4) ::
+      character(len=INDEX_LEN) ::
      &    spin_name
       logical ::
      &   found
@@ -766,9 +770,10 @@
      &                    command,itflog)
 
       ! Set overall spin case of result
+      !write(item%logfile,*) "spin_case ", spin_case
       do i = 1, item%rank3/2
          item%i_spin%spin(1,i) = spin_case(i)
-         item%i_spin%spin(2,i) = spin_case(i+2)
+         item%i_spin%spin(2,i) = spin_case(i+INDEX_LEN/2)
       end do
 
       ! Change intermediate name to reflect spin case
@@ -2081,6 +2086,7 @@
       ! TODO: spin_case is only len 4
       if (item%inter(3)) then
          item%t_spin(3)%spin = item%i_spin%spin
+         !write(item%logfile,*) "i_spin ", item%i_spin%spin
       else
          select case (item%rank3)
             case(0)
@@ -2591,10 +2597,9 @@
          item%inter_spins(ishift)%name=label
       end if
 
-      ! TODO: this looks suspicous...
-      do i=1, 2
+      do i=1, hrank
          item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
-         item%inter_spins(ishift)%cases(i+2,shift)=spin(2,i)
+         item%inter_spins(ishift)%cases(i+INDEX_LEN/2,shift)=spin(2,i)
       end do
 
       return
