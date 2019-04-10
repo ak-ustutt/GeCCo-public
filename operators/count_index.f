@@ -266,7 +266,7 @@
      &   label
 
       integer ::
-     &   i
+     &   i, j
 
       write(logfile,*) "P_list: ", label
       write(logfile,*) "=============================="
@@ -274,6 +274,7 @@
       write(logfile,*) p_list%plist(i)%pindex(1), p_list%plist(i)%ops(1)
       write(logfile,*) p_list%plist(i)%pindex(2), p_list%plist(i)%ops(2)
       write(logfile,*) p_list%plist(i)%link
+      write(logfile,'(3i3)') (p_list%plist(i)%nval(j), j=1, 3)
       write(logfile,*) "---------------------------"
       end do
       write(logfile,*) "=============================="
@@ -299,9 +300,9 @@
 
       write(item%logfile,*) "ERROR: ", error
       write(item%logfile,*) "================================="
-      write(item%logfile,*) "Result: ", item%label_res, item%idx3
-      write(item%logfile,*) "Tensor1: ", item%label_t1, item%idx1
-      write(item%logfile,*) "Tensor2: ", item%label_t2, item%idx2
+      write(item%logfile,*) "Result: ", item%label_res, trim(item%idx3)
+      write(item%logfile,*) "Tensor1: ", item%label_t1, trim(item%idx1)
+      write(item%logfile,*) "Tensor2: ", item%label_t2, trim(item%idx2)
       write(item%logfile,*)
 
       return
@@ -325,20 +326,36 @@
 
       integer :: i,j
 
+!      ! Creation operators
+!      ! Hole, abcd
+!      nops(1,1)=nops(1,1) + iocc(2,1)
+!      ! Particle, ijkl
+!      nops(2,1)=nops(2,1) + iocc(1,1)
+!      ! Valence, pqrs
+!      nops(3,1)=nops(3,1) + iocc(3,1)
+!      ! Explicit, x
+!      nops(4,1)=nops(4,1) + iocc(4,1)
+!
+!      ! Annihilation operators as above
+!      nops(1,2)=nops(1,2) + iocc(2,2)
+!      nops(2,2)=nops(2,2) + iocc(1,2)
+!      nops(3,2)=nops(3,2) + iocc(3,2)
+!      nops(4,2)=nops(4,2) + iocc(4,2)
+
       ! Creation operators
       ! Hole, abcd
       nops(1,1)=nops(1,1) + iocc(2,1)
-      ! Particle, ijkl
-      nops(2,1)=nops(2,1) + iocc(1,1)
       ! Valence, pqrs
-      nops(3,1)=nops(3,1) + iocc(3,1)
+      nops(2,1)=nops(2,1) + iocc(3,1)
+      ! Particle, ijkl
+      nops(3,1)=nops(3,1) + iocc(1,1)
       ! Explicit, x
       nops(4,1)=nops(4,1) + iocc(4,1)
 
       ! Annihilation operators as above
       nops(1,2)=nops(1,2) + iocc(2,2)
-      nops(2,2)=nops(2,2) + iocc(1,2)
-      nops(3,2)=nops(3,2) + iocc(3,2)
+      nops(2,2)=nops(2,2) + iocc(3,2)
+      nops(3,2)=nops(3,2) + iocc(1,2)
       nops(4,2)=nops(4,2) + iocc(4,2)
 
       return
@@ -1087,30 +1104,57 @@
       a3='        '
 
       ! Assign o1 (external indices of t1)
+!      do i=1, o1(1,1)
+!          c1(i:)=par(i)
+!      end do
+!      o1_array(1)=c1
+!      do i=1, o1(3,1)
+!          c2(i:)=val(i)
+!      end do
+!      o1_array(2)=c2
+!      do i=1, o1(2,1)
+!          c3(i:)=hol(i)
+!      end do
+!      o1_array(3)=c3
+
       do i=1, o1(1,1)
           c1(i:)=par(i)
       end do
       o1_array(1)=c1
-      do i=1, o1(3,1)
+      do i=1, o1(2,1)
           c2(i:)=val(i)
       end do
       o1_array(2)=c2
-      do i=1, o1(2,1)
+      do i=1, o1(3,1)
           c3(i:)=hol(i)
       end do
       o1_array(3)=c3
 
       ! Need to to be shifted to not match assignment of creations above
+!      do i=1, o1(1,2)
+!          a1(i:)=par(i+o1(1,1))
+!      end do
+!      o1_array(5)=a1
+!      do i=1, o1(3,2)
+!          a2(i:)=val(i+o1(3,1))
+!      end do
+!      o1_array(6)=a2
+!      do i=1, o1(2,2)
+!          a3(i:)=hol(i+o1(2,1))
+!      end do
+!      o1_array(7)=a3
+
+
       do i=1, o1(1,2)
           a1(i:)=par(i+o1(1,1))
       end do
       o1_array(5)=a1
-      do i=1, o1(3,2)
-          a2(i:)=val(i+o1(3,1))
+      do i=1, o1(2,2)
+          a2(i:)=val(i+o1(2,1))
       end do
       o1_array(6)=a2
-      do i=1, o1(2,2)
-          a3(i:)=hol(i+o1(2,1))
+      do i=1, o1(3,2)
+          a3(i:)=hol(i+o1(3,1))
       end do
       o1_array(7)=a3
 
@@ -1119,6 +1163,41 @@
      &          trimal(o1_array(6))//trimal(o1_array(7))
 
       item%idx3=item%idx1
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine assign_nval(ncase, index, np, p_list)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   ncase,
+     &   index,
+     &   np
+      type(pair_list), intent(inout) ::
+     &   p_list
+
+      ! Assign 'value' to index
+      select case (ncase)
+         case (1)
+            p_list%plist(np)%nval(index) = 1
+         case (2)
+            p_list%plist(np)%nval(index) = 2
+         case (3)
+            p_list%plist(np)%nval(index) = 3
+         case (4)
+            p_list%plist(np)%nval(index) = 4
+      end select
 
       return
       end
@@ -1154,9 +1233,12 @@
      &   i1, i2,        ! Search creation or annihilation first
      &   shift,         ! List shift
      &   sp             ! Pair list shift
+!      character, dimension(21) ::
+!     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
+!     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
       character, dimension(21) ::
-     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
-     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
+     &   ind=(/ 'a','b','c','d','e','f','g','p','q','r','s','t','u',
+     &          'v','i','j','k','l','m','n','o' /)   ! Letters for index string
       character(len=INDEX_LEN) ::
      &     s1, s2, s3   ! Tmp ITF index strings
       character(len=1) ::
@@ -1310,6 +1392,9 @@
                ! Assign index letter to pair list
                p_list%plist(sp)%pindex(i1) = ind(ii)
 
+               ! Assign 'value' to index
+               call assign_nval(i, i1, sp, p_list)
+
                ! Mark which operator this index belongs to
                ! Contraction index always w.r.t the first operator
                p_list%plist(sp)%ops(i1) = 1
@@ -1326,6 +1411,7 @@
                      ii = 1+(7*(k-1)) + c_shift(k)
 
                      p_list%plist(sp)%pindex(i2) = ind(ii)
+                     call assign_nval(k, i2, sp, p_list)
                      p_list%plist(sp)%linked = .false.
                      ! Ultimately contraction indices belong on both
                      ! tensors, but marking these for both the first
@@ -1377,6 +1463,8 @@
          e2ops = sum(e2, dim=1)
       end do
 
+      !call print_plist(p_list, sp-1, "P_LIST", item%logfile)
+
       ! We now have list of pairs and which ops they belong to + any
       ! contraction indices linking external indices on different
       ! operators.
@@ -1389,6 +1477,9 @@
       call make_pair_list(p_list, t1_list, 1, sp-1)
       call make_pair_list(p_list, t2_list, 2, sp-1)
 
+      !call print_plist(t1_list, item%rank1/2, "T1_LIST", item%logfile)
+      !call print_plist(t2_list, item%rank2/2, "T2_LIST", item%logfile)
+
       ! Create pair list for result tensor, only need external index
       shift = 1
       do i = nloop+1, sp-1
@@ -1396,11 +1487,11 @@
          shift = shift + 1
       end do
 
-      ! Only need to permuate anhliation ops amoungst themselves,
-      ! this is the case whenerever we have (1-Pyx)(1-Pvw). For two rank
+      ! Only need to permute annihilation ops amongst themselves,
+      ! this is the case whenever we have (1-Pyx)(1-Pvw). For two rank
       ! 4 tensors, this is straight forward. When there is a rank 2 and
       ! rank 4, can't swap the rank 2, so have to swapped both
-      ! annhilations on the rank 4 tensor
+      ! annihilations on the rank 4 tensor
       if (item%permute == 2) then
          ! Need to swap annihilation operators between tensors:
          ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
@@ -1519,9 +1610,12 @@
       type(itf_contr), intent(in) ::
      &   item              ! ITF binary contraction info
 
+!      character, dimension(21) ::
+!     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
+!     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
       character, dimension(21) ::
-     &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
-     &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
+     &   ind=(/ 'a','b','c','d','e','f','g','p','q','r','s','t','u',
+     &          'v','i','j','k','l','m','n','o' /)   ! Letters for index string
       logical ::
      &   found
       integer ::
@@ -1585,6 +1679,7 @@
             ! Search for first operator
             ii = 1+(7*(i-1)) + t_shift(i)
             list%plist(sp)%pindex(i1) = ind(ii)
+            call assign_nval(i, i1, sp, list)
             list%plist(sp)%ops(i1) = tensor
 
             t_shift(i) = t_shift(i) + 1
@@ -1597,6 +1692,7 @@
                   do l = 1, e1(k,i2)
                      ii = 1+(7*(k-1)) + t_shift(k)
                      list%plist(sp)%pindex(i2) = ind(ii)
+                     call assign_nval(k, i2, sp, list)
                      list%plist(sp)%linked = .false.
                      list%plist(sp)%ops(i2) = tensor
 
@@ -1617,6 +1713,7 @@
                   do l = 1, e2(k,i2)
                      ii = 1+(7*(k-1))+t_shift(k)
                      list%plist(sp)%pindex(i2) = ind(ii)
+                     call assign_nval(k, i2, sp, list)
                      list%plist(sp)%ops(i2) = opp_tensor
                      list%plist(sp)%linked = .true.
 
@@ -1630,6 +1727,7 @@
                             ii = 1+(7*(m-1)) + c_shift(m)
 
                            list%plist(sp)%link = ind(ii)
+                           call assign_nval(m, 3, sp, list)
 
                            c_shift(m) = c_shift(m) + 1
                            c(m,i2) = c(m,i2) - 1
@@ -1686,11 +1784,14 @@
       do i = 1, npairs
          if (p_list%plist(i)%ops(1) == place) then
             t_list%plist(s)%pindex(1) = p_list%plist(i)%pindex(1)
+            t_list%plist(s)%nval(1) = p_list%plist(i)%nval(1)
 
             if (p_list%plist(i)%linked) then
                t_list%plist(s)%pindex(2) = p_list%plist(i)%link
+               t_list%plist(s)%nval(2) = p_list%plist(i)%nval(3)
             else
                t_list%plist(s)%pindex(2) = p_list%plist(i)%pindex(2)
+               t_list%plist(s)%nval(2) = p_list%plist(i)%nval(2)
             end if
 
             t_list%plist(s)%linked = .false.
@@ -1698,11 +1799,14 @@
             s = s + 1
          else if (p_list%plist(i)%ops(2) == place) then
             t_list%plist(s)%pindex(2) = p_list%plist(i)%pindex(2)
+            t_list%plist(s)%nval(2) = p_list%plist(i)%nval(2)
 
             if (p_list%plist(i)%linked) then
                t_list%plist(s)%pindex(1) = p_list%plist(i)%link
+               t_list%plist(s)%nval(1) = p_list%plist(i)%nval(3)
             else
                t_list%plist(s)%pindex(1) = p_list%plist(i)%pindex(1)
+               t_list%plist(s)%nval(1) = p_list%plist(i)%nval(1)
             end if
 
             t_list%plist(s)%linked = .false.
@@ -1747,11 +1851,16 @@
       if (.not. integral .or. integral .and. rank == 2) then
          if (.not. inter) then
             do i = 1, rank/2
+!               if (list%plist(i)%pindex(1) >
+!     &                                     list%plist(i)%pindex(2)) then
+               if (list%plist(i)%nval(1) >=
+     &                                     list%plist(i)%nval(2)) then
                if (list%plist(i)%pindex(1) >
      &                                     list%plist(i)%pindex(2)) then
                   tmp = list%plist(i)%pindex(1)
                   list%plist(i)%pindex(1) = list%plist(i)%pindex(2)
                   list%plist(i)%pindex(2) = tmp
+               end if
                end if
             end do
          end if
@@ -2790,14 +2899,16 @@
          end do
       end if
 
-      if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
+      !if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
+      if (c(1,1)==1 .and. c(3,1)==1 .and. c(1,2)==1 .and. c(3,2)==1)
      &   then
             fact = fact * -1.0d+0
             !write(11,*) "Changing the factor ", fact
       end if
 
       ! Catch three internal integrals
-      if (c(2,1) + c(2,2)==3) then
+      !if (c(2,1) + c(2,2)==3) then
+      if (c(3,1) + c(3,2)==3) then
          fact = fact * -1.0d+0
          !write(11,*) "3 internal"
       end if

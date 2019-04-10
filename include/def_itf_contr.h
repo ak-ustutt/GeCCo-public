@@ -116,7 +116,8 @@
      &     link                 ! If external indices appear on different tensors, need a contraction index to link them
 
       integer ::
-     &     ops(2)               ! Information on which tensor the index belogns
+     &     ops(2),              ! Information on which tensor the index belogns
+     &     nval(3)              ! Numerical value of index (1=e, 2=a, 3=c, 4=x)
 
       logical ::
      &     linked = .false.     ! Doesn't need a linking index
