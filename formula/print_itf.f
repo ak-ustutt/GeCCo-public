@@ -42,7 +42,7 @@
       integer, intent(in) ::
      &   ninter,
      &   logfile
-      character(len=*) ::
+      character(len=*), intent(in) ::
      &   label
 
       integer ::
