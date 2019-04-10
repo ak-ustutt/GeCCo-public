@@ -9,7 +9,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
       logical ::
      &     check_inter
@@ -29,6 +29,7 @@
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
+      ! TODO: fix this...
       !use itf_utils copied above from module
       implicit none
 

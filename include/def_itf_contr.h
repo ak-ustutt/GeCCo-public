@@ -1,7 +1,7 @@
       integer, parameter ::
-     &     index_len = 8,       ! Length of index string
-     &     maxint = 4,          ! Maximum number of intermediates that contribute to a result
-     &     max_spin_cases = 6   ! Maximum number of intermediates that contribute to a result
+     &     INDEX_LEN = 8,       ! Length of index string
+     &     MAXINT = 4,          ! Maximum number of intermediates that contribute to a result
+     &     MAX_SPIN_CASES = 6   ! Maximum number of intermediates that contribute to a result
 
 *----------------------------------------------------------------------*
       type spin_cases
@@ -10,7 +10,7 @@
 !     printed
 *----------------------------------------------------------------------*
 
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &     name                 ! Name of tensor
       integer, dimension(INDEX_LEN,MAX_SPIN_CASES) ::
      &     cases = 0                ! Matrix containing possible spin cases each row is a different case
@@ -50,11 +50,11 @@
 !     Object that holds information needed to define a line in an ITF algo file
 *----------------------------------------------------------------------*
 
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEl) ::
      &     label_t1,            ! Name of first tensor in the contraction
      &     label_t2,            ! Name of second tensor in the contraction
      &     label_res            ! Name of tensor result
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &     idx1,                ! First tensor index string
      &     idx2,                ! Second tensor index string
      &     idx3,                ! Result tensor index string

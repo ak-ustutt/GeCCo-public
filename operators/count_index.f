@@ -33,11 +33,11 @@
       include 'opdim.h'
       include 'def_contraction.h'
 
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &    string
       integer, intent(in) ::
      &    rank          ! Rank of tensor
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &    rename_tensor
 
       if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
@@ -90,7 +90,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
 
       logical ::
@@ -119,7 +119,7 @@
       include 'def_contraction.h'
       !include 'def_itf_contr.h'
 
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
 
       logical ::
@@ -149,12 +149,12 @@
 
       integer, intent(in) ::
      &   n        ! Number of cycles
-      character(len=index_len), intent(in) ::
+      character(len=INDEX_LEN), intent(in) ::
      &   idx      ! ITF index string
 
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &   cidx
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &   tmp
 
       !TODO: only works for rank 6
@@ -376,10 +376,10 @@
       logical ::
      &    inter,           ! True if result is an intermediate
      &    found
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &    old_name,
      &    old_inter
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &    old_idx
 
       ! Initialise permutation factors:
@@ -511,7 +511,7 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
      &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(maxint), intent(inout) ::
+      type(spin_cases), dimension(MAXINT), intent(inout) ::
      &     spin_inters
       integer, intent(inout) ::
      &     permute         ! 2 = Need to permute index
@@ -561,8 +561,6 @@
                   do k = 1, spin_inters(i)%ncase
 
                      ! TODO: This code is repeated in print_itf.f
-                     ! TODO: this wont work with rank 6. Need to
-                     ! overhall intermediate search for rank 6...
                      do j = 1, itf_item%rank3/2
                         itf_item%i_spin%spin(1,j) =
      &                                       spin_inters(i)%cases(j,k)
@@ -639,7 +637,7 @@
      &    i                ! Loop index
       logical ::
      &    inter            ! True if result is an intermediate
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &    old_name
 
 
@@ -753,7 +751,7 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
      &     spin_case(INDEX_LEN)
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
 
       type(itf_contr) ::
@@ -868,7 +866,7 @@
       logical, intent(in) ::
      &     s1,s2
 
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
@@ -973,9 +971,9 @@
 
       character(len=264), intent(inout) ::
      &   st          ! Name of spin summed tensors + index
-      character(len=index_len), intent(in) ::
+      character(len=INDEX_LEN), intent(in) ::
      &   idx         ! Index of tensor
-      character(len=maxlen_bc_label), intent(in) ::
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
      &   nt          ! Name of tensors involved in the contraction
       logical, intent(in) ::
      &   spin,       ! True if pure spin
@@ -1061,10 +1059,10 @@
      &     par=(/ 'a','b','c','d' /)
       character, dimension(8) ::
      &     val=(/ 'p','q','r','s','t','u','v','w' /)
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &     c1, c2, c3,
      &     a1, a2, a3
-      character(len=index_len), dimension(8) ::
+      character(len=INDEX_LEN), dimension(8) ::
      &     o1_array     ! Index of operator 1
 
       o1=0
@@ -1159,7 +1157,7 @@
       character, dimension(21) ::
      &   ind=(/ 'a','b','c','d','e','f','g','i','j','k','l','m','n',
      &          'o','p','q','r','s','t','u','v' /)   ! Letters for index string
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &     s1, s2, s3   ! Tmp ITF index strings
       character(len=1) ::
      &   tmp
@@ -2083,7 +2081,6 @@
       hr3 = item%rank3/2
 
       ! Assign spin to indicies on the result tensor
-      ! TODO: spin_case is only len 4
       if (item%inter(3)) then
          item%t_spin(3)%spin = item%i_spin%spin
          !write(item%logfile,*) "i_spin ", item%i_spin%spin
@@ -2178,7 +2175,7 @@
      &   i, j, k, l, m, n, shift,
      &   i1, i2, i3, i4,
      &   z1, z2, r1, r2
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &   str1, str2
       logical ::
      &   eloop
@@ -2396,7 +2393,7 @@
      &   i,
      &   shift,   ! Index number of different spin cases for an intermediate
      &   ishift  ! Index number of intermediates on a line
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &   spin_name
       integer ::
      &   sum1a, sum1b, sum2a, sum2b
@@ -2528,10 +2525,10 @@
       integer, intent(in) ::
      &   hrank,            ! Rank/2
      &   spin(2,hrank)    ! Spin info
-      character(len=index_len), intent(inout) ::
+      character(len=INDEX_LEN), intent(inout) ::
      &   label             ! Spin name of intermediate
 
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &   spin_name
       integer ::
      &   i
@@ -2575,7 +2572,7 @@
      &   spin(2,hrank)
       integer, intent(inout) ::
      &   ishift      ! Index number of intermediates
-      character(len=maxlen_bc_label), intent(inout) ::
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &   label
       type(itf_contr), intent(inout) ::
      &   item
@@ -2821,16 +2818,16 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=maxlen_bc_label), intent(inout) ::
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &     result
       type(itf_contr), intent(in) ::
      &     item
 
       character(len=70) ::
      &     line
-      character(len=index_len) ::
+      character(len=INDEX_LEN) ::
      &     tindex
-      character(len=maxlen_bc_label) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &     new
 
       new = rename_tensor(result, item%rank3)
