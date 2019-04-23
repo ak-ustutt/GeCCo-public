@@ -62,6 +62,16 @@ LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
 LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
 LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 
+#LAG_E.append(_refexp("[H,T1]"))
+#LAG_E.append(_refexp("[H,T2g]"))
+#
+#LAG_A1.append(_L1_refexp("[H,T1]"))
+#LAG_A1.append(_L1_refexp("[H,T2g]"))
+#LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
+#
+#LAG_A2.append(_L2_refexp("[H,T1]"))
+#LAG_A2.append(_L2_refexp("[H,T2g]"))
+#LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
 
 LAG_E.append(_refexp("(H*T1)+(H*T2g)"))

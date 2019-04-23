@@ -65,7 +65,7 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
       
 * parameters
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=10), parameter ::
      &     name_alg_leq(0:1) =
      &     (/"  CONJGRAD","  SUBSPACE"/),

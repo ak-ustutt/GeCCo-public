@@ -47,6 +47,10 @@ try:
     if ( keywords.is_keyword_set("method.MRCC_new") ):
         print "begin setting icMRCC targets"
         import python_blocks.icMRCC
+    
+    if ( keywords.is_keyword_set("method.NEW") ):
+        print "begin setting icMRCCSD approximation targets"
+        import python_blocks.NEW
 
     if ( keywords.is_keyword_set("method.MRCCPT2") ):
         print "begin setting MRCCPT2 targets"

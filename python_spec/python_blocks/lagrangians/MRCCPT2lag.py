@@ -2,6 +2,7 @@ from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
 
+
 i_am="MRCCPT2lag.py"
 
 known_hamiltonians=["DYALL","DYALL-X","REPT","F_EFF","F_EFF-D","EXT_DYALL","SIMP_REPT"]
@@ -10,7 +11,7 @@ if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
 print("hamiltonian: ", hamiltonian, type(hamiltonian))
 
-if hamiltonian not in known_hamiltonians : 
+if hamiltonian not in known_hamiltonians :
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
 
 # Option 'connected':
@@ -58,6 +59,26 @@ ampl_type = "PT2"
 if keywords.is_keyword_set('method.MRCCPT2.ampl_type'):
     ampl_type = keywords.get('method.MRCCPT2.ampl_type')
 print("ampl_type: ", ampl_type, type(ampl_type))
+
+
+# Evaluate specific terms
+test_terms = False
+if keywords.is_keyword_set('method.MRCCPT2.test_terms'):
+    if (keywords.get('method.MRCCPT2.test_terms') == "T"):
+        test_terms=True
+    elif(keywords.get('method.MRCCPT2.test_terms') == "F"):
+        test_terms=False
+    else :
+        raise Exception(i_am+": unrecognised value for option test_terms (must be T or F)")
+print("test_terms ", test_terms, type(test_terms))
+
+
+# Calculate 'stabm' roots of the stability matrix (Jacobian)
+stabm = 0
+if keywords.is_keyword_set('method.MRCCPT2.stabm'):
+    stabm = keywords.get('method.MRCCPT2.stabm')
+print("Stability matrix roots: ", stabm, type(stabm))
+
 
 spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
@@ -148,7 +169,7 @@ elif hamiltonian=="EXT_DYALL":
     _h0_='HAM_EXT_D'
     _h0exp_='missing'
 elif hamiltonian=="SIMP_REPT":
-    _h0_='SIMP_REPT_HAM'
+    MRCC_12='SIMP_REPT_HAM'
     _h0exp_='missing'
 
 if not(connected) and _h0exp_ == 'missing':
@@ -171,8 +192,10 @@ if ampl_type == 'PT2':
     else:
         LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
 
-elif ampl_type == 'LCC':
+elif ampl_type == 'TEST1':
+    LAG_E.append("<C0^+*[[H,T2g],T2g]*C0>")
     LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+    LAG_A.append("0.5*<C0^+*(LAM2g)*([[H,T2g],T2g])*C0>")
 
 elif ampl_type == 'MRPT_3O-CC':
     LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
@@ -217,14 +240,72 @@ elif ampl_type == 'PT1_Heff2':
                                                                    "T2g","T2g'",
                                                                    "T2g","C0'"
                                                                    ])
+# Linear and quadratic MRCCSD approximations:
+elif ampl_type == 'MRCEPA(Q)':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*(H-ECEPA)*T2g*T2g*C0>")
+
+elif ampl_type == 'MRCISD':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.append("<C0^+*H*T2g*C0>")
+    E_CEPA.set_rule()
+
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+elif ampl_type == 'MRCEPA(0)':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+elif ampl_type == 'MRCCSD_(PT3)':
+    LAG_E.append("1/2*<C0^+*[[(H-"+_h0_+"),T2g],T2g]*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[["+_h0_+",T2g],T2g]*C0>")
+
+elif ampl_type == 'MRCEPA(QC)':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+
+    LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[[(H-ECEPA),T2g],T2g]*C0>")
+
+elif ampl_type == 'MRCEPA(0)_c':
+    LAG_A.append("<C0^+*(LAM2g)*(H-"+_h0_+")*T2g*C0>", connect=["H","T2g",  _h0_,"T2g"])
+    LAG_A.append("<C0^+*(LAM2g)*["+_h0_+",T2g]*C0>")
+
+elif ampl_type == 'MRCCSD(1,1)':
+    LAG_A.append("<C0^+*(LAM2g)*([H,T2g])*C0>")
+
+elif ampl_type == 'MRCCSD(1,2)':
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[[H,T2g],T2g]*C0>")
+
+elif ampl_type == 'MRCCSD(2,1)':
+    LAG_E.append("1/2*<C0^+*H*T2g*T2g*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+
+elif ampl_type == 'MRCCSD(2,2)':
+    LAG_E.append("1/2*<C0^+*H*T2g*T2g*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[[H,T2g],T2g]*C0>")
 
 else:
     quit_error(i_am+': Unknown ampl_type: ' + ampl_type)
 
 
-
-# optional penality term
-#LAG_E.append("<C0^+*(T2g^+)*O2g*C0>")
 
 #dbg
 #for item in LAG_E.show():
@@ -236,7 +317,47 @@ LAG_E.set_rule()
 #dbg
 #for item in LAG_A.show():
 #    print item
-LAG_A.set_rule()
+
+
+# Option to add specific terms using EXPAND_OP_PRODUCT to lagragian
+# Below is an example of how to do this; set_rule() should be used
+# before adding new terms
+if ampl_type == 'IDEA1_2':
+#    # Add disconnected terms onto FORM_PT_LAG_A
+#    LAG_A.set_rule()
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+#                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,VP,VV"],
+#                       AVOID:[3,4]})
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+#                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,VP,VV"],
+#                       AVOID:[3,4]})
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+#                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,PV,VV","4,,P,V"],
+#                       AVOID:[3,4]})
+#
+#    EXPAND_OP_PRODUCT({LABEL:'FORM_PT_LAG_A',NEW:False,OP_RES:'PT_LAG',
+#                       OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                       IDX_SV   :[1   ,2   ,3, 4, 5],
+#                       CONNECT:[2,3, 4,2],
+#                       LABEL_DESCR:["2,,VV,PP","3,,P,V","4,,P,V"],
+#                       AVOID:[3,4]})
+#
+#    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A',MODE:'SHORT'})
+else:
+    LAG_A.set_rule()
+
 
 #print("LAG_A finished")
 debug_FORM('FORM_PT_LAG_A')
@@ -287,7 +408,6 @@ SUM_TERMS({
 debug_FORM('FORM_PT_LAG_A')
 
 
-
 #Make the Derivative with respect to LAM2g.
 DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A',
         LABEL_RES:'FORM_PT_Amp',
@@ -315,13 +435,22 @@ debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
-OPTIMIZE({
-        LABEL_OPT:'FOPT_PT_LAG',
-        LABELS_IN:['FORM_PT_Amp','FORM_PT_LAG']})
+if ampl_type in ['MRCEPA(Q)','MRCISD','MRCEPA(0)','MRCEPA(QC)']:
+    # Construct energy operator for use in lagradian
+    DEF_ME_LIST({LIST:'ME_CEPA',
+                OPERATOR:'ECEPA',
+                IRREP:1,
+                '2MS':0,
+                AB_SYM:+1})
+    OPTIMIZE({
+            LABEL_OPT:'FOPT_PT_LAG',
+            LABELS_IN:['FORM_ECEPA','FORM_PT_Amp','FORM_PT_LAG']})
+    #PRINT_FORMULA({LABEL:'FORM_PT_Amp',MODE:'SHORT'})
 
-#OPTIMIZE({
-#        LABEL_OPT:'FOPT_PT_LAG',
-#        LABELS_IN:['FORM_PT_LAG']})
+else:
+    OPTIMIZE({
+            LABEL_OPT:'FOPT_PT_LAG',
+            LABELS_IN:['FORM_PT_Amp','FORM_PT_LAG']})
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_PT_EQ',
@@ -471,6 +600,7 @@ third_ord_terms = ['_CI', '_CC', '_CC0', '_CCa', '_CCb', '_CC_higherO', '_CC_pur
 #third_ord_terms = ['_CI']
 #third_ord_terms = ['_CCb']
 
+
 if third_ord_energy:
     new_target('MRCCPT_E_3rd_O', True)
     heading('Third order correction for the energy')
@@ -614,3 +744,126 @@ if third_ord_energy:
                 LIST:'ME_E_MRCCPT2_plus_O3'+i,
                 COMMENT:"icMRPT3"+i,
                 FORMAT:"SCAL F24.14"})
+
+
+# An example of evaulating the energy contribution of specific terms
+if test_terms:
+    new_target('testing_terms', True)
+    heading('Testing energy terms')
+    depend('SOLVE_MRCCPT2')
+    depend(('DEF_FORM_PT_LAG'))
+
+
+    DEF_SCALAR({LABEL:'E_J7'})
+    DEF_ME_LIST({LIST:'ME_J7',
+                 OPERATOR:'E_J7',
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:+1})
+
+    E_LAG_7=stf.Formula("FORM_J7:E_J7=1/2*<C0^+*T2g^+*[[H,T2g],T2g]*C0>")
+    E_LAG_7.set_rule()
+    OPTIMIZE({LABEL_OPT:'FOPT_J7',
+              LABELS_IN:['FORM_J7']})
+    PRINT_FORMULA({LABEL:'FORM_J7',MODE:'SHORT'})
+    EVALUATE({FORM:'FOPT_J7'})
+
+
+    DEF_SCALAR({LABEL:'E_J8'})
+    DEF_ME_LIST({LIST:'ME_J8',
+                 OPERATOR:'E_J8',
+                 IRREP:1,
+                 '2MS':0,
+                 AB_SYM:+1})
+
+    E_LAG_8=stf.Formula("FORM_J8:E_J8=1/2*<C0^+*T2g^+*[["+_h0_+",T2g],T2g]*C0>")
+    E_LAG_8.set_rule()
+    OPTIMIZE({LABEL_OPT:'FOPT_J8',
+              LABELS_IN:['FORM_J8']})
+    PRINT_FORMULA({LABEL:'FORM_J8',MODE:'SHORT'})
+    EVALUATE({FORM:'FOPT_J8'})
+
+
+
+# Calculate stability matrix (Jacobian)
+# stabm=number of roots
+if stabm > 0:
+    new_target('stability_matrix', True)
+    heading('Calculating eigenvalues of stability matrix (Jacobian)')
+    depend('SOLVE_MRCCPT2')
+    depend(('DEF_FORM_PT_LAG'))
+    depend('BUILD_PRECON')
+
+    CLONE_OPERATOR({LABEL:'R2g',TEMPLATE:'T2g'})
+    DEF_ME_LIST({LIST:'ME_R2g',
+            OPERATOR:'R2g',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1,MAX_REC:stabm})
+    CLONE_OPERATOR({LABEL:'R2g_prime',TEMPLATE:'T2g'})
+    DEF_ME_LIST({LIST:'ME_R2g_prime',
+            OPERATOR:'R2g_prime',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:0,MAX_REC:stabm})
+
+    # Construct overlap matrix
+    CLONE_OPERATOR({LABEL:'S2g',TEMPLATE:'O2g'})
+    DEF_ME_LIST({LIST:'ME_S2g',
+            OPERATOR:'S2g',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1,MAX_REC:stabm})
+    OVRLAP=stf.Formula("FORM_OVRLAP:S2g=<C0^+*LAM2g*R2g*C0>")
+    OVRLAP.set_rule()
+
+
+    DERIVATIVE({LABEL_IN:'FORM_OVRLAP',
+            LABEL_RES:'FORM_S_R',
+            OP_RES:'S2g',
+            OP_DERIV:'LAM2g'})
+
+
+    CLONE_OPERATOR({LABEL:'JAC_R',TEMPLATE:'O2g'})
+    DEF_ME_LIST({LIST:'ME_JAC_R',
+            OPERATOR:'JAC_R',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:+1,MAX_REC:stabm})
+
+
+    DERIVATIVE({LABEL_IN:'FORM_PT_Amp',
+            LABEL_RES:'FORM_PT_Stabm',
+            OP_RES:'JAC_R',
+            OP_DERIV:'T2g',
+            OP_MULT:'R2g'})
+
+    # for transformation:
+    DEF_SCALAR({LABEL:'DUMM_Y'})
+    INVARIANT({LABEL_RES:'FORM_R2g',
+           LABEL_IN:'FORM_T2_orth',
+           OP_RES:'R2g',
+           OPERATORS:'DUMM_Y'}) # currently the only way to change the OP_RES
+
+    REPLACE({LABEL_RES:'FORM_R2g',
+         LABEL_IN:'FORM_R2g',
+         OP_LIST:['T2_orth','R2g_prime']})
+
+    OPTIMIZE({LABEL_OPT:'FOPT_JAC_R',
+              LABELS_IN:['FORM_PT_Stabm','FORM_S_R','FORM_R2g']})
+
+    ASSIGN_ME2OP({LIST:'ME_X_TRM_DAG',
+                OPERATOR:'X_TRM'})
+
+
+    SOLVE_EVP({LIST_OPT:'ME_R2g',
+               LIST_PRC:'ME_PRECON2g',
+               #SOLVER:'NEW',
+               SOLVER:'OLD',
+               OP_MVP:'JAC_R',
+               OP_SVP:'S2g',
+               FORM:'FOPT_JAC_R',
+               MODE:'TRF',
+               #FORM_SPC:['FOPT_T2_orth'],
+               LIST_SPC:['ME_R2g_prime','ME_X_TRM','ME_X_TRM_DAG'],
+               N_ROOTS:stabm})

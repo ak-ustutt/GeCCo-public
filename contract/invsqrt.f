@@ -1095,7 +1095,7 @@ c dbgend
              if (project.eq.1) then
               allocate(scratch4(rdim,rdim))
 ! form outer product of these vectors
-              print *, "to be tested or not to be tested"
+              !print *, "to be tested or not to be tested"
            
 ! Evil Hacking ahead:
 ! see above
