@@ -64,7 +64,7 @@
       include 'ifc_input.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 000
 
       integer, intent(in) ::
      &     nopt, nroots, nspecial, nspcfrm, targ_root,choice_opt
@@ -492,14 +492,14 @@ c dbgend
  
 
 c dbg
-      do iopt = 1,nopt
-        write(lulog,*) 'starting trial vector (before): iopt = ',iopt
-        call wrt_mel_file(lulog,5,
-     &        me_trv(iopt)%mel,
-     &        1,me_trv(iopt)%mel%op%n_occ_cls,
-     &        str_info,orb_info)
-      enddo
-
+c      do iopt = 1,nopt
+c        write(lulog,*) 'starting trial vector (before): iopt = ',iopt
+c        call wrt_mel_file(lulog,5,
+c     &        me_trv(iopt)%mel,
+c     &        1,me_trv(iopt)%mel%op%n_occ_cls,
+c     &        str_info,orb_info)
+c      enddo
+c
 c dbgend
       ! start optimization loop
       iter = 0
@@ -557,16 +557,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
               if (use_s(iopt))
      &             call switch_mel_record(me_met(iopt)%mel,
      &                                                irecmet(irequest))
-              
+
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
 c              if (me_trv(iopt)%mel%absym.ne.0)
 c dbg
-         write(lulog,*) 'current trial vector (before): iopt = ',iopt
-         call wrt_mel_file(lulog,5,
-     &       me_trv(iopt)%mel,
-     &       1,me_trv(iopt)%mel%op%n_occ_cls,
-     &       str_info,orb_info)
+c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
+c        call wrt_mel_file(lulog,5,
+c    &       me_trv(iopt)%mel,
+c    &       1,me_trv(iopt)%mel%op%n_occ_cls,
+c    &       str_info,orb_info)
 c dbgend
               if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
      &             call sym_ab_list(

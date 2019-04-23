@@ -25,7 +25,7 @@
       real(8),parameter::
      &     thresh = 1.0d-16
       integer, parameter::
-     &     ntest = 100,          !20 some scalar values; 60 input lists; 100 all used vectors (large)
+     &     ntest = 000,          !20 some scalar values; 60 input lists; 100 all used vectors (large)
      &     maxelem = 100        ! maximal maxelem elements per list are printed
       character(len=*),parameter::
      &     i_am="dvdsbsp_update"
