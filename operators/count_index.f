@@ -2784,13 +2784,13 @@
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
       item%fact=contr_info%fact_itf
-      !write(11,*) "diag fact: ", contr_info%fact
-      !write(11,*) "itf fact: ", contr_info%fact_itf
+      write(11,*) "diag fact: ", contr_info%fact
+      write(11,*) "itf fact: ", contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,item%fact)
 
-      !write(11,*) "integral fact: ", item%fact
+      write(11,*) "integral fact: ", item%fact
 
       ! Inialise number of contraction indicies
       item%contri = 0
@@ -2903,15 +2903,15 @@
       if (c(1,1)==1 .and. c(3,1)==1 .and. c(1,2)==1 .and. c(3,2)==1)
      &   then
             fact = fact * -1.0d+0
-            !write(11,*) "Changing the factor ", fact
+            write(11,*) "Changing the factor ", fact
       end if
 
       ! Catch three internal integrals
       !if (c(2,1) + c(2,2)==3) then
-      if (c(3,1) + c(3,2)==3) then
-         fact = fact * -1.0d+0
-         !write(11,*) "3 internal"
-      end if
+      !if (c(3,1) + c(3,2)==3) then
+      !   fact = fact * -1.0d+0
+      !   !write(11,*) "3 internal"
+      !end if
 
       return
       end
