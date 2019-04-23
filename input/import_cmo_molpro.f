@@ -13,7 +13,7 @@
       include 'par_molpro.h'
 
       integer, parameter ::
-     &     ntest = 0
+     &     ntest = 00
 
       type(orbinf), intent(in), target ::
      &     orb_info
@@ -30,10 +30,12 @@
      &     lusir, isym, ifree, igas, igasr,
      &     ncmo, imo, imo_reo, ioff, ioff_reo, len,
      &     ioff_sym(8), ioff_mo(8),
-     &     nmo, nao, i, j, ij, ji, ncoef
+     &     nmo, nao, ii, jj, ij, ji, ncoef, idxsym
 
       real(8), pointer ::
      &     cmo(:), cmo_tmp(:), cmo_reo(:)
+      integer, pointer ::
+     &     ireots_loc(:)
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -55,6 +57,22 @@
       ifree = mem_alloc_real(cmo,ncmo,'cmo_ori')
       ! buffer for reordered CMO-matrix
       ifree = mem_alloc_real(cmo_reo,ncmo,'cmo_reo')
+      ! special reordering array
+      ifree = mem_alloc_int(ireots_loc,orb_info%ntoob,'mo_reo_loc')
+
+      ! the ireots from orb_info does not fit here, as the orbitals on 
+      ! CMO are fully symmetry-ordered!
+      idxsym = 0
+      do isym = 1, orb_info%nsym
+        do igas = 1, orb_info%ngas
+          igasr = orb_info%gas_reo(igas)
+          do ii = orb_info%mostnd(1,isym,igasr), 
+     &            orb_info%mostnd(2,isym,igasr)
+             idxsym = idxsym+1
+             ireots_loc(ii) = idxsym
+          end do
+        end do
+      end do
 
       inquire(file=f_coeff,exist=ok)
       if (.not.ok) call quit(0,'import_cmo_molpro',
@@ -93,10 +111,10 @@
       do isym = 1, orb_info%nsym
         nao = orb_info%nbas(isym)
         nmo = orb_info%ntoobs(isym)
-        do i = 1, nmo
-          do j = 1, nao
-            ij = (i-1)* nmo + j
-            ji = (j-1)* nao + i
+        do ii = 1, nmo
+          do jj = 1, nao
+            ij = (ii-1)* nmo + jj
+            ji = (jj-1)* nao + ii
             cmo(ji + ncoef) = cmo_tmp(ij + ncoef)
           end do
         end do
@@ -113,10 +131,30 @@
       call file_close_keep(ffsir)
 
       ! and reorder
+c dbg
+c      write(lulog,*) 'igamorb: '
+c      write(lulog,'(10i3)') orb_info%igamorb
+c      write(lulog,*) 'ireots_loc: '
+c      write(lulog,'(10i3)') ireots_loc
+c      write(lulog,'("ioff_mo  ",8i3)') ioff_mo
+c      write(lulog,'("ioff_sym ",8i3)') ioff_sym
+c      write(lulog,'("nbas     ",8i3)') orb_info%nbas
+c dbg
       ioff_reo = 0
+      ! loop over orbitals in type-ordering
       do imo_reo = 1, orb_info%ntoob
+c dbg
+c        write(lulog,*) 'imo_reo, isym    : ', 
+c     &                  imo_reo, orb_info%igamorb(imo_reo)
+c        write(lulog,*) ' -> imo+ioff, imo: ',
+c     & orb_info%ireots(imo_reo),ireots_loc(imo_reo) - ioff_mo(isym)
+c        write(lulog,*) ' -> len, ioff on cmo: ',orb_info%nbas(isym),
+c     &     ioff_sym(isym) + (imo-1)*len
+c        write(lulog,*) ' ioff_reo: ',ioff_reo
+c dbg
         isym = orb_info%igamorb(imo_reo)
-        imo = orb_info%ireots(imo_reo) - ioff_mo(isym)
+        ! mo in symmetry ordering ... minus offset
+        imo = ireots_loc(imo_reo) - ioff_mo(isym)
         len  = orb_info%nbas(isym)
         ioff = ioff_sym(isym) + (imo-1)*len
         cmo_reo(ioff_reo+1:ioff_reo+len) = cmo(ioff+1:ioff+len)

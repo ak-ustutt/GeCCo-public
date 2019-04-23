@@ -76,8 +76,15 @@ elif False: # ref_proj !=0
 
 SOLVE_EVP(SOLVE_map)
 
+OPTIMIZE({
+        LABEL_OPT:'FOPT_EREF',
+        LABELS_IN:'FORM_EREF'})
 
+EVALUATE({
+        FORM:'FOPT_EREF'})
 
+PRINT_MEL({LIST:'ME_E0',COMMENT:'Reference energy',FORMAT:'SCAL F24.14'})
+PUSH_RESULT({LIST:'ME_E0',COMMENT:"Reference", FORMAT:"SCAL F24.14"})
 
 
 new_target("FOPT_GAM0")
@@ -102,7 +109,7 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_GAM0',
         LABELS_IN:'FORM_GAM0'})
 PRINT({
-        STRING:'Setup densities up to 3rd order'})
+        STRING:'Setup density matrices'})
 
 new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
 depend("FOPT_GAM0")
@@ -135,12 +142,4 @@ debug_MEL('GAM0_LST')
 
 new_target("EVAL_E0")
 depend("MakeRefState")
-OPTIMIZE({
-        LABEL_OPT:'FOPT_EREF',
-        LABELS_IN:'FORM_EREF'})
-
-EVALUATE({
-        FORM:'FOPT_EREF'})
-
-PRINT_MEL({LIST:'ME_E0',COMMENT:'Reference energy',FORMAT:'SCAL F24.14'})
-PUSH_RESULT({LIST:'ME_E0',COMMENT:"Reference", FORMAT:"SCAL F24.14"})
+# moved evaluation of E0 into target MakeRefState

@@ -6,7 +6,6 @@ i_am='seq_orthogonalization'
 
 spinadapt = keywords.get('calculate.routes.spinadapt')
 spinadapt = int(spinadapt) if spinadapt is not None else 0
-ntest=100
 
 minexc= keywords.get('method.MR.minexc')
 minexc = int(minexc) if minexc is not None else 1
@@ -301,6 +300,8 @@ SELECT_LINE({
         IGAST:3,
         MODE:'no_ext'})
 
+debug_FORM('FORM_T2_orth')
+
 OPTIMIZE({
         LABEL_OPT:'FOPT_T2_orth',
         LABELS_IN:'FORM_T2_orth'})
@@ -333,7 +334,6 @@ SELECT_LINE({
         IGAST:3,         #virtual
         MODE:'no_ext'})
 
-debug_FORM('FORM_T2_orth')
 debug_FORM('FORM_LAM_TRF')
 
 
@@ -375,6 +375,7 @@ if (useT1):
         LABEL_OPT:'FOPT_T1_orth',
         LABELS_IN:'FORM_T1_orth'})
 # end of block for (useT1)
+  debug_FORM('FORM_T1_orth')
 
 
 OPTIMIZE({

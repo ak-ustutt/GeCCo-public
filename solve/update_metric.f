@@ -69,6 +69,11 @@
       call get_argument_value('method.MR','prc_traf',lval=prc_traf)
       call get_argument_value('calculate.routes','fix_met',lval=fix_met)
 
+      if (ntest.ge.100) then
+        call write_title(lulog,wst_dbg_subr,'update_metric')
+        write(lulog,*) 'project  = ',project
+        write(lulog,*) 'prc_traf = ',prc_traf
+      end if
       ! fix_met option is used to fix the metric matrix throughout the
       ! calculation by hacking into update part of it. This, along with
       ! oldref=T, can be used to fix the metric matrix even for
@@ -261,6 +266,10 @@ c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
      &             trim(me_special(6)%mel%label),.false.,
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.true.)   ! dirty: reo vtx. 1 --> 3
+
+      if (ntest.ge.100) then
+         write(lulog,*) 'update_metric: done'
+      end if
 
       return
       end

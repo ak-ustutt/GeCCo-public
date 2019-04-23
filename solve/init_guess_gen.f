@@ -3,7 +3,7 @@
 *----------------------------------------------------------------------*
       subroutine init_guess_gen(guess_gen, maxtrials,
      &     me_diag, me_trv, nopt,
-     &     op_info,str_info,strmap_info,orb_info)
+     &     op_info,str_info,strmap_info,orb_info,opti_info)
 *----------------------------------------------------------------------*
       
       implicit none
@@ -14,6 +14,7 @@
       include 'def_strinf.h'
       include 'def_strmapinf.h'
       include 'def_orbinf.h'
+      include 'def_optimize_info.h'
       
       type(guess_generator),intent(out)::
      &     guess_gen
@@ -23,7 +24,8 @@
      &     maxtrials, nopt
       type(me_list_array)::
      &     me_diag(nopt),me_trv(nopt)
-
+      integer::
+     &     idx_test
       integer::
      &     iopt,isign(nopt),ntrials(nopt)
       integer,pointer::
@@ -38,8 +40,17 @@
      &     str_info
       type(strmapinf), intent(in) ::
      &     strmap_info
+      type(optimize_info), intent(in) ::
+     &     opti_info
 
-      
+
+      if (ntest.ge.100) then
+        call write_title(lulog,wst_dbg_subr,'entered init_guess_gen')
+        write(lulog,*) 'maxtrials  = ',maxtrials
+        write(lulog,*) 'me_diag(1) = ',me_diag(1)%mel%label
+        write(lulog,*) 'me_trv(1) =  ',me_trv(1)%mel%label
+      end if
+ 
       allocate(guess_gen%idxlist_all(2,maxtrials),
      &     guess_gen%idxlist_ba(maxtrials))
       allocate(idxlist(maxtrials,nopt))
@@ -50,6 +61,9 @@
      &       idxlist(1:maxtrials,iopt),
      &       maxtrials,me_diag(iopt)%mel)
         ntrials(iopt) = min(maxtrials,me_diag(iopt)%mel%len_op)
+cak -- quick fix -> ignore vecs if the singles get zeroed out
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc) 
+     &       ntrials(iopt) = 0
       end do
       if (nopt .gt.1 )then
         call merge_min_lists(
@@ -60,6 +74,7 @@
         xlist_all(1:maxtrials) = xlist(1:maxtrials,1)
         guess_gen%idxlist_all(2,1:maxtrials) = idxlist(1:maxtrials,1)
         guess_gen%idxlist_all(1,1:maxtrials) = 1
+        guess_gen%ntrials_all = ntrials(1)
       end if
 
       do iopt =1,nopt
@@ -74,6 +89,17 @@
       deallocate( idxlist, xlist, xlist_all)
       ! And initialize iguess
       guess_gen%iguess =0
+      if (ntest.ge.100) then
+        write(lulog,*) 'guess_gen%iguess      = ',guess_gen%iguess
+        write(lulog,*) 'guess_gen%ntrials_all = ',guess_gen%ntrials_all
+        write(lulog,*) 'guess_gen%ntrials_all'
+        do idx_test=1,guess_gen%ntrials_all
+           write(lulog, '(x,i4,x,i4,x,i4)') idx_test,
+     &            guess_gen%idxlist_all(1,idx_test),
+     &            guess_gen%idxlist_all(2,idx_test)
+
+        end do
+      end if
       contains
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*

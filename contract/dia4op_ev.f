@@ -470,6 +470,10 @@ c dbg
 c                  if (ioffbuf+1.lt.1) write(6,*)'range1:',ioffbuf+1
 c                  if (ioffbuf+n_inner2.gt.maxbuff)
 c     &                 write(6,*)'range2:',ioffbuf+n_inner2
+c                  if (ioff_inner2+1.lt.1) write(6,*)'range3:',
+c     &                                     ioff_inner2+1
+c                  if (ioff_inner2+n_inner2.gt.maxstrbuf)
+c     &                 write(6,*)'range4:',ioff_inner2+n_inner2
 c dbg
                   buffer(ioffbuf+1:ioffbuf+n_inner2) =
      &                xsum(ioff_inner2+1:ioff_inner2+n_inner2) + xsum_i1

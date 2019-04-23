@@ -219,6 +219,7 @@
 
       
       norm2=0
+      if (ntest.ge.20) write(lulog,*) 'norm of input list:'
       do ilist=1,nlists
          ffme=> me_vlists(ilist)%mel%fhand
          irec= me_vlists(ilist)%mel%fhand%current_record
@@ -230,6 +231,7 @@
          end if
          norm2 =norm2+ da_ddot(ffme,irec, ffcme,irec,
      &        lenlist,buf1,buf2,lbuf)
+         if (ntest.ge.20) write(lulog,*) ilist,norm2
       end do
       if (norm2 .gt. thresh) then
          accepted =.true.
@@ -303,7 +305,9 @@
      &     ffme,ffcme
 
       if (dvdsbsp%with_metric)then
-      do ivec= 1,dvdsbsp%ncursub
+         if (ntest.ge.20) write(lulog,*) 'orthogonalizing using metric'
+         do ivec= 1,dvdsbsp%ncursub
+            if (ntest.ge.20) write(lulog,*) ' ivec = ',ivec
             overlapp=0
             do ilist=1,nlists
                ffme=> me_vlists(ilist)%mel%fhand
@@ -320,6 +324,11 @@
      &                 buf2, lbuf)
                end if
                overlapp = overlapp + ddot(lenlist,buf1,1,buf2,1)
+               if (ntest.ge.20) then
+                 write(lulog,"(1x,i4,3(1x,f16.12))") 
+     &                ilist,ddot(lenlist,buf1,1,buf1,1),
+     &                      ddot(lenlist,buf1,1,buf2,1),overlapp
+               end if
             end do
             
             do ilist=1,nlists

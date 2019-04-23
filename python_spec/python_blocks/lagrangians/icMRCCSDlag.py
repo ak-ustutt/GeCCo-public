@@ -17,14 +17,17 @@ i_am="icMRCCSDlag.py"
 new_target('DEF_FORM_MRCC_LAG')
 heading('Defining the icMRCC Lagrangian')
 
-depend('DEF_T2g')
-depend('DEF_T1')
+depend('DEF_T')
+#depend('DEF_T2g')
+#depend('DEF_T1')
 
-depend('DEF_LAM2g')
-depend('DEF_LAM1')
+depend('DEF_LAM')
+#depend('DEF_LAM2g')
+#depend('DEF_LAM1')
 
-depend('DEF_O2g')
-depend('DEF_O1')
+depend('DEF_O')
+#depend('DEF_O2g')
+#depend('DEF_O1')
 
 DEF_SCALAR({
         LABEL:'MRCC_LAG'})
