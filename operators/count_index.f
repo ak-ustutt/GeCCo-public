@@ -910,9 +910,9 @@
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                    1,item%binary,item%logfile)
+     &                    1,item%binary,item%three(1),item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                    2,item%binary,item%logfile)
+     &                    2,item%binary,item%three(2),item%logfile)
 
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
@@ -974,7 +974,7 @@
 
 *----------------------------------------------------------------------*
       subroutine spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,
-     &                          lulog)
+     &                          three,lulog)
 *----------------------------------------------------------------------*
 !     Construct spatial tensor representation
 *----------------------------------------------------------------------*
@@ -995,7 +995,8 @@
       logical, intent(in) ::
      &   spin,       ! True if pure spin
      &   inter,      ! True if an intermediate
-     &   binary      ! True if a binary contraction
+     &   binary,     ! True if a binary contraction
+     &   three       ! True if three operators of the same type
       integer, intent(in) ::
      &   rank,       ! Rank of tensor
      &   tensor,     ! T1 or T2
@@ -1261,6 +1262,8 @@
      &   e1ops,         ! Number of C/A external T1 operators
      &   e2ops,         ! Number of C/A external T2 operators
      &   e3ops          ! Total number of external operators
+      integer, dimension(4) ::
+     &   tops           ! Scratch space
 
       c=0
       e1=0
@@ -1331,6 +1334,21 @@
       item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
       item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
       item%nops3 = sum(e3, dim=2)
+
+      ! Set if it has three operators of the same type
+      tops = sum(e1, dim=2)
+      do i = 1, ngastp
+         if (tops(i)==3) then
+            item%three(1) = .true.
+         end if
+      end do
+
+      tops = sum(e1, dim=2)
+      do i = 1, ngastp
+         if (tops(i)==3) then
+            item%three(2) = .true.
+         end if
+      end do
 
       if (item%rank1 == 0 .and. item%rank2 == 0) then
          item%idx1 = ''
@@ -1538,10 +1556,10 @@
       ! of indices for the declaration and use of an intermediate (the
       ! slot structure must be the same when it is constructed and when
       ! it is used)
-      call swap_pairs(t1_list, item%rank1, item%int(1), e4)
+      call swap_pairs(t1_list,item%rank1,item%int(1),item%inter(1),e4)
       e4 = 0
-      call swap_pairs(t2_list, item%rank2, item%int(2), e4)
-      call swap_pairs(r_list, item%rank3, item%int(3), e5)
+      call swap_pairs(t2_list,item%rank2,item%int(2),item%inter(2),e4)
+      call swap_pairs(r_list,item%rank3,item%int(3),item%inter(3),e5)
 
       ! Insert ordered lists into ITF index strings
       s1 = '        '
@@ -1843,24 +1861,44 @@
       character(len=1) ::
      &   tmp               ! Temporary holder for index
       integer ::
-     &   i                 ! Loop index
+     &   i,                ! Loop index
+     &   itmp
 
 
       ! If the tensor is a rank-4 integral or an intermediate,
       ! creation/annihilation order is important, so these are skipped
       if (.not. integral .or. integral .and. rank == 2) then
          if (.not. inter) then
+            !call print_plist(list, rank/2, "hello1", 10)
             do i = 1, rank/2
 !               if (list%plist(i)%pindex(1) >
 !     &                                     list%plist(i)%pindex(2)) then
                if (list%plist(i)%nval(1) >=
      &                                     list%plist(i)%nval(2)) then
+
+               if (list%plist(i)%nval(1) ==
+     &                                     list%plist(i)%nval(2)) then
                if (list%plist(i)%pindex(1) >
      &                                     list%plist(i)%pindex(2)) then
+                  !call print_plist(list, rank/2, "hello2", 10)
                   tmp = list%plist(i)%pindex(1)
                   list%plist(i)%pindex(1) = list%plist(i)%pindex(2)
                   list%plist(i)%pindex(2) = tmp
+
+                  itmp = list%plist(i)%nval(1)
+                  list%plist(i)%nval(1) = list%plist(i)%nval(2)
+                  list%plist(i)%nval(2) = itmp
                end if
+               else
+                  tmp = list%plist(i)%pindex(1)
+                  list%plist(i)%pindex(1) = list%plist(i)%pindex(2)
+                  list%plist(i)%pindex(2) = tmp
+
+                  itmp = list%plist(i)%nval(1)
+                  list%plist(i)%nval(1) = list%plist(i)%nval(2)
+                  list%plist(i)%nval(2) = itmp
+               end if
+
                end if
             end do
          end if
@@ -1871,7 +1909,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine swap_pairs(list, rank, integral, e4)
+      subroutine swap_pairs(list, rank, integral, inter, e4)
 *----------------------------------------------------------------------*
 !     Swap pairs of indices within a pair list using bubble sort.
 *----------------------------------------------------------------------*
@@ -1886,7 +1924,8 @@
       integer, intent(in) ::
      &   rank              ! Rank of tensor
       logical, intent(in) ::
-     &   integral
+     &   integral,
+     &   inter
       integer, intent(in) ::
      &   e4(4,2)
 
@@ -1899,8 +1938,9 @@
 
       allocate(tmp_list%plist(1))
 
+      !if (e4(1,2) > e4(1,1)) then
+      if (e4(3,2) > e4(3,1)) then
       ! Skip if there is only one pair, or if this is an integral
-      if (e4(1,2) > e4(1,1)) then
       if (rank > 2 .and. .not. integral) then
          sort = .true.
          do while (sort)
@@ -1942,6 +1982,27 @@
 
       ! If there are more particle annihilation operators, such as in an
       ! intermediate, then the pairs should be sorted according to these
+
+
+      ! Basically just the amplitude tensors
+      if (rank > 2 .and. .not. integral .and. .not. inter) then
+         sort = .true.
+         do while (sort)
+            sort = .false.
+            do i = 1, rank/2
+               if (i == rank/2) exit
+
+               if (list%plist(i+1)%nval(2) <
+     &                                     list%plist(i)%nval(2)) then
+                  !call print_plist(list, rank/2, "hello", 10)
+                  tmp_list%plist(1) = list%plist(i)
+                  list%plist(i) = list%plist(i+1)
+                  list%plist(i+1) = tmp_list%plist(1)
+                  sort = .true.
+               end if
+            end do
+         end do
+      end if
 
       deallocate(tmp_list%plist)
 
@@ -2459,7 +2520,7 @@
       end do
 
       if (.not. eloop) then
-         call line_error("Didn't print out spin case", item)
+         !call line_error("Didn't print out spin case", item)
       end if
 
       ! Mark the end of the spin summed block, if we will print a
@@ -2784,13 +2845,13 @@
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
       item%fact=contr_info%fact_itf
-      write(11,*) "diag fact: ", contr_info%fact
-      write(11,*) "itf fact: ", contr_info%fact_itf
+      !write(11,*) "diag fact: ", contr_info%fact
+      !write(11,*) "itf fact: ", contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
       call integral_fact(contr_info,item%fact)
 
-      write(11,*) "integral fact: ", item%fact
+      !write(11,*) "integral fact: ", item%fact
 
       ! Inialise number of contraction indicies
       item%contri = 0
@@ -2903,7 +2964,7 @@
       if (c(1,1)==1 .and. c(3,1)==1 .and. c(1,2)==1 .and. c(3,2)==1)
      &   then
             fact = fact * -1.0d+0
-            write(11,*) "Changing the factor ", fact
+            !write(11,*) "Changing the factor ", fact
       end if
 
       ! Catch three internal integrals
