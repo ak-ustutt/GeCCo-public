@@ -3211,10 +3211,10 @@
 
       ! Catch three internal integrals
       !if (c(2,1) + c(2,2)==3) then
-      !if (c(3,1) + c(3,2)==3) then
-      !   fact = fact * -1.0d+0
-      !   !write(11,*) "3 internal"
-      !end if
+      if (c(3,1) + c(3,2)==3) then
+         fact = fact * -1.0d+0
+         !write(11,*) "3 internal"
+      end if
 
       return
       end

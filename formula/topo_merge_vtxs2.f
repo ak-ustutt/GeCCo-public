@@ -186,10 +186,10 @@ c dbg
               if (mod(sum(occ_to(1:ngastp,2))*
      &                sum(occ_fr(1:ngastp,2)),2).eq.1) 
      &            itf_sign = -itf_sign
-              ! for ITF: ... and sign for interchanging I0C J0C:
-              if (mod(sum(occ_to(1:ngastp,1))*
-     &                sum(occ_fr(1:ngastp,1)),2).eq.1) 
-     &            itf_sign = -itf_sign
+!              ! for ITF: ... and sign for interchanging I0C J0C:
+!              if (mod(sum(occ_to(1:ngastp,1))*
+!     &                sum(occ_fr(1:ngastp,1)),2).eq.1) 
+!     &            itf_sign = -itf_sign
 
 c dbg
 c              print *,'after sign_merge: ',merge_sign
