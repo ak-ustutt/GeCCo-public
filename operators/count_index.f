@@ -1228,6 +1228,9 @@
      &   e3(4,2),       ! Operator numbers of result index
      &   e4(4,2),       ! Operator numbers of result index
      &   e5(4,2),       ! Operator numbers of result index
+     &   te1(4,2),      ! Test Operator numbers of external index 1
+     &   te2(4,2),      ! Test Operator numbers of external index 2
+     &   tc(4,2),       ! Test Operator numbers of external index 2
      &   i, j, k, l,    ! Loop index
      &   ii,            ! Letter index
      &   nloop,         ! Number of contraction loops
@@ -1253,7 +1256,8 @@
      &   p_list,        ! Complete list of pairs in binary contraction
      &   t1_list,       ! List of pairs in first tensor (T1)
      &   t2_list,       ! List of pairs in second tensor (T2)
-     &   r_list         ! List of pairs in result tensor
+     &   r_list,        ! List of pairs in result tensor
+     &   d_list         ! debug list
       integer, dimension(4) ::
      &   t_shift,       ! Index shift for external indices
      &   c_shift        ! Index shift for contraction indices
@@ -1336,6 +1340,7 @@
       item%nops3 = sum(e3, dim=2)
 
       ! Set if it has three operators of the same type
+      ! TODO: probably not needed anymore
       tops = sum(e1, dim=2)
       do i = 1, ngastp
          if (tops(i)==3) then
@@ -1371,6 +1376,45 @@
       allocate(t1_list%plist(item%rank1/2))
       allocate(t2_list%plist(item%rank2/2))
       allocate(r_list%plist(item%rank3/2))
+
+!      ! New code ======================================================
+!      allocate(d_list%plist(item%rank2/2))
+!      sp=1
+!      do i = 1, 4
+!         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
+!      end do
+!      t_shift=0
+!      te1 = e1
+!      te2 = e2
+!      tc = c
+!      e1ops = sum(te1, dim=1)
+!      e2ops = sum(te2, dim=1)
+!
+!      !write(item%logfile,*) "e1 ", te1
+!      !write(item%logfile,*) "e2 ", te2
+!      !write(item%logfile,*) "c ", tc
+!      ! Assume exciation operator always comes second
+!      if (trim(item%label_t2)=='T2g' .and. item%rank2>2) then
+!
+!         do while (sum(e2ops) /= 0)
+!            ! Search on second tensor
+!            ! Note the number of creation/annihilation ops has been
+!            ! switched
+!            call find_T_pairs(d_list,sp,2, te2, te1,tc,t_shift, c_shift,
+!     &                      e2ops, e1ops, item)
+!
+!            ! Check for more operators
+!            e2ops = sum(te2, dim=1)
+!         end do
+!
+!         !call print_plist(d_list, item%rank2/2, "d_list", item%logfile)
+!      end if
+!
+!
+!      e1ops = sum(e1, dim=1)
+!      e2ops = sum(e2, dim=1)
+!      deallocate(d_list%plist)
+!      ! End new code ==================================================
 
       ! To start, we pair off contraction loops
       ! Pair list index (shift pair)
@@ -1596,6 +1640,204 @@
       return
       end
 
+
+!*----------------------------------------------------------------------*
+!      subroutine find_T_pairs(list, sp, tensor, e1, e2, c, t_shift,
+!     &                        c_shift, e1ops, e2ops, item)
+!*----------------------------------------------------------------------*
+!!     Find external pairs in a binary contraction. Assign a contraction
+!!     index if they are on different tensors.
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(pair_list), intent(inout) ::
+!     &   list              ! Complete pair list for binary contraction
+!      integer, intent(inout) ::
+!     &   sp               ! Pair list shift index
+!      integer, intent(inout) ::
+!     &   tensor,           ! Label T1 or T2
+!     &   e1(4,2),          ! External index occupations for a tensor
+!     &   e2(4,2),          ! External index occupations the other tensor
+!     &   c(4,2)            ! Contraction index occupations
+!      integer, dimension(3), intent(inout) ::
+!     &   t_shift,          ! External index letter shift
+!     &   c_shift           ! Creation index letter shift
+!      integer, dimension(2), intent(in) ::
+!     &   e1ops,
+!     &   e2ops
+!      type(itf_contr), intent(in) ::
+!     &   item              ! ITF binary contraction info
+!
+!      character, dimension(21) ::
+!     &   ind=(/ 'a','b','c','d','e','f','g','p','q','r','s','t','u',
+!     &          'v','i','j','k','l','m','n','o' /)   ! Letters for index string
+!      logical ::
+!     &   found
+!      integer ::
+!     &   opp_tensor,       ! Label opposite tensor to 'tensor'
+!     &   i1, i2,           ! Label annihilation/creation index
+!     &   n1, n2,           ! Label occupations
+!     &   start,            ! Labels P/H/V/X to look for pairs
+!     &   ii,               ! Letter index
+!     &   i,j,k,l,m,n,z,    ! Loop indices
+!     &   nops(4)
+!
+!
+!      ! Decide which tensors we are dealing with (T1 or T2)
+!      if (tensor == 1) then
+!         opp_tensor = 2
+!      else
+!         opp_tensor = 1
+!      end if
+!
+!      ! i1 and i2 label creation/annihilation
+!      ! operators, pindex always has a creation in position 1, so the
+!      ! indices must be placed in their correct position.
+!      if (e1ops(1) >= e1ops(2)) then
+!         ! Loop through creations first
+!         i1 = 1
+!         i2 = 2
+!         n1 = e1ops(2)
+!         n2 = e2ops(2)
+!      else
+!         ! Loop through annihilation first
+!         i1 = 2
+!         i2 = 1
+!         n1 = e1ops(1)
+!         n2 = e2ops(1)
+!      end if
+!
+!      found = .false.
+!
+!      ! Change i = 2, to start loop at hole index, create pair, then
+!      ! change back to i = 1 on next call, continue as normal till every
+!      ! index gone
+!      ! Have i = start, start set to be 1, 2, 3, 4 based on what the
+!      ! largest number of possible loops
+!      nops(1) = e1(1,i1) + e1(2,i2) + e1(3,i2) + e1(4,i2)
+!      nops(2) = e1(2,i1) + e1(1,i2) + e1(3,i2) + e1(4,i2)
+!      nops(3) = e1(3,i1) + e1(1,i2) + e1(2,i2) + e1(4,i2)
+!      nops(4) = e1(4,i1) + e1(1,i2) + e1(2,i2) + e1(3,i2)
+!
+!      ! By default, always start pairing from particle index
+!      start = 1
+!      do i = 2, size(nops)
+!         if (nops(start) < nops(i)) then
+!            start = i
+!         end if
+!      end do
+!
+!      ! Start main search loop
+!      !do i = 1, 4
+!      do i = start, 4
+!         do j = 1, e1(i,i1)
+!            ! Search for first operator
+!            ii = 1+(7*(i-1)) + t_shift(i)
+!            list%plist(sp)%pindex(i1) = ind(ii)
+!            call assign_nval(i, i1, sp, list)
+!            list%plist(sp)%ops(i1) = tensor
+!
+!            t_shift(i) = t_shift(i) + 1
+!            e1(i,i1) = e1(i,i1) - 1
+!
+!            ! Main loop over a and c index
+!            do z = 2, 3
+!            ! Look for matching operator
+!            if (e1(z,i2) > 0) then
+!               ! Look on the same tensor (only a or c)
+!               do k = 2, 3
+!                  do l = 1, e1(k,i2)
+!                     ii = 1+(7*(k-1)) + t_shift(k)
+!                     list%plist(sp)%pindex(i2) = ind(ii)
+!                     call assign_nval(k, i2, sp, list)
+!                     list%plist(sp)%linked = .false.
+!                     list%plist(sp)%ops(i2) = tensor
+!
+!                     t_shift(k) = t_shift(k) + 1
+!                     e1(k,i2) = e1(k,i2) - 1
+!
+!                     ! Found a pair, so increment pair list index
+!                     sp = sp + 1
+!                     found = .true.
+!                     exit
+!                  end do
+!                  if (found) exit
+!               end do
+!
+!            else if (e1(z,i2) > 0) then
+!               ! Look on the opposite tensor (only a or c)
+!               do k = 2, 3
+!                  do l = 1, e2(k,i2)
+!                     ii = 1+(7*(k-1))+t_shift(k)
+!                     list%plist(sp)%pindex(i2) = ind(ii)
+!                     call assign_nval(k, i2, sp, list)
+!                     list%plist(sp)%ops(i2) = opp_tensor
+!                     list%plist(sp)%linked = .true.
+!
+!                     t_shift(k) = t_shift(k) + 1
+!                     e2(k,i2) = e2(k,i2) - 1
+!
+!                     ! We need to link the external indices on two
+!                     ! different operators with a contraction index
+!                     do m=2, 3
+!                        do n=1, c(m,i2)
+!                            ii = 1+(7*(m-1)) + c_shift(m)
+!
+!                           list%plist(sp)%link = ind(ii)
+!                           call assign_nval(m, 3, sp, list)
+!
+!                           c_shift(m) = c_shift(m) + 1
+!                           c(m,i2) = c(m,i2) - 1
+!
+!                           sp = sp + 1
+!                           found = .true.
+!                           exit
+!                        end do
+!                        if (found) exit
+!                     end do
+!                     if (found) exit
+!                  end do
+!                  if (found) exit
+!               end do
+!            else if (c(z,i2) > 0) then
+!               ! Pair with a contraction index
+!               do m=2, 3
+!                  do n=1, c(m,i2)
+!                      ii = 1+(7*(m-1)) + c_shift(m)
+!
+!                     list%plist(sp)%pindex(i2) = ind(ii)
+!                     call assign_nval(m, 2, sp, list)
+!                     list%plist(sp)%ops(i2) = opp_tensor
+!                     list%plist(sp)%linked = .true.
+!                     list%plist(sp)%link = ind(ii)
+!                     call assign_nval(m, 3, sp, list)
+!
+!                     c_shift(m) = c_shift(m) + 1
+!                     c(m,i2) = c(m,i2) - 1
+!
+!                     sp = sp + 1
+!                     found = .true.
+!                     exit
+!                  end do
+!                  if (found) exit
+!               end do
+!            else
+!               ! No ops of opposite type to match...
+!               call line_error("Particle number not conserving",item)
+!            end if
+!            end do
+!            ! A pair loop has been found so exit
+!            if (found) exit
+!         end do
+!         if (found) exit
+!      end do
+!
+!      return
+!      end
 
 *----------------------------------------------------------------------*
       subroutine find_pairs(list, sp, tensor, e1, e2, c, t_shift,
@@ -2520,7 +2762,7 @@
       end do
 
       if (.not. eloop) then
-         !call line_error("Didn't print out spin case", item)
+         call line_error("Didn't print out spin case", item)
       end if
 
       ! Mark the end of the spin summed block, if we will print a
