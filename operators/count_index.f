@@ -1371,7 +1371,8 @@
       character(len=INDEX_LEN) ::
      &     s1, s2, s3   ! Tmp ITF index strings
       character(len=1) ::
-     &   tmp
+     &   tmp,
+     &   tmp2
       real(8) ::
      &   factor         ! Factor from equivalent lines
       logical ::
@@ -1402,9 +1403,10 @@
       type(index_str) ::
      &   str1,
      &   str2,
-     &   str3
-      integer :: n_cnt, s
-      logical :: is_cnt
+     &   str3,
+     &   tstr
+      integer :: n_cnt, s, rank, tensor
+      logical :: is_cnt, found_end, found_match
 
       c=0
       e1=0
@@ -1520,11 +1522,12 @@
        write(11,*) "FACTOR: ", str3%fact(i)
       end do
 
+
       do i = 1, item%rank1
-         is_cnt = .true.
+         is_cnt = .false.
          do j = 1, n_cnt
-            if (i/=str1%cnt_poss(j)) then
-               is_cnt = .false.
+            if (i==str1%cnt_poss(j)) then
+               is_cnt = .true.
             end if
          end do
 
@@ -1532,8 +1535,70 @@
 
 
          if (.not. is_cnt) then
-         write(11,*) "first ex index ", str1%str(i),tmp,i,item%rank1-i+1
 
+         write(11,*) "================================"
+         write(11,*) "first ex index ", str1%str(i)
+         write(11,*) "paired index ", tmp
+         write(11,*) "================================"
+
+            found_end = .false.
+            tensor = 2
+            do while (.not. found_end)
+
+               write(11,*) "do while"
+               !found_end = .false.
+               ! Set up variables
+               if (tensor == 2) then
+                  rank = item%rank2
+                  tstr = str2
+               else
+                  rank = item%rank1
+                  tstr = str1
+               end if
+
+               found_match = .false.
+               do j = 1, rank
+                  write(11,*) "searching for match ", tstr%str(j), tmp
+                  if (tstr%str(j) == tmp) then
+                     write(11,*) "found match"
+                     found_match = .true.
+                     tmp2 = tstr%str(rank-j+1)
+
+                     do k = 1, n_cnt
+                        ! Is the pair a cnt index?
+                        if ((rank-j+1) == tstr%cnt_poss(k)) then
+                           write(11,*) "hello1"
+                           found_end = .false.
+                           if (tensor == 2) then
+                              tensor = 1
+                           else
+                              tensor = 2
+                           end if
+                        else
+                           ! If not, end
+                           write(11,*) "hello2"
+                           found_end = .true.
+                        end if
+                        if (found_end) exit
+                     end do
+
+                  end if
+                  if (found_end) exit
+               end do
+               ! The index is not on the other tensor (two
+               ! external indices on one tensor)
+               if (.not. found_match) then
+                  tmp2 = tmp
+                  found_end = .true.
+                  exit
+               end if
+
+            end do
+
+            write(11,*) "================================"
+            write(11,*) "first ex index ", str1%str(i)
+            write(11,*) "second ex index ", tmp2
+            write(11,*) "================================"
 
 !            found_cnt = .true.
 !            do while (found_cnt)
@@ -3760,7 +3825,7 @@
       else
          ! For other contractions
          call assign_index(contr_info,item)
-         !call assign_new_index(contr_info,item)
+         call assign_new_index(contr_info,item)
       end if
 
       item%inter1 = ''
