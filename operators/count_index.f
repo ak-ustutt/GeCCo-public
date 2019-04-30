@@ -1526,7 +1526,7 @@
 
       ! Loop to find external pairs
       ! TODO: Start with most external indices
-      if (sum(sum(e1,dim=2))>sum(sum(e2,dim=2))) then
+      if (sum(sum(e1,dim=2))>=sum(sum(e2,dim=2))) then
          t_str1 = str1
          rank1 = item%rank1
       else
@@ -1636,17 +1636,34 @@
 
             end do
 
+            do l = 1, rank1/2
+               if (t_str1%str(i)==t_str1%str(l)) then
+                  ! Started with a creation operator
+                  p_list2%plist(shift)%pindex(1) = t_str1%str(i)
+                  p_list2%plist(shift)%pindex(2) = tmp2
+                  exit
+               else if (t_str1%str(i)==t_str1%str(l+rank1/2)) then
+                  ! Started with an annhilation operator
+                  p_list2%plist(shift)%pindex(1) = tmp2
+                  p_list2%plist(shift)%pindex(2) = t_str1%str(i)
+                  exit
+               end if
+            end do
+
             write(item%logfile,*) "================================"
             write(item%logfile,*) "Found an external pair:"
             write(item%logfile,*) "================================"
-            write(item%logfile,*) "first index  ", str1%str(i)
-            write(item%logfile,*) "second index ", tmp2
+            write(item%logfile,*) "creation index    ",
+     &                            p_list2%plist(shift)%pindex(1)
+            write(item%logfile,*) "annhilation index ",
+     &                            p_list2%plist(shift)%pindex(2)
             write(item%logfile,*) "================================"
 
-            ! TODO: get creation and annhliation in correct order
-            p_list2%plist(shift)%pindex(1) = str1%str(i)
-            p_list2%plist(shift)%pindex(2) = tmp2
             shift = shift + 1
+
+            !TODO: whole thing in a loop, decrease number of externals
+            !untill found all on both tensor (for example there are two
+            !on T1 and two on T2
 
          end if
       end do
