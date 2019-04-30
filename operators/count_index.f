@@ -1357,7 +1357,7 @@
      &   te1(4,2),      ! Test Operator numbers of external index 1
      &   te2(4,2),      ! Test Operator numbers of external index 2
      &   tc(4,2),       ! Test Operator numbers of external index 2
-     &   i, j, k, l, m,    ! Loop index
+     &   i, j, k, l, m, z,    ! Loop index
      &   ii,            ! Letter index
      &   nloop,         ! Number of contraction loops
      &   i1, i2,        ! Search creation or annihilation first
@@ -1391,8 +1391,6 @@
      &   c_shift        ! Index shift for contraction indices
       integer, dimension(2) ::
      &   cops,          ! Number of creation/annihilation contraction operators
-     &   e1ops,         ! Number of C/A external T1 operators
-     &   e2ops,         ! Number of C/A external T2 operators
      &   e3ops          ! Total number of external operators
       integer, dimension(4) ::
      &   tops           ! Scratch space
@@ -1406,7 +1404,8 @@
      &   str3,
      &   t_str1,
      &   t_str2
-      integer :: n_cnt, s, rank, rank1, tensor
+      integer :: n_cnt, s, rank, rank1, tensor, tensor1, e1ops, e2ops
+      integer :: place
       logical :: is_cnt, found_end, found_match, found_cnt
 
       c=0
@@ -1514,6 +1513,7 @@
       write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
       write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
 
+      ! Work out the factor due to permuation of creation indicies
       do i = 1, n_cnt
        if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)==0)then
           str3%fact(i) = 1
@@ -1524,14 +1524,20 @@
       end do
 
 
+      e1ops = sum(sum(e1,dim=2))
+      e2ops = sum(sum(e2,dim=2))
       ! Loop to find external pairs
-      ! TODO: Start with most external indices
-      if (sum(sum(e1,dim=2))>=sum(sum(e2,dim=2))) then
+      ! First loop over total number of external pairs
+      do z = 1, (sum(sum(e1,dim=2))+sum(sum(e2,dim=2)))/2
+
+      if (e1ops >= e2ops) then
          t_str1 = str1
          rank1 = item%rank1
+         tensor1 = 1
       else
          t_str1 = str2
          rank1 = item%rank2
+         tensor1 = 2
       end if
 
       write(item%logfile,*)
@@ -1550,6 +1556,7 @@
          end do
 
          tmp = t_str1%str(rank1-i+1)
+         tmp2 = t_str1%str(rank1-i+1)
 
          ! Need to check if previous pair has already been formed
          ! then continue
@@ -1568,16 +1575,21 @@
             end do
          end if
 
-
          if (.not. is_cnt) then
-
             write(item%logfile,*) "--------------------------------"
             write(item%logfile,*) "first ex index ", t_str1%str(i)
             write(item%logfile,*) "looking for ", tmp
             write(item%logfile,*) "--------------------------------"
 
+            ! TODO: rename rank and tensor to rank2 and tensor2
             found_end = .false.
-            tensor = 2
+            if (tensor1 == 1) then
+               tensor = 2
+               place = 1
+            else
+               tensor = 1
+               place = 2
+            end if
             do while (.not. found_end)
 
                !found_end = .false.
@@ -1626,6 +1638,15 @@
                   end if
                   if (found_end) exit
                end do
+
+               if (found_match) then
+                  if (place == 1) then
+                     place = 2
+                  else
+                     place = 1
+                  end if
+               end if
+
                ! The index is not on the other tensor (two
                ! external indices on one tensor)
                if (.not. found_match) then
@@ -1661,12 +1682,25 @@
 
             shift = shift + 1
 
-            !TODO: whole thing in a loop, decrease number of externals
-            !untill found all on both tensor (for example there are two
-            !on T1 and two on T2
+            ! TODO: need to update e1 and e2 (or tmp variables of these)
+            ! Which operators belong to which tensors
+            if (tensor1 == 1) then
+               e1ops = e1ops - 1
+            else
+               e2ops = e2ops - 1
+            end if
+
+            if (place == 1) then
+               e1ops = e1ops - 1
+            else
+               e2ops = e2ops - 1
+            end if
 
          end if
       end do
+
+
+      end do ! Loop over number of external pairs
 
       write(item%logfile,*) "====================================="
       write(item%logfile,*) "Ending external pair search"
