@@ -1357,7 +1357,7 @@
      &   te1(4,2),      ! Test Operator numbers of external index 1
      &   te2(4,2),      ! Test Operator numbers of external index 2
      &   tc(4,2),       ! Test Operator numbers of external index 2
-     &   i, j, k, l,    ! Loop index
+     &   i, j, k, l, m,    ! Loop index
      &   ii,            ! Letter index
      &   nloop,         ! Number of contraction loops
      &   i1, i2,        ! Search creation or annihilation first
@@ -1404,9 +1404,10 @@
      &   str1,
      &   str2,
      &   str3,
-     &   tstr
-      integer :: n_cnt, s, rank, tensor
-      logical :: is_cnt, found_end, found_match
+     &   t_str1,
+     &   t_str2
+      integer :: n_cnt, s, rank, rank1, tensor
+      logical :: is_cnt, found_end, found_match, found_cnt
 
       c=0
       e1=0
@@ -1523,64 +1524,104 @@
       end do
 
 
-      do i = 1, item%rank1
+      ! Loop to find external pairs
+      ! TODO: Start with most external indices
+      if (sum(sum(e1,dim=2))>sum(sum(e2,dim=2))) then
+         t_str1 = str1
+         rank1 = item%rank1
+      else
+         t_str1 = str2
+         rank1 = item%rank2
+      end if
+
+      write(item%logfile,*)
+      write(item%logfile,*) "====================================="
+      write(item%logfile,*) "Looking for pairs in assign_new_index"
+      write(item%logfile,*) "====================================="
+      shift = 1
+      do i = 1, rank1
+
+         ! Find first none contraction index
          is_cnt = .false.
          do j = 1, n_cnt
-            if (i==str1%cnt_poss(j)) then
+            if (i==t_str1%cnt_poss(j)) then
                is_cnt = .true.
             end if
          end do
 
-         tmp = str1%str(item%rank1-i+1)
+         tmp = t_str1%str(rank1-i+1)
+
+         ! Need to check if previous pair has already been formed
+         ! then continue
+         if (shift>1 .and. .not. is_cnt) then
+            do l = 1, shift-1
+               do m = 1, 2
+                  if (p_list2%plist(l)%pindex(m) == t_str1%str(i)) then
+                     ! This pair has already been found
+                     ! Mark is_cnt as true so as to skip to the next index
+                     write(item%logfile,*) "Already found this index: ",
+     &                           t_str1%str(i)
+                     is_cnt = .true.
+                     exit
+                  end if
+               end do
+            end do
+         end if
 
 
          if (.not. is_cnt) then
 
-         write(11,*) "================================"
-         write(11,*) "first ex index ", str1%str(i)
-         write(11,*) "paired index ", tmp
-         write(11,*) "================================"
+            write(item%logfile,*) "--------------------------------"
+            write(item%logfile,*) "first ex index ", t_str1%str(i)
+            write(item%logfile,*) "looking for ", tmp
+            write(item%logfile,*) "--------------------------------"
 
             found_end = .false.
             tensor = 2
             do while (.not. found_end)
 
-               write(11,*) "do while"
                !found_end = .false.
                ! Set up variables
                if (tensor == 2) then
                   rank = item%rank2
-                  tstr = str2
+                  t_str2= str2
                else
                   rank = item%rank1
-                  tstr = str1
+                  t_str2 = str1
                end if
 
                found_match = .false.
                do j = 1, rank
-                  write(11,*) "searching for match ", tstr%str(j), tmp
-                  if (tstr%str(j) == tmp) then
-                     write(11,*) "found match"
+                  write(item%logfile,*) "Searching for match ",
+     &                                  t_str2%str(j)," ",tmp
+                  if (t_str2%str(j) == tmp) then
                      found_match = .true.
-                     tmp2 = tstr%str(rank-j+1)
+                     tmp2 = t_str2%str(rank-j+1)
+                     write(item%logfile,*) t_str2%str(j),
+     &                                     " is paired with ", tmp2
 
+                     found_cnt = .false.
                      do k = 1, n_cnt
                         ! Is the pair a cnt index?
-                        if ((rank-j+1) == tstr%cnt_poss(k)) then
-                           write(11,*) "hello1"
+                        if ((rank-j+1) == t_str2%cnt_poss(k)) then
                            found_end = .false.
                            if (tensor == 2) then
                               tensor = 1
                            else
                               tensor = 2
                            end if
-                        else
-                           ! If not, end
-                           write(11,*) "hello2"
-                           found_end = .true.
+                           tmp = tmp2
+                           found_cnt = .true.
+                           exit
                         end if
-                        if (found_end) exit
                      end do
+
+                     if (.not. found_cnt) then
+                        ! If not, end
+                        found_end = .true.
+                        exit
+                     end if
+                     if (found_cnt) exit
 
                   end if
                   if (found_end) exit
@@ -1595,25 +1636,25 @@
 
             end do
 
-            write(11,*) "================================"
-            write(11,*) "first ex index ", str1%str(i)
-            write(11,*) "second ex index ", tmp2
-            write(11,*) "================================"
+            write(item%logfile,*) "================================"
+            write(item%logfile,*) "Found an external pair:"
+            write(item%logfile,*) "================================"
+            write(item%logfile,*) "first index  ", str1%str(i)
+            write(item%logfile,*) "second index ", tmp2
+            write(item%logfile,*) "================================"
 
-!            found_cnt = .true.
-!            do while (found_cnt)
-!
-!               do k = 1, item%rank2
-!                  do j = 1, n_cnt
-!                     if (i/=str2%cnt_poss(j)) then
-!                        is_cnt = .false.
-!                     end if
-!                  end do
-!               end do
-!
-!            end do
+            ! TODO: get creation and annhliation in correct order
+            p_list2%plist(shift)%pindex(1) = str1%str(i)
+            p_list2%plist(shift)%pindex(2) = tmp2
+            shift = shift + 1
+
          end if
       end do
+
+      write(item%logfile,*) "====================================="
+      write(item%logfile,*) "Ending external pair search"
+      write(item%logfile,*) "====================================="
+      write(item%logfile,*)
 
 !      ! Create pairs in order to get result index
 !      do i = 1, item%rank1/2
