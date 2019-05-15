@@ -1405,13 +1405,17 @@
      &   t_str1,
      &   t_str2
       integer :: n_cnt, s, rank, rank1, tensor, tensor1, e1ops, e2ops
-      integer :: place, distance
+      integer :: place, distance, pp
+      real(8) :: p_factor
       logical :: is_cnt, found_end, found_match, found_cnt
+      character(len=INDEX_LEN) :: tstr
 
       c=0
       e1=0
       e2=0
       e3=0
+
+      p_factor = 1.0d0
 
       ! Get occupation info
       do i = 1, contr_info%n_cnt
@@ -1509,12 +1513,11 @@
 
       ! Work out the factor due to permuation of creation indicies
       do i = 1, n_cnt
-       if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)==0)then
-          str3%fact(i) = 1
-       else
-          str3%fact(i) = -1
+       if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
+          !str3%fact(i) = -1
+          p_factor = p_factor * -1.0d0
        end if
-       write(11,*) "FACTOR: ", str3%fact(i)
+       write(11,*) "FACTOR: ", p_factor
       end do
 
 
@@ -1735,82 +1738,111 @@
          end if
       end do
 
-      write(item%logfile,*) "STR3: {", str3%str, "}"
+      write(item%logfile,*) "Result string: {", str3%str, "}"
 
-      ! Compare result string to pairs, if they have to be rearranged,
-      ! then a factor is introduced
-      ! TODO: this probably isn't correct
-      do l = 1, n_cnt
-         do i = 1, item%rank3
-            if (str3%str(i) == p_list2%plist(l)%pindex(1)) then
-               do j = 1, item%rank3
-                  if (str3%str(j) == p_list2%plist(l)%pindex(2)) then
-                     distance = abs(i-j-1)
-                     if (mod(distance,2)/=0) then
-                        write(11,*) "Factor change!"
-                        exit
-                     end if
-                     exit
+
+      ! Rearrange the result string so it is in normal order (all
+      ! creation operators to the left of the annhilation). This can
+      ! also introduce a sign change.
+      do j = 1, item%rank3/2
+         shift = 1
+         do i = 0, item%rank3/2-1
+          if (p_list2%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
+               !write(11,*) "Thats numberwang!"
+               !write(11,*) p_list2%plist(j)%pindex(1)
+               !write(11,*) str3%str(item%rank3-i)
+               tstr(shift:shift) = str3%str(item%rank3-i)
+               shift = shift + 1
+
+               do k = 1, item%rank3
+                  if (p_list2%plist(j)%pindex(1) /=
+     &                                      str3%str(k)) then
+                     write(11,*) str3%str(k)
+                     tstr(shift:shift) = str3%str(k)
+                     shift = shift + 1
                   end if
                end do
+               do k = 1, item%rank3
+                  str3%str(k) = tstr(k:k)
+               end do
+
+               write(11,*) "New result string {", str3%str, "}"
+
+               ! Update factor. If index is in even position, requires
+               ! odd number of permuations; so get a negative
+               if (mod(item%rank3-i,2)/=0) then
+                  p_factor = p_factor * -1.0d0
+                  write(11,*) "Update factor: ", p_factor
+                  write(11,*)
+               end if
+
                exit
-            end if
-            exit
+          end if
          end do
       end do
 
+      ! Rearrange operators to get correct pairing
+      do j = 1, item%rank3/2
+         do i = 0, item%rank3/2-1
+          ! Search for annhilation ops
+          if (p_list2%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
+            write(11,*) "Found ", str3%str(item%rank3-i)
+            do k = 1, item%rank3/2
+               ! Search for creation ops
+               if (p_list2%plist(j)%pindex(1) ==
+     &                                      str3%str(k)) then
+                  ! Check if position is in the pair position
+                  write(11,*) "Found ", str3%str(k), " in ", k
+                  write(11,*) "Pair ", str3%str(item%rank3-i), " in ",
+     &                        item%rank3-i
+                  write(11,*) "PP ", item%rank3-(item%rank3-i)+1
+                  pp = item%rank3-(item%rank3-i)+1
 
+                  if (item%rank3-k+1 == item%rank3-i) then
+                     write(11,*) "already in pair position"
+                  else
+                     write(11,*) "permute to get correct pairs"
+                     ! Get distance from paired position (pp)
+                     !  get factor
+                     distance = abs(k-pp)
+                     write(11,*) "Distance: ", distance
+                     if (mod(distance,2)/=0) then
+                        p_factor = p_factor * -1.0d0
+                        write(11,*) "Update factor: ", p_factor
+                        write(11,*)
+                     end if
+                     ! Swapped letters between current k and pp
+                     tmp = str3%str(pp)
+                     str3%str(pp) = str3%str(k)
+                     str3%str(k) = tmp
 
+                     write(11,*) "swapping ", str3%str(pp),
+     &                         " and ", str3%str(k)
 
-!      ! Create pairs in order to get result index
-!      do i = 1, item%rank1/2
-!         p_list%plist(i)%pindex(1) = str1%str(i)
-!         p_list%plist(i)%pindex(2) = str1%str(item%rank1-(i-1))
-!         do j = 1, n_cnt
-!            if (i==str1%cnt_poss(j)) p_list%plist(i)%linked = .true.
-!         end do
-!      end do
-!      do i = 1, item%rank2/2
-!      p_list%plist(i+item%rank1/2)%pindex(1)= str2%str(i)
-!      p_list%plist(i+item%rank1/2)%pindex(2)= str2%str(item%rank2-(i-1))
-!      do j = 1, n_cnt
-!      if (i==str2%cnt_poss(j)) then
-!         p_list%plist(i+item%rank1/2)%linked = .true.
-!      end if
-!      end do
-!      end do
-!
-!      call print_plist(p_list, item%rank1/2+item%rank2/2, "P list", 11)
-!
-!      s = 1
-!      do i = 1, item%rank1/2 + item%rank2/2
-!         if (p_list%plist(i)%linked) write(11,*) "hello"
-!         tmp = p_list%plist(i)%pindex(1)
-!         do j = i+1, item%rank1/2 + item%rank2/2
-!            if (tmp == p_list%plist(j)%pindex(2)) then
-!               p_list2%plist(s)%pindex(1) = p_list%plist(j)%pindex(1)
-!               p_list2%plist(s)%pindex(2) = p_list%plist(i)%pindex(2)
-!               s = s + 1
-!            end if
-!         end do
-!         tmp = p_list%plist(i)%pindex(2)
-!         do j = i+1, item%rank1/2 + item%rank2/2
-!            if (tmp == p_list%plist(j)%pindex(1)) then
-!               p_list2%plist(s)%pindex(1) = p_list%plist(i)%pindex(1)
-!               p_list2%plist(s)%pindex(2) = p_list%plist(j)%pindex(2)
-!               s = s + 1
-!            end if
-!         end do
-!      end do
-!
-!      call print_plist(p_list2, item%rank3/2, "P list2", 11)
+                     write(11,*) "Swap ops string {", str3%str, "}"
+                  end if
+                  exit
+               end if
+            end do
+          end if
+         end do
+      end do
+
+      write(11,*) "---------------------------"
+      write(11,*) "{",str3%str,"} = ","{",str1%str,"}{",str2%str,"}"
+      write(11,*) "Overall factor: ", p_factor
+      write(11,*) "---------------------------"
+      write(11,*)
+      write(11,*)
+
+      ! TODO: put rank2 strings through swap_index()
 
       deallocate(p_list2%plist)
       deallocate(p_list%plist)
 
-      deallocate(str3%fact)
-      deallocate(str2%fact)
-      deallocate(str1%fact)
+      !deallocate(str3%fact)
+      !deallocate(str2%fact)
+      !deallocate(str1%fact)
 
       deallocate(str3%cnt_poss)
       deallocate(str2%cnt_poss)
