@@ -1394,21 +1394,22 @@
      &   e3ops          ! Total number of external operators
       integer, dimension(4) ::
      &   tops           ! Scratch space
-!      character, pointer ::
-!     &     str1(:) => null(),
-!     &     str2(:) => null(),
-!     &     str3(:) => null()
       type(index_str) ::
      &   str1,
      &   str2,
      &   str3,
      &   t_str1,
      &   t_str2
-      integer :: n_cnt, s, rank, rank1, tensor, tensor1, e1ops, e2ops
+      integer :: n_cnt, s, rank2, rank1, tensor2, tensor1, e1ops, e2ops
       integer :: place, distance, pp
       real(8) :: p_factor
       logical :: is_cnt, found_end, found_match, found_cnt
       character(len=INDEX_LEN) :: tstr
+
+      ! TODO: ntest
+      ! TODO: change p_list2 to p_list
+      ! TODO: compare to old stuff without debug
+      ! TODO: tidy up variables
 
       c=0
       e1=0
@@ -1443,6 +1444,7 @@
      &     contr_info%ngas,contr_info%nspin,e3)
       end do
 
+      ! TODO: re-enable this
 !      ! Figure out factor from equivalent lines
 !      factor = 1.0d+0
 !      do j = 1, 2
@@ -1459,7 +1461,8 @@
       call itf_rank(e1, c, item%rank1, .false.)
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
-!
+
+       ! TODO: re-enable this
 !      ! Set number of indcies
 !      item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
 !      item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
@@ -1474,10 +1477,6 @@
       allocate(str2%cnt_poss(n_cnt))
       allocate(str3%cnt_poss(n_cnt))
 
-      allocate(str1%fact(n_cnt))
-      allocate(str2%fact(n_cnt))
-      allocate(str3%fact(n_cnt))
-
       allocate(p_list%plist(item%rank1/2+item%rank2/2))
       allocate(p_list2%plist(item%rank3/2))
 
@@ -1486,7 +1485,8 @@
          c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
       end do
 
-      ! Make 'tranpose' of c array
+      ! Make 'tranpose' of c array, this corresponds to the operators on
+      ! the second tensor
       do i = 1, 2
          do j = 1, ngastp
             if (i==1) then
@@ -1498,7 +1498,10 @@
          end do
       end do
 
-      ! e_shift updates after each call
+      ! Create an index string for T1 and T2
+      ! e_shift updates after each call - this indexs the external
+      ! operators; c_shift indexes the contraction operators. These are
+      ! needed to ensure the letters are different
       e_shift = 0
       call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1)
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2)
@@ -1514,10 +1517,9 @@
       ! Work out the factor due to permuation of creation indicies
       do i = 1, n_cnt
        if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
-          !str3%fact(i) = -1
           p_factor = p_factor * -1.0d0
        end if
-       write(11,*) "FACTOR: ", p_factor
+       !write(11,*) "FACTOR: ", p_factor
       end do
 
 
@@ -1528,11 +1530,14 @@
 
       e1ops = sum(sum(e1,dim=2))
       e2ops = sum(sum(e2,dim=2))
+      shift = 1
       ! Loop to find external pairs
       ! First loop over total number of external pairs
-      shift = 1
+      ! e1ops and e2ops are the number of external ops on T1/T2, these
+      ! are decreased until all ops have been paired
       do z = 1, (sum(sum(e1,dim=2))+sum(sum(e2,dim=2)))/2
 
+      ! Look for pairs on tensor with the largest number of external ops
       if (e1ops >= e2ops) then
          t_str1 = str1
          rank1 = item%rank1
@@ -1544,7 +1549,7 @@
       end if
 
       do i = 1, rank1
-         ! Find first none contraction index
+         ! Find first external index
          is_cnt = .false.
          do j = 1, n_cnt
             if (i==t_str1%cnt_poss(j)) then
@@ -1572,52 +1577,56 @@
             end do
          end if
 
+         ! If not a contraction index, looking for pair external
+         ! If the index paired with the external is a contraction index,
+         ! then we 'follow the chain' of contraction indices until we
+         ! reach the external index
          if (.not. is_cnt) then
             write(item%logfile,*) "--------------------------------"
             write(item%logfile,*) "first ex index ", t_str1%str(i)
             write(item%logfile,*) "looking for ", tmp
             write(item%logfile,*) "--------------------------------"
 
-            ! TODO: rename rank and tensor to rank2 and tensor2
             found_end = .false.
             if (tensor1 == 1) then
-               tensor = 2
+               tensor2 = 2
                place = 1
             else
-               tensor = 1
+               tensor2 = 1
                place = 2
             end if
             do while (.not. found_end)
 
-               !found_end = .false.
-               ! Set up variables
-               if (tensor == 2) then
-                  rank = item%rank2
+               ! Set up variables: decide if we are looking on T1 or T2
+               if (tensor2 == 2) then
+                  rank2 = item%rank2
                   t_str2= str2
                else
-                  rank = item%rank1
+                  rank2 = item%rank1
                   t_str2 = str1
                end if
 
                found_match = .false.
-               do j = 1, rank
+               do j = 1, rank2
+                  ! Start search for matching contraction index
                   write(item%logfile,*) "Searching for match ",
      &                                  t_str2%str(j)," ",tmp
                   if (t_str2%str(j) == tmp) then
+                     ! Found matching contraction index
                      found_match = .true.
-                     tmp2 = t_str2%str(rank-j+1)
+                     tmp2 = t_str2%str(rank2-j+1)
                      write(item%logfile,*) t_str2%str(j),
      &                                     " is paired with ", tmp2
 
                      found_cnt = .false.
                      do k = 1, n_cnt
-                        ! Is the pair a cnt index?
-                        if ((rank-j+1) == t_str2%cnt_poss(k)) then
+                        ! Is the paired index also a contraction index?
+                        if ((rank2-j+1) == t_str2%cnt_poss(k)) then
                            found_end = .false.
-                           if (tensor == 2) then
-                              tensor = 1
+                           if (tensor2 == 2) then
+                              tensor2 = 1
                            else
-                              tensor = 2
+                              tensor2 = 2
                            end if
                            tmp = tmp2
                            found_cnt = .true.
@@ -1626,7 +1635,8 @@
                      end do
 
                      if (.not. found_cnt) then
-                        ! If not, end
+                        ! If not the index isn't a contraction, then its
+                        ! an external and we can end the search
                         found_end = .true.
                         exit
                      end if
@@ -1636,6 +1646,7 @@
                   if (found_end) exit
                end do
 
+               ! Set where the matching pair was found
                if (found_match) then
                   if (place == 1) then
                      place = 2
@@ -1654,6 +1665,7 @@
 
             end do
 
+            ! Create a pair list object
             do l = 1, rank1/2
                if (t_str1%str(i)==t_str1%str(l)) then
                   ! Started with a creation operator
@@ -1679,8 +1691,7 @@
 
             shift = shift + 1
 
-            ! TODO: need to update e1 and e2 (or tmp variables of these)
-            ! Which operators belong to which tensors
+            ! Decrease number of external indices left to pair
             if (tensor1 == 1) then
                e1ops = e1ops - 1
             else
@@ -1748,9 +1759,7 @@
          shift = 1
          do i = 0, item%rank3/2-1
           if (p_list2%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
-               !write(11,*) "Thats numberwang!"
-               !write(11,*) p_list2%plist(j)%pindex(1)
-               !write(11,*) str3%str(item%rank3-i)
+
                tstr(shift:shift) = str3%str(item%rank3-i)
                shift = shift + 1
 
@@ -1784,10 +1793,12 @@
       ! Rearrange operators to get correct pairing
       do j = 1, item%rank3/2
          do i = 0, item%rank3/2-1
+
           ! Search for annhilation ops
           if (p_list2%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
             write(11,*) "Found ", str3%str(item%rank3-i)
             do k = 1, item%rank3/2
+
                ! Search for creation ops
                if (p_list2%plist(j)%pindex(1) ==
      &                                      str3%str(k)) then
@@ -1839,10 +1850,6 @@
 
       deallocate(p_list2%plist)
       deallocate(p_list%plist)
-
-      !deallocate(str3%fact)
-      !deallocate(str2%fact)
-      !deallocate(str1%fact)
 
       deallocate(str3%cnt_poss)
       deallocate(str2%cnt_poss)
