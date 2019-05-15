@@ -131,6 +131,12 @@ c dbgend
       character(len=5)::
      &     fname
 
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall ! variables for timing information
+      character(len=512)::
+     &     timing_msg
       ifree = mem_setmark('solve_nleq')
 
       call get_argument_value('method.MR','multistate',
@@ -344,7 +350,7 @@ cmh      end do
       imicit_tot = 0
       task = 0
       opt_loop: do !while(task.lt.8)
-
+      call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')
      &     call opt_solve_Heff(n_states,
      &     op_info,form_info,str_info,strmap_info,orb_info)
@@ -670,6 +676,12 @@ c test
           ! get norm of projected gradient and report as gradient norm
           xresnrm(1) = xdum
         end if
+      call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for iteration ')")
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
 
       end do opt_loop
 

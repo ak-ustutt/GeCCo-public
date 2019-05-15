@@ -139,6 +139,13 @@
       real(8), external ::
      &     fndmnx, da_ddot
 
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall ! variables for timing information
+      character(len=512)::
+     &     timing_msg
+
       ifree = mem_setmark('solve_evp')
 
       if (ntest.ge.100) then
@@ -505,6 +512,7 @@ c dbgend
       iter = 0
       task = 0
       opt_loop: do while(task.lt.8)
+      call atim_csw(cpu0_t,sys0_t,wall0_t)
         call leq_evp_control
      &       ('EVP',iter,
      &       task,conv,xresnrm,xeig,
@@ -680,7 +688,12 @@ c dbg
 
           end do
         end if
-
+      call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for iteration ')")
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
       end do opt_loop
 
       do iopt = 1, nopt

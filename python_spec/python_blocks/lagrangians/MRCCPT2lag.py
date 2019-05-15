@@ -323,6 +323,7 @@ LAG_E.set_rule()
 # Below is an example of how to do this; set_rule() should be used
 # before adding new terms
 if ampl_type == 'IDEA1_2':
+     pass
 #    # Add disconnected terms onto FORM_PT_LAG_A
 #    LAG_A.set_rule()
 #
