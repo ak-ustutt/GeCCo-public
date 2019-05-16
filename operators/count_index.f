@@ -1379,12 +1379,7 @@
      &   found,         ! True if found pairing index
      &   sort           ! Used in bubble sort
       type(pair_list) ::
-     &   p_list,        ! Complete list of pairs in binary contraction
-     &   p_list2,        ! Complete list of pairs in binary contraction
-     &   t1_list,       ! List of pairs in first tensor (T1)
-     &   t2_list,       ! List of pairs in second tensor (T2)
-     &   r_list,        ! List of pairs in result tensor
-     &   d_list         ! debug list
+     &   p_list        ! Complete list of pairs in binary contraction
       integer, dimension(4) ::
      &   t_shift,       ! Index shift for external indices
      &   e_shift,       ! Index shift for external indices
@@ -1401,14 +1396,14 @@
      &   t_str1,
      &   t_str2
       integer :: n_cnt, s, rank2, rank1, tensor2, tensor1, e1ops, e2ops
-      integer :: place, distance, pp
+      integer :: place, distance, pp, ntest = 0
       real(8) :: p_factor
       logical :: is_cnt, found_end, found_match, found_cnt
-      character(len=INDEX_LEN) :: tstr
+      character(len=INDEX_LEN) :: tstr, tstr1, tstr2, tstr3
 
       ! TODO: ntest
-      ! TODO: change p_list2 to p_list
       ! TODO: compare to old stuff without debug
+      ! TODO: permute strings
       ! TODO: tidy up variables
 
       c=0
@@ -1477,8 +1472,8 @@
       allocate(str2%cnt_poss(n_cnt))
       allocate(str3%cnt_poss(n_cnt))
 
-      allocate(p_list%plist(item%rank1/2+item%rank2/2))
-      allocate(p_list2%plist(item%rank3/2))
+      !allocate(p_list%plist(item%rank1/2+item%rank2/2))
+      allocate(p_list%plist(item%rank3/2))
 
       ! Set letter shift values for contraction indices
       do i = 1, 4
@@ -1506,27 +1501,29 @@
       call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1)
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2)
 
-
-      write(item%logfile,*) "STR1: {", str1%str, "}"
-      write(item%logfile,*) "STR2: {", str2%str, "}"
-      write(item%logfile,*) "STR3: {", str1%str, "}{", str2%str, "}"
-
-      write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
-      write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
+      if (ntest>100) then
+         write(item%logfile,*) "STR1: {", str1%str, "}"
+         write(item%logfile,*) "STR2: {", str2%str, "}"
+         write(item%logfile,*) "STR3: {", str1%str, "}{", str2%str, "}"
+         write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
+         write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
+      end if
 
       ! Work out the factor due to permuation of creation indicies
       do i = 1, n_cnt
        if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
           p_factor = p_factor * -1.0d0
+          write(item%logfile,*)"Update factor1: ",p_factor
+          write(item%logfile,*)
        end if
-       !write(11,*) "FACTOR: ", p_factor
       end do
 
-
-      write(item%logfile,*)
-      write(item%logfile,*) "====================================="
-      write(item%logfile,*) "Looking for pairs in assign_new_index"
-      write(item%logfile,*) "====================================="
+      if (ntest>100) then
+         write(item%logfile,*)
+         write(item%logfile,*) "====================================="
+         write(item%logfile,*) "Looking for pairs in assign_new_index"
+         write(item%logfile,*) "====================================="
+      end if
 
       e1ops = sum(sum(e1,dim=2))
       e2ops = sum(sum(e2,dim=2))
@@ -1565,11 +1562,11 @@
          if (shift>1 .and. .not. is_cnt) then
             do l = 1, shift-1
                do m = 1, 2
-                  if (p_list2%plist(l)%pindex(m) == t_str1%str(i)) then
+                  if (p_list%plist(l)%pindex(m) == t_str1%str(i)) then
                      ! This pair has already been found
                      ! Mark is_cnt as true so as to skip to the next index
-                     write(item%logfile,*) "Already found this index: ",
-     &                           t_str1%str(i)
+!                     write(item%logfile,*) "Already found this index: ",
+!     &                           t_str1%str(i)
                      is_cnt = .true.
                      exit
                   end if
@@ -1582,10 +1579,12 @@
          ! then we 'follow the chain' of contraction indices until we
          ! reach the external index
          if (.not. is_cnt) then
-            write(item%logfile,*) "--------------------------------"
-            write(item%logfile,*) "first ex index ", t_str1%str(i)
-            write(item%logfile,*) "looking for ", tmp
-            write(item%logfile,*) "--------------------------------"
+            if (ntest>100) then
+               write(item%logfile,*) "--------------------------------"
+               write(item%logfile,*) "first ex index ", t_str1%str(i)
+               write(item%logfile,*) "looking for ", tmp
+               write(item%logfile,*) "--------------------------------"
+            end if
 
             found_end = .false.
             if (tensor1 == 1) then
@@ -1609,14 +1608,14 @@
                found_match = .false.
                do j = 1, rank2
                   ! Start search for matching contraction index
-                  write(item%logfile,*) "Searching for match ",
-     &                                  t_str2%str(j)," ",tmp
+!                  write(item%logfile,*) "Searching for match ",
+!     &                                  t_str2%str(j)," ",tmp
                   if (t_str2%str(j) == tmp) then
                      ! Found matching contraction index
                      found_match = .true.
                      tmp2 = t_str2%str(rank2-j+1)
-                     write(item%logfile,*) t_str2%str(j),
-     &                                     " is paired with ", tmp2
+!                     write(item%logfile,*) t_str2%str(j),
+!     &                                     " is paired with ", tmp2
 
                      found_cnt = .false.
                      do k = 1, n_cnt
@@ -1669,25 +1668,27 @@
             do l = 1, rank1/2
                if (t_str1%str(i)==t_str1%str(l)) then
                   ! Started with a creation operator
-                  p_list2%plist(shift)%pindex(1) = t_str1%str(i)
-                  p_list2%plist(shift)%pindex(2) = tmp2
+                  p_list%plist(shift)%pindex(1) = t_str1%str(i)
+                  p_list%plist(shift)%pindex(2) = tmp2
                   exit
                else if (t_str1%str(i)==t_str1%str(l+rank1/2)) then
                   ! Started with an annhilation operator
-                  p_list2%plist(shift)%pindex(1) = tmp2
-                  p_list2%plist(shift)%pindex(2) = t_str1%str(i)
+                  p_list%plist(shift)%pindex(1) = tmp2
+                  p_list%plist(shift)%pindex(2) = t_str1%str(i)
                   exit
                end if
             end do
 
-            write(item%logfile,*) "================================"
-            write(item%logfile,*) "Found an external pair:"
-            write(item%logfile,*) "================================"
-            write(item%logfile,*) "creation index    ",
-     &                            p_list2%plist(shift)%pindex(1)
-            write(item%logfile,*) "annhilation index ",
-     &                            p_list2%plist(shift)%pindex(2)
-            write(item%logfile,*) "================================"
+            if (ntest>100) then
+               write(item%logfile,*) "================================"
+               write(item%logfile,*) "Found an external pair:"
+               write(item%logfile,*) "================================"
+               write(item%logfile,*) "creation index    ",
+     &                               p_list%plist(shift)%pindex(1)
+               write(item%logfile,*) "annhilation index ",
+     &                               p_list%plist(shift)%pindex(2)
+               write(item%logfile,*) "================================"
+            end if
 
             shift = shift + 1
 
@@ -1707,15 +1708,15 @@
          end if
       end do
 
-
       end do ! Loop over number of external pairs
 
-      write(item%logfile,*) "====================================="
-      write(item%logfile,*) "Ending external pair search"
-      write(item%logfile,*) "====================================="
-      write(item%logfile,*)
-
-      call print_plist(p_list2, item%rank3/2, "TEST", 11)
+      if (ntest>100) then
+         write(item%logfile,*) "====================================="
+         write(item%logfile,*) "Ending external pair search"
+         write(item%logfile,*) "====================================="
+         write(item%logfile,*)
+         call print_plist(p_list, item%rank3/2, "TEST", item%logfile)
+      end if
 
 
       ! Create result index string from only external operators. Order
@@ -1749,8 +1750,7 @@
          end if
       end do
 
-      write(item%logfile,*) "Result string: {", str3%str, "}"
-
+      !write(item%logfile,*) "Result string: {", str3%str, "}"
 
       ! Rearrange the result string so it is in normal order (all
       ! creation operators to the left of the annhilation). This can
@@ -1758,15 +1758,14 @@
       do j = 1, item%rank3/2
          shift = 1
          do i = 0, item%rank3/2-1
-          if (p_list2%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
+          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
 
                tstr(shift:shift) = str3%str(item%rank3-i)
                shift = shift + 1
 
                do k = 1, item%rank3
-                  if (p_list2%plist(j)%pindex(1) /=
+                  if (p_list%plist(j)%pindex(1) /=
      &                                      str3%str(k)) then
-                     write(11,*) str3%str(k)
                      tstr(shift:shift) = str3%str(k)
                      shift = shift + 1
                   end if
@@ -1775,14 +1774,14 @@
                   str3%str(k) = tstr(k:k)
                end do
 
-               write(11,*) "New result string {", str3%str, "}"
+               !write(item%logfile,*) "New result string {",str3%str, "}"
 
                ! Update factor. If index is in even position, requires
                ! odd number of permuations; so get a negative
-               if (mod(item%rank3-i,2)/=0) then
+               if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
-                  write(11,*) "Update factor: ", p_factor
-                  write(11,*)
+                  write(item%logfile,*) "Update factor2: ", p_factor
+                  write(item%logfile,*)
                end if
 
                exit
@@ -1790,47 +1789,43 @@
          end do
       end do
 
-      ! Rearrange operators to get correct pairing
+      ! Rearrange result operators to get correct pairing
       do j = 1, item%rank3/2
          do i = 0, item%rank3/2-1
 
           ! Search for annhilation ops
-          if (p_list2%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
-            write(11,*) "Found ", str3%str(item%rank3-i)
+          if (p_list%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
+!            write(item%logfile,*) "Found ", str3%str(item%rank3-i)
             do k = 1, item%rank3/2
 
                ! Search for creation ops
-               if (p_list2%plist(j)%pindex(1) ==
+               if (p_list%plist(j)%pindex(1) ==
      &                                      str3%str(k)) then
                   ! Check if position is in the pair position
-                  write(11,*) "Found ", str3%str(k), " in ", k
-                  write(11,*) "Pair ", str3%str(item%rank3-i), " in ",
-     &                        item%rank3-i
-                  write(11,*) "PP ", item%rank3-(item%rank3-i)+1
+!                  write(item%logfile,*) "Found ", str3%str(k), " in ", k
+!                  write(item%logfile,*) "Pair ", str3%str(item%rank3-i),
+!     &                                  " in ",item%rank3-i
+!                  write(item%logfile,*) "PP ",
+!     &                                  item%rank3-(item%rank3-i)+1
                   pp = item%rank3-(item%rank3-i)+1
 
-                  if (item%rank3-k+1 == item%rank3-i) then
-                     write(11,*) "already in pair position"
-                  else
-                     write(11,*) "permute to get correct pairs"
-                     ! Get distance from paired position (pp)
-                     !  get factor
+                  if (item%rank3-k+1 /= item%rank3-i) then
+                     ! Get distance from paired position (pp) and factor
                      distance = abs(k-pp)
-                     write(11,*) "Distance: ", distance
                      if (mod(distance,2)/=0) then
                         p_factor = p_factor * -1.0d0
-                        write(11,*) "Update factor: ", p_factor
-                        write(11,*)
+                        write(item%logfile,*)"Update factor3: ",p_factor
+                        write(item%logfile,*)
                      end if
                      ! Swapped letters between current k and pp
                      tmp = str3%str(pp)
                      str3%str(pp) = str3%str(k)
                      str3%str(k) = tmp
 
-                     write(11,*) "swapping ", str3%str(pp),
-     &                         " and ", str3%str(k)
-
-                     write(11,*) "Swap ops string {", str3%str, "}"
+!                     write(11,*) "swapping ", str3%str(pp),
+!     &                         " and ", str3%str(k)
+!
+!                     write(11,*) "Swap ops string {", str3%str, "}"
                   end if
                   exit
                end if
@@ -1839,16 +1834,21 @@
          end do
       end do
 
-      write(11,*) "---------------------------"
-      write(11,*) "{",str3%str,"} = ","{",str1%str,"}{",str2%str,"}"
-      write(11,*) "Overall factor: ", p_factor
-      write(11,*) "---------------------------"
-      write(11,*)
-      write(11,*)
+
+      if (p_factor>0.0d0) then
+         tmp = '+'
+      else
+         tmp = '-'
+      end if
+
+      write(item%logfile,*)
+      write(item%logfile,*) "---------------------------"
+      write(item%logfile,*) "{",str3%str,"} ",tmp,"= ","{",str1%str,
+     &                      "}{",str2%str,"}"
+      write(item%logfile,*) "---------------------------"
 
       ! TODO: put rank2 strings through swap_index()
 
-      deallocate(p_list2%plist)
       deallocate(p_list%plist)
 
       deallocate(str3%cnt_poss)
