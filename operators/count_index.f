@@ -1271,10 +1271,6 @@
       character, dimension(21) ::
      &   ind=(/ 'i','j','k','l','m','n','o','a','b','c','d','e','f',
      &          'g','p','q','r','s','t','u','v' /)   ! Letters for index string
-      type(pair_list) ::
-     &   p_list
-
-      allocate(p_list%plist(rank/2))
 
       shift_c = 1
       shift_a = rank
@@ -1287,6 +1283,7 @@
                k = 1+(7*(i-1)) + cnt_shift(i)
                idx%str(shift_c) = ind(k)
                idx%cnt_poss(l) = shift_c
+               idx%i_type(shift_c) = i
                l = l + 1
                cnt_shift(i) = cnt_shift(i) + 1
                shift_c = shift_c + 1
@@ -1296,6 +1293,7 @@
             do j = 1, ex(i,1)
                k = 1+(7*(i-1)) + e_shift(i)
                idx%str(shift_c) = ind(k)
+               idx%i_type(shift_c) = i
                e_shift(i) = e_shift(i) + 1
                shift_c = shift_c + 1
             end do
@@ -1306,6 +1304,7 @@
                k = 1+(7*(i-1)) + cnt_shift(i)
                idx%str(shift_a) = ind(k)
                idx%cnt_poss(l) = shift_a
+               idx%i_type(shift_a) = i
                l = l + 1
                cnt_shift(i) = cnt_shift(i) + 1
                shift_a = shift_a - 1
@@ -1315,15 +1314,26 @@
             do j = 1, ex(i,2)
                k = 1+(7*(i-1)) + e_shift(i)
                idx%str(shift_a) = ind(k)
+               idx%i_type(shift_a) = i
                e_shift(i) = e_shift(i) + 1
                shift_a = shift_a - 1
             end do
          end if
       end do
 
-      !call print_plist(p_list, rank/2, "P list", 11)
-
-      deallocate(p_list%plist)
+      ! Change i_type (index type) values to canonical values
+      do i = 1, rank
+         select case (idx%i_type(i))
+            case (1)
+               idx%i_type(i) = 3
+            case (2)
+               idx%i_type(i) = 1
+            case (3)
+               idx%i_type(i) = 2
+            case (4)
+               idx%i_type(i) = 4
+         end select
+      end do
 
       return
       end
@@ -1472,7 +1482,10 @@
       allocate(str2%cnt_poss(n_cnt))
       allocate(str3%cnt_poss(n_cnt))
 
-      !allocate(p_list%plist(item%rank1/2+item%rank2/2))
+      allocate(str1%i_type(item%rank1))
+      allocate(str2%i_type(item%rank2))
+      allocate(str3%i_type(item%rank3))
+
       allocate(p_list%plist(item%rank3/2))
 
       ! Set letter shift values for contraction indices
@@ -1679,6 +1692,7 @@
                end if
             end do
 
+
             if (ntest>100) then
                write(item%logfile,*) "================================"
                write(item%logfile,*) "Found an external pair:"
@@ -1834,22 +1848,63 @@
          end do
       end do
 
+      ! Permute strings into nicer order
+      ! Get canocial values for result string
+      do i = 1, item%rank3
+        if (scan("abcdefg",str3%str(i))>0) then
+           str3%i_type(i) = 1
+        else if (scan("ijklmno",str3%str(i))>0) then
+           str3%i_type(i) = 3
+        else if (scan("pqrstuv",str3%str(i))>0) then
+           str3%i_type(i) = 2
+        else if (scan("xyz",str3%str(i))>0) then
+           str3%i_type(i) = 4
+        end if
+      end do
 
+
+      ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
+      call permute_index(str1, item%rank1)
+      call permute_index(str2, item%rank2)
+      call permute_index(str3, item%rank3)
+
+      tstr1 = ""
+      tstr2 = ""
+      tstr3 = ""
       if (p_factor>0.0d0) then
          tmp = '+'
       else
          tmp = '-'
       end if
 
+      do i = 1, item%rank1/2
+         tstr1(i:i) = str1%str(i)
+         tstr1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+      end do
+      do i = 1, item%rank2/2
+         tstr2(i:i) = str2%str(i)
+         tstr2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+      end do
+      do i = 1, item%rank3/2
+         tstr3(i:i) = str3%str(i)
+         tstr3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+      end do
+
       write(item%logfile,*)
       write(item%logfile,*) "---------------------------"
-      write(item%logfile,*) "{",str3%str,"} ",tmp,"= ","{",str1%str,
+      write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
      &                      "}{",str2%str,"}"
+
+      write(item%logfile,*) "[",trim(tstr3),"] ",tmp,"= [",trim(tstr1),
+     &                      "][",trim(tstr2),"]"
       write(item%logfile,*) "---------------------------"
 
-      ! TODO: put rank2 strings through swap_index()
 
       deallocate(p_list%plist)
+
+      deallocate(str3%i_type)
+      deallocate(str2%i_type)
+      deallocate(str1%i_type)
 
       deallocate(str3%cnt_poss)
       deallocate(str2%cnt_poss)
@@ -1858,6 +1913,54 @@
       deallocate(str3%str)
       deallocate(str2%str)
       deallocate(str1%str)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine permute_index(idx, rank)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank
+
+      integer ::
+     &   i,
+     &   extent
+      character (len=1) ::
+     &   tmp
+
+      if (rank == 2) then
+         extent = rank/2
+      else
+         extent = rank/2 - 1
+      end if
+
+      do i = 1, extent
+         if (idx%i_type(i)>=idx%i_type(i+1)) then
+            if (idx%str(i)>idx%str(i+1)) then
+               tmp = idx%str(i)
+               idx%str(i) = idx%str(i+1)
+               idx%str(i+1) = tmp
+
+               if (rank>2) then
+                  tmp = idx%str(rank/2+i)
+                  idx%str(rank/2+i) = idx%str(rank/2+i+1)
+                  idx%str(rank/2+i+1) = tmp
+               end if
+            end if
+         end if
+      end do
 
       return
       end

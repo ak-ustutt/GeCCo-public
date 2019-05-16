@@ -136,6 +136,7 @@
      &     str(:) => null()
 
       integer, pointer ::
-     &     cnt_poss(:)
+     &     cnt_poss(:) => null(),
+     &     i_type(:) => null()
 
       end type index_str
