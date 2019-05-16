@@ -48,6 +48,8 @@
       type itf_contr
 *----------------------------------------------------------------------*
 !     Object that holds information needed to define a line in an ITF algo file
+!            Res[abij] += T1[acik] T2[cbkj]
+!     Label: 3            1        2
 *----------------------------------------------------------------------*
 
       character(len=MAXLEN_BC_LABEl) ::

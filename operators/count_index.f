@@ -1358,63 +1358,49 @@
 
       integer ::
      &   c(4,2),        ! Operator numbers of contraction index
-     &   ci(4,2),        ! Operator numbers of contraction index
+     &   ci(4,2),       ! Operator numbers of contraction index (inverse)
      &   e1(4,2),       ! Operator numbers of external index 1
      &   e2(4,2),       ! Operator numbers of external index 2
      &   e3(4,2),       ! Operator numbers of result index
-     &   e4(4,2),       ! Operator numbers of result index
-     &   e5(4,2),       ! Operator numbers of result index
-     &   te1(4,2),      ! Test Operator numbers of external index 1
-     &   te2(4,2),      ! Test Operator numbers of external index 2
-     &   tc(4,2),       ! Test Operator numbers of external index 2
-     &   i, j, k, l, m, z,    ! Loop index
-     &   ii,            ! Letter index
-     &   nloop,         ! Number of contraction loops
-     &   i1, i2,        ! Search creation or annihilation first
      &   shift,         ! List shift
-     &   shift_a,         ! List shift
-     &   shift_c,        ! List shift
-     &   sp             ! Pair list shift
-      character, dimension(21) ::
-     &   ind=(/ 'a','b','c','d','e','f','g','p','q','r','s','t','u',
-     &          'v','i','j','k','l','m','n','o' /)   ! Letters for index string
+     &   shift_a,       ! List shift
+     &   shift_c,       ! List shift
+     &   n_cnt,         ! Number of contraction operators
+     &   rank2, rank1,      ! Rank of tensor - either can be T1 or T2
+     &   tensor2, tensor1,  ! Labels a tesor - either 1 or 2
+     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+     &   place,         ! Marks which tensor an index was found
+     &   distance,      ! Distance from where an index should be
+     &   pp,            ! Paired position - position of paired index
+     &   ntest = 0,     ! >100 toggles some debug
+     &   i, j, k, l, m, z    ! Loop index
       character(len=INDEX_LEN) ::
-     &     s1, s2, s3   ! Tmp ITF index strings
+     &   s1, s2, s3,  ! Tmp ITF index strings
+     &   tstr
       character(len=1) ::
-     &   tmp,
-     &   tmp2
+     &   tmp, tmp2      ! Scratch space to store index letter
       real(8) ::
-     &   factor         ! Factor from equivalent lines
-      logical ::
-     &   found,         ! True if found pairing index
-     &   sort           ! Used in bubble sort
+     &   factor,        ! Factor from equivalent lines
+     &   p_factor       ! Overall factor from contraction/rearrangment
       type(pair_list) ::
      &   p_list        ! Complete list of pairs in binary contraction
       integer, dimension(4) ::
      &   t_shift,       ! Index shift for external indices
      &   e_shift,       ! Index shift for external indices
      &   c_shift        ! Index shift for contraction indices
-      integer, dimension(2) ::
-     &   cops,          ! Number of creation/annihilation contraction operators
-     &   e3ops          ! Total number of external operators
-      integer, dimension(4) ::
-     &   tops           ! Scratch space
       type(index_str) ::
-     &   str1,
-     &   str2,
-     &   str3,
-     &   t_str1,
-     &   t_str2
-      integer :: n_cnt, s, rank2, rank1, tensor2, tensor1, e1ops, e2ops
-      integer :: place, distance, pp, ntest = 0
-      real(8) :: p_factor
-      logical :: is_cnt, found_end, found_match, found_cnt
-      character(len=INDEX_LEN) :: tstr, tstr1, tstr2, tstr3
+     &   str1,          ! Stores 'normal ordered' index string for T1
+     &   str2,          ! Stores 'normal ordered' index string for T2
+     &   str3,          ! Stores 'normal ordered' index string for Res
+     &   t_str1, t_str2 ! Scratch space
 
-      ! TODO: ntest
+      logical ::        ! These are used when finding pairs of external ops
+     &   is_cnt,        ! True if the operator is a contraction op
+     &   found_end,     ! True if found external op to make a pair
+     &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
+     &   found_cnt      ! True if a contraction operator has been found
+
       ! TODO: compare to old stuff without debug
-      ! TODO: permute strings
-      ! TODO: tidy up variables
 
       c=0
       e1=0
@@ -1868,9 +1854,9 @@
       call permute_index(str2, item%rank2)
       call permute_index(str3, item%rank3)
 
-      tstr1 = ""
-      tstr2 = ""
-      tstr3 = ""
+      s1 = ""
+      s2 = ""
+      s3 = ""
       if (p_factor>0.0d0) then
          tmp = '+'
       else
@@ -1878,16 +1864,16 @@
       end if
 
       do i = 1, item%rank1/2
-         tstr1(i:i) = str1%str(i)
-         tstr1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+         s1(i:i) = str1%str(i)
+         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
       end do
       do i = 1, item%rank2/2
-         tstr2(i:i) = str2%str(i)
-         tstr2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+         s2(i:i) = str2%str(i)
+         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
       end do
       do i = 1, item%rank3/2
-         tstr3(i:i) = str3%str(i)
-         tstr3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+         s3(i:i) = str3%str(i)
+         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
       end do
 
       write(item%logfile,*)
@@ -1895,8 +1881,8 @@
       write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
      &                      "}{",str2%str,"}"
 
-      write(item%logfile,*) "[",trim(tstr3),"] ",tmp,"= [",trim(tstr1),
-     &                      "][",trim(tstr2),"]"
+      write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+     &                      "][",trim(s2),"]"
       write(item%logfile,*) "---------------------------"
 
 
