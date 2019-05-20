@@ -142,7 +142,6 @@
 *----------------------------------------------------------------------*
 
       implicit none
-
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
@@ -225,6 +224,7 @@
 *----------------------------------------------------------------------*
 !     Print spin of a tensor
 *----------------------------------------------------------------------*
+
       implicit none
 
       integer, intent(in) ::
@@ -252,6 +252,7 @@
 *----------------------------------------------------------------------*
 !     Print spin of a tensor
 *----------------------------------------------------------------------*
+
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -288,6 +289,7 @@
 *----------------------------------------------------------------------*
 !     Print error message in the itf logfile
 *----------------------------------------------------------------------*
+
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -408,7 +410,6 @@
 
       use itf_utils
       implicit none
-
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
@@ -549,8 +550,8 @@
 *----------------------------------------------------------------------*
 !     Search for intermediates, doesn't print out line
 *----------------------------------------------------------------------*
-      use itf_utils
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
@@ -667,8 +668,8 @@
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
-      use itf_utils
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
@@ -722,6 +723,7 @@
 !     Assign spin to simple cases using logic conditions
 !     This avoid the spin sum routine
 *----------------------------------------------------------------------*
+
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -1453,11 +1455,10 @@
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
 
-       ! TODO: re-enable this
 !      ! Set number of indcies
-!      item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
-!      item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
-!      item%nops3 = sum(e3, dim=2)
+      item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
+      item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
+      item%nops3 = sum(e3, dim=2)
 
       allocate(str1%str(item%rank1))
       allocate(str2%str(item%rank2))
@@ -1715,7 +1716,7 @@
          write(item%logfile,*) "Ending external pair search"
          write(item%logfile,*) "====================================="
          write(item%logfile,*)
-         call print_plist(p_list, item%rank3/2, "TEST", item%logfile)
+         call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
       end if
 
 
@@ -1758,6 +1759,7 @@
       do j = 1, item%rank3/2
          shift = 1
          do i = 0, item%rank3/2-1
+          write(11,*) p_list%plist(j)%pindex(1)
           if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
 
                tstr(shift:shift) = str3%str(item%rank3-i)
@@ -1781,6 +1783,41 @@
                if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
                   write(item%logfile,*) "Update factor2: ", p_factor
+                  write(item%logfile,*)
+               end if
+
+               exit
+          end if
+         end do
+      end do
+
+      ! Move all annhilations to the right
+      do j = 1, item%rank3/2
+         shift = item%rank3
+         do i = 1, item%rank3/2
+          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
+
+               tstr(shift:shift) = str3%str(i)
+               shift = shift - 1
+
+               do k = 0, item%rank3-1
+                  if (p_list%plist(j)%pindex(2) /=
+     &                                      str3%str(item%rank3-k)) then
+                     tstr(shift:shift) = str3%str(item%rank3-k)
+                     shift = shift - 1
+                  end if
+               end do
+               do k = 1, item%rank3
+                  str3%str(k) = tstr(k:k)
+               end do
+
+               !write(item%logfile,*) "New result string {",str3%str, "}"
+
+               ! Update factor. If index is in odd position, requires
+               ! odd number of permuations; so get a negative
+               if (mod(i,2)/=0) then
+                  p_factor = p_factor * -1.0d0
+                  write(item%logfile,*) "Update factor2.5: ", p_factor
                   write(item%logfile,*)
                end if
 
@@ -1922,31 +1959,57 @@
 
       integer ::
      &   i,
-     &   extent
+     &   sum1, sum2
       character (len=1) ::
      &   tmp
 
       if (rank == 2) then
-         extent = rank/2
-      else
-         extent = rank/2 - 1
+         if (idx%i_type(1)>=idx%i_type(2)) then
+            if (idx%str(1)>idx%str(2)) then
+               tmp = idx%str(1)
+               idx%str(1) = idx%str(2)
+               idx%str(2) = tmp
+            end if
+         end if
+         return
       end if
 
-      do i = 1, extent
-         if (idx%i_type(i)>=idx%i_type(i+1)) then
-            if (idx%str(i)>idx%str(i+1)) then
-               tmp = idx%str(i)
-               idx%str(i) = idx%str(i+1)
-               idx%str(i+1) = tmp
+      sum1 = 0
+      sum2 = 0
+      do i = 1, rank/2
+         sum1 = sum1 + idx%i_type(i)
+         sum2 = sum2 + idx%i_type(i+rank/2)
+      end do
 
-               if (rank>2) then
+      if (sum1<sum2) then
+         do i = 1, rank/2-1
+            if (idx%i_type(i)>=idx%i_type(i+1)) then
+               if (idx%str(i)>idx%str(i+1)) then
+                  tmp = idx%str(i)
+                  idx%str(i) = idx%str(i+1)
+                  idx%str(i+1) = tmp
+
                   tmp = idx%str(rank/2+i)
                   idx%str(rank/2+i) = idx%str(rank/2+i+1)
                   idx%str(rank/2+i+1) = tmp
                end if
             end if
-         end if
-      end do
+         end do
+      else
+         do i = 1, rank/2-1
+            if (idx%i_type(i+rank/2)<=idx%i_type(i+rank/2+1)) then
+               if (idx%str(i+rank/2)<idx%str(i+rank/2+1)) then
+                  tmp = idx%str(i+rank/2)
+                  idx%str(i+rank/2) = idx%str(i+rank/2+1)
+                  idx%str(i+rank/2+1) = tmp
+
+                  tmp = idx%str(i)
+                  idx%str(i) = idx%str(i+1)
+                  idx%str(i+1) = tmp
+               end if
+            end if
+         end do
+      end if
 
       return
       end
