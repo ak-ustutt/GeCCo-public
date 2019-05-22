@@ -1400,7 +1400,8 @@
      &   is_cnt,        ! True if the operator is a contraction op
      &   found_end,     ! True if found external op to make a pair
      &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
-     &   found_cnt      ! True if a contraction operator has been found
+     &   found_cnt,     ! True if a contraction operator has been found
+     &   p1, p2
 
       ! TODO: compare to old stuff without debug
 
@@ -1509,14 +1510,6 @@
          write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
       end if
 
-      ! Work out the factor due to permuation of creation indicies
-      do i = 1, n_cnt
-       if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
-          p_factor = p_factor * -1.0d0
-          write(item%logfile,*)"Update factor1: ",p_factor
-          write(item%logfile,*)
-       end if
-      end do
 
       if (ntest>100) then
          write(item%logfile,*)
@@ -1720,6 +1713,75 @@
       end if
 
 
+      ! If there is a pair in one string, permute so they are paired
+      ! 'imediately'. This can introduce a factor. Also update the
+      ! position of the contraction index
+      ! TODO: do with str2
+      if (item%rank1>2) then
+      do j = 1, item%rank3/2
+         do i = 1, item%rank1
+            if (p_list%plist(j)%pindex(1)==str1%str(i)) p1 = .true.
+            if (p_list%plist(j)%pindex(2)==str1%str(i)) p2 = .true.
+         end do
+
+         ! If a pair is on one tensor...
+         if (p1 .and. p2) then
+            do i = 1, item%rank1
+               if (p_list%plist(j)%pindex(1)==str1%str(i)) then
+                  pp = item%rank1-i+1
+                  do k = 1, item%rank1
+                     if (p_list%plist(j)%pindex(2)==str1%str(k)) then
+                        if (pp/=k) then
+                           ! Swap index so it is in paired position (pp)
+                           !write(item%logfile,*) "Old str ", str1%str
+                           tmp = str1%str(pp)
+                           str1%str(pp) = str1%str(k)
+                           str1%str(k) = tmp
+                           !write(item%logfile,*) "New str ", str1%str
+
+                           ! Update factor
+                           distance = abs(k-pp)
+                           if (mod(distance,2)/=0) then
+                              p_factor = p_factor * -1.0d0
+!                              write(item%logfile,*)"Update factor3: ",
+!     &                                              p_factor
+!                              write(item%logfile,*)
+                           end if
+
+                           ! If swapping a contraction index, need to
+                           ! update cnt_poss
+                           do l = 1, n_cnt
+                              if (pp==str1%cnt_poss(l)) then
+!                                 write(item%logfile,*) "Old cnt_poss ",
+!     &                                                str1%cnt_poss
+                                 str1%cnt_poss(l) = k
+!                                 write(item%logfile,*) "New cnt_poss ",
+!     &                                                str1%cnt_poss
+                                 exit
+                              end if
+                           end do
+                        end if
+                        exit
+                     end if
+                  end do
+                  exit
+               end if
+            end do
+         end if
+      end do
+      end if
+
+
+      ! Work out the factor due to permuation of creation indicies
+      do i = 1, n_cnt
+       if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
+          p_factor = p_factor * -1.0d0
+          !write(item%logfile,*)"Update factor1: ",p_factor
+          !write(item%logfile,*)
+       end if
+      end do
+
+
       ! Create result index string from only external operators. Order
       ! is not final...
       shift = 1
@@ -1759,7 +1821,6 @@
       do j = 1, item%rank3/2
          shift = 1
          do i = 0, item%rank3/2-1
-          write(11,*) p_list%plist(j)%pindex(1)
           if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
 
                tstr(shift:shift) = str3%str(item%rank3-i)
@@ -1782,8 +1843,8 @@
                ! odd number of permuations; so get a negative
                if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
-                  write(item%logfile,*) "Update factor2: ", p_factor
-                  write(item%logfile,*)
+                  !write(item%logfile,*) "Update factor2: ", p_factor
+                  !write(item%logfile,*)
                end if
 
                exit
@@ -1851,8 +1912,8 @@
                      distance = abs(k-pp)
                      if (mod(distance,2)/=0) then
                         p_factor = p_factor * -1.0d0
-                        write(item%logfile,*)"Update factor3: ",p_factor
-                        write(item%logfile,*)
+                        !write(item%logfile,*)"Update factor3: ",p_factor
+                        !write(item%logfile,*)
                      end if
                      ! Swapped letters between current k and pp
                      tmp = str3%str(pp)
@@ -1894,11 +1955,6 @@
       s1 = ""
       s2 = ""
       s3 = ""
-      if (p_factor>0.0d0) then
-         tmp = '+'
-      else
-         tmp = '-'
-      end if
 
       do i = 1, item%rank1/2
          s1(i:i) = str1%str(i)
@@ -1913,14 +1969,22 @@
          s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
       end do
 
-      write(item%logfile,*)
-      write(item%logfile,*) "---------------------------"
-      write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
-     &                      "}{",str2%str,"}"
+      if (.true.) then
+         if (p_factor>0.0d0) then
+            tmp = '+'
+         else
+            tmp = '-'
+         end if
 
-      write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
-     &                      "][",trim(s2),"]"
-      write(item%logfile,*) "---------------------------"
+         write(item%logfile,*)
+         write(item%logfile,*) "---------------------------"
+         write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+     &                         "}{",str2%str,"}"
+
+         write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+     &                         "][",trim(s2),"]"
+         write(item%logfile,*) "---------------------------"
+      end if
 
 
       deallocate(p_list%plist)
