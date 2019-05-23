@@ -1342,6 +1342,99 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine nicer_pairing(str1, str2, i1, i2, rank1, rank2, factor,
+     &                         n_cnt)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   str1,
+     &   str2
+      character (len=1), intent(in) ::
+     &   i1,
+     &   i2
+      integer, intent(in) ::
+     &   rank1,
+     &   rank2,
+     &   n_cnt
+      real(8), intent(inout) ::
+     &   factor
+
+      character (len=1) ::
+     &   tmp
+      integer ::
+     &   pp,
+     &   distance,
+     &   itmp,
+     &   i, j, k, l, m, n
+
+      do i = 1, rank1
+         if (i1==str1%str(i)) then
+            pp = rank1-i+1
+            do k = 1, rank2
+               if (i2==str2%str(k)) then
+                  if (str1%str(pp)/=str2%str(rank2-k+1)) then
+                     do l = 1, rank1
+                        if(str1%str(pp)==str2%str(l))
+     &                      then
+
+                           tmp = str2%str(l)
+                           str2%str(l) = str2%str(rank2-k+1)
+                           str2%str(rank2-k+1) = tmp
+
+                           write(11,*) "New ", str2%str
+
+                           ! Update factor
+                           distance = abs(l-rank2-k+1)
+                           if (mod(distance,2)/=0) then
+                              factor = factor * -1.0d0
+!                              write(item%logfile,*)"Update factor3: ",
+!                                                    factor
+!                              write(item%logfile,*)
+                           end if
+
+                           ! If swapping a contraction index, need to
+                           ! update cnt_poss
+                           write(11,*) "Old cnt_poss ", str2%cnt_poss
+                           do m = 1, n_cnt
+                              if (l==str2%cnt_poss(m)) then
+                                itmp=str2%cnt_poss(m)
+                                str2%cnt_poss(m)=rank2-k+1
+                                n = m
+                              end if
+                           end do
+                           write(11,*) "Old cnt_poss2 ", str2%cnt_poss
+                           do m = 1, n_cnt
+                              if (rank2-k+1==
+     &                           str2%cnt_poss(m) .and. m/=n) then
+                                 str2%cnt_poss(m)=itmp
+                              end if
+                           end do
+                           write(11,*) "New cnt_poss ", str2%cnt_poss
+
+                        end if
+                     end do
+                  else
+                     write(11,*) "Already paired"
+                  end if
+               end if
+            end do
+            exit
+         end if
+      end do
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine assign_new_index(contr_info,item)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
@@ -1374,8 +1467,9 @@
      &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
-     &   ntest = 0,     ! >100 toggles some debug
-     &   i, j, k, l, m, z    ! Loop index
+     &   ntest = 101,     ! >100 toggles some debug
+     &   i, j, k, l, m, z,   ! Loop index
+     &   itmp, n
       character(len=INDEX_LEN) ::
      &   s1, s2, s3,  ! Tmp ITF index strings
      &   tstr
@@ -1402,8 +1496,6 @@
      &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
      &   found_cnt,     ! True if a contraction operator has been found
      &   p1, p2
-
-      ! TODO: compare to old stuff without debug
 
       c=0
       e1=0
@@ -1663,11 +1755,15 @@
                   ! Started with a creation operator
                   p_list%plist(shift)%pindex(1) = t_str1%str(i)
                   p_list%plist(shift)%pindex(2) = tmp2
+                  p_list%plist(shift)%ops(1) = tensor1
+                  p_list%plist(shift)%ops(2) = place
                   exit
                else if (t_str1%str(i)==t_str1%str(l+rank1/2)) then
                   ! Started with an annhilation operator
                   p_list%plist(shift)%pindex(1) = tmp2
                   p_list%plist(shift)%pindex(2) = t_str1%str(i)
+                  p_list%plist(shift)%ops(1) = place
+                  p_list%plist(shift)%ops(2) = tensor1
                   exit
                end if
             end do
@@ -1716,13 +1812,18 @@
       ! If there is a pair in one string, permute so they are paired
       ! 'imediately'. This can introduce a factor. Also update the
       ! position of the contraction index
+      ! TODO: the above algo seems redundant - maybe rethink...
       ! TODO: do with str2
       if (item%rank1>2) then
       do j = 1, item%rank3/2
-         do i = 1, item%rank1
-            if (p_list%plist(j)%pindex(1)==str1%str(i)) p1 = .true.
-            if (p_list%plist(j)%pindex(2)==str1%str(i)) p2 = .true.
-         end do
+         p1 = .false.
+         p2 = .false.
+         !do i = 1, item%rank1
+         !   if (p_list%plist(j)%pindex(1)==str1%str(i)) p1 = .true.
+         !   if (p_list%plist(j)%pindex(2)==str1%str(i)) p2 = .true.
+         !end do
+         if (p_list%plist(j)%ops(1)==1) p1 = .true.
+         if (p_list%plist(j)%ops(2)==1) p2 = .true.
 
          ! If a pair is on one tensor...
          if (p1 .and. p2) then
@@ -1767,6 +1868,135 @@
                   exit
                end if
             end do
+
+         ! If a pair is split over two tensors...
+         else if (p1 .and. .not. p2) then
+            call nicer_pairing(str1, str2,
+     &                         p_list%plist(j)%pindex(1),
+     &                         p_list%plist(j)%pindex(2), item%rank1,
+     &                         item%rank2, p_factor, n_cnt)
+!            do i = 1, item%rank1
+!               if (p_list%plist(j)%pindex(1)==str1%str(i)) then
+!                  pp = item%rank1-i+1
+!                  do k = 1, item%rank2
+!                     if (p_list%plist(j)%pindex(2)==str2%str(k)) then
+!                        if (str1%str(pp)/=str2%str(item%rank2-k+1)) then
+!                           do l = 1, item%rank1
+!                              if(str1%str(pp)==str2%str(l))
+!     &                            then
+!
+!                                 write(11,*) "Old crap", str2%str
+!
+!                                 tmp = str2%str(l)
+!                                 str2%str(l) = str2%str(item%rank2-k+1)
+!                                 str2%str(item%rank2-k+1) = tmp
+!
+!                                 write(11,*) "New ", str2%str
+!
+!                                 ! Update factor
+!                                 distance = abs(l-item%rank2-k+1)
+!                                 if (mod(distance,2)/=0) then
+!                                    p_factor = p_factor * -1.0d0
+!!                                    write(item%logfile,*)"Update factor3: ",
+!!     &                                                    p_factor
+!!                                    write(item%logfile,*)
+!                                 end if
+!
+!                                 ! If swapping a contraction index, need to
+!                                 ! update cnt_poss
+!                                 do m = 1, n_cnt
+!                                    if (l==str2%cnt_poss(m)) then
+!!                                       write(item%logfile,*) "Old cnt_poss ",
+!!     &                                                      str1%cnt_poss
+!                                       str1%cnt_poss(m)=item%rank2-k+1
+!!                                       write(item%logfile,*) "New cnt_poss ",
+!!     &                                                      str1%cnt_poss
+!                                    end if
+!                                    if (item%rank2-k+1==
+!     &                                            str2%cnt_poss(m)) then
+!!                                       write(item%logfile,*) "Old cnt_poss ",
+!!     &                                                      str1%cnt_poss
+!                                       str1%cnt_poss(m)=l
+!!                                       write(item%logfile,*) "New cnt_poss ",
+!!     &                                                      str1%cnt_poss
+!                                    end if
+!                                 end do
+!                              end if
+!
+!                           end do
+!                        else
+!                           write(item%logfile,*) "Already paired"
+!                        end if
+!                     end if
+!                  end do
+!                  exit
+!               end if
+!            end do
+
+         ! TODO: same as above. Factorise and change str1 below instead?
+         else if (p2 .and. .not. p1) then
+            call nicer_pairing(str2, str1,
+     &                         p_list%plist(j)%pindex(1),
+     &                         p_list%plist(j)%pindex(2), item%rank2,
+     &                         item%rank1, p_factor, n_cnt)
+!            do i = 1, item%rank1
+!               if (p_list%plist(j)%pindex(2)==str1%str(i)) then
+!                  pp = item%rank1-i+1
+!                  do k = 1, item%rank2
+!                     if (p_list%plist(j)%pindex(1)==str2%str(k)) then
+!                        if (str1%str(pp)/=str2%str(item%rank2-k+1)) then
+!                           do l = 1, item%rank1
+!                              if(str1%str(pp)==str2%str(l))
+!     &                            then
+!
+!                                 tmp = str2%str(l)
+!                                 str2%str(l) = str2%str(item%rank2-k+1)
+!                                 str2%str(item%rank2-k+1) = tmp
+!
+!                                 write(11,*) "New ", str2%str
+!
+!                                 ! Update factor
+!                                 distance = abs(l-item%rank2-k+1)
+!                                 if (mod(distance,2)/=0) then
+!                                    p_factor = p_factor * -1.0d0
+!!                                    write(item%logfile,*)"Update factor3: ",
+!!     &                                                    p_factor
+!!                                    write(item%logfile,*)
+!                                 end if
+!
+!                                 ! If swapping a contraction index, need to
+!                                 ! update cnt_poss
+!                                 write(item%logfile,*) "Old cnt_poss ",
+!     &                                                 str2%cnt_poss
+!                                 do m = 1, n_cnt
+!                                    if (l==str2%cnt_poss(m)) then
+!                                      itmp=str2%cnt_poss(m)
+!                                      str2%cnt_poss(m)=item%rank2-k+1
+!                                      n = m
+!                                    end if
+!                                 end do
+!                                 write(item%logfile,*) "Old cnt_poss2 ",
+!     &                                                 str2%cnt_poss
+!                                 do m = 1, n_cnt
+!                                    if (item%rank2-k+1==
+!     &                                 str2%cnt_poss(m) .and. m/=n) then
+!                                       str2%cnt_poss(m)=itmp
+!                                    end if
+!                                 end do
+!                                 write(item%logfile,*) "New cnt_poss ",
+!     &                                                 str2%cnt_poss
+!
+!                              end if
+!
+!                           end do
+!                        else
+!                           write(item%logfile,*) "Already paired"
+!                        end if
+!                     end if
+!                  end do
+!                  exit
+!               end if
+!            end do
          end if
       end do
       end if
