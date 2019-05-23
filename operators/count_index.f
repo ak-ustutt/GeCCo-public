@@ -1813,15 +1813,12 @@
       ! 'imediately'. This can introduce a factor. Also update the
       ! position of the contraction index
       ! TODO: the above algo seems redundant - maybe rethink...
-      ! TODO: do with str2
       if (item%rank1>2) then
       do j = 1, item%rank3/2
          p1 = .false.
          p2 = .false.
-         !do i = 1, item%rank1
-         !   if (p_list%plist(j)%pindex(1)==str1%str(i)) p1 = .true.
-         !   if (p_list%plist(j)%pindex(2)==str1%str(i)) p2 = .true.
-         !end do
+
+         !TODO: expand this to tensor 2 + factor
          if (p_list%plist(j)%ops(1)==1) p1 = .true.
          if (p_list%plist(j)%ops(2)==1) p2 = .true.
 
@@ -1875,128 +1872,11 @@
      &                         p_list%plist(j)%pindex(1),
      &                         p_list%plist(j)%pindex(2), item%rank1,
      &                         item%rank2, p_factor, n_cnt)
-!            do i = 1, item%rank1
-!               if (p_list%plist(j)%pindex(1)==str1%str(i)) then
-!                  pp = item%rank1-i+1
-!                  do k = 1, item%rank2
-!                     if (p_list%plist(j)%pindex(2)==str2%str(k)) then
-!                        if (str1%str(pp)/=str2%str(item%rank2-k+1)) then
-!                           do l = 1, item%rank1
-!                              if(str1%str(pp)==str2%str(l))
-!     &                            then
-!
-!                                 write(11,*) "Old crap", str2%str
-!
-!                                 tmp = str2%str(l)
-!                                 str2%str(l) = str2%str(item%rank2-k+1)
-!                                 str2%str(item%rank2-k+1) = tmp
-!
-!                                 write(11,*) "New ", str2%str
-!
-!                                 ! Update factor
-!                                 distance = abs(l-item%rank2-k+1)
-!                                 if (mod(distance,2)/=0) then
-!                                    p_factor = p_factor * -1.0d0
-!!                                    write(item%logfile,*)"Update factor3: ",
-!!     &                                                    p_factor
-!!                                    write(item%logfile,*)
-!                                 end if
-!
-!                                 ! If swapping a contraction index, need to
-!                                 ! update cnt_poss
-!                                 do m = 1, n_cnt
-!                                    if (l==str2%cnt_poss(m)) then
-!!                                       write(item%logfile,*) "Old cnt_poss ",
-!!     &                                                      str1%cnt_poss
-!                                       str1%cnt_poss(m)=item%rank2-k+1
-!!                                       write(item%logfile,*) "New cnt_poss ",
-!!     &                                                      str1%cnt_poss
-!                                    end if
-!                                    if (item%rank2-k+1==
-!     &                                            str2%cnt_poss(m)) then
-!!                                       write(item%logfile,*) "Old cnt_poss ",
-!!     &                                                      str1%cnt_poss
-!                                       str1%cnt_poss(m)=l
-!!                                       write(item%logfile,*) "New cnt_poss ",
-!!     &                                                      str1%cnt_poss
-!                                    end if
-!                                 end do
-!                              end if
-!
-!                           end do
-!                        else
-!                           write(item%logfile,*) "Already paired"
-!                        end if
-!                     end if
-!                  end do
-!                  exit
-!               end if
-!            end do
-
-         ! TODO: same as above. Factorise and change str1 below instead?
          else if (p2 .and. .not. p1) then
             call nicer_pairing(str2, str1,
      &                         p_list%plist(j)%pindex(1),
      &                         p_list%plist(j)%pindex(2), item%rank2,
      &                         item%rank1, p_factor, n_cnt)
-!            do i = 1, item%rank1
-!               if (p_list%plist(j)%pindex(2)==str1%str(i)) then
-!                  pp = item%rank1-i+1
-!                  do k = 1, item%rank2
-!                     if (p_list%plist(j)%pindex(1)==str2%str(k)) then
-!                        if (str1%str(pp)/=str2%str(item%rank2-k+1)) then
-!                           do l = 1, item%rank1
-!                              if(str1%str(pp)==str2%str(l))
-!     &                            then
-!
-!                                 tmp = str2%str(l)
-!                                 str2%str(l) = str2%str(item%rank2-k+1)
-!                                 str2%str(item%rank2-k+1) = tmp
-!
-!                                 write(11,*) "New ", str2%str
-!
-!                                 ! Update factor
-!                                 distance = abs(l-item%rank2-k+1)
-!                                 if (mod(distance,2)/=0) then
-!                                    p_factor = p_factor * -1.0d0
-!!                                    write(item%logfile,*)"Update factor3: ",
-!!     &                                                    p_factor
-!!                                    write(item%logfile,*)
-!                                 end if
-!
-!                                 ! If swapping a contraction index, need to
-!                                 ! update cnt_poss
-!                                 write(item%logfile,*) "Old cnt_poss ",
-!     &                                                 str2%cnt_poss
-!                                 do m = 1, n_cnt
-!                                    if (l==str2%cnt_poss(m)) then
-!                                      itmp=str2%cnt_poss(m)
-!                                      str2%cnt_poss(m)=item%rank2-k+1
-!                                      n = m
-!                                    end if
-!                                 end do
-!                                 write(item%logfile,*) "Old cnt_poss2 ",
-!     &                                                 str2%cnt_poss
-!                                 do m = 1, n_cnt
-!                                    if (item%rank2-k+1==
-!     &                                 str2%cnt_poss(m) .and. m/=n) then
-!                                       str2%cnt_poss(m)=itmp
-!                                    end if
-!                                 end do
-!                                 write(item%logfile,*) "New cnt_poss ",
-!     &                                                 str2%cnt_poss
-!
-!                              end if
-!
-!                           end do
-!                        else
-!                           write(item%logfile,*) "Already paired"
-!                        end if
-!                     end if
-!                  end do
-!                  exit
-!               end if
-!            end do
          end if
       end do
       end if
