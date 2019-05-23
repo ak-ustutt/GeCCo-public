@@ -1435,6 +1435,81 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine nicer_pairing_one_t(str, i1, i2, rank, factor, n_cnt)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   str
+      character (len=1), intent(in) ::
+     &   i1,
+     &   i2
+      integer, intent(in) ::
+     &   rank,
+     &   n_cnt
+      real(8), intent(inout) ::
+     &   factor
+
+      character (len=1) ::
+     &   tmp
+      integer ::
+     &   pp,
+     &   distance,
+     &   i, j, k, l, m, n
+
+      do i = 1, rank
+         if (i1==str%str(i)) then
+            pp = rank-i+1
+            do k = 1, rank
+               if (i2==str%str(k)) then
+                  if (pp/=k) then
+                     ! Swap index so it is in paired position (pp)
+                     !write(item%logfile,*) "Old str ", str%str
+                     tmp = str%str(pp)
+                     str%str(pp) = str%str(k)
+                     str%str(k) = tmp
+                     !write(item%logfile,*) "New str ", str%str
+
+                     ! Update factor
+                     distance = abs(k-pp)
+                     if (mod(distance,2)/=0) then
+                        factor = factor * -1.0d0
+!                        write(item%logfile,*)"Update factor3: ",
+!     &                                        p_factor
+!                        write(item%logfile,*)
+                     end if
+
+                     ! If swapping a contraction index, need to
+                     ! update cnt_poss
+                     do l = 1, n_cnt
+                        if (pp==str%cnt_poss(l)) then
+!                           write(item%logfile,*) "Old cnt_poss ",
+!     &                                          str1%cnt_poss
+                           str%cnt_poss(l) = k
+!                           write(item%logfile,*) "New cnt_poss ",
+!     &                                          str1%cnt_poss
+                           exit
+                        end if
+                     end do
+                  end if
+                  exit
+               end if
+            end do
+            exit
+         end if
+      end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine assign_new_index(contr_info,item)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
@@ -1814,71 +1889,37 @@
       ! position of the contraction index
       ! TODO: the above algo seems redundant - maybe rethink...
       if (item%rank1>2) then
-      do j = 1, item%rank3/2
-         p1 = .false.
-         p2 = .false.
+         do j = 1, item%rank3/2
+            p1 = .false.
+            p2 = .false.
 
-         !TODO: expand this to tensor 2 + factor
-         if (p_list%plist(j)%ops(1)==1) p1 = .true.
-         if (p_list%plist(j)%ops(2)==1) p2 = .true.
+            !TODO: expand this to tensor 2 + factor
+            if (p_list%plist(j)%ops(1)==1) p1 = .true.
+            if (p_list%plist(j)%ops(2)==1) p2 = .true.
 
-         ! If a pair is on one tensor...
-         if (p1 .and. p2) then
-            do i = 1, item%rank1
-               if (p_list%plist(j)%pindex(1)==str1%str(i)) then
-                  pp = item%rank1-i+1
-                  do k = 1, item%rank1
-                     if (p_list%plist(j)%pindex(2)==str1%str(k)) then
-                        if (pp/=k) then
-                           ! Swap index so it is in paired position (pp)
-                           !write(item%logfile,*) "Old str ", str1%str
-                           tmp = str1%str(pp)
-                           str1%str(pp) = str1%str(k)
-                           str1%str(k) = tmp
-                           !write(item%logfile,*) "New str ", str1%str
+            ! If a pair is on one tensor...
+            if (p1 .and. p2) then
+               call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
+     &                                  p_list%plist(j)%pindex(2),
+     &                                  item%rank1, p_factor, n_cnt)
+            else if (.not. p1 .and. .not. p2) then
+               call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
+     &                                  p_list%plist(j)%pindex(2),
+     &                                  item%rank2, p_factor, n_cnt)
 
-                           ! Update factor
-                           distance = abs(k-pp)
-                           if (mod(distance,2)/=0) then
-                              p_factor = p_factor * -1.0d0
-!                              write(item%logfile,*)"Update factor3: ",
-!     &                                              p_factor
-!                              write(item%logfile,*)
-                           end if
-
-                           ! If swapping a contraction index, need to
-                           ! update cnt_poss
-                           do l = 1, n_cnt
-                              if (pp==str1%cnt_poss(l)) then
-!                                 write(item%logfile,*) "Old cnt_poss ",
-!     &                                                str1%cnt_poss
-                                 str1%cnt_poss(l) = k
-!                                 write(item%logfile,*) "New cnt_poss ",
-!     &                                                str1%cnt_poss
-                                 exit
-                              end if
-                           end do
-                        end if
-                        exit
-                     end if
-                  end do
-                  exit
-               end if
-            end do
-
-         ! If a pair is split over two tensors...
-         else if (p1 .and. .not. p2) then
-            call nicer_pairing(str1, str2,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank1,
-     &                         item%rank2, p_factor, n_cnt)
-         else if (p2 .and. .not. p1) then
-            call nicer_pairing(str2, str1,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank2,
-     &                         item%rank1, p_factor, n_cnt)
-         end if
-      end do
+            ! If a pair is split over two tensors...
+            else if (p1 .and. .not. p2) then
+               call nicer_pairing(str1, str2,
+     &                            p_list%plist(j)%pindex(1),
+     &                            p_list%plist(j)%pindex(2), item%rank1,
+     &                            item%rank2, p_factor, n_cnt)
+            else if (p2 .and. .not. p1) then
+               call nicer_pairing(str2, str1,
+     &                            p_list%plist(j)%pindex(1),
+     &                            p_list%plist(j)%pindex(2), item%rank2,
+     &                            item%rank1, p_factor, n_cnt)
+            end if
+         end do
       end if
 
 
