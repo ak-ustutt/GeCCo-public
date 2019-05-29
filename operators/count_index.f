@@ -1369,66 +1369,85 @@
       character (len=1) ::
      &   tmp
       integer ::
-     &   pp,
+     &   pp1, pp2, pp3,        ! Pair position
      &   distance,
      &   itmp,
      &   i, j, k, l, m, n
 
       do i = 1, rank1
          if (i1==str1%str(i)) then
-            pp = rank1-i+1
+            pp1 = rank1-i+1
             do k = 1, rank2
                if (i2==str2%str(k)) then
-                  if (str1%str(pp)/=str2%str(rank2-k+1)) then
+                  pp2= rank2-k+1
+                  if (str1%str(pp1)/=str2%str(pp2)) then
                      do l = 1, rank1
-                        if(str1%str(pp)==str2%str(l))
+                        if(str1%str(pp1)==str2%str(l))
      &                      then
 
-                           tmp = str2%str(l)
-                           str2%str(l) = str2%str(rank2-k+1)
-                           str2%str(rank2-k+1) = tmp
+                           pp3 = rank1-l+1
+                           tmp = str2%str(k)
+                           str2%str(k) = str2%str(pp3)
+                           str2%str(pp3) = tmp
+
+                           !tmp = str2%str(l)
+                           !str2%str(l) = str2%str(pp2)
+                           !str2%str(pp2) = tmp
 
                            write(11,*) "New ", str2%str
 
                            ! Update factor
-                           distance = abs(l-rank2-k+1)
+                           distance = abs(l-pp2)
                            if (mod(distance,2)/=0) then
-                              factor = factor * -1.0d0
-!                              write(item%logfile,*)"Update factor3: ",
-!                                                    factor
-!                              write(item%logfile,*)
+!                              factor = factor * -1.0d0
+!!                              write(11,*)"Update factor3.2: ",
+!!     &                                              factor
+                              write(11,*) "not updating factor"
                            end if
 
-                           ! If swapping a contraction index, need to
-                           ! update cnt_poss
-                           write(11,*) "Old cnt_poss ", str2%cnt_poss
-                           do m = 1, n_cnt
-                              if (l==str2%cnt_poss(m)) then
-                                itmp=str2%cnt_poss(m)
-                                str2%cnt_poss(m)=rank2-k+1
-                                n = m
-                              end if
-                           end do
-                           write(11,*) "Old cnt_poss2 ", str2%cnt_poss
-                           do m = 1, n_cnt
-                              if (rank2-k+1==
-     &                           str2%cnt_poss(m) .and. m/=n) then
-                                 str2%cnt_poss(m)=itmp
-                              end if
-                           end do
-                           write(11,*) "New cnt_poss ", str2%cnt_poss
 
+                           ! If swapping a contraction index
+                           do m = 1, n_cnt
+                              if (pp3==str2%cnt_poss(m)) then
+                                 write(11,*) "Old cnt_poss ",
+     &                                                str2%cnt_poss
+                                 str2%cnt_poss(m) = k
+                                 write(11,*) "New cnt_poss ",
+     &                                                str2%cnt_poss
+                                 exit
+                              end if
+                           end do
+
+!                           ! If swapping a contraction index, need to
+!                           ! update cnt_poss
+!!                           write(11,*) "Old cnt_poss ", str2%cnt_poss
+!                           do m = 1, n_cnt
+!                              if (l==str2%cnt_poss(m)) then
+!                                itmp=str2%cnt_poss(m)
+!                                str2%cnt_poss(m)=pp2
+!                                n = m
+!                              end if
+!                           end do
+!!                           write(11,*) "Old cnt_poss2 ", str2%cnt_poss
+!                           do m = 1, n_cnt
+!                              if (rank2-k+1==
+!     &                           str2%cnt_poss(m) .and. m/=n) then
+!                                 str2%cnt_poss(m)=itmp
+!                              end if
+!                           end do
+!!                           write(11,*) "New cnt_poss ", str2%cnt_poss
+
+                           exit
                         end if
                      end do
-                  else
-                     write(11,*) "Already paired"
+                     exit
                   end if
+                  exit
                end if
             end do
             exit
          end if
       end do
-
 
       return
       end
@@ -1479,10 +1498,9 @@
                      ! Update factor
                      distance = abs(k-pp)
                      if (mod(distance,2)/=0) then
-                        factor = factor * -1.0d0
-!                        write(item%logfile,*)"Update factor3: ",
-!     &                                        p_factor
-!                        write(item%logfile,*)
+                        !factor = factor * -1.0d0
+                        !write(11,*)"Update factor3.5: ", factor
+                        write(11,*) "Not updating factor"
                      end if
 
                      ! If swapping a contraction index, need to
@@ -1542,7 +1560,7 @@
      &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
-     &   ntest = 101,     ! >100 toggles some debug
+     &   ntest = 100,     ! >100 toggles some debug
      &   i, j, k, l, m, z,   ! Loop index
      &   itmp, n
       character(len=INDEX_LEN) ::
@@ -1888,47 +1906,43 @@
       ! 'imediately'. This can introduce a factor. Also update the
       ! position of the contraction index
       ! TODO: the above algo seems redundant - maybe rethink...
-      if (item%rank1>2) then
-         do j = 1, item%rank3/2
-            p1 = .false.
-            p2 = .false.
+      do j = 1, item%rank3/2
+         p1 = .false.
+         p2 = .false.
 
-            !TODO: expand this to tensor 2 + factor
-            if (p_list%plist(j)%ops(1)==1) p1 = .true.
-            if (p_list%plist(j)%ops(2)==1) p2 = .true.
+         if (p_list%plist(j)%ops(1)==1) p1 = .true.
+         if (p_list%plist(j)%ops(2)==1) p2 = .true.
 
-            ! If a pair is on one tensor...
-            if (p1 .and. p2) then
-               call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
-     &                                  p_list%plist(j)%pindex(2),
-     &                                  item%rank1, p_factor, n_cnt)
-            else if (.not. p1 .and. .not. p2) then
-               call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
-     &                                  p_list%plist(j)%pindex(2),
-     &                                  item%rank2, p_factor, n_cnt)
+         ! If a pair is on one tensor...
+         if (p1 .and. p2 .and. item%rank1>2) then
+            call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
+     &                               p_list%plist(j)%pindex(2),
+     &                               item%rank1, p_factor, n_cnt)
+         else if (.not. p1 .and. .not. p2 .and. item%rank2>2) then
+            call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
+     &                               p_list%plist(j)%pindex(2),
+     &                               item%rank2, p_factor, n_cnt)
 
-            ! If a pair is split over two tensors...
-            else if (p1 .and. .not. p2) then
-               call nicer_pairing(str1, str2,
-     &                            p_list%plist(j)%pindex(1),
-     &                            p_list%plist(j)%pindex(2), item%rank1,
-     &                            item%rank2, p_factor, n_cnt)
-            else if (p2 .and. .not. p1) then
-               call nicer_pairing(str2, str1,
-     &                            p_list%plist(j)%pindex(1),
-     &                            p_list%plist(j)%pindex(2), item%rank2,
-     &                            item%rank1, p_factor, n_cnt)
-            end if
-         end do
-      end if
+         ! If a pair is split over two tensors...
+         else if (p1 .and. .not. p2 .and. item%rank1>2) then
+            call nicer_pairing(str1, str2,
+     &                         p_list%plist(j)%pindex(1),
+     &                         p_list%plist(j)%pindex(2), item%rank1,
+     &                         item%rank2, p_factor, n_cnt)
+         else if (p2 .and. .not. p1 .and. item%rank2>2) then
+            call nicer_pairing(str2, str1,
+     &                         p_list%plist(j)%pindex(1),
+     &                         p_list%plist(j)%pindex(2), item%rank2,
+     &                         item%rank1, p_factor, n_cnt)
+         end if
+      end do
 
 
       ! Work out the factor due to permuation of creation indicies
       do i = 1, n_cnt
        if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
           p_factor = p_factor * -1.0d0
-          !write(item%logfile,*)"Update factor1: ",p_factor
-          !write(item%logfile,*)
+          write(item%logfile,*)"Update factor1: ",p_factor
        end if
       end do
 
@@ -1994,8 +2008,7 @@
                ! odd number of permuations; so get a negative
                if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
-                  !write(item%logfile,*) "Update factor2: ", p_factor
-                  !write(item%logfile,*)
+                  write(item%logfile,*) "Update factor2: ", p_factor
                end if
 
                exit
@@ -2030,7 +2043,6 @@
                if (mod(i,2)/=0) then
                   p_factor = p_factor * -1.0d0
                   write(item%logfile,*) "Update factor2.5: ", p_factor
-                  write(item%logfile,*)
                end if
 
                exit
@@ -2063,8 +2075,7 @@
                      distance = abs(k-pp)
                      if (mod(distance,2)/=0) then
                         p_factor = p_factor * -1.0d0
-                        !write(item%logfile,*)"Update factor3: ",p_factor
-                        !write(item%logfile,*)
+                        write(item%logfile,*)"Update factor3: ",p_factor
                      end if
                      ! Swapped letters between current k and pp
                      tmp = str3%str(pp)
@@ -2096,7 +2107,6 @@
            str3%i_type(i) = 4
         end if
       end do
-
 
       ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
       call permute_index(str1, item%rank1)
@@ -2137,6 +2147,9 @@
          write(item%logfile,*) "---------------------------"
       end if
 
+      !item%idx1=trim(s1)
+      !item%idx2=trim(s2)
+      !item%idx3=trim(s3)
 
       deallocate(p_list%plist)
 
@@ -2179,11 +2192,13 @@
      &   tmp
 
       if (rank == 2) then
-         if (idx%i_type(1)>=idx%i_type(2)) then
+         !if (idx%i_type(1)>=idx%i_type(2)) then
+         if (idx%i_type(1)>idx%i_type(2)) then
             if (idx%str(1)>idx%str(2)) then
                tmp = idx%str(1)
                idx%str(1) = idx%str(2)
                idx%str(2) = tmp
+               ! TODO: Get a factor here!
             end if
          end if
          return
@@ -3657,6 +3672,11 @@
       if (sum1a==sum1b .and. sum2a==sum2b) then
          if (modulo(sum1a+sum1b,2)==0 .and.
      &           modulo(sum2a+sum2b,2)==0) then
+
+!            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
+!     &                      11)
+!            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
+!     &                      11)
 
             ! Decide if tensor is mixed spin
             contains1 = .false.
