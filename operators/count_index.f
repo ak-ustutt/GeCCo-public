@@ -1394,26 +1394,26 @@
                            !str2%str(l) = str2%str(pp2)
                            !str2%str(pp2) = tmp
 
-                           write(11,*) "New ", str2%str
+                           !write(11,*) "New ", str2%str
 
                            ! Update factor
-                           distance = abs(l-pp2)
-                           if (mod(distance,2)/=0) then
-!                              factor = factor * -1.0d0
-!!                              write(11,*)"Update factor3.2: ",
-!!     &                                              factor
-                              write(11,*) "not updating factor"
-                           end if
+!                           distance = abs(l-pp2)
+!                           if (mod(distance,2)/=0) then
+!!                              factor = factor * -1.0d0
+!!!                              write(11,*)"Update factor3.2: ",
+!!!     &                                              factor
+!                              write(11,*) "not updating factor"
+!                           end if
 
 
                            ! If swapping a contraction index
                            do m = 1, n_cnt
                               if (pp3==str2%cnt_poss(m)) then
-                                 write(11,*) "Old cnt_poss ",
-     &                                                str2%cnt_poss
+!                                 write(11,*) "Old cnt_poss ",
+!     &                                                str2%cnt_poss
                                  str2%cnt_poss(m) = k
-                                 write(11,*) "New cnt_poss ",
-     &                                                str2%cnt_poss
+!                                 write(11,*) "New cnt_poss ",
+!     &                                                str2%cnt_poss
                                  exit
                               end if
                            end do
@@ -1495,13 +1495,13 @@
                      str%str(k) = tmp
                      !write(item%logfile,*) "New str ", str%str
 
-                     ! Update factor
-                     distance = abs(k-pp)
-                     if (mod(distance,2)/=0) then
-                        !factor = factor * -1.0d0
-                        !write(11,*)"Update factor3.5: ", factor
-                        write(11,*) "Not updating factor"
-                     end if
+!                     ! Update factor
+!                     distance = abs(k-pp)
+!                     if (mod(distance,2)/=0) then
+!                        !factor = factor * -1.0d0
+!                        !write(11,*)"Update factor3.5: ", factor
+!                        write(11,*) "Not updating factor"
+!                     end if
 
                      ! If swapping a contraction index, need to
                      ! update cnt_poss
@@ -1560,7 +1560,7 @@
      &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
-     &   ntest = 100,     ! >100 toggles some debug
+     &   ntest = 00,     ! >100 toggles some debug
      &   i, j, k, l, m, z,   ! Loop index
      &   itmp, n
       character(len=INDEX_LEN) ::
@@ -1624,18 +1624,18 @@
       end do
 
       ! TODO: re-enable this
-!      ! Figure out factor from equivalent lines
-!      factor = 1.0d+0
-!      do j = 1, 2
-!         do i = 1, 4
-!            if (c(i,j) == 0) cycle
-!            if (mod(c(i,j),2) == 0) then
-!               factor = factor * (1.0d+0/real(c(i,j),8))
-!            end if
-!         end do
-!      end do
-!      item%fact = item%fact * factor
-!
+      ! Figure out factor from equivalent lines
+      factor = 1.0d+0
+      do j = 1, 2
+         do i = 1, 4
+            if (c(i,j) == 0) cycle
+            if (mod(c(i,j),2) == 0) then
+               factor = factor * (1.0d+0/real(c(i,j),8))
+            end if
+         end do
+      end do
+      item%fact = item%fact * factor
+
       ! Set ranks of tensors
       call itf_rank(e1, c, item%rank1, .false.)
       call itf_rank(e2, c, item%rank2, .false.)
@@ -1651,6 +1651,10 @@
       allocate(str3%str(item%rank3))
 
       n_cnt = sum(sum(c, dim=1))
+
+      ! Set number of contraction indicies, used later on
+      item%contri = n_cnt
+
       allocate(str1%cnt_poss(n_cnt))
       allocate(str2%cnt_poss(n_cnt))
       allocate(str3%cnt_poss(n_cnt))
@@ -1938,11 +1942,14 @@
       end do
 
 
-      ! Work out the factor due to permuation of creation indicies
+      ! Work out the factor due to permuation of contraction indicies
       do i = 1, n_cnt
        if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
           p_factor = p_factor * -1.0d0
-          write(item%logfile,*)"Update factor1: ",p_factor
+          if (ntest>100) then
+            write(item%logfile,*)"Update factor 1 (contraction of ",
+     &                           " contraction indicies): ",p_factor
+          end if
        end if
       end do
 
@@ -2008,7 +2015,10 @@
                ! odd number of permuations; so get a negative
                if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
-                  write(item%logfile,*) "Update factor2: ", p_factor
+                  if (ntest>100) then
+                     write(item%logfile,*) "Update factor 2 (rearrange",
+     &               " the result string to normal order): ", p_factor
+                  end if
                end if
 
                exit
@@ -2042,7 +2052,11 @@
                ! odd number of permuations; so get a negative
                if (mod(i,2)/=0) then
                   p_factor = p_factor * -1.0d0
-                  write(item%logfile,*) "Update factor2.5: ", p_factor
+                  if (ntest>100) then
+                     write(item%logfile,*) "Update factor 3 (move
+     &               annhilations to the right in the result string): ",
+     &               p_factor
+                  end if
                end if
 
                exit
@@ -2075,7 +2089,11 @@
                      distance = abs(k-pp)
                      if (mod(distance,2)/=0) then
                         p_factor = p_factor * -1.0d0
-                        write(item%logfile,*)"Update factor3: ",p_factor
+                        if (ntest>100) then
+                           write(item%logfile,*)"Update factor 4 ",
+     &                      "(rearrange reuslt string to correct ",
+     &                      "pairing): ", p_factor
+                        end if
                      end if
                      ! Swapped letters between current k and pp
                      tmp = str3%str(pp)
@@ -2113,6 +2131,81 @@
       call permute_index(str2, item%rank2)
       call permute_index(str3, item%rank3)
 
+
+      ! Need to swap annhilation ops (1-P_ij)
+      ! TODO: this will not work if the result is greater than rank 4
+      if (item%permute==2) then
+         if (item%rank1/=2) then
+            tstr=''
+            do i = 1, item%rank1
+               if (str1%str(i)==p_list%plist(1)%pindex(2)) then
+                  tstr(i:i) = p_list%plist(2)%pindex(2)
+               else if (str1%str(i)==p_list%plist(2)%pindex(2)) then
+                  tstr(i:i) = p_list%plist(1)%pindex(2)
+               else
+                  tstr(i:i) = str1%str(i)
+               end if
+            end do
+            do i = 1, item%rank1
+               str1%str(i) = tstr(i:i)
+            end do
+         end if
+
+         if (item%rank2/=2) then
+            tstr=''
+            do i = 1, item%rank2
+               if (str2%str(i)==p_list%plist(1)%pindex(2)) then
+                  tstr(i:i) = p_list%plist(2)%pindex(2)
+               else if (str2%str(i)==p_list%plist(2)%pindex(2)) then
+                  tstr(i:i) = p_list%plist(1)%pindex(2)
+               else
+                  tstr(i:i) = str2%str(i)
+               end if
+            end do
+
+            do i = 1, item%rank2
+               str2%str(i) = tstr(i:i)
+            end do
+         end if
+      end if
+
+!      ! Only need to permute annihilation ops amongst themselves,
+!      ! this is the case whenever we have (1-Pyx)(1-Pvw). For two rank
+!      ! 4 tensors, this is straight forward. When there is a rank 2 and
+!      ! rank 4, can't swap the rank 2, so have to swapped both
+!      ! annihilations on the rank 4 tensor
+!      if (item%permute == 2) then
+!         ! Need to swap annihilation operators between tensors:
+!         ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
+!
+!         if (item%rank1 /= 2) then
+!            if (p_list%plist(nloop+2)%ops(2)==1) then
+!               ! External indices belong on same tensor
+!               tmp = p_list%plist(nloop+1)%pindex(2)
+!               t1_list%plist(nloop+1)%pindex(2) =
+!     &                                   p_list%plist(nloop+2)%pindex(2)
+!               t1_list%plist(nloop+2)%pindex(2) = tmp
+!            else
+!               t1_list%plist(nloop+1)%pindex(2) =
+!     &                                   p_list%plist(nloop+2)%pindex(2)
+!            end if
+!         end if
+!
+!         if (item%rank2 /= 2) then
+!            if (p_list%plist(nloop+1)%ops(2)==2) then
+!               tmp = p_list%plist(nloop+1)%pindex(2)
+!               t2_list%plist(nloop+1)%pindex(2) =
+!     &                                   p_list%plist(nloop+2)%pindex(2)
+!               t2_list%plist(nloop+2)%pindex(2) = tmp
+!            else
+!               t2_list%plist(nloop+1)%pindex(2) =
+!     &                                   p_list%plist(nloop+1)%pindex(2)
+!            end if
+!         end if
+!
+!      end if
+
+
       s1 = ""
       s2 = ""
       s3 = ""
@@ -2130,7 +2223,7 @@
          s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
       end do
 
-      if (.true.) then
+      if (ntest>10) then
          if (p_factor>0.0d0) then
             tmp = '+'
          else
@@ -2147,9 +2240,11 @@
          write(item%logfile,*) "---------------------------"
       end if
 
-      !item%idx1=trim(s1)
-      !item%idx2=trim(s2)
-      !item%idx3=trim(s3)
+
+      item%idx1=trim(s1)
+      item%idx2=trim(s2)
+      item%idx3=trim(s3)
+      item%fact = item%fact * p_factor
 
       deallocate(p_list%plist)
 
@@ -3935,12 +4030,14 @@
       ! diagram rules, but still some care has to be taken when translating
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      item%fact=contr_info%fact_itf
+
+      !item%fact=contr_info%fact_itf
+      item%fact=abs(contr_info%fact_itf)
       !write(11,*) "diag fact: ", contr_info%fact
       !write(11,*) "itf fact: ", contr_info%fact_itf
 
       ! Account for negative sign as explained from above...
-      call integral_fact(contr_info,item%fact)
+      !call integral_fact(contr_info,item%fact)
 
       !write(11,*) "integral fact: ", item%fact
 
@@ -3953,7 +4050,7 @@
          call assign_add_index(contr_info,item)
       else
          ! For other contractions
-         call assign_index(contr_info,item)
+         !call assign_index(contr_info,item)
          call assign_new_index(contr_info,item)
       end if
 
