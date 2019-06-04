@@ -1614,6 +1614,7 @@
      &   rank2, rank1,      ! Rank of tensor - either can be T1 or T2
      &   tensor2, tensor1,  ! Labels a tesor - either 1 or 2
      &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+     &   te1ops, te2ops,  ! Number of external ops on T1 and T2
      &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
@@ -1776,6 +1777,8 @@
 
       e1ops = sum(sum(e1,dim=2))
       e2ops = sum(sum(e2,dim=2))
+      te1ops = e1ops
+      te2ops = e2ops
       shift = 1
       ! Loop to find external pairs
       ! First loop over total number of external pairs
@@ -2061,6 +2064,20 @@
          call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
       end if
 
+      write(11,*)
+      write(11,*) "Strings before nicer pairing: "
+      write(11,*) "str1 ", str1%str
+      write(11,*) "str2 ", str2%str
+      call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+      write(11,*)
+
+      if (te1ops >= te2ops) then
+!        call find_pairs_new(str1,str2,item%rank1,item%rank2,n_cnt,item)
+        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,n_cnt,item)
+      else
+!         call find_pairs_new(str2,str1,item%rank2,item%rank1,n_cnt,item)
+        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,n_cnt,item)
+      end if
 
       ! If there is a pair in one string, permute so they are paired
       ! 'imediately'. Also update the
@@ -2378,6 +2395,295 @@
       deallocate(str3%str)
       deallocate(str2%str)
       deallocate(str1%str)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine find_pairs_wrap(str1, str2, rank1, rank2, n_cnt, item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(in) ::
+     &   str1,
+     &   str2
+      type(itf_contr), intent(in) ::
+     &   item
+      integer, intent(in) ::
+     &   rank1,
+     &   rank2,
+     &   n_cnt
+
+      type(pair_list) ::
+     &   p_list
+      integer ::
+     &   shift
+
+      write(11,*) "str1 ", str1%str
+      write(11,*) "str2 ", str2%str
+
+      allocate(p_list%plist(item%rank3/2))
+      shift = 1
+
+      call find_pairs_new(str1, str2, rank1, rank2, n_cnt, item, shift,
+     &                    p_list)
+
+      ! If all the external pairs havn't been found, then there are two
+      ! seperate pairs on each tensor. Go back and find them...
+      if (shift-1/=item%rank3/2) then
+      call find_pairs_new(str2, str1, rank2, rank1, n_cnt, item, shift,
+     &                    p_list)
+      end if
+
+
+      call print_plist(p_list, item%rank3/2, "NEW PAIRS", item%logfile)
+      write(11,*)
+
+      deallocate(p_list%plist)
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine find_pairs_new(str1, str2, rank1, rank2, n_cnt, item,
+     &                          shift, p_list)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(in) ::
+     &   str1,
+     &   str2
+      type(itf_contr), intent(in) ::
+     &   item
+      integer, intent(in) ::
+     &   rank1,
+     &   rank2,
+     &   n_cnt
+      integer, intent(inout) ::
+     &   shift
+      type(pair_list), intent(inout) ::
+     &   p_list
+
+      logical ::
+     &   is_cnt,
+     &   found_ex,
+     &   already_found
+      integer ::
+     &   i,j,k,l
+
+      !allocate(p_list%plist(item%rank3/2))
+      !shift = 1
+
+      ! Search only the creations of the first string for ex ops
+      do i = 1, rank1/2
+         write(11,*) "whats going on ", i, rank1/2
+         is_cnt = .false.
+         do j = 1, n_cnt
+            if (i==str1%cnt_poss(j)) then
+               is_cnt = .true.
+            end if
+         end do
+
+         if (.not. is_cnt) then
+
+            ! Search the annhilations of the first string
+            ! TODO: check itype of pair
+            do j = rank1/2+1, rank1
+
+               ! Check if the annhilation operator has already been paried
+               ! TODO: factorise these
+               already_found = .false.
+               do k = 1, shift
+                  if (str1%str(j)==p_list%plist(k)%pindex(2)) then
+                     already_found = .true.
+                     exit
+                  end if
+               end do
+               if (already_found) cycle
+
+               found_ex = .true.
+               do k = 1, n_cnt
+                  write(11,*) "what 1", str1%cnt_poss(k), " j ", j
+                  if (j==str1%cnt_poss(k)) then
+                     found_ex = .false.
+                  end if
+               end do
+
+               if (found_ex) then
+                  ! TODO: include place info (ops(1)), need to pass to
+                  ! function
+                  p_list%plist(shift)%pindex(1)=str1%str(i)
+                  p_list%plist(shift)%pindex(2)=str1%str(j)
+                  shift = shift + 1
+                  exit
+               end if
+            end do
+
+            ! If it didn't find an operator in the first annhilations,
+            ! look on the second annhilation ops
+            if (.not. found_ex) then
+               do j = rank2/2+1, rank2
+
+                  ! Check if the annhilation operator has already been paried
+                  already_found = .false.
+                  do k = 1, shift
+                     if (str2%str(j)==p_list%plist(k)%pindex(2)) then
+                        already_found = .true.
+                        exit
+                     end if
+                  end do
+                  if (already_found) cycle
+
+                  found_ex = .true.
+                  do k = 1, n_cnt
+                     if (j==str2%cnt_poss(k)) then
+                        found_ex = .false.
+                     end if
+                  end do
+
+                  if (found_ex) then
+                     p_list%plist(shift)%pindex(1)=str1%str(i)
+                     p_list%plist(shift)%pindex(2)=str2%str(j)
+                     shift = shift + 1
+                     exit
+                  end if
+               end do
+            end if
+
+
+         end if
+
+         if (.not. is_cnt .and. .not. found_ex) then
+            write(item%logfile,*) "Failed to find creation/annhilation",
+     &                            " pair"
+            exit
+         end if
+
+      end do
+
+
+      ! Havn't found all external pairs yet
+      if (shift-1/=item%rank3/2) then
+         write(11,*) "Continuing the search"
+
+      ! Search the annhilation operators of the first string
+      do i = rank1/2+1, rank1
+         write(11,*) "hello 2 ", i, str1%str(i)
+
+         ! Check if annhilation has already been paired
+         already_found = .false.
+         do j = 1, shift
+            if (str1%str(i)==p_list%plist(j)%pindex(2)) then
+               write(11,*) "already found!"
+               already_found = .true.
+               exit
+            end if
+         end do
+         if (already_found) cycle
+
+         is_cnt = .false.
+         do j = 1, n_cnt
+            if (i==str1%cnt_poss(j)) then
+               is_cnt = .true.
+            end if
+         end do
+
+         if (.not. is_cnt) then
+         write(11,*) "hello 2 ", i, str1%str(i)
+
+            ! Search the creations of the first string
+            ! TODO: check itype of pair
+            do j = 1, rank1/2
+
+               ! Check if the creation operator has already been paried
+               already_found = .false.
+               do k = 1, shift
+                  if (str1%str(j)==p_list%plist(k)%pindex(1)) then
+                     already_found = .true.
+                     write(11,*) "already found 2"
+                     exit
+                  end if
+               end do
+               if (already_found) cycle
+
+               found_ex = .true.
+               do k = 1, n_cnt
+                  if (j==str1%cnt_poss(k)) then
+                     found_ex = .false.
+                  end if
+               end do
+
+               if (found_ex) then
+                  ! TODO: place itype info
+                  p_list%plist(shift)%pindex(2)=str1%str(i)
+                  p_list%plist(shift)%pindex(1)=str1%str(j)
+                  shift = shift + 1
+                  exit
+               end if
+            end do
+
+            ! If it didn't find an operator in the first creations,
+            ! look on the second creations ops
+            if (.not. found_ex) then
+
+
+               do j = 1, rank2/2
+
+                  already_found = .false.
+                  do k = 1, shift
+                     if (str2%str(j)==p_list%plist(k)%pindex(1)) then
+                        already_found = .true.
+                        exit
+                     end if
+                  end do
+                  if (already_found) cycle
+
+                  found_ex = .true.
+                  do k = 1, n_cnt
+                     if (j==str2%cnt_poss(k)) then
+                        found_ex = .false.
+                     end if
+                  end do
+
+                  if (found_ex) then
+                     p_list%plist(shift)%pindex(2)=str1%str(i)
+                     p_list%plist(shift)%pindex(1)=str2%str(j)
+                     shift = shift + 1
+                     exit
+                  end if
+               end do
+            end if
+
+
+         end if
+
+         if (.not. is_cnt .and. .not. found_ex) then
+            write(item%logfile,*) "Failed to find creation/annhilation",
+     &                            " pair"
+            exit
+         end if
+
+      end do
+      end if
+
+
+      !deallocate(p_list%plist)
+
 
       return
       end
