@@ -572,15 +572,23 @@
      &     permute         ! 2 = Need to permute index
 
       type(itf_contr) ::
-     &     itf_item        ! ITF contraction object; holds all info about the ITF algo line
+     &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
-     &    i,j,k
+     &    i,j,k,
+     &    type1(INDEX_LEN),
+     &    type2(INDEX_LEN)
       logical ::
      &    summed
 
 
-      call itf_contr_init(contr_info,itf_item,permute,
-     &                    command,itflog)
+      do i = 1, MAXINT
+         if (contr_info%label_res == spin_inters(i)%name) then
+            item%itype = spin_inters(i)%itype
+            !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
+         end if
+      end do
+
+      call itf_contr_init(contr_info,item,permute,command,itflog)
 
       if (permute == 2) then
          ! Need to transpose by tensors after permutation, to
@@ -589,74 +597,114 @@
          ! here, we are just searching for intermediates and don't care
          ! about the final sign - that will come when the intermediate
          ! is printed out
-         itf_item%idx1 = f_index(itf_item%idx1,itf_item%rank1/2)
-         itf_item%idx2 = f_index(itf_item%idx2,itf_item%rank2/2)
+         item%idx1 = f_index(item%idx1,item%rank1/2)
+         item%idx2 = f_index(item%idx2,item%rank2/2)
+      end if
+
+
+      ! TODO: better way to get this info?
+      type1 = 0
+      type2 = 0
+      if (item%inter(1)) then
+         do i = 1, item%rank1
+           if (scan("abcdefg",item%idx1(i:i))>0) then
+              type1(i) = 1
+           else if (scan("ijklmno",item%idx1(i:i))>0) then
+              type1(i) = 3
+           else if (scan("pqrstuv",item%idx1(i:i))>0) then
+              type1(i) = 2
+           else if (scan("xyz",item%idx1(i:i))>0) then
+              type1(i) = 4
+           end if
+         end do
+      end if
+
+      if (item%inter(2)) then
+         do i = 1, item%rank2
+           if (scan("abcdefg",item%idx2(i:i))>0) then
+              type2(i) = 1
+           else if (scan("ijklmno",item%idx2(i:i))>0) then
+              type2(i) = 3
+           else if (scan("pqrstuv",item%idx2(i:i))>0) then
+              type2(i) = 2
+           else if (scan("xyz",item%idx2(i:i))>0) then
+              type2(i) = 4
+           end if
+         end do
       end if
 
       ! Allocate space to store information about intermediates and
       ! their spin cases. Only allocate 2 objects as there can only be
       ! at most two intermediates on a line
-      allocate(itf_item%inter_spins(2))
+      allocate(item%inter_spins(2))
 
       ! Do not want to print out the lines while gathering info about
       ! intermediates
-      itf_item%print_line = .false.
+      item%print_line = .false.
 
 
       ! Need to catch lines which don't need to be spin summed
-      call assign_simple_spin(itf_item, summed)
+      call assign_simple_spin(item, summed)
 
       ! Need to set spin result for intermediate that depends on
       ! another intermediate
       if (.not. summed) then
 
-         if (itf_item%inter(3)) then
+         if (item%inter(3)) then
             do i = 1, MAXINT
-               if (itf_item%label_res == spin_inters(i)%name) then
+               if (item%label_res == spin_inters(i)%name) then
                   do k = 1, spin_inters(i)%ncase
 
                      ! TODO: This code is repeated in print_itf.f
-                     do j = 1, itf_item%rank3/2
-                        itf_item%i_spin%spin(1,j) =
+                     do j = 1, item%rank3/2
+                        item%i_spin%spin(1,j) =
      &                                       spin_inters(i)%cases(j,k)
-                        itf_item%i_spin%spin(2,j) =
+                        item%i_spin%spin(2,j) =
      &                             spin_inters(i)%cases(j+INDEX_LEN/2,k)
                      end do
 
-                     call assign_spin(itf_item)
+                     call assign_spin(item)
                   end do
                end if
             end do
          else
             ! Result is not an intermediate, ie. its a residual, so lets find
             ! out what spin intermediates it needs.
-            call assign_spin(itf_item)
+            call assign_spin(item)
          end if
       end if
 
-      itf_item%print_line = .true.
+      item%print_line = .true.
 
       ! TODO: Ignore tensor product cases for now...
-      if (itf_item%rank3 /= 4 .and. itf_item%rank1 /= 2 .and.
-     &    itf_item%rank2 /= 2) then
-         if (itf_item%ninter == 0) call line_error("Couldn't find
-     &                                    intermediate", itf_item)
+      if (item%rank3 /= 4 .and. item%rank1 /= 2 .and.
+     &    item%rank2 /= 2) then
+         if (item%ninter == 0) call line_error("Couldn't find
+     &                                    intermediate", item)
       end if
 
 
       ! Copy information back to array in print_itf()
-      do i = 1, itf_item%ninter
-         spin_inters(i+n_inter)=itf_item%inter_spins(i)
-         !write(itf_item%logfile,*) "INER SPIN: ",itf_item%inter_spins(i)
+      do i = 1, item%ninter
+         spin_inters(i+n_inter)=item%inter_spins(i)
+
+         ! Set index type information, used to figure out pairing
+         do j = 1, INDEX_LEN
+            spin_inters(i+n_inter)%itype(1,j)=type1(j)
+            spin_inters(i+n_inter)%itype(2,j)=type2(j)
+         end do
+
+         !write(item%logfile,*) "INER SPIN: ",item%inter_spins(i)
       end do
 
+
       ! Overall number of intermediates used to index spin_inters
-      n_inter = n_inter + itf_item%ninter
+      n_inter = n_inter + item%ninter
 
-      deallocate(itf_item%inter_spins)
+      deallocate(item%inter_spins)
 
-      ! Deallocate memroy used when construcitng itf_item
-      call itf_deinit(itf_item)
+      ! Deallocate memroy used when construcitng item
+      call itf_deinit(item)
 
       return
       end
@@ -787,7 +835,7 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate_to_itf(contr_info,itflog,command,
-     &                               label,spin_case)
+     &                               label,spin_case,itype)
 *----------------------------------------------------------------------*
 !     Actually print out the intermediate lines
 *----------------------------------------------------------------------*
@@ -806,7 +854,8 @@
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
-     &     spin_case(INDEX_LEN)
+     &     spin_case(INDEX_LEN),
+     &     itype(2,INDEX_LEN)
       character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
 
@@ -820,8 +869,16 @@
      &   found
 
 
-      call itf_contr_init(contr_info,item,0,
-     &                    command,itflog)
+      ! Set index type, which tells us the info about how the
+      ! intermediates are paired
+      item%itype = itype
+      !do i = 1, 2
+      !   write(itflog,'(a8, i1, a1)') " before ", i, ":"
+      !   write(itflog,'(8i2)') (item%itype(i,j),j=1,INDEX_LEN)
+      !end do
+
+      ! TODO: subroutine to print out all info in itf_contr
+      call itf_contr_init(contr_info,item,0,command,itflog)
 
       ! Set overall spin case of result
       !write(item%logfile,*) "spin_case ", spin_case
@@ -1560,9 +1617,10 @@
      &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
-     &   ntest = 00,     ! >100 toggles some debug
+     &   ntest = 10,     ! >100 toggles some debug
      &   i, j, k, l, m, z,   ! Loop index
-     &   itmp, n
+     &   itmp, n,
+     &   ipair
       character(len=INDEX_LEN) ::
      &   s1, s2, s3,  ! Tmp ITF index strings
      &   tstr
@@ -1623,7 +1681,6 @@
      &     contr_info%ngas,contr_info%nspin,e3)
       end do
 
-      ! TODO: re-enable this
       ! Figure out factor from equivalent lines
       factor = 1.0d+0
       do j = 1, 2
@@ -1637,6 +1694,7 @@
       item%fact = item%fact * factor
 
       ! Set ranks of tensors
+      ! TODO: Combine nops and rank
       call itf_rank(e1, c, item%rank1, .false.)
       call itf_rank(e2, c, item%rank2, .false.)
       call itf_rank(e3, c, item%rank3, .true.)
@@ -1645,6 +1703,15 @@
       item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
       item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
       item%nops3 = sum(e3, dim=2)
+
+!      ! Set if it has three external operators
+!      if (item%nops1(2)==3) then
+!         item%three(1) = .true.
+!      end if
+!      if (item%nops1(2)==3) then
+!         item%three(2) = .true.
+!      end if
+
 
       allocate(str1%str(item%rank1))
       allocate(str2%str(item%rank2))
@@ -1727,6 +1794,7 @@
          tensor1 = 2
       end if
 
+
       do i = 1, rank1
          ! Find first external index
          is_cnt = .false.
@@ -1736,8 +1804,10 @@
             end if
          end do
 
+         ! Setting temporary paired index from same tensor
          tmp = t_str1%str(rank1-i+1)
          tmp2 = t_str1%str(rank1-i+1)
+
 
          ! Need to check if previous pair has already been formed
          ! then continue
@@ -1755,6 +1825,28 @@
                end do
             end do
          end if
+
+         !! (If an intermediate) Set the index type of the pair we want
+         !! to pair with
+         !if (item%inter(3) .and. .not. is_cnt) then
+         !   do j = 1, rank1
+         !      if (item%itype(tensor1,j)==t_str1%i_type(i)) then
+         !         write(11,*) "hello"
+         !         ipair = item%itype(tensor1,j+rank1/2-1)
+         !         exit
+         !      end if
+         !   end do
+         !   write(11,*) "str1 i_type: ", t_str1%i_type
+         !   !write(11,*) "index ", t_str1%i_type(i)
+         !   write(11,*) "pair ", ipair
+         !   write(11,*) "str1 ", str1%str
+         !   write(11,*) "str2 ", str2%str
+         !   do k = 1, 2
+         !      write(11,'(a7, i1, a1)') "result itype: ", k, ":"
+         !      write(11,'(8i2)') (item%itype(k,j),j=1,INDEX_LEN)
+         !   end do
+         !end if
+
 
          ! If not a contraction index, looking for pair external
          ! If the index paired with the external is a contraction index,
@@ -1818,12 +1910,76 @@
                      if (.not. found_cnt) then
                         ! If not the index isn't a contraction, then its
                         ! an external and we can end the search
+      !                  if (item%inter(3)) then
+                           ! Loop through possible pairs for original
+                           ! index
+                           ! if it matches one of the pair - ok (remove
+                           ! pair)
+                           ! if not keep going
+      !                     do k = 1, item%rank3/2
+      !write(11,*) "t_str1: ", t_str1%i_type(i)
+      !write(11,*) "item: ", item%itype(1,k)
+      !write(11,*) "t_str2: ", t_str2%i_type(rank2-j+1)
+      !write(11,*) "item: ", item%itype(1,k+item%rank3/2)
+
+      !write(11,*) "2: t_str1: ", t_str1%i_type(i)
+      !write(11,*) "2: item: ", item%itype(1,k+item%rank3/2)
+      !write(11,*) "2: t_str2: ", t_str2%i_type(rank2-j+1)
+      !write(11,*) "2: item: ", item%itype(1,k)
+      !write(11,*) "tensor ", tensor1
+      !if (t_str1%i_type(i)==item%itype(1,k) .and.
+     &!    t_str2%i_type(rank2-j+1)==item%itype(1,k+item%rank3/2)) then
+      !   !write(11,*) "found REAL end 1"
+      !   found_end=.true.
+      !   exit
+      !else if (t_str1%i_type(i)==item%itype(1,k+item%rank3/2)
+     &!  .and. t_str2%i_type(rank2-j+1)==item%itype(1,k)) then
+      !   !write(11,*) "found REAL end 2"
+      !   found_end=.true.
+      !   exit
+      !end if
+      !end do
+
+      !   if (.not. found_end) then
+      !      write(11,*) "found FAKE end"
+      !      write(11,*) t_str1%str(i), " ", tmp2
+      !      write(11,*) "t_str1: ", t_str1%i_type
+      !      write(11,*) "t_str2: ", t_str2%i_type
+      !      found_end = .true.
+      !   end if
+
+                           !if (ipair == t_str2%i_type(rank2-j+1)) then
+                           !   write(11,*) "found real end1"
+                           !   found_end = .true.
+                           !   exit
+                           !else
+                           !   write(11,*) "found FAKE end1"
+                           !   write(11,*) t_str1%str(i), " ", tmp2
+                           !   found_end = .false.
+                           !end if
+      !                  else
+      !                     ! Not an intermediate, so found end
+      !                     found_end = .true.
+      !                     exit
+      !                  end if
+
                         found_end = .true.
                         exit
                      end if
                      if (found_cnt) exit
 
                   end if
+
+                  !if (item%inter(3)) then
+                  !   if (ipair == t_str1%i_type(i)) then
+                  !      write(11,*) "found real end2"
+                  !      found_end = .true.
+                  !   else
+                  !      write(11,*) "found FAKE end2"
+                  !      found_end = .true.
+                  !   end if
+                  !end if
+
                   if (found_end) exit
                end do
 
@@ -1907,7 +2063,7 @@
 
 
       ! If there is a pair in one string, permute so they are paired
-      ! 'imediately'. This can introduce a factor. Also update the
+      ! 'imediately'. Also update the
       ! position of the contraction index
       ! TODO: the above algo seems redundant - maybe rethink...
       do j = 1, item%rank3/2
@@ -2169,42 +2325,6 @@
          end if
       end if
 
-!      ! Only need to permute annihilation ops amongst themselves,
-!      ! this is the case whenever we have (1-Pyx)(1-Pvw). For two rank
-!      ! 4 tensors, this is straight forward. When there is a rank 2 and
-!      ! rank 4, can't swap the rank 2, so have to swapped both
-!      ! annihilations on the rank 4 tensor
-!      if (item%permute == 2) then
-!         ! Need to swap annihilation operators between tensors:
-!         ! T1_{ac}^{ik} T2_{cb}^{kj} -> T1_{ac}^{jk} T2_{cb}^{ki}
-!
-!         if (item%rank1 /= 2) then
-!            if (p_list%plist(nloop+2)%ops(2)==1) then
-!               ! External indices belong on same tensor
-!               tmp = p_list%plist(nloop+1)%pindex(2)
-!               t1_list%plist(nloop+1)%pindex(2) =
-!     &                                   p_list%plist(nloop+2)%pindex(2)
-!               t1_list%plist(nloop+2)%pindex(2) = tmp
-!            else
-!               t1_list%plist(nloop+1)%pindex(2) =
-!     &                                   p_list%plist(nloop+2)%pindex(2)
-!            end if
-!         end if
-!
-!         if (item%rank2 /= 2) then
-!            if (p_list%plist(nloop+1)%ops(2)==2) then
-!               tmp = p_list%plist(nloop+1)%pindex(2)
-!               t2_list%plist(nloop+1)%pindex(2) =
-!     &                                   p_list%plist(nloop+2)%pindex(2)
-!               t2_list%plist(nloop+2)%pindex(2) = tmp
-!            else
-!               t2_list%plist(nloop+1)%pindex(2) =
-!     &                                   p_list%plist(nloop+1)%pindex(2)
-!            end if
-!         end if
-!
-!      end if
-
 
       s1 = ""
       s2 = ""
@@ -2239,7 +2359,6 @@
      &                         "][",trim(s2),"]"
          write(item%logfile,*) "---------------------------"
       end if
-
 
       item%idx1=trim(s1)
       item%idx2=trim(s2)
@@ -3983,6 +4102,8 @@
      &     perm,        ! Permutation information
      &     comm,        ! formula_item command
      &     lulog        ! Output file
+
+      integer :: i, j
       ! This should be in a 'constructor'
 
       ! Assign output file

@@ -63,6 +63,15 @@
      &                        (spin_inters(i)%cases(k,j),k=1,INDEX_LEN)
             write(logfile,*) "------------------------------"
          end do
+
+         do k = 1, 2
+            write(logfile,'(a7, i1, a1)') " itype ", k, ":"
+            write(logfile,'(8i2)')
+     &                    (spin_inters(i)%itype(k,j),j=1,INDEX_LEN)
+         end do
+         write(logfile,*) "------------------------------"
+!         write(logfile,*) "itype1: ", spin_inters(i)%itype1
+!         write(logfile,*) "itype2: ", spin_inters(i)%itype2
          write(logfile,*) "=============================="
       end do
       write(logfile,*)
@@ -263,6 +272,7 @@
          !write(itflog,*) "SPIN_INTER: ", spin_inters
          !write(itflog,*) "OSPIN_INTER: ", ospin_inters
          !write(itflog,*) "NINTER: ", ninter
+         !call print_inter_spin_cases(ospin_inters,ninter,"ospin",11)
 
          ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
@@ -285,7 +295,7 @@
                      ! Print out intermediate line
                      call intermediate_to_itf(fl_item%bcontr,itflog,
      &                     fl_item%command,ospin_inters(k)%name,
-     &                     tmp_case)
+     &                     tmp_case,ospin_inters(k)%itype)
                   end if
 
                   ! Move onto next item and repeat

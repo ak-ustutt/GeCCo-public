@@ -15,7 +15,8 @@
       integer, dimension(INDEX_LEN,MAX_SPIN_CASES) ::
      &     cases = 0                ! Matrix containing possible spin cases each row is a different case
       integer ::
-     &     ncase = 0            ! Number of different spin cases
+     &     ncase = 0,           ! Number of different spin cases
+     &     itype(2,INDEX_LEN)
 
       end type spin_cases
 
@@ -86,7 +87,8 @@
       type(spin_cases), pointer ::
      &     inter_spins(:) => null()     ! Array of intermediates + spin cases
       integer ::
-     &     ninter = 0                   ! Number of intermediates used in a contraction
+     &     ninter = 0,                  ! Number of intermediates used in a contraction
+     &     itype(2,INDEX_LEN)
       logical ::
      &     print_line = .true.          ! Should this line be printed
       type(spin_info) ::
