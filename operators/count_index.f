@@ -1647,7 +1647,8 @@
      &   factor,        ! Factor from equivalent lines
      &   p_factor       ! Overall factor from contraction/rearrangment
       type(pair_list) ::
-     &   p_list        ! Complete list of pairs in binary contraction
+     &   p_list,       ! Complete list of pairs in binary contraction
+     &   p_list2        ! Complete list of pairs in binary contraction
       integer, dimension(4) ::
      &   t_shift,       ! Index shift for external indices
      &   e_shift,       ! Index shift for external indices
@@ -2087,13 +2088,17 @@
       call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
       write(11,*)
 
+      allocate(p_list2%plist(item%rank3/2))
       if (te1ops >= te2ops) then
-!        call find_pairs_new(str1,str2,item%rank1,item%rank2,n_cnt,item)
-        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,n_cnt,item)
+        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
+     &                       item,p_list2)
       else
-!         call find_pairs_new(str2,str1,item%rank2,item%rank1,n_cnt,item)
-        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,n_cnt,item)
+        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
+     &                       item,p_list2)
       end if
+      call print_plist(p_list2, item%rank3/2, "NEW PAIRS", item%logfile)
+      deallocate(p_list2%plist)
+
 
       ! If there is a pair in one string, permute so they are paired
       ! 'imediately'. Also update the
@@ -2417,7 +2422,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine find_pairs_wrap(str1, str2, rank1, rank2, n_cnt, item)
+      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
+     &                           t2, n_cnt, item, p_list)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -2435,37 +2441,39 @@
       integer, intent(in) ::
      &   rank1,
      &   rank2,
+     &   t1,
+     &   t2,
      &   n_cnt
-
-      type(pair_list) ::
+      type(pair_list), intent(inout) ::
      &   p_list
+
       integer ::
      &   shift, i
 
-      write(11,*) "str1 ", str1%str
-      write(11,*) "str2 ", str2%str
+      !write(11,*) "str1 ", str1%str
+      !write(11,*) "str2 ", str2%str
       if (item%inter(3)) then
          write(11,*) "info ", (item%itype(1,i),i=1,INDEX_LEN)
       end if
 
-      allocate(p_list%plist(item%rank3/2))
+      !allocate(p_list%plist(item%rank3/2))
       shift = 1
 
-      call find_pairs_new(str1, str2, rank1, rank2, n_cnt, item, shift,
-     &                    p_list)
+      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
+     &                    item, shift, p_list)
 
       ! If all the external pairs havn't been found, then there are two
       ! seperate pairs on each tensor. Go back and find them...
       if (shift-1/=item%rank3/2) then
-      call find_pairs_new(str2, str1, rank2, rank1, n_cnt, item, shift,
-     &                    p_list)
+      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
+     &                    item, shift, p_list)
       end if
 
 
-      call print_plist(p_list, item%rank3/2, "NEW PAIRS", item%logfile)
-      write(11,*)
+      !call print_plist(p_list, item%rank3/2, "NEW PAIRS", item%logfile)
+      !write(11,*)
 
-      deallocate(p_list%plist)
+      !deallocate(p_list%plist)
 
 
       return
@@ -2473,8 +2481,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine find_pairs_new(str1, str2, rank1, rank2, n_cnt, item,
-     &                          shift, p_list)
+      subroutine find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
+     &                          item, shift, p_list)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -2492,6 +2500,8 @@
       integer, intent(in) ::
      &   rank1,
      &   rank2,
+     &   t1,
+     &   t2,
      &   n_cnt
       integer, intent(inout) ::
      &   shift
@@ -2523,32 +2533,23 @@
          if (.not. is_cnt) then
 
             ! Search the annhilations of the first string
-            ! TODO: check itype of pair
-            do j = rank1/2+1, rank1
+            !do j = rank1/2+1, rank1
+            do j = rank1, rank1/2+1, -1
 
-               ! If an intermediate result, check for correct pairing
-               ! Remeber - the itype info refers to the result positions
-               !correct_pair = .false.
-               !if (item%inter(3)) then
-               !   write(11,*) "is it a correct pairing?"
-               !   do k = 1, item%rank3/2
-               !      if (str1%i_type(i)==item%itype(1,k)) then
-               !         if (str1%i_type(j)==
-     &         !                       item%itype(1,k+item%rank3/2)) then
-               !            write(11,*) "correct pair ", str1%i_type(i),
-     &         !                        item%itype(1,i)
-               !            correct_pair = .true.
-               !         end if
-               !      end if
-               !   end do
-               !end if
+               write(11,*) "searching with ", str1%str(i), t1
+               write(11,*) "matching with ", str1%str(j), t1
 
-               correct_pair = .false.
-               if (item%inter(3)) then
-               call check_pairing(correct_pair,str1,str2,rank1,rank2,i,
-     &                            j,item)
-               end if
-               if (.not. correct_pair) cycle
+               ! TODO: factorise
+               ! TODO: also this should go first with a cycle condition,
+               ! remove found_ex if stament, need found_ex further below
+               ! though...
+               found_ex = .true.
+               do k = 1, n_cnt
+                  !write(11,*) "what: ", str1%cnt_poss(k), " j: ", j
+                  if (j==str1%cnt_poss(k)) then
+                     found_ex = .false.
+                  end if
+               end do
 
                ! Check if the annhilation operator has already been paried
                ! TODO: factorise these
@@ -2561,19 +2562,22 @@
                end do
                if (already_found) cycle
 
-               found_ex = .true.
-               do k = 1, n_cnt
-                  !write(11,*) "what 1", str1%cnt_poss(k), " j ", j
-                  if (j==str1%cnt_poss(k)) then
-                     found_ex = .false.
-                  end if
-               end do
+               ! If an intermediate result, check for correct pairing
+               ! Remeber - the itype info refers to the result positions
+               if (item%inter(3)) then
+                  correct_pair = .false.
+                  call check_pairing(correct_pair,str1,str1,rank1,rank1,
+     &                               i,j,item)
+                  if (.not. correct_pair) cycle
+               end if
 
                if (found_ex) then
-                  ! TODO: include place info (ops(1)), need to pass to
-                  ! function
+                  write(11,*) "placing in ", str1%str(i), t1
+                  write(11,*) "placing in ", str1%str(j), t1
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
+                  p_list%plist(shift)%ops(1)=t1
+                  p_list%plist(shift)%ops(2)=t1
                   shift = shift + 1
                   exit
                end if
@@ -2582,7 +2586,17 @@
             ! If it didn't find an operator in the first annhilations,
             ! look on the second annhilation ops
             if (.not. found_ex) then
-               do j = rank2/2+1, rank2
+               !do j = rank2/2+1, rank2
+               do j = rank2, rank2/2+1, -1
+
+                  write(11,*) "hello"
+
+                  found_ex = .true.
+                  do k = 1, n_cnt
+                     if (j==str2%cnt_poss(k)) then
+                        found_ex = .false.
+                     end if
+                  end do
 
                   ! Check if the annhilation operator has already been paried
                   already_found = .false.
@@ -2594,16 +2608,20 @@
                   end do
                   if (already_found) cycle
 
-                  found_ex = .true.
-                  do k = 1, n_cnt
-                     if (j==str2%cnt_poss(k)) then
-                        found_ex = .false.
-                     end if
-                  end do
+
+                  if (item%inter(3)) then
+                     correct_pair = .false.
+                     call check_pairing(correct_pair,str1,str2,rank1,
+     &                                  rank2,i,j,item)
+                     if (.not. correct_pair) cycle
+                  end if
+
 
                   if (found_ex) then
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
+                     p_list%plist(shift)%ops(1)=t1
+                     p_list%plist(shift)%ops(2)=t2
                      shift = shift + 1
                      exit
                   end if
@@ -2624,16 +2642,18 @@
 
       ! Havn't found all external pairs yet
       if (shift-1/=item%rank3/2) then
-         write(11,*) "Continuing the search"
+         !write(11,*) "Continuing the search"
 
       ! Search the annhilation operators of the first string
-      do i = rank1/2+1, rank1
+      ! TODO: factorise this
+      !do i = rank1/2+1, rank1
+      do i = rank1, rank1/2+1, -1
 
          ! Check if annhilation has already been paired
          already_found = .false.
          do j = 1, shift
             if (str1%str(i)==p_list%plist(j)%pindex(2)) then
-               write(11,*) "already found!"
+               !write(11,*) "already found!"
                already_found = .true.
                exit
             end if
@@ -2650,19 +2670,7 @@
          if (.not. is_cnt) then
 
             ! Search the creations of the first string
-            ! TODO: check itype of pair
             do j = 1, rank1/2
-
-               ! Check if the creation operator has already been paried
-               already_found = .false.
-               do k = 1, shift
-                  if (str1%str(j)==p_list%plist(k)%pindex(1)) then
-                     already_found = .true.
-                     write(11,*) "already found 2"
-                     exit
-                  end if
-               end do
-               if (already_found) cycle
 
                found_ex = .true.
                do k = 1, n_cnt
@@ -2671,10 +2679,33 @@
                   end if
                end do
 
+
+               ! Check if the creation operator has already been paried
+               already_found = .false.
+               do k = 1, shift
+                  if (str1%str(j)==p_list%plist(k)%pindex(1)) then
+                     already_found = .true.
+                     !write(11,*) "already found 2"
+                     exit
+                  end if
+               end do
+               if (already_found) cycle
+
+
+               if (item%inter(3)) then
+                  correct_pair = .false.
+                  call check_pairing(correct_pair,str1,str1,rank1,
+     &                               rank1,i,j,item)
+                  if (.not. correct_pair) cycle
+               end if
+
+
                if (found_ex) then
                   ! TODO: place itype info
                   p_list%plist(shift)%pindex(2)=str1%str(i)
                   p_list%plist(shift)%pindex(1)=str1%str(j)
+                  p_list%plist(shift)%ops(2)=t1
+                  p_list%plist(shift)%ops(1)=t1
                   shift = shift + 1
                   exit
                end if
@@ -2684,8 +2715,15 @@
             ! look on the second creations ops
             if (.not. found_ex) then
 
-
                do j = 1, rank2/2
+
+                  found_ex = .true.
+                  do k = 1, n_cnt
+                     if (j==str2%cnt_poss(k)) then
+                        found_ex = .false.
+                     end if
+                  end do
+
 
                   already_found = .false.
                   do k = 1, shift
@@ -2696,16 +2734,19 @@
                   end do
                   if (already_found) cycle
 
-                  found_ex = .true.
-                  do k = 1, n_cnt
-                     if (j==str2%cnt_poss(k)) then
-                        found_ex = .false.
-                     end if
-                  end do
+
+                  if (item%inter(3)) then
+                     correct_pair = .false.
+                     call check_pairing(correct_pair,str1,str2,rank1,
+     &                                  rank2,i,j,item)
+                     if (.not. correct_pair) cycle
+                  end if
 
                   if (found_ex) then
                      p_list%plist(shift)%pindex(2)=str1%str(i)
                      p_list%plist(shift)%pindex(1)=str2%str(j)
+                     p_list%plist(shift)%ops(2)=t1
+                     p_list%plist(shift)%ops(1)=t2
                      shift = shift + 1
                      exit
                   end if
@@ -2761,20 +2802,24 @@
       ! Remeber - the itype info refers to the result positions
       ! TODO: need to use paired positions
       !pp1 = rank1 - place1 + 1
-      pp2 = rank2 - place2 + 1
 
-      !if (item%inter(3)) then
       write(11,*) "is it a correct pairing?"
       do i = 1, item%rank3/2
          if (str1%i_type(place1)==item%itype(1,i)) then
+            pp2 = item%rank3 - i + 1
+            !write(11,*) "1st: ", str1%i_type(place1)
+            !write(11,*) "itype: ", item%itype(1,i)
+            !write(11,*) "2nd: ", str2%i_type(place2)
+            !write(11,*) "ityep: ", item%itype(1,pp2)
+            !write(11,*) "pp2: ", pp2
             if (str2%i_type(place2)==
      &                             item%itype(1,pp2)) then
-               write(11,*) "correct pair "
+               write(11,*) "correct pair"
                correct_pair = .true.
+               exit
             end if
          end if
       end do
-      !end if
 
       return
       end
