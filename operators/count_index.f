@@ -885,6 +885,8 @@
       logical ::
      &   found
 
+      !write(11,*) "What is this ", label
+      !write(11,*) "What is this ", spin_case
 
       ! Set index type, which tells us the info about how the
       ! intermediates are paired
@@ -897,12 +899,15 @@
       ! TODO: subroutine to print out all info in itf_contr
       call itf_contr_init(contr_info,item,0,command,itflog)
 
+
       ! Set overall spin case of result
       !write(item%logfile,*) "spin_case ", spin_case
       do i = 1, item%rank3/2
          item%i_spin%spin(1,i) = spin_case(i)
          item%i_spin%spin(2,i) = spin_case(i+INDEX_LEN/2)
       end do
+
+      !call print_spin(item%i_spin%spin, item%rank3, "TEST", 11)
 
       ! Change intermediate name to reflect spin case
       spin_name = ''
@@ -946,7 +951,7 @@
          do j = 1, ngastp
             ! Need to catach three internal integrals which result from a
             ! permuation and mark them. process.py will turn KP -> J
-            if (item%nops1(j) > 2) then
+            if (item%nops1(j) > 2 .and. item%int(1)) then
                item%label_t1 = 'KP'
             end if
          end do

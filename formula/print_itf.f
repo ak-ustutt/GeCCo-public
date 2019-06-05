@@ -115,7 +115,9 @@
      &     ospin_inters  ! Numerically ordered array of intermeidates with associated spin cases
       integer ::
      &     i,j,k,     ! Loop indcies
-     &     contr_no  ! Counter of contrations
+     &     contr_no, ! Counter of contrations
+     &     kk,
+     &     p_count
       logical ::
      &     check_inter,    ! Need to use itf module instead
      &     more_inter,     ! Check if more intermediates are needed
@@ -254,16 +256,17 @@
          ! change there names STIN001aaaa, then print out the residual
          fl_item => inter_start
 
-
          ! Numerically order spin_inters, so 001 intermediate is printed
          ! out first, then 002. This is important because intermediates
          ! may depend on previous intermediates
+         shift = 1
          do i = 1, MAXINT
             write(ch, '(I1)') i
-            shift = 0
+            !shift = 0
             do j = 1, ninter
                if (scan(ch, spin_inters(j)%name)) then
-                  ospin_inters(i+shift) = spin_inters(j)
+                  !ospin_inters(i+shift) = spin_inters(j)
+                  ospin_inters(shift) = spin_inters(j)
                   shift = shift + 1
                end if
             end do
@@ -284,9 +287,13 @@
             do i = 1, ospin_inters(k)%ncase
                do ! Loop through the list
 
-                  if (fl_item%bcontr%label_res == ospin_inters(k)%name
-     &                .or. scan('P', ospin_inters(k)%name)) then
+                  !write(11,*) "ospin name ", ospin_inters(k)%name(1:9)
+!                  if (fl_item%bcontr%label_res == ospin_inters(k)%name
+!     &                .or. scan('P', ospin_inters(k)%name)) then
+                  if (fl_item%bcontr%label_res(1:9) ==
+     &                                  ospin_inters(k)%name(1:9)) then
                      ! Send off specific spin case to be summed and printed
+                     !write(11,*) "ospin name ", ospin_inters(k)%name
                      do j = 1, INDEX_LEN
                         tmp_case(j) = ospin_inters(k)%cases(j,i)
                      end do
@@ -315,6 +322,7 @@
                end do
             end do
          end do
+
 
          ! Spin summ and print residual which uses the above
          ! intermediates
