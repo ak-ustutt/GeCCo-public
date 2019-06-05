@@ -590,18 +590,6 @@
 
       call itf_contr_init(contr_info,item,permute,command,itflog)
 
-      if (permute == 2) then
-         ! Need to transpose by tensors after permutation, to
-         ! avoid symmetry problem when using (1 + Pabij)
-         ! When we transpose tensors, we get a sign change, however
-         ! here, we are just searching for intermediates and don't care
-         ! about the final sign - that will come when the intermediate
-         ! is printed out
-         item%idx1 = f_index(item%idx1,item%rank1/2)
-         item%idx2 = f_index(item%idx2,item%rank2/2)
-      end if
-
-
       ! TODO: better way to get this info?
       ! Placed in normal ordered {} order not ITF []
       type1 = 0
@@ -647,6 +635,19 @@
            end if
          end do
       end if
+
+      if (permute == 2) then
+         ! Need to transpose by tensors after permutation, to
+         ! avoid symmetry problem when using (1 + Pabij)
+         ! When we transpose tensors, we get a sign change, however
+         ! here, we are just searching for intermediates and don't care
+         ! about the final sign - that will come when the intermediate
+         ! is printed out
+         item%idx1 = f_index(item%idx1,item%rank1/2)
+         item%idx2 = f_index(item%idx2,item%rank2/2)
+      end if
+
+
 
 
       ! Allocate space to store information about intermediates and
@@ -1797,306 +1798,306 @@
       te1ops = e1ops
       te2ops = e2ops
       shift = 1
-      ! Loop to find external pairs
-      ! First loop over total number of external pairs
-      ! e1ops and e2ops are the number of external ops on T1/T2, these
-      ! are decreased until all ops have been paired
-      do z = 1, (sum(sum(e1,dim=2))+sum(sum(e2,dim=2)))/2
+!      ! Loop to find external pairs
+!      ! First loop over total number of external pairs
+!      ! e1ops and e2ops are the number of external ops on T1/T2, these
+!      ! are decreased until all ops have been paired
+!      do z = 1, (sum(sum(e1,dim=2))+sum(sum(e2,dim=2)))/2
+!
+!      ! Look for pairs on tensor with the largest number of external ops
+!      if (e1ops >= e2ops) then
+!         t_str1 = str1
+!         rank1 = item%rank1
+!         tensor1 = 1
+!      else
+!         t_str1 = str2
+!         rank1 = item%rank2
+!         tensor1 = 2
+!      end if
+!
+!
+!      do i = 1, rank1
+!         ! Find first external index
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i==t_str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!            end if
+!         end do
+!
+!         ! Setting temporary paired index from same tensor
+!         tmp = t_str1%str(rank1-i+1)
+!         tmp2 = t_str1%str(rank1-i+1)
+!
+!
+!         ! Need to check if previous pair has already been formed
+!         ! then continue
+!         if (shift>1 .and. .not. is_cnt) then
+!            do l = 1, shift-1
+!               do m = 1, 2
+!                  if (p_list%plist(l)%pindex(m) == t_str1%str(i)) then
+!                     ! This pair has already been found
+!                     ! Mark is_cnt as true so as to skip to the next index
+!!                     write(item%logfile,*) "Already found this index: ",
+!!     &                           t_str1%str(i)
+!                     is_cnt = .true.
+!                     exit
+!                  end if
+!               end do
+!            end do
+!         end if
+!
+!         !! (If an intermediate) Set the index type of the pair we want
+!         !! to pair with
+!         !if (item%inter(3) .and. .not. is_cnt) then
+!         !   do j = 1, rank1
+!         !      if (item%itype(tensor1,j)==t_str1%i_type(i)) then
+!         !         write(11,*) "hello"
+!         !         ipair = item%itype(tensor1,j+rank1/2-1)
+!         !         exit
+!         !      end if
+!         !   end do
+!         !   write(11,*) "str1 i_type: ", t_str1%i_type
+!         !   !write(11,*) "index ", t_str1%i_type(i)
+!         !   write(11,*) "pair ", ipair
+!         !   write(11,*) "str1 ", str1%str
+!         !   write(11,*) "str2 ", str2%str
+!         !   do k = 1, 2
+!         !      write(11,'(a7, i1, a1)') "result itype: ", k, ":"
+!         !      write(11,'(8i2)') (item%itype(k,j),j=1,INDEX_LEN)
+!         !   end do
+!         !end if
+!
+!
+!         ! If not a contraction index, looking for pair external
+!         ! If the index paired with the external is a contraction index,
+!         ! then we 'follow the chain' of contraction indices until we
+!         ! reach the external index
+!         if (.not. is_cnt) then
+!            if (ntest>100) then
+!               write(item%logfile,*) "--------------------------------"
+!               write(item%logfile,*) "first ex index ", t_str1%str(i)
+!               write(item%logfile,*) "looking for ", tmp
+!               write(item%logfile,*) "--------------------------------"
+!            end if
+!
+!            found_end = .false.
+!            if (tensor1 == 1) then
+!               tensor2 = 2
+!               place = 1
+!            else
+!               tensor2 = 1
+!               place = 2
+!            end if
+!            do while (.not. found_end)
+!
+!               ! Set up variables: decide if we are looking on T1 or T2
+!               if (tensor2 == 2) then
+!                  rank2 = item%rank2
+!                  t_str2= str2
+!               else
+!                  rank2 = item%rank1
+!                  t_str2 = str1
+!               end if
+!
+!               found_match = .false.
+!               do j = 1, rank2
+!                  ! Start search for matching contraction index
+!!                  write(item%logfile,*) "Searching for match ",
+!!     &                                  t_str2%str(j)," ",tmp
+!                  if (t_str2%str(j) == tmp) then
+!                     ! Found matching contraction index
+!                     found_match = .true.
+!                     tmp2 = t_str2%str(rank2-j+1)
+!!                     write(item%logfile,*) t_str2%str(j),
+!!     &                                     " is paired with ", tmp2
+!
+!                     found_cnt = .false.
+!                     do k = 1, n_cnt
+!                        ! Is the paired index also a contraction index?
+!                        if ((rank2-j+1) == t_str2%cnt_poss(k)) then
+!                           found_end = .false.
+!                           if (tensor2 == 2) then
+!                              tensor2 = 1
+!                           else
+!                              tensor2 = 2
+!                           end if
+!                           tmp = tmp2
+!                           found_cnt = .true.
+!                           exit
+!                        end if
+!                     end do
+!
+!                     if (.not. found_cnt) then
+!                        ! If not the index isn't a contraction, then its
+!                        ! an external and we can end the search
+!      !                  if (item%inter(3)) then
+!                           ! Loop through possible pairs for original
+!                           ! index
+!                           ! if it matches one of the pair - ok (remove
+!                           ! pair)
+!                           ! if not keep going
+!      !                     do k = 1, item%rank3/2
+!      !write(11,*) "t_str1: ", t_str1%i_type(i)
+!      !write(11,*) "item: ", item%itype(1,k)
+!      !write(11,*) "t_str2: ", t_str2%i_type(rank2-j+1)
+!      !write(11,*) "item: ", item%itype(1,k+item%rank3/2)
+!
+!      !write(11,*) "2: t_str1: ", t_str1%i_type(i)
+!      !write(11,*) "2: item: ", item%itype(1,k+item%rank3/2)
+!      !write(11,*) "2: t_str2: ", t_str2%i_type(rank2-j+1)
+!      !write(11,*) "2: item: ", item%itype(1,k)
+!      !write(11,*) "tensor ", tensor1
+!      !if (t_str1%i_type(i)==item%itype(1,k) .and.
+!     &!    t_str2%i_type(rank2-j+1)==item%itype(1,k+item%rank3/2)) then
+!      !   !write(11,*) "found REAL end 1"
+!      !   found_end=.true.
+!      !   exit
+!      !else if (t_str1%i_type(i)==item%itype(1,k+item%rank3/2)
+!     &!  .and. t_str2%i_type(rank2-j+1)==item%itype(1,k)) then
+!      !   !write(11,*) "found REAL end 2"
+!      !   found_end=.true.
+!      !   exit
+!      !end if
+!      !end do
+!
+!      !   if (.not. found_end) then
+!      !      write(11,*) "found FAKE end"
+!      !      write(11,*) t_str1%str(i), " ", tmp2
+!      !      write(11,*) "t_str1: ", t_str1%i_type
+!      !      write(11,*) "t_str2: ", t_str2%i_type
+!      !      found_end = .true.
+!      !   end if
+!
+!                           !if (ipair == t_str2%i_type(rank2-j+1)) then
+!                           !   write(11,*) "found real end1"
+!                           !   found_end = .true.
+!                           !   exit
+!                           !else
+!                           !   write(11,*) "found FAKE end1"
+!                           !   write(11,*) t_str1%str(i), " ", tmp2
+!                           !   found_end = .false.
+!                           !end if
+!      !                  else
+!      !                     ! Not an intermediate, so found end
+!      !                     found_end = .true.
+!      !                     exit
+!      !                  end if
+!
+!                        found_end = .true.
+!                        exit
+!                     end if
+!                     if (found_cnt) exit
+!
+!                  end if
+!
+!                  !if (item%inter(3)) then
+!                  !   if (ipair == t_str1%i_type(i)) then
+!                  !      write(11,*) "found real end2"
+!                  !      found_end = .true.
+!                  !   else
+!                  !      write(11,*) "found FAKE end2"
+!                  !      found_end = .true.
+!                  !   end if
+!                  !end if
+!
+!                  if (found_end) exit
+!               end do
+!
+!               ! Set where the matching pair was found
+!               if (found_match) then
+!                  if (place == 1) then
+!                     place = 2
+!                  else
+!                     place = 1
+!                  end if
+!               end if
+!
+!               ! The index is not on the other tensor (two
+!               ! external indices on one tensor)
+!               if (.not. found_match) then
+!                  tmp2 = tmp
+!                  found_end = .true.
+!                  exit
+!               end if
+!
+!            end do
+!
+!            ! Create a pair list object
+!            do l = 1, rank1/2
+!               if (t_str1%str(i)==t_str1%str(l)) then
+!                  ! Started with a creation operator
+!                  p_list%plist(shift)%pindex(1) = t_str1%str(i)
+!                  p_list%plist(shift)%pindex(2) = tmp2
+!                  p_list%plist(shift)%ops(1) = tensor1
+!                  p_list%plist(shift)%ops(2) = place
+!                  exit
+!               else if (t_str1%str(i)==t_str1%str(l+rank1/2)) then
+!                  ! Started with an annhilation operator
+!                  p_list%plist(shift)%pindex(1) = tmp2
+!                  p_list%plist(shift)%pindex(2) = t_str1%str(i)
+!                  p_list%plist(shift)%ops(1) = place
+!                  p_list%plist(shift)%ops(2) = tensor1
+!                  exit
+!               end if
+!            end do
+!
+!
+!            if (ntest>100) then
+!               write(item%logfile,*) "================================"
+!               write(item%logfile,*) "Found an external pair:"
+!               write(item%logfile,*) "================================"
+!               write(item%logfile,*) "creation index    ",
+!     &                               p_list%plist(shift)%pindex(1)
+!               write(item%logfile,*) "annhilation index ",
+!     &                               p_list%plist(shift)%pindex(2)
+!               write(item%logfile,*) "================================"
+!            end if
+!
+!            shift = shift + 1
+!
+!            ! Decrease number of external indices left to pair
+!            if (tensor1 == 1) then
+!               e1ops = e1ops - 1
+!            else
+!               e2ops = e2ops - 1
+!            end if
+!
+!            if (place == 1) then
+!               e1ops = e1ops - 1
+!            else
+!               e2ops = e2ops - 1
+!            end if
+!
+!         end if
+!      end do
+!
+!      end do ! Loop over number of external pairs
+!
+!      if (ntest>100) then
+!         write(item%logfile,*) "====================================="
+!         write(item%logfile,*) "Ending external pair search"
+!         write(item%logfile,*) "====================================="
+!         write(item%logfile,*)
+!         call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+!      end if
 
-      ! Look for pairs on tensor with the largest number of external ops
-      if (e1ops >= e2ops) then
-         t_str1 = str1
-         rank1 = item%rank1
-         tensor1 = 1
-      else
-         t_str1 = str2
-         rank1 = item%rank2
-         tensor1 = 2
-      end if
-
-
-      do i = 1, rank1
-         ! Find first external index
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i==t_str1%cnt_poss(j)) then
-               is_cnt = .true.
-            end if
-         end do
-
-         ! Setting temporary paired index from same tensor
-         tmp = t_str1%str(rank1-i+1)
-         tmp2 = t_str1%str(rank1-i+1)
-
-
-         ! Need to check if previous pair has already been formed
-         ! then continue
-         if (shift>1 .and. .not. is_cnt) then
-            do l = 1, shift-1
-               do m = 1, 2
-                  if (p_list%plist(l)%pindex(m) == t_str1%str(i)) then
-                     ! This pair has already been found
-                     ! Mark is_cnt as true so as to skip to the next index
-!                     write(item%logfile,*) "Already found this index: ",
-!     &                           t_str1%str(i)
-                     is_cnt = .true.
-                     exit
-                  end if
-               end do
-            end do
-         end if
-
-         !! (If an intermediate) Set the index type of the pair we want
-         !! to pair with
-         !if (item%inter(3) .and. .not. is_cnt) then
-         !   do j = 1, rank1
-         !      if (item%itype(tensor1,j)==t_str1%i_type(i)) then
-         !         write(11,*) "hello"
-         !         ipair = item%itype(tensor1,j+rank1/2-1)
-         !         exit
-         !      end if
-         !   end do
-         !   write(11,*) "str1 i_type: ", t_str1%i_type
-         !   !write(11,*) "index ", t_str1%i_type(i)
-         !   write(11,*) "pair ", ipair
-         !   write(11,*) "str1 ", str1%str
-         !   write(11,*) "str2 ", str2%str
-         !   do k = 1, 2
-         !      write(11,'(a7, i1, a1)') "result itype: ", k, ":"
-         !      write(11,'(8i2)') (item%itype(k,j),j=1,INDEX_LEN)
-         !   end do
-         !end if
-
-
-         ! If not a contraction index, looking for pair external
-         ! If the index paired with the external is a contraction index,
-         ! then we 'follow the chain' of contraction indices until we
-         ! reach the external index
-         if (.not. is_cnt) then
-            if (ntest>100) then
-               write(item%logfile,*) "--------------------------------"
-               write(item%logfile,*) "first ex index ", t_str1%str(i)
-               write(item%logfile,*) "looking for ", tmp
-               write(item%logfile,*) "--------------------------------"
-            end if
-
-            found_end = .false.
-            if (tensor1 == 1) then
-               tensor2 = 2
-               place = 1
-            else
-               tensor2 = 1
-               place = 2
-            end if
-            do while (.not. found_end)
-
-               ! Set up variables: decide if we are looking on T1 or T2
-               if (tensor2 == 2) then
-                  rank2 = item%rank2
-                  t_str2= str2
-               else
-                  rank2 = item%rank1
-                  t_str2 = str1
-               end if
-
-               found_match = .false.
-               do j = 1, rank2
-                  ! Start search for matching contraction index
-!                  write(item%logfile,*) "Searching for match ",
-!     &                                  t_str2%str(j)," ",tmp
-                  if (t_str2%str(j) == tmp) then
-                     ! Found matching contraction index
-                     found_match = .true.
-                     tmp2 = t_str2%str(rank2-j+1)
-!                     write(item%logfile,*) t_str2%str(j),
-!     &                                     " is paired with ", tmp2
-
-                     found_cnt = .false.
-                     do k = 1, n_cnt
-                        ! Is the paired index also a contraction index?
-                        if ((rank2-j+1) == t_str2%cnt_poss(k)) then
-                           found_end = .false.
-                           if (tensor2 == 2) then
-                              tensor2 = 1
-                           else
-                              tensor2 = 2
-                           end if
-                           tmp = tmp2
-                           found_cnt = .true.
-                           exit
-                        end if
-                     end do
-
-                     if (.not. found_cnt) then
-                        ! If not the index isn't a contraction, then its
-                        ! an external and we can end the search
-      !                  if (item%inter(3)) then
-                           ! Loop through possible pairs for original
-                           ! index
-                           ! if it matches one of the pair - ok (remove
-                           ! pair)
-                           ! if not keep going
-      !                     do k = 1, item%rank3/2
-      !write(11,*) "t_str1: ", t_str1%i_type(i)
-      !write(11,*) "item: ", item%itype(1,k)
-      !write(11,*) "t_str2: ", t_str2%i_type(rank2-j+1)
-      !write(11,*) "item: ", item%itype(1,k+item%rank3/2)
-
-      !write(11,*) "2: t_str1: ", t_str1%i_type(i)
-      !write(11,*) "2: item: ", item%itype(1,k+item%rank3/2)
-      !write(11,*) "2: t_str2: ", t_str2%i_type(rank2-j+1)
-      !write(11,*) "2: item: ", item%itype(1,k)
-      !write(11,*) "tensor ", tensor1
-      !if (t_str1%i_type(i)==item%itype(1,k) .and.
-     &!    t_str2%i_type(rank2-j+1)==item%itype(1,k+item%rank3/2)) then
-      !   !write(11,*) "found REAL end 1"
-      !   found_end=.true.
-      !   exit
-      !else if (t_str1%i_type(i)==item%itype(1,k+item%rank3/2)
-     &!  .and. t_str2%i_type(rank2-j+1)==item%itype(1,k)) then
-      !   !write(11,*) "found REAL end 2"
-      !   found_end=.true.
-      !   exit
-      !end if
-      !end do
-
-      !   if (.not. found_end) then
-      !      write(11,*) "found FAKE end"
-      !      write(11,*) t_str1%str(i), " ", tmp2
-      !      write(11,*) "t_str1: ", t_str1%i_type
-      !      write(11,*) "t_str2: ", t_str2%i_type
-      !      found_end = .true.
-      !   end if
-
-                           !if (ipair == t_str2%i_type(rank2-j+1)) then
-                           !   write(11,*) "found real end1"
-                           !   found_end = .true.
-                           !   exit
-                           !else
-                           !   write(11,*) "found FAKE end1"
-                           !   write(11,*) t_str1%str(i), " ", tmp2
-                           !   found_end = .false.
-                           !end if
-      !                  else
-      !                     ! Not an intermediate, so found end
-      !                     found_end = .true.
-      !                     exit
-      !                  end if
-
-                        found_end = .true.
-                        exit
-                     end if
-                     if (found_cnt) exit
-
-                  end if
-
-                  !if (item%inter(3)) then
-                  !   if (ipair == t_str1%i_type(i)) then
-                  !      write(11,*) "found real end2"
-                  !      found_end = .true.
-                  !   else
-                  !      write(11,*) "found FAKE end2"
-                  !      found_end = .true.
-                  !   end if
-                  !end if
-
-                  if (found_end) exit
-               end do
-
-               ! Set where the matching pair was found
-               if (found_match) then
-                  if (place == 1) then
-                     place = 2
-                  else
-                     place = 1
-                  end if
-               end if
-
-               ! The index is not on the other tensor (two
-               ! external indices on one tensor)
-               if (.not. found_match) then
-                  tmp2 = tmp
-                  found_end = .true.
-                  exit
-               end if
-
-            end do
-
-            ! Create a pair list object
-            do l = 1, rank1/2
-               if (t_str1%str(i)==t_str1%str(l)) then
-                  ! Started with a creation operator
-                  p_list%plist(shift)%pindex(1) = t_str1%str(i)
-                  p_list%plist(shift)%pindex(2) = tmp2
-                  p_list%plist(shift)%ops(1) = tensor1
-                  p_list%plist(shift)%ops(2) = place
-                  exit
-               else if (t_str1%str(i)==t_str1%str(l+rank1/2)) then
-                  ! Started with an annhilation operator
-                  p_list%plist(shift)%pindex(1) = tmp2
-                  p_list%plist(shift)%pindex(2) = t_str1%str(i)
-                  p_list%plist(shift)%ops(1) = place
-                  p_list%plist(shift)%ops(2) = tensor1
-                  exit
-               end if
-            end do
-
-
-            if (ntest>100) then
-               write(item%logfile,*) "================================"
-               write(item%logfile,*) "Found an external pair:"
-               write(item%logfile,*) "================================"
-               write(item%logfile,*) "creation index    ",
-     &                               p_list%plist(shift)%pindex(1)
-               write(item%logfile,*) "annhilation index ",
-     &                               p_list%plist(shift)%pindex(2)
-               write(item%logfile,*) "================================"
-            end if
-
-            shift = shift + 1
-
-            ! Decrease number of external indices left to pair
-            if (tensor1 == 1) then
-               e1ops = e1ops - 1
-            else
-               e2ops = e2ops - 1
-            end if
-
-            if (place == 1) then
-               e1ops = e1ops - 1
-            else
-               e2ops = e2ops - 1
-            end if
-
-         end if
-      end do
-
-      end do ! Loop over number of external pairs
-
-      if (ntest>100) then
-         write(item%logfile,*) "====================================="
-         write(item%logfile,*) "Ending external pair search"
-         write(item%logfile,*) "====================================="
-         write(item%logfile,*)
-         call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
-      end if
-
-      write(11,*)
-      write(11,*) "Strings before nicer pairing: "
-      write(11,*) "str1 ", str1%str
-      write(11,*) "str2 ", str2%str
-      call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
-      write(11,*)
+      !write(11,*)
+      !write(11,*) "Strings before nicer pairing: "
+      !write(11,*) "str1 ", str1%str
+      !write(11,*) "str2 ", str2%str
+      !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+      !write(11,*)
 
       allocate(p_list2%plist(item%rank3/2))
       if (te1ops >= te2ops) then
         call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
-     &                       item,p_list2)
+     &                       item,p_list)
       else
         call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
-     &                       item,p_list2)
+     &                       item,p_list)
       end if
-      call print_plist(p_list2, item%rank3/2, "NEW PAIRS", item%logfile)
+      !call print_plist(p_list2, item%rank3/2, "NEW PAIRS", item%logfile)
       deallocate(p_list2%plist)
 
 
@@ -2452,9 +2453,9 @@
 
       !write(11,*) "str1 ", str1%str
       !write(11,*) "str2 ", str2%str
-      if (item%inter(3)) then
-         write(11,*) "info ", (item%itype(1,i),i=1,INDEX_LEN)
-      end if
+      !if (item%inter(3)) then
+      !   write(11,*) "info ", (item%itype(1,i),i=1,INDEX_LEN)
+      !end if
 
       !allocate(p_list%plist(item%rank3/2))
       shift = 1
@@ -2536,10 +2537,10 @@
             !do j = rank1/2+1, rank1
             do j = rank1, rank1/2+1, -1
 
-               write(11,*) "searching with ", str1%str(i), t1
-               write(11,*) "matching with ", str1%str(j), t1
+               !write(11,*) "searching with ", str1%str(i), t1
+               !write(11,*) "matching with ", str1%str(j), t1
 
-               ! TODO: factorise
+               ! TODO: factorise, three conditions into one function...
                ! TODO: also this should go first with a cycle condition,
                ! remove found_ex if stament, need found_ex further below
                ! though...
@@ -2560,7 +2561,10 @@
                      exit
                   end if
                end do
-               if (already_found) cycle
+               if (already_found) then
+                  found_ex = .false.
+                  cycle
+               end if
 
                ! If an intermediate result, check for correct pairing
                ! Remeber - the itype info refers to the result positions
@@ -2568,12 +2572,15 @@
                   correct_pair = .false.
                   call check_pairing(correct_pair,str1,str1,rank1,rank1,
      &                               i,j,item)
-                  if (.not. correct_pair) cycle
+                  if (.not. correct_pair) then
+                     found_ex = .false.
+                     cycle
+                  end if
                end if
 
                if (found_ex) then
-                  write(11,*) "placing in ", str1%str(i), t1
-                  write(11,*) "placing in ", str1%str(j), t1
+                  !write(11,*) "placing in ", str1%str(i), t1
+                  !write(11,*) "placing in ", str1%str(j), t1
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
                   p_list%plist(shift)%ops(1)=t1
@@ -2583,13 +2590,15 @@
                end if
             end do
 
+
             ! If it didn't find an operator in the first annhilations,
             ! look on the second annhilation ops
             if (.not. found_ex) then
                !do j = rank2/2+1, rank2
                do j = rank2, rank2/2+1, -1
 
-                  write(11,*) "hello"
+                  !write(11,*) "searching 2 with ", str1%str(i), t1
+                  !write(11,*) "matching 2 with ", str2%str(j), t2
 
                   found_ex = .true.
                   do k = 1, n_cnt
@@ -2606,18 +2615,26 @@
                         exit
                      end if
                   end do
-                  if (already_found) cycle
+                  if (already_found) then
+                     found_ex = .false.
+                     cycle
+                  end if
 
 
                   if (item%inter(3)) then
                      correct_pair = .false.
                      call check_pairing(correct_pair,str1,str2,rank1,
      &                                  rank2,i,j,item)
-                     if (.not. correct_pair) cycle
+                     if (.not. correct_pair) then
+                        found_ex = .false.
+                        cycle
+                     end if
                   end if
 
 
                   if (found_ex) then
+                     !write(11,*) "placing in ", str1%str(i), t1
+                     !write(11,*) "placing in ", str2%str(j), t2
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
@@ -2689,19 +2706,24 @@
                      exit
                   end if
                end do
-               if (already_found) cycle
+               if (already_found) then
+                  found_ex = .false.
+                  cycle
+               end if
 
 
                if (item%inter(3)) then
                   correct_pair = .false.
                   call check_pairing(correct_pair,str1,str1,rank1,
      &                               rank1,i,j,item)
-                  if (.not. correct_pair) cycle
+                  if (.not. correct_pair) then
+                     found_ex = .false.
+                     cycle
+                  end if
                end if
 
 
                if (found_ex) then
-                  ! TODO: place itype info
                   p_list%plist(shift)%pindex(2)=str1%str(i)
                   p_list%plist(shift)%pindex(1)=str1%str(j)
                   p_list%plist(shift)%ops(2)=t1
@@ -2716,6 +2738,9 @@
             if (.not. found_ex) then
 
                do j = 1, rank2/2
+
+                  !write(11,*) "searching 2 with ", str1%str(i), t1
+                  !write(11,*) "matching 2 with ", str2%str(j), t2
 
                   found_ex = .true.
                   do k = 1, n_cnt
@@ -2732,14 +2757,20 @@
                         exit
                      end if
                   end do
-                  if (already_found) cycle
+                  if (already_found) then
+                     found_ex = .false.
+                     cycle
+                  end if
 
 
                   if (item%inter(3)) then
                      correct_pair = .false.
                      call check_pairing(correct_pair,str1,str2,rank1,
      &                                  rank2,i,j,item)
-                     if (.not. correct_pair) cycle
+                     if (.not. correct_pair) then
+                        found_ex = .false.
+                        cycle
+                     end if
                   end if
 
                   if (found_ex) then
@@ -2796,30 +2827,60 @@
      &   rank1, rank2
 
       integer ::
-     &   i,
+     &   i, j, extent,
      &   pp1, pp2
 
       ! Remeber - the itype info refers to the result positions
       ! TODO: need to use paired positions
       !pp1 = rank1 - place1 + 1
 
-      write(11,*) "is it a correct pairing?"
-      do i = 1, item%rank3/2
-         if (str1%i_type(place1)==item%itype(1,i)) then
-            pp2 = item%rank3 - i + 1
-            !write(11,*) "1st: ", str1%i_type(place1)
-            !write(11,*) "itype: ", item%itype(1,i)
-            !write(11,*) "2nd: ", str2%i_type(place2)
-            !write(11,*) "ityep: ", item%itype(1,pp2)
-            !write(11,*) "pp2: ", pp2
+      !write(11,*) "is it a correct pairing?"
+      !write(11,*) "place1 ", place1
+      !write(11,*) "place2 ", place2
+
+      if (item%rank3==2) then
+         ! For rank 2, sometimes creation and annhilation ops are
+         ! switched, so need to check both pairing combinations
+         if (str1%i_type(place1)==item%itype(1,1)) then
             if (str2%i_type(place2)==
-     &                             item%itype(1,pp2)) then
-               write(11,*) "correct pair"
+     &                             item%itype(1,2)) then
+               !write(11,*) "correct pair"
                correct_pair = .true.
-               exit
+            end if
+         else if (str1%i_type(place1)==item%itype(1,2)) then
+            if (str2%i_type(place2)==
+     &                             item%itype(1,1)) then
+               !write(11,*) "correct pair"
+               correct_pair = .true.
             end if
          end if
-      end do
+      else
+         if (place1>rank1/2) then
+            j = item%rank3/2+1
+            extent = item%rank3
+         else
+            j = 1
+            extent = item%rank3/2
+         end if
+
+         do i = j, extent
+            if (str1%i_type(place1)==item%itype(1,i)) then
+               pp2 = item%rank3 - i + 1
+               !write(11,*) "1st: ", str1%i_type(place1)
+               !write(11,*) "itype: ", item%itype(1,i)
+               !write(11,*) "2nd: ", str2%i_type(place2)
+               !write(11,*) "ityep: ", item%itype(1,pp2)
+               !write(11,*) "pp2: ", pp2
+               if (str2%i_type(place2)==
+     &                                item%itype(1,pp2)) then
+                  !write(11,*) "correct pair"
+                  correct_pair = .true.
+                  exit
+               end if
+            end if
+         end do
+      end if
+
 
       return
       end

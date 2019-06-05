@@ -474,12 +474,13 @@ def rename_integrals(line):
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         # 3 external integrals which arise from a permuation, therefore they become J:eeec
-        if ("KP:ecee" in words[i]):
+        if ("KP:ceee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
+            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
+            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+            words[i] = words[i].split(':',1)[0].replace("KP", "K") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
 
     line = " ".join(words)
@@ -565,7 +566,7 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ccce" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line or "KP:ccce" in line):
+    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ccce" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line or "KP:ccce" in line or "KP:ceee" in line):
         line = rename_integrals(line)
         words=line.split()
 
