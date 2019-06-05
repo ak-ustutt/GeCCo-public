@@ -603,35 +603,51 @@
 
 
       ! TODO: better way to get this info?
+      ! Placed in normal ordered {} order not ITF []
       type1 = 0
       type2 = 0
       if (item%inter(1)) then
          do i = 1, item%rank1
+           j = i
+           if (i==3) then
+              j = 4
+           else if (i==4) then
+              j = 3
+           end if
+
            if (scan("abcdefg",item%idx1(i:i))>0) then
-              type1(i) = 1
+              type1(j) = 1
            else if (scan("ijklmno",item%idx1(i:i))>0) then
-              type1(i) = 3
+              type1(j) = 3
            else if (scan("pqrstuv",item%idx1(i:i))>0) then
-              type1(i) = 2
+              type1(j) = 2
            else if (scan("xyz",item%idx1(i:i))>0) then
-              type1(i) = 4
+              type1(j) = 4
            end if
          end do
       end if
 
       if (item%inter(2)) then
          do i = 1, item%rank2
+           j = i
+           if (i==3) then
+              j = 4
+           else if (i==4) then
+              j = 3
+           end if
+
            if (scan("abcdefg",item%idx2(i:i))>0) then
-              type2(i) = 1
+              type2(j) = 1
            else if (scan("ijklmno",item%idx2(i:i))>0) then
-              type2(i) = 3
+              type2(j) = 3
            else if (scan("pqrstuv",item%idx2(i:i))>0) then
-              type2(i) = 2
+              type2(j) = 2
            else if (scan("xyz",item%idx2(i:i))>0) then
-              type2(i) = 4
+              type2(j) = 4
            end if
          end do
       end if
+
 
       ! Allocate space to store information about intermediates and
       ! their spin cases. Only allocate 2 objects as there can only be
@@ -2424,10 +2440,13 @@
       type(pair_list) ::
      &   p_list
       integer ::
-     &   shift
+     &   shift, i
 
       write(11,*) "str1 ", str1%str
       write(11,*) "str2 ", str2%str
+      if (item%inter(3)) then
+         write(11,*) "info ", (item%itype(1,i),i=1,INDEX_LEN)
+      end if
 
       allocate(p_list%plist(item%rank3/2))
       shift = 1
@@ -2482,16 +2501,18 @@
       logical ::
      &   is_cnt,
      &   found_ex,
-     &   already_found
+     &   already_found,
+     &   correct_pair
       integer ::
      &   i,j,k,l
 
+      ! TODO: chagne str%i_type to itype
       !allocate(p_list%plist(item%rank3/2))
       !shift = 1
 
       ! Search only the creations of the first string for ex ops
       do i = 1, rank1/2
-         write(11,*) "whats going on ", i, rank1/2
+         !write(11,*) "whats going on ", i, rank1/2
          is_cnt = .false.
          do j = 1, n_cnt
             if (i==str1%cnt_poss(j)) then
@@ -2504,6 +2525,30 @@
             ! Search the annhilations of the first string
             ! TODO: check itype of pair
             do j = rank1/2+1, rank1
+
+               ! If an intermediate result, check for correct pairing
+               ! Remeber - the itype info refers to the result positions
+               !correct_pair = .false.
+               !if (item%inter(3)) then
+               !   write(11,*) "is it a correct pairing?"
+               !   do k = 1, item%rank3/2
+               !      if (str1%i_type(i)==item%itype(1,k)) then
+               !         if (str1%i_type(j)==
+     &         !                       item%itype(1,k+item%rank3/2)) then
+               !            write(11,*) "correct pair ", str1%i_type(i),
+     &         !                        item%itype(1,i)
+               !            correct_pair = .true.
+               !         end if
+               !      end if
+               !   end do
+               !end if
+
+               correct_pair = .false.
+               if (item%inter(3)) then
+               call check_pairing(correct_pair,str1,str2,rank1,rank2,i,
+     &                            j,item)
+               end if
+               if (.not. correct_pair) cycle
 
                ! Check if the annhilation operator has already been paried
                ! TODO: factorise these
@@ -2518,7 +2563,7 @@
 
                found_ex = .true.
                do k = 1, n_cnt
-                  write(11,*) "what 1", str1%cnt_poss(k), " j ", j
+                  !write(11,*) "what 1", str1%cnt_poss(k), " j ", j
                   if (j==str1%cnt_poss(k)) then
                      found_ex = .false.
                   end if
@@ -2583,7 +2628,6 @@
 
       ! Search the annhilation operators of the first string
       do i = rank1/2+1, rank1
-         write(11,*) "hello 2 ", i, str1%str(i)
 
          ! Check if annhilation has already been paired
          already_found = .false.
@@ -2604,7 +2648,6 @@
          end do
 
          if (.not. is_cnt) then
-         write(11,*) "hello 2 ", i, str1%str(i)
 
             ! Search the creations of the first string
             ! TODO: check itype of pair
@@ -2684,6 +2727,54 @@
 
       !deallocate(p_list%plist)
 
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine check_pairing(correct_pair, str1, str2, rank1, rank2,
+     &                         place1, place2, item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      logical, intent(inout) ::
+     &   correct_pair
+      type(itf_contr), intent(in) ::
+     &   item
+      type(index_str), intent(in) ::
+     &   str1, str2
+      integer, intent(in) ::
+     &   place1, place2,
+     &   rank1, rank2
+
+      integer ::
+     &   i,
+     &   pp1, pp2
+
+      ! Remeber - the itype info refers to the result positions
+      ! TODO: need to use paired positions
+      !pp1 = rank1 - place1 + 1
+      pp2 = rank2 - place2 + 1
+
+      !if (item%inter(3)) then
+      write(11,*) "is it a correct pairing?"
+      do i = 1, item%rank3/2
+         if (str1%i_type(place1)==item%itype(1,i)) then
+            if (str2%i_type(place2)==
+     &                             item%itype(1,pp2)) then
+               write(11,*) "correct pair "
+               correct_pair = .true.
+            end if
+         end if
+      end do
+      !end if
 
       return
       end
