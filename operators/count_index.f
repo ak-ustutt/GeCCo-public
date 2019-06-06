@@ -2546,47 +2546,7 @@
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
 
-!               ! TODO: factorise, three conditions into one function...
-!               ! TODO: also this should go first with a cycle condition,
-!               ! remove found_ex if stament, need found_ex further below
-!               ! though...
-!               found_ex = .true.
-!               do k = 1, n_cnt
-!                  !write(11,*) "what: ", str1%cnt_poss(k), " j: ", j
-!                  if (j==str1%cnt_poss(k)) then
-!                     found_ex = .false.
-!                  end if
-!               end do
-!
-!               ! Check if the annhilation operator has already been paried
-!               ! TODO: factorise these
-!               already_found = .false.
-!               do k = 1, shift
-!                  if (str1%str(j)==p_list%plist(k)%pindex(2)) then
-!                     already_found = .true.
-!                     exit
-!                  end if
-!               end do
-!               if (already_found) then
-!                  found_ex = .false.
-!                  cycle
-!               end if
-!
-!               ! If an intermediate result, check for correct pairing
-!               ! Remeber - the itype info refers to the result positions
-!               if (item%inter(3)) then
-!                  correct_pair = .false.
-!                  call check_pairing(correct_pair,str1,str1,rank1,rank1,
-!     &                               i,j,item)
-!                  if (.not. correct_pair) then
-!                     found_ex = .false.
-!                     cycle
-!                  end if
-!               end if
-
                if (found_ex) then
-                  !write(11,*) "placing in ", str1%str(i), t1
-                  !write(11,*) "placing in ", str1%str(j), t1
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
                   p_list%plist(shift)%ops(1)=t1
@@ -2595,7 +2555,6 @@
                   exit
                end if
             end do
-
 
             ! If it didn't find an operator in the first annhilations,
             ! look on the second annhilation ops
@@ -2608,42 +2567,7 @@
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
 
-!                  found_ex = .true.
-!                  do k = 1, n_cnt
-!                     if (j==str2%cnt_poss(k)) then
-!                        found_ex = .false.
-!                        exit
-!                     end if
-!                  end do
-!
-!                  ! Check if the annhilation operator has already been paried
-!                  already_found = .false.
-!                  do k = 1, shift
-!                     if (str2%str(j)==p_list%plist(k)%pindex(2)) then
-!                        already_found = .true.
-!                        exit
-!                     end if
-!                  end do
-!                  if (already_found) then
-!                     found_ex = .false.
-!                     cycle
-!                  end if
-!
-!
-!                  if (item%inter(3)) then
-!                     correct_pair = .false.
-!                     call check_pairing(correct_pair,str1,str2,rank1,
-!     &                                  rank2,i,j,item)
-!                     if (.not. correct_pair) then
-!                        found_ex = .false.
-!                        cycle
-!                     end if
-!                  end if
-
-
                   if (found_ex) then
-                     !write(11,*) "placing in ", str1%str(i), t1
-                     !write(11,*) "placing in ", str2%str(j), t2
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
@@ -2701,40 +2625,6 @@
      &                            i, j, 1, shift, n_cnt,
      &                            p_list, item)
 
-!               found_ex = .true.
-!               do k = 1, n_cnt
-!                  if (j==str1%cnt_poss(k)) then
-!                     found_ex = .false.
-!                  end if
-!               end do
-!
-!
-!               ! Check if the creation operator has already been paried
-!               already_found = .false.
-!               do k = 1, shift
-!                  if (str1%str(j)==p_list%plist(k)%pindex(1)) then
-!                     already_found = .true.
-!                     !write(11,*) "already found 2"
-!                     exit
-!                  end if
-!               end do
-!               if (already_found) then
-!                  found_ex = .false.
-!                  cycle
-!               end if
-!
-!
-!               if (item%inter(3)) then
-!                  correct_pair = .false.
-!                  call check_pairing(correct_pair,str1,str1,rank1,
-!     &                               rank1,i,j,item)
-!                  if (.not. correct_pair) then
-!                     found_ex = .false.
-!                     cycle
-!                  end if
-!               end if
-
-
                if (found_ex) then
                   p_list%plist(shift)%pindex(2)=str1%str(i)
                   p_list%plist(shift)%pindex(1)=str1%str(j)
@@ -2757,37 +2647,6 @@
                call suitable_pair(found_ex, str1, str2, rank1, rank2,
      &                            i, j, 1, shift, n_cnt,
      &                            p_list, item)
-
-!                  found_ex = .true.
-!                  do k = 1, n_cnt
-!                     if (j==str2%cnt_poss(k)) then
-!                        found_ex = .false.
-!                     end if
-!                  end do
-!
-!
-!                  already_found = .false.
-!                  do k = 1, shift
-!                     if (str2%str(j)==p_list%plist(k)%pindex(1)) then
-!                        already_found = .true.
-!                        exit
-!                     end if
-!                  end do
-!                  if (already_found) then
-!                     found_ex = .false.
-!                     cycle
-!                  end if
-!
-!
-!                  if (item%inter(3)) then
-!                     correct_pair = .false.
-!                     call check_pairing(correct_pair,str1,str2,rank1,
-!     &                                  rank2,i,j,item)
-!                     if (.not. correct_pair) then
-!                        found_ex = .false.
-!                        cycle
-!                     end if
-!                  end if
 
                   if (found_ex) then
                      p_list%plist(shift)%pindex(2)=str1%str(i)
