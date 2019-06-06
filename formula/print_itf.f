@@ -275,6 +275,7 @@
          !write(itflog,*) "SPIN_INTER: ", spin_inters
          !write(itflog,*) "OSPIN_INTER: ", ospin_inters
          !write(itflog,*) "NINTER: ", ninter
+         !call print_inter_spin_cases(spin_inters,ninter,"spin",11)
          !call print_inter_spin_cases(ospin_inters,ninter,"ospin",11)
 
          ! Loop over intermediates.

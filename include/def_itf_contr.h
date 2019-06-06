@@ -142,6 +142,6 @@
 
       integer, pointer ::
      &     cnt_poss(:) => null(),
-     &     i_type(:) => null()
+     &     itype(:) => null()
 
       end type index_str
