@@ -392,21 +392,21 @@ def rename_integrals(line):
             tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        if ("K:ccee" in words[i]):
+        elif ("K:ccee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[2:3] + tmp[3:4] + tmp[0:1] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
             tmp2 = tmp2[2:3] + tmp2[3:4] + tmp2[0:1] + tmp2[1:2]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        if ("K:ecec" in words[i]):
+        elif ("K:ecec" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[0:1] + tmp[2:3] + tmp[1:2] + tmp[3:4]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
             tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[1:2] + tmp2[3:4]
             words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        if ("K:ecce" in words[i]):
+        elif ("K:ecce" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -416,7 +416,7 @@ def rename_integrals(line):
 
         # 3 internal integrals
         # Pairing as above (1+3, 2+4)
-        if ("K:ccec" in words[i]):
+        elif ("K:ccec" in words[i]):
             if (second):
                 # Second integral in the line, so must be the 'transpose', ie. J:eccc
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
@@ -433,7 +433,7 @@ def rename_integrals(line):
                 words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
                 second = True
 
-        if ("K:ccce" in words[i]):
+        elif ("K:ccce" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[3:4] + tmp[0:1] + tmp[1:2] + tmp[2:3]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -441,7 +441,7 @@ def rename_integrals(line):
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         # 3 internal integrals which arise from a permuation, therefore they become J:eccc
-        if ("KP:ccce" in words[i]):
+        elif ("KP:ccce" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[3:4] + tmp[1:2] + tmp[0:1] + tmp[2:3]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -452,21 +452,21 @@ def rename_integrals(line):
         # 3 external integrals
         # Index pariing is different compared to normal 1+3, 2+4;
         # Indicies are paired between the 1+2, 3+4, so need to convert index which is pair above to this convention
-        if ("K:ceee" in words[i]):
+        elif ("K:ceee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
             tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        if ("K:ecee" in words[i]):
+        elif ("K:ecee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
             tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
-        if ("K:eece" in words[i]):
+        elif ("K:eece" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[1:2] + tmp[3:4] + tmp[0:1] + tmp[2:3]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -474,7 +474,7 @@ def rename_integrals(line):
             words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
         # 3 external integrals which arise from a permuation, therefore they become J:eeec
-        if ("KP:ceee" in words[i]):
+        elif ("KP:ceee" in words[i]):
             tmp = words[i].split('[',1)[1].split(']',1)[0]
             tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
             tmp2 = words[i].split(':',1)[1].split('[',1)[0]
@@ -566,9 +566,11 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ccce" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line or "KP:ccce" in line or "KP:ceee" in line):
-        line = rename_integrals(line)
-        words=line.split()
+    #if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ccce" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line or "KP:ccce" in line or "KP:ceee" in line):
+    if ("K:" in line or "KP:"):
+        if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
+            line = rename_integrals(line)
+            words=line.split()
 
     # Check for spin summed block
     if (words[0]=='BEGIN'):
