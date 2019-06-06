@@ -881,7 +881,8 @@
       integer ::
      &    i, j, k, l
       character(len=INDEX_LEN) ::
-     &    spin_name
+     &    spin_name,
+     &    tspin_name
       logical ::
      &   found
 
@@ -930,6 +931,7 @@
       ! TODO: use a flag in itf_contr
       if (scan('P', label)) then
 
+         item%permutation = .true.
          found = .false.
          do j = 1, ngastp
             if (item%nops3(j) > 2) then
@@ -943,10 +945,40 @@
                   end if
                end do
                item%idx3=f_index(item%idx3,item%rank3/2,.true.)
+
+               ! Also flip i_spin just in case
+               !write(11,*) "i_spin ", item%i_spin%spin
+               do l = 1, 2
+                  do k = 1, item%rank3/2
+                     if (item%i_spin%spin(l,k)==1) then
+                        item%i_spin%spin(l,k)=2
+                     else if (item%i_spin%spin(l,k)==2) then
+                        item%i_spin%spin(l,k)=1
+                     end if
+                  end do
+               end do
+               !write(11,*) "i_spin ", item%i_spin%spin
+
+               ! Maybe this will lead to problems..
+               ! Rationale - sometimes due to the permuation symmetry of
+               ! tensor (ie. with 3 or 4 indicies of the same type), we
+               ! can skip explicitly writting out all the intermediates
+               ! which are needed. This is like when skipping the result
+               ! (permutation) line above.
+               do k = 1, ngastp
+                  if (item%inter(1) .and. item%nops1(k)>2) then
+                     return
+                  end if
+                  if (item%inter(2) .and. item%nops2(k)>2) then
+                     return
+                  end if
+               end do
+
                found = .true.
                exit
             end if
          end do
+
 
          do j = 1, ngastp
             ! Need to catach three internal integrals which result from a

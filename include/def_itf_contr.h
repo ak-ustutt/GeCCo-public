@@ -79,7 +79,8 @@
      &     int(3) = .false.,    ! True if tensor is an integral
      &     three(3) = .false.,  ! True if tensor has three operators which are of the same type !TODO: probably dont need
      &     symm = .false.,      ! True if going to symmetrise result
-     &     binary = .true.
+     &     binary = .true.,     ! True if a binary contraction
+     &     permutation = .false. ! True if the line is a result of the (1+P_ij^ab) permutation
       real(8) ::
      &     fact                 ! Factor
 
