@@ -2352,7 +2352,7 @@
       ! Need to swap annhilation ops (1-P_ij)
       ! TODO: this will not work if the result is greater than rank 4
       if (item%permute==2) then
-         if (item%rank1/=2) then
+         !if (item%rank1/=2) then
             tstr=''
             do i = 1, item%rank1
                if (str1%str(i)==p_list%plist(1)%pindex(2)) then
@@ -2366,9 +2366,9 @@
             do i = 1, item%rank1
                str1%str(i) = tstr(i:i)
             end do
-         end if
+         !end if
 
-         if (item%rank2/=2) then
+         !if (item%rank2/=2) then
             tstr=''
             do i = 1, item%rank2
                if (str2%str(i)==p_list%plist(1)%pindex(2)) then
@@ -2383,8 +2383,9 @@
             do i = 1, item%rank2
                str2%str(i) = tstr(i:i)
             end do
-         end if
+         !end if
       end if
+
 
 
       s1 = ""
@@ -4506,7 +4507,7 @@
       ! For now, if intermediate is part of a permutation
       ! line, then we add a P to its name
       if (item%permute == 2) then
-      item%inter_spins(ishift)%name=trim(label)//'P'
+         item%inter_spins(ishift)%name=trim(label)//'P'
       else
          item%inter_spins(ishift)%name=label
       end if
