@@ -986,7 +986,8 @@
             item%idx3=f_index(item%idx3,item%rank3/2)
          end if
 
-         item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+         !item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+         item%idx1 = f_index(item%idx1,item%rank1/2)
          item%idx2 = f_index(item%idx2, item%rank2/2)
 
 
@@ -2352,6 +2353,13 @@
       ! Need to swap annhilation ops (1-P_ij)
       ! TODO: this will not work if the result is greater than rank 4
       if (item%permute==2) then
+         !write(11,*) "hello ", item%label_res
+         !write(11,*) "hello ", item%label_t1
+         !write(11,*) "hello ", item%label_t2
+         !write(11,*) "str1 ", str1%str
+         !write(11,*) "str2 ", str2%str
+
+         ! TODO: This information is not being handed to the lines
          !if (item%rank1/=2) then
             tstr=''
             do i = 1, item%rank1
@@ -2384,6 +2392,8 @@
                str2%str(i) = tstr(i:i)
             end do
          !end if
+         !write(11,*) "new str1 ", str1%str
+         !write(11,*) "new str2 ", str2%str
       end if
 
 
@@ -2472,9 +2482,14 @@
      &   p_list
 
       integer ::
-     &   shift
+     &   shift,
+     &   i
 
       shift = 1
+
+      !if (item%inter(3)) then
+      !   write(11,*) "itype: ", (item%itype(1,i),i=1,INDEX_LEN)
+      !end if
 
       call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
      &                    item, shift, p_list)

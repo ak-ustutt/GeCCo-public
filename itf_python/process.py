@@ -448,6 +448,13 @@ def rename_integrals(line):
             tmp2 = tmp2[3:4] + tmp2[1:2] + tmp2[0:1] + tmp2[2:3]
             words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
 
+        elif ("KP:ccec" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
+            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+            words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+
 
         # 3 external integrals
         # Index pariing is different compared to normal 1+3, 2+4;
