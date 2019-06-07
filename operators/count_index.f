@@ -580,7 +580,6 @@
       logical ::
      &    summed
 
-
       do i = 1, MAXINT
          if (contr_info%label_res == spin_inters(i)%name) then
             item%itype = spin_inters(i)%itype
@@ -679,6 +678,10 @@
                         item%i_spin%spin(2,j) =
      &                             spin_inters(i)%cases(j+INDEX_LEN/2,k)
                      end do
+
+                     ! Need to clear spins from after the first loop
+                     item%t_spin(1)%spin = 0
+                     item%t_spin(2)%spin = 0
 
                      call assign_spin(item)
                   end do
@@ -4002,7 +4005,6 @@
          return
       end if
 
-
       ! Calculate half ranks for use in indexing letter index strings
       hr1 = item%rank1/2
       hr2 = item%rank2/2
@@ -4036,7 +4038,8 @@
          end select
       end if
 
-      !call print_spin(item%t_spin(3)%spin, item%rank3, "Result", 11)
+!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
+!     &                item%logfile)
 
       ! Assign spin of external indicies to T1 and T2
       do j=1, hr3
@@ -4071,8 +4074,8 @@
          end do
       end do
 
-      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 11)
-      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 11)
+      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before", 11)
+      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before", 11)
 
       ! Sum over the remaining contraction indicies and print out the
       ! line
@@ -4133,10 +4136,12 @@
          str2 = item%idx2
       end if
 
-      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1", 10)
-      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2", 10)
+      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%logfile)
+      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%logfile)
 
-      ! Get position information of contraction indicies
+      ! Get position information of contraction indicies, ie. look for
+      ! zeros
+      ! TODO: know this information already when assigning index?
       shift = 1
       do i=1, size(item%t_spin(z1)%spin,2)
          if (item%t_spin(z1)%spin(1,i) == 0) then
