@@ -427,10 +427,11 @@
       integer ::
 !     &    perm_array(4),   ! Info of permutation factors
      &    perm_case,   ! Info of permutation factors
-     &    i, j                ! Loop index
+     &    i, j, l, k                ! Loop index
       logical ::
      &    inter,           ! True if result is an intermediate
-     &    found
+     &    found,
+     &    upper
       character(len=MAXLEN_BC_LABEL) ::
      &    old_name,
      &    old_inter
@@ -492,13 +493,39 @@
                   ! indicies, then permute the covarient index
                   if (item%inter(1)) then
                      found = .false.
-                     do j = 1, ngastp
-                        if (item%nops1(j) > 2) then
-                        item%idx1=f_index(item%idx1,item%rank1/2,.true.)
-                        found = .true.
-                        exit
-                        end if
-                     end do
+
+
+                     !do j = 1, ngastp
+                     !   if (item%nops1(j) > 2) then
+
+                     !   if (j == 1) then
+                     !      l = 3
+                     !   else if (j == 2) then
+                     !      l = 1
+                     !   else if (j == 3) then
+                     !      l = 2
+                     !   else if (j == 4) then
+                     !      l = 4
+                     !   end if
+
+                     !   do k = 1, INDEX_LEN
+                     !      if (item%itype(1,k)/=l) then
+                     !         if (k>=item%rank1/2) then
+                     !            upper = .false.
+                     !         else
+                     !            upper = .true.
+                     !         end if
+                     !         exit
+                     !      end if
+                     !   end do
+
+                     !   item%idx1=f_index(item%idx1,item%rank1/2,upper)
+
+                     !   !item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                     !   found = .true.
+                     !   exit
+                     !   end if
+                     !end do
                      if (.not.found) then
                         item%idx1=f_index(item%idx1,item%rank1/2)
                      end if
@@ -524,7 +551,7 @@
                   ! get rid of this
                   if (trim(old_inter)==trim(item%label_t1) .and.
      &                trim(old_idx)==trim(item%idx1)) then
-                     exit
+                     !exit
                   end if
                end if
 
@@ -588,6 +615,8 @@
       end do
 
       call itf_contr_init(contr_info,item,permute,command,itflog)
+
+      !write(11,*) "label ", item%label_res
 
       ! TODO: better way to get this info?
       ! Placed in normal ordered {} order not ITF []
@@ -855,7 +884,7 @@
 
 *----------------------------------------------------------------------*
       subroutine intermediate_to_itf(contr_info,itflog,command,
-     &                               label,spin_case,itype)
+     &                               label,spin_case,itype,ninter)
 *----------------------------------------------------------------------*
 !     Actually print out the intermediate lines
 *----------------------------------------------------------------------*
@@ -875,19 +904,21 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
      &     spin_case(INDEX_LEN),
-     &     itype(2,INDEX_LEN)
+     &     itype(2,INDEX_LEN),
+     &   ninter ! Total number of intermediates
       character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
 
       type(itf_contr) ::
      &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
-     &    i, j, k, l
+     &    i, j, k, l, m
       character(len=INDEX_LEN) ::
      &    spin_name,
      &    tspin_name
       logical ::
-     &   found
+     &   found,
+     &   upper
 
       ! Set index type, which tells us the info about how the
       ! intermediates are paired
@@ -932,49 +963,75 @@
 
          item%permutation = .true.
          found = .false.
-         do j = 1, ngastp
-            if (item%nops3(j) > 2) then
-               ! If there are 3 external/internal indcies, don't need to
-               ! permute index, but do need to permute spin_name
-               do k = 1, len(spin_name)
-                  if (spin_name(k:k)=='a') then
-                     spin_name(k:k)='b'
-                  else if (spin_name(k:k)=='b') then
-                     spin_name(k:k)='a'
-                  end if
-               end do
-               item%idx3=f_index(item%idx3,item%rank3/2,.true.)
-
-               ! Also flip i_spin just in case
-               do l = 1, 2
-                  do k = 1, item%rank3/2
-                     if (item%i_spin%spin(l,k)==1) then
-                        item%i_spin%spin(l,k)=2
-                     else if (item%i_spin%spin(l,k)==2) then
-                        item%i_spin%spin(l,k)=1
-                     end if
-                  end do
-               end do
-
-               ! Maybe this will lead to problems..
-               ! Rationale - sometimes due to the permuation symmetry of
-               ! tensor (ie. with 3 or 4 indicies of the same type), we
-               ! can skip explicitly writting out all the intermediates
-               ! which are needed. This is like when skipping the result
-               ! (permutation) line above.
-               do k = 1, ngastp
-                  if (item%inter(1) .and. item%nops1(k)>2) then
-                     return
-                  end if
-                  if (item%inter(2) .and. item%nops2(k)>2) then
-                     return
-                  end if
-               end do
-
-               found = .true.
-               exit
-            end if
-         end do
+!         do j = 1, ngastp
+!            if (item%nops3(j) > 2) then
+!
+!               ! Maybe this will lead to problems..
+!               ! Rationale - sometimes due to the permuation symmetry of
+!               ! tensor (ie. with 3 or 4 indicies of the same type), we
+!               ! can skip explicitly writting out all the intermediates
+!               ! which are needed. This is like when skipping the result
+!               ! (permutation) line above.
+!               do k = 1, ngastp
+!                  if (item%inter(1) .and. item%nops1(k)>2 .and.
+!     &                item%rank2==2) then
+!                     return
+!                  else if (item%inter(2) .and. item%nops2(k)>2 .and.
+!     &                item%rank1==2) then
+!                     return
+!                  end if
+!               end do
+!
+!
+!               do k = 1, len(spin_name)
+!                  if (spin_name(k:k)=='a') then
+!                     spin_name(k:k)='b'
+!                  else if (spin_name(k:k)=='b') then
+!                     spin_name(k:k)='a'
+!                  end if
+!               end do
+!
+!               !! Find the itype of the 3 indicies
+!               if (j == 1) then
+!                  l = 3
+!               else if (j == 2) then
+!                  l = 1
+!               else if (j == 3) then
+!                  l = 2
+!               else if (j == 4) then
+!                  l = 4
+!               end if
+!
+!               do k = 1, INDEX_LEN
+!                  if (item%itype(1,k)/=l) then
+!                     if (k>=item%rank3/2) then
+!                        upper = .false.
+!                     else
+!                        upper = .true.
+!                     end if
+!                     exit
+!                  end if
+!               end do
+!
+!               !item%idx3=f_index(item%idx3,item%rank3/2,.true.)
+!               item%idx3=f_index(item%idx3,item%rank3/2,upper)
+!
+!               ! Also flip i_spin just in case
+!               do l = 1, 2
+!                  do k = 1, item%rank3/2
+!                     if (item%i_spin%spin(l,k)==1) then
+!                        item%i_spin%spin(l,k)=2
+!                     else if (item%i_spin%spin(l,k)==2) then
+!                        item%i_spin%spin(l,k)=1
+!                     end if
+!                  end do
+!               end do
+!
+!
+!               found = .true.
+!               exit
+!            end if
+!         end do
 
 
          do j = 1, ngastp
@@ -1001,6 +1058,7 @@
          ! indcices in final intermediate
          if (item%rank1>2) item%fact = item%fact * -1.0d+0
          if (item%rank2>2) item%fact = item%fact * -1.0d+0
+
 
 
       end if
@@ -2873,7 +2931,6 @@
                tmp = idx%str(1)
                idx%str(1) = idx%str(2)
                idx%str(2) = tmp
-               ! TODO: Get a factor here!
             end if
          end if
          return

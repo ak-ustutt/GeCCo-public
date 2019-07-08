@@ -303,7 +303,7 @@
                      ! Print out intermediate line
                      call intermediate_to_itf(fl_item%bcontr,itflog,
      &                     fl_item%command,ospin_inters(k)%name,
-     &                     tmp_case,ospin_inters(k)%itype)
+     &                     tmp_case,ospin_inters(k)%itype,ninter)
                   end if
 
                   ! Move onto next item and repeat
