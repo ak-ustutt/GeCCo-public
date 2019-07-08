@@ -616,8 +616,6 @@
 
       call itf_contr_init(contr_info,item,permute,command,itflog)
 
-      !write(11,*) "label ", item%label_res
-
       ! TODO: better way to get this info?
       ! Placed in normal ordered {} order not ITF []
       type1 = 0
