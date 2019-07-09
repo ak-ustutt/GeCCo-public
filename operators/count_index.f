@@ -836,8 +836,10 @@
       summed = .false.
 
 !      if (item%rank3 == 2 .and. item%rank1 + item%rank2 == 2 .or.
-      if (item%rank3 + item%rank1 + item%rank2 == 4 .or.
-     &    item%rank3 + item%rank1 + item%rank2 == 6) then
+!      if (item%rank3 + item%rank1 + item%rank2 == 4 .or.
+!     &    item%rank3 + item%rank1 + item%rank2 == 6) then
+      ! TODO: probably safer to sum == 4 cases explicitly
+      if (item%rank3 + item%rank1 + item%rank2 == 6) then
          j = 1
          do i = 1, 2
             if (item%inter(i)) then
@@ -2180,7 +2182,7 @@
         call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
      &                       item,p_list)
       end if
-      !call print_plist(p_list2, item%rank3/2, "NEW PAIRS", item%logfile)
+      !call print_plist(p_list, item%rank3/2, "NEW PAIRS", item%logfile)
       deallocate(p_list2%plist)
 
 
@@ -2217,6 +2219,7 @@
      &                         item%rank1, p_factor, n_cnt)
          end if
       end do
+      !call print_plist(p_list, item%rank3/2, "NICER PAIRS", item%logfile)
 
 
       ! Work out the factor due to permuation of contraction indicies
@@ -2615,8 +2618,8 @@
             ! Search the annhilations of the first string
             do j = rank1, rank1/2+1, -1
 
-               !write(11,*) "searching with ", str1%str(i), t1
-               !write(11,*) "matching with ", str1%str(j), t1
+               !write(item%logfile,*) "searching with ", str1%str(i), t1
+               !write(item%logfile,*) "matching with ", str1%str(j), t1
                call suitable_pair(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
@@ -2647,6 +2650,7 @@
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
                      p_list%plist(shift)%ops(2)=t2
+         !call print_plist(p_list, shift, "p_list", item%logfile)
                      shift = shift + 1
                      exit
                   end if
@@ -2658,7 +2662,7 @@
 
          if (.not. is_cnt .and. .not. found_ex) then
             write(item%logfile,*) "Failed to find creation/annhilation",
-     &                            " pair"
+     &                            " pair 1"
             exit
          end if
 
@@ -2739,7 +2743,7 @@
 
          if (.not. is_cnt .and. .not. found_ex) then
             write(item%logfile,*) "Failed to find creation/annhilation",
-     &                            " pair"
+     &                            " pair 2"
             exit
          end if
 
@@ -4017,23 +4021,26 @@
       ! because the spin summed line is the same as the non-spin summed
       ! line.
       if (item%rank1 + item%rank2 + item%rank3 == 4) then
+         ! TODO: Its probably safer to just sum these cases
+         ! explicity...
+
          ! This covers all cases where we have two rank-2 tensors
          ! + one rank-0 tensor somewhere on a line
 
          ! If the line involves an intermediate, then we must add the
          ! spin name to the intermedite name. For all these cases, this
          ! is spimple
-         if (item%inter(1)) then
-            item%label_t1 = trim(item%label_t1)//'aa'
-         else if (item%inter(2)) then
-            item%label_t2 = trim(item%label_t2)//'aa'
-         end if
+         !if (item%inter(1)) then
+         !   item%label_t1 = trim(item%label_t1)//'aa'
+         !else if (item%inter(2)) then
+         !   item%label_t2 = trim(item%label_t2)//'aa'
+         !end if
 
-         ! The spin case is the line itself and wont contain any other
-         ! terms, so mark the start and end
-         call print_itf_line(item,.false.,.false.)
+         !! The spin case is the line itself and wont contain any other
+         !! terms, so mark the start and end
+         !call print_itf_line(item,.false.,.false.)
 
-         return
+         !return
       else if (item%rank1 + item%rank2 + item%rank3 == 6) then
          ! This covers all cases where we have three rank-2 tensors
 
