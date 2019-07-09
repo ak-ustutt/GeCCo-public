@@ -2219,7 +2219,7 @@
      &                         item%rank1, p_factor, n_cnt)
          end if
       end do
-      !call print_plist(p_list, item%rank3/2, "NICER PAIRS", item%logfile)
+      !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%logfile)
 
 
       ! Work out the factor due to permuation of contraction indicies
@@ -2234,8 +2234,9 @@
       end do
 
 
+
       ! Create result index string from only external operators. Order
-      ! is not final...
+      ! is not final...This is basically splicing str1 and str2 together
       shift = 1
       do i = 1, item%rank1
          is_cnt = .false.
@@ -2265,6 +2266,8 @@
          end if
       end do
 
+      !write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
+      !write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
       !write(item%logfile,*) "Result string: {", str3%str, "}"
 
       ! Rearrange the result string so it is in normal order (all
@@ -2410,7 +2413,6 @@
       call permute_index(str1, item%rank1)
       call permute_index(str2, item%rank2)
       call permute_index(str3, item%rank3)
-
 
       ! Need to swap annhilation ops (1-P_ij)
       ! TODO: this will not work if the result is greater than rank 4
@@ -2605,7 +2607,18 @@
 
       ! Search only the creations of the first string for ex ops
       do i = 1, rank1/2
-         !write(11,*) "whats going on ", i, rank1/2
+
+         ! Check if creation has already been paired
+         already_found = .false.
+         do j = 1, shift
+            if (str1%str(i)==p_list%plist(j)%pindex(1)) then
+               already_found = .true.
+               exit
+            end if
+         end do
+         if (already_found) cycle
+
+         if (already_found) cycle
          is_cnt = .false.
          do j = 1, n_cnt
             if (i==str1%cnt_poss(j)) then
@@ -2700,6 +2713,9 @@
             ! Search the creations of the first string
             do j = 1, rank1/2
 
+               !write(item%logfile,*) "searching 3 with ",str1%str(i), t1
+               !write(item%logfile,*) "matching 3 with ", str1%str(j), t1
+
                call suitable_pair(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 1, shift, n_cnt,
      &                            p_list, item)
@@ -2720,12 +2736,12 @@
 
                do j = 1, rank2/2
 
-                  !write(11,*) "searching 2 with ", str1%str(i), t1
-                  !write(11,*) "matching 2 with ", str2%str(j), t2
+                  !write(11,*) "searching 4 with ", str1%str(i), t1
+                  !write(11,*) "matching 4 with ", str2%str(j), t2
 
-               call suitable_pair(found_ex, str1, str2, rank1, rank2,
-     &                            i, j, 1, shift, n_cnt,
-     &                            p_list, item)
+                  call suitable_pair(found_ex, str1, str2, rank1, rank2,
+     &                               i, j, 1, shift, n_cnt,
+     &                               p_list, item)
 
                   if (found_ex) then
                      p_list%plist(shift)%pindex(2)=str1%str(i)
@@ -2925,6 +2941,10 @@
      &   sum1, sum2
       character (len=1) ::
      &   tmp
+
+      if (rank == 6) then
+         return
+      end if
 
       if (rank == 2) then
          !if (idx%itype(1)>=idx%itype(2)) then
