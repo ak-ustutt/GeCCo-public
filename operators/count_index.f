@@ -610,7 +610,7 @@
       do i = 1, MAXINT
          if (contr_info%label_res == spin_inters(i)%name) then
             item%itype = spin_inters(i)%itype
-            !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
+         !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
          end if
       end do
 
@@ -739,9 +739,15 @@
          do j = 1, INDEX_LEN
             spin_inters(i+n_inter)%itype(1,j)=type1(j)
             spin_inters(i+n_inter)%itype(2,j)=type2(j)
+         !write(item%logfile,*) "type1 ", type1(j)
+         !write(item%logfile,*) "type2 ", type2(j)
          end do
 
-         !write(item%logfile,*) "INER SPIN: ",item%inter_spins(i)
+         ! TODO: fucks up here
+!         write(item%logfile,*) "INER SPIN:
+!     &    ",spin_inters(i+n_inter)%itype
+         !write(item%logfile,*) "type1 ", type1
+         !write(item%logfile,*) "type2 ", type2
       end do
 
 
@@ -2415,8 +2421,9 @@
       call permute_index(str3, item%rank3)
 
       ! Need to swap annhilation ops (1-P_ij)
+      ! Don't swap index when there is a tensor product
       ! TODO: this will not work if the result is greater than rank 4
-      if (item%permute==2) then
+      if (item%permute==2 .and. .not. item%product) then
          !write(11,*) "hello ", item%label_res
          !write(11,*) "hello ", item%label_t1
          !write(11,*) "hello ", item%label_t2
@@ -2736,8 +2743,8 @@
 
                do j = 1, rank2/2
 
-                  !write(11,*) "searching 4 with ", str1%str(i), t1
-                  !write(11,*) "matching 4 with ", str2%str(j), t2
+              !write(item%logfile,*) "searching 4 with ", str1%str(i), t1
+              !write(item%logfile,*) "matching 4 with ", str2%str(j), t2
 
                   call suitable_pair(found_ex, str1, str2, rank1, rank2,
      &                               i, j, 1, shift, n_cnt,
@@ -2809,6 +2816,7 @@
       do k = 1, n_cnt
          if (place2==str2%cnt_poss(k)) then
             found_ex = .false.
+            !write(10,*) "false here 1"
             exit
          end if
       end do
@@ -2823,6 +2831,7 @@
       end do
       if (already_found) then
          found_ex = .false.
+         !write(10,*) "false here 2"
          return
       end if
 
@@ -2832,6 +2841,7 @@
      &                      rank2,place1,place2,item)
          if (.not. correct_pair) then
             found_ex = .false.
+            !write(10,*) "false here 3"
             return
          end if
       end if
@@ -2875,6 +2885,10 @@
       if (item%rank3==2) then
          ! For rank 2, sometimes creation and annhilation ops are
          ! switched, so need to check both pairing combinations
+         !write(10,*) "stuff ", str1%itype(place1)
+         !write(10,*) "stuff ", item%itype(1,1)
+         !write(10,*) "stuff ", item%itype(1,2)
+         !write(10,*) "stuff ", item%itype
          if (str1%itype(place1)==item%itype(1,1)) then
             if (str2%itype(place2)==
      &                             item%itype(1,2)) then
@@ -4040,27 +4054,26 @@
       ! There are certain cases that don't need to be spin summed
       ! because the spin summed line is the same as the non-spin summed
       ! line.
-      if (item%rank1 + item%rank2 + item%rank3 == 4) then
-         ! TODO: Its probably safer to just sum these cases
-         ! explicity...
-
+      !if (item%rank1 + item%rank2 + item%rank3 == 4) then
+      if (item%rank1 == 2 .and. item%rank2 == 0 .or.
+     &    item%rank1 == 0 .and. item%rank2 == 2) then
          ! This covers all cases where we have two rank-2 tensors
          ! + one rank-0 tensor somewhere on a line
 
          ! If the line involves an intermediate, then we must add the
          ! spin name to the intermedite name. For all these cases, this
          ! is spimple
-         !if (item%inter(1)) then
-         !   item%label_t1 = trim(item%label_t1)//'aa'
-         !else if (item%inter(2)) then
-         !   item%label_t2 = trim(item%label_t2)//'aa'
-         !end if
+         if (item%inter(1)) then
+            item%label_t1 = trim(item%label_t1)//'aa'
+         else if (item%inter(2)) then
+            item%label_t2 = trim(item%label_t2)//'aa'
+         end if
 
          !! The spin case is the line itself and wont contain any other
          !! terms, so mark the start and end
-         !call print_itf_line(item,.false.,.false.)
+         call print_itf_line(item,.false.,.false.)
 
-         !return
+         return
       else if (item%rank1 + item%rank2 + item%rank3 == 6) then
          ! This covers all cases where we have three rank-2 tensors
 
@@ -4735,6 +4748,11 @@
          allocate(item%i_spin%spin(2, item%rank3/2))
       end if
 
+      ! Check if a tensor product
+      if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
+         item%product=.true.
+      end if
+
       return
       end
 
@@ -4862,6 +4880,11 @@
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
       write(item%logfile,*) trim(line)
+
+      if (item%product) then
+         ! We don't need to symmetrise from a tensor product (I think!)
+         return
+      end if
 
       tindex = ' '
       tindex(1:1) = item%idx3(2:2)
