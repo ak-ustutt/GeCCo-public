@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 14-03-2019 11:29
+// Created on: 11-07-2019 13:50
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -22,8 +22,11 @@ tensor: J:eecc[abji], J:eecc
 // Special integral tensors
 tensor: K4E1:eecc[abij], K4E1:eecc
 
+// Tensor to send to Kext
+tensor: INTpp[abij], INTpp
+
 // Fock tensors
-tensor: f:cc[ij], f:cc
+tensor: f:cc[ji], f:cc
 tensor: f:ec[ai], f:ec
 tensor: f:ee[ab], f:ee
 
@@ -109,12 +112,10 @@ alloc L1[ai]
 .L1[ai] += R:ec[ai]
 denom-scale L1[ai], [1,0]
 
-alloc ECC[], EDi1[], Nrm1[], Var1[]
+alloc EDi1[], Nrm1[], Var1[]
 load T:ec[ai], f:ec[ai]
 // Compute Hylleraas-functional-like energy
 // 2 T^i_a f^i_a + 2 (T^i_a-R^i_a/D^i_a) R^i_a
-.ECC[] += 2.0*T:ec[ai] (f:ec[ai] + R:ec[ai])
-.ECC[] -= 2.0*L1[ai] R:ec[ai]
 // Update T:ec
 // T^i_a = T^i_a-R^i_a/D^i_a
 .T:ec[ai] -= L1[ai]
@@ -123,12 +124,11 @@ load T:ec[ai], f:ec[ai]
 .Var1[] += 2.0*L1[ai] L1[ai]
 drop f:ec[ai]
 store T:ec[ai]
-store Var1[], Nrm1[], EDi1[], ECC[]
+store Var1[], Nrm1[], EDi1[]
 
 drop L1[ai], R:ec[ai]
 
 // Update doubles
-load ECC[]
 alloc EDi2[], Nrm2[], Var2[]
 for [i,j]:
    load R:eecc[**ij]
@@ -140,10 +140,6 @@ for [i,j]:
    load K:eecc[**ij]
    // Compute Hylleraas-functional-like energy
    // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
-   load T:eecc[**ij]
-   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
-   drop T:eecc[**ij]
-   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
    .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
 
    // Update T:eecc
@@ -158,7 +154,17 @@ for [i,j]:
 
    drop L2[**ij]
    drop R:eecc[**ij]
-store Var2[], Nrm2[], EDi2[], ECC[]
+store Var2[], Nrm2[], EDi2[]
+
+
+---- code("Update_Kext_Tensor")
+// Intermediate to pass to Kext
+alloc INTpp[abij]
+load T:eecc[abij]
+.INTpp[abij] := T:eecc[abij]
+drop T:eecc[abij]
+store INTpp[abij]
+
 
 
 ---- code("Residual")
@@ -166,9 +172,9 @@ alloc R:ec[ai]
 load f:ec[ai]
 .R:ec[ai] += f:ec[ai]
 drop f:ec[ai]
-load f:cc[ij], T:ec[aj]
-.R:ec[ai] -= f:cc[ij] T:ec[aj]
-drop T:ec[aj], f:cc[ij]
+load f:cc[ji], T:ec[aj]
+.R:ec[ai] -= f:cc[ji] T:ec[aj]
+drop T:ec[aj], f:cc[ji]
 load f:ee[ab], T:ec[bi]
 .R:ec[ai] += f:ee[ab] T:ec[bi]
 drop T:ec[bi], f:ee[ab]
@@ -214,20 +220,20 @@ for [i]:
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc ITIN[abij]
-load f:cc[ik], T:eecc[abkj]
-.ITIN[abij] -= f:cc[ik] T:eecc[abkj]
-drop T:eecc[abkj], f:cc[ik]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc ITIN[abij]
-load f:ee[ac], T:eecc[bcji]
-.ITIN[abij] += f:ee[ac] T:eecc[bcji]
-drop T:eecc[bcji], f:ee[ac]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
+alloc ITIN[abji]
+load f:cc[ki], T:eecc[abjk]
+.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
+drop T:eecc[abjk], f:cc[ki]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
+alloc ITIN[abji]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[abji] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
 load K:cccc[klij], T:eecc[abkl]
 .R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
 drop T:eecc[abkl], K:cccc[klij]
@@ -258,7 +264,7 @@ load K:eecc[abij], T:eecc[abij]
 .ECC[] += .25*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 drop T:eecc[abij], K:eecc[abij]
 load f:ec[ai], T:ec[ai]
-.ECC[] += f:ec[ai] T:ec[ai]
+.ECC[] += 2.0*f:ec[ai] T:ec[ai]
 drop T:ec[ai], f:ec[ai]
 store ECC[]
 

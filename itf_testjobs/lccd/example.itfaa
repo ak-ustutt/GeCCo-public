@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 15-01-2019 09:35
+// Created on: 11-07-2019 13:50
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -19,12 +19,15 @@ tensor: J:eecc[acki], J:eecc
 // Special integral tensors
 tensor: K4E1:eecc[abij], K4E1:eecc
 
+// Tensor to send to Kext
+tensor: INTpp[abij], INTpp
+
 // Fock tensors
-tensor: f:cc[ik], f:cc
+tensor: f:cc[ki], f:cc
 tensor: f:ee[ac], f:ee
 
 // Amplitude tensors
-tensor: T:eecc[abkj], T:eecc
+tensor: T:eecc[abjk], T:eecc
 
 // Residual tensors
 tensor: R:eecc[abij], R:eecc
@@ -45,7 +48,7 @@ tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
 // Intermediates
-tensor: ITIN[abij],        !Create{type:plain}
+tensor: ITIN[abji],        !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 
@@ -83,7 +86,7 @@ store ERef[]
 
 ---- code("Update_Amplitudes")
 // Update doubles
-alloc ECC[], EDi2[], Nrm2[], Var2[]
+alloc EDi2[], Nrm2[], Var2[]
 for [i,j]:
    load R:eecc[**ij]
    // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
@@ -94,10 +97,6 @@ for [i,j]:
    load K:eecc[**ij]
    // Compute Hylleraas-functional-like energy
    // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
-   load T:eecc[**ij]
-   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
-   drop T:eecc[**ij]
-   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
    .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
 
    // Update T:eecc
@@ -112,7 +111,17 @@ for [i,j]:
 
    drop L2[**ij]
    drop R:eecc[**ij]
-store Var2[], Nrm2[], EDi2[], ECC[]
+store Var2[], Nrm2[], EDi2[]
+
+
+---- code("Update_Kext_Tensor")
+// Intermediate to pass to Kext
+alloc INTpp[abij]
+load T:eecc[abij]
+.INTpp[abij] := T:eecc[abij]
+drop T:eecc[abij]
+store INTpp[abij]
+
 
 
 ---- code("Residual")
@@ -120,20 +129,20 @@ alloc R:eecc[abij]
 load K:eecc[abij]
 .R:eecc[abij] += K:eecc[abij]
 drop K:eecc[abij]
-alloc ITIN[abij]
-load f:cc[ik], T:eecc[abkj]
-.ITIN[abij] -= f:cc[ik] T:eecc[abkj]
-drop T:eecc[abkj], f:cc[ik]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc ITIN[abij]
-load f:ee[ac], T:eecc[bcji]
-.ITIN[abij] += f:ee[ac] T:eecc[bcji]
-drop T:eecc[bcji], f:ee[ac]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
+alloc ITIN[abji]
+load f:cc[ki], T:eecc[abjk]
+.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
+drop T:eecc[abjk], f:cc[ki]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
+alloc ITIN[abji]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[abji] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
 load K:cccc[klij], T:eecc[abkl]
 .R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
 drop T:eecc[abkl], K:cccc[klij]

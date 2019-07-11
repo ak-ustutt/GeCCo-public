@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 15-01-2019 09:35
+// Created on: 11-07-2019 13:50
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -17,12 +17,15 @@ tensor: J:eecc[acki], J:eecc
 
 // Special integral tensors
 
+// Tensor to send to Kext
+tensor: INTpp[abij], INTpp
+
 // Fock tensors
-tensor: f:cc[ik], f:cc
+tensor: f:cc[ki], f:cc
 tensor: f:ee[ac], f:ee
 
 // Amplitude tensors
-tensor: T:eecc[abkj], T:eecc
+tensor: T:eecc[abjk], T:eecc
 
 // Residual tensors
 tensor: R:eecc[abij], R:eecc
@@ -43,10 +46,10 @@ tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
 // Intermediates
-tensor: ITIN[abij],        !Create{type:plain}
-tensor: STIN0001aaaa[bija], !Create{type:plain}
-tensor: STIN0001abab[bija], !Create{type:plain}
-tensor: STIN0001baba[ibja], !Create{type:plain}
+tensor: ITIN[abji],        !Create{type:plain}
+tensor: STIN0001aaaa[ibaj], !Create{type:plain}
+tensor: STIN0001baba[ibaj], !Create{type:plain}
+tensor: STIN0001abab[biaj], !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 
@@ -84,7 +87,7 @@ store ERef[]
 
 ---- code("Update_Amplitudes")
 // Update doubles
-alloc ECC[], EDi2[], Nrm2[], Var2[]
+alloc EDi2[], Nrm2[], Var2[]
 for [i,j]:
    load R:eecc[**ij]
    // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
@@ -95,10 +98,6 @@ for [i,j]:
    load K:eecc[**ij]
    // Compute Hylleraas-functional-like energy
    // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
-   load T:eecc[**ij]
-   .ECC += (2.0*T:eecc[abij] - T:eecc[baij]) (R:eecc[abij] + K:eecc[abij])
-   drop T:eecc[**ij]
-   .ECC -= (2.0*L2[abij] - L2[baij]) R:eecc[abij]
    .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
 
    // Update T:eecc
@@ -113,7 +112,17 @@ for [i,j]:
 
    drop L2[**ij]
    drop R:eecc[**ij]
-store Var2[], Nrm2[], EDi2[], ECC[]
+store Var2[], Nrm2[], EDi2[]
+
+
+---- code("Update_Kext_Tensor")
+// Intermediate to pass to Kext
+alloc INTpp[abij]
+load T:eecc[abij]
+.INTpp[abij] := T:eecc[abij]
+drop T:eecc[abij]
+store INTpp[abij]
+
 
 
 ---- code("Residual")
@@ -121,20 +130,20 @@ alloc R:eecc[abij]
 load K:eecc[abij]
 .R:eecc[abij] += K:eecc[abij]
 drop K:eecc[abij]
-alloc ITIN[abij]
-load f:cc[ik], T:eecc[abkj]
-.ITIN[abij] -= f:cc[ik] T:eecc[abkj]
-drop T:eecc[abkj], f:cc[ik]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc ITIN[abij]
-load f:ee[ac], T:eecc[bcji]
-.ITIN[abij] += f:ee[ac] T:eecc[bcji]
-drop T:eecc[bcji], f:ee[ac]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
+alloc ITIN[abji]
+load f:cc[ki], T:eecc[abjk]
+.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
+drop T:eecc[abjk], f:cc[ki]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
+alloc ITIN[abji]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[abji] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[abji] += ITIN[abji]
+.R:eecc[abji] += ITIN[baij]
+drop ITIN[abji]
 alloc ITIN[abij]
 load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
 .ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
@@ -148,22 +157,22 @@ drop T:eecc[cbik], J:eecc[ackj]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc STIN0001aaaa[bija], STIN0001abab[bija], STIN0001baba[ibja], ITIN[abij]
-load K:eecc[caki], T:eecc[bcjk]
-.STIN0001aaaa[bija] -= (K:eecc[caki] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001aaaa[bija] -= K:eecc[caki] T:eecc[bcjk]
-.STIN0001abab[bija] -= K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001abab[bija] -= (K:eecc[caki] - K:eecc[caik]) T:eecc[bcjk]
-.STIN0001baba[ibja] -= K:eecc[acki] T:eecc[cbjk]
+alloc STIN0001aaaa[ibaj], STIN0001baba[ibaj], STIN0001abab[biaj], ITIN[abij]
+load K:eecc[acik], T:eecc[bcjk]
+.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[ibaj] += K:eecc[acik] T:eecc[bcjk]
+.STIN0001baba[ibaj] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
+.STIN0001abab[biaj] -= K:eecc[acki] T:eecc[cbjk]
 drop T:eecc[cbjk], K:eecc[acki]
 load T:eecc[bcjk]
-.ITIN[abij] -= .5*STIN0001aaaa[akic] T:eecc[bcjk]
-.ITIN[abij] -= .5*STIN0001abab[akic] (T:eecc[bcjk] - T:eecc[cbjk])
-.ITIN[abij] -= .5*STIN0001baba[kajc] T:eecc[cbik]
+.ITIN[abij] += .5*STIN0001aaaa[kaci] T:eecc[bcjk]
+.ITIN[abij] += .5*STIN0001baba[kaci] (T:eecc[bcjk] - T:eecc[cbjk])
+.ITIN[abij] -= .5*STIN0001abab[akcj] T:eecc[cbik]
 drop T:eecc[cbik]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baba[ibja], STIN0001abab[bija], STIN0001aaaa[bija]
+drop ITIN[abij], STIN0001abab[biaj], STIN0001baba[ibaj], STIN0001aaaa[ibaj]
 store R:eecc[abij]
 
 alloc ECC[]

@@ -1,12 +1,12 @@
 ibank=1
-gthresh,orbital=1d-10,energy=1d-9
+gthresh,orbital=1d-12,energy=1d-12
 geom={he;he,1,1.0}
 basis,vdz
 rhf
 {mrcic,cpp_prog=MRCC,cc_method=rccd,maxiter=100}
 e = energy
 
-eold = -4.88666968
+eold = -4.886669679607
 
 dele = max(abs(e-eold))
 if(dele.gt.1e-8) then
