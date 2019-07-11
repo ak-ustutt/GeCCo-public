@@ -431,7 +431,8 @@
       logical ::
      &    inter,           ! True if result is an intermediate
      &    found,
-     &    upper
+     &    upper,
+     &    intpp
       character(len=MAXLEN_BC_LABEL) ::
      &    old_name,
      &    old_inter
@@ -453,6 +454,15 @@
       !if (.not.inter) then
       !   call permute_tensors(contr_info,perm_case,itflog)
       !end if
+
+      ! Being a special block which the python processor will pull out
+      ! into its own code block
+      ! TODO: make this more general for a dictionary of special names
+      intpp = .false.
+      if (contr_info%label_res=='INTpp') then
+         intpp = .true.
+         write(itflog,'(a)') "BEGIN_INTPP"
+      end if
 
       ! If the perm_array doesn't contain any zeros, then we should
       ! introduce an intermediate which collects half of the different
@@ -567,6 +577,10 @@
 
       ! Deallocate memroy used when construcitng item
       call itf_deinit(item)
+
+      if (intpp) then
+         write(itflog,'(a)') "END_INTPP"
+      end if
 
       return
       end

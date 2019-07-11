@@ -540,11 +540,11 @@ kext = args.kext
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
 # Open first output file
-out=open(outp, "w+")
+#out=open(outp, "w+")
+output=open(outp, "w+")
 
 # Open tempfile to catch INTpp
 kext_temp = tempfile.TemporaryFile(mode='w+t')
-kext_temp.writelines("Testing temp\n")
 
 # Declare lists needed in program
 prev_lines=[]       # Previous intermediate lines which belong to next result block
@@ -576,6 +576,11 @@ begin=False         # Marks the start of a spin summed family of contractions
 end=False           # Marks the end of a spin summed family of contractions
 old_spin_iter=[]    # Stores list of intermediates used throughout the spin summed family
 
+# Use to redirect output into the main output file or a temperary file
+# This can be expanded upon if different parts need to end up in different ---code blocks
+special_begin=False
+special_end=False
+
 # Read each line of bcontr.tmp and process it
 for line_o in f:
 
@@ -583,17 +588,30 @@ for line_o in f:
     #tensor_line = itf_line(line_o, out)
     #tensor_line.rename_line()
 
+    #out = output
+
     # Change names of external tensors (add : + generic index to name)
     line = change_line(line_o)
     words=line.split()
 
-    # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
-    # but also change name to J[eecc]
-    #if ("K:ceec" in line or "K:ccee" in line or "K:ecec" in line or "K:ecce" in line or "K:cecc" in line or "K:ccec" in line or "K:ccce" in line or "K:ceee" in line or "K:ecee" in line or "K:eece" in line or "KP:ccce" in line or "KP:ceee" in line):
-    if ("K:" in line or "KP:"):
-        if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
-            line = rename_integrals(line)
-            words=line.split()
+    # Check if we are in a special block which will end up in its own ---code block
+    # In this case we are checking for the INTpp interemediate that is passed to Kext
+    if (words[0]=='BEGIN_INTPP'):
+        special_begin = True
+        special_end = False
+        continue
+
+    if (words[0]=='END_INTPP'):
+        special_begin = False
+        special_end = True
+        continue
+
+    # Decide which file to write to
+    if (special_begin and not special_end):
+        out = kext_temp
+    else:
+        out = output
+
 
     # Check for spin summed block
     if (words[0]=='BEGIN'):
@@ -615,6 +633,15 @@ for line_o in f:
         end=True
         begin=False
         continue
+
+
+    # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
+    # but also change name to J[eecc]
+    if ("K:" in line or "KP:"):
+        if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
+            line = rename_integrals(line)
+            words=line.split()
+
 
     # Catch 4-external integrals and replace line with K4E intermediate
     # Note: this might not be general enough to handle all cases
@@ -744,8 +771,10 @@ for line_o in f:
                 if ("R[" in prev_res):
                     prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
 
-                print("store", prev_res.replace('.',''), file=out)
-                print(file=out)
+                # Don't print out store for speical code blocks (ie. not residuals)
+                if (not special_end):
+                    print("store", prev_res.replace('.',''), file=out)
+                    print(file=out)
 
             # Check whether to load previously allocated tensor
             # To load, the tensor name and generic index associated with it must be equal
@@ -1113,7 +1142,7 @@ if (not multi):
 # Print out INTpp update
 print(file=f2)
 print(file=f2)
-print('---- code("Update_kext_tensor")', file=f2)
+print('---- code("Update_Kext_Tensor")', file=f2)
 if (not kext):
     print("// Intermediate to pass to Kext", file=f2)
     print("alloc INTpp[abij]",file=f2)
@@ -1122,6 +1151,12 @@ if (not kext):
     print("drop T:eecc[abij]",file=f2)
     print("store INTpp[abij]",file=f2)
     print(file=f2)
+else:
+    kext_temp.seek(0)
+    for line in kext_temp:
+        print(line.strip(), file=f2)
+
+    print("store INTpp[abij]",file=f2)
 
 # Print out residual equations
 print(file=f2)
@@ -1298,7 +1333,6 @@ if (multi):
 
 print("---- end", file=f2)
 
-kext_temp.seek(0)
-print(kext_temp.read(), file=f2)
-kext_temp.close()
+# Close off files (including temporary ones)
 f2.close()
+kext_temp.close()
