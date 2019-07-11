@@ -590,6 +590,9 @@ special_end=False
 # Don't store tensors from these code blocks; instead these are printed out at the end
 dont_store=False
 
+# Flag if dealing with triples
+triples = False
+
 # Read each line of bcontr.tmp and process it
 for line_o in f:
 
@@ -939,6 +942,8 @@ declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (multi): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
+if (any('R:eeeccc' in s for s in declare_res)):
+   triples = True
 declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
 # Check if we have singles amplitudes
@@ -1025,6 +1030,8 @@ if (not multi):
     if (singles):
         print("tensor: L1[ai],            !Create{type:plain}", file=f2)
     print("tensor: L2[abij],          !Create{type:plain}", file=f2)
+    if (triples):
+        print("tensor: L3[abcijk],        !Create{type:plain}", file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first
@@ -1063,6 +1070,10 @@ else:
     print("   drop K:eecc[**ij]", file=f2)
     print("   store T:eecc[**ij]", file=f2)
     print("store Nrm2[], EMp2[]", file=f2)
+    if (triples):
+        print("", file=f2)
+        print("alloc T:eeeccc[abcijk]", file=f2)
+        print("store T:eeeccc[abcijk]", file=f2)
 
 # Calculate the reference energy for single-reference methods
 if (not multi):
@@ -1140,6 +1151,19 @@ if (not multi):
     print("   drop L2[**ij]",file=f2)
     print("   drop R:eecc[**ij]",file=f2)
     print("store Var2[], Nrm2[], EDi2[]",file=f2)
+    if (triples):
+        # TODO: Make update triples a loop etc.
+        print("", file=f2)
+        print("// Update triples", file=f2)
+        print("load R:eeeccc[abcijk]", file=f2)
+        print("alloc L3[abcijk]", file=f2)
+        print(".L3[abcijk] += R:eeeccc[abcijk]", file=f2)
+        print("denom-scale L3[abcijk], [1,1,1,0,0,0]", file=f2)
+        print("load T:eeeccc[abcijk]", file=f2)
+        print(".T:eeeccc[abcijk] -= L3[abcijk]", file=f2)
+        print("store T:eeeccc[abcijk]", file=f2)
+        print("drop L3[abcijk]", file=f2)
+        print("drop R:eeeccc[abcijk]", file=f2)
 
 # Print out INTpp update
 print(file=f2)
