@@ -44,6 +44,7 @@ INTERM label
 INV log
 IRREP int
 JOIN int
+KEXT log
 LABEL label
 LABEL_DESCR label
 LABELS_IN label

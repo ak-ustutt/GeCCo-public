@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_out,form_out,multi,op_info)
+      subroutine form_itf(f_input,name_out,form_out,multi,kext,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -19,6 +19,9 @@
      &     f_input
       type(operator_info), intent(in) ::
      &     op_info
+      logical, intent(in) ::
+     &     multi,       ! Flag which is passed to python processer, false if a single-ref calculation
+     &     kext         ! True if constructing INTpp tensor to contract in Kext
 
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
@@ -27,14 +30,14 @@
       type(formula_item) ::
      &     flist        ! Linked list of binary contractions
       logical ::
-     &     print_form,  ! If true, outputs GeCco formulae to file
-     &     multi        ! Flag which is passed to python processer, false if a single-ref calculation
+     &     print_form   ! If true, outputs GeCco formulae to file
       integer ::
      &     e            ! Exit satatus from python
       character(len=100) ::
      &     exe_line     ! Line for shell to execute
       character(len=10) ::
-     &     flag         ! set the --multi option for the python script
+     &     flag,        ! set the --multi option for the python script
+     &     flag2
 
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0   ! Timing variables
@@ -82,6 +85,13 @@
          flag = '--multi'
       endif
 
+      ! Is this a single-refenece or a multireferecne calculation?
+      if (kext) then
+         flag2 = '--kext'
+      else
+         flag2 = '--no-kext'
+      endif
+
       ! Process ITF lines with python script
       ! Don't need to inialise the file, the python script takes care of
       ! that
@@ -111,7 +121,7 @@
 
       exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
      &          //'bcontr2.tmp -o '//trim(name_out)
-     &          //' '//trim(flag)
+     &          //' '//trim(flag)//' '//trim(flag2)
       write(lulog,*) "Executing: ", exe_line
       call execute_command_line(trim(exe_line),exitstat=e)
 

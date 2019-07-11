@@ -62,7 +62,9 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps, trplt, inv, multi
+     &     use_1,trnsps, trplt, inv,
+     &     multi,  ! Multireference or single reference ITF code
+     &     kext    ! Provide INTpp tensor for Kext contraction
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -693,7 +695,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &          success=arg_there)
         if (.not.arg_there) title2='##not_set##'
         call get_arg('MULTI',rule,tgt_info,val_log=multi)
-        call form_itf(form_pnt,title,title2,multi,op_info)
+        call get_arg('KEXT',rule,tgt_info,val_log=kext)
+        call form_itf(form_pnt,title,title2,multi,kext,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

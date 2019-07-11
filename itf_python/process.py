@@ -507,6 +507,7 @@ def rename_integrals(line):
 import argparse     # Parse arguments
 import datetime     # Get tima and date
 import time         # For timings
+import tempfile     # For temporary files
 
 # Parse arguments from gecco
 parser = argparse.ArgumentParser(
@@ -518,7 +519,10 @@ parser.add_argument('-o','--output',default=None,help='ITF algo file')
 #parser.add_argument('-m','--multi',type=bool,default=True,help='False: single-reference; True: multireference')
 parser.add_argument('--multi',dest='multi',action='store_true')
 parser.add_argument('--no-multi',dest='multi',action='store_false')
+parser.add_argument('--kext',dest='kext',action='store_true')
+parser.add_argument('--no-kext',dest='kext',action='store_false')
 parser.set_defaults(multi=True)
+parser.set_defaults(kext=False)
 args = parser.parse_args()
 
 if args.input is None:
@@ -531,11 +535,16 @@ if args.output is None:
 inp = args.input
 outp = args.output
 multi = args.multi
+kext = args.kext
 
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
 # Open first output file
 out=open(outp, "w+")
+
+# Open tempfile to catch INTpp
+kext_temp = tempfile.TemporaryFile(mode='w+t')
+kext_temp.writelines("Testing temp\n")
 
 # Declare lists needed in program
 prev_lines=[]       # Previous intermediate lines which belong to next result block
@@ -869,7 +878,7 @@ declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
     if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
-        or "Dm" in declare_ten[i] or "J:" in declare_ten[i]): continue
+        or "Dm" in declare_ten[i] or "J:" in declare_ten[i] or "INTpp" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
@@ -879,6 +888,12 @@ for i in range(0, len(declare_ten)):
 declare_existing_tensors(declare_ten, "K-integral tensors", "K")
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
+if (kext):
+    declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
+else:
+    print(file=f2)
+    print("// Tensor to send to Kext", file=f2)
+    print("tensor: INTpp[abij], INTpp", file=f2)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 if (multi): print("tensor: R[I],  R:I", file=f2)
@@ -1095,6 +1110,19 @@ if (not multi):
     print("   drop R:eecc[**ij]",file=f2)
     print("store Var2[], Nrm2[], EDi2[], ECC[]",file=f2)
 
+# Print out INTpp update
+print(file=f2)
+print(file=f2)
+print('---- code("Update_kext_tensor")', file=f2)
+if (not kext):
+    print("// Intermediate to pass to Kext", file=f2)
+    print("alloc INTpp[abij]",file=f2)
+    print("load T:eecc[abij]",file=f2)
+    print(".INTpp[abij] := T:eecc[abij]",file=f2)
+    print("drop T:eecc[abij]",file=f2)
+    print("store INTpp[abij]",file=f2)
+    print(file=f2)
+
 # Print out residual equations
 print(file=f2)
 print(file=f2)
@@ -1270,4 +1298,7 @@ if (multi):
 
 print("---- end", file=f2)
 
+kext_temp.seek(0)
+print(kext_temp.read(), file=f2)
+kext_temp.close()
 f2.close()
