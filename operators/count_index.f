@@ -44,6 +44,8 @@
           rename_tensor='R'
       else if (trim(string).eq.'O1') then
           rename_tensor='R'
+      else if (trim(string).eq.'O3') then
+          rename_tensor='R'
       else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
           rename_tensor='T'
       else if (trim(string).eq.'T1') then
