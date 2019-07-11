@@ -580,6 +580,8 @@ old_spin_iter=[]    # Stores list of intermediates used throughout the spin summ
 # This can be expanded upon if different parts need to end up in different ---code blocks
 special_begin=False
 special_end=False
+# Don't store tensors from these code blocks; instead these are printed out at the end
+dont_store=False
 
 # Read each line of bcontr.tmp and process it
 for line_o in f:
@@ -604,6 +606,7 @@ for line_o in f:
     if (words[0]=='END_INTPP'):
         special_begin = False
         special_end = True
+        dont_store=True
         continue
 
     # Decide which file to write to
@@ -772,9 +775,11 @@ for line_o in f:
                     prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
 
                 # Don't print out store for speical code blocks (ie. not residuals)
-                if (not special_end):
+                if (not dont_store):
                     print("store", prev_res.replace('.',''), file=out)
                     print(file=out)
+                # Finished special block, so we can start storeing again
+                dont_store=False
 
             # Check whether to load previously allocated tensor
             # To load, the tensor name and generic index associated with it must be equal
@@ -866,8 +871,8 @@ for line_o in f:
 
 
 # Close off final result block
-print("store", prev_res.replace('.',''), file=out)
-out.close()
+print("store", prev_res.replace('.',''), file=output)
+output.close()
 f.close()
 
 # Open and write file again so as to prepend the declaration of tensors
