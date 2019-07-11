@@ -1570,11 +1570,11 @@
                if (i2==str2%str(k)) then
                   pp2= rank2-k+1
                   if (str1%str(pp1)/=str2%str(pp2)) then
-                     do l = 1, rank1
+                     do l = 1, rank2
                         if(str1%str(pp1)==str2%str(l))
      &                      then
 
-                           pp3 = rank1-l+1
+                           pp3 = rank2-l+1
                            tmp = str2%str(k)
                            str2%str(k) = str2%str(pp3)
                            str2%str(pp3) = tmp
@@ -2206,7 +2206,6 @@
       end if
       !call print_plist(p_list, item%rank3/2, "NEW PAIRS", item%logfile)
       deallocate(p_list2%plist)
-
 
       ! If there is a pair in one string, permute so they are paired
       ! 'imediately'. Also update the
