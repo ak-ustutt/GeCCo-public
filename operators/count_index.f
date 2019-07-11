@@ -4386,7 +4386,7 @@
       ! end the block just yet. This will save load/drop calls for the
       ! same tensors
       if (eloop .and. item%permute /= 1 .and. item%print_line) then
-         if (.not. item%symm) write(item%logfile,*) "END"
+         if (.not. item%symm) write(item%logfile,'(a3)') "END"
       end if
 
       deallocate(poss)
@@ -4529,7 +4529,7 @@
                ! line is a permutation of the previous line (ie. permute >1)
                ! then we should not begin a new block
                if (eloop==.false. .and. .not. (item%permute > 1)) then
-                  write(item%logfile,*) 'BEGIN'
+                  write(item%logfile,'(a5)') 'BEGIN'
                end if
 
                call print_itf_line(item,s1,s2)
@@ -4879,7 +4879,7 @@
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
-      write(item%logfile,*) trim(line)
+      write(item%logfile,'(a)') trim(line)
 
       if (item%product) then
          ! We don't need to symmetrise from a tensor product (I think!)
@@ -4894,10 +4894,10 @@
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trimal(tindex)//']'
-      write(item%logfile,*) trim(line)
+      write(item%logfile,'(a)') trim(line)
 
       ! Mark end of spin block
-      write(item%logfile,*) 'END'
+      write(item%logfile,'(a3)') 'END'
 
       return
       end
