@@ -230,7 +230,7 @@ def print_result(line, indent=False):
         print_drop_tensors(load_ten, indent)
 
 
-    elif len(words)>6:
+    elif len(words)==8:
         # Line contains two brackets, may have to load more than two tensors
         if "TIN" not in words:
             t1=words[2].split('*',1)[-1].replace('(','')
@@ -291,6 +291,41 @@ def print_result(line, indent=False):
         print(line.rstrip(), file=out)
 
         print_drop_tensors(load_ten, indent)
+
+    elif len(words)==14:
+
+        # Get list of non-intermediate tesnsors in a line
+        t = []
+        for i in range (1,14):
+            if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
+                continue
+            else:
+                t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
+
+        # Remove tensor which are the same (ie. don't need to load them twice)
+        seen = []
+        result = []
+        for item in t:
+            if item.split('[',1)[0] not in seen:
+                seen.append(item.split('[',1)[0])
+                result.append(item)
+
+        # Check if the line is within a loop
+        if (indent):
+            load_ten="    load "
+        else:
+            load_ten="load "
+
+        # Construct load line
+        for tensor in result[:-1]:
+            load_ten = load_ten + tensor + ', '
+        load_ten = load_ten + result[-1]
+
+        # Print out load, line and drop
+        print(load_ten, file=out)
+        print(line, file=out)
+        print_drop_tensors(load_ten, indent)
+
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
