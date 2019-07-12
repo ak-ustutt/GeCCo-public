@@ -1,11 +1,11 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 11-07-2019 13:50
+// Created on: 12-07-2019 10:04
 
 ---- decl
-index-space: ijkl, Closed  , c
-index-space: abcd, External, e
+index-space: ijklmn, Closed  , c
+index-space: abcdef, External, e
 index-space: CD, Core, C
 
 
@@ -122,7 +122,6 @@ load T:eecc[abij]
 .INTpp[abij] := T:eecc[abij]
 drop T:eecc[abij]
 store INTpp[abij]
-
 
 
 ---- code("Residual")

@@ -749,8 +749,8 @@ print(file=f2)
 # Declare tensors and index-spaces
 print("---- decl", file=f2)
 if (not multi):
-    print("index-space: ijkl, Closed  , c", file=f2)
-    print("index-space: abcd, External, e", file=f2)
+    print("index-space: ijklmn, Closed  , c", file=f2)
+    print("index-space: abcdef, External, e", file=f2)
     print("index-space: CD, Core, C", file=f2)
 else:
     print("index-space: pqrstuvw, Active  , a", file=f2)
