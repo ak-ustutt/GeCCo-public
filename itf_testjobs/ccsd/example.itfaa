@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 11-07-2019 13:41
+// Created on: 12-07-2019 09:58
 
 ---- decl
 index-space: ijkl, Closed  , c
@@ -180,9 +180,9 @@ store Var2[], Nrm2[], EDi2[]
 ---- code("Update_Kext_Tensor")
 alloc INTpp[abij]
 alloc ITIN[abij]
-load T:ec[ai], T:ec[bj]
+load T:ec[ai]
 .ITIN[abij] += T:ec[ai] T:ec[bj]
-drop T:ec[bj], T:ec[ai]
+drop T:ec[ai]
 .INTpp[abij] += ITIN[abij]
 drop ITIN[abij]
 load T:eecc[abij]
@@ -212,17 +212,15 @@ load f:ec[bj], T:eecc[abij]
 .R:ec[ai] += f:ec[bj] (T:eecc[abij] - T:eecc[baij])
 .R:ec[ai] += f:ec[bj] T:eecc[abij]
 drop T:eecc[abij], f:ec[bj]
-load K:eccc[bkji], J:eccc[bkji], INTpp[abkj], INTpp[bakj]
+load K:eccc[bkji], J:eccc[bkji], INTpp[abkj]
 .R:ec[ai] -= .5*(K:eccc[bkji] - J:eccc[bkji]) (INTpp[abkj] - INTpp[bakj])
-drop INTpp[bakj], INTpp[abkj], J:eccc[bkji], K:eccc[bkji]
+drop INTpp[abkj], J:eccc[bkji], K:eccc[bkji]
 load K:eccc[bkji], INTpp[abkj]
 .R:ec[ai] -= K:eccc[bkji] INTpp[abkj]
 drop INTpp[abkj], K:eccc[bkji]
 for [j]:
-    load K:eeec[acbj], INTpp[bcji], INTpp[cbji]
-    .R:ec[ai] += .5*(K:eeec[acbj] - K:eeec[abcj]) (INTpp[bcji] - INTpp[cbji])
-    drop INTpp[cbji], INTpp[bcji], K:eeec[acbj]
     load K:eeec[acbj], INTpp[bcji]
+    .R:ec[ai] += .5*(K:eeec[acbj] - K:eeec[abcj]) (INTpp[bcji] - INTpp[cbji])
     .R:ec[ai] += K:eeec[acbj] INTpp[bcji]
     drop INTpp[bcji], K:eeec[acbj]
 alloc STIN0001aa[ij]
@@ -234,10 +232,8 @@ load T:ec[aj]
 drop T:ec[aj]
 drop STIN0001aa[ij]
 alloc STIN0001aa[ij]
-load K:eecc[abki], INTpp[abkj], INTpp[bakj]
-.STIN0001aa[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (INTpp[abkj] - INTpp[bakj])
-drop INTpp[bakj], INTpp[abkj], K:eecc[abki]
 load K:eecc[abki], INTpp[abkj]
+.STIN0001aa[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (INTpp[abkj] - INTpp[bakj])
 .STIN0001aa[ij] += K:eecc[abki] INTpp[abkj]
 drop INTpp[abkj], K:eecc[abki]
 load T:ec[aj]
@@ -327,10 +323,8 @@ drop K4E1:eecc[abij]
 alloc STIN0001bb[ij], ITIN[abji]
 load K:eecc[abki], INTpp[abkj]
 .STIN0001bb[ij] += K:eecc[abki] INTpp[abkj]
-drop INTpp[abkj], K:eecc[abki]
-load K:eecc[abki], INTpp[abkj], INTpp[bakj]
 .STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (INTpp[abkj] - INTpp[bakj])
-drop INTpp[bakj], INTpp[abkj], K:eecc[abki]
+drop INTpp[abkj], K:eecc[abki]
 load T:eecc[abjk]
 .ITIN[abji] -= STIN0001bb[ki] T:eecc[abjk]
 drop T:eecc[abjk]
@@ -348,10 +342,8 @@ load T:eecc[abkl]
 drop T:eecc[abkl]
 drop STIN0001baab[ijkl], STIN0001abab[ijkl]
 alloc STIN0001aa[ba], ITIN[abji]
-load K:eecc[acji], INTpp[bcji], INTpp[cbji]
-.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[acij]) (INTpp[bcji] - INTpp[cbji])
-drop INTpp[cbji], INTpp[bcji], K:eecc[acji]
 load K:eecc[acji], INTpp[bcji]
+.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[acij]) (INTpp[bcji] - INTpp[cbji])
 .STIN0001aa[ba] -= K:eecc[acji] INTpp[bcji]
 drop INTpp[bcji], K:eecc[acji]
 load T:eecc[bcij]

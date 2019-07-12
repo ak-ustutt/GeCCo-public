@@ -93,7 +93,6 @@ def print_result(line, indent=False):
 
     # Load tensors, cases depend on how many tensors are on the right
     if len(words)==3:
-
         # Either a simple adding or copying case
         if "TIN" not in words[2]:
             load_ten="load " + words[2].split('*',1)[-1]
@@ -107,196 +106,10 @@ def print_result(line, indent=False):
             print_drop_tensors(load_ten)
 
 
-    elif len(words)==4:
-
-        # Normal binary tensor contraction
-        t1=words[2].split('*',1)[-1]
-        t2=words[3].split('*',1)[-1]
-
-        inter1 = False
-        inter2 = False
-        # True if not an intermediate
-        if "TIN" not in words[2]: inter1 = True
-        if "TIN" not in words[3]: inter2 = True
-
-        if inter1 or inter2:
-            if (indent):
-                load_ten = "    load "
-            else:
-                load_ten = "load "
-
-            if inter1:
-                load_ten = load_ten + t1
-            if inter1 and t1 != t2 and inter2:
-                load_ten = load_ten + ", "
-            if inter2 and t1 != t2:
-                load_ten = load_ten + t2
-
-            print(load_ten.rstrip(), file=out)
-
-        print(line.rstrip(), file=out)
-
-        # Drop tensors
-        if inter1 or inter2:
-            print_drop_tensors(load_ten, indent)
-
-    elif len(words)==6:
-
-        # Line contains brackets, may have to load more than two tensors
-        if "TIN" not in words:
-            if (indent):
-                load_ten="    load "
-            else:
-                load_ten="load "
-
-            if '(' in words[2]:
-                t1=words[2].split('*',1)[-1].replace('(','')
-                t2=words[4].split('*',1)[-1].replace(')','')
-                t3=words[5].split('*',1)[-1]
-
-                inter1 = False
-                inter2 = False
-                inter3 = False
-                # True if not an intermediate
-                if "TIN" not in words[2]: inter1 = True
-                if "TIN" not in words[4]: inter2 = True
-                if "TIN" not in words[5]: inter3 = True
-
-                gen1 = generic_index(words[2])
-                gen2 = generic_index(words[4])
-
-                # Brackets for first tensor
-                if inter1:
-                    load_ten=load_ten + t1
-                if inter1 and t1 != t2 and inter2:
-                    # Need to compare generic index as well
-                    if gen1 != gen2:
-                        load_ten=load_ten + ", "
-                    elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
-                        # Tensors have the same generic index, but different names (K and J integrals)
-                        load_ten=load_ten + ", "
-                if inter2 and t1 != t2:
-                    if gen1 != gen2:
-                        load_ten=load_ten + t2
-                    elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
-                        load_ten=load_ten + t2
-                if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
-                    load_ten=load_ten + ", "
-                if inter3 and t2 != t3 and t1 != t3:
-                    load_ten=load_ten + t3
-
-            elif '(' in words[3]:
-                t1=words[2].split('*',1)[-1]
-                t2=words[3].split('*',1)[-1].replace('(','')
-                t3=words[5].split('*',1)[-1].replace(')','')
-
-                inter1 = False
-                inter2 = False
-                inter3 = False
-                # True if not an intermediate
-                if "TIN" not in words[2]: inter1 = True
-                if "TIN" not in words[3]: inter2 = True
-                if "TIN" not in words[5]: inter3 = True
-
-                gen1 = generic_index(words[3])
-                gen2 = generic_index(words[5])
-
-                # Brackets for second tensor
-                if inter1:
-                    load_ten=load_ten + t1
-                if inter1 and t1 != t2 and inter2:
-                    load_ten=load_ten + ", "
-                if inter2 and t1 != t2:
-                    load_ten=load_ten + t2
-                if inter2 and t2 != t3 and t1 != t3 and inter3:
-                    if gen1 != gen2:
-                        load_ten=load_ten + ", "
-                    elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
-                        load_ten=load_ten + ", "
-                if inter3 and t2 != t3 and t1 != t3:
-                    if gen1 != gen2:
-                        load_ten=load_ten + t3
-                    elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
-                        load_ten=load_ten + t3
-            else:
-                print("Error in bracket determination")
-                exit(1)
-
-            print(load_ten.rstrip(), file=out)
-
-        print(line.rstrip(), file=out)
-
-        # Print out tensors we need to drop
-        print_drop_tensors(load_ten, indent)
-
-
-    elif len(words)==8:
-        # Line contains two brackets, may have to load more than two tensors
-        if "TIN" not in words:
-            t1=words[2].split('*',1)[-1].replace('(','')
-            t2=words[4].split('*',1)[-1].replace(')','')
-            t3=words[5].split('*',1)[-1].replace('(','')
-            t4=words[7].split('*',1)[-1].replace(')','')
-
-            gen1 = generic_index(words[2])
-            gen2 = generic_index(words[4])
-            gen3 = generic_index(words[5])
-            gen4 = generic_index(words[7])
-
-            inter1 = False
-            inter2 = False
-            inter3 = False
-            inter4 = False
-            # True if not an intermediate
-            if "TIN" not in words[2]: inter1 = True
-            if "TIN" not in words[4]: inter2 = True
-            if "TIN" not in words[5]: inter3 = True
-            if "TIN" not in words[7]: inter4 = True
-
-            if (indent):
-                load_ten="    load "
-            else:
-                load_ten="load "
-
-            if inter1:
-                load_ten=load_ten + t1
-            if inter1 and t1 != t2 and inter2:
-                # Need to compare generic index as well
-                if gen1 != gen2:
-                    load_ten=load_ten + ", "
-                elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
-                    load_ten=load_ten + ", "
-            if inter2 and t1 != t2:
-                if gen1 != gen2:
-                    load_ten=load_ten + t2
-                elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
-                    load_ten=load_ten + t2
-            if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
-                load_ten=load_ten + ", "
-            if inter3 and t2 != t3 and t1 != t3:
-                load_ten=load_ten + t3
-            if inter1 and inter2 and inter3 and inter4 and t1 != t4 and t2 != t4 and t3 != t4:
-                if gen3 != gen4:
-                    load_ten=load_ten + ", "
-                elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
-                    load_ten=load_ten + ", "
-            if inter4 and t1 != t4 and t2 != t4 and t3 != t4:
-                if gen3 != gen4:
-                    load_ten=load_ten + t4
-                elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
-                    load_ten=load_ten + t4
-
-            print(load_ten.rstrip(), file=out)
-
-        print(line.rstrip(), file=out)
-
-        print_drop_tensors(load_ten, indent)
-
-    elif len(words)==14:
-
+    else:
         # Get list of non-intermediate tesnsors in a line
         t = []
-        for i in range (1,14):
+        for i in range (1,len(words)):
             if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
                 continue
             else:
@@ -325,6 +138,289 @@ def print_result(line, indent=False):
         print(load_ten, file=out)
         print(line, file=out)
         print_drop_tensors(load_ten, indent)
+
+
+#        ## Normal binary tensor contraction
+#        #t1=words[2].split('*',1)[-1]
+#        #t2=words[3].split('*',1)[-1]
+#
+#        #inter1 = False
+#        #inter2 = False
+#        ## True if not an intermediate
+#        #if "TIN" not in words[2]: inter1 = True
+#        #if "TIN" not in words[3]: inter2 = True
+#
+#        #if inter1 or inter2:
+#        #    if (indent):
+#        #        load_ten = "    load "
+#        #    else:
+#        #        load_ten = "load "
+#
+#        #    if inter1:
+#        #        load_ten = load_ten + t1
+#        #    if inter1 and t1 != t2 and inter2:
+#        #        load_ten = load_ten + ", "
+#        #    if inter2 and t1 != t2:
+#        #        load_ten = load_ten + t2
+#
+#        #    print(load_ten.rstrip(), file=out)
+#
+#        #print(line.rstrip(), file=out)
+#
+#        ## Drop tensors
+#        #if inter1 or inter2:
+#        #    print_drop_tensors(load_ten, indent)
+#
+#    elif len(words)==6:
+#        # Get list of non-intermediate tesnsors in a line
+#        t = []
+#        for i in range (1,len(words)):
+#            if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
+#                continue
+#            else:
+#                t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
+#
+#        # Remove tensor which are the same (ie. don't need to load them twice)
+#        seen = []
+#        result = []
+#        for item in t:
+#            if item.split('[',1)[0] not in seen:
+#                seen.append(item.split('[',1)[0])
+#                result.append(item)
+#
+#        # Check if the line is within a loop
+#        if (indent):
+#            load_ten="    load "
+#        else:
+#            load_ten="load "
+#
+#        # Construct load line
+#        for tensor in result[:-1]:
+#            load_ten = load_ten + tensor + ', '
+#        load_ten = load_ten + result[-1]
+#
+#        # Print out load, line and drop
+#        print(load_ten, file=out)
+#        print(line, file=out)
+#        print_drop_tensors(load_ten, indent)
+#
+#
+#        ## Line contains brackets, may have to load more than two tensors
+#        #if "TIN" not in words:
+#        #    if (indent):
+#        #        load_ten="    load "
+#        #    else:
+#        #        load_ten="load "
+#
+#        #    if '(' in words[2]:
+#        #        t1=words[2].split('*',1)[-1].replace('(','')
+#        #        t2=words[4].split('*',1)[-1].replace(')','')
+#        #        t3=words[5].split('*',1)[-1]
+#
+#        #        inter1 = False
+#        #        inter2 = False
+#        #        inter3 = False
+#        #        # True if not an intermediate
+#        #        if "TIN" not in words[2]: inter1 = True
+#        #        if "TIN" not in words[4]: inter2 = True
+#        #        if "TIN" not in words[5]: inter3 = True
+#
+#        #        gen1 = generic_index(words[2])
+#        #        gen2 = generic_index(words[4])
+#
+#        #        # Brackets for first tensor
+#        #        if inter1:
+#        #            load_ten=load_ten + t1
+#        #        if inter1 and t1 != t2 and inter2:
+#        #            # Need to compare generic index as well
+#        #            if gen1 != gen2:
+#        #                load_ten=load_ten + ", "
+#        #            elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+#        #                # Tensors have the same generic index, but different names (K and J integrals)
+#        #                load_ten=load_ten + ", "
+#        #        if inter2 and t1 != t2:
+#        #            if gen1 != gen2:
+#        #                load_ten=load_ten + t2
+#        #            elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+#        #                load_ten=load_ten + t2
+#        #        if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
+#        #            load_ten=load_ten + ", "
+#        #        if inter3 and t2 != t3 and t1 != t3:
+#        #            load_ten=load_ten + t3
+#
+#        #    elif '(' in words[3]:
+#        #        t1=words[2].split('*',1)[-1]
+#        #        t2=words[3].split('*',1)[-1].replace('(','')
+#        #        t3=words[5].split('*',1)[-1].replace(')','')
+#
+#        #        inter1 = False
+#        #        inter2 = False
+#        #        inter3 = False
+#        #        # True if not an intermediate
+#        #        if "TIN" not in words[2]: inter1 = True
+#        #        if "TIN" not in words[3]: inter2 = True
+#        #        if "TIN" not in words[5]: inter3 = True
+#
+#        #        gen1 = generic_index(words[3])
+#        #        gen2 = generic_index(words[5])
+#
+#        #        # Brackets for second tensor
+#        #        if inter1:
+#        #            load_ten=load_ten + t1
+#        #        if inter1 and t1 != t2 and inter2:
+#        #            load_ten=load_ten + ", "
+#        #        if inter2 and t1 != t2:
+#        #            load_ten=load_ten + t2
+#        #        if inter2 and t2 != t3 and t1 != t3 and inter3:
+#        #            if gen1 != gen2:
+#        #                load_ten=load_ten + ", "
+#        #            elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
+#        #                load_ten=load_ten + ", "
+#        #        if inter3 and t2 != t3 and t1 != t3:
+#        #            if gen1 != gen2:
+#        #                load_ten=load_ten + t3
+#        #            elif gen1 == gen2 and t2.split(':',1)[0] != t3.split(':',1)[0]:
+#        #                load_ten=load_ten + t3
+#        #    else:
+#        #        print("Error in bracket determination")
+#        #        exit(1)
+#
+#        #    print(load_ten.rstrip(), file=out)
+#
+#        #print(line.rstrip(), file=out)
+#
+#        ## Print out tensors we need to drop
+#        #print_drop_tensors(load_ten, indent)
+#
+#
+#    elif len(words)==8:
+#        # Get list of non-intermediate tesnsors in a line
+#        t = []
+#        for i in range (1,len(words)):
+#            if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
+#                continue
+#            else:
+#                t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
+#
+#        # Remove tensor which are the same (ie. don't need to load them twice)
+#        seen = []
+#        result = []
+#        for item in t:
+#            if item.split('[',1)[0] not in seen:
+#                seen.append(item.split('[',1)[0])
+#                result.append(item)
+#
+#        # Check if the line is within a loop
+#        if (indent):
+#            load_ten="    load "
+#        else:
+#            load_ten="load "
+#
+#        # Construct load line
+#        for tensor in result[:-1]:
+#            load_ten = load_ten + tensor + ', '
+#        load_ten = load_ten + result[-1]
+#
+#        # Print out load, line and drop
+#        print(load_ten, file=out)
+#        print(line, file=out)
+#        print_drop_tensors(load_ten, indent)
+#
+#
+#        ## Line contains two brackets, may have to load more than two tensors
+#        #if "TIN" not in words:
+#        #    t1=words[2].split('*',1)[-1].replace('(','')
+#        #    t2=words[4].split('*',1)[-1].replace(')','')
+#        #    t3=words[5].split('*',1)[-1].replace('(','')
+#        #    t4=words[7].split('*',1)[-1].replace(')','')
+#
+#        #    gen1 = generic_index(words[2])
+#        #    gen2 = generic_index(words[4])
+#        #    gen3 = generic_index(words[5])
+#        #    gen4 = generic_index(words[7])
+#
+#        #    inter1 = False
+#        #    inter2 = False
+#        #    inter3 = False
+#        #    inter4 = False
+#        #    # True if not an intermediate
+#        #    if "TIN" not in words[2]: inter1 = True
+#        #    if "TIN" not in words[4]: inter2 = True
+#        #    if "TIN" not in words[5]: inter3 = True
+#        #    if "TIN" not in words[7]: inter4 = True
+#
+#        #    if (indent):
+#        #        load_ten="    load "
+#        #    else:
+#        #        load_ten="load "
+#
+#        #    if inter1:
+#        #        load_ten=load_ten + t1
+#        #    if inter1 and t1 != t2 and inter2:
+#        #        # Need to compare generic index as well
+#        #        if gen1 != gen2:
+#        #            load_ten=load_ten + ", "
+#        #        elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+#        #            load_ten=load_ten + ", "
+#        #    if inter2 and t1 != t2:
+#        #        if gen1 != gen2:
+#        #            load_ten=load_ten + t2
+#        #        elif gen1 == gen2 and t1.split(':',1)[0] != t2.split(':',1)[0]:
+#        #            load_ten=load_ten + t2
+#        #    if inter2 and t2 != t3 and inter1 and t1 != t3 and inter3:
+#        #        load_ten=load_ten + ", "
+#        #    if inter3 and t2 != t3 and t1 != t3:
+#        #        load_ten=load_ten + t3
+#        #    if inter1 and inter2 and inter3 and inter4 and t1 != t4 and t2 != t4 and t3 != t4:
+#        #        if gen3 != gen4:
+#        #            load_ten=load_ten + ", "
+#        #        elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
+#        #            load_ten=load_ten + ", "
+#        #    if inter4 and t1 != t4 and t2 != t4 and t3 != t4:
+#        #        if gen3 != gen4:
+#        #            load_ten=load_ten + t4
+#        #        elif gen3 == gen4 and t3.split(':',1)[0] != t4.split(':',1)[0]:
+#        #            load_ten=load_ten + t4
+#
+#        #    print(load_ten.rstrip(), file=out)
+#
+#        #print(line.rstrip(), file=out)
+#
+#        #print_drop_tensors(load_ten, indent)
+#
+#    elif len(words)==14:
+#
+#        # Get list of non-intermediate tesnsors in a line
+#        t = []
+#        for i in range (1,len(words)):
+#            if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
+#                continue
+#            else:
+#                t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
+#
+#        # Remove tensor which are the same (ie. don't need to load them twice)
+#        seen = []
+#        result = []
+#        for item in t:
+#            if item.split('[',1)[0] not in seen:
+#                seen.append(item.split('[',1)[0])
+#                result.append(item)
+#
+#        # Check if the line is within a loop
+#        if (indent):
+#            load_ten="    load "
+#        else:
+#            load_ten="load "
+#
+#        # Construct load line
+#        for tensor in result[:-1]:
+#            load_ten = load_ten + tensor + ', '
+#        load_ten = load_ten + result[-1]
+#
+#        # Print out load, line and drop
+#        print(load_ten, file=out)
+#        print(line, file=out)
+#        print_drop_tensors(load_ten, indent)
 
 
 
