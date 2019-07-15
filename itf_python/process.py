@@ -370,7 +370,6 @@ parser = argparse.ArgumentParser(
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-i','--input',default=None,help='ITF binary contraction file')
 parser.add_argument('-o','--output',default=None,help='ITF algo file')
-#parser.add_argument('-m','--multi',type=bool,default=True,help='False: single-reference; True: multireference')
 parser.add_argument('--multi',dest='multi',action='store_true')
 parser.add_argument('--no-multi',dest='multi',action='store_false')
 parser.add_argument('--kext',dest='kext',action='store_true')
