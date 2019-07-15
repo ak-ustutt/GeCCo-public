@@ -4138,11 +4138,13 @@
                item%t_spin(3)%spin(2,1) = 1
                item%t_spin(3)%spin(2,2) = 2
             case(6)
-               do i=1, 3
+               do i=1, 2
                   ! aaaaaa
                   item%t_spin(3)%spin(1,i) = 1
                   item%t_spin(3)%spin(2,i) = 1
                end do
+               item%t_spin(3)%spin(1,3) = 1
+               item%t_spin(3)%spin(2,3) = 1
             case default
                call line_error("Could not determine tensor rank",item)
          end select
