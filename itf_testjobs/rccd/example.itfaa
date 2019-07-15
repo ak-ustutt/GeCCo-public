@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 12-07-2019 10:04
+// Created on: 15-07-2019 14:24
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -56,17 +56,16 @@ tensor: L2[abij],          !Create{type:plain}
 
 ---- code("Init_Amplitudes")
 // Using MP2 amplitudes for starting guess
-alloc EMp2[], Nrm2[]
+alloc EMp2[]
 for [i,j]:
    alloc T:eecc[abij]
    load K:eecc[**ij]
    .T:eecc[abij] -= K:eecc[abij]
    denom-scale T:eecc[abij], [1,1,0,0]
    .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
-   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
    drop K:eecc[**ij]
    store T:eecc[**ij]
-store Nrm2[], EMp2[]
+store EMp2[]
 
 
 ---- code ("Ref_Energy")
