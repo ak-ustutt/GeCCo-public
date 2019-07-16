@@ -7,7 +7,6 @@ DEF_SCALAR({LABEL:'LCCD'})
 DEF_SCALAR({LABEL:'ECCD'})
 DEF_EXCITATION({LABEL:'T2',MIN_RANK:2,MAX_RANK:2})
 CLONE_OPERATOR({LABEL:'O2',TEMPLATE:'T2'})
-DEF_OP_FROM_OCC({LABEL:'INT_PP',DESCR:"PP,PP"})
 
 
 # Formula --------------------------------------------------------
@@ -24,18 +23,11 @@ form_l1.set_rule()
 
 PRINT_FORMULA({LABEL:'CCD_FORM',MODE:'SHORT'})
 
-EXPAND_OP_PRODUCT({LABEL:'FORM_PP',OP_RES:'INT_PP',
-                   OPERATORS:['H'],
-                   IDX_SV:[1],
-                   LABEL_DESCR:["1,,PP,PP"]})
 
 # Residual
 new_target('CCD_RES')
 depend('CCD_FORM')
 
-#FACTOR_OUT({LABEL_IN:'CCD_FORM',
-#            LABEL_RES:'CCD_FORM',
-#            INTERM:'H'})
 DERIVATIVE({LABEL_RES:'CCD_RES',LABEL_IN:'CCD_FORM',
             OP_RES:'O2',OP_DERIV:'T2^+'})
 PRINT_FORMULA({LABEL:'CCD_RES',MODE:'SHORT'})
@@ -56,7 +48,6 @@ DEF_ME_LIST({LIST:'ME_LCCD',OPERATOR:'LCCD',IRREP:1,'2MS':0,AB_SYM:+1})
 DEF_ME_LIST({LIST:'ME_ECCD',OPERATOR:'ECCD',IRREP:1,'2MS':0,AB_SYM:+1})
 DEF_ME_LIST({LIST:'ME_T2',OPERATOR:'T2',IRREP:1,'2MS':0,AB_SYM:+1})
 DEF_ME_LIST({LIST:'ME_O2',OPERATOR:'O2',IRREP:1,'2MS':0,AB_SYM:+1})
-DEF_ME_LIST({LIST:'ME_PP',OPERATOR:'INT_PP',IRREP:1,'2MS':0,AB_SYM:+1})
 
 
 # Optimise formula -----------------------------------------------

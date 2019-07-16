@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 15-07-2019 14:24
+// Created on: 15-07-2019 15:08
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -10,12 +10,14 @@ index-space: CD, Core, C
 
 
 // K-integral tensors
+tensor: K:cccc[klij], K:cccc
 tensor: K:eecc[abij], K:eecc
 
 // J-integral tensors
 tensor: J:eecc[acki], J:eecc
 
 // Special integral tensors
+tensor: K4E1:eecc[abij], K4E1:eecc
 
 // Tensor to send to Kext
 tensor: INTpp[abij], INTpp
@@ -142,6 +144,9 @@ drop T:eecc[bcij], f:ee[ac]
 .R:eecc[abji] += ITIN[abji]
 .R:eecc[abji] += ITIN[baij]
 drop ITIN[abji]
+load K:cccc[klij], T:eecc[abkl]
+.R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
+drop T:eecc[abkl], K:cccc[klij]
 alloc ITIN[abij]
 load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
 .ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
@@ -155,6 +160,11 @@ drop T:eecc[cbik], J:eecc[ackj]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
+// Replacing line with 4-external integrals
+//  .R:eecc[abij] += K:eeee[abcd] T:eecc[cdij]
+load K4E1:eecc[abij]
+.R:eecc[abij] += K4E1:eecc[abij]
+drop K4E1:eecc[abij]
 alloc STIN0001aaaa[ibaj], STIN0001baba[ibaj], STIN0001abab[biaj], ITIN[abij]
 load K:eecc[acik], T:eecc[bcjk]
 .STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
