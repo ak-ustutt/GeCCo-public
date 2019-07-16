@@ -2618,7 +2618,8 @@
      &   already_found,
      &   correct_pair
       integer ::
-     &   i,j,k,l
+     &   i,j,k,l,
+     &   ntest = 000
 
       ! Search only the creations of the first string for ex ops
       do i = 1, rank1/2
@@ -2646,8 +2647,11 @@
             ! Search the annhilations of the first string
             do j = rank1, rank1/2+1, -1
 
-               !write(item%logfile,*) "searching with ", str1%str(i), t1
-               !write(item%logfile,*) "matching with ", str1%str(j), t1
+               if (ntest>0) then
+               write(item%logfile,*) "searching with ", str1%str(i), t1
+               write(item%logfile,*) "matching with ", str1%str(j), t1
+               end if
+
                call suitable_pair(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
@@ -2667,8 +2671,10 @@
             if (.not. found_ex) then
                do j = rank2, rank2/2+1, -1
 
-                  !write(11,*) "searching 2 with ", str1%str(i), t1
-                  !write(11,*) "matching 2 with ", str2%str(j), t2
+                  if (ntest>0) then
+                  write(11,*) "searching 2 with ", str1%str(i), t1
+                  write(11,*) "matching 2 with ", str2%str(j), t2
+                  end if
                   call suitable_pair(found_ex, str1, str2, rank1, rank2,
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
@@ -2728,8 +2734,10 @@
             ! Search the creations of the first string
             do j = 1, rank1/2
 
-               !write(item%logfile,*) "searching 3 with ",str1%str(i), t1
-               !write(item%logfile,*) "matching 3 with ", str1%str(j), t1
+               if (ntest>0) then
+               write(item%logfile,*) "searching 3 with ",str1%str(i), t1
+               write(item%logfile,*) "matching 3 with ", str1%str(j), t1
+               end if
 
                call suitable_pair(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 1, shift, n_cnt,
@@ -2751,8 +2759,10 @@
 
                do j = 1, rank2/2
 
-              !write(item%logfile,*) "searching 4 with ", str1%str(i), t1
-              !write(item%logfile,*) "matching 4 with ", str2%str(j), t2
+               if (ntest>0) then
+              write(item%logfile,*) "searching 4 with ", str1%str(i), t1
+              write(item%logfile,*) "matching 4 with ", str2%str(j), t2
+               end if
 
                   call suitable_pair(found_ex, str1, str2, rank1, rank2,
      &                               i, j, 1, shift, n_cnt,
@@ -2814,7 +2824,6 @@
      &   n_cnt
 
       logical ::
-     &   already_found,
      &   correct_pair
       integer ::
      &   k
@@ -2831,18 +2840,13 @@
       end do
 
       ! Check if the annhilation operator has already been paried
-      already_found = .false.
       do k = 1, shift
          if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
-            already_found = .true.
-            exit
+            found_ex = .false.
+            !write(10,*) "false here 2"
+            return
          end if
       end do
-      if (already_found) then
-         found_ex = .false.
-         !write(10,*) "false here 2"
-         return
-      end if
 
       ! False if the matching index is a correct pair
       if (item%inter(3)) then
@@ -2851,7 +2855,7 @@
      &                      rank2,place1,place2,item)
          if (.not. correct_pair) then
             found_ex = .false.
-           ! write(10,*) "false here 3"
+            !write(10,*) "false here 3"
             return
          end if
       end if
