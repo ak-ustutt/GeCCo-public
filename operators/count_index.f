@@ -618,8 +618,7 @@
      &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    i,j,k,
-     &    type1(INDEX_LEN),
-     &    type2(INDEX_LEN)
+     &    type1(INDEX_LEN)
       logical ::
      &    summed
 
@@ -635,7 +634,7 @@
       ! TODO: better way to get this info?
       ! Placed in normal ordered {} order not ITF []
       type1 = 0
-      type2 = 0
+      ! If the t1 is an intermediate get info about its pairing
       if (item%inter(1)) then
          do i = 1, item%rank1
            j = i
@@ -657,6 +656,7 @@
          end do
       end if
 
+      ! If the t2 is an intermediate get info about its pairing
       if (item%inter(2)) then
          do i = 1, item%rank2
            j = i
@@ -667,13 +667,13 @@
            end if
 
            if (scan("abcdefg",item%idx2(i:i))>0) then
-              type2(j) = 1
+              type1(j) = 1
            else if (scan("ijklmno",item%idx2(i:i))>0) then
-              type2(j) = 3
+              type1(j) = 3
            else if (scan("pqrstuv",item%idx2(i:i))>0) then
-              type2(j) = 2
+              type1(j) = 2
            else if (scan("xyz",item%idx2(i:i))>0) then
-              type2(j) = 4
+              type1(j) = 4
            end if
          end do
       end if
@@ -753,17 +753,9 @@
 
          ! Set index type information, used to figure out pairing
          do j = 1, INDEX_LEN
-            spin_inters(i+n_inter)%itype(1,j)=type1(j)
-            spin_inters(i+n_inter)%itype(2,j)=type2(j)
-         !write(item%logfile,*) "type1 ", type1(j)
-         !write(item%logfile,*) "type2 ", type2(j)
+            spin_inters(i+n_inter)%itype(j)=type1(j)
          end do
-
-         ! TODO: fucks up here
-!         write(item%logfile,*) "INER SPIN:
-!     &    ",spin_inters(i+n_inter)%itype
-         !write(item%logfile,*) "type1 ", type1
-         !write(item%logfile,*) "type2 ", type2
+         !write(item%logfile,*) "type1 ", (type1(j),j=1,INDEX_LEN)
       end do
 
 
@@ -926,7 +918,8 @@
      &     command         ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(in) ::
      &     spin_case(INDEX_LEN),
-     &     itype(2,INDEX_LEN),
+!     &     itype(2,INDEX_LEN),
+     &     itype(INDEX_LEN),
      &   ninter ! Total number of intermediates
       character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     label
@@ -2827,6 +2820,7 @@
      &   k
 
 
+      ! False if the matching index is a contraction index
       found_ex = .true.
       do k = 1, n_cnt
          if (place2==str2%cnt_poss(k)) then
@@ -2850,13 +2844,14 @@
          return
       end if
 
+      ! False if the matching index is a correct pair
       if (item%inter(3)) then
          correct_pair = .false.
          call check_pairing(correct_pair,str1,str2,rank1,
      &                      rank2,place1,place2,item)
          if (.not. correct_pair) then
             found_ex = .false.
-            !write(10,*) "false here 3"
+           ! write(10,*) "false here 3"
             return
          end if
       end if
@@ -2893,26 +2888,25 @@
 
       ! Remeber - the itype info refers to the result positions
 
-      !write(11,*) "is it a correct pairing?"
-      !write(11,*) "place1 ", place1
-      !write(11,*) "place2 ", place2
+      !write(item%logfile,*) "is it a correct pairing?"
+      !write(item%logfile,*) "place1 ", place1
+      !write(item%logfile,*) "place2 ", place2
 
       if (item%rank3==2) then
          ! For rank 2, sometimes creation and annhilation ops are
          ! switched, so need to check both pairing combinations
-         !write(10,*) "stuff ", str1%itype(place1)
-         !write(10,*) "stuff ", item%itype(1,1)
-         !write(10,*) "stuff ", item%itype(1,2)
-         !write(10,*) "stuff ", item%itype
-         if (str1%itype(place1)==item%itype(1,1)) then
+         !write(10,*) "str1%itype ", str1%itype(place1)
+         !write(10,*) "str1%itype ", str1%itype(place2)
+         !write(10,*) "stuff ", (item%itype(j),j=1,INDEX_LEN)
+         if (str1%itype(place1)==item%itype(1)) then
             if (str2%itype(place2)==
-     &                             item%itype(1,2)) then
+     &                             item%itype(2)) then
                !write(11,*) "correct pair"
                correct_pair = .true.
             end if
-         else if (str1%itype(place1)==item%itype(1,2)) then
+         else if (str1%itype(place1)==item%itype(2)) then
             if (str2%itype(place2)==
-     &                             item%itype(1,1)) then
+     &                             item%itype(1)) then
                !write(11,*) "correct pair"
                correct_pair = .true.
             end if
@@ -2927,15 +2921,10 @@
          end if
 
          do i = j, extent
-            if (str1%itype(place1)==item%itype(1,i)) then
+            if (str1%itype(place1)==item%itype(i)) then
                pp2 = item%rank3 - i + 1
-               !write(11,*) "1st: ", str1%itype(place1)
-               !write(11,*) "itype: ", item%itype(1,i)
-               !write(11,*) "2nd: ", str2%itype(place2)
-               !write(11,*) "ityep: ", item%itype(1,pp2)
-               !write(11,*) "pp2: ", pp2
                if (str2%itype(place2)==
-     &                                item%itype(1,pp2)) then
+     &                                item%itype(pp2)) then
                   !write(11,*) "correct pair"
                   correct_pair = .true.
                   exit
