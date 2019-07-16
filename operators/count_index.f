@@ -2832,7 +2832,7 @@
          if (place2==str2%cnt_poss(k)) then
             found_ex = .false.
             !write(10,*) "false here 1"
-            exit
+            return
          end if
       end do
 
