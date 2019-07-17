@@ -2657,6 +2657,7 @@
      &                            p_list, item)
 
                if (found_ex) then
+                  !write(10,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
                   p_list%plist(shift)%ops(1)=t1
@@ -2672,14 +2673,15 @@
                do j = rank2, rank2/2+1, -1
 
                   if (ntest>0) then
-                  write(11,*) "searching 2 with ", str1%str(i), t1
-                  write(11,*) "matching 2 with ", str2%str(j), t2
+              write(item%logfile,*) "searching 2 with ", str1%str(i), t1
+              write(item%logfile,*) "matching 2 with ", str2%str(j), t2
                   end if
                   call suitable_pair(found_ex, str1, str2, rank1, rank2,
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item)
 
                   if (found_ex) then
+                  !write(10,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
@@ -2744,6 +2746,7 @@
      &                            p_list, item)
 
                if (found_ex) then
+                  !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
                   p_list%plist(shift)%pindex(2)=str1%str(i)
                   p_list%plist(shift)%pindex(1)=str1%str(j)
                   p_list%plist(shift)%ops(2)=t1
@@ -2769,6 +2772,7 @@
      &                               p_list, item)
 
                   if (found_ex) then
+                  !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
                      p_list%plist(shift)%pindex(2)=str1%str(i)
                      p_list%plist(shift)%pindex(1)=str2%str(j)
                      p_list%plist(shift)%ops(2)=t1
@@ -2848,6 +2852,12 @@
          end if
       end do
 
+      !if (item%inter(3)) then
+      !   write(10,*) "crap 1", item%label_res, " ", item%label_t2
+      !else
+      !   write(10,*) "crap 2", item%label_res, " ", item%label_t2
+      !end if
+
       ! False if the matching index is a correct pair
       if (item%inter(3)) then
          correct_pair = .false.
@@ -2859,6 +2869,7 @@
             return
          end if
       end if
+
 
       return
       end
@@ -2887,7 +2898,7 @@
      &   rank1, rank2
 
       integer ::
-     &   i, j, extent,
+     &   i, j, extent, k,
      &   pp2
 
       ! Remeber - the itype info refers to the result positions
@@ -2916,17 +2927,27 @@
             end if
          end if
       else
-         if (place1>rank1/2) then
-            j = item%rank3/2+1
-            extent = item%rank3
-         else
-            j = 1
-            extent = item%rank3/2
-         end if
+         !if (place1>rank1/2) then
+         !   j = item%rank3/2+1
+         !   extent = item%rank3
+         !else
+         !   j = 1
+         !   extent = item%rank3/2
+         !end if
 
-         do i = j, extent
+         !write(10,*) "str1 ", str1%str
+         !write(10,*) "str2 ", str2%str
+         !write(10,*) "str1%itype ", str1%itype(place1)
+         !write(10,*) "str2%itype ", str2%itype(place2)
+         !write(10,*) "itype: ", (item%itype(k),k=1,INDEX_LEN)
+         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
+         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
+         !do i = j, extent
+         do i = 1, item%rank3
+               !write(10,*) "what ", str1%itype(place1), item%itype(i)
             if (str1%itype(place1)==item%itype(i)) then
                pp2 = item%rank3 - i + 1
+               !write(10,*) "pp2 ", pp2
                if (str2%itype(place2)==
      &                                item%itype(pp2)) then
                   !write(11,*) "correct pair"
