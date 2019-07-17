@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 15-07-2019 14:23
+// Created on: 17-07-2019 13:32
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -647,25 +647,21 @@ store R:eecc[abij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
-.ECC[] += .25*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 .ECC[] += K:eecc[abij] T:eecc[abij]
-.ECC[] += .25*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 drop T:eecc[abij], K:eecc[abij]
 load f:ec[ai], T:ec[ai]
-.ECC[] += 2.0*f:ec[ai] T:ec[ai]
+.ECC[] += 2.*f:ec[ai] T:ec[ai]
 drop T:ec[ai], f:ec[ai]
-alloc STIN0001aa[ai], STIN0001bb[ai]
+alloc STIN0001aa[ai]
 load K:eecc[abij], T:ec[bj]
 .STIN0001aa[ai] += (K:eecc[abij] - K:eecc[abji]) T:ec[bj]
 .STIN0001aa[ai] += K:eecc[abij] T:ec[bj]
-.STIN0001bb[ai] += K:eecc[abij] T:ec[bj]
-.STIN0001bb[ai] += (K:eecc[abij] - K:eecc[abji]) T:ec[bj]
 drop T:ec[bj], K:eecc[abij]
 load T:ec[ai]
-.ECC[] += .5*STIN0001aa[ai] T:ec[ai]
-.ECC[] += .5*STIN0001bb[ai] T:ec[ai]
+.ECC[] += STIN0001aa[ai] T:ec[ai]
 drop T:ec[ai]
-drop STIN0001bb[ai], STIN0001aa[ai]
+drop STIN0001aa[ai]
 store ECC[]
 
 ---- end

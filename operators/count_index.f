@@ -1118,6 +1118,8 @@
      &     sfact_star         ! String representation of factor formatted for output
       integer ::
      &     i
+      real(8) ::
+     &   c_fact               ! Copy of orginal factor
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
@@ -1135,13 +1137,22 @@
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
      &                    2,item%binary,item%three(2),item%logfile)
 
+
+      ! Add factor to sclar result cases (going to skip half the spin
+      ! cases as these are the same, so add a factor of two to the
+      ! remaining ones)
+      c_fact = item%fact
+      if (item%rank3 == 0 .and. item%rank1/=0) then
+         c_fact = c_fact * 2.0d0
+      end if
+
       ! Convert factor to string, ignore if 1.0 or -1.0
       sfact=''
       sfact_star=''
-      if (abs(abs(item%fact) - 1.0d+0) > 1.0d-15) then
-            write(sfact,*) item%fact
+      if (abs(abs(c_fact) - 1.0d+0) > 1.0d-15) then
+            write(sfact,*) c_fact
 
-            if (item%fact < 0.0d+0) then
+            if (c_fact < 0.0d+0) then
                do i = 1, len(sfact)
                   if (sfact(i:i) == '-') then
                      ! Remove leading negative sign
@@ -1173,7 +1184,7 @@
 
       ! Determine what the contraction operator looks like
       equal_op='  '
-      if (item%fact < 0.0d+0) then
+      if (c_fact < 0.0d+0) then
          equal_op='-='
       else if (item%command==command_cp_intm) then
          equal_op=':='
@@ -4347,6 +4358,9 @@
                item%t_spin(z1)%spin(i1, i2) = j
                item%t_spin(z2)%spin(i3, i4) = j
                if (shift <= 2) then
+                  ! For scalar results, only need half of the spin
+                  ! cases, the rest are the same
+                  if (item%rank3 == 0 .and. i == 2) exit
                   call print_spin_case(item,eloop)
                end if
                if (shift > 2) then
@@ -4369,6 +4383,7 @@
                            item%t_spin(z1)%spin(i1, i2) = l
                            item%t_spin(z2)%spin(i3, i4) = l
                            if (shift <= 4) then
+                              if (item%rank3 == 0 .and. i == 2) exit
                               call print_spin_case(item,eloop)
                            end if
                            if (shift > 4) then
@@ -4467,6 +4482,7 @@
          sum2a = sum2a + item%t_spin(2)%spin(1,i)
          sum2b = sum2b + item%t_spin(2)%spin(2,i)
       end do
+
 
       ! Pick out specific spin cases here
       if (sum1a==sum1b .and. sum2a==sum2b) then
