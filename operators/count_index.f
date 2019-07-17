@@ -2990,13 +2990,10 @@
       end if
 
       if (rank == 2) then
-         !if (idx%itype(1)>=idx%itype(2)) then
          if (idx%itype(1)>idx%itype(2)) then
-            if (idx%str(1)>idx%str(2)) then
-               tmp = idx%str(1)
-               idx%str(1) = idx%str(2)
-               idx%str(2) = tmp
-            end if
+            tmp = idx%str(1)
+            idx%str(1) = idx%str(2)
+            idx%str(2) = tmp
          end if
          return
       end if

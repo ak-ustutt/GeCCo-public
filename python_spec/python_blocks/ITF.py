@@ -25,7 +25,7 @@ import python_interface.gecco_modules.default_keywords as dk
 #---------------------------------------------------------------##
 new_target("general considerations",True)
 
-import operators.cluster_residue_op 
+import operators.cluster_residue_op
 import operators.ref_wf_op
 import operators.H_0
 #Important note: prepared for MR_P preparation of wavefunction
