@@ -631,18 +631,18 @@
 
       call itf_contr_init(contr_info,item,permute,command,itflog)
 
-      ! TODO: better way to get this info?
+
       ! Placed in normal ordered {} order not ITF []
       type3 = 0
       t_shift = 1
       ! If the t1 is an intermediate get info about its pairing
       if (item%inter(1)) then
          do i = 1, item%rank1
-           j = i
-           if (i==3) then
-              j = 4
-           else if (i==4) then
-              j = 3
+
+           if (i>item%rank1/2) then
+              j = item%rank1 - i + item%rank1/2 + 1
+           else
+              j = i
            end if
 
            if (scan("abcdefg",item%idx1(i:i))>0) then
@@ -661,11 +661,11 @@
       ! If the t2 is an intermediate get info about its pairing
       if (item%inter(2)) then
          do i = 1, item%rank2
-           j = i
-           if (i==3) then
-              j = 4
-           else if (i==4) then
-              j = 3
+
+           if (i>item%rank2/2) then
+              j = item%rank2 - i + item%rank2/2 + 1
+           else
+              j = i
            end if
 
            if (scan("abcdefg",item%idx2(i:i))>0) then
@@ -1966,8 +1966,8 @@
         call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
      &                       item,p_list)
       end if
-!      call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
-!
+      !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+
 !      write(item%logfile,*) "T1 old: {", str1%str, "}", str1%cnt_poss
 !      write(item%logfile,*) "T2 old: {", str2%str, "}", str2%cnt_poss
 !      write(item%logfile,*) "Result old: {", str3%str, "}"
@@ -3096,14 +3096,15 @@
      &   itype(rank)    ! Index type to compare to
 
       integer ::
-     &   i, j,
+     &   i, j, k,
      &   pp1, pp2    ! Paired position
       character (len=1), pointer ::
      &   new_str(:) => null()    ! New index string with correct slot positions
       character (len=1) ::
      &   tmp
       logical ::
-     &   incorrect   ! True if the indicies are not in the correct slots
+     &   incorrect,  ! True if the indicies are not in the correct slots
+     &   used        ! True if the pair has already been used
 
 
       ! Check if the indicies are already in the correct slots
@@ -3127,11 +3128,24 @@
       ! itype of a certain position (enumerated by i) and place that
       ! pair it that position in new_str
       allocate(new_str(rank))
+      new_str = ''
 
       do i = 1, rank/2
          do j = 1, rank/2
             pp1 = rank - i + 1
             pp2 = rank - j + 1
+
+            used = .false.
+            do k = 1, rank/2
+               if (new_str(k) == idx%str(j)) then
+                  used = .true.
+                  exit
+               end if
+            end do
+
+            if (used) then
+               cycle
+            end if
 
             if (idx%itype(j)==itype(i) .and.
      &                                  idx%itype(pp2)==itype(pp1)) then
@@ -3139,8 +3153,12 @@
                !write(10,*) "idx%itype ", idx%itype(pp2)
                !write(10,*) "itype ", itype(i)
                !write(10,*) "itype ", itype(pp1)
+               !write(10,*) "idx%str(j) ", idx%str(j)
+               !write(10,*) "idx%str(pp2) ", idx%str(pp2)
                new_str(i) = idx%str(j)
                new_str(pp1) = idx%str(pp2)
+               !write(10,*) "new_str ", new_str
+               exit
 
             else
                continue

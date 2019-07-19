@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 17-07-2019 13:32
+// Created on: 19-07-2019 19:16
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -417,10 +417,10 @@ drop T:ec[bk]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij], STIN0001baba[iakj], STIN0001abab[aikj]
-alloc STIN0001abab[ijkl], STIN0001baab[ijkl], ITIN[abij]
+alloc STIN0001abab[jilk], STIN0001baab[jilk], ITIN[abij]
 load K:eccc[aijk], T:ec[al]
-.STIN0001abab[ijkl] += K:eccc[aijk] T:ec[al]
-.STIN0001baab[ijkl] += K:eccc[aijk] T:ec[al]
+.STIN0001abab[jilk] += K:eccc[aijk] T:ec[al]
+.STIN0001baab[jilk] += K:eccc[aijk] T:ec[al]
 drop T:ec[al], K:eccc[aijk]
 load INTpp[abkl]
 .ITIN[abij] += .5*STIN0001abab[klij] INTpp[abkl]
@@ -428,7 +428,7 @@ load INTpp[abkl]
 drop INTpp[abkl]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baab[ijkl], STIN0001abab[ijkl]
+drop ITIN[abij], STIN0001baab[jilk], STIN0001abab[jilk]
 alloc STIN0001bb[ij], ITIN[abji]
 load K:eccc[aikj], T:ec[ak]
 .STIN0001bb[ij] += K:eccc[aikj] T:ec[ak]
