@@ -616,7 +616,8 @@
      &     item        ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &    i,j,k,
-     &    type1(INDEX_LEN)
+     &    type3(2,INDEX_LEN),
+     &    t_shift
       logical ::
      &    summed
 
@@ -632,7 +633,8 @@
 
       ! TODO: better way to get this info?
       ! Placed in normal ordered {} order not ITF []
-      type1 = 0
+      type3 = 0
+      t_shift = 1
       ! If the t1 is an intermediate get info about its pairing
       if (item%inter(1)) then
          do i = 1, item%rank1
@@ -644,15 +646,16 @@
            end if
 
            if (scan("abcdefg",item%idx1(i:i))>0) then
-              type1(j) = 1
+              type3(t_shift,j) = 1
            else if (scan("ijklmno",item%idx1(i:i))>0) then
-              type1(j) = 3
+              type3(t_shift,j) = 3
            else if (scan("pqrstuv",item%idx1(i:i))>0) then
-              type1(j) = 2
+              type3(t_shift,j) = 2
            else if (scan("xyz",item%idx1(i:i))>0) then
-              type1(j) = 4
+              type3(t_shift,j) = 4
            end if
          end do
+         t_shift = t_shift + 1
       end if
 
       ! If the t2 is an intermediate get info about its pairing
@@ -666,13 +669,13 @@
            end if
 
            if (scan("abcdefg",item%idx2(i:i))>0) then
-              type1(j) = 1
+              type3(t_shift,j) = 1
            else if (scan("ijklmno",item%idx2(i:i))>0) then
-              type1(j) = 3
+              type3(t_shift,j) = 3
            else if (scan("pqrstuv",item%idx2(i:i))>0) then
-              type1(j) = 2
+              type3(t_shift,j) = 2
            else if (scan("xyz",item%idx2(i:i))>0) then
-              type1(j) = 4
+              type3(t_shift,j) = 4
            end if
          end do
       end if
@@ -752,9 +755,9 @@
 
          ! Set index type information, used to figure out pairing
          do j = 1, INDEX_LEN
-            spin_inters(i+n_inter)%itype(j)=type1(j)
+            spin_inters(i+n_inter)%itype(j)=type3(i,j)
          end do
-         !write(item%logfile,*) "type1 ", (type1(j),j=1,INDEX_LEN)
+         !write(item%logfile,*) "type3 ", (type3(i,j),j=1,INDEX_LEN)
       end do
 
 
@@ -4665,8 +4668,8 @@
                ! Update number of spin cases for each different
                ! intermediate
                do i = 1, ishift
-                  item%inter_spins(ishift)%ncase =
-     &                              item%inter_spins(ishift)%ncase + 1
+                  item%inter_spins(i)%ncase =
+     &                              item%inter_spins(i)%ncase + 1
                end do
 
                item%ninter = ishift
