@@ -115,6 +115,12 @@ def print_result(line, indent=False):
             else:
                 t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
 
+        # The line contains a contraction between two intermedites, so no
+        # need to print a load/drop line
+        if (len(t)==0):
+            print(line, file=out)
+            return
+
         # Remove tensor which are the same (ie. don't need to load them twice)
         seen = []
         result = []
@@ -890,7 +896,7 @@ print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
 if (multi):
     for i in range(0, len(declare_ten)):
-        if ("T[" in declare_ten[i]):
+        if ("T:" in declare_ten[i]):
             generic=generic_index(declare_ten[i])
             declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
 
