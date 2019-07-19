@@ -132,6 +132,7 @@
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
+
       ! Check if formula item is an intermediate
       if (associated(fl_item%interm)) then
 
@@ -339,6 +340,9 @@
                call print_form_item2(formlog,'LONG',contr_no,fl_item,
      &                               op_info)
                fl_item => fl_item%next
+
+               ! Count the number of terms
+               contr_no = contr_no+1
             end do
          end if
 
@@ -431,6 +435,8 @@
       if (print_form) then
         call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
       end if
+      !write(itflog,*) "term # ", contr_no
+
 
       ! Check if at the end of the list, if not, point to the next item
       fl_item => fl_item%next
