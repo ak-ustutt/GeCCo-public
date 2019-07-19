@@ -897,8 +897,8 @@ print('---- code("Init_Amplitudes")',file=f2)
 if (multi):
     for i in range(0, len(declare_ten)):
         if ("T:" in declare_ten[i]):
-            generic=generic_index(declare_ten[i])
-            declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
+            #generic=generic_index(declare_ten[i])
+            #declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
 
             print("alloc", declare_ten[i], file=f2)
             print("store", declare_ten[i], file=f2)
