@@ -624,6 +624,7 @@
          if (contr_info%label_res == spin_inters(i)%name) then
             item%itype = spin_inters(i)%itype
          !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
+            exit
          end if
       end do
 
@@ -1988,6 +1989,9 @@
 !      t1cnt_poss=str1%cnt_poss
 !      t2cnt_poss=str2%cnt_poss
 !
+!      write(10,*) "t1cnt_poss ", t1cnt_poss
+!      write(10,*) "t2cnt_poss ", t2cnt_poss
+!
 !      ! Loop over pairs
 !      sh1 = 1
 !      sh2 = 1
@@ -2038,11 +2042,12 @@
 !
 !                           do l = 1, n_cnt
 !                              if (t2cnt_poss(l)==k) then
-!                                 t2cnt_poss = 0
+!                                 t2cnt_poss(l) = 0
 !                                 exit
 !                              end if
 !                           end do
 !
+!                           exit
 !                        end if
 !                     end do
 !                     if (.not. found) then
@@ -2103,7 +2108,7 @@
 !
 !                           do l = 1, n_cnt
 !                              if (t1cnt_poss(l)==k) then
-!                                 t1cnt_poss = 0
+!                                 t1cnt_poss(l) = 0
 !                                 exit
 !                              end if
 !                           end do
@@ -2144,17 +2149,53 @@
 !
 !      ! 2.5 Place in remaing contration loops
 !      ! 3. Update old stings and update contraction postitions
+!      ! TODO: decide which one is bigger, then only search on that
+!      ! tensor
 !      if (sh1-1 < item%rank1/2) then
 !         do i = 1, n_cnt
 !            if (t1cnt_poss(i)>0) then
-!               write(10,*) "Here is a contraction"
+!               if (t1cnt_poss(i)>item%rank1/2) then
+!                  t_str1%str(item%rank1-sh1+1) = str1%str(t1cnt_poss(i))
+!
+!                  do j = 1, n_cnt
+!                     if (t1cnt_poss(j)>0 .and.
+!     &                                 t1cnt_poss(j)<=item%rank1/2) then
+!
+!                        ! Place in creation contraction
+!                        t_str1%str(sh1) = str1%str(t1cnt_poss(j))
+!                        t_str2%str(item%rank2-sh2+1) =
+!     &                                           str1%str(t1cnt_poss(j))
+!                        t1cnt_poss(j) = 0
+!                     end if
+!                  end do
+!
+!                  t_str2%str(sh2) = str1%str(t1cnt_poss(i))
+!                  sh1 = sh1 + 1
+!                  sh2 = sh2 + 1
+!
+!                  ! Update contration positions
+!                  t_str1%cnt_poss(sh3) = sh1
+!                  t_str2%cnt_poss(sh3) = sh2
+!                  sh3 = sh3 + 1
+!                  t_str1%cnt_poss(sh3) = item%rank1-sh1+1
+!                  t_str2%cnt_poss(sh3) = item%rank2-sh2+1
+!
+!                  t1cnt_poss(i) = 0
+!               end if
 !            end if
 !         end do
 !      end if
 !
 !
-!      write(10,*) "Some str1 {", t_str1%str, "}"
-!      write(10,*) "Some str2 {", t_str2%str, "}"
+!      write(10,*) "Some str1 {", t_str1%str, "} ", t_str1%cnt_poss
+!      write(10,*) "Some str2 {", t_str2%str, "} ", t_str2%cnt_poss
+!
+!      !str1%str = t_str1%str
+!      !str2%str = t_str2%str
+!      !str1%cnt_poss = t_str1%cnt_poss
+!      !str2%cnt_poss = t_str2%cnt_poss
+!
+!
 !      deallocate(t1cnt_poss)
 !      deallocate(t2cnt_poss)
 !
@@ -2391,7 +2432,6 @@
            str3%itype(i) = 4
         end if
       end do
-
 
       ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
       call permute_index(str1, item%rank1)
@@ -2887,8 +2927,10 @@
          ! For rank 2, sometimes creation and annhilation ops are
          ! switched, so need to check both pairing combinations
          !write(10,*) "str1%itype ", str1%itype(place1)
-         !write(10,*) "str1%itype ", str1%itype(place2)
-         !write(10,*) "stuff ", (item%itype(j),j=1,INDEX_LEN)
+         !write(10,*) "str2%itype ", str2%itype(place2)
+         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
+         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
+         !write(10,*) "itype ", (item%itype(j),j=1,INDEX_LEN)
          if (str1%itype(place1)==item%itype(1)) then
             if (str2%itype(place2)==
      &                             item%itype(2)) then
