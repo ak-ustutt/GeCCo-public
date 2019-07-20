@@ -692,8 +692,6 @@
       end if
 
 
-
-
       ! Allocate space to store information about intermediates and
       ! their spin cases. Only allocate 2 objects as there can only be
       ! at most two intermediates on a line

@@ -26,6 +26,31 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine init_spin_cases(spin_inters)
+*----------------------------------------------------------------------*
+!     Initalise spin_cases array
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(spin_cases), dimension(MAXINT), intent(inout) ::
+     &     spin_inters
+
+      integer ::
+     &   i, j, k
+
+      do i = 1, MAXINT
+         spin_inters(i)%name = ''
+      end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine print_inter_spin_cases(spin_inters, ninter, label,
      &                                  logfile)
 *----------------------------------------------------------------------*
@@ -167,6 +192,11 @@
          ! Global variable ninter is the number of intermediates which
          ! we need to deal with
          ninter = 0
+
+         ! Need to initalise spin_inters to avoid getting junk in the
+         ! array
+         call init_spin_cases(spin_inters)
+         call init_spin_cases(ospin_inters)
 
          call find_spin_intermediate(fl_item%bcontr,itflog,
      &                       fl_item%command,spin_inters, ninter)
