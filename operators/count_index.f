@@ -2946,13 +2946,13 @@
             end if
          end if
       else
-         !if (place1>rank1/2) then
-         !   j = item%rank3/2+1
-         !   extent = item%rank3
-         !else
-         !   j = 1
-         !   extent = item%rank3/2
-         !end if
+         if (place1>rank1/2) then
+            j = item%rank3/2+1
+            extent = item%rank3
+         else
+            j = 1
+            extent = item%rank3/2
+         end if
 
          !write(10,*) "str1 ", str1%str
          !write(10,*) "str2 ", str2%str
@@ -2961,8 +2961,8 @@
          !write(10,*) "itype: ", (item%itype(k),k=1,INDEX_LEN)
          !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
          !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
-         !do i = j, extent
-         do i = 1, item%rank3
+         do i = j, extent
+         !do i = 1, item%rank3
                !write(10,*) "what ", str1%itype(place1), item%itype(i)
             if (str1%itype(place1)==item%itype(i)) then
                pp2 = item%rank3 - i + 1
