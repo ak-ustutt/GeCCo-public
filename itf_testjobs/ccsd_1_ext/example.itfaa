@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 19-07-2019 19:16
+// Created on: 22-07-2019 11:15
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -140,8 +140,6 @@ denom-scale L1[ai], [1,0]
 
 alloc EDi1[], Nrm1[], Var1[]
 load T:ec[ai], f:ec[ai]
-// Compute Hylleraas-functional-like energy
-// 2 T^i_a f^i_a + 2 (T^i_a-R^i_a/D^i_a) R^i_a
 // Update T:ec
 // T^i_a = T^i_a-R^i_a/D^i_a
 .T:ec[ai] -= L1[ai]
@@ -164,8 +162,6 @@ for [i,j]:
    denom-scale L2[**ij], [1,1,0,0]
 
    load K:eecc[**ij]
-   // Compute Hylleraas-functional-like energy
-   // \tilde{T}^{ij}_{ab} K{ij}_{ab} + \tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}
    .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
 
    // Update T:eecc

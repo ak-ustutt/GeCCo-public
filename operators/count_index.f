@@ -4530,6 +4530,7 @@
                                        item%t_spin(z1)%spin(i1, i2) = n
                                        item%t_spin(z2)%spin(i3, i4) = n
                                        if (shift <= 6) then
+                                  if (item%rank3 == 0 .and. i == 2) exit
                                         call print_spin_case(item,eloop)
                                        end if
                                     end do

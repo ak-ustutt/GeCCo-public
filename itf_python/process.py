@@ -897,9 +897,6 @@ print('---- code("Init_Amplitudes")',file=f2)
 if (multi):
     for i in range(0, len(declare_ten)):
         if ("T:" in declare_ten[i]):
-            #generic=generic_index(declare_ten[i])
-            #declare_ten[i] = declare_ten[i][:1] + ":" + "".join(generic) + declare_ten[i][1:]
-
             print("alloc", declare_ten[i], file=f2)
             print("store", declare_ten[i], file=f2)
 else:
@@ -964,8 +961,6 @@ if (not multi):
         print("", file=f2)
         print("alloc EDi1[], Nrm1[], Var1[]", file=f2)
         print("load T:ec[ai], f:ec[ai]", file=f2)
-        print("// Compute Hylleraas-functional-like energy", file=f2)
-        print("// 2 T^i_a f^i_a + 2 (T^i_a-R^i_a/D^i_a) R^i_a", file=f2)
         print("// Update T:ec",file=f2)
         print("// T^i_a = T^i_a-R^i_a/D^i_a",file=f2)
         print(".T:ec[ai] -= L1[ai]", file=f2)
@@ -988,8 +983,6 @@ if (not multi):
     print("   denom-scale L2[**ij], [1,1,0,0]",file=f2)
     print("",file=f2)
     print("   load K:eecc[**ij]",file=f2)
-    print("   // Compute Hylleraas-functional-like energy",file=f2)
-    print("   // \\tilde{T}^{ij}_{ab} K{ij}_{ab} + \\tilde{(T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab})} R{ij}_{ab}",file=f2)
     print("   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]",file=f2)
     print("",file=f2)
     print("   // Update T:eecc",file=f2)
