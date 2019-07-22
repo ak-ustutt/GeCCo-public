@@ -1326,7 +1326,7 @@
       end do
 
       ! Assign ranks of tensors
-      call itf_rank(o1, o1, item%rank1, .true.)
+      call itf_rank(o1, o1, item%rank1, item%nops1, .true.)
       item%rank3 = item%rank1
 
       c1='        '
@@ -1935,20 +1935,13 @@
       end do
       item%fact = item%fact * factor
 
-      ! Set ranks of tensors
-      ! TODO: Combine nops and rank
-      call itf_rank(e1, c, item%rank1, .false.)
-      call itf_rank(e2, c, item%rank2, .false.)
-      call itf_rank(e3, c, item%rank3, .true.)
-
-      ! Set number of indcies
-      item%nops1 = sum(e1, dim=2) + sum(c, dim=2)
-      item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
-      item%nops3 = sum(e3, dim=2)
-
-      n_cnt = sum(sum(c, dim=1))
+      ! Set ranks and nops (number of operators) of tensors
+      call itf_rank(e1, c, item%rank1, item%nops1, .false.)
+      call itf_rank(e2, c, item%rank2, item%nops2, .false.)
+      call itf_rank(e3, c, item%rank3, item%nops3, .true.)
 
       ! Set number of contraction indicies, used later on
+      n_cnt = sum(sum(c, dim=1))
       item%contri = n_cnt
 
       ! Allocate index_str objects
@@ -5107,7 +5100,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_rank(ops1, ops2, rank, flag)
+      subroutine itf_rank(ops1, ops2, rank, nops, flag)
 *----------------------------------------------------------------------*
 !     Calculate rank of tensor
 *----------------------------------------------------------------------*
@@ -5118,18 +5111,21 @@
       include 'def_itf_contr.h'
 
       integer, intent(in) ::
-     &   ops1(4,2),
-     &   ops2(4,2)
+     &   ops1(ngastp,2),
+     &   ops2(ngastp,2)
       integer, intent(inout) ::
-     &   rank
+     &   rank,
+     &   nops(ngastp)
       logical, intent(in) ::
      &   flag
 
       if (flag) then
          ! Only use the first occupation array to calculate the rank
-         rank = sum(sum(ops1, dim=1))
+         nops = sum(ops1, dim=2)
+         rank = sum(nops, dim=1)
       else
-         rank = sum(sum(ops1, dim=1)) + sum(sum(ops2, dim=1))
+         nops = sum(ops1, dim=2) + sum(ops2, dim=2)
+         rank = sum(nops, dim=1)
       end if
 
       return
