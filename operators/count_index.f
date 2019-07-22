@@ -1437,6 +1437,55 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine init_index_str(str, rank, n_cnt)
+*----------------------------------------------------------------------*
+!     Initalise index_str
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   str
+
+      integer, intent(in) ::
+     &   rank,
+     &   n_cnt
+
+      allocate(str%str(rank))
+      allocate(str%itype(rank))
+      allocate(str%cnt_poss(n_cnt))
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine deinit_index_str(str)
+*----------------------------------------------------------------------*
+!     Deinitalise index_str
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   str
+
+      deallocate(str%str)
+      deallocate(str%itype)
+      deallocate(str%cnt_poss)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine create_index_str(idx, cnt, ex, c_shift, e_shift, rank,
      &                             second)
 *----------------------------------------------------------------------*
@@ -1897,23 +1946,15 @@
       item%nops2 = sum(e2, dim=2) + sum(c, dim=2)
       item%nops3 = sum(e3, dim=2)
 
-      ! TODO: put this in a constructor
-      allocate(str1%str(item%rank1))
-      allocate(str2%str(item%rank2))
-      allocate(str3%str(item%rank3))
-
       n_cnt = sum(sum(c, dim=1))
 
       ! Set number of contraction indicies, used later on
       item%contri = n_cnt
 
-      allocate(str1%cnt_poss(n_cnt))
-      allocate(str2%cnt_poss(n_cnt))
-      allocate(str3%cnt_poss(n_cnt))
-
-      allocate(str1%itype(item%rank1))
-      allocate(str2%itype(item%rank2))
-      allocate(str3%itype(item%rank3))
+      ! Allocate index_str objects
+      call init_index_str(str1, item%rank1, n_cnt)
+      call init_index_str(str2, item%rank2, n_cnt)
+      call init_index_str(str3, item%rank3, n_cnt)
 
       allocate(p_list%plist(item%rank3/2))
 
@@ -2541,17 +2582,9 @@
 
       deallocate(p_list%plist)
 
-      deallocate(str3%itype)
-      deallocate(str2%itype)
-      deallocate(str1%itype)
-
-      deallocate(str3%cnt_poss)
-      deallocate(str2%cnt_poss)
-      deallocate(str1%cnt_poss)
-
-      deallocate(str3%str)
-      deallocate(str2%str)
-      deallocate(str1%str)
+      call deinit_index_str(str1)
+      call deinit_index_str(str2)
+      call deinit_index_str(str3)
 
       return
       end
