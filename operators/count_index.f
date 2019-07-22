@@ -738,13 +738,8 @@
 
       item%print_line = .true.
 
-      ! TODO: Ignore tensor product cases for now...
-      if (item%rank3 /= 4 .and. item%rank1 /= 2 .and.
-     &    item%rank2 /= 2) then
-         if (item%ninter == 0) call line_error("Couldn't find
-     &                                    intermediate", item)
-      end if
-
+      if (item%ninter == 0) call line_error("Couldn't find "//
+     &                                      "intermediate", item)
 
       ! Copy information back to array in print_itf()
       do i = 1, item%ninter
@@ -4270,12 +4265,14 @@
          call print_itf_line(item,.false.,.false.)
          return
       else if (item%rank1 == 0 .or. item%rank2 ==0) then
-         ! Tensor multiplied by a scalar
-         call print_itf_line(item,.false.,.false.)
-         return
+         ! Tensor multiplied by a scalar (not involving an intermediate)
+         if (.not. item%inter(1) .and. .not. item%inter(2)) then
+            call print_itf_line(item,.false.,.false.)
+            return
+         end if
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
-         ! Don't care about tensor products now
+         ! Tensor product
          call print_itf_line(item,.false.,.false.)
          return
       end if
@@ -4387,6 +4384,21 @@
      &   str1, str2
       logical ::
      &   eloop
+
+      ! For line involving intermediates and scalars
+      ! Non intermediate lines are caught in assign_spin
+      if (item%rank1==0 .or. item%rank2==0) then
+         call print_spin_case(item,eloop)
+         if (.not. eloop) then
+            call line_error("Didn't print out spin case", item)
+         end if
+
+         if (eloop .and. item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
+         return
+      end if
+
 
       allocate(poss(2,item%contri))
 
@@ -5071,7 +5083,7 @@
       write(item%logfile,'(a)') trim(line)
 
       if (item%product) then
-         ! We don't need to symmetrise from a tensor product (I think!)
+         ! We don't need to symmetrise from a tensor product
          return
       end if
 
