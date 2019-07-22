@@ -220,6 +220,81 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine init_spin_cases(spin_inters)
+*----------------------------------------------------------------------*
+!     Initalise spin_cases array
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(spin_cases), dimension(MAXINT), intent(inout) ::
+     &     spin_inters
+
+      integer ::
+     &   i, j, k
+
+      do i = 1, MAXINT
+         spin_inters(i)%name = ''
+      end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_inter_spin_cases(spin_inters, ninter, label,
+     &                                  logfile)
+*----------------------------------------------------------------------*
+!     Print out intermediate spin cases
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(spin_cases), dimension(MAXINT), intent(in) ::
+     &     spin_inters
+      integer, intent(in) ::
+     &   ninter,
+     &   logfile
+      character(len=*), intent(in) ::
+     &   label
+
+      integer ::
+     &   i, j, k
+
+      if (ninter==0) return
+
+      write(logfile,*) "=============================="
+      write(logfile,*) "TITLE: ", trim(label)
+
+      do i = 1, ninter
+         write(logfile,*) "=============================="
+         write(logfile,*) "NCASE: ", spin_inters(i)%ncase
+         write(logfile,*) "NAME: ", trim(spin_inters(i)%name)
+         do j = 1, spin_inters(i)%ncase
+            write(logfile,*) "Spin:"
+            write(logfile,'(4i2)')
+     &                        (spin_inters(i)%cases(k,j),k=1,INDEX_LEN)
+            write(logfile,*) "------------------------------"
+         end do
+
+         write(logfile,'(8i2)')
+     &                         (spin_inters(i)%itype(j),j=1,INDEX_LEN)
+         write(logfile,*) "------------------------------"
+         write(logfile,*) "=============================="
+      end do
+      write(logfile,*)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine print_spin(spins, rank, label, logfile)
 *----------------------------------------------------------------------*
 !     Print spin of a tensor
