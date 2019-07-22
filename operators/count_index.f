@@ -714,7 +714,6 @@
                if (item%label_res == spin_inters(i)%name) then
                   do k = 1, spin_inters(i)%ncase
 
-                     ! TODO: This code is repeated in print_itf.f
                      do j = 1, item%rank3/2
                         item%i_spin%spin(1,j) =
      &                                       spin_inters(i)%cases(j,k)
@@ -846,13 +845,8 @@
       integer ::
      &    i,j
 
-
       summed = .false.
 
-!      if (item%rank3 == 2 .and. item%rank1 + item%rank2 == 2 .or.
-!      if (item%rank3 + item%rank1 + item%rank2 == 4 .or.
-!     &    item%rank3 + item%rank1 + item%rank2 == 6) then
-      ! TODO: probably safer to sum == 4 cases explicitly
       if (item%rank3 + item%rank1 + item%rank2 == 6) then
          j = 1
          do i = 1, 2
@@ -1133,9 +1127,9 @@
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                    1,item%binary,item%three(1),item%logfile)
+     &                    1,item%binary,item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                    2,item%binary,item%three(2),item%logfile)
+     &                    2,item%binary,item%logfile)
 
 
       ! Add factor to sclar result cases (going to skip half the spin
@@ -1206,7 +1200,7 @@
 
 *----------------------------------------------------------------------*
       subroutine spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,
-     &                          three,lulog)
+     &                          lulog)
 *----------------------------------------------------------------------*
 !     Construct spatial tensor representation
 *----------------------------------------------------------------------*
@@ -1227,8 +1221,7 @@
       logical, intent(in) ::
      &   spin,       ! True if pure spin
      &   inter,      ! True if an intermediate
-     &   binary,     ! True if a binary contraction
-     &   three       ! True if three operators of the same type
+     &   binary      ! True if a binary contraction
       integer, intent(in) ::
      &   rank,       ! Rank of tensor
      &   tensor,     ! T1 or T2
