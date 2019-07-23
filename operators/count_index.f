@@ -913,7 +913,7 @@
      &    summed
 
       integer ::
-     &    i,j
+     &    i,j,k
 
       summed = .false.
 
@@ -922,7 +922,6 @@
          do i = 1, 2
             if (item%inter(i)) then
                ! Only need the aa case
-!               item%inter_spins(j)%cases(:,j) = (/ 1, 0, 1, 0 /)
                item%inter_spins(j)%cases(:,j) = 0
                item%inter_spins(j)%cases(1,j) = 1
                item%inter_spins(j)%cases(1+INDEX_LEN/2,j) = 1
@@ -936,13 +935,80 @@
 
          !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
          summed = .true.
+
+      else if (item%rank1 /= 0 .and. item%rank2 == 0) then
+
+         j = 1
+         do i = 1, 2
+            if (item%inter(i)) then
+
+               if (i == 1) then
+                  select case (item%rank1)
+                     case(2)
+                        ! aa
+                        item%inter_spins(j)%cases(1,1) = 1
+                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
+                     case(4)
+                        ! abab
+                        item%inter_spins(j)%cases(1,1) = 1
+                        item%inter_spins(j)%cases(2,1) = 2
+                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
+                        item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 2
+                     case(6)
+                        do k = 1, 3
+                           ! aaaaaa
+                           item%inter_spins(j)%cases(i,1) = 1
+                           item%inter_spins(j)%cases(i+INDEX_LEN/2,1)= 1
+                        end do
+                     case default
+                        call line_error("Could not determine tensor "//
+     &                                  "rank",item)
+                  end select
+
+                  item%inter_spins(j)%name = item%label_t1
+                  item%inter_spins(j)%ncase = 1
+               end if
+
+               if (i == 2) then
+                  item%inter_spins(j)%name = item%label_t2
+                  item%inter_spins(j)%ncase = 0
+               end if
+
+               item%ninter = item%ninter + 1
+               j = j + 1
+            end if
+         end do
+
+         !write(item%logfile,*) "SIMPLE SPIN test: ", item%inter_spins
+         summed = .true.
+
+      else if (item%rank3==4.and.item%rank1==2.and.item%rank2==2) then
+         j = 1
+         do i = 1, 2
+            if (item%inter(i)) then
+
+               if (i == 1) then
+                  item%inter_spins(j)%name = item%label_t1
+                  item%inter_spins(j)%ncase = 0
+               end if
+               if (i == 2) then
+                  item%inter_spins(j)%name = item%label_t2
+                  item%inter_spins(j)%ncase = 0
+               end if
+
+               item%ninter = item%ninter + 1
+               j = j + 1
+            end if
+         end do
+         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+         summed = .true.
+
       else if (item%rank3 + item%rank1 + item%rank2 == 0) then
          ! Do nothing for scalar tensors
          j = 1
          do i = 1, 2
             if (item%inter(i)) then
                ! Only need the aa case
-               !item%inter_spins(j)%cases(:,j) = (/ 0, 0, 0, 0 /)
                item%inter_spins(j)%cases(:,j) = 0
                item%inter_spins(j)%ncase = 1
                if (i == 1) item%inter_spins(j)%name = item%label_t1
@@ -4341,10 +4407,10 @@
          return
       else if (item%rank1 == 0 .or. item%rank2 ==0) then
          ! Tensor multiplied by a scalar (not involving an intermediate)
-         if (.not. item%inter(1) .and. .not. item%inter(2)) then
+         !if (.not. item%inter(1) .and. .not. item%inter(2)) then
             call print_itf_line(item,.false.,.false.)
             return
-         end if
+         !end if
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
          ! Tensor product
@@ -4462,17 +4528,17 @@
 
       ! For line involving intermediates and scalars
       ! Non intermediate lines are caught in assign_spin
-      if (item%rank1==0 .or. item%rank2==0) then
-         call print_spin_case(item,eloop)
-         if (.not. eloop) then
-            call line_error("Didn't print out spin case", item)
-         end if
+      !if (item%rank1==0 .or. item%rank2==0) then
+      !   call print_spin_case(item,eloop)
+      !   if (.not. eloop) then
+      !      call line_error("Didn't print out spin case", item)
+      !   end if
 
-         if (eloop .and. item%permute /= 1 .and. item%print_line) then
-            if (.not. item%symm) write(item%logfile,'(a3)') "END"
-         end if
-         return
-      end if
+      !   if (eloop .and. item%permute /= 1 .and. item%print_line) then
+      !      if (.not. item%symm) write(item%logfile,'(a3)') "END"
+      !   end if
+      !   return
+      !end if
 
 
       allocate(poss(2,item%contri))

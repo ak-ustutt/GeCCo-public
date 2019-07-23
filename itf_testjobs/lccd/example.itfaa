@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 22-07-2019 11:15
+// Created on: 22-07-2019 15:59
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -51,20 +51,22 @@ tensor: DeltaC[CC], DeltaC
 tensor: ITIN[abji],        !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
+tensor: C[abij],           !Create{type:plain}
 
 
 ---- code("Init_Amplitudes")
 // Using MP2 amplitudes for starting guess
-alloc EMp2[]
+alloc EMp2[], Nrm2[]
 for [i,j]:
    alloc T:eecc[abij]
    load K:eecc[**ij]
    .T:eecc[abij] -= K:eecc[abij]
    denom-scale T:eecc[abij], [1,1,0,0]
    .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
    drop K:eecc[**ij]
    store T:eecc[**ij]
-store EMp2[]
+store Nrm2[], EMp2[]
 
 
 ---- code ("Ref_Energy")
@@ -101,8 +103,12 @@ for [i,j]:
    load T:eecc[**ij]
    .T:eecc[abij] -= L2[abij]
 
-   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
-   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   alloc C[**ij]
+   .C[**ij] += T:eecc[**ij]
+
+   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
+   drop C[**ij]
    store T:eecc[**ij]
    drop K:eecc[**ij]
 

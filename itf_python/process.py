@@ -888,6 +888,7 @@ if (not multi):
     print("tensor: L2[abij],          !Create{type:plain}", file=f2)
     if (triples):
         print("tensor: L3[abcijk],        !Create{type:plain}", file=f2)
+    print("tensor: C[abij],           !Create{type:plain}", file=f2)
 
 # Print out code blocks
 # Need to initalise the amplitudes first
@@ -903,24 +904,26 @@ else:
     # Initalise amplitudes using MP2
     print("// Using MP2 amplitudes for starting guess", file=f2)
     if (singles):
-        print("alloc T:ec[ai], EMp1[]", file=f2)
+        print("alloc T:ec[ai], EMp1[], Nrm1[]", file=f2)
         print("load f:ec[ai]", file=f2)
         print(".T:ec[ai] -= f:ec[ai]", file=f2)
         print("denom-scale T:ec[ai], [1,0]", file=f2)
         print(".EMp1[] += T:ec[ai] f:ec[ai]", file=f2)
+        print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
         print("drop f:ec[ai]", file=f2)
-        print("store EMp1[], T:ec[ai]", file=f2)
+        print("store Nrm1[], EMp1[], T:ec[ai]", file=f2)
         print("", file=f2)
-    print("alloc EMp2[]", file=f2)
+    print("alloc EMp2[], Nrm2[]", file=f2)
     print("for [i,j]:", file=f2)
     print("   alloc T:eecc[abij]", file=f2)
     print("   load K:eecc[**ij]", file=f2)
     print("   .T:eecc[abij] -= K:eecc[abij]", file=f2)
     print("   denom-scale T:eecc[abij], [1,1,0,0]", file=f2)
     print("   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]", file=f2)
+    print("   .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]", file=f2)
     print("   drop K:eecc[**ij]", file=f2)
     print("   store T:eecc[**ij]", file=f2)
-    print("store EMp2[]", file=f2)
+    print("store Nrm2[], EMp2[]", file=f2)
     if (triples):
         print("", file=f2)
         print("alloc T:eeeccc[abcijk]", file=f2)
@@ -973,6 +976,7 @@ if (not multi):
         print("", file=f2)
         print("drop L1[ai], R:ec[ai]", file=f2)
         print("", file=f2)
+        print("load T:ec[ai]", file=f2)
     print("// Update doubles",file=f2)
     print("alloc EDi2[], Nrm2[], Var2[]",file=f2)
     print("for [i,j]:",file=f2)
@@ -990,14 +994,23 @@ if (not multi):
     print("   load T:eecc[**ij]",file=f2)
     print("   .T:eecc[abij] -= L2[abij]",file=f2)
     print("",file=f2)
-    print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2)
-    print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2)
+    print("   alloc C[**ij]",file=f2)
+    print("   .C[**ij] += T:eecc[**ij]",file=f2)
+    if (singles):
+        print("   .C[abij] += T:ec[ai] T:ec[bj]",file=f2)
+    print("",file=f2)
+    print("   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]",file=f2)
+    print("   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]",file=f2)
+    #print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2)
+    #print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2)
+    print("   drop C[**ij]",file=f2)
     print("   store T:eecc[**ij]",file=f2)
     print("   drop K:eecc[**ij]",file=f2)
     print("",file=f2)
     print("   drop L2[**ij]",file=f2)
     print("   drop R:eecc[**ij]",file=f2)
     print("store Var2[], Nrm2[], EDi2[]",file=f2)
+    if (singles): print("drop T:ec[ai]", file=f2)
     if (triples):
         # TODO: Make update triples a loop etc.
         print("", file=f2)

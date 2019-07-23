@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 22-07-2019 11:15
+// Created on: 22-07-2019 15:59
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -90,28 +90,31 @@ tensor: STIN0003baba[iakj], !Create{type:plain}
 
 tensor: L1[ai],            !Create{type:plain}
 tensor: L2[abij],          !Create{type:plain}
+tensor: C[abij],           !Create{type:plain}
 
 
 ---- code("Init_Amplitudes")
 // Using MP2 amplitudes for starting guess
-alloc T:ec[ai], EMp1[]
+alloc T:ec[ai], EMp1[], Nrm1[]
 load f:ec[ai]
 .T:ec[ai] -= f:ec[ai]
 denom-scale T:ec[ai], [1,0]
 .EMp1[] += T:ec[ai] f:ec[ai]
+.Nrm1[] += 2.0*T:ec[ai] T:ec[ai]
 drop f:ec[ai]
-store EMp1[], T:ec[ai]
+store Nrm1[], EMp1[], T:ec[ai]
 
-alloc EMp2[]
+alloc EMp2[], Nrm2[]
 for [i,j]:
    alloc T:eecc[abij]
    load K:eecc[**ij]
    .T:eecc[abij] -= K:eecc[abij]
    denom-scale T:eecc[abij], [1,1,0,0]
    .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
    drop K:eecc[**ij]
    store T:eecc[**ij]
-store EMp2[]
+store Nrm2[], EMp2[]
 
 
 ---- code ("Ref_Energy")
@@ -152,6 +155,7 @@ store Var1[], Nrm1[], EDi1[]
 
 drop L1[ai], R:ec[ai]
 
+load T:ec[ai]
 // Update doubles
 alloc EDi2[], Nrm2[], Var2[]
 for [i,j]:
@@ -169,14 +173,20 @@ for [i,j]:
    load T:eecc[**ij]
    .T:eecc[abij] -= L2[abij]
 
-   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
-   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   alloc C[**ij]
+   .C[**ij] += T:eecc[**ij]
+   .C[abij] += T:ec[ai] T:ec[bj]
+
+   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
+   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
+   drop C[**ij]
    store T:eecc[**ij]
    drop K:eecc[**ij]
 
    drop L2[**ij]
    drop R:eecc[**ij]
 store Var2[], Nrm2[], EDi2[]
+drop T:ec[ai]
 
 
 ---- code("Update_Kext_Tensor")
