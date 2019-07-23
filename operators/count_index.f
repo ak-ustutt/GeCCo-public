@@ -507,6 +507,7 @@
      &    inter,           ! True if result is an intermediate
      &    found,
      &    upper,
+     &    symmetric,
      &    intpp
       character(len=MAXLEN_BC_LABEL) ::
      &    old_name,
@@ -523,12 +524,13 @@
          if(contr_info%perm(i)) perm_case = perm_case + 1
       end do
 
-      ! Determine if result needs permuting
-      !inter = check_inter(contr_info%label_res)
+      ! Check if result is a symmetric matrix, if not, then no
+      ! permuational symmetry and not extra factors
+      call check_symmetric(contr_info, command, symmetric)
+      if (.not. symmetric) then
+         perm_case = 0
+      end if
 
-      !if (.not.inter) then
-      !   call permute_tensors(contr_info,perm_case,itflog)
-      !end if
 
       ! Being a special block which the python processor will pull out
       ! into its own code block
@@ -4682,7 +4684,7 @@
       item%command=comm
 
       ! Get number of contraction and external indices on each tensor
-      call itf_ops(contr_info, item)
+      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
 
       ! Set ranks of tensors using matricies from itf_ops
       call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
@@ -4864,6 +4866,46 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine check_symmetric(contr_info, command, symmetric)
+*----------------------------------------------------------------------*
+!     Check if a tensor has permutational symmetry
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &   contr_info     ! Information about binary contraction
+      integer, intent(in) ::
+     &   command
+
+      integer ::
+     &   c(ngastp,2),
+     &   e1(ngastp,2),
+     &   e2(ngastp,2),
+     &   nops(ngastp),
+     &   i
+      logical ::
+     &   symmetric
+
+      call itf_ops(contr_info, c, e1, e2, command)
+
+      nops = sum(e1, dim=2) + sum(e2, dim=2)
+
+      symmetric = .true.
+      do i = 1, ngastp
+         if (mod(nops(i),2) /= 0) then
+            symmetric = .false.
+         end if
+      end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine itf_rank(ops1, ops2, rank, nops, flag)
 *----------------------------------------------------------------------*
 !     Calculate rank of tensor
@@ -4897,7 +4939,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_ops(contr_info,item)
+      subroutine itf_ops(contr_info, c, e1, e2, command)
 *----------------------------------------------------------------------*
 !     Assign contraction (c), external indicies 1 (e1) and external
 !     indicies 2 (e2) to ift_contr item
@@ -4912,21 +4954,24 @@
 
       type(binary_contr), intent(in) ::
      &   contr_info     ! Information about binary contraction
-      type(itf_contr), intent(inout) ::
-     &   item           ! ITF binary contraction
 
-      integer ::
+      integer, intent(inout) ::
      &   c(ngastp,2),        ! Operator numbers of contraction index
      &   e1(ngastp,2),       ! Operator numbers of external index 1
-     &   e2(ngastp,2),       ! Operator numbers of external index 2
+     &   e2(ngastp,2)        ! Operator numbers of external index 2
+
+      integer, intent(in) ::
+     &   command
+
+      integer ::
      &   i
 
       c=0
       e1=0
       e2=0
 
-      if (item%command==command_cp_intm .or.
-     &    item%command==command_add_intm) then
+      if (command==command_cp_intm .or.
+     &    command==command_add_intm) then
          do i = 1, contr_info%nj_op1
            call count_index2(i,
      &        contr_info%occ_op1(1:,1:,i),
@@ -4954,10 +4999,6 @@
      &        contr_info%ngas,contr_info%nspin,e2)
          end do
       end if
-
-      item%c = c
-      item%e1 = e1
-      item%e2 = e2
 
       return
       end
