@@ -1431,7 +1431,7 @@
      &     item         ! ITF binary contraction
 
       integer ::
-     &     o1(4,2),     ! Operator numbers of the first tensor (T1)
+     &     e1(ngastp,2),     ! Operator numbers of the first tensor (T1)
      &     i            ! Loop index
       character, dimension(4) ::
      &     hol=(/ 'i','j','k','l' /),
@@ -1442,23 +1442,9 @@
      &     c1, c2, c3,
      &     a1, a2, a3
       character(len=INDEX_LEN), dimension(8) ::
-     &     o1_array     ! Index of operator 1
+     &     e1_array     ! Index of operator 1
 
-      ! TODO: Sort this out and bring it up to date with the rest fo the
-      ! code, should use count_index2 (and remove count_index)
-      o1=0
-
-      ! Get occupation info
-      do i = 1, contr_info%nj_op1
-        call count_index(i,
-     &     contr_info%occ_op1(1:,1:,i),
-     &     contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,o1)
-      end do
-
-      ! Assign ranks of tensors
-      call itf_rank(o1, o1, item%rank1, item%nops1, .true.)
-      item%rank3 = item%rank1
+      e1=item%e1
 
       c1='        '
       c2='        '
@@ -1467,64 +1453,37 @@
       a2='        '
       a3='        '
 
-      ! Assign o1 (external indices of t1)
-!      do i=1, o1(1,1)
-!          c1(i:)=par(i)
-!      end do
-!      o1_array(1)=c1
-!      do i=1, o1(3,1)
-!          c2(i:)=val(i)
-!      end do
-!      o1_array(2)=c2
-!      do i=1, o1(2,1)
-!          c3(i:)=hol(i)
-!      end do
-!      o1_array(3)=c3
-
-      do i=1, o1(1,1)
+      ! Assign e1 (external indices of t1)
+      do i=1, e1(2,1)
           c1(i:)=par(i)
       end do
-      o1_array(1)=c1
-      do i=1, o1(2,1)
+      e1_array(1)=c1
+      do i=1, e1(3,1)
           c2(i:)=val(i)
       end do
-      o1_array(2)=c2
-      do i=1, o1(3,1)
+      e1_array(2)=c2
+      do i=1, e1(1,1)
           c3(i:)=hol(i)
       end do
-      o1_array(3)=c3
+      e1_array(3)=c3
 
       ! Need to to be shifted to not match assignment of creations above
-!      do i=1, o1(1,2)
-!          a1(i:)=par(i+o1(1,1))
-!      end do
-!      o1_array(5)=a1
-!      do i=1, o1(3,2)
-!          a2(i:)=val(i+o1(3,1))
-!      end do
-!      o1_array(6)=a2
-!      do i=1, o1(2,2)
-!          a3(i:)=hol(i+o1(2,1))
-!      end do
-!      o1_array(7)=a3
-
-
-      do i=1, o1(1,2)
-          a1(i:)=par(i+o1(1,1))
+      do i=1, e1(2,2)
+          a1(i:)=par(i+e1(2,1))
       end do
-      o1_array(5)=a1
-      do i=1, o1(2,2)
-          a2(i:)=val(i+o1(2,1))
+      e1_array(5)=a1
+      do i=1, e1(3,2)
+          a2(i:)=val(i+e1(3,1))
       end do
-      o1_array(6)=a2
-      do i=1, o1(3,2)
-          a3(i:)=hol(i+o1(3,1))
+      e1_array(6)=a2
+      do i=1, e1(1,2)
+          a3(i:)=hol(i+e1(1,1))
       end do
-      o1_array(7)=a3
+      e1_array(7)=a3
 
-      item%idx1=trimal(o1_array(1))//trimal(o1_array(2))//
-     &          trimal(o1_array(3))//trimal(o1_array(5))//
-     &          trimal(o1_array(6))//trimal(o1_array(7))
+      item%idx1=trimal(e1_array(1))//trimal(e1_array(2))//
+     &          trimal(e1_array(3))//trimal(e1_array(5))//
+     &          trimal(e1_array(6))//trimal(e1_array(7))
 
       item%idx3=item%idx1
 
@@ -4719,6 +4678,8 @@
       ! Assign output file
       item%logfile=lulog
 
+      ! Assign command type
+      item%command=comm
 
       ! Get number of contraction and external indices on each tensor
       call itf_ops(contr_info, item)
@@ -4739,9 +4700,6 @@
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
 
-
-      ! Assign command type
-      item%command=comm
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
@@ -4798,6 +4756,8 @@
          call assign_new_index(contr_info,item)
       end if
 
+
+      ! Set up arrays to store information about intermediates
       item%inter1 = ''
       item%inter2 = ''
 
@@ -4812,6 +4772,7 @@
       if (item%inter(3)) then
          allocate(item%i_spin%spin(2, item%rank3/2))
       end if
+
 
       ! Check if a tensor product
       if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
@@ -4944,7 +4905,9 @@
 
       implicit none
       include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
       type(binary_contr), intent(in) ::
@@ -4953,34 +4916,44 @@
      &   item           ! ITF binary contraction
 
       integer ::
-     &   c(4,2),        ! Operator numbers of contraction index
-     &   e1(4,2),       ! Operator numbers of external index 1
-     &   e2(4,2),       ! Operator numbers of external index 2
+     &   c(ngastp,2),        ! Operator numbers of contraction index
+     &   e1(ngastp,2),       ! Operator numbers of external index 1
+     &   e2(ngastp,2),       ! Operator numbers of external index 2
      &   i
 
       c=0
       e1=0
       e2=0
 
-      ! Get occupation info
-      do i = 1, contr_info%n_cnt
-        call count_index2(i,
-     &     contr_info%occ_cnt(1:,1:,i),
-     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,c)
-      end do
-      do i = 1, contr_info%nj_op1
-        call count_index2(i,
-     &     contr_info%occ_ex1(1:,1:,i),
-     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      do i = 1, contr_info%nj_op2
-        call count_index2(i,
-     &     contr_info%occ_ex2(1:,1:,i),
-     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e2)
-      end do
+      if (item%command==command_cp_intm .or.
+     &    item%command==command_add_intm) then
+         do i = 1, contr_info%nj_op1
+           call count_index2(i,
+     &        contr_info%occ_op1(1:,1:,i),
+     &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,e1)
+         end do
+      else
+         ! Get occupation info
+         do i = 1, contr_info%n_cnt
+           call count_index2(i,
+     &        contr_info%occ_cnt(1:,1:,i),
+     &        contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,c)
+         end do
+         do i = 1, contr_info%nj_op1
+           call count_index2(i,
+     &        contr_info%occ_ex1(1:,1:,i),
+     &        contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,e1)
+         end do
+         do i = 1, contr_info%nj_op2
+           call count_index2(i,
+     &        contr_info%occ_ex2(1:,1:,i),
+     &        contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &        contr_info%ngas,contr_info%nspin,e2)
+         end do
+      end if
 
       item%c = c
       item%e1 = e1
