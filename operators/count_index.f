@@ -4715,10 +4715,10 @@
      &     lulog        ! Output file
 
       integer :: i, j
-      ! This should be in a 'constructor'
 
       ! Assign output file
       item%logfile=lulog
+
 
       ! Get number of contraction and external indices on each tensor
       call itf_ops(contr_info, item)
@@ -4738,6 +4738,7 @@
 
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
+
 
       ! Assign command type
       item%command=comm
@@ -4768,6 +4769,13 @@
       item%int(3) = .false.
 
 
+      ! Remove zeorth-body density from equations
+      if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
+         item%label_t2 = ''
+         item%command = command_add_intm
+      end if
+
+
       ! Assign factor --- use special ITF factor
       ! the ITF factor is closer to the value expected from standard
       ! diagram rules, but still some care has to be taken when translating
@@ -4778,7 +4786,8 @@
 
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
-      if (comm==command_cp_intm .or. comm==command_add_intm) then
+      if (item%command==command_cp_intm .or.
+     &    item%command==command_add_intm) then
          ! For [ADD] and [COPY]
          ! Not a binary contraction
          item%binary = .false.
