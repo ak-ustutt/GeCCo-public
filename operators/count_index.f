@@ -4720,9 +4720,6 @@
       ! Assign output file
       item%logfile=lulog
 
-      ! Assign command type
-      item%command=comm
-
       ! Get number of contraction and external indices on each tensor
       call itf_ops(contr_info, item)
 
@@ -4734,6 +4731,7 @@
       ! Set number of contraction indicies
       item%contri = sum(sum(item%c, dim=1))
 
+
       ! Determine factor from equivalent lines
       item%fact = 1.0d+0
       call itf_equiv_lines_factor(item%c, item%fact)
@@ -4741,37 +4739,34 @@
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
 
-      ! Assign permutation number
-      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         item%permute=perm
-      end if
+      ! Assign command type
+      item%command=comm
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
-      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         ! Operator 2 does not exist in [ADD] or [COPY]
-         item%label_t2=contr_info%label_op2
-      end if
-      item%label_res=contr_info%label_res
-
       ! Check if an intermediate
       item%inter(1) = check_inter(item%label_t1)
-      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
-         item%inter(2) = check_inter(item%label_t2)
-      end if
-      item%inter(3) = check_inter(item%label_res)
-
       ! Check if an integral
       item%int(1) = check_int(item%label_t1)
-      if (comm/=command_cp_intm .or. comm/=command_add_intm) then
+
+      if (item%command/=command_cp_intm .or.
+     &    item%command/=command_add_intm) then
+
+         ! Operator 2 does not exist in [ADD] or [COPY]
+         item%label_t2=contr_info%label_op2
+
+         ! Assign permutation number
+         item%permute=perm
+
+         item%inter(2) = check_inter(item%label_t2)
+
          item%int(2) = check_int(item%label_t2)
       end if
+
+      item%label_res=contr_info%label_res
+      item%inter(3) = check_inter(item%label_res)
       item%int(3) = .false.
 
-      ! Check if binary contraction or not
-      if (comm==command_add_intm .or. comm==command_cp_intm) then
-         item%binary = .false.
-      end if
 
       ! Assign factor --- use special ITF factor
       ! the ITF factor is closer to the value expected from standard
@@ -4785,6 +4780,8 @@
       ! of operators are also set here
       if (comm==command_cp_intm .or. comm==command_add_intm) then
          ! For [ADD] and [COPY]
+         ! Not a binary contraction
+         item%binary = .false.
          call assign_add_index(contr_info,item)
       else
          ! For other contractions
