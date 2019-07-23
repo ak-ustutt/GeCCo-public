@@ -1444,6 +1444,8 @@
       character(len=INDEX_LEN), dimension(8) ::
      &     o1_array     ! Index of operator 1
 
+      ! TODO: Sort this out and bring it up to date with the rest fo the
+      ! code, should use count_index2 (and remove count_index)
       o1=0
 
       ! Get occupation info
@@ -1968,7 +1970,6 @@
      &   ci(4,2),       ! Operator numbers of contraction index (inverse)
      &   e1(4,2),       ! Operator numbers of external index 1
      &   e2(4,2),       ! Operator numbers of external index 2
-!     &   e3(4,2),       ! Operator numbers of result index
      &   shift,         ! List shift
      &   shift_a,       ! List shift
      &   shift_c,       ! List shift
@@ -2017,66 +2018,15 @@
      &   t1cnt_poss(:) => null(),
      &   t2cnt_poss(:) => null()
 
-      !c=0
-      !e1=0
-      !e2=0
-      !e3=0
-
+      ! Set operator numbers
       c=item%c
       e1=item%e1
       e2=item%e2
-      !e3=0
 
+      ! Factor due to permuation of annhilation and creation indices
       p_factor = 1.0d0
 
-!      ! TODO: Move this stuff to its own function, make init_contr more
-!      ! modular
-!      ! Get occupation info
-!      do i = 1, contr_info%n_cnt
-!        call count_index2(i,
-!     &     contr_info%occ_cnt(1:,1:,i),
-!     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,c)
-!      end do
-!      do i = 1, contr_info%nj_op1
-!        call count_index2(i,
-!     &     contr_info%occ_ex1(1:,1:,i),
-!     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e1)
-!      end do
-!      do i = 1, contr_info%nj_op2
-!        call count_index2(i,
-!     &     contr_info%occ_ex2(1:,1:,i),
-!     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e2)
-!      end do
-!      do i = 1, contr_info%nj_res
-!        call count_index2(i,
-!     &     contr_info%occ_res(1:,1:,i),
-!     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
-!     &     contr_info%ngas,contr_info%nspin,e3)
-!      end do
-
-      ! Figure out factor from equivalent lines
-      factor = 1.0d+0
-      do j = 1, 2
-         do i = 1, 4
-            if (c(i,j) == 0) cycle
-            if (mod(c(i,j),2) == 0) then
-               factor = factor * (1.0d+0/real(c(i,j),8))
-            end if
-         end do
-      end do
-      item%fact = item%fact * factor
-
-      ! Set ranks and nops (number of operators) of tensors
-!      call itf_rank(e1, c, item%rank1, item%nops1, .false.)
-!      call itf_rank(e2, c, item%rank2, item%nops2, .false.)
-!      call itf_rank(e3, c, item%rank3, item%nops3, .true.)
-
-!      ! Set number of contraction indicies
-!      n_cnt = sum(sum(c, dim=1))
-!      item%contri = n_cnt
+      ! Set number of contraction indicies
       n_cnt = item%contri
 
       ! Allocate index_str objects
@@ -2134,250 +2084,6 @@
      &                       item,p_list)
       end if
       !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
-
-!      write(item%logfile,*) "T1 old: {", str1%str, "}", str1%cnt_poss
-!      write(item%logfile,*) "T2 old: {", str2%str, "}", str2%cnt_poss
-!      write(item%logfile,*) "Result old: {", str3%str, "}"
-!
-!
-!
-!      ! TODO: new idea instead of nicer pairing
-!      ! 1. Arrange the pairs in the strings (with or without contraction
-!      ! indicies)
-!      ! 2. Place in remaining contraction indices, making sure creation
-!      ! and annhilation are not swapped
-!      allocate(t_str1%str(item%rank1))
-!      allocate(t_str2%str(item%rank2))
-!      allocate(t_str1%cnt_poss(n_cnt))
-!      allocate(t_str2%cnt_poss(n_cnt))
-!      allocate(t_str1%itype(item%rank1))
-!      allocate(t_str2%itype(item%rank2))
-!
-!      allocate(t1cnt_poss(n_cnt))
-!      allocate(t2cnt_poss(n_cnt))
-!
-!      t1cnt_poss=str1%cnt_poss
-!      t2cnt_poss=str2%cnt_poss
-!
-!      write(10,*) "t1cnt_poss ", t1cnt_poss
-!      write(10,*) "t2cnt_poss ", t2cnt_poss
-!
-!      ! Loop over pairs
-!      sh1 = 1
-!      sh2 = 1
-!      sh3 = 1
-!      t_str1%str=''
-!      t_str2%str=''
-!      do i = 1, item%rank3/2
-!         found = .false.
-!
-!         ! Place in creation index
-!         if (p_list%plist(i)%ops(1)==1) then
-!            t_str1%str(sh1) = p_list%plist(i)%pindex(1)
-!
-!            ! Place in annhilation index
-!            if (p_list%plist(i)%ops(2)==1) then
-!               pp1 = item%rank1 - sh1 + 1
-!               t_str1%str(pp1) = p_list%plist(i)%pindex(2)
-!            else
-!               pp2 = item%rank2 - sh2 + 1
-!               t_str2%str(pp2) = p_list%plist(i)%pindex(2)
-!
-!
-!
-!               ! Need to place in a contraction annhilation into t1 and
-!               ! a contraction creation into t2
-!               ! TODO: Factor this
-!               found_cnt = .false.
-!               do j = 1, n_cnt
-!                  if (t1cnt_poss(j)>item%rank1/2) then
-!                     found_cnt = .true.
-!                     write(10,*) "cnt ", t1cnt_poss(j)
-!                     pl1 = str1%cnt_poss(j)
-!                     t_str1%str(item%rank1-sh1+1) = str1%str(pl1)
-!                     t_str2%str(sh2) = str1%str(pl1)
-!
-!                     ! set new cnt_poss to t_str1 and t_str2
-!                     t_str1%cnt_poss(sh3) = item%rank1-sh1+1
-!                     t_str2%cnt_poss(sh3) = sh2
-!                     sh3 = sh3 + 1
-!
-!                     ! set cnt_poss to 0?, so don't get same op twice (in both
-!                     ! tensors)
-!                     t1cnt_poss(j) = 0
-!                     ! Check same contraction exists on t2
-!                     do k = 1, item%rank2/2
-!                        if (str1%str(pl1)==str2%str(k)) then
-!                           found = .true.
-!
-!                           do l = 1, n_cnt
-!                              if (t2cnt_poss(l)==k) then
-!                                 t2cnt_poss(l) = 0
-!                                 exit
-!                              end if
-!                           end do
-!
-!                           exit
-!                        end if
-!                     end do
-!                     if (.not. found) then
-!                        write(item%logfile,*) "ERROR: Couldn't find"//
-!     &                                        " matching creation on t2"
-!                     end if
-!
-!                     ! Only place one contraction index at a time, exit
-!                     ! the loop
-!                     exit
-!
-!                  end if
-!               end do
-!
-!               if (.not. found_cnt) then
-!                  write(item%logfile,*) "ERROR: Couldn't find"//
-!     &                                  " contraction annhilation on t1"
-!               end if
-!
-!               ! Placed an index in t_str2, so update shift
-!               sh2 = sh2 + 1
-!
-!            end if
-!
-!            ! Placed an index in t_str1, so update shift
-!            sh1 = sh1 + 1
-!
-!         else
-!            pp2 = item%rank2 - shift + 1
-!            t_str2%str(sh2) = p_list%plist(i)%pindex(1)
-!
-!            if (p_list%plist(i)%ops(2)==1) then
-!               pp1 = item%rank1 - sh1 + 1
-!               t_str1%str(pp1) = p_list%plist(i)%pindex(2)
-!
-!               ! Need to place in a contraction annhilation into t2 and
-!               ! a contraction creation into t1
-!               found_cnt = .false.
-!               do j = 1, n_cnt
-!                  if (t2cnt_poss(j)>item%rank2/2) then
-!                     found_cnt = .true.
-!                     pl1 = str2%cnt_poss(j)
-!                     t_str1%str(sh1) = str2%str(pl1)
-!                     t_str2%str(item%rank2-sh2+1) = str2%str(pl1)
-!
-!                     ! set new cnt_poss to t_str1 and t_str2
-!                     t_str1%cnt_poss(sh3) = sh1
-!                     t_str2%cnt_poss(sh3) = item%rank2-sh2+1
-!                     sh3 = sh3 + 1
-!
-!                     ! set cnt_poss to 0?, so don't get same op twice (in both
-!                     ! tensors)
-!                     t2cnt_poss(j) = 0
-!                     ! Check same contraction exists on t1
-!                     do k = 1, item%rank1/2
-!                        if (str2%str(pl1)==str1%str(k)) then
-!                           found = .true.
-!
-!                           do l = 1, n_cnt
-!                              if (t1cnt_poss(l)==k) then
-!                                 t1cnt_poss(l) = 0
-!                                 exit
-!                              end if
-!                           end do
-!
-!                        end if
-!                     end do
-!                     if (.not. found) then
-!                        write(item%logfile,*) "ERROR: Couldn't find"//
-!     &                                        " matching creation on t1"
-!                     end if
-!
-!                     ! Only place one contraction index at a time, exit
-!                     ! the loop
-!                     exit
-!
-!                  end if
-!               end do
-!
-!               if (.not. found_cnt) then
-!                  write(item%logfile,*) "ERROR: Couldn't find"//
-!     &                                  " contraction annhilation on t2"
-!               end if
-!
-!               ! Placed an index in t_str1, so update shift
-!               sh1 = sh1 + 1
-!
-!
-!            else
-!               pp2 = item%rank2 - sh2 + 1
-!               t_str2%str(pp2) = p_list%plist(i)%pindex(2)
-!            end if
-!
-!            ! Placed an index in t_str2, so update shift
-!            sh2 = sh2 + 1
-!
-!         end if
-!      end do
-!
-!      ! 2.5 Place in remaing contration loops
-!      ! 3. Update old stings and update contraction postitions
-!      ! TODO: decide which one is bigger, then only search on that
-!      ! tensor
-!      if (sh1-1 < item%rank1/2) then
-!         do i = 1, n_cnt
-!            if (t1cnt_poss(i)>0) then
-!               if (t1cnt_poss(i)>item%rank1/2) then
-!                  t_str1%str(item%rank1-sh1+1) = str1%str(t1cnt_poss(i))
-!
-!                  do j = 1, n_cnt
-!                     if (t1cnt_poss(j)>0 .and.
-!     &                                 t1cnt_poss(j)<=item%rank1/2) then
-!
-!                        ! Place in creation contraction
-!                        t_str1%str(sh1) = str1%str(t1cnt_poss(j))
-!                        t_str2%str(item%rank2-sh2+1) =
-!     &                                           str1%str(t1cnt_poss(j))
-!                        t1cnt_poss(j) = 0
-!                     end if
-!                  end do
-!
-!                  t_str2%str(sh2) = str1%str(t1cnt_poss(i))
-!                  sh1 = sh1 + 1
-!                  sh2 = sh2 + 1
-!
-!                  ! Update contration positions
-!                  t_str1%cnt_poss(sh3) = sh1
-!                  t_str2%cnt_poss(sh3) = sh2
-!                  sh3 = sh3 + 1
-!                  t_str1%cnt_poss(sh3) = item%rank1-sh1+1
-!                  t_str2%cnt_poss(sh3) = item%rank2-sh2+1
-!
-!                  t1cnt_poss(i) = 0
-!               end if
-!            end if
-!         end do
-!      end if
-!
-!
-!      write(10,*) "Some str1 {", t_str1%str, "} ", t_str1%cnt_poss
-!      write(10,*) "Some str2 {", t_str2%str, "} ", t_str2%cnt_poss
-!
-!      !str1%str = t_str1%str
-!      !str2%str = t_str2%str
-!      !str1%cnt_poss = t_str1%cnt_poss
-!      !str2%cnt_poss = t_str2%cnt_poss
-!
-!
-!      deallocate(t1cnt_poss)
-!      deallocate(t2cnt_poss)
-!
-!      deallocate(t_str1%str)
-!      deallocate(t_str2%str)
-!      deallocate(t_str1%cnt_poss)
-!      deallocate(t_str2%cnt_poss)
-!      deallocate(t_str1%itype)
-!      deallocate(t_str2%itype)
-
-
-
 
 
       ! If there is a pair in one string, permute so they are paired
@@ -5028,6 +4734,13 @@
       ! Set number of contraction indicies
       item%contri = sum(sum(item%c, dim=1))
 
+      ! Determine factor from equivalent lines
+      item%fact = 1.0d+0
+      call itf_equiv_lines_factor(item%c, item%fact)
+
+      ! Get any remaining factors from GeCCo
+      item%fact = item%fact * abs(contr_info%fact_itf)
+
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
          item%permute=perm
@@ -5065,16 +4778,8 @@
       ! diagram rules, but still some care has to be taken when translating
       ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
       ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-
       !item%fact=contr_info%fact_itf
-      item%fact=abs(contr_info%fact_itf)
-      !write(11,*) "diag fact: ", contr_info%fact
-      !write(11,*) "itf fact: ", contr_info%fact_itf
 
-      ! Account for negative sign as explained from above...
-      !call integral_fact(contr_info,item%fact)
-
-      !write(11,*) "integral fact: ", item%fact
 
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
@@ -5133,72 +4838,6 @@
 
       if (item%inter(3)) then
          deallocate(item%i_spin%spin)
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine integral_fact(contr,fact)
-*----------------------------------------------------------------------*
-!     Check if negative factor needs to be applied due to the different
-!     storage of the <aj||bi> integrals
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr   ! Information about binary contraction
-      real(8), intent(inout) ::
-     &     fact
-
-      integer ::
-     &     i,
-     &   loop,
-     &     c(4,2)
-
-
-      c = 0
-
-      if (contr%label_op1 == 'H') then
-         !TODO: Why looping over n_cnt????? probably want to loop over
-         !      number of blocks for each operator
-         do i = 1, contr%n_cnt
-!            write(10,*) "n_cnt ", contr%n_cnt
-!            write(10,*) "occ_op1 ", contr%occ_op1(1:,1:,i)
-!            write(10,*) "rst_op1 ", contr%rst_op1(1:,1:,1:,1:,1:,i)
-           call count_index(i,
-     &        contr%occ_op1(1:,1:,i),
-     &        contr%rst_op1(1:,1:,1:,1:,1:,i),
-     &        contr%ngas,contr%nspin,c)
-         end do
-      end if
-      if (contr%label_op2 == 'H') then
-         !TODO: Why looping over n_cnt????? probably want to loop over
-         !      number of vertices for each operator
-         do i = 1, contr%n_cnt
-           call count_index(i,
-     &        contr%occ_op2(1:,1:,i),
-     &        contr%rst_op2(1:,1:,1:,1:,1:,i),
-     &        contr%ngas,contr%nspin,c)
-         end do
-      end if
-
-      !if (c(1,1)==1 .and. c(2,1)==1 .and. c(1,2)==1 .and. c(2,2)==1)
-      if (c(1,1)==1 .and. c(3,1)==1 .and. c(1,2)==1 .and. c(3,2)==1)
-     &   then
-            fact = fact * -1.0d+0
-            !write(11,*) "Changing the factor ", fact
-      end if
-
-      ! Catch three internal integrals
-      !if (c(2,1) + c(2,2)==3) then
-      if (c(3,1) + c(3,2)==3) then
-         fact = fact * -1.0d+0
-         !write(11,*) "3 internal"
       end if
 
       return
@@ -5297,7 +4936,6 @@
 !     indicies 2 (e2) to ift_contr item
 *----------------------------------------------------------------------*
 
-      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -5344,3 +4982,279 @@
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine itf_equiv_lines_factor(ops, factor)
+*----------------------------------------------------------------------*
+!     Figure out factor from equivalent lines
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   ops(ngastp,2)     ! Matrix of contraction indicies
+      real(8), intent(inout) ::
+     &   factor
+
+      integer ::
+     &   i, j
+
+      do j = 1, 2
+         do i = 1, ngastp
+            if (ops(i,j) == 0) cycle
+            if (mod(ops(i,j),2) == 0) then
+               factor = factor * (1.0d+0/real(ops(i,j),8))
+            end if
+         end do
+      end do
+
+      return
+      end
+
+
+!     Old alternative to nicer_pairing
+!      write(item%logfile,*) "T1 old: {", str1%str, "}", str1%cnt_poss
+!      write(item%logfile,*) "T2 old: {", str2%str, "}", str2%cnt_poss
+!      write(item%logfile,*) "Result old: {", str3%str, "}"
+!
+!
+!
+!      ! TODO: new idea instead of nicer pairing
+!      ! 1. Arrange the pairs in the strings (with or without contraction
+!      ! indicies)
+!      ! 2. Place in remaining contraction indices, making sure creation
+!      ! and annhilation are not swapped
+!      allocate(t_str1%str(item%rank1))
+!      allocate(t_str2%str(item%rank2))
+!      allocate(t_str1%cnt_poss(n_cnt))
+!      allocate(t_str2%cnt_poss(n_cnt))
+!      allocate(t_str1%itype(item%rank1))
+!      allocate(t_str2%itype(item%rank2))
+!
+!      allocate(t1cnt_poss(n_cnt))
+!      allocate(t2cnt_poss(n_cnt))
+!
+!      t1cnt_poss=str1%cnt_poss
+!      t2cnt_poss=str2%cnt_poss
+!
+!      write(10,*) "t1cnt_poss ", t1cnt_poss
+!      write(10,*) "t2cnt_poss ", t2cnt_poss
+!
+!      ! Loop over pairs
+!      sh1 = 1
+!      sh2 = 1
+!      sh3 = 1
+!      t_str1%str=''
+!      t_str2%str=''
+!      do i = 1, item%rank3/2
+!         found = .false.
+!
+!         ! Place in creation index
+!         if (p_list%plist(i)%ops(1)==1) then
+!            t_str1%str(sh1) = p_list%plist(i)%pindex(1)
+!
+!            ! Place in annhilation index
+!            if (p_list%plist(i)%ops(2)==1) then
+!               pp1 = item%rank1 - sh1 + 1
+!               t_str1%str(pp1) = p_list%plist(i)%pindex(2)
+!            else
+!               pp2 = item%rank2 - sh2 + 1
+!               t_str2%str(pp2) = p_list%plist(i)%pindex(2)
+!
+!
+!
+!               ! Need to place in a contraction annhilation into t1 and
+!               ! a contraction creation into t2
+!               ! TODO: Factor this
+!               found_cnt = .false.
+!               do j = 1, n_cnt
+!                  if (t1cnt_poss(j)>item%rank1/2) then
+!                     found_cnt = .true.
+!                     write(10,*) "cnt ", t1cnt_poss(j)
+!                     pl1 = str1%cnt_poss(j)
+!                     t_str1%str(item%rank1-sh1+1) = str1%str(pl1)
+!                     t_str2%str(sh2) = str1%str(pl1)
+!
+!                     ! set new cnt_poss to t_str1 and t_str2
+!                     t_str1%cnt_poss(sh3) = item%rank1-sh1+1
+!                     t_str2%cnt_poss(sh3) = sh2
+!                     sh3 = sh3 + 1
+!
+!                     ! set cnt_poss to 0?, so don't get same op twice (in both
+!                     ! tensors)
+!                     t1cnt_poss(j) = 0
+!                     ! Check same contraction exists on t2
+!                     do k = 1, item%rank2/2
+!                        if (str1%str(pl1)==str2%str(k)) then
+!                           found = .true.
+!
+!                           do l = 1, n_cnt
+!                              if (t2cnt_poss(l)==k) then
+!                                 t2cnt_poss(l) = 0
+!                                 exit
+!                              end if
+!                           end do
+!
+!                           exit
+!                        end if
+!                     end do
+!                     if (.not. found) then
+!                        write(item%logfile,*) "ERROR: Couldn't find"//
+!     &                                        " matching creation on t2"
+!                     end if
+!
+!                     ! Only place one contraction index at a time, exit
+!                     ! the loop
+!                     exit
+!
+!                  end if
+!               end do
+!
+!               if (.not. found_cnt) then
+!                  write(item%logfile,*) "ERROR: Couldn't find"//
+!     &                                  " contraction annhilation on t1"
+!               end if
+!
+!               ! Placed an index in t_str2, so update shift
+!               sh2 = sh2 + 1
+!
+!            end if
+!
+!            ! Placed an index in t_str1, so update shift
+!            sh1 = sh1 + 1
+!
+!         else
+!            pp2 = item%rank2 - shift + 1
+!            t_str2%str(sh2) = p_list%plist(i)%pindex(1)
+!
+!            if (p_list%plist(i)%ops(2)==1) then
+!               pp1 = item%rank1 - sh1 + 1
+!               t_str1%str(pp1) = p_list%plist(i)%pindex(2)
+!
+!               ! Need to place in a contraction annhilation into t2 and
+!               ! a contraction creation into t1
+!               found_cnt = .false.
+!               do j = 1, n_cnt
+!                  if (t2cnt_poss(j)>item%rank2/2) then
+!                     found_cnt = .true.
+!                     pl1 = str2%cnt_poss(j)
+!                     t_str1%str(sh1) = str2%str(pl1)
+!                     t_str2%str(item%rank2-sh2+1) = str2%str(pl1)
+!
+!                     ! set new cnt_poss to t_str1 and t_str2
+!                     t_str1%cnt_poss(sh3) = sh1
+!                     t_str2%cnt_poss(sh3) = item%rank2-sh2+1
+!                     sh3 = sh3 + 1
+!
+!                     ! set cnt_poss to 0?, so don't get same op twice (in both
+!                     ! tensors)
+!                     t2cnt_poss(j) = 0
+!                     ! Check same contraction exists on t1
+!                     do k = 1, item%rank1/2
+!                        if (str2%str(pl1)==str1%str(k)) then
+!                           found = .true.
+!
+!                           do l = 1, n_cnt
+!                              if (t1cnt_poss(l)==k) then
+!                                 t1cnt_poss(l) = 0
+!                                 exit
+!                              end if
+!                           end do
+!
+!                        end if
+!                     end do
+!                     if (.not. found) then
+!                        write(item%logfile,*) "ERROR: Couldn't find"//
+!     &                                        " matching creation on t1"
+!                     end if
+!
+!                     ! Only place one contraction index at a time, exit
+!                     ! the loop
+!                     exit
+!
+!                  end if
+!               end do
+!
+!               if (.not. found_cnt) then
+!                  write(item%logfile,*) "ERROR: Couldn't find"//
+!     &                                  " contraction annhilation on t2"
+!               end if
+!
+!               ! Placed an index in t_str1, so update shift
+!               sh1 = sh1 + 1
+!
+!
+!            else
+!               pp2 = item%rank2 - sh2 + 1
+!               t_str2%str(pp2) = p_list%plist(i)%pindex(2)
+!            end if
+!
+!            ! Placed an index in t_str2, so update shift
+!            sh2 = sh2 + 1
+!
+!         end if
+!      end do
+!
+!      ! 2.5 Place in remaing contration loops
+!      ! 3. Update old stings and update contraction postitions
+!      ! TODO: decide which one is bigger, then only search on that
+!      ! tensor
+!      if (sh1-1 < item%rank1/2) then
+!         do i = 1, n_cnt
+!            if (t1cnt_poss(i)>0) then
+!               if (t1cnt_poss(i)>item%rank1/2) then
+!                  t_str1%str(item%rank1-sh1+1) = str1%str(t1cnt_poss(i))
+!
+!                  do j = 1, n_cnt
+!                     if (t1cnt_poss(j)>0 .and.
+!     &                                 t1cnt_poss(j)<=item%rank1/2) then
+!
+!                        ! Place in creation contraction
+!                        t_str1%str(sh1) = str1%str(t1cnt_poss(j))
+!                        t_str2%str(item%rank2-sh2+1) =
+!     &                                           str1%str(t1cnt_poss(j))
+!                        t1cnt_poss(j) = 0
+!                     end if
+!                  end do
+!
+!                  t_str2%str(sh2) = str1%str(t1cnt_poss(i))
+!                  sh1 = sh1 + 1
+!                  sh2 = sh2 + 1
+!
+!                  ! Update contration positions
+!                  t_str1%cnt_poss(sh3) = sh1
+!                  t_str2%cnt_poss(sh3) = sh2
+!                  sh3 = sh3 + 1
+!                  t_str1%cnt_poss(sh3) = item%rank1-sh1+1
+!                  t_str2%cnt_poss(sh3) = item%rank2-sh2+1
+!
+!                  t1cnt_poss(i) = 0
+!               end if
+!            end if
+!         end do
+!      end if
+!
+!
+!      write(10,*) "Some str1 {", t_str1%str, "} ", t_str1%cnt_poss
+!      write(10,*) "Some str2 {", t_str2%str, "} ", t_str2%cnt_poss
+!
+!      !str1%str = t_str1%str
+!      !str2%str = t_str2%str
+!      !str1%cnt_poss = t_str1%cnt_poss
+!      !str2%cnt_poss = t_str2%cnt_poss
+!
+!
+!      deallocate(t1cnt_poss)
+!      deallocate(t2cnt_poss)
+!
+!      deallocate(t_str1%str)
+!      deallocate(t_str2%str)
+!      deallocate(t_str1%cnt_poss)
+!      deallocate(t_str2%cnt_poss)
+!      deallocate(t_str1%itype)
+!      deallocate(t_str2%itype)
+
