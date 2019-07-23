@@ -1968,7 +1968,7 @@
      &   ci(4,2),       ! Operator numbers of contraction index (inverse)
      &   e1(4,2),       ! Operator numbers of external index 1
      &   e2(4,2),       ! Operator numbers of external index 2
-     &   e3(4,2),       ! Operator numbers of result index
+!     &   e3(4,2),       ! Operator numbers of result index
      &   shift,         ! List shift
      &   shift_a,       ! List shift
      &   shift_c,       ! List shift
@@ -2017,40 +2017,45 @@
      &   t1cnt_poss(:) => null(),
      &   t2cnt_poss(:) => null()
 
-      c=0
-      e1=0
-      e2=0
-      e3=0
+      !c=0
+      !e1=0
+      !e2=0
+      !e3=0
+
+      c=item%c
+      e1=item%e1
+      e2=item%e2
+      !e3=0
 
       p_factor = 1.0d0
 
-      ! TODO: Move this stuff to its own function, make init_contr more
-      ! modular
-      ! Get occupation info
-      do i = 1, contr_info%n_cnt
-        call count_index2(i,
-     &     contr_info%occ_cnt(1:,1:,i),
-     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,c)
-      end do
-      do i = 1, contr_info%nj_op1
-        call count_index2(i,
-     &     contr_info%occ_ex1(1:,1:,i),
-     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e1)
-      end do
-      do i = 1, contr_info%nj_op2
-        call count_index2(i,
-     &     contr_info%occ_ex2(1:,1:,i),
-     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e2)
-      end do
-      do i = 1, contr_info%nj_res
-        call count_index2(i,
-     &     contr_info%occ_res(1:,1:,i),
-     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
-     &     contr_info%ngas,contr_info%nspin,e3)
-      end do
+!      ! TODO: Move this stuff to its own function, make init_contr more
+!      ! modular
+!      ! Get occupation info
+!      do i = 1, contr_info%n_cnt
+!        call count_index2(i,
+!     &     contr_info%occ_cnt(1:,1:,i),
+!     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,c)
+!      end do
+!      do i = 1, contr_info%nj_op1
+!        call count_index2(i,
+!     &     contr_info%occ_ex1(1:,1:,i),
+!     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e1)
+!      end do
+!      do i = 1, contr_info%nj_op2
+!        call count_index2(i,
+!     &     contr_info%occ_ex2(1:,1:,i),
+!     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e2)
+!      end do
+!      do i = 1, contr_info%nj_res
+!        call count_index2(i,
+!     &     contr_info%occ_res(1:,1:,i),
+!     &     contr_info%rst_res(1:,1:,1:,1:,1:,i),
+!     &     contr_info%ngas,contr_info%nspin,e3)
+!      end do
 
       ! Figure out factor from equivalent lines
       factor = 1.0d+0
@@ -2065,13 +2070,14 @@
       item%fact = item%fact * factor
 
       ! Set ranks and nops (number of operators) of tensors
-      call itf_rank(e1, c, item%rank1, item%nops1, .false.)
-      call itf_rank(e2, c, item%rank2, item%nops2, .false.)
-      call itf_rank(e3, c, item%rank3, item%nops3, .true.)
+!      call itf_rank(e1, c, item%rank1, item%nops1, .false.)
+!      call itf_rank(e2, c, item%rank2, item%nops2, .false.)
+!      call itf_rank(e3, c, item%rank3, item%nops3, .true.)
 
-      ! Set number of contraction indicies, used later on
-      n_cnt = sum(sum(c, dim=1))
-      item%contri = n_cnt
+!      ! Set number of contraction indicies
+!      n_cnt = sum(sum(c, dim=1))
+!      item%contri = n_cnt
+      n_cnt = item%contri
 
       ! Allocate index_str objects
       call init_index_str(str1, item%rank1, n_cnt)
@@ -5011,11 +5017,16 @@
       ! Assign command type
       item%command=comm
 
-      ! Check if binary contraction or not
-      if (comm==command_add_intm .or. comm==command_cp_intm) then
-         item%binary = .false.
-      end if
+      ! Get number of contraction and external indices on each tensor
+      call itf_ops(contr_info, item)
 
+      ! Set ranks of tensors using matricies from itf_ops
+      call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
+      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
+      call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
+
+      ! Set number of contraction indicies
+      item%contri = sum(sum(item%c, dim=1))
 
       ! Assign permutation number
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
@@ -5030,7 +5041,6 @@
       end if
       item%label_res=contr_info%label_res
 
-
       ! Check if an intermediate
       item%inter(1) = check_inter(item%label_t1)
       if (comm/=command_cp_intm .or. comm/=command_add_intm) then
@@ -5044,6 +5054,11 @@
          item%int(2) = check_int(item%label_t2)
       end if
       item%int(3) = .false.
+
+      ! Check if binary contraction or not
+      if (comm==command_add_intm .or. comm==command_cp_intm) then
+         item%binary = .false.
+      end if
 
       ! Assign factor --- use special ITF factor
       ! the ITF factor is closer to the value expected from standard
@@ -5060,9 +5075,6 @@
       !call integral_fact(contr_info,item%fact)
 
       !write(11,*) "integral fact: ", item%fact
-
-      ! Inialise number of contraction indicies
-      item%contri = 0
 
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
@@ -5273,6 +5285,62 @@
          nops = sum(ops1, dim=2) + sum(ops2, dim=2)
          rank = sum(nops, dim=1)
       end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine itf_ops(contr_info,item)
+*----------------------------------------------------------------------*
+!     Assign contraction (c), external indicies 1 (e1) and external
+!     indicies 2 (e2) to ift_contr item
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &   contr_info     ! Information about binary contraction
+      type(itf_contr), intent(inout) ::
+     &   item           ! ITF binary contraction
+
+      integer ::
+     &   c(4,2),        ! Operator numbers of contraction index
+     &   e1(4,2),       ! Operator numbers of external index 1
+     &   e2(4,2),       ! Operator numbers of external index 2
+     &   i
+
+      c=0
+      e1=0
+      e2=0
+
+      ! Get occupation info
+      do i = 1, contr_info%n_cnt
+        call count_index2(i,
+     &     contr_info%occ_cnt(1:,1:,i),
+     &     contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,c)
+      end do
+      do i = 1, contr_info%nj_op1
+        call count_index2(i,
+     &     contr_info%occ_ex1(1:,1:,i),
+     &     contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e1)
+      end do
+      do i = 1, contr_info%nj_op2
+        call count_index2(i,
+     &     contr_info%occ_ex2(1:,1:,i),
+     &     contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+     &     contr_info%ngas,contr_info%nspin,e2)
+      end do
+
+      item%c = c
+      item%e1 = e1
+      item%e2 = e2
 
       return
       end
