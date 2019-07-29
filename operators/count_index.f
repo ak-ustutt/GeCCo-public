@@ -387,6 +387,47 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine print_itf_contr(item, label)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(in) ::
+     &   item
+      character(len=*), intent(in) ::
+     &   label
+
+      integer ::
+     &   i,j, f
+
+      write(item%logfile,*) "ift_contr: ", label
+      write(item%logfile,*) "=============================="
+      write(item%logfile,*) "R:  ", item%label_res, "  ", item%idx3
+      write(item%logfile,*) "T1: ", item%label_t1, "  ", item%idx1
+      write(item%logfile,*) "T2: ", item%label_t2, "  ", item%idx2
+      write(item%logfile,*) "---------------------------"
+      write(item%logfile,*) "itype:"
+      write(item%logfile,'(8i3)') (item%itype(j), j=1, INDEX_LEN)
+      write(item%logfile,*) "factor ", item%fact
+      if (item%inter(3)) then
+         write(item%logfile,*) "i_spin:"
+         do i = 1, 2
+            write(item%logfile,*)
+     &                        (item%i_spin%spin(i,j),j=1,item%rank3/2)
+            write(item%logfile,*) "------------------------------"
+         end do
+      end if
+      write(item%logfile,*) "=============================="
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
 *----------------------------------------------------------------------*
 !     Return array with number of operators of each type
@@ -768,7 +809,7 @@
          end do
       end if
 
-      if (permute == 2) then
+      if (item%permute == 2) then
          ! Need to transpose by tensors after permutation, to
          ! avoid symmetry problem when using (1 + Pabij)
          ! When we transpose tensors, we get a sign change, however
@@ -777,6 +818,12 @@
          ! is printed out
          item%idx1 = f_index(item%idx1,item%rank1/2)
          item%idx2 = f_index(item%idx2,item%rank2/2)
+
+         if (item%inter(3)) then
+            item%idx3 = f_index(item%idx3,item%rank3/2)
+         end if
+
+         item%label_res = trim(item%label_res)//'P'
       end if
 
 
@@ -815,6 +862,8 @@
 
                      call assign_spin(item)
                   end do
+               exit
+
                end if
             end do
          else
@@ -834,6 +883,9 @@
       ! Copy information back to array in print_itf()
       do i = 1, item%ninter
          spin_inters(i+n_inter)=item%inter_spins(i)
+!         write(item%logfile,*) "hello ", item%label_res, " ",
+!     &                        (spin_inters(i+n_inter)%name)
+!         write(item%logfile,*) (spin_inters(i+n_inter)%cases)
 
          ! Set index type information, used to figure out pairing
          do j = 1, INDEX_LEN
@@ -2290,9 +2342,9 @@
          ! it is used (it must match the itype string). Therefore the pair
          ! ordering needs to be checked. This doesn't introduce a sign
          ! change as pairs of indices are swapped.
-         !write(10,*) "Result string{", str3%str, "}"
-         !write(10,*) "Result itype{", str3%itype, "}"
-         !write(10,*) "Real itype{", item%itype, "}"
+         !write(item%logfile,*) "Result string{", str3%str, "}"
+         !write(item%logfile,*) "Result itype{", str3%itype, "}"
+         !write(item%logfile,*) "Real itype{", item%itype, "}"
          call permute_slot_order(str3, item%rank3, item%itype)
       else
          call permute_index(str3, item%rank3)
@@ -2302,7 +2354,8 @@
       ! Need to swap annhilation ops (1-P_ij)
       ! Don't swap index when there is a tensor product
       ! TODO: this will not work if the result is greater than rank 4
-      if (item%permute==2 .and. .not. item%product) then
+      if (item%permute==2 .and. .not. item%product
+     &    .and. .not. item%inter(3)) then
          !write(item%logfile,*) "hello ", item%label_res
          !write(item%logfile,*) "hello ", item%label_t1
          !write(item%logfile,*) "hello ", item%label_t2
