@@ -662,6 +662,9 @@
                   !end if
 
                   item%idx1=f_index(item%idx1,item%rank1/2)
+                  if (item%rank1/=0 .and. item%rank2==0) then
+                     item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                  end if
                   item%idx2=f_index(item%idx2,item%rank2/2)
 
                   ! Whenever we tranpose a tensor, we intoroduce a sign
@@ -969,6 +972,7 @@
 !     This avoid the spin sum routine
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -989,9 +993,8 @@
          do i = 1, 2
             if (item%inter(i)) then
                ! Only need the aa case
-               item%inter_spins(j)%cases(:,j) = 0
-               item%inter_spins(j)%cases(1,j) = 1
-               item%inter_spins(j)%cases(1+INDEX_LEN/2,j) = 1
+               item%inter_spins(j)%cases(1,1) = 1
+               item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
                item%inter_spins(j)%ncase = 1
                if (i == 1) item%inter_spins(j)%name = item%label_t1
                if (i == 2) item%inter_spins(j)%name = item%label_t2
@@ -1038,6 +1041,11 @@
                   if (item%permute == 2) then
                      item%inter_spins(j)%name =
      &                             trim(item%inter_spins(j)%name)//'P'
+                     item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+                     item%inter_spins(j)%cases(1,1) = 2
+                     item%inter_spins(j)%cases(2,1) = 1
+                     item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 2
+                     item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 1
                   end if
                end if
 
@@ -4149,7 +4157,8 @@
 
          if (item%inter(1)) then
             item%label_t1 = trim(item%label_t1)//'aa'
-         else if (item%inter(2)) then
+         end if
+         if (item%inter(2)) then
             item%label_t2 = trim(item%label_t2)//'aa'
          end if
 
@@ -4163,11 +4172,9 @@
          ! Tensor multiplied by a scalar (not involving an intermediate)
 
          if (item%inter(1)) then
-            call simple_spin_name(item%label_t1,item%inter1,
-     &                            item%rank1,item%permute)
+            call simple_spin_name(item%inter1,item%rank1,item%permute)
          else if (item%inter(2)) then
-            call simple_spin_name(item%label_t2,item%inter2,
-     &                            item%rank2,item%permute)
+            call simple_spin_name(item%inter2,item%rank2,item%permute)
          end if
 
          call print_itf_line(item,.false.,.false.)
@@ -4756,7 +4763,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine simple_spin_name(label,spin_name,rank,permute)
+      subroutine simple_spin_name(spin_name,rank,permute)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -4766,10 +4773,8 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=*), intent(inout) ::
-     &   label             ! Spin name of intermediate
       character(len=INDEX_LEN), intent(inout) ::
-     &   spin_name         ! Spin name of intermediate
+     &   spin_name             ! Spin name of intermediate
       integer, intent(in) ::
      &   rank,
      &   permute
@@ -4780,14 +4785,14 @@
          case (2)
             spin_name = 'aa'
          case (4)
-            spin_name = 'abab'
+            if (permute==2) then
+               spin_name = 'baba'
+            else
+               spin_name = 'abab'
+            end if
          case (6)
             spin_name = 'aaaaaa'
       end select
-
-      !if (permute == 2) then
-      !   label = trim(label)//'P'
-      !end if
 
       return
       end
