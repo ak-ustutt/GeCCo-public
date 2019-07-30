@@ -777,11 +777,11 @@
               j = i
            end if
 
-           if (scan("abcdefg",item%idx1(i:i))>0) then
+           if (scan("abcdefgh",item%idx1(i:i))>0) then
               type3(t_shift,j) = 1
            else if (scan("ijklmno",item%idx1(i:i))>0) then
               type3(t_shift,j) = 3
-           else if (scan("pqrstuv",item%idx1(i:i))>0) then
+           else if (scan("pqrstuvw",item%idx1(i:i))>0) then
               type3(t_shift,j) = 2
            else if (scan("xyz",item%idx1(i:i))>0) then
               type3(t_shift,j) = 4
@@ -800,11 +800,11 @@
               j = i
            end if
 
-           if (scan("abcdefg",item%idx2(i:i))>0) then
+           if (scan("abcdefgh",item%idx2(i:i))>0) then
               type3(t_shift,j) = 1
            else if (scan("ijklmno",item%idx2(i:i))>0) then
               type3(t_shift,j) = 3
-           else if (scan("pqrstuv",item%idx2(i:i))>0) then
+           else if (scan("pqrstuvw",item%idx2(i:i))>0) then
               type3(t_shift,j) = 2
            else if (scan("xyz",item%idx2(i:i))>0) then
               type3(t_shift,j) = 4
@@ -1461,7 +1461,8 @@
      &            trimal(nt)//'['//
      &            f_index(c_index(idx,2),hrank)//']'//')'
             case default
-               write(lulog,*) "ERROR: Couldn't determine rank"
+               write(lulog,*) "ERROR: Couldn't determine rank: ",
+     &                        rank
          end select
       else
          if (tensor==2 .and. .not.binary) then
@@ -1480,7 +1481,8 @@
                st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
             case default
-               write(lulog,*) "ERROR: Couldn't determine rank"
+               write(lulog,*) "ERROR: Couldn't determine rank: ",
+     &                        rank
          end select
          end if
       end if
