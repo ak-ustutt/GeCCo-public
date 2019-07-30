@@ -1034,6 +1034,11 @@
 
                   item%inter_spins(j)%name = item%label_t1
                   item%inter_spins(j)%ncase = 1
+
+                  if (item%permute == 2) then
+                     item%inter_spins(j)%name =
+     &                             trim(item%inter_spins(j)%name)//'P'
+                  end if
                end if
 
                if (i == 2) then
@@ -1045,6 +1050,7 @@
                j = j + 1
             end if
          end do
+
 
          !write(item%logfile,*) "SIMPLE SPIN test: ", item%inter_spins
          summed = .true.
@@ -4155,10 +4161,17 @@
          return
       else if (item%rank1 == 0 .or. item%rank2 ==0) then
          ! Tensor multiplied by a scalar (not involving an intermediate)
-         !if (.not. item%inter(1) .and. .not. item%inter(2)) then
-            call print_itf_line(item,.false.,.false.)
-            return
-         !end if
+
+         if (item%inter(1)) then
+            call simple_spin_name(item%label_t1,item%inter1,
+     &                            item%rank1,item%permute)
+         else if (item%inter(2)) then
+            call simple_spin_name(item%label_t2,item%inter2,
+     &                            item%rank2,item%permute)
+         end if
+
+         call print_itf_line(item,.false.,.false.)
+         return
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
 
@@ -4737,6 +4750,44 @@
       end do
 
       label = spin_name
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine simple_spin_name(label,spin_name,rank,permute)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=*), intent(inout) ::
+     &   label             ! Spin name of intermediate
+      character(len=INDEX_LEN), intent(inout) ::
+     &   spin_name         ! Spin name of intermediate
+      integer, intent(in) ::
+     &   rank,
+     &   permute
+
+      select case (rank)
+         case (0)
+            return
+         case (2)
+            spin_name = 'aa'
+         case (4)
+            spin_name = 'abab'
+         case (6)
+            spin_name = 'aaaaaa'
+      end select
+
+      !if (permute == 2) then
+      !   label = trim(label)//'P'
+      !end if
 
       return
       end
