@@ -4687,13 +4687,6 @@
      &                                  item%label_t2,ishift,item)
                end if
 
-               ! Update number of spin cases for each different
-               ! intermediate
-               do i = 1, ishift
-                  item%inter_spins(i)%ncase =
-     &                              item%inter_spins(i)%ncase + 1
-               end do
-
                item%ninter = ishift
             end if
 
@@ -4821,8 +4814,12 @@
      &   item
 
       integer ::
-     &   i,
+     &   i, j,
      &   shift
+
+      logical ::
+     &   co_v,
+     &   contr_v
 
       ishift = ishift + 1
 
@@ -4837,10 +4834,39 @@
          item%inter_spins(ishift)%name=label
       end if
 
+      ! Should check here if repeated spin cases are being added
+      ! If the algo requests a already delcared spin case, then just
+      ! skip it - we only need it once
+      if (item%inter_spins(ishift)%ncase>=1) then
+      do i = 1, item%inter_spins(ishift)%ncase
+         co_v = .false.
+         contr_v = .false.
+         do j = 1, hrank
+            if (item%inter_spins(ishift)%cases(j,i)/=spin(1,j)) then
+               co_v = .true.
+               exit
+            end if
+            if (item%inter_spins(ishift)%cases(j+INDEX_LEN/2,i)
+     &          /=spin(2,j)) then
+               contr_v = .true.
+               exit
+            end if
+         end do
+         if (.not. co_v .and. .not. contr_v) then
+            return
+         end if
+      end do
+
+      end if
+
       do i=1, hrank
          item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
          item%inter_spins(ishift)%cases(i+INDEX_LEN/2,shift)=spin(2,i)
       end do
+
+      ! Update number of spin cases
+      item%inter_spins(ishift)%ncase =
+     &                           item%inter_spins(ishift)%ncase + 1
 
       return
       end
