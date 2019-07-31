@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 22-07-2019 15:59
+// Created on: 31-07-2019 17:03
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -176,7 +176,7 @@ drop K4E1:eecc[abij]
 alloc STIN0001bb[ij], ITIN[abji]
 load K:eecc[abki], T:eecc[abkj]
 .STIN0001bb[ij] += K:eecc[abki] T:eecc[abkj]
-.STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (T:eecc[abkj] - T:eecc[bakj])
+.STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[baki]) (T:eecc[abkj] - T:eecc[bakj])
 drop T:eecc[abkj], K:eecc[abki]
 load T:eecc[abjk]
 .ITIN[abji] -= STIN0001bb[ki] T:eecc[abjk]
@@ -196,7 +196,7 @@ drop T:eecc[abkl]
 drop STIN0001baab[ijkl], STIN0001abab[ijkl]
 alloc STIN0001aa[ba], ITIN[abji]
 load K:eecc[acji], T:eecc[bcji]
-.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[acij]) (T:eecc[bcji] - T:eecc[cbji])
+.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[caji]) (T:eecc[bcji] - T:eecc[cbji])
 .STIN0001aa[ba] -= K:eecc[acji] T:eecc[bcji]
 drop T:eecc[bcji], K:eecc[acji]
 load T:eecc[bcij]
@@ -207,10 +207,10 @@ drop T:eecc[bcij]
 drop ITIN[abji], STIN0001aa[ba]
 alloc STIN0001aaaa[ibaj], STIN0001baba[ibaj], STIN0001abab[biaj], ITIN[abij]
 load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
 .STIN0001aaaa[ibaj] += K:eecc[acik] T:eecc[bcjk]
 .STIN0001baba[ibaj] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
+.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[caik]) T:eecc[bcjk]
 .STIN0001abab[biaj] -= K:eecc[acki] T:eecc[cbjk]
 drop T:eecc[cbjk], K:eecc[acki]
 load T:eecc[bcjk]
@@ -225,7 +225,7 @@ store R:eecc[abij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
-.ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .5*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
 .ECC[] += K:eecc[abij] T:eecc[abij]
 drop T:eecc[abij], K:eecc[abij]
 store ECC[]

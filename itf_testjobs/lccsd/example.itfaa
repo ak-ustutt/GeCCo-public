@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 22-07-2019 15:59
+// Created on: 31-07-2019 17:03
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -262,7 +262,7 @@ store R:eecc[abij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
-.ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .5*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
 .ECC[] += K:eecc[abij] T:eecc[abij]
 drop T:eecc[abij], K:eecc[abij]
 load f:ec[ai], T:ec[ai]
