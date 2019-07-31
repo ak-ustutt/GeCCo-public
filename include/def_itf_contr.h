@@ -76,7 +76,8 @@
      &     nops3(ngastp),
      &     c(4,2),              ! Operator numbers of contraction index
      &     e1(4,2),             ! Operator numbers of external index 1
-     &     e2(4,2)              ! Operator numbers of external index 2
+     &     e2(4,2),             ! Operator numbers of external index 2
+     &     spin_cases           ! Number of printed spin cases
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral

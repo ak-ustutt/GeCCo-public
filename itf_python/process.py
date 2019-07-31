@@ -62,7 +62,7 @@ def change_line(line_o):
     change_line_names("R", line_o, words)
     change_line_names("T", line_o, words)
     change_line_names("K", line_o, words)
-    change_line_names("KP", line_o, words)
+    change_line_names("J", line_o, words)
     change_line_names("f", line_o, words)
     line = " ".join(words)
     return line
@@ -199,8 +199,8 @@ def generic_index(tensor):
     index=list(tensor[tensor.find("[")+1:tensor.find("]")])
 
     hole     = ['i','j','k','l','m','n','o']
-    particle = ['a','b','c','d','e','f','g']
-    valence  = ['p','q','r','s','t','u','v']
+    particle = ['a','b','c','d','e','f','g','h']
+    valence  = ['p','q','r','s','t','u','v','w']
 
     gen=[]
     for i in range (0,len(index)):
@@ -502,10 +502,10 @@ for line_o in f:
 
     # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
     # but also change name to J[eecc]
-    if ("K:" in line or "KP:"):
-        if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
-            line = rename_integrals(line)
-            words=line.split()
+    #if ("K:" in line or "KP:"):
+    #    if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
+    #        line = rename_integrals(line)
+    #        words=line.split()
 
 
     # Catch 4-external integrals and replace line with K4E intermediate

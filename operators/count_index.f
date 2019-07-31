@@ -171,7 +171,7 @@
 
 
 *----------------------------------------------------------------------*
-      pure function f_index(index, hrank, upper)
+      pure function f_index(index, hrank, upper, middle)
 *----------------------------------------------------------------------*
 !     Flip co/contravarient tensor index: abcijk => acbijk
 *----------------------------------------------------------------------*
@@ -186,18 +186,27 @@
       integer, intent(in) ::
      &   hrank          ! Half rank
       logical, optional, intent(in) ::
-     &   upper          ! Flip contravarient index
+     &   upper,         ! Flip contravarient index
+     &   middle         ! Flip index slots 2 and 3
       character(hrank*2) ::
      &   f_index        ! Transpose of ITF index string
 
       logical ::
-     &   contra
+     &   contra,
+     &   mid
 
       if (present(upper)) then
          contra = upper
       else
          contra = .false.
       end if
+
+      if (present(middle)) then
+         mid = middle
+      else
+         mid = .false.
+      end if
+
 
       f_index=index
 
@@ -208,6 +217,9 @@
      &                                index(hrank+hrank:hrank+hrank)
          f_index(hrank+hrank:hrank+hrank)=
      &                                index(hrank-1+hrank:hrank-1+hrank)
+      else if (mid) then
+         f_index(2:2)=index(3:3)
+         f_index(3:3)=index(2:2)
       else
          f_index(hrank-1:hrank-1)=index(hrank:hrank)
          f_index(hrank:hrank)=index(hrank-1:hrank-1)
@@ -1327,6 +1339,15 @@
      &     i
       real(8) ::
      &   c_fact               ! Copy of orginal factor
+      logical ::
+     &   j_int
+
+
+      ! Reorder integrals into a fixed index order
+      if (item%spin_cases==0) then
+      call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
+     &                      item%label_t1,item%nops1,j_int)
+      end if
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
@@ -1340,9 +1361,11 @@
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                    1,item%binary,item%logfile)
+     &                1,item%binary,item%int(1),item%nops1,j_int,
+     &                item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                    2,item%binary,item%logfile)
+     &                2,item%binary,item%int(2),item%nops2,j_int,
+     &                item%logfile)
 
 
       ! Add factor to sclar result cases (going to skip half the spin
@@ -1407,13 +1430,175 @@
       ! Print it to bcontr.tmp
       write(item%logfile,'(a)') trim(itf_line)
 
+      ! Increment number of printed spn cases
+      item%spin_cases = item%spin_cases + 1
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine reorder_integral(integral,rank,idx,s1,label,nops,j_int)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank,
+     &   nops(ngastp)
+      logical, intent(in) ::
+     &   integral,
+     &   s1
+      logical, intent(inout) ::
+     &   j_int
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+     &   label
+
+      integer ::
+     &   itype(rank),
+     &   i,
+     &   itmp
+      character(len=1) ::
+     &   tmp
+      character(len=INDEX_LEN) ::
+     &   tstr
+      logical ::
+     &   permute,
+     &   symmetric
+
+
+      if (.not. integral) return
+      if (rank == 2) return
+
+
+      do i = 1, rank
+        if (scan("abcdefgh",idx(i:i))>0) then
+           itype(i) = 1
+        else if (scan("ijklmno",idx(i:i))>0) then
+           itype(i) = 3
+        else if (scan("pqrstuvw",idx(i:i))>0) then
+           itype(i) = 2
+        else if (scan("xyz",idx(i:i))>0) then
+           itype(i) = 4
+        end if
+      end do
+
+      ! Check when we translate the spin orbital to spatial orbital
+      ! integrals, we will need the J array
+      j_int = .false.
+      if (itype(1)==3 .and. itype(2)==1 .and. itype(3)==1 .and.
+     &    itype(4)==3) then
+         j_int = .true.
+      end if
+
+
+      symmetric = .true.
+      do i = 1, ngastp
+         if (mod(nops(i),2) /= 0 .or. nops(i)>2) then
+            symmetric = .false.
+            exit
+         end if
+      end do
+
+      do i = 1, rank/2
+         if (itype(i)>itype(i+rank/2)) then
+            ! Swap creation and annhilation
+            tmp = idx(i:i)
+            idx(i:i) = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = tmp
+
+            ! Update itype
+            itmp = itype(i)
+            itype(i) = itype(i+rank/2)
+            itype(i+rank/2) = itmp
+         else if (itype(i)==itype(i+rank/2) .and. symmetric) then
+            ! Catch J-integrals: ecec -> eecc
+            tmp = idx(i+1:i+1)
+            idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = tmp
+            label = 'J'
+            exit
+         end if
+      end do
+
+      ! Permute pairs
+      if (nops(2)<3) then
+         permute = .false.
+         do i = 1, rank/2-1
+            if (itype(i)>itype(i+1)) then
+               tmp = idx(i:i)
+               idx(i:i) = idx(i+1:i+1)
+               idx(i+1:i+1) = tmp
+
+               tmp = idx(i+rank/2:i+rank/2)
+               idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
+               idx(i+1+rank/2:i+1+rank/2) = tmp
+
+               permute = .true.
+            end if
+         end do
+
+         ! Check the annhilations
+         if (.not. permute) then
+            do i = rank/2+1, rank-1
+               if (itype(i)>itype(i+1)) then
+                  tmp = idx(i:i)
+                  idx(i:i) = idx(i+1:i+1)
+                  idx(i+1:i+1) = tmp
+
+                  tmp = idx(i-rank/2:i-rank/2)
+                  idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
+                  idx(i+1-rank/2:i+1-rank/2) = tmp
+               end if
+            end do
+         end if
+      else if (nops(2)==3) then
+         ! Need to reorder indices for 3-external integrals
+         ! Slot positions 1 and 2 are now paired
+
+         tstr=''
+         do i = 1, rank/2
+            if (itype(i)==1 .and. itype(i+rank/2)==1) then
+               tstr(1:1) = idx(i:i)
+               tstr(2:2) = idx(i+rank/2:i+rank/2)
+            else
+               tstr(3:3) = idx(i:i)
+               tstr(4:4) = idx(i+rank/2:i+rank/2)
+            end if
+         end do
+
+         idx = trim(tstr)
+      end if
+
+
+      ! Rename three external integral from KP to K (There is no J:eeec)
+      if (label == 'KP') then
+         if (nops(2)==3) then
+            label = 'K'
+         end if
+         if (nops(1)==3) then
+            ! Due to permutation of indicies, we need to permute the
+            ! middle indices again to get correct answer
+            label = 'J'
+            idx=f_index(idx,rank/2,.false.,.true.)
+         end if
+      end if
+
       return
       end
 
 
 *----------------------------------------------------------------------*
       subroutine spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,
-     &                          lulog)
+     &                          integral,nops,j_int,lulog)
 *----------------------------------------------------------------------*
 !     Construct spatial tensor representation
 *----------------------------------------------------------------------*
@@ -1434,10 +1619,13 @@
       logical, intent(in) ::
      &   spin,       ! True if pure spin
      &   inter,      ! True if an intermediate
-     &   binary      ! True if a binary contraction
+     &   binary,     ! True if a binary contraction
+     &   integral,
+     &   j_int
       integer, intent(in) ::
      &   rank,       ! Rank of tensor
      &   tensor,     ! T1 or T2
+     &   nops(ngastp),
      &   lulog       ! Logfile
 
       integer ::
@@ -1449,8 +1637,23 @@
          ! Pure spin
          select case (rank)
             case (4)
-               st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &            trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+               if (integral .and. nops(1)==3) then
+                  ! Three internal integral, need J:eccc
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &               'J'//'['//trim(idx)//']'//')'
+               else if (integral .and. nops(2)==3) then
+                  ! Three external integral, need K:eccc
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
+               else if (integral .and. j_int) then
+                  ! Need (K:eecc - J:eecc)
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &               'J'//'['//f_index(idx,hrank)//']'//')'
+               else
+                  ! Not an integral
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &               trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+               end if
             case (6)
                st='('//trimal(nt)//'['//trim(idx)//']'//' + '//
      &            trimal(nt)//'['//trim(c_index(idx,1))//']'//' + '//
@@ -2339,11 +2542,11 @@
       ! Permute strings into nicer order
       ! Get canocial values for result string
       do i = 1, item%rank3
-        if (scan("abcdefg",str3%str(i))>0) then
+        if (scan("abcdefgh",str3%str(i))>0) then
            str3%itype(i) = 1
         else if (scan("ijklmno",str3%str(i))>0) then
            str3%itype(i) = 3
-        else if (scan("pqrstuv",str3%str(i))>0) then
+        else if (scan("pqrstuvw",str3%str(i))>0) then
            str3%itype(i) = 2
         else if (scan("xyz",str3%str(i))>0) then
            str3%itype(i) = 4
@@ -4550,9 +4753,9 @@
          end if
 
          if (error) then
-           call line_error("Didn't print out spin case", item)
+           !call line_error("Didn't print out spin case", item)
          else
-           call line_error("This spin case possibly doesn't exist",item)
+           !call line_error("This spin case possibly doesn't exist",item)
          end if
       end if
 
@@ -4999,6 +5202,7 @@
          allocate(item%i_spin%spin(2, item%rank3/2))
       end if
 
+      item%spin_cases = 0
 
       ! Check if a tensor product
       if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
