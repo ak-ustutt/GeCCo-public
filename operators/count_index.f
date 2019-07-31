@@ -1343,10 +1343,21 @@
      &   j_int
 
 
-      ! Reorder integrals into a fixed index order
+      ! Reorder integrals into a fixed index order, only need to do this
+      ! once for each spin block as the spin summation doesn't depend on
+      ! the index string at this point
       if (item%spin_cases==0) then
-      call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-     &                      item%label_t1,item%nops1,j_int)
+         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
+     &                         item%label_t1,item%nops1,j_int)
+         if (.not. item%int(1) .and. .not. item%inter(1)) then
+            call reorder_amp(item%rank1,item%idx1)
+         end if
+         if (.not. item%int(2) .and. .not. item%inter(2)) then
+            call reorder_amp(item%rank2,item%idx2)
+         end if
+         if (.not. item%inter(3)) then
+            call reorder_amp(item%rank3,item%idx3)
+         end if
       end if
 
       ! Change names of specific tensors
@@ -1432,6 +1443,99 @@
 
       ! Increment number of printed spn cases
       item%spin_cases = item%spin_cases + 1
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine reorder_amp(rank,idx)
+*----------------------------------------------------------------------*
+!     Print line of ITF code
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank
+
+      integer ::
+     &   itype(rank),
+     &   i,
+     &   itmp
+      character(len=1) ::
+     &   tmp
+      logical ::
+     &   permute
+
+
+      if (rank == 2) return
+
+      ! TODO: Factorise this / only do it once...
+      do i = 1, rank
+        if (scan("abcdefgh",idx(i:i))>0) then
+           itype(i) = 1
+        else if (scan("ijklmno",idx(i:i))>0) then
+           itype(i) = 3
+        else if (scan("pqrstuvw",idx(i:i))>0) then
+           itype(i) = 2
+        else if (scan("xyz",idx(i:i))>0) then
+           itype(i) = 4
+        end if
+      end do
+
+      do i = 1, rank/2
+         if (itype(i)>itype(i+rank/2)) then
+            ! Swap creation and annhilation
+            tmp = idx(i:i)
+            idx(i:i) = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = tmp
+
+            ! Update itype
+            itmp = itype(i)
+            itype(i) = itype(i+rank/2)
+            itype(i+rank/2) = itmp
+         end if
+      end do
+
+
+      permute = .false.
+      do i = 1, rank/2-1
+         if (itype(i)>itype(i+1)) then
+            tmp = idx(i:i)
+            idx(i:i) = idx(i+1:i+1)
+            idx(i+1:i+1) = tmp
+
+            tmp = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
+            idx(i+1+rank/2:i+1+rank/2) = tmp
+
+            permute = .true.
+         else if (itype(i)<itype(i+1)) then
+            permute = .true.
+         end if
+      end do
+
+      ! Check the annhilations
+      if (.not. permute) then
+         do i = rank/2+1, rank-1
+            if (itype(i)>itype(i+1)) then
+               tmp = idx(i:i)
+               idx(i:i) = idx(i+1:i+1)
+               idx(i+1:i+1) = tmp
+
+               tmp = idx(i-rank/2:i-rank/2)
+               idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
+               idx(i+1-rank/2:i+1-rank/2) = tmp
+            end if
+         end do
+      end if
 
       return
       end
@@ -1542,6 +1646,8 @@
                idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
                idx(i+1+rank/2:i+1+rank/2) = tmp
 
+               permute = .true.
+            else if (itype(i)<itype(i+1)) then
                permute = .true.
             end if
          end do
