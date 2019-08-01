@@ -1718,12 +1718,13 @@
       if (label == 'KP') then
          if (nops(2)==3) then
             label = 'K'
-         end if
-         if (nops(1)==3) then
+         else if (nops(1)==3) then
             ! Due to permutation of indicies, we need to permute the
             ! middle indices again to get correct answer
             label = 'J'
             idx=f_index(idx,rank/2,.false.,.true.)
+         else if (nops(3)==3) then
+            label = 'J'
          end if
       end if
 
