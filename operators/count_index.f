@@ -1777,16 +1777,18 @@
                   ! Three internal integral, need J:eccc
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &               'J'//'['//trim(idx)//']'//')'
-               else if (integral .and. nops(2)==3) then
+               else if (integral .and. nops(2)==3 .or. nops(3)==3) then
                   ! Three external integral, need K:eccc
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
                else if (integral .and. j_int) then
                   ! Need (K:eecc - J:eecc)
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &               'J'//'['//f_index(idx,hrank)//']'//')'
+     &               'J'//'['//f_index(idx,hrank,.false.)//']'//')'
+               else if (integral) then
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
                else
-                  ! Not an integral
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &               trimal(nt)//'['//f_index(idx,hrank)//']'//')'
                end if
@@ -1817,8 +1819,12 @@
             case (4)
                st=trimal(nt)//'['//trim(idx)//']'
             case (6)
-               st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+               if (inter) then
+                  st=trimal(nt)//'['//trim(idx)//']'
+               else
+                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                 trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+               end if
             case default
                write(lulog,*) "ERROR: Couldn't determine rank: ",
      &                        rank
@@ -2545,16 +2551,17 @@
          end if
       end do
 
-!      write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
-!      write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
-!      write(item%logfile,*) "Result string: {", str3%str, "}"
+      !write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
+      !write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
+      !write(item%logfile,*) "Result string: {", str3%str, "}"
 
       ! Rearrange the result string so it is in normal order (all
       ! creation operators to the left of the annhilation). This can
       ! also introduce a sign change.
       do j = 1, item%rank3/2
          shift = 1
-         do i = 0, item%rank3/2-1
+         !do i = 0, item%rank3/2-1
+         do i = 0, item%rank3/2
           if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
 
                tstr(shift:shift) = str3%str(item%rank3-i)
@@ -4889,9 +4896,9 @@
          end if
 
          if (error) then
-           !call line_error("Didn't print out spin case", item)
+           call line_error("Didn't print out spin case", item)
          else
-           !call line_error("This spin case possibly doesn't exist",item)
+           call line_error("This spin case possibly doesn't exist",item)
          end if
       end if
 
