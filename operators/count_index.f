@@ -1800,83 +1800,83 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine assign_add_index(contr_info,item)
-*----------------------------------------------------------------------*
-!     Simple ITF index assignment for lines that only contain a result
-!     and a tensor, ie. COPY and ADD lines. Don't need to pair indices.
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info   ! Information about binary contraction
-      type(itf_contr), intent(inout) ::
-     &     item         ! ITF binary contraction
-
-      integer ::
-     &     e1(ngastp,2),     ! Operator numbers of the first tensor (T1)
-     &     i            ! Loop index
-      character, dimension(4) ::
-     &     hol=(/ 'i','j','k','l' /),
-     &     par=(/ 'a','b','c','d' /)
-      character, dimension(8) ::
-     &     val=(/ 'p','q','r','s','t','u','v','w' /)
-      character(len=INDEX_LEN) ::
-     &     c1, c2, c3,
-     &     a1, a2, a3
-      character(len=INDEX_LEN), dimension(8) ::
-     &     e1_array     ! Index of operator 1
-
-      e1=item%e1
-
-      c1='        '
-      c2='        '
-      c3='        '
-      a1='        '
-      a2='        '
-      a3='        '
-
-      ! Assign e1 (external indices of t1)
-      do i=1, e1(2,1)
-          c1(i:)=par(i)
-      end do
-      e1_array(1)=c1
-      do i=1, e1(3,1)
-          c2(i:)=val(i)
-      end do
-      e1_array(2)=c2
-      do i=1, e1(1,1)
-          c3(i:)=hol(i)
-      end do
-      e1_array(3)=c3
-
-      ! Need to to be shifted to not match assignment of creations above
-      do i=1, e1(2,2)
-          a1(i:)=par(i+e1(2,1))
-      end do
-      e1_array(5)=a1
-      do i=1, e1(3,2)
-          a2(i:)=val(i+e1(3,1))
-      end do
-      e1_array(6)=a2
-      do i=1, e1(1,2)
-          a3(i:)=hol(i+e1(1,1))
-      end do
-      e1_array(7)=a3
-
-      item%idx1=trimal(e1_array(1))//trimal(e1_array(2))//
-     &          trimal(e1_array(3))//trimal(e1_array(5))//
-     &          trimal(e1_array(6))//trimal(e1_array(7))
-
-      item%idx3=item%idx1
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine assign_add_index(contr_info,item)
+!*----------------------------------------------------------------------*
+!!     Simple ITF index assignment for lines that only contain a result
+!!     and a tensor, ie. COPY and ADD lines. Don't need to pair indices.
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(in) ::
+!     &     contr_info   ! Information about binary contraction
+!      type(itf_contr), intent(inout) ::
+!     &     item         ! ITF binary contraction
+!
+!      integer ::
+!     &     e1(ngastp,2),     ! Operator numbers of the first tensor (T1)
+!     &     i            ! Loop index
+!      character, dimension(4) ::
+!     &     hol=(/ 'i','j','k','l' /),
+!     &     par=(/ 'a','b','c','d' /)
+!      character, dimension(8) ::
+!     &     val=(/ 'p','q','r','s','t','u','v','w' /)
+!      character(len=INDEX_LEN) ::
+!     &     c1, c2, c3,
+!     &     a1, a2, a3
+!      character(len=INDEX_LEN), dimension(8) ::
+!     &     e1_array     ! Index of operator 1
+!
+!      e1=item%e1
+!
+!      c1='        '
+!      c2='        '
+!      c3='        '
+!      a1='        '
+!      a2='        '
+!      a3='        '
+!
+!      ! Assign e1 (external indices of t1)
+!      do i=1, e1(2,1)
+!          c1(i:)=par(i)
+!      end do
+!      e1_array(1)=c1
+!      do i=1, e1(3,1)
+!          c2(i:)=val(i)
+!      end do
+!      e1_array(2)=c2
+!      do i=1, e1(1,1)
+!          c3(i:)=hol(i)
+!      end do
+!      e1_array(3)=c3
+!
+!      ! Need to to be shifted to not match assignment of creations above
+!      do i=1, e1(2,2)
+!          a1(i:)=par(i+e1(2,1))
+!      end do
+!      e1_array(5)=a1
+!      do i=1, e1(3,2)
+!          a2(i:)=val(i+e1(3,1))
+!      end do
+!      e1_array(6)=a2
+!      do i=1, e1(1,2)
+!          a3(i:)=hol(i+e1(1,1))
+!      end do
+!      e1_array(7)=a3
+!
+!      item%idx1=trimal(e1_array(1))//trimal(e1_array(2))//
+!     &          trimal(e1_array(3))//trimal(e1_array(5))//
+!     &          trimal(e1_array(6))//trimal(e1_array(7))
+!
+!      item%idx3=item%idx1
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -5284,7 +5284,8 @@
          ! For [ADD] and [COPY]
          ! Not a binary contraction
          item%binary = .false.
-         call assign_add_index(contr_info,item)
+         !call assign_add_index(contr_info,item)
+         call assign_new_index(contr_info,item)
       else
          ! For other contractions
          !call assign_index(contr_info,item)
