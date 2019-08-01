@@ -1340,7 +1340,7 @@
       real(8) ::
      &   c_fact               ! Copy of orginal factor
       logical ::
-     &   j_int
+     &   j_int1, j_int2
 
 
       ! Reorder integrals into a fixed index order, only need to do this
@@ -1348,7 +1348,9 @@
       ! the index string at this point
       if (item%spin_cases==0) then
          call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-     &                         item%label_t1,item%nops1,j_int)
+     &                         item%label_t1,item%nops1,j_int1)
+         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
+     &                         item%label_t2,item%nops2,j_int2)
          if (.not. item%int(1) .and. .not. item%inter(1)) then
             call reorder_amp(item%rank1,item%idx1)
          end if
@@ -1372,10 +1374,10 @@
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,j_int,
+     &                1,item%binary,item%int(1),item%nops1,j_int1,
      &                item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,j_int,
+     &                2,item%binary,item%int(2),item%nops2,j_int2,
      &                item%logfile)
 
 
@@ -1568,7 +1570,7 @@
 
       integer ::
      &   itype(rank),
-     &   i,
+     &   i, j,
      &   itmp
       character(len=1) ::
      &   tmp
@@ -1601,6 +1603,12 @@
       if (itype(1)==3 .and. itype(2)==1 .and. itype(3)==1 .and.
      &    itype(4)==3) then
          j_int = .true.
+      else if (itype(1)==2 .and. itype(2)==1 .and. itype(3)==1 .and.
+     &    itype(4)==2) then
+         j_int = .true.
+      else if (itype(1)==3 .and. itype(2)==2 .and. itype(3)==2 .and.
+     &    itype(4)==3) then
+         j_int = .true.
       end if
 
 
@@ -1612,6 +1620,7 @@
          end if
       end do
 
+      !write(10,*) "idx ", idx
       do i = 1, rank/2
          if (itype(i)>itype(i+rank/2)) then
             ! Swap creation and annhilation
@@ -1629,9 +1638,28 @@
             idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
             idx(i+rank/2:i+rank/2) = tmp
             label = 'J'
+
+            itmp = itype(i+1)
+            itype(i+1) = itype(i+rank/2)
+            itype(i+rank/2) = itmp
+
+            ! Check index in correct order
+            do j = 1, rank/2
+               if (itype(j)>itype(j+rank/2)) then
+                  tmp = idx(j:j)
+                  idx(j:j) = idx(j+rank/2:j+rank/2)
+                  idx(j+rank/2:j+rank/2) = tmp
+
+                  itmp = itype(j)
+                  itype(j) = itype(j+rank/2)
+                  itype(j+rank/2) = itmp
+               end if
+            end do
+
             exit
          end if
       end do
+      !write(10,*) "idx ", idx
 
       ! Permute pairs
       if (nops(2)<3) then
@@ -1666,6 +1694,7 @@
                end if
             end do
          end if
+      !write(10,*) "idx ", idx
       else if (nops(2)==3) then
          ! Need to reorder indices for 3-external integrals
          ! Slot positions 1 and 2 are now paired
