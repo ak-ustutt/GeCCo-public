@@ -1,7 +1,7 @@
       integer, parameter ::
      &     INDEX_LEN = 8,       ! Length of index string
      &     MAXINT = 8,          ! Maximum number of intermediates that contribute to a result
-     &     MAX_SPIN_CASES = 6   ! Maximum number of intermediates that contribute to a result
+     &     MAX_SPIN_CASES = 10  ! Maximum number of intermediates that contribute to a result
 
 *----------------------------------------------------------------------*
       type spin_cases

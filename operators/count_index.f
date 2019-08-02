@@ -136,7 +136,7 @@
 
 
 *----------------------------------------------------------------------*
-      recursive function c_index(idx, n) result(cidx)
+      recursive function c_index(idx, n, reverse) result(cidx)
 *----------------------------------------------------------------------*
 !     Cycle covarient tensor index: abcijk => cabijk
 *----------------------------------------------------------------------*
@@ -150,21 +150,41 @@
      &   n        ! Number of cycles
       character(len=INDEX_LEN), intent(in) ::
      &   idx      ! ITF index string
+      logical, optional, intent(in) ::
+     &   reverse
 
       character(len=INDEX_LEN) ::
      &   cidx
       character(len=INDEX_LEN) ::
      &   tmp
 
+      logical ::
+     &   rev
+
+      if (present(reverse)) then
+         rev = reverse
+      else
+         rev = .false.
+      end if
+
+
       !TODO: only works for rank 6
       if (n == 0) then
          cidx = idx
       else
-         tmp = idx
-         tmp(1:1) = idx(3:3)
-         tmp(2:2) = idx(1:1)
-         tmp(3:3) = idx(2:2)
-         cidx = c_index(tmp, n-1)
+         if (rev) then
+            tmp = idx
+            tmp(1:1) = idx(2:2)
+            tmp(2:2) = idx(3:3)
+            tmp(3:3) = idx(1:1)
+            cidx = c_index(tmp, n-1, rev)
+         else
+            tmp = idx
+            tmp(1:1) = idx(3:3)
+            tmp(2:2) = idx(1:1)
+            tmp(3:3) = idx(2:2)
+            cidx = c_index(tmp, n-1)
+         end if
       end if
 
       end function c_index
@@ -627,55 +647,15 @@
                call itf_contr_init(contr_info,item,i,command,itflog)
 
                if (i == 2) then
-                  ! Need to transpose by tensors after permutation, to
-                  ! avoid symmetry problem when using (1 + Pabij)
-                  ! If the intermediate has three internal/external
-                  ! indicies, then permute the covarient index
-                  !if (item%inter(1)) then
-                  !   found = .false.
 
-
-                  !   !do j = 1, ngastp
-                  !   !   if (item%nops1(j) > 2) then
-
-                  !   !   if (j == 1) then
-                  !   !      l = 3
-                  !   !   else if (j == 2) then
-                  !   !      l = 1
-                  !   !   else if (j == 3) then
-                  !   !      l = 2
-                  !   !   else if (j == 4) then
-                  !   !      l = 4
-                  !   !   end if
-
-                  !   !   do k = 1, INDEX_LEN
-                  !   !      if (item%itype(1,k)/=l) then
-                  !   !         if (k>=item%rank1/2) then
-                  !   !            upper = .false.
-                  !   !         else
-                  !   !            upper = .true.
-                  !   !         end if
-                  !   !         exit
-                  !   !      end if
-                  !   !   end do
-
-                  !   !   item%idx1=f_index(item%idx1,item%rank1/2,upper)
-
-                  !   !   !item%idx1=f_index(item%idx1,item%rank1/2,.true.)
-                  !   !   found = .true.
-                  !   !   exit
-                  !   !   end if
-                  !   !end do
-                  !   if (.not.found) then
-                  !      item%idx1=f_index(item%idx1,item%rank1/2)
-                  !   end if
-                  !else
-                  !   item%idx1=f_index(item%idx1,item%rank1/2)
-                  !end if
-
-                  item%idx1=f_index(item%idx1,item%rank1/2)
-                  if (item%rank1/=0 .and. item%rank2==0) then
-                     item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                  if (item%rank1==6) then
+                     !item%idx1=c_index(item%idx1,1,.true.)
+                     item%idx1=c_index(item%idx1,1)
+                  else
+                     item%idx1=f_index(item%idx1,item%rank1/2)
+                     if (item%rank1/=0 .and. item%rank2==0) then
+                        item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                     end if
                   end if
                   item%idx2=f_index(item%idx2,item%rank2/2)
 
@@ -690,18 +670,8 @@
                      !write(item%logfile,*)"index flip fact: ", item%fact
                   end if
 
-                  ! Sometimes, the permuation intermediate goes into the
-                  ! same intermediate as the non-permuation one.
-                  ! This means there will be a factor of 2, so need to
-                  ! get rid of this
-                  !if (trim(old_inter)==trim(item%label_t1) .and.
-     &            !    trim(old_idx)==trim(item%idx1)) then
-                  !   !exit
-                  !end if
                end if
 
-               !old_inter = trim(item%label_t1)
-               !old_idx = trim(item%idx1)
                call assign_spin(item)
             end do
 
@@ -831,11 +801,21 @@
          ! here, we are just searching for intermediates and don't care
          ! about the final sign - that will come when the intermediate
          ! is printed out
-         item%idx1 = f_index(item%idx1,item%rank1/2)
+         if (item%rank1==6) then
+            !item%idx1 = c_index(item%idx1,1,.true.)
+            item%idx1 = c_index(item%idx1,1)
+         else
+            item%idx1 = f_index(item%idx1,item%rank1/2)
+         end if
          item%idx2 = f_index(item%idx2,item%rank2/2)
 
          if (item%inter(3)) then
-            item%idx3 = f_index(item%idx3,item%rank3/2)
+            if (item%rank3==6) then
+               !item%idx3 = c_index(item%idx3,1,.true.)
+               item%idx3 = c_index(item%idx3,1)
+            else
+               item%idx3 = f_index(item%idx3,item%rank3/2)
+            end if
          end if
 
          item%label_res = trim(item%label_res)//'P'
@@ -1277,11 +1257,20 @@
          end do
 
          if (.not.found) then
-            item%idx3=f_index(item%idx3,item%rank3/2)
+            if (item%rank3==6) then
+               item%idx3 = c_index(item%idx3,1)
+               !item%idx3 = c_index(item%idx3,1,.true.)
+            else
+               item%idx3=f_index(item%idx3,item%rank3/2)
+            end if
          end if
 
          !item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
-         item%idx1 = f_index(item%idx1,item%rank1/2)
+         if (item%rank1==6) then
+            item%idx1 = c_index(item%idx1,1,.true.)
+         else
+            item%idx1 = f_index(item%idx1,item%rank1/2)
+         end if
          item%idx2 = f_index(item%idx2, item%rank2/2)
 
 
@@ -1777,7 +1766,7 @@
                   ! Three internal integral, need J:eccc
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &               'J'//'['//trim(idx)//']'//')'
-               else if (integral .and. nops(2)==3 .or. nops(3)==3) then
+               else if (integral .and. (nops(2)==3 .or. nops(3)==3))then
                   ! Three external integral, need K:eccc
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
