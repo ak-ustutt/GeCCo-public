@@ -174,6 +174,6 @@ OPTIMIZE({
 # Translate optmised formulae into ITF algo code
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'icmrcc_icmrccsd_11.itfaa',
-        TITLE:'icmrcc_icmrccsd_11.formulae',
+        OUTPUT:'icmrcc_mrccsd_11.itfaa',
+        TITLE:'icmrcc_mrccsd_11.formulae',
         MULTI:True})
