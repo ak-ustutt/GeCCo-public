@@ -15,10 +15,10 @@ if(dele.gt.1e-12) then
     table,name,e,e-eold;ftyp,,,d;digits,,11,11
     save,test.log
     title,Results for icmrcc_ccsd_1_ext.itfaa
-    title,ERRORS DETECTED in icmrcc_ccd.itfaa. Max error for energy=$dele
+    title,ERRORS DETECTED in icmrcc_ccsd_1_ext.itfaa. Max error for energy=$dele
     else
     table,name,e,e-eold;ftyp,,,d;digits,,11,11
     save,test.log
     title,Results for job icmrcc_ccsd_1_ext.itfaa
-    title,No ERRORS in icmrcc_ccd.itfaa. Max error for energy=$dele
+    title,No ERRORS in icmrcc_ccsd_1_ext.itfaa. Max error for energy=$dele
 endif

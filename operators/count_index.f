@@ -684,6 +684,7 @@
       call itf_deinit(item)
 
       if (intpp) then
+         write(itflog,'(a)') "END"
          write(itflog,'(a)') "END_INTPP"
       end if
 
@@ -4486,7 +4487,16 @@
 
          !! The spin case is the line itself and wont contain any other
          !! terms, so mark the start and end
+         !call print_itf_line(item,.false.,.false.)
+         if (.not. (item%permute > 1)) then
+            write(item%logfile,'(a5)') 'BEGIN'
+         end if
+
          call print_itf_line(item,.false.,.false.)
+
+         if (item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
 
          return
       else if (item%rank1 + item%rank2 + item%rank3 == 6) then
@@ -4499,11 +4509,29 @@
             item%label_t2 = trim(item%label_t2)//'aa'
          end if
 
+         if (.not. (item%permute > 1)) then
+            write(item%logfile,'(a5)') 'BEGIN'
+         end if
+
          call print_itf_line(item,.false.,.false.)
+
+         if (item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
+         !call print_itf_line(item,.false.,.false.)
          return
       else if (item%rank1 + item%rank2 + item%rank3 == 0) then
          ! Scalar contributions
+         !call print_itf_line(item,.false.,.false.)
+         if (.not. (item%permute > 1)) then
+            write(item%logfile,'(a5)') 'BEGIN'
+         end if
+
          call print_itf_line(item,.false.,.false.)
+
+         if (item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
          return
       else if (item%rank1 == 0 .or. item%rank2 ==0) then
          ! Tensor multiplied by a scalar (not involving an intermediate)
@@ -4514,7 +4542,16 @@
             call simple_spin_name(item%inter2,item%rank2,item%permute)
          end if
 
+         if (.not. (item%permute > 1)) then
+            write(item%logfile,'(a5)') 'BEGIN'
+         end if
+
          call print_itf_line(item,.false.,.false.)
+
+         if (item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
+
          return
       else if (item%rank3==4 .and. item%rank1==2
      &         .and. item%rank2==2) then
@@ -4526,7 +4563,16 @@
             item%label_t2 = trim(item%label_t2)//'aa'
          end if
 
+         !call print_itf_line(item,.false.,.false.)
+         if (.not. (item%permute > 1)) then
+            write(item%logfile,'(a5)') 'BEGIN'
+         end if
+
          call print_itf_line(item,.false.,.false.)
+
+         if (item%permute /= 1 .and. item%print_line) then
+            if (.not. item%symm) write(item%logfile,'(a3)') "END"
+         end if
          return
       end if
 

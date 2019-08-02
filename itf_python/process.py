@@ -685,9 +685,14 @@ for line_o in f:
             print_result(line)
 
             # Drop intermediates if needed
-            if prev_inter:
+            if prev_inter and not begin:
                 print("drop ", end="", flush=True, file=out)
                 print(*list(reversed(prev_inter)),sep=", ", file=out)
+
+            # Store intermediate so as to drop at the end of spin summed family
+            if begin and not end:
+                if not old_spin_iter:
+                    old_spin_iter=prev_inter
 
             prev_res=words[0]
             prev_lines=[]
