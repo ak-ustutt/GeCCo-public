@@ -227,138 +227,138 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
             print("tensor:", tmp_ten, file=f2)
 
 
-def rename_integrals(line):
-    # Rename K -> J and permute indicies to [eecc]
-    # Molpro stores integrals in two sets of arrays: K and J. Not to be confused with the exchange
-    # and Coulomb integrals of HF theory; there is no relationship.
-    # For integrals like K_{ak}^{ic} = K_{ac}^{ik}, these are store on the K arrays.
-    # For integrals K_{ka}^{ic}, these are store on the J arrays.
-
-    second = False
-
-    words = line.split()
-    for i in range(0, len(words)):
-        if ("K:ceec" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:ccee" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[2:3] + tmp[3:4] + tmp[0:1] + tmp[1:2]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[2:3] + tmp2[3:4] + tmp2[0:1] + tmp2[1:2]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:ecec" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[2:3] + tmp[1:2] + tmp[3:4]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[1:2] + tmp2[3:4]
-            words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:ecce" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[3:4] + tmp2[2:3] + tmp2[1:2]
-            #words[i] = "(" + words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1] + " + J:" + tmp2 + "[" + tmp + "])"
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        # 3 internal integrals
-        # Pairing as above (1+3, 2+4)
-        elif ("K:ccec" in words[i]):
-            if (second):
-                # Second integral in the line, so must be the 'transpose', ie. J:eccc
-                tmp = words[i].split('[',1)[1].split(']',1)[0]
-                tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
-                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
-                words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-                second = False
-            else:
-                tmp = words[i].split('[',1)[1].split(']',1)[0]
-                tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
-                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
-                words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-                second = True
-
-        elif ("K:ccce" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[3:4] + tmp[0:1] + tmp[1:2] + tmp[2:3]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[3:4] + tmp2[0:1] + tmp2[1:2] + tmp2[2:3]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:cecc" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[0:1] + tmp[3:4] + tmp[2:3]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[0:1] + tmp2[3:4] + tmp2[2:3]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        # 3 internal integrals which arise from a permuation, therefore they become J:eccc
-        elif ("KP:ccce" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[3:4] + tmp[1:2] + tmp[0:1] + tmp[2:3]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[3:4] + tmp2[1:2] + tmp2[0:1] + tmp2[2:3]
-            words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("KP:ccec" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
-            words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-
-        # 3 external integrals
-        # Index pariing is different compared to normal 1+3, 2+4;
-        # Indicies are paired between the 1+2, 3+4, so need to convert index which is pair above to this convention
-        elif ("K:ceee" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:ecee" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("K:eece" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[3:4] + tmp[0:1] + tmp[2:3]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[0:1] + tmp2[2:3]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        # 3 external integrals which arise from a permuation, therefore they become J:eeec
-        elif ("KP:ceee" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-            words[i] = words[i].split(':',1)[0].replace("KP", "K") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-        elif ("KP:ecee" in words[i]):
-            tmp = words[i].split('[',1)[1].split(']',1)[0]
-            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
-            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
-            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
-            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-            words[i] = words[i].split(':',1)[0].replace("KP", "K") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
-
-    line = " ".join(words)
-    return line
+#def rename_integrals(line):
+#    # Rename K -> J and permute indicies to [eecc]
+#    # Molpro stores integrals in two sets of arrays: K and J. Not to be confused with the exchange
+#    # and Coulomb integrals of HF theory; there is no relationship.
+#    # For integrals like K_{ak}^{ic} = K_{ac}^{ik}, these are store on the K arrays.
+#    # For integrals K_{ka}^{ic}, these are store on the J arrays.
+#
+#    second = False
+#
+#    words = line.split()
+#    for i in range(0, len(words)):
+#        if ("K:ceec" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:ccee" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[2:3] + tmp[3:4] + tmp[0:1] + tmp[1:2]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[2:3] + tmp2[3:4] + tmp2[0:1] + tmp2[1:2]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:ecec" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[0:1] + tmp[2:3] + tmp[1:2] + tmp[3:4]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[1:2] + tmp2[3:4]
+#            words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:ecce" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[0:1] + tmp[3:4] + tmp[2:3] + tmp[1:2]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[0:1] + tmp2[3:4] + tmp2[2:3] + tmp2[1:2]
+#            #words[i] = "(" + words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1] + " + J:" + tmp2 + "[" + tmp + "])"
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        # 3 internal integrals
+#        # Pairing as above (1+3, 2+4)
+#        elif ("K:ccec" in words[i]):
+#            if (second):
+#                # Second integral in the line, so must be the 'transpose', ie. J:eccc
+#                tmp = words[i].split('[',1)[1].split(']',1)[0]
+#                tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
+#                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+#                words[i] = words[i].split(':',1)[0].replace("K", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#                second = False
+#            else:
+#                tmp = words[i].split('[',1)[1].split(']',1)[0]
+#                tmp = tmp[2:3] + tmp[1:2] + tmp[0:1] + tmp[3:4]
+#                tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#                tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+#                words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#                second = True
+#
+#        elif ("K:ccce" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[3:4] + tmp[0:1] + tmp[1:2] + tmp[2:3]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[3:4] + tmp2[0:1] + tmp2[1:2] + tmp2[2:3]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:cecc" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[1:2] + tmp[0:1] + tmp[3:4] + tmp[2:3]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[1:2] + tmp2[0:1] + tmp2[3:4] + tmp2[2:3]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        # 3 internal integrals which arise from a permuation, therefore they become J:eccc
+#        elif ("KP:ccce" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[3:4] + tmp[1:2] + tmp[0:1] + tmp[2:3]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[3:4] + tmp2[1:2] + tmp2[0:1] + tmp2[2:3]
+#            words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("KP:ccec" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[2:3] + tmp[0:1] + tmp[1:2] + tmp[3:4]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[2:3] + tmp2[1:2] + tmp2[0:1] + tmp2[3:4]
+#            words[i] = words[i].split(':',1)[0].replace("KP", "J") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#
+#        # 3 external integrals
+#        # Index pariing is different compared to normal 1+3, 2+4;
+#        # Indicies are paired between the 1+2, 3+4, so need to convert index which is pair above to this convention
+#        elif ("K:ceee" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:ecee" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("K:eece" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[1:2] + tmp[3:4] + tmp[0:1] + tmp[2:3]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[0:1] + tmp2[2:3]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        # 3 external integrals which arise from a permuation, therefore they become J:eeec
+#        elif ("KP:ceee" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[1:2] + tmp[3:4] + tmp[2:3] + tmp[0:1]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[1:2] + tmp2[3:4] + tmp2[2:3] + tmp2[0:1]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#            words[i] = words[i].split(':',1)[0].replace("KP", "K") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#        elif ("KP:ecee" in words[i]):
+#            tmp = words[i].split('[',1)[1].split(']',1)[0]
+#            tmp = tmp[0:1] + tmp[2:3] + tmp[3:4] + tmp[1:2]
+#            tmp2 = words[i].split(':',1)[1].split('[',1)[0]
+#            tmp2 = tmp2[0:1] + tmp2[2:3] + tmp2[3:4] + tmp2[1:2]
+#            words[i] = words[i].split(':',1)[0] + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#            words[i] = words[i].split(':',1)[0].replace("KP", "K") + ":" + tmp2 + "[" + tmp + "]" + words[i].split(']',1)[1]
+#
+#    line = " ".join(words)
+#    return line
 
 
 # =========================================================================================
@@ -411,9 +411,22 @@ prev_inter=[]       # List of previous intemediates, used to alloc/drop
 prev_res='#####'    # Result of previous line
 prev_generic=[]     # Previous generic result
 
-declare_res=[]      # Global list of result tensors
-declare_index=[]    # Global list of result indices
-declare_name=[]     # Global of just result tensor names
+declare_res=[]            # Global list of result tensors
+declare_index=[]          # Global list of result indices
+declare_name=[]           # Global of just result tensor names
+# TODO: Now all residuals are declared for the mutli cases, don't need all of them, all of the time
+declare_res_multi=[
+        "R:I[I]",
+        "R:ac[pi]","R:ec[ai]","R:ea[ap]",
+        "R:aacc[pqij]","R:aaac[pqri]",
+        "R:eacc[apij]","R:eaac[apqi]","R:eaaa[apqr]",
+        "R:eecc[abij]","R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
+declare_amp_multi=[
+        "T:I[I]",
+        "T:ac[pi]","T:ec[ai]","T:ea[ap]",
+        "T:aacc[pqij]","T:aaac[pqri]",
+        "T:eacc[apij]","T:eaac[apqi]","T:eaaa[apqr]",
+        "T:eecc[abij]","T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
 
 declare_inter=[]        # Global list of intermediates
 declare_inter_index=[]  # Global list of intermediates
@@ -797,10 +810,31 @@ else:
     print("tensor: INTpp[abij], INTpp", file=f2)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
-if (multi): print("tensor: R[I],  R:I", file=f2)
+#if (multi): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
 if (any('R:eeeccc' in s for s in declare_res)):
    triples = True
+
+if (multi):
+    print(file=f2)
+    print("// Residuals not used in the code", file=f2)
+    for i in range(0, len(declare_res_multi)):
+        if any(declare_res_multi[i].split('[',1)[0]+"[" in s for s in declare_res):
+            continue
+        else:
+            tmp_ten = declare_res_multi[i] + ", " + declare_res_multi[i].split('[',1)[0]
+            print("tensor:", tmp_ten, file=f2)
+
+    print(file=f2)
+    print("// Amplitudes not used in the code", file=f2)
+    for i in range(0, len(declare_amp_multi)):
+        if any(declare_amp_multi[i].split('[',1)[0]+"[" in s for s in declare_ten):
+            continue
+        else:
+            tmp_ten = declare_amp_multi[i] + ", " + declare_amp_multi[i].split('[',1)[0]
+            print("tensor:", tmp_ten, file=f2)
+
+
 declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 
 # Check if we have singles amplitudes
@@ -953,91 +987,6 @@ if (not multi):
     print("drop DeltaC, CoreH, f:CC", file=f2)
     print("store ERef[]", file=f2)
 
-# Print out amplitude update
-# For single-reference methods, this also calculates the energy
-if (not multi):
-    print(file=f2)
-    print(file=f2)
-    print('---- code("Update_Amplitudes")',file=f2)
-    if (singles):
-        print("// Update singles", file=f2)
-        print("load R:ec[ai]", file=f2)
-        print("// L1 = R^i_a/D^i_a; D^i_a = e_a-e_i", file=f2)
-        print("alloc L1[ai]", file=f2)
-        print(".L1[ai] += R:ec[ai]", file=f2)
-        print("denom-scale L1[ai], [1,0]", file=f2)
-        print("", file=f2)
-        print("alloc EDi1[], Nrm1[], Var1[]", file=f2)
-        print("load T:ec[ai], f:ec[ai]", file=f2)
-        print("// Update T:ec",file=f2)
-        print("// T^i_a = T^i_a-R^i_a/D^i_a",file=f2)
-        print(".T:ec[ai] -= L1[ai]", file=f2)
-        print(".EDi1[] += 2.0*T:ec[ai] f:ec[ai]", file=f2)
-        print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
-        print(".Var1[] += 2.0*L1[ai] L1[ai]", file=f2)
-        print("drop f:ec[ai]", file=f2)
-        print("store T:ec[ai]", file=f2)
-        print("store Var1[], Nrm1[], EDi1[]", file=f2)
-        print("", file=f2)
-        print("drop L1[ai], R:ec[ai]", file=f2)
-        print("", file=f2)
-        print("load T:ec[ai]", file=f2)
-    print("// Update doubles",file=f2)
-    print("alloc EDi2[], Nrm2[], Var2[]",file=f2)
-    print("for [i,j]:",file=f2)
-    print("   load R:eecc[**ij]",file=f2)
-    print("   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2)
-    print("   alloc L2[**ij]",file=f2)
-    print("   .L2[**ij] += R:eecc[**ij]",file=f2)
-    print("   denom-scale L2[**ij], [1,1,0,0]",file=f2)
-    print("",file=f2)
-    print("   load K:eecc[**ij]",file=f2)
-    print("   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]",file=f2)
-    print("",file=f2)
-    print("   // Update T:eecc",file=f2)
-    print("   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}",file=f2)
-    print("   load T:eecc[**ij]",file=f2)
-    print("   .T:eecc[abij] -= L2[abij]",file=f2)
-    print("",file=f2)
-    print("   alloc C[**ij]",file=f2)
-    print("   .C[**ij] += T:eecc[**ij]",file=f2)
-    if (singles):
-        print("   .C[abij] += T:ec[ai] T:ec[bj]",file=f2)
-    print("",file=f2)
-    print("   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]",file=f2)
-    print("   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]",file=f2)
-    #print("   .EDi2 += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]",file=f2)
-    #print("   .Nrm2 += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]",file=f2)
-    print("   drop C[**ij]",file=f2)
-    print("   store T:eecc[**ij]",file=f2)
-    print("   drop K:eecc[**ij]",file=f2)
-    print("",file=f2)
-    print("   drop L2[**ij]",file=f2)
-    print("   drop R:eecc[**ij]",file=f2)
-    print("store Var2[], Nrm2[], EDi2[]",file=f2)
-    if (singles): print("drop T:ec[ai]", file=f2)
-    if (triples):
-        # TODO: Make update triples a loop etc.
-        print("", file=f2)
-        print("// Update triples", file=f2)
-        print("load R:eeeccc[abcijk]", file=f2)
-        print("alloc L3[abcijk]", file=f2)
-        print(".L3[abcijk] += R:eeeccc[abcijk]", file=f2)
-        print("denom-scale L3[abcijk], [1,1,1,0,0,0]", file=f2)
-        print("", file=f2)
-        print("load Var3[]", file=f2)
-        print(".Var3[] += (6.0*L3[abcijk] - L3[bcaijk] - L3[cabijk] - L3[bacijk] - L3[acbijk] - L3[cbaijk]) L3[abcijk]", file=f2)
-        print("store Var3[]", file=f2)
-        print("", file=f2)
-        print("load T:eeeccc[abcijk]", file=f2)
-        print(".T:eeeccc[abcijk] -= L3[abcijk]", file=f2)
-        print("load Nrm3[]", file=f2)
-        print(".Nrm3[] += (6.0*T:eeeccc[abcijk] - T:eeeccc[bcaijk] - T:eeeccc[cabijk] - T:eeeccc[bacijk] - T:eeeccc[acbijk] - T:eeeccc[cbaijk]) T:eeeccc[abcijk]", file=f2)
-        print("store Nrm3[]", file=f2)
-        print("store T:eeeccc[abcijk]", file=f2)
-        print("", file=f2)
-        print("drop L3[abcijk]", file=f2)
-        print("drop R:eeeccc[abcijk]", file=f2)
 
 # Print out INTpp update
 print(file=f2)
@@ -1062,26 +1011,268 @@ print(file=f2)
 print(file=f2)
 print('---- code("Residual")', file=f2)
 f2.write(tmp)
-print(file=f2)
 
 # Symmetrise tensors
-if "R[abij]" in declare_res:
-    print("load R:eecc[abij]", file=f2)
-    print(".R:eecc[abij] += R:eecc[baji]", file=f2)
-    print("store R:eecc[abij]", file=f2)
-    print(file=f2)
+#if "R[abij]" in declare_res:
+#    print("load R:eecc[abij]", file=f2)
+#    print(".R:eecc[abij] += R:eecc[baji]", file=f2)
+#    print("store R:eecc[abij]", file=f2)
+#    print(file=f2)
+#
+#if "R[pqij]" in declare_res:
+#    print("load R:aacc[pqij]", file=f2)
+#    print(".R:aacc[pqij] += R:aacc[qpji]", file=f2)
+#    print("store R:aacc[pqij]", file=f2)
+#    print(file=f2)
+#
+#if "R[abpq]" in declare_res:
+#    print("load R:eeaa[abpq]", file=f2)
+#    print(".R:eeaa[abpq] += R:eeaa[baqp]", file=f2)
+#    print("store R:eeaa[abpq]", file=f2)
+#    print(file=f2)
 
-if "R[pqij]" in declare_res:
+
+# Apply preconditioner and update amplitudes
+print(file=f2)
+print(file=f2)
+print('---- code("Update_Amplitudes")',file=f2)
+if (not multi):
+    if (singles):
+        #print("// Update singles", file=f2)
+        #print("load R:ec[ai]", file=f2)
+        #print("// L1 = R^i_a/D^i_a; D^i_a = e_a-e_i", file=f2)
+        #print("alloc L1[ai]", file=f2)
+        #print(".L1[ai] += R:ec[ai]", file=f2)
+        #print("denom-scale L1[ai], [1,0]", file=f2)
+        #print("", file=f2)
+        #print("alloc EDi1[], Nrm1[], Var1[]", file=f2)
+        #print("load T:ec[ai], f:ec[ai]", file=f2)
+        #print("// Update T:ec",file=f2)
+        #print("// T^i_a = T^i_a-R^i_a/D^i_a",file=f2)
+        #print(".T:ec[ai] -= L1[ai]", file=f2)
+        #print(".EDi1[] += 2.0*T:ec[ai] f:ec[ai]", file=f2)
+        #print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
+        #print(".Var1[] += 2.0*L1[ai] L1[ai]", file=f2)
+        #print("drop f:ec[ai]", file=f2)
+        #print("store T:ec[ai]", file=f2)
+        #print("store Var1[], Nrm1[], EDi1[]", file=f2)
+        #print("", file=f2)
+        #print("drop L1[ai], R:ec[ai]", file=f2)
+        #print("", file=f2)
+        #print("load T:ec[ai]", file=f2)
+        print("// Update singles", file=f2)
+        print("load R:ec[ai]", file=f2)
+        print("load f:ee[aa], f:cc[ii]", file=f2)
+        print("denom-scale R:ec[ai], f:ee[aa] - f:cc[ii]", file=f2)
+        print("drop f:cc[ii], f:ee[aa]", file=f2)
+        print("", file=f2)
+        print("alloc EDi1[], Nrm1[], Var1[]", file=f2)
+        print("load T:ec[ai], f:ec[ai]", file=f2)
+        print(".T:ec[ai] -= R:ec[ai]", file=f2)
+        print(".EDi1[] += 2.0*T:ec[ai] f:ec[ai]", file=f2)
+        print(".Nrm1[] += 2.0*T:ec[ai] T:ec[ai]", file=f2)
+        print(".Var1[] += 2.0*R:ec[ai] R:ec[ai]", file=f2)
+        print("drop f:ec[ai]", file=f2)
+        print("store T:ec[ai]", file=f2)
+        print("store Var1[], Nrm1[], EDi1[]", file=f2)
+        print("drop R:ec[ai]", file=f2)
+        print("", file=f2)
+    print("// Update doubles", file=f2)
+    if (singles): print("load T:ec[ai]", file=f2)
+    print("alloc EDi2[], Nrm2[], Var2[]", file=f2)
+    print("load R:eecc[abij], K:eecc[abij]", file=f2)
+    print("load T:eecc[abij]", file=f2)
+    print("load f:ee[aa], f:cc[ii]", file=f2)
+    print("denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]", file=f2)
+    print("drop f:cc[ii], f:ee[aa]", file=f2)
+    print("", file=f2)
+    print(".T:eecc[abij] -= R:eecc[abij]", file=f2)
+    print("", file=f2)
+    print("alloc C[abij]", file=f2)
+    print(".C[abij] += T:eecc[abij]", file=f2)
+    if (singles): print(".C[abij] += T:ec[ai] T:ec[bj]", file=f2)
+    print(".EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]", file=f2)
+    print(".Nrm2 += (2.0*C[abij] - C[baij]) C[abij]", file=f2)
+    print("drop C[abij]", file=f2)
+    print("", file=f2)
+    print(".Var2 += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]", file=f2)
+    print("", file=f2)
+    print("store T:eecc[abij]", file=f2)
+    print("drop K:eecc[abij], R:eecc[abij]", file=f2)
+    print("store Var2[], Nrm2[], EDi2[]", file=f2)
+    if (singles): print("drop T:ec[ai]", file=f2)
+    #print("// Update doubles",file=f2)
+    #print("alloc EDi2[], Nrm2[], Var2[]",file=f2)
+    #print("for [i,j]:",file=f2)
+    #print("   load R:eecc[**ij]",file=f2)
+    #print("   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j",file=f2)
+    #print("   alloc L2[**ij]",file=f2)
+    #print("   .L2[**ij] += R:eecc[**ij]",file=f2)
+    #print("   denom-scale L2[**ij], [1,1,0,0]",file=f2)
+    #print("",file=f2)
+    #print("   load K:eecc[**ij]",file=f2)
+    #print("   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]",file=f2)
+    #print("",file=f2)
+    #print("   // Update T:eecc",file=f2)
+    #print("   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}",file=f2)
+    #print("   load T:eecc[**ij]",file=f2)
+    #print("   .T:eecc[abij] -= L2[abij]",file=f2)
+    #print("",file=f2)
+    #print("   alloc C[**ij]",file=f2)
+    #print("   .C[**ij] += T:eecc[**ij]",file=f2)
+    #if (singles):
+    #    print("   .C[abij] += T:ec[ai] T:ec[bj]",file=f2)
+    #print("",file=f2)
+    #print("   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]",file=f2)
+    #print("   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]",file=f2)
+    #print("   drop C[**ij]",file=f2)
+    #print("   store T:eecc[**ij]",file=f2)
+    #print("   drop K:eecc[**ij]",file=f2)
+    #print("",file=f2)
+    #print("   drop L2[**ij]",file=f2)
+    #print("   drop R:eecc[**ij]",file=f2)
+    #print("store Var2[], Nrm2[], EDi2[]",file=f2)
+    #if (singles): print("drop T:ec[ai]", file=f2)
+    if (triples):
+        # TODO: Do this properly
+        print("", file=f2)
+        print("// Update triples", file=f2)
+        print("load R:eeeccc[abcijk]", file=f2)
+        print("alloc L3[abcijk]", file=f2)
+        print(".L3[abcijk] += R:eeeccc[abcijk]", file=f2)
+        print("denom-scale L3[abcijk], [1,1,1,0,0,0]", file=f2)
+        print("", file=f2)
+        print("load Var3[]", file=f2)
+        print(".Var3[] += (6.0*L3[abcijk] - L3[bcaijk] - L3[cabijk] - L3[bacijk] - L3[acbijk] - L3[cbaijk]) L3[abcijk]", file=f2)
+        print("store Var3[]", file=f2)
+        print("", file=f2)
+        print("load T:eeeccc[abcijk]", file=f2)
+        print(".T:eeeccc[abcijk] -= L3[abcijk]", file=f2)
+        print("load Nrm3[]", file=f2)
+        print(".Nrm3[] += (6.0*T:eeeccc[abcijk] - T:eeeccc[bcaijk] - T:eeeccc[cabijk] - T:eeeccc[bacijk] - T:eeeccc[acbijk] - T:eeeccc[cbaijk]) T:eeeccc[abcijk]", file=f2)
+        print("store Nrm3[]", file=f2)
+        print("store T:eeeccc[abcijk]", file=f2)
+        print("", file=f2)
+        print("drop L3[abcijk]", file=f2)
+        print("drop R:eeeccc[abcijk]", file=f2)
+else:
+    print("alloc Var1[]", file=f2)
+    print("", file=f2)
+    print("load R:ac[pi]", file=f2)
+    print("load f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:ac[pi], f:aa[pp] - f:cc[ii]", file=f2)
+    print("drop f:cc[ii], f:aa[pp]", file=f2)
+    print("load T:ac[pi]", file=f2)
+    print(".T:ac[pi] -= R:ac[pi]", file=f2)
+    print("store T:ac[pi]", file=f2)
+    print(".Var1[] += 2.0*R:ac[pi] R:ac[pi]", file=f2)
+    print("drop R:ac[pi]", file=f2)
+    print("", file=f2)
+    print("load R:ec[ai]", file=f2)
+    print("load f:ee[aa], f:cc[ii]", file=f2)
+    print("denom-scale R:ec[ai], f:ee[aa] - f:cc[ii]", file=f2)
+    print("drop f:cc[ii], f:ee[aa]", file=f2)
+    print("load T:ec[ai]", file=f2)
+    print(".T:ec[ai] -= R:ec[ai]", file=f2)
+    print("store T:ec[ai]", file=f2)
+    print(".Var1[] += 2.0*R:ec[ai] R:ec[ai]", file=f2)
+    print("drop R:ec[ai]", file=f2)
+    print("", file=f2)
+    print("load R:ea[ap]", file=f2)
+    print("load f:ee[aa], f:aa[pp]", file=f2)
+    print("denom-scale R:ea[ap], f:ee[aa] - f:aa[pp]", file=f2)
+    print("drop f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:ea[ap]", file=f2)
+    print(".T:ea[ap] -= R:ea[ap]", file=f2)
+    print("store T:ea[ap]", file=f2)
+    print(".Var1[] += 2.0*R:ea[ap] R:ea[ap]", file=f2)
+    print("drop R:ea[ap]", file=f2)
+    print("", file=f2)
+    print("store Var1[]", file=f2)
+    print("alloc Var2[]", file=f2)
+    print("", file=f2)
     print("load R:aacc[pqij]", file=f2)
-    print(".R:aacc[pqij] += R:aacc[qpji]", file=f2)
-    print("store R:aacc[pqij]", file=f2)
-    print(file=f2)
-
-if "R[abpq]" in declare_res:
+    print("load f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:aacc[pqij], f:aa[pp] + f:aa[qq] - f:cc[ii] - f:cc[jj]", file=f2)
+    print("drop f:cc[ii], f:aa[pp]", file=f2)
+    print("load T:aacc[pqij]", file=f2)
+    print(".T:aacc[pqij] -= R:aacc[pqij]", file=f2)
+    print("store T:aacc[pqij]", file=f2)
+    print(".Var2[] += (2.0*R:aacc[pqij] - R:aacc[qpij]) R:aacc[pqij]", file=f2)
+    print("drop R:aacc[pqij]", file=f2)
+    print("", file=f2)
+    print("load R:aaac[pqri]", file=f2)
+    print("load f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:aaac[pqri], f:aa[pp] + f:aa[qq] - f:aa[rr] - f:cc[ii]", file=f2)
+    print("drop f:cc[ii], f:aa[pp]", file=f2)
+    print("load T:aaac[pqri]", file=f2)
+    print(".T:aaac[pqri] -= R:aaac[pqri]", file=f2)
+    print("store T:aaac[pqri]", file=f2)
+    print(".Var2[] += R:aaac[pqri] R:aaac[pqri]", file=f2)
+    print("drop R:aaac[pqri]", file=f2)
+    print("", file=f2)
+    print("load R:eacc[apij]", file=f2)
+    print("load f:ee[aa], f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:eacc[apij], f:ee[aa] + f:aa[pp] - f:cc[ii] - f:cc[jj]", file=f2)
+    print("drop f:cc[ii], f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:eacc[apij]", file=f2)
+    print(".T:eacc[apij] -= R:eacc[apij]", file=f2)
+    print("store T:eacc[apij]", file=f2)
+    print(".Var2[] += R:eacc[apij] R:eacc[apij]", file=f2)
+    print("drop R:eacc[apij]", file=f2)
+    print("", file=f2)
+    print("load R:eaac[apqi]", file=f2)
+    print("load f:ee[aa], f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:eaac[apqi], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:cc[ii]", file=f2)
+    print("drop f:cc[ii], f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:eaac[apqi]", file=f2)
+    print(".T:eaac[apqi] -= R:eaac[apqi]", file=f2)
+    print("store T:eaac[apqi]", file=f2)
+    print(".Var2[] += R:eaac[apqi] R:eaac[apqi]", file=f2)
+    print("drop R:eaac[apqi]", file=f2)
+    print("", file=f2)
+    print("load R:eaaa[apqr]", file=f2)
+    print("load f:ee[aa], f:aa[pp]", file=f2)
+    print("denom-scale R:eaaa[apqr], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:aa[rr]", file=f2)
+    print("drop f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:eaaa[apqr]", file=f2)
+    print(".T:eaaa[apqr] -= R:eaaa[apqr]", file=f2)
+    print("store T:eaaa[apqr]", file=f2)
+    print(".Var2[] += R:eaaa[apqr] R:eaaa[apqr]", file=f2)
+    print("drop R:eaaa[apqr]", file=f2)
+    print("", file=f2)
+    print("load R:eecc[abij]", file=f2)
+    print("load f:ee[aa], f:cc[ii]", file=f2)
+    print("denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]", file=f2)
+    print("drop f:cc[ii], f:ee[aa]", file=f2)
+    print("load T:eecc[abij]", file=f2)
+    print(".T:eecc[abij] -= R:eecc[abij]", file=f2)
+    print("store T:eecc[abij]", file=f2)
+    print(".Var2[] += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]", file=f2)
+    print("drop R:eecc[abij]", file=f2)
+    print("", file=f2)
+    print("load R:eeac[abpi]", file=f2)
+    print("load f:ee[aa], f:aa[pp], f:cc[ii]", file=f2)
+    print("denom-scale R:eeac[abpi], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:cc[ii]", file=f2)
+    print("drop f:cc[ii], f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:eeac[abpi]", file=f2)
+    print(".T:eeac[abpi] -= R:eeac[abpi]", file=f2)
+    print("store T:eeac[abpi]", file=f2)
+    print(".Var2[] += R:eeac[abpi] R:eeac[abpi]", file=f2)
+    print("drop R:eeac[abpi]", file=f2)
+    print("", file=f2)
     print("load R:eeaa[abpq]", file=f2)
-    print(".R:eeaa[abpq] += R:eeaa[baqp]", file=f2)
-    print("store R:eeaa[abpq]", file=f2)
-    print(file=f2)
+    print("load f:ee[aa], f:aa[pp]", file=f2)
+    print("denom-scale R:eeaa[abpq], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:aa[qq]", file=f2)
+    print("drop f:aa[pp], f:ee[aa]", file=f2)
+    print("load T:eeaa[abpq]", file=f2)
+    print(".T:eeaa[abpq] -= R:eeaa[abpq]", file=f2)
+    print("store T:eeaa[abpq]", file=f2)
+    print(".Var2[] += (2.0*R:eeaa[abpq] - R:eeaa[bapq]) R:eeaa[abpq]", file=f2)
+    print("drop R:eeaa[abpq]", file=f2)
+    print("", file=f2)
+    print("store Var2[]", file=f2)
+
 
 # Print out code needed to evaluate the overlap matrix
 if (multi):
