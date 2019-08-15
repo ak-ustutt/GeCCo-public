@@ -47,8 +47,13 @@ def _refexp(x):
 def _L2_refexp(x):
     return _refexp("LAM2g(" + x + ")")
 
+def _L3_refexp(x):
+    return _refexp("-LAM2g(" + x + ")")
+
 LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
+#LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
+LAG_A2.append(_L3_refexp("H"))
 
 # Use en_type/res_type to generate icMRCCSD equations
 # Default is linear icMRCCSD
@@ -69,6 +74,36 @@ if keywords.is_keyword_set('method.ITF.en_type'):
         LAG_E.append(_refexp("[[[[H,T2g],T2g],T2g],T2g]"))
     elif(keywords.get('method.ITF.en_type') == '9'):
         LAG_E.set_rule()
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','H','T2g','T2g','C0'],
+                           IDX_SV   :[1, 2, 3, 4,5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,P, 3,,P,H, 4,,P,H"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','T2g','T2g','H','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,P, 4,,P,H, 3,,P,H"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','T2g','T2g','H','C0'],
+                           IDX_SV   :[1, 2, 3, 4,5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,V,P, 4,,P,V, 3,,P,V"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','H','T2g','T2g','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,V,P, 4,,P,V, 3,,P,V"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','T2g','T2g','H','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,V, 4,,V,H, 3,,V,H"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                           OPERATORS:['C0^+','H','T2g','T2g','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,V, 4,,V,H, 3,,V,H"]})
     else:
         raise Exception(i_am+": unrecognised value for en_type, must be {1,2,3,4}")
 else:
@@ -127,12 +162,32 @@ if keywords.is_keyword_set('method.ITF.res_type'):
                            OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
                            IDX_SV   :[1, 2, 3, 4, 5],
                            CONNECT:[2,3, 2,4, 3,4],
-                           LABEL_DESCR:["2,,HH,PP, 3,,PP,HH, 4,,PP,HH"]})
+                           LABEL_DESCR:["2,,H,P, 3,,P,H, 4,,P,H"]})
         EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                            OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
                            IDX_SV   :[1, 2, 3, 4, 5],
                            CONNECT:[2,3, 2,4, 3,4],
-                           LABEL_DESCR:["2,,HH,PP, 4,,PP,HH, 3,,PP,HH"]})
+                           LABEL_DESCR:["2,,H,P, 4,,P,H, 3,,P,H"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                           OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,V,P, 4,,P,V, 3,,P,V"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                           OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,V,P, 4,,P,V, 3,,P,V"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                           OPERATORS:['C0^+','LAM2g','T2g','H','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,V, 4,,V,H, 3,,V,H"]})
+        EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                           OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                           IDX_SV   :[1, 2, 3, 4, 5],
+                           CONNECT:[2,3, 2,4, 3,4],
+                           LABEL_DESCR:["2,,H,V, 4,,V,H, 3,,V,H"]})
     else:
         raise Exception(i_am+": unrecognised value for res_type, must be {1,2,3,4,5,6,7,8}")
 else:
@@ -168,8 +223,8 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_E']})
 
-#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 # Translate optmised formulae into ITF algo code
 TRANSLATE_ITF({
