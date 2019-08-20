@@ -24,9 +24,9 @@ depend('DEF_FORM_ITF_LAG')
 depend('EVAL_E0')
 depend('BUILD_PRECON')
 
-ASSIGN_ME2OP({
-        LIST:'ME_X_TRM_DAG',
-        OPERATOR:'X_TRM'})
+#ASSIGN_ME2OP({
+#        LIST:'ME_X_TRM_DAG',
+#        OPERATOR:'X_TRM'})
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T2g'],

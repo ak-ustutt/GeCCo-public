@@ -50,5 +50,4 @@ SOLVE_NLEQ({
         LIST_SPC:_list_spc
         })
 
-
 PUSH_RESULT({LIST:'MRCC_LAG_LST',COMMENT:"MRCC", FORMAT:"SCAL F20.14"})

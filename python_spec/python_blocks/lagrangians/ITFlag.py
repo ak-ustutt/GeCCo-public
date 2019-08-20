@@ -29,6 +29,7 @@ DEF_ME_LIST({
         '2MS':0,
         AB_SYM:+1})
 
+
 DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
@@ -51,7 +52,6 @@ def _L3_refexp(x):
     return _refexp("-LAM2g(" + x + ")")
 
 LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
-#LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 LAG_A2.append(_L3_refexp("H"))
 
@@ -244,8 +244,8 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 # Translate optmised formulae into ITF algo code
-#TRANSLATE_ITF({
-#        LABEL:'FOPT_MRCC_LAG',
-#        OUTPUT:'icmrcc_mrccsd_11.itfaa',
-#        TITLE:'icmrcc_mrccsd_11.formulae',
-#        MULTI:True})
+TRANSLATE_ITF({
+        LABEL:'FOPT_MRCC_LAG',
+        OUTPUT:'icmrcc_mrccsd_11.itfaa',
+        TITLE:'icmrcc_mrccsd_11.formulae',
+        MULTI:True})
