@@ -45,7 +45,8 @@ SOLVE_NLEQ({
         LIST_PRC:['ME_PRECON1','ME_PRECON2g'],
         LIST_E:'MRCC_LAG_LST',
         FORM:'FOPT_MRCC_LAG',
-        MODE:'TRF TR0',
+        #MODE:'TRF TR0',
+        MODE:'DIA DIA',
         FORM_SPC:_form_spc,
         LIST_SPC:_list_spc
         })

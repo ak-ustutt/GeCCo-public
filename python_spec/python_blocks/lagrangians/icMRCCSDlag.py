@@ -62,19 +62,24 @@ def _L2_refexp(x):
 def _L3_refexp(x):
     return _refexp("-LAM2g(" + x + ")")
 
+def _L4_refexp(x):
+    return _refexp("-LAM1(" + x + ")")
+
 LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
 LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
-LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
-LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L3_refexp("H"))
+LAG_A1.append(_L4_refexp("H"))
 
-LAG_E.append(_refexp("[H,T1]"))
+LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
+LAG_A2.append(_L3_refexp("H"))
+
+#LAG_E.append(_refexp("[H,T1]"))
 #LAG_E.append(_refexp("[H,T2g]"))
 
-LAG_A1.append(_L1_refexp("[H,T1]"))
+#LAG_A1.append(_L1_refexp("[H,T1]"))
 #LAG_A1.append(_L1_refexp("[H,T2g]"))
 #LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
 
-LAG_A2.append(_L2_refexp("[H,T1]"))
+#LAG_A2.append(_L2_refexp("[H,T1]"))
 #LAG_A2.append(_L2_refexp("[H,T2g]"))
 #LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
@@ -143,6 +148,113 @@ LAG_E.set_rule()
 LAG_A1.set_rule()
 LAG_A2.set_rule()
 
+# E ============================
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                   OPERATORS:['C0^+','H','T1','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   CONNECT:[2,3],
+                   LABEL_DESCR:["2,,H,P,", "3,,P,H"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                   OPERATORS:['C0^+','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   CONNECT:[2,3],
+                   LABEL_DESCR:["2,,HH,PP,", "3,,PP,HH"]})
+
+
+# A1 ============================
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+                   OPERATORS:['C0^+','LAM1','H','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   LABEL_DESCR:["2,,H,P"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+                   OPERATORS:['C0^+','LAM1','H','T1','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["2,3,H,", "2,4,,P", "3,4,H,", "1,5,,V"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+                   OPERATORS:['C0^+','LAM1','H','T1','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["2,3,,P", "2,4,H,", "3,4,,P", "1,5,,V"]})
+
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+#                   OPERATORS:['C0^+','LAM1','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,H,P,", "4,,P,H"]})
+
+
+
+# A2 ============================
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   LABEL_DESCR:["2,,HH,PP"]})
+
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,H,", "2,4,H,PP", "3,4,H,", "1,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,,P", "2,4,HH,P", "3,4,,P", "1,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,HH", "2,4,,PP", "3,4,HH,", "1,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["1,3,,V", "2,3,H,", "2,4,H,PP", "3,4,H,", "3,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["1,3,,V", "2,3,,P", "2,4,HH,P", "3,4,,P", "3,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,H,P", "2,4,H,P", "3,4,H,P", "1,5,,V"]})
+
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,HH"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,VH,PP,", "4,,PP,VH"]})
+
+
+# K4E
+# T:eecc
+EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["2,3,,PP", "2,4,HH,", "3,4,,PP", "1,5,,V"]})
+
+# T:eeac
+EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["1,2,,V", "2,3,,PP", "2,4,H,", "3,4,,PP", "4,5,,V"]})
+
+PRINT_FORMULA({LABEL:'K4E',MODE:'SHORT'})
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',INTERM:'K4E'})
+
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 #comment("debug form MRCC_LAG_E")
 #debug_FORM('FORM_MRCC_LAG_E', True,mode='LONG')
