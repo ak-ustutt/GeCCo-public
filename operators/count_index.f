@@ -1329,8 +1329,6 @@
      &     i
       real(8) ::
      &   c_fact               ! Copy of orginal factor
-      logical ::
-     &   j_int1, j_int2
 
 
       ! Reorder integrals into a fixed index order, only need to do this
@@ -1338,9 +1336,9 @@
       ! the index string at this point
       if (item%spin_cases==0) then
          call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-     &                         item%label_t1,item%nops1,j_int1)
+     &                         item%label_t1,item%nops1)
          call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
-     &                         item%label_t2,item%nops2,j_int2)
+     &                         item%label_t2,item%nops2)
          if (.not. item%int(1) .and. .not. item%inter(1)) then
             call reorder_amp(item%rank1,item%idx1)
          end if
@@ -1364,10 +1362,10 @@
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,j_int1,
+     &                1,item%binary,item%int(1),item%nops1,item%j_int,
      &                item%logfile)
       call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,j_int2,
+     &                2,item%binary,item%int(2),item%nops2,item%j_int,
      &                item%logfile)
 
 
@@ -1534,7 +1532,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine reorder_integral(integral,rank,idx,s1,label,nops,j_int)
+      subroutine reorder_integral(integral,rank,idx,s1,label,nops)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1553,8 +1551,6 @@
       logical, intent(in) ::
      &   integral,
      &   s1
-      logical, intent(inout) ::
-     &   j_int
       character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &   label
 
@@ -1586,21 +1582,6 @@
            itype(i) = 4
         end if
       end do
-
-      ! Check when we translate the spin orbital to spatial orbital
-      ! integrals, we will need the J array
-      j_int = .false.
-      if (itype(1)==3 .and. itype(2)==1 .and. itype(3)==1 .and.
-     &    itype(4)==3) then
-         j_int = .true.
-      else if (itype(1)==2 .and. itype(2)==1 .and. itype(3)==1 .and.
-     &    itype(4)==2) then
-         j_int = .true.
-      else if (itype(1)==3 .and. itype(2)==2 .and. itype(3)==2 .and.
-     &    itype(4)==3) then
-         j_int = .true.
-      end if
-
 
       symmetric = .true.
       do i = 1, ngastp
@@ -1772,9 +1753,15 @@
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
                else if (integral .and. j_int) then
-                  ! Need (K:eecc - J:eecc)
-                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &               'J'//'['//f_index(idx,hrank,.false.)//']'//')'
+                  if (trim(nt)=='K') then
+                     ! Need (K:eecc - J:eecc)
+                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                  'J'//'['//f_index(idx,hrank,.false.)//']'//')'
+                  else if (trim(nt)=='J') then
+                     ! Need (J:eecc - K:eecc)
+                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                  'K'//'['//f_index(idx,hrank,.false.)//']'//')'
+                  end if
                else if (integral) then
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
@@ -5280,7 +5267,7 @@
      &     comm,        ! formula_item command
      &     lulog        ! Output file
 
-      integer :: i, j
+      integer :: i, j, ct(ngastp,2)
 
       ! Assign output file
       item%logfile=lulog
@@ -5312,8 +5299,14 @@
       item%label_t1=contr_info%label_op1
       ! Check if an intermediate
       item%inter(1) = check_inter(item%label_t1)
+
       ! Check if an integral
       item%int(1) = check_int(item%label_t1)
+      if (item%int(1) .and. item%rank1==4 .and.
+     &    .not.any(item%nops1==1)) then
+         call check_j_integral(item%e1, item%c, item%j_int, .false.)
+      end if
+
 
       if (item%command/=command_cp_intm .or.
      &    item%command/=command_add_intm) then
@@ -5327,6 +5320,10 @@
          item%inter(2) = check_inter(item%label_t2)
 
          item%int(2) = check_int(item%label_t2)
+         if (item%int(2) .and. item%rank2==4 .and.
+     &       .not.any(item%nops2==1)) then
+            call check_j_integral(item%e2, item%c, item%j_int, .true.)
+         end if
       end if
 
       item%label_res=contr_info%label_res
@@ -5506,6 +5503,51 @@
          if (mod(nops(i),2) /= 0) then
             symmetric = .false.
          end if
+      end do
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine check_j_integral(e, c, j_int, second)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   e(ngastp,2),
+     &   c(ngastp,2)
+      logical, intent(in) ::
+     &   second
+      logical, intent(inout) ::
+     &   j_int
+
+      integer ::
+     &   i, j,
+     &   ct(ngastp,2)
+
+      j_int = .true.
+
+      if (second) then
+         do i = 1, ngastp
+            ct(i,1) = c(i,2)
+            ct(i,2) = c(i,1)
+         end do
+      else
+         ct = c
+      end if
+
+      do i = 1, ngastp
+         do j = 1, 2
+            if (e(i,j) + ct(i,j) > 1) then
+               j_int = .false.
+            end if
+         end do
       end do
 
       return
