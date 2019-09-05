@@ -653,9 +653,9 @@
                      item%idx1=c_index(item%idx1,1)
                   else
                      item%idx1=f_index(item%idx1,item%rank1/2)
-                     if (item%rank1/=0 .and. item%rank2==0) then
-                        item%idx1=f_index(item%idx1,item%rank1/2,.true.)
-                     end if
+                     !if (item%rank1/=0 .and. item%rank2==0) then
+                     !   item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                     !end if
                   end if
                   item%idx2=f_index(item%idx2,item%rank2/2)
 
