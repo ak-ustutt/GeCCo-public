@@ -83,7 +83,24 @@ def print_drop_tensors(load_tensors, indent=False):
         print(drop_tensors.rstrip(), file=out)
 
 
-def print_result(line, indent=False):
+# TODO: merge this with above
+def print_drop_init_tensors(load_tensors, indent=False):
+    # Just reverse the load_ten line for drop_ten
+    load_split = load_tensors.replace(',','').split()
+    drop_tensors = "drop "
+    for i in range(len(load_split)-1, 0, -1):
+        drop_tensors = drop_tensors + load_split[i]
+        if (i != 1):
+            drop_tensors = drop_tensors + ", "
+
+    if (indent):
+        print("    "+drop_tensors.rstrip(), file=init_res_temp)
+    else:
+        print(drop_tensors.rstrip(), file=init_res_temp)
+
+
+
+def print_result(line, indent=False, init=False):
     # Load, contract, drop tensors involved with result tensors
 
     words=line.split()
@@ -98,12 +115,15 @@ def print_result(line, indent=False):
             load_ten="load " + words[2].split('*',1)[-1]
 
             print(load_ten.strip(), file=out)
+            if (init): print(load_ten.strip(), file=init_res_temp)
 
         print(line.strip(), file=out)
+        if (init): print(line.strip(), file=init_res_temp)
 
         # Drop tensors
         if "TIN" not in words[2]:
             print_drop_tensors(load_ten)
+            if (init): print_drop_init_tensors(load_ten)
 
 
     else:
@@ -144,6 +164,11 @@ def print_result(line, indent=False):
         print(load_ten, file=out)
         print(line, file=out)
         print_drop_tensors(load_ten, indent)
+
+        if (init):
+            print(load_ten, file=init_res_temp)
+            print(line, file=init_res_temp)
+            print_drop_init_tensors(load_ten, indent)
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
@@ -380,6 +405,8 @@ parser.add_argument('--multi',dest='multi',action='store_true')
 parser.add_argument('--no-multi',dest='multi',action='store_false')
 parser.add_argument('--kext',dest='kext',action='store_true')
 parser.add_argument('--no-kext',dest='kext',action='store_false')
+parser.add_argument('--init-res',dest='initalise',action='store_true')
+parser.add_argument('--no-init-res',dest='initalise',action='store_false')
 parser.set_defaults(multi=True)
 parser.set_defaults(kext=False)
 args = parser.parse_args()
@@ -395,6 +422,7 @@ inp = args.input
 outp = args.output
 multi = args.multi
 kext = args.kext
+initalise = args.initalise
 
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
@@ -404,6 +432,11 @@ output=open(outp, "w+")
 
 # Open tempfile to catch INTpp
 kext_temp = tempfile.TemporaryFile(mode='w+t')
+
+# Open tempfile for Initalist_Residual
+init_res_temp = tempfile.TemporaryFile(mode='w+t')
+init_res = False
+init_alloc = False
 
 # Declare lists needed in program
 prev_lines=[]       # Previous intermediate lines which belong to next result block
@@ -558,6 +591,13 @@ for line_o in f:
         print("// ", line, file=out)
         line = " ".join(words)
 
+    # Check if the line should be in the Initalise_Residual algo. This corresponds
+    # to the first iteration where all amps = 0
+    init_res = False
+    if ("R:" in line and initalise):
+        if ("K:" in line or "f" in line):
+            init_res = True
+
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
@@ -653,6 +693,11 @@ for line_o in f:
                 if (not dont_store):
                     print("store", prev_res.replace('.',''), file=out)
                     print(file=out)
+
+                    if (init_alloc and initalise):
+                        print("store", prev_res.replace('.',''), file=init_res_temp)
+                        print(file=init_res_temp)
+                        init_alloc = False
                 # Finished special block, so we can start storeing again
                 dont_store=False
 
@@ -685,6 +730,9 @@ for line_o in f:
                 if ("R[" in words[0]):
                     tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
                 print("alloc", tmp_res.replace('.',''), file=out)
+                if (init_res and initalise):
+                    print("alloc", tmp_res.replace('.',''), file=init_res_temp)
+                    init_alloc = True
 
             # Alloc intermediates if needed
             if prev_inter:
@@ -695,7 +743,8 @@ for line_o in f:
             print_inter(prev_lines)
 
             # Print result line
-            print_result(line)
+            #print_result(line)
+            print_result(line, False, init_res)
 
             # Drop intermediates if needed
             if prev_inter and not begin:
@@ -728,7 +777,8 @@ for line_o in f:
                 print_loop(line, words)
 
             # Print result line
-            print_result(line, tab)
+            #print_result(line, tab)
+            print_result(line, tab, init_res)
             tab = False
 
             # Drop intermediates if needed, don't drop if needed again in
@@ -1067,8 +1117,19 @@ else:
 
     print("store INTpp[abij]",file=f2)
 
+
+# Print out Init_Residual
+if (initalise):
+    print(file=f2)
+    print(file=f2)
+    print('---- code("Init_Residual")', file=f2)
+    init_res_temp.seek(0)
+    for line in init_res_temp:
+        print(line.strip(), file=f2)
+
+
 # Print out residual equations
-print(file=f2)
+if (not initalise): print(file=f2)
 print(file=f2)
 print('---- code("Residual")', file=f2)
 f2.write(tmp)
@@ -1641,3 +1702,4 @@ print("---- end", file=f2)
 # Close off files (including temporary ones)
 f2.close()
 kext_temp.close()
+init_res_temp.close()

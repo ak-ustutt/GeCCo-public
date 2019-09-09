@@ -63,8 +63,9 @@
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
      &     use_1,trnsps, trplt, inv,
-     &     multi,  ! Multireference or single reference ITF code
-     &     kext    ! Provide INTpp tensor for Kext contraction
+     &     multi,    ! Multireference or single reference ITF code
+     &     kext,     ! Provide INTpp tensor for Kext contraction
+     &     init_res  ! Produce Init_residual code
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -696,7 +697,8 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         if (.not.arg_there) title2='##not_set##'
         call get_arg('MULTI',rule,tgt_info,val_log=multi)
         call get_arg('KEXT',rule,tgt_info,val_log=kext)
-        call form_itf(form_pnt,title,title2,multi,kext,op_info)
+        call get_arg('INIT_RES',rule,tgt_info,val_log=init_res)
+        call form_itf(form_pnt,title,title2,multi,kext,init_res,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

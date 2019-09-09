@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_out,form_out,multi,kext,op_info)
+      subroutine form_itf(f_input,name_out,form_out,multi,kext,init_res,
+     &                    op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -21,7 +22,8 @@
      &     op_info
       logical, intent(in) ::
      &     multi,       ! Flag which is passed to python processer, false if a single-ref calculation
-     &     kext         ! True if constructing INTpp tensor to contract in Kext
+     &     kext,        ! True if constructing INTpp tensor to contract in Kext
+     &     init_res     ! Produce Init_residual algo code
 
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
@@ -33,9 +35,9 @@
      &     print_form   ! If true, outputs GeCco formulae to file
       integer ::
      &     e            ! Exit satatus from python
-      character(len=100) ::
+      character(len=200) ::
      &     exe_line     ! Line for shell to execute
-      character(len=50) ::
+      character(len=100) ::
      &     flags        ! set the flag options for the python script
 
       real(8) ::
@@ -89,6 +91,13 @@
          flags = trim(flags)//' --kext'
       else
          flags = trim(flags)//' --no-kext'
+      endif
+
+      ! Initalise the residual with only integral terms (T=0)
+      if (init_res) then
+         flags = trim(flags)//' --init-res'
+      else
+         flags = trim(flags)//' --no-init-res'
       endif
 
       ! Process ITF lines with python script

@@ -373,6 +373,8 @@
      &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'KEXT',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'INIT_RES',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,

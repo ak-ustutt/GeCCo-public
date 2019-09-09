@@ -39,6 +39,7 @@ IGAST int
 IMODE int
 ISTATE int
 INIT log
+INIT_RES log
 INPROJ int
 INTERM label
 INV log

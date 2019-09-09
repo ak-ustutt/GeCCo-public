@@ -301,7 +301,9 @@ TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:'icmrcc_mrccsd_11.itfaa',
         TITLE:'icmrcc_mrccsd_11.formulae',
-        MULTI:True})
+        MULTI:True,
+        KEXT:False,
+        INIT_RES:True})
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')
