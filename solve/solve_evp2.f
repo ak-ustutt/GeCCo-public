@@ -726,7 +726,6 @@ c dbg
         if (iand(task,8).eq.8)
      &       call print_step_results(iter,
      &       xrsnrm, xeig,nroots, nopt)
-
       call atim_csw(cpu,sys,wall)
          if(iprlvl.ge.5)then
          write (timing_msg,"(x,'time for iteration ')")
@@ -746,7 +745,6 @@ c dbg
          write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
          call warn('linear solver', 'NO CONVERGENCE OBTAINED')
       end if
-
       do iopt = 1, nopt
 
 
@@ -846,7 +844,8 @@ c dbgend
 
 !     deallocate(xrsnrm)
 
-      call dealloc_formula_list(fl_mvp)
+      !causes an error for some reason.
+      !call dealloc_formula_list(fl_mvp)
       do jdx = 1, nspcfrm
          call dealloc_formula_list(fl_spc(jdx))
       end do
