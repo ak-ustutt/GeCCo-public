@@ -60,7 +60,7 @@
           end if
       else if (trim(string).eq.'GAM0') then
           if (rank==2) then
-             rename_tensor='Dm1'
+             rename_tensor='Ym1'
           else if (rank==4) then
              rename_tensor='Dm2'
           else if (rank==6) then
@@ -5334,6 +5334,40 @@
       ! Remove zeorth-body density from equations
       if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
          item%label_t2 = ''
+         item%command = command_add_intm
+      else if (item%label_t1 == 'GAM0' .and. item%rank1 == 0
+     &         .and. item%command /= command_add_intm) then
+         item%label_t1 = item%label_t2
+         item%rank1 = item%rank2
+         item%e1 = item%e2
+         item%nops1 = item%nops2
+         item%int(1) = item%int(2)
+         item%inter(1) = item%inter(2)
+         item%label_t2 = ''
+         item%e2 = 0
+         item%nops2 = 0
+         item%int(2) = .false.
+         item%inter(2) = .false.
+         item%command = command_add_intm
+      end if
+
+      ! Remove zeorth-body integrals from equations
+      if (item%label_t2 == 'H' .and. item%rank2 == 0) then
+         item%label_t2 = ''
+         item%command = command_add_intm
+      else if (item%label_t1 == 'H' .and. item%rank1 == 0
+     &         .and. item%command /= command_add_intm) then
+         item%label_t1 = item%label_t2
+         item%rank1 = item%rank2
+         item%e1 = item%e2
+         item%nops1 = item%nops2
+         item%int(1) = item%int(2)
+         item%inter(1) = item%inter(2)
+         item%label_t2 = ''
+         item%e2 = 0
+         item%nops2 = 0
+         item%int(2) = .false.
+         item%inter(2) = .false.
          item%command = command_add_intm
       end if
 

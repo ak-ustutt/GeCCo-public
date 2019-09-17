@@ -160,6 +160,9 @@ PRECONDITIONER({
         LIST_PRC:'ME_PRECON2g',
         LIST_INP:'FOCK_EFF_INACT_LST'})
 
+PRINT_MEL({
+        LIST:'ME_PRECON2g'})
+
 EXTRACT_DIAG({
         LIST_RES:'ME_PRECON2g',
         LIST_IN:'A_TRF_LST',
@@ -176,6 +179,9 @@ PRINT_MEL({
 
 PRINT_MEL_INFO({
         LIST:'ME_PRECON2g'})
+
+PRINT_MEL({
+        LIST:'A_TRF_LST'})
 
 debug_MEL('ME_PRECON2g')
 
