@@ -371,6 +371,8 @@
      &     val_str='stdout',req=.false.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'MULTI',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'PROCESS',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'KEXT',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'INIT_RES',1,tgt_info,

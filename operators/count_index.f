@@ -5294,7 +5294,6 @@
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
 
-
       ! Assign labels
       item%label_t1=contr_info%label_op1
       ! Check if an intermediate

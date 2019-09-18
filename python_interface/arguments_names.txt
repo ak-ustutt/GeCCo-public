@@ -115,6 +115,7 @@ OP_TRF label
 OP_X label
 ORDER int
 OUTPUT str
+PROCESS log
 RANK int
 REC int
 REORDER log

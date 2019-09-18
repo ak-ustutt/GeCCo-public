@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_out,form_out,multi,kext,init_res,
-     &                    op_info)
+      subroutine form_itf(f_input,name_out,form_out,multi,process,kext,
+     &                    init_res,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -22,6 +22,7 @@
      &     op_info
       logical, intent(in) ::
      &     multi,       ! Flag which is passed to python processer, false if a single-ref calculation
+     &     process,     ! Process bcontr.tmp file to create .itfaa file
      &     kext,        ! True if constructing INTpp tensor to contract in Kext
      &     init_res     ! Produce Init_residual algo code
 
@@ -106,66 +107,68 @@
       write(lulog,*) ' ITF algo file written to:       ',
      &               trim(name_out)
 
-      ! Quick and dirty scan through tmp binary contraction file to
-      ! find if any repeated lines can be replaced by a factor
-      call atim_csw(cpu0,sys0,wall0)
+      if (process) then
+         ! Quick and dirty scan through tmp binary contraction file to
+         ! find if any repeated lines can be replaced by a factor
+         call atim_csw(cpu0,sys0,wall0)
 
-      exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
-     &          //trim(fline%name)//' -o bcontr2.tmp'
-      write(lulog,*) "Executing: ", exe_line
-      call execute_command_line(trim(exe_line),exitstat=e)
+         exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
+     &             //trim(fline%name)//' -o bcontr2.tmp'
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
 
-      call atim_csw(cpu,sys,wall)
-      call prtim(lulog,'Time to simplify ITF code',
-     &           cpu-cpu0,sys-sys0,wall-wall0)
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to simplify ITF code',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
 
-      if (e > 0) then
-         write(lulog,*) "Error in executing simplify.py"
-         call quit(1,'Please check the bcontr.tmp file')
-      end if
+         if (e > 0) then
+            write(lulog,*) "Error in executing simplify.py"
+            call quit(1,'Please check the bcontr.tmp file')
+         end if
 
-      ! Main ITF algo file processing
-      call atim_csw(cpu0,sys0,wall0)
+         ! Main ITF algo file processing
+         call atim_csw(cpu0,sys0,wall0)
 
-      exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
-     &          //'bcontr2.tmp -o '//trim(name_out)
-     &          //' '//trim(flags)
-      write(lulog,*) "Executing: ", exe_line
-      call execute_command_line(trim(exe_line),exitstat=e)
+         exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
+     &             //'bcontr2.tmp -o '//trim(name_out)
+     &             //' '//trim(flags)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
 
-      call atim_csw(cpu,sys,wall)
-      call prtim(lulog,'Time to create ITF algo file',
-     &           cpu-cpu0,sys-sys0,wall-wall0)
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to create ITF algo file',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
 
-      if (e > 0) then
-         write(lulog,*) "Error in executing process.py"
-         call quit(1,'Please check the bcontr2.tmp file')
-      end if
+         if (e > 0) then
+            write(lulog,*) "Error in executing process.py"
+            call quit(1,'Please check the bcontr2.tmp file')
+         end if
 
-      ! Quick and dirty scan to remove unnecessary load and drop lines
-      call atim_csw(cpu0,sys0,wall0)
+         ! Quick and dirty scan to remove unnecessary load and drop lines
+         call atim_csw(cpu0,sys0,wall0)
 
-      exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
-     &          //trim(name_out)
-      write(lulog,*) "Executing: ", exe_line
-      call execute_command_line(trim(exe_line),exitstat=e)
+         exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
+     &             //trim(name_out)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
 
-      call atim_csw(cpu,sys,wall)
-      call prtim(lulog,'Time to reduce ITF algo file',
-     &           cpu-cpu0,sys-sys0,wall-wall0)
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to reduce ITF algo file',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
 
-      if (e > 0) then
-         write(lulog,*) "Error in executing reduce.py"
-         call quit(1,'Please check the ITF algo file')
-      end if
+         if (e > 0) then
+            write(lulog,*) "Error in executing reduce.py"
+            call quit(1,'Please check the ITF algo file')
+         end if
 
-      exe_line='mv tmp.itfaa '//trim(name_out)
-      write(lulog,*) "Executing: ", exe_line
-      call execute_command_line(trim(exe_line),exitstat=e)
+         exe_line='mv tmp.itfaa '//trim(name_out)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
 
-      if (e > 0) then
-         write(lulog,*) "Error in renaming files"
-         call quit(1,'Please check the ITF algo file')
+         if (e > 0) then
+            write(lulog,*) "Error in renaming files"
+            call quit(1,'Please check the ITF algo file')
+         end if
       end if
 
       ! Close binary contraction file

@@ -17,7 +17,7 @@
       include 'def_strinf.h'
       include 'def_orbinf.h'
       include 'def_strmapinf.h'
-      include 'par_actions.h'     
+      include 'par_actions.h'
       include 'ifc_input.h'
       include 'ifc_targets.h'
       include 'ifc_adv.h'
@@ -57,13 +57,14 @@
      &     idxblk(maxfac), idxterms(maxterms), idx_sv(maxterms),
      &     iblkmin(maxterms), iblkmax(maxterms),
      &     connect(maxterms*2), avoid(maxterms*2),
-     &     inproj(maxterms*2), iarr2(2), 
+     &     inproj(maxterms*2), iarr2(2),
      &     iblk_include(maxterms), iblk_include_or(maxterms),
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
      &     use_1,trnsps, trplt, inv,
      &     multi,    ! Multireference or single reference ITF code
+     &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
      &     init_res  ! Produce Init_residual code
       integer, pointer ::
@@ -82,11 +83,11 @@
       character(len_command_par) ::
      &     env_type, list_type,ctype
       character(len_command_par) ::
-     &     label, label2, label_list(max_label), 
+     &     label, label2, label_list(max_label),
      &     label_list2(max_label), descr(max_label)
 
       integer, allocatable ::
-     &     ifreq(:), pop_idx(:) 
+     &     ifreq(:), pop_idx(:)
 
       integer, external ::
      &     idx_formlist, idx_mel_list, idx_oplist2
@@ -143,7 +144,7 @@
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call get_arg('DESCR', rule,tgt_info,val_str=strscr,
      &                             success=arg_there)
-        if (.not.arg_there) then 
+        if (.not.arg_there) then
           call get_arg('BLOCKS',rule,tgt_info,val_int=nblk)
           call get_arg('OCC',   rule,tgt_info,val_occ=occ_def)
           call set_uop2(op_pnt,trim(label),
@@ -173,7 +174,7 @@
      &       val_int_list=iblk_exclude,ndim=nexclude)
         call set_hop(op_pnt,trim(label),.false.,
      &       min_rank,max_rank,iformal,explicit,
-     &       iblk_exclude,nexclude,orb_info)        
+     &       iblk_exclude,nexclude,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_EXCITATION)
 *----------------------------------------------------------------------*
@@ -202,7 +203,7 @@ C*----------------------------------------------------------------------*
         call get_arg('ANSATZ',rule,tgt_info,val_int=ansatz)
         call get_arg('N_PART',rule,tgt_info,val_int=n_ap)
         call set_r12gem(op_pnt,trim(label),n_ap,
-     &       min_rank,max_rank,ansatz,orb_info)        
+     &       min_rank,max_rank,ansatz,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_R12COEFF)
 *----------------------------------------------------------------------*
@@ -214,7 +215,7 @@ C*----------------------------------------------------------------------*
         call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call set_r12c(op_pnt,trim(label),dagger,
-     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
+     &       min_rank,max_rank,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_R12INT)
 *----------------------------------------------------------------------*
@@ -226,7 +227,7 @@ C*----------------------------------------------------------------------*
         call get_arg('N_PART',rule,tgt_info,val_int=n_ap)
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call set_r12i(op_pnt,trim(label),n_ap,
-     &       min_rank,max_rank,ncadiff,iformal,orb_info)        
+     &       min_rank,max_rank,ncadiff,iformal,orb_info)
 *----------------------------------------------------------------------*
       case(DEF_R12INTERM)
 *----------------------------------------------------------------------*
@@ -239,7 +240,7 @@ C*----------------------------------------------------------------------*
         call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
         call get_arg('FORMAL',rule,tgt_info,val_int=iformal)
         call set_r12intm(op_pnt,trim(label),dagger,
-     &       min_rank,max_rank,ncadiff,iformal,op_info,orb_info)        
+     &       min_rank,max_rank,ncadiff,iformal,op_info,orb_info)
 *----------------------------------------------------------------------*
       case(CLONE_OP)
 *----------------------------------------------------------------------*
@@ -248,7 +249,7 @@ C*----------------------------------------------------------------------*
         call get_arg('TEMPLATE',rule,tgt_info,val_label=label2)
         call get_op(op_pnt2,trim(label2),OLD)
         call get_arg('ADJOINT',rule,tgt_info,val_log=dagger)
-        call clone_operator(op_pnt,op_pnt2,dagger,orb_info)        
+        call clone_operator(op_pnt,op_pnt2,dagger,orb_info)
 *----------------------------------------------------------------------*
       case(SET_ORDER)
 *----------------------------------------------------------------------*
@@ -405,7 +406,7 @@ C*----------------------------------------------------------------------*
         call get_arg('LEVEL',rule,tgt_info,val_int=level)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
-c prelim        
+c prelim
         if (level.ne.2) call quit(1,'process_formulae',
      &       'MP: only level==2 implemented')
         call set_mp2_r12_lagrangian(form_pnt,
@@ -438,7 +439,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       title,label_list,nop,ansatz,
      &       op_info,orb_info)
 *----------------------------------------------------------------------*
-      case(SPLIT_R12EXC_FORMULA)  
+      case(SPLIT_R12EXC_FORMULA)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
         call get_form(form_pnt,trim(label),NEW)
@@ -696,9 +697,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &          success=arg_there)
         if (.not.arg_there) title2='##not_set##'
         call get_arg('MULTI',rule,tgt_info,val_log=multi)
+        call get_arg('PROCESS',rule,tgt_info,val_log=process)
         call get_arg('KEXT',rule,tgt_info,val_log=kext)
         call get_arg('INIT_RES',rule,tgt_info,val_log=init_res)
-        call form_itf(form_pnt,title,title2,multi,kext,init_res,op_info)
+        call form_itf(form_pnt,title,title2,multi,process,
+     &                kext,init_res,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*
@@ -956,14 +959,14 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
-        call get_arg('OPERATOR',rule,tgt_info,val_label=label2)        
+        call get_arg('OPERATOR',rule,tgt_info,val_label=label2)
 
         call assign_me_list(label,label2,op_info)
 
 *----------------------------------------------------------------------*
       case(RES_ME_LIST)
 *----------------------------------------------------------------------*
-        
+
         call get_arg('LIST',rule,tgt_info,val_label=label)
 
         call reset_me_list(label,op_info)
@@ -971,7 +974,7 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
       case(DELETE_ME_LIST)
 *----------------------------------------------------------------------*
-        
+
         call get_arg('LIST',rule,tgt_info,val_label=label)
 
         call del_me_list(label,op_info)
@@ -1000,7 +1003,7 @@ c dbg
         print *,'iRdef = ',iRdef(1:norb)
 c dbg
         ! trap, if we get so far ...
-        if (norb.gt.maxterms) 
+        if (norb.gt.maxterms)
      &       call quit(1,'process_rule','norb.gt.maxterms')
         call get_arg('CASE',rule,tgt_info,val_int=icase)
         call get_arg('SPLIT-FOCK',rule,tgt_info,val_int=icaseF)
@@ -1029,7 +1032,7 @@ c dbg
         allocate(ifreq(iorder))
         call get_arg('IDX_FREQ',rule,tgt_info,val_int_list=ifreq)
         call get_mel(mel_pnt,label,OLD)
-        
+
         if (form_test) return
 
         call print_result(iorder,ifreq,mel_pnt,.false.,orb_info)
@@ -1111,7 +1114,7 @@ c dbg
 
         call get_arg('STRING',rule,tgt_info,val_str=strscr)
         call get_arg('OUTPUT',rule,tgt_info,val_str=mode)
-        
+
         call print_out(" "//trim(strscr),mode(1:1))
 
 *----------------------------------------------------------------------*
@@ -1388,7 +1391,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list,ndim=nfac)
         call get_arg('FAC',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
         call get_arg('REPLACE',rule,tgt_info,val_log=init)
-        
+
         call add_op(label,fac,label_list,nfac,
      &       op_info,orb_info,str_info,init)
 *----------------------------------------------------------------------*
@@ -1488,7 +1491,7 @@ c          mode = 'dia-R12'
      &       val_label_list=label_list(1:),ndim=nopt)
         call get_arg('LIST_SPC',rule,tgt_info,
      &       val_label_list=label_list(nopt+1:2*nopt),success=arg_there)
-        if(.NOT.arg_there) 
+        if(.NOT.arg_there)
      &  label_list(nopt+1:2*nopt) = label_list(1:nopt)
         call get_arg('IMODE',rule,tgt_info,val_int=imode)
 
