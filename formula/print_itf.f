@@ -99,8 +99,8 @@
 
             if(associated(fl_item%interm)) cycle
             if(.not.associated(fl_item%next)) then
-               write(itflog,*) "ERROR: intermediate was declared, but
-     &                          not used!"
+               write(itflog,*) "ERROR: Intermediate was declared, but"
+     &                          //" not used!"
                exit
             end if
             if(scan(fl_item%bcontr%label_res, "STIN")==0) then

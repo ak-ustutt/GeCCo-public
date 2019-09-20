@@ -262,7 +262,8 @@ cmh        contr_red is already initialized and possibly non-zero!
       end if
 
       new_sign = sh_sign*cnt_sign*merge_sign
-      itf_sign = sh_sign*cnt_sign*merge_sign_itf
+      !itf_sign = sh_sign*cnt_sign*merge_sign_itf
+      itf_sign = sh_sign
 
       if (ntest.ge.100)
      &     write(lulog,*) 'new_sign = ',new_sign

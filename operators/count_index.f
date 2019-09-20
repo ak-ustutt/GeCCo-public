@@ -1756,11 +1756,11 @@
                   if (trim(nt)=='K') then
                      ! Need (K:eecc - J:eecc)
                      st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &                  'J'//'['//f_index(idx,hrank,.false.)//']'//')'
+     &                  'J'//'['//f_index(idx,hrank,.true.)//']'//')'
                   else if (trim(nt)=='J') then
                      ! Need (J:eecc - K:eecc)
                      st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &                  'K'//'['//f_index(idx,hrank,.false.)//']'//')'
+     &                  'K'//'['//f_index(idx,hrank,.true.)//']'//')'
                   end if
                else if (integral) then
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
@@ -5293,6 +5293,8 @@
 
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
+      !item%fact = item%fact * contr_info%fact_itf
+      !write(lulog,*) "hello ", contr_info%fact_itf
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
@@ -5301,9 +5303,10 @@
 
       ! Check if an integral
       item%int(1) = check_int(item%label_t1)
-      if (item%int(1) .and. item%rank1==4 .and.
-     &    .not.any(item%nops1==1)) then
-         call check_j_integral(item%e1, item%c, item%j_int, .false.)
+      if (item%int(1) .and. item%rank1==4) then! .and.
+!     &    .not.any(item%nops1==1)) then
+         call check_j_integral(item%e1, item%c, item%nops1, item%j_int,
+     &                         .false.)
       end if
 
 
@@ -5319,9 +5322,10 @@
          item%inter(2) = check_inter(item%label_t2)
 
          item%int(2) = check_int(item%label_t2)
-         if (item%int(2) .and. item%rank2==4 .and.
-     &       .not.any(item%nops2==1)) then
-            call check_j_integral(item%e2, item%c, item%j_int, .true.)
+         if (item%int(2) .and. item%rank2==4) then! .and.
+!     &       .not.any(item%nops2==1)) then
+            call check_j_integral(item%e2, item%c,item%nops2,item%j_int,
+     &                            .true.)
          end if
       end if
 
@@ -5542,9 +5546,10 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine check_j_integral(e, c, j_int, second)
+      subroutine check_j_integral(e, c, nops, j_int, second)
 *----------------------------------------------------------------------*
-!
+!     Check if the two electron integrals need to be mapped to the J
+!     array in Molpro
 *----------------------------------------------------------------------*
 
       implicit none
@@ -5554,7 +5559,8 @@
 
       integer, intent(in) ::
      &   e(ngastp,2),
-     &   c(ngastp,2)
+     &   c(ngastp,2),
+     &   nops(ngastp)
       logical, intent(in) ::
      &   second
       logical, intent(inout) ::
@@ -5565,6 +5571,12 @@
      &   ct(ngastp,2)
 
       j_int = .true.
+
+      if (nops(1)==1 .and. nops(2)==1 .and. nops(3)==2) then
+         ! K:eaca - K:eaac (there is no J:eaac)
+         j_int = .false.
+         return
+      end if
 
       if (second) then
          do i = 1, ngastp
