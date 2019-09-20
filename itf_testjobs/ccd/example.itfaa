@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 31-07-2019 17:03
+// Created on: 20-09-2019 11:24
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -14,7 +14,7 @@ tensor: K:cccc[klij], K:cccc
 tensor: K:eecc[abij], K:eecc
 
 // J-integral tensors
-tensor: J:eecc[acki], J:eecc
+tensor: J:eecc[caik], J:eecc
 
 // Special integral tensors
 tensor: K4E1:eecc[abij], K4E1:eecc
@@ -47,6 +47,8 @@ tensor: CoreH[CC],  h:CC
 tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
+tensor: ShiftP[], ShiftP
+
 // Intermediates
 tensor: ITIN[abji],        !Create{type:plain}
 tensor: STIN0001bb[ij],    !Create{type:plain}
@@ -66,12 +68,12 @@ tensor: C[abij],           !Create{type:plain}
 alloc EMp2[], Nrm2[]
 for [i,j]:
    alloc T:eecc[abij]
-   load K:eecc[**ij]
+   load K:eecc[**ij], f:ee[aa], f:cc[ii], f:cc[jj]
    .T:eecc[abij] -= K:eecc[abij]
-   denom-scale T:eecc[abij], [1,1,0,0]
+   denom-scale T:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
    .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
    .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
-   drop K:eecc[**ij]
+   drop f:cc[jj], f:cc[ii], f:ee[aa], K:eecc[**ij]
    store T:eecc[**ij]
 store Nrm2[], EMp2[]
 
@@ -90,38 +92,6 @@ load f:CC[CC], CoreH[CC], DeltaC[CC]
 .ERef += CoreH[CD] DeltaC[CD]
 drop DeltaC, CoreH, f:CC
 store ERef[]
-
-
----- code("Update_Amplitudes")
-// Update doubles
-alloc EDi2[], Nrm2[], Var2[]
-for [i,j]:
-   load R:eecc[**ij]
-   // L2 = R^{ij}_{ab}/D^{ij}_{ab}; D^{ij}_{ab} = e_a+e_b-e_i-e_j
-   alloc L2[**ij]
-   .L2[**ij] += R:eecc[**ij]
-   denom-scale L2[**ij], [1,1,0,0]
-
-   load K:eecc[**ij]
-   .Var2 += (2.0*L2[abij] - L2[baij]) L2[abij]
-
-   // Update T:eecc
-   // T^{ij}_{ab} = T^{ij}_{ab}-R^{ij}_{ab}/D^{ij}_{ab}
-   load T:eecc[**ij]
-   .T:eecc[abij] -= L2[abij]
-
-   alloc C[**ij]
-   .C[**ij] += T:eecc[**ij]
-
-   .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
-   .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
-   drop C[**ij]
-   store T:eecc[**ij]
-   drop K:eecc[**ij]
-
-   drop L2[**ij]
-   drop R:eecc[**ij]
-store Var2[], Nrm2[], EDi2[]
 
 
 ---- code("Update_Kext_Tensor")
@@ -156,9 +126,9 @@ load K:cccc[klij], T:eecc[abkl]
 .R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
 drop T:eecc[abkl], K:cccc[klij]
 alloc ITIN[abij]
-load K:eecc[caki], J:eecc[acki], T:eecc[bcjk]
-.ITIN[abij] += (K:eecc[caki] - J:eecc[acki]) T:eecc[bcjk]
-drop T:eecc[bcjk], J:eecc[acki], K:eecc[caki]
+load K:eecc[caki], J:eecc[caik], T:eecc[bcjk]
+.ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[bcjk]
+drop T:eecc[bcjk], J:eecc[caik], K:eecc[caki]
 load K:eecc[caki], T:eecc[bcjk]
 .ITIN[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
 drop T:eecc[bcjk], K:eecc[caki]
@@ -176,7 +146,7 @@ drop K4E1:eecc[abij]
 alloc STIN0001bb[ij], ITIN[abji]
 load K:eecc[abki], T:eecc[abkj]
 .STIN0001bb[ij] += K:eecc[abki] T:eecc[abkj]
-.STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[baki]) (T:eecc[abkj] - T:eecc[bakj])
+.STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (T:eecc[abkj] - T:eecc[bakj])
 drop T:eecc[abkj], K:eecc[abki]
 load T:eecc[abjk]
 .ITIN[abji] -= STIN0001bb[ki] T:eecc[abjk]
@@ -196,7 +166,7 @@ drop T:eecc[abkl]
 drop STIN0001baab[ijkl], STIN0001abab[ijkl]
 alloc STIN0001aa[ba], ITIN[abji]
 load K:eecc[acji], T:eecc[bcji]
-.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[caji]) (T:eecc[bcji] - T:eecc[cbji])
+.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[acij]) (T:eecc[bcji] - T:eecc[cbji])
 .STIN0001aa[ba] -= K:eecc[acji] T:eecc[bcji]
 drop T:eecc[bcji], K:eecc[acji]
 load T:eecc[bcij]
@@ -207,10 +177,10 @@ drop T:eecc[bcij]
 drop ITIN[abji], STIN0001aa[ba]
 alloc STIN0001aaaa[ibaj], STIN0001baba[ibaj], STIN0001abab[biaj], ITIN[abij]
 load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[caik]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
 .STIN0001aaaa[ibaj] += K:eecc[acik] T:eecc[bcjk]
 .STIN0001baba[ibaj] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
-.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[caik]) T:eecc[bcjk]
+.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
 .STIN0001abab[biaj] -= K:eecc[acki] T:eecc[cbjk]
 drop T:eecc[cbjk], K:eecc[acki]
 load T:eecc[bcjk]
@@ -225,9 +195,32 @@ store R:eecc[abij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
-.ECC[] += .5*(K:eecc[abij] - K:eecc[baij]) (T:eecc[abij] - T:eecc[baij])
+.ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
 .ECC[] += K:eecc[abij] T:eecc[abij]
 drop T:eecc[abij], K:eecc[abij]
 store ECC[]
 
+
+---- code("Update_Amplitudes")
+// Update doubles
+alloc EDi2[], Nrm2[], Var2[]
+load R:eecc[abij], K:eecc[abij]
+load T:eecc[abij]
+load f:ee[aa], f:cc[ii], ShiftP[]
+denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
+drop ShiftP[], f:cc[ii], f:ee[aa]
+
+.T:eecc[abij] -= R:eecc[abij]
+
+alloc C[abij]
+.C[abij] += T:eecc[abij]
+.EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
+.Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
+drop C[abij]
+
+.Var2 += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+
+store T:eecc[abij]
+drop K:eecc[abij], R:eecc[abij]
+store Var2[], Nrm2[], EDi2[]
 ---- end
