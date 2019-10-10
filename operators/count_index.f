@@ -1744,12 +1744,9 @@
          ! Pure spin
          select case (rank)
             case (4)
-               if (integral .and. nops(1)==3) then
-                  ! Three internal integral, need J:eccc
-                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &               'J'//'['//trim(idx)//']'//')'
-               else if (integral .and. (nops(2)==3 .or. nops(3)==3))then
-                  ! Three external integral, need K:eccc
+               if (integral .and. (nops(1)==3 .or. nops(2)==3 .or.
+     &             nops(3)==3)) then
+                  ! Three-somthing integral (ie. K:eccc, K:accc, ...)
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
                else if (integral .and. j_int) then
@@ -5354,25 +5351,25 @@
          item%command = command_add_intm
       end if
 
-      ! Remove zeorth-body integrals from equations
-      if (item%label_t2 == 'H' .and. item%rank2 == 0) then
-         item%label_t2 = ''
-         item%command = command_add_intm
-      else if (item%label_t1 == 'H' .and. item%rank1 == 0
-     &         .and. item%command /= command_add_intm) then
-         item%label_t1 = item%label_t2
-         item%rank1 = item%rank2
-         item%e1 = item%e2
-         item%nops1 = item%nops2
-         item%int(1) = item%int(2)
-         item%inter(1) = item%inter(2)
-         item%label_t2 = ''
-         item%e2 = 0
-         item%nops2 = 0
-         item%int(2) = .false.
-         item%inter(2) = .false.
-         item%command = command_add_intm
-      end if
+!      ! Remove zeorth-body integrals from equations
+!      if (item%label_t2 == 'H' .and. item%rank2 == 0) then
+!         item%label_t2 = ''
+!         item%command = command_add_intm
+!      else if (item%label_t1 == 'H' .and. item%rank1 == 0
+!     &         .and. item%command /= command_add_intm) then
+!         item%label_t1 = item%label_t2
+!         item%rank1 = item%rank2
+!         item%e1 = item%e2
+!         item%nops1 = item%nops2
+!         item%int(1) = item%int(2)
+!         item%inter(1) = item%inter(2)
+!         item%label_t2 = ''
+!         item%e2 = 0
+!         item%nops2 = 0
+!         item%int(2) = .false.
+!         item%inter(2) = .false.
+!         item%command = command_add_intm
+!      end if
 
 
       ! Assign factor --- use special ITF factor

@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 20-09-2019 11:24
+// Created on: 10-10-2019 12:56
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -16,7 +16,7 @@ tensor: K:eecc[baji], K:eecc
 tensor: K:eeec[acbj], K:eeec
 
 // J-integral tensors
-tensor: J:eccc[bkji], J:eccc
+tensor: J:eccc[bilj], J:eccc
 tensor: J:eecc[baij], J:eecc
 
 // Special integral tensors
@@ -163,10 +163,8 @@ load f:ec[bj], T:eecc[abij]
 .R:ec[ai] += f:ec[bj] (T:eecc[abij] - T:eecc[baij])
 .R:ec[ai] += f:ec[bj] T:eecc[abij]
 drop T:eecc[abij], f:ec[bj]
-load K:eccc[bkji], J:eccc[bkji], INTpp[abkj]
-.R:ec[ai] -= .5*(K:eccc[bkji] - J:eccc[bkji]) (INTpp[abkj] - INTpp[bakj])
-drop INTpp[abkj], J:eccc[bkji], K:eccc[bkji]
 load K:eccc[bkji], INTpp[abkj]
+.R:ec[ai] -= .5*(K:eccc[bkji] - K:eccc[bjki]) (INTpp[abkj] - INTpp[bakj])
 .R:ec[ai] -= K:eccc[bkji] INTpp[abkj]
 drop INTpp[abkj], K:eccc[bkji]
 for [j]:
@@ -356,10 +354,8 @@ drop ITIN[abji], STIN0001bb[ij]
 alloc STIN0001abab[aikj], STIN0001baba[iakj], ITIN[abij]
 load K:eccc[bilj], T:eecc[abkl]
 .STIN0001abab[aikj] += K:eccc[bilj] (T:eecc[abkl] - T:eecc[bakl])
+.STIN0001abab[aikj] += (K:eccc[bilj] - K:eccc[blij]) T:eecc[abkl]
 drop T:eecc[abkl], K:eccc[bilj]
-load K:eccc[bilj], J:eccc[bilj], T:eecc[abkl]
-.STIN0001abab[aikj] += (K:eccc[bilj] - J:eccc[bilj]) T:eecc[abkl]
-drop T:eecc[abkl], J:eccc[bilj], K:eccc[bilj]
 load J:eccc[bilj], T:eecc[bakl]
 .STIN0001baba[iakj] -= J:eccc[bilj] T:eecc[bakl]
 drop T:eecc[bakl], J:eccc[bilj]
@@ -385,10 +381,8 @@ drop ITIN[abij], STIN0001baab[jilk], STIN0001abab[jilk]
 alloc STIN0001bb[ij], ITIN[abji]
 load K:eccc[aikj], T:ec[ak]
 .STIN0001bb[ij] += K:eccc[aikj] T:ec[ak]
+.STIN0001bb[ij] += (K:eccc[aikj] - K:eccc[akij]) T:ec[ak]
 drop T:ec[ak], K:eccc[aikj]
-load K:eccc[aikj], J:eccc[aikj], T:ec[ak]
-.STIN0001bb[ij] += (K:eccc[aikj] - J:eccc[aikj]) T:ec[ak]
-drop T:ec[ak], J:eccc[aikj], K:eccc[aikj]
 load T:eecc[abjk]
 .ITIN[abji] -= STIN0001bb[ki] T:eecc[abjk]
 drop T:eecc[abjk]

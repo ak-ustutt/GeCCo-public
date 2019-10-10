@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 20-09-2019 11:24
+// Created on: 10-10-2019 12:56
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -16,7 +16,6 @@ tensor: K:eecc[baji], K:eecc
 tensor: K:eeec[acbj], K:eeec
 
 // J-integral tensors
-tensor: J:eccc[bkji], J:eccc
 tensor: J:eecc[baij], J:eecc
 
 // Special integral tensors
@@ -138,10 +137,8 @@ load f:ec[bj], T:eecc[abij]
 .R:ec[ai] += f:ec[bj] (T:eecc[abij] - T:eecc[baij])
 .R:ec[ai] += f:ec[bj] T:eecc[abij]
 drop T:eecc[abij], f:ec[bj]
-load K:eccc[bkji], J:eccc[bkji], T:eecc[abkj]
-.R:ec[ai] -= .5*(K:eccc[bkji] - J:eccc[bkji]) (T:eecc[abkj] - T:eecc[bakj])
-drop T:eecc[abkj], J:eccc[bkji], K:eccc[bkji]
 load K:eccc[bkji], T:eecc[abkj]
+.R:ec[ai] -= .5*(K:eccc[bkji] - K:eccc[bjki]) (T:eecc[abkj] - T:eecc[bakj])
 .R:ec[ai] -= K:eccc[bkji] T:eecc[abkj]
 drop T:eecc[abkj], K:eccc[bkji]
 for [j]:
