@@ -173,6 +173,13 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
                    CONNECT:[2,3],
                    LABEL_DESCR:["2,,HH,PP,", "3,,PP,HH"]})
 
+# T:aacc
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+#                   OPERATORS:['C0^+','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   CONNECT:[2,3],
+#                   LABEL_DESCR:["2,,HH,VV,", "3,,VV,HH"]})
+
 #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
 #                   OPERATORS:['C0^+','H','T2g','C0'],
 #                   IDX_SV   :[1, 2, 3, 4],
@@ -312,6 +319,37 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    IDX_SV   :[1, 2, 3, 4, 5],
                    CONNECT:[2,3, 3,4],
                    LABEL_DESCR:["2,,HH,PP,", "4,,P,H"]})
+
+
+# T:aacc
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   LABEL_DESCR:["2,,HH,VV"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,VV,", "4,,PP,HH"]})
+#
+##EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+##                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+##                   IDX_SV   :[1, 2, 3, 4, 5],
+##                   CONNECT:[2,3, 3,4],
+##                   LABEL_DESCR:["2,,HH,VV,", "4,,P,H"]})
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,H,VV", "2,4,H,","3,4,,P","1,5,,V"]})
+#
+##EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+##                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+##                   IDX_SV   :[1, 2, 3, 4, 5],
+##                   CONNECT:[2,3, 3,4],
+##                   LABEL_DESCR:["2,,HH,VV,", "4,,VV,HH"]})
+
+
 
 # Doesn't exist?
 #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
@@ -461,8 +499,8 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'icmrcc_mrccsd_11.itfaa',
-        TITLE:'icmrcc_mrccsd_11.formulae',
+        OUTPUT:'icmrcc_mrccsd_11_doublet.itfaa',
+        TITLE:'icmrcc_mrccsd_11_doublet.formulae',
         MULTI:True,
         PROCESS:True,
         KEXT:False,

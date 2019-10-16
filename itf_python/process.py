@@ -32,7 +32,7 @@ class itf_line:
                     self.parts[i] = self.parts[i].replace(name, name + ":" + "".join(generic_index(self.parts[i])))
 
 
-def print_inter(prev_lines):
+def print_inter(prev_lines, init=False):
     # Load, contract, drop tensors involved with intermediates
     # Loop over previously stored lines
     global tab
@@ -40,7 +40,7 @@ def print_inter(prev_lines):
     for i in range(0, len(prev_lines)):
         words = prev_lines[i].split()
         print_loop(prev_lines[i], words)
-        print_result(prev_lines[i], tab)
+        print_result(prev_lines[i], tab, init)
     tab = False
 
 
@@ -594,9 +594,13 @@ for line_o in f:
     # Check if the line should be in the Initalise_Residual algo. This corresponds
     # to the first iteration where all amps = 0
     init_res = False
-    if ("R:" in line and initalise):
+    init_inter_res = False
+    if ("R:" in line and not "STIN" in line and initalise):
         if ("K:" in line or "f" in line):
             init_res = True
+    if ("ITIN" in line and not "STIN" in line and initalise):
+        if ("K:" in line or "f" in line):
+            init_inter_res = True
 
 
     # Check if brackets in the binary contraction
@@ -740,7 +744,7 @@ for line_o in f:
                 print(*prev_inter,sep=", ", file=out)
 
             # Print intermediates and load/drop relavant tensors
-            print_inter(prev_lines)
+            print_inter(prev_lines, init_inter_res)
 
             # Print result line
             #print_result(line)
@@ -770,7 +774,7 @@ for line_o in f:
                 print(*prev_inter,sep=", ", file=out)
 
             # Print intermediates and load/drop relavant tensors
-            print_inter(prev_lines)
+            print_inter(prev_lines, init_inter_res)
 
             # Print loop for 3-external integrals
             if (begin and not end):
