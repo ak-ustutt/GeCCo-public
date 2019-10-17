@@ -136,6 +136,33 @@
 
 
 *----------------------------------------------------------------------*
+      pure function check_den(label)
+*----------------------------------------------------------------------*
+!     Check if tensor is a density matrix
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     label
+
+      logical ::
+     &     check_den
+
+      ! Assume these are the names of intermediates
+      if (index(label, "GAM")>0) then
+         check_den=.true.
+      else
+         check_den=.false.
+      end if
+
+      end function
+
+
+*----------------------------------------------------------------------*
       recursive function c_index(idx, n, reverse) result(cidx)
 *----------------------------------------------------------------------*
 !     Cycle covarient tensor index: abcijk => cabijk
@@ -460,7 +487,8 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
+      !subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
+      subroutine count_index2(iocc,nops)
 *----------------------------------------------------------------------*
 !     Return array with number of operators of each type
 *----------------------------------------------------------------------*
@@ -469,8 +497,9 @@
       include 'opdim.h'
 
       integer, intent(in) ::
-     &     iocc(ngastp,2), ngas, nspin,
-     &     irstr(2,ngas,2,2,nspin), idx
+     &     iocc(ngastp,2)
+!, ngas, nspin,
+!     &     irstr(2,ngas,2,2,nspin), idx
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
 
@@ -2482,15 +2511,86 @@
 
 
       ! Work out the factor due to permuation of contraction indicies
-      do i = 1, n_cnt
-       if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)/=0)then
-          p_factor = p_factor * -1.0d0
-          if (ntest>100) then
-            write(item%logfile,*)"Update factor 1 (contraction of ",
-     &                           " contraction indicies): ",p_factor
+      if (.not. item%den(1) .and. .not. item%den(2)) then
+         do i = 1, n_cnt
+          if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
+     &        /=0)then
+             p_factor = p_factor * -1.0d0
+             if (ntest>100) then
+               write(item%logfile,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+             end if
           end if
-       end if
-      end do
+         end do
+
+      else if (item%den(1) .and. item%rank1/=0) then
+!         write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
+!         write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+
+         do i = 1, n_cnt
+            if (str1%cnt_poss(i)<=item%rank1/2) then
+               ! Creation operator of density is contracted
+               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+     &                 -item%rank1/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>100) then
+                  write(item%logfile,*) "hello1"
+                write(item%logfile,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            else if (str1%cnt_poss(i)>item%rank1/2) then
+               ! Annhilation operator of density is contracted
+               ! NOTE: not removing previously conracted indicies from
+               ! the list - so this may be wrong in the long term. Seems
+               ! to produce the correct answer for now...
+               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+     &                 -item%rank1/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>100) then
+                  write(item%logfile,*) "hello2"
+                write(item%logfile,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            end if
+         end do
+
+      else if (item%den(2) .and. item%rank2/=0) then
+         !write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
+         !write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+
+         do i = 1, n_cnt
+            if (str2%cnt_poss(i)<=item%rank2/2) then
+               ! Creation operator of density is contracted
+               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+     &                 -item%rank2/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>100) then
+                  write(item%logfile,*) "hello3"
+                write(item%logfile,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            else if (str2%cnt_poss(i)>item%rank2/2) then
+               ! Annhilation operator of density is contracted
+               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+     &                 -item%rank2/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>100) then
+                  write(item%logfile,*) "hello4"
+                write(item%logfile,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            end if
+         end do
+
+      end if
 
 
 
@@ -2606,6 +2706,24 @@
           end if
          end do
       end do
+
+      ! Due to how the R:ea residual is defined, {p a^+} instead of
+      ! {a^+ p}, we need an extra minus to flip the normal ordered
+      ! string.
+      !if (.not. item%inter(3)) then
+         if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+     &       item%nops3(3)==1 .and. item%nops3(4)==0) then
+         if (.not. item%inter(3)) then
+
+            p_factor = p_factor * -1.0d0
+            if (ntest>100) then
+               write(item%logfile,*) "Update factor (R:ea)", p_factor
+            end if
+         else
+            !write(item%logfile,*) "kidder "
+         end if
+         end if
+      !end if
 
       ! Rearrange result operators to get correct pairing
       do j = 1, item%rank3/2
@@ -5291,19 +5409,25 @@
       ! Get any remaining factors from GeCCo
       item%fact = item%fact * abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
-      !write(lulog,*) "hello ", contr_info%fact_itf
+
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
+
       ! Check if an intermediate
       item%inter(1) = check_inter(item%label_t1)
+      if (.not. item%inter(1)) then
+         ! Check if a density matrix
+         item%den(1) = check_den(item%label_t1)
 
-      ! Check if an integral
-      item%int(1) = check_int(item%label_t1)
-      if (item%int(1) .and. item%rank1==4) then! .and.
-!     &    .not.any(item%nops1==1)) then
-         call check_j_integral(item%e1, item%c, item%nops1, item%j_int,
-     &                         .false.)
+         if (.not. item%den(1)) then
+            ! Check if an integral
+            item%int(1) = check_int(item%label_t1)
+            if (item%int(1) .and. item%rank1==4) then
+               call check_j_integral(item%e1, item%c, item%nops1,
+     &                               item%j_int, .false.)
+            end if
+         end if
       end if
 
 
@@ -5318,11 +5442,16 @@
 
          item%inter(2) = check_inter(item%label_t2)
 
-         item%int(2) = check_int(item%label_t2)
-         if (item%int(2) .and. item%rank2==4) then! .and.
-!     &       .not.any(item%nops2==1)) then
-            call check_j_integral(item%e2, item%c,item%nops2,item%j_int,
-     &                            .true.)
+         if (.not. item%inter(2)) then
+            item%den(2) = check_den(item%label_t2)
+
+            if (.not. item%den(2)) then
+               item%int(2) = check_int(item%label_t2)
+               if (item%int(2) .and. item%rank2==4) then
+                  call check_j_integral(item%e2, item%c, item%nops2,
+     &                                  item%j_int, .true.)
+               end if
+            end if
          end if
       end if
 
@@ -5664,30 +5793,35 @@
       if (command==command_cp_intm .or.
      &    command==command_add_intm) then
          do i = 1, contr_info%nj_op1
-           call count_index2(i,
-     &        contr_info%occ_op1(1:,1:,i),
-     &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-     &        contr_info%ngas,contr_info%nspin,e1)
+!           call count_index2(i,
+!     &        contr_info%occ_op1(1:,1:,i),
+!     &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
+!     &        contr_info%ngas,contr_info%nspin,e1)
+      !subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
+           call count_index2(contr_info%occ_op1(1:,1:,i), e1)
          end do
       else
          ! Get occupation info
          do i = 1, contr_info%n_cnt
-           call count_index2(i,
-     &        contr_info%occ_cnt(1:,1:,i),
-     &        contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-     &        contr_info%ngas,contr_info%nspin,c)
+!           call count_index2(i,
+!     &        contr_info%occ_cnt(1:,1:,i),
+!     &        contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
+!     &        contr_info%ngas,contr_info%nspin,c)
+           call count_index2(contr_info%occ_cnt(1:,1:,i), c)
          end do
          do i = 1, contr_info%nj_op1
-           call count_index2(i,
-     &        contr_info%occ_ex1(1:,1:,i),
-     &        contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-     &        contr_info%ngas,contr_info%nspin,e1)
+!           call count_index2(i,
+!     &        contr_info%occ_ex1(1:,1:,i),
+!     &        contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
+!     &        contr_info%ngas,contr_info%nspin,e1)
+           call count_index2(contr_info%occ_ex1(1:,1:,i), e1)
          end do
          do i = 1, contr_info%nj_op2
-           call count_index2(i,
-     &        contr_info%occ_ex2(1:,1:,i),
-     &        contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-     &        contr_info%ngas,contr_info%nspin,e2)
+!           call count_index2(i,
+!     &        contr_info%occ_ex2(1:,1:,i),
+!     &        contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
+!     &        contr_info%ngas,contr_info%nspin,e2)
+           call count_index2(contr_info%occ_ex2(1:,1:,i), e2)
          end do
       end if
 
