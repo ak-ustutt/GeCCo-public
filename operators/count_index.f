@@ -487,8 +487,7 @@
       end
 
 *----------------------------------------------------------------------*
-      !subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
-      subroutine count_index2(iocc,nops)
+      subroutine count_index2(iocc, nops)
 *----------------------------------------------------------------------*
 !     Return array with number of operators of each type
 *----------------------------------------------------------------------*
@@ -498,12 +497,8 @@
 
       integer, intent(in) ::
      &     iocc(ngastp,2)
-!, ngas, nspin,
-!     &     irstr(2,ngas,2,2,nspin), idx
       integer, intent(inout) ::
      &     nops(4,2)                     ! Matrix of index info
-
-      integer :: i,j
 
       ! Creation operators
       ! Particle, ijkl
@@ -5793,34 +5788,17 @@
       if (command==command_cp_intm .or.
      &    command==command_add_intm) then
          do i = 1, contr_info%nj_op1
-!           call count_index2(i,
-!     &        contr_info%occ_op1(1:,1:,i),
-!     &        contr_info%rst_op1(1:,1:,1:,1:,1:,i),
-!     &        contr_info%ngas,contr_info%nspin,e1)
-      !subroutine count_index2(idx,iocc,irstr,ngas,nspin,nops)
            call count_index2(contr_info%occ_op1(1:,1:,i), e1)
          end do
       else
          ! Get occupation info
          do i = 1, contr_info%n_cnt
-!           call count_index2(i,
-!     &        contr_info%occ_cnt(1:,1:,i),
-!     &        contr_info%rst_cnt(1:,1:,1:,1:,1:,i),
-!     &        contr_info%ngas,contr_info%nspin,c)
            call count_index2(contr_info%occ_cnt(1:,1:,i), c)
          end do
          do i = 1, contr_info%nj_op1
-!           call count_index2(i,
-!     &        contr_info%occ_ex1(1:,1:,i),
-!     &        contr_info%rst_ex1(1:,1:,1:,1:,1:,i),
-!     &        contr_info%ngas,contr_info%nspin,e1)
            call count_index2(contr_info%occ_ex1(1:,1:,i), e1)
          end do
          do i = 1, contr_info%nj_op2
-!           call count_index2(i,
-!     &        contr_info%occ_ex2(1:,1:,i),
-!     &        contr_info%rst_ex2(1:,1:,1:,1:,1:,i),
-!     &        contr_info%ngas,contr_info%nspin,e2)
            call count_index2(contr_info%occ_ex2(1:,1:,i), e2)
          end do
       end if
