@@ -1768,28 +1768,38 @@
          ! Pure spin
          select case (rank)
             case (4)
-               if (integral .and. (nops(1)==3 .or. nops(2)==3 .or.
-     &             nops(3)==3)) then
-                  ! Three-somthing integral (ie. K:eccc, K:accc, ...)
-                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+
+               if (integral) then
+                  if ((nops(1)==3 .or. nops(2)==3 .or. nops(3)==3)) then
+                   ! Three-somthing integral (ie. K:eccc, K:accc, ...)
+                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
-               else if (integral .and. j_int) then
-                  if (trim(nt)=='K') then
-                     ! Need (K:eecc - J:eecc)
-                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &                  'J'//'['//f_index(idx,hrank,.true.)//']'//')'
-                  else if (trim(nt)=='J') then
-                     ! Need (J:eecc - K:eecc)
-                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &                  'K'//'['//f_index(idx,hrank,.true.)//']'//')'
-                  end if
-               else if (integral) then
-                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+                  else if (j_int) then
+                     if (trim(nt)=='K') then
+                        ! Need (K:eecc - J:eecc)
+                        st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                     'J'//'['//f_index(idx,hrank,.true.)//']'//')'
+                     else if (trim(nt)=='J') then
+                        ! Need (J:eecc - K:eecc)
+                        st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                     'K'//'['//f_index(idx,hrank,.true.)//']'//')'
+                     end if
+                  else
+                    st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
+                  end if
+
                else
-                  st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-     &               trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+                  if ((nops(1)==2.and.nops(2)==1.and.nops(3)==1)) then
+                    ! T:eacc
+                    st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
+                  else
+                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                  trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+                  end if
                end if
+
             case (6)
                st='('//trimal(nt)//'['//trim(idx)//']'//' + '//
      &            trimal(nt)//'['//trim(c_index(idx,1))//']'//' + '//

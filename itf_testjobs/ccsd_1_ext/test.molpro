@@ -4,8 +4,7 @@ geom={he;he,1,1.0}
 basis,vdz
 rhf
 basis,vdz
-{ccsd,cpp_prog=CCSD,maxit=1,shiftp=0.0}
-{mrcic,cpp_prog=MRCC,cc_method=ccsd_1_ext}
+{cmrcc,cc_method=ccsd_1_ext}
 e = energy
 
 eold = -4.803106068096

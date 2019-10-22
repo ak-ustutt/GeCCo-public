@@ -3,8 +3,7 @@ gthresh,orbital=1d-12,energy=1d-12
 geom={he;he,1,1.0}
 basis,vdz
 rhf
-{ccsd,cpp_prog=CCSD}
-{mrcic,cpp_prog=MRCC,cc_method=lccsd}
+{cmrcc,cc_method=lccsd}
 e = energy
 
 eold =  -4.803787027833
