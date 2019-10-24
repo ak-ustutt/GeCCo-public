@@ -66,7 +66,8 @@
       logical ::
      &     check_inter,    ! Need to use itf module instead
      &     more_inter,     ! Check if more intermediates are needed
-     &     finished_inter  ! Check if finished recursive intermediate search
+     &     finished_inter, ! Check if finished recursive intermediate search
+     &     symm_res        ! True is intermediate contributes to a symmmetric residual
       integer ::
      &     tmp_case(INDEX_LEN),
      &     ninter,       ! Number of intermediates found in recursive search
@@ -122,8 +123,12 @@
          call init_spin_cases(spin_inters)
          call init_spin_cases(ospin_inters)
 
+         ! Set symm_res in find_spin_intermediate and then use later on
+         symm_res = .false.
+         call check_symmetric(fl_item%bcontr, fl_item%command, symm_res)
          call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                       fl_item%command,spin_inters, ninter)
+     &                       fl_item%command,spin_inters, ninter,
+     &                       symm_res)
 
          ! Go back to inter_start and look for the intermediates
          fl_item => inter_start
@@ -156,7 +161,8 @@
 !                  call intermediate_to_itf(fl_item%bcontr,itflog,
 !     &                           fl_item%command,spin_inters,ninter,1)
                    call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                          fl_item%command,spin_inters,ninter)
+     &                          fl_item%command,spin_inters,ninter,
+     &                          symm_res)
 
                   ! Mark the position of the previously checked
                   ! intermediates
@@ -226,8 +232,8 @@
          !write(itflog,*) "SPIN_INTER: ", spin_inters
          !write(itflog,*) "OSPIN_INTER: ", ospin_inters
          !write(itflog,*) "NINTER: ", ninter
-         !call print_inter_spin_cases(spin_inters,ninter,"spin",11)
-         !call print_inter_spin_cases(ospin_inters,ninter,"ospin",10)
+         !call print_inter_spin_cases(spin_inters,ninter,"spin",itflog)
+         !call print_inter_spin_cases(ospin_inters,ninter,"ospin",itflog)
 
          ! Loop over intermediates.
          ! We want to loop over all lines of intermediate, before doing
@@ -254,7 +260,8 @@
                      ! Print out intermediate line
                      call intermediate_to_itf(fl_item%bcontr,itflog,
      &                     fl_item%command,ospin_inters(k)%name,
-     &                     tmp_case,ospin_inters(k)%itype,ninter)
+     &                     tmp_case,ospin_inters(k)%itype,ninter,
+     &                     ospin_inters(k)%symm_res)
                   end if
 
                   ! Move onto next item and repeat

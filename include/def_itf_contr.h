@@ -17,6 +17,8 @@
       integer ::
      &     ncase = 0,           ! Number of different spin cases
      &     itype(INDEX_LEN)
+      logical ::
+     &     symm_res = .false.    ! True if intermediate contributes to a symmetric residual
 
       end type spin_cases
 
@@ -83,9 +85,11 @@
      &     int(3) = .false.,    ! True if tensor is an integral
      &     den(3) = .false.,    ! True if tensor is a denisty matrix
      &     symm = .false.,      ! True if going to symmetrise result
+     &     symm_res = .false.,   ! True if intermediate contributes to a symmetric residual
      &     binary = .true.,     ! True if a binary contraction
      &     permutation = .false., ! True if the line is a result of the (1+P_ij^ab) permutation
      &     product = .false., ! True if the line is a tensor product
+     &     perm_case(4),
      &     j_int = .false.      ! True if integral is special
       real(8) ::
      &     fact                 ! Factor
