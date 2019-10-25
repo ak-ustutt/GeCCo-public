@@ -163,6 +163,56 @@
 
 
 *----------------------------------------------------------------------*
+      function get_itype(idx) result(itype)
+*----------------------------------------------------------------------*
+!     Returns index type (itype) of a given index
+*----------------------------------------------------------------------*
+      implicit none
+
+      character(len=1), intent(in) ::
+     &     idx
+      integer ::
+     &     itype
+
+      if (scan("abcdefgh",idx)>0) then
+         itype = 1
+      else if (scan("ijklmno",idx)>0) then
+         itype = 3
+      else if (scan("pqrstuvw",idx)>0) then
+         itype = 2
+      else if (scan("xyz",idx)>0) then
+         itype = 4
+      end if
+
+      end function get_itype
+
+
+*----------------------------------------------------------------------*
+      function get_itype_can(idx) result(itype)
+*----------------------------------------------------------------------*
+!     Returns index type (itype) of a given index (canonical)
+*----------------------------------------------------------------------*
+      implicit none
+
+      character(len=1), intent(in) ::
+     &     idx
+      integer ::
+     &     itype
+
+      if (scan("abcdefgh",idx)>0) then
+         itype = 2
+      else if (scan("ijklmno",idx)>0) then
+         itype = 1
+      else if (scan("pqrstuvw",idx)>0) then
+         itype = 3
+      else if (scan("xyz",idx)>0) then
+         itype = 4
+      end if
+
+      end function get_itype_can
+
+
+*----------------------------------------------------------------------*
       recursive function c_index(idx, n, reverse) result(cidx)
 *----------------------------------------------------------------------*
 !     Cycle covarient tensor index: abcijk => cabijk
@@ -683,6 +733,7 @@
                         !   item%idx1=f_index(item%idx1,item%rank1/2,.true.)
                         !end if
                      end if
+
                      item%idx2=f_index(item%idx2,item%rank2/2)
 
                      ! Whenever we tranpose a tensor, we intoroduce a sign
@@ -796,21 +847,13 @@
       if (item%inter(1)) then
          do i = 1, item%rank1
 
-           if (i>item%rank1/2) then
-              j = item%rank1 - i + item%rank1/2 + 1
-           else
-              j = i
-           end if
+            if (i>item%rank1/2) then
+               j = item%rank1 - i + item%rank1/2 + 1
+            else
+               j = i
+            end if
 
-           if (scan("abcdefgh",item%idx1(i:i))>0) then
-              type3(t_shift,j) = 1
-           else if (scan("ijklmno",item%idx1(i:i))>0) then
-              type3(t_shift,j) = 3
-           else if (scan("pqrstuvw",item%idx1(i:i))>0) then
-              type3(t_shift,j) = 2
-           else if (scan("xyz",item%idx1(i:i))>0) then
-              type3(t_shift,j) = 4
-           end if
+            type3(t_shift,j) = get_itype(item%idx1(i:i))
          end do
          t_shift = t_shift + 1
       end if
@@ -819,21 +862,13 @@
       if (item%inter(2)) then
          do i = 1, item%rank2
 
-           if (i>item%rank2/2) then
-              j = item%rank2 - i + item%rank2/2 + 1
-           else
-              j = i
-           end if
+            if (i>item%rank2/2) then
+               j = item%rank2 - i + item%rank2/2 + 1
+            else
+               j = i
+            end if
 
-           if (scan("abcdefgh",item%idx2(i:i))>0) then
-              type3(t_shift,j) = 1
-           else if (scan("ijklmno",item%idx2(i:i))>0) then
-              type3(t_shift,j) = 3
-           else if (scan("pqrstuvw",item%idx2(i:i))>0) then
-              type3(t_shift,j) = 2
-           else if (scan("xyz",item%idx2(i:i))>0) then
-              type3(t_shift,j) = 4
-           end if
+            type3(t_shift,j) = get_itype(item%idx2(i:i))
          end do
       end if
 
@@ -1532,15 +1567,7 @@
 
       ! TODO: Factorise this / only do it once...
       do i = 1, rank
-        if (scan("abcdefgh",idx(i:i))>0) then
-           itype(i) = 1
-        else if (scan("ijklmno",idx(i:i))>0) then
-           itype(i) = 3
-        else if (scan("pqrstuvw",idx(i:i))>0) then
-           itype(i) = 2
-        else if (scan("xyz",idx(i:i))>0) then
-           itype(i) = 4
-        end if
+         itype(i) = get_itype(idx(i:i))
       end do
 
       do i = 1, rank/2
@@ -1635,15 +1662,7 @@
 
 
       do i = 1, rank
-        if (scan("abcdefgh",idx(i:i))>0) then
-           itype(i) = 1
-        else if (scan("ijklmno",idx(i:i))>0) then
-           itype(i) = 3
-        else if (scan("pqrstuvw",idx(i:i))>0) then
-           itype(i) = 2
-        else if (scan("xyz",idx(i:i))>0) then
-           itype(i) = 4
-        end if
+         itype(i) = get_itype(idx(i:i))
       end do
 
       symmetric = .true.
@@ -1758,6 +1777,8 @@
             label = 'J'
             idx=f_index(idx,rank/2,.false.,.true.)
          else if (nops(3)==3) then
+            label = 'J'
+         else
             label = 'J'
          end if
       end if
@@ -2824,15 +2845,7 @@
       ! Permute strings into nicer order
       ! Get canocial values for result string
       do i = 1, item%rank3
-        if (scan("abcdefgh",str3%str(i))>0) then
-           str3%itype(i) = 1
-        else if (scan("ijklmno",str3%str(i))>0) then
-           str3%itype(i) = 3
-        else if (scan("pqrstuvw",str3%str(i))>0) then
-           str3%itype(i) = 2
-        else if (scan("xyz",str3%str(i))>0) then
-           str3%itype(i) = 4
-        end if
+         str3%itype(i) = get_itype(str3%str(i))
       end do
 
       ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
@@ -2917,16 +2930,7 @@
             ! Loop through str1 until not a contraction
             if (any(str1%cnt_poss==i)) cycle
 
-            ! TODO: turn this into a function, returns an int!
-            if (scan("abcdefgh",str1%str(i))>0) then
-               itype1 = 2
-            else if (scan("ijklmno",str1%str(i))>0) then
-               itype1 = 1
-            else if (scan("pqrstuvw",str1%str(i))>0) then
-               itype1 = 3
-            else if (scan("xyz",str1%str(i))>0) then
-               itype1 = 4
-            end if
+            itype1 = get_itype_can(str1%str(i))
 
             ! Check itype matches perm_case
             if (ptype==itype1) then
@@ -2934,15 +2938,7 @@
                   ! Loop through str2 until not a contraction
                   if (any(str2%cnt_poss==j)) cycle
 
-                  if (scan("abcdefgh",str2%str(j))>0) then
-                     itype2 = 2
-                  else if (scan("ijklmno",str2%str(j))>0) then
-                     itype2 = 1
-                  else if (scan("pqrstuvw",str2%str(j))>0) then
-                     itype2 = 3
-                  else if (scan("xyz",str2%str(j))>0) then
-                     itype2 = 4
-                  end if
+                  itype2 = get_itype_can(str2%str(j))
 
                   ! Check external lines of same itype, and swap
                   if (itype1 == itype2) then
