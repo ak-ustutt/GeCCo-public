@@ -163,53 +163,51 @@
 
 
 *----------------------------------------------------------------------*
-      function get_itype(idx) result(itype)
+      function get_itype(idx, canonical) result(itype)
 *----------------------------------------------------------------------*
 !     Returns index type (itype) of a given index
 *----------------------------------------------------------------------*
       implicit none
 
       character(len=1), intent(in) ::
-     &     idx
+     &   idx
+      logical, optional, intent(in) ::
+     &   canonical
       integer ::
-     &     itype
+     &   itype,
+     &   vals(4)
+      logical ::
+     &   can
+
+      if (present(canonical)) then
+         can = canonical
+      else
+         can = .false.
+      end if
+
+      if (can) then
+         vals(1) = 2
+         vals(2) = 1
+         vals(3) = 3
+         vals(4) = 4
+      else
+         vals(1) = 1
+         vals(2) = 3
+         vals(3) = 2
+         vals(4) = 4
+      end if
 
       if (scan("abcdefgh",idx)>0) then
-         itype = 1
+         itype = vals(1)
       else if (scan("ijklmno",idx)>0) then
-         itype = 3
+         itype = vals(2)
       else if (scan("pqrstuvw",idx)>0) then
-         itype = 2
+         itype = vals(3)
       else if (scan("xyz",idx)>0) then
-         itype = 4
+         itype = vals(4)
       end if
 
       end function get_itype
-
-
-*----------------------------------------------------------------------*
-      function get_itype_can(idx) result(itype)
-*----------------------------------------------------------------------*
-!     Returns index type (itype) of a given index (canonical)
-*----------------------------------------------------------------------*
-      implicit none
-
-      character(len=1), intent(in) ::
-     &     idx
-      integer ::
-     &     itype
-
-      if (scan("abcdefgh",idx)>0) then
-         itype = 2
-      else if (scan("ijklmno",idx)>0) then
-         itype = 1
-      else if (scan("pqrstuvw",idx)>0) then
-         itype = 3
-      else if (scan("xyz",idx)>0) then
-         itype = 4
-      end if
-
-      end function get_itype_can
 
 
 *----------------------------------------------------------------------*
@@ -2930,7 +2928,7 @@
             ! Loop through str1 until not a contraction
             if (any(str1%cnt_poss==i)) cycle
 
-            itype1 = get_itype_can(str1%str(i))
+            itype1 = get_itype(str1%str(i), .true.)
 
             ! Check itype matches perm_case
             if (ptype==itype1) then
@@ -2938,7 +2936,7 @@
                   ! Loop through str2 until not a contraction
                   if (any(str2%cnt_poss==j)) cycle
 
-                  itype2 = get_itype_can(str2%str(j))
+                  itype2 = get_itype(str2%str(j), .true.)
 
                   ! Check external lines of same itype, and swap
                   if (itype1 == itype2) then
