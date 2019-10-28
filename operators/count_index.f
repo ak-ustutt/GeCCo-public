@@ -1658,7 +1658,6 @@
       if (.not. integral) return
       if (rank == 2) return
 
-
       do i = 1, rank
          itype(i) = get_itype(idx(i:i))
       end do
@@ -1781,6 +1780,16 @@
          end if
       end if
 
+      if (nops(1)==3 .and. nops(3)==1) then
+         ! Need to have special case of K:ccca not K:accc
+         tstr = ''
+         tstr(1:1) = idx(2:2)
+         tstr(2:2) = idx(3:3)
+         tstr(3:3) = idx(4:4)
+         tstr(4:4) = idx(1:1)
+         idx = tstr
+      end if
+
       return
       end
 
@@ -1829,9 +1838,22 @@
 
                if (integral) then
                   if ((nops(1)==3 .or. nops(2)==3 .or. nops(3)==3)) then
+!                  if (nops(2)==3 .or. nops(3)==3) then
                    ! Three-somthing integral (ie. K:eccc, K:accc, ...)
                    st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
+
+!                  else if (nops(1)==3 .and. nops(3)==1) then
+!                   st='('//trimal(nt)//'['//c_index(idx,1) //']'//
+!     &             ' - '//
+!     &             'K'//'['//
+!     &             f_index(c_index(idx,1),hrank,.false.,.true.)//']'//
+!     &             ')'
+!
+!                  else if (nops(1)==3) then
+!                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+!     &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
+!
                   else if (j_int) then
                      if (trim(nt)=='K') then
                         ! Need (K:eecc - J:eecc)
@@ -1842,10 +1864,12 @@
                         st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &                     'K'//'['//f_index(idx,hrank,.true.)//']'//')'
                      end if
+
                else if ((nops(1)==1.and.nops(2)==2.and.nops(3)==1)) then
                     ! K:eeac - K:eeac
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+
                   else
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
