@@ -44,6 +44,7 @@ INPROJ int
 INTERM label
 INV log
 IRREP int
+ITIN log
 JOIN int
 KEXT log
 LABEL label

@@ -26,7 +26,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_itf(itflog,fl_head,op_info,print_form,formlog)
+      subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
+     &                     formlog)
 *----------------------------------------------------------------------*
 *     Print ITF info to itflog
 *----------------------------------------------------------------------*
@@ -48,6 +49,7 @@
       type(operator_info), intent(in) ::
      &     op_info
       logical, intent(in) ::
+     &     itin,           ! Create ITIN lines or symmetrise residual at the end
      &     print_form        ! Print to optional formulae file
 
       type(formula_item), pointer ::
@@ -313,82 +315,45 @@
       else
          ! Not an intermediate, so select the correct command case
 
-         select case(fl_item%command)
-         case(command_end_of_formula)
-!           write(itflog,*) '[END]'
-         case(command_set_target_init)
-!           write(itflog,*) '[INIT TARGET]',fl_item%target
-         case(command_set_target_update)
-!           write(itflog,*) '[SET TARGET]',fl_item%target
-         case(command_new_intermediate)
-!           write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
-!           write(itflog,'(2x,a)') trim(fl_item%interm%name)
-!           write(itflog,'(2x,"attribute parentage: ",a," ",a)')
-!        &                        trim(fl_item%parent1),
-!        &                        trim(fl_item%parent2)
-!           write(itflog,'(2x,"incore: ",i2)') fl_item%incore
-!           call print_op_occ(itflog,fl_item%interm)
-         case(command_del_intermediate)
-!           write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
-!           write(itflog,'(2x,a)') trim(fl_item%label)
-         case(command_add_contribution)
-           write(itflog,*) '[CONTR]',fl_item%target
-         case(command_add_intm)
-!           write(itflog,*) '[ADD]',
-!        &       fl_item%target
-!           call prt_bcontr(itflog,fl_item%bcontr)
 
-           call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
+         if (fl_item%command==command_add_intm .or.
+     &       fl_item%command==command_cp_intm .or.
+     &       fl_item%command==command_add_bc .or.
+     &       fl_item%command==command_bc .or.
+     &       fl_item%command==command_bc_reo) then
+            call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
+         else if (fl_item%command==command_add_contribution) then
+            write(itflog,*) '[CONTR]',fl_item%target
+         else if (fl_item%command==command_add_bc_reo) then
+            write(itflog,*) '[CONTRACT][REORDER][ADD]',
+     &           fl_item%target
+            call prt_bcontr(itflog,fl_item%bcontr)
+            call prt_reorder(itflog,fl_item%reo)
+         else if (fl_item%command==command_add_reo) then
+            write(itflog,*) '[REORDER][ADD]',
+     &           fl_item%target
+            call prt_bcontr(itflog,fl_item%bcontr)
+            call prt_reorder(itflog,fl_item%reo)
+         else if (fl_item%command==command_symmetrise) then
+            write(itflog,*) '[SYMMETRISE]',fl_item%target
+         else if (fl_item%command==command_end_of_formula .or.
+     &            fl_item%command==command_set_target_init .or.
+     &            fl_item%command==command_set_target_update .or.
+     &            fl_item%command==command_new_intermediate .or.
+     &            fl_item%command==command_del_intermediate .or.
+     &            fl_item%command==command_reorder) then
+            ! Do nothing
+            ! write(itflog,*) '[END]'
+            ! write(itflog,*) '[INIT TARGET]',fl_item%target
+            ! write(itflog,*) '[SET TARGET]',fl_item%target
+            ! write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
+            ! write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
+            ! write(itflog,*) '[REORDER]',fl_item%target
+         else
+            write(itflog,*) 'unknown command ',fl_item%command,
+     &           fl_item%target
+         end if
 
-         case(command_cp_intm)
-!           write(itflog,*) '[COPY]',
-!        &       fl_item%target
-!           call prt_bcontr(itflog,fl_item%bcontr)
-
-           ! Assume that copy means alloc, then :=
-           call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
-
-         case(command_add_bc)
-!           write(itflog,*) '[CONTRACT][ADD]',
-!        &       fl_item%target
-!           call prt_bcontr(itflog,fl_item%bcontr)
-
-           call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
-
-         case(command_add_bc_reo)
-           write(itflog,*) '[CONTRACT][REORDER][ADD]',
-     &          fl_item%target
-           call prt_bcontr(itflog,fl_item%bcontr)
-           call prt_reorder(itflog,fl_item%reo)
-         case(command_bc)
-!           write(itflog,*) '[CONTRACT]',
-!        &       fl_item%target
-!           call prt_bcontr(itflog,fl_item%bcontr)
-
-           call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
-
-         case(command_bc_reo)
-!           write(itflog,*) '[CONTRACT][REORDER]',
-!        &       fl_item%target
-!           call prt_bcontr(itflog,fl_item%bcontr)
-!           call prt_reorder(itflog,fl_item%reo)
-
-           call command_to_itf(fl_item%bcontr,itflog,fl_item%command)
-
-         case(command_reorder)
-!           write(itflog,*) '[REORDER]',fl_item%target
-!           call prt_reorder(itflog,fl_item%reo)
-         case(command_add_reo)
-           write(itflog,*) '[REORDER][ADD]',
-     &          fl_item%target
-           call prt_bcontr(itflog,fl_item%bcontr)
-           call prt_reorder(itflog,fl_item%reo)
-         case(command_symmetrise)
-           write(itflog,*) '[SYMMETRISE]',fl_item%target
-         case default
-           write(itflog,*) 'unknown command ',fl_item%command,
-     &          fl_item%target
-         end select
 
       end if
 

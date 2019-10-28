@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_itf(f_input,name_out,form_out,multi,process,kext,
-     &                    init_res,op_info)
+     &                    init_res,itin,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -24,7 +24,8 @@
      &     multi,       ! Flag which is passed to python processer, false if a single-ref calculation
      &     process,     ! Process bcontr.tmp file to create .itfaa file
      &     kext,        ! True if constructing INTpp tensor to contract in Kext
-     &     init_res     ! Produce Init_residual algo code
+     &     init_res,    ! Produce Init_residual algo code
+     &     itin         ! Produce ITIN lines, or symmetrise residual at end
 
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
@@ -74,7 +75,8 @@
       call atim_csw(cpu0,sys0,wall0)
 
       ! Translate formula list into ITF binary contractions
-      call print_itf(fline%unit,flist,op_info,print_form,fform%unit)
+      call print_itf(fline%unit,flist,itin,op_info,print_form,
+     &               fform%unit)
 
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'Time to process formulae',

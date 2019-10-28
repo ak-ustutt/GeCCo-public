@@ -66,7 +66,8 @@
      &     multi,    ! Multireference or single reference ITF code
      &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
-     &     init_res  ! Produce Init_residual code
+     &     init_res, ! Produce Init_residual code
+     &     itin
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
      &     gas_constr(:,:,:,:,:,:)
@@ -700,8 +701,9 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('PROCESS',rule,tgt_info,val_log=process)
         call get_arg('KEXT',rule,tgt_info,val_log=kext)
         call get_arg('INIT_RES',rule,tgt_info,val_log=init_res)
+        call get_arg('ITIN',rule,tgt_info,val_log=itin)
         call form_itf(form_pnt,title,title2,multi,process,
-     &                kext,init_res,op_info)
+     &                kext,init_res,itin,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*
