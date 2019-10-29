@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 29-10-2019 13:27
+// Created on: 29-10-2019 13:41
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -115,7 +115,7 @@ load f:ee[ac], T:eecc[bcij]
 .G:eecc[abji] += f:ee[ac] T:eecc[bcij]
 drop T:eecc[bcij], f:ee[ac]
 load K:cccc[klij], T:eecc[abkl]
-.G:eecc[abij] += 0.5*K:cccc[klij] T:eecc[abkl]
+.G:eecc[abij] += .5*K:cccc[klij] T:eecc[abkl]
 drop T:eecc[abkl], K:cccc[klij]
 load K:eecc[caki], J:eecc[caik], T:eecc[bcjk]
 .G:eecc[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[bcjk]
@@ -127,9 +127,9 @@ load J:eecc[ackj], T:eecc[cbik]
 .G:eecc[abij] -= J:eecc[ackj] T:eecc[cbik]
 drop T:eecc[cbik], J:eecc[ackj]
 // Replacing line with 4-external integrals
-//  .G:eecc[abij] += 0.5*K:eeee[abcd] T:eecc[cdij]
+//  .G:eecc[abij] += .5*K:eeee[abcd] T:eecc[cdij]
 load K4E1:eecc[abij]
-.G:eecc[abij] += 0.5*K4E1:eecc[abij]
+.G:eecc[abij] += .5*K4E1:eecc[abij]
 drop K4E1:eecc[abij]
 alloc STIN0001bb[ij]
 load K:eecc[abki], T:eecc[abkj]

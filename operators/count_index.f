@@ -5667,7 +5667,7 @@
          if (item%symm_res .and. item%permute==0 .and. .not. itin) then
             if (contr_info%label_res/='ECCD' .and.
      &          contr_info%label_res/='INTpp') then
-               item%fact = item%fact * 0.5
+               item%fact = item%fact * 0.5d+0
             end if
          end if
       end if

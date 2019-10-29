@@ -68,7 +68,10 @@ for line in f1:
                     # No need to print factor
                     wordsf[0] = ""
                 else:
-                    wordsf[0] = str(factor) + "*"
+                    if (factor<1.0):
+                        wordsf[0] = str(factor)[1:] + "*"
+                    else:
+                        wordsf[0] = str(factor) + "*"
 
                 words[2] = "".join(wordsf)
             else:
