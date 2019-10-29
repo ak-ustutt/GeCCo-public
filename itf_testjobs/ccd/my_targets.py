@@ -58,7 +58,8 @@ OPTIMIZE({LABEL_OPT:'CCD_OPT',LABELS_IN:['CCD_RES','CCD_EN']})
 TRANSLATE_ITF({LABEL: 'CCD_OPT',
                OUTPUT:'icmrcc_ccd.itfaa',
                TITLE: 'icmrcc_ccd.formulae',
-               MULTI:False})
+               MULTI:False,
+               ITIN:False})
 PRINT_FORMULA({LABEL:'CCD_OPT',MODE:'SHORT'})
 
 

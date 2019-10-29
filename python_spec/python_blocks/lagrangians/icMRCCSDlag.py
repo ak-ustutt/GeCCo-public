@@ -574,7 +574,8 @@ TRANSLATE_ITF({
         MULTI:True,
         PROCESS:True,
         KEXT:False,
-        INIT_RES:True})
+        INIT_RES:True,
+        ITIN:True})
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')

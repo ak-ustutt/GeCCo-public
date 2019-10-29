@@ -623,7 +623,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine command_to_itf(contr_info,itflog,command)
+      subroutine command_to_itf(contr_info,itin, itflog,command)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -639,6 +639,8 @@
 
       type(binary_contr), intent(inout) ::
      &     contr_info      ! Information about binary contraction
+      logical, intent(in) ::
+     &   itin              ! Print ITIN lines or not
       integer, intent(in) ::
      &     itflog,         ! Output file
      &     command         ! Type of formula item command, ie. contraction, copy etc.
@@ -693,23 +695,39 @@
       ! .R[abij] += I[abij]
       ! .R[abij] += I[baji]
       ! Save old name and replace it with a new one
-      if (perm_case > 0 .and. symmetric) then
+      if (perm_case > 0 .and. symmetric .and. itin) then
          old_name = contr_info%label_res
          contr_info%label_res = "ITIN"
          item%symm = .true.
+      end if
+
+      !if (perm_case > 0 .and. symmetric .and. .not. itin) then
+      if (symmetric .and. .not. itin) then
+         item%symm = .true.
+         old_name = contr_info%label_res
+
+         if (intpp) then
+            contr_info%label_res = "INTpp"
+         else
+            if (trim(contr_info%label_res)=='ECCD') then
+               item%symm = .false.
+            else
+               contr_info%label_res = "G"
+            end if
+         end if
       end if
 
       ! Pick out specific commands, form the itf_contr object, spin sum
       ! and print out contraction line
       if (command==command_add_intm .or. command==command_cp_intm) then
          ! For [ADD] and [COPY] cases
-         call itf_contr_init(contr_info,item,0,command,itflog)
+         call itf_contr_init(contr_info,item,0,itin,command,itflog)
          call print_itf_line(item,.false.,.false.)
       else
          ! For other binary contractions
          if (perm_case == 0) then
             ! No permutations
-            call itf_contr_init(contr_info,item,0,command,itflog)
+            call itf_contr_init(contr_info,item,0,itin,command,itflog)
             call assign_spin(item)
          else
             if (symmetric) then
@@ -718,7 +736,8 @@
                   ! assign_spin. For most cases this is just one, however
                   ! for (1-Pij)(1-Pab), we need to generate one of these
                   ! permutations before symmetrising
-                  call itf_contr_init(contr_info,item,i,command,itflog)
+                  call itf_contr_init(contr_info,item,i,itin,command,
+     &                                itflog)
 
                   if (i == 2) then
 
@@ -755,7 +774,8 @@
                   ! assign_spin. For most cases this is just one, however
                   ! for (1-Pij)(1-Pab), we need to generate one of these
                   ! permutations before symmetrising
-                  call itf_contr_init(contr_info,item,i,command,itflog)
+                  call itf_contr_init(contr_info,item,i,itin,
+     &                                command,itflog)
 
                   if (i==2 .and. item%inter(1) .or. item%inter(2)) then
                      item%print_line = .false.
@@ -767,7 +787,11 @@
             end if
 
             ! If created a perm intermediate, print the symmetrised lines
-            if (symmetric) call print_symmetrise(old_name,item)
+            if (symmetric .and. itin) then
+               call print_symmetrise(old_name,item)
+            else if (symmetric .and. .not. intpp) then
+               write(itflog,'(a)') "END"
+            end if
          end if
       end if
 
@@ -828,7 +852,8 @@
          end if
       end do
 
-      call itf_contr_init(contr_info,item,permute,command,itflog)
+      call itf_contr_init(contr_info,item,permute,.false.,command,
+     &                    itflog)
 
       !write(10,*) "intermediate_spin_info ", item%label_res
       !write(10,*) "intermediate_spin_info ", item%idx3
@@ -1239,7 +1264,7 @@
 
       ! TODO: subroutine to print out all info in itf_contr
       if (scan('P', label)) item%permutation = .true.
-      call itf_contr_init(contr_info,item,0,command,itflog)
+      call itf_contr_init(contr_info,item,0,.false.,command,itflog)
 
       ! Set overall spin case of result
       !write(item%logfile,*) "spin_case ", spin_case
@@ -5525,8 +5550,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,item,perm,comm,
-     &                          lulog)
+      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -5548,6 +5572,8 @@
      &     perm,        ! Permutation information
      &     comm,        ! formula_item command
      &     lulog        ! Output file
+      logical, intent(in) ::
+     &     itin
 
       integer :: i, j, ct(ngastp,2)
 
@@ -5632,6 +5658,18 @@
       ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})
       if (.not. item%inter(3)) then
          call check_symmetric(contr_info, item%command, item%symm_res)
+
+         ! Add factor to account for factor of two when the residual is
+         ! symmetrised:
+         ! R:eecc[abij] += G:eecc[abij]
+         ! R:eecc[abij] += G:eecc[baji]
+         !TODO: ECCD and INTpp comparisions is janky - add a reason...
+         if (item%symm_res .and. item%permute==0 .and. .not. itin) then
+            if (contr_info%label_res/='ECCD' .and.
+     &          contr_info%label_res/='INTpp') then
+               item%fact = item%fact * 0.5
+            end if
+         end if
       end if
 
 

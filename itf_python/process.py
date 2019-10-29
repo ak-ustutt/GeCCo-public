@@ -19,7 +19,7 @@ class itf_line:
         """Add generic index to tensors within a line"""
         # Need to replace residual and amplitude (R and T) tensor names
         # with there names defined in C++, ie. R:eecc
-        names = ["R", "T", "K", "f"]
+        names = ["R", "G", "T", "K", "f"]
         for i in range(0, len(names)):
             self.rename_line_names(names[i])
         self.line = " ".join(self.parts)
@@ -60,6 +60,7 @@ def change_line(line_o):
     # with there names defined in C++, ie. R:eecc
     words=line_o.split()
     change_line_names("R", line_o, words)
+    change_line_names("G", line_o, words)
     change_line_names("T", line_o, words)
     change_line_names("K", line_o, words)
     change_line_names("J", line_o, words)
@@ -595,7 +596,7 @@ for line_o in f:
     # to the first iteration where all amps = 0
     init_res = False
     init_inter_res = False
-    if ("R:" in line and not "STIN" in line and initalise):
+    if (("R:" in line or "G:" in line) and not "STIN" in line and initalise):
         if ("K:" in line or "f" in line):
             init_res = True
     if ("ITIN" in line and not "STIN" in line and initalise):
@@ -692,6 +693,8 @@ for line_o in f:
                 # Add generic index to residual tensor name
                 if ("R[" in prev_res):
                     prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
+                elif ("G[" in prev_res):
+                    prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
 
                 # Don't print out store for speical code blocks (ie. not residuals)
                 if (not dont_store):
@@ -716,6 +719,8 @@ for line_o in f:
                         tmp_res=words[0]
                         if ("R[" in words[0]):
                             tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                        elif ("G[" in words[0]):
+                            tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
                         print("load", tmp_res.replace('.',''), file=out)
                         loaded=True
@@ -733,6 +738,9 @@ for line_o in f:
                 tmp_res=words[0]
                 if ("R[" in words[0]):
                     tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                elif ("G[" in words[0]):
+                    tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
+
                 print("alloc", tmp_res.replace('.',''), file=out)
                 if (init_res and initalise):
                     print("alloc", tmp_res.replace('.',''), file=init_res_temp)
@@ -866,6 +874,12 @@ declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 #if (multi): print("tensor: R[I],  R:I", file=f2)
 declare_existing_tensors(declare_res, "Residual tensors", "R")
+
+g_residual = False
+if "G:eecc[abij]" in declare_res:
+    g_residual = True
+    print("tensor: R:eecc[abij], R:eecc", file=f2)
+
 if (any('R:eeeccc' in s for s in declare_res)):
    triples = True
 
@@ -1034,6 +1048,9 @@ for i in range(0, len(declare_inter)):
         print("tensor: %-18s !Create{type:scalar}" % (declare_inter[i] + ","), file=f2)
     else:
         print("tensor: %-18s !Create{type:plain}" % (declare_inter[i] + ","), file=f2)
+if g_residual:
+    print("tensor: G:eecc[abij], !Create{type:disk}", file=f2)
+
 
 # Intermediates needed in single-reference amp update
 if (not multi):
@@ -1140,12 +1157,15 @@ print('---- code("Residual")', file=f2)
 f2.write(tmp)
 
 # Symmetrise tensors
-#if "R[abij]" in declare_res:
-#    print("load R:eecc[abij]", file=f2)
-#    print(".R:eecc[abij] += R:eecc[baji]", file=f2)
-#    print("store R:eecc[abij]", file=f2)
-#    print(file=f2)
-#
+if "G:eecc[abij]" in declare_res:
+    print("", file=f2)
+    print("alloc R:eecc[abij]", file=f2)
+    print("load G:eecc[abij]", file=f2)
+    print(".R:eecc[abij] += G:eecc[abij]", file=f2)
+    print(".R:eecc[abij] += G:eecc[baji]", file=f2)
+    print("drop G:eecc[abij]", file=f2)
+    print("store R:eecc[abij]", file=f2)
+
 #if "R[pqij]" in declare_res:
 #    print("load R:aacc[pqij]", file=f2)
 #    print(".R:aacc[pqij] += R:aacc[qpji]", file=f2)

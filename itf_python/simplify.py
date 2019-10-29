@@ -50,12 +50,13 @@ for line in f1:
 
     # If the current line is the same as the precceding line, increment a factor
     # + do not print out the line
+    #if (line == old_line and line != "END" or line != "BEGIN"):
     if (line == old_line):
         factor = factor + 1.0
         continue
 
     # line != old_line, so print out precceding with new factor
-    if (old_line != "" or old_line != "BEGIN" or old_line != "END"):
+    if (old_line != "" or old_line.strip() != 'BEGIN' or old_line.strip() != 'END'):
         if (factor > 1.0):
             words = old_line.split()
             # Check if factor already there...
