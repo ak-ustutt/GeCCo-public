@@ -163,6 +163,33 @@
 
 
 *----------------------------------------------------------------------*
+      pure function check_energy(label)
+*----------------------------------------------------------------------*
+!     Check if tensor is a density matrix
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     label
+
+      logical ::
+     &     check_energy
+
+      ! Assume these are the names of intermediates
+      if (index(label, "ECCD")>0) then
+         check_energy=.true.
+      else
+         check_energy=.false.
+      end if
+
+      end function
+
+
+*----------------------------------------------------------------------*
       function get_itype(idx, canonical) result(itype)
 *----------------------------------------------------------------------*
 !     Returns index type (itype) of a given index
@@ -709,7 +736,7 @@
          if (intpp) then
             contr_info%label_res = "INTpp"
          else
-            if (trim(contr_info%label_res)=='ECCD') then
+            if (check_energy(contr_info%label_res)) then
                item%symm = .false.
             else
                contr_info%label_res = "G"
@@ -5665,7 +5692,7 @@
          ! R:eecc[abij] += G:eecc[baji]
          !TODO: ECCD and INTpp comparisions is janky - add a reason...
          if (item%symm_res .and. item%permute==0 .and. .not. itin) then
-            if (contr_info%label_res/='ECCD' .and.
+            if (.not. check_energy(contr_info%label_res) .and.
      &          contr_info%label_res/='INTpp') then
                item%fact = item%fact * 0.5d+0
             end if
