@@ -1822,6 +1822,16 @@
          idx = tstr
       end if
 
+      if (label=='J'.and.nops(1)==1.and.nops(2)==2.and.nops(3)==1) then
+         ! Need to have special case of J:eeca not J:eeac
+         tstr = ''
+         tstr(1:1) = idx(2:2)
+         tstr(2:2) = idx(1:1)
+         tstr(3:3) = idx(4:4)
+         tstr(4:4) = idx(3:3)
+         idx = tstr
+      end if
+
       return
       end
 
