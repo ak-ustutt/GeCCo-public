@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 29-10-2019 13:41
+// Created on: 12-11-2019 14:08
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -16,7 +16,6 @@ tensor: K:eecc[baji], K:eecc
 tensor: K:eeec[acbj], K:eeec
 
 // J-integral tensors
-tensor: J:eccc[bilj], J:eccc
 tensor: J:eecc[baij], J:eecc
 
 // Special integral tensors
@@ -397,10 +396,8 @@ alloc STIN0001abab[aikj], STIN0001baba[iakj], ITIN[abij]
 load K:eccc[bilj], T:eecc[abkl]
 .STIN0001abab[aikj] += K:eccc[bilj] (T:eecc[abkl] - T:eecc[bakl])
 .STIN0001abab[aikj] += (K:eccc[bilj] - K:eccc[blij]) T:eecc[abkl]
-drop T:eecc[abkl], K:eccc[bilj]
-load J:eccc[bilj], T:eecc[bakl]
-.STIN0001baba[iakj] -= J:eccc[bilj] T:eecc[bakl]
-drop T:eecc[bakl], J:eccc[bilj]
+.STIN0001baba[iakj] -= K:eccc[blij] T:eecc[bakl]
+drop T:eecc[bakl], K:eccc[blij]
 load T:ec[bk]
 .ITIN[abij] -= STIN0001abab[akij] T:ec[bk]
 .ITIN[abij] -= STIN0001baba[kaji] T:ec[bk]
@@ -472,10 +469,8 @@ drop ITIN[abji], STIN0001aa[ab]
 alloc STIN0001baba[jilk], STIN0001abab[ijlk], STIN0002abab[aikj], STIN0002baba[iakj], ITIN[abij]
 load K:eccc[aijk], T:ec[al]
 .STIN0001baba[jilk] += K:eccc[aijk] T:ec[al]
-drop T:ec[al], K:eccc[aijk]
-load J:eccc[aijk], T:ec[al]
-.STIN0001abab[ijlk] += J:eccc[aijk] T:ec[al]
-drop T:ec[al], J:eccc[aijk]
+.STIN0001abab[ijlk] += K:eccc[ajik] T:ec[al]
+drop T:ec[al], K:eccc[ajik]
 load T:ec[al]
 .STIN0002abab[aikj] -= STIN0001baba[iljk] T:ec[al]
 .STIN0002baba[iakj] -= STIN0001abab[lijk] T:ec[al]

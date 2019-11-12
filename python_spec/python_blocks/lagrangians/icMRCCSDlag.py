@@ -48,6 +48,10 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
+CLONE_OPERATOR({LABEL:'INTpp',TEMPLATE:'T2g'})
+DEF_ME_LIST({LIST:'ME_INTpp',OPERATOR:'INTpp',IRREP:1,'2MS':0,AB_SYM:+1})
+
+
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
 def _refexp(x):
     return "<C0^+*(" + x + ")*C0>"
@@ -350,15 +354,18 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
 #                   IDX_SV   :[1, 2, 3, 4, 5],
 #                   CONNECT:[2,3, 3,4],
 #                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,VH"]})
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   LABEL_DESCR:["1,3,,V", "2,3,HH,", "2,4,,PP", "3,4,H,", "4,5,,V"]})
 
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   LABEL_DESCR:["1,3,,V", "2,3,H,P", "2,4,H,P", "3,4,,P", "4,5,,V"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["1,3,,V", "2,3,HH,", "2,4,,PP", "3,4,H,", "4,5,,V"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   LABEL_DESCR:["1,3,,V", "2,3,H,P", "2,4,H,P", "3,4,,P", "4,5,,V"]})
+
+
 
 # T:eeac
 EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
@@ -478,25 +485,36 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
 #                   LABEL_DESCR:["2,3,H,P", "2,4,H,P", "3,4,H,P", "1,5,,V"]})
 
 
+EXPAND_OP_PRODUCT({LABEL:'CCD_FORM_PP',NEW:True,OP_RES:'INTpp',
+                   OPERATORS:['INTpp','H','T2g','INTpp'],
+                   IDX_SV   :[1,2,3,1],
+                   LABEL_DESCR:["2,,PP,PP","3,,PP,HH"]})
 
+EXPAND_OP_PRODUCT({LABEL:'CCD_FORM_PP',NEW:False,OP_RES:'INTpp',
+                   OPERATORS:['INTpp','H','T2g','INTpp'],
+                   IDX_SV   :[1,2,3,1],
+                   LABEL_DESCR:["2,,PP,PP","3,,PP,VH"]})
+
+PRINT_FORMULA({LABEL:'CCD_FORM_PP',MODE:'SHORT'})
 
 # K4E
 # T:eecc
-EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   LABEL_DESCR:["2,3,,PP", "2,4,HH,", "3,4,,PP", "1,5,,V"]})
+#EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["2,3,,PP", "2,4,HH,", "3,4,,PP", "1,5,,V"]})
 
-EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
+EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
                    OPERATORS:['C0^+','LAM2g','H','T1','C0'],
                    IDX_SV   :[1, 2, 3, 4, 5],
                    LABEL_DESCR:["2,3,H,PP", "2,4,H,", "3,4,,P", "1,5,,V"]})
 
 # T:eeac
-EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   LABEL_DESCR:["1,2,,V", "2,3,,PP", "2,4,H,", "3,4,,PP", "4,5,,V"]})
+#EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["1,2,,V", "2,3,,PP", "2,4,H,", "3,4,,PP", "4,5,,V"]})
+
 # R:eeac K3E
 #EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
 #                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
@@ -516,6 +534,8 @@ EXPAND_OP_PRODUCT({LABEL:'K4E1',NEW:True,OP_RES:'MRCC_LAG_A1',
 #                   LABEL_DESCR:["1,3,,V", "2,3,,P", "2,4,H,", "3,4,,PP", "4,5,,V"]})
 
 
+
+
 PRINT_FORMULA({LABEL:'K4E',MODE:'SHORT'})
 FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',INTERM:'K4E'})
 
@@ -525,6 +545,11 @@ FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',INTERM:'K4E
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
+
+#FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',INTERM:'CCD_FORM_PP'})
+#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
 
 #comment("debug form MRCC_LAG_E")
 #debug_FORM('FORM_MRCC_LAG_E', True,mode='LONG')
@@ -544,6 +569,7 @@ FACTOR_OUT({
         LABEL_RES:'FORM_MRCC_LAG_A1',
         INTERM:'FORM_GAM0'})
 
+
 #Make the Derivative with respect to LAM
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A1',
@@ -560,6 +586,7 @@ DERIVATIVE({
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
+        #LABELS_IN:['CCD_FORM_PP','FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})

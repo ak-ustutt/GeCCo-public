@@ -1397,14 +1397,6 @@
 !         end do
 
 
-         do j = 1, ngastp
-            ! Need to catach three internal integrals which result from a
-            ! permuation and mark them. process.py will turn KP -> J
-            if (item%nops1(j) > 2 .and. item%int(1)) then
-               item%label_t1 = 'KP'
-            end if
-         end do
-
          if (.not.found) then
             if (item%rank3==6) then
                item%idx3 = c_index(item%idx3,1)
@@ -1484,8 +1476,10 @@
       ! the index string at this point
       if (item%spin_cases==0) then
          call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
+     &                         item%j_int,
      &                         item%label_t1,item%nops1)
          call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
+     &                         item%j_int,
      &                         item%label_t2,item%nops2)
          if (.not. item%int(1) .and. .not. item%inter(1)) then
             call reorder_amp(item%rank1,item%idx1)
@@ -1672,7 +1666,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine reorder_integral(integral,rank,idx,s1,label,nops)
+      subroutine reorder_integral(integral,rank,idx,s1,j_int,label,nops)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1690,7 +1684,8 @@
      &   nops(ngastp)
       logical, intent(in) ::
      &   integral,
-     &   s1
+     &   s1,
+     &   j_int
       character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &   label
 
@@ -1734,31 +1729,33 @@
             itmp = itype(i)
             itype(i) = itype(i+rank/2)
             itype(i+rank/2) = itmp
-         else if (itype(i)==itype(i+rank/2) .and. symmetric) then
-            ! Catch J-integrals: ecec -> eecc
-            tmp = idx(i+1:i+1)
-            idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
-            idx(i+rank/2:i+rank/2) = tmp
-            label = 'J'
+         else if (j_int) then
+            if (itype(i)==itype(i+rank/2)) then
+               ! Catch J-integrals: ecec -> eecc
+               tmp = idx(i+1:i+1)
+               idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
+               idx(i+rank/2:i+rank/2) = tmp
+               label = 'J'
 
-            itmp = itype(i+1)
-            itype(i+1) = itype(i+rank/2)
-            itype(i+rank/2) = itmp
+               itmp = itype(i+1)
+               itype(i+1) = itype(i+rank/2)
+               itype(i+rank/2) = itmp
 
-            ! Check index in correct order
-            do j = 1, rank/2
-               if (itype(j)>itype(j+rank/2)) then
-                  tmp = idx(j:j)
-                  idx(j:j) = idx(j+rank/2:j+rank/2)
-                  idx(j+rank/2:j+rank/2) = tmp
+               ! Check index in correct order
+               do j = 1, rank/2
+                  if (itype(j)>itype(j+rank/2)) then
+                     tmp = idx(j:j)
+                     idx(j:j) = idx(j+rank/2:j+rank/2)
+                     idx(j+rank/2:j+rank/2) = tmp
 
-                  itmp = itype(j)
-                  itype(j) = itype(j+rank/2)
-                  itype(j+rank/2) = itmp
-               end if
-            end do
+                     itmp = itype(j)
+                     itype(j) = itype(j+rank/2)
+                     itype(j+rank/2) = itmp
+                  end if
+               end do
 
-            exit
+               exit
+            end if
          end if
       end do
       !write(10,*) "idx ", idx
@@ -1815,22 +1812,6 @@
          idx = trim(tstr)
       end if
 
-
-      ! Rename three external integral from KP to K (There is no J:eeec)
-      if (label == 'KP') then
-         if (nops(2)==3) then
-            label = 'K'
-         else if (nops(1)==3) then
-            ! Due to permutation of indicies, we need to permute the
-            ! middle indices again to get correct answer
-            label = 'J'
-            idx=f_index(idx,rank/2,.false.,.true.)
-         else if (nops(3)==3) then
-            label = 'J'
-         else
-            label = 'J'
-         end if
-      end if
 
       if (nops(1)==3 .and. nops(3)==1) then
          ! Need to have special case of K:ccca not K:accc
@@ -1890,22 +1871,10 @@
 
                if (integral) then
                   if ((nops(1)==3 .or. nops(2)==3 .or. nops(3)==3)) then
-!                  if (nops(2)==3 .or. nops(3)==3) then
                    ! Three-somthing integral (ie. K:eccc, K:accc, ...)
                    st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
 
-!                  else if (nops(1)==3 .and. nops(3)==1) then
-!                   st='('//trimal(nt)//'['//c_index(idx,1) //']'//
-!     &             ' - '//
-!     &             'K'//'['//
-!     &             f_index(c_index(idx,1),hrank,.false.,.true.)//']'//
-!     &             ')'
-!
-!                  else if (nops(1)==3) then
-!                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
-!     &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'//')'
-!
                   else if (j_int) then
                      if (trim(nt)=='K') then
                         ! Need (K:eecc - J:eecc)
@@ -1917,7 +1886,8 @@
      &                     'K'//'['//f_index(idx,hrank,.true.)//']'//')'
                      end if
 
-               else if ((nops(1)==1.and.nops(2)==2.and.nops(3)==1)) then
+                  else if ((nops(1)==1.and.nops(2)==2.and.nops(3)==1))
+     &              then
                     ! K:eeac - K:eeac
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
@@ -5661,6 +5631,9 @@
 
          ! Assign permutation number
          item%permute=perm
+         if (perm>1) then
+            item%permutation = .true.
+         end if
 
          item%inter(2) = check_inter(item%label_t2)
 
