@@ -1755,7 +1755,6 @@
                end do
 
             end if
-            exit
          end if
       end do
       !write(10,*) "idx ", idx
