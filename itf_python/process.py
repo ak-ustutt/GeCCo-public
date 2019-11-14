@@ -651,7 +651,10 @@ for line_o in f:
             found = False
             for i in range(0, len(prev_inter)):
                 if words[0].split('[',1)[0].replace('.','') in prev_inter[i].split('[',1)[0].replace('.',''):
-                    found = True
+                    generic1=generic_index(words[0])
+                    generic2=generic_index(prev_inter[i])
+                    if (generic1==generic2):
+                        found = True
 
             if (not found):
                 prev_inter.append(words[0].replace('.',''))
@@ -774,7 +777,7 @@ for line_o in f:
 
         #elif words[0] == prev_res:
         else:
-            # Still within the same result block
+            # Still within the same result block (ie. still with the same residual)
 
             # Alloc intermediates if needed
             if prev_inter:

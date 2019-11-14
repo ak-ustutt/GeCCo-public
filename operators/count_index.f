@@ -686,9 +686,11 @@
      &    intpp
       character(len=MAXLEN_BC_LABEL) ::
      &    old_name,
+     &    un_perm_name,
      &    old_inter
       character(len=INDEX_LEN) ::
-     &    old_idx
+     &    old_idx,
+     &    un_perm_idx
 
       ! Initialise permutation factors:
       ! 0 == no permutation
@@ -796,6 +798,8 @@
                   call assign_spin(item)
                end do
             else
+               un_perm_name=''
+               un_perm_idx=''
                do i=1, perm_case+1
                   ! Loop over permutation cases and send separately to
                   ! assign_spin. For most cases this is just one, however
@@ -804,13 +808,31 @@
                   call itf_contr_init(contr_info,item,i,itin,
      &                                command,itflog)
 
-                  if (i==2 .and. item%inter(1) .or. item%inter(2)) then
-                     item%print_line = .false.
+                  ! Don't print permutation iter if we already have it
+                  if (i==2 .and. item%inter(1)) then
+                     if (un_perm_idx==item%idx1 .and.
+     &                   un_perm_name==item%label_t1) then
+                        item%print_line = .false.
+                     end if
+                  else if (i==2 .and. item%inter(2)) then
+                     if (un_perm_idx==item%idx2 .and.
+     &                   un_perm_name==item%label_t2) then
+                        item%print_line = .false.
+                     end if
                   end if
 
                   call assign_spin(item)
+
+                  if (item%inter(1)) then
+                     un_perm_idx = item%idx1
+                     un_perm_name = item%label_t1
+                  else if (item%inter(2)) then
+                     un_perm_idx = item%idx2
+                     un_perm_name = item%label_t2
+                  end if
+
                end do
-               write(itflog,'(a)') "END"
+               !write(itflog,'(a)') "END"
             end if
 
             ! If created a perm intermediate, print the symmetrised lines
@@ -4949,8 +4971,10 @@
          end do
       end do
 
-      !call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before", 11)
-      !call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before", 11)
+!      call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before",
+!     &                item%logfile)
+!      call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before",
+!     &                item%logfile)
 
       ! Sum over the remaining contraction indicies and print out the
       ! line
@@ -5303,9 +5327,9 @@
      &           modulo(sum2a+sum2b,2)==0) then
 
 !            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
-!     &                      11)
+!     &                      item%logfile)
 !            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
-!     &                      11)
+!     &                      item%logfile)
 
             ! Decide if tensor is mixed spin
             contains1 = .false.
