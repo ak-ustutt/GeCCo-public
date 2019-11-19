@@ -293,7 +293,7 @@
 
 
 *----------------------------------------------------------------------*
-      pure function f_index(index, hrank, upper, middle)
+      pure function f_index(index, hrank, upper, middle, first, second)
 *----------------------------------------------------------------------*
 !     Flip co/contravarient tensor index: abcijk => acbijk
 *----------------------------------------------------------------------*
@@ -309,13 +309,20 @@
      &   hrank          ! Half rank
       logical, optional, intent(in) ::
      &   upper,         ! Flip contravarient index
-     &   middle         ! Flip index slots 2 and 3
+     &   middle,        ! Flip index slots 2 and 3
+     &   first,         ! Flip first pair
+     &   second         ! Flip second pair
       character(hrank*2) ::
      &   f_index        ! Transpose of ITF index string
 
       logical ::
      &   contra,
-     &   mid
+     &   mid,
+     &   f_pair,
+     &   s_pair
+
+      f_index=index
+      if (hrank==1 .or. hrank==0) return
 
       if (present(upper)) then
          contra = upper
@@ -329,10 +336,17 @@
          mid = .false.
       end if
 
+      if (present(first)) then
+         f_pair = first
+      else
+         f_pair = .false.
+      end if
 
-      f_index=index
-
-      if (hrank==1 .or. hrank==0) return
+      if (present(second)) then
+         s_pair = second
+      else
+         s_pair = .false.
+      end if
 
       if (contra) then
          f_index(hrank-1+hrank:hrank-1+hrank)=
@@ -342,6 +356,12 @@
       else if (mid) then
          f_index(2:2)=index(3:3)
          f_index(3:3)=index(2:2)
+      else if (f_pair) then
+         f_index(1:1)=index(3:3)
+         f_index(3:3)=index(1:1)
+      else if (s_pair) then
+         f_index(2:2)=index(4:4)
+         f_index(4:4)=index(2:2)
       else
          f_index(hrank-1:hrank-1)=index(hrank:hrank)
          f_index(hrank:hrank)=index(hrank-1:hrank-1)
@@ -1933,6 +1953,20 @@
                     ! K:eeac - K:eeac
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+
+                  else if ((nops(1)==1.and.nops(2)==1.and.nops(3)==2))
+     &              then
+                     if (get_itype(idx(2:2))==2 .and.
+     &                   get_itype(idx(3:3))==2) then
+                        ! K:eaac - K:ecaa
+                        st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &                      trimal(nt)//'['//
+     &                 f_index(idx,hrank,.false.,.false.,.false.,.true.)
+     &                 //']'//')'
+                     else
+                        st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
+                     end if
 
                   else
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//

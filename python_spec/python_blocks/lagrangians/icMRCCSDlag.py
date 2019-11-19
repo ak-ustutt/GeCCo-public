@@ -279,17 +279,17 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
                    CONNECT:[2,3, 3,4],
                    LABEL_DESCR:["2,,H,V,", "4,,P,V"]})
 
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
-#                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   CONNECT:[2,3, 3,4],
-#                   LABEL_DESCR:["2,,H,V,", "4,,PP,HH"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 3,4],
+                   LABEL_DESCR:["2,,H,V,", "4,,PP,HH"]})
 
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
-#                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   CONNECT:[2,3, 3,4],
-#                   LABEL_DESCR:["2,,H,V,", "4,,PP,VH"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 3,4],
+                   LABEL_DESCR:["2,,H,V,", "4,,PP,VH"]})
 
 
 
@@ -399,11 +399,11 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    CONNECT:[2,3, 2,4, 3,4],
                    LABEL_DESCR:["2,,VH,PP,", "4,,P,V"]})
 
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   CONNECT:[2,3, 2,4, 3,4],
-#                   LABEL_DESCR:["2,,VH,PP,", "4,,V,H"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,VH,PP,", "4,,V,H"]})
 
 
 
