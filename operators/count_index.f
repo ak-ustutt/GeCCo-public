@@ -823,16 +823,27 @@
 
                   call assign_spin(item)
 
-                  if (item%inter(1)) then
+                  if (i==1 .and. item%inter(1)) then
                      un_perm_idx = item%idx1
                      un_perm_name = item%label_t1
-                  else if (item%inter(2)) then
+                  else if (i==1 .and. item%inter(2)) then
                      un_perm_idx = item%idx2
                      un_perm_name = item%label_t2
                   end if
 
                end do
-               !write(itflog,'(a)') "END"
+
+               if (item%inter(1)) then
+                  if (un_perm_idx==item%idx1 .and.
+     &                un_perm_name==item%label_t1) then
+                     write(itflog,'(a)') "END"
+                  end if
+               else if (item%inter(2)) then
+                  if (un_perm_idx==item%idx2 .and.
+     &                un_perm_name==item%label_t2) then
+                     write(itflog,'(a)') "END"
+                  end if
+               end if
             end if
 
             ! If created a perm intermediate, print the symmetrised lines
