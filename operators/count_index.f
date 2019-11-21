@@ -730,7 +730,7 @@
       end do
 
       ! If symmetrising after every term, rename residual ITIN
-      call prepare_symmetrisation(contr_info, itin, intpp, symmetric,
+      call prepare_symmetrise(contr_info, itin, intpp, symmetric,
      &                            command, old_name)
 
 
@@ -862,7 +862,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine prepare_symmetrisation(contr_info, itin, intpp,
+      subroutine prepare_symmetrise(contr_info, itin, intpp,
      &                                  symmetric, command, old_name)
 *----------------------------------------------------------------------*
 !
