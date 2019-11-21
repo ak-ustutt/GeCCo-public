@@ -729,30 +729,9 @@
          if(contr_info%perm(i)) perm_case = perm_case + 1
       end do
 
-
-      ! Check if result is a symmetric matrix, if not, then no
-      ! permuational symmetry and not extra factors
-      call check_symmetric(contr_info, command, symmetric)
-
-      ! If a symmetric residual, symmetrise after every term. Introduce
-      ! ITIN intermeidate to collect terms
-      ! .R[abij] += I[abij]
-      ! .R[abij] += I[baji]
-      if (symmetric .and. itin) then
-         old_name = contr_info%label_res
-         contr_info%label_res = "ITIN"
-      end if
-
-      ! If not symmetrising after every term, rename residual to G
-      if (symmetric .and. .not. itin) then
-         old_name = contr_info%label_res
-
-         if (intpp) then
-            contr_info%label_res = "INTpp"
-         else
-            contr_info%label_res = "G"
-         end if
-      end if
+      ! If symmetrising after every term, rename residual ITIN
+      call prepare_symmetrisation(contr_info, itin, intpp, symmetric,
+     &                            command, old_name)
 
 
       ! Mark begining of spin summed block
@@ -882,78 +861,55 @@
       end
 
 
-!*----------------------------------------------------------------------*
-!      subroutine prepare_symmetrisation(contr_info, itin, command,
-!     &                                  old_name)
-!*----------------------------------------------------------------------*
-!!
-!*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+      subroutine prepare_symmetrisation(contr_info, itin, intpp,
+     &                                  symmetric, command, old_name)
+*----------------------------------------------------------------------*
 !
-!      use itf_utils
-!      implicit none
-!      include 'opdim.h'
-!      include 'mdef_operator_info.h' ! For def_formular_item.h
-!      include 'def_contraction.h'
-!      include 'def_formula_item.h' ! For command parameters
-!      include 'def_itf_contr.h'
-!
-!      type(binary_contr), intent(inout) ::
-!     &   contr_info      ! Information about binary contraction
-!      logical, intent(in) ::
-!     &   itin              ! Print ITIN lines or not
-!      integer, intent(in) ::
-!     &   command         ! Type of formula item command, ie. contraction, copy etc.
-!      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-!     &   old_name,
-!
-!      type(itf_contr) ::
-!     &   item        ! ITF contraction object; holds all info about the ITF algo line
-!      integer ::
-!     &   perm_case,   ! Info of permutation factors
-!     &   i, j, l, k                ! Loop index
-!      logical ::
-!     &   inter,           ! True if result is an intermediate
-!     &   found,
-!     &   upper,
-!     &   symmetric,
-!     &   intpp
-!      character(len=MAXLEN_BC_LABEL) ::
-!     &   un_perm_name,
-!     &   old_inter
-!      character(len=INDEX_LEN) ::
-!     &   old_idx,
-!     &   un_perm_idx
-!
-!      ! Check if result is a symmetric matrix, if not, then no
-!      ! permuational symmetry and not extra factors
-!      call check_symmetric(contr_info, command, symmetric)
-!
-!      ! If a symmetric residual, symmetrise after every term. Introduce
-!      ! ITIN intermeidate to collect terms
-!      ! .R[abij] += I[abij]
-!      ! .R[abij] += I[baji]
-!      if (symmetric .and. itin) then
-!         old_name = contr_info%label_res
-!         contr_info%label_res = "ITIN"
-!         item%symm = .true.
-!      end if
-!
-!      ! If not symmetrising after every term, rename residual to G
-!      if (symmetric .and. .not. itin) then
-!         item%symm = .true.
-!         old_name = contr_info%label_res
-!
-!         if (intpp) then
-!            contr_info%label_res = "INTpp"
-!         else
-!            if (check_energy(contr_info%label_res)) then
-!               item%symm = .false.
-!            else
-!               contr_info%label_res = "G"
-!            end if
-!         end if
-!      end if
+*----------------------------------------------------------------------*
 
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+
+      type(binary_contr), intent(inout) ::
+     &   contr_info      ! Information about binary contraction
+      logical, intent(in) ::
+     &   itin,             ! Print ITIN lines or not
+     &   intpp
+      logical, intent(inout) ::
+     &   symmetric
+      integer, intent(in) ::
+     &   command         ! Type of formula item command, ie. contraction, copy etc.
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+     &   old_name
+
+      ! Check if result is a symmetric matrix, if not, then no
+      ! permuational symmetry and not extra factors
+      call check_symmetric(contr_info, command, symmetric)
+
+      ! If a symmetric residual, symmetrise after every term. Introduce
+      ! ITIN intermeidate to collect terms
+      ! .R[abij] += I[abij]
+      ! .R[abij] += I[baji]
+      if (symmetric .and. itin) then
+         old_name = contr_info%label_res
+         contr_info%label_res = "ITIN"
+      end if
+
+      ! If not symmetrising after every term, rename residual to G
+      if (symmetric .and. .not. itin) then
+         old_name = contr_info%label_res
+
+         if (intpp) then
+            contr_info%label_res = "INTpp"
+         else
+            contr_info%label_res = "G"
+         end if
+      end if
+
+      return
+      end
 
 
 *----------------------------------------------------------------------*
