@@ -288,7 +288,7 @@
          ! Spin summ and print residual which uses the above
          ! intermediates
          fl_item => res_start
-         call command_to_itf(fl_item%bcontr,itin,
+         call command_to_itf2(fl_item%bcontr,itin,
      &                       itflog,fl_item%command)
 
 
@@ -322,7 +322,7 @@
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
-            call command_to_itf(fl_item%bcontr,itin,itflog,
+            call command_to_itf2(fl_item%bcontr,itin,itflog,
      &                          fl_item%command)
          else if (fl_item%command==command_add_contribution) then
             write(itflog,*) '[CONTR]',fl_item%target

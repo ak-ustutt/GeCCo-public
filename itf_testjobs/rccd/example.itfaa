@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 12-11-2019 14:09
+// Created on: 21-11-2019 14:52
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -50,7 +50,7 @@ tensor: DeltaC[CC], DeltaC
 tensor: ShiftP[], ShiftP
 
 // Intermediates
-tensor: ITIN[abji],        !Create{type:plain}
+tensor: ITIN[abij],        !Create{type:plain}
 tensor: STIN0001aaaa[ibaj], !Create{type:plain}
 tensor: STIN0001baba[ibaj], !Create{type:plain}
 tensor: STIN0001abab[biaj], !Create{type:plain}
@@ -101,9 +101,13 @@ store INTpp[abij]
 
 ---- code("Residual")
 alloc R:eecc[abij]
+alloc ITIN[abij]
 load K:eecc[abij]
-.R:eecc[abij] += K:eecc[abij]
+.ITIN[abij] += .5*K:eecc[abij]
 drop K:eecc[abij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
 alloc ITIN[abji]
 load f:cc[ki], T:eecc[abjk]
 .ITIN[abji] -= f:cc[ki] T:eecc[abjk]
@@ -118,9 +122,13 @@ drop T:eecc[bcij], f:ee[ac]
 .R:eecc[abji] += ITIN[abji]
 .R:eecc[abji] += ITIN[baij]
 drop ITIN[abji]
+alloc ITIN[abij]
 load K:cccc[klij], T:eecc[abkl]
-.R:eecc[abij] += K:cccc[klij] T:eecc[abkl]
+.ITIN[abij] += .5*K:cccc[klij] T:eecc[abkl]
 drop T:eecc[abkl], K:cccc[klij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
 alloc ITIN[abij]
 load K:eecc[caki], J:eecc[caik], T:eecc[bcjk]
 .ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[bcjk]
@@ -135,10 +143,14 @@ drop T:eecc[cbik], J:eecc[ackj]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
 // Replacing line with 4-external integrals
-//  .R:eecc[abij] += K:eeee[abcd] T:eecc[cdij]
+//  .ITIN[abij] += .5*K:eeee[abcd] T:eecc[cdij]
+alloc ITIN[abij]
 load K4E1:eecc[abij]
-.R:eecc[abij] += K4E1:eecc[abij]
+.ITIN[abij] += .5*K4E1:eecc[abij]
 drop K4E1:eecc[abij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
 alloc STIN0001aaaa[ibaj], STIN0001baba[ibaj], STIN0001abab[biaj], ITIN[abij]
 load K:eecc[acik], T:eecc[bcjk]
 .STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])

@@ -886,6 +886,225 @@
       return
       end
 
+
+*----------------------------------------------------------------------*
+      subroutine command_to_itf2(contr_info, itin, itflog, command)
+*----------------------------------------------------------------------*
+!     Take GeCco binary contraction and produce ITF algo code.
+!     Includes antisymmetry of residual equations and spin summation.
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
+      include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(inout) ::
+     &   contr_info      ! Information about binary contraction
+      logical, intent(in) ::
+     &   itin              ! Print ITIN lines or not
+      integer, intent(in) ::
+     &   itflog,         ! Output file
+     &   command         ! Type of formula item command, ie. contraction, copy etc.
+
+      type(itf_contr) ::
+     &   item        ! ITF contraction object; holds all info about the ITF algo line
+      integer ::
+     &   perm_case,   ! Info of permutation factors
+     &   i, j, l, k                ! Loop index
+      logical ::
+     &   inter,           ! True if result is an intermediate
+     &   found,
+     &   upper,
+     &   symmetric,
+     &   intpp
+      character(len=MAXLEN_BC_LABEL) ::
+     &   old_name,
+     &   un_perm_name,
+     &   old_inter
+      character(len=INDEX_LEN) ::
+     &   old_idx,
+     &   un_perm_idx
+
+      ! Being a special block which the python processor will pull out
+      ! into its own code block
+      intpp = .false.
+      if (contr_info%label_res=='INTpp') then
+         intpp = .true.
+         write(itflog,'(a)') "BEGIN_INTPP"
+      end if
+
+
+      ! Initialise permutation factors:
+      ! 0 == no permutation
+      ! 1 == (1-Pxy)
+      ! 2 == (1-Pxy)(1-Pvw) = (1+Pxy) in spatial orbitals
+      perm_case = 0
+      do i = 1, ngastp
+         if(contr_info%perm(i)) perm_case = perm_case + 1
+      end do
+
+      ! Check if result is a symmetric matrix, if not, then no
+      ! permuational symmetry and not extra factors
+      call check_symmetric(contr_info, command, symmetric)
+
+      ! If a symmetric residual, symmetrise after every term. Introduce
+      ! ITIN intermeidate to collect terms
+      ! .R[abij] += I[abij]
+      ! .R[abij] += I[baji]
+      if (symmetric .and. itin) then
+         old_name = contr_info%label_res
+         contr_info%label_res = "ITIN"
+         item%symm = .true.
+      end if
+
+      ! If not symmetrising after every term, rename residual to G
+      if (symmetric .and. .not. itin) then
+         item%symm = .true.
+         old_name = contr_info%label_res
+
+         if (intpp) then
+            contr_info%label_res = "INTpp"
+         else
+            if (check_energy(contr_info%label_res)) then
+               item%symm = .false.
+            else
+               contr_info%label_res = "G"
+            end if
+         end if
+      end if
+
+
+      ! Pick out specific commands, form the itf_contr object, spin sum
+      ! and print out contraction line
+      if (command==command_add_intm .or. command==command_cp_intm) then
+         ! For [ADD] and [COPY] cases
+         write(itflog,'(a5)') 'BEGIN'
+         call itf_contr_init(contr_info,item,0,itin,command,itflog)
+         call print_itf_line(item,.false.,.false.)
+      else
+         ! For other binary contractions
+         if (perm_case == 0) then
+            ! No permutations
+            call itf_contr_init(contr_info,item,0,itin,command,itflog)
+            call assign_spin(item)
+         else
+            if (symmetric) then
+               do i=1, perm_case
+                  ! Loop over permutation cases and send separately to
+                  ! assign_spin. For most cases this is just one, however
+                  ! for (1-Pij)(1-Pab), we need to generate one of these
+                  ! permutations before symmetrising
+                  call itf_contr_init(contr_info,item,i,itin,command,
+     &                                itflog)
+
+                  if (i == 2) then
+
+                     if (item%rank1==6) then
+                        !item%idx1=c_index(item%idx1,1,.true.)
+                        item%idx1=c_index(item%idx1,1)
+                     else
+                        item%idx1=f_index(item%idx1,item%rank1/2)
+                        !if (item%rank1/=0 .and. item%rank2==0) then
+                        !   item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+                        !end if
+                     end if
+
+                     item%idx2=f_index(item%idx2,item%rank2/2)
+
+                     ! Whenever we tranpose a tensor, we intoroduce a sign
+                     ! chage
+                     ! No sign due to the tranpose of idx1 which defines an
+                     ! intermeidate. Extra signs to to tranpose of tensors
+                     ! which define intermediates are included in the
+                     ! intermediate line
+                     if (item%permute==2) then
+                        if (item%rank2>2) item%fact = item%fact*-1.0d+0
+                        !write(item%logfile,*)"index flip fact: ", item%fact
+                     end if
+
+                  end if
+
+                  call assign_spin(item)
+               end do
+            else
+               un_perm_name=''
+               un_perm_idx=''
+               do i=1, perm_case+1
+                  ! Loop over permutation cases and send separately to
+                  ! assign_spin. For most cases this is just one, however
+                  ! for (1-Pij)(1-Pab), we need to generate one of these
+                  ! permutations before symmetrising
+                  call itf_contr_init(contr_info,item,i,itin,
+     &                                command,itflog)
+
+                  ! Don't print permutation iter if we already have it
+                  if (i==2 .and. item%inter(1)) then
+                     if (un_perm_idx==item%idx1 .and.
+     &                   un_perm_name==item%label_t1) then
+                        item%print_line = .false.
+                     end if
+                  else if (i==2 .and. item%inter(2)) then
+                     if (un_perm_idx==item%idx2 .and.
+     &                   un_perm_name==item%label_t2) then
+                        item%print_line = .false.
+                     end if
+                  end if
+
+                  call assign_spin(item)
+
+                  if (i==1 .and. item%inter(1)) then
+                     un_perm_idx = item%idx1
+                     un_perm_name = item%label_t1
+                  else if (i==1 .and. item%inter(2)) then
+                     un_perm_idx = item%idx2
+                     un_perm_name = item%label_t2
+                  end if
+
+               end do
+
+               if (item%inter(1)) then
+                  if (un_perm_idx==item%idx1 .and.
+     &                un_perm_name==item%label_t1) then
+                     write(itflog,'(a)') "END"
+                  end if
+               else if (item%inter(2)) then
+                  if (un_perm_idx==item%idx2 .and.
+     &                un_perm_name==item%label_t2) then
+                     write(itflog,'(a)') "END"
+                  end if
+               end if
+            end if
+
+         end if
+      end if
+
+
+      ! If created a perm intermediate, print the symmetrised lines
+      if (symmetric .and. itin) then
+         call print_symmetrise(old_name,item)
+         ! Mark end of spin block
+         write(itflog,'(a)') "END"
+      else if (symmetric) then
+         write(itflog,'(a)') "END"
+      else if (command==command_add_intm .or.
+     &         command==command_cp_intm) then
+         write(itflog,'(a)') "END"
+      end if
+
+      ! Deallocate memroy used when construcitng item
+      call itf_deinit(item)
+
+      if (intpp) then
+         write(itflog,'(a)') "END_INTPP"
+      end if
+
+      return
+      end
+
 *----------------------------------------------------------------------*
       subroutine intermediate_spin_info(contr_info,itflog,command,
      &                               spin_inters,n_inter,permute)
@@ -5733,7 +5952,7 @@
       item%int(3) = .false.
 
 
-      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})
+      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
       if (.not. item%inter(3)) then
          call check_symmetric(contr_info, item%command, item%symm_res)
 
@@ -5742,7 +5961,8 @@
          ! R:eecc[abij] += G:eecc[abij]
          ! R:eecc[abij] += G:eecc[baji]
          !TODO: ECCD and INTpp comparisions is janky - add a reason...
-         if (item%symm_res .and. item%permute==0 .and. .not. itin) then
+         !if (item%symm_res .and. item%permute==0 .and. .not. itin) then
+         if (item%symm_res .and. item%permute==0) then
             if (.not. check_energy(contr_info%label_res) .and.
      &          contr_info%label_res/='INTpp') then
                item%fact = item%fact * 0.5d+0
@@ -5770,26 +5990,6 @@
          item%inter(2) = .false.
          item%command = command_add_intm
       end if
-
-!      ! Remove zeorth-body integrals from equations
-!      if (item%label_t2 == 'H' .and. item%rank2 == 0) then
-!         item%label_t2 = ''
-!         item%command = command_add_intm
-!      else if (item%label_t1 == 'H' .and. item%rank1 == 0
-!     &         .and. item%command /= command_add_intm) then
-!         item%label_t1 = item%label_t2
-!         item%rank1 = item%rank2
-!         item%e1 = item%e2
-!         item%nops1 = item%nops2
-!         item%int(1) = item%int(2)
-!         item%inter(1) = item%inter(2)
-!         item%label_t2 = ''
-!         item%e2 = 0
-!         item%nops2 = 0
-!         item%int(2) = .false.
-!         item%inter(2) = .false.
-!         item%command = command_add_intm
-!      end if
 
 
       ! Assign factor --- use special ITF factor
@@ -5918,8 +6118,6 @@
      &       trim(item%label_res)//'['//trimal(tindex)//']'
       write(item%logfile,'(a)') trim(line)
 
-      ! Mark end of spin block
-      write(item%logfile,'(a3)') 'END'
 
       return
       end
@@ -5953,6 +6151,12 @@
       call itf_ops(contr_info, c, e1, e2, command)
 
       nops = sum(e1, dim=2) + sum(e2, dim=2)
+
+      if (sum(nops)==0) then
+         ! Scalars don't have symmetry
+         symmetric = .false.
+         return
+      end if
 
       symmetric = .true.
       do i = 1, ngastp
