@@ -741,24 +741,19 @@
       if (symmetric .and. itin) then
          old_name = contr_info%label_res
          contr_info%label_res = "ITIN"
-         item%symm = .true.
       end if
 
       ! If not symmetrising after every term, rename residual to G
       if (symmetric .and. .not. itin) then
-         item%symm = .true.
          old_name = contr_info%label_res
 
          if (intpp) then
             contr_info%label_res = "INTpp"
          else
-            if (check_energy(contr_info%label_res)) then
-               item%symm = .false.
-            else
-               contr_info%label_res = "G"
-            end if
+            contr_info%label_res = "G"
          end if
       end if
+
 
       ! Mark begining of spin summed block
       write(itflog,'(a5)') 'BEGIN'
@@ -5761,11 +5756,8 @@
          ! symmetrised:
          ! R:eecc[abij] += G:eecc[abij]
          ! R:eecc[abij] += G:eecc[baji]
-         !TODO: ECCD and INTpp comparisions is janky - add a reason...
-         !if (item%symm_res .and. item%permute==0 .and. .not. itin) then
          if (item%symm_res .and. item%permute==0) then
-            if (.not. check_energy(contr_info%label_res) .and.
-     &          contr_info%label_res/='INTpp') then
+            if (contr_info%label_res/='INTpp') then
                item%fact = item%fact * 0.5d+0
             end if
          end if

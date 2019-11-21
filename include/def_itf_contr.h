@@ -84,7 +84,6 @@
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral
      &     den(3) = .false.,    ! True if tensor is a denisty matrix
-     &     symm = .false.,      ! True if going to symmetrise result
      &     symm_res = .false.,   ! True if intermediate contributes to a symmetric residual
      &     binary = .true.,     ! True if a binary contraction
      &     permutation = .false., ! True if the line is a result of the (1+P_ij^ab) permutation
