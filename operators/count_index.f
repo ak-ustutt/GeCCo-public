@@ -751,6 +751,17 @@
             call assign_spin(item)
          else
             if (symmetric) then
+!               call itf_contr_init(contr_info,item,1,itin,command,
+!     &                                itflog)
+!               call assign_spin(item)
+!
+!               ! check_permutation()
+!               if (perm_case==2) then
+!
+!                  ! create_permutation_line()
+!
+!               end if
+
                do i=1, perm_case
                   ! Loop over permutation cases and send separately to
                   ! assign_spin. For most cases this is just one, however
@@ -758,6 +769,7 @@
                   ! permutations before symmetrising
                   call itf_contr_init(contr_info,item,i,itin,command,
      &                                itflog)
+
 
                   if (i == 2) then
 
@@ -787,6 +799,10 @@
                   end if
 
                   call assign_spin(item)
+
+                  !if (i == 1 .and. perm_case>1) then
+                  !   call create_permutation(item, contr_info%perm)
+                  !end if
                end do
             else
                un_perm_name=''
@@ -862,10 +878,123 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine create_permutation(item, perm)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &   item        ! ITF contraction object; holds all info about the ITF algo line
+      logical, intent(in) ::
+     &   perm(ngastp)
+
+      integer ::
+     &   ex_itype,
+     &   i, j,
+     &   shift
+      character(len=1) ::
+     &   ex_ind(2)
+      logical ::
+     &   found1,
+     &   found2
+      character(len=INDEX_LEN) ::
+     &   tmp1, tmp2
+
+      tmp1 = item%idx1
+      tmp2 = item%idx2
+
+      ! Identify and swap external indicies
+      do i = 1, ngastp
+         if (perm(i)) then
+            ex_itype = i
+            exit
+         end if
+      end do
+
+
+      shift = 1
+      do i = 1, item%rank3
+         if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
+
+         do j = 1, item%rank1
+            if (item%idx3(i:i)==item%idx1(j:j)) then
+               ex_ind(shift) = item%idx1(j:j)
+               shift = shift + 1
+            end if
+         end do
+
+         do j = 1, item%rank2
+            if (item%idx3(i:i)==item%idx2(j:j)) then
+               ex_ind(shift) = item%idx2(j:j)
+               shift = shift + 1
+            end if
+         end do
+
+      end do
+
+      if (shift < 3) write(item%logfile,*) "ERROR"
+
+      found1 = .false.
+      found2 = .false.
+      do i = 1, item%rank1
+         if (tmp1(i:i)==ex_ind(1)) then
+            tmp1(i:i) = ex_ind(2)
+            found1 = .true.
+            exit
+         end if
+      end do
+      if (.not. found1) then
+         do i = 1, item%rank1
+            if (tmp1(i:i)==ex_ind(2)) then
+               tmp1(i:i) = ex_ind(1)
+               found1 = .true.
+               exit
+            end if
+         end do
+      end if
+
+      do i = 1, item%rank2
+         if (tmp2(i:i)==ex_ind(1)) then
+            tmp2(i:i) = ex_ind(2)
+            found2 = .true.
+         end if
+      end do
+      if (.not. found2) then
+         do i = 1, item%rank2
+            if (tmp2(i:i)==ex_ind(2)) then
+               tmp2(i:i) = ex_ind(1)
+               found2 = .true.
+            end if
+         end do
+      end if
+
+      write(item%logfile,*) "ex ind ", ex_ind
+      write(item%logfile,*) "ex type ", ex_itype
+      write(item%logfile,*) "perm ", perm
+
+      ! Permute indicies to get correct pairing
+      tmp1 = f_index(tmp1, item%rank1/2)
+      tmp2 = f_index(tmp2, item%rank2/2)
+
+      write(item%logfile,*) "idx1 ", tmp1
+      write(item%logfile,*) "idx2 ", tmp2
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine prepare_symmetrise(contr_info, itin, intpp,
      &                                  symmetric, command, old_name)
 *----------------------------------------------------------------------*
-!
+!     If a symmetric residual and symmetrising after every term, rename
+!     result tensor to ITIN. If not symmetrising after every term,
+!     rename tensor to G (and symmetrise at end)
 *----------------------------------------------------------------------*
 
       implicit none
