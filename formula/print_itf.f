@@ -77,6 +77,66 @@
       character ::
      &     ch           ! Scratch
 
+
+      ! Point to start of linked list
+      fl_item => fl_head
+      contr_no = 0
+
+      ! Loop over formula_items, end of the list points to NULL
+      do while (associated(fl_item%next))
+
+         if (fl_item%command==command_add_intm .or.
+     &       fl_item%command==command_cp_intm .or.
+     &       fl_item%command==command_add_bc .or.
+     &       fl_item%command==command_bc .or.
+     &       fl_item%command==command_bc_reo) then
+            call command_to_itf2(fl_item%bcontr,itin,formlog,
+     &                          fl_item%command)
+         else if (fl_item%command==command_add_contribution) then
+            write(itflog,*) '[CONTR]',fl_item%target
+         else if (fl_item%command==command_add_bc_reo) then
+            write(itflog,*) '[CONTRACT][REORDER][ADD]',
+     &           fl_item%target
+            call prt_bcontr(itflog,fl_item%bcontr)
+            call prt_reorder(itflog,fl_item%reo)
+         else if (fl_item%command==command_add_reo) then
+            write(itflog,*) '[REORDER][ADD]',
+     &           fl_item%target
+            call prt_bcontr(itflog,fl_item%bcontr)
+            call prt_reorder(itflog,fl_item%reo)
+         else if (fl_item%command==command_symmetrise) then
+            write(itflog,*) '[SYMMETRISE]',fl_item%target
+         else if (fl_item%command==command_end_of_formula .or.
+     &            fl_item%command==command_set_target_init .or.
+     &            fl_item%command==command_set_target_update .or.
+     &            fl_item%command==command_new_intermediate .or.
+     &            fl_item%command==command_del_intermediate .or.
+     &            fl_item%command==command_reorder) then
+            ! Do nothing
+            ! write(itflog,*) '[END]'
+            ! write(itflog,*) '[INIT TARGET]',fl_item%target
+            ! write(itflog,*) '[SET TARGET]',fl_item%target
+            ! write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
+            ! write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
+            ! write(itflog,*) '[REORDER]',fl_item%target
+         else
+            write(itflog,*) 'unknown command ',fl_item%command,
+     &           fl_item%target
+         end if
+
+
+      ! Check if at the end of the list, if not, point to the next item
+      fl_item => fl_item%next
+
+      ! Count the number of terms
+      contr_no = contr_no+1
+
+      end do
+
+
+
+
+
       ! Point to start of linked list
       fl_item => fl_head
       contr_no = 0
@@ -373,6 +433,12 @@
       contr_no = contr_no+1
 
       end do
+
+
+
+
+
+
 
       return
       end
