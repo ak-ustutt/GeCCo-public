@@ -750,7 +750,10 @@
       ! 4. Spin sum
       call assign_spin2(item)
 
-      call print_itf_line2(item,.false.,.false.)
+      ! 5. Loop over spin cases and print out each line
+      call print_spin_cases(item)
+
+      !call print_itf_line2(item,.false.,.false.)
 !
 !      write(itflog,*) itflog
 !
@@ -1906,7 +1909,82 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line2(item,s1,s2)
+      subroutine print_spin_cases(item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &     item
+
+      integer ::
+     &   i, j,
+     &   actual_spin_cases
+      logical ::
+     &   contains1, contains2,
+     &   s1, s2
+
+
+      ! Cover case where only 1 spin case per line
+      if (item%nspin_cases==1) then
+         actual_spin_cases = 2
+      else
+         actual_spin_cases = item%nspin_cases
+      end if
+
+
+      do j = 1, actual_spin_cases -1
+
+            ! Decide if tensor is mixed spin
+            contains1 = .false.
+            contains2 = .false.
+            s1 = .false.
+            if (item%rank1>2) then
+               do i = 1, size(item%all_spins(j)%t_spin(1)%spin,2)
+                  if (item%all_spins(j)%t_spin(1)%spin(1,i)==1) then
+                     contains1 = .true.
+                  end if
+                  if (item%all_spins(j)%t_spin(1)%spin(1,i)==2) then
+                     contains2 = .true.
+                  end if
+               end do
+               if (contains1 .neqv. contains2) then
+                  s1 = .true.
+               end if
+            end if
+
+            contains1 = .false.
+            contains2 = .false.
+            s2 = .false.
+            if (item%rank2>2) then
+               do i = 1, size(item%all_spins(j)%t_spin(2)%spin,2)
+                  if (item%all_spins(j)%t_spin(2)%spin(1,i)==1) then
+                     contains1 = .true.
+                  end if
+                  if (item%all_spins(j)%t_spin(2)%spin(1,i)==2) then
+                     contains2 = .true.
+                  end if
+               end do
+               if (contains1 .neqv. contains2) then
+                  s2 = .true.
+               end if
+            end if
+
+            call print_itf_line2(item,s1,s2,item%all_spins(j)%t_spin)
+
+      end do
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine print_itf_line2(item,s1,s2,t_spin)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1923,9 +2001,13 @@
      &     item
       logical, intent(in) ::
      &     s1,s2
+      type(spin_info2), intent(in) ::
+     &      t_spin(3)
 
       character(len=MAXLEN_BC_LABEL) ::
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
+      character(len=INDEX_LEN) ::
+     &     slabel1, slabel2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=264) ::
@@ -1968,9 +2050,19 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
+
       ! Add intermediate spin strings to names
-      if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
-      if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
+      !call print_spin(t_spin(3)%spin, item%rank3, "hello", item%logfile)
+      !call print_spin(t_spin(1)%spin, item%rank1, "hello", item%logfile)
+      !call print_spin(t_spin(2)%spin, item%rank2, "hello", item%logfile)
+      if (item%inter(1)) then
+         call inter_spin_name(item%rank1,t_spin(1)%spin,slabel1)
+         nt1 = trim(nt1)//trim(slabel1)
+      end if
+      if (item%inter(2)) then
+         call inter_spin_name(item%rank2,t_spin(2)%spin,slabel2)
+         nt2 = trim(nt2)//trim(slabel2)
+      end if
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
@@ -6544,7 +6636,7 @@
      &   item
 
       integer ::
-     &   i,j,              ! Loop index
+     &   i,j,k,l,m,n,             ! Loop index
      &   result_spin(4),   ! Spin case of result
      &   hr1, hr2, hr3     ! Half tensor ranks
 
@@ -6554,10 +6646,7 @@
       hr3 = item%rank3/2
 
       ! Assign spin to indicies on the result tensor
-      if (item%inter(3)) then
-         item%t_spin(3)%spin = item%i_spin%spin
-         !write(item%logfile,*) "i_spin ", item%i_spin%spin
-      else
+      if (.not. item%inter(3)) then
          select case (item%rank3)
             case(0)
             case(2)
@@ -6581,10 +6670,6 @@
             case default
                call line_error("Could not determine tensor rank",item)
          end select
-      end if
-
-!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
-!     &                item%logfile)
 
       ! Assign spin of external indicies to T1 and T2
       do j=1, hr3
@@ -6618,6 +6703,151 @@
             end if
          end do
       end do
+         ! Sum over the remaining contraction indicies and print out the
+         ! line
+!      call print_spin(item%t_spin(3)%spin,item%rank3,item%label_res,
+!     &                item%logfile)
+!      call print_spin(item%t_spin(1)%spin,item%rank3,"T1",
+!     &                item%logfile)
+!      call print_spin(item%t_spin(2)%spin,item%rank3,"T2",
+!     &                item%logfile)
+         call spin_index2(item)
+
+      else
+
+      if (item%rank3>0) then
+         do n = 1, 2
+            item%t_spin(3)%spin(1,1) = n
+            do m = 1, 2
+               item%t_spin(3)%spin(2,1) = m
+               if (item%rank3==2) then
+      ! Assign spin of external indicies to T1 and T2
+      item%t_spin(1)%spin = 0
+      item%t_spin(2)%spin = 0
+      do j=1, hr3
+         do i=1, hr1
+            ! Assign spin of first tensor
+            if (item%idx3(j:j)==item%idx1(i:i)) then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+         end do
+
+         do i=1, hr2
+            ! Assign spin of second tensor
+            if (item%idx3(j:j)==item%idx2(i:i)) then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+         end do
+      end do
+
+!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
+!     &                item%logfile)
+      call spin_index2(item)
+
+               else
+                  do k = 1, 2
+                     item%t_spin(3)%spin(1,2) = k
+                     do l = 1, 2
+                        item%t_spin(3)%spin(2,2) = l
+      ! Assign spin of external indicies to T1 and T2
+      item%t_spin(1)%spin = 0
+      item%t_spin(2)%spin = 0
+      do j=1, hr3
+         do i=1, hr1
+            ! Assign spin of first tensor
+            if (item%idx3(j:j)==item%idx1(i:i)) then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
+               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
+               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+         end do
+
+         do i=1, hr2
+            ! Assign spin of second tensor
+            if (item%idx3(j:j)==item%idx2(i:i)) then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
+            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
+            end if
+
+            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
+               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
+            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
+               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
+            end if
+         end do
+      end do
+
+!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result2",
+!     &                item%logfile)
+      call spin_index2(item)
+                     end do
+                  end do
+               end if
+            end do
+         end do
+
+      end if
+
+      end if
+
+!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
+!     &                item%logfile)
+
+!      ! Assign spin of external indicies to T1 and T2
+!      do j=1, hr3
+!         do i=1, hr1
+!            ! Assign spin of first tensor
+!            if (item%idx3(j:j)==item%idx1(i:i)) then
+!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
+!            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
+!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
+!            end if
+!
+!            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
+!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
+!            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
+!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
+!            end if
+!         end do
+!
+!         do i=1, hr2
+!            ! Assign spin of second tensor
+!            if (item%idx3(j:j)==item%idx2(i:i)) then
+!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
+!            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
+!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
+!            end if
+!
+!            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
+!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
+!            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
+!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
+!            end if
+!         end do
+!      end do
 
 !      call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before",
 !     &                item%logfile)
@@ -6626,7 +6856,7 @@
 
       ! Sum over the remaining contraction indicies and print out the
       ! line
-      call spin_index2(item)
+!      call spin_index2(item)
 
       return
       end
@@ -6661,7 +6891,8 @@
      &   eloop,
      &   error
 
-      allocate(poss(2,item%contri))
+      if (item%contri>0)  then
+         allocate(poss(2,item%contri))
 
       ! Largest tensor goes first
       if (item%rank2 > item%rank1) then
@@ -6737,17 +6968,25 @@
          call line_error("Didn't find contraction index", item)
       end if
 
+!      if (item%contri>0) then
+!      write(item%logfile,*) "spin z1: ", size(item%t_spin(z1)%spin,2)
+!      write(item%logfile,*) "spin z2: ", size(item%t_spin(z2)%spin,2)
+!      write(item%logfile,*) "CONTRI: ", item%contri
+!      write(item%logfile,*) "SHIFT: ", shift
+!      write(item%logfile,*) "========================"
+!      do i = 1, 2
+!         do j = 1, item%contri
+!            write(item%logfile,*) "DEBUG1 poss: ", poss(i,j)%elements
+!         end do
+!      end do
+!      write(item%logfile,*) "========================"
+!      end if
+
+      end if
+
       ! Main spin summation loop
       shift = shift - 1
       eloop = .false.
-
-      !write(item%logfile,*) "========================"
-      !do i = 1, 2
-      !   do j = 1, item%contri
-      !      write(item%logfile,*) "DEBUG1 poss: ", poss(i,j)%elements
-      !   end do
-      !end do
-      !write(item%logfile,*) "========================"
 
       if (item%contri/=0) then
       do i = 1, 2
@@ -6758,7 +6997,7 @@
          item%t_spin(z1)%spin(i1, i2) = i
          item%t_spin(z2)%spin(i3, i4) = i
          if (shift <= 1) then
-            !call print_spin_case(item,eloop)
+            call print_spin_case2(item,eloop)
          end if
          if (shift > 1) then
             do j = 1, 2
@@ -6772,7 +7011,7 @@
                   ! For scalar results, only need half of the spin
                   ! cases, the rest are the same
                   if (item%rank3 == 0 .and. i == 2) exit
-                  !call print_spin_case(item,eloop)
+                  call print_spin_case2(item,eloop)
                end if
                if (shift > 2) then
                   do k = 1, 2
@@ -6783,7 +7022,7 @@
                      item%t_spin(z1)%spin(i1, i2) = k
                      item%t_spin(z2)%spin(i3, i4) = k
                      if (shift <= 3) then
-                        !call print_spin_case(item,eloop)
+                        call print_spin_case2(item,eloop)
                      end if
                      if (shift > 3) then
                         do l = 1, 2
@@ -6795,7 +7034,7 @@
                            item%t_spin(z2)%spin(i3, i4) = l
                            if (shift <= 4) then
                               if (item%rank3 == 0 .and. i == 2) exit
-                              !call print_spin_case(item,eloop)
+                              call print_spin_case2(item,eloop)
                            end if
                            if (shift > 4) then
                               do m = 1, 2
@@ -6806,7 +7045,7 @@
                                  item%t_spin(z1)%spin(i1, i2) = m
                                  item%t_spin(z2)%spin(i3, i4) = m
                                  if (shift <= 5) then
-                                    !call print_spin_case(item,eloop)
+                                    call print_spin_case2(item,eloop)
                                  end if
                                  if (shift > 5) then
                                     do n = 1, 2
@@ -6818,7 +7057,7 @@
                                        item%t_spin(z2)%spin(i3, i4) = n
                                        if (shift <= 6) then
                                   if (item%rank3 == 0 .and. i == 2) exit
-                                        !call print_spin_case(item,eloop)
+                                       call print_spin_case2(item,eloop)
                                        end if
                                     end do
                                  end if
@@ -6831,6 +7070,13 @@
             end do
          end if
       end do
+
+      else
+         ! No contraction indicies - tensors have same spin as result
+         if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
+         if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
+
+         call print_spin_case2(item,eloop)
       end if
 
 !      if (.not. eloop) then
@@ -6911,10 +7157,89 @@
 !         end if
 !      end if
 
-      deallocate(poss)
+      if (item%contri>0) deallocate(poss)
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_spin_case2(item,eloop)
+*----------------------------------------------------------------------*
+!     Print spin case
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item
+      logical, intent(inout) ::
+     &   eloop     ! Check if at least one spin case is printed out
+
+      logical ::
+     &   s1,       ! True if tensor 1 is mixed spin
+     &   s2,       ! True if tensor 2 is mixed spin
+     &   contains1,
+     &   contains2
+      integer ::
+     &   i,
+     &   shift,   ! Index number of different spin cases for an intermediate
+     &   ishift  ! Index number of intermediates on a line
+      character(len=INDEX_LEN) ::
+     &   spin_name
+      integer ::
+     &   sum1a, sum1b, sum2a, sum2b
+
+      ! Sum the spins of the covarient and contravarient indicies
+      sum1a = 0
+      sum1b = 0
+      sum2a = 0
+      sum2b = 0
+      do i = 1, size(item%t_spin(1)%spin,2)
+         sum1a = sum1a + item%t_spin(1)%spin(1,i)
+         sum1b = sum1b + item%t_spin(1)%spin(2,i)
+      end do
+      do i = 1, size(item%t_spin(2)%spin,2)
+         sum2a = sum2a + item%t_spin(2)%spin(1,i)
+         sum2b = sum2b + item%t_spin(2)%spin(2,i)
+      end do
+
+
+      ! Pick out specific spin cases here
+      if (sum1a==sum1b .and. sum2a==sum2b) then
+         if (modulo(sum1a+sum1b,2)==0 .and.
+     &           modulo(sum2a+sum2b,2)==0) then
+
+!            call print_spin(item%t_spin(3)%spin, item%rank3, "Spin 3",
+!     &                      item%logfile)
+!            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
+!     &                      item%logfile)
+!            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
+!     &                      item%logfile)
+
+            item%all_spins(item%nspin_cases)%t_spin(1)%spin=
+     &                                          item%t_spin(1)%spin
+            item%all_spins(item%nspin_cases)%t_spin(2)%spin=
+     &                                          item%t_spin(2)%spin
+            item%all_spins(item%nspin_cases)%t_spin(3)%spin=
+     &                                          item%t_spin(3)%spin
+            item%nspin_cases = item%nspin_cases + 1
+
+
+
+            ! TODO: need eloop??
+            eloop=.true.
+         end if
+      end if
+
+
+      return
+      end
+
 
 *----------------------------------------------------------------------*
       subroutine print_spin_case(item,eloop)
@@ -7078,6 +7403,7 @@
      &   i
 
       spin_name = ''
+
 
       do i = 1, hrank
          if (spin(1,i)==1) then
@@ -7589,9 +7915,26 @@
       item%inter1 = ''
       item%inter2 = ''
 
-      allocate(item%t_spin(1)%spin(2, item%rank1/2))
-      allocate(item%t_spin(2)%spin(2, item%rank2/2))
-      allocate(item%t_spin(3)%spin(2, item%rank3/2))
+      ! TODO: bit of a hack to avoid seg faults for rank == 0
+      ! Instead have a check when assiging spins if == 0
+      if (item%rank1>0) then
+         allocate(item%t_spin(1)%spin(2, item%rank1/2))
+      else
+         allocate(item%t_spin(1)%spin(2, 2))
+      end if
+
+      if (item%rank2>0) then
+         allocate(item%t_spin(2)%spin(2, item%rank2/2))
+      else
+         allocate(item%t_spin(2)%spin(2, 2))
+      end if
+
+      if (item%rank3>0) then
+         allocate(item%t_spin(3)%spin(2, item%rank3/2))
+      else
+         allocate(item%t_spin(3)%spin(2, 2))
+      end if
+
 
       item%t_spin(1)%spin = 0
       item%t_spin(2)%spin = 0
@@ -7610,6 +7953,8 @@
          item%product=.true.
       end if
 
+      ! Number of spin cases associated with this line
+      item%nspin_cases=1
 
       return
       end

@@ -55,7 +55,7 @@
 *----------------------------------------------------------------------*
 
       integer ::
-     &     spin(INDEX_LEN/2,INDEX_LEN/2)
+     &     spin(2,INDEX_LEN/2)
 
       end type spin_info2
 
@@ -190,6 +190,8 @@
      &     t_spin(3),                   ! Spin info of result, t1 and t2 tensors
      &     i_spin                       ! Spin info of an intermediate
 
+      integer ::
+     &      nspin_cases
       type(spin_cases2)
      &     all_spins(10)
 
