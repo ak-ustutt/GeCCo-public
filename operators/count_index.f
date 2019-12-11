@@ -2007,7 +2007,7 @@
       character(len=MAXLEN_BC_LABEL) ::
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=INDEX_LEN) ::
-     &     slabel1, slabel2
+     &     slabel1, slabel2, slabel3
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=264) ::
@@ -2052,16 +2052,20 @@
 
 
       ! Add intermediate spin strings to names
-      !call print_spin(t_spin(3)%spin, item%rank3, "hello", item%logfile)
-      !call print_spin(t_spin(1)%spin, item%rank1, "hello", item%logfile)
-      !call print_spin(t_spin(2)%spin, item%rank2, "hello", item%logfile)
+      !call print_spin(t_spin(3)%spin, item%rank3, "3", item%logfile)
+      !call print_spin(t_spin(1)%spin, item%rank1, "2", item%logfile)
+      !call print_spin(t_spin(2)%spin, item%rank2, "1", item%logfile)
       if (item%inter(1)) then
-         call inter_spin_name(item%rank1,t_spin(1)%spin,slabel1)
+         call inter_spin_name2(t_spin(1)%spin,item%rank1/2,slabel1)
          nt1 = trim(nt1)//trim(slabel1)
       end if
       if (item%inter(2)) then
-         call inter_spin_name(item%rank2,t_spin(2)%spin,slabel2)
+         call inter_spin_name2(t_spin(2)%spin,item%rank2/2,slabel2)
          nt2 = trim(nt2)//trim(slabel2)
+      end if
+      if (item%inter(3)) then
+         call inter_spin_name2(t_spin(3)%spin,item%rank3/2,slabel3)
+         nres = trim(nres)//trim(slabel3)
       end if
 
       ! Change tensor to spatial orbital quantity, unless it is an
@@ -7380,6 +7384,51 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine inter_spin_name2(spin,hrank,label)
+*----------------------------------------------------------------------*
+!     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   hrank,            ! Rank/2
+     &   spin(2,INDEX_LEN/2)    ! Spin info
+      character(len=INDEX_LEN), intent(inout) ::
+     &   label             ! Spin name of intermediate
+
+      character(len=INDEX_LEN) ::
+     &   spin_name
+      integer ::
+     &   i
+
+      spin_name = ''
+
+      do i = 1, hrank
+         if (spin(1,i)==1) then
+            spin_name(i:i) = 'a'
+         else if (spin(1,i)==2) then
+            spin_name(i:i) = 'b'
+         end if
+
+         if (spin(2,i)==1) then
+            spin_name(i+hrank:i+hrank) = 'a'
+         else if (spin(2,i)==2) then
+            spin_name(i+hrank:i+hrank) = 'b'
+         end if
+      end do
+
+      label = spin_name
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine inter_spin_name(spin,hrank,label)
 *----------------------------------------------------------------------*
 !     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
@@ -7403,7 +7452,6 @@
      &   i
 
       spin_name = ''
-
 
       do i = 1, hrank
          if (spin(1,i)==1) then
