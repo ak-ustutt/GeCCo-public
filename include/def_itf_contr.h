@@ -193,7 +193,7 @@
       integer ::
      &      nspin_cases
       type(spin_cases2)
-     &     all_spins(10)
+     &     all_spins(15)
 
       end type itf_contr2
 

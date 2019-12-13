@@ -753,17 +753,9 @@
       ! 5. Loop over spin cases and print out each line
       call print_spin_cases(item)
 
-      !call print_itf_line2(item,.false.,.false.)
-!
-!      write(itflog,*) itflog
-!
-!      ! 2. Assign index
-!      !call assign_new_index2(item)
-!
-!      ! 3. Determine sign
-!
-!
-!
+      call print_itf_contr2(item)
+
+
 !      ! If created a perm intermediate, print the symmetrised lines
 !      if (symmetric .and. itin) then
 !         call print_symmetrise(old_name,item)
@@ -8060,6 +8052,72 @@
       if (item%inter(3)) then
          deallocate(item%i_spin%spin)
       end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_itf_contr2(item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &     item     ! Object which holds information necessary to print out an ITF algo line
+
+      integer ::
+     &   i,j,k,
+     &   l1,l2,l3
+
+      write(item%logfile,*)
+      write(item%logfile,*) "================================="
+      write(item%logfile,*) trim(item%label_res)//"["//
+     & trim(item%idx3)//"]"//
+     & " = "//trim(item%label_t1)//"["//
+     & trim(item%idx1)//"]"//" "//
+     & trim(item%label_t2)//"["//
+     & trim(item%idx2)//"]"
+      write(item%logfile,*) "FACTOR: ", item%fact
+      write(item%logfile,*) "SPIN CASES: ", item%spin_cases-1
+
+      l1 = item%rank1/2
+      l2 = item%rank2/2
+      l3 = item%rank3/2
+
+      do i = 1, item%spin_cases-1
+      write(item%logfile,*)
+      write(item%logfile,*) "---------------------------------"
+      do k = 1, 2
+      write(item%logfile,'(2a)',advance='no') "  "
+      do j = 1, l3
+      write(item%logfile,'(i1)',advance='no')
+     &     item%all_spins(i)%t_spin(3)%spin(k,j)
+      end do
+      write(item%logfile,'(2a)',advance='no') "  "
+      do j = 1, l1
+      write(item%logfile,'(i1)',advance='no')
+     &     item%all_spins(i)%t_spin(1)%spin(k,j)
+      end do
+      write(item%logfile,'(2a)',advance='no') "  "
+      do j = 1, l2
+      write(item%logfile,'(i1)',advance='no')
+     &     item%all_spins(i)%t_spin(2)%spin(k,j)
+      end do
+      write(item%logfile,*)
+      end do
+      end do
+
+      write(item%logfile,*) "================================="
+      write(item%logfile,*)
+!      write(item%logfile,'(i3)')
+!     &     (item%all_spins(i)%t_spin(2)%spin(1,j),j=1,l2)
 
       return
       end
