@@ -8143,7 +8143,7 @@
 
       ! Initalise the number of different spin cases
       ! Each line has a minimum of one spin case
-      item%spin_cases = 0
+      item%spin_cases = 1
 
 
 
