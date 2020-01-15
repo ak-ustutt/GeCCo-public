@@ -174,7 +174,8 @@
      &     permutation = .false., ! True if the line is a result of the (1+P_ij^ab) permutation
      &     product = .false., ! True if the line is a tensor product
      &     perm_case(4),
-     &     j_int = .false.      ! True if integral is special
+     &     j_int = .false.,     ! True if integral is special
+     &     symmetric = .false.
       real(8) ::
      &     fact                 ! Factor
 

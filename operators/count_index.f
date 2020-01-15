@@ -693,16 +693,19 @@
      &   command         ! Type of formula item command, ie. contraction, copy etc.
 
       type(itf_contr2) ::
-     &   item        ! ITF contraction object; holds all info about the ITF algo line
+     &   item,      ! ITF contraction object; holds all info about the ITF algo line
+     &   pitem      ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &   perm_case,   ! Info of permutation factors
-     &   i, j, l, k                ! Loop index
+     &   i, j, l, k,                ! Loop index
+     &   ntest = 00
       logical ::
      &   inter,           ! True if result is an intermediate
      &   found,
      &   upper,
      &   symmetric,
-     &   intpp
+     &   intpp,
+     &   pline
       character(len=MAXLEN_BC_LABEL) ::
      &   old_name,
      &   un_perm_name,
@@ -734,12 +737,13 @@
 !     &                            command, old_name)
 !
 !
-!      ! Mark begining of spin summed block
-!      write(itflog,'(a5)') 'BEGIN'
 
 
+      ! Mark begining of spin summed block
+      write(itflog,'(a5)') 'BEGIN'
 
 
+      ! 0. Decide whether to symmetrise after every term
 
       ! 1. Initalise itf_contr
       call itf_contr_init2(contr_info,item,1,itin,command,itflog)
@@ -747,13 +751,48 @@
       ! 2. Assign index / Determine sign
       call assign_new_index2(item)
 
+      ! 3. Determine if we need a permutation line and create new item
+      !    for it
+      !    Permutation line required for:
+      !        a) Symmetric residuals with two pairs of external indicies
+      !        a) Non-symmetric residuals with one pair of external indicies
+      pline = .false.
+      perm_case = 0
+      do i = 1, ngastp
+         if(contr_info%perm(i)) perm_case = perm_case + 1
+      end do
+
+      if (item%symmetric .and. perm_case==2 .or.
+     &    .not. item%symmetric .and. perm_case==1) then
+         pline = .true.
+         call itf_contr_init2(contr_info,pitem,1,itin,command,itflog)
+         call assign_new_index2(pitem)
+
+         ! Permute indicies and update factor
+         !call print_itf_contr2(pitem)
+         call create_permutation2(pitem, contr_info%perm)
+         !call print_itf_contr2(pitem)
+      end if
+
       ! 4. Spin sum
       call assign_spin2(item)
+      if (pline) call assign_spin2(pitem)
 
       ! 5. Loop over spin cases and print out each line
       call print_spin_cases(item)
+      if (pline) then
+         call print_spin_cases(pitem)
+      end if
 
-      call print_itf_contr2(item)
+
+      ! 6. Print symmetrisation term
+
+
+      !if (ntest>0) then
+      if (.true.) then
+         call print_itf_contr2(item)
+         if (pline) call print_itf_contr2(pitem)
+      end if
 
 
 !      ! If created a perm intermediate, print the symmetrised lines
@@ -761,15 +800,15 @@
 !         call print_symmetrise(old_name,item)
 !      end if
 !
-!      ! Mark end of spin block
-!      if (item%print_line) write(itflog,'(a)') "END"
+      ! Mark end of spin block
+      write(itflog,'(a)') "END"
 
       ! Deallocate memroy used when construcitng item
       call itf_deinit2(item)
 
-      if (intpp) then
-         write(itflog,'(a)') "END_INTPP"
-      end if
+      !if (intpp) then
+      !   write(itflog,'(a)') "END_INTPP"
+      !end if
 
       return
       end
@@ -1091,6 +1130,122 @@
 
       write(item%logfile,*) "idx1 ", tmp1
       write(item%logfile,*) "idx2 ", tmp2
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine create_permutation2(item, perm)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item        ! ITF contraction object; holds all info about the ITF algo line
+      logical, intent(in) ::
+     &   perm(ngastp)
+
+      integer ::
+     &   ex_itype,
+     &   i, j,
+     &   shift
+      character(len=1) ::
+     &   ex_ind(2)
+      logical ::
+     &   found1,
+     &   found2
+      character(len=INDEX_LEN) ::
+     &   tmp1, tmp2
+
+      tmp1 = item%idx1
+      tmp2 = item%idx2
+
+      ! Identify and swap external indicies
+      do i = 1, ngastp
+         if (perm(i)) then
+            ex_itype = i
+            exit
+         end if
+      end do
+
+
+      shift = 1
+      do i = 1, item%rank3
+         if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
+
+         do j = 1, item%rank1
+            if (item%idx3(i:i)==item%idx1(j:j)) then
+               ex_ind(shift) = item%idx1(j:j)
+               shift = shift + 1
+            end if
+         end do
+
+         do j = 1, item%rank2
+            if (item%idx3(i:i)==item%idx2(j:j)) then
+               ex_ind(shift) = item%idx2(j:j)
+               shift = shift + 1
+            end if
+         end do
+
+      end do
+
+      if (shift < 3) write(item%logfile,*) "ERROR"
+
+      found1 = .false.
+      found2 = .false.
+      do i = 1, item%rank1
+         if (tmp1(i:i)==ex_ind(1)) then
+            tmp1(i:i) = ex_ind(2)
+            found1 = .true.
+            exit
+         end if
+      end do
+      if (.not. found1) then
+         do i = 1, item%rank1
+            if (tmp1(i:i)==ex_ind(2)) then
+               tmp1(i:i) = ex_ind(1)
+               found1 = .true.
+               exit
+            end if
+         end do
+      end if
+
+      do i = 1, item%rank2
+         if (tmp2(i:i)==ex_ind(1)) then
+            tmp2(i:i) = ex_ind(2)
+            found2 = .true.
+         end if
+      end do
+      if (.not. found2) then
+         do i = 1, item%rank2
+            if (tmp2(i:i)==ex_ind(2)) then
+               tmp2(i:i) = ex_ind(1)
+               found2 = .true.
+            end if
+         end do
+      end if
+
+      !write(item%logfile,*) "ex ind ", ex_ind
+      !write(item%logfile,*) "ex type ", ex_itype
+      !write(item%logfile,*) "perm ", perm
+
+      ! Permute indicies to get correct pairing
+      tmp1 = f_index(tmp1, item%rank1/2)
+      tmp2 = f_index(tmp2, item%rank2/2)
+
+      !write(item%logfile,*) "idx1 ", tmp1
+      !write(item%logfile,*) "idx2 ", tmp2
+
+      ! Update orginal index
+      item%idx1 = tmp1
+      item%idx2 = tmp2
 
       return
       end
@@ -7072,6 +7227,7 @@
          if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
          if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
 
+         write(item%logfile,*) "hello"
          call print_spin_case2(item,eloop)
       end if
 
@@ -7889,6 +8045,7 @@
       item%inter(3) = check_inter(item%label_res)
       item%int(3) = .false.
 
+      call check_symmetric(contr_info, item%command, item%symmetric)
 
       ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
       if (.not. item%inter(3)) then
@@ -7984,6 +8141,8 @@
          allocate(item%i_spin%spin(2, item%rank3/2))
       end if
 
+      ! Initalise the number of different spin cases
+      ! Each line has a minimum of one spin case
       item%spin_cases = 0
 
 
