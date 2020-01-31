@@ -1237,8 +1237,8 @@
       !write(item%logfile,*) "perm ", perm
 
       ! Permute indicies to get correct pairing
-      tmp1 = f_index(tmp1, item%rank1/2)
-      tmp2 = f_index(tmp2, item%rank2/2)
+      !tmp1 = f_index(tmp1, item%rank1/2)
+      !tmp2 = f_index(tmp2, item%rank2/2)
 
       !write(item%logfile,*) "idx1 ", tmp1
       !write(item%logfile,*) "idx2 ", tmp2
@@ -2174,23 +2174,23 @@
       ! Reorder integrals into a fixed index order, only need to do this
       ! once for each spin block as the spin summation doesn't depend on
       ! the index string at this point
-      if (item%spin_cases==0) then
-         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-     &                         item%j_int,
-     &                         item%label_t1,item%nops1)
-         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
-     &                         item%j_int,
-     &                         item%label_t2,item%nops2)
-         if (.not. item%int(1) .and. .not. item%inter(1)) then
-            call reorder_amp(item%rank1,item%idx1)
-         end if
-         if (.not. item%int(2) .and. .not. item%inter(2)) then
-            call reorder_amp(item%rank2,item%idx2)
-         end if
-         if (.not. item%inter(3)) then
-            call reorder_amp(item%rank3,item%idx3)
-         end if
-      end if
+!      if (item%spin_cases==1) then
+!         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
+!     &                         item%j_int,
+!     &                         item%label_t1,item%nops1)
+!         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
+!     &                         item%j_int,
+!     &                         item%label_t2,item%nops2)
+!         if (.not. item%int(1) .and. .not. item%inter(1)) then
+!            call reorder_amp(item%rank1,item%idx1)
+!         end if
+!         if (.not. item%int(2) .and. .not. item%inter(2)) then
+!            call reorder_amp(item%rank2,item%idx2)
+!         end if
+!         if (.not. item%inter(3)) then
+!            call reorder_amp(item%rank3,item%idx3)
+!         end if
+!      end if
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
