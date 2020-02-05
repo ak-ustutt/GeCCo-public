@@ -784,9 +784,12 @@
          call print_spin_cases(pitem)
       end if
 
-
-      ! 6. Print symmetrisation term
-
+      ! 7. Print symmetrisation term
+!      ! If created a perm intermediate, print the symmetrised lines
+!      if (symmetric .and. itin) then
+!         call print_symmetrise(old_name,item)
+!      end if
+!
 
       !if (ntest>0) then
       if (.true.) then
@@ -795,11 +798,6 @@
       end if
 
 
-!      ! If created a perm intermediate, print the symmetrised lines
-!      if (symmetric .and. itin) then
-!         call print_symmetrise(old_name,item)
-!      end if
-!
       ! Mark end of spin block
       write(itflog,'(a)') "END"
 
@@ -1249,6 +1247,89 @@
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item
+      type(spin_info2), intent(in) ::
+     &      t_spin(3)
+      character(len=INDEX_LEN), intent(inout) ::
+     &     new_idx1, new_idx2
+
+      integer ::
+     &   i
+      character(len=1) ::
+     &   tmp
+
+
+      ! For now leave intermediates
+      if (item%inter(3)) return
+
+      ! Check if abab
+      ! TODO: only work for rank 4
+      ! TODO: this needs to be in the print out
+      if (item%rank1>2) then
+         write(item%logfile,*) "spin ", t_spin(1)%spin(1,1)
+         write(item%logfile,*) "spin ", t_spin(1)%spin(1,2)
+         write(item%logfile,*) "spin ", t_spin(1)%spin(2,1)
+         write(item%logfile,*) "spin ", t_spin(1)%spin(2,2)
+         if (t_spin(1)%spin(1,1)>
+     &       t_spin(1)%spin(1,2)) then
+            tmp = new_idx1(2:2)
+            new_idx1(2:2) = new_idx1(1:1)
+            new_idx1(1:1) = tmp
+         end if
+         if (t_spin(1)%spin(2,1)>
+     &       t_spin(1)%spin(2,2)) then
+            tmp = new_idx1(3:3)
+            new_idx1(3:3) = new_idx1(4:4)
+            new_idx1(4:4) = tmp
+         end if
+      end if
+
+      if (item%rank2>2) then
+         if (t_spin(2)%spin(1,1)>
+     &       t_spin(2)%spin(1,2)) then
+            tmp = new_idx2(2:2)
+            new_idx2(2:2) = new_idx2(1:1)
+            new_idx2(1:1) = tmp
+         end if
+         if (t_spin(2)%spin(2,1)>
+     &       t_spin(2)%spin(2,2)) then
+            tmp = new_idx2(3:3)
+            new_idx2(3:3) = new_idx2(4:4)
+            new_idx2(4:4) = tmp
+         end if
+      end if
+
+!         if (item%all_spins(spin_case)%t_spin(i)%spin(1,1)>
+!     &      item%all_spins(spin_case)%t_spin(i)%spin(1,2)) then
+!            tmp = item%idx1(3:3)
+!            item%idx1(3:3) = item%idx1(1:1)
+!            item%idx1(1:1) = tmp
+!         end if
+!         if (item%all_spins(spin_case)%t_spin(i)%spin(2,1)>
+!     &      item%all_spins(spin_case)%t_spin(i)%spin(2,2)) then
+!            tmp = item%idx1(2:2)
+!            item%idx1(2:2) = item%idx1(4:4)
+!            item%idx1(4:4) = tmp
+!         end if
+
+      return
+      end
+
 
 *----------------------------------------------------------------------*
       subroutine prepare_symmetrise(contr_info, itin, intpp,
@@ -2154,7 +2235,8 @@
       character(len=MAXLEN_BC_LABEL) ::
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=INDEX_LEN) ::
-     &     slabel1, slabel2, slabel3
+     &     slabel1, slabel2, slabel3,
+     &     new_idx1, new_idx2
       character(len=5) ::
      &     s_int                 ! Intermdiate tensor number
       character(len=264) ::
@@ -2171,26 +2253,13 @@
      &   c_fact               ! Copy of orginal factor
 
 
-      ! Reorder integrals into a fixed index order, only need to do this
-      ! once for each spin block as the spin summation doesn't depend on
-      ! the index string at this point
-!      if (item%spin_cases==1) then
-!         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-!     &                         item%j_int,
-!     &                         item%label_t1,item%nops1)
-!         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
-!     &                         item%j_int,
-!     &                         item%label_t2,item%nops2)
-!         if (.not. item%int(1) .and. .not. item%inter(1)) then
-!            call reorder_amp(item%rank1,item%idx1)
-!         end if
-!         if (.not. item%int(2) .and. .not. item%inter(2)) then
-!            call reorder_amp(item%rank2,item%idx2)
-!         end if
-!         if (.not. item%inter(3)) then
-!            call reorder_amp(item%rank3,item%idx3)
-!         end if
-!      end if
+      new_idx1 = item%idx1
+      new_idx2 = item%idx2
+
+      ! Reorder tensor index into abab blocks
+      call convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
+      write(item%logfile,*) "new_idx1 ", trim(new_idx1)
+      write(item%logfile,*) "new_idx2 ", trim(new_idx2)
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
@@ -8253,7 +8322,7 @@
       do i = 1, item%spin_cases-1
       write(item%logfile,*)
       write(item%logfile,*) "---------------------------------"
-      do k = 1, 2
+      do k = 2, 1, -1
       write(item%logfile,'(2a)',advance='no') "  "
       do j = 1, l3
       write(item%logfile,'(i1)',advance='no')
