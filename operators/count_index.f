@@ -1281,10 +1281,6 @@
       ! TODO: only work for rank 4
       ! TODO: this needs to be in the print out
       if (item%rank1>2) then
-         write(item%logfile,*) "spin ", t_spin(1)%spin(1,1)
-         write(item%logfile,*) "spin ", t_spin(1)%spin(1,2)
-         write(item%logfile,*) "spin ", t_spin(1)%spin(2,1)
-         write(item%logfile,*) "spin ", t_spin(1)%spin(2,2)
          if (t_spin(1)%spin(1,1)>
      &       t_spin(1)%spin(1,2)) then
             tmp = new_idx1(2:2)
@@ -2257,9 +2253,8 @@
       new_idx2 = item%idx2
 
       ! Reorder tensor index into abab blocks
+      ! TODO: maybe need a factor here?
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
-      write(item%logfile,*) "new_idx1 ", trim(new_idx1)
-      write(item%logfile,*) "new_idx2 ", trim(new_idx2)
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
@@ -2286,10 +2281,16 @@
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
-      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
+!      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
+!     &                1,item%binary,item%int(1),item%nops1,item%j_int,
+!     &                item%logfile)
+!      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
+!     &                2,item%binary,item%int(2),item%nops2,item%j_int,
+!     &                item%logfile)
+      call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
      &                1,item%binary,item%int(1),item%nops1,item%j_int,
      &                item%logfile)
-      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
+      call spatial_string(st2,new_idx2,nt2,s2,item%inter(2),item%rank2,
      &                2,item%binary,item%int(2),item%nops2,item%j_int,
      &                item%logfile)
 
@@ -8344,8 +8345,6 @@
 
       write(item%logfile,*) "================================="
       write(item%logfile,*)
-!      write(item%logfile,'(i3)')
-!     &     (item%all_spins(i)%t_spin(2)%spin(1,j),j=1,l2)
 
       return
       end
