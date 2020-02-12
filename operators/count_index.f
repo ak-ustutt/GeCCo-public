@@ -2271,6 +2271,17 @@
          nres = trim(nres)//trim(slabel3)
       end if
 
+
+      ! Reorder integrals into fixed slot order
+      ! TODO: I think this is ok to do after converting to abab block,
+      !       but need to check...
+      call reorder_integral2(item%int(1),item%rank1,new_idx1,s1,
+     &                      item%j_int,
+     &                      item%label_t1,item%nops1)
+      call reorder_integral2(item%int(2),item%rank2,new_idx2,s2,
+     &                      item%j_int,
+     &                      item%label_t2,item%nops2)
+
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
 !      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
@@ -2609,6 +2620,179 @@
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine reorder_integral2(integral,rank,idx,s1,j_int,label,
+     &                             nops)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank,
+     &   nops(ngastp)
+      logical, intent(in) ::
+     &   integral,
+     &   s1,
+     &   j_int
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+     &   label
+
+      integer ::
+     &   itype(rank),
+     &   i, j,
+     &   itmp
+      character(len=1) ::
+     &   tmp
+      character(len=INDEX_LEN) ::
+     &   tstr
+      logical ::
+     &   permute,
+     &   symmetric
+
+
+      if (.not. integral) return
+      if (rank == 2) return
+
+      do i = 1, rank
+         itype(i) = get_itype(idx(i:i))
+      end do
+
+      symmetric = .true.
+      do i = 1, ngastp
+         if (mod(nops(i),2) /= 0 .or. nops(i)>2) then
+            symmetric = .false.
+            exit
+         end if
+      end do
+
+      !write(10,*) "idx ", idx
+      do i = 1, rank/2
+         if (itype(i)>itype(i+rank/2)) then
+            ! Swap creation and annhilation
+            tmp = idx(i:i)
+            idx(i:i) = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = tmp
+
+            ! Update itype
+            itmp = itype(i)
+            itype(i) = itype(i+rank/2)
+            itype(i+rank/2) = itmp
+         else if (j_int) then
+            if (itype(i)==itype(i+rank/2)) then
+               ! Catch J-integrals: ecec -> eecc
+               tmp = idx(i+1:i+1)
+               idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
+               idx(i+rank/2:i+rank/2) = tmp
+               label = 'J'
+
+               itmp = itype(i+1)
+               itype(i+1) = itype(i+rank/2)
+               itype(i+rank/2) = itmp
+
+               ! Check index in correct order
+               do j = 1, rank/2
+                  if (itype(j)>itype(j+rank/2)) then
+                     tmp = idx(j:j)
+                     idx(j:j) = idx(j+rank/2:j+rank/2)
+                     idx(j+rank/2:j+rank/2) = tmp
+
+                     itmp = itype(j)
+                     itype(j) = itype(j+rank/2)
+                     itype(j+rank/2) = itmp
+                  end if
+               end do
+
+            end if
+         end if
+      end do
+      !write(10,*) "idx ", idx
+
+      ! Permute pairs
+      if (nops(2)<3) then
+         permute = .false.
+         do i = 1, rank/2-1
+            if (itype(i)>itype(i+1)) then
+               tmp = idx(i:i)
+               idx(i:i) = idx(i+1:i+1)
+               idx(i+1:i+1) = tmp
+
+               tmp = idx(i+rank/2:i+rank/2)
+               idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
+               idx(i+1+rank/2:i+1+rank/2) = tmp
+
+               permute = .true.
+            else if (itype(i)<itype(i+1)) then
+               permute = .true.
+            end if
+         end do
+
+         ! Check the annhilations
+         if (.not. permute) then
+            do i = rank/2+1, rank-1
+               if (itype(i)>itype(i+1)) then
+                  tmp = idx(i:i)
+                  idx(i:i) = idx(i+1:i+1)
+                  idx(i+1:i+1) = tmp
+
+                  tmp = idx(i-rank/2:i-rank/2)
+                  idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
+                  idx(i+1-rank/2:i+1-rank/2) = tmp
+               end if
+            end do
+         end if
+      !write(10,*) "idx ", idx
+      else if (nops(2)==3) then
+         ! Need to reorder indices for 3-external integrals
+         ! Slot positions 1 and 2 are now paired
+
+         tstr=''
+         do i = 1, rank/2
+            if (itype(i)==1 .and. itype(i+rank/2)==1) then
+               tstr(1:1) = idx(i:i)
+               tstr(2:2) = idx(i+rank/2:i+rank/2)
+            else
+               tstr(3:3) = idx(i:i)
+               tstr(4:4) = idx(i+rank/2:i+rank/2)
+            end if
+         end do
+
+         idx = trim(tstr)
+      end if
+
+
+      if (nops(1)==3 .and. nops(3)==1) then
+         ! Need to have special case of K:ccca not K:accc
+         tstr = ''
+         tstr(1:1) = idx(2:2)
+         tstr(2:2) = idx(3:3)
+         tstr(3:3) = idx(4:4)
+         tstr(4:4) = idx(1:1)
+         idx = tstr
+      end if
+
+      if (label=='J'.and.nops(1)==1.and.nops(2)==2.and.nops(3)==1) then
+         ! Need to have special case of J:eeca not J:eeac
+         tstr = ''
+         tstr(1:1) = idx(2:2)
+         tstr(2:2) = idx(1:1)
+         tstr(3:3) = idx(4:4)
+         tstr(4:4) = idx(3:3)
+         idx = tstr
+      end if
+
+      return
+      end
+
 
 
 *----------------------------------------------------------------------*
