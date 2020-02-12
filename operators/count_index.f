@@ -1256,7 +1256,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
+      subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
+     &                                 new_fact)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1273,6 +1274,8 @@
      &      t_spin(3)
       character(len=INDEX_LEN), intent(inout) ::
      &     new_idx1, new_idx2
+      real(8), intent(inout) ::
+     &     new_fact
 
       integer ::
      &   i
@@ -1287,14 +1290,14 @@
             tmp = new_idx1(2:2)
             new_idx1(2:2) = new_idx1(1:1)
             new_idx1(1:1) = tmp
-            item%fact = item%fact * -1.0d+0
+            new_fact = new_fact * -1.0d+0
          end if
          if (t_spin(1)%spin(2,1)>
      &       t_spin(1)%spin(2,2)) then
             tmp = new_idx1(3:3)
             new_idx1(3:3) = new_idx1(4:4)
             new_idx1(4:4) = tmp
-            item%fact = item%fact * -1.0d+0
+            new_fact = new_fact * -1.0d+0
          end if
       end if
 
@@ -1304,14 +1307,14 @@
             tmp = new_idx2(2:2)
             new_idx2(2:2) = new_idx2(1:1)
             new_idx2(1:1) = tmp
-            item%fact = item%fact * -1.0d+0
+            new_fact = new_fact * -1.0d+0
          end if
          if (t_spin(2)%spin(2,1)>
      &       t_spin(2)%spin(2,2)) then
             tmp = new_idx2(3:3)
             new_idx2(3:3) = new_idx2(4:4)
             new_idx2(4:4) = tmp
-            item%fact = item%fact * -1.0d+0
+            new_fact = new_fact * -1.0d+0
          end if
       end if
 
@@ -2243,10 +2246,12 @@
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
+      c_fact = item%fact
 
       ! Reorder tensor index into abab blocks
       ! May get factor change here
-      call convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
+      call convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
+     &                           c_fact)
 
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
@@ -2255,9 +2260,6 @@
 
 
       ! Add intermediate spin strings to names
-      !call print_spin(t_spin(3)%spin, item%rank3, "3", item%logfile)
-      !call print_spin(t_spin(1)%spin, item%rank1, "2", item%logfile)
-      !call print_spin(t_spin(2)%spin, item%rank2, "1", item%logfile)
       if (item%inter(1)) then
          call inter_spin_name2(t_spin(1)%spin,item%rank1/2,slabel1)
          nt1 = trim(nt1)//trim(slabel1)
@@ -2282,14 +2284,9 @@
      &                      item%j_int,
      &                      item%label_t2,item%nops2)
 
+
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
-!      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-!     &                1,item%binary,item%int(1),item%nops1,item%j_int,
-!     &                item%logfile)
-!      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-!     &                2,item%binary,item%int(2),item%nops2,item%j_int,
-!     &                item%logfile)
       call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
      &                1,item%binary,item%int(1),item%nops1,item%j_int,
      &                item%logfile)
@@ -2298,10 +2295,10 @@
      &                item%logfile)
 
 
-      ! Add factor to sclar result cases (going to skip half the spin
+      ! Add factor to scalar result cases (going to skip half the spin
       ! cases as these are the same, so add a factor of two to the
       ! remaining ones)
-      c_fact = item%fact
+      !c_fact = item%fact
       if (item%rank3 == 0 .and. item%rank1/=0) then
          c_fact = c_fact * 2.0d0
       end if
@@ -7473,7 +7470,6 @@
          if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
          if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
 
-         write(item%logfile,*) "hello"
          call print_spin_case2(item,eloop)
       end if
 
