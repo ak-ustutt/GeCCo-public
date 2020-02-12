@@ -764,14 +764,17 @@
 
       if (item%symmetric .and. perm_case==2 .or.
      &    .not. item%symmetric .and. perm_case==1) then
+         ! Don't need perm line for intermediates
+         if (.not. item%inter(3)) then
+         ! -1 factor for permuation line
          pline = .true.
          call itf_contr_init2(contr_info,pitem,1,itin,command,itflog)
          call assign_new_index2(pitem)
 
          ! Permute indicies and update factor
-         !call print_itf_contr2(pitem)
          call create_permutation2(pitem, contr_info%perm)
          !call print_itf_contr2(pitem)
+         end if
       end if
 
       ! 4. Spin sum
@@ -1245,6 +1248,9 @@
       item%idx1 = tmp1
       item%idx2 = tmp2
 
+      ! Negative sign from (1-P_xy)
+      item%fact = item%fact * -1.0d+0
+
       return
       end
 
@@ -1273,55 +1279,41 @@
       character(len=1) ::
      &   tmp
 
-
-      ! For now leave intermediates
-      if (item%inter(3)) return
-
       ! Check if abab
       ! TODO: only work for rank 4
-      ! TODO: this needs to be in the print out
-      if (item%rank1>2) then
+      if (item%rank1>2 .and. .not. item%inter(1)) then
          if (t_spin(1)%spin(1,1)>
      &       t_spin(1)%spin(1,2)) then
             tmp = new_idx1(2:2)
             new_idx1(2:2) = new_idx1(1:1)
             new_idx1(1:1) = tmp
+            item%fact = item%fact * -1.0d+0
          end if
          if (t_spin(1)%spin(2,1)>
      &       t_spin(1)%spin(2,2)) then
             tmp = new_idx1(3:3)
             new_idx1(3:3) = new_idx1(4:4)
             new_idx1(4:4) = tmp
+            item%fact = item%fact * -1.0d+0
          end if
       end if
 
-      if (item%rank2>2) then
+      if (item%rank2>2 .and. .not. item%inter(2)) then
          if (t_spin(2)%spin(1,1)>
      &       t_spin(2)%spin(1,2)) then
             tmp = new_idx2(2:2)
             new_idx2(2:2) = new_idx2(1:1)
             new_idx2(1:1) = tmp
+            item%fact = item%fact * -1.0d+0
          end if
          if (t_spin(2)%spin(2,1)>
      &       t_spin(2)%spin(2,2)) then
             tmp = new_idx2(3:3)
             new_idx2(3:3) = new_idx2(4:4)
             new_idx2(4:4) = tmp
+            item%fact = item%fact * -1.0d+0
          end if
       end if
-
-!         if (item%all_spins(spin_case)%t_spin(i)%spin(1,1)>
-!     &      item%all_spins(spin_case)%t_spin(i)%spin(1,2)) then
-!            tmp = item%idx1(3:3)
-!            item%idx1(3:3) = item%idx1(1:1)
-!            item%idx1(1:1) = tmp
-!         end if
-!         if (item%all_spins(spin_case)%t_spin(i)%spin(2,1)>
-!     &      item%all_spins(spin_case)%t_spin(i)%spin(2,2)) then
-!            tmp = item%idx1(2:2)
-!            item%idx1(2:2) = item%idx1(4:4)
-!            item%idx1(4:4) = tmp
-!         end if
 
       return
       end
@@ -2253,7 +2245,7 @@
       new_idx2 = item%idx2
 
       ! Reorder tensor index into abab blocks
-      ! TODO: maybe need a factor here?
+      ! May get factor change here
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2)
 
       ! Change names of specific tensors
