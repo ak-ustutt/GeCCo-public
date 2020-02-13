@@ -30,7 +30,6 @@ files = vars(args)['file']
 
 out = 'bcontr3.tmp'
 
-# TODO: use a virtual file
 temp_out = 'tmp.tmp'
 f2 = open(temp_out,"w+")
 
@@ -90,3 +89,4 @@ for line in readlines_reverse(temp_out):
     print(line, file=f2)
 
 f2.close()
+os.remove('tmp.tmp')
