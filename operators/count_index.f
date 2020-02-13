@@ -1201,48 +1201,43 @@
 
       found1 = .false.
       found2 = .false.
+      write(item%logfile,*) "tmp1 ", tmp1
       do i = 1, item%rank1
-         if (tmp1(i:i)==ex_ind(1)) then
+         !if (tmp1(i:i)==ex_ind(1)) then
+         if (item%idx1(i:i)==ex_ind(1)) then
             tmp1(i:i) = ex_ind(2)
-            found1 = .true.
+            !found1 = .true.
             exit
          end if
       end do
-      if (.not. found1) then
+      !if (.not. found1) then
          do i = 1, item%rank1
-            if (tmp1(i:i)==ex_ind(2)) then
+            if (item%idx1(i:i)==ex_ind(2)) then
                tmp1(i:i) = ex_ind(1)
                found1 = .true.
                exit
             end if
          end do
-      end if
+      !end if
 
       do i = 1, item%rank2
-         if (tmp2(i:i)==ex_ind(1)) then
+         if (item%idx2(i:i)==ex_ind(1)) then
             tmp2(i:i) = ex_ind(2)
-            found2 = .true.
+            !found2 = .true.
          end if
       end do
-      if (.not. found2) then
+      !if (.not. found2) then
          do i = 1, item%rank2
-            if (tmp2(i:i)==ex_ind(2)) then
+            if (item%idx2(i:i)==ex_ind(2)) then
                tmp2(i:i) = ex_ind(1)
-               found2 = .true.
+               !found2 = .true.
             end if
          end do
-      end if
+      !end if
 
       !write(item%logfile,*) "ex ind ", ex_ind
       !write(item%logfile,*) "ex type ", ex_itype
       !write(item%logfile,*) "perm ", perm
-
-      ! Permute indicies to get correct pairing
-      !tmp1 = f_index(tmp1, item%rank1/2)
-      !tmp2 = f_index(tmp2, item%rank2/2)
-
-      !write(item%logfile,*) "idx1 ", tmp1
-      !write(item%logfile,*) "idx2 ", tmp2
 
       ! Update orginal index
       item%idx1 = tmp1
@@ -2242,11 +2237,14 @@
      &     i
       real(8) ::
      &   c_fact               ! Copy of orginal factor
+      logical ::
+     &   new_j
 
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
       c_fact = item%fact
+      new_j = item%j_int
 
       ! Reorder tensor index into abab blocks
       ! May get factor change here
@@ -2278,20 +2276,20 @@
       ! TODO: I think this is ok to do after converting to abab block,
       !       but need to check...
       call reorder_integral2(item%int(1),item%rank1,new_idx1,s1,
-     &                      item%j_int,
-     &                      item%label_t1,item%nops1)
+     &                      new_j,
+     &                      nt1,item%nops1)
       call reorder_integral2(item%int(2),item%rank2,new_idx2,s2,
-     &                      item%j_int,
-     &                      item%label_t2,item%nops2)
+     &                      new_j,
+     &                      nt2,item%nops2)
 
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,item%j_int,
+     &                1,item%binary,item%int(1),item%nops1,new_j,
      &                item%logfile)
       call spatial_string(st2,new_idx2,nt2,s2,item%inter(2),item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,item%j_int,
+     &                2,item%binary,item%int(2),item%nops2,new_j,
      &                item%logfile)
 
 
