@@ -1414,7 +1414,7 @@
 
       ! Check permuational symmetry, if permutational symmetry, then
       ! multiply by 0.5 (we will symmetrise each result)
-      if (perm_case /= 2) item%fact = item%fact * 0.5d+0
+      if (perm_case == 0) item%fact = item%fact * 0.5d+0
 
       ! Introduce ITIN intermeidate to collect terms
       ! .R[abij] += I[abij]
