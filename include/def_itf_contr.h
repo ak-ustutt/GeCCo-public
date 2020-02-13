@@ -175,7 +175,8 @@
      &     product = .false., ! True if the line is a tensor product
      &     perm_case(4),
      &     j_int = .false.,     ! True if integral is special
-     &     symmetric = .false.
+     &     symmetric = .false.,
+     &     intpp = .false.
       real(8) ::
      &     fact                 ! Factor
 

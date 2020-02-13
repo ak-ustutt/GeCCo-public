@@ -732,18 +732,11 @@
 !         if(contr_info%perm(i)) perm_case = perm_case + 1
 !      end do
 !
-!      ! If symmetrising after every term, rename residual ITIN
-!      call prepare_symmetrise(contr_info, itin, intpp, symmetric,
-!     &                            command, old_name)
-!
-!
-
+      intpp = .false.
 
       ! Mark begining of spin summed block
       write(itflog,'(a5)') 'BEGIN'
 
-
-      ! 0. Decide whether to symmetrise after every term
 
       ! 1. Initalise itf_contr
       call itf_contr_init2(contr_info,item,1,itin,command,itflog)
@@ -762,20 +755,35 @@
          if(contr_info%perm(i)) perm_case = perm_case + 1
       end do
 
+      ! 3.5. Decide whether to symmetrise after every term
+      ! TODO: Symmetrise at the end for some results
+      ! TODO: keep old name in item
+      old_name = item%label_res
+      item%intpp = .false.
+      call prepare_symmetrise2(contr_info, command, perm_case,
+     &                         old_name, item)
+
+
       if (item%symmetric .and. perm_case==2 .or.
      &    .not. item%symmetric .and. perm_case==1) then
          ! Don't need perm line for intermediates
          if (.not. item%inter(3)) then
-         ! -1 factor for permuation line
          pline = .true.
+
+         !TODO: just copy item??
          call itf_contr_init2(contr_info,pitem,1,itin,command,itflog)
          call assign_new_index2(pitem)
 
+         ! TODO: For now, so perm lines have same name as non-perm lines
+         pitem%label_res = item%label_res
+
          ! Permute indicies and update factor
+         ! -1 factor for permuation line
          call create_permutation2(pitem, contr_info%perm)
          !call print_itf_contr2(pitem)
          end if
       end if
+
 
       ! 4. Spin sum
       call assign_spin2(item)
@@ -788,11 +796,10 @@
       end if
 
       ! 7. Print symmetrisation term
-!      ! If created a perm intermediate, print the symmetrised lines
-!      if (symmetric .and. itin) then
-!         call print_symmetrise(old_name,item)
-!      end if
-!
+      if (.not. item%inter(3)) then
+         call print_symmetrise2(old_name, item)
+      end if
+
 
       if (ntest>0) then
       !if (.true.) then
@@ -1367,6 +1374,54 @@
             contr_info%label_res = "G"
          end if
       end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine prepare_symmetrise2(contr_info, command, perm_case,
+     &                               old_name, item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(inout) ::
+     &   contr_info      ! Information about binary contraction
+      integer, intent(in) ::
+     &   command         ! Type of formula item command, ie. contraction, copy etc.
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+     &   old_name
+      integer, intent(in) ::
+     &   perm_case    ! Info of permutation factors
+      type(itf_contr2), intent(inout) ::
+     &   item
+
+      logical ::
+     &   symmetric
+
+      ! Return if INTPP block
+      if (item%intpp) return
+
+      ! Return if an intermediate or result rank less than 2
+      if (item%inter(3) .or. item%rank3<=2) return
+
+      ! Check permuational symmetry, if permutational symmetry, then
+      ! multiply by 0.5 (we will symmetrise each result)
+      if (perm_case /= 2) item%fact = item%fact * 0.5d+0
+
+      ! Introduce ITIN intermeidate to collect terms
+      ! .R[abij] += I[abij]
+      ! .R[abij] += I[baji]
+      old_name = item%label_res
+      item%label_res = "ITIN"
+
 
       return
       end
@@ -8547,6 +8602,59 @@
      &     new
 
       new = rename_tensor(result, item%rank3)
+
+      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+     &       trim(item%label_res)//'['//trim(item%idx3)//']'
+      write(item%logfile,'(a)') trim(line)
+
+      if (item%product) then
+         ! We don't need to symmetrise from a tensor product
+         return
+      end if
+
+      tindex = ' '
+      tindex(1:1) = item%idx3(2:2)
+      tindex(2:2) = item%idx3(1:1)
+      tindex(3:3) = item%idx3(4:4)
+      tindex(4:4) = item%idx3(3:3)
+
+      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+     &       trim(item%label_res)//'['//trimal(tindex)//']'
+      write(item%logfile,'(a)') trim(line)
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine print_symmetrise2(old_result, item)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     old_result
+      type(itf_contr), intent(inout) ::
+     &     item
+
+      character(len=70) ::
+     &     line
+      character(len=INDEX_LEN) ::
+     &     tindex
+      character(len=MAXLEN_BC_LABEL) ::
+     &     new
+
+      if (item%inter(3)) return
+      if (item%rank3<=2) return
+
+      new = rename_tensor(old_result, item%rank3)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
