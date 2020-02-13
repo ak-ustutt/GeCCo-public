@@ -794,8 +794,8 @@
 !      end if
 !
 
-      !if (ntest>0) then
-      if (.true.) then
+      if (ntest>0) then
+      !if (.true.) then
          call print_itf_contr2(item)
          if (pline) call print_itf_contr2(pitem)
       end if
@@ -1199,41 +1199,31 @@
 
       if (shift < 3) write(item%logfile,*) "ERROR"
 
-      found1 = .false.
-      found2 = .false.
-      write(item%logfile,*) "tmp1 ", tmp1
       do i = 1, item%rank1
-         !if (tmp1(i:i)==ex_ind(1)) then
          if (item%idx1(i:i)==ex_ind(1)) then
             tmp1(i:i) = ex_ind(2)
-            !found1 = .true.
             exit
          end if
       end do
-      !if (.not. found1) then
-         do i = 1, item%rank1
-            if (item%idx1(i:i)==ex_ind(2)) then
-               tmp1(i:i) = ex_ind(1)
-               found1 = .true.
-               exit
-            end if
-         end do
-      !end if
+      do i = 1, item%rank1
+         if (item%idx1(i:i)==ex_ind(2)) then
+            tmp1(i:i) = ex_ind(1)
+            exit
+         end if
+      end do
 
       do i = 1, item%rank2
          if (item%idx2(i:i)==ex_ind(1)) then
             tmp2(i:i) = ex_ind(2)
-            !found2 = .true.
+            exit
          end if
       end do
-      !if (.not. found2) then
-         do i = 1, item%rank2
-            if (item%idx2(i:i)==ex_ind(2)) then
-               tmp2(i:i) = ex_ind(1)
-               !found2 = .true.
-            end if
-         end do
-      !end if
+      do i = 1, item%rank2
+         if (item%idx2(i:i)==ex_ind(2)) then
+            tmp2(i:i) = ex_ind(1)
+            exit
+         end if
+      end do
 
       !write(item%logfile,*) "ex ind ", ex_ind
       !write(item%logfile,*) "ex type ", ex_itype
@@ -1254,7 +1244,8 @@
       subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
      &                                 new_fact)
 *----------------------------------------------------------------------*
-!
+!     Convert integrals and amplitudes to abab spn blocks, this may also
+!     intoduce a sign change
 *----------------------------------------------------------------------*
 
       use itf_utils
@@ -1276,8 +1267,19 @@
      &   i
       character(len=1) ::
      &   tmp
+      integer ::
+     &   ops(4,2)
 
-      ! Check if abab
+      ! TODO: Don't bother for eeee or cccc integrals - a hack for now
+      ! to allow the summation of K:eeee terms
+      ops = item%e1 + item%c
+      if (ops(2,2)==2 .and. ops(2,1)==2 .or.
+     &    ops(1,2)==2 .and. ops(1,1)==2) then
+         if (.not. item%inter(1) .and. .not. item%inter(3)) then
+            return
+         end if
+      end if
+
       ! TODO: only work for rank 4
       if (item%rank1>2 .and. .not. item%inter(1)) then
          if (t_spin(1)%spin(1,1)>
