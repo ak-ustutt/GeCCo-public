@@ -670,7 +670,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine command_to_itf2(contr_info, itin, itflog, command)
+      subroutine command_to_itf2(contr_info, itin, itflog, command,
+     &                           inter_itype)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -690,7 +691,8 @@
      &   itin              ! Print ITIN lines or not
       integer, intent(in) ::
      &   itflog,         ! Output file
-     &   command         ! Type of formula item command, ie. contraction, copy etc.
+     &   command,        ! Type of formula item command, ie. contraction, copy etc.
+     &   inter_itype     ! Store itypes of intermediates between lines
 
       type(itf_contr2) ::
      &   item,      ! ITF contraction object; holds all info about the ITF algo line
@@ -701,7 +703,6 @@
      &   ntest = 00
       logical ::
      &   inter,           ! True if result is an intermediate
-     &   found,
      &   upper,
      &   symmetric,
      &   intpp,
@@ -723,15 +724,6 @@
 !      end if
 !
 !
-!      ! Initialise permutation factors:
-!      ! 0 == no permutation
-!      ! 1 == (1-Pxy)
-!      ! 2 == (1-Pxy)(1-Pvw) = (1+Pxy) in spatial orbitals
-!      perm_case = 0
-!      do i = 1, ngastp
-!         if(contr_info%perm(i)) perm_case = perm_case + 1
-!      end do
-!
       intpp = .false.
 
       ! Mark begining of spin summed block
@@ -739,10 +731,13 @@
 
 
       ! 1. Initalise itf_contr
-      call itf_contr_init2(contr_info,item,1,itin,command,itflog)
+      call itf_contr_init2(contr_info,item,1,itin,command,itflog,
+     &                     inter_itype)
+
 
       ! 2. Assign index / Determine sign
       call assign_new_index2(item)
+
 
       ! 3. Determine if we need a permutation line and create new item
       !    for it
@@ -771,7 +766,8 @@
          pline = .true.
 
          !TODO: just copy item??
-         call itf_contr_init2(contr_info,pitem,1,itin,command,itflog)
+         call itf_contr_init2(contr_info,pitem,1,itin,command,itflog,
+     &                        inter_itype)
          call assign_new_index2(pitem)
 
          ! TODO: For now, so perm lines have same name as non-perm lines
@@ -799,6 +795,10 @@
       if (.not. item%inter(3)) then
          call print_symmetrise2(old_name, item)
       end if
+
+      ! 8. If an intermediate, set inter_itype for use in next line
+      ! where the intermediate is created
+      call set_itype(item, inter_itype)
 
 
       if (ntest>0) then
@@ -1030,6 +1030,53 @@
       return
       end
 
+
+*----------------------------------------------------------------------*
+      subroutine set_itype(item, itype)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item        ! ITF contraction object; holds all info about the ITF algo line
+      integer, intent(inout) ::
+     &   itype(INDEX_LEN)
+
+      integer ::
+     &   i
+
+      ! If the current result is not an intermeidte, don't need an itype
+      ! for the next line
+      if (.not. item%inter(3)) then
+         itype = 0
+         return
+      end if
+
+      ! Get current itype of intermediate result
+      !do i = 1, item%rank3
+      !   itype(i) = get_itype(item%idx3(i:i))
+      !end do
+
+      if (item%rank3==2) then
+         itype(1) = get_itype(item%idx3(1:1))
+         itype(2) = get_itype(item%idx3(2:2))
+      else if (item%rank3==4) then
+         itype(1) = get_itype(item%idx3(1:1))
+         itype(2) = get_itype(item%idx3(2:2))
+         itype(3) = get_itype(item%idx3(4:4))
+         itype(4) = get_itype(item%idx3(3:3))
+      end if
+
+      return
+      end
 
 *----------------------------------------------------------------------*
       subroutine create_permutation(item, perm)
@@ -3599,6 +3646,11 @@
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
      &                      .true.)
 
+      ! If t1 or t2 is an intermediate, index needs to be consisent with
+      ! the item%itype info (which came from the previous line)
+      if (item%inter(1)) call match_idx_with_itype(item, str1, n_cnt)
+
+
       if (ntest>100) then
          write(item%logfile,*) "STR1: {", str1%str, "}"
          write(item%logfile,*) "STR2: {", str2%str, "}"
@@ -3991,6 +4043,96 @@
       end
 
 
+*----------------------------------------------------------------------*
+      subroutine match_idx_with_itype(item, idx, n_cnt)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item           ! ITF binary contraction
+      type(index_str), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   n_cnt
+
+      character(len=1) ::
+     &   tmp
+      integer ::
+     &   itmp, i, cnt_poss(n_cnt)
+
+
+      if (item%rank1<=2) return
+      ! TODO: this is shit
+      !write(item%logfile,*) "item: ", item%itype
+      !write(item%logfile,*) "idx: ", idx%itype
+      !write(item%logfile,*) "cnt_poss: ", idx%cnt_poss
+      !write(item%logfile,*) "str: ", idx%str
+
+      cnt_poss = idx%cnt_poss
+
+      if (item%itype(1)/=idx%itype(1)) then
+         tmp = idx%str(2)
+         idx%str(2) = idx%str(1)
+         idx%str(1) = tmp
+         itmp = idx%itype(2)
+         idx%itype(2) = idx%itype(1)
+         idx%itype(1) = itmp
+
+         do i = 1, n_cnt
+            if (idx%cnt_poss(i)==1) then
+               cnt_poss(i)=2
+               exit
+            end if
+         end do
+         do i = 1, n_cnt
+            if (idx%cnt_poss(i)==2) then
+               cnt_poss(i)=1
+               exit
+            end if
+         end do
+
+      end if
+
+      if (item%rank1>2) then
+         if (item%itype(3)/=idx%itype(3)) then
+            tmp = idx%str(4)
+            idx%str(4) = idx%str(3)
+            idx%str(3) = tmp
+            itmp = idx%itype(4)
+            idx%itype(4) = idx%itype(3)
+            idx%itype(3) = itmp
+         end if
+
+         do i = 1, n_cnt
+            if (idx%cnt_poss(i)==3) then
+               cnt_poss(i)=4
+               exit
+            end if
+         end do
+         do i = 1, n_cnt
+            if (idx%cnt_poss(i)==4) then
+               cnt_poss(i)=3
+               exit
+            end if
+         end do
+      end if
+
+      idx%cnt_poss = cnt_poss
+
+      !write(item%logfile,*) "item: ", item%itype
+      !write(item%logfile,*) "idx: ", idx%itype
+      !write(item%logfile,*) "cnt_poss: ", idx%cnt_poss
+      !write(item%logfile,*) "str: ", idx%str
+
+      return
+      end
 
 *----------------------------------------------------------------------*
       subroutine assign_new_index(contr_info,item)
@@ -5021,7 +5163,7 @@
       type(index_str), intent(in) ::
      &   str1,
      &   str2
-      type(itf_contr), intent(in) ::
+      type(itf_contr2), intent(in) ::
      &   item
       integer, intent(in) ::
      &   rank1,
@@ -5076,12 +5218,12 @@
                write(item%logfile,*) "matching with ", str1%str(j), t1
                end if
 
-               call suitable_pair2(found_ex, str1, str1, rank1, rank1,
+               call suitable_pair3(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype)
+     &                            p_list, item, itype, t1, t2)
 
                if (found_ex) then
-                  !write(10,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
+        !write(item%logfile,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
                   p_list%plist(shift)%ops(1)=t1
@@ -5102,10 +5244,10 @@
                   end if
                   call suitable_pair2(found_ex,str1, str2, rank1, rank2,
      &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype)
+     &                            p_list, item, itype, t1, t2)
 
                   if (found_ex) then
-                  !write(10,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
+        !write(item%logfile,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
@@ -5167,7 +5309,7 @@
 
                call suitable_pair2(found_ex, str1, str1, rank1, rank1,
      &                            i, j, 1, shift, n_cnt,
-     &                            p_list, item, itype)
+     &                            p_list, item, itype, t1, t2)
 
                if (found_ex) then
                   !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
@@ -5193,7 +5335,7 @@
 
                   call suitable_pair2(found_ex,str1, str2, rank1, rank2,
      &                               i, j, 1, shift, n_cnt,
-     &                               p_list, item, itype)
+     &                               p_list, item, itype, t1, t2)
 
                   if (found_ex) then
                   !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
@@ -5226,7 +5368,7 @@
 *----------------------------------------------------------------------*
       subroutine suitable_pair2(found_ex, str1, str2, rank1, rank2,
      &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype)
+     &                         p_list, item, itype, t1, t2)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -5238,7 +5380,7 @@
 
       logical, intent(inout) ::
      &   found_ex
-      type(itf_contr), intent(in) ::
+      type(itf_contr2), intent(in) ::
      &   item
       type(index_str), intent(in) ::
      &   str1, str2
@@ -5249,7 +5391,8 @@
      &   rank1, rank2,
      &   ann_cre,
      &   shift,
-     &   n_cnt
+     &   n_cnt,
+     &   t1, t2
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
 
@@ -5279,9 +5422,10 @@
       end do
 
 !      ! False if the matching index is a correct pair
-!      if (item%inter(3)) then
+!      if (item%inter(1) .and. t1==1 .and. t2==1) then
+!         write(item%logfile,*) "t1, t2: ", t1, t2
 !         correct_pair = .false.
-!         call check_pairing(correct_pair,str1,str2,rank1,
+!         call check_pairing2(correct_pair,str1,str2,rank1,
 !     &                      rank2,place1,place2,item, itype)
 !         if (.not. correct_pair) then
 !            found_ex = .false.
@@ -5289,6 +5433,151 @@
 !            return
 !         end if
 !      end if
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine suitable_pair3(found_ex, str1, str2, rank1, rank2,
+     &                         place1, place2, ann_cre, shift, n_cnt,
+     &                         p_list, item, itype, t1, t2)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      logical, intent(inout) ::
+     &   found_ex
+      type(itf_contr2), intent(in) ::
+     &   item
+      type(index_str), intent(in) ::
+     &   str1, str2
+      type(pair_list), intent(in) ::
+     &   p_list
+      integer, intent(in) ::
+     &   place1, place2,
+     &   rank1, rank2,
+     &   ann_cre,
+     &   shift,
+     &   n_cnt,
+     &   t1, t2
+      integer, intent(inout) ::
+     &   itype(INDEX_LEN)
+
+      logical ::
+     &   correct_pair
+      integer ::
+     &   k
+
+
+      found_ex = .true.
+
+      ! False if the matching index is a contraction index
+      found_ex = .true.
+      do k = 1, n_cnt
+         if (place2==str2%cnt_poss(k)) then
+            found_ex = .false.
+            !write(item%logfile,*) "false here 1"
+            return
+         end if
+      end do
+
+      ! Check if the annhilation operator has already been paried
+      do k = 1, shift
+         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+            found_ex = .false.
+            !write(item%logfile,*) "false here 2"
+            return
+         end if
+      end do
+
+      ! False if the matching index is a correct pair
+      if (item%inter(1) .and. item%rank1>2 .and. t1/=2) then
+         ! TODO: t2 are useless
+         correct_pair = .false.
+         call check_pairing2(correct_pair,str1,str2,rank1,
+     &                      rank2,place1,place2,item, itype)
+         if (.not. correct_pair) then
+            found_ex = .false.
+            !write(item%logfile,*) "false here 3"
+            return
+         end if
+      end if
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine check_pairing2(correct_pair, str1, str2, rank1, rank2,
+     &                         place1, place2, item, itype)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      logical, intent(inout) ::
+     &   correct_pair
+      type(itf_contr2), intent(in) ::
+     &   item
+      type(index_str), intent(in) ::
+     &   str1, str2
+      integer, intent(in) ::
+     &   place1, place2,
+     &   rank1, rank2
+      integer, intent(inout) ::
+     &   itype(INDEX_LEN)
+
+      integer ::
+     &   i, j, extent, k,
+     &   pp2
+
+      ! Remeber - the itype info refers to the first tensor positions
+
+      !write(item%logfile,*) "is it a correct pairing?"
+      !write(item%logfile,*) "place1 ", place1
+      !write(item%logfile,*) "place2 ", place2
+
+      !write(item%logfile, *) "itype: ", itype
+
+      if (place1>rank1/2) then
+         j = item%rank3/2+1
+         extent = item%rank3
+      else
+         j = 1
+         extent = item%rank3/2
+      end if
+
+      do i = j, extent
+!         write(item%logfile,*) "what ", str1%itype(place1), itype(i)
+         if (str1%itype(place1)==itype(i)) then
+            pp2 = item%rank3 - i + 1
+!          write(item%logfile,*) "pp2 ", pp2
+!          write(item%logfile,*) "what2 ", str2%itype(place2), itype(pp2)
+            if (str2%itype(place2)==
+     &                             itype(pp2)) then
+!               write(item%logfile,*)"correct pair ",str1%str(place1),
+!     &                              " ", str2%str(place2)
+               correct_pair = .true.
+               ! Remove pair from itype copy
+               itype(i) = 0
+               itype(pp2) = 0
+               !write(10,*) "itype after: ", (itype(k),k=1,INDEX_LEN)
+               exit
+            end if
+         end if
+      end do
 
 
       return
@@ -8235,7 +8524,8 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init2(contr_info,item,perm,itin,comm,lulog)
+      subroutine itf_contr_init2(contr_info,item,perm,itin,comm,lulog,
+     &                           itype)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -8256,7 +8546,8 @@
       integer, intent(in) ::
      &     perm,        ! Permutation information
      &     comm,        ! formula_item command
-     &     lulog        ! Output file
+     &     lulog,        ! Output file
+     &   itype(INDEX_LEN)
       logical, intent(in) ::
      &     itin
 
@@ -8451,6 +8742,10 @@
 
       ! Number of spin cases associated with this line
       item%nspin_cases=1
+
+
+      ! Set itype from previous line (can be 0)
+      item%itype = itype
 
       return
       end

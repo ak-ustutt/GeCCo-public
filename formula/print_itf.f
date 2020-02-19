@@ -76,11 +76,15 @@
      &     shift         ! Used to store sequentially
       character ::
      &     ch           ! Scratch
+      integer ::
+     &   inter_itype(INDEX_LEN)  ! Store inter itype info from previous line
 
 
       ! Point to start of linked list
       fl_item => fl_head
       contr_no = 0
+
+      inter_itype = 0
 
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
@@ -91,7 +95,7 @@
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
             call command_to_itf2(fl_item%bcontr,itin,formlog,
-     &                          fl_item%command)
+     &                          fl_item%command, inter_itype)
          else if (fl_item%command==command_add_contribution) then
             write(itflog,*) '[CONTR]',fl_item%target
          else if (fl_item%command==command_add_bc_reo) then
