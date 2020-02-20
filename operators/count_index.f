@@ -3789,7 +3789,6 @@
       end if
 
 
-
       ! Create result index string from only external operators. Order
       ! is not final...This is basically splicing str1 and str2 together
       shift = 1
@@ -3994,6 +3993,11 @@
       end if
 
 
+      ! Check intermediates have correct itypes, if not, permute the
+      ! pairs
+      if (item%inter(1)) call match_idx_with_itype2(item, str1, n_cnt)
+
+
       s1 = ""
       s2 = ""
       s3 = ""
@@ -4130,6 +4134,71 @@
       !write(item%logfile,*) "idx: ", idx%itype
       !write(item%logfile,*) "cnt_poss: ", idx%cnt_poss
       !write(item%logfile,*) "str: ", idx%str
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine match_idx_with_itype2(item, idx, n_cnt)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr2), intent(inout) ::
+     &   item           ! ITF binary contraction
+      type(index_str), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   n_cnt
+
+      character(len=1) ::
+     &   tmp1, tmp2
+      integer ::
+     &   itmp1, itmp2, i, cnt_poss(n_cnt)
+
+
+      if (item%rank1<=2) return
+
+      ! Update itype which may have changed
+      do i = 1, item%rank1
+         idx%itype(i) = get_itype(idx%str(i))
+      end do
+
+      !write(item%logfile,*) "itype: ", item%itype
+      !write(item%logfile,*) "idx itype: ", idx%itype
+      !write(item%logfile,*) "idx: ", idx%str
+      do i = 1, 4
+         if (item%itype(i)/=idx%itype(i)) then
+
+            !write(item%logfile,*) "changing ", idx%str
+            !write(item%logfile,*) "changing ", idx%itype
+
+            tmp1 = idx%str(2)
+            tmp2 = idx%str(4)
+            idx%str(2) = idx%str(1)
+            idx%str(4) = idx%str(3)
+            idx%str(1) = tmp1
+            idx%str(3) = tmp2
+
+            itmp1 = idx%itype(2)
+            itmp2 = idx%itype(4)
+            idx%itype(2) = idx%itype(1)
+            idx%itype(4) = idx%itype(3)
+            idx%itype(1) = itmp1
+            idx%itype(3) = itmp2
+
+            !write(item%logfile,*) "to ", idx%str
+            !write(item%logfile,*) "to ", idx%itype
+
+         end if
+      end do
 
       return
       end
