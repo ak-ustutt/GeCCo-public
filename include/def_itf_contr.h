@@ -82,7 +82,8 @@
       character(len=MAXLEN_BC_LABEl) ::
      &     label_t1,            ! Name of first tensor in the contraction
      &     label_t2,            ! Name of second tensor in the contraction
-     &     label_res            ! Name of tensor result
+     &     label_res,           ! Name of tensor result
+     &     old_name             ! If symmetrising result, the previous label it had
       character(len=INDEX_LEN) ::
      &     idx1,                ! First tensor index string
      &     idx2,                ! Second tensor index string

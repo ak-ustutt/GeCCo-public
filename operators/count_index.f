@@ -574,8 +574,6 @@
       logical ::
      &   intpp,
      &   pline
-      character(len=MAXLEN_BC_LABEL) ::
-     &   old_name
 
       ! Being a special block which the python processor will pull out
       ! into its own code block
@@ -611,13 +609,11 @@
       end do
 
       ! 3.5. Decide whether to symmetrise after every term
-      ! TODO: Symmetrise at the end for some results
-      ! TODO: keep old name in item
-      old_name = item%label_res
+      item%old_name = item%label_res
       !item%intpp = .false.
 
 
-      call prepare_symmetrise(perm_case, old_name, item)
+      call prepare_symmetrise(perm_case, item)
 
 
       if (item%symmetric .and. perm_case==2 .or.
@@ -669,7 +665,7 @@
 
       ! 7. Print symmetrisation term
       if (.not. item%inter(3)) then
-         call print_symmetrise(old_name, item)
+         call print_symmetrise(item)
       end if
 
 
@@ -1117,7 +1113,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine prepare_symmetrise(perm_case, old_name, item)
+      subroutine prepare_symmetrise(perm_case, item)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1128,8 +1124,6 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-     &   old_name
       integer, intent(in) ::
      &   perm_case    ! Info of permutation factors
       type(itf_contr), intent(inout) ::
@@ -1148,7 +1142,7 @@
       ! Introduce ITIN intermeidate to collect terms
       ! .R[abij] += I[abij]
       ! .R[abij] += I[baji]
-      old_name = item%label_res
+      item%old_name = item%label_res
       item%label_res = "ITIN"
 
       return
@@ -4375,7 +4369,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_symmetrise(old_result, item)
+      subroutine print_symmetrise(item)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -4386,8 +4380,6 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      character(len=MAXLEN_BC_LABEL), intent(in) ::
-     &     old_result
       type(itf_contr), intent(inout) ::
      &     item
 
@@ -4401,7 +4393,7 @@
       if (item%inter(3)) return
       if (item%rank3<=2) return
 
-      new = rename_tensor(old_result, item%rank3)
+      new = rename_tensor(item%old_name, item%rank3)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
