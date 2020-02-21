@@ -715,16 +715,15 @@
      &   old_idx,
      &   un_perm_idx
 
-!      ! Being a special block which the python processor will pull out
-!      ! into its own code block
-!      intpp = .false.
-!      if (contr_info%label_res=='INTpp') then
-!         intpp = .true.
-!         write(itflog,'(a)') "BEGIN_INTPP"
-!      end if
-!
-!
+
+      ! Being a special block which the python processor will pull out
+      ! into its own code block
       intpp = .false.
+      if (contr_info%label_res=='INTpp') then
+         intpp = .true.
+         write(itflog,'(a)') "BEGIN_INTPP"
+      end if
+
 
       ! Mark begining of spin summed block
       write(itflog,'(a5)') 'BEGIN'
@@ -754,30 +753,45 @@
       ! TODO: Symmetrise at the end for some results
       ! TODO: keep old name in item
       old_name = item%label_res
-      item%intpp = .false.
+      !item%intpp = .false.
+
+
       call prepare_symmetrise2(contr_info, command, perm_case,
      &                         old_name, item)
 
 
       if (item%symmetric .and. perm_case==2 .or.
      &    .not. item%symmetric .and. perm_case==1) then
-         ! Don't need perm line for intermediates
-         if (.not. item%inter(3)) then
-         pline = .true.
 
-         !TODO: just copy item??
-         call itf_contr_init2(contr_info,pitem,1,itin,command,itflog,
-     &                        inter_itype)
-         call assign_new_index2(pitem)
+         ! Don't need perm line for intermediates or tensor products
+         if (.not. item%inter(3) .and. .not. item%product) then
 
-         ! TODO: For now, so perm lines have same name as non-perm lines
-         pitem%label_res = item%label_res
+      !      if (item%product) then
 
-         ! Permute indicies and update factor
-         ! -1 factor for permuation line
-         call create_permutation2(pitem, contr_info%perm)
-         !call print_itf_contr2(pitem)
+      !         ! For tensor product case, intorduce a factor of two for the
+      !         ! hypothtical permutation line
+      !         item%fact = item%fact * 2.0d+0
+
+      !      else
+
+            pline = .true.
+
+            !TODO: just copy item??
+            call itf_contr_init2(contr_info,pitem,1,itin,command,itflog,
+     &                           inter_itype)
+            call assign_new_index2(pitem)
+
+            ! TODO: For now, so perm lines have same name as non-perm lines
+            pitem%label_res = item%label_res
+
+            ! Permute indicies and update factor
+            ! -1 factor for permuation line
+            call create_permutation2(pitem, contr_info%perm)
+            !call print_itf_contr2(pitem)
+
+            !end if
          end if
+
       end if
 
 
@@ -811,12 +825,13 @@
       ! Mark end of spin block
       write(itflog,'(a)') "END"
 
+      if (intpp) then
+         write(itflog,'(a)') "END_INTPP"
+      end if
+
+
       ! Deallocate memroy used when construcitng item
       call itf_deinit2(item)
-
-      !if (intpp) then
-      !   write(itflog,'(a)') "END_INTPP"
-      !end if
 
       return
       end
@@ -2264,7 +2279,10 @@
             contains2 = .false.
             s1 = .false.
             if (item%rank1>2) then
-               do i = 1, size(item%all_spins(j)%t_spin(1)%spin,2)
+               ! TODO: check size of spin - size could be bigger than
+               ! needed...
+               !do i = 1, size(item%all_spins(j)%t_spin(1)%spin,2)
+               do i = 1, item%rank1/2
                   if (item%all_spins(j)%t_spin(1)%spin(1,i)==1) then
                      contains1 = .true.
                   end if
@@ -2277,11 +2295,15 @@
                end if
             end if
 
+            ! True if pure spin
             contains1 = .false.
             contains2 = .false.
             s2 = .false.
             if (item%rank2>2) then
-               do i = 1, size(item%all_spins(j)%t_spin(2)%spin,2)
+!      call print_spin(item%all_spins(j)%t_spin(2)%spin, item%rank2,
+!     &                "T2", item%logfile)
+               !do i = 1, size(item%all_spins(j)%t_spin(2)%spin,2)
+               do i = 1, item%rank2/2
                   if (item%all_spins(j)%t_spin(2)%spin(1,i)==1) then
                      contains1 = .true.
                   end if
@@ -2375,7 +2397,6 @@
          nres = trim(nres)//trim(slabel3)
       end if
 
-
       ! Reorder integrals into fixed slot order
       ! TODO: I think this is ok to do after converting to abab block,
       !       but need to check...
@@ -2386,6 +2407,10 @@
      &                      new_j,
      &                      nt2,item%nops2)
 
+      !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%logfile)
+      !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%logfile)
+      !write(item%logfile,*) "s1: ", s1
+      !write(item%logfile,*) "s2: ", s2
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
@@ -5184,7 +5209,7 @@
       type(index_str), intent(in) ::
      &   str1,
      &   str2
-      type(itf_contr), intent(in) ::
+      type(itf_contr2), intent(in) ::
      &   item
       integer, intent(in) ::
      &   rank1,
@@ -9024,10 +9049,10 @@
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
       write(item%logfile,'(a)') trim(line)
 
-      if (item%product) then
-         ! We don't need to symmetrise from a tensor product
-         return
-      end if
+      !if (item%product) then
+      !   ! We don't need to symmetrise from a tensor product
+      !   return
+      !end if
 
       tindex = ' '
       tindex(1:1) = item%idx3(2:2)
