@@ -94,7 +94,7 @@
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
-            call command_to_itf2(fl_item%bcontr,itin,formlog,
+            call command_to_itf2(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype)
          else if (fl_item%command==command_add_contribution) then
             write(itflog,*) '[CONTR]',fl_item%target
@@ -128,307 +128,10 @@
      &           fl_item%target
          end if
 
-
-      ! Check if at the end of the list, if not, point to the next item
-      fl_item => fl_item%next
-
-      ! Count the number of terms
-      contr_no = contr_no+1
-
-      end do
-
-
-
-
-
-      ! Point to start of linked list
-      fl_item => fl_head
-      contr_no = 0
-
-      ! Loop over formula_items, end of the list points to NULL
-      do while (associated(fl_item%next))
-
-
-      ! Check if formula item is an intermediate
-      if (associated(fl_item%interm)) then
-
-         ! Recursive search back along the list.
-         ! Mark point where intermediates start
-!         write(itflog,*) "Starting intermediate search"
-         if (.not.associated(fl_item%next)) exit
-         inter_start => fl_item%next
-
-         ! Cycle through list until we hit the next result which isn't
-         ! an intermediate. All previous intermediates are assumed to
-         ! contribute to the following result lines
-         do
-            fl_item => fl_item%next
-
-            if(associated(fl_item%interm)) cycle
-            if(.not.associated(fl_item%next)) then
-               write(itflog,*) "ERROR: Intermediate was declared, but"
-     &                          //" not used!"
-               exit
-            end if
-            if(scan(fl_item%bcontr%label_res, "STIN")==0) then
-               !write(itflog,*) "Found next result"
-               res_start => fl_item
-               exit
-            end if
-
-         end do
-
-         ! We want to build an array of intermediate names and their
-         ! various spin cases here
-         ! Global variable ninter is the number of intermediates which
-         ! we need to deal with
-         ninter = 0
-
-         ! Need to initalise spin_inters to avoid getting junk in the
-         ! array
-         call init_spin_cases(spin_inters)
-         call init_spin_cases(ospin_inters)
-
-         ! Set symm_res in find_spin_intermediate and then use later on
-         symm_res = .false.
-         call check_symmetric(fl_item%bcontr, fl_item%command, symm_res)
-         call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                       fl_item%command,spin_inters, ninter,
-     &                       symm_res)
-
-         ! Go back to inter_start and look for the intermediates
-         fl_item => inter_start
-         ! Marker needs to be set to where we have already check for
-         ! intermediates
-         summed_inter => res_start
-         finished_inter = .false.
-
-         ! Recursive search through list to get all information about
-         ! every intermediate used to produce a result
-         do while (.not.finished_inter)
-
-            ! Check if infomation about the intermediate is needed, all required
-            ! intermediates are stored in spin_inters
-            do i = 1, ninter
-               if (fl_item%bcontr%label_res == spin_inters(i)%name)
-     &                      more_inter = .true.
-            end do
-
-            !if (fl_item%bcontr%label_res == spin_inters(1)%name) then
-            ! If the intermediate is needed, check if it depends on any
-            ! intermediates + find out their names/ spin cases
-            if (more_inter) then
-               if (check_inter(fl_item%bcontr%label_op1) .or.
-     &             check_inter(fl_item%bcontr%label_op2)) then
-
-                  ! When we check for other intermediates, need
-                  ! to know which spin cases to pick out! This is done
-                  ! in the subroutine call
-!                  call intermediate_to_itf(fl_item%bcontr,itflog,
-!     &                           fl_item%command,spin_inters,ninter,1)
-                   call find_spin_intermediate(fl_item%bcontr,itflog,
-     &                          fl_item%command,spin_inters,ninter,
-     &                          symm_res)
-
-                  ! Mark the position of the previously checked
-                  ! intermediates
-                  summed_inter => fl_item
-
-                  ! Move back to the start and start search for next
-                  ! intermediate
-                  fl_item => inter_start
-               else
-                  ! If it doesn't have any intermediates, move onto the
-                  ! next item
-                  fl_item => fl_item%next
-
-                  ! If the next item is has reached the begining of the
-                  ! previously summed intermediate, then we need to
-                  ! break out this loop.
-                  if (associated(fl_item,summed_inter)) finished_inter =
-     &                                                     .true.
-               end if
-            else
-               ! If the interemediate isn't needed, move onto the next
-               ! item
-               fl_item => fl_item%next
-               if (associated(fl_item,summed_inter)) finished_inter =
-     &                                                  .true.
-            end if
-
-
-            more_inter = .false.
-
-            if (associated(fl_item%interm)) then
-               fl_item => fl_item%next
-               if (associated(fl_item,summed_inter)) finished_inter =
-     &                                                  .true.
-            end if
-
-            ! Check we haven't reached the residual result
-            if (associated(fl_item,res_start)) then
-!               write(itflog,*) "Found the end"
-               !fl_item => res_start
-               finished_inter = .true.
-            end if
-         end do
-
-         ! Once we have the complete spin_inters array - this contains
-         ! all the info for all the intermediates used in the future
-         ! residual. So now we can spin summ these and print them out, +
-         ! change there names STIN001aaaa, then print out the residual
-         fl_item => inter_start
-
-         ! Numerically order spin_inters, so 001 intermediate is printed
-         ! out first, then 002. This is important because intermediates
-         ! may depend on previous intermediates
-         shift = 1
-         do i = 1, MAXINT
-            write(ch, '(I1)') i
-            !shift = 0
-            do j = 1, ninter
-               if (scan(ch, spin_inters(j)%name)) then
-                  !ospin_inters(i+shift) = spin_inters(j)
-                  ospin_inters(shift) = spin_inters(j)
-                  shift = shift + 1
-               end if
-            end do
-         end do
-
-         !write(itflog,*) "SPIN_INTER: ", spin_inters
-         !write(itflog,*) "OSPIN_INTER: ", ospin_inters
-         !write(itflog,*) "NINTER: ", ninter
-         !call print_inter_spin_cases(spin_inters,ninter,"spin",itflog)
-         !call print_inter_spin_cases(ospin_inters,ninter,"ospin",itflog)
-
-         ! Loop over intermediates.
-         ! We want to loop over all lines of intermediate, before doing
-         ! another/ printing the next spin case. I_aaaa, then I_abab
-         do k = 1, ninter
-            ! Loop over the number of spin cases for an intermediate
-            ! For each spin case of an intermediate, we want to loop though
-            ! the list and print out all the lines which contribute
-            do i = 1, ospin_inters(k)%ncase
-               do ! Loop through the list
-
-                  !write(11,*) "ospin name ", ospin_inters(k)%name(1:9)
-!                  if (fl_item%bcontr%label_res == ospin_inters(k)%name
-!     &                .or. scan('P', ospin_inters(k)%name)) then
-                  if (fl_item%bcontr%label_res(1:9) ==
-     &                                  ospin_inters(k)%name(1:9)) then
-                     ! Send off specific spin case to be summed and printed
-                     !write(11,*) "ospin name ", ospin_inters(k)%name
-                     do j = 1, INDEX_LEN
-                        tmp_case(j) = ospin_inters(k)%cases(j,i)
-                     end do
-                     !write(itflog,*) "TMP FILE: ", tmp_case
-
-                     ! Print out intermediate line
-                     call intermediate_to_itf(fl_item%bcontr,itflog,
-     &                     fl_item%command,ospin_inters(k)%name,
-     &                     tmp_case,ospin_inters(k)%itype,ninter,
-     &                     ospin_inters(k)%symm_res)
-                  end if
-
-                  ! Move onto next item and repeat
-                  fl_item => fl_item%next
-
-                  if (associated(fl_item%interm)) then
-                     fl_item => fl_item%next
-                  end if
-
-                  if (associated(fl_item,res_start)) then
-!                     write(itflog,*) "Finished one spin inter block"
-                     ! Go back to start and print out remaing spin cases +
-                     ! reapeat
-                     fl_item => inter_start
-                     exit
-                  end if
-               end do
-            end do
-         end do
-
-
-         ! Spin summ and print residual which uses the above
-         ! intermediates
-         fl_item => res_start
-         call command_to_itf(fl_item%bcontr,itin,
-     &                       itflog,fl_item%command)
-
-
-         ! Not needed for now, but maybe in the future:
-         ! Check if next residual needs intermdiates and which spin
-         ! cases are needed.
-         ! Exit if next resdiual is different or a new intermediate is
-         ! declared.
-
-         if (print_form) then
-            fl_item => inter_start
-            do while (.not.associated(fl_item, res_start))
-               call print_form_item2(formlog,'LONG',contr_no,fl_item,
-     &                               op_info)
-               fl_item => fl_item%next
-
-               ! Count the number of terms
-               contr_no = contr_no+1
-            end do
-         end if
-
-         ! Move to the end of the section, so next item is ready
-         fl_item => res_start
-
-      else
-         ! Not an intermediate, so select the correct command case
-
-
-         if (fl_item%command==command_add_intm .or.
-     &       fl_item%command==command_cp_intm .or.
-     &       fl_item%command==command_add_bc .or.
-     &       fl_item%command==command_bc .or.
-     &       fl_item%command==command_bc_reo) then
-            call command_to_itf(fl_item%bcontr,itin,itflog,
-     &                          fl_item%command)
-         else if (fl_item%command==command_add_contribution) then
-            write(itflog,*) '[CONTR]',fl_item%target
-         else if (fl_item%command==command_add_bc_reo) then
-            write(itflog,*) '[CONTRACT][REORDER][ADD]',
-     &           fl_item%target
-            call prt_bcontr(itflog,fl_item%bcontr)
-            call prt_reorder(itflog,fl_item%reo)
-         else if (fl_item%command==command_add_reo) then
-            write(itflog,*) '[REORDER][ADD]',
-     &           fl_item%target
-            call prt_bcontr(itflog,fl_item%bcontr)
-            call prt_reorder(itflog,fl_item%reo)
-         else if (fl_item%command==command_symmetrise) then
-            write(itflog,*) '[SYMMETRISE]',fl_item%target
-         else if (fl_item%command==command_end_of_formula .or.
-     &            fl_item%command==command_set_target_init .or.
-     &            fl_item%command==command_set_target_update .or.
-     &            fl_item%command==command_new_intermediate .or.
-     &            fl_item%command==command_del_intermediate .or.
-     &            fl_item%command==command_reorder) then
-            ! Do nothing
-            ! write(itflog,*) '[END]'
-            ! write(itflog,*) '[INIT TARGET]',fl_item%target
-            ! write(itflog,*) '[SET TARGET]',fl_item%target
-            ! write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
-            ! write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
-            ! write(itflog,*) '[REORDER]',fl_item%target
-         else
-            write(itflog,*) 'unknown command ',fl_item%command,
-     &           fl_item%target
-         end if
-
-
-      end if
-
       ! Optionally print the formula items to another output file
       if (print_form) then
         call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
       end if
-      !write(itflog,*) "term # ", contr_no
-
 
       ! Check if at the end of the list, if not, point to the next item
       fl_item => fl_item%next
@@ -437,6 +140,307 @@
       contr_no = contr_no+1
 
       end do
+
+
+
+
+
+!      ! Point to start of linked list
+!      fl_item => fl_head
+!      contr_no = 0
+!
+!      ! Loop over formula_items, end of the list points to NULL
+!      do while (associated(fl_item%next))
+!
+!
+!      ! Check if formula item is an intermediate
+!      if (associated(fl_item%interm)) then
+!
+!         ! Recursive search back along the list.
+!         ! Mark point where intermediates start
+!!         write(itflog,*) "Starting intermediate search"
+!         if (.not.associated(fl_item%next)) exit
+!         inter_start => fl_item%next
+!
+!         ! Cycle through list until we hit the next result which isn't
+!         ! an intermediate. All previous intermediates are assumed to
+!         ! contribute to the following result lines
+!         do
+!            fl_item => fl_item%next
+!
+!            if(associated(fl_item%interm)) cycle
+!            if(.not.associated(fl_item%next)) then
+!               write(itflog,*) "ERROR: Intermediate was declared, but"
+!     &                          //" not used!"
+!               exit
+!            end if
+!            if(scan(fl_item%bcontr%label_res, "STIN")==0) then
+!               !write(itflog,*) "Found next result"
+!               res_start => fl_item
+!               exit
+!            end if
+!
+!         end do
+!
+!         ! We want to build an array of intermediate names and their
+!         ! various spin cases here
+!         ! Global variable ninter is the number of intermediates which
+!         ! we need to deal with
+!         ninter = 0
+!
+!         ! Need to initalise spin_inters to avoid getting junk in the
+!         ! array
+!         call init_spin_cases(spin_inters)
+!         call init_spin_cases(ospin_inters)
+!
+!         ! Set symm_res in find_spin_intermediate and then use later on
+!         symm_res = .false.
+!         call check_symmetric(fl_item%bcontr, fl_item%command, symm_res)
+!         call find_spin_intermediate(fl_item%bcontr,itflog,
+!     &                       fl_item%command,spin_inters, ninter,
+!     &                       symm_res)
+!
+!         ! Go back to inter_start and look for the intermediates
+!         fl_item => inter_start
+!         ! Marker needs to be set to where we have already check for
+!         ! intermediates
+!         summed_inter => res_start
+!         finished_inter = .false.
+!
+!         ! Recursive search through list to get all information about
+!         ! every intermediate used to produce a result
+!         do while (.not.finished_inter)
+!
+!            ! Check if infomation about the intermediate is needed, all required
+!            ! intermediates are stored in spin_inters
+!            do i = 1, ninter
+!               if (fl_item%bcontr%label_res == spin_inters(i)%name)
+!     &                      more_inter = .true.
+!            end do
+!
+!            !if (fl_item%bcontr%label_res == spin_inters(1)%name) then
+!            ! If the intermediate is needed, check if it depends on any
+!            ! intermediates + find out their names/ spin cases
+!            if (more_inter) then
+!               if (check_inter(fl_item%bcontr%label_op1) .or.
+!     &             check_inter(fl_item%bcontr%label_op2)) then
+!
+!                  ! When we check for other intermediates, need
+!                  ! to know which spin cases to pick out! This is done
+!                  ! in the subroutine call
+!!                  call intermediate_to_itf(fl_item%bcontr,itflog,
+!!     &                           fl_item%command,spin_inters,ninter,1)
+!                   call find_spin_intermediate(fl_item%bcontr,itflog,
+!     &                          fl_item%command,spin_inters,ninter,
+!     &                          symm_res)
+!
+!                  ! Mark the position of the previously checked
+!                  ! intermediates
+!                  summed_inter => fl_item
+!
+!                  ! Move back to the start and start search for next
+!                  ! intermediate
+!                  fl_item => inter_start
+!               else
+!                  ! If it doesn't have any intermediates, move onto the
+!                  ! next item
+!                  fl_item => fl_item%next
+!
+!                  ! If the next item is has reached the begining of the
+!                  ! previously summed intermediate, then we need to
+!                  ! break out this loop.
+!                  if (associated(fl_item,summed_inter)) finished_inter =
+!     &                                                     .true.
+!               end if
+!            else
+!               ! If the interemediate isn't needed, move onto the next
+!               ! item
+!               fl_item => fl_item%next
+!               if (associated(fl_item,summed_inter)) finished_inter =
+!     &                                                  .true.
+!            end if
+!
+!
+!            more_inter = .false.
+!
+!            if (associated(fl_item%interm)) then
+!               fl_item => fl_item%next
+!               if (associated(fl_item,summed_inter)) finished_inter =
+!     &                                                  .true.
+!            end if
+!
+!            ! Check we haven't reached the residual result
+!            if (associated(fl_item,res_start)) then
+!!               write(itflog,*) "Found the end"
+!               !fl_item => res_start
+!               finished_inter = .true.
+!            end if
+!         end do
+!
+!         ! Once we have the complete spin_inters array - this contains
+!         ! all the info for all the intermediates used in the future
+!         ! residual. So now we can spin summ these and print them out, +
+!         ! change there names STIN001aaaa, then print out the residual
+!         fl_item => inter_start
+!
+!         ! Numerically order spin_inters, so 001 intermediate is printed
+!         ! out first, then 002. This is important because intermediates
+!         ! may depend on previous intermediates
+!         shift = 1
+!         do i = 1, MAXINT
+!            write(ch, '(I1)') i
+!            !shift = 0
+!            do j = 1, ninter
+!               if (scan(ch, spin_inters(j)%name)) then
+!                  !ospin_inters(i+shift) = spin_inters(j)
+!                  ospin_inters(shift) = spin_inters(j)
+!                  shift = shift + 1
+!               end if
+!            end do
+!         end do
+!
+!         !write(itflog,*) "SPIN_INTER: ", spin_inters
+!         !write(itflog,*) "OSPIN_INTER: ", ospin_inters
+!         !write(itflog,*) "NINTER: ", ninter
+!         !call print_inter_spin_cases(spin_inters,ninter,"spin",itflog)
+!         !call print_inter_spin_cases(ospin_inters,ninter,"ospin",itflog)
+!
+!         ! Loop over intermediates.
+!         ! We want to loop over all lines of intermediate, before doing
+!         ! another/ printing the next spin case. I_aaaa, then I_abab
+!         do k = 1, ninter
+!            ! Loop over the number of spin cases for an intermediate
+!            ! For each spin case of an intermediate, we want to loop though
+!            ! the list and print out all the lines which contribute
+!            do i = 1, ospin_inters(k)%ncase
+!               do ! Loop through the list
+!
+!                  !write(11,*) "ospin name ", ospin_inters(k)%name(1:9)
+!!                  if (fl_item%bcontr%label_res == ospin_inters(k)%name
+!!     &                .or. scan('P', ospin_inters(k)%name)) then
+!                  if (fl_item%bcontr%label_res(1:9) ==
+!     &                                  ospin_inters(k)%name(1:9)) then
+!                     ! Send off specific spin case to be summed and printed
+!                     !write(11,*) "ospin name ", ospin_inters(k)%name
+!                     do j = 1, INDEX_LEN
+!                        tmp_case(j) = ospin_inters(k)%cases(j,i)
+!                     end do
+!                     !write(itflog,*) "TMP FILE: ", tmp_case
+!
+!                     ! Print out intermediate line
+!                     call intermediate_to_itf(fl_item%bcontr,itflog,
+!     &                     fl_item%command,ospin_inters(k)%name,
+!     &                     tmp_case,ospin_inters(k)%itype,ninter,
+!     &                     ospin_inters(k)%symm_res)
+!                  end if
+!
+!                  ! Move onto next item and repeat
+!                  fl_item => fl_item%next
+!
+!                  if (associated(fl_item%interm)) then
+!                     fl_item => fl_item%next
+!                  end if
+!
+!                  if (associated(fl_item,res_start)) then
+!!                     write(itflog,*) "Finished one spin inter block"
+!                     ! Go back to start and print out remaing spin cases +
+!                     ! reapeat
+!                     fl_item => inter_start
+!                     exit
+!                  end if
+!               end do
+!            end do
+!         end do
+!
+!
+!         ! Spin summ and print residual which uses the above
+!         ! intermediates
+!         fl_item => res_start
+!         call command_to_itf(fl_item%bcontr,itin,
+!     &                       itflog,fl_item%command)
+!
+!
+!         ! Not needed for now, but maybe in the future:
+!         ! Check if next residual needs intermdiates and which spin
+!         ! cases are needed.
+!         ! Exit if next resdiual is different or a new intermediate is
+!         ! declared.
+!
+!         if (print_form) then
+!            fl_item => inter_start
+!            do while (.not.associated(fl_item, res_start))
+!               call print_form_item2(formlog,'LONG',contr_no,fl_item,
+!     &                               op_info)
+!               fl_item => fl_item%next
+!
+!               ! Count the number of terms
+!               contr_no = contr_no+1
+!            end do
+!         end if
+!
+!         ! Move to the end of the section, so next item is ready
+!         fl_item => res_start
+!
+!      else
+!         ! Not an intermediate, so select the correct command case
+!
+!
+!         if (fl_item%command==command_add_intm .or.
+!     &       fl_item%command==command_cp_intm .or.
+!     &       fl_item%command==command_add_bc .or.
+!     &       fl_item%command==command_bc .or.
+!     &       fl_item%command==command_bc_reo) then
+!            call command_to_itf(fl_item%bcontr,itin,itflog,
+!     &                          fl_item%command)
+!         else if (fl_item%command==command_add_contribution) then
+!            write(itflog,*) '[CONTR]',fl_item%target
+!         else if (fl_item%command==command_add_bc_reo) then
+!            write(itflog,*) '[CONTRACT][REORDER][ADD]',
+!     &           fl_item%target
+!            call prt_bcontr(itflog,fl_item%bcontr)
+!            call prt_reorder(itflog,fl_item%reo)
+!         else if (fl_item%command==command_add_reo) then
+!            write(itflog,*) '[REORDER][ADD]',
+!     &           fl_item%target
+!            call prt_bcontr(itflog,fl_item%bcontr)
+!            call prt_reorder(itflog,fl_item%reo)
+!         else if (fl_item%command==command_symmetrise) then
+!            write(itflog,*) '[SYMMETRISE]',fl_item%target
+!         else if (fl_item%command==command_end_of_formula .or.
+!     &            fl_item%command==command_set_target_init .or.
+!     &            fl_item%command==command_set_target_update .or.
+!     &            fl_item%command==command_new_intermediate .or.
+!     &            fl_item%command==command_del_intermediate .or.
+!     &            fl_item%command==command_reorder) then
+!            ! Do nothing
+!            ! write(itflog,*) '[END]'
+!            ! write(itflog,*) '[INIT TARGET]',fl_item%target
+!            ! write(itflog,*) '[SET TARGET]',fl_item%target
+!            ! write(itflog,*) '[NEW INTERMEDIATE]',fl_item%target
+!            ! write(itflog,*) '[DELETE INTERMEDIATE]',fl_item%target
+!            ! write(itflog,*) '[REORDER]',fl_item%target
+!         else
+!            write(itflog,*) 'unknown command ',fl_item%command,
+!     &           fl_item%target
+!         end if
+!
+!
+!      end if
+!
+!      ! Optionally print the formula items to another output file
+!      if (print_form) then
+!        call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
+!      end if
+!      !write(itflog,*) "term # ", contr_no
+!
+!
+!      ! Check if at the end of the list, if not, point to the next item
+!      fl_item => fl_item%next
+!
+!      ! Count the number of terms
+!      contr_no = contr_no+1
+!
+!      end do
 
 
 

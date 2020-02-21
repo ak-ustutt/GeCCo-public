@@ -128,11 +128,27 @@
             call quit(1,'Please check the bcontr.tmp file')
          end if
 
+
+         exe_line='python3 $GECCO_DIR/itf_python/remove_extra_lines.py'
+     &             //' bcontr2.tmp'
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to remove exta lines in ITF code',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing remove_exta_lines.py"
+            call quit(1,'Please check the bcontr2.tmp file')
+         end if
+
+
          ! Main ITF algo file processing
          call atim_csw(cpu0,sys0,wall0)
 
          exe_line='python3 $GECCO_DIR/itf_python/process.py -i '
-     &             //'bcontr2.tmp -o '//trim(name_out)
+     &             //'bcontr3.tmp -o '//trim(name_out)
      &             //' '//trim(flags)
          write(lulog,*) "Executing: ", exe_line
          call execute_command_line(trim(exe_line),exitstat=e)
@@ -143,34 +159,34 @@
 
          if (e > 0) then
             write(lulog,*) "Error in executing process.py"
-            call quit(1,'Please check the bcontr2.tmp file')
+            call quit(1,'Please check the bcontr3.tmp file')
          end if
 
-         ! Quick and dirty scan to remove unnecessary load and drop lines
-         call atim_csw(cpu0,sys0,wall0)
-
-         exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
-     &             //trim(name_out)
-         write(lulog,*) "Executing: ", exe_line
-         call execute_command_line(trim(exe_line),exitstat=e)
-
-         call atim_csw(cpu,sys,wall)
-         call prtim(lulog,'Time to reduce ITF algo file',
-     &              cpu-cpu0,sys-sys0,wall-wall0)
-
-         if (e > 0) then
-            write(lulog,*) "Error in executing reduce.py"
-            call quit(1,'Please check the ITF algo file')
-         end if
-
-         exe_line='mv tmp.itfaa '//trim(name_out)
-         write(lulog,*) "Executing: ", exe_line
-         call execute_command_line(trim(exe_line),exitstat=e)
-
-         if (e > 0) then
-            write(lulog,*) "Error in renaming files"
-            call quit(1,'Please check the ITF algo file')
-         end if
+!         ! Quick and dirty scan to remove unnecessary load and drop lines
+!         call atim_csw(cpu0,sys0,wall0)
+!
+!         exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
+!     &             //trim(name_out)
+!         write(lulog,*) "Executing: ", exe_line
+!         call execute_command_line(trim(exe_line),exitstat=e)
+!
+!         call atim_csw(cpu,sys,wall)
+!         call prtim(lulog,'Time to reduce ITF algo file',
+!     &              cpu-cpu0,sys-sys0,wall-wall0)
+!
+!         if (e > 0) then
+!            write(lulog,*) "Error in executing reduce.py"
+!            call quit(1,'Please check the ITF algo file')
+!         end if
+!
+!         exe_line='mv tmp.itfaa '//trim(name_out)
+!         write(lulog,*) "Executing: ", exe_line
+!         call execute_command_line(trim(exe_line),exitstat=e)
+!
+!         if (e > 0) then
+!            write(lulog,*) "Error in renaming files"
+!            call quit(1,'Please check the ITF algo file')
+!         end if
       end if
 
       ! Close binary contraction file
