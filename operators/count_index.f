@@ -2361,11 +2361,6 @@
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
      &                      .true.)
 
-      ! If t1 or t2 is an intermediate, index needs to be consisent with
-      ! the item%itype info (which came from the previous line)
-      !if (item%inter(1)) call match_idx_with_itype(item, str1, n_cnt)
-
-
       if (ntest>100) then
          write(item%out,*) "STR1: {", str1%str, "}"
          write(item%out,*) "STR2: {", str2%str, "}"
@@ -2755,98 +2750,6 @@
 
       return
       end
-
-
-!*----------------------------------------------------------------------*
-!      subroutine match_idx_with_itype(item, idx, n_cnt)
-!*----------------------------------------------------------------------*
-!!
-!*----------------------------------------------------------------------*
-!
-!      use itf_utils
-!      implicit none
-!      include 'opdim.h'
-!      include 'def_contraction.h'
-!      include 'def_itf_contr.h'
-!
-!      type(itf_contr), intent(inout) ::
-!     &   item           ! ITF binary contraction
-!      type(index_str), intent(inout) ::
-!     &   idx
-!      integer, intent(in) ::
-!     &   n_cnt
-!
-!      character(len=1) ::
-!     &   tmp
-!      integer ::
-!     &   itmp, i, cnt_poss(n_cnt)
-!
-!
-!      if (item%rank1<=2) return
-!      ! TODO: this is shit
-!      !write(item%out,*) "item: ", item%itype
-!      !write(item%out,*) "idx: ", idx%itype
-!      !write(item%out,*) "cnt_poss: ", idx%cnt_poss
-!      !write(item%out,*) "str: ", idx%str
-!
-!      cnt_poss = idx%cnt_poss
-!
-!      if (item%itype(1)/=idx%itype(1)) then
-!         tmp = idx%str(2)
-!         idx%str(2) = idx%str(1)
-!         idx%str(1) = tmp
-!         itmp = idx%itype(2)
-!         idx%itype(2) = idx%itype(1)
-!         idx%itype(1) = itmp
-!
-!         do i = 1, n_cnt
-!            if (idx%cnt_poss(i)==1) then
-!               cnt_poss(i)=2
-!               exit
-!            end if
-!         end do
-!         do i = 1, n_cnt
-!            if (idx%cnt_poss(i)==2) then
-!               cnt_poss(i)=1
-!               exit
-!            end if
-!         end do
-!
-!      end if
-!
-!      if (item%rank1>2) then
-!         if (item%itype(3)/=idx%itype(3)) then
-!            tmp = idx%str(4)
-!            idx%str(4) = idx%str(3)
-!            idx%str(3) = tmp
-!            itmp = idx%itype(4)
-!            idx%itype(4) = idx%itype(3)
-!            idx%itype(3) = itmp
-!         end if
-!
-!         do i = 1, n_cnt
-!            if (idx%cnt_poss(i)==3) then
-!               cnt_poss(i)=4
-!               exit
-!            end if
-!         end do
-!         do i = 1, n_cnt
-!            if (idx%cnt_poss(i)==4) then
-!               cnt_poss(i)=3
-!               exit
-!            end if
-!         end do
-!      end if
-!
-!      idx%cnt_poss = cnt_poss
-!
-!      !write(item%out,*) "item: ", item%itype
-!      !write(item%out,*) "idx: ", idx%itype
-!      !write(item%out,*) "cnt_poss: ", idx%cnt_poss
-!      !write(item%out,*) "str: ", idx%str
-!
-!      return
-!      end
 
 
 *----------------------------------------------------------------------*
