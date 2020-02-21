@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 21-02-2020 09:31
+// Created on: 21-02-2020 12:46
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -51,9 +51,9 @@ tensor: ShiftP[], ShiftP
 
 // Intermediates
 tensor: ITIN[abij],        !Create{type:plain}
-tensor: STIN0001aaaa[ibaj], !Create{type:plain}
-tensor: STIN0001baab[ibaj], !Create{type:plain}
-tensor: STIN0001baba[ibaj], !Create{type:plain}
+tensor: STIN0001aaaa[abij], !Create{type:plain}
+tensor: STIN0001baab[abij], !Create{type:plain}
+tensor: STIN0001baba[abij], !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 tensor: C[abij],           !Create{type:plain}
@@ -151,34 +151,34 @@ drop K4E1:eecc[abij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc STIN0001aaaa[ibaj], STIN0001baab[ibaj], STIN0001baba[ibaj], ITIN[abij]
+alloc STIN0001aaaa[abij], STIN0001baab[abij], STIN0001baba[abij], ITIN[abij]
 load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[ibaj] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001aaaa[abij] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
 drop T:eecc[bcjk], K:eecc[acik]
 load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[ibaj] += K:eecc[acik] T:eecc[bcjk]
+.STIN0001aaaa[abij] += K:eecc[acik] T:eecc[bcjk]
 drop T:eecc[bcjk], K:eecc[acik]
 load K:eecc[acki], T:eecc[bckj]
-.STIN0001baab[ibaj] += K:eecc[acki] T:eecc[bckj]
+.STIN0001baab[abij] += K:eecc[acki] T:eecc[bckj]
 drop T:eecc[bckj], K:eecc[acki]
 load K:eecc[caki], T:eecc[bcjk]
-.STIN0001baba[ibaj] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
+.STIN0001baba[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
 drop T:eecc[bcjk], K:eecc[caki]
 load K:eecc[acik], T:eecc[bcjk]
-.STIN0001baba[ibaj] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
+.STIN0001baba[abij] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
 drop T:eecc[bcjk], K:eecc[acik]
 load T:eecc[cbkj]
-.ITIN[abij] += .5*STIN0001aaaa[kaci] T:eecc[cbkj]
+.ITIN[abij] += .5*STIN0001aaaa[caki] T:eecc[cbkj]
 drop T:eecc[cbkj]
 load T:eecc[bcjk]
-.ITIN[abij] += .5*STIN0001baba[kaci] (T:eecc[bcjk] - T:eecc[cbjk])
+.ITIN[abij] += .5*STIN0001baba[caki] (T:eecc[bcjk] - T:eecc[cbjk])
 drop T:eecc[bcjk]
 load T:eecc[cbik]
-.ITIN[abij] += .5*STIN0001baab[kacj] T:eecc[cbik]
+.ITIN[abij] += .5*STIN0001baab[cakj] T:eecc[cbik]
 drop T:eecc[cbik]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baba[ibaj], STIN0001baab[ibaj], STIN0001aaaa[ibaj]
+drop ITIN[abij], STIN0001baba[abij], STIN0001baab[abij], STIN0001aaaa[abij]
 store R:eecc[abij]
 
 alloc ECC[]
