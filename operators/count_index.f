@@ -575,6 +575,7 @@
      &   intpp,
      &   pline
 
+
       ! Being a special block which the python processor will pull out
       ! into its own code block
       intpp = .false.
@@ -582,7 +583,6 @@
          intpp = .true.
          write(itflog,'(a)') "BEGIN_INTPP"
       end if
-
 
       ! Mark begining of spin summed block
       write(itflog,'(a5)') 'BEGIN'
@@ -622,30 +622,19 @@
          ! Don't need perm line for intermediates or tensor products
          if (.not. item%inter(3) .and. .not. item%product) then
 
-      !      if (item%product) then
-
-      !         ! For tensor product case, intorduce a factor of two for the
-      !         ! hypothtical permutation line
-      !         item%fact = item%fact * 2.0d+0
-
-      !      else
-
             pline = .true.
 
-            !TODO: just copy item??
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                           inter_itype)
             call assign_index(pitem)
 
-            ! TODO: For now, so perm lines have same name as non-perm lines
+            pitem%old_name = pitem%label_res
             pitem%label_res = item%label_res
 
             ! Permute indicies and update factor
             ! -1 factor for permuation line
             call create_permutation(pitem, contr_info%perm)
-            !call print_itf_contr(pitem)
 
-            !end if
          end if
 
       end if
@@ -1187,9 +1176,6 @@
             contains2 = .false.
             s1 = .false.
             if (item%rank1>2) then
-               ! TODO: check size of spin - size could be bigger than
-               ! needed...
-               !do i = 1, size(item%all_spins(j)%t_spin(1)%spin,2)
                do i = 1, item%rank1/2
                   if (item%all_spins(j)%t_spin(1)%spin(1,i)==1) then
                      contains1 = .true.
@@ -1291,14 +1277,17 @@
       if (item%inter(1)) then
          call inter_spin_name(t_spin(1)%spin,item%rank1/2,slabel1)
          nt1 = trim(nt1)//trim(slabel1)
+         call reorder_intermediate(item%rank1,new_idx1,item%nops1)
       end if
       if (item%inter(2)) then
          call inter_spin_name(t_spin(2)%spin,item%rank2/2,slabel2)
          nt2 = trim(nt2)//trim(slabel2)
+         call reorder_intermediate(item%rank2,new_idx2,item%nops2)
       end if
       if (item%inter(3)) then
          call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
          nres = trim(nres)//trim(slabel3)
+         call reorder_intermediate(item%rank3,new_idx3,item%nops3)
       end if
 
       ! Reorder integrals into fixed slot order
@@ -1309,12 +1298,6 @@
      &                      new_j,
      &                      nt2,item%nops2)
 
-      call reorder_intermediate(item%inter(1),item%rank1,new_idx1,
-     &                          item%nops1)
-      call reorder_intermediate(item%inter(2),item%rank2,new_idx2,
-     &                          item%nops2)
-      call reorder_intermediate(item%inter(3),item%rank3,new_idx3,
-     &                          item%nops3)
 
       !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%out)
       !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%out)
@@ -1658,7 +1641,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine reorder_intermediate(inter,rank,idx,nops)
+      subroutine reorder_intermediate(rank,idx,nops)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1674,8 +1657,6 @@
       integer, intent(in) ::
      &   rank,
      &   nops(ngastp)
-      logical, intent(in) ::
-     &   inter
 
       integer ::
      &   itype(rank),
@@ -1685,9 +1666,6 @@
      &   tmp
       logical ::
      &   permute
-
-
-      if (.not. inter) return
 
       do i = 1, rank
          itype(i) = get_itype(idx(i:i))
