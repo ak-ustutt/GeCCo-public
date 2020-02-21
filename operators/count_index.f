@@ -500,6 +500,46 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine set_itype(item, itype)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &   item        ! ITF contraction object; holds all info about the ITF algo line
+      integer, intent(inout) ::
+     &   itype(INDEX_LEN)
+
+      ! If the current result is not an intermeidte, don't need an itype
+      ! for the next line
+      if (.not. item%inter(3)) then
+         itype = 0
+         return
+      end if
+
+      if (item%rank3==2) then
+         itype(1) = get_itype(item%idx3(1:1))
+         itype(2) = get_itype(item%idx3(2:2))
+      else if (item%rank3==4) then
+         itype(1) = get_itype(item%idx3(1:1))
+         itype(2) = get_itype(item%idx3(2:2))
+         itype(3) = get_itype(item%idx3(4:4))
+         itype(4) = get_itype(item%idx3(3:3))
+      end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
      &                           inter_itype)
 *----------------------------------------------------------------------*
@@ -556,7 +596,7 @@
 
 
       ! 2. Assign index / Determine sign
-      call assign_new_index(item)
+      call assign_index(item)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -599,7 +639,7 @@
             !TODO: just copy item??
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                           inter_itype)
-            call assign_new_index(pitem)
+            call assign_index(pitem)
 
             ! TODO: For now, so perm lines have same name as non-perm lines
             pitem%label_res = item%label_res
@@ -619,16 +659,19 @@
       call assign_spin(item)
       if (pline) call assign_spin(pitem)
 
+
       ! 5. Loop over spin cases and print out each line
       call print_spin_cases(item)
       if (pline) then
          call print_spin_cases(pitem)
       end if
 
+
       ! 7. Print symmetrisation term
       if (.not. item%inter(3)) then
          call print_symmetrise(old_name, item)
       end if
+
 
       ! 8. If an intermediate, set inter_itype for use in next line
       ! where the intermediate is created
@@ -636,7 +679,6 @@
 
 
       if (ntest>0) then
-      !if (.true.) then
          call print_itf_contr(item)
          if (pline) call print_itf_contr(pitem)
       end if
@@ -658,43 +700,242 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine set_itype(item, itype)
+      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
+     &                           itype)
 *----------------------------------------------------------------------*
-!
+!     Initialise ITF contraction object
 *----------------------------------------------------------------------*
 
       use itf_utils
       implicit none
+
       include 'opdim.h'
-      include 'mdef_operator_info.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
-      include 'def_formula_item.h'
+      include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
+      type(binary_contr), intent(in) ::
+     &     contr_info   ! Information about binary contraction
       type(itf_contr), intent(inout) ::
-     &   item        ! ITF contraction object; holds all info about the ITF algo line
-      integer, intent(inout) ::
+     &     item     ! Object which holds information necessary to print out an ITF algo line
+      integer, intent(in) ::
+     &     perm,        ! Permutation information
+     &     comm,        ! formula_item command
+     &     lulog,        ! Output file
      &   itype(INDEX_LEN)
+      logical, intent(in) ::
+     &     itin
 
-      ! If the current result is not an intermeidte, don't need an itype
-      ! for the next line
+      ! Assign output file
+      item%out=lulog
+
+      ! Assign command type
+      item%command=comm
+
+      ! Get number of contraction and external indices on each tensor
+      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
+
+      ! Set ranks of tensors using matricies from itf_ops
+      call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
+      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
+      call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
+
+      ! Set number of contraction indicies
+      item%contri = sum(sum(item%c, dim=1))
+
+      ! Set external lines (used for permuations)
+      item%perm_case = contr_info%perm
+
+      ! Determine factor from equivalent lines
+      item%fact = 1.0d+0
+      call itf_equiv_lines_factor(item%c, item%fact)
+
+      ! Get any remaining factors from GeCCo
+      item%fact = item%fact * abs(contr_info%fact_itf)
+      !item%fact = item%fact * contr_info%fact_itf
+
+
+      ! Assign labels
+      item%label_t1=contr_info%label_op1
+
+      ! Check if an intermediate
+      item%inter(1) = check_inter(item%label_t1)
+      if (.not. item%inter(1)) then
+         ! Check if a density matrix
+         item%den(1) = check_den(item%label_t1)
+
+         if (.not. item%den(1)) then
+            ! Check if an integral
+            item%int(1) = check_int(item%label_t1)
+            if (item%int(1) .and. item%rank1==4) then
+               call check_j_integral(item%e1, item%c, item%nops1,
+     &                               item%j_int, .false.)
+            end if
+         end if
+      end if
+
+
+      if (item%command/=command_cp_intm .or.
+     &    item%command/=command_add_intm) then
+
+         ! Operator 2 does not exist in [ADD] or [COPY]
+         item%label_t2=contr_info%label_op2
+
+         ! Assign permutation number
+         item%permute=perm
+
+         item%inter(2) = check_inter(item%label_t2)
+
+         if (.not. item%inter(2)) then
+            item%den(2) = check_den(item%label_t2)
+
+            if (.not. item%den(2)) then
+               item%int(2) = check_int(item%label_t2)
+               if (item%int(2) .and. item%rank2==4) then
+                  call check_j_integral(item%e2, item%c, item%nops2,
+     &                                  item%j_int, .true.)
+               end if
+            end if
+         end if
+      end if
+
+      item%label_res=contr_info%label_res
+      item%inter(3) = check_inter(item%label_res)
+      item%int(3) = .false.
+
+      call check_symmetric(contr_info, item%command, item%symmetric)
+
+      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
       if (.not. item%inter(3)) then
-         itype = 0
-         return
+         call check_symmetric(contr_info, item%command, item%symm_res)
+
+         ! Add factor to account for factor of two when the residual is
+         ! symmetrised:
+         ! R:eecc[abij] += G:eecc[abij]
+         ! R:eecc[abij] += G:eecc[baji]
+         if (item%symm_res .and. item%permute==0) then
+            if (contr_info%label_res/='INTpp') then
+               item%fact = item%fact * 0.5d+0
+            end if
+         end if
       end if
 
-      if (item%rank3==2) then
-         itype(1) = get_itype(item%idx3(1:1))
-         itype(2) = get_itype(item%idx3(2:2))
-      else if (item%rank3==4) then
-         itype(1) = get_itype(item%idx3(1:1))
-         itype(2) = get_itype(item%idx3(2:2))
-         itype(3) = get_itype(item%idx3(4:4))
-         itype(4) = get_itype(item%idx3(3:3))
+
+      ! Remove zeorth-body density from equations
+      if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
+         item%label_t2 = ''
+         item%command = command_add_intm
+      else if (item%label_t1 == 'GAM0' .and. item%rank1 == 0
+     &         .and. item%command /= command_add_intm) then
+         item%label_t1 = item%label_t2
+         item%rank1 = item%rank2
+         item%e1 = item%e2
+         item%nops1 = item%nops2
+         item%int(1) = item%int(2)
+         item%inter(1) = item%inter(2)
+         item%label_t2 = ''
+         item%e2 = 0
+         item%nops2 = 0
+         item%int(2) = .false.
+         item%inter(2) = .false.
+         item%command = command_add_intm
       end if
+
+
+      ! Assign factor --- use special ITF factor
+      ! the ITF factor is closer to the value expected from standard
+      ! diagram rules, but still some care has to be taken when translating
+      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+      !item%fact=contr_info%fact_itf
+
+
+      ! Assign index string. Tensor ranks and number
+      ! of operators are also set here
+      if (item%command==command_cp_intm .or.
+     &    item%command==command_add_intm) then
+         ! For [ADD] and [COPY]
+         ! Not a binary contraction
+         item%binary = .false.
+         !call assign_add_index(contr_info,item)
+         !call assign_index(contr_info,item)
+      else
+         ! For other contractions
+         !call assign_index(contr_info,item)
+         !call assign_index(contr_info,item)
+      end if
+
+
+      ! TODO: bit of a hack to avoid seg faults for rank == 0
+      ! Instead have a check when assiging spins if == 0
+      if (item%rank1>0) then
+         allocate(item%t_spin(1)%spin(2, item%rank1/2))
+      else
+         allocate(item%t_spin(1)%spin(2, 2))
+      end if
+
+      if (item%rank2>0) then
+         allocate(item%t_spin(2)%spin(2, item%rank2/2))
+      else
+         allocate(item%t_spin(2)%spin(2, 2))
+      end if
+
+      if (item%rank3>0) then
+         allocate(item%t_spin(3)%spin(2, item%rank3/2))
+      else
+         allocate(item%t_spin(3)%spin(2, 2))
+      end if
+
+
+      item%t_spin(1)%spin = 0
+      item%t_spin(2)%spin = 0
+      item%t_spin(3)%spin = 0
+
+      ! Initalise the number of different spin cases
+      ! Each line has a minimum of one spin case
+      item%spin_cases = 1
+
+
+      ! Check if a tensor product
+      if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
+         item%product=.true.
+      end if
+
+      ! Number of spin cases associated with this line
+      item%nspin_cases=1
+
+
+      ! Set itype from previous line (can be 0)
+      item%itype = itype
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine itf_deinit(item)
+*----------------------------------------------------------------------*
+!     Deinitialise ITF contraction object
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &     item     ! Object which holds information necessary to print out an ITF algo line
+
+      deallocate(item%t_spin(1)%spin)
+      deallocate(item%t_spin(2)%spin)
+      deallocate(item%t_spin(3)%spin)
+
+      return
+      end
+
 
 
 *----------------------------------------------------------------------*
@@ -973,9 +1214,6 @@
             contains2 = .false.
             s2 = .false.
             if (item%rank2>2) then
-!      call print_spin(item%all_spins(j)%t_spin(2)%spin, item%rank2,
-!     &                "T2", item%out)
-               !do i = 1, size(item%all_spins(j)%t_spin(2)%spin,2)
                do i = 1, item%rank2/2
                   if (item%all_spins(j)%t_spin(2)%spin(1,i)==1) then
                      contains1 = .true.
@@ -1021,7 +1259,7 @@
      &     nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=INDEX_LEN) ::
      &     slabel1, slabel2, slabel3,
-     &     new_idx1, new_idx2
+     &     new_idx1, new_idx2, new_idx3
       character(len=264) ::
      &     itf_line,          ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
@@ -1040,6 +1278,7 @@
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
+      new_idx3 = item%idx3
       c_fact = item%fact
       new_j = item%j_int
 
@@ -1069,14 +1308,19 @@
       end if
 
       ! Reorder integrals into fixed slot order
-      ! TODO: I think this is ok to do after converting to abab block,
-      !       but need to check...
       call reorder_integral(item%int(1),item%rank1,new_idx1,
      &                      new_j,
      &                      nt1,item%nops1)
       call reorder_integral(item%int(2),item%rank2,new_idx2,
      &                      new_j,
      &                      nt2,item%nops2)
+
+      call reorder_intermediate(item%inter(1),item%rank1,new_idx1,
+     &                          item%nops1)
+      call reorder_intermediate(item%inter(2),item%rank2,new_idx2,
+     &                          item%nops2)
+      call reorder_intermediate(item%inter(3),item%rank3,new_idx3,
+     &                          item%nops3)
 
       !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%out)
       !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%out)
@@ -1149,7 +1393,8 @@
 
       ! Construct complete itf algo line from the above parts
       itf_line='.'//trimal(nres)//
-     &    '['//trim(item%idx3)//'] '//equal_op//' '//
+!     &    '['//trim(item%idx3)//'] '//equal_op//' '//
+     &    '['//trim(new_idx3)//'] '//equal_op//' '//
      &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
       ! Print it to bcontr.tmp
@@ -1282,6 +1527,7 @@
      &   permute,
      &   symmetric
 
+      ! TODO: is this the same as reorder amplitude?
 
       if (.not. integral) return
       if (rank == 2) return
@@ -1416,6 +1662,95 @@
       return
       end
 
+
+*----------------------------------------------------------------------*
+      subroutine reorder_intermediate(inter,rank,idx,nops)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank,
+     &   nops(ngastp)
+      logical, intent(in) ::
+     &   inter
+
+      integer ::
+     &   itype(rank),
+     &   i,
+     &   itmp
+      character(len=1) ::
+     &   tmp
+      logical ::
+     &   permute
+
+
+      if (.not. inter) return
+
+      do i = 1, rank
+         itype(i) = get_itype(idx(i:i))
+      end do
+
+      do i = 1, rank/2
+         if (itype(i)>itype(i+rank/2)) then
+            ! Swap creation and annhilation
+            tmp = idx(i:i)
+            idx(i:i) = idx(i+rank/2:i+rank/2)
+            idx(i+rank/2:i+rank/2) = tmp
+
+            ! Update itype
+            itmp = itype(i)
+            itype(i) = itype(i+rank/2)
+            itype(i+rank/2) = itmp
+         end if
+      end do
+
+      ! Permute pairs
+      if (nops(2)<3) then
+         permute = .false.
+         do i = 1, rank/2-1
+            if (itype(i)>itype(i+1)) then
+               tmp = idx(i:i)
+               idx(i:i) = idx(i+1:i+1)
+               idx(i+1:i+1) = tmp
+
+               tmp = idx(i+rank/2:i+rank/2)
+               idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
+               idx(i+1+rank/2:i+1+rank/2) = tmp
+
+               permute = .true.
+            else if (itype(i)<itype(i+1)) then
+               permute = .true.
+            end if
+         end do
+
+         ! Check the annhilations
+         if (.not. permute) then
+            do i = rank/2+1, rank-1
+               if (itype(i)>itype(i+1)) then
+                  tmp = idx(i:i)
+                  idx(i:i) = idx(i+1:i+1)
+                  idx(i+1:i+1) = tmp
+
+                  tmp = idx(i-rank/2:i-rank/2)
+                  idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
+                  idx(i+1-rank/2:i+1-rank/2) = tmp
+               end if
+            end do
+         end if
+
+      end if
+
+      return
+      end
 
 
 *----------------------------------------------------------------------*
@@ -1932,7 +2267,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine assign_new_index(item)
+      subroutine assign_index(item)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
@@ -2373,11 +2708,6 @@
       end if
 
 
-      ! Check intermediates have correct itypes, if not, permute the
-      ! pairs
-      if (item%inter(1)) call match_idx_with_itype2(item, str1)
-
-
       s1 = ""
       s2 = ""
       s3 = ""
@@ -2514,69 +2844,6 @@
       !write(item%out,*) "idx: ", idx%itype
       !write(item%out,*) "cnt_poss: ", idx%cnt_poss
       !write(item%out,*) "str: ", idx%str
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine match_idx_with_itype2(item, idx)
-*----------------------------------------------------------------------*
-!
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item           ! ITF binary contraction
-      type(index_str), intent(inout) ::
-     &   idx
-
-      character(len=1) ::
-     &   tmp1, tmp2
-      integer ::
-     &   itmp1, itmp2, i
-
-
-      if (item%rank1<=2) return
-
-      ! Update itype which may have changed
-      do i = 1, item%rank1
-         idx%itype(i) = get_itype(idx%str(i))
-      end do
-
-      !write(item%out,*) "itype: ", item%itype
-      !write(item%out,*) "idx itype: ", idx%itype
-      !write(item%out,*) "idx: ", idx%str
-      do i = 1, 4
-         if (item%itype(i)/=idx%itype(i)) then
-
-            !write(item%out,*) "changing ", idx%str
-            !write(item%out,*) "changing ", idx%itype
-
-            tmp1 = idx%str(2)
-            tmp2 = idx%str(4)
-            idx%str(2) = idx%str(1)
-            idx%str(4) = idx%str(3)
-            idx%str(1) = tmp1
-            idx%str(3) = tmp2
-
-            itmp1 = idx%itype(2)
-            itmp2 = idx%itype(4)
-            idx%itype(2) = idx%itype(1)
-            idx%itype(4) = idx%itype(3)
-            idx%itype(1) = itmp1
-            idx%itype(3) = itmp2
-
-            !write(item%out,*) "to ", idx%str
-            !write(item%out,*) "to ", idx%itype
-
-         end if
-      end do
 
       return
       end
@@ -4139,242 +4406,6 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                           itype)
-*----------------------------------------------------------------------*
-!     Initialise ITF contraction object
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info   ! Information about binary contraction
-      type(itf_contr), intent(inout) ::
-     &     item     ! Object which holds information necessary to print out an ITF algo line
-      integer, intent(in) ::
-     &     perm,        ! Permutation information
-     &     comm,        ! formula_item command
-     &     lulog,        ! Output file
-     &   itype(INDEX_LEN)
-      logical, intent(in) ::
-     &     itin
-
-      ! Assign output file
-      item%out=lulog
-
-      ! Assign command type
-      item%command=comm
-
-      ! Get number of contraction and external indices on each tensor
-      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
-
-      ! Set ranks of tensors using matricies from itf_ops
-      call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
-      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
-      call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
-
-      ! Set number of contraction indicies
-      item%contri = sum(sum(item%c, dim=1))
-
-      ! Set external lines (used for permuations)
-      item%perm_case = contr_info%perm
-
-      ! Determine factor from equivalent lines
-      item%fact = 1.0d+0
-      call itf_equiv_lines_factor(item%c, item%fact)
-
-      ! Get any remaining factors from GeCCo
-      item%fact = item%fact * abs(contr_info%fact_itf)
-      !item%fact = item%fact * contr_info%fact_itf
-
-
-      ! Assign labels
-      item%label_t1=contr_info%label_op1
-
-      ! Check if an intermediate
-      item%inter(1) = check_inter(item%label_t1)
-      if (.not. item%inter(1)) then
-         ! Check if a density matrix
-         item%den(1) = check_den(item%label_t1)
-
-         if (.not. item%den(1)) then
-            ! Check if an integral
-            item%int(1) = check_int(item%label_t1)
-            if (item%int(1) .and. item%rank1==4) then
-               call check_j_integral(item%e1, item%c, item%nops1,
-     &                               item%j_int, .false.)
-            end if
-         end if
-      end if
-
-
-      if (item%command/=command_cp_intm .or.
-     &    item%command/=command_add_intm) then
-
-         ! Operator 2 does not exist in [ADD] or [COPY]
-         item%label_t2=contr_info%label_op2
-
-         ! Assign permutation number
-         item%permute=perm
-
-         item%inter(2) = check_inter(item%label_t2)
-
-         if (.not. item%inter(2)) then
-            item%den(2) = check_den(item%label_t2)
-
-            if (.not. item%den(2)) then
-               item%int(2) = check_int(item%label_t2)
-               if (item%int(2) .and. item%rank2==4) then
-                  call check_j_integral(item%e2, item%c, item%nops2,
-     &                                  item%j_int, .true.)
-               end if
-            end if
-         end if
-      end if
-
-      item%label_res=contr_info%label_res
-      item%inter(3) = check_inter(item%label_res)
-      item%int(3) = .false.
-
-      call check_symmetric(contr_info, item%command, item%symmetric)
-
-      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
-      if (.not. item%inter(3)) then
-         call check_symmetric(contr_info, item%command, item%symm_res)
-
-         ! Add factor to account for factor of two when the residual is
-         ! symmetrised:
-         ! R:eecc[abij] += G:eecc[abij]
-         ! R:eecc[abij] += G:eecc[baji]
-         if (item%symm_res .and. item%permute==0) then
-            if (contr_info%label_res/='INTpp') then
-               item%fact = item%fact * 0.5d+0
-            end if
-         end if
-      end if
-
-
-      ! Remove zeorth-body density from equations
-      if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
-         item%label_t2 = ''
-         item%command = command_add_intm
-      else if (item%label_t1 == 'GAM0' .and. item%rank1 == 0
-     &         .and. item%command /= command_add_intm) then
-         item%label_t1 = item%label_t2
-         item%rank1 = item%rank2
-         item%e1 = item%e2
-         item%nops1 = item%nops2
-         item%int(1) = item%int(2)
-         item%inter(1) = item%inter(2)
-         item%label_t2 = ''
-         item%e2 = 0
-         item%nops2 = 0
-         item%int(2) = .false.
-         item%inter(2) = .false.
-         item%command = command_add_intm
-      end if
-
-
-      ! Assign factor --- use special ITF factor
-      ! the ITF factor is closer to the value expected from standard
-      ! diagram rules, but still some care has to be taken when translating
-      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
-      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      !item%fact=contr_info%fact_itf
-
-
-      ! Assign index string. Tensor ranks and number
-      ! of operators are also set here
-      if (item%command==command_cp_intm .or.
-     &    item%command==command_add_intm) then
-         ! For [ADD] and [COPY]
-         ! Not a binary contraction
-         item%binary = .false.
-         !call assign_add_index(contr_info,item)
-         !call assign_new_index(contr_info,item)
-      else
-         ! For other contractions
-         !call assign_index(contr_info,item)
-         !call assign_new_index(contr_info,item)
-      end if
-
-
-      ! TODO: bit of a hack to avoid seg faults for rank == 0
-      ! Instead have a check when assiging spins if == 0
-      if (item%rank1>0) then
-         allocate(item%t_spin(1)%spin(2, item%rank1/2))
-      else
-         allocate(item%t_spin(1)%spin(2, 2))
-      end if
-
-      if (item%rank2>0) then
-         allocate(item%t_spin(2)%spin(2, item%rank2/2))
-      else
-         allocate(item%t_spin(2)%spin(2, 2))
-      end if
-
-      if (item%rank3>0) then
-         allocate(item%t_spin(3)%spin(2, item%rank3/2))
-      else
-         allocate(item%t_spin(3)%spin(2, 2))
-      end if
-
-
-      item%t_spin(1)%spin = 0
-      item%t_spin(2)%spin = 0
-      item%t_spin(3)%spin = 0
-
-      ! Initalise the number of different spin cases
-      ! Each line has a minimum of one spin case
-      item%spin_cases = 1
-
-
-      ! Check if a tensor product
-      if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
-         item%product=.true.
-      end if
-
-      ! Number of spin cases associated with this line
-      item%nspin_cases=1
-
-
-      ! Set itype from previous line (can be 0)
-      item%itype = itype
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine itf_deinit(item)
-*----------------------------------------------------------------------*
-!     Deinitialise ITF contraction object
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &     item     ! Object which holds information necessary to print out an ITF algo line
-
-      deallocate(item%t_spin(1)%spin)
-      deallocate(item%t_spin(2)%spin)
-      deallocate(item%t_spin(3)%spin)
-
-      return
-      end
 
 
 *----------------------------------------------------------------------*
