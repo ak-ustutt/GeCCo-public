@@ -1,38 +1,9 @@
 *----------------------------------------------------------------------*
-      pure function check_inter(label)
-*----------------------------------------------------------------------*
-!    Check if tensor is an intermediate
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=MAXLEN_BC_LABEL), intent(in) ::
-     &     label
-      logical ::
-     &     check_inter
-
-      ! Assume these are the names of intermediates
-      if (index(label, "STIN")>0 .or.
-     &    index(label, "LTIN")>0) then
-         check_inter=.true.
-      else
-         check_inter=.false.
-      end if
-
-      end function
-
-
-*----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
      &                     formlog)
 *----------------------------------------------------------------------*
-*     Print ITF info to itflog
+*     Print ITF lines to itflog
 *----------------------------------------------------------------------*
-      ! TODO: fix this...
-      !use itf_utils !copied above from module
       implicit none
 
       include 'opdim.h'
@@ -42,25 +13,25 @@
       include 'def_itf_contr.h'
 
       integer, intent(in) ::
-     &     itflog,            ! Output file for ITF algo code
-     &     formlog            ! Output of GeCco formulae
+     &     itflog,                              ! Output file for ITF algo code
+     &     formlog                              ! Output of GeCco formulae
       type(formula_item), intent(in), target ::
-     &     fl_head            ! Linked list of formulae
+     &     fl_head                              ! Linked list of formulae
       type(operator_info), intent(in) ::
-     &     op_info
+     &     op_info                              ! Operator info for printing formulae
       logical, intent(in) ::
-     &     itin,           ! Create ITIN lines or symmetrise residual at the end
-     &     print_form        ! Print to optional formulae file
+     &     itin,                                ! Create ITIN lines or symmetrise residual at the end
+     &     print_form                           ! Print to optional formulae file
 
       type(formula_item), pointer ::
-     &     fl_item    ! Current formula_item
+     &     fl_item                              ! Current formula_item
       integer ::
-     &     contr_no  ! Counter of contrations
+     &     contr_no                             ! Counter of contrations
       integer ::
-     &   inter_itype(INDEX_LEN)  ! Store inter itype info from previous line
+     &   inter_itype(INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
 
 
-      ! Point to start of linked list
+      ! Point to start of linked list of formulae
       fl_item => fl_head
       contr_no = 0
       inter_itype = 0
@@ -107,16 +78,16 @@
      &           fl_item%target
          end if
 
-      ! Optionally print the formula items to another output file
-      if (print_form) then
-        call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
-      end if
+         ! Optionally print the formula items to another output file
+         if (print_form) then
+          call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
+         end if
 
-      ! Check if at the end of the list, if not, point to the next item
-      fl_item => fl_item%next
+         ! Check if at the end of the list, if not, point to the next item
+         fl_item => fl_item%next
 
-      ! Count the number of terms
-      contr_no = contr_no+1
+         ! Count the number of terms
+         contr_no = contr_no + 1
 
       end do
 
