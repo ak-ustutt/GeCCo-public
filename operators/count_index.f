@@ -529,22 +529,13 @@
      &   pitem      ! ITF contraction object; holds all info about the ITF algo line
       integer ::
      &   perm_case,   ! Info of permutation factors
-     &   i, j, l, k,                ! Loop index
+     &   i,                ! Loop index
      &   ntest = 00
       logical ::
-     &   inter,           ! True if result is an intermediate
-     &   upper,
-     &   symmetric,
      &   intpp,
      &   pline
       character(len=MAXLEN_BC_LABEL) ::
-     &   old_name,
-     &   un_perm_name,
-     &   old_inter
-      character(len=INDEX_LEN) ::
-     &   old_idx,
-     &   un_perm_idx
-
+     &   old_name
 
       ! Being a special block which the python processor will pull out
       ! into its own code block
@@ -586,8 +577,7 @@
       !item%intpp = .false.
 
 
-      call prepare_symmetrise(contr_info, command, perm_case,
-     &                         old_name, item)
+      call prepare_symmetrise(perm_case, old_name, item)
 
 
       if (item%symmetric .and. perm_case==2 .or.
@@ -686,20 +676,12 @@
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
 
-      integer ::
-     &   i
-
       ! If the current result is not an intermeidte, don't need an itype
       ! for the next line
       if (.not. item%inter(3)) then
          itype = 0
          return
       end if
-
-      ! Get current itype of intermediate result
-      !do i = 1, item%rank3
-      !   itype(i) = get_itype(item%idx3(i:i))
-      !end do
 
       if (item%rank3==2) then
          itype(1) = get_itype(item%idx3(1:1))
@@ -738,9 +720,6 @@
      &   shift
       character(len=1) ::
      &   ex_ind(2)
-      logical ::
-     &   found1,
-     &   found2
       character(len=INDEX_LEN) ::
      &   tmp1, tmp2
 
@@ -842,8 +821,6 @@
       real(8), intent(inout) ::
      &     new_fact
 
-      integer ::
-     &   i
       character(len=1) ::
      &   tmp
       integer ::
@@ -899,8 +876,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine prepare_symmetrise(contr_info, command, perm_case,
-     &                               old_name, item)
+      subroutine prepare_symmetrise(perm_case, old_name, item)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -911,19 +887,12 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(binary_contr), intent(inout) ::
-     &   contr_info      ! Information about binary contraction
-      integer, intent(in) ::
-     &   command         ! Type of formula item command, ie. contraction, copy etc.
       character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &   old_name
       integer, intent(in) ::
      &   perm_case    ! Info of permutation factors
       type(itf_contr), intent(inout) ::
      &   item
-
-      logical ::
-     &   symmetric
 
       ! Return if INTPP block
       if (item%intpp) return
@@ -940,7 +909,6 @@
       ! .R[abij] += I[baji]
       old_name = item%label_res
       item%label_res = "ITIN"
-
 
       return
       end
@@ -1054,8 +1022,6 @@
       character(len=INDEX_LEN) ::
      &     slabel1, slabel2, slabel3,
      &     new_idx1, new_idx2
-      character(len=5) ::
-     &     s_int                 ! Intermdiate tensor number
       character(len=264) ::
      &     itf_line,          ! Line of ITF code
      &     st1, st2           ! Name of spin summed tensors + index
@@ -1105,10 +1071,10 @@
       ! Reorder integrals into fixed slot order
       ! TODO: I think this is ok to do after converting to abab block,
       !       but need to check...
-      call reorder_integral(item%int(1),item%rank1,new_idx1,s1,
+      call reorder_integral(item%int(1),item%rank1,new_idx1,
      &                      new_j,
      &                      nt1,item%nops1)
-      call reorder_integral(item%int(2),item%rank2,new_idx2,s2,
+      call reorder_integral(item%int(2),item%rank2,new_idx2,
      &                      new_j,
      &                      nt2,item%nops2)
 
@@ -1281,7 +1247,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine reorder_integral(integral,rank,idx,s1,j_int,label,
+      subroutine reorder_integral(integral,rank,idx,j_int,label,
      &                             nops)
 *----------------------------------------------------------------------*
 !
@@ -1300,7 +1266,6 @@
      &   nops(ngastp)
       logical, intent(in) ::
      &   integral,
-     &   s1,
      &   j_int
       character(len=MAXLEN_BC_LABEL), intent(inout) ::
      &   label
@@ -1671,7 +1636,6 @@
      &   shift_a,
      &   cnt_shift(ngastp),
      &   i, j, k, l,
-     &   shift_p,
      &   op1, op2
       character, dimension(22) ::
      &   ind=(/ 'i','j','k','l','m','n','o','a','b','c','d','e','f',
@@ -1784,7 +1748,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine nicer_pairing(str1, str2, i1, i2, rank1, rank2, factor,
+      subroutine nicer_pairing(str1, str2, i1, i2, rank1, rank2,
      &                         n_cnt)
 *----------------------------------------------------------------------*
 !
@@ -1805,16 +1769,12 @@
      &   rank1,
      &   rank2,
      &   n_cnt
-      real(8), intent(inout) ::
-     &   factor
 
       character (len=1) ::
      &   tmp
       integer ::
      &   pp1, pp2, pp3,        ! Pair position
-     &   distance,
-     &   itmp,
-     &   i, j, k, l, m, n
+     &   i, k, l, m
 
       do i = 1, rank1
          if (i1==str1%str(i)) then
@@ -1901,7 +1861,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine nicer_pairing_one_t(str, i1, i2, rank, factor, n_cnt)
+      subroutine nicer_pairing_one_t(str, i1, i2, rank, n_cnt)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1919,15 +1879,12 @@
       integer, intent(in) ::
      &   rank,
      &   n_cnt
-      real(8), intent(inout) ::
-     &   factor
 
       character (len=1) ::
      &   tmp
       integer ::
      &   pp,
-     &   distance,
-     &   i, j, k, l, m, n
+     &   i, k, l
 
       do i = 1, rank
          if (i1==str%str(i)) then
@@ -1995,55 +1952,33 @@
      &   e1(ngastp,2),       ! Operator numbers of external index 1
      &   e2(ngastp,2),       ! Operator numbers of external index 2
      &   shift,         ! List shift
-     &   shift_a,       ! List shift
-     &   shift_c,       ! List shift
      &   n_cnt,         ! Number of contraction operators
-     &   rank2, rank1,      ! Rank of tensor - either can be T1 or T2
-     &   tensor2, tensor1,  ! Labels a tesor - either 1 or 2
      &   e1ops, e2ops,  ! Number of external ops on T1 and T2
-     &   place,         ! Marks which tensor an index was found
      &   distance,      ! Distance from where an index should be
      &   pp,            ! Paired position - position of paired index
      &   ntest = 000,     ! >100 toggles some debug
-     &   i, j, k, l, m, z,   ! Loop index
-     &   itmp, n,
-     &   ipair,
-     &   sh1, sh2, sh3,
-     &   pp1, pp2, pl1, pl2,
-     &   itype(INDEX_LEN),
-     &   itype1, itype2, ptype
+     &   i, j, k,
+     &   itype(INDEX_LEN)
       character(len=INDEX_LEN) ::
      &   s1, s2, s3,  ! Tmp ITF index strings
      &   tstr
       character(len=1) ::
-     &   tmp, tmp2      ! Scratch space to store index letter
+     &   tmp       ! Scratch space to store index letter
       real(8) ::
-     &   factor,        ! Factor from equivalent lines
      &   p_factor       ! Overall factor from contraction/rearrangment
       type(pair_list) ::
-     &   p_list,       ! Complete list of pairs in binary contraction
-     &   p_list2        ! Complete list of pairs in binary contraction
+     &   p_list       ! Complete list of pairs in binary contraction
       integer, dimension(4) ::
-     &   t_shift,       ! Index shift for external indices
      &   e_shift,       ! Index shift for external indices
      &   c_shift        ! Index shift for contraction indices
       type(index_str) ::
      &   str1,          ! Stores 'normal ordered' index string for T1
      &   str2,          ! Stores 'normal ordered' index string for T2
-     &   str3,          ! Stores 'normal ordered' index string for Res
-     &   t_str1, t_str2 ! Scratch space
+     &   str3           ! Stores 'normal ordered' index string for Res
 
       logical ::        ! These are used when finding pairs of external ops
      &   is_cnt,        ! True if the operator is a contraction op
-     &   found_end,     ! True if found external op to make a pair
-     &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
-     &   found_cnt,     ! True if a contraction operator has been found
-     &   p1, p2,
-     &   found,
-     &   swapped        ! True is exchanged external lines in permutation line
-      integer, pointer ::
-     &   t1cnt_poss(:) => null(),
-     &   t2cnt_poss(:) => null()
+     &   p1, p2
 
       ! Set operator numbers
       c=item%c
@@ -2133,23 +2068,23 @@
          if (p1 .and. p2 .and. item%rank1>2) then
             call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
      &                               p_list%plist(j)%pindex(2),
-     &                               item%rank1, p_factor, n_cnt)
+     &                               item%rank1, n_cnt)
          else if (.not. p1 .and. .not. p2 .and. item%rank2>2) then
             call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
      &                               p_list%plist(j)%pindex(2),
-     &                               item%rank2, p_factor, n_cnt)
+     &                               item%rank2, n_cnt)
 
          ! If a pair is split over two tensors...
          else if (p1 .and. .not. p2 .and. item%rank1>2) then
             call nicer_pairing(str1, str2,
      &                         p_list%plist(j)%pindex(1),
      &                         p_list%plist(j)%pindex(2), item%rank1,
-     &                         item%rank2, p_factor, n_cnt)
+     &                         item%rank2, n_cnt)
          else if (p2 .and. .not. p1 .and. item%rank2>2) then
             call nicer_pairing(str2, str1,
      &                         p_list%plist(j)%pindex(1),
      &                         p_list%plist(j)%pindex(2), item%rank2,
-     &                         item%rank1, p_factor, n_cnt)
+     &                         item%rank1, n_cnt)
          end if
       end do
       !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%out)
@@ -2440,7 +2375,7 @@
 
       ! Check intermediates have correct itypes, if not, permute the
       ! pairs
-      if (item%inter(1)) call match_idx_with_itype2(item, str1, n_cnt)
+      if (item%inter(1)) call match_idx_with_itype2(item, str1)
 
 
       s1 = ""
@@ -2585,7 +2520,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine match_idx_with_itype2(item, idx, n_cnt)
+      subroutine match_idx_with_itype2(item, idx)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -2600,13 +2535,11 @@
      &   item           ! ITF binary contraction
       type(index_str), intent(inout) ::
      &   idx
-      integer, intent(in) ::
-     &   n_cnt
 
       character(len=1) ::
      &   tmp1, tmp2
       integer ::
-     &   itmp1, itmp2, i, cnt_poss(n_cnt)
+     &   itmp1, itmp2, i
 
 
       if (item%rank1<=2) return
@@ -2678,8 +2611,7 @@
      &   p_list
 
       integer ::
-     &   shift,
-     &   i
+     &   shift
 
       shift = 1
 
@@ -2730,10 +2662,9 @@
       logical ::
      &   is_cnt,
      &   found_ex,
-     &   already_found,
-     &   correct_pair
+     &   already_found
       integer ::
-     &   i,j,k,l,
+     &   i,j,
      &   ntest = 000
 
       ! Search only the creations of the first string for ex ops
@@ -2767,9 +2698,9 @@
                write(item%out,*) "matching with ", str1%str(j), t1
                end if
 
-               call suitable_pair3(found_ex, str1, str1, rank1, rank1,
+               call suitable_pair3(found_ex, str1, str1, rank1,
      &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype, t1, t2)
+     &                            p_list, item, itype, t1)
 
                if (found_ex) then
         !write(item%out,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
@@ -2791,9 +2722,9 @@
               write(item%out,*) "searching 2 with ", str1%str(i), t1
               write(item%out,*) "matching 2 with ", str2%str(j), t2
                   end if
-                  call suitable_pair2(found_ex,str1, str2, rank1, rank2,
-     &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype, t1, t2)
+                  call suitable_pair2(found_ex, str2,
+     &                            j, 2, shift, n_cnt,
+     &                            p_list)
 
                   if (found_ex) then
         !write(item%out,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
@@ -2856,9 +2787,9 @@
                write(item%out,*) "matching 3 with ", str1%str(j), t1
                end if
 
-               call suitable_pair2(found_ex, str1, str1, rank1, rank1,
-     &                            i, j, 1, shift, n_cnt,
-     &                            p_list, item, itype, t1, t2)
+               call suitable_pair2(found_ex, str1,
+     &                            j, 1, shift, n_cnt,
+     &                            p_list)
 
                if (found_ex) then
                   !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
@@ -2882,9 +2813,9 @@
               write(item%out,*) "matching 4 with ", str2%str(j), t2
                end if
 
-                  call suitable_pair2(found_ex,str1, str2, rank1, rank2,
-     &                               i, j, 1, shift, n_cnt,
-     &                               p_list, item, itype, t1, t2)
+                  call suitable_pair2(found_ex, str2,
+     &                               j, 1, shift, n_cnt,
+     &                               p_list)
 
                   if (found_ex) then
                   !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
@@ -2915,9 +2846,9 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine suitable_pair2(found_ex, str1, str2, rank1, rank2,
-     &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype, t1, t2)
+      subroutine suitable_pair2(found_ex, str2,
+     &                         place2, ann_cre, shift, n_cnt,
+     &                         p_list)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -2929,24 +2860,16 @@
 
       logical, intent(inout) ::
      &   found_ex
-      type(itf_contr), intent(in) ::
-     &   item
       type(index_str), intent(in) ::
-     &   str1, str2
+     &   str2
       type(pair_list), intent(in) ::
      &   p_list
       integer, intent(in) ::
-     &   place1, place2,
-     &   rank1, rank2,
+     &   place2,
      &   ann_cre,
      &   shift,
-     &   n_cnt,
-     &   t1, t2
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
+     &   n_cnt
 
-      logical ::
-     &   correct_pair
       integer ::
      &   k
 
@@ -2989,9 +2912,9 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine suitable_pair3(found_ex, str1, str2, rank1, rank2,
+      subroutine suitable_pair3(found_ex, str1, str2, rank1,
      &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype, t1, t2)
+     &                         p_list, item, itype, t1)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -3011,11 +2934,11 @@
      &   p_list
       integer, intent(in) ::
      &   place1, place2,
-     &   rank1, rank2,
+     &   rank1,
      &   ann_cre,
      &   shift,
      &   n_cnt,
-     &   t1, t2
+     &   t1
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
 
@@ -3051,7 +2974,7 @@
          ! TODO: t2 are useless
          correct_pair = .false.
          call check_pairing(correct_pair,str1,str2,rank1,
-     &                      rank2,place1,place2,item, itype)
+     &                      place1,place2,item, itype)
          if (.not. correct_pair) then
             found_ex = .false.
             !write(item%out,*) "false here 3"
@@ -3065,7 +2988,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine check_pairing(correct_pair, str1, str2, rank1, rank2,
+      subroutine check_pairing(correct_pair, str1, str2, rank1,
      &                         place1, place2, item, itype)
 *----------------------------------------------------------------------*
 !
@@ -3084,12 +3007,12 @@
      &   str1, str2
       integer, intent(in) ::
      &   place1, place2,
-     &   rank1, rank2
+     &   rank1
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
 
       integer ::
-     &   i, j, extent, k,
+     &   i, j, extent,
      &   pp2
 
       ! Remeber - the itype info refers to the first tensor positions
@@ -3622,7 +3545,6 @@
 
       integer ::
      &   i,j,k,l,m,n,             ! Loop index
-     &   result_spin(4),   ! Spin case of result
      &   hr1, hr2, hr3     ! Half tensor ranks
 
       ! Calculate half ranks for use in indexing letter index strings
@@ -3828,11 +3750,8 @@
      &   z1, z2, r1, r2
       character(len=INDEX_LEN) ::
      &   str1, str2
-      character(len=1) ::
-     &   p1, p2
       logical ::
-     &   eloop,
-     &   error
+     &   eloop
 
       if (item%contri>0)  then
          allocate(poss(2,item%contri))
@@ -4123,17 +4042,8 @@
       logical, intent(inout) ::
      &   eloop     ! Check if at least one spin case is printed out
 
-      logical ::
-     &   s1,       ! True if tensor 1 is mixed spin
-     &   s2,       ! True if tensor 2 is mixed spin
-     &   contains1,
-     &   contains2
       integer ::
-     &   i,
-     &   shift,   ! Index number of different spin cases for an intermediate
-     &   ishift  ! Index number of intermediates on a line
-      character(len=INDEX_LEN) ::
-     &   spin_name
+     &   i
       integer ::
      &   sum1a, sum1b, sum2a, sum2b
 
@@ -4256,8 +4166,6 @@
      &   itype(INDEX_LEN)
       logical, intent(in) ::
      &     itin
-
-      integer :: i, j, ct(ngastp,2)
 
       ! Assign output file
       item%out=lulog

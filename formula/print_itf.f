@@ -53,29 +53,9 @@
      &     print_form        ! Print to optional formulae file
 
       type(formula_item), pointer ::
-     &     fl_item,   ! Current formula_item
-     &     inter_start,    ! Mark start of intermediate search
-     &     res_start,      ! Mark end of intermediate search
-     &     summed_inter    ! Mark intermediate points in intermediate search
-      type(spin_cases), dimension(MAXINT) ::
-     &     spin_inters , ! Array of intermeidates with associated spin cases
-     &     ospin_inters  ! Numerically ordered array of intermeidates with associated spin cases
+     &     fl_item    ! Current formula_item
       integer ::
-     &     i,j,k,     ! Loop indcies
-     &     contr_no, ! Counter of contrations
-     &     kk,
-     &     p_count
-      logical ::
-     &     check_inter,    ! Need to use itf module instead
-     &     more_inter,     ! Check if more intermediates are needed
-     &     finished_inter, ! Check if finished recursive intermediate search
-     &     symm_res        ! True is intermediate contributes to a symmmetric residual
-      integer ::
-     &     tmp_case(INDEX_LEN),
-     &     ninter,       ! Number of intermediates found in recursive search
-     &     shift         ! Used to store sequentially
-      character ::
-     &     ch           ! Scratch
+     &     contr_no  ! Counter of contrations
       integer ::
      &   inter_itype(INDEX_LEN)  ! Store inter itype info from previous line
 
