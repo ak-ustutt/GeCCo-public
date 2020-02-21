@@ -451,7 +451,7 @@
 
       character(len=*), intent(in) ::
      &     error
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &     item
 
       write(item%logfile,*) "ERROR: ", error
@@ -466,7 +466,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine count_index2(iocc, nops)
+      subroutine count_index(iocc, nops)
 *----------------------------------------------------------------------*
 !     Return array with number of operators of each type
 *----------------------------------------------------------------------*
@@ -500,7 +500,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine command_to_itf2(contr_info, itin, itflog, command,
+      subroutine command_to_itf(contr_info, itin, itflog, command,
      &                           inter_itype)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
@@ -524,7 +524,7 @@
      &   command,        ! Type of formula item command, ie. contraction, copy etc.
      &   inter_itype     ! Store itypes of intermediates between lines
 
-      type(itf_contr2) ::
+      type(itf_contr) ::
      &   item,      ! ITF contraction object; holds all info about the ITF algo line
      &   pitem      ! ITF contraction object; holds all info about the ITF algo line
       integer ::
@@ -560,12 +560,12 @@
 
 
       ! 1. Initalise itf_contr
-      call itf_contr_init2(contr_info,item,1,itin,command,itflog,
+      call itf_contr_init(contr_info,item,1,itin,command,itflog,
      &                     inter_itype)
 
 
       ! 2. Assign index / Determine sign
-      call assign_new_index2(item)
+      call assign_new_index(item)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -586,7 +586,7 @@
       !item%intpp = .false.
 
 
-      call prepare_symmetrise2(contr_info, command, perm_case,
+      call prepare_symmetrise(contr_info, command, perm_case,
      &                         old_name, item)
 
 
@@ -607,17 +607,17 @@
             pline = .true.
 
             !TODO: just copy item??
-            call itf_contr_init2(contr_info,pitem,1,itin,command,itflog,
+            call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                           inter_itype)
-            call assign_new_index2(pitem)
+            call assign_new_index(pitem)
 
             ! TODO: For now, so perm lines have same name as non-perm lines
             pitem%label_res = item%label_res
 
             ! Permute indicies and update factor
             ! -1 factor for permuation line
-            call create_permutation2(pitem, contr_info%perm)
-            !call print_itf_contr2(pitem)
+            call create_permutation(pitem, contr_info%perm)
+            !call print_itf_contr(pitem)
 
             !end if
          end if
@@ -626,8 +626,8 @@
 
 
       ! 4. Spin sum
-      call assign_spin2(item)
-      if (pline) call assign_spin2(pitem)
+      call assign_spin(item)
+      if (pline) call assign_spin(pitem)
 
       ! 5. Loop over spin cases and print out each line
       call print_spin_cases(item)
@@ -637,7 +637,7 @@
 
       ! 7. Print symmetrisation term
       if (.not. item%inter(3)) then
-         call print_symmetrise2(old_name, item)
+         call print_symmetrise(old_name, item)
       end if
 
       ! 8. If an intermediate, set inter_itype for use in next line
@@ -647,8 +647,8 @@
 
       if (ntest>0) then
       !if (.true.) then
-         call print_itf_contr2(item)
-         if (pline) call print_itf_contr2(pitem)
+         call print_itf_contr(item)
+         if (pline) call print_itf_contr(pitem)
       end if
 
 
@@ -661,7 +661,7 @@
 
 
       ! Deallocate memroy used when construcitng item
-      call itf_deinit2(item)
+      call itf_deinit(item)
 
       return
       end
@@ -681,7 +681,7 @@
       include 'def_formula_item.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item        ! ITF contraction object; holds all info about the ITF algo line
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
@@ -716,7 +716,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine create_permutation2(item, perm)
+      subroutine create_permutation(item, perm)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -727,7 +727,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item        ! ITF contraction object; holds all info about the ITF algo line
       logical, intent(in) ::
      &   perm(ngastp)
@@ -833,7 +833,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item
       type(spin_info2), intent(in) ::
      &      t_spin(3)
@@ -899,7 +899,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine prepare_symmetrise2(contr_info, command, perm_case,
+      subroutine prepare_symmetrise(contr_info, command, perm_case,
      &                               old_name, item)
 *----------------------------------------------------------------------*
 !
@@ -919,7 +919,7 @@
      &   old_name
       integer, intent(in) ::
      &   perm_case    ! Info of permutation factors
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item
 
       logical ::
@@ -958,7 +958,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item
 
       integer ::
@@ -1021,7 +1021,7 @@
                end if
             end if
 
-            call print_itf_line2(item,s1,s2,item%all_spins(j)%t_spin)
+            call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin)
 
       end do
 
@@ -1029,7 +1029,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line2(item,s1,s2,t_spin)
+      subroutine print_itf_line(item,s1,s2,t_spin)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1042,7 +1042,7 @@
       include 'def_formula_item.h' ! For command parameters
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item
       logical, intent(in) ::
      &     s1,s2
@@ -1090,25 +1090,25 @@
 
       ! Add intermediate spin strings to names
       if (item%inter(1)) then
-         call inter_spin_name2(t_spin(1)%spin,item%rank1/2,slabel1)
+         call inter_spin_name(t_spin(1)%spin,item%rank1/2,slabel1)
          nt1 = trim(nt1)//trim(slabel1)
       end if
       if (item%inter(2)) then
-         call inter_spin_name2(t_spin(2)%spin,item%rank2/2,slabel2)
+         call inter_spin_name(t_spin(2)%spin,item%rank2/2,slabel2)
          nt2 = trim(nt2)//trim(slabel2)
       end if
       if (item%inter(3)) then
-         call inter_spin_name2(t_spin(3)%spin,item%rank3/2,slabel3)
+         call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
          nres = trim(nres)//trim(slabel3)
       end if
 
       ! Reorder integrals into fixed slot order
       ! TODO: I think this is ok to do after converting to abab block,
       !       but need to check...
-      call reorder_integral2(item%int(1),item%rank1,new_idx1,s1,
+      call reorder_integral(item%int(1),item%rank1,new_idx1,s1,
      &                      new_j,
      &                      nt1,item%nops1)
-      call reorder_integral2(item%int(2),item%rank2,new_idx2,s2,
+      call reorder_integral(item%int(2),item%rank2,new_idx2,s2,
      &                      new_j,
      &                      nt2,item%nops2)
 
@@ -1281,7 +1281,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine reorder_integral2(integral,rank,idx,s1,j_int,label,
+      subroutine reorder_integral(integral,rank,idx,s1,j_int,label,
      &                             nops)
 *----------------------------------------------------------------------*
 !
@@ -1975,7 +1975,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine assign_new_index2(item)
+      subroutine assign_new_index(item)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
@@ -1986,7 +1986,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item           ! ITF binary contraction
 
       integer ::
@@ -2111,10 +2111,10 @@
       e1ops = sum(sum(e1,dim=2))
       e2ops = sum(sum(e2,dim=2))
       if (e1ops >= e2ops) then
-        call find_pairs_wrap2(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
+        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
      &                       item,p_list,itype)
       else
-        call find_pairs_wrap2(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
+        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
      &                       item,p_list,itype)
       end if
       !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
@@ -2504,7 +2504,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item           ! ITF binary contraction
       type(index_str), intent(inout) ::
      &   idx
@@ -2596,7 +2596,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item           ! ITF binary contraction
       type(index_str), intent(inout) ::
      &   idx
@@ -2650,7 +2650,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine find_pairs_wrap2(str1, str2, rank1, rank2, t1,
+      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
      &                           t2, n_cnt, item, p_list, itype)
 *----------------------------------------------------------------------*
 !
@@ -2664,7 +2664,7 @@
       type(index_str), intent(in) ::
      &   str1,
      &   str2
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &   item
       integer, intent(in) ::
      &   rank1,
@@ -2683,13 +2683,13 @@
 
       shift = 1
 
-      call find_pairs_new2(str1, str2, rank1, rank2, t1, t2, n_cnt,
+      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
      &                    item, shift, p_list, itype)
 
       ! If all the external pairs havn't been found, then there are two
       ! seperate pairs on each tensor. Go back and find them...
       if (shift-1/=item%rank3/2) then
-      call find_pairs_new2(str2, str1, rank2, rank1, t2, t1, n_cnt,
+      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
      &                    item, shift, p_list, itype)
       end if
 
@@ -2698,7 +2698,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine find_pairs_new2(str1,str2, rank1, rank2, t1, t2, n_cnt,
+      subroutine find_pairs_new(str1,str2, rank1, rank2, t1, t2, n_cnt,
      &                          item, shift, p_list, itype)
 *----------------------------------------------------------------------*
 !
@@ -2712,7 +2712,7 @@
       type(index_str), intent(in) ::
      &   str1,
      &   str2
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &   item
       integer, intent(in) ::
      &   rank1,
@@ -2929,7 +2929,7 @@
 
       logical, intent(inout) ::
      &   found_ex
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &   item
       type(index_str), intent(in) ::
      &   str1, str2
@@ -3003,7 +3003,7 @@
 
       logical, intent(inout) ::
      &   found_ex
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &   item
       type(index_str), intent(in) ::
      &   str1, str2
@@ -3050,7 +3050,7 @@
       if (item%inter(1) .and. item%rank1>2 .and. t1/=2) then
          ! TODO: t2 are useless
          correct_pair = .false.
-         call check_pairing2(correct_pair,str1,str2,rank1,
+         call check_pairing(correct_pair,str1,str2,rank1,
      &                      rank2,place1,place2,item, itype)
          if (.not. correct_pair) then
             found_ex = .false.
@@ -3065,7 +3065,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine check_pairing2(correct_pair, str1, str2, rank1, rank2,
+      subroutine check_pairing(correct_pair, str1, str2, rank1, rank2,
      &                         place1, place2, item, itype)
 *----------------------------------------------------------------------*
 !
@@ -3078,7 +3078,7 @@
 
       logical, intent(inout) ::
      &   correct_pair
-      type(itf_contr2), intent(in) ::
+      type(itf_contr), intent(in) ::
      &   item
       type(index_str), intent(in) ::
      &   str1, str2
@@ -3606,7 +3606,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine assign_spin2(item)
+      subroutine assign_spin(item)
 *----------------------------------------------------------------------*
 !     Assign spin to tensors, then sum remaining contraction indices
 *----------------------------------------------------------------------*
@@ -3617,7 +3617,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item
 
       integer ::
@@ -3696,7 +3696,7 @@
 !     &                item%logfile)
 !      call print_spin(item%t_spin(2)%spin,item%rank3,"T2",
 !     &                item%logfile)
-         call spin_index2(item)
+         call spin_index(item)
 
       else
 
@@ -3743,7 +3743,7 @@
 
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
 !     &                item%logfile)
-      call spin_index2(item)
+      call spin_index(item)
 
                else
                   do k = 1, 2
@@ -3787,7 +3787,7 @@
 
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result2",
 !     &                item%logfile)
-      call spin_index2(item)
+      call spin_index(item)
                      end do
                   end do
                end if
@@ -3801,54 +3801,12 @@
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
 !     &                item%logfile)
 
-!      ! Assign spin of external indicies to T1 and T2
-!      do j=1, hr3
-!         do i=1, hr1
-!            ! Assign spin of first tensor
-!            if (item%idx3(j:j)==item%idx1(i:i)) then
-!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
-!            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
-!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
-!            end if
-!
-!            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
-!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
-!            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
-!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
-!            end if
-!         end do
-!
-!         do i=1, hr2
-!            ! Assign spin of second tensor
-!            if (item%idx3(j:j)==item%idx2(i:i)) then
-!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
-!            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
-!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
-!            end if
-!
-!            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
-!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
-!            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
-!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
-!            end if
-!         end do
-!      end do
-
-!      call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before",
-!     &                item%logfile)
-!      call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before",
-!     &                item%logfile)
-
-      ! Sum over the remaining contraction indicies and print out the
-      ! line
-!      call spin_index2(item)
-
       return
       end
 
 
 *----------------------------------------------------------------------*
-      subroutine spin_index2(item)
+      subroutine spin_index(item)
 *----------------------------------------------------------------------*
 !     Find contraction index used in spin summation
 *----------------------------------------------------------------------*
@@ -3859,7 +3817,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item
 
       type(twodarray), pointer ::
@@ -3982,7 +3940,7 @@
          item%t_spin(z1)%spin(i1, i2) = i
          item%t_spin(z2)%spin(i3, i4) = i
          if (shift <= 1) then
-            call print_spin_case2(item,eloop)
+            call print_spin_case(item,eloop)
          end if
          if (shift > 1) then
             do j = 1, 2
@@ -3996,7 +3954,7 @@
                   ! For scalar results, only need half of the spin
                   ! cases, the rest are the same
                   if (item%rank3 == 0 .and. i == 2) exit
-                  call print_spin_case2(item,eloop)
+                  call print_spin_case(item,eloop)
                end if
                if (shift > 2) then
                   do k = 1, 2
@@ -4007,7 +3965,7 @@
                      item%t_spin(z1)%spin(i1, i2) = k
                      item%t_spin(z2)%spin(i3, i4) = k
                      if (shift <= 3) then
-                        call print_spin_case2(item,eloop)
+                        call print_spin_case(item,eloop)
                      end if
                      if (shift > 3) then
                         do l = 1, 2
@@ -4019,7 +3977,7 @@
                            item%t_spin(z2)%spin(i3, i4) = l
                            if (shift <= 4) then
                               if (item%rank3 == 0 .and. i == 2) exit
-                              call print_spin_case2(item,eloop)
+                              call print_spin_case(item,eloop)
                            end if
                            if (shift > 4) then
                               do m = 1, 2
@@ -4030,7 +3988,7 @@
                                  item%t_spin(z1)%spin(i1, i2) = m
                                  item%t_spin(z2)%spin(i3, i4) = m
                                  if (shift <= 5) then
-                                    call print_spin_case2(item,eloop)
+                                    call print_spin_case(item,eloop)
                                  end if
                                  if (shift > 5) then
                                     do n = 1, 2
@@ -4042,7 +4000,7 @@
                                        item%t_spin(z2)%spin(i3, i4) = n
                                        if (shift <= 6) then
                                   if (item%rank3 == 0 .and. i == 2) exit
-                                       call print_spin_case2(item,eloop)
+                                       call print_spin_case(item,eloop)
                                        end if
                                     end do
                                  end if
@@ -4061,7 +4019,7 @@
          if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
          if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
 
-         call print_spin_case2(item,eloop)
+         call print_spin_case(item,eloop)
       end if
 
 !      if (.not. eloop) then
@@ -4149,7 +4107,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case2(item,eloop)
+      subroutine print_spin_case(item,eloop)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
@@ -4160,7 +4118,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &   item
       logical, intent(inout) ::
      &   eloop     ! Check if at least one spin case is printed out
@@ -4227,7 +4185,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine inter_spin_name2(spin,hrank,label)
+      subroutine inter_spin_name(spin,hrank,label)
 *----------------------------------------------------------------------*
 !     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
 *----------------------------------------------------------------------*
@@ -4272,7 +4230,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init2(contr_info,item,perm,itin,comm,lulog,
+      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
      &                           itype)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
@@ -4289,7 +4247,7 @@
 
       type(binary_contr), intent(in) ::
      &     contr_info   ! Information about binary contraction
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item     ! Object which holds information necessary to print out an ITF algo line
       integer, intent(in) ::
      &     perm,        ! Permutation information
@@ -4500,7 +4458,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_deinit2(item)
+      subroutine itf_deinit(item)
 *----------------------------------------------------------------------*
 !     Deinitialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -4512,7 +4470,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item     ! Object which holds information necessary to print out an ITF algo line
 
       deallocate(item%t_spin(1)%spin)
@@ -4528,7 +4486,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_contr2(item)
+      subroutine print_itf_contr(item)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -4539,7 +4497,7 @@
       include 'def_contraction.h'
       include 'def_itf_contr.h'
 
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item     ! Object which holds information necessary to print out an ITF algo line
 
       integer ::
@@ -4591,7 +4549,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_symmetrise2(old_result, item)
+      subroutine print_symmetrise(old_result, item)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -4604,7 +4562,7 @@
 
       character(len=MAXLEN_BC_LABEL), intent(in) ::
      &     old_result
-      type(itf_contr2), intent(inout) ::
+      type(itf_contr), intent(inout) ::
      &     item
 
       character(len=70) ::
@@ -4810,18 +4768,18 @@
       if (command==command_cp_intm .or.
      &    command==command_add_intm) then
          do i = 1, contr_info%nj_op1
-           call count_index2(contr_info%occ_op1(1:,1:,i), e1)
+           call count_index(contr_info%occ_op1(1:,1:,i), e1)
          end do
       else
          ! Get occupation info
          do i = 1, contr_info%n_cnt
-           call count_index2(contr_info%occ_cnt(1:,1:,i), c)
+           call count_index(contr_info%occ_cnt(1:,1:,i), c)
          end do
          do i = 1, contr_info%nj_op1
-           call count_index2(contr_info%occ_ex1(1:,1:,i), e1)
+           call count_index(contr_info%occ_ex1(1:,1:,i), e1)
          end do
          do i = 1, contr_info%nj_op2
-           call count_index2(contr_info%occ_ex2(1:,1:,i), e2)
+           call count_index(contr_info%occ_ex2(1:,1:,i), e2)
          end do
       end if
 

@@ -72,7 +72,7 @@
 
 
 *----------------------------------------------------------------------*
-      type itf_contr2
+      type itf_contr
 *----------------------------------------------------------------------*
 !     Object that holds information needed to define a line in an ITF algo file
 !            Res[abij] += T1[acik] T2[cbkj]
@@ -136,7 +136,7 @@
       type(spin_cases2)
      &     all_spins(15)
 
-      end type itf_contr2
+      end type itf_contr
 
 
 *----------------------------------------------------------------------*
