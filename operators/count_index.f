@@ -373,82 +373,82 @@
       end module itf_utils
 
 
-*----------------------------------------------------------------------*
-      subroutine init_spin_cases(spin_inters)
-*----------------------------------------------------------------------*
-!     Initalise spin_cases array
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(spin_cases), dimension(MAXINT), intent(inout) ::
-     &     spin_inters
-
-      integer ::
-     &   i, j, k
-
-      do i = 1, MAXINT
-         spin_inters(i)%name = ''
-      end do
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine print_inter_spin_cases(spin_inters, ninter, label,
-     &                                  logfile)
-*----------------------------------------------------------------------*
-!     Print out intermediate spin cases
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(spin_cases), dimension(MAXINT), intent(in) ::
-     &     spin_inters
-      integer, intent(in) ::
-     &   ninter,
-     &   logfile
-      character(len=*), intent(in) ::
-     &   label
-
-      integer ::
-     &   i, j, k
-
-      if (ninter==0) return
-
-      write(logfile,*) "=============================="
-      write(logfile,*) "TITLE: ", trim(label)
-
-      do i = 1, ninter
-         write(logfile,*) "=============================="
-         write(logfile,*) "NCASE: ", spin_inters(i)%ncase
-         write(logfile,*) "NAME: ", trim(spin_inters(i)%name)
-         write(logfile,*) "SYMM_RES: ", spin_inters(i)%symm_res
-         do j = 1, spin_inters(i)%ncase
-            write(logfile,*) "Spin:"
-            write(logfile,'(4i2)')
-     &                        (spin_inters(i)%cases(k,j),k=1,INDEX_LEN)
-            write(logfile,*) "------------------------------"
-         end do
-
-         write(logfile,'(8i2)')
-     &                         (spin_inters(i)%itype(j),j=1,INDEX_LEN)
-         write(logfile,*) "------------------------------"
-         write(logfile,*) "=============================="
-      end do
-      write(logfile,*)
-
-      return
-      end
-
-
+!*----------------------------------------------------------------------*
+!      subroutine init_spin_cases(spin_inters)
+!*----------------------------------------------------------------------*
+!!     Initalise spin_cases array
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(spin_cases), dimension(MAXINT), intent(inout) ::
+!     &     spin_inters
+!
+!      integer ::
+!     &   i, j, k
+!
+!      do i = 1, MAXINT
+!         spin_inters(i)%name = ''
+!      end do
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine print_inter_spin_cases(spin_inters, ninter, label,
+!     &                                  logfile)
+!*----------------------------------------------------------------------*
+!!     Print out intermediate spin cases
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(spin_cases), dimension(MAXINT), intent(in) ::
+!     &     spin_inters
+!      integer, intent(in) ::
+!     &   ninter,
+!     &   logfile
+!      character(len=*), intent(in) ::
+!     &   label
+!
+!      integer ::
+!     &   i, j, k
+!
+!      if (ninter==0) return
+!
+!      write(logfile,*) "=============================="
+!      write(logfile,*) "TITLE: ", trim(label)
+!
+!      do i = 1, ninter
+!         write(logfile,*) "=============================="
+!         write(logfile,*) "NCASE: ", spin_inters(i)%ncase
+!         write(logfile,*) "NAME: ", trim(spin_inters(i)%name)
+!         write(logfile,*) "SYMM_RES: ", spin_inters(i)%symm_res
+!         do j = 1, spin_inters(i)%ncase
+!            write(logfile,*) "Spin:"
+!            write(logfile,'(4i2)')
+!     &                        (spin_inters(i)%cases(k,j),k=1,INDEX_LEN)
+!            write(logfile,*) "------------------------------"
+!         end do
+!
+!         write(logfile,'(8i2)')
+!     &                         (spin_inters(i)%itype(j),j=1,INDEX_LEN)
+!         write(logfile,*) "------------------------------"
+!         write(logfile,*) "=============================="
+!      end do
+!      write(logfile,*)
+!
+!      return
+!      end
+!
+!
 *----------------------------------------------------------------------*
       subroutine print_spin(spins, rank, label, logfile)
 *----------------------------------------------------------------------*
@@ -616,57 +616,57 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
-*----------------------------------------------------------------------*
-!     Return array with number of operators of each type
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-
-      integer, intent(in) ::
-     &     iocc(ngastp,2), ngas, nspin,
-     &     irstr(2,ngas,2,2,nspin), idx
-      integer, intent(inout) ::
-     &     nops(4,2)                     ! Matrix of index info
-
-      integer :: i,j
-
+!*----------------------------------------------------------------------*
+!      subroutine count_index(idx,iocc,irstr,ngas,nspin,nops)
+!*----------------------------------------------------------------------*
+!!     Return array with number of operators of each type
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!
+!      integer, intent(in) ::
+!     &     iocc(ngastp,2), ngas, nspin,
+!     &     irstr(2,ngas,2,2,nspin), idx
+!      integer, intent(inout) ::
+!     &     nops(4,2)                     ! Matrix of index info
+!
+!      integer :: i,j
+!
+!!      ! Creation operators
+!!      ! Hole, abcd
+!!      nops(1,1)=nops(1,1) + iocc(2,1)
+!!      ! Particle, ijkl
+!!      nops(2,1)=nops(2,1) + iocc(1,1)
+!!      ! Valence, pqrs
+!!      nops(3,1)=nops(3,1) + iocc(3,1)
+!!      ! Explicit, x
+!!      nops(4,1)=nops(4,1) + iocc(4,1)
+!!
+!!      ! Annihilation operators as above
+!!      nops(1,2)=nops(1,2) + iocc(2,2)
+!!      nops(2,2)=nops(2,2) + iocc(1,2)
+!!      nops(3,2)=nops(3,2) + iocc(3,2)
+!!      nops(4,2)=nops(4,2) + iocc(4,2)
+!
 !      ! Creation operators
 !      ! Hole, abcd
 !      nops(1,1)=nops(1,1) + iocc(2,1)
-!      ! Particle, ijkl
-!      nops(2,1)=nops(2,1) + iocc(1,1)
 !      ! Valence, pqrs
-!      nops(3,1)=nops(3,1) + iocc(3,1)
+!      nops(2,1)=nops(2,1) + iocc(3,1)
+!      ! Particle, ijkl
+!      nops(3,1)=nops(3,1) + iocc(1,1)
 !      ! Explicit, x
 !      nops(4,1)=nops(4,1) + iocc(4,1)
 !
 !      ! Annihilation operators as above
 !      nops(1,2)=nops(1,2) + iocc(2,2)
-!      nops(2,2)=nops(2,2) + iocc(1,2)
-!      nops(3,2)=nops(3,2) + iocc(3,2)
+!      nops(2,2)=nops(2,2) + iocc(3,2)
+!      nops(3,2)=nops(3,2) + iocc(1,2)
 !      nops(4,2)=nops(4,2) + iocc(4,2)
-
-      ! Creation operators
-      ! Hole, abcd
-      nops(1,1)=nops(1,1) + iocc(2,1)
-      ! Valence, pqrs
-      nops(2,1)=nops(2,1) + iocc(3,1)
-      ! Particle, ijkl
-      nops(3,1)=nops(3,1) + iocc(1,1)
-      ! Explicit, x
-      nops(4,1)=nops(4,1) + iocc(4,1)
-
-      ! Annihilation operators as above
-      nops(1,2)=nops(1,2) + iocc(2,2)
-      nops(2,2)=nops(2,2) + iocc(3,2)
-      nops(3,2)=nops(3,2) + iocc(1,2)
-      nops(4,2)=nops(4,2) + iocc(4,2)
-
-      return
-      end
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -838,212 +838,212 @@
 
 
 
-*----------------------------------------------------------------------*
-      subroutine command_to_itf(contr_info, itin, itflog, command)
-*----------------------------------------------------------------------*
-!     Take GeCco binary contraction and produce ITF algo code.
-!     Includes antisymmetry of residual equations and spin summation.
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(inout) ::
-     &   contr_info      ! Information about binary contraction
-      logical, intent(in) ::
-     &   itin              ! Print ITIN lines or not
-      integer, intent(in) ::
-     &   itflog,         ! Output file
-     &   command         ! Type of formula item command, ie. contraction, copy etc.
-
-      type(itf_contr) ::
-     &   item        ! ITF contraction object; holds all info about the ITF algo line
-      integer ::
-     &   perm_case,   ! Info of permutation factors
-     &   i, j, l, k                ! Loop index
-      logical ::
-     &   inter,           ! True if result is an intermediate
-     &   found,
-     &   upper,
-     &   symmetric,
-     &   intpp
-      character(len=MAXLEN_BC_LABEL) ::
-     &   old_name,
-     &   un_perm_name,
-     &   old_inter
-      character(len=INDEX_LEN) ::
-     &   old_idx,
-     &   un_perm_idx
-
-      ! Being a special block which the python processor will pull out
-      ! into its own code block
-      intpp = .false.
-      if (contr_info%label_res=='INTpp') then
-         intpp = .true.
-         write(itflog,'(a)') "BEGIN_INTPP"
-      end if
-
-
-      ! Initialise permutation factors:
-      ! 0 == no permutation
-      ! 1 == (1-Pxy)
-      ! 2 == (1-Pxy)(1-Pvw) = (1+Pxy) in spatial orbitals
-      perm_case = 0
-      do i = 1, ngastp
-         if(contr_info%perm(i)) perm_case = perm_case + 1
-      end do
-
-      ! If symmetrising after every term, rename residual ITIN
-      call prepare_symmetrise(contr_info, itin, intpp, symmetric,
-     &                            command, old_name)
-
-
-      ! Mark begining of spin summed block
-      write(itflog,'(a5)') 'BEGIN'
-
-      ! Pick out specific commands, form the itf_contr object, spin sum
-      ! and print out contraction line
-      if (command==command_add_intm .or. command==command_cp_intm) then
-         ! For [ADD] and [COPY] cases
-         call itf_contr_init(contr_info,item,0,itin,command,itflog)
-         call print_itf_line(item,.false.,.false.)
-      else
-         ! For other binary contractions
-         if (perm_case == 0) then
-            ! No permutations
-            call itf_contr_init(contr_info,item,0,itin,command,itflog)
-            call assign_spin(item)
-         else
-            if (symmetric) then
-!               call itf_contr_init(contr_info,item,1,itin,command,
+!*----------------------------------------------------------------------*
+!      subroutine command_to_itf(contr_info, itin, itflog, command)
+!*----------------------------------------------------------------------*
+!!     Take GeCco binary contraction and produce ITF algo code.
+!!     Includes antisymmetry of residual equations and spin summation.
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(inout) ::
+!     &   contr_info      ! Information about binary contraction
+!      logical, intent(in) ::
+!     &   itin              ! Print ITIN lines or not
+!      integer, intent(in) ::
+!     &   itflog,         ! Output file
+!     &   command         ! Type of formula item command, ie. contraction, copy etc.
+!
+!      type(itf_contr) ::
+!     &   item        ! ITF contraction object; holds all info about the ITF algo line
+!      integer ::
+!     &   perm_case,   ! Info of permutation factors
+!     &   i, j, l, k                ! Loop index
+!      logical ::
+!     &   inter,           ! True if result is an intermediate
+!     &   found,
+!     &   upper,
+!     &   symmetric,
+!     &   intpp
+!      character(len=MAXLEN_BC_LABEL) ::
+!     &   old_name,
+!     &   un_perm_name,
+!     &   old_inter
+!      character(len=INDEX_LEN) ::
+!     &   old_idx,
+!     &   un_perm_idx
+!
+!      ! Being a special block which the python processor will pull out
+!      ! into its own code block
+!      intpp = .false.
+!      if (contr_info%label_res=='INTpp') then
+!         intpp = .true.
+!         write(itflog,'(a)') "BEGIN_INTPP"
+!      end if
+!
+!
+!      ! Initialise permutation factors:
+!      ! 0 == no permutation
+!      ! 1 == (1-Pxy)
+!      ! 2 == (1-Pxy)(1-Pvw) = (1+Pxy) in spatial orbitals
+!      perm_case = 0
+!      do i = 1, ngastp
+!         if(contr_info%perm(i)) perm_case = perm_case + 1
+!      end do
+!
+!      ! If symmetrising after every term, rename residual ITIN
+!      call prepare_symmetrise(contr_info, itin, intpp, symmetric,
+!     &                            command, old_name)
+!
+!
+!      ! Mark begining of spin summed block
+!      write(itflog,'(a5)') 'BEGIN'
+!
+!      ! Pick out specific commands, form the itf_contr object, spin sum
+!      ! and print out contraction line
+!      if (command==command_add_intm .or. command==command_cp_intm) then
+!         ! For [ADD] and [COPY] cases
+!         call itf_contr_init(contr_info,item,0,itin,command,itflog)
+!         call print_itf_line(item,.false.,.false.)
+!      else
+!         ! For other binary contractions
+!         if (perm_case == 0) then
+!            ! No permutations
+!            call itf_contr_init(contr_info,item,0,itin,command,itflog)
+!            call assign_spin(item)
+!         else
+!            if (symmetric) then
+!!               call itf_contr_init(contr_info,item,1,itin,command,
+!!     &                                itflog)
+!!               call assign_spin(item)
+!!
+!!               ! check_permutation()
+!!               if (perm_case==2) then
+!!
+!!                  ! create_permutation_line()
+!!
+!!               end if
+!
+!               do i=1, perm_case
+!                  ! Loop over permutation cases and send separately to
+!                  ! assign_spin. For most cases this is just one, however
+!                  ! for (1-Pij)(1-Pab), we need to generate one of these
+!                  ! permutations before symmetrising
+!                  call itf_contr_init(contr_info,item,i,itin,command,
 !     &                                itflog)
-!               call assign_spin(item)
 !
-!               ! check_permutation()
-!               if (perm_case==2) then
 !
-!                  ! create_permutation_line()
+!                  if (i == 2) then
 !
+!                     if (item%rank1==6) then
+!                        !item%idx1=c_index(item%idx1,1,.true.)
+!                        item%idx1=c_index(item%idx1,1)
+!                     else
+!                        item%idx1=f_index(item%idx1,item%rank1/2)
+!                        !if (item%rank1/=0 .and. item%rank2==0) then
+!                        !   item%idx1=f_index(item%idx1,item%rank1/2,.true.)
+!                        !end if
+!                     end if
+!
+!                     item%idx2=f_index(item%idx2,item%rank2/2)
+!
+!                     ! Whenever we tranpose a tensor, we intoroduce a sign
+!                     ! chage
+!                     ! No sign due to the tranpose of idx1 which defines an
+!                     ! intermeidate. Extra signs to to tranpose of tensors
+!                     ! which define intermediates are included in the
+!                     ! intermediate line
+!                     if (item%permute==2) then
+!                        if (item%rank2>2) item%fact = item%fact*-1.0d+0
+!                        !write(item%logfile,*)"index flip fact: ", item%fact
+!                     end if
+!
+!                  end if
+!
+!                  call assign_spin(item)
+!
+!                  !if (i == 1 .and. perm_case>1) then
+!                  !   call create_permutation(item, contr_info%perm)
+!                  !end if
+!               end do
+!            else
+!               un_perm_name=''
+!               un_perm_idx=''
+!               do i=1, perm_case+1
+!                  ! Loop over permutation cases and send separately to
+!                  ! assign_spin. For most cases this is just one, however
+!                  ! for (1-Pij)(1-Pab), we need to generate one of these
+!                  ! permutations before symmetrising
+!                  call itf_contr_init(contr_info,item,i,itin,
+!     &                                command,itflog)
+!
+!                  ! Don't print permutation iter if we already have it
+!                  if (i==2 .and. item%inter(1)) then
+!                     if (un_perm_idx==item%idx1 .and.
+!     &                   un_perm_name==item%label_t1) then
+!                        item%print_line = .false.
+!                     end if
+!                  else if (i==2 .and. item%inter(2)) then
+!                     if (un_perm_idx==item%idx2 .and.
+!     &                   un_perm_name==item%label_t2) then
+!                        item%print_line = .false.
+!                     end if
+!                  end if
+!
+!                  call assign_spin(item)
+!
+!                  if (i==1 .and. item%inter(1)) then
+!                     un_perm_idx = item%idx1
+!                     un_perm_name = item%label_t1
+!                  else if (i==1 .and. item%inter(2)) then
+!                     un_perm_idx = item%idx2
+!                     un_perm_name = item%label_t2
+!                  end if
+!
+!               end do
+!
+!               if (item%inter(1)) then
+!                  if (un_perm_idx==item%idx1 .and.
+!     &                un_perm_name==item%label_t1) then
+!                     write(itflog,'(a)') "END"
+!                  end if
+!               else if (item%inter(2)) then
+!                  if (un_perm_idx==item%idx2 .and.
+!     &                un_perm_name==item%label_t2) then
+!                     write(itflog,'(a)') "END"
+!                  end if
 !               end if
-
-               do i=1, perm_case
-                  ! Loop over permutation cases and send separately to
-                  ! assign_spin. For most cases this is just one, however
-                  ! for (1-Pij)(1-Pab), we need to generate one of these
-                  ! permutations before symmetrising
-                  call itf_contr_init(contr_info,item,i,itin,command,
-     &                                itflog)
-
-
-                  if (i == 2) then
-
-                     if (item%rank1==6) then
-                        !item%idx1=c_index(item%idx1,1,.true.)
-                        item%idx1=c_index(item%idx1,1)
-                     else
-                        item%idx1=f_index(item%idx1,item%rank1/2)
-                        !if (item%rank1/=0 .and. item%rank2==0) then
-                        !   item%idx1=f_index(item%idx1,item%rank1/2,.true.)
-                        !end if
-                     end if
-
-                     item%idx2=f_index(item%idx2,item%rank2/2)
-
-                     ! Whenever we tranpose a tensor, we intoroduce a sign
-                     ! chage
-                     ! No sign due to the tranpose of idx1 which defines an
-                     ! intermeidate. Extra signs to to tranpose of tensors
-                     ! which define intermediates are included in the
-                     ! intermediate line
-                     if (item%permute==2) then
-                        if (item%rank2>2) item%fact = item%fact*-1.0d+0
-                        !write(item%logfile,*)"index flip fact: ", item%fact
-                     end if
-
-                  end if
-
-                  call assign_spin(item)
-
-                  !if (i == 1 .and. perm_case>1) then
-                  !   call create_permutation(item, contr_info%perm)
-                  !end if
-               end do
-            else
-               un_perm_name=''
-               un_perm_idx=''
-               do i=1, perm_case+1
-                  ! Loop over permutation cases and send separately to
-                  ! assign_spin. For most cases this is just one, however
-                  ! for (1-Pij)(1-Pab), we need to generate one of these
-                  ! permutations before symmetrising
-                  call itf_contr_init(contr_info,item,i,itin,
-     &                                command,itflog)
-
-                  ! Don't print permutation iter if we already have it
-                  if (i==2 .and. item%inter(1)) then
-                     if (un_perm_idx==item%idx1 .and.
-     &                   un_perm_name==item%label_t1) then
-                        item%print_line = .false.
-                     end if
-                  else if (i==2 .and. item%inter(2)) then
-                     if (un_perm_idx==item%idx2 .and.
-     &                   un_perm_name==item%label_t2) then
-                        item%print_line = .false.
-                     end if
-                  end if
-
-                  call assign_spin(item)
-
-                  if (i==1 .and. item%inter(1)) then
-                     un_perm_idx = item%idx1
-                     un_perm_name = item%label_t1
-                  else if (i==1 .and. item%inter(2)) then
-                     un_perm_idx = item%idx2
-                     un_perm_name = item%label_t2
-                  end if
-
-               end do
-
-               if (item%inter(1)) then
-                  if (un_perm_idx==item%idx1 .and.
-     &                un_perm_name==item%label_t1) then
-                     write(itflog,'(a)') "END"
-                  end if
-               else if (item%inter(2)) then
-                  if (un_perm_idx==item%idx2 .and.
-     &                un_perm_name==item%label_t2) then
-                     write(itflog,'(a)') "END"
-                  end if
-               end if
-            end if
-
-         end if
-      end if
-
-
-      ! If created a perm intermediate, print the symmetrised lines
-      if (symmetric .and. itin) then
-         call print_symmetrise(old_name,item)
-      end if
-
-
-      ! Mark end of spin block
-      if (item%print_line) write(itflog,'(a)') "END"
-
-      ! Deallocate memroy used when construcitng item
-      call itf_deinit(item)
-
-      if (intpp) then
-         write(itflog,'(a)') "END_INTPP"
-      end if
-
-      return
-      end
+!            end if
+!
+!         end if
+!      end if
+!
+!
+!      ! If created a perm intermediate, print the symmetrised lines
+!      if (symmetric .and. itin) then
+!         call print_symmetrise(old_name,item)
+!      end if
+!
+!
+!      ! Mark end of spin block
+!      if (item%print_line) write(itflog,'(a)') "END"
+!
+!      ! Deallocate memroy used when construcitng item
+!      call itf_deinit(item)
+!
+!      if (intpp) then
+!         write(itflog,'(a)') "END_INTPP"
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -1093,116 +1093,116 @@
       return
       end
 
-*----------------------------------------------------------------------*
-      subroutine create_permutation(item, perm)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine create_permutation(item, perm)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item        ! ITF contraction object; holds all info about the ITF algo line
-      logical, intent(in) ::
-     &   perm(ngastp)
-
-      integer ::
-     &   ex_itype,
-     &   i, j,
-     &   shift
-      character(len=1) ::
-     &   ex_ind(2)
-      logical ::
-     &   found1,
-     &   found2
-      character(len=INDEX_LEN) ::
-     &   tmp1, tmp2
-
-      tmp1 = item%idx1
-      tmp2 = item%idx2
-
-      ! Identify and swap external indicies
-      do i = 1, ngastp
-         if (perm(i)) then
-            ex_itype = i
-            exit
-         end if
-      end do
-
-
-      shift = 1
-      do i = 1, item%rank3
-         if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
-
-         do j = 1, item%rank1
-            if (item%idx3(i:i)==item%idx1(j:j)) then
-               ex_ind(shift) = item%idx1(j:j)
-               shift = shift + 1
-            end if
-         end do
-
-         do j = 1, item%rank2
-            if (item%idx3(i:i)==item%idx2(j:j)) then
-               ex_ind(shift) = item%idx2(j:j)
-               shift = shift + 1
-            end if
-         end do
-
-      end do
-
-      if (shift < 3) write(item%logfile,*) "ERROR"
-
-      found1 = .false.
-      found2 = .false.
-      do i = 1, item%rank1
-         if (tmp1(i:i)==ex_ind(1)) then
-            tmp1(i:i) = ex_ind(2)
-            found1 = .true.
-            exit
-         end if
-      end do
-      if (.not. found1) then
-         do i = 1, item%rank1
-            if (tmp1(i:i)==ex_ind(2)) then
-               tmp1(i:i) = ex_ind(1)
-               found1 = .true.
-               exit
-            end if
-         end do
-      end if
-
-      do i = 1, item%rank2
-         if (tmp2(i:i)==ex_ind(1)) then
-            tmp2(i:i) = ex_ind(2)
-            found2 = .true.
-         end if
-      end do
-      if (.not. found2) then
-         do i = 1, item%rank2
-            if (tmp2(i:i)==ex_ind(2)) then
-               tmp2(i:i) = ex_ind(1)
-               found2 = .true.
-            end if
-         end do
-      end if
-
-      write(item%logfile,*) "ex ind ", ex_ind
-      write(item%logfile,*) "ex type ", ex_itype
-      write(item%logfile,*) "perm ", perm
-
-      ! Permute indicies to get correct pairing
-      tmp1 = f_index(tmp1, item%rank1/2)
-      tmp2 = f_index(tmp2, item%rank2/2)
-
-      write(item%logfile,*) "idx1 ", tmp1
-      write(item%logfile,*) "idx2 ", tmp2
-
-      return
-      end
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &   item        ! ITF contraction object; holds all info about the ITF algo line
+!      logical, intent(in) ::
+!     &   perm(ngastp)
+!
+!      integer ::
+!     &   ex_itype,
+!     &   i, j,
+!     &   shift
+!      character(len=1) ::
+!     &   ex_ind(2)
+!      logical ::
+!     &   found1,
+!     &   found2
+!      character(len=INDEX_LEN) ::
+!     &   tmp1, tmp2
+!
+!      tmp1 = item%idx1
+!      tmp2 = item%idx2
+!
+!      ! Identify and swap external indicies
+!      do i = 1, ngastp
+!         if (perm(i)) then
+!            ex_itype = i
+!            exit
+!         end if
+!      end do
+!
+!
+!      shift = 1
+!      do i = 1, item%rank3
+!         if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
+!
+!         do j = 1, item%rank1
+!            if (item%idx3(i:i)==item%idx1(j:j)) then
+!               ex_ind(shift) = item%idx1(j:j)
+!               shift = shift + 1
+!            end if
+!         end do
+!
+!         do j = 1, item%rank2
+!            if (item%idx3(i:i)==item%idx2(j:j)) then
+!               ex_ind(shift) = item%idx2(j:j)
+!               shift = shift + 1
+!            end if
+!         end do
+!
+!      end do
+!
+!      if (shift < 3) write(item%logfile,*) "ERROR"
+!
+!      found1 = .false.
+!      found2 = .false.
+!      do i = 1, item%rank1
+!         if (tmp1(i:i)==ex_ind(1)) then
+!            tmp1(i:i) = ex_ind(2)
+!            found1 = .true.
+!            exit
+!         end if
+!      end do
+!      if (.not. found1) then
+!         do i = 1, item%rank1
+!            if (tmp1(i:i)==ex_ind(2)) then
+!               tmp1(i:i) = ex_ind(1)
+!               found1 = .true.
+!               exit
+!            end if
+!         end do
+!      end if
+!
+!      do i = 1, item%rank2
+!         if (tmp2(i:i)==ex_ind(1)) then
+!            tmp2(i:i) = ex_ind(2)
+!            found2 = .true.
+!         end if
+!      end do
+!      if (.not. found2) then
+!         do i = 1, item%rank2
+!            if (tmp2(i:i)==ex_ind(2)) then
+!               tmp2(i:i) = ex_ind(1)
+!               found2 = .true.
+!            end if
+!         end do
+!      end if
+!
+!      write(item%logfile,*) "ex ind ", ex_ind
+!      write(item%logfile,*) "ex type ", ex_itype
+!      write(item%logfile,*) "perm ", perm
+!
+!      ! Permute indicies to get correct pairing
+!      tmp1 = f_index(tmp1, item%rank1/2)
+!      tmp2 = f_index(tmp2, item%rank2/2)
+!
+!      write(item%logfile,*) "idx1 ", tmp1
+!      write(item%logfile,*) "idx2 ", tmp2
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -1388,57 +1388,57 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine prepare_symmetrise(contr_info, itin, intpp,
-     &                                  symmetric, command, old_name)
-*----------------------------------------------------------------------*
-!     If a symmetric residual and symmetrising after every term, rename
-!     result tensor to ITIN. If not symmetrising after every term,
-!     rename tensor to G (and symmetrise at end)
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      type(binary_contr), intent(inout) ::
-     &   contr_info      ! Information about binary contraction
-      logical, intent(in) ::
-     &   itin,             ! Print ITIN lines or not
-     &   intpp
-      logical, intent(inout) ::
-     &   symmetric
-      integer, intent(in) ::
-     &   command         ! Type of formula item command, ie. contraction, copy etc.
-      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-     &   old_name
-
-      ! Check if result is a symmetric matrix, if not, then no
-      ! permuational symmetry and not extra factors
-      call check_symmetric(contr_info, command, symmetric)
-
-      ! If a symmetric residual, symmetrise after every term. Introduce
-      ! ITIN intermeidate to collect terms
-      ! .R[abij] += I[abij]
-      ! .R[abij] += I[baji]
-      if (symmetric .and. itin) then
-         old_name = contr_info%label_res
-         contr_info%label_res = "ITIN"
-      end if
-
-      ! If not symmetrising after every term, rename residual to G
-      if (symmetric .and. .not. itin) then
-         old_name = contr_info%label_res
-
-         if (intpp) then
-            contr_info%label_res = "INTpp"
-         else
-            contr_info%label_res = "G"
-         end if
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine prepare_symmetrise(contr_info, itin, intpp,
+!     &                                  symmetric, command, old_name)
+!*----------------------------------------------------------------------*
+!!     If a symmetric residual and symmetrising after every term, rename
+!!     result tensor to ITIN. If not symmetrising after every term,
+!!     rename tensor to G (and symmetrise at end)
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!
+!      type(binary_contr), intent(inout) ::
+!     &   contr_info      ! Information about binary contraction
+!      logical, intent(in) ::
+!     &   itin,             ! Print ITIN lines or not
+!     &   intpp
+!      logical, intent(inout) ::
+!     &   symmetric
+!      integer, intent(in) ::
+!     &   command         ! Type of formula item command, ie. contraction, copy etc.
+!      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+!     &   old_name
+!
+!      ! Check if result is a symmetric matrix, if not, then no
+!      ! permuational symmetry and not extra factors
+!      call check_symmetric(contr_info, command, symmetric)
+!
+!      ! If a symmetric residual, symmetrise after every term. Introduce
+!      ! ITIN intermeidate to collect terms
+!      ! .R[abij] += I[abij]
+!      ! .R[abij] += I[baji]
+!      if (symmetric .and. itin) then
+!         old_name = contr_info%label_res
+!         contr_info%label_res = "ITIN"
+!      end if
+!
+!      ! If not symmetrising after every term, rename residual to G
+!      if (symmetric .and. .not. itin) then
+!         old_name = contr_info%label_res
+!
+!         if (intpp) then
+!            contr_info%label_res = "INTpp"
+!         else
+!            contr_info%label_res = "G"
+!         end if
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -1489,756 +1489,756 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine intermediate_spin_info(contr_info,itflog,command,
-     &                               spin_inters,n_inter,permute)
-*----------------------------------------------------------------------*
-!     Search for intermediates, doesn't print out line
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info      ! Inofrmation about binary contraction
-      integer, intent(in) ::
-     &     itflog,         ! Output file
-     &     command         ! Type of formula item command, ie. contraction, copy etc.
-      integer, intent(inout) ::
-     &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(MAXINT), intent(inout) ::
-     &     spin_inters
-      integer, intent(inout) ::
-     &     permute         ! 2 = Need to permute index
-
-      type(itf_contr) ::
-     &     item        ! ITF contraction object; holds all info about the ITF algo line
-      integer ::
-     &    i,j,k,
-     &    type3(2,INDEX_LEN),
-     &    t_shift
-      logical ::
-     &    summed,
-     &    symmetric
-
-      do i = 1, MAXINT
-         if (contr_info%label_res == spin_inters(i)%name) then
-            item%itype = spin_inters(i)%itype
-            item%symm_res = spin_inters(i)%symm_res
-         !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
-            exit
-         end if
-      end do
-
-      call itf_contr_init(contr_info,item,permute,.false.,command,
-     &                    itflog)
-
-      !write(10,*) "intermediate_spin_info ", item%label_res
-      !write(10,*) "intermediate_spin_info ", item%idx3
-
-      !write(10,*) "intermediate_spin_info ", item%label_t1
-      !write(10,*) "intermediate_spin_info ", item%idx1
-      !write(10,*) "intermediate_spin_info ", item%label_t2
-      !write(10,*) "intermediate_spin_info ", item%idx2
-
-      ! Placed in normal ordered {} order not ITF []
-      type3 = 0
-      t_shift = 1
-      ! If the t1 is an intermediate get info about its pairing
-      if (item%inter(1)) then
-         do i = 1, item%rank1
-
-            if (i>item%rank1/2) then
-               j = item%rank1 - i + item%rank1/2 + 1
-            else
-               j = i
-            end if
-
-            type3(t_shift,j) = get_itype(item%idx1(i:i))
-         end do
-         t_shift = t_shift + 1
-      end if
-
-      ! If the t2 is an intermediate get info about its pairing
-      if (item%inter(2)) then
-         do i = 1, item%rank2
-
-            if (i>item%rank2/2) then
-               j = item%rank2 - i + item%rank2/2 + 1
-            else
-               j = i
-            end if
-
-            type3(t_shift,j) = get_itype(item%idx2(i:i))
-         end do
-      end if
-
-      if (item%permute == 2 .and. item%symm_res) then
-         ! Need to transpose by tensors after permutation, to
-         ! avoid symmetry problem when using (1 + Pabij)
-         ! When we transpose tensors, we get a sign change, however
-         ! here, we are just searching for intermediates and don't care
-         ! about the final sign - that will come when the intermediate
-         ! is printed out
-         if (item%rank1==6) then
-            !item%idx1 = c_index(item%idx1,1,.true.)
-            item%idx1 = c_index(item%idx1,1)
-         else
-            item%idx1 = f_index(item%idx1,item%rank1/2)
-         end if
-         item%idx2 = f_index(item%idx2,item%rank2/2)
-
-         if (item%inter(3)) then
-            if (item%rank3==6) then
-               !item%idx3 = c_index(item%idx3,1,.true.)
-               item%idx3 = c_index(item%idx3,1)
-            else
-               item%idx3 = f_index(item%idx3,item%rank3/2)
-            end if
-         end if
-
-         item%label_res = trim(item%label_res)//'P'
-      end if
-
-
-      ! Allocate space to store information about intermediates and
-      ! their spin cases. Only allocate 2 objects as there can only be
-      ! at most two intermediates on a line
-      allocate(item%inter_spins(2))
-
-
-      ! Do not want to print out the lines while gathering info about
-      ! intermediates
-      item%print_line = .false.
-
-
-      ! Need to catch lines which don't need to be spin summed
-      call assign_simple_spin(item, summed, item%symm_res)
-
-      ! Need to set spin result for intermediate that depends on
-      ! another intermediate
-      if (.not. summed) then
-
-         if (item%inter(3)) then
-            do i = 1, MAXINT
-               if (item%label_res == spin_inters(i)%name) then
-                  do k = 1, spin_inters(i)%ncase
-
-                     do j = 1, item%rank3/2
-                        item%i_spin%spin(1,j) =
-     &                                       spin_inters(i)%cases(j,k)
-                        item%i_spin%spin(2,j) =
-     &                             spin_inters(i)%cases(j+INDEX_LEN/2,k)
-                     end do
-
-                     ! Need to clear spins from after the first loop
-                     item%t_spin(1)%spin = 0
-                     item%t_spin(2)%spin = 0
-
-                     call assign_spin(item)
-                  end do
-               exit
-
-               end if
-            end do
-         else
-            ! Result is not an intermediate, ie. its a residual, so lets find
-            ! out what spin intermediates it needs.
-            call assign_spin(item)
-         end if
-      end if
-
-      item%print_line = .true.
-
-      !write(item%logfile,*) "summed: ", summed, " ninter: ", item%ninter
-
-      if (item%ninter == 0) call line_error("Couldn't find "//
-     &                                      "intermediate", item)
-
-      ! Copy information back to array in print_itf()
-      do i = 1, item%ninter
-         spin_inters(i+n_inter)=item%inter_spins(i)
-         spin_inters(i+n_inter)%symm_res=item%symm_res
-!         write(item%logfile,*) "hello ", item%label_res, " ",
-!     &                        (spin_inters(i+n_inter)%name)
-!         write(item%logfile,*) (spin_inters(i+n_inter)%cases)
-
-         ! Set index type information, used to figure out pairing
-         do j = 1, INDEX_LEN
-            spin_inters(i+n_inter)%itype(j)=type3(i,j)
-         end do
-         !write(item%logfile,*) "type3 ", (type3(i,j),j=1,INDEX_LEN)
-      end do
-
-
-      ! Overall number of intermediates used to index spin_inters
-      n_inter = n_inter + item%ninter
-
-      deallocate(item%inter_spins)
-
-      ! Deallocate memroy used when construcitng item
-      call itf_deinit(item)
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine find_spin_intermediate(contr_info,itflog,command,
-     &                                  spin_inters,n_inter,symm_res)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine intermediate_spin_info(contr_info,itflog,command,
+!     &                               spin_inters,n_inter,permute)
+!*----------------------------------------------------------------------*
+!!     Search for intermediates, doesn't print out line
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info      ! Inofrmation about binary contraction
-      integer, intent(in) ::
-     &     itflog,         ! Output file
-     &     command         ! Type of formula item command, ie. contraction, copy etc.
-      integer, intent(inout) ::
-     &     n_inter         ! Overall number of intermediates needed by result
-      type(spin_cases), dimension(MAXINT), intent(inout) ::
-     &     spin_inters
-      logical, intent(in) ::
-     &   symm_res
-
-      integer ::
-     &    perm_case,   ! Info of permutation factors
-     &    i                ! Loop index
-      logical ::
-     &    inter,            ! True if result is an intermediate
-     &    symmetric           ! True is a symmetric tensor
-      character(len=MAXLEN_BC_LABEL) ::
-     &    old_name
-
-
-      ! Initialise permutation factors to 0 == no permutation
-      perm_case = 0
-      do i = 1, ngastp
-         if(contr_info%perm(i)) perm_case = perm_case + 1
-      end do
-
-      !call check_symmetric(contr_info, command, symmetric)
-
-      if (perm_case == 0) then
-         ! No permutations
-         call intermediate_spin_info(contr_info,itflog,command,
-     &                            spin_inters,n_inter,1)
-      else
-         if (symm_res) then
-            do i=1, perm_case
-               call intermediate_spin_info(contr_info,itflog,command,
-     &                                  spin_inters,n_inter,i)
-            end do
-         else
-            do i=1, perm_case+1
-               call intermediate_spin_info(contr_info,itflog,command,
-     &                                  spin_inters,n_inter,i)
-            end do
-         end if
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine assign_simple_spin(item, summed, symmetric)
-*----------------------------------------------------------------------*
-!     Assign spin to simple cases using logic conditions
-!     This avoid the spin sum routine
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &    item
-      logical, intent(inout) ::
-     &    summed
-      logical, intent(in) ::
-     &    symmetric
-
-      integer ::
-     &    i,j,k
-
-      summed = .false.
-
-      if (item%rank3 + item%rank1 + item%rank2 == 6) then
-         j = 1
-         do i = 1, 2
-            if (item%inter(i)) then
-               ! Only need the aa case
-               item%inter_spins(j)%cases(1,1) = 1
-               item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
-               item%inter_spins(j)%ncase = 1
-               if (i == 1) item%inter_spins(j)%name = item%label_t1
-               if (i == 2) item%inter_spins(j)%name = item%label_t2
-               item%ninter = item%ninter + 1
-               j = j + 1
-            end if
-         end do
-
-         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
-         summed = .true.
-
-      else if (item%rank1 /= 0 .and. item%rank2 == 0) then
-
-         j = 1
-         do i = 1, 2
-            if (item%inter(i)) then
-
-               if (i == 1) then
-                  select case (item%rank1)
-                     case(2)
-                        ! aa
-                        item%inter_spins(j)%cases(1,1) = 1
-                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
-                     case(4)
-                        ! abab
-                        item%inter_spins(j)%cases(1,1) = 1
-                        item%inter_spins(j)%cases(2,1) = 2
-                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
-                        item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 2
-                     case(6)
-                        do k = 1, 3
-                           ! aaaaaa
-                           item%inter_spins(j)%cases(i,1) = 1
-                           item%inter_spins(j)%cases(i+INDEX_LEN/2,1)= 1
-                        end do
-                     case default
-                        call line_error("Could not determine tensor "//
-     &                                  "rank",item)
-                  end select
-
-                  item%inter_spins(j)%name = item%label_t1
-                  item%inter_spins(j)%ncase = 1
-
-                  if (item%permute == 2 .and. item%symm_res) then
-                     item%inter_spins(j)%name =
-     &                             trim(item%inter_spins(j)%name)//'P'
-                     item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
-                     item%inter_spins(j)%cases(1,1) = 2
-                     item%inter_spins(j)%cases(2,1) = 1
-                     item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 2
-                     item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 1
-                  end if
-               end if
-
-               if (i == 2) then
-                  item%inter_spins(j)%name = item%label_t2
-                  item%inter_spins(j)%ncase = 0
-               end if
-
-               item%ninter = item%ninter + 1
-               j = j + 1
-            end if
-         end do
-
-
-         !write(item%logfile,*) "SIMPLE SPIN test: ", item%inter_spins
-         summed = .true.
-
-      else if (item%rank3==4.and.item%rank1==2.and.item%rank2==2) then
-         ! Tensor product
-         j = 1
-         do i = 1, 2
-            if (item%inter(i)) then
-               ! Only need the aa case
-               item%inter_spins(j)%cases(:,j) = 0
-               item%inter_spins(j)%cases(1,j) = 1
-               item%inter_spins(j)%cases(1+INDEX_LEN/2,j) = 1
-               item%inter_spins(j)%ncase = 1
-               if (i == 1) item%inter_spins(j)%name = item%label_t1
-               if (i == 2) item%inter_spins(j)%name = item%label_t2
-               item%ninter = item%ninter + 1
-               j = j + 1
-            end if
-         end do
-
-         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
-         summed = .true.
-
-      else if (item%rank3 + item%rank1 + item%rank2 == 0) then
-         ! Do nothing for scalar tensors
-         j = 1
-         do i = 1, 2
-            if (item%inter(i)) then
-               ! Only need the aa case
-               item%inter_spins(j)%cases(:,j) = 0
-               item%inter_spins(j)%ncase = 1
-               if (i == 1) item%inter_spins(j)%name = item%label_t1
-               if (i == 2) item%inter_spins(j)%name = item%label_t2
-               item%ninter = item%ninter + 1
-               j = j + 1
-            end if
-         end do
-
-         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
-         summed = .true.
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine intermediate_to_itf(contr_info,itflog,command,
-     &                               label,spin_case,itype,ninter,
-     &                               symm_res)
-*----------------------------------------------------------------------*
-!     Actually print out the intermediate lines
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info      ! Inofrmation about binary contraction
-      integer, intent(in) ::
-     &     itflog,         ! Output file
-     &     command         ! Type of formula item command, ie. contraction, copy etc.
-      integer, intent(in) ::
-     &     spin_case(INDEX_LEN),
-!     &     itype(2,INDEX_LEN),
-     &     itype(INDEX_LEN),
-     &   ninter ! Total number of intermediates
-      character(len=MAXLEN_BC_LABEL), intent(in) ::
-     &     label
-      logical, intent(in) ::
-     &   symm_res
-
-      type(itf_contr) ::
-     &     item        ! ITF contraction object; holds all info about the ITF algo line
-      integer ::
-     &    i, j, k, l, m
-      character(len=INDEX_LEN) ::
-     &    spin_name,
-     &    tspin_name
-      logical ::
-     &   found,
-     &   upper
-
-      ! Mark begging of spin summed block
-      write(itflog,'(a5)') 'BEGIN'
-
-      ! Set index type, which tells us the info about how the
-      ! intermediates are paired
-      item%itype = itype
-      item%symm_res = symm_res
-
-      ! TODO: subroutine to print out all info in itf_contr
-      if (scan('P', label)) item%permutation = .true.
-      call itf_contr_init(contr_info,item,0,.false.,command,itflog)
-
-      ! Set overall spin case of result
-      !write(item%logfile,*) "spin_case ", spin_case
-      do i = 1, item%rank3/2
-         item%i_spin%spin(1,i) = spin_case(i)
-         item%i_spin%spin(2,i) = spin_case(i+INDEX_LEN/2)
-      end do
-
-      !call print_spin(item%i_spin%spin, item%rank3, "TEST", 11)
-
-      ! Change intermediate name to reflect spin case
-      spin_name = ''
-      j = 1
-      do k = 1, 2
-         do i = 1, item%rank3/2
-            if (item%i_spin%spin(k,i)==1) then
-               spin_name(j:j) = 'a'
-               j = j + 1
-            else if (item%i_spin%spin(k,i)==2) then
-               spin_name(j:j) = 'b'
-               j = j + 1
-            end if
-         end do
-      end do
-
-
-      ! If an intermediate arises as the result of a permutation, we
-      ! need to create this new intermediate. This requires the
-      ! transpose
-      ! TODO: use a flag in itf_contr
-      if (scan('P', label) .and. item%symm_res) then
-
-         !item%permutation = .true.
-         found = .false.
-!         do j = 1, ngastp
-!            if (item%nops3(j) > 2) then
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
 !
-!               ! Maybe this will lead to problems..
-!               ! Rationale - sometimes due to the permuation symmetry of
-!               ! tensor (ie. with 3 or 4 indicies of the same type), we
-!               ! can skip explicitly writting out all the intermediates
-!               ! which are needed. This is like when skipping the result
-!               ! (permutation) line above.
-!               do k = 1, ngastp
-!                  if (item%inter(1) .and. item%nops1(k)>2 .and.
-!     &                item%rank2==2) then
-!                     return
-!                  else if (item%inter(2) .and. item%nops2(k)>2 .and.
-!     &                item%rank1==2) then
-!                     return
+!      type(binary_contr), intent(in) ::
+!     &     contr_info      ! Inofrmation about binary contraction
+!      integer, intent(in) ::
+!     &     itflog,         ! Output file
+!     &     command         ! Type of formula item command, ie. contraction, copy etc.
+!      integer, intent(inout) ::
+!     &     n_inter         ! Overall number of intermediates needed by result
+!      type(spin_cases), dimension(MAXINT), intent(inout) ::
+!     &     spin_inters
+!      integer, intent(inout) ::
+!     &     permute         ! 2 = Need to permute index
+!
+!      type(itf_contr) ::
+!     &     item        ! ITF contraction object; holds all info about the ITF algo line
+!      integer ::
+!     &    i,j,k,
+!     &    type3(2,INDEX_LEN),
+!     &    t_shift
+!      logical ::
+!     &    summed,
+!     &    symmetric
+!
+!      do i = 1, MAXINT
+!         if (contr_info%label_res == spin_inters(i)%name) then
+!            item%itype = spin_inters(i)%itype
+!            item%symm_res = spin_inters(i)%symm_res
+!         !write(itflog,*) "multiple intermediate ", spin_inters(i)%itype
+!            exit
+!         end if
+!      end do
+!
+!      call itf_contr_init(contr_info,item,permute,.false.,command,
+!     &                    itflog)
+!
+!      !write(10,*) "intermediate_spin_info ", item%label_res
+!      !write(10,*) "intermediate_spin_info ", item%idx3
+!
+!      !write(10,*) "intermediate_spin_info ", item%label_t1
+!      !write(10,*) "intermediate_spin_info ", item%idx1
+!      !write(10,*) "intermediate_spin_info ", item%label_t2
+!      !write(10,*) "intermediate_spin_info ", item%idx2
+!
+!      ! Placed in normal ordered {} order not ITF []
+!      type3 = 0
+!      t_shift = 1
+!      ! If the t1 is an intermediate get info about its pairing
+!      if (item%inter(1)) then
+!         do i = 1, item%rank1
+!
+!            if (i>item%rank1/2) then
+!               j = item%rank1 - i + item%rank1/2 + 1
+!            else
+!               j = i
+!            end if
+!
+!            type3(t_shift,j) = get_itype(item%idx1(i:i))
+!         end do
+!         t_shift = t_shift + 1
+!      end if
+!
+!      ! If the t2 is an intermediate get info about its pairing
+!      if (item%inter(2)) then
+!         do i = 1, item%rank2
+!
+!            if (i>item%rank2/2) then
+!               j = item%rank2 - i + item%rank2/2 + 1
+!            else
+!               j = i
+!            end if
+!
+!            type3(t_shift,j) = get_itype(item%idx2(i:i))
+!         end do
+!      end if
+!
+!      if (item%permute == 2 .and. item%symm_res) then
+!         ! Need to transpose by tensors after permutation, to
+!         ! avoid symmetry problem when using (1 + Pabij)
+!         ! When we transpose tensors, we get a sign change, however
+!         ! here, we are just searching for intermediates and don't care
+!         ! about the final sign - that will come when the intermediate
+!         ! is printed out
+!         if (item%rank1==6) then
+!            !item%idx1 = c_index(item%idx1,1,.true.)
+!            item%idx1 = c_index(item%idx1,1)
+!         else
+!            item%idx1 = f_index(item%idx1,item%rank1/2)
+!         end if
+!         item%idx2 = f_index(item%idx2,item%rank2/2)
+!
+!         if (item%inter(3)) then
+!            if (item%rank3==6) then
+!               !item%idx3 = c_index(item%idx3,1,.true.)
+!               item%idx3 = c_index(item%idx3,1)
+!            else
+!               item%idx3 = f_index(item%idx3,item%rank3/2)
+!            end if
+!         end if
+!
+!         item%label_res = trim(item%label_res)//'P'
+!      end if
+!
+!
+!      ! Allocate space to store information about intermediates and
+!      ! their spin cases. Only allocate 2 objects as there can only be
+!      ! at most two intermediates on a line
+!      allocate(item%inter_spins(2))
+!
+!
+!      ! Do not want to print out the lines while gathering info about
+!      ! intermediates
+!      item%print_line = .false.
+!
+!
+!      ! Need to catch lines which don't need to be spin summed
+!      call assign_simple_spin(item, summed, item%symm_res)
+!
+!      ! Need to set spin result for intermediate that depends on
+!      ! another intermediate
+!      if (.not. summed) then
+!
+!         if (item%inter(3)) then
+!            do i = 1, MAXINT
+!               if (item%label_res == spin_inters(i)%name) then
+!                  do k = 1, spin_inters(i)%ncase
+!
+!                     do j = 1, item%rank3/2
+!                        item%i_spin%spin(1,j) =
+!     &                                       spin_inters(i)%cases(j,k)
+!                        item%i_spin%spin(2,j) =
+!     &                             spin_inters(i)%cases(j+INDEX_LEN/2,k)
+!                     end do
+!
+!                     ! Need to clear spins from after the first loop
+!                     item%t_spin(1)%spin = 0
+!                     item%t_spin(2)%spin = 0
+!
+!                     call assign_spin(item)
+!                  end do
+!               exit
+!
+!               end if
+!            end do
+!         else
+!            ! Result is not an intermediate, ie. its a residual, so lets find
+!            ! out what spin intermediates it needs.
+!            call assign_spin(item)
+!         end if
+!      end if
+!
+!      item%print_line = .true.
+!
+!      !write(item%logfile,*) "summed: ", summed, " ninter: ", item%ninter
+!
+!      if (item%ninter == 0) call line_error("Couldn't find "//
+!     &                                      "intermediate", item)
+!
+!      ! Copy information back to array in print_itf()
+!      do i = 1, item%ninter
+!         spin_inters(i+n_inter)=item%inter_spins(i)
+!         spin_inters(i+n_inter)%symm_res=item%symm_res
+!!         write(item%logfile,*) "hello ", item%label_res, " ",
+!!     &                        (spin_inters(i+n_inter)%name)
+!!         write(item%logfile,*) (spin_inters(i+n_inter)%cases)
+!
+!         ! Set index type information, used to figure out pairing
+!         do j = 1, INDEX_LEN
+!            spin_inters(i+n_inter)%itype(j)=type3(i,j)
+!         end do
+!         !write(item%logfile,*) "type3 ", (type3(i,j),j=1,INDEX_LEN)
+!      end do
+!
+!
+!      ! Overall number of intermediates used to index spin_inters
+!      n_inter = n_inter + item%ninter
+!
+!      deallocate(item%inter_spins)
+!
+!      ! Deallocate memroy used when construcitng item
+!      call itf_deinit(item)
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine find_spin_intermediate(contr_info,itflog,command,
+!     &                                  spin_inters,n_inter,symm_res)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(in) ::
+!     &     contr_info      ! Inofrmation about binary contraction
+!      integer, intent(in) ::
+!     &     itflog,         ! Output file
+!     &     command         ! Type of formula item command, ie. contraction, copy etc.
+!      integer, intent(inout) ::
+!     &     n_inter         ! Overall number of intermediates needed by result
+!      type(spin_cases), dimension(MAXINT), intent(inout) ::
+!     &     spin_inters
+!      logical, intent(in) ::
+!     &   symm_res
+!
+!      integer ::
+!     &    perm_case,   ! Info of permutation factors
+!     &    i                ! Loop index
+!      logical ::
+!     &    inter,            ! True if result is an intermediate
+!     &    symmetric           ! True is a symmetric tensor
+!      character(len=MAXLEN_BC_LABEL) ::
+!     &    old_name
+!
+!
+!      ! Initialise permutation factors to 0 == no permutation
+!      perm_case = 0
+!      do i = 1, ngastp
+!         if(contr_info%perm(i)) perm_case = perm_case + 1
+!      end do
+!
+!      !call check_symmetric(contr_info, command, symmetric)
+!
+!      if (perm_case == 0) then
+!         ! No permutations
+!         call intermediate_spin_info(contr_info,itflog,command,
+!     &                            spin_inters,n_inter,1)
+!      else
+!         if (symm_res) then
+!            do i=1, perm_case
+!               call intermediate_spin_info(contr_info,itflog,command,
+!     &                                  spin_inters,n_inter,i)
+!            end do
+!         else
+!            do i=1, perm_case+1
+!               call intermediate_spin_info(contr_info,itflog,command,
+!     &                                  spin_inters,n_inter,i)
+!            end do
+!         end if
+!      end if
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine assign_simple_spin(item, summed, symmetric)
+!*----------------------------------------------------------------------*
+!!     Assign spin to simple cases using logic conditions
+!!     This avoid the spin sum routine
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &    item
+!      logical, intent(inout) ::
+!     &    summed
+!      logical, intent(in) ::
+!     &    symmetric
+!
+!      integer ::
+!     &    i,j,k
+!
+!      summed = .false.
+!
+!      if (item%rank3 + item%rank1 + item%rank2 == 6) then
+!         j = 1
+!         do i = 1, 2
+!            if (item%inter(i)) then
+!               ! Only need the aa case
+!               item%inter_spins(j)%cases(1,1) = 1
+!               item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
+!               item%inter_spins(j)%ncase = 1
+!               if (i == 1) item%inter_spins(j)%name = item%label_t1
+!               if (i == 2) item%inter_spins(j)%name = item%label_t2
+!               item%ninter = item%ninter + 1
+!               j = j + 1
+!            end if
+!         end do
+!
+!         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+!         summed = .true.
+!
+!      else if (item%rank1 /= 0 .and. item%rank2 == 0) then
+!
+!         j = 1
+!         do i = 1, 2
+!            if (item%inter(i)) then
+!
+!               if (i == 1) then
+!                  select case (item%rank1)
+!                     case(2)
+!                        ! aa
+!                        item%inter_spins(j)%cases(1,1) = 1
+!                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
+!                     case(4)
+!                        ! abab
+!                        item%inter_spins(j)%cases(1,1) = 1
+!                        item%inter_spins(j)%cases(2,1) = 2
+!                        item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 1
+!                        item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 2
+!                     case(6)
+!                        do k = 1, 3
+!                           ! aaaaaa
+!                           item%inter_spins(j)%cases(i,1) = 1
+!                           item%inter_spins(j)%cases(i+INDEX_LEN/2,1)= 1
+!                        end do
+!                     case default
+!                        call line_error("Could not determine tensor "//
+!     &                                  "rank",item)
+!                  end select
+!
+!                  item%inter_spins(j)%name = item%label_t1
+!                  item%inter_spins(j)%ncase = 1
+!
+!                  if (item%permute == 2 .and. item%symm_res) then
+!                     item%inter_spins(j)%name =
+!     &                             trim(item%inter_spins(j)%name)//'P'
+!                     item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+!                     item%inter_spins(j)%cases(1,1) = 2
+!                     item%inter_spins(j)%cases(2,1) = 1
+!                     item%inter_spins(j)%cases(1+INDEX_LEN/2,1) = 2
+!                     item%inter_spins(j)%cases(2+INDEX_LEN/2,1) = 1
 !                  end if
-!               end do
-!
-!
-!               do k = 1, len(spin_name)
-!                  if (spin_name(k:k)=='a') then
-!                     spin_name(k:k)='b'
-!                  else if (spin_name(k:k)=='b') then
-!                     spin_name(k:k)='a'
-!                  end if
-!               end do
-!
-!               !! Find the itype of the 3 indicies
-!               if (j == 1) then
-!                  l = 3
-!               else if (j == 2) then
-!                  l = 1
-!               else if (j == 3) then
-!                  l = 2
-!               else if (j == 4) then
-!                  l = 4
 !               end if
 !
-!               do k = 1, INDEX_LEN
-!                  if (item%itype(1,k)/=l) then
-!                     if (k>=item%rank3/2) then
-!                        upper = .false.
-!                     else
-!                        upper = .true.
-!                     end if
+!               if (i == 2) then
+!                  item%inter_spins(j)%name = item%label_t2
+!                  item%inter_spins(j)%ncase = 0
+!               end if
+!
+!               item%ninter = item%ninter + 1
+!               j = j + 1
+!            end if
+!         end do
+!
+!
+!         !write(item%logfile,*) "SIMPLE SPIN test: ", item%inter_spins
+!         summed = .true.
+!
+!      else if (item%rank3==4.and.item%rank1==2.and.item%rank2==2) then
+!         ! Tensor product
+!         j = 1
+!         do i = 1, 2
+!            if (item%inter(i)) then
+!               ! Only need the aa case
+!               item%inter_spins(j)%cases(:,j) = 0
+!               item%inter_spins(j)%cases(1,j) = 1
+!               item%inter_spins(j)%cases(1+INDEX_LEN/2,j) = 1
+!               item%inter_spins(j)%ncase = 1
+!               if (i == 1) item%inter_spins(j)%name = item%label_t1
+!               if (i == 2) item%inter_spins(j)%name = item%label_t2
+!               item%ninter = item%ninter + 1
+!               j = j + 1
+!            end if
+!         end do
+!
+!         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+!         summed = .true.
+!
+!      else if (item%rank3 + item%rank1 + item%rank2 == 0) then
+!         ! Do nothing for scalar tensors
+!         j = 1
+!         do i = 1, 2
+!            if (item%inter(i)) then
+!               ! Only need the aa case
+!               item%inter_spins(j)%cases(:,j) = 0
+!               item%inter_spins(j)%ncase = 1
+!               if (i == 1) item%inter_spins(j)%name = item%label_t1
+!               if (i == 2) item%inter_spins(j)%name = item%label_t2
+!               item%ninter = item%ninter + 1
+!               j = j + 1
+!            end if
+!         end do
+!
+!         !write(item%logfile,*) "SIMPLE SPIN: ", item%inter_spins
+!         summed = .true.
+!      end if
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine intermediate_to_itf(contr_info,itflog,command,
+!     &                               label,spin_case,itype,ninter,
+!     &                               symm_res)
+!*----------------------------------------------------------------------*
+!!     Actually print out the intermediate lines
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(in) ::
+!     &     contr_info      ! Inofrmation about binary contraction
+!      integer, intent(in) ::
+!     &     itflog,         ! Output file
+!     &     command         ! Type of formula item command, ie. contraction, copy etc.
+!      integer, intent(in) ::
+!     &     spin_case(INDEX_LEN),
+!!     &     itype(2,INDEX_LEN),
+!     &     itype(INDEX_LEN),
+!     &   ninter ! Total number of intermediates
+!      character(len=MAXLEN_BC_LABEL), intent(in) ::
+!     &     label
+!      logical, intent(in) ::
+!     &   symm_res
+!
+!      type(itf_contr) ::
+!     &     item        ! ITF contraction object; holds all info about the ITF algo line
+!      integer ::
+!     &    i, j, k, l, m
+!      character(len=INDEX_LEN) ::
+!     &    spin_name,
+!     &    tspin_name
+!      logical ::
+!     &   found,
+!     &   upper
+!
+!      ! Mark begging of spin summed block
+!      write(itflog,'(a5)') 'BEGIN'
+!
+!      ! Set index type, which tells us the info about how the
+!      ! intermediates are paired
+!      item%itype = itype
+!      item%symm_res = symm_res
+!
+!      ! TODO: subroutine to print out all info in itf_contr
+!      if (scan('P', label)) item%permutation = .true.
+!      call itf_contr_init(contr_info,item,0,.false.,command,itflog)
+!
+!      ! Set overall spin case of result
+!      !write(item%logfile,*) "spin_case ", spin_case
+!      do i = 1, item%rank3/2
+!         item%i_spin%spin(1,i) = spin_case(i)
+!         item%i_spin%spin(2,i) = spin_case(i+INDEX_LEN/2)
+!      end do
+!
+!      !call print_spin(item%i_spin%spin, item%rank3, "TEST", 11)
+!
+!      ! Change intermediate name to reflect spin case
+!      spin_name = ''
+!      j = 1
+!      do k = 1, 2
+!         do i = 1, item%rank3/2
+!            if (item%i_spin%spin(k,i)==1) then
+!               spin_name(j:j) = 'a'
+!               j = j + 1
+!            else if (item%i_spin%spin(k,i)==2) then
+!               spin_name(j:j) = 'b'
+!               j = j + 1
+!            end if
+!         end do
+!      end do
+!
+!
+!      ! If an intermediate arises as the result of a permutation, we
+!      ! need to create this new intermediate. This requires the
+!      ! transpose
+!      ! TODO: use a flag in itf_contr
+!      if (scan('P', label) .and. item%symm_res) then
+!
+!         !item%permutation = .true.
+!         found = .false.
+!!         do j = 1, ngastp
+!!            if (item%nops3(j) > 2) then
+!!
+!!               ! Maybe this will lead to problems..
+!!               ! Rationale - sometimes due to the permuation symmetry of
+!!               ! tensor (ie. with 3 or 4 indicies of the same type), we
+!!               ! can skip explicitly writting out all the intermediates
+!!               ! which are needed. This is like when skipping the result
+!!               ! (permutation) line above.
+!!               do k = 1, ngastp
+!!                  if (item%inter(1) .and. item%nops1(k)>2 .and.
+!!     &                item%rank2==2) then
+!!                     return
+!!                  else if (item%inter(2) .and. item%nops2(k)>2 .and.
+!!     &                item%rank1==2) then
+!!                     return
+!!                  end if
+!!               end do
+!!
+!!
+!!               do k = 1, len(spin_name)
+!!                  if (spin_name(k:k)=='a') then
+!!                     spin_name(k:k)='b'
+!!                  else if (spin_name(k:k)=='b') then
+!!                     spin_name(k:k)='a'
+!!                  end if
+!!               end do
+!!
+!!               !! Find the itype of the 3 indicies
+!!               if (j == 1) then
+!!                  l = 3
+!!               else if (j == 2) then
+!!                  l = 1
+!!               else if (j == 3) then
+!!                  l = 2
+!!               else if (j == 4) then
+!!                  l = 4
+!!               end if
+!!
+!!               do k = 1, INDEX_LEN
+!!                  if (item%itype(1,k)/=l) then
+!!                     if (k>=item%rank3/2) then
+!!                        upper = .false.
+!!                     else
+!!                        upper = .true.
+!!                     end if
+!!                     exit
+!!                  end if
+!!               end do
+!!
+!!               !item%idx3=f_index(item%idx3,item%rank3/2,.true.)
+!!               item%idx3=f_index(item%idx3,item%rank3/2,upper)
+!!
+!!               ! Also flip i_spin just in case
+!!               do l = 1, 2
+!!                  do k = 1, item%rank3/2
+!!                     if (item%i_spin%spin(l,k)==1) then
+!!                        item%i_spin%spin(l,k)=2
+!!                     else if (item%i_spin%spin(l,k)==2) then
+!!                        item%i_spin%spin(l,k)=1
+!!                     end if
+!!                  end do
+!!               end do
+!!
+!!
+!!               found = .true.
+!!               exit
+!!            end if
+!!         end do
+!
+!
+!         if (.not.found) then
+!            if (item%rank3==6) then
+!               item%idx3 = c_index(item%idx3,1)
+!               !item%idx3 = c_index(item%idx3,1,.true.)
+!            else
+!               item%idx3=f_index(item%idx3,item%rank3/2)
+!            end if
+!         end if
+!
+!         !item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
+!         if (item%rank1==6) then
+!            item%idx1 = c_index(item%idx1,1,.true.)
+!         else
+!            item%idx1 = f_index(item%idx1,item%rank1/2)
+!         end if
+!         item%idx2 = f_index(item%idx2, item%rank2/2)
+!
+!
+!         ! This factor is from (1-Pij)
+!         item%fact = item%fact * -1.0d+0
+!
+!         ! These factors come from permutations in order to match up
+!         ! indcices in final intermediate
+!         if (item%rank1>2) item%fact = item%fact * -1.0d+0
+!         if (item%rank2>2) item%fact = item%fact * -1.0d+0
+!
+!
+!
+!      end if
+!
+!      item%label_res = trim(item%label_res)//trim(spin_name)
+!      call assign_spin(item)
+!
+!      write(itflog,'(a)') "END"
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine print_itf_line(item,s1,s2)
+!*----------------------------------------------------------------------*
+!!     Print line of ITF code
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &     item
+!      logical, intent(in) ::
+!     &     s1,s2
+!
+!      character(len=MAXLEN_BC_LABEL) ::
+!     &     nres, nt1, nt2          ! Name of tensors involved in the contraction
+!      character(len=5) ::
+!     &     s_int                 ! Intermdiate tensor number
+!      character(len=264) ::
+!     &     itf_line,          ! Line of ITF code
+!     &     st1, st2           ! Name of spin summed tensors + index
+!      character(len=2) ::
+!     &     equal_op           ! ITF contraction operator; ie. +=, -=, :=
+!      character(len=25) ::
+!     &     sfact,             ! String representation of factor
+!     &     sfact_star         ! String representation of factor formatted for output
+!      integer ::
+!     &     i
+!      real(8) ::
+!     &   c_fact               ! Copy of orginal factor
+!
+!
+!      ! Reorder integrals into a fixed index order, only need to do this
+!      ! once for each spin block as the spin summation doesn't depend on
+!      ! the index string at this point
+!      if (item%spin_cases==0) then
+!         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
+!     &                         item%j_int,
+!     &                         item%label_t1,item%nops1)
+!         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
+!     &                         item%j_int,
+!     &                         item%label_t2,item%nops2)
+!         if (.not. item%int(1) .and. .not. item%inter(1)) then
+!            call reorder_amp(item%rank1,item%idx1)
+!         end if
+!         if (.not. item%int(2) .and. .not. item%inter(2)) then
+!            call reorder_amp(item%rank2,item%idx2)
+!         end if
+!         if (.not. item%inter(3)) then
+!            call reorder_amp(item%rank3,item%idx3)
+!         end if
+!      end if
+!
+!      ! Change names of specific tensors
+!      nres=rename_tensor(item%label_res, item%rank3)
+!      nt1=rename_tensor(item%label_t1, item%rank1)
+!      nt2=rename_tensor(item%label_t2, item%rank2)
+!
+!      ! Add intermediate spin strings to names
+!      if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
+!      if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
+!
+!      ! Change tensor to spatial orbital quantity, unless it is an
+!      ! intermediate
+!      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
+!     &                1,item%binary,item%int(1),item%nops1,item%j_int,
+!     &                item%logfile)
+!      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
+!     &                2,item%binary,item%int(2),item%nops2,item%j_int,
+!     &                item%logfile)
+!
+!
+!      ! Add factor to sclar result cases (going to skip half the spin
+!      ! cases as these are the same, so add a factor of two to the
+!      ! remaining ones)
+!      c_fact = item%fact
+!      if (item%rank3 == 0 .and. item%rank1/=0) then
+!         c_fact = c_fact * 2.0d0
+!      end if
+!
+!      ! Convert factor to string, ignore if 1.0 or -1.0
+!      sfact=''
+!      sfact_star=''
+!      if (abs(abs(c_fact) - 1.0d+0) > 1.0d-15) then
+!            write(sfact,*) c_fact
+!
+!            if (c_fact < 0.0d+0) then
+!               do i = 1, len(sfact)
+!                  if (sfact(i:i) == '-') then
+!                     ! Remove leading negative sign
+!                     sfact(i:i) = ''
 !                     exit
 !                  end if
 !               end do
-!
-!               !item%idx3=f_index(item%idx3,item%rank3/2,.true.)
-!               item%idx3=f_index(item%idx3,item%rank3/2,upper)
-!
-!               ! Also flip i_spin just in case
-!               do l = 1, 2
-!                  do k = 1, item%rank3/2
-!                     if (item%i_spin%spin(l,k)==1) then
-!                        item%i_spin%spin(l,k)=2
-!                     else if (item%i_spin%spin(l,k)==2) then
-!                        item%i_spin%spin(l,k)=1
-!                     end if
-!                  end do
-!               end do
-!
-!
-!               found = .true.
-!               exit
 !            end if
-!         end do
-
-
-         if (.not.found) then
-            if (item%rank3==6) then
-               item%idx3 = c_index(item%idx3,1)
-               !item%idx3 = c_index(item%idx3,1,.true.)
-            else
-               item%idx3=f_index(item%idx3,item%rank3/2)
-            end if
-         end if
-
-         !item%idx1 = f_index(item%idx1,item%rank1/2,.true.)
-         if (item%rank1==6) then
-            item%idx1 = c_index(item%idx1,1,.true.)
-         else
-            item%idx1 = f_index(item%idx1,item%rank1/2)
-         end if
-         item%idx2 = f_index(item%idx2, item%rank2/2)
-
-
-         ! This factor is from (1-Pij)
-         item%fact = item%fact * -1.0d+0
-
-         ! These factors come from permutations in order to match up
-         ! indcices in final intermediate
-         if (item%rank1>2) item%fact = item%fact * -1.0d+0
-         if (item%rank2>2) item%fact = item%fact * -1.0d+0
-
-
-
-      end if
-
-      item%label_res = trim(item%label_res)//trim(spin_name)
-      call assign_spin(item)
-
-      write(itflog,'(a)') "END"
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2)
-*----------------------------------------------------------------------*
-!     Print line of ITF code
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &     item
-      logical, intent(in) ::
-     &     s1,s2
-
-      character(len=MAXLEN_BC_LABEL) ::
-     &     nres, nt1, nt2          ! Name of tensors involved in the contraction
-      character(len=5) ::
-     &     s_int                 ! Intermdiate tensor number
-      character(len=264) ::
-     &     itf_line,          ! Line of ITF code
-     &     st1, st2           ! Name of spin summed tensors + index
-      character(len=2) ::
-     &     equal_op           ! ITF contraction operator; ie. +=, -=, :=
-      character(len=25) ::
-     &     sfact,             ! String representation of factor
-     &     sfact_star         ! String representation of factor formatted for output
-      integer ::
-     &     i
-      real(8) ::
-     &   c_fact               ! Copy of orginal factor
-
-
-      ! Reorder integrals into a fixed index order, only need to do this
-      ! once for each spin block as the spin summation doesn't depend on
-      ! the index string at this point
-      if (item%spin_cases==0) then
-         call reorder_integral(item%int(1),item%rank1,item%idx1,s1,
-     &                         item%j_int,
-     &                         item%label_t1,item%nops1)
-         call reorder_integral(item%int(2),item%rank2,item%idx2,s2,
-     &                         item%j_int,
-     &                         item%label_t2,item%nops2)
-         if (.not. item%int(1) .and. .not. item%inter(1)) then
-            call reorder_amp(item%rank1,item%idx1)
-         end if
-         if (.not. item%int(2) .and. .not. item%inter(2)) then
-            call reorder_amp(item%rank2,item%idx2)
-         end if
-         if (.not. item%inter(3)) then
-            call reorder_amp(item%rank3,item%idx3)
-         end if
-      end if
-
-      ! Change names of specific tensors
-      nres=rename_tensor(item%label_res, item%rank3)
-      nt1=rename_tensor(item%label_t1, item%rank1)
-      nt2=rename_tensor(item%label_t2, item%rank2)
-
-      ! Add intermediate spin strings to names
-      if (item%inter(1)) nt1 = trim(nt1)//trim(item%inter1)
-      if (item%inter(2)) nt2 = trim(nt2)//trim(item%inter2)
-
-      ! Change tensor to spatial orbital quantity, unless it is an
-      ! intermediate
-      call spatial_string(st1,item%idx1,nt1,s1,item%inter(1),item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,item%j_int,
-     &                item%logfile)
-      call spatial_string(st2,item%idx2,nt2,s2,item%inter(2),item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,item%j_int,
-     &                item%logfile)
-
-
-      ! Add factor to sclar result cases (going to skip half the spin
-      ! cases as these are the same, so add a factor of two to the
-      ! remaining ones)
-      c_fact = item%fact
-      if (item%rank3 == 0 .and. item%rank1/=0) then
-         c_fact = c_fact * 2.0d0
-      end if
-
-      ! Convert factor to string, ignore if 1.0 or -1.0
-      sfact=''
-      sfact_star=''
-      if (abs(abs(c_fact) - 1.0d+0) > 1.0d-15) then
-            write(sfact,*) c_fact
-
-            if (c_fact < 0.0d+0) then
-               do i = 1, len(sfact)
-                  if (sfact(i:i) == '-') then
-                     ! Remove leading negative sign
-                     sfact(i:i) = ''
-                     exit
-                  end if
-               end do
-            end if
-
-            do i=1, len(sfact)
-               ! Remove leading zero
-               if (sfact(i:i) == '0') then
-                  sfact(i:i)=''
-               else if (sfact(i:i) == '.') then
-                  exit
-               end if
-            end do
-
-            do i=len(sfact), 1, -1
-               ! Remove trailing zeros
-               if (sfact(i:i) == '0' .or. sfact(i:i) == ' ') then
-                  sfact(i:i) = ''
-               else
-                  exit
-               end if
-            end do
-            sfact_star=trimal(sfact)//'*'
-      end if
-
-      ! Determine what the contraction operator looks like
-      equal_op='  '
-      if (c_fact < 0.0d+0) then
-         equal_op='-='
-      else if (item%command==command_cp_intm) then
-         equal_op=':='
-      else
-         equal_op='+='
-      end if
-
-      ! Construct complete itf algo line from the above parts
-      itf_line='.'//trimal(nres)//
-     &    '['//trim(item%idx3)//'] '//equal_op//' '//
-     &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
-
-      ! Print it to bcontr.tmp
-      write(item%logfile,'(a)') trim(itf_line)
-
-      ! Increment number of printed spn cases
-      item%spin_cases = item%spin_cases + 1
-
-      return
-      end
+!
+!            do i=1, len(sfact)
+!               ! Remove leading zero
+!               if (sfact(i:i) == '0') then
+!                  sfact(i:i)=''
+!               else if (sfact(i:i) == '.') then
+!                  exit
+!               end if
+!            end do
+!
+!            do i=len(sfact), 1, -1
+!               ! Remove trailing zeros
+!               if (sfact(i:i) == '0' .or. sfact(i:i) == ' ') then
+!                  sfact(i:i) = ''
+!               else
+!                  exit
+!               end if
+!            end do
+!            sfact_star=trimal(sfact)//'*'
+!      end if
+!
+!      ! Determine what the contraction operator looks like
+!      equal_op='  '
+!      if (c_fact < 0.0d+0) then
+!         equal_op='-='
+!      else if (item%command==command_cp_intm) then
+!         equal_op=':='
+!      else
+!         equal_op='+='
+!      end if
+!
+!      ! Construct complete itf algo line from the above parts
+!      itf_line='.'//trimal(nres)//
+!     &    '['//trim(item%idx3)//'] '//equal_op//' '//
+!     &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
+!
+!      ! Print it to bcontr.tmp
+!      write(item%logfile,'(a)') trim(itf_line)
+!
+!      ! Increment number of printed spn cases
+!      item%spin_cases = item%spin_cases + 1
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -2575,175 +2575,175 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine reorder_integral(integral,rank,idx,s1,j_int,label,nops)
-*----------------------------------------------------------------------*
-!     Print line of ITF code
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=INDEX_LEN), intent(inout) ::
-     &   idx
-      integer, intent(in) ::
-     &   rank,
-     &   nops(ngastp)
-      logical, intent(in) ::
-     &   integral,
-     &   s1,
-     &   j_int
-      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-     &   label
-
-      integer ::
-     &   itype(rank),
-     &   i, j,
-     &   itmp
-      character(len=1) ::
-     &   tmp
-      character(len=INDEX_LEN) ::
-     &   tstr
-      logical ::
-     &   permute,
-     &   symmetric
-
-
-      if (.not. integral) return
-      if (rank == 2) return
-
-      do i = 1, rank
-         itype(i) = get_itype(idx(i:i))
-      end do
-
-      symmetric = .true.
-      do i = 1, ngastp
-         if (mod(nops(i),2) /= 0 .or. nops(i)>2) then
-            symmetric = .false.
-            exit
-         end if
-      end do
-
-      !write(10,*) "idx ", idx
-      do i = 1, rank/2
-         if (itype(i)>itype(i+rank/2)) then
-            ! Swap creation and annhilation
-            tmp = idx(i:i)
-            idx(i:i) = idx(i+rank/2:i+rank/2)
-            idx(i+rank/2:i+rank/2) = tmp
-
-            ! Update itype
-            itmp = itype(i)
-            itype(i) = itype(i+rank/2)
-            itype(i+rank/2) = itmp
-         else if (j_int) then
-            if (itype(i)==itype(i+rank/2)) then
-               ! Catch J-integrals: ecec -> eecc
-               tmp = idx(i+1:i+1)
-               idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
-               idx(i+rank/2:i+rank/2) = tmp
-               label = 'J'
-
-               itmp = itype(i+1)
-               itype(i+1) = itype(i+rank/2)
-               itype(i+rank/2) = itmp
-
-               ! Check index in correct order
-               do j = 1, rank/2
-                  if (itype(j)>itype(j+rank/2)) then
-                     tmp = idx(j:j)
-                     idx(j:j) = idx(j+rank/2:j+rank/2)
-                     idx(j+rank/2:j+rank/2) = tmp
-
-                     itmp = itype(j)
-                     itype(j) = itype(j+rank/2)
-                     itype(j+rank/2) = itmp
-                  end if
-               end do
-
-            end if
-         end if
-      end do
-      !write(10,*) "idx ", idx
-
-      ! Permute pairs
-      if (nops(2)<3) then
-         permute = .false.
-         do i = 1, rank/2-1
-            if (itype(i)>itype(i+1)) then
-               tmp = idx(i:i)
-               idx(i:i) = idx(i+1:i+1)
-               idx(i+1:i+1) = tmp
-
-               tmp = idx(i+rank/2:i+rank/2)
-               idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
-               idx(i+1+rank/2:i+1+rank/2) = tmp
-
-               permute = .true.
-            else if (itype(i)<itype(i+1)) then
-               permute = .true.
-            end if
-         end do
-
-         ! Check the annhilations
-         if (.not. permute) then
-            do i = rank/2+1, rank-1
-               if (itype(i)>itype(i+1)) then
-                  tmp = idx(i:i)
-                  idx(i:i) = idx(i+1:i+1)
-                  idx(i+1:i+1) = tmp
-
-                  tmp = idx(i-rank/2:i-rank/2)
-                  idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
-                  idx(i+1-rank/2:i+1-rank/2) = tmp
-               end if
-            end do
-         end if
-      !write(10,*) "idx ", idx
-      else if (nops(2)==3) then
-         ! Need to reorder indices for 3-external integrals
-         ! Slot positions 1 and 2 are now paired
-
-         tstr=''
-         do i = 1, rank/2
-            if (itype(i)==1 .and. itype(i+rank/2)==1) then
-               tstr(1:1) = idx(i:i)
-               tstr(2:2) = idx(i+rank/2:i+rank/2)
-            else
-               tstr(3:3) = idx(i:i)
-               tstr(4:4) = idx(i+rank/2:i+rank/2)
-            end if
-         end do
-
-         idx = trim(tstr)
-      end if
-
-
-      if (nops(1)==3 .and. nops(3)==1) then
-         ! Need to have special case of K:ccca not K:accc
-         tstr = ''
-         tstr(1:1) = idx(2:2)
-         tstr(2:2) = idx(3:3)
-         tstr(3:3) = idx(4:4)
-         tstr(4:4) = idx(1:1)
-         idx = tstr
-      end if
-
-      if (label=='J'.and.nops(1)==1.and.nops(2)==2.and.nops(3)==1) then
-         ! Need to have special case of J:eeca not J:eeac
-         tstr = ''
-         tstr(1:1) = idx(2:2)
-         tstr(2:2) = idx(1:1)
-         tstr(3:3) = idx(4:4)
-         tstr(4:4) = idx(3:3)
-         idx = tstr
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine reorder_integral(integral,rank,idx,s1,j_int,label,nops)
+!*----------------------------------------------------------------------*
+!!     Print line of ITF code
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=INDEX_LEN), intent(inout) ::
+!     &   idx
+!      integer, intent(in) ::
+!     &   rank,
+!     &   nops(ngastp)
+!      logical, intent(in) ::
+!     &   integral,
+!     &   s1,
+!     &   j_int
+!      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+!     &   label
+!
+!      integer ::
+!     &   itype(rank),
+!     &   i, j,
+!     &   itmp
+!      character(len=1) ::
+!     &   tmp
+!      character(len=INDEX_LEN) ::
+!     &   tstr
+!      logical ::
+!     &   permute,
+!     &   symmetric
+!
+!
+!      if (.not. integral) return
+!      if (rank == 2) return
+!
+!      do i = 1, rank
+!         itype(i) = get_itype(idx(i:i))
+!      end do
+!
+!      symmetric = .true.
+!      do i = 1, ngastp
+!         if (mod(nops(i),2) /= 0 .or. nops(i)>2) then
+!            symmetric = .false.
+!            exit
+!         end if
+!      end do
+!
+!      !write(10,*) "idx ", idx
+!      do i = 1, rank/2
+!         if (itype(i)>itype(i+rank/2)) then
+!            ! Swap creation and annhilation
+!            tmp = idx(i:i)
+!            idx(i:i) = idx(i+rank/2:i+rank/2)
+!            idx(i+rank/2:i+rank/2) = tmp
+!
+!            ! Update itype
+!            itmp = itype(i)
+!            itype(i) = itype(i+rank/2)
+!            itype(i+rank/2) = itmp
+!         else if (j_int) then
+!            if (itype(i)==itype(i+rank/2)) then
+!               ! Catch J-integrals: ecec -> eecc
+!               tmp = idx(i+1:i+1)
+!               idx(i+1:i+1) = idx(i+rank/2:i+rank/2)
+!               idx(i+rank/2:i+rank/2) = tmp
+!               label = 'J'
+!
+!               itmp = itype(i+1)
+!               itype(i+1) = itype(i+rank/2)
+!               itype(i+rank/2) = itmp
+!
+!               ! Check index in correct order
+!               do j = 1, rank/2
+!                  if (itype(j)>itype(j+rank/2)) then
+!                     tmp = idx(j:j)
+!                     idx(j:j) = idx(j+rank/2:j+rank/2)
+!                     idx(j+rank/2:j+rank/2) = tmp
+!
+!                     itmp = itype(j)
+!                     itype(j) = itype(j+rank/2)
+!                     itype(j+rank/2) = itmp
+!                  end if
+!               end do
+!
+!            end if
+!         end if
+!      end do
+!      !write(10,*) "idx ", idx
+!
+!      ! Permute pairs
+!      if (nops(2)<3) then
+!         permute = .false.
+!         do i = 1, rank/2-1
+!            if (itype(i)>itype(i+1)) then
+!               tmp = idx(i:i)
+!               idx(i:i) = idx(i+1:i+1)
+!               idx(i+1:i+1) = tmp
+!
+!               tmp = idx(i+rank/2:i+rank/2)
+!               idx(i+rank/2:i+rank/2) = idx(i+1+rank/2:i+1+rank/2)
+!               idx(i+1+rank/2:i+1+rank/2) = tmp
+!
+!               permute = .true.
+!            else if (itype(i)<itype(i+1)) then
+!               permute = .true.
+!            end if
+!         end do
+!
+!         ! Check the annhilations
+!         if (.not. permute) then
+!            do i = rank/2+1, rank-1
+!               if (itype(i)>itype(i+1)) then
+!                  tmp = idx(i:i)
+!                  idx(i:i) = idx(i+1:i+1)
+!                  idx(i+1:i+1) = tmp
+!
+!                  tmp = idx(i-rank/2:i-rank/2)
+!                  idx(i-rank/2:i-rank/2) = idx(i+1-rank/2:i+1-rank/2)
+!                  idx(i+1-rank/2:i+1-rank/2) = tmp
+!               end if
+!            end do
+!         end if
+!      !write(10,*) "idx ", idx
+!      else if (nops(2)==3) then
+!         ! Need to reorder indices for 3-external integrals
+!         ! Slot positions 1 and 2 are now paired
+!
+!         tstr=''
+!         do i = 1, rank/2
+!            if (itype(i)==1 .and. itype(i+rank/2)==1) then
+!               tstr(1:1) = idx(i:i)
+!               tstr(2:2) = idx(i+rank/2:i+rank/2)
+!            else
+!               tstr(3:3) = idx(i:i)
+!               tstr(4:4) = idx(i+rank/2:i+rank/2)
+!            end if
+!         end do
+!
+!         idx = trim(tstr)
+!      end if
+!
+!
+!      if (nops(1)==3 .and. nops(3)==1) then
+!         ! Need to have special case of K:ccca not K:accc
+!         tstr = ''
+!         tstr(1:1) = idx(2:2)
+!         tstr(2:2) = idx(3:3)
+!         tstr(3:3) = idx(4:4)
+!         tstr(4:4) = idx(1:1)
+!         idx = tstr
+!      end if
+!
+!      if (label=='J'.and.nops(1)==1.and.nops(2)==2.and.nops(3)==1) then
+!         ! Need to have special case of J:eeca not J:eeac
+!         tstr = ''
+!         tstr(1:1) = idx(2:2)
+!         tstr(2:2) = idx(1:1)
+!         tstr(3:3) = idx(4:4)
+!         tstr(4:4) = idx(3:3)
+!         idx = tstr
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -3138,39 +3138,39 @@
 !      end
 
 
-*----------------------------------------------------------------------*
-      subroutine assign_nval(ncase, index, np, p_list)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine assign_nval(ncase, index, np, p_list)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      integer, intent(in) ::
-     &   ncase,
-     &   index,
-     &   np
-      type(pair_list), intent(inout) ::
-     &   p_list
-
-      ! Assign 'value' to index
-      select case (ncase)
-         case (1)
-            p_list%plist(np)%nval(index) = 1
-         case (2)
-            p_list%plist(np)%nval(index) = 2
-         case (3)
-            p_list%plist(np)%nval(index) = 3
-         case (4)
-            p_list%plist(np)%nval(index) = 4
-      end select
-
-      return
-      end
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      integer, intent(in) ::
+!     &   ncase,
+!     &   index,
+!     &   np
+!      type(pair_list), intent(inout) ::
+!     &   p_list
+!
+!      ! Assign 'value' to index
+!      select case (ncase)
+!         case (1)
+!            p_list%plist(np)%nval(index) = 1
+!         case (2)
+!            p_list%plist(np)%nval(index) = 2
+!         case (3)
+!            p_list%plist(np)%nval(index) = 3
+!         case (4)
+!            p_list%plist(np)%nval(index) = 4
+!      end select
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -4228,970 +4228,970 @@
       return
       end
 
-*----------------------------------------------------------------------*
-      subroutine assign_new_index(contr_info,item)
-*----------------------------------------------------------------------*
-!     Assign an ITF index string to each tensor in a line
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &   contr_info     ! Information about binary contraction
-      type(itf_contr), intent(inout) ::
-     &   item           ! ITF binary contraction
-
-      integer ::
-     &   c(ngastp,2),        ! Operator numbers of contraction index
-     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
-     &   e1(ngastp,2),       ! Operator numbers of external index 1
-     &   e2(ngastp,2),       ! Operator numbers of external index 2
-     &   shift,         ! List shift
-     &   shift_a,       ! List shift
-     &   shift_c,       ! List shift
-     &   n_cnt,         ! Number of contraction operators
-     &   rank2, rank1,      ! Rank of tensor - either can be T1 or T2
-     &   tensor2, tensor1,  ! Labels a tesor - either 1 or 2
-     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
-     &   place,         ! Marks which tensor an index was found
-     &   distance,      ! Distance from where an index should be
-     &   pp,            ! Paired position - position of paired index
-     &   ntest = 000,     ! >100 toggles some debug
-     &   i, j, k, l, m, z,   ! Loop index
-     &   itmp, n,
-     &   ipair,
-     &   sh1, sh2, sh3,
-     &   pp1, pp2, pl1, pl2,
-     &   itype(INDEX_LEN),
-     &   itype1, itype2, ptype
-      character(len=INDEX_LEN) ::
-     &   s1, s2, s3,  ! Tmp ITF index strings
-     &   tstr
-      character(len=1) ::
-     &   tmp, tmp2      ! Scratch space to store index letter
-      real(8) ::
-     &   factor,        ! Factor from equivalent lines
-     &   p_factor       ! Overall factor from contraction/rearrangment
-      type(pair_list) ::
-     &   p_list,       ! Complete list of pairs in binary contraction
-     &   p_list2        ! Complete list of pairs in binary contraction
-      integer, dimension(4) ::
-     &   t_shift,       ! Index shift for external indices
-     &   e_shift,       ! Index shift for external indices
-     &   c_shift        ! Index shift for contraction indices
-      type(index_str) ::
-     &   str1,          ! Stores 'normal ordered' index string for T1
-     &   str2,          ! Stores 'normal ordered' index string for T2
-     &   str3,          ! Stores 'normal ordered' index string for Res
-     &   t_str1, t_str2 ! Scratch space
-
-      logical ::        ! These are used when finding pairs of external ops
-     &   is_cnt,        ! True if the operator is a contraction op
-     &   found_end,     ! True if found external op to make a pair
-     &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
-     &   found_cnt,     ! True if a contraction operator has been found
-     &   p1, p2,
-     &   found,
-     &   swapped        ! True is exchanged external lines in permutation line
-      integer, pointer ::
-     &   t1cnt_poss(:) => null(),
-     &   t2cnt_poss(:) => null()
-
-      ! Set operator numbers
-      c=item%c
-      e1=item%e1
-      e2=item%e2
-
-      ! Factor due to permuation of annhilation and creation indices
-      p_factor = 1.0d0
-
-      ! Set number of contraction indicies
-      n_cnt = item%contri
-
-      ! Allocate index_str objects
-      call init_index_str(str1, item%rank1, n_cnt)
-      call init_index_str(str2, item%rank2, n_cnt)
-      call init_index_str(str3, item%rank3, n_cnt)
-
-      allocate(p_list%plist(item%rank3/2))
-
-      ! Set letter shift values for contraction indices
-      do i = 1, 4
-         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
-      end do
-
-      ! Make 'tranpose' of c array, this corresponds to the operators on
-      ! the second tensor
-      do i = 1, 2
-         do j = 1, ngastp
-            if (i==1) then
-               k = 2
-            else
-               k = 1
-            end if
-            ci(j,i) = c(j,k)
-         end do
-      end do
-
-      ! Create an index string for T1 and T2
-      ! e_shift updates after each call - this indexs the external
-      ! operators; c_shift indexes the contraction operators. These are
-      ! needed to ensure the letters are different
-      e_shift = 0
-      call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1,
-     &                      .false.)
-      call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
-     &                      .true.)
-
-      if (ntest>100) then
-         write(item%logfile,*) "STR1: {", str1%str, "}"
-         write(item%logfile,*) "STR2: {", str2%str, "}"
-         write(item%logfile,*) "STR3: {", str1%str, "}{", str2%str, "}"
-         write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
-         write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
-      end if
-
-
-      ! Find external indicies and correctly pair them
-      ! Make a copy of itype which will be modified when a pair is found
-      itype = item%itype
-      e1ops = sum(sum(e1,dim=2))
-      e2ops = sum(sum(e2,dim=2))
-      if (e1ops >= e2ops) then
-        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
-     &                       item,p_list,itype)
-      else
-        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
-     &                       item,p_list,itype)
-      end if
-      !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
-
-
-      ! If there is a pair in one string, permute so they are paired
-      ! 'imediately'. Also update the position of the contraction index
-      do j = 1, item%rank3/2
-         p1 = .false.
-         p2 = .false.
-
-         if (p_list%plist(j)%ops(1)==1) p1 = .true.
-         if (p_list%plist(j)%ops(2)==1) p2 = .true.
-
-         ! If a pair is on one tensor...
-         if (p1 .and. p2 .and. item%rank1>2) then
-            call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
-     &                               p_list%plist(j)%pindex(2),
-     &                               item%rank1, p_factor, n_cnt)
-         else if (.not. p1 .and. .not. p2 .and. item%rank2>2) then
-            call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
-     &                               p_list%plist(j)%pindex(2),
-     &                               item%rank2, p_factor, n_cnt)
-
-         ! If a pair is split over two tensors...
-         else if (p1 .and. .not. p2 .and. item%rank1>2) then
-            call nicer_pairing(str1, str2,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank1,
-     &                         item%rank2, p_factor, n_cnt)
-         else if (p2 .and. .not. p1 .and. item%rank2>2) then
-            call nicer_pairing(str2, str1,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank2,
-     &                         item%rank1, p_factor, n_cnt)
-         end if
-      end do
-      !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%logfile)
-
-
-      ! Work out the factor due to permuation of contraction indicies
-      if (.not. item%den(1) .and. .not. item%den(2)) then
-         do i = 1, n_cnt
-          if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
-     &        /=0)then
-             p_factor = p_factor * -1.0d0
-             if (ntest>100) then
-               write(item%logfile,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-             end if
-          end if
-         end do
-
-      else if (item%den(1) .and. item%rank1/=0) then
-!         write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
-!         write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
-
-         do i = 1, n_cnt
-            if (str1%cnt_poss(i)<=item%rank1/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str1%cnt_poss(i)>item%rank1/2) then
-               ! Annhilation operator of density is contracted
-               ! NOTE: not removing previously conracted indicies from
-               ! the list - so this may be wrong in the long term. Seems
-               ! to produce the correct answer for now...
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      else if (item%den(2) .and. item%rank2/=0) then
-         !write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
-         !write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
-
-         do i = 1, n_cnt
-            if (str2%cnt_poss(i)<=item%rank2/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str2%cnt_poss(i)>item%rank2/2) then
-               ! Annhilation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      end if
-
-
-
-      ! Create result index string from only external operators. Order
-      ! is not final...This is basically splicing str1 and str2 together
-      shift = 1
-      do i = 1, item%rank1
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str1%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str1%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      do i = 1, item%rank2
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str2%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str2%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      !write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
-      !write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
-      !write(item%logfile,*) "Result string: {", str3%str, "}"
-
-      ! Rearrange the result string so it is in normal order (all
-      ! creation operators to the left of the annhilation). This can
-      ! also introduce a sign change.
-      do j = 1, item%rank3/2
-         shift = 1
-         !do i = 0, item%rank3/2-1
-         do i = 0, item%rank3/2
-          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
-
-               tstr(shift:shift) = str3%str(item%rank3-i)
-               shift = shift + 1
-
-               do k = 1, item%rank3
-                  if (p_list%plist(j)%pindex(1) /=
-     &                                      str3%str(k)) then
-                     tstr(shift:shift) = str3%str(k)
-                     shift = shift + 1
-                  end if
-               end do
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               !write(item%logfile,*) "New result string {",str3%str, "}"
-
-               ! Update factor. If index is in even position, requires
-               ! odd number of permuations; so get a negative
-               if (mod(item%rank3-i,2)==0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                     write(item%logfile,*) "Update factor 2 (rearrange",
-     &               " the result string to normal order): ", p_factor
-                  end if
-               end if
-
-               exit
-          end if
-         end do
-      end do
-
-      ! Move all annhilations to the right
-      do j = 1, item%rank3/2
-         shift = item%rank3
-         do i = 1, item%rank3/2
-          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
-
-               tstr(shift:shift) = str3%str(i)
-               shift = shift - 1
-
-               do k = 0, item%rank3-1
-                  if (p_list%plist(j)%pindex(2) /=
-     &                                      str3%str(item%rank3-k)) then
-                     tstr(shift:shift) = str3%str(item%rank3-k)
-                     shift = shift - 1
-                  end if
-               end do
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               !write(item%logfile,*) "New result string {",str3%str, "}"
-
-               ! Update factor. If index is in odd position, requires
-               ! odd number of permuations; so get a negative
-               if (mod(i,2)/=0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                     write(item%logfile,*) "Update factor 3 (move
-     &               annhilations to the right in the result string): ",
-     &               p_factor
-                  end if
-               end if
-
-               exit
-          end if
-         end do
-      end do
-
-      ! Due to how the R:ea residual is defined, {p a^+} instead of
-      ! {a^+ p}, we need an extra minus to flip the normal ordered
-      ! string.
-      !if (.not. item%inter(3)) then
-         if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-     &       item%nops3(3)==1 .and. item%nops3(4)==0) then
-         if (.not. item%inter(3)) then
-
-            p_factor = p_factor * -1.0d0
-            if (ntest>100) then
-               write(item%logfile,*) "Update factor (R:ea)", p_factor
-            end if
-         else
-            !write(item%logfile,*) "kidder "
-         end if
-         end if
-      !end if
-
-      ! Rearrange result operators to get correct pairing
-      do j = 1, item%rank3/2
-         do i = 0, item%rank3/2-1
-
-          ! Search for annhilation ops
-          if (p_list%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
-!            write(item%logfile,*) "Found ", str3%str(item%rank3-i)
-            do k = 1, item%rank3/2
-
-               ! Search for creation ops
-               if (p_list%plist(j)%pindex(1) ==
-     &                                      str3%str(k)) then
-                  ! Check if position is in the pair position
-!                  write(item%logfile,*) "Found ", str3%str(k), " in ", k
-!                  write(item%logfile,*) "Pair ", str3%str(item%rank3-i),
-!     &                                  " in ",item%rank3-i
-!                  write(item%logfile,*) "PP ",
-!     &                                  item%rank3-(item%rank3-i)+1
-                  pp = item%rank3-(item%rank3-i)+1
-
-                  if (item%rank3-k+1 /= item%rank3-i) then
-                     ! Get distance from paired position (pp) and factor
-                     distance = abs(k-pp)
-                     if (mod(distance,2)/=0) then
-                        p_factor = p_factor * -1.0d0
-                        if (ntest>100) then
-                           write(item%logfile,*)"Update factor 4 ",
-     &                      "(rearrange reuslt string to correct ",
-     &                      "pairing): ", p_factor
-                        end if
-                     end if
-                     ! Swapped letters between current k and pp
-                     tmp = str3%str(pp)
-                     str3%str(pp) = str3%str(k)
-                     str3%str(k) = tmp
-
-!                     write(11,*) "swapping ", str3%str(pp),
-!     &                         " and ", str3%str(k)
+!*----------------------------------------------------------------------*
+!      subroutine assign_new_index(contr_info,item)
+!*----------------------------------------------------------------------*
+!!     Assign an ITF index string to each tensor in a line
+!*----------------------------------------------------------------------*
 !
-!                     write(11,*) "Swap ops string {", str3%str, "}"
-                  end if
-                  exit
-               end if
-            end do
-          end if
-         end do
-      end do
-
-
-      ! Permute strings into nicer order
-      ! Get canocial values for result string
-      do i = 1, item%rank3
-         str3%itype(i) = get_itype(str3%str(i))
-      end do
-
-      ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
-      call permute_index(str1, item%rank1)
-      call permute_index(str2, item%rank2)
-      if (item%inter(3)) then
-         ! For intermeidiates, the index pairing and order must match how
-         ! it is used (it must match the itype string). Therefore the pair
-         ! ordering needs to be checked. This doesn't introduce a sign
-         ! change as pairs of indices are swapped.
-         !write(item%logfile,*) "Result string{", str3%str, "}"
-         !write(item%logfile,*) "Result itype{", str3%itype, "}"
-         !write(item%logfile,*) "Real itype{", item%itype, "}"
-         call permute_slot_order(str3, item%rank3, item%itype)
-      else
-         call permute_index(str3, item%rank3)
-      end if
-
-
-      ! Need to swap annhilation ops (1-P_ij)
-      ! Don't swap index when there is a tensor product
-      ! TODO: this will not work if the result is greater than rank 4
-      if (item%permute==2 .and. .not. item%product
-     &    .and. .not. item%inter(3) .and. item%symm_res) then
-!     &    .and. .not. item%inter(3)) then
-         !write(item%logfile,*) "hello ", item%label_res
-         !write(item%logfile,*) "hello ", item%label_t1
-         !write(item%logfile,*) "hello ", item%label_t2
-         !write(item%logfile,*) "str1 ", str1%str
-         !write(item%logfile,*) "str2 ", str2%str
-
-         ! TODO: This information is not being handed to the lines
-         !if (item%rank1/=2) then
-            tstr=''
-            do i = 1, item%rank1
-               if (str1%str(i)==p_list%plist(1)%pindex(2)) then
-                  tstr(i:i) = p_list%plist(2)%pindex(2)
-               else if (str1%str(i)==p_list%plist(2)%pindex(2)) then
-                  tstr(i:i) = p_list%plist(1)%pindex(2)
-               else
-                  tstr(i:i) = str1%str(i)
-               end if
-            end do
-            do i = 1, item%rank1
-               str1%str(i) = tstr(i:i)
-            end do
-         !end if
-
-         !if (item%rank2/=2) then
-            tstr=''
-            do i = 1, item%rank2
-               if (str2%str(i)==p_list%plist(1)%pindex(2)) then
-                  tstr(i:i) = p_list%plist(2)%pindex(2)
-               else if (str2%str(i)==p_list%plist(2)%pindex(2)) then
-                  tstr(i:i) = p_list%plist(1)%pindex(2)
-               else
-                  tstr(i:i) = str2%str(i)
-               end if
-            end do
-
-            do i = 1, item%rank2
-               str2%str(i) = tstr(i:i)
-            end do
-         !end if
-         !write(item%logfile,*) "new str1 ", str1%str
-         !write(item%logfile,*) "new str2 ", str2%str
-      end if
-
-
-      ! Need permuatation line for non-symmetric residuals.
-      ! But keep same spin
-      if (item%permutation .and. .not. item%symm_res) then
-
-         do i = 1, ngastp
-            if (item%perm_case(i)) then
-               ptype = i
-               exit
-            end if
-         end do
-
-         do i = 1, item%rank1
-            ! Loop through str1 until not a contraction
-            if (any(str1%cnt_poss==i)) cycle
-
-            itype1 = get_itype(str1%str(i), .true.)
-
-            ! Check itype matches perm_case
-            if (ptype==itype1) then
-               do j = 1, item%rank2
-                  ! Loop through str2 until not a contraction
-                  if (any(str2%cnt_poss==j)) cycle
-
-                  itype2 = get_itype(str2%str(j), .true.)
-
-                  ! Check external lines of same itype, and swap
-                  if (itype1 == itype2) then
-                     tmp = str1%str(i)
-                     str1%str(i) = str2%str(j)
-                     str2%str(j) = tmp
-                     swapped = .true.
-                  end if
-
-                  if (swapped) exit
-               end do
-
-            end if
-
-            ! Update factor and transpose index
-            if (swapped) then
-               ! Factor from (1-P_xy)
-               p_factor = p_factor * -1.0d0
-
-               ! Need to transpose indicies to maintin correct pairing
-               ! TODO: have an f_string???
-               if (item%rank1>2) then
-                  tmp = str1%str(1)
-                  str1%str(1) = str1%str(2)
-                  str1%str(2) = tmp
-               end if
-
-               if (item%rank2>2) then
-                  tmp = str2%str(1)
-                  str2%str(1) = str2%str(2)
-                  str2%str(2) = tmp
-               end if
-
-               ! Update factor due to transposition
-               if (item%rank1>2) p_factor = p_factor * -1.0d0
-               if (item%rank2>2) p_factor = p_factor * -1.0d0
-
-               exit
-            end if
-         end do
-
-      end if
-
-
-      s1 = ""
-      s2 = ""
-      s3 = ""
-
-      do i = 1, item%rank1/2
-         s1(i:i) = str1%str(i)
-         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
-      end do
-      do i = 1, item%rank2/2
-         s2(i:i) = str2%str(i)
-         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
-      end do
-      do i = 1, item%rank3/2
-         s3(i:i) = str3%str(i)
-         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
-      end do
-
-      if (ntest>10) then
-         if (p_factor>0.0d0) then
-            tmp = '+'
-         else
-            tmp = '-'
-         end if
-
-         write(item%logfile,*)
-         write(item%logfile,*) "---------------------------"
-         write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
-     &                         "}{",str2%str,"}"
-
-         write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
-     &                         "][",trim(s2),"]"
-         write(item%logfile,*) "---------------------------"
-      end if
-
-      item%idx1=trim(s1)
-      item%idx2=trim(s2)
-      item%idx3=trim(s3)
-      item%fact = item%fact * p_factor
-
-      deallocate(p_list%plist)
-
-      call deinit_index_str(str1)
-      call deinit_index_str(str2)
-      call deinit_index_str(str3)
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
-     &                           t2, n_cnt, item, p_list, itype)
-*----------------------------------------------------------------------*
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(in) ::
-     &   str1,
-     &   str2
-      type(itf_contr), intent(in) ::
-     &   item
-      integer, intent(in) ::
-     &   rank1,
-     &   rank2,
-     &   t1,
-     &   t2,
-     &   n_cnt
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-      type(pair_list), intent(inout) ::
-     &   p_list
-
-      integer ::
-     &   shift,
-     &   i
-
-      shift = 1
-
-      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
-     &                    item, shift, p_list, itype)
-
-      ! If all the external pairs havn't been found, then there are two
-      ! seperate pairs on each tensor. Go back and find them...
-      if (shift-1/=item%rank3/2) then
-      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
-     &                    item, shift, p_list, itype)
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
-     &                          item, shift, p_list, itype)
-*----------------------------------------------------------------------*
+!      type(binary_contr), intent(in) ::
+!     &   contr_info     ! Information about binary contraction
+!      type(itf_contr), intent(inout) ::
+!     &   item           ! ITF binary contraction
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(in) ::
-     &   str1,
-     &   str2
-      type(itf_contr), intent(in) ::
-     &   item
-      integer, intent(in) ::
-     &   rank1,
-     &   rank2,
-     &   t1,
-     &   t2,
-     &   n_cnt
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-      integer, intent(inout) ::
-     &   shift
-      type(pair_list), intent(inout) ::
-     &   p_list
-
-      logical ::
-     &   is_cnt,
-     &   found_ex,
-     &   already_found,
-     &   correct_pair
-      integer ::
-     &   i,j,k,l,
-     &   ntest = 000
-
-      ! Search only the creations of the first string for ex ops
-      do i = 1, rank1/2
-
-         ! Check if creation has already been paired
-         already_found = .false.
-         do j = 1, shift
-            if (str1%str(i)==p_list%plist(j)%pindex(1)) then
-               already_found = .true.
-               exit
-            end if
-         end do
-         if (already_found) cycle
-
-         if (already_found) cycle
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i==str1%cnt_poss(j)) then
-               is_cnt = .true.
-            end if
-         end do
-
-         if (.not. is_cnt) then
-
-            ! Search the annhilations of the first string
-            do j = rank1, rank1/2+1, -1
-
-               if (ntest>0) then
-               write(item%logfile,*) "searching with ", str1%str(i), t1
-               write(item%logfile,*) "matching with ", str1%str(j), t1
-               end if
-
-               call suitable_pair(found_ex, str1, str1, rank1, rank1,
-     &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype)
-
-               if (found_ex) then
-                  !write(10,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
-                  p_list%plist(shift)%pindex(1)=str1%str(i)
-                  p_list%plist(shift)%pindex(2)=str1%str(j)
-                  p_list%plist(shift)%ops(1)=t1
-                  p_list%plist(shift)%ops(2)=t1
-                  shift = shift + 1
-                  exit
-               end if
-            end do
-
-            ! If it didn't find an operator in the first annhilations,
-            ! look on the second annhilation ops
-            if (.not. found_ex) then
-               do j = rank2, rank2/2+1, -1
-
-                  if (ntest>0) then
-              write(item%logfile,*) "searching 2 with ", str1%str(i), t1
-              write(item%logfile,*) "matching 2 with ", str2%str(j), t2
-                  end if
-                  call suitable_pair(found_ex, str1, str2, rank1, rank2,
-     &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype)
-
-                  if (found_ex) then
-                  !write(10,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
-                     p_list%plist(shift)%pindex(1)=str1%str(i)
-                     p_list%plist(shift)%pindex(2)=str2%str(j)
-                     p_list%plist(shift)%ops(1)=t1
-                     p_list%plist(shift)%ops(2)=t2
-         !call print_plist(p_list, shift, "p_list", item%logfile)
-                     shift = shift + 1
-                     exit
-                  end if
-               end do
-            end if
-
-
-         end if
-
-         if (.not. is_cnt .and. .not. found_ex) then
-            write(item%logfile,*) "Failed to find creation/annhilation",
-     &                            " pair 1"
-            exit
-         end if
-
-      end do
-
-
-      ! Havn't found all external pairs yet
-      if (shift-1/=item%rank3/2) then
-         !write(11,*) "Continuing the search"
-
-      ! Search the annhilation operators of the first string
-      ! TODO: factorise this
-      do i = rank1, rank1/2+1, -1
-
-         ! Check if annhilation has already been paired
-         already_found = .false.
-         do j = 1, shift
-            if (str1%str(i)==p_list%plist(j)%pindex(2)) then
-               !write(11,*) "already found!"
-               already_found = .true.
-               exit
-            end if
-         end do
-         if (already_found) cycle
-
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i==str1%cnt_poss(j)) then
-               is_cnt = .true.
-            end if
-         end do
-
-         if (.not. is_cnt) then
-
-            ! Search the creations of the first string
-            do j = 1, rank1/2
-
-               if (ntest>0) then
-               write(item%logfile,*) "searching 3 with ",str1%str(i), t1
-               write(item%logfile,*) "matching 3 with ", str1%str(j), t1
-               end if
-
-               call suitable_pair(found_ex, str1, str1, rank1, rank1,
-     &                            i, j, 1, shift, n_cnt,
-     &                            p_list, item, itype)
-
-               if (found_ex) then
-                  !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
-                  p_list%plist(shift)%pindex(2)=str1%str(i)
-                  p_list%plist(shift)%pindex(1)=str1%str(j)
-                  p_list%plist(shift)%ops(2)=t1
-                  p_list%plist(shift)%ops(1)=t1
-                  shift = shift + 1
-                  exit
-               end if
-            end do
-
-            ! If it didn't find an operator in the first creations,
-            ! look on the second creations ops
-            if (.not. found_ex) then
-
-               do j = 1, rank2/2
-
-               if (ntest>0) then
-              write(item%logfile,*) "searching 4 with ", str1%str(i), t1
-              write(item%logfile,*) "matching 4 with ", str2%str(j), t2
-               end if
-
-                  call suitable_pair(found_ex, str1, str2, rank1, rank2,
-     &                               i, j, 1, shift, n_cnt,
-     &                               p_list, item, itype)
-
-                  if (found_ex) then
-                  !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
-                     p_list%plist(shift)%pindex(2)=str1%str(i)
-                     p_list%plist(shift)%pindex(1)=str2%str(j)
-                     p_list%plist(shift)%ops(2)=t1
-                     p_list%plist(shift)%ops(1)=t2
-                     shift = shift + 1
-                     exit
-                  end if
-               end do
-            end if
-
-
-         end if
-
-         if (.not. is_cnt .and. .not. found_ex) then
-            write(item%logfile,*) "Failed to find creation/annhilation",
-     &                            " pair 2"
-            exit
-         end if
-
-      end do
-      end if
-
-      return
-      end
-
-
-
-*----------------------------------------------------------------------*
-      subroutine suitable_pair(found_ex, str1, str2, rank1, rank2,
-     &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype)
-*----------------------------------------------------------------------*
+!      integer ::
+!     &   c(ngastp,2),        ! Operator numbers of contraction index
+!     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
+!     &   e1(ngastp,2),       ! Operator numbers of external index 1
+!     &   e2(ngastp,2),       ! Operator numbers of external index 2
+!     &   shift,         ! List shift
+!     &   shift_a,       ! List shift
+!     &   shift_c,       ! List shift
+!     &   n_cnt,         ! Number of contraction operators
+!     &   rank2, rank1,      ! Rank of tensor - either can be T1 or T2
+!     &   tensor2, tensor1,  ! Labels a tesor - either 1 or 2
+!     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+!     &   place,         ! Marks which tensor an index was found
+!     &   distance,      ! Distance from where an index should be
+!     &   pp,            ! Paired position - position of paired index
+!     &   ntest = 000,     ! >100 toggles some debug
+!     &   i, j, k, l, m, z,   ! Loop index
+!     &   itmp, n,
+!     &   ipair,
+!     &   sh1, sh2, sh3,
+!     &   pp1, pp2, pl1, pl2,
+!     &   itype(INDEX_LEN),
+!     &   itype1, itype2, ptype
+!      character(len=INDEX_LEN) ::
+!     &   s1, s2, s3,  ! Tmp ITF index strings
+!     &   tstr
+!      character(len=1) ::
+!     &   tmp, tmp2      ! Scratch space to store index letter
+!      real(8) ::
+!     &   factor,        ! Factor from equivalent lines
+!     &   p_factor       ! Overall factor from contraction/rearrangment
+!      type(pair_list) ::
+!     &   p_list,       ! Complete list of pairs in binary contraction
+!     &   p_list2        ! Complete list of pairs in binary contraction
+!      integer, dimension(4) ::
+!     &   t_shift,       ! Index shift for external indices
+!     &   e_shift,       ! Index shift for external indices
+!     &   c_shift        ! Index shift for contraction indices
+!      type(index_str) ::
+!     &   str1,          ! Stores 'normal ordered' index string for T1
+!     &   str2,          ! Stores 'normal ordered' index string for T2
+!     &   str3,          ! Stores 'normal ordered' index string for Res
+!     &   t_str1, t_str2 ! Scratch space
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   found_ex
-      type(itf_contr), intent(in) ::
-     &   item
-      type(index_str), intent(in) ::
-     &   str1, str2
-      type(pair_list), intent(in) ::
-     &   p_list
-      integer, intent(in) ::
-     &   place1, place2,
-     &   rank1, rank2,
-     &   ann_cre,
-     &   shift,
-     &   n_cnt
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-
-      logical ::
-     &   correct_pair
-      integer ::
-     &   k
-
-
-      ! False if the matching index is a contraction index
-      found_ex = .true.
-      do k = 1, n_cnt
-         if (place2==str2%cnt_poss(k)) then
-            found_ex = .false.
-            !write(item%logfile,*) "false here 1"
-            return
-         end if
-      end do
-
-      ! Check if the annhilation operator has already been paried
-      do k = 1, shift
-         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
-            found_ex = .false.
-            !write(item%logfile,*) "false here 2"
-            return
-         end if
-      end do
-
-      ! False if the matching index is a correct pair
-      if (item%inter(3)) then
-         correct_pair = .false.
-         call check_pairing(correct_pair,str1,str2,rank1,
-     &                      rank2,place1,place2,item, itype)
-         if (.not. correct_pair) then
-            found_ex = .false.
-            !write(item%logfile,*) "false here 3"
-            return
-         end if
-      end if
-
-
-      return
-      end
+!      logical ::        ! These are used when finding pairs of external ops
+!     &   is_cnt,        ! True if the operator is a contraction op
+!     &   found_end,     ! True if found external op to make a pair
+!     &   found_match,   ! True if a matching contraction op has been found on the opposite tensor
+!     &   found_cnt,     ! True if a contraction operator has been found
+!     &   p1, p2,
+!     &   found,
+!     &   swapped        ! True is exchanged external lines in permutation line
+!      integer, pointer ::
+!     &   t1cnt_poss(:) => null(),
+!     &   t2cnt_poss(:) => null()
+!
+!      ! Set operator numbers
+!      c=item%c
+!      e1=item%e1
+!      e2=item%e2
+!
+!      ! Factor due to permuation of annhilation and creation indices
+!      p_factor = 1.0d0
+!
+!      ! Set number of contraction indicies
+!      n_cnt = item%contri
+!
+!      ! Allocate index_str objects
+!      call init_index_str(str1, item%rank1, n_cnt)
+!      call init_index_str(str2, item%rank2, n_cnt)
+!      call init_index_str(str3, item%rank3, n_cnt)
+!
+!      allocate(p_list%plist(item%rank3/2))
+!
+!      ! Set letter shift values for contraction indices
+!      do i = 1, 4
+!         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
+!      end do
+!
+!      ! Make 'tranpose' of c array, this corresponds to the operators on
+!      ! the second tensor
+!      do i = 1, 2
+!         do j = 1, ngastp
+!            if (i==1) then
+!               k = 2
+!            else
+!               k = 1
+!            end if
+!            ci(j,i) = c(j,k)
+!         end do
+!      end do
+!
+!      ! Create an index string for T1 and T2
+!      ! e_shift updates after each call - this indexs the external
+!      ! operators; c_shift indexes the contraction operators. These are
+!      ! needed to ensure the letters are different
+!      e_shift = 0
+!      call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1,
+!     &                      .false.)
+!      call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
+!     &                      .true.)
+!
+!      if (ntest>100) then
+!         write(item%logfile,*) "STR1: {", str1%str, "}"
+!         write(item%logfile,*) "STR2: {", str2%str, "}"
+!         write(item%logfile,*) "STR3: {", str1%str, "}{", str2%str, "}"
+!         write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
+!         write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
+!      end if
+!
+!
+!      ! Find external indicies and correctly pair them
+!      ! Make a copy of itype which will be modified when a pair is found
+!      itype = item%itype
+!      e1ops = sum(sum(e1,dim=2))
+!      e2ops = sum(sum(e2,dim=2))
+!      if (e1ops >= e2ops) then
+!        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
+!     &                       item,p_list,itype)
+!      else
+!        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
+!     &                       item,p_list,itype)
+!      end if
+!      !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+!
+!
+!      ! If there is a pair in one string, permute so they are paired
+!      ! 'imediately'. Also update the position of the contraction index
+!      do j = 1, item%rank3/2
+!         p1 = .false.
+!         p2 = .false.
+!
+!         if (p_list%plist(j)%ops(1)==1) p1 = .true.
+!         if (p_list%plist(j)%ops(2)==1) p2 = .true.
+!
+!         ! If a pair is on one tensor...
+!         if (p1 .and. p2 .and. item%rank1>2) then
+!            call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
+!     &                               p_list%plist(j)%pindex(2),
+!     &                               item%rank1, p_factor, n_cnt)
+!         else if (.not. p1 .and. .not. p2 .and. item%rank2>2) then
+!            call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
+!     &                               p_list%plist(j)%pindex(2),
+!     &                               item%rank2, p_factor, n_cnt)
+!
+!         ! If a pair is split over two tensors...
+!         else if (p1 .and. .not. p2 .and. item%rank1>2) then
+!            call nicer_pairing(str1, str2,
+!     &                         p_list%plist(j)%pindex(1),
+!     &                         p_list%plist(j)%pindex(2), item%rank1,
+!     &                         item%rank2, p_factor, n_cnt)
+!         else if (p2 .and. .not. p1 .and. item%rank2>2) then
+!            call nicer_pairing(str2, str1,
+!     &                         p_list%plist(j)%pindex(1),
+!     &                         p_list%plist(j)%pindex(2), item%rank2,
+!     &                         item%rank1, p_factor, n_cnt)
+!         end if
+!      end do
+!      !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%logfile)
+!
+!
+!      ! Work out the factor due to permuation of contraction indicies
+!      if (.not. item%den(1) .and. .not. item%den(2)) then
+!         do i = 1, n_cnt
+!          if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
+!     &        /=0)then
+!             p_factor = p_factor * -1.0d0
+!             if (ntest>100) then
+!               write(item%logfile,*)"Update factor 1 (contraction of "
+!     &                             //"contraction indicies): ", p_factor
+!             end if
+!          end if
+!         end do
+!
+!      else if (item%den(1) .and. item%rank1/=0) then
+!!         write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
+!!         write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+!
+!         do i = 1, n_cnt
+!            if (str1%cnt_poss(i)<=item%rank1/2) then
+!               ! Creation operator of density is contracted
+!               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+!     &                 -item%rank1/2,2)/=0)then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                write(item%logfile,*)"Update factor 1 (contraction of "
+!     &                             //"contraction indicies): ", p_factor
+!                  end if
+!               end if
+!
+!            else if (str1%cnt_poss(i)>item%rank1/2) then
+!               ! Annhilation operator of density is contracted
+!               ! NOTE: not removing previously conracted indicies from
+!               ! the list - so this may be wrong in the long term. Seems
+!               ! to produce the correct answer for now...
+!               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+!     &                 -item%rank1/2,2)/=0)then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                write(item%logfile,*)"Update factor 1 (contraction of "
+!     &                             //"contraction indicies): ", p_factor
+!                  end if
+!               end if
+!
+!            end if
+!         end do
+!
+!      else if (item%den(2) .and. item%rank2/=0) then
+!         !write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
+!         !write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+!
+!         do i = 1, n_cnt
+!            if (str2%cnt_poss(i)<=item%rank2/2) then
+!               ! Creation operator of density is contracted
+!               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+!     &                 -item%rank2/2,2)/=0)then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                write(item%logfile,*)"Update factor 1 (contraction of "
+!     &                             //"contraction indicies): ", p_factor
+!                  end if
+!               end if
+!
+!            else if (str2%cnt_poss(i)>item%rank2/2) then
+!               ! Annhilation operator of density is contracted
+!               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+!     &                 -item%rank2/2,2)/=0)then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                write(item%logfile,*)"Update factor 1 (contraction of "
+!     &                             //"contraction indicies): ", p_factor
+!                  end if
+!               end if
+!
+!            end if
+!         end do
+!
+!      end if
+!
+!
+!
+!      ! Create result index string from only external operators. Order
+!      ! is not final...This is basically splicing str1 and str2 together
+!      shift = 1
+!      do i = 1, item%rank1
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i == str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!               exit
+!            end if
+!         end do
+!         if (.not. is_cnt) then
+!            str3%str(shift) = str1%str(i)
+!            shift = shift + 1
+!         end if
+!      end do
+!
+!      do i = 1, item%rank2
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i == str2%cnt_poss(j)) then
+!               is_cnt = .true.
+!               exit
+!            end if
+!         end do
+!         if (.not. is_cnt) then
+!            str3%str(shift) = str2%str(i)
+!            shift = shift + 1
+!         end if
+!      end do
+!
+!      !write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
+!      !write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
+!      !write(item%logfile,*) "Result string: {", str3%str, "}"
+!
+!      ! Rearrange the result string so it is in normal order (all
+!      ! creation operators to the left of the annhilation). This can
+!      ! also introduce a sign change.
+!      do j = 1, item%rank3/2
+!         shift = 1
+!         !do i = 0, item%rank3/2-1
+!         do i = 0, item%rank3/2
+!          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
+!
+!               tstr(shift:shift) = str3%str(item%rank3-i)
+!               shift = shift + 1
+!
+!               do k = 1, item%rank3
+!                  if (p_list%plist(j)%pindex(1) /=
+!     &                                      str3%str(k)) then
+!                     tstr(shift:shift) = str3%str(k)
+!                     shift = shift + 1
+!                  end if
+!               end do
+!               do k = 1, item%rank3
+!                  str3%str(k) = tstr(k:k)
+!               end do
+!
+!               !write(item%logfile,*) "New result string {",str3%str, "}"
+!
+!               ! Update factor. If index is in even position, requires
+!               ! odd number of permuations; so get a negative
+!               if (mod(item%rank3-i,2)==0) then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                     write(item%logfile,*) "Update factor 2 (rearrange",
+!     &               " the result string to normal order): ", p_factor
+!                  end if
+!               end if
+!
+!               exit
+!          end if
+!         end do
+!      end do
+!
+!      ! Move all annhilations to the right
+!      do j = 1, item%rank3/2
+!         shift = item%rank3
+!         do i = 1, item%rank3/2
+!          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
+!
+!               tstr(shift:shift) = str3%str(i)
+!               shift = shift - 1
+!
+!               do k = 0, item%rank3-1
+!                  if (p_list%plist(j)%pindex(2) /=
+!     &                                      str3%str(item%rank3-k)) then
+!                     tstr(shift:shift) = str3%str(item%rank3-k)
+!                     shift = shift - 1
+!                  end if
+!               end do
+!               do k = 1, item%rank3
+!                  str3%str(k) = tstr(k:k)
+!               end do
+!
+!               !write(item%logfile,*) "New result string {",str3%str, "}"
+!
+!               ! Update factor. If index is in odd position, requires
+!               ! odd number of permuations; so get a negative
+!               if (mod(i,2)/=0) then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                     write(item%logfile,*) "Update factor 3 (move
+!     &               annhilations to the right in the result string): ",
+!     &               p_factor
+!                  end if
+!               end if
+!
+!               exit
+!          end if
+!         end do
+!      end do
+!
+!      ! Due to how the R:ea residual is defined, {p a^+} instead of
+!      ! {a^+ p}, we need an extra minus to flip the normal ordered
+!      ! string.
+!      !if (.not. item%inter(3)) then
+!         if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+!     &       item%nops3(3)==1 .and. item%nops3(4)==0) then
+!         if (.not. item%inter(3)) then
+!
+!            p_factor = p_factor * -1.0d0
+!            if (ntest>100) then
+!               write(item%logfile,*) "Update factor (R:ea)", p_factor
+!            end if
+!         else
+!            !write(item%logfile,*) "kidder "
+!         end if
+!         end if
+!      !end if
+!
+!      ! Rearrange result operators to get correct pairing
+!      do j = 1, item%rank3/2
+!         do i = 0, item%rank3/2-1
+!
+!          ! Search for annhilation ops
+!          if (p_list%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
+!!            write(item%logfile,*) "Found ", str3%str(item%rank3-i)
+!            do k = 1, item%rank3/2
+!
+!               ! Search for creation ops
+!               if (p_list%plist(j)%pindex(1) ==
+!     &                                      str3%str(k)) then
+!                  ! Check if position is in the pair position
+!!                  write(item%logfile,*) "Found ", str3%str(k), " in ", k
+!!                  write(item%logfile,*) "Pair ", str3%str(item%rank3-i),
+!!     &                                  " in ",item%rank3-i
+!!                  write(item%logfile,*) "PP ",
+!!     &                                  item%rank3-(item%rank3-i)+1
+!                  pp = item%rank3-(item%rank3-i)+1
+!
+!                  if (item%rank3-k+1 /= item%rank3-i) then
+!                     ! Get distance from paired position (pp) and factor
+!                     distance = abs(k-pp)
+!                     if (mod(distance,2)/=0) then
+!                        p_factor = p_factor * -1.0d0
+!                        if (ntest>100) then
+!                           write(item%logfile,*)"Update factor 4 ",
+!     &                      "(rearrange reuslt string to correct ",
+!     &                      "pairing): ", p_factor
+!                        end if
+!                     end if
+!                     ! Swapped letters between current k and pp
+!                     tmp = str3%str(pp)
+!                     str3%str(pp) = str3%str(k)
+!                     str3%str(k) = tmp
+!
+!!                     write(11,*) "swapping ", str3%str(pp),
+!!     &                         " and ", str3%str(k)
+!!
+!!                     write(11,*) "Swap ops string {", str3%str, "}"
+!                  end if
+!                  exit
+!               end if
+!            end do
+!          end if
+!         end do
+!      end do
+!
+!
+!      ! Permute strings into nicer order
+!      ! Get canocial values for result string
+!      do i = 1, item%rank3
+!         str3%itype(i) = get_itype(str3%str(i))
+!      end do
+!
+!      ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
+!      call permute_index(str1, item%rank1)
+!      call permute_index(str2, item%rank2)
+!      if (item%inter(3)) then
+!         ! For intermeidiates, the index pairing and order must match how
+!         ! it is used (it must match the itype string). Therefore the pair
+!         ! ordering needs to be checked. This doesn't introduce a sign
+!         ! change as pairs of indices are swapped.
+!         !write(item%logfile,*) "Result string{", str3%str, "}"
+!         !write(item%logfile,*) "Result itype{", str3%itype, "}"
+!         !write(item%logfile,*) "Real itype{", item%itype, "}"
+!         call permute_slot_order(str3, item%rank3, item%itype)
+!      else
+!         call permute_index(str3, item%rank3)
+!      end if
+!
+!
+!      ! Need to swap annhilation ops (1-P_ij)
+!      ! Don't swap index when there is a tensor product
+!      ! TODO: this will not work if the result is greater than rank 4
+!      if (item%permute==2 .and. .not. item%product
+!     &    .and. .not. item%inter(3) .and. item%symm_res) then
+!!     &    .and. .not. item%inter(3)) then
+!         !write(item%logfile,*) "hello ", item%label_res
+!         !write(item%logfile,*) "hello ", item%label_t1
+!         !write(item%logfile,*) "hello ", item%label_t2
+!         !write(item%logfile,*) "str1 ", str1%str
+!         !write(item%logfile,*) "str2 ", str2%str
+!
+!         ! TODO: This information is not being handed to the lines
+!         !if (item%rank1/=2) then
+!            tstr=''
+!            do i = 1, item%rank1
+!               if (str1%str(i)==p_list%plist(1)%pindex(2)) then
+!                  tstr(i:i) = p_list%plist(2)%pindex(2)
+!               else if (str1%str(i)==p_list%plist(2)%pindex(2)) then
+!                  tstr(i:i) = p_list%plist(1)%pindex(2)
+!               else
+!                  tstr(i:i) = str1%str(i)
+!               end if
+!            end do
+!            do i = 1, item%rank1
+!               str1%str(i) = tstr(i:i)
+!            end do
+!         !end if
+!
+!         !if (item%rank2/=2) then
+!            tstr=''
+!            do i = 1, item%rank2
+!               if (str2%str(i)==p_list%plist(1)%pindex(2)) then
+!                  tstr(i:i) = p_list%plist(2)%pindex(2)
+!               else if (str2%str(i)==p_list%plist(2)%pindex(2)) then
+!                  tstr(i:i) = p_list%plist(1)%pindex(2)
+!               else
+!                  tstr(i:i) = str2%str(i)
+!               end if
+!            end do
+!
+!            do i = 1, item%rank2
+!               str2%str(i) = tstr(i:i)
+!            end do
+!         !end if
+!         !write(item%logfile,*) "new str1 ", str1%str
+!         !write(item%logfile,*) "new str2 ", str2%str
+!      end if
+!
+!
+!      ! Need permuatation line for non-symmetric residuals.
+!      ! But keep same spin
+!      if (item%permutation .and. .not. item%symm_res) then
+!
+!         do i = 1, ngastp
+!            if (item%perm_case(i)) then
+!               ptype = i
+!               exit
+!            end if
+!         end do
+!
+!         do i = 1, item%rank1
+!            ! Loop through str1 until not a contraction
+!            if (any(str1%cnt_poss==i)) cycle
+!
+!            itype1 = get_itype(str1%str(i), .true.)
+!
+!            ! Check itype matches perm_case
+!            if (ptype==itype1) then
+!               do j = 1, item%rank2
+!                  ! Loop through str2 until not a contraction
+!                  if (any(str2%cnt_poss==j)) cycle
+!
+!                  itype2 = get_itype(str2%str(j), .true.)
+!
+!                  ! Check external lines of same itype, and swap
+!                  if (itype1 == itype2) then
+!                     tmp = str1%str(i)
+!                     str1%str(i) = str2%str(j)
+!                     str2%str(j) = tmp
+!                     swapped = .true.
+!                  end if
+!
+!                  if (swapped) exit
+!               end do
+!
+!            end if
+!
+!            ! Update factor and transpose index
+!            if (swapped) then
+!               ! Factor from (1-P_xy)
+!               p_factor = p_factor * -1.0d0
+!
+!               ! Need to transpose indicies to maintin correct pairing
+!               ! TODO: have an f_string???
+!               if (item%rank1>2) then
+!                  tmp = str1%str(1)
+!                  str1%str(1) = str1%str(2)
+!                  str1%str(2) = tmp
+!               end if
+!
+!               if (item%rank2>2) then
+!                  tmp = str2%str(1)
+!                  str2%str(1) = str2%str(2)
+!                  str2%str(2) = tmp
+!               end if
+!
+!               ! Update factor due to transposition
+!               if (item%rank1>2) p_factor = p_factor * -1.0d0
+!               if (item%rank2>2) p_factor = p_factor * -1.0d0
+!
+!               exit
+!            end if
+!         end do
+!
+!      end if
+!
+!
+!      s1 = ""
+!      s2 = ""
+!      s3 = ""
+!
+!      do i = 1, item%rank1/2
+!         s1(i:i) = str1%str(i)
+!         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+!      end do
+!      do i = 1, item%rank2/2
+!         s2(i:i) = str2%str(i)
+!         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+!      end do
+!      do i = 1, item%rank3/2
+!         s3(i:i) = str3%str(i)
+!         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+!      end do
+!
+!      if (ntest>10) then
+!         if (p_factor>0.0d0) then
+!            tmp = '+'
+!         else
+!            tmp = '-'
+!         end if
+!
+!         write(item%logfile,*)
+!         write(item%logfile,*) "---------------------------"
+!         write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+!     &                         "}{",str2%str,"}"
+!
+!         write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+!     &                         "][",trim(s2),"]"
+!         write(item%logfile,*) "---------------------------"
+!      end if
+!
+!      item%idx1=trim(s1)
+!      item%idx2=trim(s2)
+!      item%idx3=trim(s3)
+!      item%fact = item%fact * p_factor
+!
+!      deallocate(p_list%plist)
+!
+!      call deinit_index_str(str1)
+!      call deinit_index_str(str2)
+!      call deinit_index_str(str3)
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
+!     &                           t2, n_cnt, item, p_list, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(index_str), intent(in) ::
+!     &   str1,
+!     &   str2
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      integer, intent(in) ::
+!     &   rank1,
+!     &   rank2,
+!     &   t1,
+!     &   t2,
+!     &   n_cnt
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!      type(pair_list), intent(inout) ::
+!     &   p_list
+!
+!      integer ::
+!     &   shift,
+!     &   i
+!
+!      shift = 1
+!
+!      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
+!     &                    item, shift, p_list, itype)
+!
+!      ! If all the external pairs havn't been found, then there are two
+!      ! seperate pairs on each tensor. Go back and find them...
+!      if (shift-1/=item%rank3/2) then
+!      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
+!     &                    item, shift, p_list, itype)
+!      end if
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
+!     &                          item, shift, p_list, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(index_str), intent(in) ::
+!     &   str1,
+!     &   str2
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      integer, intent(in) ::
+!     &   rank1,
+!     &   rank2,
+!     &   t1,
+!     &   t2,
+!     &   n_cnt
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!      integer, intent(inout) ::
+!     &   shift
+!      type(pair_list), intent(inout) ::
+!     &   p_list
+!
+!      logical ::
+!     &   is_cnt,
+!     &   found_ex,
+!     &   already_found,
+!     &   correct_pair
+!      integer ::
+!     &   i,j,k,l,
+!     &   ntest = 000
+!
+!      ! Search only the creations of the first string for ex ops
+!      do i = 1, rank1/2
+!
+!         ! Check if creation has already been paired
+!         already_found = .false.
+!         do j = 1, shift
+!            if (str1%str(i)==p_list%plist(j)%pindex(1)) then
+!               already_found = .true.
+!               exit
+!            end if
+!         end do
+!         if (already_found) cycle
+!
+!         if (already_found) cycle
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i==str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!            end if
+!         end do
+!
+!         if (.not. is_cnt) then
+!
+!            ! Search the annhilations of the first string
+!            do j = rank1, rank1/2+1, -1
+!
+!               if (ntest>0) then
+!               write(item%logfile,*) "searching with ", str1%str(i), t1
+!               write(item%logfile,*) "matching with ", str1%str(j), t1
+!               end if
+!
+!               call suitable_pair(found_ex, str1, str1, rank1, rank1,
+!     &                            i, j, 2, shift, n_cnt,
+!     &                            p_list, item, itype)
+!
+!               if (found_ex) then
+!                  !write(10,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
+!                  p_list%plist(shift)%pindex(1)=str1%str(i)
+!                  p_list%plist(shift)%pindex(2)=str1%str(j)
+!                  p_list%plist(shift)%ops(1)=t1
+!                  p_list%plist(shift)%ops(2)=t1
+!                  shift = shift + 1
+!                  exit
+!               end if
+!            end do
+!
+!            ! If it didn't find an operator in the first annhilations,
+!            ! look on the second annhilation ops
+!            if (.not. found_ex) then
+!               do j = rank2, rank2/2+1, -1
+!
+!                  if (ntest>0) then
+!              write(item%logfile,*) "searching 2 with ", str1%str(i), t1
+!              write(item%logfile,*) "matching 2 with ", str2%str(j), t2
+!                  end if
+!                  call suitable_pair(found_ex, str1, str2, rank1, rank2,
+!     &                            i, j, 2, shift, n_cnt,
+!     &                            p_list, item, itype)
+!
+!                  if (found_ex) then
+!                  !write(10,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
+!                     p_list%plist(shift)%pindex(1)=str1%str(i)
+!                     p_list%plist(shift)%pindex(2)=str2%str(j)
+!                     p_list%plist(shift)%ops(1)=t1
+!                     p_list%plist(shift)%ops(2)=t2
+!         !call print_plist(p_list, shift, "p_list", item%logfile)
+!                     shift = shift + 1
+!                     exit
+!                  end if
+!               end do
+!            end if
+!
+!
+!         end if
+!
+!         if (.not. is_cnt .and. .not. found_ex) then
+!            write(item%logfile,*) "Failed to find creation/annhilation",
+!     &                            " pair 1"
+!            exit
+!         end if
+!
+!      end do
+!
+!
+!      ! Havn't found all external pairs yet
+!      if (shift-1/=item%rank3/2) then
+!         !write(11,*) "Continuing the search"
+!
+!      ! Search the annhilation operators of the first string
+!      ! TODO: factorise this
+!      do i = rank1, rank1/2+1, -1
+!
+!         ! Check if annhilation has already been paired
+!         already_found = .false.
+!         do j = 1, shift
+!            if (str1%str(i)==p_list%plist(j)%pindex(2)) then
+!               !write(11,*) "already found!"
+!               already_found = .true.
+!               exit
+!            end if
+!         end do
+!         if (already_found) cycle
+!
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i==str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!            end if
+!         end do
+!
+!         if (.not. is_cnt) then
+!
+!            ! Search the creations of the first string
+!            do j = 1, rank1/2
+!
+!               if (ntest>0) then
+!               write(item%logfile,*) "searching 3 with ",str1%str(i), t1
+!               write(item%logfile,*) "matching 3 with ", str1%str(j), t1
+!               end if
+!
+!               call suitable_pair(found_ex, str1, str1, rank1, rank1,
+!     &                            i, j, 1, shift, n_cnt,
+!     &                            p_list, item, itype)
+!
+!               if (found_ex) then
+!                  !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
+!                  p_list%plist(shift)%pindex(2)=str1%str(i)
+!                  p_list%plist(shift)%pindex(1)=str1%str(j)
+!                  p_list%plist(shift)%ops(2)=t1
+!                  p_list%plist(shift)%ops(1)=t1
+!                  shift = shift + 1
+!                  exit
+!               end if
+!            end do
+!
+!            ! If it didn't find an operator in the first creations,
+!            ! look on the second creations ops
+!            if (.not. found_ex) then
+!
+!               do j = 1, rank2/2
+!
+!               if (ntest>0) then
+!              write(item%logfile,*) "searching 4 with ", str1%str(i), t1
+!              write(item%logfile,*) "matching 4 with ", str2%str(j), t2
+!               end if
+!
+!                  call suitable_pair(found_ex, str1, str2, rank1, rank2,
+!     &                               i, j, 1, shift, n_cnt,
+!     &                               p_list, item, itype)
+!
+!                  if (found_ex) then
+!                  !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
+!                     p_list%plist(shift)%pindex(2)=str1%str(i)
+!                     p_list%plist(shift)%pindex(1)=str2%str(j)
+!                     p_list%plist(shift)%ops(2)=t1
+!                     p_list%plist(shift)%ops(1)=t2
+!                     shift = shift + 1
+!                     exit
+!                  end if
+!               end do
+!            end if
+!
+!
+!         end if
+!
+!         if (.not. is_cnt .and. .not. found_ex) then
+!            write(item%logfile,*) "Failed to find creation/annhilation",
+!     &                            " pair 2"
+!            exit
+!         end if
+!
+!      end do
+!      end if
+!
+!      return
+!      end
+!
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine suitable_pair(found_ex, str1, str2, rank1, rank2,
+!     &                         place1, place2, ann_cre, shift, n_cnt,
+!     &                         p_list, item, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   found_ex
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      type(index_str), intent(in) ::
+!     &   str1, str2
+!      type(pair_list), intent(in) ::
+!     &   p_list
+!      integer, intent(in) ::
+!     &   place1, place2,
+!     &   rank1, rank2,
+!     &   ann_cre,
+!     &   shift,
+!     &   n_cnt
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!
+!      logical ::
+!     &   correct_pair
+!      integer ::
+!     &   k
+!
+!
+!      ! False if the matching index is a contraction index
+!      found_ex = .true.
+!      do k = 1, n_cnt
+!         if (place2==str2%cnt_poss(k)) then
+!            found_ex = .false.
+!            !write(item%logfile,*) "false here 1"
+!            return
+!         end if
+!      end do
+!
+!      ! Check if the annhilation operator has already been paried
+!      do k = 1, shift
+!         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+!            found_ex = .false.
+!            !write(item%logfile,*) "false here 2"
+!            return
+!         end if
+!      end do
+!
+!      ! False if the matching index is a correct pair
+!      if (item%inter(3)) then
+!         correct_pair = .false.
+!         call check_pairing(correct_pair,str1,str2,rank1,
+!     &                      rank2,place1,place2,item, itype)
+!         if (.not. correct_pair) then
+!            found_ex = .false.
+!            !write(item%logfile,*) "false here 3"
+!            return
+!         end if
+!      end if
+!
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -5677,102 +5677,102 @@
       return
       end
 
-*----------------------------------------------------------------------*
-      subroutine check_pairing(correct_pair, str1, str2, rank1, rank2,
-     &                         place1, place2, item, itype)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine check_pairing(correct_pair, str1, str2, rank1, rank2,
+!     &                         place1, place2, item, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   correct_pair
-      type(itf_contr), intent(in) ::
-     &   item
-      type(index_str), intent(in) ::
-     &   str1, str2
-      integer, intent(in) ::
-     &   place1, place2,
-     &   rank1, rank2
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-
-      integer ::
-     &   i, j, extent, k,
-     &   pp2
-
-      ! Remeber - the itype info refers to the result positions
-
-      !write(item%logfile,*) "is it a correct pairing?"
-      !write(item%logfile,*) "place1 ", place1
-      !write(item%logfile,*) "place2 ", place2
-
-
-      if (item%rank3==2) then
-         ! For rank 2, sometimes creation and annhilation ops are
-         ! switched, so need to check both pairing combinations
-         !write(10,*) "str1%itype ", str1%itype(place1)
-         !write(10,*) "str2%itype ", str2%itype(place2)
-         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
-         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
-         !write(10,*) "itype ", (itype(j),j=1,INDEX_LEN)
-         if (str1%itype(place1)==item%itype(1)) then
-            if (str2%itype(place2)==
-     &                             item%itype(2)) then
-               !write(11,*) "correct pair"
-               correct_pair = .true.
-            end if
-         else if (str1%itype(place1)==item%itype(2)) then
-            if (str2%itype(place2)==
-     &                             item%itype(1)) then
-               !write(11,*) "correct pair"
-               correct_pair = .true.
-            end if
-         end if
-      else
-         if (place1>rank1/2) then
-            j = item%rank3/2+1
-            extent = item%rank3
-         else
-            j = 1
-            extent = item%rank3/2
-         end if
-
-         !write(10,*) "str1 ", str1%str
-         !write(10,*) "str2 ", str2%str
-         !write(10,*) "str1%itype ", str1%itype(place1)
-         !write(10,*) "str2%itype ", str2%itype(place2)
-         !write(10,*) "itype: ", (itype(k),k=1,INDEX_LEN)
-         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
-         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
-         do i = j, extent
-            !write(10,*) "what ", str1%itype(place1), itype(i)
-            if (str1%itype(place1)==itype(i)) then
-               pp2 = item%rank3 - i + 1
-               !write(10,*) "pp2 ", pp2
-               !write(10,*) "what2 ", str2%itype(place2), itype(pp2)
-               if (str2%itype(place2)==
-     &                                itype(pp2)) then
-!                  write(item%logfile,*)"correct pair ",str1%str(place1),
-!     &                                 " ", str2%str(place2)
-                  correct_pair = .true.
-                  ! Remove pair from itype copy
-                  itype(i) = 0
-                  itype(pp2) = 0
-                  !write(10,*) "itype after: ", (itype(k),k=1,INDEX_LEN)
-                  exit
-               end if
-            end if
-         end do
-      end if
-
-
-      return
-      end
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   correct_pair
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      type(index_str), intent(in) ::
+!     &   str1, str2
+!      integer, intent(in) ::
+!     &   place1, place2,
+!     &   rank1, rank2
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!
+!      integer ::
+!     &   i, j, extent, k,
+!     &   pp2
+!
+!      ! Remeber - the itype info refers to the result positions
+!
+!      !write(item%logfile,*) "is it a correct pairing?"
+!      !write(item%logfile,*) "place1 ", place1
+!      !write(item%logfile,*) "place2 ", place2
+!
+!
+!      if (item%rank3==2) then
+!         ! For rank 2, sometimes creation and annhilation ops are
+!         ! switched, so need to check both pairing combinations
+!         !write(10,*) "str1%itype ", str1%itype(place1)
+!         !write(10,*) "str2%itype ", str2%itype(place2)
+!         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
+!         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
+!         !write(10,*) "itype ", (itype(j),j=1,INDEX_LEN)
+!         if (str1%itype(place1)==item%itype(1)) then
+!            if (str2%itype(place2)==
+!     &                             item%itype(2)) then
+!               !write(11,*) "correct pair"
+!               correct_pair = .true.
+!            end if
+!         else if (str1%itype(place1)==item%itype(2)) then
+!            if (str2%itype(place2)==
+!     &                             item%itype(1)) then
+!               !write(11,*) "correct pair"
+!               correct_pair = .true.
+!            end if
+!         end if
+!      else
+!         if (place1>rank1/2) then
+!            j = item%rank3/2+1
+!            extent = item%rank3
+!         else
+!            j = 1
+!            extent = item%rank3/2
+!         end if
+!
+!         !write(10,*) "str1 ", str1%str
+!         !write(10,*) "str2 ", str2%str
+!         !write(10,*) "str1%itype ", str1%itype(place1)
+!         !write(10,*) "str2%itype ", str2%itype(place2)
+!         !write(10,*) "itype: ", (itype(k),k=1,INDEX_LEN)
+!         !write(10,*) "str1%itype: ", (str1%itype(k),k=1,rank1)
+!         !write(10,*) "str2%itype: ", (str2%itype(k),k=1,rank2)
+!         do i = j, extent
+!            !write(10,*) "what ", str1%itype(place1), itype(i)
+!            if (str1%itype(place1)==itype(i)) then
+!               pp2 = item%rank3 - i + 1
+!               !write(10,*) "pp2 ", pp2
+!               !write(10,*) "what2 ", str2%itype(place2), itype(pp2)
+!               if (str2%itype(place2)==
+!     &                                itype(pp2)) then
+!!                  write(item%logfile,*)"correct pair ",str1%str(place1),
+!!     &                                 " ", str2%str(place2)
+!                  correct_pair = .true.
+!                  ! Remove pair from itype copy
+!                  itype(i) = 0
+!                  itype(pp2) = 0
+!                  !write(10,*) "itype after: ", (itype(k),k=1,INDEX_LEN)
+!                  exit
+!               end if
+!            end if
+!         end do
+!      end if
+!
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -7002,454 +7002,454 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine assign_spin(item)
-*----------------------------------------------------------------------*
-!     Assign spin to tensors, then sum remaining contraction indices
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item
-
-      integer ::
-     &   i,j,              ! Loop index
-     &   result_spin(4),   ! Spin case of result
-     &   hr1, hr2, hr3     ! Half tensor ranks
-
-      ! There are certain cases that don't need to be spin summed
-      ! because the spin summed line is the same as the non-spin summed
-      ! line.
-      !if (item%rank1 + item%rank2 + item%rank3 == 4) then
-      if (item%rank1 == 2 .and. item%rank2 == 0 .or.
-     &    item%rank1 == 0 .and. item%rank2 == 2) then
-         ! This covers all cases where we have two rank-2 tensors
-         ! + one rank-0 tensor somewhere on a line
-
-         ! If the line involves an intermediate, then we must add the
-         ! spin name to the intermedite name. For all these cases, this
-         ! is spimple
-         if (item%inter(1)) then
-            item%label_t1 = trim(item%label_t1)//'aa'
-         else if (item%inter(2)) then
-            item%label_t2 = trim(item%label_t2)//'aa'
-         end if
-
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (item%rank1 + item%rank2 + item%rank3 == 6) then
-         ! This covers all cases where we have three rank-2 tensors
-
-         if (item%inter(1)) then
-            item%label_t1 = trim(item%label_t1)//'aa'
-         end if
-         if (item%inter(2)) then
-            item%label_t2 = trim(item%label_t2)//'aa'
-         end if
-
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (item%rank1 + item%rank2 + item%rank3 == 0) then
-         ! Scalar contributions
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (item%rank1 == 0 .or. item%rank2 ==0) then
-         ! Tensor multiplied by a scalar (not involving an intermediate)
-
-         if (item%inter(1)) then
-            call simple_spin_name(item%inter1,item%rank1,item%permute)
-         else if (item%inter(2)) then
-            call simple_spin_name(item%inter2,item%rank2,item%permute)
-         end if
-
-         call print_itf_line(item,.false.,.false.)
-         return
-      else if (item%rank3==4 .and. item%rank1==2
-     &         .and. item%rank2==2) then
-
-         ! Tensor product
-         if (item%inter(1)) then
-            item%label_t1 = trim(item%label_t1)//'aa'
-         else if (item%inter(2)) then
-            item%label_t2 = trim(item%label_t2)//'aa'
-         end if
-
-         call print_itf_line(item,.false.,.false.)
-         return
-      end if
-
-      !write(item%logfile,*) "inside assign_spin"
-
-      ! Calculate half ranks for use in indexing letter index strings
-      hr1 = item%rank1/2
-      hr2 = item%rank2/2
-      hr3 = item%rank3/2
-
-      ! Assign spin to indicies on the result tensor
-      if (item%inter(3)) then
-         item%t_spin(3)%spin = item%i_spin%spin
-         !write(item%logfile,*) "i_spin ", item%i_spin%spin
-      else
-         select case (item%rank3)
-            case(0)
-            case(2)
-               ! aa
-               item%t_spin(3)%spin(1,1) = 1
-               item%t_spin(3)%spin(2,1) = 1
-            case(4)
-               ! abab
-               item%t_spin(3)%spin(1,1) = 1
-               item%t_spin(3)%spin(1,2) = 2
-               item%t_spin(3)%spin(2,1) = 1
-               item%t_spin(3)%spin(2,2) = 2
-            case(6)
-               do i=1, 2
-                  ! aaaaaa
-                  item%t_spin(3)%spin(1,i) = 1
-                  item%t_spin(3)%spin(2,i) = 1
-               end do
-               item%t_spin(3)%spin(1,3) = 1
-               item%t_spin(3)%spin(2,3) = 1
-            case default
-               call line_error("Could not determine tensor rank",item)
-         end select
-      end if
-
-!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
-!     &                item%logfile)
-
-      ! Assign spin of external indicies to T1 and T2
-      do j=1, hr3
-         do i=1, hr1
-            ! Assign spin of first tensor
-            if (item%idx3(j:j)==item%idx1(i:i)) then
-               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
-            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
-               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
-            end if
-
-            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
-               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
-            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
-               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
-            end if
-         end do
-
-         do i=1, hr2
-            ! Assign spin of second tensor
-            if (item%idx3(j:j)==item%idx2(i:i)) then
-               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
-            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
-               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
-            end if
-
-            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
-               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
-            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
-               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
-            end if
-         end do
-      end do
-
-!      call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before",
-!     &                item%logfile)
-!      call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before",
-!     &                item%logfile)
-
-      ! Sum over the remaining contraction indicies and print out the
-      ! line
-      call spin_index(item)
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine spin_index(item)
-*----------------------------------------------------------------------*
-!     Find contraction index used in spin summation
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &     item
-
-      type(twodarray), pointer ::
-     &   poss(:,:) => null()
-      integer ::
-     &   i, j, k, l, m, n, shift,
-     &   i1, i2, i3, i4,
-     &   z1, z2, r1, r2
-      character(len=INDEX_LEN) ::
-     &   str1, str2
-      character(len=1) ::
-     &   p1, p2
-      logical ::
-     &   eloop,
-     &   error
-
-      allocate(poss(2,item%contri))
-
-      ! Largest tensor goes first
-      if (item%rank2 > item%rank1) then
-         z1 = 2
-         z2 = 1
-         r1 = item%rank2/2
-         r2 = item%rank1/2
-         str1 = item%idx2
-         str2 = item%idx1
-      else
-         z1 = 1
-         z2 = 2
-         r1 = item%rank1/2
-         r2 = item%rank2/2
-         str1 = item%idx1
-         str2 = item%idx2
-      end if
-
-      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%logfile)
-      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%logfile)
-
-      ! Get position information of contraction indicies, ie. look for
-      ! zeros
-      ! TODO: know this information already when assigning index?
-      shift = 1
-      do i=1, size(item%t_spin(z1)%spin,2)
-         if (item%t_spin(z1)%spin(1,i) == 0) then
-            do j=1, size(item%t_spin(z2)%spin,2)
-               if (str1(i:i) == str2(j+r2:j+r2)) then
-                  poss(1,shift)%elements(1) = 1
-                  poss(1,shift)%elements(2) = i
-                  poss(2,shift)%elements(1) = 2
-                  poss(2,shift)%elements(2) = j
-                  shift = shift + 1
-               end if
-            end do
-            do j=1, size(item%t_spin(z2)%spin,2)
-               if (str1(i:i) == str2(j:j)) then
-                  poss(1,shift)%elements(1) = 1
-                  poss(1,shift)%elements(2) = i
-                  poss(2,shift)%elements(1) = 1
-                  poss(2,shift)%elements(2) = j
-                  shift = shift + 1
-               end if
-            end do
-         end if
-      end do
-
-      do i=1, size(item%t_spin(z1)%spin,2)
-         if (item%t_spin(z1)%spin(2,i) == 0) then
-            do j=1, size(item%t_spin(z2)%spin,2)
-               if (str1(i+r1:i+r1) == str2(j:j)) then
-                  poss(1,shift)%elements(1) = 2
-                  poss(1,shift)%elements(2) = i
-                  poss(2,shift)%elements(1) = 1
-                  poss(2,shift)%elements(2) = j
-                  shift = shift + 1
-               end if
-            end do
-            do j=1, size(item%t_spin(z2)%spin,2)
-               if (str1(i+r1:i+r1) == str2(j+r2:j+r2)) then
-                  poss(1,shift)%elements(1) = 2
-                  poss(1,shift)%elements(2) = i
-                  poss(2,shift)%elements(1) = 2
-                  poss(2,shift)%elements(2) = j
-                  shift = shift + 1
-               end if
-            end do
-         end if
-      end do
-
-      if (shift == 1) then
-         call line_error("Didn't find contraction index", item)
-      end if
-
-      ! Main spin summation loop
-      shift = shift - 1
-      eloop = .false.
-
-      !write(10,*) "========================"
-      !do i = 1, 2
-      !   do j = 1, item%contri
-      !      write(10,*) "DEBUG1 poss: ", poss(i,j)%elements
-      !   end do
-      !end do
-      !write(10,*) "========================"
-
-      do i = 1, 2
-         i1 = poss(1,1)%elements(1)
-         i2 = poss(1,1)%elements(2)
-         i3 = poss(2,1)%elements(1)
-         i4 = poss(2,1)%elements(2)
-         item%t_spin(z1)%spin(i1, i2) = i
-         item%t_spin(z2)%spin(i3, i4) = i
-         if (shift <= 1) then
-            call print_spin_case(item,eloop)
-         end if
-         if (shift > 1) then
-            do j = 1, 2
-               i1 = poss(1,2)%elements(1)
-               i2 = poss(1,2)%elements(2)
-               i3 = poss(2,2)%elements(1)
-               i4 = poss(2,2)%elements(2)
-               item%t_spin(z1)%spin(i1, i2) = j
-               item%t_spin(z2)%spin(i3, i4) = j
-               if (shift <= 2) then
-                  ! For scalar results, only need half of the spin
-                  ! cases, the rest are the same
-                  if (item%rank3 == 0 .and. i == 2) exit
-                  call print_spin_case(item,eloop)
-               end if
-               if (shift > 2) then
-                  do k = 1, 2
-                     i1 = poss(1,3)%elements(1)
-                     i2 = poss(1,3)%elements(2)
-                     i3 = poss(2,3)%elements(1)
-                     i4 = poss(2,3)%elements(2)
-                     item%t_spin(z1)%spin(i1, i2) = k
-                     item%t_spin(z2)%spin(i3, i4) = k
-                     if (shift <= 3) then
-                        call print_spin_case(item,eloop)
-                     end if
-                     if (shift > 3) then
-                        do l = 1, 2
-                           i1 = poss(1,4)%elements(1)
-                           i2 = poss(1,4)%elements(2)
-                           i3 = poss(2,4)%elements(1)
-                           i4 = poss(2,4)%elements(2)
-                           item%t_spin(z1)%spin(i1, i2) = l
-                           item%t_spin(z2)%spin(i3, i4) = l
-                           if (shift <= 4) then
-                              if (item%rank3 == 0 .and. i == 2) exit
-                              call print_spin_case(item,eloop)
-                           end if
-                           if (shift > 4) then
-                              do m = 1, 2
-                                 i1 = poss(1,5)%elements(1)
-                                 i2 = poss(1,5)%elements(2)
-                                 i3 = poss(2,5)%elements(1)
-                                 i4 = poss(2,5)%elements(2)
-                                 item%t_spin(z1)%spin(i1, i2) = m
-                                 item%t_spin(z2)%spin(i3, i4) = m
-                                 if (shift <= 5) then
-                                    call print_spin_case(item,eloop)
-                                 end if
-                                 if (shift > 5) then
-                                    do n = 1, 2
-                                       i1 = poss(1,6)%elements(1)
-                                       i2 = poss(1,6)%elements(2)
-                                       i3 = poss(2,6)%elements(1)
-                                       i4 = poss(2,6)%elements(2)
-                                       item%t_spin(z1)%spin(i1, i2) = n
-                                       item%t_spin(z2)%spin(i3, i4) = n
-                                       if (shift <= 6) then
-                                  if (item%rank3 == 0 .and. i == 2) exit
-                                        call print_spin_case(item,eloop)
-                                       end if
-                                    end do
-                                 end if
-                              end do
-                           end if
-                        end do
-                     end if
-                  end do
-               end if
-            end do
-         end if
-      end do
-
-      if (.not. eloop) then
-         ! Check other reasons why the spin case wasn't printed
-         error = .false.
-         ! Check all indicies are assigned
-         do i = 1, item%rank3
-            if(item%idx3(i:i)==' ') then
-               error = .true.
-               exit
-            end if
-         end do
-
-         ! Check correctly paired
-         ! Warning: this doesn't check pairs across the tensors!
-         if (.not. error) then
-            do i = 1, item%rank3/2
-               p1 = item%idx3(i:i)
-               p2 = item%idx3(i+item%rank3/2:i+item%rank3/2)
-
-               do j = 1, item%rank1/2
-                  if (p1 == item%idx1(j:j)) then
-                     if (p2 /=
-     &                   item%idx1(j+item%rank1/2:j+item%rank1/2)) then
-                        do k = 1, item%rank2/2
-                           if (p2 ==
-     &                    item%idx2(k+item%rank2/2:k+item%rank2/2)) then
-                              if
-     &                        (item%idx1(j+item%rank1/2:j+item%rank1/2)
-     &                        /=
-     &                        item%idx2(k:k))
-     &                        then
-                                error = .true.
-                                exit
-                              end if
-
-                              exit
-                           end if
-
-                        end do
-
-                     end if
-                  end if
-               end do
-
-               do j = 1, item%rank2/2
-                  if (p1 == item%idx2(j:j)) then
-                     if (p2 /=
-     &                   item%idx2(j+item%rank2/2:j+item%rank2/2)) then
-                        do k = 1, item%rank1/2
-                           if (p2 ==
-     &                    item%idx1(k+item%rank1/2:k+item%rank1/2)) then
-                              if
-     &                        (item%idx2(j+item%rank2/2:j+item%rank2/2)
-     &                        /=
-     &                        item%idx1(k:k))
-     &                        then
-                                error = .true.
-                                exit
-                              end if
-
-                              exit
-                           end if
-
-                        end do
-
-                     end if
-                  end if
-               end do
-
-            end do
-         end if
-
-         if (error) then
-           call line_error("Didn't print out spin case", item)
-         else
-           call line_error("This spin case possibly doesn't exist",item)
-         end if
-      end if
-
-      deallocate(poss)
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine assign_spin(item)
+!*----------------------------------------------------------------------*
+!!     Assign spin to tensors, then sum remaining contraction indices
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &   item
+!
+!      integer ::
+!     &   i,j,              ! Loop index
+!     &   result_spin(4),   ! Spin case of result
+!     &   hr1, hr2, hr3     ! Half tensor ranks
+!
+!      ! There are certain cases that don't need to be spin summed
+!      ! because the spin summed line is the same as the non-spin summed
+!      ! line.
+!      !if (item%rank1 + item%rank2 + item%rank3 == 4) then
+!      if (item%rank1 == 2 .and. item%rank2 == 0 .or.
+!     &    item%rank1 == 0 .and. item%rank2 == 2) then
+!         ! This covers all cases where we have two rank-2 tensors
+!         ! + one rank-0 tensor somewhere on a line
+!
+!         ! If the line involves an intermediate, then we must add the
+!         ! spin name to the intermedite name. For all these cases, this
+!         ! is spimple
+!         if (item%inter(1)) then
+!            item%label_t1 = trim(item%label_t1)//'aa'
+!         else if (item%inter(2)) then
+!            item%label_t2 = trim(item%label_t2)//'aa'
+!         end if
+!
+!         call print_itf_line(item,.false.,.false.)
+!         return
+!      else if (item%rank1 + item%rank2 + item%rank3 == 6) then
+!         ! This covers all cases where we have three rank-2 tensors
+!
+!         if (item%inter(1)) then
+!            item%label_t1 = trim(item%label_t1)//'aa'
+!         end if
+!         if (item%inter(2)) then
+!            item%label_t2 = trim(item%label_t2)//'aa'
+!         end if
+!
+!         call print_itf_line(item,.false.,.false.)
+!         return
+!      else if (item%rank1 + item%rank2 + item%rank3 == 0) then
+!         ! Scalar contributions
+!         call print_itf_line(item,.false.,.false.)
+!         return
+!      else if (item%rank1 == 0 .or. item%rank2 ==0) then
+!         ! Tensor multiplied by a scalar (not involving an intermediate)
+!
+!         if (item%inter(1)) then
+!            call simple_spin_name(item%inter1,item%rank1,item%permute)
+!         else if (item%inter(2)) then
+!            call simple_spin_name(item%inter2,item%rank2,item%permute)
+!         end if
+!
+!         call print_itf_line(item,.false.,.false.)
+!         return
+!      else if (item%rank3==4 .and. item%rank1==2
+!     &         .and. item%rank2==2) then
+!
+!         ! Tensor product
+!         if (item%inter(1)) then
+!            item%label_t1 = trim(item%label_t1)//'aa'
+!         else if (item%inter(2)) then
+!            item%label_t2 = trim(item%label_t2)//'aa'
+!         end if
+!
+!         call print_itf_line(item,.false.,.false.)
+!         return
+!      end if
+!
+!      !write(item%logfile,*) "inside assign_spin"
+!
+!      ! Calculate half ranks for use in indexing letter index strings
+!      hr1 = item%rank1/2
+!      hr2 = item%rank2/2
+!      hr3 = item%rank3/2
+!
+!      ! Assign spin to indicies on the result tensor
+!      if (item%inter(3)) then
+!         item%t_spin(3)%spin = item%i_spin%spin
+!         !write(item%logfile,*) "i_spin ", item%i_spin%spin
+!      else
+!         select case (item%rank3)
+!            case(0)
+!            case(2)
+!               ! aa
+!               item%t_spin(3)%spin(1,1) = 1
+!               item%t_spin(3)%spin(2,1) = 1
+!            case(4)
+!               ! abab
+!               item%t_spin(3)%spin(1,1) = 1
+!               item%t_spin(3)%spin(1,2) = 2
+!               item%t_spin(3)%spin(2,1) = 1
+!               item%t_spin(3)%spin(2,2) = 2
+!            case(6)
+!               do i=1, 2
+!                  ! aaaaaa
+!                  item%t_spin(3)%spin(1,i) = 1
+!                  item%t_spin(3)%spin(2,i) = 1
+!               end do
+!               item%t_spin(3)%spin(1,3) = 1
+!               item%t_spin(3)%spin(2,3) = 1
+!            case default
+!               call line_error("Could not determine tensor rank",item)
+!         end select
+!      end if
+!
+!!      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
+!!     &                item%logfile)
+!
+!      ! Assign spin of external indicies to T1 and T2
+!      do j=1, hr3
+!         do i=1, hr1
+!            ! Assign spin of first tensor
+!            if (item%idx3(j:j)==item%idx1(i:i)) then
+!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(1,j)
+!            else if (item%idx3(j:j)==item%idx1(i+hr1:i+hr1)) then
+!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(1,j)
+!            end if
+!
+!            if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
+!               item%t_spin(1)%spin(1,i) = item%t_spin(3)%spin(2,j)
+!            else if (item%idx3(j+hr3:j+hr3)==item%idx1(i+hr1:i+hr1))then
+!               item%t_spin(1)%spin(2,i) = item%t_spin(3)%spin(2,j)
+!            end if
+!         end do
+!
+!         do i=1, hr2
+!            ! Assign spin of second tensor
+!            if (item%idx3(j:j)==item%idx2(i:i)) then
+!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(1,j)
+!            else if (item%idx3(j:j)==item%idx2(i+hr2:i+hr2)) then
+!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(1,j)
+!            end if
+!
+!            if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
+!               item%t_spin(2)%spin(1,i) = item%t_spin(3)%spin(2,j)
+!            else if (item%idx3(j+hr3:j+hr3)==item%idx2(i+hr2:i+hr2))then
+!               item%t_spin(2)%spin(2,i) = item%t_spin(3)%spin(2,j)
+!            end if
+!         end do
+!      end do
+!
+!!      call print_spin(item%t_spin(1)%spin, item%rank1, "T1 before",
+!!     &                item%logfile)
+!!      call print_spin(item%t_spin(2)%spin, item%rank2, "T2 before",
+!!     &                item%logfile)
+!
+!      ! Sum over the remaining contraction indicies and print out the
+!      ! line
+!      call spin_index(item)
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine spin_index(item)
+!*----------------------------------------------------------------------*
+!!     Find contraction index used in spin summation
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &     item
+!
+!      type(twodarray), pointer ::
+!     &   poss(:,:) => null()
+!      integer ::
+!     &   i, j, k, l, m, n, shift,
+!     &   i1, i2, i3, i4,
+!     &   z1, z2, r1, r2
+!      character(len=INDEX_LEN) ::
+!     &   str1, str2
+!      character(len=1) ::
+!     &   p1, p2
+!      logical ::
+!     &   eloop,
+!     &   error
+!
+!      allocate(poss(2,item%contri))
+!
+!      ! Largest tensor goes first
+!      if (item%rank2 > item%rank1) then
+!         z1 = 2
+!         z2 = 1
+!         r1 = item%rank2/2
+!         r2 = item%rank1/2
+!         str1 = item%idx2
+!         str2 = item%idx1
+!      else
+!         z1 = 1
+!         z2 = 2
+!         r1 = item%rank1/2
+!         r2 = item%rank2/2
+!         str1 = item%idx1
+!         str2 = item%idx2
+!      end if
+!
+!      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%logfile)
+!      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%logfile)
+!
+!      ! Get position information of contraction indicies, ie. look for
+!      ! zeros
+!      ! TODO: know this information already when assigning index?
+!      shift = 1
+!      do i=1, size(item%t_spin(z1)%spin,2)
+!         if (item%t_spin(z1)%spin(1,i) == 0) then
+!            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (str1(i:i) == str2(j+r2:j+r2)) then
+!                  poss(1,shift)%elements(1) = 1
+!                  poss(1,shift)%elements(2) = i
+!                  poss(2,shift)%elements(1) = 2
+!                  poss(2,shift)%elements(2) = j
+!                  shift = shift + 1
+!               end if
+!            end do
+!            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (str1(i:i) == str2(j:j)) then
+!                  poss(1,shift)%elements(1) = 1
+!                  poss(1,shift)%elements(2) = i
+!                  poss(2,shift)%elements(1) = 1
+!                  poss(2,shift)%elements(2) = j
+!                  shift = shift + 1
+!               end if
+!            end do
+!         end if
+!      end do
+!
+!      do i=1, size(item%t_spin(z1)%spin,2)
+!         if (item%t_spin(z1)%spin(2,i) == 0) then
+!            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (str1(i+r1:i+r1) == str2(j:j)) then
+!                  poss(1,shift)%elements(1) = 2
+!                  poss(1,shift)%elements(2) = i
+!                  poss(2,shift)%elements(1) = 1
+!                  poss(2,shift)%elements(2) = j
+!                  shift = shift + 1
+!               end if
+!            end do
+!            do j=1, size(item%t_spin(z2)%spin,2)
+!               if (str1(i+r1:i+r1) == str2(j+r2:j+r2)) then
+!                  poss(1,shift)%elements(1) = 2
+!                  poss(1,shift)%elements(2) = i
+!                  poss(2,shift)%elements(1) = 2
+!                  poss(2,shift)%elements(2) = j
+!                  shift = shift + 1
+!               end if
+!            end do
+!         end if
+!      end do
+!
+!      if (shift == 1) then
+!         call line_error("Didn't find contraction index", item)
+!      end if
+!
+!      ! Main spin summation loop
+!      shift = shift - 1
+!      eloop = .false.
+!
+!      !write(10,*) "========================"
+!      !do i = 1, 2
+!      !   do j = 1, item%contri
+!      !      write(10,*) "DEBUG1 poss: ", poss(i,j)%elements
+!      !   end do
+!      !end do
+!      !write(10,*) "========================"
+!
+!      do i = 1, 2
+!         i1 = poss(1,1)%elements(1)
+!         i2 = poss(1,1)%elements(2)
+!         i3 = poss(2,1)%elements(1)
+!         i4 = poss(2,1)%elements(2)
+!         item%t_spin(z1)%spin(i1, i2) = i
+!         item%t_spin(z2)%spin(i3, i4) = i
+!         if (shift <= 1) then
+!            call print_spin_case(item,eloop)
+!         end if
+!         if (shift > 1) then
+!            do j = 1, 2
+!               i1 = poss(1,2)%elements(1)
+!               i2 = poss(1,2)%elements(2)
+!               i3 = poss(2,2)%elements(1)
+!               i4 = poss(2,2)%elements(2)
+!               item%t_spin(z1)%spin(i1, i2) = j
+!               item%t_spin(z2)%spin(i3, i4) = j
+!               if (shift <= 2) then
+!                  ! For scalar results, only need half of the spin
+!                  ! cases, the rest are the same
+!                  if (item%rank3 == 0 .and. i == 2) exit
+!                  call print_spin_case(item,eloop)
+!               end if
+!               if (shift > 2) then
+!                  do k = 1, 2
+!                     i1 = poss(1,3)%elements(1)
+!                     i2 = poss(1,3)%elements(2)
+!                     i3 = poss(2,3)%elements(1)
+!                     i4 = poss(2,3)%elements(2)
+!                     item%t_spin(z1)%spin(i1, i2) = k
+!                     item%t_spin(z2)%spin(i3, i4) = k
+!                     if (shift <= 3) then
+!                        call print_spin_case(item,eloop)
+!                     end if
+!                     if (shift > 3) then
+!                        do l = 1, 2
+!                           i1 = poss(1,4)%elements(1)
+!                           i2 = poss(1,4)%elements(2)
+!                           i3 = poss(2,4)%elements(1)
+!                           i4 = poss(2,4)%elements(2)
+!                           item%t_spin(z1)%spin(i1, i2) = l
+!                           item%t_spin(z2)%spin(i3, i4) = l
+!                           if (shift <= 4) then
+!                              if (item%rank3 == 0 .and. i == 2) exit
+!                              call print_spin_case(item,eloop)
+!                           end if
+!                           if (shift > 4) then
+!                              do m = 1, 2
+!                                 i1 = poss(1,5)%elements(1)
+!                                 i2 = poss(1,5)%elements(2)
+!                                 i3 = poss(2,5)%elements(1)
+!                                 i4 = poss(2,5)%elements(2)
+!                                 item%t_spin(z1)%spin(i1, i2) = m
+!                                 item%t_spin(z2)%spin(i3, i4) = m
+!                                 if (shift <= 5) then
+!                                    call print_spin_case(item,eloop)
+!                                 end if
+!                                 if (shift > 5) then
+!                                    do n = 1, 2
+!                                       i1 = poss(1,6)%elements(1)
+!                                       i2 = poss(1,6)%elements(2)
+!                                       i3 = poss(2,6)%elements(1)
+!                                       i4 = poss(2,6)%elements(2)
+!                                       item%t_spin(z1)%spin(i1, i2) = n
+!                                       item%t_spin(z2)%spin(i3, i4) = n
+!                                       if (shift <= 6) then
+!                                  if (item%rank3 == 0 .and. i == 2) exit
+!                                        call print_spin_case(item,eloop)
+!                                       end if
+!                                    end do
+!                                 end if
+!                              end do
+!                           end if
+!                        end do
+!                     end if
+!                  end do
+!               end if
+!            end do
+!         end if
+!      end do
+!
+!      if (.not. eloop) then
+!         ! Check other reasons why the spin case wasn't printed
+!         error = .false.
+!         ! Check all indicies are assigned
+!         do i = 1, item%rank3
+!            if(item%idx3(i:i)==' ') then
+!               error = .true.
+!               exit
+!            end if
+!         end do
+!
+!         ! Check correctly paired
+!         ! Warning: this doesn't check pairs across the tensors!
+!         if (.not. error) then
+!            do i = 1, item%rank3/2
+!               p1 = item%idx3(i:i)
+!               p2 = item%idx3(i+item%rank3/2:i+item%rank3/2)
+!
+!               do j = 1, item%rank1/2
+!                  if (p1 == item%idx1(j:j)) then
+!                     if (p2 /=
+!     &                   item%idx1(j+item%rank1/2:j+item%rank1/2)) then
+!                        do k = 1, item%rank2/2
+!                           if (p2 ==
+!     &                    item%idx2(k+item%rank2/2:k+item%rank2/2)) then
+!                              if
+!     &                        (item%idx1(j+item%rank1/2:j+item%rank1/2)
+!     &                        /=
+!     &                        item%idx2(k:k))
+!     &                        then
+!                                error = .true.
+!                                exit
+!                              end if
+!
+!                              exit
+!                           end if
+!
+!                        end do
+!
+!                     end if
+!                  end if
+!               end do
+!
+!               do j = 1, item%rank2/2
+!                  if (p1 == item%idx2(j:j)) then
+!                     if (p2 /=
+!     &                   item%idx2(j+item%rank2/2:j+item%rank2/2)) then
+!                        do k = 1, item%rank1/2
+!                           if (p2 ==
+!     &                    item%idx1(k+item%rank1/2:k+item%rank1/2)) then
+!                              if
+!     &                        (item%idx2(j+item%rank2/2:j+item%rank2/2)
+!     &                        /=
+!     &                        item%idx1(k:k))
+!     &                        then
+!                                error = .true.
+!                                exit
+!                              end if
+!
+!                              exit
+!                           end if
+!
+!                        end do
+!
+!                     end if
+!                  end if
+!               end do
+!
+!            end do
+!         end if
+!
+!         if (error) then
+!           call line_error("Didn't print out spin case", item)
+!         else
+!           call line_error("This spin case possibly doesn't exist",item)
+!         end if
+!      end if
+!
+!      deallocate(poss)
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -8073,142 +8073,142 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine print_spin_case(item,eloop)
-*----------------------------------------------------------------------*
-!     Print spin case
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item
-      logical, intent(inout) ::
-     &   eloop     ! Check if at least one spin case is printed out
-
-      logical ::
-     &   s1,       ! True if tensor 1 is mixed spin
-     &   s2,       ! True if tensor 2 is mixed spin
-     &   contains1,
-     &   contains2
-      integer ::
-     &   i,
-     &   shift,   ! Index number of different spin cases for an intermediate
-     &   ishift  ! Index number of intermediates on a line
-      character(len=INDEX_LEN) ::
-     &   spin_name
-      integer ::
-     &   sum1a, sum1b, sum2a, sum2b
-
-      ! Sum the spins of the covarient and contravarient indicies
-      sum1a = 0
-      sum1b = 0
-      sum2a = 0
-      sum2b = 0
-      do i = 1, size(item%t_spin(1)%spin,2)
-         sum1a = sum1a + item%t_spin(1)%spin(1,i)
-         sum1b = sum1b + item%t_spin(1)%spin(2,i)
-      end do
-      do i = 1, size(item%t_spin(2)%spin,2)
-         sum2a = sum2a + item%t_spin(2)%spin(1,i)
-         sum2b = sum2b + item%t_spin(2)%spin(2,i)
-      end do
-
-
-      ! Pick out specific spin cases here
-      if (sum1a==sum1b .and. sum2a==sum2b) then
-         if (modulo(sum1a+sum1b,2)==0 .and.
-     &           modulo(sum2a+sum2b,2)==0) then
-
-!            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
-!     &                      item%logfile)
-!            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
-!     &                      item%logfile)
-
-            ! Decide if tensor is mixed spin
-            contains1 = .false.
-            contains2 = .false.
-            s1 = .false.
-            if (item%rank1>2) then
-               do i = 1, size(item%t_spin(1)%spin,2)
-                  if (item%t_spin(1)%spin(1,i)==1) then
-                     contains1 = .true.
-                  end if
-                  if (item%t_spin(1)%spin(1,i)==2) then
-                     contains2 = .true.
-                  end if
-               end do
-               if (contains1 .neqv. contains2) then
-                  s1 = .true.
-               end if
-            end if
-
-            contains1 = .false.
-            contains2 = .false.
-            s2 = .false.
-            if (item%rank2>2) then
-               do i = 1, size(item%t_spin(2)%spin,2)
-                  if (item%t_spin(2)%spin(1,i)==1) then
-                     contains1 = .true.
-                  end if
-                  if (item%t_spin(2)%spin(1,i)==2) then
-                     contains2 = .true.
-                  end if
-               end do
-               if (contains1 .neqv. contains2) then
-                  s2 = .true.
-               end if
-            end if
-
-            ! Append spin name to intermediate label (i.e. STIN001abab)
-            if (item%inter(1)) then
-               call inter_spin_name(item%t_spin(1)%spin,
-     &                                 item%rank1/2,item%inter1)
-            end if
-
-            if (item%inter(2)) then
-               call inter_spin_name(item%t_spin(2)%spin,
-     &                                 item%rank2/2,item%inter2)
-            end if
-
-
-            ! Check if we are searching for intermediates
-            if (associated(item%inter_spins)) then
-
-               ! Number of intermediates
-               ishift = 0
-
-               if (item%inter(1)) then
-                  call inter_spin_case(item%t_spin(1)%spin,item%rank1/2,
-     &                                 item%label_t1,ishift,item)
-               end if
-
-               if (item%inter(2)) then
-                  call inter_spin_case(item%t_spin(2)%spin,item%rank2/2,
-     &                                  item%label_t2,ishift,item)
-               end if
-
-               item%ninter = ishift
-            end if
-
-            ! Print the spin summed line
-            if (item%print_line) then
-               ! Mark the start of the spin summed block, if the current
-               ! line is a permutation of the previous line (ie. permute >1)
-               ! then we should not begin a new block
-               call print_itf_line(item,s1,s2)
-            end if
-
-            eloop=.true.
-         end if
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine print_spin_case(item,eloop)
+!*----------------------------------------------------------------------*
+!!     Print spin case
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &   item
+!      logical, intent(inout) ::
+!     &   eloop     ! Check if at least one spin case is printed out
+!
+!      logical ::
+!     &   s1,       ! True if tensor 1 is mixed spin
+!     &   s2,       ! True if tensor 2 is mixed spin
+!     &   contains1,
+!     &   contains2
+!      integer ::
+!     &   i,
+!     &   shift,   ! Index number of different spin cases for an intermediate
+!     &   ishift  ! Index number of intermediates on a line
+!      character(len=INDEX_LEN) ::
+!     &   spin_name
+!      integer ::
+!     &   sum1a, sum1b, sum2a, sum2b
+!
+!      ! Sum the spins of the covarient and contravarient indicies
+!      sum1a = 0
+!      sum1b = 0
+!      sum2a = 0
+!      sum2b = 0
+!      do i = 1, size(item%t_spin(1)%spin,2)
+!         sum1a = sum1a + item%t_spin(1)%spin(1,i)
+!         sum1b = sum1b + item%t_spin(1)%spin(2,i)
+!      end do
+!      do i = 1, size(item%t_spin(2)%spin,2)
+!         sum2a = sum2a + item%t_spin(2)%spin(1,i)
+!         sum2b = sum2b + item%t_spin(2)%spin(2,i)
+!      end do
+!
+!
+!      ! Pick out specific spin cases here
+!      if (sum1a==sum1b .and. sum2a==sum2b) then
+!         if (modulo(sum1a+sum1b,2)==0 .and.
+!     &           modulo(sum2a+sum2b,2)==0) then
+!
+!!            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
+!!     &                      item%logfile)
+!!            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
+!!     &                      item%logfile)
+!
+!            ! Decide if tensor is mixed spin
+!            contains1 = .false.
+!            contains2 = .false.
+!            s1 = .false.
+!            if (item%rank1>2) then
+!               do i = 1, size(item%t_spin(1)%spin,2)
+!                  if (item%t_spin(1)%spin(1,i)==1) then
+!                     contains1 = .true.
+!                  end if
+!                  if (item%t_spin(1)%spin(1,i)==2) then
+!                     contains2 = .true.
+!                  end if
+!               end do
+!               if (contains1 .neqv. contains2) then
+!                  s1 = .true.
+!               end if
+!            end if
+!
+!            contains1 = .false.
+!            contains2 = .false.
+!            s2 = .false.
+!            if (item%rank2>2) then
+!               do i = 1, size(item%t_spin(2)%spin,2)
+!                  if (item%t_spin(2)%spin(1,i)==1) then
+!                     contains1 = .true.
+!                  end if
+!                  if (item%t_spin(2)%spin(1,i)==2) then
+!                     contains2 = .true.
+!                  end if
+!               end do
+!               if (contains1 .neqv. contains2) then
+!                  s2 = .true.
+!               end if
+!            end if
+!
+!            ! Append spin name to intermediate label (i.e. STIN001abab)
+!            if (item%inter(1)) then
+!               call inter_spin_name(item%t_spin(1)%spin,
+!     &                                 item%rank1/2,item%inter1)
+!            end if
+!
+!            if (item%inter(2)) then
+!               call inter_spin_name(item%t_spin(2)%spin,
+!     &                                 item%rank2/2,item%inter2)
+!            end if
+!
+!
+!            ! Check if we are searching for intermediates
+!            if (associated(item%inter_spins)) then
+!
+!               ! Number of intermediates
+!               ishift = 0
+!
+!               if (item%inter(1)) then
+!                  call inter_spin_case(item%t_spin(1)%spin,item%rank1/2,
+!     &                                 item%label_t1,ishift,item)
+!               end if
+!
+!               if (item%inter(2)) then
+!                  call inter_spin_case(item%t_spin(2)%spin,item%rank2/2,
+!     &                                  item%label_t2,ishift,item)
+!               end if
+!
+!               item%ninter = ishift
+!            end if
+!
+!            ! Print the spin summed line
+!            if (item%print_line) then
+!               ! Mark the start of the spin summed block, if the current
+!               ! line is a permutation of the previous line (ie. permute >1)
+!               ! then we should not begin a new block
+!               call print_itf_line(item,s1,s2)
+!            end if
+!
+!            eloop=.true.
+!         end if
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -8256,365 +8256,365 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine inter_spin_name(spin,hrank,label)
-*----------------------------------------------------------------------*
-!     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      integer, intent(in) ::
-     &   hrank,            ! Rank/2
-     &   spin(2,hrank)    ! Spin info
-      character(len=INDEX_LEN), intent(inout) ::
-     &   label             ! Spin name of intermediate
-
-      character(len=INDEX_LEN) ::
-     &   spin_name
-      integer ::
-     &   i
-
-      spin_name = ''
-
-      do i = 1, hrank
-         if (spin(1,i)==1) then
-            spin_name(i:i) = 'a'
-         else if (spin(1,i)==2) then
-            spin_name(i:i) = 'b'
-         end if
-
-         if (spin(2,i)==1) then
-            spin_name(i+hrank:i+hrank) = 'a'
-         else if (spin(2,i)==2) then
-            spin_name(i+hrank:i+hrank) = 'b'
-         end if
-      end do
-
-      label = spin_name
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine simple_spin_name(spin_name,rank,permute)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine inter_spin_name(spin,hrank,label)
+!*----------------------------------------------------------------------*
+!!     Add spin name to intermediate (ie. STIN001 -> STIN001abab)
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=INDEX_LEN), intent(inout) ::
-     &   spin_name             ! Spin name of intermediate
-      integer, intent(in) ::
-     &   rank,
-     &   permute
-
-      select case (rank)
-         case (0)
-            return
-         case (2)
-            spin_name = 'aa'
-         case (4)
-            if (permute==2) then
-               spin_name = 'baba'
-            else
-               spin_name = 'abab'
-            end if
-         case (6)
-            spin_name = 'aaaaaa'
-      end select
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine inter_spin_case(spin,hrank,label,ishift,item)
-*----------------------------------------------------------------------*
-!     Determine intermediate spin cases and save info to item
-*----------------------------------------------------------------------*
-
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      integer, intent(in) ::
-     &   hrank,       ! Half rank
-     &   spin(2,hrank)
-      integer, intent(inout) ::
-     &   ishift      ! Index number of intermediates
-      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-     &   label
-      type(itf_contr), intent(inout) ::
-     &   item
-
-      integer ::
-     &   i, j,
-     &   shift
-
-      logical ::
-     &   co_v,
-     &   contr_v
-
-      ishift = ishift + 1
-
-      ! Number of spin cases
-      shift = item%inter_spins(ishift)%ncase + 1
-
-      ! For now, if intermediate is part of a permutation
-      ! line, then we add a P to its name
-      if (item%permute == 2) then
-         item%inter_spins(ishift)%name=trim(label)//'P'
-      else
-         item%inter_spins(ishift)%name=label
-      end if
-
-      ! Should check here if repeated spin cases are being added
-      ! If the algo requests a already delcared spin case, then just
-      ! skip it - we only need it once
-      if (item%inter_spins(ishift)%ncase>=1) then
-      do i = 1, item%inter_spins(ishift)%ncase
-         co_v = .false.
-         contr_v = .false.
-         do j = 1, hrank
-            if (item%inter_spins(ishift)%cases(j,i)/=spin(1,j)) then
-               co_v = .true.
-               exit
-            end if
-            if (item%inter_spins(ishift)%cases(j+INDEX_LEN/2,i)
-     &          /=spin(2,j)) then
-               contr_v = .true.
-               exit
-            end if
-         end do
-         if (.not. co_v .and. .not. contr_v) then
-            return
-         end if
-      end do
-
-      end if
-
-      do i=1, hrank
-         item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
-         item%inter_spins(ishift)%cases(i+INDEX_LEN/2,shift)=spin(2,i)
-      end do
-
-      ! Update number of spin cases
-      item%inter_spins(ishift)%ncase =
-     &                           item%inter_spins(ishift)%ncase + 1
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog)
-*----------------------------------------------------------------------*
-!     Initialise ITF contraction object
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-
-      include 'opdim.h'
-      include 'mdef_operator_info.h' ! For def_formular_item.h
-      include 'def_contraction.h'
-      include 'def_formula_item.h' ! For command parameters
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(in) ::
-     &     contr_info   ! Information about binary contraction
-      type(itf_contr), intent(inout) ::
-     &     item     ! Object which holds information necessary to print out an ITF algo line
-      integer, intent(in) ::
-     &     perm,        ! Permutation information
-     &     comm,        ! formula_item command
-     &     lulog        ! Output file
-      logical, intent(in) ::
-     &     itin
-
-      integer :: i, j, ct(ngastp,2)
-
-      ! Assign output file
-      item%logfile=lulog
-
-      ! Assign command type
-      item%command=comm
-
-      ! Get number of contraction and external indices on each tensor
-      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
-
-      ! Set ranks of tensors using matricies from itf_ops
-      call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
-      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
-      call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
-
-      ! Set number of contraction indicies
-      item%contri = sum(sum(item%c, dim=1))
-
-      ! Set external lines (used for permuations)
-      item%perm_case = contr_info%perm
-
-      ! Determine factor from equivalent lines
-      item%fact = 1.0d+0
-      call itf_equiv_lines_factor(item%c, item%fact)
-
-      ! Get any remaining factors from GeCCo
-      item%fact = item%fact * abs(contr_info%fact_itf)
-      !item%fact = item%fact * contr_info%fact_itf
-
-
-      ! Assign labels
-      item%label_t1=contr_info%label_op1
-
-      ! Check if an intermediate
-      item%inter(1) = check_inter(item%label_t1)
-      if (.not. item%inter(1)) then
-         ! Check if a density matrix
-         item%den(1) = check_den(item%label_t1)
-
-         if (.not. item%den(1)) then
-            ! Check if an integral
-            item%int(1) = check_int(item%label_t1)
-            if (item%int(1) .and. item%rank1==4) then
-               call check_j_integral(item%e1, item%c, item%nops1,
-     &                               item%j_int, .false.)
-            end if
-         end if
-      end if
-
-
-      if (item%command/=command_cp_intm .or.
-     &    item%command/=command_add_intm) then
-
-         ! Operator 2 does not exist in [ADD] or [COPY]
-         item%label_t2=contr_info%label_op2
-
-         ! Assign permutation number
-         item%permute=perm
-         if (perm>1) then
-            item%permutation = .true.
-         end if
-
-         item%inter(2) = check_inter(item%label_t2)
-
-         if (.not. item%inter(2)) then
-            item%den(2) = check_den(item%label_t2)
-
-            if (.not. item%den(2)) then
-               item%int(2) = check_int(item%label_t2)
-               if (item%int(2) .and. item%rank2==4) then
-                  call check_j_integral(item%e2, item%c, item%nops2,
-     &                                  item%j_int, .true.)
-               end if
-            end if
-         end if
-      end if
-
-      item%label_res=contr_info%label_res
-      item%inter(3) = check_inter(item%label_res)
-      item%int(3) = .false.
-
-
-      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
-      if (.not. item%inter(3)) then
-         call check_symmetric(contr_info, item%command, item%symm_res)
-
-         ! Add factor to account for factor of two when the residual is
-         ! symmetrised:
-         ! R:eecc[abij] += G:eecc[abij]
-         ! R:eecc[abij] += G:eecc[baji]
-         if (item%symm_res .and. item%permute==0) then
-            if (contr_info%label_res/='INTpp') then
-               item%fact = item%fact * 0.5d+0
-            end if
-         end if
-      end if
-
-
-      ! Remove zeorth-body density from equations
-      if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
-         item%label_t2 = ''
-         item%command = command_add_intm
-      else if (item%label_t1 == 'GAM0' .and. item%rank1 == 0
-     &         .and. item%command /= command_add_intm) then
-         item%label_t1 = item%label_t2
-         item%rank1 = item%rank2
-         item%e1 = item%e2
-         item%nops1 = item%nops2
-         item%int(1) = item%int(2)
-         item%inter(1) = item%inter(2)
-         item%label_t2 = ''
-         item%e2 = 0
-         item%nops2 = 0
-         item%int(2) = .false.
-         item%inter(2) = .false.
-         item%command = command_add_intm
-      end if
-
-
-      ! Assign factor --- use special ITF factor
-      ! the ITF factor is closer to the value expected from standard
-      ! diagram rules, but still some care has to be taken when translating
-      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
-      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      !item%fact=contr_info%fact_itf
-
-
-      ! Assign index string. Tensor ranks and number
-      ! of operators are also set here
-      if (item%command==command_cp_intm .or.
-     &    item%command==command_add_intm) then
-         ! For [ADD] and [COPY]
-         ! Not a binary contraction
-         item%binary = .false.
-         !call assign_add_index(contr_info,item)
-         call assign_new_index(contr_info,item)
-      else
-         ! For other contractions
-         !call assign_index(contr_info,item)
-         call assign_new_index(contr_info,item)
-      end if
-
-
-      ! Set up arrays to store information about intermediates
-      item%inter1 = ''
-      item%inter2 = ''
-
-      allocate(item%t_spin(1)%spin(2, item%rank1/2))
-      allocate(item%t_spin(2)%spin(2, item%rank2/2))
-      allocate(item%t_spin(3)%spin(2, item%rank3/2))
-
-      item%t_spin(1)%spin = 0
-      item%t_spin(2)%spin = 0
-      item%t_spin(3)%spin = 0
-
-      if (item%inter(3)) then
-         allocate(item%i_spin%spin(2, item%rank3/2))
-      end if
-
-      item%spin_cases = 0
-
-
-
-      ! Check if a tensor product
-      if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
-         item%product=.true.
-      end if
-
-      return
-      end
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      integer, intent(in) ::
+!     &   hrank,            ! Rank/2
+!     &   spin(2,hrank)    ! Spin info
+!      character(len=INDEX_LEN), intent(inout) ::
+!     &   label             ! Spin name of intermediate
+!
+!      character(len=INDEX_LEN) ::
+!     &   spin_name
+!      integer ::
+!     &   i
+!
+!      spin_name = ''
+!
+!      do i = 1, hrank
+!         if (spin(1,i)==1) then
+!            spin_name(i:i) = 'a'
+!         else if (spin(1,i)==2) then
+!            spin_name(i:i) = 'b'
+!         end if
+!
+!         if (spin(2,i)==1) then
+!            spin_name(i+hrank:i+hrank) = 'a'
+!         else if (spin(2,i)==2) then
+!            spin_name(i+hrank:i+hrank) = 'b'
+!         end if
+!      end do
+!
+!      label = spin_name
+!
+!      return
+!      end
+
+
+!*----------------------------------------------------------------------*
+!      subroutine simple_spin_name(spin_name,rank,permute)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=INDEX_LEN), intent(inout) ::
+!     &   spin_name             ! Spin name of intermediate
+!      integer, intent(in) ::
+!     &   rank,
+!     &   permute
+!
+!      select case (rank)
+!         case (0)
+!            return
+!         case (2)
+!            spin_name = 'aa'
+!         case (4)
+!            if (permute==2) then
+!               spin_name = 'baba'
+!            else
+!               spin_name = 'abab'
+!            end if
+!         case (6)
+!            spin_name = 'aaaaaa'
+!      end select
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine inter_spin_case(spin,hrank,label,ishift,item)
+!*----------------------------------------------------------------------*
+!!     Determine intermediate spin cases and save info to item
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      integer, intent(in) ::
+!     &   hrank,       ! Half rank
+!     &   spin(2,hrank)
+!      integer, intent(inout) ::
+!     &   ishift      ! Index number of intermediates
+!      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+!     &   label
+!      type(itf_contr), intent(inout) ::
+!     &   item
+!
+!      integer ::
+!     &   i, j,
+!     &   shift
+!
+!      logical ::
+!     &   co_v,
+!     &   contr_v
+!
+!      ishift = ishift + 1
+!
+!      ! Number of spin cases
+!      shift = item%inter_spins(ishift)%ncase + 1
+!
+!      ! For now, if intermediate is part of a permutation
+!      ! line, then we add a P to its name
+!      if (item%permute == 2) then
+!         item%inter_spins(ishift)%name=trim(label)//'P'
+!      else
+!         item%inter_spins(ishift)%name=label
+!      end if
+!
+!      ! Should check here if repeated spin cases are being added
+!      ! If the algo requests a already delcared spin case, then just
+!      ! skip it - we only need it once
+!      if (item%inter_spins(ishift)%ncase>=1) then
+!      do i = 1, item%inter_spins(ishift)%ncase
+!         co_v = .false.
+!         contr_v = .false.
+!         do j = 1, hrank
+!            if (item%inter_spins(ishift)%cases(j,i)/=spin(1,j)) then
+!               co_v = .true.
+!               exit
+!            end if
+!            if (item%inter_spins(ishift)%cases(j+INDEX_LEN/2,i)
+!     &          /=spin(2,j)) then
+!               contr_v = .true.
+!               exit
+!            end if
+!         end do
+!         if (.not. co_v .and. .not. contr_v) then
+!            return
+!         end if
+!      end do
+!
+!      end if
+!
+!      do i=1, hrank
+!         item%inter_spins(ishift)%cases(i,shift)=spin(1,i)
+!         item%inter_spins(ishift)%cases(i+INDEX_LEN/2,shift)=spin(2,i)
+!      end do
+!
+!      ! Update number of spin cases
+!      item%inter_spins(ishift)%ncase =
+!     &                           item%inter_spins(ishift)%ncase + 1
+!
+!      return
+!      end
+
+
+!*----------------------------------------------------------------------*
+!      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog)
+!*----------------------------------------------------------------------*
+!!     Initialise ITF contraction object
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h' ! For def_formular_item.h
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h' ! For command parameters
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(in) ::
+!     &     contr_info   ! Information about binary contraction
+!      type(itf_contr), intent(inout) ::
+!     &     item     ! Object which holds information necessary to print out an ITF algo line
+!      integer, intent(in) ::
+!     &     perm,        ! Permutation information
+!     &     comm,        ! formula_item command
+!     &     lulog        ! Output file
+!      logical, intent(in) ::
+!     &     itin
+!
+!      integer :: i, j, ct(ngastp,2)
+!
+!      ! Assign output file
+!      item%logfile=lulog
+!
+!      ! Assign command type
+!      item%command=comm
+!
+!      ! Get number of contraction and external indices on each tensor
+!      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
+!
+!      ! Set ranks of tensors using matricies from itf_ops
+!      call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
+!      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
+!      call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
+!
+!      ! Set number of contraction indicies
+!      item%contri = sum(sum(item%c, dim=1))
+!
+!      ! Set external lines (used for permuations)
+!      item%perm_case = contr_info%perm
+!
+!      ! Determine factor from equivalent lines
+!      item%fact = 1.0d+0
+!      call itf_equiv_lines_factor(item%c, item%fact)
+!
+!      ! Get any remaining factors from GeCCo
+!      item%fact = item%fact * abs(contr_info%fact_itf)
+!      !item%fact = item%fact * contr_info%fact_itf
+!
+!
+!      ! Assign labels
+!      item%label_t1=contr_info%label_op1
+!
+!      ! Check if an intermediate
+!      item%inter(1) = check_inter(item%label_t1)
+!      if (.not. item%inter(1)) then
+!         ! Check if a density matrix
+!         item%den(1) = check_den(item%label_t1)
+!
+!         if (.not. item%den(1)) then
+!            ! Check if an integral
+!            item%int(1) = check_int(item%label_t1)
+!            if (item%int(1) .and. item%rank1==4) then
+!               call check_j_integral(item%e1, item%c, item%nops1,
+!     &                               item%j_int, .false.)
+!            end if
+!         end if
+!      end if
+!
+!
+!      if (item%command/=command_cp_intm .or.
+!     &    item%command/=command_add_intm) then
+!
+!         ! Operator 2 does not exist in [ADD] or [COPY]
+!         item%label_t2=contr_info%label_op2
+!
+!         ! Assign permutation number
+!         item%permute=perm
+!         if (perm>1) then
+!            item%permutation = .true.
+!         end if
+!
+!         item%inter(2) = check_inter(item%label_t2)
+!
+!         if (.not. item%inter(2)) then
+!            item%den(2) = check_den(item%label_t2)
+!
+!            if (.not. item%den(2)) then
+!               item%int(2) = check_int(item%label_t2)
+!               if (item%int(2) .and. item%rank2==4) then
+!                  call check_j_integral(item%e2, item%c, item%nops2,
+!     &                                  item%j_int, .true.)
+!               end if
+!            end if
+!         end if
+!      end if
+!
+!      item%label_res=contr_info%label_res
+!      item%inter(3) = check_inter(item%label_res)
+!      item%int(3) = .false.
+!
+!
+!      ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
+!      if (.not. item%inter(3)) then
+!         call check_symmetric(contr_info, item%command, item%symm_res)
+!
+!         ! Add factor to account for factor of two when the residual is
+!         ! symmetrised:
+!         ! R:eecc[abij] += G:eecc[abij]
+!         ! R:eecc[abij] += G:eecc[baji]
+!         if (item%symm_res .and. item%permute==0) then
+!            if (contr_info%label_res/='INTpp') then
+!               item%fact = item%fact * 0.5d+0
+!            end if
+!         end if
+!      end if
+!
+!
+!      ! Remove zeorth-body density from equations
+!      if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
+!         item%label_t2 = ''
+!         item%command = command_add_intm
+!      else if (item%label_t1 == 'GAM0' .and. item%rank1 == 0
+!     &         .and. item%command /= command_add_intm) then
+!         item%label_t1 = item%label_t2
+!         item%rank1 = item%rank2
+!         item%e1 = item%e2
+!         item%nops1 = item%nops2
+!         item%int(1) = item%int(2)
+!         item%inter(1) = item%inter(2)
+!         item%label_t2 = ''
+!         item%e2 = 0
+!         item%nops2 = 0
+!         item%int(2) = .false.
+!         item%inter(2) = .false.
+!         item%command = command_add_intm
+!      end if
+!
+!
+!      ! Assign factor --- use special ITF factor
+!      ! the ITF factor is closer to the value expected from standard
+!      ! diagram rules, but still some care has to be taken when translating
+!      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+!      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+!      !item%fact=contr_info%fact_itf
+!
+!
+!      ! Assign index string. Tensor ranks and number
+!      ! of operators are also set here
+!      if (item%command==command_cp_intm .or.
+!     &    item%command==command_add_intm) then
+!         ! For [ADD] and [COPY]
+!         ! Not a binary contraction
+!         item%binary = .false.
+!         !call assign_add_index(contr_info,item)
+!         call assign_new_index(contr_info,item)
+!      else
+!         ! For other contractions
+!         !call assign_index(contr_info,item)
+!         call assign_new_index(contr_info,item)
+!      end if
+!
+!
+!      ! Set up arrays to store information about intermediates
+!      item%inter1 = ''
+!      item%inter2 = ''
+!
+!      allocate(item%t_spin(1)%spin(2, item%rank1/2))
+!      allocate(item%t_spin(2)%spin(2, item%rank2/2))
+!      allocate(item%t_spin(3)%spin(2, item%rank3/2))
+!
+!      item%t_spin(1)%spin = 0
+!      item%t_spin(2)%spin = 0
+!      item%t_spin(3)%spin = 0
+!
+!      if (item%inter(3)) then
+!         allocate(item%i_spin%spin(2, item%rank3/2))
+!      end if
+!
+!      item%spin_cases = 0
+!
+!
+!
+!      ! Check if a tensor product
+!      if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
+!         item%product=.true.
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -8846,32 +8846,32 @@
 
 
 
-*----------------------------------------------------------------------*
-      subroutine itf_deinit(item)
-*----------------------------------------------------------------------*
-!     Deinitialise ITF contraction object
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &     item     ! Object which holds information necessary to print out an ITF algo line
-
-      deallocate(item%t_spin(1)%spin)
-      deallocate(item%t_spin(2)%spin)
-      deallocate(item%t_spin(3)%spin)
-
-      if (item%inter(3)) then
-         deallocate(item%i_spin%spin)
-      end if
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine itf_deinit(item)
+!*----------------------------------------------------------------------*
+!!     Deinitialise ITF contraction object
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &     item     ! Object which holds information necessary to print out an ITF algo line
+!
+!      deallocate(item%t_spin(1)%spin)
+!      deallocate(item%t_spin(2)%spin)
+!      deallocate(item%t_spin(3)%spin)
+!
+!      if (item%inter(3)) then
+!         deallocate(item%i_spin%spin)
+!      end if
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
@@ -8966,54 +8966,54 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine print_symmetrise(result, item)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine print_symmetrise(result, item)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=MAXLEN_BC_LABEL), intent(inout) ::
-     &     result
-      type(itf_contr), intent(in) ::
-     &     item
-
-      character(len=70) ::
-     &     line
-      character(len=INDEX_LEN) ::
-     &     tindex
-      character(len=MAXLEN_BC_LABEL) ::
-     &     new
-
-      new = rename_tensor(result, item%rank3)
-
-      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
-     &       trim(item%label_res)//'['//trim(item%idx3)//']'
-      write(item%logfile,'(a)') trim(line)
-
-      if (item%product) then
-         ! We don't need to symmetrise from a tensor product
-         return
-      end if
-
-      tindex = ' '
-      tindex(1:1) = item%idx3(2:2)
-      tindex(2:2) = item%idx3(1:1)
-      tindex(3:3) = item%idx3(4:4)
-      tindex(4:4) = item%idx3(3:3)
-
-      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
-     &       trim(item%label_res)//'['//trimal(tindex)//']'
-      write(item%logfile,'(a)') trim(line)
-
-
-      return
-      end
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+!     &     result
+!      type(itf_contr), intent(in) ::
+!     &     item
+!
+!      character(len=70) ::
+!     &     line
+!      character(len=INDEX_LEN) ::
+!     &     tindex
+!      character(len=MAXLEN_BC_LABEL) ::
+!     &     new
+!
+!      new = rename_tensor(result, item%rank3)
+!
+!      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+!     &       trim(item%label_res)//'['//trim(item%idx3)//']'
+!      write(item%logfile,'(a)') trim(line)
+!
+!      if (item%product) then
+!         ! We don't need to symmetrise from a tensor product
+!         return
+!      end if
+!
+!      tindex = ' '
+!      tindex(1:1) = item%idx3(2:2)
+!      tindex(2:2) = item%idx3(1:1)
+!      tindex(3:3) = item%idx3(4:4)
+!      tindex(4:4) = item%idx3(3:3)
+!
+!      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+!     &       trim(item%label_res)//'['//trimal(tindex)//']'
+!      write(item%logfile,'(a)') trim(line)
+!
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*

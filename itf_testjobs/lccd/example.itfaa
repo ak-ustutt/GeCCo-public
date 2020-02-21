@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 21-11-2019 14:52
+// Created on: 21-02-2020 09:31
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -113,9 +113,9 @@ drop T:eecc[abjk], f:cc[ki]
 .R:eecc[abji] += ITIN[baij]
 drop ITIN[abji]
 alloc ITIN[abji]
-load f:ee[ac], T:eecc[bcij]
-.ITIN[abji] += f:ee[ac] T:eecc[bcij]
-drop T:eecc[bcij], f:ee[ac]
+load f:ee[ac], T:eecc[cbji]
+.ITIN[abji] += f:ee[ac] T:eecc[cbji]
+drop T:eecc[cbji], f:ee[ac]
 .R:eecc[abji] += ITIN[abji]
 .R:eecc[abji] += ITIN[baij]
 drop ITIN[abji]
@@ -127,12 +127,12 @@ drop T:eecc[abkl], K:cccc[klij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
 alloc ITIN[abij]
-load K:eecc[caki], J:eecc[caik], T:eecc[bcjk]
-.ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[bcjk]
-drop T:eecc[bcjk], J:eecc[caik], K:eecc[caki]
-load K:eecc[caki], T:eecc[bcjk]
-.ITIN[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
-drop T:eecc[bcjk], K:eecc[caki]
+load K:eecc[caki], J:eecc[caik], T:eecc[cbkj]
+.ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[cbkj]
+drop T:eecc[cbkj], J:eecc[caik], K:eecc[caki]
+load K:eecc[acik], T:eecc[bcjk]
+.ITIN[abij] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
+drop T:eecc[bcjk], K:eecc[acik]
 load J:eecc[ackj], T:eecc[cbik]
 .ITIN[abij] -= J:eecc[ackj] T:eecc[cbik]
 drop T:eecc[cbik], J:eecc[ackj]
@@ -153,8 +153,13 @@ store R:eecc[abij]
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
 .ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
-.ECC[] += K:eecc[abij] T:eecc[abij]
 drop T:eecc[abij], K:eecc[abij]
+load K:eecc[abij], T:eecc[abij]
+.ECC[] += .5*K:eecc[abij] T:eecc[abij]
+drop T:eecc[abij], K:eecc[abij]
+load K:eecc[baij], T:eecc[baij]
+.ECC[] += .5*K:eecc[baij] T:eecc[baij]
+drop T:eecc[baij], K:eecc[baij]
 store ECC[]
 
 
