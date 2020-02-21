@@ -454,12 +454,12 @@
       type(itf_contr), intent(in) ::
      &     item
 
-      write(item%logfile,*) "ERROR: ", error
-      write(item%logfile,*) "================================="
-      write(item%logfile,*) "Result: ", item%label_res, trim(item%idx3)
-      write(item%logfile,*) "Tensor1: ", item%label_t1, trim(item%idx1)
-      write(item%logfile,*) "Tensor2: ", item%label_t2, trim(item%idx2)
-      write(item%logfile,*)
+      write(item%out,*) "ERROR: ", error
+      write(item%out,*) "================================="
+      write(item%out,*) "Result: ", item%label_res, trim(item%idx3)
+      write(item%out,*) "Tensor1: ", item%label_t1, trim(item%idx1)
+      write(item%out,*) "Tensor2: ", item%label_t2, trim(item%idx2)
+      write(item%out,*)
 
       return
       end
@@ -776,7 +776,7 @@
 
       end do
 
-      if (shift < 3) write(item%logfile,*) "ERROR"
+      if (shift < 3) write(item%out,*) "ERROR"
 
       do i = 1, item%rank1
          if (item%idx1(i:i)==ex_ind(1)) then
@@ -804,9 +804,9 @@
          end if
       end do
 
-      !write(item%logfile,*) "ex ind ", ex_ind
-      !write(item%logfile,*) "ex type ", ex_itype
-      !write(item%logfile,*) "perm ", perm
+      !write(item%out,*) "ex ind ", ex_ind
+      !write(item%out,*) "ex type ", ex_itype
+      !write(item%out,*) "perm ", perm
 
       ! Update orginal index
       item%idx1 = tmp1
@@ -1006,7 +1006,7 @@
             s2 = .false.
             if (item%rank2>2) then
 !      call print_spin(item%all_spins(j)%t_spin(2)%spin, item%rank2,
-!     &                "T2", item%logfile)
+!     &                "T2", item%out)
                !do i = 1, size(item%all_spins(j)%t_spin(2)%spin,2)
                do i = 1, item%rank2/2
                   if (item%all_spins(j)%t_spin(2)%spin(1,i)==1) then
@@ -1112,19 +1112,19 @@
      &                      new_j,
      &                      nt2,item%nops2)
 
-      !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%logfile)
-      !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%logfile)
-      !write(item%logfile,*) "s1: ", s1
-      !write(item%logfile,*) "s2: ", s2
+      !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%out)
+      !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%out)
+      !write(item%out,*) "s1: ", s1
+      !write(item%out,*) "s2: ", s2
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
       call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
      &                1,item%binary,item%int(1),item%nops1,new_j,
-     &                item%logfile)
+     &                item%out)
       call spatial_string(st2,new_idx2,nt2,s2,item%inter(2),item%rank2,
      &                2,item%binary,item%int(2),item%nops2,new_j,
-     &                item%logfile)
+     &                item%out)
 
 
       ! Add factor to scalar result cases (going to skip half the spin
@@ -1187,7 +1187,7 @@
      &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
 
       ! Print it to bcontr.tmp
-      write(item%logfile,'(a)') trim(itf_line)
+      write(item%out,'(a)') trim(itf_line)
 
       ! Increment number of printed spn cases
       item%spin_cases = item%spin_cases + 1
@@ -1936,11 +1936,11 @@
                if (i2==str%str(k)) then
                   if (pp/=k) then
                      ! Swap index so it is in paired position (pp)
-                     !write(item%logfile,*) "Old str ", str%str
+                     !write(item%out,*) "Old str ", str%str
                      tmp = str%str(pp)
                      str%str(pp) = str%str(k)
                      str%str(k) = tmp
-                     !write(item%logfile,*) "New str ", str%str
+                     !write(item%out,*) "New str ", str%str
 
 !                     ! Update factor
 !                     distance = abs(k-pp)
@@ -1954,10 +1954,10 @@
                      ! update cnt_poss
                      do l = 1, n_cnt
                         if (pp==str%cnt_poss(l)) then
-!                           write(item%logfile,*) "Old cnt_poss ",
+!                           write(item%out,*) "Old cnt_poss ",
 !     &                                          str1%cnt_poss
                            str%cnt_poss(l) = k
-!                           write(item%logfile,*) "New cnt_poss ",
+!                           write(item%out,*) "New cnt_poss ",
 !     &                                          str1%cnt_poss
                            exit
                         end if
@@ -2097,11 +2097,11 @@
 
 
       if (ntest>100) then
-         write(item%logfile,*) "STR1: {", str1%str, "}"
-         write(item%logfile,*) "STR2: {", str2%str, "}"
-         write(item%logfile,*) "STR3: {", str1%str, "}{", str2%str, "}"
-         write(item%logfile,*) "CNT POSS1: ", str1%cnt_poss
-         write(item%logfile,*) "CNT POSS2: ", str2%cnt_poss
+         write(item%out,*) "STR1: {", str1%str, "}"
+         write(item%out,*) "STR2: {", str2%str, "}"
+         write(item%out,*) "STR3: {", str1%str, "}{", str2%str, "}"
+         write(item%out,*) "CNT POSS1: ", str1%cnt_poss
+         write(item%out,*) "CNT POSS2: ", str2%cnt_poss
       end if
 
 
@@ -2117,7 +2117,7 @@
         call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
      &                       item,p_list,itype)
       end if
-      !call print_plist(p_list, item%rank3/2, "PAIRS", item%logfile)
+      !call print_plist(p_list, item%rank3/2, "PAIRS", item%out)
 
 
       ! If there is a pair in one string, permute so they are paired
@@ -2152,7 +2152,7 @@
      &                         item%rank1, p_factor, n_cnt)
          end if
       end do
-      !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%logfile)
+      !call print_plist(p_list,item%rank3/2,"NICER PAIRS",item%out)
 
 
       ! Work out the factor due to permuation of contraction indicies
@@ -2162,15 +2162,15 @@
      &        /=0)then
              p_factor = p_factor * -1.0d0
              if (ntest>100) then
-               write(item%logfile,*)"Update factor 1 (contraction of "
+               write(item%out,*)"Update factor 1 (contraction of "
      &                             //"contraction indicies): ", p_factor
              end if
           end if
          end do
 
       else if (item%den(1) .and. item%rank1/=0) then
-!         write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
-!         write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+!         write(item%out,*) "str poss1 ", str1%cnt_poss, str1%str
+!         write(item%out,*) "str poss2 ", str2%cnt_poss, str2%str
 
          do i = 1, n_cnt
             if (str1%cnt_poss(i)<=item%rank1/2) then
@@ -2179,7 +2179,7 @@
      &                 -item%rank1/2,2)/=0)then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
+                write(item%out,*)"Update factor 1 (contraction of "
      &                             //"contraction indicies): ", p_factor
                   end if
                end if
@@ -2193,7 +2193,7 @@
      &                 -item%rank1/2,2)/=0)then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
+                write(item%out,*)"Update factor 1 (contraction of "
      &                             //"contraction indicies): ", p_factor
                   end if
                end if
@@ -2202,8 +2202,8 @@
          end do
 
       else if (item%den(2) .and. item%rank2/=0) then
-         !write(item%logfile,*) "str poss1 ", str1%cnt_poss, str1%str
-         !write(item%logfile,*) "str poss2 ", str2%cnt_poss, str2%str
+         !write(item%out,*) "str poss1 ", str1%cnt_poss, str1%str
+         !write(item%out,*) "str poss2 ", str2%cnt_poss, str2%str
 
          do i = 1, n_cnt
             if (str2%cnt_poss(i)<=item%rank2/2) then
@@ -2212,7 +2212,7 @@
      &                 -item%rank2/2,2)/=0)then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
+                write(item%out,*)"Update factor 1 (contraction of "
      &                             //"contraction indicies): ", p_factor
                   end if
                end if
@@ -2223,7 +2223,7 @@
      &                 -item%rank2/2,2)/=0)then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                write(item%logfile,*)"Update factor 1 (contraction of "
+                write(item%out,*)"Update factor 1 (contraction of "
      &                             //"contraction indicies): ", p_factor
                   end if
                end if
@@ -2265,9 +2265,9 @@
          end if
       end do
 
-      !write(item%logfile,*) "T1 string: {", str1%str, "}", str1%cnt_poss
-      !write(item%logfile,*) "T2 string: {", str2%str, "}", str2%cnt_poss
-      !write(item%logfile,*) "Result string: {", str3%str, "}"
+      !write(item%out,*) "T1 string: {", str1%str, "}", str1%cnt_poss
+      !write(item%out,*) "T2 string: {", str2%str, "}", str2%cnt_poss
+      !write(item%out,*) "Result string: {", str3%str, "}"
 
       ! Rearrange the result string so it is in normal order (all
       ! creation operators to the left of the annhilation). This can
@@ -2292,14 +2292,14 @@
                   str3%str(k) = tstr(k:k)
                end do
 
-               !write(item%logfile,*) "New result string {",str3%str, "}"
+               !write(item%out,*) "New result string {",str3%str, "}"
 
                ! Update factor. If index is in even position, requires
                ! odd number of permuations; so get a negative
                if (mod(item%rank3-i,2)==0) then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                     write(item%logfile,*) "Update factor 2 (rearrange",
+                     write(item%out,*) "Update factor 2 (rearrange",
      &               " the result string to normal order): ", p_factor
                   end if
                end if
@@ -2329,14 +2329,14 @@
                   str3%str(k) = tstr(k:k)
                end do
 
-               !write(item%logfile,*) "New result string {",str3%str, "}"
+               !write(item%out,*) "New result string {",str3%str, "}"
 
                ! Update factor. If index is in odd position, requires
                ! odd number of permuations; so get a negative
                if (mod(i,2)/=0) then
                   p_factor = p_factor * -1.0d0
                   if (ntest>100) then
-                     write(item%logfile,*) "Update factor 3 (move
+                     write(item%out,*) "Update factor 3 (move
      &               annhilations to the right in the result string): ",
      &               p_factor
                   end if
@@ -2357,10 +2357,10 @@
 
             p_factor = p_factor * -1.0d0
             if (ntest>100) then
-               write(item%logfile,*) "Update factor (R:ea)", p_factor
+               write(item%out,*) "Update factor (R:ea)", p_factor
             end if
          else
-            !write(item%logfile,*) "kidder "
+            !write(item%out,*) "kidder "
          end if
          end if
       !end if
@@ -2371,17 +2371,17 @@
 
           ! Search for annhilation ops
           if (p_list%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
-!            write(item%logfile,*) "Found ", str3%str(item%rank3-i)
+!            write(item%out,*) "Found ", str3%str(item%rank3-i)
             do k = 1, item%rank3/2
 
                ! Search for creation ops
                if (p_list%plist(j)%pindex(1) ==
      &                                      str3%str(k)) then
                   ! Check if position is in the pair position
-!                  write(item%logfile,*) "Found ", str3%str(k), " in ", k
-!                  write(item%logfile,*) "Pair ", str3%str(item%rank3-i),
+!                  write(item%out,*) "Found ", str3%str(k), " in ", k
+!                  write(item%out,*) "Pair ", str3%str(item%rank3-i),
 !     &                                  " in ",item%rank3-i
-!                  write(item%logfile,*) "PP ",
+!                  write(item%out,*) "PP ",
 !     &                                  item%rank3-(item%rank3-i)+1
                   pp = item%rank3-(item%rank3-i)+1
 
@@ -2391,7 +2391,7 @@
                      if (mod(distance,2)/=0) then
                         p_factor = p_factor * -1.0d0
                         if (ntest>100) then
-                           write(item%logfile,*)"Update factor 4 ",
+                           write(item%out,*)"Update factor 4 ",
      &                      "(rearrange reuslt string to correct ",
      &                      "pairing): ", p_factor
                         end if
@@ -2428,9 +2428,9 @@
          ! it is used (it must match the itype string). Therefore the pair
          ! ordering needs to be checked. This doesn't introduce a sign
          ! change as pairs of indices are swapped.
-         !write(item%logfile,*) "Result string{", str3%str, "}"
-         !write(item%logfile,*) "Result itype{", str3%itype, "}"
-         !write(item%logfile,*) "Real itype{", item%itype, "}"
+         !write(item%out,*) "Result string{", str3%str, "}"
+         !write(item%out,*) "Result itype{", str3%itype, "}"
+         !write(item%out,*) "Real itype{", item%itype, "}"
          !call permute_slot_order(str3, item%rank3, item%itype)
          call permute_index(str3, item%rank3)
       else
@@ -2467,14 +2467,14 @@
             tmp = '-'
          end if
 
-         write(item%logfile,*)
-         write(item%logfile,*) "---------------------------"
-         write(item%logfile,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+         write(item%out,*)
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
      &                         "}{",str2%str,"}"
 
-         write(item%logfile,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
      &                         "][",trim(s2),"]"
-         write(item%logfile,*) "---------------------------"
+         write(item%out,*) "---------------------------"
       end if
 
       item%idx1=trim(s1)
@@ -2519,10 +2519,10 @@
 
       if (item%rank1<=2) return
       ! TODO: this is shit
-      !write(item%logfile,*) "item: ", item%itype
-      !write(item%logfile,*) "idx: ", idx%itype
-      !write(item%logfile,*) "cnt_poss: ", idx%cnt_poss
-      !write(item%logfile,*) "str: ", idx%str
+      !write(item%out,*) "item: ", item%itype
+      !write(item%out,*) "idx: ", idx%itype
+      !write(item%out,*) "cnt_poss: ", idx%cnt_poss
+      !write(item%out,*) "str: ", idx%str
 
       cnt_poss = idx%cnt_poss
 
@@ -2575,10 +2575,10 @@
 
       idx%cnt_poss = cnt_poss
 
-      !write(item%logfile,*) "item: ", item%itype
-      !write(item%logfile,*) "idx: ", idx%itype
-      !write(item%logfile,*) "cnt_poss: ", idx%cnt_poss
-      !write(item%logfile,*) "str: ", idx%str
+      !write(item%out,*) "item: ", item%itype
+      !write(item%out,*) "idx: ", idx%itype
+      !write(item%out,*) "cnt_poss: ", idx%cnt_poss
+      !write(item%out,*) "str: ", idx%str
 
       return
       end
@@ -2616,14 +2616,14 @@
          idx%itype(i) = get_itype(idx%str(i))
       end do
 
-      !write(item%logfile,*) "itype: ", item%itype
-      !write(item%logfile,*) "idx itype: ", idx%itype
-      !write(item%logfile,*) "idx: ", idx%str
+      !write(item%out,*) "itype: ", item%itype
+      !write(item%out,*) "idx itype: ", idx%itype
+      !write(item%out,*) "idx: ", idx%str
       do i = 1, 4
          if (item%itype(i)/=idx%itype(i)) then
 
-            !write(item%logfile,*) "changing ", idx%str
-            !write(item%logfile,*) "changing ", idx%itype
+            !write(item%out,*) "changing ", idx%str
+            !write(item%out,*) "changing ", idx%itype
 
             tmp1 = idx%str(2)
             tmp2 = idx%str(4)
@@ -2639,8 +2639,8 @@
             idx%itype(1) = itmp1
             idx%itype(3) = itmp2
 
-            !write(item%logfile,*) "to ", idx%str
-            !write(item%logfile,*) "to ", idx%itype
+            !write(item%out,*) "to ", idx%str
+            !write(item%out,*) "to ", idx%itype
 
          end if
       end do
@@ -2763,8 +2763,8 @@
             do j = rank1, rank1/2+1, -1
 
                if (ntest>0) then
-               write(item%logfile,*) "searching with ", str1%str(i), t1
-               write(item%logfile,*) "matching with ", str1%str(j), t1
+               write(item%out,*) "searching with ", str1%str(i), t1
+               write(item%out,*) "matching with ", str1%str(j), t1
                end if
 
                call suitable_pair3(found_ex, str1, str1, rank1, rank1,
@@ -2772,7 +2772,7 @@
      &                            p_list, item, itype, t1, t2)
 
                if (found_ex) then
-        !write(item%logfile,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
+        !write(item%out,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
                   p_list%plist(shift)%pindex(1)=str1%str(i)
                   p_list%plist(shift)%pindex(2)=str1%str(j)
                   p_list%plist(shift)%ops(1)=t1
@@ -2788,20 +2788,20 @@
                do j = rank2, rank2/2+1, -1
 
                   if (ntest>0) then
-              write(item%logfile,*) "searching 2 with ", str1%str(i), t1
-              write(item%logfile,*) "matching 2 with ", str2%str(j), t2
+              write(item%out,*) "searching 2 with ", str1%str(i), t1
+              write(item%out,*) "matching 2 with ", str2%str(j), t2
                   end if
                   call suitable_pair2(found_ex,str1, str2, rank1, rank2,
      &                            i, j, 2, shift, n_cnt,
      &                            p_list, item, itype, t1, t2)
 
                   if (found_ex) then
-        !write(item%logfile,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
+        !write(item%out,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
                      p_list%plist(shift)%pindex(1)=str1%str(i)
                      p_list%plist(shift)%pindex(2)=str2%str(j)
                      p_list%plist(shift)%ops(1)=t1
                      p_list%plist(shift)%ops(2)=t2
-         !call print_plist(p_list, shift, "p_list", item%logfile)
+         !call print_plist(p_list, shift, "p_list", item%out)
                      shift = shift + 1
                      exit
                   end if
@@ -2812,7 +2812,7 @@
          end if
 
          if (.not. is_cnt .and. .not. found_ex) then
-            write(item%logfile,*) "Failed to find creation/annhilation",
+            write(item%out,*) "Failed to find creation/annhilation",
      &                            " pair 1"
             exit
          end if
@@ -2852,8 +2852,8 @@
             do j = 1, rank1/2
 
                if (ntest>0) then
-               write(item%logfile,*) "searching 3 with ",str1%str(i), t1
-               write(item%logfile,*) "matching 3 with ", str1%str(j), t1
+               write(item%out,*) "searching 3 with ",str1%str(i), t1
+               write(item%out,*) "matching 3 with ", str1%str(j), t1
                end if
 
                call suitable_pair2(found_ex, str1, str1, rank1, rank1,
@@ -2878,8 +2878,8 @@
                do j = 1, rank2/2
 
                if (ntest>0) then
-              write(item%logfile,*) "searching 4 with ", str1%str(i), t1
-              write(item%logfile,*) "matching 4 with ", str2%str(j), t2
+              write(item%out,*) "searching 4 with ", str1%str(i), t1
+              write(item%out,*) "matching 4 with ", str2%str(j), t2
                end if
 
                   call suitable_pair2(found_ex,str1, str2, rank1, rank2,
@@ -2902,7 +2902,7 @@
          end if
 
          if (.not. is_cnt .and. .not. found_ex) then
-            write(item%logfile,*) "Failed to find creation/annhilation",
+            write(item%out,*) "Failed to find creation/annhilation",
      &                            " pair 2"
             exit
          end if
@@ -2956,7 +2956,7 @@
       do k = 1, n_cnt
          if (place2==str2%cnt_poss(k)) then
             found_ex = .false.
-            !write(item%logfile,*) "false here 1"
+            !write(item%out,*) "false here 1"
             return
          end if
       end do
@@ -2965,20 +2965,20 @@
       do k = 1, shift
          if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
             found_ex = .false.
-            !write(item%logfile,*) "false here 2"
+            !write(item%out,*) "false here 2"
             return
          end if
       end do
 
 !      ! False if the matching index is a correct pair
 !      if (item%inter(1) .and. t1==1 .and. t2==1) then
-!         write(item%logfile,*) "t1, t2: ", t1, t2
+!         write(item%out,*) "t1, t2: ", t1, t2
 !         correct_pair = .false.
 !         call check_pairing2(correct_pair,str1,str2,rank1,
 !     &                      rank2,place1,place2,item, itype)
 !         if (.not. correct_pair) then
 !            found_ex = .false.
-!            !write(item%logfile,*) "false here 3"
+!            !write(item%out,*) "false here 3"
 !            return
 !         end if
 !      end if
@@ -3032,7 +3032,7 @@
       do k = 1, n_cnt
          if (place2==str2%cnt_poss(k)) then
             found_ex = .false.
-            !write(item%logfile,*) "false here 1"
+            !write(item%out,*) "false here 1"
             return
          end if
       end do
@@ -3041,7 +3041,7 @@
       do k = 1, shift
          if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
             found_ex = .false.
-            !write(item%logfile,*) "false here 2"
+            !write(item%out,*) "false here 2"
             return
          end if
       end do
@@ -3054,7 +3054,7 @@
      &                      rank2,place1,place2,item, itype)
          if (.not. correct_pair) then
             found_ex = .false.
-            !write(item%logfile,*) "false here 3"
+            !write(item%out,*) "false here 3"
             return
          end if
       end if
@@ -3094,11 +3094,11 @@
 
       ! Remeber - the itype info refers to the first tensor positions
 
-      !write(item%logfile,*) "is it a correct pairing?"
-      !write(item%logfile,*) "place1 ", place1
-      !write(item%logfile,*) "place2 ", place2
+      !write(item%out,*) "is it a correct pairing?"
+      !write(item%out,*) "place1 ", place1
+      !write(item%out,*) "place2 ", place2
 
-      !write(item%logfile, *) "itype: ", itype
+      !write(item%out, *) "itype: ", itype
 
       if (place1>rank1/2) then
          j = item%rank3/2+1
@@ -3109,14 +3109,14 @@
       end if
 
       do i = j, extent
-!         write(item%logfile,*) "what ", str1%itype(place1), itype(i)
+!         write(item%out,*) "what ", str1%itype(place1), itype(i)
          if (str1%itype(place1)==itype(i)) then
             pp2 = item%rank3 - i + 1
-!          write(item%logfile,*) "pp2 ", pp2
-!          write(item%logfile,*) "what2 ", str2%itype(place2), itype(pp2)
+!          write(item%out,*) "pp2 ", pp2
+!          write(item%out,*) "what2 ", str2%itype(place2), itype(pp2)
             if (str2%itype(place2)==
      &                             itype(pp2)) then
-!               write(item%logfile,*)"correct pair ",str1%str(place1),
+!               write(item%out,*)"correct pair ",str1%str(place1),
 !     &                              " ", str2%str(place2)
                correct_pair = .true.
                ! Remove pair from itype copy
@@ -3691,11 +3691,11 @@
          ! Sum over the remaining contraction indicies and print out the
          ! line
 !      call print_spin(item%t_spin(3)%spin,item%rank3,item%label_res,
-!     &                item%logfile)
+!     &                item%out)
 !      call print_spin(item%t_spin(1)%spin,item%rank3,"T1",
-!     &                item%logfile)
+!     &                item%out)
 !      call print_spin(item%t_spin(2)%spin,item%rank3,"T2",
-!     &                item%logfile)
+!     &                item%out)
          call spin_index(item)
 
       else
@@ -3742,7 +3742,7 @@
       end do
 
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
-!     &                item%logfile)
+!     &                item%out)
       call spin_index(item)
 
                else
@@ -3786,7 +3786,7 @@
       end do
 
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result2",
-!     &                item%logfile)
+!     &                item%out)
       call spin_index(item)
                      end do
                   end do
@@ -3799,7 +3799,7 @@
       end if
 
 !      call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
-!     &                item%logfile)
+!     &                item%out)
 
       return
       end
@@ -3854,8 +3854,8 @@
          str2 = item%idx2
       end if
 
-      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%logfile)
-      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%logfile)
+      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%out)
+      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%out)
 
       ! Get position information of contraction indicies, ie. look for
       ! zeros
@@ -3912,17 +3912,17 @@
       end if
 
 !      if (item%contri>0) then
-!      write(item%logfile,*) "spin z1: ", size(item%t_spin(z1)%spin,2)
-!      write(item%logfile,*) "spin z2: ", size(item%t_spin(z2)%spin,2)
-!      write(item%logfile,*) "CONTRI: ", item%contri
-!      write(item%logfile,*) "SHIFT: ", shift
-!      write(item%logfile,*) "========================"
+!      write(item%out,*) "spin z1: ", size(item%t_spin(z1)%spin,2)
+!      write(item%out,*) "spin z2: ", size(item%t_spin(z2)%spin,2)
+!      write(item%out,*) "CONTRI: ", item%contri
+!      write(item%out,*) "SHIFT: ", shift
+!      write(item%out,*) "========================"
 !      do i = 1, 2
 !         do j = 1, item%contri
-!            write(item%logfile,*) "DEBUG1 poss: ", poss(i,j)%elements
+!            write(item%out,*) "DEBUG1 poss: ", poss(i,j)%elements
 !         end do
 !      end do
-!      write(item%logfile,*) "========================"
+!      write(item%out,*) "========================"
 !      end if
 
       end if
@@ -4158,11 +4158,11 @@
      &           modulo(sum2a+sum2b,2)==0) then
 
 !            call print_spin(item%t_spin(3)%spin, item%rank3, "Spin 3",
-!     &                      item%logfile)
+!     &                      item%out)
 !            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
-!     &                      item%logfile)
+!     &                      item%out)
 !            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
-!     &                      item%logfile)
+!     &                      item%out)
 
             item%all_spins(item%nspin_cases)%t_spin(1)%spin=
      &                                          item%t_spin(1)%spin
@@ -4260,7 +4260,7 @@
       integer :: i, j, ct(ngastp,2)
 
       ! Assign output file
-      item%logfile=lulog
+      item%out=lulog
 
       ! Assign command type
       item%command=comm
@@ -4316,9 +4316,6 @@
 
          ! Assign permutation number
          item%permute=perm
-         if (perm>1) then
-            item%permutation = .true.
-         end if
 
          item%inter(2) = check_inter(item%label_t2)
 
@@ -4402,10 +4399,6 @@
       end if
 
 
-      ! Set up arrays to store information about intermediates
-      item%inter1 = ''
-      item%inter2 = ''
-
       ! TODO: bit of a hack to avoid seg faults for rank == 0
       ! Instead have a check when assiging spins if == 0
       if (item%rank1>0) then
@@ -4431,14 +4424,9 @@
       item%t_spin(2)%spin = 0
       item%t_spin(3)%spin = 0
 
-      if (item%inter(3)) then
-         allocate(item%i_spin%spin(2, item%rank3/2))
-      end if
-
       ! Initalise the number of different spin cases
       ! Each line has a minimum of one spin case
       item%spin_cases = 1
-
 
 
       ! Check if a tensor product
@@ -4477,10 +4465,6 @@
       deallocate(item%t_spin(2)%spin)
       deallocate(item%t_spin(3)%spin)
 
-      if (item%inter(3)) then
-         deallocate(item%i_spin%spin)
-      end if
-
       return
       end
 
@@ -4504,46 +4488,46 @@
      &   i,j,k,
      &   l1,l2,l3
 
-      write(item%logfile,*)
-      write(item%logfile,*) "================================="
-      write(item%logfile,*) trim(item%label_res)//"["//
+      write(item%out,*)
+      write(item%out,*) "================================="
+      write(item%out,*) trim(item%label_res)//"["//
      & trim(item%idx3)//"]"//
      & " = "//trim(item%label_t1)//"["//
      & trim(item%idx1)//"]"//" "//
      & trim(item%label_t2)//"["//
      & trim(item%idx2)//"]"
-      write(item%logfile,*) "FACTOR: ", item%fact
-      write(item%logfile,*) "SPIN CASES: ", item%spin_cases-1
+      write(item%out,*) "FACTOR: ", item%fact
+      write(item%out,*) "SPIN CASES: ", item%spin_cases-1
 
       l1 = item%rank1/2
       l2 = item%rank2/2
       l3 = item%rank3/2
 
       do i = 1, item%spin_cases-1
-      write(item%logfile,*)
-      write(item%logfile,*) "---------------------------------"
+      write(item%out,*)
+      write(item%out,*) "---------------------------------"
       do k = 2, 1, -1
-      write(item%logfile,'(2a)',advance='no') "  "
+      write(item%out,'(2a)',advance='no') "  "
       do j = 1, l3
-      write(item%logfile,'(i1)',advance='no')
+      write(item%out,'(i1)',advance='no')
      &     item%all_spins(i)%t_spin(3)%spin(k,j)
       end do
-      write(item%logfile,'(2a)',advance='no') "  "
+      write(item%out,'(2a)',advance='no') "  "
       do j = 1, l1
-      write(item%logfile,'(i1)',advance='no')
+      write(item%out,'(i1)',advance='no')
      &     item%all_spins(i)%t_spin(1)%spin(k,j)
       end do
-      write(item%logfile,'(2a)',advance='no') "  "
+      write(item%out,'(2a)',advance='no') "  "
       do j = 1, l2
-      write(item%logfile,'(i1)',advance='no')
+      write(item%out,'(i1)',advance='no')
      &     item%all_spins(i)%t_spin(2)%spin(k,j)
       end do
-      write(item%logfile,*)
+      write(item%out,*)
       end do
       end do
 
-      write(item%logfile,*) "================================="
-      write(item%logfile,*)
+      write(item%out,*) "================================="
+      write(item%out,*)
 
       return
       end
@@ -4579,7 +4563,7 @@
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
-      write(item%logfile,'(a)') trim(line)
+      write(item%out,'(a)') trim(line)
 
       !if (item%product) then
       !   ! We don't need to symmetrise from a tensor product
@@ -4594,7 +4578,7 @@
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trimal(tindex)//']'
-      write(item%logfile,'(a)') trim(line)
+      write(item%out,'(a)') trim(line)
 
 
       return
