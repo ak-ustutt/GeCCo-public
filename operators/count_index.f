@@ -1174,11 +1174,14 @@
       type(itf_contr), intent(inout) ::
      &   item                           ! ITF contration info
 
-      ! Return if INTPP block
-      if (item%intpp) return
-
       ! Return if an intermediate or result rank less than 2
       if (item%inter(3) .or. item%rank3<=2) return
+
+      ! Return if not a symmetric result
+      if (.not. item%symmetric) return
+
+      ! Return if INTPP block
+      if (item%intpp) return
 
       if (ntest>=100) then
          call debug_header("prepare_symmetrise", item%out)
@@ -1399,6 +1402,9 @@
       end if
       if (.not. item%inter(2) .and. .not. item%int(2)) then
          call reorder_amp(item%rank2, new_idx2)
+      end if
+      if (.not. item%inter(3) .and. .not. item%int(3)) then
+         call reorder_amp(item%rank3, new_idx3)
       end if
 
       if (ntest>=100) then
@@ -4606,8 +4612,14 @@
       character(len=MAXLEN_BC_LABEL) ::
      &   new
 
-      if (item%inter(3)) return
-      if (item%rank3<=2) return
+      ! Return if an intermediate or result rank less than 2
+      if (item%inter(3) .or. item%rank3<=2) return
+
+      ! Return if not a symmetric result
+      if (.not. item%symmetric) return
+
+      ! Return if INTPP block
+      if (item%intpp) return
 
       if (ntest>=100) call debug_header("print_symmetrise", item%out)
 
