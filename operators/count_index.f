@@ -1103,11 +1103,12 @@
      &   ops(4,2)
 
       ! TODO: Don't bother for eeee or cccc integrals - a hack for now
-      ! to allow the summation of K:eeee terms
+      ! to allow the summation of K:eeee terms in simplfy.py
       ops = item%e1 + item%c
       if (ops(2,2)==2 .and. ops(2,1)==2 .or.
      &    ops(1,2)==2 .and. ops(1,1)==2) then
-         if (.not. item%inter(1) .and. .not. item%inter(3)) then
+         !if (.not. item%inter(1) .and. .not. item%inter(3)) then
+         if (.not. item%inter(1)) then
             return
          end if
       end if

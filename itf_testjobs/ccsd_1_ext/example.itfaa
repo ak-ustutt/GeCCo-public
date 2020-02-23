@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 21-02-2020 12:54
+// Created on: 23-02-2020 14:46
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -433,9 +433,9 @@ drop T:eecc[cbik]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij], STIN0001baba[abij], STIN0001baab[abij], STIN0001aaaa[abij]
 alloc STIN0001abab[aikj], ITIN[abij]
-load K:cccc[likj], T:ec[al]
-.STIN0001abab[aikj] -= K:cccc[likj] T:ec[al]
-drop T:ec[al], K:cccc[likj]
+load K:cccc[iljk], T:ec[al]
+.STIN0001abab[aikj] -= K:cccc[iljk] T:ec[al]
+drop T:ec[al], K:cccc[iljk]
 load T:ec[bk]
 .ITIN[abij] -= .5*STIN0001abab[akij] T:ec[bk]
 drop T:ec[bk]
