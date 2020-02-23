@@ -524,7 +524,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine set_itype(item, itype)
+      subroutine set_itype(item, itype, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -541,6 +541,8 @@
      &   item        ! ITF contraction object; holds all info about the ITF algo line
       integer, intent(inout) ::
      &   itype(INDEX_LEN)
+      integer, intent(in) ::
+     &   ntest
 
       ! If the current result is not an intermeidte, don't need an itype
       ! for the next line
@@ -557,6 +559,11 @@
          itype(2) = get_itype(item%idx3(2:2))
          itype(3) = get_itype(item%idx3(4:4))
          itype(4) = get_itype(item%idx3(3:3))
+      end if
+
+      if (ntest>=100) then
+         call debug_header("set_itype", item%out)
+         write(item%out,*) "itype from intermediate: ", itype
       end if
 
       return
@@ -683,19 +690,19 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item)
-      if (pline) call print_spin_cases(pitem)
+      call print_spin_cases(item, ntest7)
+      if (pline) call print_spin_cases(pitem, ntest7)
 
 
       ! 8. Print symmetrisation term
       if (.not. item%inter(3)) then
-         call print_symmetrise(item)
+         call print_symmetrise(item, ntest8)
       end if
 
 
       ! 9. If an intermediate, set inter_itype for use in next line
       ! where the intermediate is created
-      call set_itype(item, inter_itype)
+      call set_itype(item, inter_itype, ntest9)
 
 
       if (ntest10>=100) then
@@ -1197,7 +1204,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item)
+      subroutine print_spin_cases(item, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1209,7 +1216,9 @@
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item
+      integer, intent(in) ::
+     &   ntest
 
       integer ::
      &   i, j,
@@ -1218,6 +1227,7 @@
      &   contains1, contains2,
      &   s1, s2
 
+      if (ntest>=100) call debug_header("print_spin_cases", item%out)
 
       ! Cover case where only 1 spin case per line
       if (item%nspin_cases==1) then
@@ -1265,7 +1275,13 @@
                end if
             end if
 
-            call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin)
+            if (ntest>=100) then
+               write(item%out,*) "T1 is pure spin: ", s1
+               write(item%out,*) "T2 is pure spin: ", s2
+            end if
+
+            call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
+     &                          ntest)
 
       end do
 
@@ -1273,7 +1289,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin)
+      subroutine print_itf_line(item,s1,s2,t_spin,ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1287,32 +1303,33 @@
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item
       logical, intent(in) ::
-     &     s1,s2
+     &   s1,s2
       type(spin_info2), intent(in) ::
-     &      t_spin(3)
+     &   t_spin(3)
+      integer, intent(in) ::
+     &   ntest
 
       character(len=MAXLEN_BC_LABEL) ::
-     &     nres, nt1, nt2          ! Name of tensors involved in the contraction
+     &   nres, nt1, nt2          ! Name of tensors involved in the contraction
       character(len=INDEX_LEN) ::
-     &     slabel1, slabel2, slabel3,
-     &     new_idx1, new_idx2, new_idx3
+     &   slabel1, slabel2, slabel3,
+     &   new_idx1, new_idx2, new_idx3
       character(len=264) ::
-     &     itf_line,          ! Line of ITF code
-     &     st1, st2           ! Name of spin summed tensors + index
+     &   itf_line,          ! Line of ITF code
+     &   st1, st2           ! Name of spin summed tensors + index
       character(len=2) ::
-     &     equal_op           ! ITF contraction operator; ie. +=, -=, :=
+     &   equal_op           ! ITF contraction operator; ie. +=, -=, :=
       character(len=25) ::
-     &     sfact,             ! String representation of factor
-     &     sfact_star         ! String representation of factor formatted for output
+     &   sfact,             ! String representation of factor
+     &   sfact_star         ! String representation of factor formatted for output
       integer ::
-     &     i
+     &   i
       real(8) ::
      &   c_fact               ! Copy of orginal factor
       logical ::
      &   new_j
-
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
@@ -1320,16 +1337,34 @@
       c_fact = item%fact
       new_j = item%j_int
 
+      if (ntest>=100) then
+         call debug_header("print_itf_line", item%out)
+         write(item%out,*) "Idx1: ", new_idx1
+         write(item%out,*) "Idx2: ", new_idx2
+         write(item%out,*) "Idx3: ", new_idx3
+         write(item%out,*) "Factor: ", c_fact
+         write(item%out,*) "j_int: ", new_j
+      end if
+
       ! Reorder tensor index into abab blocks
       ! May get factor change here
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
      &                           c_fact)
 
+      if (ntest>=100) then
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "After convert_to_abab_block"
+         write(item%out,*) "Idx1: ", new_idx1
+         write(item%out,*) "Idx2: ", new_idx2
+         write(item%out,*) "Idx3: ", new_idx3
+         write(item%out,*) "Factor: ", c_fact
+         write(item%out,*) "---------------------------"
+      end if
+
       ! Change names of specific tensors
       nres=rename_tensor(item%label_res, item%rank3)
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
-
 
       ! Add intermediate spin strings to names
       if (item%inter(1)) then
@@ -1356,11 +1391,22 @@
      &                      new_j,
      &                      nt2,item%nops2)
 
+      if (ntest>=100) then
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "After reorder()"
+         write(item%out,*) "Idx1: ", new_idx1
+         write(item%out,*) "Idx2: ", new_idx2
+         write(item%out,*) "Idx3: ", new_idx3
+         write(item%out,*) "Factor: ", c_fact
+         write(item%out,*) "---------------------------"
+      end if
 
-      !call print_spin(t_spin(1)%spin, item%rank1, "T1", item%out)
-      !call print_spin(t_spin(2)%spin, item%rank2, "T2", item%out)
-      !write(item%out,*) "s1: ", s1
-      !write(item%out,*) "s2: ", s2
+      if (ntest>=200) then
+         call print_spin(t_spin(1)%spin, item%rank1, "T1", item%out)
+         call print_spin(t_spin(2)%spin, item%rank2, "T2", item%out)
+         write(item%out,*) "s1: ", s1
+         write(item%out,*) "s2: ", s2
+      end if
 
       ! Change tensor to spatial orbital quantity, unless it is an
       ! intermediate
@@ -3846,7 +3892,7 @@
      &                   item%out)
          end if
 
-         call spin_index(item)
+         call spin_index(item, ntest)
 
       else
 
@@ -3907,7 +3953,7 @@
                      call print_spin(item%t_spin(3)%spin,
      &                               item%rank3,"Res",item%out)
                   end if
-                  call spin_index(item)
+                  call spin_index(item, ntest)
 
                else
                   do k = 1, 2
@@ -3968,7 +4014,7 @@
      &                                     item%rank3,"Res",item%out)
                         end if
 
-                        call spin_index(item)
+                        call spin_index(item, ntest)
                      end do
                   end do
                end if
@@ -3989,7 +4035,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine spin_index(item)
+      subroutine spin_index(item, ntest)
 *----------------------------------------------------------------------*
 !     Find contraction index used in spin summation
 *----------------------------------------------------------------------*
@@ -4001,7 +4047,9 @@
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item
+      integer, intent(in) ::
+     &   ntest
 
       type(twodarray), pointer ::
      &   poss(:,:) => null()
@@ -4013,6 +4061,8 @@
      &   str1, str2
       logical ::
      &   eloop
+
+      if (ntest>=100) call debug_header("spin_index", item%out)
 
       if (item%contri>0)  then
          allocate(poss(2,item%contri))
@@ -4034,8 +4084,10 @@
          str2 = item%idx2
       end if
 
-      !call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%out)
-      !call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%out)
+      if (ntest>=100) then
+         call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%out)
+         call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%out)
+      end if
 
       ! Get position information of contraction indicies, ie. look for
       ! zeros
@@ -4091,19 +4143,21 @@
          call line_error("Didn't find contraction index", item)
       end if
 
-!      if (item%contri>0) then
-!      write(item%out,*) "spin z1: ", size(item%t_spin(z1)%spin,2)
-!      write(item%out,*) "spin z2: ", size(item%t_spin(z2)%spin,2)
-!      write(item%out,*) "CONTRI: ", item%contri
-!      write(item%out,*) "SHIFT: ", shift
-!      write(item%out,*) "========================"
-!      do i = 1, 2
-!         do j = 1, item%contri
-!            write(item%out,*) "DEBUG1 poss: ", poss(i,j)%elements
-!         end do
-!      end do
-!      write(item%out,*) "========================"
-!      end if
+      if (ntest>=100) then
+         if (item%contri>0) then
+            write(item%out,*) "spin z1: ", size(item%t_spin(z1)%spin,2)
+            write(item%out,*) "spin z2: ", size(item%t_spin(z2)%spin,2)
+            write(item%out,*) "CONTRI: ", item%contri
+            write(item%out,*) "SHIFT: ", shift
+            write(item%out,*) "========================"
+            do i = 1, 2
+               do j = 1, item%contri
+                  write(item%out,*) "poss: ", poss(i,j)%elements
+               end do
+            end do
+            write(item%out,*) "========================"
+         end if
+      end if
 
       end if
 
@@ -4120,7 +4174,7 @@
          item%t_spin(z1)%spin(i1, i2) = i
          item%t_spin(z2)%spin(i3, i4) = i
          if (shift <= 1) then
-            call print_spin_case(item,eloop)
+            call save_spin_case(item,eloop,ntest)
          end if
          if (shift > 1) then
             do j = 1, 2
@@ -4134,7 +4188,7 @@
                   ! For scalar results, only need half of the spin
                   ! cases, the rest are the same
                   if (item%rank3 == 0 .and. i == 2) exit
-                  call print_spin_case(item,eloop)
+                  call save_spin_case(item,eloop,ntest)
                end if
                if (shift > 2) then
                   do k = 1, 2
@@ -4145,7 +4199,7 @@
                      item%t_spin(z1)%spin(i1, i2) = k
                      item%t_spin(z2)%spin(i3, i4) = k
                      if (shift <= 3) then
-                        call print_spin_case(item,eloop)
+                        call save_spin_case(item,eloop,ntest)
                      end if
                      if (shift > 3) then
                         do l = 1, 2
@@ -4157,7 +4211,7 @@
                            item%t_spin(z2)%spin(i3, i4) = l
                            if (shift <= 4) then
                               if (item%rank3 == 0 .and. i == 2) exit
-                              call print_spin_case(item,eloop)
+                              call save_spin_case(item,eloop,ntest)
                            end if
                            if (shift > 4) then
                               do m = 1, 2
@@ -4168,7 +4222,8 @@
                                  item%t_spin(z1)%spin(i1, i2) = m
                                  item%t_spin(z2)%spin(i3, i4) = m
                                  if (shift <= 5) then
-                                    call print_spin_case(item,eloop)
+                                    call
+     &                                  save_spin_case(item,eloop,ntest)
                                  end if
                                  if (shift > 5) then
                                     do n = 1, 2
@@ -4180,7 +4235,8 @@
                                        item%t_spin(z2)%spin(i3, i4) = n
                                        if (shift <= 6) then
                                   if (item%rank3 == 0 .and. i == 2) exit
-                                       call print_spin_case(item,eloop)
+                                       call
+     &                                  save_spin_case(item,eloop,ntest)
                                        end if
                                     end do
                                  end if
@@ -4199,7 +4255,7 @@
          if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
          if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
 
-         call print_spin_case(item,eloop)
+         call save_spin_case(item,eloop,ntest)
       end if
 
 !      if (.not. eloop) then
@@ -4287,7 +4343,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_case(item,eloop)
+      subroutine save_spin_case(item,eloop,ntest)
 *----------------------------------------------------------------------*
 !     Print spin case
 *----------------------------------------------------------------------*
@@ -4302,11 +4358,15 @@
      &   item
       logical, intent(inout) ::
      &   eloop     ! Check if at least one spin case is printed out
+      integer, intent(in) ::
+     &   ntest
 
       integer ::
      &   i
       integer ::
      &   sum1a, sum1b, sum2a, sum2b
+
+      if (ntest>=100) call debug_header("save_spin_case", item%out)
 
       ! Sum the spins of the covarient and contravarient indicies
       sum1a = 0
@@ -4328,12 +4388,6 @@
          if (modulo(sum1a+sum1b,2)==0 .and.
      &           modulo(sum2a+sum2b,2)==0) then
 
-!            call print_spin(item%t_spin(3)%spin, item%rank3, "Spin 3",
-!     &                      item%out)
-!            call print_spin(item%t_spin(1)%spin, item%rank1, "Spin 1",
-!     &                      item%out)
-!            call print_spin(item%t_spin(2)%spin, item%rank2, "Spin 2",
-!     &                      item%out)
 
             item%all_spins(item%nspin_cases)%t_spin(1)%spin=
      &                                          item%t_spin(1)%spin
@@ -4344,8 +4398,19 @@
             item%nspin_cases = item%nspin_cases + 1
 
 
+            if (ntest>=100) then
+               write(item%out,*) "Saving spin case to item%t_spin:"
+               call print_spin(item%t_spin(3)%spin,item%rank3,"Spin 3",
+     &                         item%out)
+               call print_spin(item%t_spin(1)%spin,item%rank1,"Spin 1",
+     &                         item%out)
+               call print_spin(item%t_spin(2)%spin,item%rank2,"Spin 2",
+     &                         item%out)
+               write(item%out,*) "Number of spin cases thus far: ",
+     &                           item%nspin_cases
 
-            ! TODO: need eloop??
+            end if
+
             eloop=.true.
          end if
       end if
@@ -4466,7 +4531,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_symmetrise(item)
+      subroutine print_symmetrise(item, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -4478,28 +4543,27 @@
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &     item
+     &   item
+      integer, intent(in) ::
+     &   ntest
 
       character(len=70) ::
-     &     line
+     &   line
       character(len=INDEX_LEN) ::
-     &     tindex
+     &   tindex
       character(len=MAXLEN_BC_LABEL) ::
-     &     new
+     &   new
 
       if (item%inter(3)) return
       if (item%rank3<=2) return
+
+      if (ntest>=100) call debug_header("print_symmetrise", item%out)
 
       new = rename_tensor(item%old_name, item%rank3)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
       write(item%out,'(a)') trim(line)
-
-      !if (item%product) then
-      !   ! We don't need to symmetrise from a tensor product
-      !   return
-      !end if
 
       tindex = ' '
       tindex(1:1) = item%idx3(2:2)
@@ -4510,7 +4574,6 @@
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trimal(tindex)//']'
       write(item%out,'(a)') trim(line)
-
 
       return
       end
