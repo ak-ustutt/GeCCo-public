@@ -1105,10 +1105,14 @@
       ! TODO: Don't bother for eeee or cccc integrals - a hack for now
       ! to allow the summation of K:eeee terms in simplfy.py
       ops = item%e1 + item%c
-      if (ops(2,2)==2 .and. ops(2,1)==2 .or.
-     &    ops(1,2)==2 .and. ops(1,1)==2) then
-         !if (.not. item%inter(1) .and. .not. item%inter(3)) then
+      if (ops(2,2)==2 .and. ops(2,1)==2) then
          if (.not. item%inter(1)) then
+            return
+         end if
+      end if
+
+      if (ops(1,2)==2 .and. ops(1,1)==2) then
+         if (.not. item%inter(1) .and. .not. item%inter(3)) then
             return
          end if
       end if
@@ -3633,7 +3637,6 @@
       ! creation/annihilation order is important, so these are skipped
       if (.not. integral .or. integral .and. rank == 2) then
          if (.not. inter) then
-            !call print_plist(list, rank/2, "hello1", 10)
             do i = 1, rank/2
 !               if (list%plist(i)%pindex(1) >
 !     &                                     list%plist(i)%pindex(2)) then
@@ -3644,7 +3647,6 @@
      &                                     list%plist(i)%nval(2)) then
                if (list%plist(i)%pindex(1) >
      &                                     list%plist(i)%pindex(2)) then
-                  !call print_plist(list, rank/2, "hello2", 10)
                   tmp = list%plist(i)%pindex(1)
                   list%plist(i)%pindex(1) = list%plist(i)%pindex(2)
                   list%plist(i)%pindex(2) = tmp
@@ -3758,7 +3760,6 @@
 
                if (list%plist(i+1)%nval(2) <
      &                                     list%plist(i)%nval(2)) then
-                  !call print_plist(list, rank/2, "hello", 10)
                   tmp_list%plist(1) = list%plist(i)
                   list%plist(i) = list%plist(i+1)
                   list%plist(i+1) = tmp_list%plist(1)
