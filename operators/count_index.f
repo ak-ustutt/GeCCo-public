@@ -601,15 +601,15 @@
       integer ::
      &   i,                  ! Loop index
      &   perm_case,          ! Info of permutation factors
-     &   ntest1 = 00,        ! Control debug
-     &   ntest2 = 00,        ! Control debug
-     &   ntest3 = 00,        ! Control debug
-     &   ntest4 = 00,        ! Control debug
-     &   ntest5 = 00,        ! Control debug
-     &   ntest6 = 00,        ! Control debug
-     &   ntest7 = 00,        ! Control debug
-     &   ntest8 = 00,        ! Control debug
-     &   ntest9 = 00,        ! Control debug
+     &   ntest1 =  00,       ! Control debug
+     &   ntest2 =  00,       ! Control debug
+     &   ntest3 =  00,       ! Control debug
+     &   ntest4 =  00,       ! Control debug
+     &   ntest5 =  00,       ! Control debug
+     &   ntest6 =  00,       ! Control debug
+     &   ntest7 =  00,       ! Control debug
+     &   ntest8 =  00,       ! Control debug
+     &   ntest9 =  00,       ! Control debug
      &   ntest10 = 00        ! Control debug
       logical ::
      &   intpp,              ! Use INTPP kext intermeidate
@@ -1390,6 +1390,13 @@
       call reorder_integral(item%int(2),item%rank2,new_idx2,
      &                      new_j,
      &                      nt2,item%nops2)
+
+      if (.not. item%inter(1) .and. .not. item%int(1)) then
+         call reorder_amp(item%rank1, new_idx1)
+      end if
+      if (.not. item%inter(2) .and. .not. item%int(2)) then
+         call reorder_amp(item%rank2, new_idx2)
+      end if
 
       if (ntest>=100) then
          write(item%out,*) "---------------------------"
