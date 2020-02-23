@@ -601,12 +601,12 @@
       integer ::
      &   i,                  ! Loop index
      &   perm_case,          ! Info of permutation factors
-     &   ntest1 =  00,       ! Control debug
-     &   ntest2 =  00,       ! Control debug
-     &   ntest3 =  00,       ! Control debug
-     &   ntest4 =  00,       ! Control debug
-     &   ntest5 =  00,       ! Control debug
-     &   ntest6 =  00,       ! Control debug
+     &   ntest1 =  00,       ! Control debug: init_itf_contr
+     &   ntest2 =  00,       ! Control debug: assign_index
+     &   ntest3 =  00,       ! Control debug: determine permuation
+     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
+     &   ntest5 =  00,       ! Control debug: prepare permutation
+     &   ntest6 =  00,       ! Control debug: assign_spin
      &   ntest7 =  00,       ! Control debug
      &   ntest8 =  00,       ! Control debug
      &   ntest9 =  00,       ! Control debug
@@ -646,8 +646,6 @@
       perm_case = 0
       do i = 1, ngastp
          if(contr_info%perm(i)) perm_case = perm_case + 1
-
-
       end do
 
       if (ntest3>=100) then
@@ -1428,9 +1426,9 @@
       ! Add factor to scalar result cases (going to skip half the spin
       ! cases as these are the same, so add a factor of two to the
       ! remaining ones)
-      !c_fact = item%fact
       if (item%rank3 == 0 .and. item%rank1/=0) then
          c_fact = c_fact * 2.0d0
+         if (ntest>=100) write(item%out,*) "Changing factor: ", c_fact
       end if
 
       ! Convert factor to string, ignore if 1.0 or -1.0
@@ -4028,6 +4026,8 @@
             end do
          end do
 
+      else if (item%rank3==0) then
+         call spin_index(item, ntest)
       end if
 
       end if
@@ -4071,9 +4071,6 @@
 
       if (ntest>=100) call debug_header("spin_index", item%out)
 
-      if (item%contri>0)  then
-         allocate(poss(2,item%contri))
-
       ! Largest tensor goes first
       if (item%rank2 > item%rank1) then
          z1 = 2
@@ -4090,6 +4087,10 @@
          str1 = item%idx1
          str2 = item%idx2
       end if
+
+      if (item%contri>0)  then
+         allocate(poss(2,item%contri))
+
 
       if (ntest>=100) then
          call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%out)
@@ -4259,8 +4260,50 @@
 
       else
          ! No contraction indicies - tensors have same spin as result
-         if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
-         if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
+         if (ntest>=100) then
+            write(item%out,*) "No contraction indices: ", item%contri
+         end if
+
+         !if (r1>0) item%t_spin(z1)%spin = item%t_spin(3)%spin
+         !if (r2>0) item%t_spin(z2)%spin = item%t_spin(3)%spin
+
+         ! TODO: factorise this, maybe combine with stuff above?
+         if (item%rank1>0) then
+            do i = 1, item%rank3/2
+               do j = 1, item%rank1/2
+                  if (item%idx3(i:i)==item%idx1(j:j)) then
+                     item%t_spin(1)%spin(1,j) = item%t_spin(3)%spin(1,i)
+                  end if
+               end do
+            end do
+            do i = item%rank3/2+1, item%rank3
+               do j = item%rank1/2+1, item%rank1
+                  if (item%idx3(i:i)==item%idx1(j:j)) then
+                     item%t_spin(1)%spin(2,j-item%rank1/2) =
+     &                             item%t_spin(3)%spin(2,i-item%rank3/2)
+                  end if
+               end do
+            end do
+         end if
+
+         if (item%rank2>0) then
+            do i = 1, item%rank3/2
+               do j = 1, item%rank2/2
+                  if (item%idx3(i:i)==item%idx2(j:j)) then
+                     item%t_spin(2)%spin(1,j) = item%t_spin(3)%spin(1,i)
+                  end if
+               end do
+            end do
+            do i = item%rank3/2+1, item%rank3
+               do j = item%rank2/2+1, item%rank2
+                  if (item%idx3(i:i)==item%idx2(j:j)) then
+                     item%t_spin(2)%spin(2,j-item%rank2/2) =
+     &                             item%t_spin(3)%spin(2,i-item%rank3/2)
+                  end if
+               end do
+            end do
+         end if
+
 
          call save_spin_case(item,eloop,ntest)
       end if
@@ -4414,7 +4457,7 @@
                call print_spin(item%t_spin(2)%spin,item%rank2,"Spin 2",
      &                         item%out)
                write(item%out,*) "Number of spin cases thus far: ",
-     &                           item%nspin_cases
+     &                           item%nspin_cases - 1
 
             end if
 
