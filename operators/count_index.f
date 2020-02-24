@@ -391,11 +391,13 @@
       integer ::
      &   i
 
+      write(logfile,*)
       write(logfile,*) "SPIN OF ", trim(label)
-      write(logfile,*) "================================="
+      write(logfile,*) "---------------------------------"
       write(logfile,*) (spins(2,i), i=1, rank/2)
       write(logfile,*) (spins(1,i), i=1, rank/2)
-      write(logfile,*) "================================="
+      write(logfile,*) "---------------------------------"
+      write(logfile,*)
 
       return
       end
@@ -423,8 +425,9 @@
       integer ::
      &   i, j
 
+      write(logfile,*)
       write(logfile,*) "P_list: ", label
-      write(logfile,*) "=============================="
+      write(logfile,*) "------------------------------"
       do i = 1, size
       write(logfile,*) p_list%plist(i)%pindex(1), p_list%plist(i)%ops(1)
       write(logfile,*) p_list%plist(i)%pindex(2), p_list%plist(i)%ops(2)
@@ -432,7 +435,7 @@
       write(logfile,'(3i3)') (p_list%plist(i)%nval(j), j=1, 3)
       write(logfile,*) "---------------------------"
       end do
-      write(logfile,*) "=============================="
+      write(logfile,*)
 
       return
       end
@@ -478,6 +481,7 @@
       integer, intent(in) ::
      &   logfile
 
+      write(logfile,*)
       write(logfile,*) "================================="
       write(logfile,*) "Debug from:"
       write(logfile,*)
@@ -607,9 +611,9 @@
      &   ntest4 =  00,       ! Control debug: prepare_symmetrise
      &   ntest5 =  00,       ! Control debug: prepare permutation
      &   ntest6 =  00,       ! Control debug: assign_spin
-     &   ntest7 =  00,       ! Control debug
-     &   ntest8 =  00,       ! Control debug
-     &   ntest9 =  00,       ! Control debug
+     &   ntest7 =  00,       ! Control debug: print_spin_cases
+     &   ntest8 =  00,       ! Control debug: print_symmetrise
+     &   ntest9 =  00,       ! Control debug: set_itype
      &   ntest10 = 00        ! Control debug
       logical ::
      &   intpp,              ! Use INTPP kext intermeidate
@@ -3918,49 +3922,13 @@
                   ! Assign spin of external indicies to T1 and T2
                   item%t_spin(1)%spin = 0
                   item%t_spin(2)%spin = 0
-                  do j=1, hr3
-                     do i=1, hr1
-                        ! Assign spin of first tensor
-                        if (item%idx3(j:j)==item%idx1(i:i)) then
-                           item%t_spin(1)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                        else if (item%idx3(j:j)==
-     &                                      item%idx1(i+hr1:i+hr1)) then
-                           item%t_spin(1)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                        end if
 
-                        if (item%idx3(j+hr3:j+hr3)==item%idx1(i:i)) then
-                           item%t_spin(1)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                        else if (item%idx3(j+hr3:j+hr3)==
-     &                                       item%idx1(i+hr1:i+hr1))then
-                           item%t_spin(1)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                        end if
-                     end do
-
-                     do i=1, hr2
-                        ! Assign spin of second tensor
-                        if (item%idx3(j:j)==item%idx2(i:i)) then
-                           item%t_spin(2)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                        else if (item%idx3(j:j)==
-     &                                      item%idx2(i+hr2:i+hr2)) then
-                           item%t_spin(2)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                        end if
-
-                        if (item%idx3(j+hr3:j+hr3)==item%idx2(i:i)) then
-                           item%t_spin(2)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                        else if (item%idx3(j+hr3:j+hr3)==
-     &                                       item%idx2(i+hr2:i+hr2))then
-                           item%t_spin(2)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                        end if
-                     end do
-                  end do
+                  call assign_tensor_spin(item%idx3, item%idx1,
+     &                 hr3, hr1, item%t_spin(3),
+     &                 item%t_spin(1))
+                  call assign_tensor_spin(item%idx3, item%idx2,
+     &                 hr3, hr2, item%t_spin(3),
+     &                 item%t_spin(2))
 
                   if (ntest>=100) then
                      call print_spin(item%t_spin(3)%spin,
@@ -3976,51 +3944,13 @@
                         ! Assign spin of external indicies to T1 and T2
                         item%t_spin(1)%spin = 0
                         item%t_spin(2)%spin = 0
-                        do j=1, hr3
-                           do i=1, hr1
-                              ! Assign spin of first tensor
-                              if (item%idx3(j:j)==item%idx1(i:i)) then
-                                 item%t_spin(1)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                              else if (item%idx3(j:j)==
-     &                                      item%idx1(i+hr1:i+hr1)) then
-                                 item%t_spin(1)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                              end if
 
-                              if (item%idx3(j+hr3:j+hr3)==
-     &                                              item%idx1(i:i)) then
-                                 item%t_spin(1)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                              else if (item%idx3(j+hr3:j+hr3)==
-     &                                       item%idx1(i+hr1:i+hr1))then
-                                 item%t_spin(1)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                              end if
-                           end do
-
-                           do i=1, hr2
-                              ! Assign spin of second tensor
-                              if (item%idx3(j:j)==item%idx2(i:i)) then
-                                 item%t_spin(2)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                              else if (item%idx3(j:j)==
-     &                                      item%idx2(i+hr2:i+hr2)) then
-                                 item%t_spin(2)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(1,j)
-                              end if
-
-                              if (item%idx3(j+hr3:j+hr3)==
-     &                                              item%idx2(i:i)) then
-                                 item%t_spin(2)%spin(1,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                              else if (item%idx3(j+hr3:j+hr3)==
-     &                                       item%idx2(i+hr2:i+hr2))then
-                                 item%t_spin(2)%spin(2,i) =
-     &                                          item%t_spin(3)%spin(2,j)
-                              end if
-                           end do
-                        end do
+                        call assign_tensor_spin(item%idx3, item%idx1,
+     &                       hr3, hr1, item%t_spin(3),
+     &                       item%t_spin(1))
+                        call assign_tensor_spin(item%idx3, item%idx2,
+     &                       hr3, hr2, item%t_spin(3),
+     &                       item%t_spin(2))
 
                         if (ntest>=100) then
                            call print_spin(item%t_spin(3)%spin,
@@ -4044,6 +3974,57 @@
          call print_spin(item%t_spin(3)%spin,item%rank3,"Result",
      &                   item%out)
       end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine assign_tensor_spin(r_idx, t_idx, r_hrank, t_hrank,
+     &                              rs, ts)
+*----------------------------------------------------------------------*
+!     Assign spin from a result tensor to a tensor tensor in the correct
+!     possition
+*----------------------------------------------------------------------*
+
+      implicit none
+
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(in) ::
+     &   r_idx,                         ! Result index
+     &   t_idx                          ! Tensor index
+      integer, intent(in) ::
+     &   r_hrank,                       ! Result half rank
+     &   t_hrank                        ! Tensor half rank
+      type(spin_info), intent(in) ::
+     &   rs                             ! Result spin
+      type(spin_info), intent(inout) ::
+     &   ts                             ! Tensor spin
+
+      integer ::
+     &   i, j
+
+      do j=1, r_hrank
+         do i=1, t_hrank
+
+            if (r_idx(j:j) == t_idx(i:i)) then
+               ts%spin(1,i) = rs%spin(1,j)
+            else if (r_idx(j:j)== t_idx(i+t_hrank:i+t_hrank)) then
+               ts%spin(2,i) = rs%spin(1,j)
+            end if
+
+            if (r_idx(j+r_hrank:j+r_hrank) == t_idx(i:i)) then
+               ts%spin(1,i) = rs%spin(2,j)
+            else if (r_idx(j+r_hrank:j+r_hrank) ==
+     &                                   t_idx(i+t_hrank:i+t_hrank))then
+               ts%spin(2,i) = rs%spin(2,j)
+            end if
+
+         end do
+      end do
 
       return
       end
