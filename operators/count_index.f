@@ -3830,7 +3830,7 @@
      &   ntest
 
       integer ::
-     &   i,j,k,l,m,n,             ! Loop index
+     &   i,j,k,l,m,n,z,            ! Loop index
      &   hr1, hr2, hr3     ! Half tensor ranks
 
       ! Calculate half ranks for use in indexing letter index strings
@@ -3930,10 +3930,6 @@
      &                 hr3, hr2, item%t_spin(3),
      &                 item%t_spin(2))
 
-                  if (ntest>=100) then
-                     call print_spin(item%t_spin(3)%spin,
-     &                               item%rank3,"Res",item%out)
-                  end if
                   call spin_index(item, ntest)
 
                else
@@ -3941,28 +3937,46 @@
                      item%t_spin(3)%spin(1,2) = k
                      do l = 1, 2
                         item%t_spin(3)%spin(2,2) = l
-                        ! Assign spin of external indicies to T1 and T2
-                        item%t_spin(1)%spin = 0
-                        item%t_spin(2)%spin = 0
+                        if (item%rank3==4) then
+                           ! Assign spin of external indicies to T1 and T2
+                           item%t_spin(1)%spin = 0
+                           item%t_spin(2)%spin = 0
 
-                        call assign_tensor_spin(item%idx3, item%idx1,
-     &                       hr3, hr1, item%t_spin(3),
-     &                       item%t_spin(1))
-                        call assign_tensor_spin(item%idx3, item%idx2,
-     &                       hr3, hr2, item%t_spin(3),
-     &                       item%t_spin(2))
+                           call assign_tensor_spin(item%idx3, item%idx1,
+     &                          hr3, hr1, item%t_spin(3),
+     &                          item%t_spin(1))
+                           call assign_tensor_spin(item%idx3, item%idx2,
+     &                          hr3, hr2, item%t_spin(3),
+     &                          item%t_spin(2))
 
-                        if (ntest>=100) then
-                           call print_spin(item%t_spin(3)%spin,
-     &                                     item%rank3,"Res",item%out)
+                           call spin_index(item, ntest)
+                        else
+                           do i = 1, 2
+                              item%t_spin(3)%spin(1,3) = i
+                              do j = 1, 2
+                                 item%t_spin(3)%spin(2,3) = j
+                                 ! Assign spin of external indicies to T1 and T2
+                                 item%t_spin(1)%spin = 0
+                                 item%t_spin(2)%spin = 0
+
+                                 call assign_tensor_spin(item%idx3,
+     &                               item%idx1,hr3, hr1, item%t_spin(3),
+     &                               item%t_spin(1))
+                                 call assign_tensor_spin(item%idx3,
+     &                               item%idx2,hr3, hr2, item%t_spin(3),
+     &                                item%t_spin(2))
+
+                                 call spin_index(item, ntest)
+                              end do
+                           end do
+
                         end if
-
-                        call spin_index(item, ntest)
                      end do
                   end do
                end if
             end do
          end do
+
 
       else if (item%rank3==0) then
          call spin_index(item, ntest)

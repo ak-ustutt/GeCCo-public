@@ -126,7 +126,7 @@
       integer ::
      &      nspin_cases
       type(spin_cases2)
-     &     all_spins(15)
+     &     all_spins(20)
 
       end type itf_contr
 
