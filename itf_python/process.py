@@ -606,29 +606,35 @@ for line_o in f:
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
-        if '(' in words[2] and '(' in words[5]:
-            # Check if first tensor needs to be declared
-            add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-            # Check if second tensor needs to be declared
-            add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-        elif '(' in words[3]:
-            # Check if first tensor needs to be declared
-            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-        elif '(' in words[2] :
-            # Check if first tensor needs to be declared
-            add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
+        if len(words)==5:
+            # I += (K - J)
+            if '(' in words[2] and '(' in words[4]:
+                add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
         else:
-            # No brackets
-            # Check if first tensor needs to be declared
-            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-            # Check if second tensor needs to be declared
-            add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
+            if '(' in words[2] and '(' in words[5]:
+                # Check if first tensor needs to be declared
+                add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+                # Check if second tensor needs to be declared
+                add_to_global(words[5].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[7].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+            elif '(' in words[3]:
+                # Check if first tensor needs to be declared
+                add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[3].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[5].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+            elif '(' in words[2] :
+                # Check if first tensor needs to be declared
+                add_to_global(words[2].replace('(',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[4].replace(')',''),declare_ten,declare_ten_index,declare_ten_name)
+                add_to_global(words[5],declare_ten,declare_ten_index,declare_ten_name)
+            else:
+                # No brackets
+                # Check if first tensor needs to be declared
+                add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
+                # Check if second tensor needs to be declared
+                add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
     elif (len(words)==3):
         # Simple add or assign line
         if ("K:[]" not in words[2]):

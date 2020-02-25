@@ -548,6 +548,9 @@
       integer, intent(in) ::
      &   ntest
 
+      integer ::
+     &   i
+
       ! If the current result is not an intermeidte, don't need an itype
       ! for the next line
       if (.not. item%inter(3)) then
@@ -563,11 +566,23 @@
          itype(2) = get_itype(item%idx3(2:2))
          itype(3) = get_itype(item%idx3(4:4))
          itype(4) = get_itype(item%idx3(3:3))
+      else if (item%rank3==6) then
+         itype(1) = get_itype(item%idx3(1:1))
+         itype(2) = get_itype(item%idx3(2:2))
+         itype(3) = get_itype(item%idx3(3:3))
+         itype(4) = get_itype(item%idx3(6:6))
+         itype(5) = get_itype(item%idx3(5:5))
+         itype(6) = get_itype(item%idx3(4:4))
       end if
 
       if (ntest>=100) then
          call debug_header("set_itype", item%out)
-         write(item%out,*) "itype from intermediate: ", itype
+         write(item%out,*) "itype from intermediate: ", item%idx3
+         write(item%out,'(a6)',advance='no') "     {"
+         do i = 1, item%rank3
+            write(item%out,'(i0, 1x)', advance='no') itype(i)
+         end do
+         write(item%out,'(a1)') "}"
       end if
 
       return
@@ -2470,6 +2485,10 @@
          write(item%out,*) "Inital factor: ", p_factor
       end if
 
+!      if (item%inter(1)) call match_idx_with_itype(item, str1,
+!     &                               item%rank1, n_cnt)
+!      if (item%inter(2)) call match_idx_with_itype(item, str2,
+!     &                               item%rank2, n_cnt)
 
       ! Find external indicies and correctly pair them
       ! Make a copy of itype which will be modified when a pair is found
@@ -3242,6 +3261,82 @@
       do k = 1, n_cnt
          if (place2==str2%cnt_poss(k)) then
             found_ex = .false.
+            !write(item%out,*) "false here: contraction index"
+            return
+         end if
+      end do
+
+      ! Check if the annhilation operator has already been paried
+      do k = 1, shift
+         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+            found_ex = .false.
+            !write(item%out,*) "false here: already paired"
+            return
+         end if
+      end do
+
+      ! False if the matching index is a correct pair
+      if (item%inter(1) .and. item%rank1>2 .and. t1/=2 .or.
+     &   item%inter(2) .and. item%rank2>2 .and. t1/=1) then
+         correct_pair = .false.
+         call check_pairing(correct_pair,str1,str2,rank1,
+     &                      place1,place2,item, itype)
+         if (.not. correct_pair) then
+            found_ex = .false.
+            !write(item%out,*) "false here: incorrect itype"
+            return
+         end if
+      end if
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine suitable_pair4(found_ex, str1, str2, rank1,
+     &                         place1, place2, ann_cre, shift, n_cnt,
+     &                         p_list, item, itype, t1)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      logical, intent(inout) ::
+     &   found_ex
+      type(itf_contr), intent(in) ::
+     &   item
+      type(index_str), intent(in) ::
+     &   str1, str2
+      type(pair_list), intent(in) ::
+     &   p_list
+      integer, intent(in) ::
+     &   place1, place2,
+     &   rank1,
+     &   ann_cre,
+     &   shift,
+     &   n_cnt,
+     &   t1
+      integer, intent(inout) ::
+     &   itype(INDEX_LEN)
+
+      logical ::
+     &   correct_pair
+      integer ::
+     &   k
+
+
+      found_ex = .true.
+
+      ! False if the matching index is a contraction index
+      found_ex = .true.
+      do k = 1, n_cnt
+         if (place2==str2%cnt_poss(k)) then
+            found_ex = .false.
             !write(item%out,*) "false here 1"
             return
          end if
@@ -3257,8 +3352,7 @@
       end do
 
       ! False if the matching index is a correct pair
-      if (item%inter(1) .and. item%rank1>2 .and. t1/=2) then
-         ! TODO: t2 are useless
+      if (item%inter(2) .and. item%rank2>2 .and. t1/=1) then
          correct_pair = .false.
          call check_pairing(correct_pair,str1,str2,rank1,
      &                      place1,place2,item, itype)
@@ -3272,7 +3366,6 @@
 
       return
       end
-
 
 *----------------------------------------------------------------------*
       subroutine check_pairing(correct_pair, str1, str2, rank1,
@@ -3304,26 +3397,35 @@
 
       ! Remeber - the itype info refers to the first tensor positions
 
-      !write(item%out,*) "is it a correct pairing?"
-      !write(item%out,*) "place1 ", place1
-      !write(item%out,*) "place2 ", place2
-
-      !write(item%out, *) "itype: ", itype
+!      write(item%out,*) "is it a correct pairing?"
+!      write(item%out,*) "place1 str1 ", place1
+!      write(item%out,*) "place2 str2 ", place2
+!
+!      write(item%out, *) "itype: ", itype
+!      write(item%out, *) "str1%itype: ", str1%itype
+!      write(item%out, *) "str2%itype: ", str2%itype
 
       if (place1>rank1/2) then
-         j = item%rank3/2+1
-         extent = item%rank3
+         !j = item%rank3/2+1
+         j = rank1/2+1
+         !extent = item%rank3
+         extent = rank1
       else
          j = 1
-         extent = item%rank3/2
+         !extent = item%rank3/2
+         extent = rank1/2
       end if
 
       do i = j, extent
-!         write(item%out,*) "what ", str1%itype(place1), itype(i)
+!         write(item%out,*) "possition itype: ", i
+!         write(item%out,*) "str1%itype vs itpye ", str1%itype(place1),
+!     &                     itype(i)
          if (str1%itype(place1)==itype(i)) then
-            pp2 = item%rank3 - i + 1
-!          write(item%out,*) "pp2 ", pp2
-!          write(item%out,*) "what2 ", str2%itype(place2), itype(pp2)
+            !pp2 = item%rank3 - i + 1
+            pp2 = rank1 - i + 1
+!          write(item%out,*) "paired possition ", pp2
+!          write(item%out,*) "str2%itype vs itype ", str2%itype(place2),
+!     &                      itype(pp2)
             if (str2%itype(place2)==
      &                             itype(pp2)) then
 !               write(item%out,*)"correct pair ",str1%str(place1),
@@ -3332,7 +3434,6 @@
                ! Remove pair from itype copy
                itype(i) = 0
                itype(pp2) = 0
-               !write(10,*) "itype after: ", (itype(k),k=1,INDEX_LEN)
                exit
             end if
          end if
@@ -3341,6 +3442,154 @@
 
       return
       end
+
+
+!*----------------------------------------------------------------------*
+!      subroutine match_idx_with_itype(item, idx, rank, n_cnt)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(itf_contr), intent(inout) ::
+!     &   item           ! ITF binary contraction
+!      type(index_str), intent(inout) ::
+!     &   idx
+!      integer, intent(in) ::
+!     &   n_cnt,
+!     &   rank
+!
+!      integer ::
+!     &   itmp, i, j, k, cnt_poss(n_cnt)
+!      character (len=1) ::
+!     &   tmp_str(rank)
+!      integer ::
+!     &   tmp_itype(rank)
+!
+!
+!      if (rank<=2) return
+!
+!      write(item%out,*) "item: ", item%itype
+!      write(item%out,*) "idx: ", idx%itype
+!      write(item%out,*) "cnt_poss: ", idx%cnt_poss
+!      write(item%out,*) "str: ", idx%str
+!
+!      cnt_poss = idx%cnt_poss
+!      tmp_str = idx%str
+!      tmp_itype = idx%itype
+!
+!      ! Match creations to item%itype
+!      do i = 1, rank/2
+!         do j = 1, rank/2
+!            if (item%itype(i)==tmp_itype(j)) then
+!               idx%str(i:i) = tmp_str(j:j)
+!               idx%itype(i) = tmp_itype(j)
+!
+!               tmp_str(j:j) = ''
+!               tmp_itype(j) = 0
+!
+!               ! Update contraction
+!               do k = 1, n_cnt
+!                  if (cnt_poss(k) == j) then
+!                     idx%cnt_poss(k) = i
+!                     cnt_poss(k) = 0
+!                     exit
+!                  end if
+!               end do
+!               exit
+!
+!            end if
+!         end do
+!      end do
+!
+!      ! Match annhilations to item%itype
+!      do i = rank/2+1, rank
+!         do j = rank/2+1, rank
+!            if (item%itype(i)==tmp_itype(j)) then
+!               idx%str(i:i) = tmp_str(j:j)
+!               idx%itype(i) = tmp_itype(j)
+!
+!               tmp_str(j:j) = ''
+!               tmp_itype(j) = 0
+!
+!               ! Update contraction
+!               do k = 1, n_cnt
+!                  if (cnt_poss(k) == j) then
+!                     idx%cnt_poss(k) = i
+!                     cnt_poss(k) = 0
+!                     exit
+!                  end if
+!               end do
+!               exit
+!
+!            end if
+!         end do
+!      end do
+!
+!
+!
+!!      if (item%itype(1)/=idx%itype(1)) then
+!!         tmp = idx%str(2)
+!!         idx%str(2) = idx%str(1)
+!!         idx%str(1) = tmp
+!!         itmp = idx%itype(2)
+!!         idx%itype(2) = idx%itype(1)
+!!         idx%itype(1) = itmp
+!!
+!!         do i = 1, n_cnt
+!!            if (idx%cnt_poss(i)==1) then
+!!               cnt_poss(i)=2
+!!               exit
+!!            end if
+!!         end do
+!!         do i = 1, n_cnt
+!!            if (idx%cnt_poss(i)==2) then
+!!               cnt_poss(i)=1
+!!               exit
+!!            end if
+!!         end do
+!!
+!!      end if
+!!
+!!      if (item%rank1>2) then
+!!         if (item%itype(3)/=idx%itype(3)) then
+!!            tmp = idx%str(4)
+!!            idx%str(4) = idx%str(3)
+!!            idx%str(3) = tmp
+!!            itmp = idx%itype(4)
+!!            idx%itype(4) = idx%itype(3)
+!!            idx%itype(3) = itmp
+!!         end if
+!!
+!!         do i = 1, n_cnt
+!!            if (idx%cnt_poss(i)==3) then
+!!               cnt_poss(i)=4
+!!               exit
+!!            end if
+!!         end do
+!!         do i = 1, n_cnt
+!!            if (idx%cnt_poss(i)==4) then
+!!               cnt_poss(i)=3
+!!               exit
+!!            end if
+!!         end do
+!!      end if
+!!
+!!      idx%cnt_poss = cnt_poss
+!!
+!
+!      write(item%out,*) "item: ", item%itype
+!      write(item%out,*) "idx: ", idx%itype
+!      write(item%out,*) "cnt_poss: ", idx%cnt_poss
+!      write(item%out,*) "str: ", idx%str
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*
