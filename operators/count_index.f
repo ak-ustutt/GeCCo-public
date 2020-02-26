@@ -591,7 +591,7 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype)
+     &                           inter_itype, contr_no)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -612,7 +612,9 @@
       integer, intent(in) ::
      &   itflog,             ! Output file
      &   command,            ! Type of formula item command, ie. contraction, copy etc.
-     &   inter_itype         ! Store itypes of intermediates between lines
+     &   contr_no            ! Formula number
+      integer, intent(inout) ::
+     &   inter_itype(*)      ! Store itypes of intermediates between lines
 
       type(itf_contr) ::
      &   item,               ! ITF contraction object; holds all info about the ITF algo line
@@ -634,6 +636,9 @@
      &   intpp,              ! Use INTPP kext intermeidate
      &   pline               ! True if including a permuation line
 
+      if (ntest1>=100 .or. ntest2>=100) then
+         write(itflog,*) "FORMULA NUMBER: ", contr_no
+      end if
 
       ! Begin a special block which the python processor will pull out
       ! into its own code block
@@ -2612,7 +2617,7 @@
      &                 -item%rank2/2,2)/=0)then
                   p_factor = p_factor * -1.0d0
                   if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
+                     write(item%out,*)"Update factor 2 (contraction of "
      &                             //"contraction indicies): ", p_factor
                   end if
                end if

@@ -33,7 +33,7 @@
 
       ! Point to start of linked list of formulae
       fl_item => fl_head
-      contr_no = 0
+      contr_no = 1
       inter_itype = 0
 
       ! Loop over formula_items, end of the list points to NULL
@@ -44,8 +44,14 @@
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
+
             call command_to_itf(fl_item%bcontr,itin,itflog,
-     &                          fl_item%command, inter_itype)
+     &                          fl_item%command, inter_itype,
+     &                          contr_no)
+
+            ! Count the number of terms
+            contr_no = contr_no + 1
+
          else if (fl_item%command==command_add_contribution) then
             write(itflog,*) '[CONTR]',fl_item%target
          else if (fl_item%command==command_add_bc_reo) then
@@ -80,14 +86,12 @@
 
          ! Optionally print the formula items to another output file
          if (print_form) then
+          write(formlog,*) "FORMULA NUMBER: ", contr_no
           call print_form_item2(formlog,'LONG',contr_no,fl_item,op_info)
          end if
 
          ! Check if at the end of the list, if not, point to the next item
          fl_item => fl_item%next
-
-         ! Count the number of terms
-         contr_no = contr_no + 1
 
       end do
 
