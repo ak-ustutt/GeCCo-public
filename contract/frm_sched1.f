@@ -420,7 +420,7 @@ c          new = .false.!cur_contr%nvtx.ge.4
             call init_reo_info(reo_info)
           end if
 
-          call get_bc_info3(bc_sign,possible,
+          call get_bc_info3(bc_sign,idum,possible,
      &         idxop,iblkop,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         iocc_op1,iocc_op2,iocc_op1op2,
