@@ -28,7 +28,8 @@
      &     tra_res, tra_op, ldummy
       integer, pointer ::
      &     occ_res(:,:,:), occ_op(:,:,:),
-     &     rst_res(:,:,:,:,:,:), rst_op(:,:,:,:,:,:)
+     &     rst_res(:,:,:,:,:,:), rst_op(:,:,:,:,:,:),
+     &     svdummy(:)
       type(operator), pointer ::
      &     op_res, op_add
 
@@ -61,21 +62,26 @@ c      iblk_op   = contr%vertex(1)%iblk_op
       occ_op => op_add%ihpvca_occ(1:,1:,idxblk:idxblk-1+nj_op)
       rst_op => op_add%igasca_restr(1:,1:,1:,1:,1:,
      &                                   idxblk:idxblk-1+nj_op)
+      ! dummy map for itf
+      allocate(svdummy(nj_res))
+      svdummy(1:nj_res) = 1
 
       call store_bc(fl_item,
      &     contr%fac,contr%fac,
      &     label_res,label_op,'---',
      &     iblk_res,iblk_op,idummy,
      &     tra_res,tra_op,ldummy,
-     &     nj_res,nj_op,idummy,
+     &     nj_res,nj_op,0,
      &     occ_res,occ_op,idummy,
      &     rst_res,rst_op,idummy,
      &     idummy,idummy,idummy,
      &     idummy,idummy,idummy,0,
      &     idummy,idummy,
      &     idummy,idummy,
+     &     svdummy,
      &     orb_info)
-     &     
+     
+      deallocate(svdummy)
 
       return
       end

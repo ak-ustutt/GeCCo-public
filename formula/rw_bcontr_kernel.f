@@ -55,6 +55,7 @@
           allocate(bcontr%merge_op1op2(len_m12))
           allocate(bcontr%merge_op2op1(len_m21))
         end if
+        allocate(bcontr%svertex_itf(nj_op1+nj_op2))
 
         bcontr%n_operands = n_operands
         bcontr%n_cnt = nj_cnt
@@ -75,7 +76,7 @@
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
      &       bcontr%occ_op1,bcontr%rst_op1,
-     &       bcontr%perm
+     &       bcontr%perm,bcontr%svertex_itf(1:nj_op1+nj_op2)
 
         ! extra records
         if (n_operands.eq.2)
@@ -132,7 +133,7 @@
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
      &       bcontr%occ_op1,bcontr%rst_op1,
-     &       bcontr%perm
+     &       bcontr%perm,bcontr%svertex_itf(1:nj_op1+nj_op2)
 
         ! extra records
         if (n_operands.eq.2)

@@ -87,6 +87,7 @@
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
      &     merge_op2op1(2*contr%nvtx*contr%nvtx),
+     &     svertex_itf(contr%nvtx),
      &     iscale_new(ngastp)
 
       integer, pointer ::

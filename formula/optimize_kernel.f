@@ -72,7 +72,7 @@ c dbg
      &     intm_new, op
 
       integer, pointer ::
-     &     occ(:,:,:), rst(:,:,:,:,:,:)
+     &     occ(:,:,:), rst(:,:,:,:,:,:), svdummy(:)
       
       logical, external ::
      &     list_cmp
@@ -735,20 +735,26 @@ c dbg
 c dbg
               if (watch) print *,'item inserted'
 c dbg
+              ! dummy map for itf
+              allocate(svdummy(nj))
+              svdummy(1:nj) = 1
               fl_pnt_mark2 => fl_pnt_mark2%next
               call store_bc(fl_pnt_mark2,
      &                  fact,fact_itf,
      &                  label_new,label_op,'---',
      &                  1,iblk_op,idummy,
      &                  .false.,tra_op,ldummy,
-     &                  nj,nj,idummy,
+     &                  nj,nj,0,
      &                  occ,occ,idummy,
      &                  rst,rst,idummy,
      &                  idummy,idummy,idummy,
      &                  idummy,idummy,idummy,0,
      &                  idummy,idummy,
      &                  idummy,idummy,
+     &                  svdummy,
      &                  orb_info)
+
+              deallocate(svdummy)
 c dbg
               if (watch) print *,' ... and written'
 c dbg
