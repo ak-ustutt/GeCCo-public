@@ -118,28 +118,26 @@ depend('RSPNS_OP')
 
 DEF_SCALAR({LABEL:"Exc_En"})
 EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:True,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
-                   OPERATORS:["AR_rspns_q", "R_q^+", "AR_rspns_q"],
-                   IDX_SV   :[1, 2, 1],
-                   AVOID    :[1,3],
-                   LABEL_DESCR:["1,2,,V", "2,3,,P"]})
+                    OPERATORS:["AR_rspns_q", "R_q^+", "AR_rspns_q"],
+                    IDX_SV   :[1, 2, 1],
+                    AVOID    :[1,3]})
 
 EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:False,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
                    OPERATORS:["R_mu^+", "AR_rspns_mu"],
                    IDX_SV   :[1, 2],
-                   LABEL_DESCR:["1,2,,VV"]})
+                   CONNECT  :[1,2]})
 
 
 DEF_SCALAR({LABEL:"Exc_Sr"})
 EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:True,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
                    OPERATORS:["SR_rspns_q", "R_q^+", "SR_rspns_q"],
                    IDX_SV   :[1, 2, 1],
-                   AVOID    :[1,3],
-                   LABEL_DESCR:["1,2,,V", "2,3,,P"]})
+                   AVOID    :[1,3]})
 
 EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:False,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
                    OPERATORS:["R_mu^+", "SR_rspns_mu"],
                    IDX_SV   :[1, 2],
-                   LABEL_DESCR:["1,2,,VV"]})
+                   CONNECT  :[1,2]})
 
 
 #################################
@@ -791,7 +789,10 @@ for _icnt in range (0,_ncnt):
             debug_MEL('ME_Exc_En'+_extnsn)
             debug_MEL('ME_Exc_Sr'+_extnsn)
 
-            SCALE_COPY({LIST_RES:'ME_Exc_En'+_extnsn, LIST_INP:'ME_Exc_Sr'+_extnsn, FAC:1.0, MODE:'precond'})
+            SCALE({LIST_RES:'ME_Exc_En'+_extnsn,LIST_INP:'ME_Exc_En'+_extnsn,
+                   LIST_SCAL:'ME_Exc_Sr'+_extnsn,FAC:1.0,INV:True})
+
+            #SCALE_COPY({LIST_RES:'ME_Exc_En'+_extnsn, LIST_INP:'ME_Exc_Sr'+_extnsn, FAC:1.0, MODE:'precond'})
 
             PUSH_RESULT({LIST:'ME_Exc_En'+_extnsn,COMMENT:'MRCC_STATE_'+str(_isym+1)+'.'+str(i), FORMAT:"SCAL F20.14"})
 
