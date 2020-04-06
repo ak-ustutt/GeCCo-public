@@ -685,7 +685,8 @@
 
       ! 5. Prepare permuation line if required
       if (item%symmetric .and. perm_case==2 .or.
-     &    .not. item%symmetric .and. perm_case==1) then
+     &    .not. item%symmetric .and. perm_case==1 .and.
+     &    .not. item%nosym) then
 
          ! Don't need perm line for intermediates or tensor products
          if (.not. item%inter(3) .and. .not. item%product) then
@@ -859,11 +860,13 @@
       item%inter(3) = check_inter(item%label_res)
       item%int(3) = .false.
 
-      call check_symmetric(contr_info, item%command, item%symmetric)
+      call check_symmetric(contr_info, item%command, item%symmetric,
+     &                     item%nosym)
 
       ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
       if (.not. item%inter(3)) then
-         call check_symmetric(contr_info, item%command, item%symm_res)
+         call check_symmetric(contr_info, item%command, item%symm_res,
+     &                        item%nosym)
 
          ! Add factor to account for factor of two when the residual is
          ! symmetrised:
@@ -4893,11 +4896,12 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine check_symmetric(contr_info, command, symmetric)
+      subroutine check_symmetric(contr_info, command, symmetric, nosym)
 *----------------------------------------------------------------------*
 !     Check if a tensor has permutational symmetry
 *----------------------------------------------------------------------*
 
+      use itf_utils
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -4907,6 +4911,9 @@
      &   contr_info     ! Information about binary contraction
       integer, intent(in) ::
      &   command
+      logical, intent(inout) ::
+     &   symmetric,  ! Check if tensor has R[abij] = R[baji] symmetry
+     &   nosym       ! Check if tensor is R[apiq]
 
       integer ::
      &   c(ngastp,2),
@@ -4914,8 +4921,6 @@
      &   e2(ngastp,2),
      &   nops(ngastp),
      &   i
-      logical ::
-     &   symmetric
 
       call itf_ops(contr_info, c, e1, e2, command)
 
@@ -4924,6 +4929,7 @@
       if (sum(nops)==0) then
          ! Scalars don't have symmetry
          symmetric = .false.
+         nosym = .false.
          return
       end if
 
@@ -4934,8 +4940,16 @@
          end if
       end do
 
+      nosym = .false.
+      if (nops(1)==1 .and. nops(2)==1 .and. nops(3)==2) then
+         if (.not. check_inter(contr_info%label_res)) then
+            nosym = .true.
+         end if
+      end if
+
       return
       end
+
 
 *----------------------------------------------------------------------*
       subroutine check_j_integral(e, c, nops, j_int, second)

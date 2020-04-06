@@ -189,6 +189,12 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
                    CONNECT:[2,3],
                    LABEL_DESCR:["3,,PV,HH"]})
 
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                   OPERATORS:['C0^+','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   CONNECT:[2,3],
+                   LABEL_DESCR:["3,,PV,HV"]})
+
 
 
 # A1 ============================
@@ -463,11 +469,17 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
 
 
 # T:eaac
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','C0'],
+                   IDX_SV   :[1, 2, 3, 4],
+                   LABEL_DESCR:["2,,VH,PV"]})
+
 #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
 #                   OPERATORS:['C0^+','LAM2g','H','C0'],
 #                   IDX_SV   :[1, 2, 3, 4],
-#                   LABEL_DESCR:["2,,HV,PV"]})
+#                   LABEL_DESCR:["1,2,,V", "2,3,H,P", "2,4,,V"]})
 
+#C0^+(1) LAM2g(7) H(5) C0(1) [1,2,,V][2,3,H,P][2,4,,V]
 
 
 

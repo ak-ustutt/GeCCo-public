@@ -113,6 +113,7 @@
      &     perm_case(4),
      &     j_int = .false.,     ! True if integral is special
      &     symmetric = .false.,
+     &     nosym = .false.,     ! True if R[apiq] (residual has no symmetry between indicies)
      &     intpp = .false.
       real(8) ::
      &     fact                 ! Factor
