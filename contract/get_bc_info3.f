@@ -8,6 +8,7 @@
      &     gamt_op,gamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
+     &     svertex_itf,
      &     contr_in,occ_vtx_in,irestr_vtx_in,info_vtx,
      &     make_contr_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
@@ -71,7 +72,8 @@
      &     irestr_op2(2,orb_info%ngas,2,2,*),
      &     irestr_op1op2(2,orb_info%ngas,2,2,*),
      &     mst_op(2), mst_op1op2, gamt_op(2), gamt_op1op2,
-     &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
+     &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*),
+     &     svertex_itf(*)
 
       type(contraction), pointer ::
      &     contr, contr_pnt
@@ -209,6 +211,11 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
         gamt_op(2) = 1
       end if
 
+      ! some extra for ITF:
+      ! provide a map on svertex_itf(njoined_op(1)+njoined_op2(2)) 
+      ! from which the original arrangement 
+      ! of vertices can be reconstructed
+      idx=0
       ivtx1 = 0
       ivtx2 = 0
       do ivtx = 1, nvtx
@@ -218,6 +225,8 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         occ_vtx(1:ngastp,1:2,ivtx+njoined_res)
           irestr_op1(1:2,1:ngas,1:2,1:2,ivtx1) =
      &         irestr_vtx(1:2,1:ngas,1:2,1:2,ivtx+njoined_res)
+          idx=idx+1             ! itf
+          svertex_itf(idx)=1    ! itf
         end if
         if (contr%svertex(ivtx).eq.isvtx2.and..not.self) then
           ivtx2 = ivtx2+1
@@ -225,6 +234,8 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         occ_vtx(1:ngastp,1:2,ivtx+njoined_res)
           irestr_op2(1:2,1:ngas,1:2,1:2,ivtx2) =
      &         irestr_vtx(1:2,1:ngas,1:2,1:2,ivtx+njoined_res)
+          idx=idx+1             ! itf
+          svertex_itf(idx)=2    ! itf
         end if
       end do
       

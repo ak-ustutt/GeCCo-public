@@ -87,6 +87,7 @@
      &     merge_op2(2*contr%nvtx*contr%nvtx),
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
      &     merge_op2op1(2*contr%nvtx*contr%nvtx),
+     &     svertex_itf(contr%nvtx),
      &     iscale_new(ngastp)
 
       integer, pointer ::
@@ -129,7 +130,7 @@ c dbg
       ! restriction on result:
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
 
-      call get_bc_info3(bc_sign,possible,
+      call get_bc_info3(bc_sign,idum,possible,
      &     idxop,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,

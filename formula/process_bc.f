@@ -127,6 +127,7 @@
      &     merge_stp1inv_0(2*contr%nvtx*contr%nvtx),
      &     merge_stp2_0(2*contr%nvtx*contr%nvtx),
      &     merge_stp2inv_0(2*contr%nvtx*contr%nvtx),
+     &     svertex_itf(contr%nvtx),
      &     iscale_new(ngastp)
 
       integer, pointer ::
@@ -187,6 +188,7 @@
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
+     &     svertex_itf,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     .true.,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
@@ -529,6 +531,7 @@ c     &        'operator with zero length?')
      &       irst_ex1,irst_ex2,irst_cnt,njoined_cnt,
      &       merge_op1,merge_op2,
      &       merge_op1op2,merge_op2op1,
+     &       svertex_itf,
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1

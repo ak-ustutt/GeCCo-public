@@ -118,7 +118,8 @@ c
      &     rst_ex2(:,:,:,:,:,:),
      &     rst_cnt(:,:,:,:,:,:),
      &     merge_op1(:), merge_op2(:),
-     &     merge_op1op2(:), merge_op2op1(:)
+     &     merge_op1op2(:), merge_op2op1(:),
+     &     svertex_itf(:)
       end type binary_contr
 
       type reorder
