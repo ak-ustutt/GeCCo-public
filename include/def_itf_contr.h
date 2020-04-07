@@ -114,6 +114,7 @@
      &     j_int = .false.,     ! True if integral is special
      &     symmetric = .false.,
      &     nosym = .false.,     ! True if R[apiq] (residual has no symmetry between indicies)
+     &     abba_line = .false., ! True if this line is the R[apiq] abba spin case
      &     intpp = .false.
       real(8) ::
      &     fact                 ! Factor

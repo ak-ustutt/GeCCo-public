@@ -706,6 +706,20 @@
 
       end if
 
+      if (item%nosym) then
+         ! Need to get both ab/ab and ab/ba spin cases for R[apiq]
+         ! For now, this is stored in pline as it is not used in R[apiq]
+         pline = .true.
+
+         call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
+     &                        inter_itype,ntest5)
+         call assign_index(pitem,ntest5)
+
+         pitem%old_name = pitem%label_res
+         pitem%label_res = item%label_res
+         pitem%abba_line = .true.
+      end if
+
 
       ! 6. Spin sum
       call assign_spin(item, ntest6)
@@ -1103,7 +1117,7 @@
 
 *----------------------------------------------------------------------*
       subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
-     &                                 new_fact)
+     &                                 new_idx3, new_fact)
 *----------------------------------------------------------------------*
 !     Convert integrals and amplitudes to abab spn blocks, this may also
 !     intoduce a sign change
@@ -1120,7 +1134,7 @@
       type(spin_info2), intent(in) ::
      &      t_spin(3)
       character(len=INDEX_LEN), intent(inout) ::
-     &     new_idx1, new_idx2
+     &     new_idx1, new_idx2, new_idx3
       real(8), intent(inout) ::
      &     new_fact
 
@@ -1175,6 +1189,24 @@
             tmp = new_idx2(3:3)
             new_idx2(3:3) = new_idx2(4:4)
             new_idx2(4:4) = tmp
+            new_fact = new_fact * -1.0d+0
+         end if
+      end if
+
+      ! For the R[apiq] abba case, we need to rearange
+      if (item%rank3>2 .and. item%abba_line) then
+         if (t_spin(3)%spin(1,1)>
+     &       t_spin(3)%spin(1,2)) then
+            tmp = new_idx3(2:2)
+            new_idx3(2:2) = new_idx3(1:1)
+            new_idx3(1:1) = tmp
+            new_fact = new_fact * -1.0d+0
+         end if
+         if (t_spin(3)%spin(2,1)>
+     &       t_spin(3)%spin(2,2)) then
+            tmp = new_idx3(3:3)
+            new_idx3(3:3) = new_idx3(4:4)
+            new_idx3(4:4) = tmp
             new_fact = new_fact * -1.0d+0
          end if
       end if
@@ -1263,12 +1295,14 @@
       if (ntest>=100) call debug_header("print_spin_cases", item%out)
 
       ! Cover case where only 1 spin case per line
-      if (item%nspin_cases==1) then
-         actual_spin_cases = 2
-      else
-         actual_spin_cases = item%nspin_cases
-      end if
+      !if (item%nspin_cases==1) then
+      !   actual_spin_cases = 2
+      !   write(item%out,*) "hello"
+      !else
+      !   actual_spin_cases = item%nspin_cases
+      !end if
 
+      actual_spin_cases = item%nspin_cases
 
       do j = 1, actual_spin_cases -1
 
@@ -1382,7 +1416,7 @@
       ! Reorder tensor index into abab blocks
       ! May get factor change here
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
-     &                           c_fact)
+     &                           new_idx3, c_fact)
 
       if (ntest>=100) then
          write(item%out,*) "---------------------------"
@@ -4104,11 +4138,19 @@
                item%t_spin(3)%spin(1,1) = 1
                item%t_spin(3)%spin(2,1) = 1
             case(4)
-               ! abab
-               item%t_spin(3)%spin(1,1) = 1
-               item%t_spin(3)%spin(1,2) = 2
-               item%t_spin(3)%spin(2,1) = 1
-               item%t_spin(3)%spin(2,2) = 2
+               if (item%abba_line) then
+                  ! abba
+                  item%t_spin(3)%spin(1,1) = 1
+                  item%t_spin(3)%spin(1,2) = 2
+                  item%t_spin(3)%spin(2,1) = 2
+                  item%t_spin(3)%spin(2,2) = 1
+               else
+                  ! abab
+                  item%t_spin(3)%spin(1,1) = 1
+                  item%t_spin(3)%spin(1,2) = 2
+                  item%t_spin(3)%spin(2,1) = 1
+                  item%t_spin(3)%spin(2,2) = 2
+               end if
             case(6)
                do i=1, 2
                   ! aaaaaa
