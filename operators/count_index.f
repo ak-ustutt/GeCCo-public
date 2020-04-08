@@ -1996,6 +1996,11 @@
                     ! T:eacc
                     st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
+                  else if ((nops(1)==1.and.nops(2)==1.and.
+     &                      nops(3)==2)) then
+                    ! T:eaca or T:eaac
+                    st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
+     &              trimal(nt)//'['//f_index(idx,hrank,.true.)//']'//')'
                   else
                      st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &                  trimal(nt)//'['//f_index(idx,hrank)//']'//')'
