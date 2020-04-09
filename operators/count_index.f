@@ -764,8 +764,184 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine command_to_itf2(contr_info, itin, itflog, command,
+     &                           inter_itype, contr_no, nk4e)
+*----------------------------------------------------------------------*
+!     Take GeCco binary contraction and produce ITF algo code.
+!     Includes antisymmetry of residual equations and spin summation.
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h'
+      include 'def_contraction.h'
+      include 'def_formula_item.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(inout) ::
+     &   contr_info          ! Information about binary contraction
+      logical, intent(in) ::
+     &   itin                ! Print ITIN lines or not
+      integer, intent(in) ::
+     &   itflog,             ! Output file
+     &   command,            ! Type of formula item command, ie. contraction, copy etc.
+     &   contr_no            ! Formula number
+      integer, intent(inout) ::
+     &   nk4e                ! K4E counter
+      integer, intent(inout) ::
+     &   inter_itype(*)      ! Store itypes of intermediates between lines
+
+      type(itf_contr) ::
+     &   item,               ! ITF contraction object; holds all info about the ITF algo line
+     &   pitem               ! Permutation ITF contraction object
+      integer ::
+     &   i,                  ! Loop index
+     &   perm_case,          ! Info of permutation factors
+     &   ntest1 =  00,       ! Control debug: init_itf_contr
+     &   ntest2 =  00,       ! Control debug: assign_index
+     &   ntest3 =  00,       ! Control debug: determine permuation
+     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
+     &   ntest5 =  00,       ! Control debug: prepare permutation
+     &   ntest6 =  00,       ! Control debug: assign_spin
+     &   ntest7 =  00,       ! Control debug: print_spin_cases
+     &   ntest8 =  00,       ! Control debug: print_symmetrise
+     &   ntest9 =  00,       ! Control debug: set_itype
+     &   ntest10 = 00        ! Control debug
+      logical ::
+     &   intpp,              ! Use INTPP kext intermeidate
+     &   pline               ! True if including a permuation line
+
+      if (ntest1>=100 .or. ntest2>=100) then
+         write(itflog,*) "FORMULA NUMBER: ", contr_no
+      end if
+
+      ! Begin a special block which the python processor will pull out
+      ! into its own code block
+      intpp = .false.
+      if (contr_info%label_res=='INTpp') then
+         intpp = .true.
+         write(itflog,'(a)') "BEGIN_INTPP"
+      end if
+
+      ! Mark begining of spin summed block
+      write(itflog,'(a5)') 'BEGIN'
+
+
+      ! 1. Initalise itf_contr
+      call itf_contr_init(contr_info,item,1,itin,command,itflog,
+     &                    inter_itype,nk4e,ntest1)
+
+
+      ! 2. Assign index / Determine sign
+      call assign_index2(item,ntest2)
+
+
+      ! 3. Determine if we need a permutation line and create new item
+      !    for it
+      !    Permutation line required for:
+      !        a) Symmetric residuals with two pairs of external indicies
+      !        a) Non-symmetric residuals with one pair of external indicies
+      pline = .false.
+      perm_case = 0
+      do i = 1, ngastp
+         if(contr_info%perm(i)) perm_case = perm_case + 1
+      end do
+
+      if (ntest3>=100) then
+         call debug_header("Determine permutation", item%out)
+         write(item%out,*) "perm_case: ", perm_case
+      end if
+
+
+      ! 4. Decide whether to symmetrise after every term
+      item%old_name = item%label_res
+      call prepare_symmetrise(perm_case, item, ntest4)
+
+
+      ! 5. Prepare permuation line if required
+      if (item%symmetric .and. perm_case==2 .or.
+     &    .not. item%symmetric .and. perm_case==1 .and.
+     &    .not. item%nosym) then
+
+         ! Don't need perm line for intermediates or tensor products
+         if (.not. item%inter(3) .and. .not. item%product) then
+            pline = .true.
+
+            call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
+     &                           inter_itype,nk4e,ntest5)
+            call assign_index2(pitem,ntest5)
+
+            pitem%old_name = pitem%label_res
+            pitem%label_res = item%label_res
+
+            ! Permute indicies and update factor
+            ! -1 factor for permuation line
+            call create_permutation(pitem, contr_info%perm,ntest5)
+         end if
+
+      end if
+
+      if (item%nosym) then
+         ! Need to get both ab/ab and ab/ba spin cases for R[apiq]
+         ! For now, this is stored in pline as it is not used in R[apiq]
+         pline = .true.
+
+         call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
+     &                        inter_itype,ntest5)
+         call assign_index(pitem,ntest5)
+
+         pitem%old_name = pitem%label_res
+         pitem%label_res = item%label_res
+         pitem%abba_line = .true.
+      end if
+
+
+      ! 6. Spin sum
+      call assign_spin(item, ntest6)
+      if (pline) call assign_spin(pitem, ntest6)
+
+
+      ! 7. Loop over spin cases and print out each line
+      call print_spin_cases(item, ntest7)
+      if (pline) call print_spin_cases(pitem, ntest7)
+
+
+      ! 8. Print symmetrisation term
+      if (.not. item%inter(3)) then
+         call print_symmetrise(item, ntest8)
+      end if
+
+
+      ! 9. If an intermediate, set inter_itype for use in next line
+      ! where the intermediate is created
+      call set_itype(item, inter_itype, ntest9)
+
+
+      if (ntest10>=100) then
+         call print_itf_contr(item)
+         if (pline) call print_itf_contr(pitem)
+      end if
+
+
+      ! Mark end of spin block
+      write(itflog,'(a)') "END"
+
+      if (intpp) then
+         write(itflog,'(a)') "END_INTPP"
+      end if
+
+
+      ! Deallocate memroy used when construcitng item
+      call itf_deinit(item)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,ntest)
+     &                          itype,nk4e,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -788,6 +964,7 @@
      &   comm,        ! formula_item command
      &   lulog,        ! Output file
      &   itype(INDEX_LEN),
+     &   nk4e,
      &   ntest
       logical, intent(in) ::
      &   itin
@@ -975,6 +1152,12 @@
       ! Set itype from previous line (can be 0)
       item%itype = itype
 
+      ! Set K4E info
+      item%nk4e = nk4e
+      if (item%int(1) .or. item%int(2))then
+         call check_k4e(contr_info, item%command, item%k4e_line)
+      end if
+
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)
          call print_itf_contr(item)
@@ -1145,18 +1328,18 @@
 
       ! TODO: Don't bother for eeee or cccc integrals - a hack for now
       ! to allow the summation of K:eeee terms in simplfy.py
-      ops = item%e1 + item%c
-      if (ops(2,2)==2 .and. ops(2,1)==2) then
-         if (.not. item%inter(1)) then
-            return
-         end if
-      end if
+      !ops = item%e1 + item%c
+      !if (ops(2,2)==2 .and. ops(2,1)==2) then
+      !   if (.not. item%inter(1)) then
+      !      return
+      !   end if
+      !end if
 
-      if (ops(1,2)==2 .and. ops(1,1)==2) then
-         if (.not. item%inter(1) .and. .not. item%inter(3)) then
-            return
-         end if
-      end if
+      !if (ops(1,2)==2 .and. ops(1,1)==2) then
+      !   if (.not. item%inter(1) .and. .not. item%inter(3)) then
+      !      return
+      !   end if
+      !end if
 
       ! TODO: only work for rank 4
       if (item%rank1>2 .and. .not. item%inter(1)) then
@@ -1390,7 +1573,8 @@
      &   equal_op           ! ITF contraction operator; ie. +=, -=, :=
       character(len=25) ::
      &   sfact,             ! String representation of factor
-     &   sfact_star         ! String representation of factor formatted for output
+     &   sfact_star,        ! String representation of factor formatted for output
+     &   k4e_no             ! Counter of K4E tensors
       integer ::
      &   i
       real(8) ::
@@ -1549,11 +1733,27 @@
          equal_op='+='
       end if
 
+
       ! Construct complete itf algo line from the above parts
       itf_line='.'//trimal(nres)//
 !     &    '['//trim(item%idx3)//'] '//equal_op//' '//
      &    '['//trim(new_idx3)//'] '//equal_op//' '//
      &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
+
+
+      ! Handle K4E
+      ! Print orginal line as a comment, then line with K4E
+      if (item%k4e_line) then
+         !itf_line = "// "//trim(itf_line)
+         !write(item%out,'(a)') trim(itf_line)
+
+         write(k4e_no,*) item%nk4e
+
+         itf_line='.'//trimal(nres)//
+     &      '['//trim(new_idx3)//'] '//equal_op//' '//
+     &      trim(sfact_star)//'K4E'//trim(adjustl(k4e_no))//
+     &      '['//trim(new_idx3)//']'
+      end if
 
       ! Print it to bcontr.tmp
       write(item%out,'(a)') trim(itf_line)
@@ -2883,6 +3083,507 @@
          call permute_index(str3, item%rank3)
       else
          call permute_index(str3, item%rank3)
+      end if
+
+
+      s1 = ""
+      s2 = ""
+      s3 = ""
+
+      do i = 1, item%rank1/2
+         s1(i:i) = str1%str(i)
+         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+      end do
+      do i = 1, item%rank2/2
+         s2(i:i) = str2%str(i)
+         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+      end do
+      do i = 1, item%rank3/2
+         s3(i:i) = str3%str(i)
+         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+      end do
+
+      if (ntest>=100) then
+         if (p_factor>0.0d0) then
+            tmp = '+'
+         else
+            tmp = '-'
+         end if
+
+         write(item%out,*) "Final indices"
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+     &                         "}{",str2%str,"}"
+
+         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+     &                         "][",trim(s2),"]"
+         write(item%out,*) "---------------------------"
+      end if
+
+      item%idx1=trim(s1)
+      item%idx2=trim(s2)
+      item%idx3=trim(s3)
+      item%fact = item%fact * p_factor
+
+      deallocate(p_list%plist)
+
+      call deinit_index_str(str1)
+      call deinit_index_str(str2)
+      call deinit_index_str(str3)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine assign_index2(item,ntest)
+*----------------------------------------------------------------------*
+!     Assign an ITF index string to each tensor in a line
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &   item           ! ITF binary contraction
+      integer, intent(in) ::
+     &   ntest
+
+      integer ::
+     &   c(ngastp,2),        ! Operator numbers of contraction index
+     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
+     &   e1(ngastp,2),       ! Operator numbers of external index 1
+     &   e2(ngastp,2),       ! Operator numbers of external index 2
+     &   shift,         ! List shift
+     &   n_cnt,         ! Number of contraction operators
+     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+     &   distance,      ! Distance from where an index should be
+     &   pp,            ! Paired position - position of paired index
+     &   i, j, k,
+     &   itype(INDEX_LEN)
+      character(len=INDEX_LEN) ::
+     &   s1, s2, s3,  ! Tmp ITF index strings
+     &   tstr
+      character(len=1) ::
+     &   tmp       ! Scratch space to store index letter
+      real(8) ::
+     &   p_factor       ! Overall factor from contraction/rearrangment
+      type(pair_list) ::
+     &   p_list       ! Complete list of pairs in binary contraction
+      integer, dimension(4) ::
+     &   e_shift,       ! Index shift for external indices
+     &   c_shift        ! Index shift for contraction indices
+      type(index_str) ::
+     &   str1,          ! Stores 'normal ordered' index string for T1
+     &   str2,          ! Stores 'normal ordered' index string for T2
+     &   str3           ! Stores 'normal ordered' index string for Res
+
+      logical ::        ! These are used when finding pairs of external ops
+     &   is_cnt,        ! True if the operator is a contraction op
+     &   p1, p2
+
+      if (ntest>=100) call debug_header("assign_index", item%out)
+
+      ! Set operator numbers
+      c=item%c
+      e1=item%e1
+      e2=item%e2
+
+      ! Factor due to permuation of annhilation and creation indices
+      p_factor = 1.0d0
+
+      ! Set number of contraction indicies
+      n_cnt = item%contri
+
+      ! Allocate index_str objects
+      call init_index_str(str1, item%rank1, n_cnt)
+      call init_index_str(str2, item%rank2, n_cnt)
+      call init_index_str(str3, item%rank3, n_cnt)
+
+      allocate(p_list%plist(item%rank3/2))
+
+      ! Set letter shift values for contraction indices
+      do i = 1, 4
+         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
+      end do
+
+      ! Make 'tranpose' of c array, this corresponds to the operators on
+      ! the second tensor
+      do i = 1, 2
+         do j = 1, ngastp
+            if (i==1) then
+               k = 2
+            else
+               k = 1
+            end if
+            ci(j,i) = c(j,k)
+         end do
+      end do
+
+      ! Create an index string for T1 and T2
+      ! e_shift updates after each call - this indexs the external
+      ! operators; c_shift indexes the contraction operators. These are
+      ! needed to ensure the letters are different
+      e_shift = 0
+      call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1,
+     &                      .false.)
+      call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
+     &                      .true.)
+
+      if (ntest>=100) then
+         write(item%out,*) "Inital index strings in normal order"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,*) "Res: {", str1%str, "}{", str2%str, "}"
+         write(item%out,*) "Contraction T1: ", str1%cnt_poss
+         write(item%out,*) "Contraction T2: ", str2%cnt_poss
+         write(item%out,*) "Inital factor: ", p_factor
+      end if
+
+
+      itype = item%itype
+      if (item%inter(1)) then
+!         write(item%out,*) "fuck ", str1%str
+!         write(item%out,*) "fuck ", str1%itype
+!         write(item%out,*) "fuck ", itype
+         do i = 1, item%rank1/2
+            if (str1%itype(i) /= itype(i)) then
+!               write(item%out,*) "hello"
+               tstr(1:1) = str1%str(1)
+               str1%str(1) = str1%str(2)
+               str1%str(2) = tstr(1:1)
+               k = str1%itype(1)
+               str1%itype(1) = str1%itype(2)
+               str1%itype(2) = k
+
+               do k = 1, n_cnt
+                  if (1==str1%cnt_poss(k)) then
+!                     write(item%out,*) "Old cnt_poss ",
+!     &                                    str1%cnt_poss
+                     str1%cnt_poss(k) = 2
+!                     write(item%out,*) "New cnt_poss ",
+!     &                                    str1%cnt_poss
+                     exit
+                  end if
+               end do
+            end if
+         end do
+         do i = item%rank1/2+1, item%rank1
+            if (str1%itype(i) /= itype(i)) then
+               tstr(4:4) = str1%str(3)
+               str1%str(3) = str1%str(4)
+               str1%str(4) = tstr(3:3)
+               k = str1%itype(3)
+               str1%itype(3) = str1%itype(4)
+               str1%itype(4) = k
+            end if
+         end do
+!         write(item%out,*) "fuck2 ", str1%str
+      end if
+
+
+
+      ! Work out the factor due to permuation of contraction indicies
+      if (.not. item%den(1) .and. .not. item%den(2)) then
+
+         do i = 1, n_cnt
+            if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
+     &          /=0)then
+               p_factor = p_factor * -1.0d0
+               if (ntest>=100) then
+                  write(item%out,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+               end if
+            end if
+         end do
+
+      else if (item%den(1) .and. item%rank1/=0) then
+
+         do i = 1, n_cnt
+            if (str1%cnt_poss(i)<=item%rank1/2) then
+               ! Creation operator of density is contracted
+               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+     &                 -item%rank1/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            else if (str1%cnt_poss(i)>item%rank1/2) then
+               ! Annhilation operator of density is contracted
+               ! NOTE: not removing previously conracted indicies from
+               ! the list - so this may be wrong in the long term. Seems
+               ! to produce the correct answer for now...
+               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+     &                 -item%rank1/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            end if
+         end do
+
+      else if (item%den(2) .and. item%rank2/=0) then
+
+         do i = 1, n_cnt
+            if (str2%cnt_poss(i)<=item%rank2/2) then
+               ! Creation operator of density is contracted
+               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
+     &                 -item%rank2/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*)"Update factor 1 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            else if (str2%cnt_poss(i)>item%rank2/2) then
+               ! Annhilation operator of density is contracted
+               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
+     &                 -item%rank2/2,2)/=0)then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*)"Update factor 2 (contraction of "
+     &                             //"contraction indicies): ", p_factor
+                  end if
+               end if
+
+            end if
+         end do
+
+      end if
+
+
+      ! Create result index string from only external operators. Order
+      ! is not final...This is basically splicing str1 and str2 together
+      shift = 1
+      do i = 1, item%rank1
+         is_cnt = .false.
+         do j = 1, n_cnt
+            if (i == str1%cnt_poss(j)) then
+               is_cnt = .true.
+               exit
+            end if
+         end do
+         if (.not. is_cnt) then
+            str3%str(shift) = str1%str(i)
+            shift = shift + 1
+         end if
+      end do
+
+      do i = 1, item%rank2
+         is_cnt = .false.
+         do j = 1, n_cnt
+            if (i == str2%cnt_poss(j)) then
+               is_cnt = .true.
+               exit
+            end if
+         end do
+         if (.not. is_cnt) then
+            str3%str(shift) = str2%str(i)
+            shift = shift + 1
+         end if
+      end do
+
+      if (ntest>=100) then
+         write(item%out,*) "Index strings in normal order"
+         write(item%out,*) "Result string in arbitary order"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,*) "Res: {", str3%str, "}"
+         write(item%out,*) "Contraction T1: ", str1%cnt_poss
+         write(item%out,*) "Contraction T2: ", str2%cnt_poss
+         write(item%out,*) "Inital factor: ", p_factor
+      end if
+
+      ! Rearrange the result string so it is in normal order (all
+      ! creation operators to the left of the annhilation). This can
+      ! also introduce a sign change.
+      ! TODO: make this a function - also seach for anhilators?
+      tstr = ""
+      do i = 1, item%rank1/2
+         shift = 1
+         do j = 1, item%rank3
+
+            if (str3%str(j) == str1%str(i)) then
+               tstr(shift:shift) = str3%str(j)
+               shift = shift + 1
+
+               do k = 1, item%rank3
+                  if (str3%str(k) /= str3%str(j)) then
+                     tstr(shift:shift) = str3%str(k)
+                     shift = shift + 1
+                  end if
+               end do
+
+               do k = 1, item%rank3
+                  str3%str(k) = tstr(k:k)
+               end do
+
+               if (mod(item%rank3-j,2)==0) then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*) "Update factor 2 (rearrange",
+     &               " the result string to normal order): ", p_factor
+                  end if
+               end if
+               exit
+            end if
+
+         end do
+      end do
+
+
+      do i = 1, item%rank2/2
+         shift = 1
+         do j = 1, item%rank3
+
+            if (str3%str(j) == str2%str(i)) then
+               tstr(shift:shift) = str3%str(j)
+               shift = shift + 1
+
+               do k = 1, item%rank3
+                  if (str3%str(k) /= str3%str(j)) then
+                     tstr(shift:shift) = str3%str(k)
+                     shift = shift + 1
+                  end if
+               end do
+
+               do k = 1, item%rank3
+                  str3%str(k) = tstr(k:k)
+               end do
+
+               if (mod(item%rank3-j,2)==0) then
+                  p_factor = p_factor * -1.0d0
+                  if (ntest>=100) then
+                     write(item%out,*) "Update factor 2 (rearrange",
+     &               " the result string to normal order): ", p_factor
+                  end if
+               end if
+               exit
+            end if
+
+         end do
+      end do
+
+
+!      do j = 1, item%rank3/2
+!         shift = 1
+!         !do i = 0, item%rank3/2-1
+!         do i = 0, item%rank3/2
+!          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
+!
+!               tstr(shift:shift) = str3%str(item%rank3-i)
+!               shift = shift + 1
+!
+!               do k = 1, item%rank3
+!                  if (p_list%plist(j)%pindex(1) /=
+!     &                                      str3%str(k)) then
+!                     tstr(shift:shift) = str3%str(k)
+!                     shift = shift + 1
+!                  end if
+!               end do
+!               do k = 1, item%rank3
+!                  str3%str(k) = tstr(k:k)
+!               end do
+!
+!               !write(item%out,*) "New result string {",str3%str, "}"
+!
+!               ! Update factor. If index is in even position, requires
+!               ! odd number of permuations; so get a negative
+!               if (mod(item%rank3-i,2)==0) then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                     write(item%out,*) "Update factor 2 (rearrange",
+!     &               " the result string to normal order): ", p_factor
+!                  end if
+!               end if
+!
+!               exit
+!          end if
+!         end do
+!      end do
+
+!      ! Move all annhilations to the right
+!      do j = 1, item%rank3/2
+!         shift = item%rank3
+!         do i = 1, item%rank3/2
+!          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
+!
+!               tstr(shift:shift) = str3%str(i)
+!               shift = shift - 1
+!
+!               do k = 0, item%rank3-1
+!                  if (p_list%plist(j)%pindex(2) /=
+!     &                                      str3%str(item%rank3-k)) then
+!                     tstr(shift:shift) = str3%str(item%rank3-k)
+!                     shift = shift - 1
+!                  end if
+!               end do
+!               do k = 1, item%rank3
+!                  str3%str(k) = tstr(k:k)
+!               end do
+!
+!               !write(item%out,*) "New result string {",str3%str, "}"
+!
+!               ! Update factor. If index is in odd position, requires
+!               ! odd number of permuations; so get a negative
+!               if (mod(i,2)/=0) then
+!                  p_factor = p_factor * -1.0d0
+!                  if (ntest>100) then
+!                     write(item%out,*) "Update factor 3 (move
+!     &               annhilations to the right in the result string): ",
+!     &               p_factor
+!                  end if
+!               end if
+!
+!               exit
+!          end if
+!         end do
+!      end do
+
+      ! Due to how the R:ea residual is defined, {p a^+} instead of
+      ! {a^+ p}, we need an extra minus to flip the normal ordered
+      ! string.
+      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+         if (.not. item%inter(3)) then
+
+            p_factor = p_factor * -1.0d0
+            if (ntest>100) then
+               write(item%out,*) "Update factor (R:ea)", p_factor
+            end if
+         end if
+      end if
+
+      if (ntest>=100) then
+         write(item%out,*) "Result string in normal order"
+         write(item%out,*) "Res: {", str3%str, "}"
+      end if
+
+
+      ! TODO: put this in reorder_integral
+      if (item%rank1 == 2) then
+         if (str1%itype(1)>str1%itype(2)) then
+            tmp = str1%str(1)
+            str1%str(1) = str1%str(2)
+            str1%str(2) = tmp
+         end if
+      end if
+      if (item%rank2 == 2) then
+         if (str2%itype(1)>str2%itype(2)) then
+            tmp = str2%str(1)
+            str2%str(1) = str2%str(2)
+            str2%str(2) = tmp
+         end if
       end if
 
 
@@ -4991,6 +5692,55 @@
       if (nops(1)==1 .and. nops(2)==1 .and. nops(3)==2) then
          if (.not. check_inter(contr_info%label_res)) then
             nosym = .true.
+         end if
+      end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine check_k4e(contr_info, command, k4e_line)
+*----------------------------------------------------------------------*
+!     Check if a tensor has permutational symmetry
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &   contr_info     ! Information about binary contraction
+      integer, intent(in) ::
+     &   command
+      logical, intent(inout) ::
+     &   k4e_line
+
+      integer ::
+     &   c(ngastp,2),
+     &   e1(ngastp,2),
+     &   e2(ngastp,2),
+     &   nops(ngastp),
+     &   i
+
+      call itf_ops(contr_info, c, e1, e2, command)
+
+      nops = sum(e1, dim=2) + sum(c, dim=2)
+
+      k4e_line = .false.
+
+      if (sum(nops)==0 .or. sum(nops)==2) then
+         return
+      end if
+
+      if (nops(2)==4) then
+         k4e_line = .true.
+      else
+         nops = sum(e2, dim=2) + sum(c, dim=2)
+         if (nops(2)==4) then
+            k4e_line = .true.
          end if
       end if
 

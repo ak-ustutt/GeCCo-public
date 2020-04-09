@@ -102,7 +102,8 @@
      &     c(4,2),              ! Operator numbers of contraction index
      &     e1(4,2),             ! Operator numbers of external index 1
      &     e2(4,2),             ! Operator numbers of external index 2
-     &     spin_cases           ! Number of printed spin cases
+     &     spin_cases,          ! Number of printed spin cases
+     &     nk4e                 ! Counter of k4e lines
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral
@@ -115,6 +116,7 @@
      &     symmetric = .false.,
      &     nosym = .false.,     ! True if R[apiq] (residual has no symmetry between indicies)
      &     abba_line = .false., ! True if this line is the R[apiq] abba spin case
+     &     k4e_line = .false., ! True if a K4E line
      &     intpp = .false.
       real(8) ::
      &     fact                 ! Factor
