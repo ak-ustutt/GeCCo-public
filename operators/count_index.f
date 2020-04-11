@@ -859,6 +859,7 @@
       call prepare_symmetrise(perm_case, item, ntest4)
 
 
+
       ! 5. Prepare permuation line if required
       if (item%symmetric .and. perm_case==2 .or.
      &    .not. item%symmetric .and. perm_case==1 .and.
@@ -888,7 +889,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                        inter_itype,ntest5)
+     &                       inter_itype,nk4e,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
