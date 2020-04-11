@@ -3161,8 +3161,8 @@
      &   n_cnt,         ! Number of contraction operators
      &   e1ops, e2ops,  ! Number of external ops on T1 and T2
      &   distance,      ! Distance from where an index should be
-     &   pp,            ! Paired position - position of paired index
-     &   i, j, k,
+     &   pp, pp2,            ! Paired position - position of paired index
+     &   i, j, k, l,
      &   itype(INDEX_LEN)
       character(len=INDEX_LEN) ::
      &   s1, s2, s3,  ! Tmp ITF index strings
@@ -3244,45 +3244,193 @@
       end if
 
 
+      ! TODO: Need to set intermediates so they match the previous itpye
+      ! TODO: If itype is already the same, don't do anything
+      ! TODO: Make a function + inter(2)
       itype = item%itype
-      if (item%inter(1)) then
-!         write(item%out,*) "fuck ", str1%str
-!         write(item%out,*) "fuck ", str1%itype
-!         write(item%out,*) "fuck ", itype
-         do i = 1, item%rank1/2
-            if (str1%itype(i) /= itype(i)) then
-!               write(item%out,*) "hello"
-               tstr(1:1) = str1%str(1)
-               str1%str(1) = str1%str(2)
-               str1%str(2) = tstr(1:1)
-               k = str1%itype(1)
-               str1%itype(1) = str1%itype(2)
-               str1%itype(2) = k
 
-               do k = 1, n_cnt
-                  if (1==str1%cnt_poss(k)) then
-!                     write(item%out,*) "Old cnt_poss ",
-!     &                                    str1%cnt_poss
-                     str1%cnt_poss(k) = 2
-!                     write(item%out,*) "New cnt_poss ",
-!     &                                    str1%cnt_poss
-                     exit
-                  end if
-               end do
-            end if
+      if (item%inter(1)) then
+!         write(item%out,*) "fuck ", itype
+!         write(item%out,*) "fuck1 ", str1%str
+!         write(item%out,*) "fuck1 ", str1%itype
+!         write(item%out,*) "fuck1 ", str1%cnt_poss
+
+         do i = 1, item%rank1/2
+            do j = 1, item%rank1/2
+               if (itype(i) == str1%itype(j)) then
+                  tstr(i:i) = str1%str(j)
+                  str1%str(j) = ''
+                  str1%itype(j) = 0
+                  exit
+               end if
+            end do
          end do
-         do i = item%rank1/2+1, item%rank1
-            if (str1%itype(i) /= itype(i)) then
-               tstr(4:4) = str1%str(3)
-               str1%str(3) = str1%str(4)
-               str1%str(4) = tstr(3:3)
-               k = str1%itype(3)
-               str1%itype(3) = str1%itype(4)
-               str1%itype(4) = k
-            end if
+         do i = item%rank1/2 + 1, item%rank1
+            do j = item%rank1/2+1, item%rank1
+               if (itype(i) == str1%itype(j)) then
+                  tstr(i:i) = str1%str(j)
+                  str1%str(j) = ''
+                  str1%itype(j) = 0
+                  exit
+               end if
+            end do
          end do
+
+         do i = 1, item%rank1
+            str1%str(i) = tstr(i:i)
+         end do
+
+         do i = 1, item%rank1
+            str1%itype(i) = itype(i)
+         end do
+
+         shift = 1
+         do i = 1, item%rank1
+            do j = 1, item%rank2
+               if (str1%str(i) == str2%str(j)) then
+                  str1%cnt_poss(shift) = i
+                  shift = shift + 1
+               end if
+            end do
+         end do
+
 !         write(item%out,*) "fuck2 ", str1%str
+!         write(item%out,*) "fuck2 ", str1%itype
+!         write(item%out,*) "fuck2 ", str1%cnt_poss
       end if
+
+!      if (item%inter(1)) then
+!!         write(item%out,*) "fuck ", str1%str
+!!         write(item%out,*) "fuck ", str1%itype
+!         write(item%out,*) "fuck ", itype
+!         write(item%out,*) "fuck1 ", str1%str
+!         write(item%out,*) "fuck1 ", str1%itype
+!         write(item%out,*) "fuck1 ", str1%cnt_poss
+!         do i = 1, item%rank1/2
+!            if (str1%itype(i) /= itype(i)) then
+!!               write(item%out,*) "hello"
+!               tstr(1:1) = str1%str(1)
+!               str1%str(1) = str1%str(2)
+!               str1%str(2) = tstr(1:1)
+!               k = str1%itype(1)
+!               str1%itype(1) = str1%itype(2)
+!               str1%itype(2) = k
+!
+!               do k = 1, n_cnt
+!                  if (1==str1%cnt_poss(k)) then
+!!                     write(item%out,*) "Old cnt_poss ",
+!!     &                                    str1%cnt_poss
+!                     str1%cnt_poss(k) = 2
+!!                     write(item%out,*) "New cnt_poss ",
+!!     &                                    str1%cnt_poss
+!                     exit
+!                  end if
+!               end do
+!            end if
+!         end do
+!         do i = item%rank1/2+1, item%rank1
+!            if (str1%itype(i) /= itype(i)) then
+!               tstr(4:4) = str1%str(3)
+!               str1%str(3) = str1%str(4)
+!               str1%str(4) = tstr(3:3)
+!               k = str1%itype(3)
+!               str1%itype(3) = str1%itype(4)
+!               str1%itype(4) = k
+!            end if
+!         end do
+!         write(item%out,*) "fuck2 ", str1%str
+!         write(item%out,*) "fuck2 ", str1%itype
+!         write(item%out,*) "fuck2 ", str1%cnt_poss
+!      end if
+
+
+!      !write(item%out,*) "start"
+!      if (item%inter(1)) then
+!         write(item%out,*) "fuck ", str1%str
+!         write(item%out,*) "str%itype ", str1%itype
+!         !write(item%out,*) "itype ", itype
+!         write(item%out,*) "old cnt ", str1%cnt_poss
+!
+!         shift = 1
+!         do i = 1, item%rank1/2
+!            do j = 1, item%rank1
+!               if (str1%itype(i) == itype(j)) then
+!
+!                  pp = item%rank1 - j + 1
+!                  do k = item%rank1, item%rank1/2 + 1, -1
+!                     if (str1%itype(k) == itype(pp)) then
+!                        !write(item%out,*) "what "
+!                        tstr(shift:shift) = str1%str(i)
+!                        !write(item%out,*) "what ", tstr(shift:shift)
+!                        pp2 = item%rank1 - shift + 1
+!                        tstr(pp2:pp2) = str1%str(k)
+!                        !write(item%out,*) "pp2 ", pp2
+!                        !write(item%out,*) "what ", tstr(pp2:pp2)
+!                        !write(item%out,*) "hello ", tstr
+!                        str1%str(i) = ''
+!                        str1%str(k) = ''
+!                        str1%itype(i) = 0
+!                        str1%itype(k) = 0
+!                        itype(j) = 0
+!                        itype(pp) = 0
+!                        !write(item%out,*) "does itpye: ", itype
+!
+!!                        do l = 1, n_cnt
+!!                           if (i==str1%cnt_poss(l)) then
+!!                              write(item%out,*) "Old cnt_poss ",
+!!     &                                             str1%cnt_poss
+!!                              str1%cnt_poss(l) = shift
+!!                              write(item%out,*) "New cnt_poss ",
+!!     &                                             str1%cnt_poss
+!!                              exit
+!!                           end if
+!!                        end do
+!!
+!!                        do l = 1, n_cnt
+!!                           if (k==str1%cnt_poss(l)) then
+!!                              write(item%out,*) "Old cnt_poss2 ",
+!!     &                                             str1%cnt_poss
+!!                              str1%cnt_poss(l) = pp2
+!!                              write(item%out,*) "New cnt_poss2 ",
+!!     &                                             str1%cnt_poss
+!!                              exit
+!!                           end if
+!!                        end do
+!
+!                        shift = shift + 1
+!
+!                        exit
+!                     end if
+!                  end do
+!
+!                  exit
+!               end if
+!            end do
+!         end do
+!
+!         do i = 1, item%rank1
+!            str1%str(i) = tstr(i:i)
+!         end do
+!
+!         do i = 1, item%rank1
+!            str1%itype(i) = get_itype(str1%str(i))
+!         end do
+!
+!         shift = 1
+!         do i = 1, item%rank1
+!            do j = 1, item%rank2
+!               if (str1%str(i) == str2%str(j)) then
+!                  str1%cnt_poss(shift) = i
+!                  shift = shift + 1
+!               end if
+!            end do
+!         end do
+!
+!         write(item%out,*) "new str ", str1%str
+!         write(item%out,*) "new itype ", str1%itype
+!         write(item%out,*) "new cnt ", str1%cnt_poss
+!      end if
+!      !write(item%out,*) "end"
 
 
 
@@ -3473,82 +3621,6 @@
 
          end do
       end do
-
-
-!      do j = 1, item%rank3/2
-!         shift = 1
-!         !do i = 0, item%rank3/2-1
-!         do i = 0, item%rank3/2
-!          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
-!
-!               tstr(shift:shift) = str3%str(item%rank3-i)
-!               shift = shift + 1
-!
-!               do k = 1, item%rank3
-!                  if (p_list%plist(j)%pindex(1) /=
-!     &                                      str3%str(k)) then
-!                     tstr(shift:shift) = str3%str(k)
-!                     shift = shift + 1
-!                  end if
-!               end do
-!               do k = 1, item%rank3
-!                  str3%str(k) = tstr(k:k)
-!               end do
-!
-!               !write(item%out,*) "New result string {",str3%str, "}"
-!
-!               ! Update factor. If index is in even position, requires
-!               ! odd number of permuations; so get a negative
-!               if (mod(item%rank3-i,2)==0) then
-!                  p_factor = p_factor * -1.0d0
-!                  if (ntest>100) then
-!                     write(item%out,*) "Update factor 2 (rearrange",
-!     &               " the result string to normal order): ", p_factor
-!                  end if
-!               end if
-!
-!               exit
-!          end if
-!         end do
-!      end do
-
-!      ! Move all annhilations to the right
-!      do j = 1, item%rank3/2
-!         shift = item%rank3
-!         do i = 1, item%rank3/2
-!          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
-!
-!               tstr(shift:shift) = str3%str(i)
-!               shift = shift - 1
-!
-!               do k = 0, item%rank3-1
-!                  if (p_list%plist(j)%pindex(2) /=
-!     &                                      str3%str(item%rank3-k)) then
-!                     tstr(shift:shift) = str3%str(item%rank3-k)
-!                     shift = shift - 1
-!                  end if
-!               end do
-!               do k = 1, item%rank3
-!                  str3%str(k) = tstr(k:k)
-!               end do
-!
-!               !write(item%out,*) "New result string {",str3%str, "}"
-!
-!               ! Update factor. If index is in odd position, requires
-!               ! odd number of permuations; so get a negative
-!               if (mod(i,2)/=0) then
-!                  p_factor = p_factor * -1.0d0
-!                  if (ntest>100) then
-!                     write(item%out,*) "Update factor 3 (move
-!     &               annhilations to the right in the result string): ",
-!     &               p_factor
-!                  end if
-!               end if
-!
-!               exit
-!          end if
-!         end do
-!      end do
 
       ! Due to how the R:ea residual is defined, {p a^+} instead of
       ! {a^+ p}, we need an extra minus to flip the normal ordered
