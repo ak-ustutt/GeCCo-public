@@ -589,182 +589,182 @@
       end
 
 
+!*----------------------------------------------------------------------*
+!      subroutine command_to_itf(contr_info, itin, itflog, command,
+!     &                           inter_itype, contr_no)
+!*----------------------------------------------------------------------*
+!!     Take GeCco binary contraction and produce ITF algo code.
+!!     Includes antisymmetry of residual equations and spin summation.
+!*----------------------------------------------------------------------*
+!
+!      use itf_utils
+!      implicit none
+!      include 'opdim.h'
+!      include 'mdef_operator_info.h'
+!      include 'def_contraction.h'
+!      include 'def_formula_item.h'
+!      include 'def_itf_contr.h'
+!
+!      type(binary_contr), intent(inout) ::
+!     &   contr_info          ! Information about binary contraction
+!      logical, intent(in) ::
+!     &   itin                ! Print ITIN lines or not
+!      integer, intent(in) ::
+!     &   itflog,             ! Output file
+!     &   command,            ! Type of formula item command, ie. contraction, copy etc.
+!     &   contr_no            ! Formula number
+!      integer, intent(inout) ::
+!     &   inter_itype(*)      ! Store itypes of intermediates between lines
+!
+!      type(itf_contr) ::
+!     &   item,               ! ITF contraction object; holds all info about the ITF algo line
+!     &   pitem               ! Permutation ITF contraction object
+!      integer ::
+!     &   i,                  ! Loop index
+!     &   perm_case,          ! Info of permutation factors
+!     &   ntest1 =  00,       ! Control debug: init_itf_contr
+!     &   ntest2 =  00,       ! Control debug: assign_index
+!     &   ntest3 =  00,       ! Control debug: determine permuation
+!     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
+!     &   ntest5 =  00,       ! Control debug: prepare permutation
+!     &   ntest6 =  00,       ! Control debug: assign_spin
+!     &   ntest7 =  00,       ! Control debug: print_spin_cases
+!     &   ntest8 =  00,       ! Control debug: print_symmetrise
+!     &   ntest9 =  00,       ! Control debug: set_itype
+!     &   ntest10 = 00        ! Control debug
+!      logical ::
+!     &   intpp,              ! Use INTPP kext intermeidate
+!     &   pline               ! True if including a permuation line
+!
+!      if (ntest1>=100 .or. ntest2>=100) then
+!         write(itflog,*) "FORMULA NUMBER: ", contr_no
+!      end if
+!
+!      ! Begin a special block which the python processor will pull out
+!      ! into its own code block
+!      intpp = .false.
+!      if (contr_info%label_res=='INTpp') then
+!         intpp = .true.
+!         write(itflog,'(a)') "BEGIN_INTPP"
+!      end if
+!
+!      ! Mark begining of spin summed block
+!      write(itflog,'(a5)') 'BEGIN'
+!
+!
+!      ! 1. Initalise itf_contr
+!      call itf_contr_init(contr_info,item,1,itin,command,itflog,
+!     &                    inter_itype,ntest1)
+!
+!
+!      ! 2. Assign index / Determine sign
+!      call assign_index(item,ntest2)
+!
+!
+!      ! 3. Determine if we need a permutation line and create new item
+!      !    for it
+!      !    Permutation line required for:
+!      !        a) Symmetric residuals with two pairs of external indicies
+!      !        a) Non-symmetric residuals with one pair of external indicies
+!      pline = .false.
+!      perm_case = 0
+!      do i = 1, ngastp
+!         if(contr_info%perm(i)) perm_case = perm_case + 1
+!      end do
+!
+!      if (ntest3>=100) then
+!         call debug_header("Determine permutation", item%out)
+!         write(item%out,*) "perm_case: ", perm_case
+!      end if
+!
+!
+!      ! 4. Decide whether to symmetrise after every term
+!      item%old_name = item%label_res
+!      call prepare_symmetrise(perm_case, item, ntest4)
+!
+!
+!      ! 5. Prepare permuation line if required
+!      if (item%symmetric .and. perm_case==2 .or.
+!     &    .not. item%symmetric .and. perm_case==1 .and.
+!     &    .not. item%nosym) then
+!
+!         ! Don't need perm line for intermediates or tensor products
+!         if (.not. item%inter(3) .and. .not. item%product) then
+!            pline = .true.
+!
+!            call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
+!     &                           inter_itype,ntest5)
+!            call assign_index(pitem,ntest5)
+!
+!            pitem%old_name = pitem%label_res
+!            pitem%label_res = item%label_res
+!
+!            ! Permute indicies and update factor
+!            ! -1 factor for permuation line
+!            call create_permutation(pitem, contr_info%perm,ntest5)
+!         end if
+!
+!      end if
+!
+!      if (item%nosym) then
+!         ! Need to get both ab/ab and ab/ba spin cases for R[apiq]
+!         ! For now, this is stored in pline as it is not used in R[apiq]
+!         pline = .true.
+!
+!         call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
+!     &                        inter_itype,ntest5)
+!         call assign_index(pitem,ntest5)
+!
+!         pitem%old_name = pitem%label_res
+!         pitem%label_res = item%label_res
+!         pitem%abba_line = .true.
+!      end if
+!
+!
+!      ! 6. Spin sum
+!      call assign_spin(item, ntest6)
+!      if (pline) call assign_spin(pitem, ntest6)
+!
+!
+!      ! 7. Loop over spin cases and print out each line
+!      call print_spin_cases(item, ntest7)
+!      if (pline) call print_spin_cases(pitem, ntest7)
+!
+!
+!      ! 8. Print symmetrisation term
+!      if (.not. item%inter(3)) then
+!         call print_symmetrise(item, ntest8)
+!      end if
+!
+!
+!      ! 9. If an intermediate, set inter_itype for use in next line
+!      ! where the intermediate is created
+!      call set_itype(item, inter_itype, ntest9)
+!
+!
+!      if (ntest10>=100) then
+!         call print_itf_contr(item)
+!         if (pline) call print_itf_contr(pitem)
+!      end if
+!
+!
+!      ! Mark end of spin block
+!      write(itflog,'(a)') "END"
+!
+!      if (intpp) then
+!         write(itflog,'(a)') "END_INTPP"
+!      end if
+!
+!
+!      ! Deallocate memroy used when construcitng item
+!      call itf_deinit(item)
+!
+!      return
+!      end
+
+
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, contr_no)
-*----------------------------------------------------------------------*
-!     Take GeCco binary contraction and produce ITF algo code.
-!     Includes antisymmetry of residual equations and spin summation.
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'mdef_operator_info.h'
-      include 'def_contraction.h'
-      include 'def_formula_item.h'
-      include 'def_itf_contr.h'
-
-      type(binary_contr), intent(inout) ::
-     &   contr_info          ! Information about binary contraction
-      logical, intent(in) ::
-     &   itin                ! Print ITIN lines or not
-      integer, intent(in) ::
-     &   itflog,             ! Output file
-     &   command,            ! Type of formula item command, ie. contraction, copy etc.
-     &   contr_no            ! Formula number
-      integer, intent(inout) ::
-     &   inter_itype(*)      ! Store itypes of intermediates between lines
-
-      type(itf_contr) ::
-     &   item,               ! ITF contraction object; holds all info about the ITF algo line
-     &   pitem               ! Permutation ITF contraction object
-      integer ::
-     &   i,                  ! Loop index
-     &   perm_case,          ! Info of permutation factors
-     &   ntest1 =  00,       ! Control debug: init_itf_contr
-     &   ntest2 =  00,       ! Control debug: assign_index
-     &   ntest3 =  00,       ! Control debug: determine permuation
-     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
-     &   ntest5 =  00,       ! Control debug: prepare permutation
-     &   ntest6 =  00,       ! Control debug: assign_spin
-     &   ntest7 =  00,       ! Control debug: print_spin_cases
-     &   ntest8 =  00,       ! Control debug: print_symmetrise
-     &   ntest9 =  00,       ! Control debug: set_itype
-     &   ntest10 = 00        ! Control debug
-      logical ::
-     &   intpp,              ! Use INTPP kext intermeidate
-     &   pline               ! True if including a permuation line
-
-      if (ntest1>=100 .or. ntest2>=100) then
-         write(itflog,*) "FORMULA NUMBER: ", contr_no
-      end if
-
-      ! Begin a special block which the python processor will pull out
-      ! into its own code block
-      intpp = .false.
-      if (contr_info%label_res=='INTpp') then
-         intpp = .true.
-         write(itflog,'(a)') "BEGIN_INTPP"
-      end if
-
-      ! Mark begining of spin summed block
-      write(itflog,'(a5)') 'BEGIN'
-
-
-      ! 1. Initalise itf_contr
-      call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,ntest1)
-
-
-      ! 2. Assign index / Determine sign
-      call assign_index(item,ntest2)
-
-
-      ! 3. Determine if we need a permutation line and create new item
-      !    for it
-      !    Permutation line required for:
-      !        a) Symmetric residuals with two pairs of external indicies
-      !        a) Non-symmetric residuals with one pair of external indicies
-      pline = .false.
-      perm_case = 0
-      do i = 1, ngastp
-         if(contr_info%perm(i)) perm_case = perm_case + 1
-      end do
-
-      if (ntest3>=100) then
-         call debug_header("Determine permutation", item%out)
-         write(item%out,*) "perm_case: ", perm_case
-      end if
-
-
-      ! 4. Decide whether to symmetrise after every term
-      item%old_name = item%label_res
-      call prepare_symmetrise(perm_case, item, ntest4)
-
-
-      ! 5. Prepare permuation line if required
-      if (item%symmetric .and. perm_case==2 .or.
-     &    .not. item%symmetric .and. perm_case==1 .and.
-     &    .not. item%nosym) then
-
-         ! Don't need perm line for intermediates or tensor products
-         if (.not. item%inter(3) .and. .not. item%product) then
-            pline = .true.
-
-            call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,ntest5)
-            call assign_index(pitem,ntest5)
-
-            pitem%old_name = pitem%label_res
-            pitem%label_res = item%label_res
-
-            ! Permute indicies and update factor
-            ! -1 factor for permuation line
-            call create_permutation(pitem, contr_info%perm,ntest5)
-         end if
-
-      end if
-
-      if (item%nosym) then
-         ! Need to get both ab/ab and ab/ba spin cases for R[apiq]
-         ! For now, this is stored in pline as it is not used in R[apiq]
-         pline = .true.
-
-         call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                        inter_itype,ntest5)
-         call assign_index(pitem,ntest5)
-
-         pitem%old_name = pitem%label_res
-         pitem%label_res = item%label_res
-         pitem%abba_line = .true.
-      end if
-
-
-      ! 6. Spin sum
-      call assign_spin(item, ntest6)
-      if (pline) call assign_spin(pitem, ntest6)
-
-
-      ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, ntest7)
-      if (pline) call print_spin_cases(pitem, ntest7)
-
-
-      ! 8. Print symmetrisation term
-      if (.not. item%inter(3)) then
-         call print_symmetrise(item, ntest8)
-      end if
-
-
-      ! 9. If an intermediate, set inter_itype for use in next line
-      ! where the intermediate is created
-      call set_itype(item, inter_itype, ntest9)
-
-
-      if (ntest10>=100) then
-         call print_itf_contr(item)
-         if (pline) call print_itf_contr(pitem)
-      end if
-
-
-      ! Mark end of spin block
-      write(itflog,'(a)') "END"
-
-      if (intpp) then
-         write(itflog,'(a)') "END_INTPP"
-      end if
-
-
-      ! Deallocate memroy used when construcitng item
-      call itf_deinit(item)
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine command_to_itf2(contr_info, itin, itflog, command,
      &                           inter_itype, contr_no, nk4e)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
@@ -834,7 +834,7 @@
 
 
       ! 2. Assign index / Determine sign
-      call assign_index2(item,ntest2)
+      call assign_index(item,ntest2)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -871,7 +871,7 @@
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                           inter_itype,nk4e,ntest5)
-            call assign_index2(pitem,ntest5)
+            call assign_index(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
             pitem%label_res = item%label_res
@@ -2448,702 +2448,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine nicer_pairing(str1, str2, i1, i2, rank1, rank2,
-     &                         n_cnt)
-*----------------------------------------------------------------------*
-!
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(inout) ::
-     &   str1,
-     &   str2
-      character (len=1), intent(in) ::
-     &   i1,         ! Creation index
-     &   i2          ! Annhilation index
-      integer, intent(in) ::
-     &   rank1,
-     &   rank2,
-     &   n_cnt
-
-      character (len=1) ::
-     &   tmp
-      integer ::
-     &   pp1, pp2, pp3,        ! Pair position
-     &   i, k, l, m
-
-      do i = 1, rank1
-         if (i1==str1%str(i)) then
-            pp1 = rank1-i+1
-            do k = 1, rank2
-               if (i2==str2%str(k)) then
-                  pp2= rank2-k+1
-                  if (str1%str(pp1)/=str2%str(pp2)) then
-                     do l = 1, rank2
-                        if(str1%str(pp1)==str2%str(l))
-     &                      then
-
-                  !write(10,*) "str1%str(i) ", str1%str(i)
-                  !write(10,*) "str1%str(pp) ", str1%str(pp1)
-                  !write(10,*) "str2%str(k) ", str2%str(l)
-                  !write(10,*) "str2%str(pp) ", str2%str(pp2)
-
-                           pp3 = rank2-l+1
-                           tmp = str2%str(k)
-                           str2%str(k) = str2%str(pp3)
-                           str2%str(pp3) = tmp
-
-                           !tmp = str2%str(l)
-                           !str2%str(l) = str2%str(pp2)
-                           !str2%str(pp2) = tmp
-
-                           !write(10,*) "New ", str2%str
-
-                           ! Update factor
-!                           distance = abs(l-pp2)
-!                           if (mod(distance,2)/=0) then
-!!                              factor = factor * -1.0d0
-!!!                              write(11,*)"Update factor3.2: ",
-!!!     &                                              factor
-!                              write(11,*) "not updating factor"
-!                           end if
-
-
-                           ! If swapping a contraction index
-                           do m = 1, n_cnt
-                              if (pp3==str2%cnt_poss(m)) then
-!                                 write(11,*) "Old cnt_poss ",
-!     &                                                str2%cnt_poss
-                                 str2%cnt_poss(m) = k
-!                                 write(11,*) "New cnt_poss ",
-!     &                                                str2%cnt_poss
-                                 exit
-                              end if
-                           end do
-
-!                           ! If swapping a contraction index, need to
-!                           ! update cnt_poss
-!!                           write(11,*) "Old cnt_poss ", str2%cnt_poss
-!                           do m = 1, n_cnt
-!                              if (l==str2%cnt_poss(m)) then
-!                                itmp=str2%cnt_poss(m)
-!                                str2%cnt_poss(m)=pp2
-!                                n = m
-!                              end if
-!                           end do
-!!                           write(11,*) "Old cnt_poss2 ", str2%cnt_poss
-!                           do m = 1, n_cnt
-!                              if (rank2-k+1==
-!     &                           str2%cnt_poss(m) .and. m/=n) then
-!                                 str2%cnt_poss(m)=itmp
-!                              end if
-!                           end do
-!!                           write(11,*) "New cnt_poss ", str2%cnt_poss
-
-                           exit
-                        end if
-                     end do
-                     exit
-                  end if
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine nicer_pairing_one_t(str, i1, i2, rank, n_cnt)
-*----------------------------------------------------------------------*
-!
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(inout) ::
-     &   str
-      character (len=1), intent(in) ::
-     &   i1,
-     &   i2
-      integer, intent(in) ::
-     &   rank,
-     &   n_cnt
-
-      character (len=1) ::
-     &   tmp
-      integer ::
-     &   pp,
-     &   i, k, l
-
-      do i = 1, rank
-         if (i1==str%str(i)) then
-            pp = rank-i+1
-            do k = 1, rank
-               if (i2==str%str(k)) then
-                  if (pp/=k) then
-                     ! Swap index so it is in paired position (pp)
-                     !write(item%out,*) "Old str ", str%str
-                     tmp = str%str(pp)
-                     str%str(pp) = str%str(k)
-                     str%str(k) = tmp
-                     !write(item%out,*) "New str ", str%str
-
-!                     ! Update factor
-!                     distance = abs(k-pp)
-!                     if (mod(distance,2)/=0) then
-!                        !factor = factor * -1.0d0
-!                        !write(11,*)"Update factor3.5: ", factor
-!                        write(11,*) "Not updating factor"
-!                     end if
-
-                     ! If swapping a contraction index, need to
-                     ! update cnt_poss
-                     do l = 1, n_cnt
-                        if (pp==str%cnt_poss(l)) then
-!                           write(item%out,*) "Old cnt_poss ",
-!     &                                          str1%cnt_poss
-                           str%cnt_poss(l) = k
-!                           write(item%out,*) "New cnt_poss ",
-!     &                                          str1%cnt_poss
-                           exit
-                        end if
-                     end do
-                  end if
-                  exit
-               end if
-            end do
-            exit
-         end if
-      end do
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
       subroutine assign_index(item,ntest)
-*----------------------------------------------------------------------*
-!     Assign an ITF index string to each tensor in a line
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item           ! ITF binary contraction
-      integer, intent(in) ::
-     &   ntest
-
-      integer ::
-     &   c(ngastp,2),        ! Operator numbers of contraction index
-     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
-     &   e1(ngastp,2),       ! Operator numbers of external index 1
-     &   e2(ngastp,2),       ! Operator numbers of external index 2
-     &   shift,         ! List shift
-     &   n_cnt,         ! Number of contraction operators
-     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
-     &   distance,      ! Distance from where an index should be
-     &   pp,            ! Paired position - position of paired index
-     &   i, j, k,
-     &   itype(INDEX_LEN)
-      character(len=INDEX_LEN) ::
-     &   s1, s2, s3,  ! Tmp ITF index strings
-     &   tstr
-      character(len=1) ::
-     &   tmp       ! Scratch space to store index letter
-      real(8) ::
-     &   p_factor       ! Overall factor from contraction/rearrangment
-      type(pair_list) ::
-     &   p_list       ! Complete list of pairs in binary contraction
-      integer, dimension(4) ::
-     &   e_shift,       ! Index shift for external indices
-     &   c_shift        ! Index shift for contraction indices
-      type(index_str) ::
-     &   str1,          ! Stores 'normal ordered' index string for T1
-     &   str2,          ! Stores 'normal ordered' index string for T2
-     &   str3           ! Stores 'normal ordered' index string for Res
-
-      logical ::        ! These are used when finding pairs of external ops
-     &   is_cnt,        ! True if the operator is a contraction op
-     &   p1, p2
-
-      if (ntest>=100) call debug_header("assign_index", item%out)
-
-      ! Set operator numbers
-      c=item%c
-      e1=item%e1
-      e2=item%e2
-
-      ! Factor due to permuation of annhilation and creation indices
-      p_factor = 1.0d0
-
-      ! Set number of contraction indicies
-      n_cnt = item%contri
-
-      ! Allocate index_str objects
-      call init_index_str(str1, item%rank1, n_cnt)
-      call init_index_str(str2, item%rank2, n_cnt)
-      call init_index_str(str3, item%rank3, n_cnt)
-
-      allocate(p_list%plist(item%rank3/2))
-
-      ! Set letter shift values for contraction indices
-      do i = 1, 4
-         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
-      end do
-
-      ! Make 'tranpose' of c array, this corresponds to the operators on
-      ! the second tensor
-      do i = 1, 2
-         do j = 1, ngastp
-            if (i==1) then
-               k = 2
-            else
-               k = 1
-            end if
-            ci(j,i) = c(j,k)
-         end do
-      end do
-
-      ! Create an index string for T1 and T2
-      ! e_shift updates after each call - this indexs the external
-      ! operators; c_shift indexes the contraction operators. These are
-      ! needed to ensure the letters are different
-      e_shift = 0
-      call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1,
-     &                      .false.)
-      call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
-     &                      .true.)
-
-      if (ntest>=100) then
-         write(item%out,*) "Inital index strings in normal order"
-         write(item%out,*) "T1: {", str1%str, "}"
-         write(item%out,*) "T2: {", str2%str, "}"
-         write(item%out,*) "Res: {", str1%str, "}{", str2%str, "}"
-         write(item%out,*) "Contraction T1: ", str1%cnt_poss
-         write(item%out,*) "Contraction T2: ", str2%cnt_poss
-         write(item%out,*) "Inital factor: ", p_factor
-      end if
-
-!      if (item%inter(1)) call match_idx_with_itype(item, str1,
-!     &                               item%rank1, n_cnt)
-!      if (item%inter(2)) call match_idx_with_itype(item, str2,
-!     &                               item%rank2, n_cnt)
-
-      ! Find external indicies and correctly pair them
-      ! Make a copy of itype which will be modified when a pair is found
-      itype = item%itype
-      e1ops = sum(sum(e1,dim=2))
-      e2ops = sum(sum(e2,dim=2))
-      if (e1ops >= e2ops) then
-        call find_pairs_wrap(str1,str2,item%rank1,item%rank2,1,2,n_cnt,
-     &                       item,p_list,itype)
-      else
-        call find_pairs_wrap(str2,str1,item%rank2,item%rank1,2,1,n_cnt,
-     &                       item,p_list,itype)
-      end if
-
-      if (ntest>=100) then
-         write(item%out,*) "Index pair list"
-         call print_plist(p_list, item%rank3/2, "PAIRS", item%out)
-      end if
-
-      ! If there is a pair in one string, permute so they are paired
-      ! 'imediately'. Also update the position of the contraction index
-      do j = 1, item%rank3/2
-         p1 = .false.
-         p2 = .false.
-
-         if (p_list%plist(j)%ops(1)==1) p1 = .true.
-         if (p_list%plist(j)%ops(2)==1) p2 = .true.
-
-         ! If a pair is on one tensor...
-         if (p1 .and. p2 .and. item%rank1>2) then
-            call nicer_pairing_one_t(str1, p_list%plist(j)%pindex(1),
-     &                               p_list%plist(j)%pindex(2),
-     &                               item%rank1, n_cnt)
-         else if (.not. p1 .and. .not. p2 .and. item%rank2>2) then
-            call nicer_pairing_one_t(str2, p_list%plist(j)%pindex(1),
-     &                               p_list%plist(j)%pindex(2),
-     &                               item%rank2, n_cnt)
-
-         ! If a pair is split over two tensors...
-         else if (p1 .and. .not. p2 .and. item%rank1>2) then
-            call nicer_pairing(str1, str2,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank1,
-     &                         item%rank2, n_cnt)
-         else if (p2 .and. .not. p1 .and. item%rank2>2) then
-            call nicer_pairing(str2, str1,
-     &                         p_list%plist(j)%pindex(1),
-     &                         p_list%plist(j)%pindex(2), item%rank2,
-     &                         item%rank1, n_cnt)
-         end if
-      end do
-
-      if (ntest>=100) then
-         write(item%out,*) "Index pair list after nicer_pairing()"
-         call print_plist(p_list, item%rank3/2, "PAIRS", item%out)
-      end if
-
-
-      ! Work out the factor due to permuation of contraction indicies
-      if (.not. item%den(1) .and. .not. item%den(2)) then
-
-         do i = 1, n_cnt
-            if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
-     &          /=0)then
-               p_factor = p_factor * -1.0d0
-               if (ntest>=100) then
-                  write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-               end if
-            end if
-         end do
-
-      else if (item%den(1) .and. item%rank1/=0) then
-
-         do i = 1, n_cnt
-            if (str1%cnt_poss(i)<=item%rank1/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str1%cnt_poss(i)>item%rank1/2) then
-               ! Annhilation operator of density is contracted
-               ! NOTE: not removing previously conracted indicies from
-               ! the list - so this may be wrong in the long term. Seems
-               ! to produce the correct answer for now...
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      else if (item%den(2) .and. item%rank2/=0) then
-
-         do i = 1, n_cnt
-            if (str2%cnt_poss(i)<=item%rank2/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str2%cnt_poss(i)>item%rank2/2) then
-               ! Annhilation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 2 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      end if
-
-
-      ! Create result index string from only external operators. Order
-      ! is not final...This is basically splicing str1 and str2 together
-      shift = 1
-      do i = 1, item%rank1
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str1%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str1%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      do i = 1, item%rank2
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str2%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str2%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      if (ntest>=100) then
-         write(item%out,*) "Index strings in normal order"
-         write(item%out,*) "Result string in arbitary order"
-         write(item%out,*) "T1: {", str1%str, "}"
-         write(item%out,*) "T2: {", str2%str, "}"
-         write(item%out,*) "Res: {", str3%str, "}"
-         write(item%out,*) "Contraction T1: ", str1%cnt_poss
-         write(item%out,*) "Contraction T2: ", str2%cnt_poss
-         write(item%out,*) "Inital factor: ", p_factor
-      end if
-
-      ! Rearrange the result string so it is in normal order (all
-      ! creation operators to the left of the annhilation). This can
-      ! also introduce a sign change.
-      do j = 1, item%rank3/2
-         shift = 1
-         !do i = 0, item%rank3/2-1
-         do i = 0, item%rank3/2
-          if (p_list%plist(j)%pindex(1) == str3%str(item%rank3-i)) then
-
-               tstr(shift:shift) = str3%str(item%rank3-i)
-               shift = shift + 1
-
-               do k = 1, item%rank3
-                  if (p_list%plist(j)%pindex(1) /=
-     &                                      str3%str(k)) then
-                     tstr(shift:shift) = str3%str(k)
-                     shift = shift + 1
-                  end if
-               end do
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               !write(item%out,*) "New result string {",str3%str, "}"
-
-               ! Update factor. If index is in even position, requires
-               ! odd number of permuations; so get a negative
-               if (mod(item%rank3-i,2)==0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                     write(item%out,*) "Update factor 2 (rearrange",
-     &               " the result string to normal order): ", p_factor
-                  end if
-               end if
-
-               exit
-          end if
-         end do
-      end do
-
-      ! Move all annhilations to the right
-      do j = 1, item%rank3/2
-         shift = item%rank3
-         do i = 1, item%rank3/2
-          if (p_list%plist(j)%pindex(2) == str3%str(i)) then
-
-               tstr(shift:shift) = str3%str(i)
-               shift = shift - 1
-
-               do k = 0, item%rank3-1
-                  if (p_list%plist(j)%pindex(2) /=
-     &                                      str3%str(item%rank3-k)) then
-                     tstr(shift:shift) = str3%str(item%rank3-k)
-                     shift = shift - 1
-                  end if
-               end do
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               !write(item%out,*) "New result string {",str3%str, "}"
-
-               ! Update factor. If index is in odd position, requires
-               ! odd number of permuations; so get a negative
-               if (mod(i,2)/=0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>100) then
-                     write(item%out,*) "Update factor 3 (move
-     &               annhilations to the right in the result string): ",
-     &               p_factor
-                  end if
-               end if
-
-               exit
-          end if
-         end do
-      end do
-
-      ! Due to how the R:ea residual is defined, {p a^+} instead of
-      ! {a^+ p}, we need an extra minus to flip the normal ordered
-      ! string.
-      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-         if (.not. item%inter(3)) then
-
-            p_factor = p_factor * -1.0d0
-            if (ntest>100) then
-               write(item%out,*) "Update factor (R:ea)", p_factor
-            end if
-         end if
-      end if
-
-      if (ntest>=100) then
-         write(item%out,*) "Result string in normal order"
-         write(item%out,*) "Res: {", str3%str, "}"
-      end if
-
-      ! Rearrange result operators to get correct pairing
-      do j = 1, item%rank3/2
-         do i = 0, item%rank3/2-1
-
-          ! Search for annhilation ops
-          if (p_list%plist(j)%pindex(2) == str3%str(item%rank3-i)) then
-!            write(item%out,*) "Found ", str3%str(item%rank3-i)
-            do k = 1, item%rank3/2
-
-               ! Search for creation ops
-               if (p_list%plist(j)%pindex(1) ==
-     &                                      str3%str(k)) then
-                  ! Check if position is in the pair position
-!                  write(item%out,*) "Found ", str3%str(k), " in ", k
-!                  write(item%out,*) "Pair ", str3%str(item%rank3-i),
-!     &                                  " in ",item%rank3-i
-!                  write(item%out,*) "PP ",
-!     &                                  item%rank3-(item%rank3-i)+1
-                  pp = item%rank3-(item%rank3-i)+1
-
-                  if (item%rank3-k+1 /= item%rank3-i) then
-                     ! Get distance from paired position (pp) and factor
-                     distance = abs(k-pp)
-                     if (mod(distance,2)/=0) then
-                        p_factor = p_factor * -1.0d0
-                        if (ntest>100) then
-                           write(item%out,*)"Update factor 4 ",
-     &                      "(rearrange reuslt string to correct ",
-     &                      "pairing): ", p_factor
-                        end if
-                     end if
-                     ! Swapped letters between current k and pp
-                     tmp = str3%str(pp)
-                     str3%str(pp) = str3%str(k)
-                     str3%str(k) = tmp
-
-!                     write(11,*) "swapping ", str3%str(pp),
-!     &                         " and ", str3%str(k)
-!
-!                     write(11,*) "Swap ops string {", str3%str, "}"
-                  end if
-                  exit
-               end if
-            end do
-          end if
-         end do
-      end do
-
-      if (ntest>=100) then
-         write(item%out,*) "Result string in normal order"
-         write(item%out,*) "Res: {", str3%str, "}"
-      end if
-
-      ! Permute strings into nicer order
-      ! Get canocial values for result string
-      do i = 1, item%rank3
-         str3%itype(i) = get_itype(str3%str(i))
-      end do
-
-      ! Permute string: {baij} => {abji}, {ia} => {ai} etc.
-      call permute_index(str1, item%rank1)
-      call permute_index(str2, item%rank2)
-      if (item%inter(3)) then
-         ! For intermeidiates, the index pairing and order must match how
-         ! it is used (it must match the itype string). Therefore the pair
-         ! ordering needs to be checked. This doesn't introduce a sign
-         ! change as pairs of indices are swapped.
-         !write(item%out,*) "Result string{", str3%str, "}"
-         !write(item%out,*) "Result itype{", str3%itype, "}"
-         !write(item%out,*) "Real itype{", item%itype, "}"
-         !call permute_slot_order(str3, item%rank3, item%itype)
-         call permute_index(str3, item%rank3)
-      else
-         call permute_index(str3, item%rank3)
-      end if
-
-
-      s1 = ""
-      s2 = ""
-      s3 = ""
-
-      do i = 1, item%rank1/2
-         s1(i:i) = str1%str(i)
-         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
-      end do
-      do i = 1, item%rank2/2
-         s2(i:i) = str2%str(i)
-         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
-      end do
-      do i = 1, item%rank3/2
-         s3(i:i) = str3%str(i)
-         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
-      end do
-
-      if (ntest>=100) then
-         if (p_factor>0.0d0) then
-            tmp = '+'
-         else
-            tmp = '-'
-         end if
-
-         write(item%out,*) "Final indices"
-         write(item%out,*) "---------------------------"
-         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
-     &                         "}{",str2%str,"}"
-
-         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
-     &                         "][",trim(s2),"]"
-         write(item%out,*) "---------------------------"
-      end if
-
-      item%idx1=trim(s1)
-      item%idx2=trim(s2)
-      item%idx3=trim(s3)
-      item%fact = item%fact * p_factor
-
-      deallocate(p_list%plist)
-
-      call deinit_index_str(str1)
-      call deinit_index_str(str2)
-      call deinit_index_str(str3)
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine assign_index2(item,ntest)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
@@ -3399,7 +2704,6 @@
       ! Rearrange the result string so it is in normal order (all
       ! creation operators to the left of the annhilation). This can
       ! also introduce a sign change.
-      ! TODO: make this a function - also seach for anhilators?
       if (item%rank2/=0) then
          tstr = ""
          do i = 1, item%rank1/2
@@ -3638,562 +2942,562 @@
       end
 
 
-*----------------------------------------------------------------------*
-      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
-     &                           t2, n_cnt, item, p_list, itype)
-*----------------------------------------------------------------------*
+!*----------------------------------------------------------------------*
+!      subroutine find_pairs_wrap(str1, str2, rank1, rank2, t1,
+!     &                           t2, n_cnt, item, p_list, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(in) ::
-     &   str1,
-     &   str2
-      type(itf_contr), intent(in) ::
-     &   item
-      integer, intent(in) ::
-     &   rank1,
-     &   rank2,
-     &   t1,
-     &   t2,
-     &   n_cnt
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-      type(pair_list), intent(inout) ::
-     &   p_list
-
-      integer ::
-     &   shift
-
-      shift = 1
-
-      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
-     &                    item, shift, p_list, itype)
-
-      ! If all the external pairs havn't been found, then there are two
-      ! seperate pairs on each tensor. Go back and find them...
-      if (shift-1/=item%rank3/2) then
-      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
-     &                    item, shift, p_list, itype)
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine find_pairs_new(str1,str2, rank1, rank2, t1, t2, n_cnt,
-     &                          item, shift, p_list, itype)
-*----------------------------------------------------------------------*
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(in) ::
-     &   str1,
-     &   str2
-      type(itf_contr), intent(in) ::
-     &   item
-      integer, intent(in) ::
-     &   rank1,
-     &   rank2,
-     &   t1,
-     &   t2,
-     &   n_cnt
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-      integer, intent(inout) ::
-     &   shift
-      type(pair_list), intent(inout) ::
-     &   p_list
-
-      logical ::
-     &   is_cnt,
-     &   found_ex,
-     &   already_found
-      integer ::
-     &   i,j,
-     &   ntest = 000
-
-      ! Search only the creations of the first string for ex ops
-      do i = 1, rank1/2
-
-         ! Check if creation has already been paired
-         already_found = .false.
-         do j = 1, shift
-            if (str1%str(i)==p_list%plist(j)%pindex(1)) then
-               already_found = .true.
-               exit
-            end if
-         end do
-         if (already_found) cycle
-
-         if (already_found) cycle
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i==str1%cnt_poss(j)) then
-               is_cnt = .true.
-            end if
-         end do
-
-         if (.not. is_cnt) then
-
-            ! Search the annhilations of the first string
-            do j = rank1, rank1/2+1, -1
-
-               if (ntest>0) then
-               write(item%out,*) "searching with ", str1%str(i), t1
-               write(item%out,*) "matching with ", str1%str(j), t1
-               end if
-
-               call suitable_pair3(found_ex, str1, str1, rank1,
-     &                            i, j, 2, shift, n_cnt,
-     &                            p_list, item, itype, t1)
-
-               if (found_ex) then
-        !write(item%out,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
-                  p_list%plist(shift)%pindex(1)=str1%str(i)
-                  p_list%plist(shift)%pindex(2)=str1%str(j)
-                  p_list%plist(shift)%ops(1)=t1
-                  p_list%plist(shift)%ops(2)=t1
-                  shift = shift + 1
-                  exit
-               end if
-            end do
-
-            ! If it didn't find an operator in the first annhilations,
-            ! look on the second annhilation ops
-            if (.not. found_ex) then
-               do j = rank2, rank2/2+1, -1
-
-                  if (ntest>0) then
-              write(item%out,*) "searching 2 with ", str1%str(i), t1
-              write(item%out,*) "matching 2 with ", str2%str(j), t2
-                  end if
-                  call suitable_pair2(found_ex, str2,
-     &                            j, 2, shift, n_cnt,
-     &                            p_list)
-
-                  if (found_ex) then
-        !write(item%out,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
-                     p_list%plist(shift)%pindex(1)=str1%str(i)
-                     p_list%plist(shift)%pindex(2)=str2%str(j)
-                     p_list%plist(shift)%ops(1)=t1
-                     p_list%plist(shift)%ops(2)=t2
-         !call print_plist(p_list, shift, "p_list", item%out)
-                     shift = shift + 1
-                     exit
-                  end if
-               end do
-            end if
-
-
-         end if
-
-         if (.not. is_cnt .and. .not. found_ex) then
-            write(item%out,*) "Failed to find creation/annhilation",
-     &                            " pair 1"
-            exit
-         end if
-
-      end do
-
-
-      ! Havn't found all external pairs yet
-      if (shift-1/=item%rank3/2) then
-         !write(11,*) "Continuing the search"
-
-      ! Search the annhilation operators of the first string
-      ! TODO: factorise this
-      do i = rank1, rank1/2+1, -1
-
-         ! Check if annhilation has already been paired
-         already_found = .false.
-         do j = 1, shift
-            if (str1%str(i)==p_list%plist(j)%pindex(2)) then
-               !write(11,*) "already found!"
-               already_found = .true.
-               exit
-            end if
-         end do
-         if (already_found) cycle
-
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i==str1%cnt_poss(j)) then
-               is_cnt = .true.
-            end if
-         end do
-
-         if (.not. is_cnt) then
-
-            ! Search the creations of the first string
-            do j = 1, rank1/2
-
-               if (ntest>0) then
-               write(item%out,*) "searching 3 with ",str1%str(i), t1
-               write(item%out,*) "matching 3 with ", str1%str(j), t1
-               end if
-
-               call suitable_pair2(found_ex, str1,
-     &                            j, 1, shift, n_cnt,
-     &                            p_list)
-
-               if (found_ex) then
-                  !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
-                  p_list%plist(shift)%pindex(2)=str1%str(i)
-                  p_list%plist(shift)%pindex(1)=str1%str(j)
-                  p_list%plist(shift)%ops(2)=t1
-                  p_list%plist(shift)%ops(1)=t1
-                  shift = shift + 1
-                  exit
-               end if
-            end do
-
-            ! If it didn't find an operator in the first creations,
-            ! look on the second creations ops
-            if (.not. found_ex) then
-
-               do j = 1, rank2/2
-
-               if (ntest>0) then
-              write(item%out,*) "searching 4 with ", str1%str(i), t1
-              write(item%out,*) "matching 4 with ", str2%str(j), t2
-               end if
-
-                  call suitable_pair2(found_ex, str2,
-     &                               j, 1, shift, n_cnt,
-     &                               p_list)
-
-                  if (found_ex) then
-                  !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
-                     p_list%plist(shift)%pindex(2)=str1%str(i)
-                     p_list%plist(shift)%pindex(1)=str2%str(j)
-                     p_list%plist(shift)%ops(2)=t1
-                     p_list%plist(shift)%ops(1)=t2
-                     shift = shift + 1
-                     exit
-                  end if
-               end do
-            end if
-
-
-         end if
-
-         if (.not. is_cnt .and. .not. found_ex) then
-            write(item%out,*) "Failed to find creation/annhilation",
-     &                            " pair 2"
-            exit
-         end if
-
-      end do
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine suitable_pair2(found_ex, str2,
-     &                         place2, ann_cre, shift, n_cnt,
-     &                         p_list)
-*----------------------------------------------------------------------*
+!      type(index_str), intent(in) ::
+!     &   str1,
+!     &   str2
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      integer, intent(in) ::
+!     &   rank1,
+!     &   rank2,
+!     &   t1,
+!     &   t2,
+!     &   n_cnt
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!      type(pair_list), intent(inout) ::
+!     &   p_list
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   found_ex
-      type(index_str), intent(in) ::
-     &   str2
-      type(pair_list), intent(in) ::
-     &   p_list
-      integer, intent(in) ::
-     &   place2,
-     &   ann_cre,
-     &   shift,
-     &   n_cnt
-
-      integer ::
-     &   k
-
-
-      ! False if the matching index is a contraction index
-      found_ex = .true.
-      do k = 1, n_cnt
-         if (place2==str2%cnt_poss(k)) then
-            found_ex = .false.
-            !write(item%out,*) "false here 1"
-            return
-         end if
-      end do
-
-      ! Check if the annhilation operator has already been paried
-      do k = 1, shift
-         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
-            found_ex = .false.
-            !write(item%out,*) "false here 2"
-            return
-         end if
-      end do
-
+!      integer ::
+!     &   shift
+!
+!      shift = 1
+!
+!      call find_pairs_new(str1, str2, rank1, rank2, t1, t2, n_cnt,
+!     &                    item, shift, p_list, itype)
+!
+!      ! If all the external pairs havn't been found, then there are two
+!      ! seperate pairs on each tensor. Go back and find them...
+!      if (shift-1/=item%rank3/2) then
+!      call find_pairs_new(str2, str1, rank2, rank1, t2, t1, n_cnt,
+!     &                    item, shift, p_list, itype)
+!      end if
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine find_pairs_new(str1,str2, rank1, rank2, t1, t2, n_cnt,
+!     &                          item, shift, p_list, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(index_str), intent(in) ::
+!     &   str1,
+!     &   str2
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      integer, intent(in) ::
+!     &   rank1,
+!     &   rank2,
+!     &   t1,
+!     &   t2,
+!     &   n_cnt
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!      integer, intent(inout) ::
+!     &   shift
+!      type(pair_list), intent(inout) ::
+!     &   p_list
+!
+!      logical ::
+!     &   is_cnt,
+!     &   found_ex,
+!     &   already_found
+!      integer ::
+!     &   i,j,
+!     &   ntest = 000
+!
+!      ! Search only the creations of the first string for ex ops
+!      do i = 1, rank1/2
+!
+!         ! Check if creation has already been paired
+!         already_found = .false.
+!         do j = 1, shift
+!            if (str1%str(i)==p_list%plist(j)%pindex(1)) then
+!               already_found = .true.
+!               exit
+!            end if
+!         end do
+!         if (already_found) cycle
+!
+!         if (already_found) cycle
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i==str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!            end if
+!         end do
+!
+!         if (.not. is_cnt) then
+!
+!            ! Search the annhilations of the first string
+!            do j = rank1, rank1/2+1, -1
+!
+!               if (ntest>0) then
+!               write(item%out,*) "searching with ", str1%str(i), t1
+!               write(item%out,*) "matching with ", str1%str(j), t1
+!               end if
+!
+!               call suitable_pair3(found_ex, str1, str1, rank1,
+!     &                            i, j, 2, shift, n_cnt,
+!     &                            p_list, item, itype, t1)
+!
+!               if (found_ex) then
+!        !write(item%out,*)"found pair 1 ",str1%str(i)," ",str1%str(j)
+!                  p_list%plist(shift)%pindex(1)=str1%str(i)
+!                  p_list%plist(shift)%pindex(2)=str1%str(j)
+!                  p_list%plist(shift)%ops(1)=t1
+!                  p_list%plist(shift)%ops(2)=t1
+!                  shift = shift + 1
+!                  exit
+!               end if
+!            end do
+!
+!            ! If it didn't find an operator in the first annhilations,
+!            ! look on the second annhilation ops
+!            if (.not. found_ex) then
+!               do j = rank2, rank2/2+1, -1
+!
+!                  if (ntest>0) then
+!              write(item%out,*) "searching 2 with ", str1%str(i), t1
+!              write(item%out,*) "matching 2 with ", str2%str(j), t2
+!                  end if
+!                  call suitable_pair2(found_ex, str2,
+!     &                            j, 2, shift, n_cnt,
+!     &                            p_list)
+!
+!                  if (found_ex) then
+!        !write(item%out,*)"found pair 2 ",str1%str(i)," ",str2%str(j)
+!                     p_list%plist(shift)%pindex(1)=str1%str(i)
+!                     p_list%plist(shift)%pindex(2)=str2%str(j)
+!                     p_list%plist(shift)%ops(1)=t1
+!                     p_list%plist(shift)%ops(2)=t2
+!         !call print_plist(p_list, shift, "p_list", item%out)
+!                     shift = shift + 1
+!                     exit
+!                  end if
+!               end do
+!            end if
+!
+!
+!         end if
+!
+!         if (.not. is_cnt .and. .not. found_ex) then
+!            write(item%out,*) "Failed to find creation/annhilation",
+!     &                            " pair 1"
+!            exit
+!         end if
+!
+!      end do
+!
+!
+!      ! Havn't found all external pairs yet
+!      if (shift-1/=item%rank3/2) then
+!         !write(11,*) "Continuing the search"
+!
+!      ! Search the annhilation operators of the first string
+!      ! TODO: factorise this
+!      do i = rank1, rank1/2+1, -1
+!
+!         ! Check if annhilation has already been paired
+!         already_found = .false.
+!         do j = 1, shift
+!            if (str1%str(i)==p_list%plist(j)%pindex(2)) then
+!               !write(11,*) "already found!"
+!               already_found = .true.
+!               exit
+!            end if
+!         end do
+!         if (already_found) cycle
+!
+!         is_cnt = .false.
+!         do j = 1, n_cnt
+!            if (i==str1%cnt_poss(j)) then
+!               is_cnt = .true.
+!            end if
+!         end do
+!
+!         if (.not. is_cnt) then
+!
+!            ! Search the creations of the first string
+!            do j = 1, rank1/2
+!
+!               if (ntest>0) then
+!               write(item%out,*) "searching 3 with ",str1%str(i), t1
+!               write(item%out,*) "matching 3 with ", str1%str(j), t1
+!               end if
+!
+!               call suitable_pair2(found_ex, str1,
+!     &                            j, 1, shift, n_cnt,
+!     &                            p_list)
+!
+!               if (found_ex) then
+!                  !write(10,*)"found pair 3 ",str1%str(i)," ",str1%str(j)
+!                  p_list%plist(shift)%pindex(2)=str1%str(i)
+!                  p_list%plist(shift)%pindex(1)=str1%str(j)
+!                  p_list%plist(shift)%ops(2)=t1
+!                  p_list%plist(shift)%ops(1)=t1
+!                  shift = shift + 1
+!                  exit
+!               end if
+!            end do
+!
+!            ! If it didn't find an operator in the first creations,
+!            ! look on the second creations ops
+!            if (.not. found_ex) then
+!
+!               do j = 1, rank2/2
+!
+!               if (ntest>0) then
+!              write(item%out,*) "searching 4 with ", str1%str(i), t1
+!              write(item%out,*) "matching 4 with ", str2%str(j), t2
+!               end if
+!
+!                  call suitable_pair2(found_ex, str2,
+!     &                               j, 1, shift, n_cnt,
+!     &                               p_list)
+!
+!                  if (found_ex) then
+!                  !write(10,*)"found pair 4 ",str1%str(i)," ",str2%str(j)
+!                     p_list%plist(shift)%pindex(2)=str1%str(i)
+!                     p_list%plist(shift)%pindex(1)=str2%str(j)
+!                     p_list%plist(shift)%ops(2)=t1
+!                     p_list%plist(shift)%ops(1)=t2
+!                     shift = shift + 1
+!                     exit
+!                  end if
+!               end do
+!            end if
+!
+!
+!         end if
+!
+!         if (.not. is_cnt .and. .not. found_ex) then
+!            write(item%out,*) "Failed to find creation/annhilation",
+!     &                            " pair 2"
+!            exit
+!         end if
+!
+!      end do
+!      end if
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine suitable_pair2(found_ex, str2,
+!     &                         place2, ann_cre, shift, n_cnt,
+!     &                         p_list)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   found_ex
+!      type(index_str), intent(in) ::
+!     &   str2
+!      type(pair_list), intent(in) ::
+!     &   p_list
+!      integer, intent(in) ::
+!     &   place2,
+!     &   ann_cre,
+!     &   shift,
+!     &   n_cnt
+!
+!      integer ::
+!     &   k
+!
+!
+!      ! False if the matching index is a contraction index
+!      found_ex = .true.
+!      do k = 1, n_cnt
+!         if (place2==str2%cnt_poss(k)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here 1"
+!            return
+!         end if
+!      end do
+!
+!      ! Check if the annhilation operator has already been paried
+!      do k = 1, shift
+!         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here 2"
+!            return
+!         end if
+!      end do
+!
+!!      ! False if the matching index is a correct pair
+!!      if (item%inter(1) .and. t1==1 .and. t2==1) then
+!!         write(item%out,*) "t1, t2: ", t1, t2
+!!         correct_pair = .false.
+!!         call check_pairing2(correct_pair,str1,str2,rank1,
+!!     &                      rank2,place1,place2,item, itype)
+!!         if (.not. correct_pair) then
+!!            found_ex = .false.
+!!            !write(item%out,*) "false here 3"
+!!            return
+!!         end if
+!!      end if
+!
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine suitable_pair3(found_ex, str1, str2, rank1,
+!     &                         place1, place2, ann_cre, shift, n_cnt,
+!     &                         p_list, item, itype, t1)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   found_ex
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      type(index_str), intent(in) ::
+!     &   str1, str2
+!      type(pair_list), intent(in) ::
+!     &   p_list
+!      integer, intent(in) ::
+!     &   place1, place2,
+!     &   rank1,
+!     &   ann_cre,
+!     &   shift,
+!     &   n_cnt,
+!     &   t1
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!
+!      logical ::
+!     &   correct_pair
+!      integer ::
+!     &   k
+!
+!
+!      found_ex = .true.
+!
+!      ! False if the matching index is a contraction index
+!      found_ex = .true.
+!      do k = 1, n_cnt
+!         if (place2==str2%cnt_poss(k)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here: contraction index"
+!            return
+!         end if
+!      end do
+!
+!      ! Check if the annhilation operator has already been paried
+!      do k = 1, shift
+!         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here: already paired"
+!            return
+!         end if
+!      end do
+!
 !      ! False if the matching index is a correct pair
-!      if (item%inter(1) .and. t1==1 .and. t2==1) then
-!         write(item%out,*) "t1, t2: ", t1, t2
+!      if (item%inter(1) .and. item%rank1>2 .and. t1/=2 .or.
+!     &   item%inter(2) .and. item%rank2>2 .and. t1/=1) then
 !         correct_pair = .false.
-!         call check_pairing2(correct_pair,str1,str2,rank1,
-!     &                      rank2,place1,place2,item, itype)
+!         call check_pairing(correct_pair,str1,str2,rank1,
+!     &                      place1,place2,item, itype)
+!         if (.not. correct_pair) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here: incorrect itype"
+!            return
+!         end if
+!      end if
+!
+!
+!      return
+!      end
+!
+!
+!*----------------------------------------------------------------------*
+!      subroutine suitable_pair4(found_ex, str1, str2, rank1,
+!     &                         place1, place2, ann_cre, shift, n_cnt,
+!     &                         p_list, item, itype, t1)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   found_ex
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      type(index_str), intent(in) ::
+!     &   str1, str2
+!      type(pair_list), intent(in) ::
+!     &   p_list
+!      integer, intent(in) ::
+!     &   place1, place2,
+!     &   rank1,
+!     &   ann_cre,
+!     &   shift,
+!     &   n_cnt,
+!     &   t1
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!
+!      logical ::
+!     &   correct_pair
+!      integer ::
+!     &   k
+!
+!
+!      found_ex = .true.
+!
+!      ! False if the matching index is a contraction index
+!      found_ex = .true.
+!      do k = 1, n_cnt
+!         if (place2==str2%cnt_poss(k)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here 1"
+!            return
+!         end if
+!      end do
+!
+!      ! Check if the annhilation operator has already been paried
+!      do k = 1, shift
+!         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
+!            found_ex = .false.
+!            !write(item%out,*) "false here 2"
+!            return
+!         end if
+!      end do
+!
+!      ! False if the matching index is a correct pair
+!      if (item%inter(2) .and. item%rank2>2 .and. t1/=1) then
+!         correct_pair = .false.
+!         call check_pairing(correct_pair,str1,str2,rank1,
+!     &                      place1,place2,item, itype)
 !         if (.not. correct_pair) then
 !            found_ex = .false.
 !            !write(item%out,*) "false here 3"
 !            return
 !         end if
 !      end if
-
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine suitable_pair3(found_ex, str1, str2, rank1,
-     &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype, t1)
-*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   found_ex
-      type(itf_contr), intent(in) ::
-     &   item
-      type(index_str), intent(in) ::
-     &   str1, str2
-      type(pair_list), intent(in) ::
-     &   p_list
-      integer, intent(in) ::
-     &   place1, place2,
-     &   rank1,
-     &   ann_cre,
-     &   shift,
-     &   n_cnt,
-     &   t1
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-
-      logical ::
-     &   correct_pair
-      integer ::
-     &   k
-
-
-      found_ex = .true.
-
-      ! False if the matching index is a contraction index
-      found_ex = .true.
-      do k = 1, n_cnt
-         if (place2==str2%cnt_poss(k)) then
-            found_ex = .false.
-            !write(item%out,*) "false here: contraction index"
-            return
-         end if
-      end do
-
-      ! Check if the annhilation operator has already been paried
-      do k = 1, shift
-         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
-            found_ex = .false.
-            !write(item%out,*) "false here: already paired"
-            return
-         end if
-      end do
-
-      ! False if the matching index is a correct pair
-      if (item%inter(1) .and. item%rank1>2 .and. t1/=2 .or.
-     &   item%inter(2) .and. item%rank2>2 .and. t1/=1) then
-         correct_pair = .false.
-         call check_pairing(correct_pair,str1,str2,rank1,
-     &                      place1,place2,item, itype)
-         if (.not. correct_pair) then
-            found_ex = .false.
-            !write(item%out,*) "false here: incorrect itype"
-            return
-         end if
-      end if
-
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine suitable_pair4(found_ex, str1, str2, rank1,
-     &                         place1, place2, ann_cre, shift, n_cnt,
-     &                         p_list, item, itype, t1)
-*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   found_ex
-      type(itf_contr), intent(in) ::
-     &   item
-      type(index_str), intent(in) ::
-     &   str1, str2
-      type(pair_list), intent(in) ::
-     &   p_list
-      integer, intent(in) ::
-     &   place1, place2,
-     &   rank1,
-     &   ann_cre,
-     &   shift,
-     &   n_cnt,
-     &   t1
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-
-      logical ::
-     &   correct_pair
-      integer ::
-     &   k
-
-
-      found_ex = .true.
-
-      ! False if the matching index is a contraction index
-      found_ex = .true.
-      do k = 1, n_cnt
-         if (place2==str2%cnt_poss(k)) then
-            found_ex = .false.
-            !write(item%out,*) "false here 1"
-            return
-         end if
-      end do
-
-      ! Check if the annhilation operator has already been paried
-      do k = 1, shift
-         if (str2%str(place2)==p_list%plist(k)%pindex(ann_cre)) then
-            found_ex = .false.
-            !write(item%out,*) "false here 2"
-            return
-         end if
-      end do
-
-      ! False if the matching index is a correct pair
-      if (item%inter(2) .and. item%rank2>2 .and. t1/=1) then
-         correct_pair = .false.
-         call check_pairing(correct_pair,str1,str2,rank1,
-     &                      place1,place2,item, itype)
-         if (.not. correct_pair) then
-            found_ex = .false.
-            !write(item%out,*) "false here 3"
-            return
-         end if
-      end if
-
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine check_pairing(correct_pair, str1, str2, rank1,
-     &                         place1, place2, item, itype)
-*----------------------------------------------------------------------*
+!      return
+!      end
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      logical, intent(inout) ::
-     &   correct_pair
-      type(itf_contr), intent(in) ::
-     &   item
-      type(index_str), intent(in) ::
-     &   str1, str2
-      integer, intent(in) ::
-     &   place1, place2,
-     &   rank1
-      integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-
-      integer ::
-     &   i, j, extent,
-     &   pp2
-
-      ! Remeber - the itype info refers to the first tensor positions
-
-!      write(item%out,*) "is it a correct pairing?"
-!      write(item%out,*) "place1 str1 ", place1
-!      write(item%out,*) "place2 str2 ", place2
+!*----------------------------------------------------------------------*
+!      subroutine check_pairing(correct_pair, str1, str2, rank1,
+!     &                         place1, place2, item, itype)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
 !
-!      write(item%out, *) "itype: ", itype
-!      write(item%out, *) "str1%itype: ", str1%itype
-!      write(item%out, *) "str2%itype: ", str2%itype
-
-      if (place1>rank1/2) then
-         !j = item%rank3/2+1
-         j = rank1/2+1
-         !extent = item%rank3
-         extent = rank1
-      else
-         j = 1
-         !extent = item%rank3/2
-         extent = rank1/2
-      end if
-
-      do i = j, extent
-!         write(item%out,*) "possition itype: ", i
-!         write(item%out,*) "str1%itype vs itpye ", str1%itype(place1),
-!     &                     itype(i)
-         if (str1%itype(place1)==itype(i)) then
-            !pp2 = item%rank3 - i + 1
-            pp2 = rank1 - i + 1
-!          write(item%out,*) "paired possition ", pp2
-!          write(item%out,*) "str2%itype vs itype ", str2%itype(place2),
-!     &                      itype(pp2)
-            if (str2%itype(place2)==
-     &                             itype(pp2)) then
-!               write(item%out,*)"correct pair ",str1%str(place1),
-!     &                              " ", str2%str(place2)
-               correct_pair = .true.
-               ! Remove pair from itype copy
-               itype(i) = 0
-               itype(pp2) = 0
-               exit
-            end if
-         end if
-      end do
-
-
-      return
-      end
-
-
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      logical, intent(inout) ::
+!     &   correct_pair
+!      type(itf_contr), intent(in) ::
+!     &   item
+!      type(index_str), intent(in) ::
+!     &   str1, str2
+!      integer, intent(in) ::
+!     &   place1, place2,
+!     &   rank1
+!      integer, intent(inout) ::
+!     &   itype(INDEX_LEN)
+!
+!      integer ::
+!     &   i, j, extent,
+!     &   pp2
+!
+!      ! Remeber - the itype info refers to the first tensor positions
+!
+!!      write(item%out,*) "is it a correct pairing?"
+!!      write(item%out,*) "place1 str1 ", place1
+!!      write(item%out,*) "place2 str2 ", place2
+!!
+!!      write(item%out, *) "itype: ", itype
+!!      write(item%out, *) "str1%itype: ", str1%itype
+!!      write(item%out, *) "str2%itype: ", str2%itype
+!
+!      if (place1>rank1/2) then
+!         !j = item%rank3/2+1
+!         j = rank1/2+1
+!         !extent = item%rank3
+!         extent = rank1
+!      else
+!         j = 1
+!         !extent = item%rank3/2
+!         extent = rank1/2
+!      end if
+!
+!      do i = j, extent
+!!         write(item%out,*) "possition itype: ", i
+!!         write(item%out,*) "str1%itype vs itpye ", str1%itype(place1),
+!!     &                     itype(i)
+!         if (str1%itype(place1)==itype(i)) then
+!            !pp2 = item%rank3 - i + 1
+!            pp2 = rank1 - i + 1
+!!          write(item%out,*) "paired possition ", pp2
+!!          write(item%out,*) "str2%itype vs itype ", str2%itype(place2),
+!!     &                      itype(pp2)
+!            if (str2%itype(place2)==
+!     &                             itype(pp2)) then
+!!               write(item%out,*)"correct pair ",str1%str(place1),
+!!     &                              " ", str2%str(place2)
+!               correct_pair = .true.
+!               ! Remove pair from itype copy
+!               itype(i) = 0
+!               itype(pp2) = 0
+!               exit
+!            end if
+!         end if
+!      end do
+!
+!
+!      return
+!      end
+!
+!
 !*----------------------------------------------------------------------*
 !      subroutine match_idx_with_itype(item, idx, rank, n_cnt)
 !*----------------------------------------------------------------------*
@@ -4340,215 +3644,215 @@
 !
 !      return
 !      end
-
-
-*----------------------------------------------------------------------*
-      subroutine permute_index(idx, rank)
-*----------------------------------------------------------------------*
 !
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(inout) ::
-     &   idx
-      integer, intent(in) ::
-     &   rank
-
-      integer ::
-     &   i, j,
-     &   sum1, sum2
-      character (len=1) ::
-     &   tmp
-
-      if (rank == 6) then
-         return
-      end if
-
-      if (rank == 2) then
-         if (idx%itype(1)>idx%itype(2)) then
-            tmp = idx%str(1)
-            idx%str(1) = idx%str(2)
-            idx%str(2) = tmp
-         end if
-         return
-      end if
-
-      sum1 = 0
-      sum2 = 0
-      do i = 1, rank/2
-         sum1 = sum1 + idx%itype(i)
-         sum2 = sum2 + idx%itype(i+rank/2)
-      end do
-
-      if (sum1<sum2) then
-         do i = 1, rank/2-1
-            if (idx%itype(i)>=idx%itype(i+1)) then
-               if (idx%str(i)>idx%str(i+1)) then
-                  tmp = idx%str(i)
-                  idx%str(i) = idx%str(i+1)
-                  idx%str(i+1) = tmp
-
-                  tmp = idx%str(rank/2+i)
-                  idx%str(rank/2+i) = idx%str(rank/2+i+1)
-                  idx%str(rank/2+i+1) = tmp
-
-                  ! Update possition of contraction indicies
-                  do j = 1, size(idx%cnt_poss)
-                     if (idx%cnt_poss(j)==i) then
-                        idx%cnt_poss(j)=i+1
-                     else if (idx%cnt_poss(j)==i+1) then
-                        idx%cnt_poss(j)=i
-                     end if
-                  end do
-
-                  !itmp = idx%itype(i)
-                  !idx%itype(i) = idx%itype(i+1)
-                  !idx%itype(i+1) = itmp
-
-                  !itmp = idx%itype(rank/2+i)
-                  !idx%itype(rank/2+i) = idx%itype(rank/2+i+1)
-                  !idx%itype(rank/2+i+1) = itmp
-               end if
-            end if
-         end do
-      else
-         do i = 1, rank/2-1
-            if (idx%itype(i+rank/2)<=idx%itype(i+rank/2+1)) then
-               if (idx%str(i+rank/2)<idx%str(i+rank/2+1)) then
-                  tmp = idx%str(i+rank/2)
-                  idx%str(i+rank/2) = idx%str(i+rank/2+1)
-                  idx%str(i+rank/2+1) = tmp
-
-                  tmp = idx%str(i)
-                  idx%str(i) = idx%str(i+1)
-                  idx%str(i+1) = tmp
-
-                  do j = 1, size(idx%cnt_poss)
-                     if (idx%cnt_poss(j)==i+rank/2) then
-                        idx%cnt_poss(j)=i+rank/2+1
-                     else if (idx%cnt_poss(j)==i+1) then
-                        idx%cnt_poss(j)=i+rank/2
-                     end if
-                  end do
-
-                  !itmp = idx%itype(i+rank/2)
-                  !idx%itype(i+rank/2) = idx%itype(i+rank/2+1)
-                  !idx%itype(i+rank/2+1) = itmp
-
-                  !itmp = idx%itype(i)
-                  !idx%itype(i) = idx%itype(i+1)
-                  !idx%itype(i+1) = itmp
-               end if
-            end if
-         end do
-      end if
-
-      return
-      end
-
-
-*----------------------------------------------------------------------*
-      subroutine permute_slot_order(idx, rank, itype)
-*----------------------------------------------------------------------*
-!     Swap around pairs of indices, so as to match a given itype
-!     sequence. This changes which indicies will ultimiatley end up in
-!     each ITF tensor slot.
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(index_str), intent(inout) ::
-     &   idx         ! Index and itype of tensor
-      integer, intent(in) ::
-     &   rank,       ! Rank of tensor
-     &   itype(rank)    ! Index type to compare to
-
-      integer ::
-     &   i, j, k,
-     &   pp1, pp2    ! Paired position
-      character (len=1), pointer ::
-     &   new_str(:) => null()    ! New index string with correct slot positions
-      character (len=1) ::
-     &   tmp
-      logical ::
-     &   incorrect,  ! True if the indicies are not in the correct slots
-     &   used        ! True if the pair has already been used
+!
+!*----------------------------------------------------------------------*
+!      subroutine permute_index(idx, rank)
+!*----------------------------------------------------------------------*
+!!
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(index_str), intent(inout) ::
+!     &   idx
+!      integer, intent(in) ::
+!     &   rank
+!
+!      integer ::
+!     &   i, j,
+!     &   sum1, sum2
+!      character (len=1) ::
+!     &   tmp
+!
+!      if (rank == 6) then
+!         return
+!      end if
+!
+!      if (rank == 2) then
+!         if (idx%itype(1)>idx%itype(2)) then
+!            tmp = idx%str(1)
+!            idx%str(1) = idx%str(2)
+!            idx%str(2) = tmp
+!         end if
+!         return
+!      end if
+!
+!      sum1 = 0
+!      sum2 = 0
+!      do i = 1, rank/2
+!         sum1 = sum1 + idx%itype(i)
+!         sum2 = sum2 + idx%itype(i+rank/2)
+!      end do
+!
+!      if (sum1<sum2) then
+!         do i = 1, rank/2-1
+!            if (idx%itype(i)>=idx%itype(i+1)) then
+!               if (idx%str(i)>idx%str(i+1)) then
+!                  tmp = idx%str(i)
+!                  idx%str(i) = idx%str(i+1)
+!                  idx%str(i+1) = tmp
+!
+!                  tmp = idx%str(rank/2+i)
+!                  idx%str(rank/2+i) = idx%str(rank/2+i+1)
+!                  idx%str(rank/2+i+1) = tmp
+!
+!                  ! Update possition of contraction indicies
+!                  do j = 1, size(idx%cnt_poss)
+!                     if (idx%cnt_poss(j)==i) then
+!                        idx%cnt_poss(j)=i+1
+!                     else if (idx%cnt_poss(j)==i+1) then
+!                        idx%cnt_poss(j)=i
+!                     end if
+!                  end do
+!
+!                  !itmp = idx%itype(i)
+!                  !idx%itype(i) = idx%itype(i+1)
+!                  !idx%itype(i+1) = itmp
+!
+!                  !itmp = idx%itype(rank/2+i)
+!                  !idx%itype(rank/2+i) = idx%itype(rank/2+i+1)
+!                  !idx%itype(rank/2+i+1) = itmp
+!               end if
+!            end if
+!         end do
+!      else
+!         do i = 1, rank/2-1
+!            if (idx%itype(i+rank/2)<=idx%itype(i+rank/2+1)) then
+!               if (idx%str(i+rank/2)<idx%str(i+rank/2+1)) then
+!                  tmp = idx%str(i+rank/2)
+!                  idx%str(i+rank/2) = idx%str(i+rank/2+1)
+!                  idx%str(i+rank/2+1) = tmp
+!
+!                  tmp = idx%str(i)
+!                  idx%str(i) = idx%str(i+1)
+!                  idx%str(i+1) = tmp
+!
+!                  do j = 1, size(idx%cnt_poss)
+!                     if (idx%cnt_poss(j)==i+rank/2) then
+!                        idx%cnt_poss(j)=i+rank/2+1
+!                     else if (idx%cnt_poss(j)==i+1) then
+!                        idx%cnt_poss(j)=i+rank/2
+!                     end if
+!                  end do
+!
+!                  !itmp = idx%itype(i+rank/2)
+!                  !idx%itype(i+rank/2) = idx%itype(i+rank/2+1)
+!                  !idx%itype(i+rank/2+1) = itmp
+!
+!                  !itmp = idx%itype(i)
+!                  !idx%itype(i) = idx%itype(i+1)
+!                  !idx%itype(i+1) = itmp
+!               end if
+!            end if
+!         end do
+!      end if
+!
+!      return
+!      end
 
 
-      ! Check if the indicies are already in the correct slots
-      incorrect = .false.
-      do i = 1, rank
-         if (idx%itype(i) /= itype(i)) incorrect = .true.
-      end do
-      if (.not. incorrect) return
-
-      ! Always have itypes of lower value on the left
-      if (rank == 2) then
-         if (idx%itype(1)>idx%itype(2)) then
-            tmp = idx%str(1)
-            idx%str(1) = idx%str(2)
-            idx%str(2) = tmp
-         end if
-         return
-      end if
-
-      ! For higher rank tensors, search for index pair which matches the
-      ! itype of a certain position (enumerated by i) and place that
-      ! pair it that position in new_str
-      allocate(new_str(rank))
-      new_str = ''
-
-      do i = 1, rank/2
-         do j = 1, rank/2
-            pp1 = rank - i + 1
-            pp2 = rank - j + 1
-
-            used = .false.
-            do k = 1, rank/2
-               if (new_str(k) == idx%str(j)) then
-                  used = .true.
-                  exit
-               end if
-            end do
-
-            if (used) then
-               cycle
-            end if
-
-            if (idx%itype(j)==itype(i) .and.
-     &                                  idx%itype(pp2)==itype(pp1)) then
-               !write(10,*) "idx%itype ", idx%itype(j)
-               !write(10,*) "idx%itype ", idx%itype(pp2)
-               !write(10,*) "itype ", itype(i)
-               !write(10,*) "itype ", itype(pp1)
-               !write(10,*) "idx%str(j) ", idx%str(j)
-               !write(10,*) "idx%str(pp2) ", idx%str(pp2)
-               new_str(i) = idx%str(j)
-               new_str(pp1) = idx%str(pp2)
-               !write(10,*) "new_str ", new_str
-               exit
-
-            else
-               continue
-            end if
-
-         end do
-      end do
-
-      ! Update old result string and itype
-      idx%str = new_str
-      idx%itype = itype
-      deallocate(new_str)
-
-      return
-      end
+!*----------------------------------------------------------------------*
+!      subroutine permute_slot_order(idx, rank, itype)
+!*----------------------------------------------------------------------*
+!!     Swap around pairs of indices, so as to match a given itype
+!!     sequence. This changes which indicies will ultimiatley end up in
+!!     each ITF tensor slot.
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      type(index_str), intent(inout) ::
+!     &   idx         ! Index and itype of tensor
+!      integer, intent(in) ::
+!     &   rank,       ! Rank of tensor
+!     &   itype(rank)    ! Index type to compare to
+!
+!      integer ::
+!     &   i, j, k,
+!     &   pp1, pp2    ! Paired position
+!      character (len=1), pointer ::
+!     &   new_str(:) => null()    ! New index string with correct slot positions
+!      character (len=1) ::
+!     &   tmp
+!      logical ::
+!     &   incorrect,  ! True if the indicies are not in the correct slots
+!     &   used        ! True if the pair has already been used
+!
+!
+!      ! Check if the indicies are already in the correct slots
+!      incorrect = .false.
+!      do i = 1, rank
+!         if (idx%itype(i) /= itype(i)) incorrect = .true.
+!      end do
+!      if (.not. incorrect) return
+!
+!      ! Always have itypes of lower value on the left
+!      if (rank == 2) then
+!         if (idx%itype(1)>idx%itype(2)) then
+!            tmp = idx%str(1)
+!            idx%str(1) = idx%str(2)
+!            idx%str(2) = tmp
+!         end if
+!         return
+!      end if
+!
+!      ! For higher rank tensors, search for index pair which matches the
+!      ! itype of a certain position (enumerated by i) and place that
+!      ! pair it that position in new_str
+!      allocate(new_str(rank))
+!      new_str = ''
+!
+!      do i = 1, rank/2
+!         do j = 1, rank/2
+!            pp1 = rank - i + 1
+!            pp2 = rank - j + 1
+!
+!            used = .false.
+!            do k = 1, rank/2
+!               if (new_str(k) == idx%str(j)) then
+!                  used = .true.
+!                  exit
+!               end if
+!            end do
+!
+!            if (used) then
+!               cycle
+!            end if
+!
+!            if (idx%itype(j)==itype(i) .and.
+!     &                                  idx%itype(pp2)==itype(pp1)) then
+!               !write(10,*) "idx%itype ", idx%itype(j)
+!               !write(10,*) "idx%itype ", idx%itype(pp2)
+!               !write(10,*) "itype ", itype(i)
+!               !write(10,*) "itype ", itype(pp1)
+!               !write(10,*) "idx%str(j) ", idx%str(j)
+!               !write(10,*) "idx%str(pp2) ", idx%str(pp2)
+!               new_str(i) = idx%str(j)
+!               new_str(pp1) = idx%str(pp2)
+!               !write(10,*) "new_str ", new_str
+!               exit
+!
+!            else
+!               continue
+!            end if
+!
+!         end do
+!      end do
+!
+!      ! Update old result string and itype
+!      idx%str = new_str
+!      idx%itype = itype
+!      deallocate(new_str)
+!
+!      return
+!      end
 
 
 *----------------------------------------------------------------------*

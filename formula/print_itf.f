@@ -47,7 +47,7 @@
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
 
-            call command_to_itf2(fl_item%bcontr,itin,itflog,
+            call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
      &                          contr_no,k4e_no)
 
