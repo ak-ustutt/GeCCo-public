@@ -3251,59 +3251,30 @@
       end if
 
 
-      ! TODO: Need to set intermediates so they match the previous itpye
-      ! TODO: If itype is already the same, don't do anything
-      ! TODO: Make a function + inter(2)
-      itype = item%itype
-
+      ! Rearrange intermediate index to matach previously declared inter
+      ! index. This uses the itype array from the previous lines
+      ! TODO: itype for two inters on same line
       if (item%inter(1)) then
-!         write(item%out,*) "fuck ", itype
-!         write(item%out,*) "fuck1 ", str1%str
-!         write(item%out,*) "fuck1 ", str1%itype
-!         write(item%out,*) "fuck1 ", str1%cnt_poss
-
-         do i = 1, item%rank1/2
-            do j = 1, item%rank1/2
-               if (itype(i) == str1%itype(j)) then
-                  tstr(i:i) = str1%str(j)
-                  str1%str(j) = ''
-                  str1%itype(j) = 0
-                  exit
-               end if
-            end do
-         end do
-         do i = item%rank1/2 + 1, item%rank1
-            do j = item%rank1/2+1, item%rank1
-               if (itype(i) == str1%itype(j)) then
-                  tstr(i:i) = str1%str(j)
-                  str1%str(j) = ''
-                  str1%itype(j) = 0
-                  exit
-               end if
-            end do
-         end do
-
-         do i = 1, item%rank1
-            str1%str(i) = tstr(i:i)
-         end do
-
-         do i = 1, item%rank1
-            str1%itype(i) = itype(i)
-         end do
-
-         shift = 1
-         do i = 1, item%rank1
-            do j = 1, item%rank2
-               if (str1%str(i) == str2%str(j)) then
-                  str1%cnt_poss(shift) = i
-                  shift = shift + 1
-               end if
-            end do
-         end do
-
-!         write(item%out,*) "fuck2 ", str1%str
-!         write(item%out,*) "fuck2 ", str1%itype
-!         write(item%out,*) "fuck2 ", str1%cnt_poss
+         call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
+     &                            item%itype)
+         if (ntest>=100) then
+            write(item%out,*) "After arragne_inter_itpye, inter(1)"
+            write(item%out,*) "T1: {", str1%str, "}"
+            write(item%out,*) "itpye: {", str1%itype, "}"
+            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+            write(item%out,*) "previous itype: ", itype
+         end if
+      end if
+      if (item%inter(2)) then
+         call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
+     &                            item%itype)
+         if (ntest>=100) then
+            write(item%out,*) "After arragne_inter_itpye, inter(2)"
+            write(item%out,*) "T2: {", str1%str, "}"
+            write(item%out,*) "itpye: {", str1%itype, "}"
+            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+            write(item%out,*) "previous itype: ", itype
+         end if
       end if
 
 
@@ -3578,6 +3549,90 @@
       call deinit_index_str(str1)
       call deinit_index_str(str2)
       call deinit_index_str(str3)
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine arrange_inter_itype(rank1, rank2, idx1, idx2, itype)
+*----------------------------------------------------------------------*
+!     Rearrange intermeidate index according to the itype of the
+!     previously declared intermediate
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   rank1,
+     &   rank2,
+     &   itype(INDEX_LEN)
+      type(index_str), intent(inout) ::
+     &   idx1,
+     &   idx2
+
+      integer ::
+     &   i, j,
+     &   shift
+      character (len=INDEX_LEN) ::
+     &   tstr
+      logical ::
+     &   same
+
+      same = .true.
+      do i = 1, rank1
+         ! Check if intermediate already has correct index itype
+         if (idx1%itype(i) /= itype(i)) then
+            same = .false.
+         end if
+      end do
+
+      if (same) return
+
+
+      do i = 1, rank1/2
+         do j = 1, rank1/2
+            if (itype(i) == idx1%itype(j)) then
+               tstr(i:i) = idx1%str(j)
+               idx1%str(j) = ''
+               idx1%itype(j) = 0
+               exit
+            end if
+         end do
+      end do
+
+      do i = rank1/2 + 1, rank1
+         do j = rank1/2+1, rank1
+            if (itype(i) == idx1%itype(j)) then
+               tstr(i:i) = idx1%str(j)
+               idx1%str(j) = ''
+               idx1%itype(j) = 0
+               exit
+            end if
+         end do
+      end do
+
+      do i = 1, rank1
+         idx1%str(i) = tstr(i:i)
+      end do
+
+      do i = 1, rank1
+         idx1%itype(i) = itype(i)
+      end do
+
+      ! Update contraction index posistions
+      shift = 1
+      do i = 1, rank1
+         do j = 1, rank2
+            if (idx1%str(i) == idx2%str(j)) then
+               idx1%cnt_poss(shift) = i
+               shift = shift + 1
+            end if
+         end do
+      end do
 
       return
       end

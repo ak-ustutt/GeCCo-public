@@ -29,8 +29,7 @@
      &     contr_no,                            ! Counter of contrations
      &     k4e_no                               ! Counter of K ext contractions (involving 4 ext ints)
       integer ::
-     &   inter_itype(INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
-     &   inter_itype2(INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
+     &   inter_itype(INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
 
 
       ! Point to start of linked list of formulae
@@ -48,12 +47,8 @@
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
 
-!            call command_to_itf(fl_item%bcontr,itin,itflog,
-!     &                          fl_item%command, inter_itype,
-!     &                          contr_no)
-
             call command_to_itf2(fl_item%bcontr,itin,itflog,
-     &                          fl_item%command, inter_itype2,
+     &                          fl_item%command, inter_itype,
      &                          contr_no,k4e_no)
 
             ! Count the number of terms
