@@ -933,6 +933,12 @@
       end if
 
 
+      ! Update K4E counter
+      if (item%k4e_line) then
+         nk4e = nk4e + 1
+      end if
+
+
       ! Deallocate memroy used when construcitng item
       call itf_deinit(item)
 
@@ -3557,71 +3563,73 @@
       ! creation operators to the left of the annhilation). This can
       ! also introduce a sign change.
       ! TODO: make this a function - also seach for anhilators?
-      tstr = ""
-      do i = 1, item%rank1/2
-         shift = 1
-         do j = 1, item%rank3
+      if (item%rank2/=0) then
+         tstr = ""
+         do i = 1, item%rank1/2
+            shift = 1
+            do j = 1, item%rank3
 
-            if (str3%str(j) == str1%str(i)) then
-               tstr(shift:shift) = str3%str(j)
-               shift = shift + 1
+               if (str3%str(j) == str1%str(i)) then
+                  tstr(shift:shift) = str3%str(j)
+                  shift = shift + 1
 
-               do k = 1, item%rank3
-                  if (str3%str(k) /= str3%str(j)) then
-                     tstr(shift:shift) = str3%str(k)
-                     shift = shift + 1
+                  do k = 1, item%rank3
+                     if (str3%str(k) /= str3%str(j)) then
+                        tstr(shift:shift) = str3%str(k)
+                        shift = shift + 1
+                     end if
+                  end do
+
+                  do k = 1, item%rank3
+                     str3%str(k) = tstr(k:k)
+                  end do
+
+                  if (mod(item%rank3-j,2)==0) then
+                     p_factor = p_factor * -1.0d0
+                     if (ntest>=100) then
+                        write(item%out,*) "Update factor 2 (rearrange",
+     &                 " the result string to normal order): ", p_factor
+                     end if
                   end if
-               end do
-
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               if (mod(item%rank3-j,2)==0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*) "Update factor 2 (rearrange",
-     &               " the result string to normal order): ", p_factor
-                  end if
+                  exit
                end if
-               exit
-            end if
 
+            end do
          end do
-      end do
 
 
-      do i = 1, item%rank2/2
-         shift = 1
-         do j = 1, item%rank3
+         do i = 1, item%rank2/2
+            shift = 1
+            do j = 1, item%rank3
 
-            if (str3%str(j) == str2%str(i)) then
-               tstr(shift:shift) = str3%str(j)
-               shift = shift + 1
+               if (str3%str(j) == str2%str(i)) then
+                  tstr(shift:shift) = str3%str(j)
+                  shift = shift + 1
 
-               do k = 1, item%rank3
-                  if (str3%str(k) /= str3%str(j)) then
-                     tstr(shift:shift) = str3%str(k)
-                     shift = shift + 1
+                  do k = 1, item%rank3
+                     if (str3%str(k) /= str3%str(j)) then
+                        tstr(shift:shift) = str3%str(k)
+                        shift = shift + 1
+                     end if
+                  end do
+
+                  do k = 1, item%rank3
+                     str3%str(k) = tstr(k:k)
+                  end do
+
+                  if (mod(item%rank3-j,2)==0) then
+                     p_factor = p_factor * -1.0d0
+                     if (ntest>=100) then
+                        write(item%out,*) "Update factor 2 (rearrange",
+     &                 " the result string to normal order): ", p_factor
+                     end if
                   end if
-               end do
-
-               do k = 1, item%rank3
-                  str3%str(k) = tstr(k:k)
-               end do
-
-               if (mod(item%rank3-j,2)==0) then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*) "Update factor 2 (rearrange",
-     &               " the result string to normal order): ", p_factor
-                  end if
+                  exit
                end if
-               exit
-            end if
 
+            end do
          end do
-      end do
+      end if
 
       ! Due to how the R:ea residual is defined, {p a^+} instead of
       ! {a^+ p}, we need an extra minus to flip the normal ordered
