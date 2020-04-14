@@ -29,8 +29,7 @@
      &     contr_no,                            ! Counter of contrations
      &     k4e_no                               ! Counter of K ext contractions (involving 4 ext ints)
       integer ::
-     &   inter_itype(INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
-     &   inter_itype2(MAXINT,INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
+     &   inter_itype(MAXINT,INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
 
 
       ! Point to start of linked list of formulae
@@ -50,7 +49,7 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
-     &                          contr_no,k4e_no,inter_itype2)
+     &                          contr_no,k4e_no)
 
             !write(itflog,*) "hello ", fl_item%bcontr%svertex_itf
 

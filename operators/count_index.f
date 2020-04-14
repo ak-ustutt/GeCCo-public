@@ -528,7 +528,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine set_itype(item, itype, itype2, ntest)
+      subroutine set_itype(item, itype, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -544,9 +544,7 @@
       type(itf_contr), intent(inout) ::
      &   item        ! ITF contraction object; holds all info about the ITF algo line
       integer, intent(inout) ::
-     &   itype(INDEX_LEN)
-      integer, intent(inout) ::
-     &   itype2(MAXINT, INDEX_LEN)
+     &   itype(MAXINT, INDEX_LEN)
       integer, intent(in) ::
      &   ntest
 
@@ -561,59 +559,35 @@
          return
       end if
 
-      if (item%rank3==2) then
-         itype(1) = get_itype(item%idx3(1:1))
-         itype(2) = get_itype(item%idx3(2:2))
-      else if (item%rank3==4) then
-         itype(1) = get_itype(item%idx3(1:1))
-         itype(2) = get_itype(item%idx3(2:2))
-         itype(3) = get_itype(item%idx3(4:4))
-         itype(4) = get_itype(item%idx3(3:3))
-      else if (item%rank3==6) then
-         itype(1) = get_itype(item%idx3(1:1))
-         itype(2) = get_itype(item%idx3(2:2))
-         itype(3) = get_itype(item%idx3(3:3))
-         itype(4) = get_itype(item%idx3(6:6))
-         itype(5) = get_itype(item%idx3(5:5))
-         itype(6) = get_itype(item%idx3(4:4))
-      end if
-
-      if (ntest>=100) then
-         call debug_header("set_itype", item%out)
-         write(item%out,*) "itype from intermediate: ", item%idx3
-         write(item%out,'(a6)',advance='no') "     {"
-         do i = 1, item%rank3
-            write(item%out,'(i0, 1x)', advance='no') itype(i)
-         end do
-         write(item%out,'(a1)') "}"
-      end if
-
-
       ! More advanced itype for handling n intermeidates which are
       ! defined and used anywhere within the complete diagram
+      ! WARNING: This won't work for more than 9 intermediates...
       i = len(trim(item%label_res))
       read(item%label_res(i:i),'(1i)') ninter
+      if (ninter==0)
+     &          call line_error("0 ninter in set_itype",item)
+
 
       ! Clear all itype info from previous diagram
       if (i == 1) then
-         itype2 = 0
+         itype = 0
       end if
 
       if (item%rank3==2) then
-         itype2(ninter,1) = get_itype(item%idx3(1:1))
-         itype2(ninter,2) = get_itype(item%idx3(2:2))
+         itype(ninter,1) = get_itype(item%idx3(1:1))
+         itype(ninter,2) = get_itype(item%idx3(2:2))
       else if (item%rank3==4) then
-         itype2(ninter,1) = get_itype(item%idx3(1:1))
-         itype2(ninter,2) = get_itype(item%idx3(2:2))
-         itype2(ninter,3) = get_itype(item%idx3(4:4))
-         itype2(ninter,4) = get_itype(item%idx3(3:3))
+         itype(ninter,1) = get_itype(item%idx3(1:1))
+         itype(ninter,2) = get_itype(item%idx3(2:2))
+         itype(ninter,3) = get_itype(item%idx3(4:4))
+         itype(ninter,4) = get_itype(item%idx3(3:3))
       else if (item%rank3==6) then
-         itype2(ninter,1) = get_itype(item%idx3(1:1))
-         itype2(ninter,2) = get_itype(item%idx3(2:2))
-         itype2(ninter,3) = get_itype(item%idx3(3:3))
-         itype2(ninter,4) = get_itype(item%idx3(6:6))
-         itype2(ninter,5) = get_itype(item%idx3(5:5))
-         itype2(ninter,6) = get_itype(item%idx3(4:4))
+         itype(ninter,1) = get_itype(item%idx3(1:1))
+         itype(ninter,2) = get_itype(item%idx3(2:2))
+         itype(ninter,3) = get_itype(item%idx3(3:3))
+         itype(ninter,4) = get_itype(item%idx3(6:6))
+         itype(ninter,5) = get_itype(item%idx3(5:5))
+         itype(ninter,6) = get_itype(item%idx3(4:4))
       end if
 
 
@@ -622,7 +596,7 @@
          do j = 1, MAXINT
             write(item%out,'(a6)',advance='no') "     {"
             do i = 1, item%rank3
-               write(item%out,'(i0, 1x)', advance='no') itype2(j, i)
+               write(item%out,'(i0, 1x)', advance='no') itype(j, i)
             end do
             write(item%out,'(a1)') "}"
          end do
@@ -635,7 +609,7 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, contr_no, nk4e, itype2)
+     &                           inter_itype, contr_no, nk4e)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -660,9 +634,7 @@
       integer, intent(inout) ::
      &   nk4e                ! K4E counter
       integer, intent(inout) ::
-     &   inter_itype(*)      ! Store itypes of intermediates between lines
-      integer, intent(inout) ::
-     &   itype2(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
+     &   inter_itype(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
 
       type(itf_contr) ::
      &   item,               ! ITF contraction object; holds all info about the ITF algo line
@@ -702,7 +674,7 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,itype2,nk4e,ntest1)
+     &                    inter_itype,nk4e,ntest1)
 
 
       ! 2. Assign index / Determine sign
@@ -742,7 +714,7 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,itype2,nk4e,ntest5)
+     &                           inter_itype,nk4e,ntest5)
             call assign_index(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
@@ -761,7 +733,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,itype2,nk4e,ntest5)
+     &                       inter_itype,nk4e,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
@@ -788,7 +760,7 @@
 
       ! 9. If an intermediate, set inter_itype for use in next line
       ! where the intermediate is created
-      call set_itype(item, inter_itype, itype2, ntest9)
+      call set_itype(item, inter_itype, ntest9)
 
 
       if (ntest10>=100) then
@@ -820,7 +792,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,itype2,nk4e,ntest)
+     &                          itype,nk4e,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -842,8 +814,7 @@
      &   perm,        ! Permutation information
      &   comm,        ! formula_item command
      &   lulog,        ! Output file
-     &   itype(INDEX_LEN),
-     &   itype2(MAXINT,INDEX_LEN),
+     &   itype(MAXINT,INDEX_LEN),
      &   nk4e,
      &   ntest
       logical, intent(in) ::
@@ -1028,10 +999,8 @@
       ! Number of spin cases associated with this line
       item%nspin_cases=1
 
-
       ! Set itype from previous line (can be 0)
       item%itype = itype
-      item%itype2 = itype2
 
       ! Set K4E info
       item%nk4e = nk4e
@@ -2435,7 +2404,7 @@
       ! TODO: itype for two inters on same line
       if (item%inter(1)) then
          call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
-     &                           item%itype, item%itype2, item%label_t1)
+     &                           item%itype, item%label_t1)
          if (ntest>=100) then
             write(item%out,*) "After arragne_inter_itpye, inter(1)"
             write(item%out,*) "T1: {", str1%str, "}"
@@ -2446,7 +2415,7 @@
       end if
       if (item%inter(2)) then
          call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
-     &                           item%itype, item%itype2, item%label_t2)
+     &                           item%itype, item%label_t2)
          if (ntest>=100) then
             write(item%out,*) "After arragne_inter_itpye, inter(2)"
             write(item%out,*) "T2: {", str1%str, "}"
@@ -2734,7 +2703,7 @@
 
 *----------------------------------------------------------------------*
       subroutine arrange_inter_itype(rank1, rank2, idx1, idx2, itype,
-     &                               itype2, label)
+     &                               label)
 *----------------------------------------------------------------------*
 !     Rearrange intermeidate index according to the itype of the
 !     previously declared intermediate
@@ -2748,8 +2717,7 @@
       integer, intent(in) ::
      &   rank1,
      &   rank2,
-     &   itype(INDEX_LEN),
-     &   itype2(MAXINT,INDEX_LEN)
+     &   itype(MAXINT, INDEX_LEN)
       type(index_str), intent(inout) ::
      &   idx1,
      &   idx2
@@ -2759,8 +2727,7 @@
       integer ::
      &   i, j,
      &   shift,
-     &   ninter,
-     &   titype(INDEX_LEN)
+     &   ninter
       character (len=INDEX_LEN) ::
      &   tstr
       logical ::
@@ -2770,15 +2737,10 @@
       i = len(trim(label))
       read(label(i:i),'(1i)') ninter
 
-      titype = 0
-      do i = 1, rank1
-         titype(i) = itype2(ninter, i)
-      end do
-
       same = .true.
       do i = 1, rank1
          ! Check if intermediate already has correct index itype
-         if (idx1%itype(i) /= itype2(ninter,i)) then
+         if (idx1%itype(i) /= itype(ninter,i)) then
             same = .false.
          end if
       end do
@@ -2788,7 +2750,7 @@
 
       do i = 1, rank1/2
          do j = 1, rank1/2
-            if (itype2(ninter,i) == idx1%itype(j)) then
+            if (itype(ninter,i) == idx1%itype(j)) then
                tstr(i:i) = idx1%str(j)
                idx1%str(j) = ''
                idx1%itype(j) = 0
@@ -2799,7 +2761,7 @@
 
       do i = rank1/2 + 1, rank1
          do j = rank1/2+1, rank1
-            if (itype2(ninter,i) == idx1%itype(j)) then
+            if (itype(ninter,i) == idx1%itype(j)) then
                tstr(i:i) = idx1%str(j)
                idx1%str(j) = ''
                idx1%itype(j) = 0
@@ -2813,7 +2775,7 @@
       end do
 
       do i = 1, rank1
-         idx1%itype(i) = itype2(ninter,i)
+         idx1%itype(i) = itype(ninter,i)
       end do
 
       ! Update contraction index posistions
@@ -2826,60 +2788,6 @@
             end if
          end do
       end do
-
-
-
-!      same = .true.
-!      do i = 1, rank1
-!         ! Check if intermediate already has correct index itype
-!         if (idx1%itype(i) /= itype(i)) then
-!            same = .false.
-!         end if
-!      end do
-!
-!      if (same) return
-!
-!
-!      do i = 1, rank1/2
-!         do j = 1, rank1/2
-!            if (itype(i) == idx1%itype(j)) then
-!               tstr(i:i) = idx1%str(j)
-!               idx1%str(j) = ''
-!               idx1%itype(j) = 0
-!               exit
-!            end if
-!         end do
-!      end do
-!
-!      do i = rank1/2 + 1, rank1
-!         do j = rank1/2+1, rank1
-!            if (itype(i) == idx1%itype(j)) then
-!               tstr(i:i) = idx1%str(j)
-!               idx1%str(j) = ''
-!               idx1%itype(j) = 0
-!               exit
-!            end if
-!         end do
-!      end do
-!
-!      do i = 1, rank1
-!         idx1%str(i) = tstr(i:i)
-!      end do
-!
-!      do i = 1, rank1
-!         idx1%itype(i) = itype(i)
-!      end do
-!
-!      ! Update contraction index posistions
-!      shift = 1
-!      do i = 1, rank1
-!         do j = 1, rank2
-!            if (idx1%str(i) == idx2%str(j)) then
-!               idx1%cnt_poss(shift) = i
-!               shift = shift + 1
-!            end if
-!         end do
-!      end do
 
       return
       end

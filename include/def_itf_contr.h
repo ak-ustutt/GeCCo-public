@@ -123,8 +123,7 @@
 
       integer ::
      &     ninter = 0,                  ! Number of intermediates used in a contraction
-     &     itype(INDEX_LEN),
-     &     itype2(MAXINT,INDEX_LEN)
+     &     itype(MAXINT,INDEX_LEN)
       type(spin_info) ::
      &     t_spin(3)                    ! Spin info of result, t1 and t2 tensors
 
