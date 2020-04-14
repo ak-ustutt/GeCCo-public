@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 23-02-2020 15:16
+// Created on: 14-04-2020 09:40
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -14,10 +14,10 @@ tensor: K:cccc[klij], K:cccc
 tensor: K:eecc[abij], K:eecc
 
 // J-integral tensors
-tensor: J:eecc[caik], J:eecc
+tensor: J:eecc[acki], J:eecc
 
 // Special integral tensors
-tensor: K4E1:eecc[abij], K4E1:eecc
+tensor: K4E1[baij], K4E1
 
 // Tensor to send to Kext
 tensor: INTpp[abij], INTpp
@@ -27,7 +27,7 @@ tensor: f:cc[ki], f:cc
 tensor: f:ee[ac], f:ee
 
 // Amplitude tensors
-tensor: T:eecc[abjk], T:eecc
+tensor: T:eecc[bajk], T:eecc
 
 // Residual tensors
 tensor: R:eecc[abij], R:eecc
@@ -105,50 +105,51 @@ drop K:eecc[abij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc ITIN[abji]
-load f:cc[ki], T:eecc[abjk]
-.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
-drop T:eecc[abjk], f:cc[ki]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji]
-alloc ITIN[abji]
-load f:ee[ac], T:eecc[cbji]
-.ITIN[abji] += f:ee[ac] T:eecc[cbji]
-drop T:eecc[cbji], f:ee[ac]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji]
-alloc ITIN[abij]
-load K:cccc[klij], T:eecc[abkl]
-.ITIN[abij] += .5*K:cccc[klij] T:eecc[abkl]
-drop T:eecc[abkl], K:cccc[klij]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc ITIN[abij]
-load K:eecc[caki], J:eecc[caik], T:eecc[cbkj]
-.ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[cbkj]
-drop T:eecc[cbkj], J:eecc[caik], K:eecc[caki]
-load K:eecc[acik], T:eecc[bcjk]
-.ITIN[abij] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
-drop T:eecc[bcjk], K:eecc[acik]
-load J:eecc[ackj], T:eecc[cbik]
-.ITIN[abij] -= J:eecc[ackj] T:eecc[cbik]
-drop T:eecc[cbik], J:eecc[ackj]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-// Replacing line with 4-external integrals
-//  .ITIN[abij] += .5*K:eeee[abcd] T:eecc[cdij]
-alloc ITIN[abij]
-load K4E1:eecc[abij]
-.ITIN[abij] += .5*K4E1:eecc[abij]
-drop K4E1:eecc[abij]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-store R:eecc[abij]
+alloc ITIN[baji]
+load f:cc[ki], T:eecc[bajk]
+.ITIN[baji] -= f:cc[ki] T:eecc[bajk]
+drop T:eecc[bajk], f:cc[ki]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji]
+alloc ITIN[baij]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[baij] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc ITIN[baij]
+load K:cccc[klij], T:eecc[bakl]
+.ITIN[baij] += .25*K:cccc[klij] T:eecc[bakl]
+drop T:eecc[bakl], K:cccc[klij]
+load K:cccc[lkij], T:eecc[balk]
+.ITIN[baij] += .25*K:cccc[lkij] T:eecc[balk]
+drop T:eecc[balk], K:cccc[lkij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc ITIN[baji]
+load K:eecc[caki], T:eecc[cbkj]
+.ITIN[baji] += K:eecc[caki] (T:eecc[cbkj] - T:eecc[bckj])
+drop T:eecc[cbkj], K:eecc[caki]
+load J:eecc[acki], K:eecc[acik], T:eecc[bcjk]
+.ITIN[baji] -= (J:eecc[acki] - K:eecc[acik]) T:eecc[bcjk]
+drop T:eecc[bcjk], K:eecc[acik], J:eecc[acki]
+load J:eecc[ackj], T:eecc[bcki]
+.ITIN[baji] -= J:eecc[ackj] T:eecc[bcki]
+drop T:eecc[bcki], J:eecc[ackj]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji]
+alloc ITIN[baij]
+load K4E1[baij]
+.ITIN[baij] += .5*K4E1[baij]
+drop K4E1[baij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+store R:eecc[baij]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]

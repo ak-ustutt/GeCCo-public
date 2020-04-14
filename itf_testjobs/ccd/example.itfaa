@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 23-02-2020 15:15
+// Created on: 14-04-2020 09:40
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -14,10 +14,10 @@ tensor: K:cccc[klij], K:cccc
 tensor: K:eecc[abij], K:eecc
 
 // J-integral tensors
-tensor: J:eecc[caik], J:eecc
+tensor: J:eecc[acki], J:eecc
 
 // Special integral tensors
-tensor: K4E1:eecc[abij], K4E1:eecc
+tensor: K4E1[baij], K4E1
 
 // Tensor to send to Kext
 tensor: INTpp[abij], INTpp
@@ -27,7 +27,7 @@ tensor: f:cc[ki], f:cc
 tensor: f:ee[ac], f:ee
 
 // Amplitude tensors
-tensor: T:eecc[abjk], T:eecc
+tensor: T:eecc[bajk], T:eecc
 
 // Residual tensors
 tensor: R:eecc[abij], R:eecc
@@ -52,12 +52,12 @@ tensor: ShiftP[], ShiftP
 // Intermediates
 tensor: ITIN[abij],        !Create{type:plain}
 tensor: STIN0001bb[ij],    !Create{type:plain}
-tensor: STIN0001abab[ijkl], !Create{type:plain}
-tensor: STIN0001baab[ijkl], !Create{type:plain}
-tensor: STIN0001aa[ba],    !Create{type:plain}
-tensor: STIN0001aaaa[abij], !Create{type:plain}
-tensor: STIN0001baab[abij], !Create{type:plain}
-tensor: STIN0001baba[abij], !Create{type:plain}
+tensor: STIN0001abab[jikl], !Create{type:plain}
+tensor: STIN0001baab[jikl], !Create{type:plain}
+tensor: STIN0001bb[ba],    !Create{type:plain}
+tensor: STIN0001baab[baji], !Create{type:plain}
+tensor: STIN0001baba[baji], !Create{type:plain}
+tensor: STIN0001bbbb[baji], !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 tensor: C[abij],           !Create{type:plain}
@@ -112,50 +112,51 @@ drop K:eecc[abij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
-alloc ITIN[abji]
-load f:cc[ki], T:eecc[abjk]
-.ITIN[abji] -= f:cc[ki] T:eecc[abjk]
-drop T:eecc[abjk], f:cc[ki]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji]
-alloc ITIN[abji]
-load f:ee[ac], T:eecc[cbji]
-.ITIN[abji] += f:ee[ac] T:eecc[cbji]
-drop T:eecc[cbji], f:ee[ac]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji]
-alloc ITIN[abij]
-load K:cccc[klij], T:eecc[abkl]
-.ITIN[abij] += .5*K:cccc[klij] T:eecc[abkl]
-drop T:eecc[abkl], K:cccc[klij]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc ITIN[abij]
-load K:eecc[caki], J:eecc[caik], T:eecc[cbkj]
-.ITIN[abij] += (K:eecc[caki] - J:eecc[caik]) T:eecc[cbkj]
-drop T:eecc[cbkj], J:eecc[caik], K:eecc[caki]
-load K:eecc[acik], T:eecc[bcjk]
-.ITIN[abij] += K:eecc[acik] (T:eecc[bcjk] - T:eecc[cbjk])
-drop T:eecc[bcjk], K:eecc[acik]
-load J:eecc[ackj], T:eecc[cbik]
-.ITIN[abij] -= J:eecc[ackj] T:eecc[cbik]
-drop T:eecc[cbik], J:eecc[ackj]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-// Replacing line with 4-external integrals
-//  .ITIN[abij] += .5*K:eeee[abcd] T:eecc[cdij]
-alloc ITIN[abij]
-load K4E1:eecc[abij]
-.ITIN[abij] += .5*K4E1:eecc[abij]
-drop K4E1:eecc[abij]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij]
-alloc STIN0001bb[ij], ITIN[abji]
+alloc ITIN[baji]
+load f:cc[ki], T:eecc[bajk]
+.ITIN[baji] -= f:cc[ki] T:eecc[bajk]
+drop T:eecc[bajk], f:cc[ki]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji]
+alloc ITIN[baij]
+load f:ee[ac], T:eecc[bcij]
+.ITIN[baij] += f:ee[ac] T:eecc[bcij]
+drop T:eecc[bcij], f:ee[ac]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc ITIN[baij]
+load K:cccc[klij], T:eecc[bakl]
+.ITIN[baij] += .25*K:cccc[klij] T:eecc[bakl]
+drop T:eecc[bakl], K:cccc[klij]
+load K:cccc[lkij], T:eecc[balk]
+.ITIN[baij] += .25*K:cccc[lkij] T:eecc[balk]
+drop T:eecc[balk], K:cccc[lkij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc ITIN[baji]
+load K:eecc[caki], T:eecc[cbkj]
+.ITIN[baji] += K:eecc[caki] (T:eecc[cbkj] - T:eecc[bckj])
+drop T:eecc[cbkj], K:eecc[caki]
+load J:eecc[acki], K:eecc[acik], T:eecc[bcjk]
+.ITIN[baji] -= (J:eecc[acki] - K:eecc[acik]) T:eecc[bcjk]
+drop T:eecc[bcjk], K:eecc[acik], J:eecc[acki]
+load J:eecc[ackj], T:eecc[bcki]
+.ITIN[baji] -= J:eecc[ackj] T:eecc[bcki]
+drop T:eecc[bcki], J:eecc[ackj]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji]
+alloc ITIN[baij]
+load K4E1[baij]
+.ITIN[baij] += .5*K4E1[baij]
+drop K4E1[baij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij]
+alloc STIN0001bb[ij], ITIN[baji]
 load K:eecc[abki], T:eecc[abkj]
 .STIN0001bb[ij] += .5*K:eecc[abki] T:eecc[abkj]
 drop T:eecc[abkj], K:eecc[abki]
@@ -165,79 +166,79 @@ drop T:eecc[bakj], K:eecc[baki]
 load K:eecc[abki], T:eecc[abkj]
 .STIN0001bb[ij] += .5*(K:eecc[abki] - K:eecc[abik]) (T:eecc[abkj] - T:eecc[bakj])
 drop T:eecc[abkj], K:eecc[abki]
-load T:eecc[abjk]
-.ITIN[abji] -= STIN0001bb[ki] T:eecc[abjk]
-drop T:eecc[abjk]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji], STIN0001bb[ij]
-alloc STIN0001abab[ijkl], STIN0001baab[ijkl], ITIN[abij]
-load K:eecc[abij], T:eecc[abkl]
-.STIN0001abab[ijkl] += .5*K:eecc[abij] T:eecc[abkl]
-drop T:eecc[abkl], K:eecc[abij]
-load K:eecc[baij], T:eecc[bakl]
-.STIN0001abab[ijkl] += .5*K:eecc[baij] T:eecc[bakl]
-drop T:eecc[bakl], K:eecc[baij]
+load T:eecc[bajk]
+.ITIN[baji] -= STIN0001bb[ki] T:eecc[bajk]
+drop T:eecc[bajk]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001bb[ij]
+alloc STIN0001abab[jikl], STIN0001baab[jikl], ITIN[baij]
 load K:eecc[abji], T:eecc[abkl]
-.STIN0001baab[ijkl] -= .5*K:eecc[abji] T:eecc[abkl]
+.STIN0001abab[jikl] += .5*K:eecc[abji] T:eecc[abkl]
 drop T:eecc[abkl], K:eecc[abji]
 load K:eecc[baji], T:eecc[bakl]
-.STIN0001baab[ijkl] -= .5*K:eecc[baji] T:eecc[bakl]
+.STIN0001abab[jikl] += .5*K:eecc[baji] T:eecc[bakl]
 drop T:eecc[bakl], K:eecc[baji]
-load T:eecc[abkl]
-.ITIN[abij] += .25*STIN0001abab[klij] T:eecc[abkl]
-drop T:eecc[abkl]
-load T:eecc[ablk]
-.ITIN[abij] -= .25*STIN0001baab[klij] T:eecc[ablk]
-drop T:eecc[ablk]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baab[ijkl], STIN0001abab[ijkl]
-alloc STIN0001aa[ba], ITIN[abji]
-load K:eecc[acji], T:eecc[bcji]
-.STIN0001aa[ba] -= .5*(K:eecc[acji] - K:eecc[acij]) (T:eecc[bcji] - T:eecc[cbji])
-drop T:eecc[bcji], K:eecc[acji]
-load K:eecc[acji], T:eecc[bcji]
-.STIN0001aa[ba] -= .5*K:eecc[acji] T:eecc[bcji]
-drop T:eecc[bcji], K:eecc[acji]
-load K:eecc[acij], T:eecc[bcij]
-.STIN0001aa[ba] -= .5*K:eecc[acij] T:eecc[bcij]
-drop T:eecc[bcij], K:eecc[acij]
-load T:eecc[cbji]
-.ITIN[abji] += STIN0001aa[ac] T:eecc[cbji]
-drop T:eecc[cbji]
-.R:eecc[abji] += ITIN[abji]
-.R:eecc[abji] += ITIN[baij]
-drop ITIN[abji], STIN0001aa[ba]
-alloc STIN0001aaaa[abij], STIN0001baab[abij], STIN0001baba[abij], ITIN[abij]
-load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[abij] += (K:eecc[acik] - K:eecc[acki]) (T:eecc[bcjk] - T:eecc[cbjk])
-drop T:eecc[bcjk], K:eecc[acik]
-load K:eecc[acik], T:eecc[bcjk]
-.STIN0001aaaa[abij] += K:eecc[acik] T:eecc[bcjk]
-drop T:eecc[bcjk], K:eecc[acik]
-load K:eecc[acki], T:eecc[bckj]
-.STIN0001baab[abij] += K:eecc[acki] T:eecc[bckj]
-drop T:eecc[bckj], K:eecc[acki]
-load K:eecc[caki], T:eecc[bcjk]
-.STIN0001baba[abij] += K:eecc[caki] (T:eecc[bcjk] - T:eecc[cbjk])
-drop T:eecc[bcjk], K:eecc[caki]
-load K:eecc[acik], T:eecc[bcjk]
-.STIN0001baba[abij] += (K:eecc[acik] - K:eecc[acki]) T:eecc[bcjk]
-drop T:eecc[bcjk], K:eecc[acik]
+load K:eecc[abij], T:eecc[abkl]
+.STIN0001baab[jikl] -= .5*K:eecc[abij] T:eecc[abkl]
+drop T:eecc[abkl], K:eecc[abij]
+load K:eecc[baij], T:eecc[bakl]
+.STIN0001baab[jikl] -= .5*K:eecc[baij] T:eecc[bakl]
+drop T:eecc[bakl], K:eecc[baij]
+load T:eecc[bakl]
+.ITIN[baij] += .25*STIN0001abab[klij] T:eecc[bakl]
+drop T:eecc[bakl]
+load T:eecc[balk]
+.ITIN[baij] -= .25*STIN0001baab[klij] T:eecc[balk]
+drop T:eecc[balk]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001baab[jikl], STIN0001abab[jikl]
+alloc STIN0001bb[ba], ITIN[baij]
+load K:eecc[caij], T:eecc[cbij]
+.STIN0001bb[ba] -= .5*K:eecc[caij] T:eecc[cbij]
+drop T:eecc[cbij], K:eecc[caij]
+load K:eecc[caji], T:eecc[cbji]
+.STIN0001bb[ba] -= .5*K:eecc[caji] T:eecc[cbji]
+drop T:eecc[cbji], K:eecc[caji]
+load K:eecc[caij], T:eecc[cbij]
+.STIN0001bb[ba] -= .5*(K:eecc[caij] - K:eecc[caji]) (T:eecc[cbij] - T:eecc[bcij])
+drop T:eecc[cbij], K:eecc[caij]
+load T:eecc[bcij]
+.ITIN[baij] += STIN0001bb[ac] T:eecc[bcij]
+drop T:eecc[bcij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001bb[ba]
+alloc STIN0001baab[baji], STIN0001baba[baji], STIN0001bbbb[baji], ITIN[baji]
+load K:eecc[caik], T:eecc[cbjk]
+.STIN0001baab[baji] += K:eecc[caik] T:eecc[cbjk]
+drop T:eecc[cbjk], K:eecc[caik]
+load K:eecc[caki], T:eecc[cbkj]
+.STIN0001baba[baji] += (K:eecc[caki] - K:eecc[caik]) T:eecc[cbkj]
+drop T:eecc[cbkj], K:eecc[caki]
+load K:eecc[acik], T:eecc[cbkj]
+.STIN0001baba[baji] += K:eecc[acik] (T:eecc[cbkj] - T:eecc[bckj])
+drop T:eecc[cbkj], K:eecc[acik]
+load K:eecc[caki], T:eecc[cbkj]
+.STIN0001bbbb[baji] += K:eecc[caki] T:eecc[cbkj]
+drop T:eecc[cbkj], K:eecc[caki]
+load K:eecc[caki], T:eecc[cbkj]
+.STIN0001bbbb[baji] += (K:eecc[caki] - K:eecc[caik]) (T:eecc[cbkj] - T:eecc[bckj])
+drop T:eecc[cbkj], K:eecc[caki]
 load T:eecc[cbkj]
-.ITIN[abij] += .5*STIN0001aaaa[caki] T:eecc[cbkj]
+.ITIN[baji] += .5*STIN0001baba[acik] (T:eecc[cbkj] - T:eecc[bckj])
 drop T:eecc[cbkj]
 load T:eecc[bcjk]
-.ITIN[abij] += .5*STIN0001baba[caki] (T:eecc[bcjk] - T:eecc[cbjk])
+.ITIN[baji] += .5*STIN0001bbbb[acik] T:eecc[bcjk]
 drop T:eecc[bcjk]
-load T:eecc[cbik]
-.ITIN[abij] += .5*STIN0001baab[cakj] T:eecc[cbik]
-drop T:eecc[cbik]
-.R:eecc[abij] += ITIN[abij]
-.R:eecc[abij] += ITIN[baji]
-drop ITIN[abij], STIN0001baba[abij], STIN0001baab[abij], STIN0001aaaa[abij]
-store R:eecc[abij]
+load T:eecc[bcki]
+.ITIN[baji] += .5*STIN0001baab[acjk] T:eecc[bcki]
+drop T:eecc[bcki]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001bbbb[baji], STIN0001baba[baji], STIN0001baab[baji]
+store R:eecc[baji]
 
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
