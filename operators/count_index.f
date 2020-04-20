@@ -602,7 +602,6 @@
          end do
       end if
 
-
       return
       end
 
@@ -820,6 +819,9 @@
       logical, intent(in) ::
      &   itin
 
+      integer ::
+     &   i
+
       ! Assign output file
       item%out=lulog
 
@@ -1008,6 +1010,21 @@
          call check_k4e(contr_info, item%command, item%k4e_line)
       end if
 
+
+      ! Set vertex info, used to calculate overal sign in assign_index()
+      allocate(item%vertex(contr_info%nj_op1 + contr_info%nj_op2))
+      do i = 1, contr_info%nj_op1 + contr_info%nj_op2
+         item%vertex(i) = contr_info%svertex_itf(i)
+      end do
+
+      !write(item%out,*) "vertex ", item%vertex
+
+      item%nj_op1 = contr_info%nj_op1
+      item%nj_op2 = contr_info%nj_op2
+      item%nj_res = contr_info%nj_res
+
+      call  itf_vertex_ops(contr_info, item, comm)
+
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)
          call print_itf_contr(item)
@@ -1036,6 +1053,20 @@
       deallocate(item%t_spin(1)%spin)
       deallocate(item%t_spin(2)%spin)
       deallocate(item%t_spin(3)%spin)
+
+      deallocate(item%vertex)
+
+      ! TODO: probably don't need to check if associated
+      if (associated(item%v1)) deallocate(item%v1)
+      if (associated(item%v2)) deallocate(item%v2)
+      if (associated(item%v3)) deallocate(item%v3)
+      if (associated(item%vc1)) deallocate(item%vc1)
+      if (associated(item%vc2)) deallocate(item%vc2)
+      if (associated(item%vc3)) deallocate(item%vc3)
+
+      deallocate(item%vnops1)
+      deallocate(item%vnops2)
+      deallocate(item%vnops3)
 
       return
       end
@@ -2151,6 +2182,150 @@
 
 
 *----------------------------------------------------------------------*
+      subroutine create_index_str2(idx, cnt, ex, c_shift, e_shift, rank,
+     &                             second)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   cnt(4,2),        ! Operator numbers of contraction index
+     &   ex(4,2),
+     &   rank
+      integer, intent(inout) ::
+     &   c_shift(4),
+     &   e_shift(4)
+      logical, intent(in) ::
+     &   second
+
+      integer ::
+     &   shift_c,
+     &   shift_a,
+     &   cnt_shift(ngastp),
+     &   i, j, k, l,
+     &   op1, op2
+      character, dimension(22) ::
+     &   ind=(/ 'i','j','k','l','m','n','o','a','b','c','d','e','f',
+     &          'g','p','q','r','s','t','u','v','w' /)  ! Letters for index string
+
+
+      idx%str = ""
+      idx%itype = 0
+
+      if (second) then
+         op1 = 2
+         op2 = 1
+         shift_c = rank
+         shift_a = 1
+      else
+         op1 = 1
+         op2 = 2
+         shift_c = 1
+         shift_a = rank
+      end if
+
+      !shift_c = 1
+      !shift_a = rank
+      cnt_shift = c_shift
+      l = 1
+
+      do i = 1, ngastp
+         !if (cnt(i,1)>0) then
+         if (cnt(i,op1)>0) then
+            !do j = 1, cnt(i,1)
+            do j = 1, cnt(i,op1)
+               k = 1+(7*(i-1)) + cnt_shift(i)
+               idx%str(shift_c) = ind(k)
+               idx%cnt_poss(l) = shift_c
+               idx%itype(shift_c) = i
+               l = l + 1
+               cnt_shift(i) = cnt_shift(i) + 1
+               if (second) then
+                  shift_c = shift_c - 1
+               else
+                  shift_c = shift_c + 1
+               end if
+            end do
+         end if
+         !if (ex(i,1)>0) then
+         if (ex(i,op1)>0) then
+            !do j = 1, ex(i,1)
+            do j = 1, ex(i,op1)
+               k = 1+(7*(i-1)) + e_shift(i)
+               idx%str(shift_c) = ind(k)
+               idx%itype(shift_c) = i
+               e_shift(i) = e_shift(i) + 1
+               !shift_c = shift_c + 1
+               if (second) then
+                  shift_c = shift_c - 1
+               else
+                  shift_c = shift_c + 1
+               end if
+            end do
+         end if
+
+         !if (cnt(i,2)>0) then
+         if (cnt(i,op2)>0) then
+            !do j = 1, cnt(i,2)
+            do j = 1, cnt(i,op2)
+               k = 1+(7*(i-1)) + cnt_shift(i)
+               idx%str(shift_a) = ind(k)
+               idx%cnt_poss(l) = shift_a
+               idx%itype(shift_a) = i
+               l = l + 1
+               cnt_shift(i) = cnt_shift(i) + 1
+               if (second) then
+                  shift_a = shift_a + 1
+               else
+                  shift_a = shift_a - 1
+               end if
+            end do
+         end if
+         !if (ex(i,2)>0) then
+         if (ex(i,op2)>0) then
+            !do j = 1, ex(i,2)
+            do j = 1, ex(i,op2)
+               k = 1+(7*(i-1)) + e_shift(i)
+               idx%str(shift_a) = ind(k)
+               idx%itype(shift_a) = i
+               e_shift(i) = e_shift(i) + 1
+               !shift_a = shift_a - 1
+               if (second) then
+                  shift_a = shift_a + 1
+               else
+                  shift_a = shift_a - 1
+               end if
+            end do
+         end if
+      end do
+
+      ! Change i_type (index type) values to canonical values
+      do i = 1, rank
+         select case (idx%itype(i))
+            case (1)
+               idx%itype(i) = 3
+            case (2)
+               idx%itype(i) = 1
+            case (3)
+               idx%itype(i) = 2
+            case (4)
+               idx%itype(i) = 4
+         end select
+      end do
+
+      c_shift = cnt_shift
+
+      return
+      end
+
+*----------------------------------------------------------------------*
       subroutine create_index_str(idx, cnt, ex, c_shift, e_shift, rank,
      &                             second)
 *----------------------------------------------------------------------*
@@ -2313,21 +2488,23 @@
      &   e1(ngastp,2),       ! Operator numbers of external index 1
      &   e2(ngastp,2),       ! Operator numbers of external index 2
      &   shift,         ! List shift
+     &   sc,         ! List shift
      &   n_cnt,         ! Number of contraction operators
      &   e1ops, e2ops,  ! Number of external ops on T1 and T2
      &   distance,      ! Distance from where an index should be
      &   pp, pp2,            ! Paired position - position of paired index
      &   i, j, k, l,
+     &   v1, v2,
      &   itype(INDEX_LEN)
       character(len=INDEX_LEN) ::
      &   s1, s2, s3,  ! Tmp ITF index strings
      &   tstr
+      character(len=50) ::
+     &   constr
       character(len=1) ::
      &   tmp       ! Scratch space to store index letter
       real(8) ::
      &   p_factor       ! Overall factor from contraction/rearrangment
-      type(pair_list) ::
-     &   p_list       ! Complete list of pairs in binary contraction
       integer, dimension(4) ::
      &   e_shift,       ! Index shift for external indices
      &   c_shift        ! Index shift for contraction indices
@@ -2335,12 +2512,28 @@
      &   str1,          ! Stores 'normal ordered' index string for T1
      &   str2,          ! Stores 'normal ordered' index string for T2
      &   str3           ! Stores 'normal ordered' index string for Res
+      type(index_str), pointer ::
+     &   op1(:) => null(),
+     &   op2(:) => null()
 
       logical ::        ! These are used when finding pairs of external ops
      &   is_cnt,        ! True if the operator is a contraction op
-     &   p1, p2
+     &   p1, p2,
+     &   found
 
       if (ntest>=100) call debug_header("assign_index", item%out)
+
+      allocate(op1(item%nj_op1))
+      allocate(op2(item%nj_op2))
+
+      do i = 1, item%nj_op1
+      call init_index_str(op1(i),item%rank1,
+     &         sum(sum(item%vc1(i,:,:),dim=1)))
+      end do
+      do i = 1, item%nj_op2
+      call init_index_str(op2(i),item%rank2,
+     &         sum(sum(item%vc2(i,:,:),dim=1)))
+      end do
 
       ! Set operator numbers
       c=item%c
@@ -2357,8 +2550,6 @@
       call init_index_str(str1, item%rank1, n_cnt)
       call init_index_str(str2, item%rank2, n_cnt)
       call init_index_str(str3, item%rank3, n_cnt)
-
-      allocate(p_list%plist(item%rank3/2))
 
       ! Set letter shift values for contraction indices
       do i = 1, 4
@@ -2388,20 +2579,142 @@
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
      &                      .true.)
 
-      if (ntest>=100) then
-         write(item%out,*) "Inital index strings in normal order"
-         write(item%out,*) "T1: {", str1%str, "}"
-         write(item%out,*) "T2: {", str2%str, "}"
-         write(item%out,*) "Res: {", str1%str, "}{", str2%str, "}"
-         write(item%out,*) "Contraction T1: ", str1%cnt_poss
-         write(item%out,*) "Contraction T2: ", str2%cnt_poss
-         write(item%out,*) "Inital factor: ", p_factor
-      end if
+
+!      e_shift = 0
+!
+!      do i = 1, item%nj_op1
+!         call create_index_str2(op1(i),item%vc1(i,:,:),item%v1(i,:,:),
+!     &                         c_shift,
+!     &                         e_shift, item%rank1, .false.)
+!      !   write(item%out,*) "T1: {", op1(i)%str, "}"
+!      !   write(item%out,*) "Contraction T1: ", op1(i)%cnt_poss
+!      end do
+!
+!      ! Set letter shift values for contraction indices
+!      ! TODO: don't do this twice
+!      do i = 1, 4
+!         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
+!      end do
+!
+!      do i = 1, item%nj_op2
+!         call create_index_str2(op2(i),item%vc2(i,:,:),item%v2(i,:,:),
+!     &                         c_shift,
+!     &                         e_shift, item%rank2, .false.)
+!      !   write(item%out,*) "T2: {", op2(i)%str, "}"
+!      !   write(item%out,*) "Contraction T2: ", op2(i)%cnt_poss
+!      end do
+!
+!
+!      if (item%inter(1)) then
+!         call arrange_inter_itype2(item%rank1,item%rank2,op1(1),str2,
+!     &                           item%itype, item%vnops1(i),
+!     &                           item%label_t1)
+!         if (ntest>=100) then
+!            write(item%out,*) "After arragne_inter_itpye, inter(1)"
+!            write(item%out,*) "T1: {", str1%str, "}"
+!            write(item%out,*) "itpye: {", str1%itype, "}"
+!            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+!            write(item%out,*) "previous itype: ", itype
+!         end if
+!      end if
+!      if (item%inter(2)) then
+!         call arrange_inter_itype2(item%rank2,item%rank1,op2(1),str1,
+!     &                       item%itype, item%vnops2(i),
+!     &                       item%label_t2)
+!         if (ntest>=100) then
+!            write(item%out,*) "After arragne_inter_itpye, inter(2)"
+!            write(item%out,*) "T2: {", str1%str, "}"
+!            write(item%out,*) "itpye: {", str1%itype, "}"
+!            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+!            write(item%out,*) "previous itype: ", itype
+!         end if
+!      end if
+
+
+!      shift = 1
+!      sc = 1
+!      constr = ""
+!
+!      v1 = 1
+!      v2 = 1
+!      do k = 1, size(item%vertex)
+!         if (item%vertex(k) == 1) then
+!               do j = 1, item%rank1
+!                  if (associated(op1(v1)%str)) then
+!                     if (op1(v1)%str(j) /= " ") then
+!                        constr(shift:shift) = op1(v1)%str(j)
+!
+!                        shift = shift + 1
+!                     end if
+!                  end if
+!               end do
+!               v1 = v1 + 1
+!
+!         else
+!               sc = 1
+!               do j = 1, item%rank2
+!                  if (associated(op2(v2)%str)) then
+!                     if (op2(v2)%str(j) /= " ") then
+!                        constr(shift:shift) = op2(v2)%str(j)
+!
+!                        shift = shift + 1
+!                     end if
+!                  end if
+!               end do
+!               v2 = v2 + 1
+!         end if
+!      end do
+!
+!
+!      write(item%out,*) "constr: ", trim(constr)
+!
+!      shift = 1
+!      do i = 1, item%rank1 + item%rank2
+!         do j = i + 1, item%rank1 + item%rank2
+!            if (constr(i:i) == constr(j:j)) then
+!               !write(item%out,*) "distance ", j - i - 1
+!               if (mod(j-i-1,2)/=0)then
+!                  p_factor = p_factor * -1.0d0
+!               end if
+!               exit
+!            end if
+!         end do
+!      end do
+!
+!      do i = 1, item%rank1 + item%rank2
+!         do j = i + 1, item%rank1 + item%rank2
+!            if (constr(i:i) == constr(j:j)) then
+!               constr(i:i) = " "
+!               constr(j:j) = " "
+!               exit
+!            end if
+!         end do
+!      end do
+!
+!      shift = 1
+!      do i = 1, item%rank1 + item%rank2
+!         if (constr(i:i) /= " ") then
+!            str3%str(shift) = constr(i:i)
+!            shift = shift + 1
+!         end if
+!      end do
+!
+!      write(item%out,*) "hello ", str3%str
+!
+!
+!      if (ntest>=100) then
+!         write(item%out,*) "Inital index strings in normal order"
+!         write(item%out,*) "T1: {", str1%str, "}"
+!         write(item%out,*) "T2: {", str2%str, "}"
+!         write(item%out,*) "Res: {", str1%str, "}{", str2%str, "}"
+!         write(item%out,*) "Contraction T1: ", str1%cnt_poss
+!         write(item%out,*) "Contraction T2: ", str2%cnt_poss
+!         write(item%out,*) "Inital factor: ", p_factor
+!      end if
 
 
       ! Rearrange intermediate index to matach previously declared inter
       ! index. This uses the itype array from the previous lines
-      ! TODO: itype for two inters on same line
       if (item%inter(1)) then
          call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
      &                           item%itype, item%label_t1)
@@ -2691,21 +3004,31 @@
       item%idx3=trim(s3)
       item%fact = item%fact * p_factor
 
-      deallocate(p_list%plist)
 
       call deinit_index_str(str1)
       call deinit_index_str(str2)
       call deinit_index_str(str3)
 
+      do i = 1, item%nj_op1
+         call deinit_index_str(op1(i))
+      end do
+      do i = 1, item%nj_op2
+         call deinit_index_str(op2(i))
+      end do
+
+      allocate(op1(item%nj_op1))
+      allocate(op2(item%nj_op2))
+
       return
       end
+
 
 
 *----------------------------------------------------------------------*
       subroutine arrange_inter_itype(rank1, rank2, idx1, idx2, itype,
      &                               label)
 *----------------------------------------------------------------------*
-!     Rearrange intermeidate index according to the itype of the
+!     rearrange intermeidate index according to the itype of the
 !     previously declared intermediate
 *----------------------------------------------------------------------*
 
@@ -2717,7 +3040,7 @@
       integer, intent(in) ::
      &   rank1,
      &   rank2,
-     &   itype(MAXINT, INDEX_LEN)
+     &   itype(maxint, index_len)
       type(index_str), intent(inout) ::
      &   idx1,
      &   idx2
@@ -2728,18 +3051,18 @@
      &   i, j,
      &   shift,
      &   ninter
-      character (len=INDEX_LEN) ::
+      character (len=index_len) ::
      &   tstr
       logical ::
      &   same
 
-      ! Find itype corresponding to numbered intermediate
+      ! find itype corresponding to numbered intermediate
       i = len(trim(label))
       read(label(i:i),'(1i)') ninter
 
       same = .true.
       do i = 1, rank1
-         ! Check if intermediate already has correct index itype
+         ! check if intermediate already has correct index itype
          if (idx1%itype(i) /= itype(ninter,i)) then
             same = .false.
          end if
@@ -2778,7 +3101,117 @@
          idx1%itype(i) = itype(ninter,i)
       end do
 
-      ! Update contraction index posistions
+      ! update contraction index posistions
+      shift = 1
+      do i = 1, rank1
+         do j = 1, rank2
+            if (idx1%str(i) == idx2%str(j)) then
+               idx1%cnt_poss(shift) = i
+               shift = shift + 1
+            end if
+         end do
+      end do
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine arrange_inter_itype2(rank1, rank2, idx1, idx2, itype,
+     &                                nop, label)
+*----------------------------------------------------------------------*
+!     rearrange intermeidate index according to the itype of the
+!     previously declared intermediate
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      integer, intent(in) ::
+     &   rank1,
+     &   rank2,
+     &   itype(maxint, index_len),
+     &   nop
+      type(index_str), intent(inout) ::
+     &   idx1,
+     &   idx2
+      character(len=maxlen_bc_label), intent(in) ::
+     &   label
+
+      integer ::
+     &   i, j,
+     &   shift,
+     &   ninter
+      character (len=index_len) ::
+     &   tstr
+      logical ::
+     &   same
+
+      if (nop==0) then
+         write(15,*) "ZERO"
+         return
+      end if
+
+      if (nop<rank1) then
+         write(15,*) "TROUBLE"
+         return
+      end if
+
+      if (nop==rank1) then
+         write(15,*) "GOOD"
+         return
+      end if
+
+      return
+
+      ! find itype corresponding to numbered intermediate
+      i = len(trim(label))
+      read(label(i:i),'(1i)') ninter
+
+      same = .true.
+      do i = 1, rank1
+         ! check if intermediate already has correct index itype
+         if (idx1%itype(i) /= itype(ninter,i)) then
+            same = .false.
+         end if
+      end do
+
+      if (same) return
+
+
+      do i = 1, rank1/2
+         do j = 1, rank1/2
+            if (itype(ninter,i) == idx1%itype(j)) then
+               tstr(i:i) = idx1%str(j)
+               idx1%str(j) = ''
+               idx1%itype(j) = 0
+               exit
+            end if
+         end do
+      end do
+
+      do i = rank1/2 + 1, rank1
+         do j = rank1/2+1, rank1
+            if (itype(ninter,i) == idx1%itype(j)) then
+               tstr(i:i) = idx1%str(j)
+               idx1%str(j) = ''
+               idx1%itype(j) = 0
+               exit
+            end if
+         end do
+      end do
+
+      do i = 1, rank1
+         idx1%str(i) = tstr(i:i)
+      end do
+
+      do i = 1, rank1
+         idx1%itype(i) = itype(ninter,i)
+      end do
+
+      ! update contraction index posistions
       shift = 1
       do i = 1, rank1
          do j = 1, rank2
@@ -4128,6 +4561,149 @@
            call count_index(contr_info%occ_ex2(1:,1:,i), e2)
          end do
       end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine itf_vertex_ops(contr_info, item, command)
+*----------------------------------------------------------------------*
+!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'mdef_operator_info.h' ! For def_formular_item.h
+      include 'def_contraction.h'
+      include 'def_formula_item.h' ! For command parameters
+      include 'def_itf_contr.h'
+
+      type(binary_contr), intent(in) ::
+     &   contr_info     ! Information about binary contraction
+      type(itf_contr), intent(inout) ::
+     &   item
+      integer, intent(in) ::
+     &   command
+      integer, pointer ::
+     &  op1(:,:,:) => null(),
+     &  op2(:,:,:) => null(),
+     &  res(:,:,:) => null()
+
+      integer ::
+     &   i, j, k
+
+      ! Read in for external indicies
+      ! Calculate contraction indicies + which vertex
+
+      allocate(item%v1(contr_info%nj_op1,ngastp,2))
+      allocate(item%v2(contr_info%nj_op2,ngastp,2))
+      allocate(item%v3(contr_info%nj_res,ngastp,2))
+      allocate(item%vc1(contr_info%nj_op1,ngastp,2))
+      allocate(item%vc2(contr_info%nj_op2,ngastp,2))
+      allocate(item%vc3(contr_info%nj_res,ngastp,2))
+
+      allocate(item%vnops1(contr_info%nj_op1))
+      allocate(item%vnops2(contr_info%nj_op2))
+      allocate(item%vnops3(contr_info%nj_res))
+
+      allocate(op1(contr_info%nj_op1,ngastp,2))
+      allocate(op2(contr_info%nj_op2,ngastp,2))
+
+      item%v1 = 0
+      item%v2 = 0
+      item%v3 = 0
+      item%vc1 = 0
+      item%vc2 = 0
+      item%vc3 = 0
+
+      op1 = 0
+      op2 = 0
+
+      if (command==command_cp_intm .or.
+     &    command==command_add_intm) then
+         do i = 1, contr_info%nj_op1
+           call count_index(contr_info%occ_op1(1:,1:,i), item%v1(i,:,:))
+           item%vnops1(i) = sum(sum(item%v1(i,:,:),dim=1))
+         end do
+      else
+         ! Get external indicies
+         do i = 1, contr_info%nj_op1
+           call count_index(contr_info%occ_ex1(1:,1:,i), item%v1(i,:,:))
+         end do
+         do i = 1, contr_info%nj_op2
+           call count_index(contr_info%occ_ex2(1:,1:,i),item%v2(i,:,:))
+         end do
+
+         ! Get complete index
+         do i = 1, contr_info%nj_op1
+           call count_index(contr_info%occ_op1(1:,1:,i), op1(i,:,:))
+         end do
+         do i = 1, contr_info%nj_op2
+           call count_index(contr_info%occ_op2(1:,1:,i), op2(i,:,:))
+         end do
+
+         do i = 1, contr_info%nj_op1
+            do j = 1, ngastp
+               do k = 1, 2
+                  item%vc1(i,j,k) = op1(i,j,k) - item%v1(i,j,k)
+               end do
+            end do
+         end do
+
+         do i = 1, contr_info%nj_op2
+            do j = 1, ngastp
+               do k = 1, 2
+                  item%vc2(i,j,k) = op2(i,j,k) - item%v2(i,j,k)
+               end do
+            end do
+         end do
+
+         do i = 1, contr_info%nj_op1
+            item%vnops1(i) = sum(sum(item%v1(i,:,:),dim=1)) +
+     &                       sum(sum(item%vc1(i,:,:),dim=1))
+            !write(item%out,*) "vnops1 ", item%vnops1(i)
+         end do
+         do i = 1, contr_info%nj_op2
+            item%vnops2(i) = sum(sum(item%v2(i,:,:),dim=1)) +
+     &                       sum(sum(item%vc2(i,:,:),dim=1))
+            !write(item%out,*) "vnops2 ", item%vnops2(i)
+         end do
+
+         !write(item%out,*) "External"
+         !do k = 1, contr_info%nj_op1
+         !   do j = 1, 2
+         !      if (j==1) write(item%out,'(a6)',advance='no') "/"
+         !      if (j==2) write(item%out,'(a6)',advance='no') "\"
+         !      do i = 1, ngastp
+         !         write(item%out,'(i0, 1x)', advance='no')item%v1(k,i,j)
+         !      end do
+         !      if (j==1) write(item%out,'(a1)',advance='no') "\"
+         !      if (j==2) write(item%out,'(a1)',advance='no') "/"
+         !      write(item%out,*) "      "
+         !   end do
+         !   write(item%out,*)
+         !end do
+
+         !write(item%out,*) "Contraction"
+         !do k = 1, contr_info%nj_op1
+         !   do j = 1, 2
+         !      if (j==1) write(item%out,'(a6)',advance='no') "/"
+         !      if (j==2) write(item%out,'(a6)',advance='no') "\"
+         !      do i = 1, ngastp
+         !         write(item%out,'(i0, 1x)',advance='no')item%vc1(k,i,j)
+         !      end do
+         !      if (j==1) write(item%out,'(a1)',advance='no') "\"
+         !      if (j==2) write(item%out,'(a1)',advance='no') "/"
+         !      write(item%out,*) "      "
+         !   end do
+         !   write(item%out,*)
+         !end do
+
+      end if
+
+      deallocate(op1)
+      deallocate(op2)
 
       return
       end

@@ -1,7 +1,8 @@
       integer, parameter ::
      &     INDEX_LEN = 8,       ! Length of index string
      &     MAXINT = 8,          ! Maximum number of intermediates that contribute to a result
-     &     MAX_SPIN_CASES = 10  ! Maximum number of intermediates that contribute to a result
+     &     MAX_SPIN_CASES = 10,  ! Maximum number of intermediates that contribute to a result
+     &     MAXVTX = 10  ! Maximum number of intermediates that contribute to a result
 
 *----------------------------------------------------------------------*
       type spin_cases
@@ -87,7 +88,10 @@
       character(len=INDEX_LEN) ::
      &     idx1,                ! First tensor index string
      &     idx2,                ! Second tensor index string
-     &     idx3                 ! Result tensor index string
+     &     idx3,                 ! Result tensor index string
+     &     vidx1(MAXVTX),                ! First tensor index string
+     &     vidx2(MAXVTX),                ! Second tensor index string
+     &     vidx3(MAXVTX)                 ! Result tensor index string
       integer ::
      &     rank1,               ! Rank of first tensor
      &     rank2,               ! Rank of second tensor
@@ -103,7 +107,10 @@
      &     e1(4,2),             ! Operator numbers of external index 1
      &     e2(4,2),             ! Operator numbers of external index 2
      &     spin_cases,          ! Number of printed spin cases
-     &     nk4e                 ! Counter of k4e lines
+     &     nk4e,                ! Counter of k4e lines
+     &     nj_op1,
+     &     nj_op2,
+     &     nj_res
       logical ::
      &     inter(3) = .false.,  ! True if tensor is an intermediate
      &     int(3) = .false.,    ! True if tensor is an integral
@@ -123,9 +130,21 @@
 
       integer ::
      &     ninter = 0,                  ! Number of intermediates used in a contraction
-     &     itype(MAXINT,INDEX_LEN)
+     &     itype(MAXINT,INDEX_LEN),
+     &     itype2(MAXVTX,MAXINT,INDEX_LEN)
       type(spin_info) ::
      &     t_spin(3)                    ! Spin info of result, t1 and t2 tensors
+      integer, pointer ::
+     &  vertex(:) => null(),
+     &  v1(:,:,:) => null(),
+     &  v2(:,:,:) => null(),
+     &  v3(:,:,:) => null(),
+     &  vc1(:,:,:) => null(),
+     &  vc2(:,:,:) => null(),
+     &  vc3(:,:,:) => null(),
+     &  vnops1(:) => null(),
+     &  vnops2(:) => null(),
+     &  vnops3(:) => null()
 
       integer ::
      &      nspin_cases

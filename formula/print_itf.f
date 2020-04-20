@@ -51,8 +51,6 @@
      &                          fl_item%command, inter_itype,
      &                          contr_no,k4e_no)
 
-            !write(itflog,*) "hello ", fl_item%bcontr%svertex_itf
-
             ! Count the number of terms
             contr_no = contr_no + 1
 
