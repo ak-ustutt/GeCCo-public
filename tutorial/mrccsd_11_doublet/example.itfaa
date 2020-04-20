@@ -1,0 +1,1577 @@
+// This ITF algo file was created using the GeCCo ITF translator
+// Author: J.A. Black
+
+// Created on: 15-04-2020 14:52
+
+---- decl
+index-space: pqrstuvw, Active  , a
+index-space: ijkl    , Closed  , c
+index-space: gh      , ClosedF , f
+index-space: abcd    , External, e
+index-space: mno     , Internal, i
+
+index-space: I       , ConfigI0, I
+
+tensor: Ym1[pq],  !Create{type:disk}
+
+// K-integral tensors
+tensor: K:aaaa[sqrp], K:aaaa
+tensor: K:aaac[prqi], K:aaac
+tensor: K:aacc[qpij], K:aacc
+tensor: K:ccca[kjiq], K:ccca
+tensor: K:cccc[ijkl], K:cccc
+tensor: K:eaaa[arqp], K:eaaa
+tensor: K:eaac[apri], K:eaac
+tensor: K:eaca[apiq], K:eaca
+tensor: K:eacc[aqji], K:eacc
+tensor: K:ecaa[aipr], K:ecaa
+tensor: K:eccc[akji], K:eccc
+tensor: K:eeaa[bapq], K:eeaa
+tensor: K:eeac[cbpj], K:eeac
+tensor: K:eecc[abij], K:eecc
+
+// J-integral tensors
+tensor: J:aacc[qpji], J:aacc
+tensor: J:eacc[aqji], J:eacc
+tensor: J:eeaa[baqp], J:eeaa
+tensor: J:eeca[cbjp], J:eeca
+tensor: J:eecc[acki], J:eecc
+
+// Special integral tensors
+tensor: K4E1[baij], K4E1
+tensor: K4E2[abpi], K4E2
+
+// Tensor to send to Kext
+tensor: INTpp[abij], INTpp
+
+// Fock tensors
+tensor: f:aa[pq], f:aa
+tensor: f:ac[pi], f:ac
+tensor: f:cc[ij], f:cc
+tensor: f:ea[ap], f:ea
+tensor: f:ec[ai], f:ec
+tensor: f:ee[ab], f:ee
+
+// Amplitude tensors
+tensor: T:ac[pi], T:ac
+tensor: T:ea[aq], T:ea
+tensor: T:ec[ai], T:ec
+tensor: T:eaac[aqpi], T:eaac
+tensor: T:eaca[aqip], T:eaca
+tensor: T:eacc[bqji], T:eacc
+tensor: T:eeac[abpk], T:eeac
+tensor: T:eecc[bajk], T:eecc
+
+// Residual tensors
+tensor: R:eecc[abij], R:eecc
+tensor: R:eeac[bapi], R:eeac
+tensor: R:eacc[apij], R:eacc
+tensor: R:eaca[apiq], R:eaca
+tensor: R:eaac[apqi], R:eaac
+tensor: R:ec[ai], R:ec
+tensor: R:ea[ap], R:ea
+tensor: R:ac[pi], R:ac
+
+// Residuals not used in the code
+tensor: R:I[I], R:I
+tensor: R:aacc[pqij], R:aacc
+tensor: R:aaac[pqri], R:aaac
+tensor: R:eaaa[apqr], R:eaaa
+tensor: R:eeaa[abpq], R:eeaa
+
+// Amplitudes not used in the code
+tensor: T:I[I], T:I
+tensor: T:aacc[pqij], T:aacc
+tensor: T:aaac[pqri], T:aaac
+tensor: T:eaaa[apqr], T:eaaa
+tensor: T:eeaa[abpq], T:eeaa
+
+// Energy and DIIS scalars
+tensor: ECC[], ECC
+
+// Fock matricies, including core orbitals
+tensor: fc:aa[pq], fc:aa
+tensor: fc:cc[ki], fc:cc
+tensor: fc:ea[aq], fc:ea
+tensor: fc:ec[ai], fc:ec
+tensor: fc:ee[ab], fc:ee
+tensor: fc:ca[ip], fc:ca
+
+tensor: J:eacc[apij]
+tensor: J:ecca[aijp]
+tensor: J:ecaa[aipq]
+tensor: J:eaaa[apqr]
+tensor: J:ccaa[ijpq]
+tensor: J:caaa[ipqr]
+tensor: J:ccca[ijkq]
+tensor: K:ccaa[ijpq]
+tensor: K:ecaa[aipq]
+
+// Effective Fock matricies
+tensor: g:aa[pq]
+tensor: g:ac[pi]
+tensor: g:cc[ij]
+tensor: g:ea[ap]
+tensor: g:ec[ai]
+tensor: g:ee[ab]
+
+// Resuced density tensors (Icc-Icc coupling-coefficients)
+// these are created on C++ side in CreateMrciTensors method
+tensor: Dm1[pp],         DDm1
+tensor: Dm2[pppp],       DDm2
+tensor: Dm3[pppppp],     DDm3
+tensor: Dm1H[pp],        DHm1
+tensor: Dm2H[pppp],      DHm2
+tensor: Dm3H[pppppp],    DHm3
+
+// Non-disk density matrix drivers
+// Can be loaded, but can not be stored.
+// spec:<Ref|+-+-|Ref> means that Dm2X[pqrs] = <Ref|E^p_q R^r_s|Ref>
+tensor: Dm2X[pppp],      !Create{type:cc-drv; spec:<Ref|+-+-|Ref>; irrep:0;}
+tensor: Dm3X[pppppp],    !Create{type:cc-drv; spec:<Ref|+-+-+-|Ref>; irrep:0;}
+tensor: Dm2HX[pppp],     !Create{type:cc-drv; spec:<Ref|/+/-/+/-|Ref>; irrep:0;}
+tensor: Dm3HX[pppppp],   !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep:0;}
+
+// Delta tensors
+tensor: deltacc[ij],      DeltaCloClo
+tensor: deltaaa[pq],      DeltaActAct
+tensor: delta4[pppp],     !Create{type:plain}, Delta4  // Intermediate rank4 delta tensor
+
+// Overlap tensors labeled by the exciation class
+tensor: S1:I1[pp],       S1:I1
+tensor: S2:I1[pppppp],   S2:I1
+tensor: S3:I1[pppp],     S3:I1
+tensor: S1:I2[pppp],     S1:I2
+tensor: S1:S0[pp],       S1:S0
+tensor: S2:S0[pppppp],   S2:S0
+tensor: S3:S0[pppp],     S3:S0
+tensor: S2:S1[pppp],     S2:S1
+tensor: S3:S1[pp],       S3:S1
+tensor: S1:S2[pp],       S1:S2
+tensor: S1:P0[pppp],     S1:P0
+tensor: S1:P1[pp],       S1:P1
+
+// Orthogonal residuals
+tensor: OR:I[I], OR:I
+tensor: OR:ac[pi], OR:ac
+tensor: OR:ec[ai], OR:ec
+tensor: OR:ea[ap], OR:ea
+tensor: OR:aacc[pqij], OR:aacc
+tensor: OR:aaac[pqri], OR:aaac
+tensor: OR:eacc[apij], OR:eacx
+tensor: OR:eaac[apqi], OR:eaac
+tensor: OR:eaaa[apqr], OR:eaaa
+tensor: OR:eecc[abij], OR:eecc
+tensor: OR:eeac[abpi], OR:eeac
+tensor: OR:eeaa[abpq], OR:eeaa
+
+// Orthogonal amplitudes
+tensor: OT:I[I], OT:I
+tensor: OT:ac[pi], OT:ac
+tensor: OT:ec[ai], OT:ec
+tensor: OT:ea[ap], OT:ea
+tensor: OT:aacc[pqij], OT:aacc
+tensor: OT:aaac[pqri], OT:aaac
+tensor: OT:eacc[apij], OT:eacx
+tensor: OT:eaac[apqi], OT:eaac
+tensor: OT:eaaa[apqr], OT:eaaa
+tensor: OT:eecc[abij], OT:eecc
+tensor: OT:eeac[abpi], OT:eeac
+tensor: OT:eeaa[abpq], OT:eeaa
+
+tensor: ShiftP[], ShiftP
+
+// Intermediates
+tensor: ITIN[abij],        !Create{type:plain}
+tensor: STIN0001bb[ij],    !Create{type:plain}
+tensor: STIN0001bb[ab],    !Create{type:plain}
+tensor: STIN0001abab[ijkl], !Create{type:plain}
+tensor: STIN0001baab[ijkl], !Create{type:plain}
+tensor: STIN0001abab[baji], !Create{type:plain}
+tensor: STIN0001abba[baji], !Create{type:plain}
+tensor: STIN0001aa[ai],    !Create{type:plain}
+tensor: STIN0001abab[pkji], !Create{type:plain}
+tensor: STIN0001baab[pkji], !Create{type:plain}
+tensor: STIN0001abab[bapi], !Create{type:plain}
+tensor: STIN0001abba[bapi], !Create{type:plain}
+tensor: STIN0001bbbb[bapi], !Create{type:plain}
+tensor: STIN0001aa[pi],    !Create{type:plain}
+tensor: STIN0001baab[bapi], !Create{type:plain}
+tensor: STIN0001baba[abpi], !Create{type:plain}
+tensor: STIN0001abab[aipj], !Create{type:plain}
+tensor: STIN0001baab[aipj], !Create{type:plain}
+tensor: STIN0001baab[baqp], !Create{type:plain}
+tensor: STIN0001abab[apqi], !Create{type:plain}
+tensor: STIN0001baab[apqi], !Create{type:plain}
+tensor: STIN0001bbbb[apqi], !Create{type:plain}
+tensor: STIN0001bb[ai],    !Create{type:plain}
+tensor: STIN0001baab[apij], !Create{type:plain}
+tensor: STIN0001baba[apij], !Create{type:plain}
+tensor: STIN0001bb[pi],    !Create{type:plain}
+tensor: STIN0001aa[ij],    !Create{type:plain}
+tensor: STIN0001aa[ba],    !Create{type:plain}
+tensor: STIN0001aa[ap],    !Create{type:plain}
+tensor: STIN0001bb[ap],    !Create{type:plain}
+tensor: STIN0001aaaa[qpji], !Create{type:plain}
+tensor: STIN0001abba[qpji], !Create{type:plain}
+tensor: STIN0001baba[qpji], !Create{type:plain}
+tensor: STIN0001aaaa[pqri], !Create{type:plain}
+tensor: STIN0001baab[pqri], !Create{type:plain}
+tensor: STIN0001baba[qpri], !Create{type:plain}
+tensor: STIN0001aa[pq],    !Create{type:plain}
+tensor: STIN0001[],        !Create{type:scalar}
+
+
+---- code("Init_Amplitudes")
+alloc T:ac[pi]
+store T:ac[pi]
+alloc T:ea[aq]
+store T:ea[aq]
+alloc T:ec[ai]
+store T:ec[ai]
+alloc T:eaac[aqpi]
+store T:eaac[aqpi]
+alloc T:eaca[aqip]
+store T:eaca[aqip]
+alloc T:eacc[bqji]
+store T:eacc[bqji]
+alloc T:eeac[abpk]
+store T:eeac[abpk]
+alloc T:eecc[bajk]
+store T:eecc[bajk]
+
+
+---- code("Update_Kext_Tensor")
+// Intermediate to pass to Kext
+alloc INTpp[abij]
+load T:eecc[abij]
+.INTpp[abij] := T:eecc[abij]
+drop T:eecc[abij]
+store INTpp[abij]
+
+
+---- code("Residual")
+alloc R:eecc[abij]
+alloc ITIN[abij]
+load K:eecc[abij]
+.ITIN[abij] += .5*K:eecc[abij]
+drop K:eecc[abij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij]
+alloc STIN0001bb[ij], ITIN[baji]
+load f:cc[ij]
+.STIN0001bb[ij] += f:cc[ij]
+drop f:cc[ij]
+load T:eecc[bajk]
+.ITIN[baji] -= STIN0001bb[ki] T:eecc[bajk]
+drop T:eecc[bajk]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001bb[ij]
+alloc STIN0001bb[ab], ITIN[baij]
+load f:ee[ab]
+.STIN0001bb[ab] += f:ee[ab]
+drop f:ee[ab]
+load T:eecc[bcij]
+.ITIN[baij] += STIN0001bb[ac] T:eecc[bcij]
+drop T:eecc[bcij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001bb[ab]
+alloc STIN0001abab[ijkl], STIN0001baab[ijkl], ITIN[baij]
+load K:cccc[ijkl]
+.STIN0001abab[ijkl] += K:cccc[ijkl]
+drop K:cccc[ijkl]
+load K:cccc[jikl]
+.STIN0001baab[ijkl] -= K:cccc[jikl]
+drop K:cccc[jikl]
+load T:eecc[bakl]
+.ITIN[baij] += .25*STIN0001abab[klij] T:eecc[bakl]
+drop T:eecc[bakl]
+load T:eecc[balk]
+.ITIN[baij] -= .25*STIN0001baab[klij] T:eecc[balk]
+drop T:eecc[balk]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001baab[ijkl], STIN0001abab[ijkl]
+alloc STIN0001abab[baji], STIN0001abba[baji], ITIN[abij]
+load K:eecc[caki], T:eecc[cbkj]
+.STIN0001abab[baji] += K:eecc[caki] (T:eecc[cbkj] - T:eecc[bckj])
+drop T:eecc[cbkj], K:eecc[caki]
+load J:eecc[acki], K:eecc[acik], T:eecc[bcjk]
+.STIN0001abab[baji] -= (J:eecc[acki] - K:eecc[acik]) T:eecc[bcjk]
+drop T:eecc[bcjk], K:eecc[acik], J:eecc[acki]
+load J:eecc[acki], T:eecc[bckj]
+.STIN0001abba[baji] += J:eecc[acki] T:eecc[bckj]
+drop T:eecc[bckj], J:eecc[acki]
+.ITIN[abij] += STIN0001abab[abij]
+.ITIN[abij] -= STIN0001abba[abji]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij], STIN0001abba[baji], STIN0001abab[baji]
+alloc STIN0001bb[ji], ITIN[baji]
+load Ym1[pq], J:aacc[qpji]
+.STIN0001bb[ji] += Ym1[pq] J:aacc[qpji]
+drop J:aacc[qpji], Ym1[pq]
+load Ym1[pq], J:aacc[qpji], K:aacc[qpij]
+.STIN0001bb[ji] += Ym1[pq] (J:aacc[qpji] - K:aacc[qpij])
+drop K:aacc[qpij], J:aacc[qpji], Ym1[pq]
+load T:eecc[bajk]
+.ITIN[baji] -= STIN0001bb[ki] T:eecc[bajk]
+drop T:eecc[bajk]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001bb[ji]
+alloc STIN0001abab[baij], ITIN[abij]
+load K4E1[baij]
+.STIN0001abab[baij] += K4E1[baij]
+drop K4E1[baij]
+.ITIN[abij] += .5*STIN0001abab[abij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+drop ITIN[abij], STIN0001abab[baij]
+alloc STIN0001bb[ba], ITIN[baij]
+load Ym1[pq], J:eeaa[baqp]
+.STIN0001bb[ba] += Ym1[pq] J:eeaa[baqp]
+drop J:eeaa[baqp], Ym1[pq]
+load Ym1[pq], J:eeaa[baqp], K:eeaa[bapq]
+.STIN0001bb[ba] += Ym1[pq] (J:eeaa[baqp] - K:eeaa[bapq])
+drop K:eeaa[bapq], J:eeaa[baqp], Ym1[pq]
+load T:eecc[bcij]
+.ITIN[baij] += STIN0001bb[ac] T:eecc[bcij]
+drop T:eecc[bcij]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001bb[ba]
+alloc STIN0001aa[ai], ITIN[baij]
+load T:ec[ai]
+.STIN0001aa[ai] += T:ec[ai]
+drop T:ec[ai]
+load K:eccc[akji]
+.ITIN[baij] -= K:eccc[akji] STIN0001aa[bk]
+drop K:eccc[akji]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001aa[ai]
+alloc STIN0001abab[pkji], STIN0001baab[pkji], ITIN[baij]
+load Ym1[pq], K:ccca[kjiq]
+.STIN0001abab[pkji] -= Ym1[pq] K:ccca[kjiq]
+drop K:ccca[kjiq], Ym1[pq]
+load Ym1[pq], K:ccca[kijq]
+.STIN0001baab[pkji] += Ym1[pq] K:ccca[kijq]
+drop K:ccca[kijq], Ym1[pq]
+load T:eeac[abpk]
+.ITIN[baij] += .5*STIN0001abab[pkji] T:eeac[abpk]
+drop T:eeac[abpk]
+load T:eeac[bapk]
+.ITIN[baij] -= .5*STIN0001baab[pkji] T:eeac[bapk]
+drop T:eeac[bapk]
+.R:eecc[baij] += ITIN[baij]
+.R:eecc[baij] += ITIN[abji]
+drop ITIN[baij], STIN0001baab[pkji], STIN0001abab[pkji]
+alloc STIN0001abab[bapi], STIN0001abba[bapi], STIN0001bbbb[bapi], ITIN[baji]
+load T:eeac[baqi], Ym1[qp]
+.STIN0001abab[bapi] -= T:eeac[baqi] Ym1[qp]
+drop Ym1[qp], T:eeac[baqi]
+load T:eeac[abqi], Ym1[qp]
+.STIN0001abba[bapi] += T:eeac[abqi] Ym1[qp]
+drop Ym1[qp], T:eeac[abqi]
+load T:eeac[baqi], Ym1[qp]
+.STIN0001bbbb[bapi] -= (T:eeac[baqi] - T:eeac[abqi]) Ym1[qp]
+drop Ym1[qp], T:eeac[baqi]
+load K:eeac[cbpj], J:eeca[cbjp]
+.ITIN[baji] += STIN0001abab[capi] (K:eeac[cbpj] - J:eeca[cbjp])
+drop J:eeca[cbjp], K:eeac[cbpj]
+load K:eeac[cbpj]
+.ITIN[baji] += STIN0001bbbb[capi] K:eeac[cbpj]
+drop K:eeac[cbpj]
+load J:eeca[cbip]
+.ITIN[baji] += STIN0001abba[capj] J:eeca[cbip]
+drop J:eeca[cbip]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001bbbb[bapi], STIN0001abba[bapi], STIN0001abab[bapi]
+alloc STIN0001aa[pi], ITIN[baji]
+load T:ac[pi]
+.STIN0001aa[pi] += T:ac[pi]
+drop T:ac[pi]
+load K:eeac[bapi]
+.ITIN[baji] += K:eeac[bapi] STIN0001aa[pj]
+drop K:eeac[bapi]
+.R:eecc[baji] += ITIN[baji]
+.R:eecc[baji] += ITIN[abij]
+drop ITIN[baji], STIN0001aa[pi]
+store R:eecc[baji]
+
+alloc R:eeac[bapi]
+load K:eeac[baqi], Ym1[qp]
+.R:eeac[bapi] -= K:eeac[baqi] Ym1[qp]
+drop Ym1[qp], K:eeac[baqi]
+alloc STIN0001baab[bapi]
+load f:cc[ji], T:eeac[abpj]
+.STIN0001baab[bapi] += f:cc[ji] T:eeac[abpj]
+drop T:eeac[abpj], f:cc[ji]
+load Ym1[qp]
+.R:eeac[bapi] += STIN0001baab[abqi] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001baab[bapi]
+alloc STIN0001abba[abpi], STIN0001baba[abpi]
+load f:ee[ac], T:eeac[bcpi]
+.STIN0001abba[abpi] -= f:ee[ac] T:eeac[bcpi]
+drop T:eeac[bcpi], f:ee[ac]
+load f:ee[ac], T:eeac[cbpi]
+.STIN0001baba[abpi] += f:ee[ac] T:eeac[cbpi]
+drop T:eeac[cbpi], f:ee[ac]
+load Ym1[qp]
+.R:eeac[bapi] -= STIN0001baba[baqi] Ym1[qp]
+drop Ym1[qp]
+load Ym1[qp]
+.R:eeac[bapi] += STIN0001abba[abqi] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001baba[abpi], STIN0001abba[abpi]
+alloc STIN0001abab[bapi], STIN0001baab[bapi]
+load K:eecc[caji], T:eeac[bcpj]
+.STIN0001abab[bapi] += K:eecc[caji] (T:eeac[bcpj] - T:eeac[cbpj])
+drop T:eeac[bcpj], K:eecc[caji]
+load J:eecc[acji], K:eecc[acij], T:eeac[bcpj]
+.STIN0001abab[bapi] -= (J:eecc[acji] - K:eecc[acij]) T:eeac[bcpj]
+drop T:eeac[bcpj], K:eecc[acij], J:eecc[acji]
+load J:eecc[acji], T:eeac[cbpj]
+.STIN0001baab[bapi] += J:eecc[acji] T:eeac[cbpj]
+drop T:eeac[cbpj], J:eecc[acji]
+load Ym1[qp]
+.R:eeac[bapi] += STIN0001baab[abqi] Ym1[qp]
+drop Ym1[qp]
+load Ym1[qp]
+.R:eeac[bapi] -= STIN0001abab[baqi] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001baab[bapi], STIN0001abab[bapi]
+alloc STIN0001baba[abpi]
+load K4E2[abpi]
+.STIN0001baba[abpi] += K4E2[abpi]
+drop K4E2[abpi]
+load Ym1[qp]
+.R:eeac[bapi] -= STIN0001baba[baqi] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001baba[abpi]
+alloc STIN0001abab[aipj], STIN0001baab[aipj]
+load J:eacc[aqji], Ym1[qp]
+.STIN0001abab[aipj] -= J:eacc[aqji] Ym1[qp]
+drop Ym1[qp], J:eacc[aqji]
+load K:eacc[aqji], Ym1[qp]
+.STIN0001baab[aipj] += K:eacc[aqji] Ym1[qp]
+drop Ym1[qp], K:eacc[aqji]
+load T:ec[bj]
+.R:eeac[bapi] += STIN0001baab[ajpi] T:ec[bj]
+drop T:ec[bj]
+load T:ec[aj]
+.R:eeac[bapi] -= STIN0001abab[bjpi] T:ec[aj]
+drop T:ec[aj]
+drop STIN0001baab[aipj], STIN0001abab[aipj]
+alloc STIN0001abab[pijk], STIN0001baab[pijk]
+load K:ccca[ijkq], Ym1[qp]
+.STIN0001abab[pijk] -= K:ccca[ijkq] Ym1[qp]
+drop Ym1[qp], K:ccca[ijkq]
+load K:ccca[jikq], Ym1[qp]
+.STIN0001baab[pijk] += K:ccca[jikq] Ym1[qp]
+drop Ym1[qp], K:ccca[jikq]
+load T:eecc[bajk]
+.R:eeac[bapi] += .5*STIN0001abab[pkji] T:eecc[bajk]
+drop T:eecc[bajk]
+load T:eecc[bakj]
+.R:eeac[bapi] -= .5*STIN0001baab[pkji] T:eecc[bakj]
+drop T:eecc[bakj]
+drop STIN0001baab[pijk], STIN0001abab[pijk]
+alloc STIN0001abba[abpi], STIN0001baba[abpi]
+load J:eeca[acjp], T:eecc[bcji]
+.STIN0001abba[abpi] += J:eeca[acjp] T:eecc[bcji]
+drop T:eecc[bcji], J:eeca[acjp]
+load K:eeac[acpj], J:eeca[acjp], T:eecc[cbji]
+.STIN0001baba[abpi] += (K:eeac[acpj] - J:eeca[acjp]) T:eecc[cbji]
+drop T:eecc[cbji], J:eeca[acjp], K:eeac[acpj]
+load K:eeac[acpj], T:eecc[cbji]
+.STIN0001baba[abpi] += K:eeac[acpj] (T:eecc[cbji] - T:eecc[bcji])
+drop T:eecc[cbji], K:eeac[acpj]
+load Ym1[qp]
+.R:eeac[bapi] -= STIN0001baba[baqi] Ym1[qp]
+drop Ym1[qp]
+load Ym1[qp]
+.R:eeac[bapi] += STIN0001abba[abqi] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001baba[abpi], STIN0001abba[abpi]
+alloc STIN0001baab[baqp]
+load K:eeaa[abrp], Ym1[rq]
+.STIN0001baab[baqp] += K:eeaa[abrp] Ym1[rq]
+drop Ym1[rq], K:eeaa[abrp]
+load T:ac[qi]
+.R:eeac[abpi] -= STIN0001baab[abqp] T:ac[qi]
+drop T:ac[qi]
+drop STIN0001baab[baqp]
+alloc STIN0001abab[apqi], STIN0001baab[apqi], STIN0001bbbb[apqi]
+load K:eaac[apri], Ym1[rq]
+.STIN0001abab[apqi] -= K:eaac[apri] Ym1[rq]
+drop Ym1[rq], K:eaac[apri]
+load K:eaac[arpi], Ym1[rq]
+.STIN0001baab[apqi] += K:eaac[arpi] Ym1[rq]
+drop Ym1[rq], K:eaac[arpi]
+load K:eaac[arpi], K:ecaa[aipr], Ym1[rq]
+.STIN0001bbbb[apqi] += (K:eaac[arpi] - K:ecaa[aipr]) Ym1[rq]
+drop Ym1[rq], K:ecaa[aipr], K:eaac[arpi]
+load T:eacc[bqji]
+.R:eeac[abpi] += STIN0001baab[apqj] (T:eacc[bqji] - T:eacc[bqij])
+drop T:eacc[bqji]
+load T:eacc[bqij]
+.R:eeac[abpi] -= STIN0001bbbb[apqj] T:eacc[bqij]
+drop T:eacc[bqij]
+load T:eacc[aqji]
+.R:eeac[abpi] -= STIN0001abab[bpqj] T:eacc[aqji]
+drop T:eacc[aqji]
+drop STIN0001bbbb[apqi], STIN0001baab[apqi], STIN0001abab[apqi]
+store R:eeac[abpi]
+
+alloc R:eacc[apij]
+load K:eacc[apij]
+.R:eacc[apij] += K:eacc[apij]
+drop K:eacc[apij]
+load Ym1[pq], K:eacc[aqij]
+.R:eacc[apij] -= Ym1[pq] K:eacc[aqij]
+drop K:eacc[aqij], Ym1[pq]
+alloc STIN0001abab[pikj]
+load K:ccca[ikjp]
+.STIN0001abab[pikj] += K:ccca[ikjp]
+drop K:ccca[ikjp]
+load T:ec[ak]
+.R:eacc[apij] -= STIN0001abab[pkji] T:ec[ak]
+drop T:ec[ak]
+drop STIN0001abab[pikj]
+alloc STIN0001abab[pkji]
+load Ym1[pq], K:ccca[kjiq]
+.STIN0001abab[pkji] -= Ym1[pq] K:ccca[kjiq]
+drop K:ccca[kjiq], Ym1[pq]
+load T:ec[ak]
+.R:eacc[apij] -= STIN0001abab[pkji] T:ec[ak]
+drop T:ec[ak]
+drop STIN0001abab[pkji]
+alloc STIN0001aa[ai], STIN0001bb[ai]
+load T:ec[ai]
+.STIN0001aa[ai] += T:ec[ai]
+drop T:ec[ai]
+load T:ec[ai]
+.STIN0001bb[ai] += T:ec[ai]
+drop T:ec[ai]
+load K:eeac[bapi]
+.R:eacc[apij] += K:eeac[bapi] STIN0001aa[bj]
+drop K:eeac[bapi]
+load J:eeca[abjp]
+.R:eacc[apij] += J:eeca[abjp] STIN0001bb[bi]
+drop J:eeca[abjp]
+drop STIN0001bb[ai], STIN0001aa[ai]
+alloc STIN0001baab[apij], STIN0001baba[apij]
+load J:eeca[baip], T:ec[bj]
+.STIN0001baab[apij] -= J:eeca[baip] T:ec[bj]
+drop T:ec[bj], J:eeca[baip]
+load K:eeac[bapi], T:ec[bj]
+.STIN0001baba[apij] += K:eeac[bapi] T:ec[bj]
+drop T:ec[bj], K:eeac[bapi]
+load Ym1[pq]
+.R:eacc[apij] += Ym1[pq] STIN0001baab[aqji]
+drop Ym1[pq]
+load Ym1[pq]
+.R:eacc[apij] -= Ym1[pq] STIN0001baba[aqij]
+drop Ym1[pq]
+drop STIN0001baba[apij], STIN0001baab[apij]
+alloc STIN0001aa[pi]
+load T:ac[pi]
+.STIN0001aa[pi] += T:ac[pi]
+drop T:ac[pi]
+load K:eccc[akji]
+.R:eacc[apji] -= K:eccc[akji] STIN0001aa[pk]
+drop K:eccc[akji]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi], STIN0001bb[pi]
+load T:ac[pi]
+.STIN0001aa[pi] += T:ac[pi]
+drop T:ac[pi]
+load T:ac[pi]
+.STIN0001bb[pi] += T:ac[pi]
+drop T:ac[pi]
+load K:eaca[apiq]
+.R:eacc[apij] += K:eaca[apiq] STIN0001aa[qj]
+drop K:eaca[apiq]
+load K:eaac[apqj]
+.R:eacc[apij] += K:eaac[apqj] STIN0001bb[qi]
+drop K:eaac[apqj]
+drop STIN0001bb[pi], STIN0001aa[pi]
+alloc STIN0001baab[apij], STIN0001baba[apij]
+load K:eaac[apqi], T:ac[qj]
+.STIN0001baab[apij] -= K:eaac[apqi] T:ac[qj]
+drop T:ac[qj], K:eaac[apqi]
+load K:eaca[apiq], T:ac[qj]
+.STIN0001baba[apij] += K:eaca[apiq] T:ac[qj]
+drop T:ac[qj], K:eaca[apiq]
+load Ym1[pq]
+.R:eacc[apij] += Ym1[pq] STIN0001baab[aqji]
+drop Ym1[pq]
+load Ym1[pq]
+.R:eacc[apij] -= Ym1[pq] STIN0001baba[aqij]
+drop Ym1[pq]
+drop STIN0001baba[apij], STIN0001baab[apij]
+store R:eacc[apij]
+
+alloc R:eaca[apiq]
+load Ym1[pq], f:ec[ai]
+.R:eaca[apiq] += Ym1[pq] f:ec[ai]
+drop f:ec[ai], Ym1[pq]
+load K:eaca[apir], Ym1[rq]
+.R:eaca[apiq] -= K:eaca[apir] Ym1[rq]
+drop Ym1[rq], K:eaca[apir]
+store R:eaca[apiq]
+
+alloc R:eaac[apqi]
+load K:eaac[apri], Ym1[rq]
+.R:eaac[apqi] -= K:eaac[apri] Ym1[rq]
+drop Ym1[rq], K:eaac[apri]
+store R:eaac[apqi]
+
+alloc R:ec[ai]
+load f:ec[ai]
+.R:ec[ai] += f:ec[ai]
+drop f:ec[ai]
+load Ym1[pq], K:eaca[aqip], K:eaac[aqpi]
+.R:ec[ai] += Ym1[pq] (K:eaca[aqip] - K:eaac[aqpi])
+drop K:eaac[aqpi], K:eaca[aqip], Ym1[pq]
+load Ym1[pq], K:eaca[aqip]
+.R:ec[ai] += Ym1[pq] K:eaca[aqip]
+drop K:eaca[aqip], Ym1[pq]
+alloc STIN0001aa[ij]
+load f:cc[ij]
+.STIN0001aa[ij] += f:cc[ij]
+drop f:cc[ij]
+load T:ec[aj]
+.R:ec[ai] -= STIN0001aa[ji] T:ec[aj]
+drop T:ec[aj]
+drop STIN0001aa[ij]
+alloc STIN0001aa[ai]
+load f:ee[ab], T:ec[bi]
+.STIN0001aa[ai] += f:ee[ab] T:ec[bi]
+drop T:ec[bi], f:ee[ab]
+.R:ec[ai] += STIN0001aa[ai]
+drop STIN0001aa[ai]
+alloc STIN0001aa[ai]
+load J:eecc[abji], K:eecc[abij], T:ec[bj]
+.STIN0001aa[ai] -= (J:eecc[abji] - K:eecc[abij]) T:ec[bj]
+drop T:ec[bj], K:eecc[abij], J:eecc[abji]
+load K:eecc[abij], T:ec[bj]
+.STIN0001aa[ai] += K:eecc[abij] T:ec[bj]
+drop T:ec[bj], K:eecc[abij]
+.R:ec[ai] += STIN0001aa[ai]
+drop STIN0001aa[ai]
+alloc STIN0001aa[ji]
+load Ym1[pq], J:aacc[qpji], K:aacc[qpij]
+.STIN0001aa[ji] += Ym1[pq] (J:aacc[qpji] - K:aacc[qpij])
+drop K:aacc[qpij], J:aacc[qpji], Ym1[pq]
+load Ym1[pq], J:aacc[qpji]
+.STIN0001aa[ji] += Ym1[pq] J:aacc[qpji]
+drop J:aacc[qpji], Ym1[pq]
+load T:ec[aj]
+.R:ec[ai] -= STIN0001aa[ji] T:ec[aj]
+drop T:ec[aj]
+drop STIN0001aa[ji]
+alloc STIN0001aa[ba]
+load Ym1[pq], J:eeaa[baqp], K:eeaa[bapq]
+.STIN0001aa[ba] += Ym1[pq] (J:eeaa[baqp] - K:eeaa[bapq])
+drop K:eeaa[bapq], J:eeaa[baqp], Ym1[pq]
+load Ym1[pq], J:eeaa[baqp]
+.STIN0001aa[ba] += Ym1[pq] J:eeaa[baqp]
+drop J:eeaa[baqp], Ym1[pq]
+load T:ec[bi]
+.R:ec[ai] += STIN0001aa[ab] T:ec[bi]
+drop T:ec[bi]
+drop STIN0001aa[ba]
+alloc STIN0001aa[ai]
+load K:eccc[bjki], T:eecc[bajk]
+.STIN0001aa[ai] += .5*(K:eccc[bjki] - K:eccc[bkji]) (T:eecc[bajk] - T:eecc[abjk])
+drop T:eecc[bajk], K:eccc[bjki]
+load K:eccc[bjki], T:eecc[abjk]
+.STIN0001aa[ai] -= .5*K:eccc[bjki] T:eecc[abjk]
+drop T:eecc[abjk], K:eccc[bjki]
+load K:eccc[bkji], T:eecc[abkj]
+.STIN0001aa[ai] -= .5*K:eccc[bkji] T:eecc[abkj]
+drop T:eecc[abkj], K:eccc[bkji]
+.R:ec[ai] += STIN0001aa[ai]
+drop STIN0001aa[ai]
+alloc STIN0001aa[ap], STIN0001bb[ap]
+load T:ea[aq], Ym1[qp]
+.STIN0001aa[ap] -= T:ea[aq] Ym1[qp]
+drop Ym1[qp], T:ea[aq]
+load T:ea[aq], Ym1[qp]
+.STIN0001bb[ap] -= T:ea[aq] Ym1[qp]
+drop Ym1[qp], T:ea[aq]
+load K:eeac[bapi], J:eeca[baip]
+.R:ec[ai] += STIN0001aa[bp] (K:eeac[bapi] - J:eeca[baip])
+drop J:eeca[baip], K:eeac[bapi]
+load K:eeac[bapi]
+.R:ec[ai] += STIN0001bb[bp] K:eeac[bapi]
+drop K:eeac[bapi]
+drop STIN0001bb[ap], STIN0001aa[ap]
+alloc STIN0001aa[pi]
+load T:ac[pi]
+.STIN0001aa[pi] += T:ac[pi]
+drop T:ac[pi]
+load f:ea[ap]
+.R:ec[ai] += f:ea[ap] STIN0001aa[pi]
+drop f:ea[ap]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi], STIN0001bb[pi]
+load T:ac[pi]
+.STIN0001aa[pi] += T:ac[pi]
+drop T:ac[pi]
+load T:ac[pi]
+.STIN0001bb[pi] += T:ac[pi]
+drop T:ac[pi]
+load J:eacc[apji], K:eacc[apij]
+.R:ec[ai] -= (J:eacc[apji] - K:eacc[apij]) STIN0001aa[pj]
+drop K:eacc[apij], J:eacc[apji]
+load K:eacc[apij]
+.R:ec[ai] += K:eacc[apij] STIN0001bb[pj]
+drop K:eacc[apij]
+drop STIN0001bb[pi], STIN0001aa[pi]
+alloc STIN0001aa[pi], STIN0001bb[pi]
+load Ym1[pq], T:ac[qi]
+.STIN0001aa[pi] -= Ym1[pq] T:ac[qi]
+drop T:ac[qi], Ym1[pq]
+load Ym1[pq], T:ac[qi]
+.STIN0001bb[pi] -= Ym1[pq] T:ac[qi]
+drop T:ac[qi], Ym1[pq]
+load J:eacc[apji], K:eacc[apij]
+.R:ec[ai] -= (J:eacc[apji] - K:eacc[apij]) STIN0001aa[pj]
+drop K:eacc[apij], J:eacc[apji]
+load K:eacc[apij]
+.R:ec[ai] += K:eacc[apij] STIN0001bb[pj]
+drop K:eacc[apij]
+drop STIN0001bb[pi], STIN0001aa[pi]
+alloc STIN0001aa[ap]
+load Ym1[qr], K:eaaa[arqp]
+.STIN0001aa[ap] -= Ym1[qr] (K:eaaa[arqp] - K:eaaa[aqrp])
+drop K:eaaa[arqp], Ym1[qr]
+load Ym1[qr], K:eaaa[arpq]
+.STIN0001aa[ap] += Ym1[qr] K:eaaa[arpq]
+drop K:eaaa[arpq], Ym1[qr]
+load T:ac[pi]
+.R:ec[ai] += STIN0001aa[ap] T:ac[pi]
+drop T:ac[pi]
+drop STIN0001aa[ap]
+store R:ec[ai]
+
+alloc R:ea[ap]
+load f:ea[aq], Ym1[qp]
+.R:ea[ap] += f:ea[aq] Ym1[qp]
+drop Ym1[qp], f:ea[aq]
+alloc STIN0001aa[ap]
+load f:ee[ab], T:ea[bp]
+.STIN0001aa[ap] += f:ee[ab] T:ea[bp]
+drop T:ea[bp], f:ee[ab]
+load Ym1[qp]
+.R:ea[ap] += STIN0001aa[aq] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001aa[ap]
+alloc STIN0001aa[ap]
+load K:eeac[abpi], J:eeca[abip], T:ec[bi]
+.STIN0001aa[ap] += (K:eeac[abpi] - J:eeca[abip]) T:ec[bi]
+drop T:ec[bi], J:eeca[abip], K:eeac[abpi]
+load K:eeac[abpi], T:ec[bi]
+.STIN0001aa[ap] += K:eeac[abpi] T:ec[bi]
+drop T:ec[bi], K:eeac[abpi]
+load Ym1[qp]
+.R:ea[ap] += STIN0001aa[aq] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001aa[ap]
+alloc STIN0001aa[ap]
+load K:eacc[bpij], T:eecc[baij]
+.STIN0001aa[ap] -= .5*(K:eacc[bpij] - K:eacc[bpji]) (T:eecc[baij] - T:eecc[abij])
+drop T:eecc[baij], K:eacc[bpij]
+load K:eacc[bpji], T:eecc[abij]
+.STIN0001aa[ap] -= .5*K:eacc[bpji] T:eecc[abij]
+drop T:eecc[abij], K:eacc[bpji]
+load K:eacc[bpij], T:eecc[abji]
+.STIN0001aa[ap] -= .5*K:eacc[bpij] T:eecc[abji]
+drop T:eecc[abji], K:eacc[bpij]
+load Ym1[qp]
+.R:ea[ap] += STIN0001aa[aq] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001aa[ap]
+alloc STIN0001aa[ap]
+load f:ec[bi], T:eeac[abpi]
+.STIN0001aa[ap] += f:ec[bi] (T:eeac[abpi] - T:eeac[bapi])
+drop T:eeac[abpi], f:ec[bi]
+load f:ec[bi], T:eeac[abpi]
+.STIN0001aa[ap] += f:ec[bi] T:eeac[abpi]
+drop T:eeac[abpi], f:ec[bi]
+load Ym1[qp]
+.R:ea[ap] += STIN0001aa[aq] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001aa[ap]
+alloc STIN0001aa[ap]
+load K:eaac[aqpi], K:ecaa[aipq], T:ac[qi]
+.STIN0001aa[ap] += (K:eaac[aqpi] - K:ecaa[aipq]) T:ac[qi]
+drop T:ac[qi], K:ecaa[aipq], K:eaac[aqpi]
+load K:eaac[aqpi], T:ac[qi]
+.STIN0001aa[ap] += K:eaac[aqpi] T:ac[qi]
+drop T:ac[qi], K:eaac[aqpi]
+load Ym1[qp]
+.R:ea[ap] += STIN0001aa[aq] Ym1[qp]
+drop Ym1[qp]
+drop STIN0001aa[ap]
+alloc STIN0001aaaa[qpji], STIN0001abba[qpji], STIN0001baba[qpji]
+load K:aacc[rpij], Ym1[rq]
+.STIN0001aaaa[qpji] += (K:aacc[rpij] - K:aacc[rpji]) Ym1[rq]
+drop Ym1[rq], K:aacc[rpij]
+load K:aacc[prji], Ym1[rq]
+.STIN0001abba[qpji] += K:aacc[prji] Ym1[rq]
+drop Ym1[rq], K:aacc[prji]
+load K:aacc[prij], Ym1[rq]
+.STIN0001baba[qpji] -= K:aacc[prij] Ym1[rq]
+drop Ym1[rq], K:aacc[prij]
+load T:eacc[aqij]
+.R:ea[ap] -= .5*STIN0001aaaa[qpij] (T:eacc[aqij] - T:eacc[aqji])
+drop T:eacc[aqij]
+load T:eacc[aqij]
+.R:ea[ap] -= .5*STIN0001abba[qpij] T:eacc[aqij]
+drop T:eacc[aqij]
+load T:eacc[aqji]
+.R:ea[ap] += .5*STIN0001baba[qpij] T:eacc[aqji]
+drop T:eacc[aqji]
+drop STIN0001baba[qpji], STIN0001abba[qpji], STIN0001aaaa[qpji]
+store R:ea[ap]
+
+alloc R:ac[pi]
+load f:ac[pi]
+.R:ac[pi] += f:ac[pi]
+drop f:ac[pi]
+load Ym1[pq], f:ac[qi]
+.R:ac[pi] -= Ym1[pq] f:ac[qi]
+drop f:ac[qi], Ym1[pq]
+load Ym1[qr], K:aaac[prqi]
+.R:ac[pi] -= Ym1[qr] (K:aaac[prqi] - K:aaac[pqri])
+drop K:aaac[prqi], Ym1[qr]
+load Ym1[qr], K:aaac[rpqi]
+.R:ac[pi] += Ym1[qr] K:aaac[rpqi]
+drop K:aaac[rpqi], Ym1[qr]
+alloc STIN0001aa[pi]
+load f:ea[ap], T:ec[ai]
+.STIN0001aa[pi] += f:ea[ap] T:ec[ai]
+drop T:ec[ai], f:ea[ap]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load J:eacc[apij], K:eacc[apji], T:ec[aj]
+.STIN0001aa[pi] -= (J:eacc[apij] - K:eacc[apji]) T:ec[aj]
+drop T:ec[aj], K:eacc[apji], J:eacc[apij]
+load K:eacc[apji], T:ec[aj]
+.STIN0001aa[pi] += K:eacc[apji] T:ec[aj]
+drop T:ec[aj], K:eacc[apji]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load J:eacc[apij], K:eacc[apji], T:ec[aj]
+.STIN0001aa[pi] -= (J:eacc[apij] - K:eacc[apji]) T:ec[aj]
+drop T:ec[aj], K:eacc[apji], J:eacc[apij]
+load K:eacc[apji], T:ec[aj]
+.STIN0001aa[pi] += K:eacc[apji] T:ec[aj]
+drop T:ec[aj], K:eacc[apji]
+load Ym1[pq]
+.R:ac[pi] -= Ym1[pq] STIN0001aa[qi]
+drop Ym1[pq]
+drop STIN0001aa[pi]
+alloc STIN0001aaaa[pqri], STIN0001baab[pqri]
+load K:eaaa[aqpr], T:ec[ai]
+.STIN0001aaaa[pqri] -= (K:eaaa[aqpr] - K:eaaa[apqr]) T:ec[ai]
+drop T:ec[ai], K:eaaa[aqpr]
+load K:eaaa[aqpr], T:ec[ai]
+.STIN0001baab[pqri] -= K:eaaa[aqpr] T:ec[ai]
+drop T:ec[ai], K:eaaa[aqpr]
+load Ym1[qr]
+.R:ac[pi] -= Ym1[qr] STIN0001aaaa[prqi]
+drop Ym1[qr]
+load Ym1[qr]
+.R:ac[pi] -= Ym1[qr] STIN0001baab[prqi]
+drop Ym1[qr]
+drop STIN0001baab[pqri], STIN0001aaaa[pqri]
+alloc STIN0001aaaa[qpri], STIN0001baba[qpri]
+load K:eaac[apqi], K:ecaa[aiqp], T:ea[ar]
+.STIN0001aaaa[qpri] += (K:eaac[apqi] - K:ecaa[aiqp]) T:ea[ar]
+drop T:ea[ar], K:ecaa[aiqp], K:eaac[apqi]
+load K:eaac[apqi], T:ea[ar]
+.STIN0001baba[qpri] += K:eaac[apqi] T:ea[ar]
+drop T:ea[ar], K:eaac[apqi]
+load Ym1[qr]
+.R:ac[pi] += Ym1[qr] STIN0001aaaa[rpqi]
+drop Ym1[qr]
+load Ym1[qr]
+.R:ac[pi] += Ym1[qr] STIN0001baba[rpqi]
+drop Ym1[qr]
+drop STIN0001baba[qpri], STIN0001aaaa[qpri]
+alloc STIN0001aa[pi]
+load K:eeac[bapj], T:eecc[abji]
+.STIN0001aa[pi] += .5*(K:eeac[bapj] - K:eeac[abpj]) (T:eecc[abji] - T:eecc[baji])
+drop T:eecc[abji], K:eeac[bapj]
+load K:eeac[abpj], T:eecc[abij]
+.STIN0001aa[pi] += .5*K:eeac[abpj] T:eecc[abij]
+drop T:eecc[abij], K:eeac[abpj]
+load K:eeac[bapj], T:eecc[baij]
+.STIN0001aa[pi] += .5*K:eeac[bapj] T:eecc[baij]
+drop T:eecc[baij], K:eeac[bapj]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aaaa[pqri], STIN0001baab[pqri]
+load K:eeaa[abpq], T:eeac[bari]
+.STIN0001aaaa[pqri] -= .5*(K:eeaa[abpq] - K:eeaa[abqp]) (T:eeac[bari] - T:eeac[abri])
+drop T:eeac[bari], K:eeaa[abpq]
+load K:eeaa[abpq], T:eeac[bari]
+.STIN0001baab[pqri] -= .5*K:eeaa[abpq] T:eeac[bari]
+drop T:eeac[bari], K:eeaa[abpq]
+load K:eeaa[bapq], T:eeac[abri]
+.STIN0001baab[pqri] -= .5*K:eeaa[bapq] T:eeac[abri]
+drop T:eeac[abri], K:eeaa[bapq]
+load Ym1[qr]
+.R:ac[pi] -= Ym1[qr] STIN0001aaaa[prqi]
+drop Ym1[qr]
+load Ym1[qr]
+.R:ac[pi] -= Ym1[qr] STIN0001baab[prqi]
+drop Ym1[qr]
+drop STIN0001baab[pqri], STIN0001aaaa[pqri]
+alloc STIN0001aa[pi]
+load f:cc[ji], T:ac[pj]
+.STIN0001aa[pi] -= f:cc[ji] T:ac[pj]
+drop T:ac[pj], f:cc[ji]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load f:cc[ji], T:ac[pj]
+.STIN0001aa[pi] -= f:cc[ji] T:ac[pj]
+drop T:ac[pj], f:cc[ji]
+load Ym1[pq]
+.R:ac[pi] -= Ym1[pq] STIN0001aa[qi]
+drop Ym1[pq]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pq]
+load f:aa[pq]
+.STIN0001aa[pq] += f:aa[pq]
+drop f:aa[pq]
+load T:ac[qi]
+.R:ac[pi] += STIN0001aa[pq] T:ac[qi]
+drop T:ac[qi]
+drop STIN0001aa[pq]
+alloc STIN0001aa[pi]
+load J:aacc[pqji], K:aacc[pqij], T:ac[qj]
+.STIN0001aa[pi] -= (J:aacc[pqji] - K:aacc[pqij]) T:ac[qj]
+drop T:ac[qj], K:aacc[pqij], J:aacc[pqji]
+load K:aacc[pqij], T:ac[qj]
+.STIN0001aa[pi] += K:aacc[pqij] T:ac[qj]
+drop T:ac[qj], K:aacc[pqij]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi], STIN0001bb[pi]
+load Ym1[pq], T:ac[qi]
+.STIN0001aa[pi] -= Ym1[pq] T:ac[qi]
+drop T:ac[qi], Ym1[pq]
+load Ym1[pq], T:ac[qi]
+.STIN0001bb[pi] -= Ym1[pq] T:ac[qi]
+drop T:ac[qi], Ym1[pq]
+load J:aacc[pqji], K:aacc[pqij]
+.R:ac[pi] -= (J:aacc[pqji] - K:aacc[pqij]) STIN0001aa[qj]
+drop K:aacc[pqij], J:aacc[pqji]
+load K:aacc[pqij]
+.R:ac[pi] += K:aacc[pqij] STIN0001bb[qj]
+drop K:aacc[pqij]
+drop STIN0001bb[pi], STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load J:aacc[pqji], K:aacc[pqij], T:ac[qj]
+.STIN0001aa[pi] -= (J:aacc[pqji] - K:aacc[pqij]) T:ac[qj]
+drop T:ac[qj], K:aacc[pqij], J:aacc[pqji]
+load K:aacc[pqij], T:ac[qj]
+.STIN0001aa[pi] += K:aacc[pqij] T:ac[qj]
+drop T:ac[qj], K:aacc[pqij]
+load Ym1[pq]
+.R:ac[pi] -= Ym1[pq] STIN0001aa[qi]
+drop Ym1[pq]
+drop STIN0001aa[pi]
+alloc STIN0001aa[ji]
+load Ym1[pq], J:aacc[qpji], K:aacc[qpij]
+.STIN0001aa[ji] += Ym1[pq] (J:aacc[qpji] - K:aacc[qpij])
+drop K:aacc[qpij], J:aacc[qpji], Ym1[pq]
+load Ym1[pq], J:aacc[qpji]
+.STIN0001aa[ji] += Ym1[pq] J:aacc[qpji]
+drop J:aacc[qpji], Ym1[pq]
+load T:ac[pj]
+.R:ac[pi] -= STIN0001aa[ji] T:ac[pj]
+drop T:ac[pj]
+drop STIN0001aa[ji]
+alloc STIN0001aa[qp]
+load Ym1[rs], K:aaaa[sqrp]
+.STIN0001aa[qp] += Ym1[rs] (K:aaaa[sqrp] - K:aaaa[sqpr])
+drop K:aaaa[sqrp], Ym1[rs]
+load Ym1[rs], K:aaaa[qspr]
+.STIN0001aa[qp] += Ym1[rs] K:aaaa[qspr]
+drop K:aaaa[qspr], Ym1[rs]
+load T:ac[qi]
+.R:ac[pi] += STIN0001aa[pq] T:ac[qi]
+drop T:ac[qi]
+drop STIN0001aa[qp]
+alloc STIN0001aa[pi]
+load K:eccc[ajki], T:eacc[apjk]
+.STIN0001aa[pi] += .5*(K:eccc[ajki] - K:eccc[akji]) (T:eacc[apjk] - T:eacc[apkj])
+drop T:eacc[apjk], K:eccc[ajki]
+load K:eccc[ajki], T:eacc[apkj]
+.STIN0001aa[pi] -= .5*K:eccc[ajki] T:eacc[apkj]
+drop T:eacc[apkj], K:eccc[ajki]
+load K:eccc[akji], T:eacc[apjk]
+.STIN0001aa[pi] -= .5*K:eccc[akji] T:eacc[apjk]
+drop T:eacc[apjk], K:eccc[akji]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load K:eccc[ajki], T:eacc[apjk]
+.STIN0001aa[pi] += .5*(K:eccc[ajki] - K:eccc[akji]) (T:eacc[apjk] - T:eacc[apkj])
+drop T:eacc[apjk], K:eccc[ajki]
+load K:eccc[ajki], T:eacc[apkj]
+.STIN0001aa[pi] -= .5*K:eccc[ajki] T:eacc[apkj]
+drop T:eacc[apkj], K:eccc[ajki]
+load K:eccc[akji], T:eacc[apjk]
+.STIN0001aa[pi] -= .5*K:eccc[akji] T:eacc[apjk]
+drop T:eacc[apjk], K:eccc[akji]
+load Ym1[pq]
+.R:ac[pi] -= Ym1[pq] STIN0001aa[qi]
+drop Ym1[pq]
+drop STIN0001aa[pi]
+alloc STIN0001aa[pi]
+load K:eaca[apjq], K:eaac[apqj], T:eacc[aqji]
+.STIN0001aa[pi] += (K:eaca[apjq] - K:eaac[apqj]) (T:eacc[aqji] - T:eacc[aqij])
+drop T:eacc[aqji], K:eaac[apqj], K:eaca[apjq]
+load K:eaac[aqpj], T:eacc[aqij]
+.STIN0001aa[pi] += K:eaac[aqpj] T:eacc[aqij]
+drop T:eacc[aqij], K:eaac[aqpj]
+load K:eaca[apjq], T:eacc[aqji]
+.STIN0001aa[pi] += K:eaca[apjq] T:eacc[aqji]
+drop T:eacc[aqji], K:eaca[apjq]
+.R:ac[pi] += STIN0001aa[pi]
+drop STIN0001aa[pi]
+store R:ac[pi]
+
+alloc ECC[]
+alloc STIN0001[]
+load f:ec[ai], T:ec[ai]
+.STIN0001[] += 2.*f:ec[ai] T:ec[ai]
+drop T:ec[ai], f:ec[ai]
+.ECC[] += STIN0001[]
+drop STIN0001[]
+alloc STIN0001aa[pq]
+load K:eaca[apiq], K:eaac[apqi], T:ec[ai]
+.STIN0001aa[pq] += (K:eaca[apiq] - K:eaac[apqi]) T:ec[ai]
+drop T:ec[ai], K:eaac[apqi], K:eaca[apiq]
+load K:eaca[apiq], T:ec[ai]
+.STIN0001aa[pq] += K:eaca[apiq] T:ec[ai]
+drop T:ec[ai], K:eaca[apiq]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[pq]
+alloc STIN0001aa[pq]
+load f:ea[ap], T:ea[aq]
+.STIN0001aa[pq] += f:ea[ap] T:ea[aq]
+drop T:ea[aq], f:ea[ap]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[pq]
+alloc STIN0001[]
+load f:ac[pi], T:ac[pi]
+.STIN0001[] += 2.*f:ac[pi] T:ac[pi]
+drop T:ac[pi], f:ac[pi]
+.ECC[] += STIN0001[]
+drop STIN0001[]
+alloc STIN0001aa[qp]
+load f:ac[pi], T:ac[qi]
+.STIN0001aa[qp] -= f:ac[pi] T:ac[qi]
+drop T:ac[qi], f:ac[pi]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[qp]
+alloc STIN0001aa[pq]
+load K:aaac[prqi], T:ac[ri]
+.STIN0001aa[pq] += (K:aaac[prqi] - K:aaac[pqri]) T:ac[ri]
+drop T:ac[ri], K:aaac[prqi]
+load K:aaac[prqi], T:ac[ri]
+.STIN0001aa[pq] += K:aaac[prqi] T:ac[ri]
+drop T:ac[ri], K:aaac[prqi]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[pq]
+alloc STIN0001[]
+load K:eecc[abij], T:eecc[abij]
+.STIN0001[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
+drop T:eecc[abij], K:eecc[abij]
+load K:eecc[abij], T:eecc[abij]
+.STIN0001[] += .5*K:eecc[abij] T:eecc[abij]
+drop T:eecc[abij], K:eecc[abij]
+load K:eecc[baij], T:eecc[baij]
+.STIN0001[] += .5*K:eecc[baij] T:eecc[baij]
+drop T:eecc[baij], K:eecc[baij]
+.ECC[] += STIN0001[]
+drop STIN0001[]
+alloc STIN0001aa[pq]
+load K:eeac[bapi], T:eeac[baqi]
+.STIN0001aa[pq] += .5*(K:eeac[bapi] - K:eeac[abpi]) (T:eeac[baqi] - T:eeac[abqi])
+drop T:eeac[baqi], K:eeac[bapi]
+load K:eeac[abpi], T:eeac[abqi]
+.STIN0001aa[pq] += .5*K:eeac[abpi] T:eeac[abqi]
+drop T:eeac[abqi], K:eeac[abpi]
+load K:eeac[bapi], T:eeac[baqi]
+.STIN0001aa[pq] += .5*K:eeac[bapi] T:eeac[baqi]
+drop T:eeac[baqi], K:eeac[bapi]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[pq]
+alloc STIN0001[]
+load K:eacc[apij], T:eacc[apij]
+.STIN0001[] += (K:eacc[apij] - K:eacc[apji]) (T:eacc[apij] - T:eacc[apji])
+drop T:eacc[apij], K:eacc[apij]
+load K:eacc[apij], T:eacc[apij]
+.STIN0001[] += K:eacc[apij] T:eacc[apij]
+drop T:eacc[apij], K:eacc[apij]
+load K:eacc[apji], T:eacc[apji]
+.STIN0001[] += K:eacc[apji] T:eacc[apji]
+drop T:eacc[apji], K:eacc[apji]
+.ECC[] += STIN0001[]
+drop STIN0001[]
+alloc STIN0001aa[qp]
+load K:eacc[apij], T:eacc[aqij]
+.STIN0001aa[qp] -= .5*(K:eacc[apij] - K:eacc[apji]) (T:eacc[aqij] - T:eacc[aqji])
+drop T:eacc[aqij], K:eacc[apij]
+load K:eacc[apji], T:eacc[aqji]
+.STIN0001aa[qp] -= .5*K:eacc[apji] T:eacc[aqji]
+drop T:eacc[aqji], K:eacc[apji]
+load K:eacc[apij], T:eacc[aqij]
+.STIN0001aa[qp] -= .5*K:eacc[apij] T:eacc[aqij]
+drop T:eacc[aqij], K:eacc[apij]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[qp]
+alloc STIN0001aa[qp]
+load f:ec[ai], T:eaca[aqip], T:eaac[aqpi]
+.STIN0001aa[qp] += f:ec[ai] (T:eaca[aqip] - T:eaac[aqpi])
+drop T:eaac[aqpi], T:eaca[aqip], f:ec[ai]
+load f:ec[ai], T:eaca[aqip]
+.STIN0001aa[qp] += f:ec[ai] T:eaca[aqip]
+drop T:eaca[aqip], f:ec[ai]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[qp]
+alloc STIN0001aa[pq]
+load K:eaca[apir], K:eaac[apri], T:eaca[ariq], T:eaac[arqi]
+.STIN0001aa[pq] += (K:eaca[apir] - K:eaac[apri]) (T:eaca[ariq] - T:eaac[arqi])
+drop T:eaac[arqi], T:eaca[ariq], K:eaac[apri], K:eaca[apir]
+load K:eaac[arpi], T:eaac[arqi]
+.STIN0001aa[pq] += K:eaac[arpi] T:eaac[arqi]
+drop T:eaac[arqi], K:eaac[arpi]
+load K:eaca[apir], T:eaca[ariq]
+.STIN0001aa[pq] += K:eaca[apir] T:eaca[ariq]
+drop T:eaca[ariq], K:eaca[apir]
+load Ym1[pq]
+.ECC[] += 2.*Ym1[pq] STIN0001aa[qp]
+drop Ym1[pq]
+drop STIN0001aa[pq]
+store ECC[]
+
+
+---- code("Generate_Fock_Matrices")
+alloc f:ac[**]
+load fc:ca[**]
+.f:ac[pi] := fc:ca[ip]
+drop fc:ca[**]
+load deltacc[**], J:ccca[****]
+.f:ac[pi] += (2.*J:ccca[jkip] - J:ccca[ikjp]) deltacc[kj]
+drop J:ccca[****], deltacc[**]
+store f:ac[**]
+
+alloc f:ec[**]
+load fc:ec[**]
+.f:ec[ai] += fc:ec[ai]
+drop fc:ec[**]
+load deltacc[**], J:eccc[****]
+.f:ec[ai] += (2.*J:eccc[aijk] - J:eccc[ajik]) deltacc[kj]
+drop J:eccc[****], deltacc[**]
+store f:ec[**]
+
+alloc f:cc[**]
+load fc:cc[**]
+.f:cc[ij] := fc:cc[ij]
+drop fc:cc[**]
+load deltacc[**], K:cccc[****]
+.f:cc[ij] += (2.*K:cccc[jkil] - K:cccc[jkli]) deltacc[lk]
+drop K:cccc[****], deltacc[**]
+store f:cc[**]
+
+alloc f:ea[**]
+load fc:ea[**]
+.f:ea[ap] := fc:ea[ap]
+drop fc:ea[**]
+load deltacc[**]
+load J:eacc[****], J:ecca[****]
+.f:ea[ap] += (2.*J:eacc[apij] - J:ecca[ajip])  deltacc[ji]
+drop J:ecca[****], J:eacc[****]
+drop deltacc[**]
+store f:ea[**]
+
+alloc f:ee[**]
+load fc:ee[**]
+.f:ee[ab] := fc:ee[ab]
+drop fc:ee[**]
+load deltacc[**]
+load J:eecc[****], K:eecc[****]
+.f:ee[ab] += (2.*J:eecc[baij] - K:eecc[baji]) deltacc[ji]
+drop K:eecc[****], J:eecc[****]
+drop deltacc[**]
+store f:ee[**]
+
+alloc f:aa[**]
+load fc:aa[**]
+.f:aa[pq] := fc:aa[pq]
+drop fc:aa[**]
+load deltacc[**]
+load J:ccaa[****], K:ccaa[****]
+.f:aa[pq] += (2.*J:ccaa[ijqp] - K:ccaa[jiqp]) deltacc[ji]
+drop K:ccaa[****], J:ccaa[****]
+drop deltacc[**]
+store f:aa[**]
+
+alloc g:ac[**]
+load f:ac[**]
+.g:ac[pi] := f:ac[pi]
+drop f:ac[**]
+load J:caaa[****], Dm1[**]
+.g:ac[pi] += (J:caaa[ipqr] - .5*J:caaa[irqp]) Dm1[qr]
+drop Dm1[**], J:caaa[****]
+store g:ac[**]
+
+alloc g:ec[**]
+load f:ec[**]
+.g:ec[ai] := f:ec[ai]
+drop f:ec[**]
+load Dm1[**]
+load J:ecaa[****], K:ecaa[****]
+.g:ec[ai] += (J:ecaa[aipq] - .5*K:ecaa[aipq]) Dm1[pq]
+drop K:ecaa[****], J:ecaa[****]
+drop Dm1[**]
+store g:ec[**]
+
+alloc g:cc[**]
+load f:cc[**]
+.g:cc[ij] := f:cc[ij]
+drop f:cc[**]
+load Dm1[**]
+load J:ccaa[****], K:ccaa[****]
+.g:cc[ij] += (J:ccaa[jipq] - .5*K:ccaa[jiqp]) Dm1[pq]
+drop K:ccaa[****], J:ccaa[****]
+drop Dm1[**]
+store g:cc[**]
+
+alloc g:ea[**]
+load f:ea[**]
+.g:ea[ap] := f:ea[ap]
+drop f:ea[**]
+load J:eaaa[****], Dm1[**]
+.g:ea[ap] += (J:eaaa[apqr] - .5*J:eaaa[arqp]) Dm1[qr]
+drop Dm1[**], J:eaaa[****]
+store g:ea[**]
+
+alloc g:ee[**]
+load f:ee[**]
+.g:ee[ab] := f:ee[ab]
+drop f:ee[**]
+load Dm1[**]
+load J:eeaa[****], K:eeaa[****]
+.g:ee[ab] += (J:eeaa[bapq] - .5*K:eeaa[baqp]) Dm1[pq]
+drop K:eeaa[****], J:eeaa[****]
+drop Dm1[**]
+store g:ee[**]
+
+alloc g:aa[**]
+load f:aa[**]
+.g:aa[pq] := f:aa[pq]
+drop f:aa[**]
+load Dm1[**]
+load K:aaaa[****]
+.g:aa[pq] += (K:aaaa[qrps] - .5*K:aaaa[qrsp])  Dm1[rs]
+drop K:aaaa[****]
+drop Dm1[**]
+store g:aa[**]
+
+
+---- code("Update_Amplitudes")
+alloc Var1[]
+
+load OR:ac[pi]
+load f:aa[pp], f:cc[ii]
+denom-scale OR:ac[pi], f:aa[pp] - f:cc[ii]
+drop f:cc[ii], f:aa[pp]
+alloc OT:ac[pi]
+.OT:ac[pi] -= OR:ac[pi]
+store OT:ac[pi]
+.Var1[] += 2.0*OR:ac[pi] OR:ac[pi]
+drop OR:ac[pi]
+
+load OR:ec[ai]
+load f:ee[aa], f:cc[ii]
+denom-scale OR:ec[ai], f:ee[aa] - f:cc[ii]
+drop f:cc[ii], f:ee[aa]
+alloc OT:ec[ai]
+.OT:ec[ai] -= OR:ec[ai]
+store OT:ec[ai]
+.Var1[] += 2.0*OR:ec[ai] OR:ec[ai]
+drop OR:ec[ai]
+
+load OR:ea[ap]
+load f:ee[aa], f:aa[pp]
+denom-scale OR:ea[ap], f:ee[aa] - f:aa[pp]
+drop f:aa[pp], f:ee[aa]
+alloc OT:ea[ap]
+.OT:ea[ap] -= OR:ea[ap]
+store OT:ea[ap]
+.Var1[] += 2.0*OR:ea[ap] OR:ea[ap]
+drop OR:ea[ap]
+
+store Var1[]
+alloc Var2[]
+
+load OR:aacc[pqij]
+load f:aa[pp], f:cc[ii]
+denom-scale OR:aacc[pqij], f:aa[pp] + f:aa[qq] - f:cc[ii] - f:cc[jj]
+drop f:cc[ii], f:aa[pp]
+alloc OT:aacc[pqij]
+.OT:aacc[pqij] -= OR:aacc[pqij]
+store OT:aacc[pqij]
+.Var2[] += (2.0*OR:aacc[pqij] - OR:aacc[qpij]) OR:aacc[pqij]
+drop OR:aacc[pqij]
+
+load OR:aaac[pqri]
+load f:aa[pp], f:cc[ii]
+denom-scale OR:aaac[pqri], f:aa[pp] + f:aa[qq] - f:aa[rr] - f:cc[ii]
+drop f:cc[ii], f:aa[pp]
+alloc OT:aaac[pqri]
+.OT:aaac[pqri] -= OR:aaac[pqri]
+store OT:aaac[pqri]
+.Var2[] += OR:aaac[pqri] OR:aaac[pqri]
+drop OR:aaac[pqri]
+
+load OR:eacc[apij]
+load f:ee[aa], f:aa[pp], f:cc[ii]
+denom-scale OR:eacc[apij], f:ee[aa] + f:aa[pp] - f:cc[ii] - f:cc[jj]
+drop f:cc[ii], f:aa[pp], f:ee[aa]
+alloc OT:eacc[apij]
+.OT:eacc[apij] -= OR:eacc[apij]
+store OT:eacc[apij]
+.Var2[] += OR:eacc[apij] OR:eacc[apij]
+drop OR:eacc[apij]
+
+load OR:eaac[apqi]
+load f:ee[aa], f:aa[pp], f:cc[ii]
+denom-scale OR:eaac[apqi], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:cc[ii]
+drop f:cc[ii], f:aa[pp], f:ee[aa]
+alloc OT:eaac[apqi]
+.OT:eaac[apqi] -= OR:eaac[apqi]
+store OT:eaac[apqi]
+.Var2[] += OR:eaac[apqi] OR:eaac[apqi]
+drop OR:eaac[apqi]
+
+load OR:eaaa[apqr]
+load f:ee[aa], f:aa[pp]
+denom-scale OR:eaaa[apqr], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:aa[rr]
+drop f:aa[pp], f:ee[aa]
+alloc OT:eaaa[apqr]
+.OT:eaaa[apqr] -= OR:eaaa[apqr]
+store OT:eaaa[apqr]
+.Var2[] += OR:eaaa[apqr] OR:eaaa[apqr]
+drop OR:eaaa[apqr]
+
+load OR:eecc[abij]
+load f:ee[aa], f:cc[ii]
+denom-scale OR:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
+drop f:cc[ii], f:ee[aa]
+alloc OT:eecc[abij]
+.OT:eecc[abij] -= OR:eecc[abij]
+store OT:eecc[abij]
+.Var2[] += (2.0*OR:eecc[abij] - OR:eecc[baij]) OR:eecc[abij]
+drop OR:eecc[abij]
+
+load OR:eeac[abpi]
+load f:ee[aa], f:aa[pp], f:cc[ii]
+denom-scale OR:eeac[abpi], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:cc[ii]
+drop f:cc[ii], f:aa[pp], f:ee[aa]
+alloc OT:eeac[abpi]
+.OT:eeac[abpi] -= OR:eeac[abpi]
+store OT:eeac[abpi]
+.Var2[] += OR:eeac[abpi] OR:eeac[abpi]
+drop OR:eeac[abpi]
+
+load OR:eeaa[abpq]
+load f:ee[aa], f:aa[pp]
+denom-scale OR:eeaa[abpq], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:aa[qq]
+drop f:aa[pp], f:ee[aa]
+alloc OT:eeaa[abpq]
+.OT:eeaa[abpq] -= OR:eeaa[abpq]
+store OT:eeaa[abpq]
+.Var2[] += (2.0*OR:eeaa[abpq] - OR:eeaa[bapq]) OR:eeaa[abpq]
+drop OR:eeaa[abpq]
+
+store Var2[]
+
+// Set up 3rd order denisty and hole tensors
+// This is taken from the cic code
+---- code("FormDm3OnDisk")
+// <E^pqr_stu> += <E^p_s E^q_t R^r_u>
+//             -= delta_rs <E^pq_ut>
+//             -= delta_rt <E^pq_su>
+//             -= delta_qs <E^p_t E^r_u>
+
+alloc Dm3[******]
+load deltaaa[**]
+load Dm3X[******]
+.Dm3[pqruts] += Dm3X[psqtru]
+drop Dm3X
+load Dm2[****]
+.Dm3[pqruts] -= deltaaa[rs] Dm2[pqtu]
+.Dm3[pqruts] -= deltaaa[rt] Dm2[pqus]
+drop Dm2
+load Dm2X[****]
+.Dm3[pqruts] -= deltaaa[qs] Dm2X[ptru]
+drop Dm2X
+drop deltaaa[**]
+store Dm3
+
+// also hole dm3
+// <E^k_s E^l_t E^m_u E^r_m E^q_l E^p_k> = HDm3[sturqp]
+//          + <E^k_s E^p_k E^l_t E^q_l E^m_u E^r_m>
+//          - delta_pu <E^m_s E^l_t E^q_l E^r_m>
+//          - delta_pt <E^l_s E^m_u E^r_m E^q_l>
+//          - delta_qu <E^k_s E^p_k E^m_t E^r_m>
+
+alloc Dm3H[******]
+load deltaaa[**]
+load Dm3HX[******]
+.Dm3H[sturqp] += Dm3HX[sptqur]
+drop Dm3HX
+load Dm2H[****]
+.Dm3H[sturqp] -= deltaaa[pu] Dm2H[stqr]
+.Dm3H[sturqp] -= deltaaa[pt] Dm2H[surq]
+drop Dm2H
+load Dm2HX[****]
+.Dm3H[sturqp] -= deltaaa[qu] Dm2HX[sptr]
+drop Dm2HX
+drop deltaaa[**]
+store Dm3H
+
+
+---- code("MRCC_SBlock")
+// Set up overlap metric, ready to construct X used
+// in sequential orthogonalisation
+
+// I1
+alloc S1:I1[pq]
+load Dm1H[pq]
+.S1:I1[pq] := Dm1H[pq]
+drop Dm1H[pq]
+store S1:I1[pq]
+
+alloc S2:I1[pqrstu]
+load Dm3[pppppp], Dm2[pppp], Dm1[pp], deltaaa[pp]
+.S2:I1[pqrstu] := Dm3[pqrstu]
+.S2:I1[pqrstu] -= deltaaa[pt] Dm2[rqsu]
+.S2:I1[pqrstu] += deltaaa[pu] Dm2[rqst]
+.S2:I1[pqrstu] += deltaaa[qt] Dm2[rpsu]
+.S2:I1[pqrstu] -= deltaaa[qu] Dm2[rpst]
+alloc delta4[pppp]
+.delta4[pqtu] += deltaaa[pt] deltaaa[qu]
+.S2:I1[pqrstu] += delta4[pqtu] Dm1[rs]
+.S2:I1[pqrstu] -= delta4[qptu] Dm1[rs]
+drop delta4[pppp]
+drop deltaaa[pp], Dm1[pp], Dm2[pppp], Dm3[pppppp]
+store S2:I1[pqrstu]
+
+alloc S3:I1[pqrs]
+load Dm2[pppp], Dm1[pp], deltaaa[pp]
+.S3:I1[pqrs] -= Dm2[qprs]
+.S3:I1[pqrs] -= deltaaa[pr] Dm1[qs]
+.S3:I1[pqrs] += deltaaa[ps] Dm1[qr]
+drop deltaaa[pp], Dm1[pp], Dm2[pppp]
+store S3:I1[pqrs]
+
+// I2
+alloc S1:I2[pqrs]
+load Dm2H[pppp]
+.S1:I2[pqrs] := Dm2H[pqrs]
+drop Dm2H[pppp]
+store S1:I2[pqrs]
+
+// S0
+alloc S1:S0[pq]
+load Dm1[pp]
+.S1:S0[pq] := Dm1[pq]
+drop Dm1[pp]
+store S1:S0[pq]
+
+alloc S2:S0[pqrstu]
+load Dm3[pppppp], Dm2[pppp], deltaaa[pp]
+.S2:S0[pqrstu] -= Dm3[pqrstu]
+.S2:S0[pqrstu] += deltaaa[pu] Dm2[qrst]
+drop deltaaa[pp], Dm2[pppp], Dm3[pppppp]
+store S2:S0[pqrstu]
+
+alloc S3:S0[pqrs]
+load Dm2[pppp]
+.S3:S0[pqrs] := Dm2[pqsr]
+drop Dm2[pppp]
+store S3:S0[pqrs]
+
+// S1
+alloc S2:S1[pqrs]
+load Dm2[pppp], Dm1[pp], deltaaa[pp]
+.S2:S1[pqrs] -= Dm2[qprs]
+.S2:S1[pqrs] += deltaaa[ps] Dm1[qr]
+drop deltaaa[pp], Dm1[pp], Dm2[pppp]
+store S2:S1[pqrs]
+
+alloc S3:S1[pq]
+load Dm1[pp]
+.S3:S1[pq] := Dm1[qp]
+drop Dm1[pp]
+store S3:S1[pq]
+
+// S2
+alloc S1:S2[pq]
+load Dm1H[pq]
+.S1:S2[pq] := Dm1H[pq]
+drop Dm1H[pq]
+store S1:S2[pq]
+
+// P0
+alloc S1:P0[pqrs]
+load Dm2[pppp]
+.S1:P0[pqrs] := Dm2[pqrs]
+drop Dm2[pppp]
+store S1:P0[pqrs]
+
+// P1
+alloc S1:P1[pq]
+load Dm1[pp]
+.S1:P1[pq] := Dm1[pq]
+drop Dm1[pp]
+store S1:P1[pq]
+
+---- end
