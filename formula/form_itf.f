@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_itf(f_input,name_out,form_out,multi,process,kext,
-     &                    init_res,itin,op_info)
+     &                    tasks,init_res,itin,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -24,6 +24,7 @@
      &     multi,       ! Flag which is passed to python processer, false if a single-ref calculation
      &     process,     ! Process bcontr.tmp file to create .itfaa file
      &     kext,        ! True if constructing INTpp tensor to contract in Kext
+     &     tasks,       ! True if using ITF tasks to generate algos
      &     init_res,    ! Produce Init_residual algo code
      &     itin         ! Produce ITIN lines, or symmetrise residual at end
 

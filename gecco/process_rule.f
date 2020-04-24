@@ -67,6 +67,7 @@
      &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
      &     init_res, ! Produce Init_residual code
+     &     tasks,    ! Use ITF tasks to generate algos
      &     itin
       integer, pointer ::
      &     occ_def(:,:,:), nact(:), hpvx_constr(:), hpvxca_constr(:),
@@ -700,10 +701,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('MULTI',rule,tgt_info,val_log=multi)
         call get_arg('PROCESS',rule,tgt_info,val_log=process)
         call get_arg('KEXT',rule,tgt_info,val_log=kext)
+        call get_arg('TASKS',rule,tgt_info,val_log=tasks)
         call get_arg('INIT_RES',rule,tgt_info,val_log=init_res)
         call get_arg('ITIN',rule,tgt_info,val_log=itin)
         call form_itf(form_pnt,title,title2,multi,process,
-     &                kext,init_res,itin,op_info)
+     &                kext,tasks,init_res,itin,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

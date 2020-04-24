@@ -129,6 +129,7 @@ SOLVER str
 SPECIES int
 STRING str
 SWITCH int
+TASKS log
 TARG_ROOT int
 TEMPLATE label
 TERMS int
