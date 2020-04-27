@@ -118,6 +118,7 @@
      &               trim(name_out)
 
       if (process) then
+         if (.not. tasks) then
          ! Quick and dirty scan through tmp binary contraction file to
          ! find if any repeated lines can be replaced by a factor
          call atim_csw(cpu0,sys0,wall0)
@@ -171,8 +172,7 @@
          end if
 
 
-
-         if (tasks) then
+         else if (tasks) then
          ! Create an file for ITF Tasks
          exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
      &             //trim(ftasks%name)//' -o tasks2.tmp'
@@ -220,7 +220,7 @@
          call atim_csw(cpu0,sys0,wall0)
 
          exe_line='python3 $GECCO_DIR/itf_python/process_tasks.py -i '
-     &             //'tasks4.tmp -o '//'au'//trim(name_out)
+     &             //'tasks4.tmp -o '//trim(name_out)
      &             //' '//trim(flags)
          write(lulog,*) "Executing: ", exe_line
          call execute_command_line(trim(exe_line),exitstat=e)

@@ -451,7 +451,7 @@ if (multi):
 print("// Energy and DIIS scalars", file=f2)
 for i in range(0, len(declare_ten)):
     if "ECC" in declare_ten[i]:
-        print("tensor: %-12s" % (declare_ten[i] + ", " + declare_ten[i]), file=f2)
+        print("tensor: %-12s" % (declare_ten[i] + ", " + declare_ten[i].split('[')[0]), file=f2)
         init.append(declare_ten[i])
         save.append(declare_ten[i])
         break

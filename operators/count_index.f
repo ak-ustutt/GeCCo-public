@@ -1678,34 +1678,18 @@
 
 
       ! Construct complete itf algo line from the above parts
-      itf_line='.'//trimal(nres)//
-!     &    '['//trim(item%idx3)//'] '//equal_op//' '//
-     &    '['//trim(new_idx3)//'] '//equal_op//' '//
-     &    trim(sfact_star)//trimal(st1)//' '//trimal(st2)
-
-
-      ! Handle K4E
-      ! Print orginal line as a comment, then line with K4E
-      if (item%k4e_line) then
-         !itf_line = "// "//trim(itf_line)
-         !write(item%out,'(a)') trim(itf_line)
-
-         write(k4e_no,*) item%nk4e
-
-         itf_line='.'//trimal(nres)//
-     &      '['//trim(new_idx3)//'] '//equal_op//' '//
-     &      trim(sfact_star)//'K4E'//trim(adjustl(k4e_no))//
-     &      '['//trim(new_idx3)//']'
-      end if
-
-      ! Print it to bcontr.tmp
-      write(item%out,'(a)') trim(itf_line)
-
       if (tasks) then
          itf_line='.'//trimal(nres)//
      &       '['//trim(new_idx3)//'] '//equal_op//' '//
      &       trim(sfact_star)//trimal(tst1)//' '//trimal(tst2)
+      else
+         itf_line='.'//trimal(nres)//
+     &      '['//trim(new_idx3)//'] '//equal_op//' '//
+     &      trim(sfact_star)//trimal(st1)//' '//trimal(st2)
+      end if
 
+
+      ! Print K4E line instead
       if (item%k4e_line) then
          write(k4e_no,*) item%nk4e
 
@@ -1715,7 +1699,13 @@
      &      '['//trim(new_idx3)//']'
       end if
 
+
+      if (tasks) then
+         ! Print to tasks.tmp
          write(taskslog,'(a)') trim(itf_line)
+      else
+         ! Print to bcontr.tmp
+         write(item%out,'(a)') trim(itf_line)
       end if
 
       ! Increment number of printed spn cases
