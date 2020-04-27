@@ -31,7 +31,8 @@
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
      &     fitf,        ! File for ITF algo code
-     &     fform        ! File for GeCco formulae
+     &     fform,       ! File for GeCco formulae
+     &     ftasks
       type(formula_item) ::
      &     flist        ! Linked list of binary contractions
       logical ::
@@ -61,6 +62,12 @@
         write(fform%unit,*) "Generated formulae"
       end if
 
+      if (tasks) then
+        ! Open file to use with itf tasks
+        call file_init(ftasks,'tasks.tmp',ftyp_sq_frm,0)
+        call file_open(ftasks)
+      end if
+
       ! Read in input formula
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist,.true.)
@@ -77,7 +84,7 @@
 
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,itin,op_info,print_form,
-     &               fform%unit)
+     &               fform%unit,tasks,ftasks%unit)
 
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'Time to process formulae',
@@ -131,7 +138,7 @@
 
 
          exe_line='python3 $GECCO_DIR/itf_python/remove_extra_lines.py'
-     &             //' bcontr2.tmp'
+     &             //' bcontr2.tmp -o bcontr3.tmp'
          write(lulog,*) "Executing: ", exe_line
          call execute_command_line(trim(exe_line),exitstat=e)
 
@@ -161,6 +168,71 @@
          if (e > 0) then
             write(lulog,*) "Error in executing process.py"
             call quit(1,'Please check the bcontr3.tmp file')
+         end if
+
+
+
+         if (tasks) then
+         ! Create an file for ITF Tasks
+         exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
+     &             //trim(ftasks%name)//' -o tasks2.tmp'
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to simplify ITF code',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing simplify.py"
+            call quit(1,'Please check the tasks.tmp file')
+         end if
+
+         exe_line='python3 $GECCO_DIR/itf_python/remove_extra_lines.py'
+     &             //' tasks2.tmp -o tasks3.tmp'
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to remove exta lines in ITF code',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing remove_exta_lines.py"
+            call quit(1,'Please check the tasks2.tmp file')
+         end if
+
+         exe_line='python3 $GECCO_DIR/itf_python/remove_extra_lines2.py'
+     &             //' tasks3.tmp -o tasks4.tmp'
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to remove exta lines in ITF code',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing remove_exta_lines2.py"
+            call quit(1,'Please check the tasks3.tmp file')
+         end if
+
+
+         call atim_csw(cpu0,sys0,wall0)
+
+         exe_line='python3 $GECCO_DIR/itf_python/process_tasks.py -i '
+     &             //'tasks4.tmp -o '//'au'//trim(name_out)
+     &             //' '//trim(flags)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to create ITF algo file',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing process.py"
+            call quit(1,'Please check the tasks4.tmp file')
+         end if
          end if
 
 !         ! Quick and dirty scan to remove unnecessary load and drop lines
@@ -194,6 +266,8 @@
       call file_close_keep(fline)
       ! Deallocat link list
       call dealloc_formula_list(flist)
+
+      if (tasks) call file_close_keep(ftasks)
 
       if (print_form) then
         write(fform%unit,*) "End formulae"

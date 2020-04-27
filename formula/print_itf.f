@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
-     &                     formlog)
+     &                     formlog,tasks,taskslog)
 *----------------------------------------------------------------------*
 *     Print ITF lines to itflog
 *----------------------------------------------------------------------*
@@ -14,20 +14,23 @@
 
       integer, intent(in) ::
      &     itflog,                              ! Output file for ITF algo code
-     &     formlog                              ! Output of GeCco formulae
+     &     formlog,                             ! Output of GeCco formulae
+     &     taskslog
       type(formula_item), intent(in), target ::
      &     fl_head                              ! Linked list of formulae
       type(operator_info), intent(in) ::
      &     op_info                              ! Operator info for printing formulae
       logical, intent(in) ::
      &     itin,                                ! Create ITIN lines or symmetrise residual at the end
-     &     print_form                           ! Print to optional formulae file
+     &     print_form,                          ! Print to optional formulae file
+     &     tasks
 
       type(formula_item), pointer ::
      &     fl_item                              ! Current formula_item
       integer ::
      &     contr_no,                            ! Counter of contrations
-     &     k4e_no                               ! Counter of K ext contractions (involving 4 ext ints)
+     &     k4e_no,                              ! Counter of K ext contractions (involving 4 ext ints)
+     &     x_no
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
 
@@ -36,6 +39,7 @@
       fl_item => fl_head
       contr_no = 1
       k4e_no = 1
+      x_no = 1
       inter_itype = 0
 
       ! Loop over formula_items, end of the list points to NULL
@@ -49,7 +53,8 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
-     &                          contr_no,k4e_no)
+     &                          contr_no,k4e_no,tasks,taskslog,
+     &                          x_no)
 
             ! Count the number of terms
             contr_no = contr_no + 1

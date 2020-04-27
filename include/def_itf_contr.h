@@ -108,6 +108,7 @@
      &     e2(4,2),             ! Operator numbers of external index 2
      &     spin_cases,          ! Number of printed spin cases
      &     nk4e,                ! Counter of k4e lines
+     &     nx,
      &     nj_op1,
      &     nj_op2,
      &     nj_res

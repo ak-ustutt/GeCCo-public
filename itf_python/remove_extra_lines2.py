@@ -52,13 +52,7 @@ for line in readlines_reverse(files[0]):
         continue
 
     words = line.split()
-    if 'STIN' not in words[0]:
-
-        # Skips X intermediates for ITF tasks file
-        if 'X' in words[0]:
-            print(line, file=f2)
-            continue
-
+    if 'X' not in words[0]:
         begin = True
 
         if end:
@@ -66,12 +60,12 @@ for line in readlines_reverse(files[0]):
             end = False
 
         for w in words:
-            if 'STIN' in w:
+            if 'X' in w:
                 tensor = w.split('[')[0]
                 inters.append(tensor)
         print(line, file=f2)
 
-    elif 'STIN' in words[0]:
+    elif 'X' in words[0]:
         end = True
 
 
@@ -80,10 +74,9 @@ for line in readlines_reverse(files[0]):
         if words[0].split('[')[0].replace('.','') in combined_inters:
             print(line, file=f2)
 
-
             # Intermediates may depend on other intermediates
             for w in words:
-                if 'STIN' in w:
+                if 'X' in w:
                     tensor = w.split('[')[0]
                     inters.append(tensor)
             #print('Needed ', line, words[0].split('[')[0], combined_inters)

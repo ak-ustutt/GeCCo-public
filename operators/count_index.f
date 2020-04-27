@@ -608,7 +608,8 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, contr_no, nk4e)
+     &                           inter_itype, contr_no, nk4e, tasks,
+     &                           taskslog, nx)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -625,13 +626,16 @@
       type(binary_contr), intent(inout) ::
      &   contr_info          ! Information about binary contraction
       logical, intent(in) ::
-     &   itin                ! Print ITIN lines or not
+     &   itin,               ! Print ITIN lines or not
+     &   tasks
       integer, intent(in) ::
      &   itflog,             ! Output file
      &   command,            ! Type of formula item command, ie. contraction, copy etc.
-     &   contr_no            ! Formula number
+     &   contr_no,           ! Formula number
+     &   taskslog
       integer, intent(inout) ::
-     &   nk4e                ! K4E counter
+     &   nk4e,               ! K4E counter
+     &   nx                  ! X intermediate counter
       integer, intent(inout) ::
      &   inter_itype(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
 
@@ -673,7 +677,7 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,nk4e,ntest1)
+     &                    inter_itype,nk4e,nx,ntest1)
 
 
       ! 2. Assign index / Determine sign
@@ -713,7 +717,7 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,nk4e,ntest5)
+     &                           inter_itype,nk4e,nx,ntest5)
             call assign_index(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
@@ -732,7 +736,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,nk4e,ntest5)
+     &                       inter_itype,nk4e,nx,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
@@ -747,8 +751,8 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, ntest7)
-      if (pline) call print_spin_cases(pitem, ntest7)
+      call print_spin_cases(item, tasks, taskslog, ntest7)
+      if (pline) call print_spin_cases(pitem, tasks, taskslog, ntest7)
 
 
       ! 8. Print symmetrisation term
@@ -781,6 +785,9 @@
          nk4e = nk4e + 1
       end if
 
+      ! Update X number
+      nx = item%nx
+
 
       ! Deallocate memroy used when construcitng item
       call itf_deinit(item)
@@ -791,7 +798,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,nk4e,ntest)
+     &                          itype,nk4e,nx,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -815,6 +822,7 @@
      &   lulog,        ! Output file
      &   itype(MAXINT,INDEX_LEN),
      &   nk4e,
+     &   nx,
      &   ntest
       logical, intent(in) ::
      &   itin
@@ -1024,6 +1032,10 @@
       item%nj_res = contr_info%nj_res
 
       call  itf_vertex_ops(contr_info, item, comm)
+
+
+      ! Set X interemediate info
+      item%nx = nx
 
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)
@@ -1333,7 +1345,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, ntest)
+      subroutine print_spin_cases(item, tasks, taskslog, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1347,7 +1359,10 @@
       type(itf_contr), intent(inout) ::
      &   item
       integer, intent(in) ::
+     &   taskslog,
      &   ntest
+      logical, intent(in) ::
+     &   tasks
 
       integer ::
      &   i, j,
@@ -1412,7 +1427,7 @@
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          ntest)
+     &                          tasks, taskslog, ntest)
 
       end do
 
@@ -1420,7 +1435,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin,ntest)
+      subroutine print_itf_line(item,s1,s2,t_spin,tasks,taskslog,ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1436,10 +1451,12 @@
       type(itf_contr), intent(inout) ::
      &   item
       logical, intent(in) ::
-     &   s1,s2
+     &   s1,s2,
+     &   tasks
       type(spin_info2), intent(in) ::
      &   t_spin(3)
       integer, intent(in) ::
+     &   taskslog,
      &   ntest
 
       character(len=MAXLEN_BC_LABEL) ::
@@ -1449,13 +1466,16 @@
      &   new_idx1, new_idx2, new_idx3
       character(len=264) ::
      &   itf_line,          ! Line of ITF code
-     &   st1, st2           ! Name of spin summed tensors + index
+     &   st1, st2,          ! Name of spin summed tensors + index
+     &   tst1, tst2,          ! Name of spin summed tensors + index
+     &   xst1, xst2           ! Name of spin summed tensors + index
       character(len=2) ::
      &   equal_op           ! ITF contraction operator; ie. +=, -=, :=
       character(len=25) ::
      &   sfact,             ! String representation of factor
      &   sfact_star,        ! String representation of factor formatted for output
-     &   k4e_no             ! Counter of K4E tensors
+     &   k4e_no,            ! Counter of K4E tensors
+     &   nx
       integer ::
      &   i
       real(8) ::
@@ -1560,6 +1580,48 @@
      &                item%out)
 
 
+
+      ! Create intermediate instead of brackets
+      if (tasks) then
+
+
+         if (s1 .and. .not. item%inter(1)) then
+            write(nx,*) item%nx
+
+            tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+
+            ! Print out the X intermediate lines
+      call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
+     &                item%rank1,
+     &                1,item%binary,item%int(1),item%nops1,new_j,
+     &                item%nx,item%out)
+            write(taskslog,'(a)') trim(xst1)
+
+            item%nx = item%nx + 1
+         else
+            tst1 = st1
+         end if
+
+
+         if (s2 .and. .not. item%inter(2)) then
+            write(nx,*) item%nx
+
+            tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
+
+      call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
+     &                item%rank2,
+     &                2,item%binary,item%int(2),item%nops2,new_j,
+     &                item%nx,item%out)
+            write(taskslog,'(a)') trim(xst2)
+
+            item%nx = item%nx + 1
+         else
+            tst2 = st2
+         end if
+
+      end if
+
+
       ! Add factor to scalar result cases (going to skip half the spin
       ! cases as these are the same, so add a factor of two to the
       ! remaining ones)
@@ -1638,6 +1700,23 @@
 
       ! Print it to bcontr.tmp
       write(item%out,'(a)') trim(itf_line)
+
+      if (tasks) then
+         itf_line='.'//trimal(nres)//
+     &       '['//trim(new_idx3)//'] '//equal_op//' '//
+     &       trim(sfact_star)//trimal(tst1)//' '//trimal(tst2)
+
+      if (item%k4e_line) then
+         write(k4e_no,*) item%nk4e
+
+         itf_line='.'//trimal(nres)//
+     &      '['//trim(new_idx3)//'] '//equal_op//' '//
+     &      trim(sfact_star)//'K4E'//trim(adjustl(k4e_no))//
+     &      '['//trim(new_idx3)//']'
+      end if
+
+         write(taskslog,'(a)') trim(itf_line)
+      end if
 
       ! Increment number of printed spn cases
       item%spin_cases = item%spin_cases + 1
@@ -2120,6 +2199,200 @@
                else
                   st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &                 trimal(nt)//'['//f_index(idx,hrank)//']'//')'
+               end if
+            case default
+               write(lulog,*) "ERROR: Couldn't determine rank: ",
+     &                        rank
+         end select
+         end if
+      end if
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine spatial_string2(st,idx,nt,spin,inter,rank,tensor,
+     &                          binary,
+     &                          integral,nops,j_int,nx,lulog)
+*----------------------------------------------------------------------*
+!     Construct spatial tensor representation
+*----------------------------------------------------------------------*
+
+      use itf_utils
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=264), intent(inout) ::
+     &   st          ! Name of spin summed tensors + index
+      character(len=INDEX_LEN), intent(in) ::
+     &   idx         ! Index of tensor
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &   nt          ! Name of tensors involved in the contraction
+      logical, intent(in) ::
+     &   spin,       ! True if pure spin
+     &   inter,      ! True if an intermediate
+     &   binary,     ! True if a binary contraction
+     &   integral,
+     &   j_int
+      integer, intent(in) ::
+     &   rank,       ! Rank of tensor
+     &   tensor,     ! T1 or T2
+     &   nops(ngastp),
+     &   nx,
+     &   lulog       ! Logfile
+
+      integer ::
+     &   hrank       ! Half rank
+      character(len=25) ::
+     &   x
+
+      hrank = rank / 2
+
+      write(x,*) nx
+      st = ''
+
+      if (spin .and. .not.inter) then
+         ! Pure spin
+         select case (rank)
+            case (4)
+
+               if (integral) then
+                  if ((nops(1)==3 .or. nops(2)==3 .or. nops(3)==3)) then
+                   ! Three-somthing integral (ie. K:eccc, K:accc, ...)
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             'K'//'['//f_index(idx,hrank,.false.,.true.)//']'
+
+                  else if (j_int) then
+                     if (trim(nt)=='K') then
+                        ! Need (K:eecc - J:eecc)
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             'J'//'['//f_index(idx,hrank,.true.)//']'
+
+                     else if (trim(nt)=='J') then
+
+                        ! Need (J:eecc - K:eecc)
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             'K'//'['//f_index(idx,hrank,.true.)//']'
+
+                     end if
+
+                  else if ((nops(1)==1.and.nops(2)==2.and.nops(3)==1))
+     &              then
+                    ! K:eeac - K:eeac
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank)//']'
+
+                  else if ((nops(1)==1.and.nops(2)==1.and.nops(3)==2))
+     &              then
+                     if (get_itype(idx(2:2))==2 .and.
+     &                   get_itype(idx(3:3))==2) then
+                        ! K:eaac - K:ecaa
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//
+     &             f_index(idx,hrank,.false.,.false.,.false.,.true.)//
+     &             ']'
+
+                     else
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank,.true.)//']'
+
+                     end if
+
+                  else
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank,.true.)//']'
+
+                  end if
+
+               else
+                  ! Amplitude or density
+                  if ((nops(1)==2.and.nops(2)==1.and.nops(3)==1)) then
+                    ! T:eacc
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank,.true.)//']'
+
+                  else if ((nops(1)==1.and.nops(2)==1.and.
+     &                      nops(3)==2)) then
+                    ! T:eaca or T:eaac
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank,.true.)//']'
+
+                  else
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank)//']'
+
+                  end if
+               end if
+
+            case (6)
+               ! TODO: ignore for now...
+               st='('//trimal(nt)//'['//trim(idx)//']'//' + '//
+     &            trimal(nt)//'['//trim(c_index(idx,1))//']'//' + '//
+     &            trimal(nt)//'['//trim(c_index(idx,2))//']'//' - '//
+     &            trimal(nt)//'['//f_index(idx,hrank)//']'//' - '//
+     &            trimal(nt)//'['//
+     &            f_index(c_index(idx,1),hrank)//']'//' - '//
+     &            trimal(nt)//'['//
+     &            f_index(c_index(idx,2),hrank)//']'//')'
+            case default
+               write(lulog,*) "ERROR: Couldn't determine rank: ",
+     &                        rank
+         end select
+      else
+         if (tensor==2 .and. .not.binary) then
+            ! Don't need second operator for [ADD] or [COPY]
+            st=''
+            return
+         else
+         select case (rank)
+            case (0)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (2)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (4)
+               st=trimal(nt)//'['//trim(idx)//']'
+            case (6)
+               if (inter) then
+                  st=trimal(nt)//'['//trim(idx)//']'
+               else
+
+                   st='.X'//trimal(x)//'['//trim(idx)//'] += '//
+     &             trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &             '.X'//trimal(x)//'['//trim(idx)//'] -= '//
+     &             trimal(nt)//'['//f_index(idx,hrank)//']'
+
                end if
             case default
                write(lulog,*) "ERROR: Couldn't determine rank: ",
