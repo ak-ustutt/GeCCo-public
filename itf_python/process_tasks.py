@@ -422,6 +422,9 @@ for i in range(0, len(declare_ten)):
         print("tensor: R%-18s" % (":"+gindex+"["+ declare_ten[i].split('[')[1] + ", R:" + gindex), file=f2)
         init.append("R:"+gindex)
         save.append("R:"+gindex)
+    elif "R" in declare_ten[i]:
+        # TODO: like this, not like above...
+        print("tensor: " + declare_ten[i] + ", " + declare_ten[i].split('[')[0], file=f2)
 print("",file=f2)
 
 
@@ -451,7 +454,7 @@ if (multi):
 print("// Energy and DIIS scalars", file=f2)
 for i in range(0, len(declare_ten)):
     if "ECC" in declare_ten[i]:
-        print("tensor: %-12s" % (declare_ten[i] + ", " + declare_ten[i].split('[')[0]), file=f2)
+        print("tensor: %-10s" % (declare_ten[i] + ", " + declare_ten[i].split('[')[0]), file=f2)
         init.append(declare_ten[i])
         save.append(declare_ten[i])
         break

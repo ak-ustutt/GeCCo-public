@@ -607,9 +607,12 @@
 
 
 *----------------------------------------------------------------------*
+!      subroutine command_to_itf(contr_info, itin, itflog, command,
+!     &                           inter_itype, contr_no, nk4e, tasks,
+!     &                           taskslog, nx)
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, contr_no, nk4e, tasks,
-     &                           taskslog, nx)
+     &                           inter_itype, counter, tasks,
+     &                           taskslog)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -631,11 +634,9 @@
       integer, intent(in) ::
      &   itflog,             ! Output file
      &   command,            ! Type of formula item command, ie. contraction, copy etc.
-     &   contr_no,           ! Formula number
      &   taskslog
       integer, intent(inout) ::
-     &   nk4e,               ! K4E counter
-     &   nx                  ! X intermediate counter
+     &   counter(4)
       integer, intent(inout) ::
      &   inter_itype(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
 
@@ -660,7 +661,7 @@
      &   pline               ! True if including a permuation line
 
       if (ntest1>=100 .or. ntest2>=100) then
-         write(itflog,*) "FORMULA NUMBER: ", contr_no
+         write(itflog,*) "FORMULA NUMBER: ", counter(1)
       end if
 
       ! Begin a special block which the python processor will pull out
@@ -677,7 +678,7 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,nk4e,nx,ntest1)
+     &                    inter_itype,counter,ntest1)
 
 
       ! 2. Assign index / Determine sign
@@ -717,7 +718,8 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,nk4e,nx,ntest5)
+     &                           inter_itype,counter,
+     &                           ntest5)
             call assign_index(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
@@ -736,7 +738,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,nk4e,nx,ntest5)
+     &                       inter_itype,counter,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
@@ -781,12 +783,14 @@
 
 
       ! Update K4E counter
+      ! TODO: update all counter here like nx
       if (item%k4e_line) then
-         nk4e = nk4e + 1
+         !counter(3) = counter(3) + 1
+         counter(3) = item%cntr(3)
       end if
 
       ! Update X number
-      nx = item%nx
+      counter(4) = item%cntr(4)
 
 
       ! Deallocate memroy used when construcitng item
@@ -798,7 +802,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,nk4e,nx,ntest)
+     &                          itype,counter,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -821,8 +825,7 @@
      &   comm,        ! formula_item command
      &   lulog,        ! Output file
      &   itype(MAXINT,INDEX_LEN),
-     &   nk4e,
-     &   nx,
+     &   counter(4),
      &   ntest
       logical, intent(in) ::
      &   itin
@@ -1013,7 +1016,6 @@
       item%itype = itype
 
       ! Set K4E info
-      item%nk4e = nk4e
       if (item%int(1) .or. item%int(2))then
          call check_k4e(contr_info, item%command, item%k4e_line)
       end if
@@ -1034,8 +1036,11 @@
       call  itf_vertex_ops(contr_info, item, comm)
 
 
-      ! Set X interemediate info
-      item%nx = nx
+      ! Set counter information that is outside of the loop
+      item%cntr(1) = counter(1)
+      item%cntr(2) = counter(2)
+      item%cntr(3) = counter(3)
+      item%cntr(4) = counter(4)
 
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)
@@ -1586,7 +1591,7 @@
 
 
          if (s1 .and. .not. item%inter(1)) then
-            write(nx,*) item%nx
+            write(nx,*) item%cntr(4)
 
             tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
 
@@ -1594,27 +1599,27 @@
       call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
      &                item%rank1,
      &                1,item%binary,item%int(1),item%nops1,new_j,
-     &                item%nx,item%out)
+     &                item%cntr(4),item%out)
             write(taskslog,'(a)') trim(xst1)
 
-            item%nx = item%nx + 1
+            item%cntr(4) = item%cntr(4) + 1
          else
             tst1 = st1
          end if
 
 
          if (s2 .and. .not. item%inter(2)) then
-            write(nx,*) item%nx
+            write(nx,*) item%cntr(4)
 
             tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
 
       call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
      &                item%rank2,
      &                2,item%binary,item%int(2),item%nops2,new_j,
-     &                item%nx,item%out)
+     &                item%cntr(4),item%out)
             write(taskslog,'(a)') trim(xst2)
 
-            item%nx = item%nx + 1
+            item%cntr(4) = item%cntr(4) + 1
          else
             tst2 = st2
          end if
@@ -1691,7 +1696,7 @@
 
       ! Print K4E line instead
       if (item%k4e_line) then
-         write(k4e_no,*) item%nk4e
+         write(k4e_no,*) item%cntr(3)
 
          itf_line='.'//trimal(nres)//
      &      '['//trim(new_idx3)//'] '//equal_op//' '//
