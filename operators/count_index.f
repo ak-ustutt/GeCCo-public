@@ -607,9 +607,6 @@
 
 
 *----------------------------------------------------------------------*
-!      subroutine command_to_itf(contr_info, itin, itflog, command,
-!     &                           inter_itype, contr_no, nk4e, tasks,
-!     &                           taskslog, nx)
       subroutine command_to_itf(contr_info, itin, itflog, command,
      &                           inter_itype, counter, tasks,
      &                           taskslog)
@@ -782,10 +779,12 @@
       end if
 
 
+      ! Update counter of quantaties
+      ! Number of intermediates
+      counter(2) = item%cntr(2)
+
       ! Update K4E counter
-      ! TODO: update all counter here like nx
       if (item%k4e_line) then
-         !counter(3) = counter(3) + 1
          counter(3) = item%cntr(3)
       end if
 
@@ -1037,10 +1036,10 @@
 
 
       ! Set counter information that is outside of the loop
-      item%cntr(1) = counter(1)
-      item%cntr(2) = counter(2)
-      item%cntr(3) = counter(3)
-      item%cntr(4) = counter(4)
+      item%cntr(1) = counter(1) ! Contraction number
+      item%cntr(2) = counter(2) ! Intermediate number
+      item%cntr(3) = counter(3) ! K4E number
+      item%cntr(4) = counter(4) ! X intermediate number
 
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)

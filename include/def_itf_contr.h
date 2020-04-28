@@ -107,9 +107,7 @@
      &     e1(4,2),             ! Operator numbers of external index 1
      &     e2(4,2),             ! Operator numbers of external index 2
      &     spin_cases,          ! Number of printed spin cases
-!     &     nk4e,                ! Counter of k4e lines
-!     &     nx,
-     &     cntr(4),
+     &     cntr(4),             ! Keep count of various quantaties inbetween calls to command_to_itf()
      &     nj_op1,
      &     nj_op2,
      &     nj_res

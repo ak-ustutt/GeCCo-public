@@ -29,9 +29,6 @@
      &     fl_item                              ! Current formula_item
       integer ::
      &     counter(4)                           ! Counter array
-!     &     contr_no,                            ! Counter of contrations
-!     &     k4e_no,                              ! Counter of K ext contractions (involving 4 ext ints)
-!     &     x_no
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
 
@@ -43,10 +40,6 @@
       counter(2) = 1    ! intermediate number
       counter(3) = 1    ! k4e
       counter(4) = 1    ! x intermediate
-      !contr_no = 1
-      !k4e_no = 1
-      !x_no = 1
-
       inter_itype = 0
 
       ! Loop over formula_items, end of the list points to NULL
@@ -57,11 +50,6 @@
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
-
-!            call command_to_itf(fl_item%bcontr,itin,itflog,
-!     &                          fl_item%command, inter_itype,
-!     &                          contr_no,k4e_no,tasks,taskslog,
-!     &                          x_no)
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
