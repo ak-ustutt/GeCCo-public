@@ -703,9 +703,9 @@ print('', file=f2)
 
 print('---- task("Update_Kext_Tensor")', file=f2)
 if (not kext):
-    print("init INTpp ITIN[abij]",file=f2)
+    print("init INTpp",file=f2)
     print("save INTpp",file=f2)
-    print(".INTpp[abij] := T:eecc[abij]",file=f2)
+    print(".INTpp[abij] += T:eecc[abij]",file=f2)
 else:
     print("init INTpp, ITIN[abij]",file=f2)
     print("save INTpp",file=f2)
@@ -713,8 +713,9 @@ else:
     for line in kext_temp:
         print(line.strip(), file=f2)
 
-print(".INTpp[abij] += ITIN[abij]",file=f2)
-print(".INTpp[abij] += ITIN[baji]",file=f2)
+    print(".INTpp[abij] += ITIN[abij]",file=f2)
+    print(".INTpp[abij] += ITIN[baji]",file=f2)
+
 print('', file=f2)
 
 # Print out Init_Residual
