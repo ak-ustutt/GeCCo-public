@@ -675,7 +675,7 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,counter,ntest1)
+     &                    inter_itype,counter,tasks,taskslog,ntest1)
 
 
       ! 2. Assign index / Determine sign
@@ -715,7 +715,7 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,counter,
+     &                           inter_itype,counter,tasks,taskslog,
      &                           ntest5)
             call assign_index(pitem,ntest5)
 
@@ -735,7 +735,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,counter,ntest5)
+     &                       inter_itype,counter,tasks,taskslog,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
@@ -781,7 +781,11 @@
 
       ! Update counter of quantaties
       ! Number of intermediates
-      counter(2) = item%cntr(2)
+      if (.not. item%inter(3)) then
+         counter(2) = item%cntr(2) + 1
+      else
+         counter(2) = item%cntr(2)
+      end if
 
       ! Update K4E counter
       if (item%k4e_line) then
@@ -801,7 +805,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,counter,ntest)
+     &                          itype,counter,tasks,tout,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -825,15 +829,23 @@
      &   lulog,        ! Output file
      &   itype(MAXINT,INDEX_LEN),
      &   counter(4),
+     &   tout,
      &   ntest
       logical, intent(in) ::
-     &   itin
+     &   itin,
+     &   tasks
 
       integer ::
      &   i
+      character(len=60) ::
+     &   tmp
 
       ! Assign output file
       item%out=lulog
+
+      ! Set tasks file
+      item%tout = tout
+      item%tasks = tasks
 
       ! Assign command type
       item%command=comm
@@ -884,6 +896,8 @@
             end if
          end if
       end if
+
+
 
 
       if (item%command/=command_cp_intm .or.
@@ -1040,6 +1054,27 @@
       item%cntr(2) = counter(2) ! Intermediate number
       item%cntr(3) = counter(3) ! K4E number
       item%cntr(4) = counter(4) ! X intermediate number
+
+      if (tasks) then
+         ! Need to number intermediates in the task file
+         write(tmp,*) item%cntr(2)
+
+         if (item%inter(1)) then
+            item%label_t1 = "STIN"//trim(adjustl(tmp))//
+     &                       item%label_t1(6:9)
+         end if
+
+         if (item%inter(2)) then
+            item%label_t2 = "STIN"//trim(adjustl(tmp))//
+     &                       item%label_t2(6:9)
+         end if
+
+         if (item%inter(3)) then
+            item%label_res = "STIN"//trim(adjustl(tmp))//
+     &                       item%label_res(6:9)
+         end if
+      end if
+
 
       if (ntest>=100) then
          call debug_header("itf_contr_init", item%out)

@@ -97,6 +97,7 @@
      &     rank2,               ! Rank of second tensor
      &     rank3,               ! Rank of result tensor
      &     out,                 ! File to print to
+     &     tout,                ! ITF Task file
      &     permute,             ! 0,1,2,3: permutation cases
      &     command,             ! Type of contraction, borrowed from formula_item
      &     contri,              ! Number of contraction indices in a line
@@ -124,7 +125,8 @@
      &     nosym = .false.,     ! True if R[apiq] (residual has no symmetry between indicies)
      &     abba_line = .false., ! True if this line is the R[apiq] abba spin case
      &     k4e_line = .false., ! True if a K4E line
-     &     intpp = .false.
+     &     intpp = .false.,
+     &     tasks = .false.
       real(8) ::
      &     fact                 ! Factor
 

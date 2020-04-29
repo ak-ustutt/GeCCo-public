@@ -425,6 +425,8 @@ for i in range(0, len(declare_ten)):
     elif "R" in declare_ten[i]:
         # TODO: like this, not like above...
         print("tensor: " + declare_ten[i] + ", " + declare_ten[i].split('[')[0], file=f2)
+        init.append(declare_ten[i])
+        save.append(declare_ten[i])
 print("",file=f2)
 
 
@@ -466,7 +468,7 @@ singles = False
 for i in range(0, len(declare_ten)):
     if ("T:ec" in declare_ten[i]):
         singles = True
-    break
+        break
 
 if (not multi):
     # Tensors needed in CCD
