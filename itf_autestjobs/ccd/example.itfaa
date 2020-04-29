@@ -1,0 +1,216 @@
+// This ITF algo file was created using the GeCCo ITF translator
+// Author: J.A. Black
+
+// Created on: 29-04-2020 16:32
+
+---- decl
+index-space: ijklmn, Closed  , c
+index-space: abcdef, External, e
+index-space: CD, Core, C
+
+
+// K-integral tensors
+tensor: K:eecc[abij], K:eecc
+tensor: K:cccc[klij], K:cccc
+
+// J-integral tensors
+tensor: J:eecc[acki], J:eecc
+
+// Special integral tensors
+tensor: K4E1[baij], K4E1
+
+// Tensor to send to Kext
+tensor: INTpp[abij], INTpp
+
+// Fock tensors
+tensor: f:cc[ki], f:cc
+tensor: f:ee[ac], f:ee
+
+// Amplitude tensors
+tensor: T:eecc[bajk], T:eecc
+
+// Residual tensors
+tensor: R:eecc[abij], R:eecc
+
+// Energy and DIIS scalars
+tensor: ECC[], ECC
+
+tensor: ERef[], ERef     // Reference energy
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: EDi2[], EDi2     // Direct 1st order energy
+tensor: Nrm2[], Nrm2     // Doubles amplitude norm
+tensor: Var2[], Var2     // Doubles residual norm
+
+// Tensors needed to calculate the reference energy
+tensor: f:CC[CC],   f:CC
+tensor: CoreH[ii],  h:cc
+tensor: CoreH[CC],  h:CC
+tensor: Delta[ii],  Delta
+tensor: DeltaC[CC], DeltaC
+
+tensor: ShiftP[], ShiftP
+
+// Intermediates
+tensor: ITIN[abij],        !Create{type:plain}
+tensor: X1[cbkj],          !Create{type:plain}
+tensor: X2[acki],          !Create{type:plain}
+tensor: STIN70001bb[ij],   !Create{type:plain}
+tensor: X5[abki],          !Create{type:plain}
+tensor: X6[abkj],          !Create{type:plain}
+tensor: STIN80001abab[jikl], !Create{type:plain}
+tensor: STIN80001baab[jikl], !Create{type:plain}
+tensor: STIN90001bb[ba],   !Create{type:plain}
+tensor: X13[caij],         !Create{type:plain}
+tensor: X14[cbij],         !Create{type:plain}
+tensor: STIN100001baab[baji], !Create{type:plain}
+tensor: X19[caki],         !Create{type:plain}
+tensor: STIN100001baba[baji], !Create{type:plain}
+tensor: X20[cbkj],         !Create{type:plain}
+tensor: STIN100001bbbb[baji], !Create{type:plain}
+tensor: X21[caki],         !Create{type:plain}
+tensor: X22[cbkj],         !Create{type:plain}
+tensor: X23[cbkj],         !Create{type:plain}
+tensor: X24[abij],         !Create{type:plain}
+tensor: X25[abij],         !Create{type:plain}
+
+tensor: L2[abij],          !Create{type:plain}
+tensor: C[abij],           !Create{type:plain}
+
+
+---- code("Init_Amplitudes")
+// Using MP2 amplitudes for starting guess
+alloc EMp2[], Nrm2[]
+for [i,j]:
+   alloc T:eecc[abij]
+   load K:eecc[**ij], f:ee[aa], f:cc[ii], f:cc[jj]
+   .T:eecc[abij] -= K:eecc[abij]
+   denom-scale T:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
+   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
+   .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   drop f:cc[jj], f:cc[ii], f:ee[aa], K:eecc[**ij]
+   store T:eecc[**ij]
+store Nrm2[], EMp2[]
+
+
+---- code ("Ref_Energy")
+alloc ERef[]
+// Closed-shell contribution
+load f:cc[ii], CoreH[ii], Delta[ii]
+.ERef += f:cc[ij] Delta[ij]
+.ERef += CoreH[ij] Delta[ij]
+drop Delta, CoreH, f:cc
+
+// Core contribution
+load f:CC[CC], CoreH[CC], DeltaC[CC]
+.ERef += f:CC[CD] DeltaC[CD]
+.ERef += CoreH[CD] DeltaC[CD]
+drop DeltaC, CoreH, f:CC
+store ERef[]
+
+
+---- code("Update_Kext_Tensor")
+load T:eecc[abij]
+drop T:eecc[abij]
+
+
+---- task("Update_Kext_Tensor")
+init INTpp
+save INTpp
+.INTpp[abij] += T:eecc[abij]
+
+
+---- code("Residual")
+load T:eecc[abij]
+drop T:eecc[abij]
+
+
+---- task("Residual")
+init R:eecc, ECC[], ITIN[abij], X1[cbkj], X2[acki], STIN70001bb[ij], X5[abki], X6[abkj], STIN80001abab[jikl], STIN80001baab[jikl], STIN90001bb[ba], X13[caij], X14[cbij], STIN100001baab[baji], X19[caki], STIN100001baba[baji], X20[cbkj], STIN100001bbbb[baji], X21[caki], X22[cbkj], X23[cbkj], X24[abij], X25[abij]
+save R:eecc, ECC[]
+.ITIN[abij] += .5*K:eecc[abij]
+.ITIN[baji] -= f:cc[ki] T:eecc[bajk]
+.ITIN[baij] += f:ee[ac] T:eecc[bcij]
+.ITIN[baij] += .25*K:cccc[klij] T:eecc[bakl]
+.ITIN[baij] += .25*K:cccc[lkij] T:eecc[balk]
+.X1[cbkj] += T:eecc[cbkj]
+.X1[cbkj] -= T:eecc[bckj]
+.ITIN[baji] += K:eecc[caki] X1[cbkj]
+.X2[acki] += J:eecc[acki]
+.X2[acki] -= K:eecc[acik]
+.ITIN[baji] -= X2[acki] T:eecc[bcjk]
+.ITIN[baji] -= J:eecc[ackj] T:eecc[bcki]
+.ITIN[baij] += .5*K4E1[baij]
+.STIN70001bb[ij] += .5*K:eecc[abki] T:eecc[abkj]
+.STIN70001bb[ij] += .5*K:eecc[baki] T:eecc[bakj]
+.X5[abki] += K:eecc[abki]
+.X5[abki] -= K:eecc[abik]
+.X6[abkj] += T:eecc[abkj]
+.X6[abkj] -= T:eecc[bakj]
+.STIN70001bb[ij] += .5*X5[abki] X6[abkj]
+.ITIN[baji] -= STIN70001bb[ki] T:eecc[bajk]
+.STIN80001abab[jikl] += .5*K:eecc[abji] T:eecc[abkl]
+.STIN80001abab[jikl] += .5*K:eecc[baji] T:eecc[bakl]
+.STIN80001baab[jikl] -= .5*K:eecc[abij] T:eecc[abkl]
+.STIN80001baab[jikl] -= .5*K:eecc[baij] T:eecc[bakl]
+.ITIN[baij] += .25*STIN80001abab[klij] T:eecc[bakl]
+.ITIN[baij] -= .25*STIN80001baab[klij] T:eecc[balk]
+.STIN90001bb[ba] -= .5*K:eecc[caij] T:eecc[cbij]
+.STIN90001bb[ba] -= .5*K:eecc[caji] T:eecc[cbji]
+.X13[caij] += K:eecc[caij]
+.X13[caij] -= K:eecc[caji]
+.X14[cbij] += T:eecc[cbij]
+.X14[cbij] -= T:eecc[bcij]
+.STIN90001bb[ba] -= .5*X13[caij] X14[cbij]
+.ITIN[baij] += STIN90001bb[ac] T:eecc[bcij]
+.STIN100001baab[baji] += K:eecc[caik] T:eecc[cbjk]
+.X19[caki] += K:eecc[caki]
+.X19[caki] -= K:eecc[caik]
+.STIN100001baba[baji] += X19[caki] T:eecc[cbkj]
+.X20[cbkj] += T:eecc[cbkj]
+.X20[cbkj] -= T:eecc[bckj]
+.STIN100001baba[baji] += K:eecc[acik] X20[cbkj]
+.STIN100001bbbb[baji] += K:eecc[caki] T:eecc[cbkj]
+.X21[caki] += K:eecc[caki]
+.X21[caki] -= K:eecc[caik]
+.X22[cbkj] += T:eecc[cbkj]
+.X22[cbkj] -= T:eecc[bckj]
+.STIN100001bbbb[baji] += X21[caki] X22[cbkj]
+.X23[cbkj] += T:eecc[cbkj]
+.X23[cbkj] -= T:eecc[bckj]
+.ITIN[baji] += .5*STIN100001baba[acik] X23[cbkj]
+.ITIN[baji] += .5*STIN100001bbbb[acik] T:eecc[bcjk]
+.ITIN[baji] += .5*STIN100001baab[acjk] T:eecc[bcki]
+.X24[abij] += K:eecc[abij]
+.X24[abij] -= K:eecc[abji]
+.X25[abij] += T:eecc[abij]
+.X25[abij] -= T:eecc[baij]
+.ECC[] += .5*X24[abij] X25[abij]
+.ECC[] += .5*K:eecc[abij] T:eecc[abij]
+.ECC[] += .5*K:eecc[baij] T:eecc[baij]
+.R:eecc[abij] += ITIN[abij]
+.R:eecc[abij] += ITIN[baji]
+
+
+---- code("Update_Amplitudes")
+// Update doubles
+alloc EDi2[], Nrm2[], Var2[]
+load R:eecc[abij], K:eecc[abij]
+load T:eecc[abij]
+load f:ee[aa], f:cc[ii], ShiftP[]
+denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
+drop ShiftP[], f:cc[ii], f:ee[aa]
+
+.T:eecc[abij] -= R:eecc[abij]
+
+alloc C[abij]
+.C[abij] += T:eecc[abij]
+.EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
+.Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
+drop C[abij]
+
+.Var2 += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+
+store T:eecc[abij]
+drop K:eecc[abij], R:eecc[abij]
+store Var2[], Nrm2[], EDi2[]
+---- end

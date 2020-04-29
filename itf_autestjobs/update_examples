@@ -1,0 +1,12 @@
+#!/bin/bash
+
+TESTJOB=$HOME/programs/GeCCo/itf_autestjobs
+
+for dir in */; do
+    dir=${dir%*/}
+    echo updating $dir
+
+    cd $dir
+    cp auicmrcc_${dir}.itfaa example.itfaa
+    cd $TESTJOB
+done
