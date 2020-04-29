@@ -1,15 +1,3 @@
-def print_inter(prev_lines, init=False):
-    # Load, contract, drop tensors involved with intermediates
-    # Loop over previously stored lines
-    global tab
-
-    for i in range(0, len(prev_lines)):
-        words = prev_lines[i].split()
-        print_loop(prev_lines[i], words)
-        print_result(prev_lines[i], tab, init)
-    tab = False
-
-
 def change_line_names(name, line, words):
     # Add generic index to tensor name
 
@@ -33,109 +21,6 @@ def change_line(line_o):
     change_line_names("f", line_o, words)
     line = " ".join(words)
     return line
-
-
-def print_drop_tensors(load_tensors, indent=False):
-    # Just reverse the load_ten line for drop_ten
-    load_split = load_tensors.replace(',','').split()
-    drop_tensors = "drop "
-    for i in range(len(load_split)-1, 0, -1):
-        drop_tensors = drop_tensors + load_split[i]
-        if (i != 1):
-            drop_tensors = drop_tensors + ", "
-
-    if (indent):
-        print("    "+drop_tensors.rstrip(), file=out)
-    else:
-        print(drop_tensors.rstrip(), file=out)
-
-
-# TODO: merge this with above
-def print_drop_init_tensors(load_tensors, indent=False):
-    # Just reverse the load_ten line for drop_ten
-    load_split = load_tensors.replace(',','').split()
-    drop_tensors = "drop "
-    for i in range(len(load_split)-1, 0, -1):
-        drop_tensors = drop_tensors + load_split[i]
-        if (i != 1):
-            drop_tensors = drop_tensors + ", "
-
-    if (indent):
-        print("    "+drop_tensors.rstrip(), file=init_res_temp)
-    else:
-        print(drop_tensors.rstrip(), file=init_res_temp)
-
-
-
-def print_result(line, indent=False, init=False):
-    # Load, contract, drop tensors involved with result tensors
-
-    words=line.split()
-
-    if (indent):
-        line = "    " + line
-
-    # Load tensors, cases depend on how many tensors are on the right
-    if len(words)==3:
-        # Either a simple adding or copying case
-        if "TIN" not in words[2]:
-            load_ten="load " + words[2].split('*',1)[-1]
-
-            print(load_ten.strip(), file=out)
-            if (init): print(load_ten.strip(), file=init_res_temp)
-
-        print(line.strip(), file=out)
-        if (init): print(line.strip(), file=init_res_temp)
-
-        # Drop tensors
-        if "TIN" not in words[2]:
-            print_drop_tensors(load_ten)
-            if (init): print_drop_init_tensors(load_ten)
-
-
-    else:
-        # Get list of non-intermediate tesnsors in a line
-        t = []
-        for i in range (1,len(words)):
-            if ('+' in words[i] or '-' in words[i] or 'TIN' in words[i]):
-                continue
-            else:
-                t.append(words[i].split('*',1)[-1].replace('(','').replace(')',''))
-
-        # The line contains a contraction between two intermedites, so no
-        # need to print a load/drop line
-        if (len(t)==0):
-            print(line, file=out)
-            return
-
-        # Remove tensor which are the same (ie. don't need to load them twice)
-        seen = []
-        result = []
-        for item in t:
-            if item.split('[',1)[0] not in seen:
-                seen.append(item.split('[',1)[0])
-                result.append(item)
-
-        # Check if the line is within a loop
-        if (indent):
-            load_ten="    load "
-        else:
-            load_ten="load "
-
-        # Construct load line
-        for tensor in result[:-1]:
-            load_ten = load_ten + tensor + ', '
-        load_ten = load_ten + result[-1]
-
-        # Print out load, line and drop
-        print(load_ten, file=out)
-        print(line, file=out)
-        print_drop_tensors(load_ten, indent)
-
-        if (init):
-            print(load_ten, file=init_res_temp)
-            print(line, file=init_res_temp)
-            print_drop_init_tensors(load_ten, indent)
 
 
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
@@ -165,23 +50,6 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
             declare_ten.append(word.split('*',1)[-1])
             declare_ten_index.append(generic)
             declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
-
-
-def print_loop(line, words):
-    global tab
-    global old_loop
-
-    tab = False
-    if ("K:eeec" in line or "K:eeea" in line):
-        for i in range(0, len(words)):
-            if ("K:eeec" in words[i] or "K:eeea" in words[i]):
-                tmp = words[i].split('[',1)[1].split(']',1)[0]
-                loop = "for ["+tmp[3:4]+"]:"
-                if (loop != old_loop):
-                    print(loop, file=out)
-                old_loop = loop
-                tab = True
-                break
 
 
 def generic_index(tensor):
@@ -260,8 +128,8 @@ initalise = args.initalise
 
 # Open bcontr.tmp file to read from
 f=open(inp,"r")
+
 # Open first output file
-#out=open(outp, "w+")
 output=open(outp, "w+")
 
 # Open tempfile to catch INTpp
@@ -272,15 +140,6 @@ init_res_temp = tempfile.TemporaryFile(mode='w+t')
 init_res = False
 init_alloc = False
 
-# Declare lists needed in program
-prev_lines=[]       # Previous intermediate lines which belong to next result block
-prev_inter=[]       # List of previous intemediates, used to alloc/drop
-prev_res='#####'    # Result of previous line
-prev_generic=[]     # Previous generic result
-
-declare_res=[]            # Global list of result tensors
-declare_index=[]          # Global list of result indices
-declare_name=[]           # Global of just result tensor names
 # TODO: Now all residuals are declared for the mutli cases, don't need all of them, all of the time
 declare_res_multi=[
         "R:I[I]",
@@ -295,34 +154,22 @@ declare_amp_multi=[
         "T:eacc[apij]","T:eaac[apqi]","T:eaaa[apqr]",
         "T:eecc[abij]","T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
 
-declare_inter=[]        # Global list of intermediates
-declare_inter_index=[]  # Global list of intermediates
-declare_inter_name=[]   # Global list of intermediates
-
 declare_ten=[]          # Global list of tensors involved in binary contractions
 declare_ten_index=[]    # Global list of tensor indicies
 declare_ten_name=[]     # Global list of tensor names
 
-tab = False         # True if codes need to be indented with '    '
-old_loop = ''       # Stores value of the previous for[x] loop, used so as not to repeat the for loop
-
-# Spin summed family = One or more equations the arise from the spin summation
-# proccedure on one result tensor contraction line
-begin=False         # Marks the start of a spin summed family of contractions
-end=False           # Marks the end of a spin summed family of contractions
-old_spin_iter=[]    # Stores list of intermediates used throughout the spin summed family
 
 # Use to redirect output into the main output file or a temperary file
 # This can be expanded upon if different parts need to end up in different ---code blocks
 special_begin=False
 special_end=False
-# Don't store tensors from these code blocks; instead these are printed out at the end
-dont_store=False
 
 # Flag if dealing with triples
 triples = False
 
-# Read each line of bcontr.tmp and process it
+
+# Read each line of the file and add each tensor to a global list
+# This list will be used to declare tensors in the final itf file
 for line_o in f:
 
     # Change names of external tensors (add : + generic index to name)
@@ -339,7 +186,6 @@ for line_o in f:
     if (words[0]=='END_INTPP'):
         special_begin = False
         special_end = True
-        dont_store=True
         continue
 
     # Decide which file to write to
@@ -350,30 +196,28 @@ for line_o in f:
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
-        # No brackets
+        # Check if result tensor needs to be declared
+        add_to_global(words[0].replace('.',''),declare_ten,declare_ten_index,declare_ten_name)
         # Check if first tensor needs to be declared
         add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
         # Check if second tensor needs to be declared
         add_to_global(words[3],declare_ten,declare_ten_index,declare_ten_name)
-        add_to_global(words[0].replace('.',''),declare_ten,declare_ten_index,declare_ten_name)
     elif (len(words)==3):
         # Simple add or assign line
-        if ("K:[]" not in words[2]):
-            # Don't want to declare a tensor for the reference energy
-            add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
-            add_to_global(words[0].replace('.',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[0].replace('.',''),declare_ten,declare_ten_index,declare_ten_name)
+        add_to_global(words[2],declare_ten,declare_ten_index,declare_ten_name)
 
-    # populate declare_ten, declare_res, declare_inter
-
+    # Print lines to a tmp file. Each file represents a code/task block
     print(line, file=out)
-
 
 output.close()
 f.close()
 
 
 
-############### Print final file ###########################
+# =========================================================================================
+# Print final .itfaa file
+# =========================================================================================
 
 # Open and write file again so as to prepend the declaration of tensors
 f2=open(outp, "r")
@@ -382,6 +226,7 @@ f2.close()
 
 f2=open(outp, "w")
 
+# init and save arrays, used in the task blocks
 init = []
 save = []
 
@@ -391,6 +236,7 @@ print(file=f2)
 now = datetime.datetime.now()
 print("// Created on:", now.strftime("%d-%m-%Y %H:%M"), file=f2)
 print(file=f2)
+
 
 # Declare tensors and index-spaces
 print("---- decl", file=f2)
@@ -426,23 +272,24 @@ declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 print("",file=f2)
 
+
 print("// Residual tensors", file=f2)
 for i in range(0, len(declare_ten)):
     if "ITIN" in declare_ten[i]:
         gindex = declare_ten[i].split('[')[0]+":"+"".join(generic_index(declare_ten[i]))
         gindex = gindex.split(':')[1]
-        print("tensor: R%-18s" % (":"+gindex+"["+ declare_ten[i].split('[')[1] + ", R:" + gindex), file=f2)
+        #print("tensor: R%-18s" % (":"+gindex+"["+ declare_ten[i].split('[')[1] + ", R:" + gindex), file=f2)
+        print("tensor: R:" + gindex + "[" + declare_ten[i].split('[')[1] + ", " + "R:" + gindex, file=f2)
         init.append("R:"+gindex)
         save.append("R:"+gindex)
     elif "R" in declare_ten[i]:
-        # TODO: like this, not like above...
         print("tensor: " + declare_ten[i] + ", " + declare_ten[i].split('[')[0], file=f2)
         init.append(declare_ten[i])
         save.append(declare_ten[i])
 print("",file=f2)
 
 
-if (any('R:eeeccc' in s for s in declare_res)):
+if (any('R:eeeccc' in s for s in declare_ten)):
    triples = True
 
 if (multi):
@@ -718,6 +565,7 @@ else:
 
 print('', file=f2)
 
+
 # Print out Init_Residual
 if (initalise):
     print(file=f2)
@@ -726,7 +574,6 @@ if (initalise):
     init_res_temp.seek(0)
     for line in init_res_temp:
         print(line.strip(), file=f2)
-
 
 
 # Print out residual equations
@@ -744,6 +591,7 @@ print("save ", end="", flush=True, file=f2)
 print(*save, sep=", ", file=f2)
 
 f2.write(tmp)
+
 
 # Symmetrise tensors
 for i in range(0, len(declare_ten)):
