@@ -303,9 +303,6 @@ declare_ten=[]          # Global list of tensors involved in binary contractions
 declare_ten_index=[]    # Global list of tensor indicies
 declare_ten_name=[]     # Global list of tensor names
 
-prev_K4E_lines={0:"start"}
-K4E_count=1
-
 tab = False         # True if codes need to be indented with '    '
 old_loop = ''       # Stores value of the previous for[x] loop, used so as not to repeat the for loop
 
@@ -331,6 +328,19 @@ for line_o in f:
     # Change names of external tensors (add : + generic index to name)
     line = change_line(line_o)
     words=line.split()
+
+    # Check if we are in a special block which will end up in its own ---code block
+    # In this case we are checking for the INTpp interemediate that is passed to Kext
+    if (words[0]=='BEGIN_INTPP'):
+        special_begin = True
+        special_end = False
+        continue
+
+    if (words[0]=='END_INTPP'):
+        special_begin = False
+        special_end = True
+        dont_store=True
+        continue
 
     # Decide which file to write to
     if (special_begin and not special_end):
@@ -358,10 +368,12 @@ for line_o in f:
     print(line, file=out)
 
 
-
-
 output.close()
 f.close()
+
+
+
+############### Print final file ###########################
 
 # Open and write file again so as to prepend the declaration of tensors
 f2=open(outp, "r")
@@ -684,20 +696,26 @@ if (not multi):
 print(file=f2)
 print(file=f2)
 print('---- code("Update_Kext_Tensor")', file=f2)
+print('load T:eecc[abij]', file=f2)
+print('drop T:eecc[abij]', file=f2)
+print('', file=f2)
+print('', file=f2)
+
+print('---- task("Update_Kext_Tensor")', file=f2)
 if (not kext):
-    print("// Intermediate to pass to Kext", file=f2)
-    print("alloc INTpp[abij]",file=f2)
-    print("load T:eecc[abij]",file=f2)
+    print("init INTpp ITIN[abij]",file=f2)
+    print("save INTpp",file=f2)
     print(".INTpp[abij] := T:eecc[abij]",file=f2)
-    print("drop T:eecc[abij]",file=f2)
-    print("store INTpp[abij]",file=f2)
 else:
+    print("init INTpp, ITIN[abij]",file=f2)
+    print("save INTpp",file=f2)
     kext_temp.seek(0)
     for line in kext_temp:
         print(line.strip(), file=f2)
 
-    print("store INTpp[abij]",file=f2)
-
+print(".INTpp[abij] += ITIN[abij]",file=f2)
+print(".INTpp[abij] += ITIN[baji]",file=f2)
+print('', file=f2)
 
 # Print out Init_Residual
 if (initalise):

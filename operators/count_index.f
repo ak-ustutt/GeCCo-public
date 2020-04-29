@@ -666,7 +666,11 @@
       intpp = .false.
       if (contr_info%label_res=='INTpp') then
          intpp = .true.
-         write(itflog,'(a)') "BEGIN_INTPP"
+         if (tasks) then
+            write(taskslog,'(a)') "BEGIN_INTPP"
+         else
+            write(itflog,'(a)') "BEGIN_INTPP"
+         end if
       end if
 
       ! Mark begining of spin summed block
@@ -775,7 +779,11 @@
       write(itflog,'(a)') "END"
 
       if (intpp) then
-         write(itflog,'(a)') "END_INTPP"
+         if (tasks) then
+            write(taskslog,'(a)') "END_INTPP"
+         else 
+            write(itflog,'(a)') "END_INTPP"
+         end if
       end if
 
 
