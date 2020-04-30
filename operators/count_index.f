@@ -746,8 +746,8 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, tasks, ntest7)
-      if (pline) call print_spin_cases(pitem, tasks, ntest7)
+      call print_spin_cases(item, ntest7)
+      if (pline) call print_spin_cases(pitem, ntest7)
 
 
       ! 8. Print symmetrisation term
@@ -1378,7 +1378,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, tasks, ntest)
+      subroutine print_spin_cases(item, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1393,8 +1393,6 @@
      &   item
       integer, intent(in) ::
      &   ntest
-      logical, intent(in) ::
-     &   tasks
 
       integer ::
      &   i, j,
@@ -1459,7 +1457,7 @@
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          tasks, ntest)
+     &                          ntest)
 
       end do
 
@@ -1467,7 +1465,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin,tasks,ntest)
+      subroutine print_itf_line(item,s1,s2,t_spin,ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1483,8 +1481,7 @@
       type(itf_contr), intent(inout) ::
      &   item
       logical, intent(in) ::
-     &   s1,s2,
-     &   tasks
+     &   s1,s2 
       type(spin_info2), intent(in) ::
      &   t_spin(3)
       integer, intent(in) ::
@@ -1613,7 +1610,7 @@
 
 
       ! Create intermediate instead of brackets
-      if (tasks) then
+      if (item%tasks) then
 
 
          if (s1 .and. .not. item%inter(1)) then
@@ -1709,7 +1706,7 @@
 
 
       ! Construct complete itf algo line from the above parts
-      if (tasks) then
+      if (item%tasks) then
          itf_line='.'//trimal(nres)//
      &       '['//trim(new_idx3)//'] '//equal_op//' '//
      &       trim(sfact_star)//trimal(tst1)//' '//trimal(tst2)
