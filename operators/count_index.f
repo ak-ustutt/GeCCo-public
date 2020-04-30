@@ -1625,42 +1625,7 @@
             ! Names an operator info are saved in x_dict between loops
             call check_x(item, x_dict, tst1, new_idx1, .true., old)
 
-
-!            do i = 1, item%cntr(4)
-!               if (item%label_t1==x_dict(i)%label) then
-!
-!                  new = .false.
-!                  do j = 1, ngastp
-!                     do k = 1, 2
-!                        ! Compare operator numbers
-!                        if (x_dict(i)%ops(j,k)/=item%e1(j,k)+
-!     &                      item%c(j,k)) then
-!                           new = .true.
-!                           exit
-!                        end if
-!                     end do
-!                  end do
-!
-!                  if (.not. new) then
-!                     ! We have declared this X inter before, so just use
-!                     ! the old X number
-!                     write(nx,*) x_dict(i)%n
-!                     tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
-!                     exit
-!                  end if
-!
-!               end if
-!            end do
-!
             if (.not. old) then
-!               ! If a new X intermediate, save info to x_dict
-!               x_dict(item%cntr(4))%n = item%cntr(4)
-!               x_dict(item%cntr(4))%label = trim(item%label_t1)
-!               do j = 1, ngastp
-!                  do k = 1, 2
-!                     x_dict(item%cntr(4))%ops=item%e1(j,k)+item%c(j,k)
-!                  end do
-!               end do
 
                ! Print out new X intermediate
                write(nx,*) item%cntr(4)
@@ -1844,18 +1809,8 @@
       old = .false.
       do i = 1, item%cntr(4)
          if (label==x_dict(i)%label) then
-            !write(item%out,*) "fuck1 ", label, x_dict(i)%label
 
             old = .true.
-            !do k = 1, 2
-            !   write(item%out,'(4i)')(x_dict(i)%ops(j,k),j=1,ngastp)
-            !end do
-            !do k = 1, 2
-            !   write(item%out,'(4i)')(e(j,k),j=1,ngastp)
-            !end do
-            !do k = 1, 2
-            !   write(item%out,'(4i)')(c(j,k),j=1,ngastp)
-            !end do
             do j = 1, ngastp
                do k = 1, 2
                   ! Compare operator numbers
@@ -1866,8 +1821,6 @@
                end do
             end do
 
-            !write(item%out,*) "old is now ", old
-
             if (old) then
                ! We have declared this X inter before, so just use
                ! the old X number
@@ -1876,12 +1829,8 @@
                return
             end if
 
-
          end if
       end do
-
-
-
 
       if (.not. old) then
          ! If a new X intermediate, save info to x_dict
@@ -1892,18 +1841,6 @@
                x_dict(item%cntr(4))%ops(j,k)=e(j,k)+c(j,k)
             end do
          end do
-
-!         ! Print out new X intermediate
-!         write(nx,*) item%cntr(4)
-!
-!         tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
-!
-!         call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
-!     &                item%rank1,
-!     &                1,item%binary,item%int(1),item%nops1,new_j,
-!     &                item%cntr(4),item%out)
-!         write(item%out,'(a)') trim(xst1)
-
       end if
 
       return

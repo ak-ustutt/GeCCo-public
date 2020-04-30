@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 29-04-2020 16:32
+// Created on: 30-04-2020 11:42
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -54,24 +54,14 @@ tensor: ShiftP[], ShiftP
 tensor: ITIN[abij],        !Create{type:plain}
 tensor: X1[cbkj],          !Create{type:plain}
 tensor: X2[acki],          !Create{type:plain}
+tensor: X3[abki],          !Create{type:plain}
 tensor: STIN70001bb[ij],   !Create{type:plain}
-tensor: X5[abki],          !Create{type:plain}
-tensor: X6[abkj],          !Create{type:plain}
 tensor: STIN80001abab[jikl], !Create{type:plain}
 tensor: STIN80001baab[jikl], !Create{type:plain}
 tensor: STIN90001bb[ba],   !Create{type:plain}
-tensor: X13[caij],         !Create{type:plain}
-tensor: X14[cbij],         !Create{type:plain}
 tensor: STIN100001baab[baji], !Create{type:plain}
-tensor: X19[caki],         !Create{type:plain}
 tensor: STIN100001baba[baji], !Create{type:plain}
-tensor: X20[cbkj],         !Create{type:plain}
 tensor: STIN100001bbbb[baji], !Create{type:plain}
-tensor: X21[caki],         !Create{type:plain}
-tensor: X22[cbkj],         !Create{type:plain}
-tensor: X23[cbkj],         !Create{type:plain}
-tensor: X24[abij],         !Create{type:plain}
-tensor: X25[abij],         !Create{type:plain}
 
 tensor: L2[abij],          !Create{type:plain}
 tensor: C[abij],           !Create{type:plain}
@@ -125,7 +115,7 @@ drop T:eecc[abij]
 
 
 ---- task("Residual")
-init R:eecc, ECC[], ITIN[abij], X1[cbkj], X2[acki], STIN70001bb[ij], X5[abki], X6[abkj], STIN80001abab[jikl], STIN80001baab[jikl], STIN90001bb[ba], X13[caij], X14[cbij], STIN100001baab[baji], X19[caki], STIN100001baba[baji], X20[cbkj], STIN100001bbbb[baji], X21[caki], X22[cbkj], X23[cbkj], X24[abij], X25[abij]
+init R:eecc, ECC[], ITIN[abij], X1[cbkj], X2[acki], X3[abki], STIN70001bb[ij], STIN80001abab[jikl], STIN80001baab[jikl], STIN90001bb[ba], STIN100001baab[baji], STIN100001baba[baji], STIN100001bbbb[baji]
 save R:eecc, ECC[]
 .ITIN[abij] += .5*K:eecc[abij]
 .ITIN[baji] -= f:cc[ki] T:eecc[bajk]
@@ -140,13 +130,11 @@ save R:eecc, ECC[]
 .ITIN[baji] -= X2[acki] T:eecc[bcjk]
 .ITIN[baji] -= J:eecc[ackj] T:eecc[bcki]
 .ITIN[baij] += .5*K4E1[baij]
+.X3[abki] += K:eecc[abki]
+.X3[abki] -= K:eecc[abik]
 .STIN70001bb[ij] += .5*K:eecc[abki] T:eecc[abkj]
 .STIN70001bb[ij] += .5*K:eecc[baki] T:eecc[bakj]
-.X5[abki] += K:eecc[abki]
-.X5[abki] -= K:eecc[abik]
-.X6[abkj] += T:eecc[abkj]
-.X6[abkj] -= T:eecc[bakj]
-.STIN70001bb[ij] += .5*X5[abki] X6[abkj]
+.STIN70001bb[ij] += .5*X3[abki] X1[abkj]
 .ITIN[baji] -= STIN70001bb[ki] T:eecc[bajk]
 .STIN80001abab[jikl] += .5*K:eecc[abji] T:eecc[abkl]
 .STIN80001abab[jikl] += .5*K:eecc[baji] T:eecc[bakl]
@@ -156,35 +144,17 @@ save R:eecc, ECC[]
 .ITIN[baij] -= .25*STIN80001baab[klij] T:eecc[balk]
 .STIN90001bb[ba] -= .5*K:eecc[caij] T:eecc[cbij]
 .STIN90001bb[ba] -= .5*K:eecc[caji] T:eecc[cbji]
-.X13[caij] += K:eecc[caij]
-.X13[caij] -= K:eecc[caji]
-.X14[cbij] += T:eecc[cbij]
-.X14[cbij] -= T:eecc[bcij]
-.STIN90001bb[ba] -= .5*X13[caij] X14[cbij]
+.STIN90001bb[ba] -= .5*X3[caij] X1[cbij]
 .ITIN[baij] += STIN90001bb[ac] T:eecc[bcij]
 .STIN100001baab[baji] += K:eecc[caik] T:eecc[cbjk]
-.X19[caki] += K:eecc[caki]
-.X19[caki] -= K:eecc[caik]
-.STIN100001baba[baji] += X19[caki] T:eecc[cbkj]
-.X20[cbkj] += T:eecc[cbkj]
-.X20[cbkj] -= T:eecc[bckj]
-.STIN100001baba[baji] += K:eecc[acik] X20[cbkj]
+.STIN100001baba[baji] += X3[caki] T:eecc[cbkj]
+.STIN100001baba[baji] += K:eecc[acik] X1[cbkj]
 .STIN100001bbbb[baji] += K:eecc[caki] T:eecc[cbkj]
-.X21[caki] += K:eecc[caki]
-.X21[caki] -= K:eecc[caik]
-.X22[cbkj] += T:eecc[cbkj]
-.X22[cbkj] -= T:eecc[bckj]
-.STIN100001bbbb[baji] += X21[caki] X22[cbkj]
-.X23[cbkj] += T:eecc[cbkj]
-.X23[cbkj] -= T:eecc[bckj]
-.ITIN[baji] += .5*STIN100001baba[acik] X23[cbkj]
+.STIN100001bbbb[baji] += X3[caki] X1[cbkj]
+.ITIN[baji] += .5*STIN100001baba[acik] X1[cbkj]
 .ITIN[baji] += .5*STIN100001bbbb[acik] T:eecc[bcjk]
 .ITIN[baji] += .5*STIN100001baab[acjk] T:eecc[bcki]
-.X24[abij] += K:eecc[abij]
-.X24[abij] -= K:eecc[abji]
-.X25[abij] += T:eecc[abij]
-.X25[abij] -= T:eecc[baij]
-.ECC[] += .5*X24[abij] X25[abij]
+.ECC[] += .5*X3[abij] X1[abij]
 .ECC[] += .5*K:eecc[abij] T:eecc[abij]
 .ECC[] += .5*K:eecc[baij] T:eecc[baij]
 .R:eecc[abij] += ITIN[abij]
