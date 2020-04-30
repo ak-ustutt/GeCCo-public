@@ -608,8 +608,7 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, counter, tasks,
-     &                           taskslog)
+     &                           inter_itype, counter, tasks)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -630,8 +629,7 @@
      &   tasks
       integer, intent(in) ::
      &   itflog,             ! Output file
-     &   command,            ! Type of formula item command, ie. contraction, copy etc.
-     &   taskslog
+     &   command             ! Type of formula item command, ie. contraction, copy etc.
       integer, intent(inout) ::
      &   counter(4)
       integer, intent(inout) ::
@@ -666,20 +664,15 @@
       intpp = .false.
       if (contr_info%label_res=='INTpp') then
          intpp = .true.
-         if (tasks) then
-            write(taskslog,'(a)') "BEGIN_INTPP"
-         else
-            write(itflog,'(a)') "BEGIN_INTPP"
-         end if
+         write(itflog,'(a)') "BEGIN_INTPP"
       end if
 
       ! Mark begining of spin summed block
-      write(itflog,'(a5)') 'BEGIN'
-
+      if (.not. tasks) write(itflog,'(a5)') 'BEGIN'
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,counter,tasks,taskslog,ntest1)
+     &                    inter_itype,counter,tasks,ntest1)
 
 
       ! 2. Assign index / Determine sign
@@ -719,8 +712,7 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,counter,tasks,taskslog,
-     &                           ntest5)
+     &                           inter_itype,counter,tasks,ntest5)
             call assign_index(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
@@ -739,7 +731,7 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,counter,tasks,taskslog,ntest5)
+     &                       inter_itype,counter,tasks,ntest5)
          call assign_index(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
@@ -754,13 +746,13 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, tasks, taskslog, ntest7)
-      if (pline) call print_spin_cases(pitem, tasks, taskslog, ntest7)
+      call print_spin_cases(item, tasks, ntest7)
+      if (pline) call print_spin_cases(pitem, tasks, ntest7)
 
 
       ! 8. Print symmetrisation term
       if (.not. item%inter(3)) then
-         call print_symmetrise(item, ntest8)
+         if (.not. tasks) call print_symmetrise(item, ntest8)
       end if
 
 
@@ -776,14 +768,10 @@
 
 
       ! Mark end of spin block
-      write(itflog,'(a)') "END"
+      if (.not. tasks) write(itflog,'(a)') "END"
 
       if (intpp) then
-         if (tasks) then
-            write(taskslog,'(a)') "END_INTPP"
-         else 
-            write(itflog,'(a)') "END_INTPP"
-         end if
+         write(itflog,'(a)') "END_INTPP"
       end if
 
 
@@ -813,7 +801,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,counter,tasks,tout,ntest)
+     &                          itype,counter,tasks,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -837,7 +825,6 @@
      &   lulog,        ! Output file
      &   itype(MAXINT,INDEX_LEN),
      &   counter(4),
-     &   tout,
      &   ntest
       logical, intent(in) ::
      &   itin,
@@ -852,7 +839,6 @@
       item%out=lulog
 
       ! Set tasks file
-      item%tout = tout
       item%tasks = tasks
 
       ! Assign command type
@@ -1392,7 +1378,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, tasks, taskslog, ntest)
+      subroutine print_spin_cases(item, tasks, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1406,7 +1392,6 @@
       type(itf_contr), intent(inout) ::
      &   item
       integer, intent(in) ::
-     &   taskslog,
      &   ntest
       logical, intent(in) ::
      &   tasks
@@ -1474,7 +1459,7 @@
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          tasks, taskslog, ntest)
+     &                          tasks, ntest)
 
       end do
 
@@ -1482,7 +1467,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin,tasks,taskslog,ntest)
+      subroutine print_itf_line(item,s1,s2,t_spin,tasks,ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1503,7 +1488,6 @@
       type(spin_info2), intent(in) ::
      &   t_spin(3)
       integer, intent(in) ::
-     &   taskslog,
      &   ntest
 
       character(len=MAXLEN_BC_LABEL) ::
@@ -1642,7 +1626,7 @@
      &                item%rank1,
      &                1,item%binary,item%int(1),item%nops1,new_j,
      &                item%cntr(4),item%out)
-            write(taskslog,'(a)') trim(xst1)
+            write(item%out,'(a)') trim(xst1)
 
             item%cntr(4) = item%cntr(4) + 1
          else
@@ -1659,7 +1643,7 @@
      &                item%rank2,
      &                2,item%binary,item%int(2),item%nops2,new_j,
      &                item%cntr(4),item%out)
-            write(taskslog,'(a)') trim(xst2)
+            write(item%out,'(a)') trim(xst2)
 
             item%cntr(4) = item%cntr(4) + 1
          else
@@ -1746,14 +1730,8 @@
      &      '['//trim(new_idx3)//']'
       end if
 
-
-      if (tasks) then
-         ! Print to tasks.tmp
-         write(taskslog,'(a)') trim(itf_line)
-      else
-         ! Print to bcontr.tmp
-         write(item%out,'(a)') trim(itf_line)
-      end if
+      ! Print to output file
+      write(item%out,'(a)') trim(itf_line)
 
       ! Increment number of printed spn cases
       item%spin_cases = item%spin_cases + 1

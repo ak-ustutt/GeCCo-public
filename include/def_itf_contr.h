@@ -97,7 +97,6 @@
      &     rank2,               ! Rank of second tensor
      &     rank3,               ! Rank of result tensor
      &     out,                 ! File to print to
-     &     tout,                ! ITF Task file
      &     permute,             ! 0,1,2,3: permutation cases
      &     command,             ! Type of contraction, borrowed from formula_item
      &     contri,              ! Number of contraction indices in a line

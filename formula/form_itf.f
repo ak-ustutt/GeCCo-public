@@ -31,8 +31,7 @@
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
      &     fitf,        ! File for ITF algo code
-     &     fform,       ! File for GeCco formulae
-     &     ftasks
+     &     fform        ! File for GeCco formulae
       type(formula_item) ::
      &     flist        ! Linked list of binary contractions
       logical ::
@@ -52,20 +51,18 @@
       call write_title(lulog,wst_section,'Translating formula to ITF')
 
       ! Open tmp binary contraction file
-      call file_init(fline,'bcontr.tmp',ftyp_sq_frm,0)
+      if (tasks) then
+         call file_init(fline,'tasks.tmp',ftyp_sq_frm,0)
+      else
+         call file_init(fline,'bcontr.tmp',ftyp_sq_frm,0)
+      end if
       call file_open(fline)
 
       if (print_form) then
-        ! Open optional formulae file
-        call file_init(fform,form_out,ftyp_sq_frm,0)
-        call file_open(fform)
-        write(fform%unit,*) "Generated formulae"
-      end if
-
-      if (tasks) then
-        ! Open file to use with itf tasks
-        call file_init(ftasks,'tasks.tmp',ftyp_sq_frm,0)
-        call file_open(ftasks)
+         ! Open optional formulae file
+         call file_init(fform,form_out,ftyp_sq_frm,0)
+         call file_open(fform)
+         write(fform%unit,*) "Generated formulae"
       end if
 
       ! Read in input formula
@@ -84,7 +81,7 @@
 
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,itin,op_info,print_form,
-     &               fform%unit,tasks,ftasks%unit)
+     &               fform%unit,tasks)
 
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'Time to process formulae',
@@ -175,7 +172,7 @@
          else if (tasks) then
          ! Create an file for ITF Tasks
          exe_line='python3 $GECCO_DIR/itf_python/simplify.py -i '
-     &             //trim(ftasks%name)//' -o tasks2.tmp'
+     &             //trim(fline%name)//' -o tasks2.tmp'
          write(lulog,*) "Executing: ", exe_line
          call execute_command_line(trim(exe_line),exitstat=e)
 
@@ -266,8 +263,6 @@
       call file_close_keep(fline)
       ! Deallocat link list
       call dealloc_formula_list(flist)
-
-      if (tasks) call file_close_keep(ftasks)
 
       if (print_form) then
         write(fform%unit,*) "End formulae"

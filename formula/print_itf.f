@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
-     &                     formlog,tasks,taskslog)
+     &                     formlog,tasks)
 *----------------------------------------------------------------------*
 *     Print ITF lines to itflog
 *----------------------------------------------------------------------*
@@ -14,8 +14,7 @@
 
       integer, intent(in) ::
      &     itflog,                              ! Output file for ITF algo code
-     &     formlog,                             ! Output of GeCco formulae
-     &     taskslog
+     &     formlog                              ! Output of GeCco formulae
       type(formula_item), intent(in), target ::
      &     fl_head                              ! Linked list of formulae
       type(operator_info), intent(in) ::
@@ -53,7 +52,7 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
-     &                          counter,tasks,taskslog)
+     &                          counter,tasks)
 
             ! Count the number of terms
             counter(1) = counter(1) + 1
