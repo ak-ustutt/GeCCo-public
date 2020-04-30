@@ -787,7 +787,7 @@
 
       ! Update K4E counter
       if (item%k4e_line) then
-         counter(3) = item%cntr(3)
+         counter(3) = item%cntr(3) + 1
       end if
 
       ! Update X number

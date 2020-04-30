@@ -609,6 +609,7 @@ TRANSLATE_ITF({
         MULTI:True,
         PROCESS:True,
         KEXT:False,
+        TASKS:False,
         INIT_RES:False,
         ITIN:True})
 
