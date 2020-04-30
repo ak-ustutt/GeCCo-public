@@ -146,13 +146,13 @@ declare_res_multi=[
         "R:ac[pi]","R:ec[ai]","R:ea[ap]",
         "R:aacc[pqij]","R:aaac[pqri]",
         "R:eacc[apij]","R:eaac[apqi]","R:eaaa[apqr]",
-        "R:eecc[abij]","R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
+        "R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
 declare_amp_multi=[
         "T:I[I]",
         "T:ac[pi]","T:ec[ai]","T:ea[ap]",
         "T:aacc[pqij]","T:aaac[pqri]",
         "T:eacc[apij]","T:eaac[apqi]","T:eaaa[apqr]",
-        "T:eecc[abij]","T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
+        "T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
 
 declare_ten=[]          # Global list of tensors involved in binary contractions
 declare_ten_index=[]    # Global list of tensor indicies
@@ -296,7 +296,7 @@ if (multi):
     print(file=f2)
     print("// Residuals not used in the code", file=f2)
     for i in range(0, len(declare_res_multi)):
-        if any(declare_res_multi[i].split('[',1)[0]+"[" in s for s in declare_res):
+        if any(declare_res_multi[i].split('[',1)[0]+"[" in s for s in declare_ten):
             continue
         else:
             tmp_ten = declare_res_multi[i] + ", " + declare_res_multi[i].split('[',1)[0]
