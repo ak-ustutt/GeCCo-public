@@ -608,7 +608,7 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, counter, tasks)
+     &                           inter_itype, counter, tasks, x_dict)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -634,6 +634,8 @@
      &   counter(4)
       integer, intent(inout) ::
      &   inter_itype(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
+      type(x_inter), intent(inout) ::
+     &   x_dict(MAXX)
 
       type(itf_contr) ::
      &   item,               ! ITF contraction object; holds all info about the ITF algo line
@@ -746,8 +748,8 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, ntest7)
-      if (pline) call print_spin_cases(pitem, ntest7)
+      call print_spin_cases(item, x_dict, ntest7)
+      if (pline) call print_spin_cases(pitem, x_dict, ntest7)
 
 
       ! 8. Print symmetrisation term
@@ -1378,7 +1380,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, ntest)
+      subroutine print_spin_cases(item, x_dict, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1391,6 +1393,8 @@
 
       type(itf_contr), intent(inout) ::
      &   item
+      type(x_inter), intent(inout) ::
+     &   x_dict(MAXX)
       integer, intent(in) ::
      &   ntest
 
@@ -1457,7 +1461,7 @@
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          ntest)
+     &                          x_dict, ntest)
 
       end do
 
@@ -1465,7 +1469,7 @@
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin,ntest)
+      subroutine print_itf_line(item,s1,s2,t_spin,x_dict,ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1481,9 +1485,11 @@
       type(itf_contr), intent(inout) ::
      &   item
       logical, intent(in) ::
-     &   s1,s2 
+     &   s1,s2
       type(spin_info2), intent(in) ::
      &   t_spin(3)
+      type(x_inter), intent(inout) ::
+     &   x_dict(MAXX)
       integer, intent(in) ::
      &   ntest
 
@@ -1505,11 +1511,12 @@
      &   k4e_no,            ! Counter of K4E tensors
      &   nx
       integer ::
-     &   i
+     &   i,j,k
       real(8) ::
      &   c_fact               ! Copy of orginal factor
       logical ::
-     &   new_j
+     &   new_j,
+     &   old
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
@@ -1612,37 +1619,87 @@
       ! Create intermediate instead of brackets
       if (item%tasks) then
 
-
          if (s1 .and. .not. item%inter(1)) then
-            write(nx,*) item%cntr(4)
 
-            tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+            ! Need to check if already declared this X intermediate
+            ! Names an operator info are saved in x_dict between loops
+            call check_x(item, x_dict, tst1, new_idx1, .true., old)
 
-            ! Print out the X intermediate lines
-      call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
-     &                item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,new_j,
-     &                item%cntr(4),item%out)
-            write(item%out,'(a)') trim(xst1)
 
-            item%cntr(4) = item%cntr(4) + 1
+!            do i = 1, item%cntr(4)
+!               if (item%label_t1==x_dict(i)%label) then
+!
+!                  new = .false.
+!                  do j = 1, ngastp
+!                     do k = 1, 2
+!                        ! Compare operator numbers
+!                        if (x_dict(i)%ops(j,k)/=item%e1(j,k)+
+!     &                      item%c(j,k)) then
+!                           new = .true.
+!                           exit
+!                        end if
+!                     end do
+!                  end do
+!
+!                  if (.not. new) then
+!                     ! We have declared this X inter before, so just use
+!                     ! the old X number
+!                     write(nx,*) x_dict(i)%n
+!                     tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+!                     exit
+!                  end if
+!
+!               end if
+!            end do
+!
+            if (.not. old) then
+!               ! If a new X intermediate, save info to x_dict
+!               x_dict(item%cntr(4))%n = item%cntr(4)
+!               x_dict(item%cntr(4))%label = trim(item%label_t1)
+!               do j = 1, ngastp
+!                  do k = 1, 2
+!                     x_dict(item%cntr(4))%ops=item%e1(j,k)+item%c(j,k)
+!                  end do
+!               end do
+
+               ! Print out new X intermediate
+               write(nx,*) item%cntr(4)
+
+               tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+
+               call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
+     &                      item%rank1,
+     &                      1,item%binary,item%int(1),item%nops1,new_j,
+     &                      item%cntr(4),item%out)
+               write(item%out,'(a)') trim(xst1)
+
+               ! Increase X counter
+               item%cntr(4) = item%cntr(4) + 1
+            end if
+
          else
             tst1 = st1
          end if
 
 
          if (s2 .and. .not. item%inter(2)) then
-            write(nx,*) item%cntr(4)
 
-            tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
+            call check_x(item, x_dict, tst2, new_idx2, .false., old)
 
-      call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
-     &                item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,new_j,
-     &                item%cntr(4),item%out)
-            write(item%out,'(a)') trim(xst2)
+            if (.not. old) then
+               write(nx,*) item%cntr(4)
 
-            item%cntr(4) = item%cntr(4) + 1
+               tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
+
+               call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
+     &                      item%rank2,
+     &                      2,item%binary,item%int(2),item%nops2,new_j,
+     &                      item%cntr(4),item%out)
+               write(item%out,'(a)') trim(xst2)
+
+               item%cntr(4) = item%cntr(4) + 1
+            end if
+
          else
             tst2 = st2
          end if
@@ -1735,6 +1792,123 @@
 
       return
       end
+
+
+*----------------------------------------------------------------------*
+      subroutine check_x(item, x_dict, tst, idx, t1, old)
+*----------------------------------------------------------------------*
+!     Check if already delcared an X intermediate, if not return
+!     new=false and add info to x_dict
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &   item
+      type(x_inter), intent(inout) ::
+     &   x_dict(MAXX)
+      character(len=264) ::
+     &   tst
+      character(len=INDEX_LEN), intent(in) ::
+     &   idx
+      logical, intent(in) ::
+     &   t1
+      logical, intent(inout) ::
+     &   old
+
+      integer ::
+     &   i,j,k,
+     &   e(ngastp,2), c(ngastp,2)
+      character(len=MAXLEN_BC_LABEL) ::
+     &   label
+      character(len=25) ::
+     &   nx
+
+      if (t1) then
+         label = item%label_t1
+         e = item%e1
+         c = item%c
+      else
+         label = item%label_t2
+         e = item%e2
+         do j = 1, ngastp
+            c(j,1) = item%c(j,2)
+            c(j,2) = item%c(j,1)
+         end do
+      end if
+
+      old = .false.
+      do i = 1, item%cntr(4)
+         if (label==x_dict(i)%label) then
+            !write(item%out,*) "fuck1 ", label, x_dict(i)%label
+
+            old = .true.
+            !do k = 1, 2
+            !   write(item%out,'(4i)')(x_dict(i)%ops(j,k),j=1,ngastp)
+            !end do
+            !do k = 1, 2
+            !   write(item%out,'(4i)')(e(j,k),j=1,ngastp)
+            !end do
+            !do k = 1, 2
+            !   write(item%out,'(4i)')(c(j,k),j=1,ngastp)
+            !end do
+            do j = 1, ngastp
+               do k = 1, 2
+                  ! Compare operator numbers
+                  if (x_dict(i)%ops(j,k)/=e(j,k)+c(j,k)) then
+                     old = .false.
+                     exit
+                  end if
+               end do
+            end do
+
+            !write(item%out,*) "old is now ", old
+
+            if (old) then
+               ! We have declared this X inter before, so just use
+               ! the old X number
+               write(nx,*) x_dict(i)%n
+               tst='X'//trimal(nx)//'['//trim(idx)//']'
+               return
+            end if
+
+
+         end if
+      end do
+
+
+
+
+      if (.not. old) then
+         ! If a new X intermediate, save info to x_dict
+         x_dict(item%cntr(4))%n = item%cntr(4)
+         x_dict(item%cntr(4))%label = label
+         do j = 1, ngastp
+            do k = 1, 2
+               x_dict(item%cntr(4))%ops(j,k)=e(j,k)+c(j,k)
+            end do
+         end do
+
+!         ! Print out new X intermediate
+!         write(nx,*) item%cntr(4)
+!
+!         tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+!
+!         call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
+!     &                item%rank1,
+!     &                1,item%binary,item%int(1),item%nops1,new_j,
+!     &                item%cntr(4),item%out)
+!         write(item%out,'(a)') trim(xst1)
+
+      end if
+
+      return
+      end
+
 
 *----------------------------------------------------------------------*
       subroutine reorder_amp(rank,idx)

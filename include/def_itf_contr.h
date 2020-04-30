@@ -2,7 +2,8 @@
      &     INDEX_LEN = 8,       ! Length of index string
      &     MAXINT = 8,          ! Maximum number of intermediates that contribute to a result
      &     MAX_SPIN_CASES = 10,  ! Maximum number of intermediates that contribute to a result
-     &     MAXVTX = 10  ! Maximum number of intermediates that contribute to a result
+     &     MAXVTX = 10,  ! Maximum number of intermediates that contribute to a result
+     &     MAXX = 20  ! Maximum number of X intermediates
 
 *----------------------------------------------------------------------*
       type spin_cases
@@ -201,3 +202,18 @@
      &     itype(:) => null()
 
       end type index_str
+
+
+*----------------------------------------------------------------------*
+      type x_inter
+*----------------------------------------------------------------------*
+!    Xn = (T[abij] - T[abij])
+*----------------------------------------------------------------------*
+      integer ::
+     &  n,       ! X number
+     &  ops(4,2)          ! Total number of operators across vertices
+
+      character(len=MAXLEN_BC_LABEl) ::
+     &  label   ! Name of tensor
+
+      end type x_inter

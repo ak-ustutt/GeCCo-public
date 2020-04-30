@@ -29,7 +29,10 @@
       integer ::
      &     counter(4)                           ! Counter array
       integer ::
-     &   inter_itype(MAXINT,INDEX_LEN)                 ! Store intermediate index-type (itype) info from previous line
+     &   inter_itype(MAXINT,INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
+     &   i
+      type(x_inter) ::
+     &   x_dict(MAXX)
 
 
       ! Point to start of linked list of formulae
@@ -40,6 +43,11 @@
       counter(3) = 1    ! k4e
       counter(4) = 1    ! x intermediate
       inter_itype = 0
+
+      do i = 1, MAXX
+         x_dict(i)%label = ''
+         x_dict(i)%ops = 0
+      end do
 
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
@@ -52,7 +60,7 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
-     &                          counter,tasks)
+     &                          counter,tasks,x_dict)
 
             ! Count the number of terms
             counter(1) = counter(1) + 1
