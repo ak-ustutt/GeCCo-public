@@ -223,6 +223,7 @@
             <!--(0=off)-->
           </argument>
           <argument length="8" name="method" status="A" type="8" value="MRCCSD_22"/>
+          <argument length="8" name="hamiltonian" status="A" type="8" value="DYALL"/>
         </keyword>
         <keyword name="MRCI" status="A">
           <argument length="1" name="nroots" status="A" type="2" value="1">

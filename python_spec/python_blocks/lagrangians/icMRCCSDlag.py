@@ -46,13 +46,6 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
-# Determine method to use
-method=''
-if keywords.is_keyword_set('method.MR_P.method'):
-    method=keywords.get('method.MR_P.method')
-print "Performing a ", method, " calculation."
-
-
 # Select a method to use
 approx = keywords.get('method.MR_P.method')
 method = approx if approx is not None else "Yuri"
@@ -61,6 +54,28 @@ known_methods=["Yuri", "MRCCSD_22", "CEPT2"]
 if method not in known_methods :
     raise Exception(i_am+": unknown method:"+str(method))
 print("Using the "+method+" method.")
+
+
+# Select H0
+if method==CEPT2:
+    known_hamiltonians=["DYALL","REPT","F_EFF"]
+    hamiltonian = keywords.get('method.MR_P.hamiltonian')
+    hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
+
+    if hamiltonian not in known_hamiltonians :
+        raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
+
+    depend('H0')
+
+    if hamiltonian=="DYALL":
+        depend('EVAL_HAM_D')
+        _h0_='HAM_D'
+    elif hamiltonian=="REPT":
+        depend('EVAL_REPT_HAM')
+        _h0_='REPT_HAM'
+    elif hamiltonian=="F_EFF":
+        depend('EVAL_F_EFF')
+        _h0_='FOCK_EFF'
 
 
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
