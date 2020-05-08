@@ -222,6 +222,7 @@
           <argument length="1" name="spinexpec" status="A" type="2" value="0">
             <!--(0=off)-->
           </argument>
+          <argument length="8" name="method" status="A" type="8" value="MRCCSD_22"/>
         </keyword>
         <keyword name="MRCI" status="A">
           <argument length="1" name="nroots" status="A" type="2" value="1">

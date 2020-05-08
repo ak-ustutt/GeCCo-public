@@ -46,6 +46,23 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
+# Determine method to use
+method=''
+if keywords.is_keyword_set('method.MR_P.method'):
+    method=keywords.get('method.MR_P.method')
+print "Performing a ", method, " calculation."
+
+
+# Select a method to use
+approx = keywords.get('method.MR_P.method')
+method = approx if approx is not None else "Yuri"
+
+known_methods=["Yuri", "MRCCSD_22", "CEPT2"]
+if method not in known_methods :
+    raise Exception(i_am+": unknown method:"+str(method))
+print("Using the "+method+" method.")
+
+
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
 def _refexp(x):
     return "<C0^+*(" + x + ")*C0>"
@@ -62,77 +79,82 @@ LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
 LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
 LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
 
-#LAG_E.append(_refexp("[H,T1]"))
-#LAG_E.append(_refexp("[H,T2g]"))
-#
-#LAG_A1.append(_L1_refexp("[H,T1]"))
-#LAG_A1.append(_L1_refexp("[H,T2g]"))
-#LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
-#
-#LAG_A2.append(_L2_refexp("[H,T1]"))
-#LAG_A2.append(_L2_refexp("[H,T2g]"))
-#LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
+if method=='MRCCSD_22':
+    # Put MRCCSD(2,2) method here...
+
+elif method=='Yuri':
+
+    #LAG_E.append(_refexp("[H,T1]"))
+    #LAG_E.append(_refexp("[H,T2g]"))
+    #
+    #LAG_A1.append(_L1_refexp("[H,T1]"))
+    #LAG_A1.append(_L1_refexp("[H,T2g]"))
+    #LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
+    #
+    #LAG_A2.append(_L2_refexp("[H,T1]"))
+    #LAG_A2.append(_L2_refexp("[H,T2g]"))
+    #LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
 
-LAG_E.append(_refexp("(H*T1)+(H*T2g)"))
-LAG_E.append(_refexp("-(T1*H)-(T2g*H)"))
+    LAG_E.append(_refexp("(H*T1)+(H*T2g)"))
+    LAG_E.append(_refexp("-(T1*H)-(T2g*H)"))
 
-LAG_E.append(_refexp("(1/2)*(H*T1 *T1 )"))
-LAG_E.append(_refexp("(1/2)*(H*T1 *T2g)"))
-LAG_E.append(_refexp("(1/2)*(H*T2g*T1 )"))
-LAG_E.append(_refexp("(1/2)*(H*T2g*T2g)"))
+    LAG_E.append(_refexp("(1/2)*(H*T1 *T1 )"))
+    LAG_E.append(_refexp("(1/2)*(H*T1 *T2g)"))
+    LAG_E.append(_refexp("(1/2)*(H*T2g*T1 )"))
+    LAG_E.append(_refexp("(1/2)*(H*T2g*T2g)"))
 
-#LAG_E.append(_refexp("(1/2)*(H*T2g'*T2g'')"), avoid=["T2g'","T2g''"])
+    #LAG_E.append(_refexp("(1/2)*(H*T2g'*T2g'')"), avoid=["T2g'","T2g''"])
 
-LAG_E.append(_refexp("-(T1 *H*T1 )"))
-LAG_E.append(_refexp("-(T1 *H*T2g)"))
-LAG_E.append(_refexp("-(T2g*H*T1 )"))
-LAG_E.append(_refexp("-(T2g*H*T2g)"))
+    LAG_E.append(_refexp("-(T1 *H*T1 )"))
+    LAG_E.append(_refexp("-(T1 *H*T2g)"))
+    LAG_E.append(_refexp("-(T2g*H*T1 )"))
+    LAG_E.append(_refexp("-(T2g*H*T2g)"))
 
-LAG_E.append(_refexp("(1/2)*(T1 *T1 *H)"))
-LAG_E.append(_refexp("(1/2)*(T1 *T2g*H)"))
-LAG_E.append(_refexp("(1/2)*(T2g*T1 *H)"))
-LAG_E.append(_refexp("(1/2)*(T2g*T2g*H)"))
-
-
-
-LAG_A1.append(_L1_refexp("(H*T1)+(H*T2g)"))
-LAG_A1.append(_L1_refexp("-(T1*H)-(T2g*H)"))
-
-LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T1 )"))
-LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T2g)"))
-LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T1 )"))
-LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T2g)"))
-
-LAG_A1.append(_L1_refexp("-(T1 *H*T1 )"))
-LAG_A1.append(_L1_refexp("-(T1 *H*T2g)"))
-LAG_A1.append(_L1_refexp("-(T2g*H*T1 )"))
-LAG_A1.append(_L1_refexp("-(T2g*H*T2g)"))
-
-LAG_A1.append(_L1_refexp("(1/2)*(T1 *T1 *H)"))
-LAG_A1.append(_L1_refexp("(1/2)*(T1 *T2g*H)"))
-LAG_A1.append(_L1_refexp("(1/2)*(T2g*T1 *H)"))
-LAG_A1.append(_L1_refexp("(1/2)*(T2g*T2g*H)"))
+    LAG_E.append(_refexp("(1/2)*(T1 *T1 *H)"))
+    LAG_E.append(_refexp("(1/2)*(T1 *T2g*H)"))
+    LAG_E.append(_refexp("(1/2)*(T2g*T1 *H)"))
+    LAG_E.append(_refexp("(1/2)*(T2g*T2g*H)"))
 
 
 
-LAG_A2.append(_L2_refexp("(H*T1)+(H*T2g)"))
-LAG_A2.append(_L2_refexp("-(T1*H)-(T2g*H)"))
+    LAG_A1.append(_L1_refexp("(H*T1)+(H*T2g)"))
+    LAG_A1.append(_L1_refexp("-(T1*H)-(T2g*H)"))
 
-LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T1 )"))
-LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T2g)"))
-LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T1 )"))
-LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T2g)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T1 )"))
+    LAG_A1.append(_L1_refexp("(1/2)*(H*T1 *T2g)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T1 )"))
+    LAG_A1.append(_L1_refexp("(1/2)*(H*T2g*T2g)"))
 
-LAG_A2.append(_L2_refexp("-(T1 *H*T1 )"))
-LAG_A2.append(_L2_refexp("-(T1 *H*T2g)"))
-LAG_A2.append(_L2_refexp("-(T2g*H*T1 )"))
-LAG_A2.append(_L2_refexp("-(T2g*H*T2g)"))
+    LAG_A1.append(_L1_refexp("-(T1 *H*T1 )"))
+    LAG_A1.append(_L1_refexp("-(T1 *H*T2g)"))
+    LAG_A1.append(_L1_refexp("-(T2g*H*T1 )"))
+    LAG_A1.append(_L1_refexp("-(T2g*H*T2g)"))
 
-LAG_A2.append(_L2_refexp("(1/2)*(T1 *T1 *H)"))
-LAG_A2.append(_L2_refexp("(1/2)*(T1 *T2g*H)"))
-LAG_A2.append(_L2_refexp("(1/2)*(T2g*T1 *H)"))
-LAG_A2.append(_L2_refexp("(1/2)*(T2g*T2g*H)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(T1 *T1 *H)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(T1 *T2g*H)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(T2g*T1 *H)"))
+    LAG_A1.append(_L1_refexp("(1/2)*(T2g*T2g*H)"))
+
+
+
+    LAG_A2.append(_L2_refexp("(H*T1)+(H*T2g)"))
+    LAG_A2.append(_L2_refexp("-(T1*H)-(T2g*H)"))
+
+    LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T1 )"))
+    LAG_A2.append(_L2_refexp("(1/2)*(H*T1 *T2g)"))
+    LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T1 )"))
+    LAG_A2.append(_L2_refexp("(1/2)*(H*T2g*T2g)"))
+
+    LAG_A2.append(_L2_refexp("-(T1 *H*T1 )"))
+    LAG_A2.append(_L2_refexp("-(T1 *H*T2g)"))
+    LAG_A2.append(_L2_refexp("-(T2g*H*T1 )"))
+    LAG_A2.append(_L2_refexp("-(T2g*H*T2g)"))
+
+    LAG_A2.append(_L2_refexp("(1/2)*(T1 *T1 *H)"))
+    LAG_A2.append(_L2_refexp("(1/2)*(T1 *T2g*H)"))
+    LAG_A2.append(_L2_refexp("(1/2)*(T2g*T1 *H)"))
+    LAG_A2.append(_L2_refexp("(1/2)*(T2g*T2g*H)"))
 
 
 
@@ -141,16 +163,13 @@ LAG_A1.set_rule()
 LAG_A2.set_rule()
 
 
-#comment("debug form MRCC_LAG_E")
-#debug_FORM('FORM_MRCC_LAG_E', True,mode='LONG')
-
-#Make the Derivative with respect to LAM  
+#Make the Derivative with respect to LAM
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_Amp1',
         OP_RES:'O1',
         OP_DERIV:'LAM1'})
-                     
+
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_Amp2',
