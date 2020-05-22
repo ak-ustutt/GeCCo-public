@@ -177,13 +177,21 @@ if not(connected) and _h0exp_ == 'missing':
 
 _h1_ = "(H-" +_h0_ + ")"
 
-#Starting energy and amplitudes equations
-LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
-                  "<C0^+*H*C0>")
-LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
-                  "<C0^+*(LAM2g*H)*C0>")
 
-LAG_E.append("<C0^+*H*T2g*C0>")
+#Starting energy and amplitudes equations
+if ampl_type == 'CEPT2':
+    LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+                      "<C0^+*H*C0>")
+    LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+                      "<C0^+*(LAM2g*H)*C0>")
+
+else:
+    LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+                      "<C0^+*H*C0>")
+    LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+                      "<C0^+*(LAM2g*H)*C0>")
+    LAG_E.append("<C0^+*H*T2g*C0>")
+
 
 # How the amplitudes equations look like:
 if ampl_type == 'PT2':
@@ -301,6 +309,12 @@ elif ampl_type == 'MRCCSD(2,2)':
     LAG_E.append("1/2*<C0^+*H*T2g*T2g*C0>")
     LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
     LAG_A.append("1/2*<C0^+*(LAM2g)*[[H,T2g],T2g]*C0>")
+
+elif ampl_type == 'MRCCSD(4,2)':
+    # Alex: write the mrccsd(4,2) method here
+
+elif ampl_type == 'CEPT2':
+    # Alex: cept2 will go here
 
 else:
     quit_error(i_am+': Unknown ampl_type: ' + ampl_type)
