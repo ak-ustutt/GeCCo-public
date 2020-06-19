@@ -120,6 +120,43 @@ elif hamiltonian=="EXT_DYALL":
 elif hamiltonian=="SIMP_REPT":
     depend('EVAL_SIMP_REPT_HAM')
 
+#------------------this belongs in the operatorfile-----
+
+#te_shape='VV,HH|PV,HH|PP,HH|PP,VV|PV,HV|P,H|PV,HV|PV,VV|P,V|VV,VH|V,H'  #alles ab PPVV, PV,HV is here just to test stuff.
+#without_singles_1
+#te_shape='VV,HH|PV,HH|PP,HH'
+#without_singles_2
+te_shape='PP,HV|PP,VV|PP,HH'
+DEF_OP_FROM_OCC({LABEL:'Te',
+                 DESCR:te_shape})
+
+
+
+
+CLONE_OPERATOR({LABEL:'LAMe',
+                TEMPLATE:'Te',
+                ADJOINT:True})
+#ti_form = 'T2g'
+#without_singles_1
+#ti_shape='VV,VH|PV,VV|PV,HV|PP,VV|PP,HV'
+#without_singles_2
+#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH'
+#with_singles_1
+#ti_shape='V,H|VV,VH|P,V|PV,VV|PV,HV|PP,VV|PP,HV|P,H'
+#with_singles_2
+ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+DEF_OP_FROM_OCC({LABEL:'Ti',
+		 DESCR:ti_shape})
+
+#DEF_FORMULA({LABEL:'FORM_Ti',FORMULA:ti_form})
+
+#LAMi_form = 'LAM2g'
+CLONE_OPERATOR({LABEL:'LAMi',
+                TEMPLATE:'Ti',
+                ADJOINT:True})
+
+#DEF_FORMULA({LABEL:'FORM_LAMi',FORMULA:LAMi_form})
+#-------------------------------------------------------
 DEF_SCALAR({
         LABEL:'PT_LAG'})
 DEF_ME_LIST({
@@ -182,8 +219,20 @@ _h1_ = "(H-" +_h0_ + ")"
 if ampl_type == 'CEPT2':
     LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
                       "<C0^+*H*C0>")
+#    LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+#                      "<C0^+*(LAM2g*H)*C0>")
+#nothirdlag?
+
     LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
-                      "<C0^+*(LAM2g*H)*C0>")
+                      "<C0^+*(LAMi*H)*C0>")
+    LAG_A.append("<C0^+*(LAMe*H)*C0>")
+
+elif ampl_type == 'MRCEPA0alex':
+    LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
+                      "<C0^+*H*C0>")
+    LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
+                      "<C0^+*(LAMi*H)*C0>")
+    LAG_A.append("<C0^+*(LAMe*H)*C0>")
 
 else:
     LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
@@ -194,11 +243,15 @@ else:
 
 
 # How the amplitudes equations look like:
+
 if ampl_type == 'PT2':
     if (connected):
         LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
     else:
         LAG_A.append("<C0^+*(LAM2g)*("+_h0_+"-"+_h0exp_+")*T2g*C0>")
+
+elif ampl_type == 'CASPT2test':
+    LAG_A.append("<C0^+*(LAM2g)*(["+_h0_+",T2g])*C0>")
 
 elif ampl_type == 'TEST1':
     LAG_E.append("<C0^+*[[H,T2g],T2g]*C0>")
@@ -268,13 +321,27 @@ elif ampl_type == 'MRCISD':
 
     LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
 
-elif ampl_type == 'MRCEPA(0)':
+elif ampl_type == 'MRCEPA0':
     DEF_SCALAR({LABEL:'ECEPA'})
 
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.set_rule()
 
     LAG_A.append("<C0^+*(LAM2g)*(H-ECEPA)*T2g*C0>")
+
+
+elif ampl_type == 'MRCEPA0alex':
+    DEF_SCALAR({LABEL:'ECEPA'})
+
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+    
+    LAG_E.append("<C0^+*H*Ti*C0>")
+    LAG_E.append("<C0^+*H*Te*C0>")
+    LAG_A.append("<C0^+*(LAMe)*(H-ECEPA)*Te*C0>")
+    LAG_A.append("<C0^+*(LAMe)*(H-ECEPA)*Ti*C0>")
+    LAG_A.append("<C0^+*(LAMi)*(H-ECEPA)*Te*C0>")
+    LAG_A.append("<C0^+*(LAMi)*(H-ECEPA)*Ti*C0>")
 
 elif ampl_type == 'MRCCSD_(PT3)':
     LAG_E.append("1/2*<C0^+*[[(H-"+_h0_+"),T2g],T2g]*C0>")
@@ -310,12 +377,27 @@ elif ampl_type == 'MRCCSD(2,2)':
     LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
     LAG_A.append("1/2*<C0^+*(LAM2g)*[[H,T2g],T2g]*C0>")
 
-elif ampl_type == 'MRCCSD(4,2)':
+elif ampl_type == 'MRCCSD42':
     # Alex: write the mrccsd(4,2) method here
+    LAG_E.append("1/2*<C0^+*H*T2g*T2g*C0>")
+    LAG_E.append("<C0^+*1/6*H*T2g*T2g*T2g*C0>")
+    LAG_E.append("<C0^+*1/24*H*T2g*T2g*T2g*T2g*C0>")
+    LAG_A.append("<C0^+*(LAM2g)*[H,T2g]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAM2g)*[[H,T2g],T2g]*C0>")
 
 elif ampl_type == 'CEPT2':
     # Alex: cept2 will go here
+    
+    DEF_SCALAR({LABEL:'ECEPA'})
 
+    E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+    E_CEPA.set_rule()
+
+    LAG_E.append("<C0^+*H*T2g*C0>")
+    LAG_A.append("<C0^+*(LAMi)*["+_h0_+",T2g]*C0>")
+    LAG_A.append("<C0^+*(LAMe)*(H-ECEPA)*Te*C0>")
+    LAG_A.append("<C0^+*(LAMe)*["+_h0_+",Ti]*C0>")
+   
 else:
     quit_error(i_am+': Unknown ampl_type: ' + ampl_type)
 
@@ -370,6 +452,24 @@ if ampl_type == 'IDEA1_2':
 #                       AVOID:[3,4]})
 #
 #    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A',MODE:'SHORT'})
+elif ampl_type in ['CEPT2','MRCEPA0alex']:
+    LAG_A.set_rule()
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG', MODE:"SHORT"})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A', MODE:"SHORT"})
+    REPLACE({LABEL_RES:'FORM_PT_LAG',
+         LABEL_IN:'FORM_PT_LAG',
+         OP_LIST:['Ti','T2g','Te','T2g']})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG', MODE:"SHORT"})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A', MODE:"SHORT"})
+    REPLACE({LABEL_RES:'FORM_PT_LAG_A',
+         LABEL_IN:'FORM_PT_LAG_A',
+         OP_LIST:['Ti','T2g','Te','T2g']})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG', MODE:"SHORT"})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A', MODE:"SHORT"})
+    REPLACE({LABEL_RES:'FORM_PT_LAG_A',
+         LABEL_IN:'FORM_PT_LAG_A',
+         OP_LIST:['LAMi','LAM2g','LAMe','LAM2g']})
+    PRINT_FORMULA({LABEL:'FORM_PT_LAG_A', MODE:"SHORT"})
 else:
     LAG_A.set_rule()
 
@@ -450,7 +550,7 @@ debug_FORM('FORM_PT_RHS')
 
 TEX_FORMULA({LABEL:'FORM_PT_LAG_A',OUTPUT:'PT2-LAG-A.tex'})
 
-if ampl_type in ['MRCEPA(Q)','MRCISD','MRCEPA(0)','MRCEPA(QC)']:
+if ampl_type in ['MRCEPA(Q)','MRCISD','MRCEPA0','MRCEPA0alex','MRCEPA(QC)','CEPT2']:
     # Construct energy operator for use in lagradian
     DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
