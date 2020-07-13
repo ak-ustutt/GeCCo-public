@@ -81,7 +81,7 @@ if method in ['CEPT2','BETACEPT2','PT2']:
 #----------
 #Define the Te and Ti operators
 #with_singles_2
-#te_shape='PP,HV|PP,VV|PP,HH'
+te_shape='PP,HV|PP,VV|PP,HH'
 #--------------
 #with_singles_3
 #te_shape='PP,HV|PP,VV|PP,HH|P,V'
@@ -93,7 +93,7 @@ if method in ['CEPT2','BETACEPT2','PT2']:
 #te_shape='PP,HV|PP,VV|PP,HH|P,H'
 #--------------
 #with_singles_6
-te_shape='PP,HV|PP,VV|PP,HH|V,H|P,V|P,H'
+#te_shape='PP,HV|PP,VV|PP,HH|V,H|P,V|P,H'
 
 #with_singles_2   
 ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
@@ -167,8 +167,8 @@ LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
 if method in ['BETACEPT2','CEPA0TeTi']: #Ts -> T1     Te,Ti -> T2g  --note:testidea1, check idea2
 
     LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _Ls_refexp("H"))
-    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _Li_refexp("H"))
-    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _Le_refexp("H"))
+    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _Li_refexp("H"))
+    LAG_A2.append(_Le_refexp("H"))
 else:
     LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
     LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
@@ -277,6 +277,7 @@ elif method == 'CEPT2':
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.set_rule()
     
+    LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
     
 
 elif method == 'BETACEPT2':
@@ -286,6 +287,22 @@ elif method == 'BETACEPT2':
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.set_rule()
 
+    LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
+
+    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+#    LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))   # testfor with_singles_6
+#    LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))   # 
+    
+    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+
+    LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  # exclude for  test
+    LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+    LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+#    LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))   #test 
 elif method == 'CEPA0TeTi':
     #here goes cept2
     DEF_SCALAR({LABEL:'ECEPA'})
