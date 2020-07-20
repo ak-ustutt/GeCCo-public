@@ -94,6 +94,10 @@ te_shape='PP,HV|PP,VV|PP,HH'
 #--------------
 #with_singles_6
 #te_shape='PP,HV|PP,VV|PP,HH|V,H|P,V|P,H'
+#--------------
+#CIPT2 seperation ? "all excitations from the active space"
+#te_shape='PP,HV|PP,VV|PV,VV|P,V'
+#--------------
 
 #with_singles_2   
 ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
@@ -110,7 +114,9 @@ ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
 #with_singles_6
 #ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH'
 #--------------
-
+#CIPT2 seperation ?
+#ti_shape='VV,VH|VV,HH|PV,HV|PV,HH|PP,HH|V,H|P,H'
+#--------------
 DEF_OP_FROM_OCC({LABEL:'Te',
                  DESCR:te_shape})
 

@@ -502,19 +502,22 @@ elif ampl_type == 'CEPT2_TIS':
 
     LAG_E.append("<C0^+*H*Tii*C0>")
     LAG_E.append("<C0^+*H*Tes*C0>")
+    LAG_E.append("<C0^+*H*Tis*C0>")
 
     LAG_A.append("<C0^+*(LAMii)*("+_h0_+"-"+_h0exp_+")*Tii*C0>") # "not connected"
     LAG_A.append("<C0^+*(LAMii)*("+_h0_+"-"+_h0exp_+")*Tes*C0>")
+    LAG_A.append("<C0^+*(LAMii)*("+_h0_+"-"+_h0exp_+")*Tis*C0>")
 
-    LAG_A.append("<C0^+*(-LAMes)*("+_h0_+"-"+_h0exp_+")*Tis*C0>")
+    LAG_A.append("<C0^+*(LAMes)*("+_h0_+"-"+_h0exp_+")*Tis*C0>")
     LAG_A.append("<C0^+*(LAMes)*("+_h0_+"-"+_h0exp_+")*Tii*C0>")
     LAG_A.append("<C0^+*(LAMes)*(H-ECEPA)*Tes*C0>")
-    LAG_A.append("<C0^+*(LAMes)*(H-ECEPA)*Tis*C0>")
+#    LAG_A.append("<C0^+*(LAMes)*(H-ECEPA)*Tis*C0>")
 
-    LAG_A.append("<C0^+*(LAMis)*(H-ECEPA)*Tes*C0>")
-    LAG_A.append("<C0^+*(LAMis)*(H-ECEPA)*Tis*C0>")
+#    LAG_A.append("<C0^+*(LAMis)*(H-ECEPA)*Tes*C0>")
+ #   LAG_A.append("<C0^+*(LAMis)*(H-ECEPA)*Tis*C0>")
     LAG_A.append("<C0^+*(LAMis)*(-"+_h0_+"-"+_h0exp_+")*Tis*C0>") # "not connected"
     LAG_A.append("<C0^+*(LAMis)*(-"+_h0_+"-"+_h0exp_+")*Tes*C0>")
+    LAG_A.append("<C0^+*(LAMis)*(-"+_h0_+"-"+_h0exp_+")*Tii*C0>")
  
 elif ampl_type == 'CCEPA':
     DEF_SCALAR({LABEL:'ECEPA'})
