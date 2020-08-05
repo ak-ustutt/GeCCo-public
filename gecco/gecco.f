@@ -51,7 +51,11 @@ c      iprlvl = 3     ! print level
      &             name_infile,name_logfile)
       if (l_exit) goto 2308
 
-      if (l_molpro) iprlvl = 0
+      if (l_molpro) then
+        iprlvl = 0
+        ! Turn on new molpro output
+        lmol = .true.
+      end if
 
       ! init the file-handler
       call fh_init(iprlvl)
