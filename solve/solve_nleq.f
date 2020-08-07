@@ -46,6 +46,7 @@ c dbg it's now itegral
 c dbgend
       include 'routes.h'
       include 'mdef_target_info.h'
+      include 'molpro_out.h'
 
       integer, parameter ::
      &     ntest = 000
@@ -348,7 +349,7 @@ cmh      end do
 
       if (lmol) then
          write(luout,*)
-         write(luout,'(A85)') "ITER.  CI ITER.   TOTAL ENERGY     ENERGY
+         write(luout,'(A81)') "ITER.  NCI    TOTAL ENERGY     ENERGY
      & CHANGE     VAR     DIIS    TIME    TIME/IT"
       end if
 
@@ -358,6 +359,7 @@ cmh      end do
       imicit_tot = 0
       task = 0
       old_energy = 0.0
+      ci_iter = 0 ! From molpro_out.h
       opt_loop: do !while(task.lt.8)
       call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')
@@ -411,17 +413,8 @@ c     &       ff_trv,ff_h_trv,
      &          ,i_state = 1,n_states)]
           else
 
-           ! Use the new molpro outpu
-           if (lmol) then
-             call atim_csw(m_cpu,m_sys,m_wall)
-             time_per_it = (m_cpu - cpu0_t) / it_print
-             out_format = "(i4,f27.8,f17.8,d13.2,i4,f8.2,f10.2)"
-             write(luout,out_format)
-     &             it_print,energy(0),energy(0)-old_energy(0),
-     &             xresnrm(1:nopt),opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
-     &             time_per_it
-             old_energy(0) = energy(0)
-           else
+           ! New Molpro output is defined at the end of the loop
+           if (.not. lmol) then
              write(luout,out_format)
      &             it_print,energy(0),xresnrm(1:nopt)
            end if
@@ -579,6 +572,7 @@ c          end do
 c dbgend
         end if !do C0 optimization if requested
 
+
         if (ntest.ge.1000) then
           do iopt = 1, nopt
             write(lulog,*) 'dump of '//trim(me_opt(iopt)%mel%label)
@@ -705,6 +699,18 @@ c test
          call prtim(lulog,trim(timing_msg),
      &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
          end if
+
+        ! Print out new molpro output
+        if (lmol) then
+           call atim_csw(m_cpu,m_sys,m_wall)
+           time_per_it = (m_cpu - cpu0_t) / (it_print+1)
+           out_format = "(i4,i7,f16.8,f17.8,d12.2,i5,f9.2,f11.2)"
+           write(luout,out_format)
+     &           it_print+1,ci_iter,energy(0),energy(0)-old_energy(0),
+     &           xresnrm(1:nopt),opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
+     &           time_per_it
+           old_energy(0) = energy(0)
+        end if
 
       end do opt_loop
 
