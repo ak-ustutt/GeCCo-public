@@ -126,7 +126,8 @@ c dbgend
       character(50) ::
      &     out_format
       character(80) ::
-     &     mol_format
+     &     mol_format,
+     &     mol_format2
       character(5) ::
      &     evp_mode
       character(2) ::
@@ -408,28 +409,30 @@ c     &       ff_trv,ff_h_trv,
      &        '(1x,i3,',n_states,'(f24.12,',nopt_state,
      &        '(x,g10.4)))'
          if (imacit.gt.1) then
-          if(multistate)then
-           write(luout,out_format)
-     &          it_print, [(
-     &          [energy(i_state),
-     &          xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
-     &          ,i_state = 1,n_states)]
-          else
+          if (.not. lmol) then
+           if (multistate) then
+            write(luout,out_format)
+     &           it_print, [(
+     &           [energy(i_state),
+     &           xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
+     &           ,i_state = 1,n_states)]
+           else
 
-           ! New Molpro output is defined at the end of the loop
-           if (.not. lmol) then
-             write(luout,out_format)
-     &             it_print,energy(0),xresnrm(1:nopt)
+            ! New Molpro output is defined at the end of the loop
+            write(luout,out_format)
+     &            it_print,energy(0),xresnrm(1:nopt)
            end if
 
           end if
          end if
          if (task.ge.8) then
+          write(luout,*)
           if (conv) then
            write(luout,'("    CONVERGED")')
           else
            write(luout,'("    NOT CONVERGED!")')
           end if
+          write(luout,*)
          end if
         end if
 
@@ -708,12 +711,46 @@ c test
            time_per_it = (m_cpu - cpu0_t) / (it_print+1)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
      &                  "i6,f9.2,f10.2)"
-           write(luout,mol_format)
-     &           it_print+1,ci_iter,energy(0),energy(0)-old_energy(0),
-     &           xresnrm(1:nopt),n_sv_um,sv_min_um,sv_max_um,
-     &           opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
-     &           time_per_it
-           old_energy(0) = energy(0)
+
+           if (multistate) then
+
+            mol_format2 = "(f27.8,f16.8,d12.2)"
+
+            do i_state = 1, n_states
+             if (i_state==1) then
+             write(luout,mol_format)
+     &             it_print+1,ci_iter,energy(i_state-1),
+     &             energy(i_state-1)-old_energy(i_state-1),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
+     &             n_sv_um,sv_min_um,sv_max_um,
+     &             opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
+     &             time_per_it
+             else
+             write(luout,mol_format2)
+     &             energy(i_state-1),
+     &             energy(i_state-1)-old_energy(i_state-1),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)
+             end if
+            end do
+            write(luout,*)
+
+            do i_state = 1, n_states
+               old_energy(i_state-1) = energy(i_state-1)
+            end do
+
+          else
+
+            write(luout,mol_format)
+     &            it_print+1,ci_iter,energy(0),
+     &            energy(0)-old_energy(0),
+     &            xresnrm(1:nopt),
+     &            n_sv_um,sv_min_um,sv_max_um,
+     &            opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
+     &            time_per_it
+
+            old_energy(0) = energy(0)
+          end if
+
         end if
 
       end do opt_loop
