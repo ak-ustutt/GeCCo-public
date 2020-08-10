@@ -1735,6 +1735,15 @@ c dbgend
       enddo iocc_loop
       deallocate(blk_used)
 
+      ! Set n_sv, sv_max, sv_min from molpro_out.h for use in the molpro
+      ! output
+      n_sv = icnt_sv-icnt_sv0
+      sv_min = xmin
+      sv_max = xmax
+        write(luout,*) "val: ", icnt_sv-icnt_sv0
+        write(luout,*) "val: ", xmax
+        write(luout,*) "val: ", xmin
+
       if (iprint.ge.5) then
         write(lulog,'(x,77("="))')
         write(lulog,'(x,a)')
@@ -1781,14 +1790,11 @@ c        else
         write(lulog,'(x,a,E19.10)')
      &        'The smallest included singular value is ',xmin
 c        end if
+        write(luout,*) "val2: ", icnt_sv-icnt_sv0
+        write(luout,*) "val2: ", xmax
+        write(luout,*) "val2: ", xmin
       end if
       deallocate(bins,ex2occ_cls)
-
-      ! Set n_sv, sv_max, sv_min from molpro_out.h for use in the molpro
-      ! output
-      n_sv = icnt_sv
-      sv_min = xmin
-      sv_max = xmax
 
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant

@@ -123,6 +123,7 @@
         end if
       end if
 
+      write(luout,*) "hello"
       ! get half-transform of square root of inverted metric
       ! and projector matrix
       if (gno.gt.0.and.project.eq.1) then
