@@ -50,7 +50,23 @@ DEF_SCALAR({
 approx = keywords.get('method.MR_P.method')
 method = approx if approx is not None else "Yuri"
 
+# No occupied orbitals? Don't need the To operator
+no_occ=False
+if keywords.is_keyword_set('method.MR_P.no_occ'):
+    string = (keywords.get('method.MR_P.no_occ'))
+    if string == 'T':
+        no_occ = True
+    elif string == 'F':
+        no_occ = False
+    else:
+        print("Didn't recognise no_occ argument; setting to False")
+        no_occ = False
+    print("Are there no occupied orbitals: ", no_occ)
+else:
+    print("This calculation has occupied orbitals")
+
 #test-keyword
+singles = 0
 if method in ["CEPT2","CCEPA","TCPT2"]:
    singles = 0
 if method in ["TCPT20","TCPT21","CEPT20","CEPT21","CEPT22","CEPT23","CEPT24","CEPT25","CEPT26","CEPT27","CCEPA0","CCEPA1","CCEPA2","CCEPA3","CCEPA4","CCEPA5","CCEPA6","CCEPA7"]:
@@ -65,7 +81,7 @@ if method not in known_methods :
     raise Exception(i_am+": unknown method:"+str(method))
 print("Using the "+method+" method.")
 
-    
+
 
 # Select H0
 if method in ['CEPT2','BETACEPT2','PT2','SPLITCEPT2','SPLITCCEPA','TCPT2']:
@@ -94,7 +110,7 @@ if method in ["CEPT2","CCEPA","TCPT2"]:
 #if method_old in ["CEPT20","CEPT21"]:
  #   known_singles=[0,1,2,3,4,5,6,7]
  #   singles = keywords.get('method.MP_P.singles')
-    
+
 
 #    if singles is None:
 #       singles == 0
@@ -106,7 +122,7 @@ if method in ["CEPT2","CCEPA","TCPT2"]:
 #Tr -> External_Single_EXT
     if singles == 1:
        print("i am defining To")
-       to_shape='V,H'      #1 
+       to_shape='V,H'      #1
        tr_shape='P,V|P,H'  #1
     elif singles == 2:
 
@@ -129,23 +145,30 @@ if method in ["CEPT2","CCEPA","TCPT2"]:
        tr_shape='P,V'      #5
     elif singles == 6:
        to_shape='P,V|P,H'  #6
-       tr_shape='V,H'      #6 
-    
+       tr_shape='V,H'      #6
+
     if singles in [1,2,3,4,5,6]:
-       print("me2")
-       DEF_OP_FROM_OCC({LABEL:'To',
-                        DESCR:to_shape})
+        if (no_occ and singles==1):
+            DEF_OP_FROM_OCC({LABEL:'Tr',
+                             DESCR:tr_shape})
 
-       CLONE_OPERATOR({LABEL:'LAMo',
-                       TEMPLATE:'To',
-                       ADJOINT:True})
-       print(to_shape)
-       DEF_OP_FROM_OCC({LABEL:'Tr',
-                        DESCR:tr_shape})
+            CLONE_OPERATOR({LABEL:'LAMr',
+                            TEMPLATE:'Tr',
+                            ADJOINT:True})
+        else:
+            DEF_OP_FROM_OCC({LABEL:'To',
+                             DESCR:to_shape})
 
-       CLONE_OPERATOR({LABEL:'LAMr',
-                       TEMPLATE:'Tr',
-                       ADJOINT:True})
+            CLONE_OPERATOR({LABEL:'LAMo',
+                            TEMPLATE:'To',
+                            ADJOINT:True})
+
+            DEF_OP_FROM_OCC({LABEL:'Tr',
+                             DESCR:tr_shape})
+
+            CLONE_OPERATOR({LABEL:'LAMr',
+                            TEMPLATE:'Tr',
+                            ADJOINT:True})
 #----------
 #Define the Te and Ti operators
 #with_singles_2
@@ -155,7 +178,7 @@ te_shape='PP,HV|PP,VV|PP,HH'
 #te_shape='PP,VV|PV,VV|P,V'
 #--------------
 
-#with_singles_2   
+#with_singles_2
 ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
 DEF_OP_FROM_OCC({LABEL:'Te',
                  DESCR:te_shape})
@@ -189,7 +212,7 @@ CLONE_OPERATOR({LABEL:'LAMs',
 #To -> Internal_Single_EXT
 #Tr -> External_Single_EXT
 
-#to_shape='V,H'      #1 
+#to_shape='V,H'      #1
    #to_shape='P,V'      #2
    #to_shape='P,H'      #3
    #to_shape='V,H|P,V'  #4
@@ -208,14 +231,14 @@ CLONE_OPERATOR({LABEL:'LAMs',
    #tr_shape='V,H|P,V'  #3
    #tr_shape='P,H'      #4
    #tr_shape='P,V'      #5
-   #tr_shape='V,H'      #6 
+   #tr_shape='V,H'      #6
 #DEF_OP_FROM_OCC({LABEL:'Tr',
 #                 DESCR:to_shape})
 #CLONE_OPERATOR({LABEL:'LAMr',
 #                TEMPLATE:'Tr',
 #                ADJOINT:True})
 
-#---------------  
+#---------------
 
 
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
@@ -225,7 +248,7 @@ def _refexp(x):
 if method in ['TCPT2','CEPT2','CCEPA','BETACEPT2','CEPA0TeTi','BETACCEPA','SPLITCEPT2','SPLITCCEPA']: #TeTistuff
    def _Le_refexp(x):
        return _refexp("LAMe(" + x + ")")
-   
+
    def _Li_refexp(x):
        return _refexp("LAMi(" + x + ")")
    print("LAMe definiert")
@@ -284,10 +307,15 @@ elif singles in [0,7]:
     LAG_A2.append(_Le_refexp("H"))
 
 elif singles in [1,2,3,4,5,6]:
-    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _Lo_refexp("H"))
-    LAG_A1.append(_Lr_refexp("H"))
-    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _Li_refexp("H"))
-    LAG_A2.append(_Le_refexp("H"))
+    if no_occ:
+        LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _Lr_refexp("H"))
+        LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _Li_refexp("H"))
+        LAG_A2.append(_Le_refexp("H"))
+    else:
+        LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _Lo_refexp("H"))
+        LAG_A1.append(_Lr_refexp("H"))
+        LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _Li_refexp("H"))
+        LAG_A2.append(_Le_refexp("H"))
 
 
 #keyword test
@@ -301,7 +329,7 @@ if method=='MRCCSD22':
     # Put MRCCSD(2,2) method here...
     LAG_E.append(_refexp("H*T2g"))
     LAG_E.append(_refexp("(1/2)*H*T2g*T2g"))
-    
+
     LAG_A1.append(_L1_refexp("[H,T2g]"))  #dunno
     LAG_A1.append(_L1_refexp("(1/2)*[[H,T2g],T2g]")) #
 
@@ -309,17 +337,17 @@ if method=='MRCCSD22':
     LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
     LAG_A2.append(_L1_refexp("-[H,T2g]"))  #dunno
     LAG_A2.append(_L1_refexp("-(1/2)*[[H,T2g],T2g]")) #
-        
+
 elif method=='PT2':
 
     LAG_E.append(_refexp("(H*T1)+(H*T2g)"))
 
     LAG_A1.append(_L1_refexp("("+_h0_+"-"+_h0exp_+")*T1"))
     LAG_A1.append(_L1_refexp("("+_h0_+"-"+_h0exp_+")*T2g"))
-    
+
     LAG_A2.append(_L2_refexp("("+_h0_+"-"+_h0exp_+")*T1"))
     LAG_A2.append(_L2_refexp("("+_h0_+"-"+_h0exp_+")*T2g"))
-    
+
 elif method=='Yuri':
 
     #LAG_E.append(_refexp("[H,T1]"))
@@ -400,13 +428,13 @@ elif method == 'CEPT2':
 
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.set_rule()
-    
 
-    if singles == 0: 
+
+    if singles == 0:
        LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
-    
+
        if hamiltonian == "DYALL":
-       
+
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
@@ -420,12 +448,12 @@ elif method == 'CEPT2':
           LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
        else:
-     
+
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
@@ -435,93 +463,107 @@ elif method == 'CEPT2':
 
     elif singles in [1,2,3,4,5,6]:
 
-       LAG_E.append(_refexp("(H*(Te+Ti))+(H*(Tr+To))"))
-       print("i am in singles1")
-       if hamiltonian == "DYALL":
+        print("i am in singles1")
+        if hamiltonian == "DYALL":
+           LAG_E.append(_refexp("(H*(Te+Ti))+(H*(Tr+To))"))
 
-          print("i am in Dyall")
-          LAG_A1.append(_Lo_refexp("(["+_h0_+",To])"))
-          LAG_A1.append(_Lo_refexp("(["+_h0_+",Ti])"))
-          LAG_A1.append(_Lo_refexp("(["+_h0_+",Te])"))
-          LAG_A1.append(_Lo_refexp("(["+_h0_+",Tr])"))
+           print("i am in Dyall")
+           LAG_A1.append(_Lo_refexp("(["+_h0_+",To])"))
+           LAG_A1.append(_Lo_refexp("(["+_h0_+",Ti])"))
+           LAG_A1.append(_Lo_refexp("(["+_h0_+",Te])"))
+           LAG_A1.append(_Lo_refexp("(["+_h0_+",Tr])"))
 
-          LAG_A1.append(_Lr_refexp("(["+_h0_+",To])"))
-          LAG_A1.append(_Lr_refexp("(["+_h0_+",Ti])"))
-          LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
-          LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
+           LAG_A1.append(_Lr_refexp("(["+_h0_+",To])"))
+           LAG_A1.append(_Lr_refexp("(["+_h0_+",Ti])"))
+           LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
+           LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
 
-          LAG_A2.append(_Li_refexp("(["+_h0_+",To])"))
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Tr])"))
+           LAG_A2.append(_Li_refexp("(["+_h0_+",To])"))
+           LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
+           LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
+           LAG_A2.append(_Li_refexp("(["+_h0_+",Tr])"))
 
-          LAG_A2.append(_Le_refexp("(["+_h0_+",To])"))
-          LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+           LAG_A2.append(_Le_refexp("(["+_h0_+",To])"))
+           LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
+           LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))
+           LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
-       else:
+        else:
 
-          print("i am not in Dyall")
-          LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*To"))
-          LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
-          LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
+            print("i am not in Dyall")
+            if no_occ:
+                LAG_E.append(_refexp("(H*(Te+Ti))+(H*(Tr))"))
+                LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
+                LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
 
-          LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*To"))
-          LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
-          LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
 
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))  
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))  
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
+                LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))
+                LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+            else:
+                LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*To"))
+                LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+                LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
 
-          LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*To"))  # exclude for  test
-          LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+                LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*To"))
+                LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
+                LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
+
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+                LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
+
+                LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*To"))  # exclude for  test
+                LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+                LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))
+                LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
 
     elif singles == 7:
-       LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
-    
-       if hamiltonian == "DYALL":
-          LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))
-          LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
-          LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))
+        LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
 
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Ts])"))
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
-          LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
+        if hamiltonian == "DYALL":
+            LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))
+            LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
+            LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))
 
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))
-          LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+            LAG_A2.append(_Li_refexp("(["+_h0_+",Ts])"))
+            LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
+            LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
 
-       else:
-     
-          LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))
-          LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))
+            LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))
+            LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
+            LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+        else:
 
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))
-          LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-          LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
+            LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))
+            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+            LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))
+
+            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+
+            LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))
+            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+            LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
 elif method == 'TCPT2':
     print("halli hallo")
-    if singles == 0: 
+    if singles == 0:
        LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
        LAG_E.append(_refexp("1/2*H*Te*Te"))
-    
+
        if hamiltonian == "DYALL":
-       
+
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
           LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
@@ -539,12 +581,12 @@ elif method == 'TCPT2':
           LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
 
        else:
-     
+
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
@@ -556,13 +598,13 @@ elif method == 'TCPT2':
           LAG_A2.append(_Le_refexp("-Te*H*Te"))
           LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
 
-    if singles == 1: 
+    if singles == 1:
        LAG_E.append(_refexp("(H*(To+Tr))+(H*(Te+Ti))"))
        LAG_E.append(_refexp("1/2*H*Te*Te"))
        LAG_E.append(_refexp("1/2*H*Tr*Tr"))
-    
+
        if hamiltonian == "DYALL":
-       
+
           LAG_A1.append(_Lo_refexp("(["+_h0_+",To])"))
           LAG_A1.append(_Lo_refexp("(["+_h0_+",Ti])"))
           LAG_A1.append(_Lo_refexp("(["+_h0_+",Te])"))
@@ -600,7 +642,7 @@ elif method == 'TCPT2':
           LAG_A2.append(_Le_refexp("1/2*Tr*Tr*H"))
 
        else:
-     
+
           LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*To"))
           LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
@@ -619,7 +661,7 @@ elif method == 'TCPT2':
           LAG_A1.append(_Lr_refexp("1/2*Te*Te*H"))
           LAG_A1.append(_Lr_refexp("1/2*Tr*Tr*H"))
 
-          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))  
+          LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
           LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
@@ -642,11 +684,11 @@ elif method == 'BETACEPT2':
 
     E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
     E_CEPA.set_rule()
-    
+
     LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
 
     if hamiltonian == "DYALL":
-       
+
        LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
        LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
        LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
@@ -660,12 +702,12 @@ elif method == 'BETACEPT2':
        LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
 
     else:
-     
+
        LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
        LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
        LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-       LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+       LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
        LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
        LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
@@ -676,15 +718,15 @@ elif method == 'BETACEPT2':
 #-------singles in Te------------
 #    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti")) #THIS IS WORKING RIGHT NOW, EQUATIONS SHOULD REFLECT THE CHANGE IN SINGLES!!!
 #    LAG_A1.append(_Ls_refexp("(H-ECEPA)*Te"))   # testfor with_singles_6
-#    LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))   # 
+#    LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))   #
 #
-#    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+#    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
 #    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 #    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 #
 #    LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 #    LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
-#    LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))   #test 
+#    LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))   #test
 
 
 #-------------WORKING EQUATIONS--------
@@ -694,7 +736,7 @@ elif method == 'BETACEPT2':
 #    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 #    LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 #
-#    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+#    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
 #    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 #    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 #
@@ -712,16 +754,16 @@ elif method == 'SPLITCEPT2':
     LAG_E.append(_refexp("(H*(Tr+To))+(H*(Te+Ti))"))
 
     LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*To"))
-    LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Ti")) 
+    LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
     LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
     LAG_A1.append(_Lo_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
 
     LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*To"))
     LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-    LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))  
-    LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))    
+    LAG_A1.append(_Lr_refexp("(H-ECEPA)*Te"))
+    LAG_A1.append(_Lr_refexp("(H-ECEPA)*Tr"))
 
-    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))  
+    LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*To"))
     LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
     LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
     LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
@@ -729,7 +771,7 @@ elif method == 'SPLITCEPT2':
     LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*To"))  # exclude for  test
     LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
     LAG_A2.append(_Le_refexp("(H-ECEPA)*Te"))
-    LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))   #test 
+    LAG_A2.append(_Le_refexp("(H-ECEPA)*Tr"))   #test
 
 elif method == 'CEPA0TeTi':
     #here goes cept2
@@ -1068,7 +1110,7 @@ else:
     LAG_A2.set_rule()
     print("Rules set")
 if singles in [0,7]:
-    print("i am replacing Ts") 
+    print("i am replacing Ts")
     REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',
          LABEL_IN:'FORM_MRCC_LAG_E',
          OP_LIST:['Ti','T2g','Te','T2g','Ts','T1']})
@@ -1089,38 +1131,63 @@ if singles in [0,7]:
          LABEL_IN:'FORM_MRCC_LAG_A2',
          OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMs','LAM1']})
 elif singles in [1,2,3,4,5,6]:
-    print("i am replacing To")
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
-    print("i am replacing To")
-    print(LAG_A1)
-    print("LAG_A2")
-    print(LAG_A2)
-    REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',
-         LABEL_IN:'FORM_MRCC_LAG_E',
-         OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+    if no_occ:
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',
+             LABEL_IN:'FORM_MRCC_LAG_E',
+             OP_LIST:['Ti','T2g','Te','T2g','Tr','T1']})
 
-    REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
-         LABEL_IN:'FORM_MRCC_LAG_A1',
-         OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
+             LABEL_IN:'FORM_MRCC_LAG_A1',
+             OP_LIST:['Ti','T2g','Te','T2g','Tr','T1']})
 
-    REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
-         LABEL_IN:'FORM_MRCC_LAG_A1',
-         OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMo','LAM1','LAMr','LAM1']})
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
+             LABEL_IN:'FORM_MRCC_LAG_A1',
+             OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMr','LAM1']})
 
-    REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
-         LABEL_IN:'FORM_MRCC_LAG_A2',
-         OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
+             LABEL_IN:'FORM_MRCC_LAG_A2',
+             OP_LIST:['Ti','T2g','Te','T2g','Tr','T1']})
 
-    REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
-         LABEL_IN:'FORM_MRCC_LAG_A2',
-         OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMo','LAM1','LAMr','LAM1']})
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
-    print("i am replacing To")
-    print(LAG_A1)
-    print("LAG_A2")
-    print(LAG_A2)
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
+             LABEL_IN:'FORM_MRCC_LAG_A2',
+             OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMr','LAM1']})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
+    else:
+        print("i am replacing To")
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
+        print("i am replacing To")
+        print(LAG_A1)
+        print("LAG_A2")
+        print(LAG_A2)
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',
+             LABEL_IN:'FORM_MRCC_LAG_E',
+             OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
+             LABEL_IN:'FORM_MRCC_LAG_A1',
+             OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',
+             LABEL_IN:'FORM_MRCC_LAG_A1',
+             OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMo','LAM1','LAMr','LAM1']})
+
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
+             LABEL_IN:'FORM_MRCC_LAG_A2',
+             OP_LIST:['Ti','T2g','Te','T2g','To','T1','Tr','T1']})
+
+        REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',
+             LABEL_IN:'FORM_MRCC_LAG_A2',
+             OP_LIST:['LAMi','LAM2g','LAMe','LAM2g','LAMo','LAM1','LAMr','LAM1']})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1', MODE:"SHORT"})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2', MODE:"SHORT"})
+        print("i am replacing To")
+        print(LAG_A1)
+        print("LAG_A2")
+        print(LAG_A2)
 
 #Replaces the Ti and Te strings, so that the equations can be parsed to the solver
 
