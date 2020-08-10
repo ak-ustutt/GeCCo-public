@@ -125,6 +125,8 @@ c dbgend
      &     mel_C0, mel_pnt
       character(50) ::
      &     out_format
+      character(80) ::
+     &     mol_format
       character(5) ::
      &     evp_mode
       character(2) ::
@@ -349,8 +351,9 @@ cmh      end do
 
       if (lmol) then
          write(luout,*)
-         write(luout,'(A81)') "ITER.  NCI    TOTAL ENERGY     ENERGY
-     & CHANGE     VAR     DIIS    TIME    TIME/IT"
+         write(luout,'(A108)') "ITER.  NCI    TOTAL ENERGY     ENERGY
+     & CHANGE     VAR     NSV    SV MIN     SV MAX    DIIS    TIME   "
+     & //"TIME/IT"
       end if
 
       ! start optimization loop
@@ -361,10 +364,17 @@ cmh      end do
       old_energy = 0.0
       ci_iter = 0 ! From molpro_out.h
       opt_loop: do !while(task.lt.8)
+         write(luout,*) "what inside: ", n_sv
+         write(luout,*) "what inside: ", sv_min
+         write(luout,*) "what inside: ", sv_max
       call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')
      &     call opt_solve_Heff(n_states,
      &     op_info,form_info,str_info,strmap_info,orb_info)
+
+         write(luout,*) "what inside2: ", n_sv
+         write(luout,*) "what inside2: ", sv_min
+         write(luout,*) "what inside2: ", sv_max
 
         call optcont
      &       (imacit,imicit,imicit_tot,
@@ -379,6 +389,9 @@ c     &       ff_trv,ff_h_trv,
      &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
+         write(luout,*) "what inside2: ", n_sv
+         write(luout,*) "what inside2: ", sv_min
+         write(luout,*) "what inside2: ", sv_max
 
         if (multistate.and.
      &       (opti_info%optref.eq.-1.or.opti_info%optref.eq.-2)) then ! save the just calculated ME_C0 in ME_C0_1
@@ -572,7 +585,6 @@ c          end do
 c dbgend
         end if !do C0 optimization if requested
 
-
         if (ntest.ge.1000) then
           do iopt = 1, nopt
             write(lulog,*) 'dump of '//trim(me_opt(iopt)%mel%label)
@@ -704,10 +716,12 @@ c test
         if (lmol) then
            call atim_csw(m_cpu,m_sys,m_wall)
            time_per_it = (m_cpu - cpu0_t) / (it_print+1)
-           out_format = "(i4,i7,f16.8,f17.8,d12.2,i5,f9.2,f11.2)"
-           write(luout,out_format)
+           mol_format = "(i4,i7,f16.8,f17.8,d12.2,i5,d11.2,d11.2,"//
+     &                  "i6,f9.2,f10.2)"
+           write(luout,mol_format)
      &           it_print+1,ci_iter,energy(0),energy(0)-old_energy(0),
-     &           xresnrm(1:nopt),opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
+     &           xresnrm(1:nopt),n_sv,sv_min,sv_max,
+     &           opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
      &           time_per_it
            old_energy(0) = energy(0)
         end if

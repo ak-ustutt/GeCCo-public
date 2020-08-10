@@ -66,6 +66,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
+      include 'molpro_out.h'
       
 * parameters
       integer, parameter ::
@@ -206,6 +207,9 @@
           write(lulog,*) 'macro iteration part entered'
         end if
 
+         write(luout,*) "what inside3: ", n_sv
+         write(luout,*) "what inside3: ", sv_min
+         write(luout,*) "what inside3: ", sv_max
         call optc_macit(imacit,imicit,imicit_tot,
      &       task,iroute,opti_info%nopt,
      &       me_opt,me_grd,me_dia,
@@ -219,6 +223,9 @@
      &       orb_info,op_info,str_info,strmap_info)
 
         de = opti_stat%energy_last - energy(0)
+         write(luout,*) "what inside3: ", n_sv
+         write(luout,*) "what inside3: ", sv_min
+         write(luout,*) "what inside3: ", sv_max
 
       else
 *======================================================================*

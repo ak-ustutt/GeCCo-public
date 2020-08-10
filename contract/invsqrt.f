@@ -12,16 +12,16 @@
 *     lmodspc=true: special mode: no sequential projections; symmetrize;
 *                   just diagonal blocks; no spin splitting for ms=0;
 *                   return diagonalized list on inp and unitary on inv
-*      
+*
 *     works also for sums of density matrices of the structure:
 *       /0 0 0 0\
 *       \0 0 x 0/  (not necessarily igastp=3)
-*       /0 0 y 0\ 
-*       \0 0 y 0/ 
+*       /0 0 y 0\
+*       \0 0 y 0/
 *       /0 0 x 0\
 *       \0 0 0 0/
 *
-*     IMPORTANT NOTE: At present the sequence matters (for project!=1):          
+*     IMPORTANT NOTE: At present the sequence matters (for project!=1):
 *        e.g.  (,V;V,V;V,) then (,V;V,;,) then (,;,V;V,) and then (,;,;,)
 *
 *     matthias, dec 2009 (adopted from invert.f)
@@ -41,19 +41,20 @@
       include 'multd2h.h'
       include 'ifc_input.h'
       include 'routes.h'
+      include 'molpro_out.h'
 
       type gam_generator_t
           integer::last_gam
           integer::ngam
           integer::total_gam
       end type
-          
-      type ms_generator_t 
+
+      type ms_generator_t
         integer::last_ms
         integer::nel
         integer::total_ms
       end type
-          
+
       integer, parameter ::
      &     ntest = 00
       character(len=*),parameter::
@@ -88,7 +89,7 @@ c      logical ::
 c     &     loop(nocc_cls)
       integer ::
      &     ifree, nbuff, idxmsa, iocc_cls, iexc_cls,
-     &     msmax, msa, igama, idx, jdx, ngam, 
+     &     msmax, msa, igama, idx, jdx, ngam,
      &     ioff, njoined,
      &     idxdis, lenca, iblkoff, ncblk, nablk,
      &     msc, igamc, idxmsc, mscmax,
@@ -285,12 +286,12 @@ c dbgend
            write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
           call wrt_occ_n(lulog,op_inp%ihpvca_occ(1,1,iblkoff+1),njoined)
         end if
-       
+
         if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined))
      &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
         if (blk_used(iocc_cls)) cycle iocc_loop
-        
+
         blk_used(iocc_cls) = .true.
         iexc_cls = iexc_cls + 1
         ex2occ_cls(iexc_cls) = tocc_cls
@@ -322,9 +323,9 @@ c dbgend
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &       blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
-        end if 
+        end if
 
-        
+
         ifree = mem_setmark('invsqrt_blk')
 
 !-----------
@@ -430,12 +431,12 @@ c dbgend
             idxmsa = idxmsa+1
             msc = msa + mel_inp%mst
             idxmsc = (msmax-msc)/2 + 1
-      
+
             ! Loop over Irrep of annihilator string.
             igama_loop: do igama =1, ngam
 
               igamc = multd2h(igama,mel_inp%gamt)
-              ndis = mel_get_ndis_h(mel_inp,iocc_cls,igamc,idxmsc) 
+              ndis = mel_get_ndis_h(mel_inp,iocc_cls,igamc,idxmsc)
 
               ndim = isqrt_h(
      &             mel_get_lenblock_h(mel_inv,iocc_cls,igama,idxmsa))
@@ -449,7 +450,7 @@ c dbgend
      &             ndim
 c     &           int(sqrt(dble(mel_inp%len_op_gmo(iocc_cls)%
 c     &                         gam_ms(igama,idxmsa))))
-              
+
               if (iprint.ge.100)
      &           write(lulog,*) ' len = ',
      &             mel_inp%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa),
@@ -475,7 +476,7 @@ c     &                         gam_ms(igama,idxmsa))))
              end if
              call copy_buffer_1_h(buffer_in, scratch, !buffer_in -> scatch
      &            ndim,ndim,ioff,transp)
-             
+
 
               if (msc.eq.0.and..not.lmodspc) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
@@ -572,12 +573,12 @@ c dbgend
      &                ndim,ndim,ioff,transp)
                  deallocate(scratch2)
               end if
-              
+
               if (get_u) then
 ! write unitary matrix to buffer
                  call copy_buffer_2_h(scratch3, buffer_u,
      &                ndim,ndim,ioff,transp)
-                 
+
                  deallocate(scratch3)
               end if
            enddo igama_loop
@@ -599,7 +600,7 @@ c dbgend
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &         blk_redundant(iocc_cls) = .false.
           cycle iocc_loop
-       end if !onedis 
+       end if !onedis
 
 
         ! Here comes the complicated part for densities with 3 vertices
@@ -645,7 +646,7 @@ c dbgend
 
         do ms1 = msmax_sub, -msmax_sub, -2
            ms2 = -ms1           ! particle conserving operator
-           
+
          do igam = 1, ngam ! irrep of the second dimension must be the same
             call calculate_rank_dimensions_h(
      &           mel_inp,op_inp,graphs,iocc_cls, njoined,
@@ -653,7 +654,7 @@ c dbgend
      &           sgrm,project,
      &           na1mx,nc1mx,
      &           ndim,nrank,rankoff,rankdim)
-            
+
           if (ndim.eq.0) cycle
 
           if (project.eq.0) then
@@ -672,7 +673,7 @@ c dbgend
      &       write(lulog,'(a,5i8)') 'dim. per rank:',rankdim(1:nrank)
 
           allocate(scratch(ndim,ndim),flmap(ndim,3),svs(ndim))
-          
+
           scratch = 0d0
           svs = 0d0
           if (.not.half.or.lmodspc) then
@@ -753,7 +754,7 @@ c dbgend
             ! loop over Ms(A1)/GAMMA(A1) --> Ms(C1)/GAMMA(C1) already defined
             off_line = off_line2
             off_colmax = 0
-            
+
             call init_ms_generator_h(ms_gen1,na1,ms1)
             do while(next_ms_h(ms_gen1,msa1,msc1))
                if (.not. is_possible_h(nc1,msc1,1) ) cycle
@@ -762,25 +763,25 @@ c dbgend
              do while(next_gam_h(gam_gen1, gama1,gamc1))
               if (.not. is_possible_h(na1,0,gama1) ) cycle
               if (.not. is_possible_h(nc1,0,gamc1) ) cycle
-                  
+
               off_col = off_col2
 
 ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
               call init_ms_generator_h(ms_gen2,nc2,-ms2)
               do while(next_ms_h(ms_gen2,msc2,msa2) )
                  if (.not. is_possible_h(na2, msa2,1)) cycle
-                 
+
                msa = msa1 + msa2
                idxmsa = (msmax-msa)/2 + 1
                idxmsa2 = msa2idxms4op(-msa,ms1+ms2,msmax,msmax)
-               
+
                call init_gam_generator_h(gam_gen2,ngam,igam)
                do while(next_gam_h(gam_gen2, gamc2,gama2))
                 if (.not. is_possible_h(na2,0,gama2) ) cycle
                 if (.not. is_possible_h(nc2,0,gamc2) ) cycle
-                
+
                 igama = multd2h(gama1,gama2)
-                
+
                 call set_dist_msgam_h(
      &               gamdis_c,gamdis_a,
      &               msdis_c,msdis_a,
@@ -791,7 +792,7 @@ c dbgend
      &               nc1,na1,
      &               nc2,na2,
      &               ncblk2,nablk2)
-               
+
 
                 ! determine the distribution in question
                 call ms2idxms(idxmsdis_c,msdis_c,occ_csub2,ncblk2)
@@ -876,7 +877,7 @@ c dbgend
                 ! assemble distribution of A2/C2 tuple
                 ! inelegant: we are currently using next_tupel_ca for setting up
                 ! final flipmap. But there should be a way to do this using
-                ! only the flipmaps from above. 
+                ! only the flipmaps from above.
                 msdst = 0
                 igamdst = 1
                 do idx = 1, ngastp
@@ -924,7 +925,7 @@ c dbgend
                     do idxa2 = 1, len2(4)
                       if (na1.eq.0.and.na2.ne.0) then
                        istr_asub(1) = idxa2-1
-                       istr_asub_flip(1) = 
+                       istr_asub_flip(1) =
      &                          abs(flipmap_a(idxa2))-1
                       else if (na2.ne.0) then
                        istr_asub(2) = idxa2-1
@@ -1072,16 +1073,16 @@ c dbgend
 !                  scratch(idxst2,idxst+1) is ndim elements behind scratch(idxst2,idxst)
 !  this is how dgemm is intended to be used.
 ! I miss C++
-              
+
                call dgemm('t','n',rdim,rdim2,rdim2,
      &                   1d0,scratch(idxst2,idxst),ndim,
      &                   scratch(idxst2,idxst2),ndim,
-     &                   0d0,scratch(idxst,idxst2),ndim) 
-               
+     &                   0d0,scratch(idxst,idxst2),ndim)
+
 c dbg
                ! transpose (only needed for double-check below)
                do idx = 0, rdim2-1
-                 scratch(idxst2+idx,idxst:idxnd) 
+                 scratch(idxst2+idx,idxst:idxnd)
      &           = scratch(idxst:idxnd,idxst2+idx)
                end do
 c dbgend
@@ -1096,7 +1097,7 @@ c dbgend
               allocate(scratch4(rdim,rdim))
 ! form outer product of these vectors
               !print *, "to be tested or not to be tested"
-           
+
 ! Evil Hacking ahead:
 ! see above
               call dgemm('n','t',rdim,rdim,ndim-idxnd,
@@ -1283,7 +1284,7 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
-         
+
             if (.not.half) then
               ! full undo of pre-diagonalization for projector
               call extract_submatrix_h(scratch2,
@@ -1298,7 +1299,7 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
-              
+
               deallocate(sing2,trip2)
             end if
             if (get_u) then
@@ -1341,7 +1342,7 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
-            
+
           else if (.not.half.and.get_u) then
 ! calculate S^(-0.5)
             call extract_submatrix_h(scratch,
@@ -1581,12 +1582,12 @@ c dbgend
             call init_ms_generator_h(ms_gen1,na1,ms1)
             do while(next_ms_h(ms_gen1,msa1,msc1))
                if (.not. is_possible_h(nc1,msc1,1) ) cycle
-             
+
              call init_gam_generator_h(gam_gen1,ngam,igam)
              do while(next_gam_h(gam_gen1, gama1,gamc1))
               if (.not. is_possible_h(na1,0,gama1) ) cycle
               if (.not. is_possible_h(nc1,0,gamc1) ) cycle
-              
+
               ! loop over Ms(C2)/GAMMA(C2) --> Ms(A2)/GAMMA(A2) already defined
               off_col = off_col2
               call init_ms_generator_h(ms_gen2,nc2,-ms2)
@@ -1594,12 +1595,12 @@ c dbgend
                  if (.not. is_possible_h(na2, msa2,1)) cycle
                  msa = msa1 + msa2
                  idxmsa = (msmax-msa)/2 + 1
-               
+
                call init_gam_generator_h(gam_gen2,ngam,igam)
                do while(next_gam_h(gam_gen2, gamc2,gama2))
                   if (.not. is_possible_h(na2,0,gama2) ) cycle
                   if (.not. is_possible_h(nc2,0,gamc2) ) cycle
-                
+
                 igama = multd2h(gama1,gama2)
                 call set_dist_msgam_h(
      &               gamdis_c,gamdis_a,
@@ -1621,7 +1622,7 @@ c dbgend
      &                       graph_csub2,idxmsdis_c,gamdis_c,hpvx_csub2,
      &                       graph_asub2,idxmsdis_a,gamdis_a,hpvx_asub2,
      &               hpvxseq,.false.)
-                
+
                 call expand_len_str_h(len2,len_str,nablk2,ncblk2,nc1,nc2
      &               ,na1,na2)
                 if (ielprd(len_str,ncblk2+nablk2).eq.0) cycle
@@ -1782,7 +1783,16 @@ c        else
 c        end if
       end if
       deallocate(bins,ex2occ_cls)
- 
+
+      ! Set n_sv, sv_max, sv_min from molpro_out.h for use in the molpro
+      ! output
+      n_sv = icnt_sv
+      sv_min = xmin
+      sv_max = xmax
+      write(luout,*) "what: ", n_sv
+      write(luout,*) "what: ", sv_min
+      write(luout,*) "what: ", sv_max
+
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
         write(lulog,'(x,a)') 'There are redundant blocks:'
@@ -1848,7 +1858,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
         len_rec =ffinv%length_of_record
         call put_vec(ffinv,buffer_out,(curr_rec-1)*len_rec+1,
      &       (curr_rec-1)*len_rec+nbuff)
-      endif  
+      endif
       if(.not.bufin.and.(.not.half.or.lmodspc))then
         curr_rec=ffinp%current_record
         len_rec =ffinp%length_of_record
@@ -1868,7 +1878,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       contains
 
 !-----------------------------------------------------------------------!
-!!    determines if the ms symmetry is fixed.   
+!!    determines if the ms symmetry is fixed.
 !!
 !!
 !-----------------------------------------------------------------------!
@@ -1889,7 +1899,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     iocc_equal_n
       integer::
      &     nocc_cmp,iocc_cmp
-      
+
       call process_occ_descr(occ_def_cmp,
      &     nocc_cmp,occ_descr,njoined,maxdef)
       do iocc_cmp = 1,nocc_cmp
@@ -1900,10 +1910,10 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
          end if
       end do
       compare_iocc_cls=.false.
-      
+
       end function
 !----------------------------------------------------------------------- !
-!!    determines if the ms symmetry is fixed.   
+!!    determines if the ms symmetry is fixed.
 !!
 !!
 !-----------------------------------------------------------------------!
@@ -1913,7 +1923,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &    fix_ms_h
       type(me_list),intent(in)::
      &     mel_inp, mel_inv, mel_u
- 
+
       fix_ms_h = .false.
       if(mel_inp%fix_vertex_ms.or.mel_inv%fix_vertex_ms
      &   .or.mel_u%fix_vertex_ms)then
@@ -1940,12 +1950,12 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
       idxop = idx_oplist2('T',op_info)
 
-      if (is_keyword_set('method.MRCI').gt.0) 
+      if (is_keyword_set('method.MRCI').gt.0)
      &      idxop = idx_oplist2('C',op_info)
 
       if (idxop.gt.0)then
          get_cluster_op_h => op_info%op_arr(idxop)%op
-      else 
+      else
          get_cluster_op_h => null()
       end if
 
@@ -2003,7 +2013,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
       integer::
      &     idx,jdx
-      
+
       if(transpose)then
          do idx = 1,dim1
             do jdx = 1,dim2
@@ -2032,18 +2042,18 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
       integer::
      &     mel_get_ndis_h
-     
+
       type(me_list),intent(in)::
      &     mel
       integer,intent(in)::
      &     iocc,                !occupation block number
      &     igam,                !symetry number (of anihilation symmetry
      &     idxms                ! ms index      (of anihilation MS
-      
+
       mel_get_ndis_h=
      &     mel%off_op_gmox(iocc)%ndis(igam,idxms) !yep, it is saved there.
       end function
-      
+
 !-----------------------------------------------------------------------!
 !>    returns length of a  symmetry /MS block
 !!
@@ -2058,7 +2068,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
       integer::
      &     mel_get_lenblock_h
-     
+
       type(me_list),intent(in)::
      &     mel
       integer,intent(in)::
@@ -2068,12 +2078,12 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       mel_get_lenblock_h =
      &     mel%len_op_gmo(iocc_cls)%gam_ms(igama,idxmsa)
       end function mel_get_lenblock_h
-      
+
 !-----------------------------------------------------------------------!
 !>    finds the square root of an integer (delivered as integer)
 !!
 !!     undefined if a negative integer is passed
-!!    @param in integer 
+!!    @param in integer
 !-----------------------------------------------------------------------!
       function isqrt_h(in)
 !-----------------------------------------------------------------------!
@@ -2117,7 +2127,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
          len_str_out(3) = len_str(ncblk+1)
          len_str_out(4) = len_str(ncblk+2)
       end if
-      
+
       end subroutine
 !-----------------------------------------------------------------------!
       subroutine calculate_rank_dimensions_h(
@@ -2140,7 +2150,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     ms1, igam,           !ms and symmetry filter
      &     project
       logical, intent(in)::
-     &     sgrm                 ! if separate orthogonalization is requested 
+     &     sgrm                 ! if separate orthogonalization is requested
       integer, intent(inout)::
      &     ndim, nrank
       integer, dimension(maxrank),intent(out)::
@@ -2150,38 +2160,38 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     na1,nc1,
      &     na2,nc2,
      &     rdim
-      
+
       ndim = 0
       nrank = 0
 
       jocc_cls = iocc_cls
       jblkoff = occoff_h(jocc_cls,njoined)
- 
+
       na1 = na1mx
       nc1 = nc1mx
       rankoff = 0
       rankdim = 0
       blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
-           na2 = nc1mx 
+           na2 = nc1mx
            nc2 = na1mx
            rdim = 0
-           
+
            do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
-              
+
            ! no off-diagonal blocks in SepO (separate orthog.)
            if (sgrm.and.na1.ne.nc2) then
               na2 = na2 - 1
               nc2 = nc2 - 1
               cycle
            end if
-           
+
             ! exit if there is no block like this
            if ( na1.ne.sum( op_inp%ihpvca_occ(1:ngastp,2,jblkoff+1)).or.
      &          nc1.ne.sum( op_inp%ihpvca_occ(1:ngastp,1,jblkoff+2)).or.
      &          na2.ne.sum( op_inp%ihpvca_occ(1:ngastp,2,jblkoff+2)).or.
      &          nc2.ne.sum( op_inp%ihpvca_occ(1:ngastp,1,jblkoff+3)))
      &          exit blk_loop
-           
+
 ! skip off-diagonal blocks
             if (na1.ne.nc2) then
                call advance_block_n2_h(nc2,na2,
@@ -2197,7 +2207,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
                end if
               exit blk_loop
            end if
- 
+
 ! ASSUMPTION rdim = 0 at this point
 ! currently ensured by:
 ! because only diagonal blocks reach this point.
@@ -2213,10 +2223,10 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
            call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
            jblkoff = occoff_h(jocc_cls,njoined)
            end do
-         
+
            na1 = na1 - 1
            nc1 = nc1 - 1
-      
+
            ndim = ndim + rdim
            if (project.gt.0.and.rdim.gt.0) then
               call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
@@ -2228,15 +2238,15 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !>  adds the number of all strings in the ioff block to len
 !
 !!   @param[inout] len cumulative number of all strings with this ms restrictions
-!!   @param hpvx_occ (occupational numbers for all spaces for all vertices)   
+!!   @param hpvx_occ (occupational numbers for all spaces for all vertices)
 !!   @param idx_graph graph indices for all spaces of all vertices
-!!   @param iocc, index of the occupation block 
+!!   @param iocc, index of the occupation block
 !!   @param ms1,gam1 combined ms and symmetry of C1/A1 tuple
 !
 !    Note: only works for derived density matrices ms_total =0, totalsymmetrisch , form:
 !
 !!    / 0 0 0 0 \
-!!    \ 0 0 x 0 /  msc1 gamc1 nc1 
+!!    \ 0 0 x 0 /  msc1 gamc1 nc1
 !!    / 0 0 y 0 \  msa1 gama1 na1
 !!    \ 0 0 y 0 /  msc2 gamc2 nc2
 !!    / 0 0 x 0 \  msa2 gama2 na2
@@ -2260,16 +2270,16 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     ms1,gam1
       type(graph), pointer,intent(in)::
      &     graphs(:)
-      
+
       integer,intent(inout)::
      &     len
       integer::
      &     ncblk,nablk,ioff,njoined
 
       njoined = op%njoined
-      
+
       ioff = (iocc-1)*njoined
-      
+
       call get_num_subblk(ncblk,nablk,
      &     op%ihpvca_occ(1,1,ioff+1),njoined)
       call get_combineddistlen_core_h(
@@ -2281,7 +2291,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     graphs)
 
       end subroutine
-      
+
 !-----------------------------------------------------------------------!
       subroutine get_combineddistlen_core_h(
      &     len,
@@ -2292,7 +2302,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     graphs)
 !-----------------------------------------------------------------------!
       implicit none
-      
+
       integer::
      &     hpvx_occ(ngastp,2,*),         !ngastp from hostinclude
      &     idx_graph(ngastp,2,*)
@@ -2300,7 +2310,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     ioff,                !offset of block
      &     njoined,
      &     nablk,ncblk
-      
+
       integer,intent(in)::
      &     ms1,gam1
       type(graph), pointer,intent(in)::
@@ -2327,21 +2337,21 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
 
       allocate(len_str(nablk+ncblk))
-      
+
       na1=sum(hpvx_occ(1:ngastp,2,ioff+1))
       nc1=sum(hpvx_occ(1:ngastp,1,ioff+2))
       call condense_occ(occ_csub, occ_asub,
      &     hpvx_csub,hpvx_asub,
      &     hpvx_occ(1,1,ioff+1),njoined,hpvxblkseq) !hpvxblkseq from hostinclude
-      
+
       call condense_occ(graph_csub, graph_asub,
      &     hpvx_csub,hpvx_asub,
      &     idx_graph(1,1,ioff+1),njoined,hpvxblkseq)
-      
+
       call init_ms_generator_h(msa_gen,na1,ms1)
       do while(next_ms_h(msa_gen,msa1,msc1) )
          if (.not. is_possible_h(nc1, msc1,1)) cycle
-         
+
          call init_gam_generator_h(gama_gen,ngam,igam)
          do while(next_gam_h(gama_gen,gama1,gamc1) )
             if (.not. is_possible_h(na1,0,gama1) ) cycle
@@ -2361,7 +2371,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
             call ms2idxms(idxmsdis_c,msdis_c,occ_csub,ncblk) !translates ms numbers on msdis into indexes
             call ms2idxms(idxmsdis_a,msdis_a,occ_asub,nablk)
-            
+
             call set_len_str(len_str,ncblk,nablk, ! finds the number of strings for for the given distribution
      &           graphs,
      &           graph_csub,idxmsdis_c,gamdis_c,hpvx_csub,
@@ -2376,20 +2386,20 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       end do
       deallocate(len_str)
       end subroutine
-      
+
 
 !-----------------------------------------------------------------------!
-!!  
+!!
 !!  sets the ms and gam values for the distributions
 !!
 !!   @param[out] gamdis_c,gamdis_a symmetry of the creator/anihilator strings of a specific distribution (see also condense_occ.f)
 !!   @param[out] msmdis_c,msmdis_a symmetry of the creator/anihilator strings of a specific distribution
 !!    / 0 0 0 0 \
-!!    \ 0 0 x 0 /  msc1 gamc1 nc1 
+!!    \ 0 0 x 0 /  msc1 gamc1 nc1
 !!    / 0 0 y 0 \  msa1 gama1 na1
 !!    \ 0 0 y 0 /  msc2 gamc2 nc2
 !!    / 0 0 x 0 \  msa2 gama2 na2
-!!    \ 0 0 0 0 /      
+!!    \ 0 0 0 0 /
 !-----------------------------------------------------------------------!
       subroutine set_dist_msgam_h(
      &     gamdis_c,gamdis_a,
@@ -2414,12 +2424,12 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     nc1,na1,
      &     nc2,na2,
      &     ncblk,nablk
-      
+
       msdis_c(1) = msc1
       msdis_a(1) = msa1
       gamdis_c(1) = gamc1
       gamdis_a(1) = gama1
-   
+
        if(nablk.eq.1 .and. na1.eq.0)then
           msdis_a(1) = msa2
           gamdis_a(1) = gama2
@@ -2427,7 +2437,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
           msdis_a(2) = msa2
           gamdis_a(2) = gama2
        end if
-      
+
       if(ncblk.eq.1 .and. nc1.eq.0)then
          msdis_c(1) = msc2
          gamdis_c(1) = gamc2
@@ -2435,10 +2445,10 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
          msdis_c(2) = msc2
          gamdis_c(2) = gamc2
       end if
-      
+
       end subroutine
 !------------------------------------------------------------------!
-!!    calculates the occupation offset of an occupation on the hpvx_occ array 
+!!    calculates the occupation offset of an occupation on the hpvx_occ array
 !!
 !!   @param iocc index of the occupation
 !!   @param njoined numbers of vertexes the operator has
@@ -2518,7 +2528,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !!
 !!  usage:
 !!  call init_generator(mygenerator, ....   )
-!!  do  while (next(mygenerator, ...values) ) ! values are intent(out) or intent(inout) 
+!!  do  while (next(mygenerator, ...values) ) ! values are intent(out) or intent(inout)
 !!     ! code, that uses values
 !!  end do
 !!  call del_generator(mygenerator) ! mygenerator may now be reused (new call to init_generator...)
@@ -2531,7 +2541,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !------------------------------------------------------------------!
 !!   initializes an ms Generator
 !!
-!!   
+!!
 !!   @param ms_gen the ms_generator
 !!   @param nel number of electrons
 !!   @param total_ms total ms
@@ -2543,7 +2553,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     ms_gen
       integer,intent(in)::
      &     nel,total_ms
-      
+
       ms_gen%last_ms = nel+2 !msa starts at last_ms -2 so first value is msa=nel
       ms_gen%nel = nel
       ms_gen%total_ms = total_ms
@@ -2563,7 +2573,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !!  generates actual ms values
 !!
 !!  note that msa and msc should not be used if the function returns false
-!!  @param msa the ms value of the anihilator string 
+!!  @param msa the ms value of the anihilator string
 !!  @param msc the ms value of the creator string
 !------------------------------------------------------------------!
       function next_ms_h(ms_gen,msa,msc)
@@ -2588,7 +2598,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
          msc = msa + ms_gen%total_ms
          next_ms_h =.true.
       end if
-      
+
       end function
 
 
@@ -2605,7 +2615,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     gam_gen
       integer,intent(in)::
      &     ngam,total_gam
-      
+
       gam_gen%last_gam=0 !gama starts at last_gam+1
       gam_gen%ngam = ngam
       gam_gen%total_gam = total_gam
@@ -2629,7 +2639,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !!  generates actual ms values
 !!
 !!  note that gama and gamc should not be used if the function returns false
-!!  @param gama the symmetry number of the anihilator string 
+!!  @param gama the symmetry number of the anihilator string
 !!  @param gamc the symmetry number of the creator string
 !------------------------------------------------------------------!
       function next_gam_h(gam_gen,gama,gamc)
@@ -2641,7 +2651,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     gama,gamc
       type(gam_generator_t),intent(inout)::
      &     gam_gen
-      
+
       if (gam_gen%last_gam .ge. gam_gen%ngam)then
          ! setting some defined values
          gama=0
@@ -2663,7 +2673,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !!     where mat is used, but ifort then allocates the matrix on the stack => possible stackoverflow
 !!     instead we explicitly allocate them on the heap
 !!
-!!     I miss C++      
+!!     I miss C++
 !------------------------------------------------------------------!
       subroutine extract_submatrix_h(mat,
      &     dim1, a_start, a_end,
@@ -2674,7 +2684,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       integer,intent(in)::
      &     dim1, a_start, a_end,
      &     dim2, b_start, b_end
-   
+
       double precision, intent(in)::
      &     mat(dim1,dim2)
       double precision, pointer::
@@ -2694,7 +2704,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       integer,intent(in)::
      &     dim1, a_start, a_end,
      &     dim2, b_start, b_end
-   
+
       double precision, pointer::
      &     inmat(:,:)
       double precision::
@@ -2729,7 +2739,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       inmat=>null()
       end subroutine
 !------------------------------------------------------------------!
-      
+
 !------------------------------------------------------------------!
 !!    checks if a given combination of electron number, ms and symmetry is possible for a gam/ms block
 !!    ms=0 and gam =1 are qlways possible and check only the other condition
@@ -2739,10 +2749,10 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       implicit none
       logical::
      &     is_possible_h
-      
+
       integer,intent(in)::
      &     nel,ms,gam
-      
+
       is_possible_h = .true.
       if (abs(ms).gt. nel)is_possible_h = .false.
       if (nel .eq.0 .and. gam.ne.1)is_possible_h = .false.
@@ -2770,7 +2780,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     error
       integer ::
      &     ij
-   
+
       if ( njoined .ne. 3) then
         call quit(2, i_am, "not prepared for njonied !=3")
       end if
