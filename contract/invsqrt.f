@@ -1789,9 +1789,6 @@ c        end if
       n_sv = icnt_sv
       sv_min = xmin
       sv_max = xmax
-      write(luout,*) "what: ", n_sv
-      write(luout,*) "what: ", sv_min
-      write(luout,*) "what: ", sv_max
 
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant

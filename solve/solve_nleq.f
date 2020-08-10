@@ -351,8 +351,8 @@ cmh      end do
 
       if (lmol) then
          write(luout,*)
-         write(luout,'(A108)') "ITER.  NCI    TOTAL ENERGY     ENERGY
-     & CHANGE     VAR     NSV    SV MIN     SV MAX    DIIS    TIME   "
+         write(luout,'(A109)') "ITER.  NCI    TOTAL ENERGY    ENERGY
+     & CHANGE     VAR       NSV    SV MIN     SV MAX    DIIS    TIME   "
      & //"TIME/IT"
       end if
 
@@ -364,17 +364,10 @@ cmh      end do
       old_energy = 0.0
       ci_iter = 0 ! From molpro_out.h
       opt_loop: do !while(task.lt.8)
-         write(luout,*) "what inside: ", n_sv
-         write(luout,*) "what inside: ", sv_min
-         write(luout,*) "what inside: ", sv_max
       call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')
      &     call opt_solve_Heff(n_states,
      &     op_info,form_info,str_info,strmap_info,orb_info)
-
-         write(luout,*) "what inside2: ", n_sv
-         write(luout,*) "what inside2: ", sv_min
-         write(luout,*) "what inside2: ", sv_max
 
         call optcont
      &       (imacit,imicit,imicit_tot,
@@ -389,9 +382,6 @@ c     &       ff_trv,ff_h_trv,
      &       fl_spc,nspcfrm,
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
-         write(luout,*) "what inside2: ", n_sv
-         write(luout,*) "what inside2: ", sv_min
-         write(luout,*) "what inside2: ", sv_max
 
         if (multistate.and.
      &       (opti_info%optref.eq.-1.or.opti_info%optref.eq.-2)) then ! save the just calculated ME_C0 in ME_C0_1
@@ -716,11 +706,11 @@ c test
         if (lmol) then
            call atim_csw(m_cpu,m_sys,m_wall)
            time_per_it = (m_cpu - cpu0_t) / (it_print+1)
-           mol_format = "(i4,i7,f16.8,f17.8,d12.2,i5,d11.2,d11.2,"//
+           mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
      &                  "i6,f9.2,f10.2)"
            write(luout,mol_format)
      &           it_print+1,ci_iter,energy(0),energy(0)-old_energy(0),
-     &           xresnrm(1:nopt),n_sv,sv_min,sv_max,
+     &           xresnrm(1:nopt),n_sv_um,sv_min_um,sv_max_um,
      &           opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
      &           time_per_it
            old_energy(0) = energy(0)
