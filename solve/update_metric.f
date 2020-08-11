@@ -23,7 +23,6 @@
       include 'def_dependency_info.h'
       include 'ifc_input.h'
       include 'routes.h'
-      include 'molpro_out.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -123,7 +122,6 @@
         end if
       end if
 
-      write(luout,*) "hello"
       ! get half-transform of square root of inverted metric
       ! and projector matrix
       if (gno.gt.0.and.project.eq.1) then
@@ -138,12 +136,6 @@
      &              'invsqrt',
      &              op_info,orb_info,str_info,strmap_info)
       end if
-
-      ! Update singular value common block variables for use in the
-      ! molpro output (molpro_out.h)
-      n_sv_um = n_sv
-      sv_min_um = sv_min
-      sv_max_um = sv_max
 
       ! Trafo into GNO basis required?
       if (gno.gt.0) then

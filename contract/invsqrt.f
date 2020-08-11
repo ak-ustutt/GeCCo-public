@@ -1736,13 +1736,14 @@ c dbgend
       deallocate(blk_used)
 
       ! Set n_sv, sv_max, sv_min from molpro_out.h for use in the molpro
-      ! output
-      n_sv = icnt_sv-icnt_sv0
-      sv_min = xmin
-      sv_max = xmax
-        write(luout,*) "val: ", icnt_sv-icnt_sv0
-        write(luout,*) "val: ", xmax
-        write(luout,*) "val: ", xmin
+      ! output.
+      ! Assuming that half=false, when calling invsqrt for the
+      ! orthogonalisation (and not preconditioner) step.
+      if (.not. half) then
+         n_sv = icnt_sv-icnt_sv0
+         sv_min = xmin
+         sv_max = xmax
+      end if
 
       if (iprint.ge.5) then
         write(lulog,'(x,77("="))')
@@ -1790,9 +1791,6 @@ c        else
         write(lulog,'(x,a,E19.10)')
      &        'The smallest included singular value is ',xmin
 c        end if
-        write(luout,*) "val2: ", icnt_sv-icnt_sv0
-        write(luout,*) "val2: ", xmax
-        write(luout,*) "val2: ", xmin
       end if
       deallocate(bins,ex2occ_cls)
 

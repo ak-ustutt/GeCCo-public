@@ -722,7 +722,7 @@ c test
      &             it_print+1,ci_iter,energy(i_state-1),
      &             energy(i_state-1)-old_energy(i_state-1),
      &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
-     &             n_sv_um,sv_min_um,sv_max_um,
+     &             n_sv,sv_min,sv_max,
      &             opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
      &             time_per_it
              else
@@ -744,7 +744,7 @@ c test
      &            it_print+1,ci_iter,energy(0),
      &            energy(0)-old_energy(0),
      &            xresnrm(1:nopt),
-     &            n_sv_um,sv_min_um,sv_max_um,
+     &            n_sv,sv_min,sv_max,
      &            opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
      &            time_per_it
 
