@@ -139,7 +139,8 @@ c dbgend
      &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
      &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
      &     cpu,sys,wall, ! variables for timing information
-     &     m_cpu,m_sys,m_wall,time_per_it ! Molpro timing variables
+     &     m_cpu,m_sys,m_wall,time_per_it, ! Molpro timing variables
+     &     res_sum ! Sum of seperated residuals
       character(len=512)::
      &     timing_msg
       ifree = mem_setmark('solve_nleq')
@@ -740,10 +741,17 @@ c test
 
           else
 
+            ! MRCC2 reports back seperate singles and doubles residuals,
+            ! add them up and print out sum
+            res_sum = 0.0
+            do i_state = 1, nopt
+             res_sum = res_sum + xresnrm(i_state)
+            end do
+
             write(luout,mol_format)
      &            it_print+1,ci_iter,energy(0),
      &            energy(0)-old_energy(0),
-     &            xresnrm(1:nopt),
+     &            res_sum,
      &            n_sv,sv_min,sv_max,
      &            opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
      &            time_per_it

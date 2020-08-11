@@ -111,6 +111,8 @@
       ifree = mem_setmark(strmaps)
       call init_strmap(str_info,strmap_info)
 
+      write(luout,*) "hello 1"
+
       ! loop until all dependencies are fulfilled
       do
         ! get next target to process
