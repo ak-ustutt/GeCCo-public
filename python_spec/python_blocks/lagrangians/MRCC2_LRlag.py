@@ -164,7 +164,7 @@ DERIVATIVE({LABEL_RES:'FORM_S1',
             OP_RES:'SR1_rspns_q',
             OP_DERIV:['LAM1']})
 
-debug_FORM("FORM_S1",only_this=True)
+debug_FORM("FORM_S1")
 
 def MRCCSD_T2_metric(label, OP_res, maxcom):
     SR2=stf.GenForm(label=label, OP_res=OP_res)
@@ -217,7 +217,7 @@ DERIVATIVE({LABEL_RES:'FORM_S2g',
 
 
 
-debug_FORM("FORM_S2g",only_this=True)
+debug_FORM("FORM_S2g")
 
 
 

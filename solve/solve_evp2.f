@@ -65,6 +65,7 @@
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
       include "def_guess_gen.h"
+      include 'molpro_out.h'
 
 
       integer, parameter ::
@@ -114,7 +115,8 @@
      &     xresmax, xdum, xnrm,
      &     xeig(nroots,2),reig(nroots,2),
      &     xresnrm(nroots,nopt),
-     &     xnrm2(nroots)
+     &     xnrm2(nroots),
+     &     old_eig(nroots,2)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
      &     me_trv(:), me_mvp(:), me_mvpprj(:),
@@ -161,7 +163,17 @@
       real(8)::
      &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
      &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
-     &     cpu,sys,wall ! variables for timing information
+     &     cpu,sys,wall  ! variables for timing information
+      character(len=80)::
+     &     mol_format,
+     &     mol_format2
+      integer ::
+     &     i
+      real(8) ::
+     &     time_per_it,
+     &     var(nopt)
+      real(8),external::
+     &     fndmnx
       character(len=512)::
      &     timing_msg
 
@@ -558,17 +570,23 @@
       call init_buffers(opti_info%nwfpar, nopt,
      &     xbuf1,xbuf2,xbuf3,nincore, lenbuf)
 
+      if (lmol) then
+         write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &     " CHANGE     VAR      TIME    TIME/IT"
+      end if
+
       iter = 0
       task = 4
       nrequest=nroots
       xrsnrm=0d0
       xeig=0d0
       reig=0d0
+      old_eig=0d0
 
       opt_loop: do while(task.lt.8)
          call atim_csw(cpu0_t,sys0_t,wall0_t)
          iter=iter+1
-         if (iter.gt.1) then
+         if (iter.gt.1 .and. .not. lmol) then
             call print_step_results(iter-1,xrsnrm, xeig,
      &           nroots, nopt)
          end if
@@ -710,6 +728,7 @@ c dbg
           me_pnt_list=>me_trv
           nlists = nrequest
         end if
+
        call transform_back_h(fl_mvp,depend,
      &      trafo,
      &      me_special,
@@ -721,11 +740,34 @@ c dbg
      &      strmap_info, orb_info,
      &      opti_info)
 
+         ! New molpro output
+         if (lmol) then
+            time_per_it = cpu0_t / iter
+            mol_format = '(i4,f17.8,f16.8,d13.2,f7.2,f11.2)'
+            mol_format2 = '(f21.8,f16.8,d13.2)'
 
+            do i = 1, nroots
+               var(i) = fndmnx(xrsnrm(i,1:nopt),nopt,2)
+               if (i==1) then
+                  write(luout,mol_format)
+     &            iter,xeig(i,1),xeig(i,1)-old_eig(i,1),var(i),
+     &            cpu0_t,time_per_it
+               else
+                  write(luout,mol_format2)
+     &            xeig(i,1),xeig(i,1)-old_eig(i,1),var(i)
+               end if
+            end do
+            write(luout,*)
 
-        if (iand(task,8).eq.8)
-     &       call print_step_results(iter,
-     &       xrsnrm, xeig,nroots, nopt)
+            do i = 1, nroots
+               old_eig(i,1) = xeig(i,1)
+            end do
+         end if
+
+        if (iand(task,8).eq.8 .and. .not. lmol)
+     &         call print_step_results(iter,
+     &         xrsnrm, xeig,nroots, nopt)
+
       call atim_csw(cpu,sys,wall)
          if(iprlvl.ge.5)then
          write (timing_msg,"(x,'time for iteration ')")
@@ -1200,7 +1242,7 @@ c dbg
       integer, intent(in)::
      &     lu
 
-      write(lu,*) "This is the 'NEW' solver by Arne Bargholz 2017"
+      write(lu,*) "New solver by Arne Bargholz, 2017"
       end subroutine
 
 *----------------------------------------------------------------------*

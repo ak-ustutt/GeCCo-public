@@ -139,7 +139,7 @@ c dbgend
      &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
      &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
      &     cpu,sys,wall, ! variables for timing information
-     &     m_cpu,m_sys,m_wall,time_per_it, ! Molpro timing variables
+     &     time_per_it, ! Molpro timing variables
      &     res_sum ! Sum of seperated residuals
       character(len=512)::
      &     timing_msg
@@ -708,8 +708,7 @@ c test
 
         ! Print out new molpro output
         if (lmol) then
-           call atim_csw(m_cpu,m_sys,m_wall)
-           time_per_it = (m_cpu - cpu0_t) / (it_print+1)
+           time_per_it = cpu0_t / (it_print+1)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
      &                  "i6,f9.2,f10.2)"
 
@@ -724,7 +723,7 @@ c test
      &             energy(i_state-1)-old_energy(i_state-1),
      &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
      &             n_sv,sv_min,sv_max,
-     &             opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
+     &             opti_stat%ndim_rsbsp,cpu0_t,
      &             time_per_it
              else
              write(luout,mol_format2)
@@ -753,8 +752,7 @@ c test
      &            energy(0)-old_energy(0),
      &            res_sum,
      &            n_sv,sv_min,sv_max,
-     &            opti_stat%ndim_rsbsp,m_cpu-cpu0_t,
-     &            time_per_it
+     &            opti_stat%ndim_rsbsp,cpu0_t,time_per_it
 
             old_energy(0) = energy(0)
           end if

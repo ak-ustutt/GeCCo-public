@@ -12,7 +12,7 @@
 
       integer, parameter ::
      &    len_descr = 20
-     
+
       character(len=len_descr) ::
      &    descr
       integer, pointer ::
@@ -28,7 +28,8 @@
       occ => mel%op%ihpvca_occ(:,:,:)
       length => mel%len_op_occ(:)
 
-      if (lmol .and. trim(mel%op%name)=='T2g') then
+      if (lmol .and. trim(mel%op%name)=='T2g' .or.
+     &    trim(mel%op%name)=='T') then
       ! Special molpro output for the cluster operators
       write(luout,*)
       write(luout,*) "Summery of cluster operator dimensions: "
@@ -98,4 +99,4 @@
       write(luout,'(2x,47("-"))')
       end if
 
-      end 
+      end
