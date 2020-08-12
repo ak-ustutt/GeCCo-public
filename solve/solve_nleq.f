@@ -356,6 +356,8 @@ cmh      end do
          write(luout,'(A109)') "ITER.  NCI    TOTAL ENERGY    ENERGY
      & CHANGE     RES       NSV    SV MIN     SV MAX    DIIS    TIME   "
      & //"TIME/IT"
+         ! Turn off the printing of ci iterations
+         no_print = .true.
       end if
 
       ! start optimization loop

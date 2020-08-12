@@ -757,7 +757,7 @@ c dbg
      &            xeig(i,1),xeig(i,1)-old_eig(i,1),var(i)
                end if
             end do
-            write(luout,*)
+            if (nroots>1) write(luout,*)
 
             do i = 1, nroots
                old_eig(i,1) = xeig(i,1)

@@ -56,6 +56,8 @@ c      iprlvl = 3     ! print level
         iprlvl = 0
         ! Turn on new molpro output
         lmol = .true.
+        ! Print the inital ci iterations
+        no_print = .false.
       end if
 
       ! init the file-handler

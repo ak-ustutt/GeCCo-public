@@ -104,7 +104,8 @@
      &     jdx, nspec_, nextra_, idxspc
       real(8) ::
      &     xresmax, xdum, xnrm,
-     &     xeig(nroots,2), xresnrm(nroots*nopt)
+     &     xeig(nroots,2), xresnrm(nroots*nopt),
+     &     old_eig(nroots,2)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
      &     me_special(:), me_scr(:), me_home(:), me_ext(:)
@@ -148,8 +149,13 @@
      &     timing_msg
       character(len=50)::
      &     output
+      character(len=80)::
+     &     mol_format,
+     &     mol_format2
       real(8)::
-     &     old_energy
+     &     time_per_it
+      integer ::
+     &     i
 
       ifree = mem_setmark('solve_evp')
 
@@ -502,6 +508,12 @@ c dbgend
         end if
       endif
 
+      ! Header for molpro output
+      if (lmol .and. .not. no_print) then
+         write(luout,*)
+         write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &      " CHANGE     RES      TIME    TIME/IT"
+      end if
 
 c dbg
 c      do iopt = 1,nopt
@@ -516,7 +528,7 @@ c dbgend
       ! start optimization loop
       iter = 0
       task = 0
-      old_energy = 0.0
+      old_eig = 0d0
       opt_loop: do while(task.lt.8)
       call atim_csw(cpu0_t,sys0_t,wall0_t)
         call leq_evp_control
@@ -535,8 +547,33 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
 
-          if (lulog.ne.luout .and. .not.lmol) then
-            write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
+          if (lulog.ne.luout) then
+            if (lmol) then
+               if (.not. no_print) then
+                  time_per_it = cpu0_t / (iter-1)
+                  mol_format = '(i4,f18.8,f16.8,d12.2,f7.2,f11.2)'
+                  mol_format2 = '(f22.8,f16.8,d12.2)'
+
+                  do i = 1, nroots
+                     if (i==1) then
+                        write(luout,mol_format)
+     &                  iter,xeig(i,1),xeig(i,1)-old_eig(i,1),
+     &                  xresnrm(i),cpu0_t,time_per_it
+                     else
+                        write(luout,mol_format2)
+     &                  xeig(i,1),xeig(i,1)-old_eig(i,1),xresnrm(i)
+                     end if
+
+                  end do
+                  if (nroots>1) write(luout,*)
+
+                  do i = 1, nroots
+                     old_eig(i,1) = xeig(i,1)
+                  end do
+               end if
+            else
+               write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
+            end if
           end if
 
           if (iprlvl.gt.0) then
