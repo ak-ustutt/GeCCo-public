@@ -93,6 +93,7 @@ print("Using the "+method+" method.")
 
 
 # Select H0
+ham = ''
 if method in ['CEPT2','PT2','TCPT2']:
     known_hamiltonians=["DYALL","REPT","F_EFF"]
     hamiltonian = keywords.get('method.MR_P.hamiltonian')
@@ -106,13 +107,16 @@ if method in ['CEPT2','PT2','TCPT2']:
     if hamiltonian=="DYALL":
         depend('EVAL_HAM_D')
         _h0_='HAM_D'
+        ham = _h0_
     elif hamiltonian=="REPT":
         depend('EVAL_REPT_HAM')
         _h0_='REPT_HAM'
+        ham = _h0_
     elif hamiltonian=="F_EFF":
         depend('EVAL_F_EFF')
         _h0_='FOCK_EFF'
         _h0exp_='FOCK_EFF_EXP'
+        ham = _h0_+"-"+_h0exp_
 
 
 #---Test-for-new-keyword
@@ -354,31 +358,43 @@ elif method == 'CEPT2':
         LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
         LAG_A2.append(_Le_refexp("(H-ECEPA)*Te")) #this term stays the same
 
-        if hamiltonian == "DYALL":
+        LAG_A1.append(_Ls_refexp("(["+ham+",Ts])"))
+        LAG_A1.append(_Ls_refexp("(["+ham+",Ti])"))
+        LAG_A1.append(_Ls_refexp("(["+ham+",Te])"))
 
-            LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
-            LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
-            LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
+        LAG_A2.append(_Li_refexp("(["+ham+",Ts])"))
+        LAG_A2.append(_Li_refexp("(["+ham+",Ti])"))
+        LAG_A2.append(_Li_refexp("(["+ham+",Te])"))
 
-            LAG_A2.append(_Li_refexp("(["+_h0_+",Ts])"))
-            LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
-            LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
+        LAG_A2.append(_Le_refexp("(["+ham+",Ts])"))
+        LAG_A2.append(_Le_refexp("(["+ham+",Ti])"))
 
-            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])"))
-            LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
 
-        else:
-
-            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
-            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
-
-            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
-            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
-            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
-
-            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  # exclude for  test
-            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+#        if hamiltonian == "DYALL":
+#
+#            LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
+#            LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
+#            LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
+#
+#            LAG_A2.append(_Li_refexp("(["+_h0_+",Ts])"))
+#            LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
+#            LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
+#
+#            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])"))
+#            LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
+#
+#        else:
+#
+#            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+#            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+#            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+#
+#            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+#            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+#            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
+#
+#            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+#            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
     elif singles in [1,2,3,4,5,6]:
         LAG_E.append(_refexp("(H*(Te+Ti))+(H*(Tr))"))
