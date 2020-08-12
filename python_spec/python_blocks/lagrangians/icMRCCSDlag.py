@@ -1,7 +1,5 @@
 """An implementation of the icMRCCSD Lagrangian, done term by term and separated T1 and T2.
 
-
-
 History:
 
 Yuri august 2017: Creation based on MRCC2lag.py. Implementation up to maxcom=2
@@ -50,6 +48,7 @@ DEF_SCALAR({
 approx = keywords.get('method.MR_P.method')
 method = approx if approx is not None else "Yuri"
 
+
 # No occupied orbitals? Don't need the To operator
 no_occ=False
 if keywords.is_keyword_set('method.MR_P.no_occ'):
@@ -65,6 +64,7 @@ if keywords.is_keyword_set('method.MR_P.no_occ'):
 else:
     print("This calculation has occupied orbitals")
 
+
 #Workaround for the single-seperation of CEPT2,CCEPA and TCPT2
 if method in ["CEPT2","CCEPA","TCPT2"]:
    singles = 0
@@ -73,13 +73,23 @@ if method in ["TCPT20","TCPT21","CEPT20","CEPT21","CEPT22","CEPT23","CEPT24","CE
     singles = int(method[5])
     print("setting singles to:"+str(singles))
     method_old = method
-    method = method[0:5]  
+    method = method[0:5]
+
+singles = 0
+if keywords.is_keyword_set('method.MR_P.singles'):
+    singles = int((keywords.get('method.MR_P.singles')))
+    if singles == 0:
+        print("All singles operators are in the internal space")
+    else:
+        print("Singles operators are split between the internal and external spaces")
+else:
+    print("All singles operators are in the internal space")
+
 
 known_methods=["Yuri", "MRCCSD22", "CEPT2","CCEPA","TCPT2","CEPA0","PT2"]
 if method not in known_methods :
     raise Exception(i_am+": unknown method:"+str(method))
 print("Using the "+method+" method.")
-
 
 
 # Select H0
@@ -103,6 +113,7 @@ if method in ['CEPT2','PT2','TCPT2']:
         depend('EVAL_F_EFF')
         _h0_='FOCK_EFF'
         _h0exp_='FOCK_EFF_EXP'
+
 
 #---Test-for-new-keyword
 if method in ["CEPT2","CCEPA","TCPT2"]:
@@ -404,7 +415,6 @@ elif method == 'CEPT2':
                 LAG_A2.append(_Le_refexp("(["+_h0_+",To])"))
 
 
-
         else:
 
             LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
@@ -475,7 +485,7 @@ elif method == 'TCPT2':
             LAG_A1.append(_Ls_refexp("(["+_h0_+",Ts])"))
             LAG_A1.append(_Ls_refexp("(["+_h0_+",Ti])"))
             LAG_A1.append(_Ls_refexp("(["+_h0_+",Te])"))
- 
+
             LAG_A2.append(_Li_refexp("(["+_h0_+",Ts])"))
             LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
             LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
@@ -493,11 +503,11 @@ elif method == 'TCPT2':
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))  
+            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
             LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
     if singles in [1,2,3,4,5,6]:
-        
+
         LAG_E.append(_refexp("(H*(Tr))+(H*(Te+Ti))"))
         LAG_E.append(_refexp("1/2*H*Te*Te"))
         LAG_E.append(_refexp("1/2*H*Tr*Tr"))
@@ -576,7 +586,7 @@ elif method == 'TCPT2':
 
 
     if singles == 7:
-            
+
         LAG_E.append(_refexp("(H*(Ts))+(H*(Te+Ti))"))
 
         if hamiltonian == "DYALL":
