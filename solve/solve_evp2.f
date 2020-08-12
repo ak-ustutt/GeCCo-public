@@ -572,7 +572,7 @@
 
       if (lmol) then
          write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
-     &     " CHANGE     VAR      TIME    TIME/IT"
+     &     " CHANGE     RES      TIME    TIME/IT"
       end if
 
       iter = 0

@@ -354,7 +354,7 @@ cmh      end do
       if (lmol) then
          write(luout,*)
          write(luout,'(A109)') "ITER.  NCI    TOTAL ENERGY    ENERGY
-     & CHANGE     VAR       NSV    SV MIN     SV MAX    DIIS    TIME   "
+     & CHANGE     RES       NSV    SV MIN     SV MAX    DIIS    TIME   "
      & //"TIME/IT"
       end if
 
@@ -419,12 +419,65 @@ c     &       ff_trv,ff_h_trv,
      &           ,i_state = 1,n_states)]
            else
 
-            ! New Molpro output is defined at the end of the loop
             write(luout,out_format)
      &            it_print,energy(0),xresnrm(1:nopt)
            end if
 
+
+         else
+           ! Print out new molpro output
+           time_per_it = cpu0_t / (it_print+1)
+           mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
+     &                  "i6,f9.2,f10.2)"
+
+           if (multistate) then
+
+            mol_format2 = "(f27.8,f16.8,d12.2)"
+
+            do i_state = 1, n_states
+             if (i_state==1) then
+             write(luout,mol_format)
+     &             it_print,ci_iter,energy(i_state),
+     &             energy(i_state)-old_energy(i_state),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
+     &             n_sv,sv_min,sv_max,
+     &             opti_stat%ndim_rsbsp,cpu0_t,
+     &             time_per_it
+             else
+             write(luout,mol_format2)
+     &             energy(i_state),
+     &             energy(i_state)-old_energy(i_state),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)
+             end if
+            end do
+            write(luout,*)
+
+            do i_state = 1, n_states
+               old_energy(i_state) = energy(i_state)
+            end do
+
+          else
+
+            ! MRCC2 reports back seperate singles and doubles residuals,
+            ! add them up and print out sum
+            res_sum = 0.0
+            do i_state = 1, nopt
+             res_sum = res_sum + xresnrm(i_state)
+            end do
+
+            write(luout,mol_format)
+     &            it_print,ci_iter,energy(0),
+     &            energy(0)-old_energy(0),
+     &            res_sum,
+     &            n_sv,sv_min,sv_max,
+     &            opti_stat%ndim_rsbsp,cpu0_t,time_per_it
+
+            old_energy(0) = energy(0)
           end if
+
+        end if
+
+
          end if
          if (task.ge.8) then
           write(luout,*)
@@ -705,59 +758,6 @@ c test
          call prtim(lulog,trim(timing_msg),
      &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
          end if
-
-        ! Print out new molpro output
-        if (lmol) then
-           time_per_it = cpu0_t / (it_print+1)
-           mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
-     &                  "i6,f9.2,f10.2)"
-
-           if (multistate) then
-
-            mol_format2 = "(f27.8,f16.8,d12.2)"
-
-            do i_state = 1, n_states
-             if (i_state==1) then
-             write(luout,mol_format)
-     &             it_print+1,ci_iter,energy(i_state-1),
-     &             energy(i_state-1)-old_energy(i_state-1),
-     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
-     &             n_sv,sv_min,sv_max,
-     &             opti_stat%ndim_rsbsp,cpu0_t,
-     &             time_per_it
-             else
-             write(luout,mol_format2)
-     &             energy(i_state-1),
-     &             energy(i_state-1)-old_energy(i_state-1),
-     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)
-             end if
-            end do
-            write(luout,*)
-
-            do i_state = 1, n_states
-               old_energy(i_state-1) = energy(i_state-1)
-            end do
-
-          else
-
-            ! MRCC2 reports back seperate singles and doubles residuals,
-            ! add them up and print out sum
-            res_sum = 0.0
-            do i_state = 1, nopt
-             res_sum = res_sum + xresnrm(i_state)
-            end do
-
-            write(luout,mol_format)
-     &            it_print+1,ci_iter,energy(0),
-     &            energy(0)-old_energy(0),
-     &            res_sum,
-     &            n_sv,sv_min,sv_max,
-     &            opti_stat%ndim_rsbsp,cpu0_t,time_per_it
-
-            old_energy(0) = energy(0)
-          end if
-
-        end if
 
       end do opt_loop
 
