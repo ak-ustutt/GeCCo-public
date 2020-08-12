@@ -572,7 +572,7 @@
 
       if (lmol) then
          write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
-     &     " CHANGE     RES      TIME    TIME/IT"
+     &     " CHANGE     RES       TIME   TIME/IT"
       end if
 
       iter = 0
@@ -743,7 +743,7 @@ c dbg
          ! New molpro output
          if (lmol) then
             time_per_it = cpu0_t / iter
-            mol_format = '(i4,f17.8,f16.8,d13.2,f7.2,f11.2)'
+            mol_format = '(i4,f17.8,f16.8,d13.2,f8.2,f10.2)'
             mol_format2 = '(f21.8,f16.8,d13.2)'
 
             do i = 1, nroots
@@ -774,7 +774,10 @@ c dbg
          call prtim(lulog,trim(timing_msg),
      &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
          end if
+
       end do opt_loop
+
+      if (lmol .and. nroots<2) write(luout,*)
 
 
       if(nrequest.eq.0)then

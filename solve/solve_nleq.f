@@ -366,7 +366,6 @@ cmh      end do
       imicit_tot = 0
       task = 0
       old_energy = 0.0
-      ci_iter = 0 ! From molpro_out.h
       opt_loop: do !while(task.lt.8)
       call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')

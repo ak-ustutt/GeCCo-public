@@ -66,7 +66,7 @@ _method="MRCC2"
 
 new_target('INPUT_INFO')
 
-PRINT({STRING: 'Doing icMRCC response in the ' + str(_method) + ' framework' })
+PRINT({STRING: 'Performing icMRCC response in the ' + str(_method) + ' framework' })
 
 PRINT({STRING: 'Irrep, S2, Ms of the reference state: ' + str(_isym_0) + ', ' +  str(_s2_0) + ', ' + str(_msc_0)})
 

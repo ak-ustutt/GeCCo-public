@@ -155,7 +155,7 @@
       real(8)::
      &     time_per_it
       integer ::
-     &     i
+     &     i, print_iter
 
       ifree = mem_setmark('solve_evp')
 
@@ -512,7 +512,7 @@ c dbgend
       if (lmol .and. .not. no_print) then
          write(luout,*)
          write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
-     &      " CHANGE     RES      TIME    TIME/IT"
+     &      " CHANGE     RES       TIME   TIME/IT"
       end if
 
 c dbg
@@ -551,13 +551,19 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
             if (lmol) then
                if (.not. no_print) then
                   time_per_it = cpu0_t / (iter-1)
-                  mol_format = '(i4,f18.8,f16.8,d12.2,f7.2,f11.2)'
+                  mol_format = '(i4,f18.8,f16.8,d12.2,f8.2,f10.2)'
                   mol_format2 = '(f22.8,f16.8,d12.2)'
+
+                  if (conv) then
+                     print_iter = iter
+                  else
+                     print_iter = iter-1
+                  end if
 
                   do i = 1, nroots
                      if (i==1) then
                         write(luout,mol_format)
-     &                  iter,xeig(i,1),xeig(i,1)-old_eig(i,1),
+     &                  print_iter,xeig(i,1),xeig(i,1)-old_eig(i,1),
      &                  xresnrm(i),cpu0_t,time_per_it
                      else
                         write(luout,mol_format2)
@@ -740,7 +746,11 @@ c dbg
          call prtim(lulog,trim(timing_msg),
      &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
          end if
+
       end do opt_loop
+
+      if (lmol .and. nroots<2 .and. .not. no_print)
+     &    write(luout,*)
 
       ! Set ci_iter from molpro_out.h for use in molpro output
       ci_iter = iter
