@@ -885,10 +885,12 @@ c dbgend
 
 !     Arne says: Deallocating xrsnrm results in a double free error.
 !     So far, I haven't seen this error; hopefully it has disappeared...
-!      deallocate(xrsnrm)
+      deallocate(xrsnrm)
 
-      !causes an error for some reason.
-      !call dealloc_formula_list(fl_mvp)
+!     Arne says: Deallocating fl_mvp results in an error
+!     So far, I haven't seen this error; hopefully it has disappeared...
+      call dealloc_formula_list(fl_mvp)
+
       do jdx = 1, nspcfrm
          call dealloc_formula_list(fl_spc(jdx))
       end do
