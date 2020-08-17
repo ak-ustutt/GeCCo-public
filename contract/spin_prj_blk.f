@@ -9,7 +9,7 @@
 *     buffer_in/buffer_out may be the same
 *
 *     matthias and andreas, april 2013
-*     
+*
 *----------------------------------------------------------------------*
 
       implicit none
@@ -46,7 +46,7 @@
       logical ::
      &     first, ms_fix, ms_fix_ok, ok
       integer ::
-     &     nocc_cls, njoined, nsplc, isplc, 
+     &     nocc_cls, njoined, nsplc, isplc,
      &     ifree, nblk, nbuff, idxmsa, idxmsc, ioff0, ioff,
      &     msa, msc, igama, igamc, idxa, idxc, ngam, lena, lenc,
      &     iblkoff, ncblk, nablk, msc_max, msa_max,
@@ -70,7 +70,7 @@
      &     msdis_c_tgt(:),  msdis_a_tgt(:),
      &     idxmsdis_c(:),  idxmsdis_a(:),
      &     gamdis_c(:), gamdis_a(:),
-     &     len_str(:), gsign(:), csign(:), asign(:), 
+     &     len_str(:), gsign(:), csign(:), asign(:),
      &     offsets(:), maps_c(:,:), maps_a(:,:), nmaps_c(:), nmaps_a(:),
      &     hpvx_occ(:,:,:), ca_occ(:,:), idx_graph(:,:,:),
      &     ldim_op_c(:,:), ldim_op_a(:,:),
@@ -131,7 +131,7 @@
       msa_max = ca_occ(2,iblk)
       nel = msc_max + msa_max
 
-      if (msc_max.ne.msa_max) 
+      if (msc_max.ne.msa_max)
      &      call quit(1,'spin_prj_blk',
      &                  'only particle-conserving operators!')
 
@@ -197,14 +197,14 @@
      &                  idx_graph(1,1,iblkoff+1),njoined,hpvxblkseq)
 
       ! We will loop over the elements of the "sceleton part"
-      ! of the ME list, i.e. either msa=msc=0 (for 2-body, 4-body, 
+      ! of the ME list, i.e. either msa=msc=0 (for 2-body, 4-body,
       ! ... operators) or msa=msc=1 (for 1-body, 3-body, ...
       ! operators). Needs to be generalized, if needed.
       idxmsa = 0
 
       msa = mod(msa_max,2)
       msc = msa + mel%mst ! <- should be zero (checked above)
-      
+
       if (ntest.ge.100) then
         write(lulog,*) 'occupation summary for block: ', iblk
         write(lulog,*) 'occ_csub   = ',occ_csub(1:ncblk)
@@ -246,7 +246,7 @@ c      print *,'maxbuf(A)=',maxbuf
 c dbg
 
       ! Loop over Irrep of annihilator string.
-      igama_loop: do igama = 1, ngam          
+      igama_loop: do igama = 1, ngam
 
         igamc = multd2h(igama,mel%gamt)
 
@@ -276,7 +276,7 @@ c          print *,'msdis_a:',msdis_a(1:nablk)
 c          print *,'to'
 c          print *,'msdis_c_tgt:',msdis_c_tgt(1:ncblk)
 c          print *,'msdis_a_tgt:',msdis_a_tgt(1:nablk)
-c dbg          
+c dbg
           ! do we have a gamma distribution enumerator?
           ! for the moment we skip unless we get our target
           ! MS distribution
@@ -320,7 +320,7 @@ C          if (.not.ok) cycle
      &            nsplc,mel,iblk,ioff0,igama,ngam,graphs,
      &            msdis_c,gamdis_c,hpvx_csub,occ_csub,graph_csub,ncblk,
      &            msdis_a,gamdis_a,hpvx_asub,occ_asub,graph_asub,nablk,
-     &            s2,mel%mst,ncoup,coeff,nomni,omnistrings) 
+     &            s2,mel%mst,ncoup,coeff,nomni,omnistrings)
 
           call get_spprjmap_blk(spprjmap_c,
      &         ncblk,occ_csub,len_str,graph_csub,idxmsdis_c,gamdis_c,
@@ -341,7 +341,7 @@ C          if (.not.ok) cycle
                 idxmap = maps_a(isplc,icmp)
                 if (idxmap.eq.0) then
                   istr_asub(icmp,isplc)=istr_asub0
-                else 
+                else
                   imap = spprjmap_a(ioff+istr_asub0*nmap+idxmap)
                   if (imap.eq.0) asign(isplc)=0
                   istr_asub(icmp,isplc) = abs(imap)-1
@@ -425,9 +425,9 @@ c     &               dble(asign(isplc)*csign(isplc))
           end do idxa_loop
 
         end do distr_loop
-          
+
       end do igama_loop
-          
+
       deallocate(hpvx_csub,hpvx_asub,
      &         occ_csub, occ_asub,
      &         graph_csub, graph_asub,
@@ -436,12 +436,12 @@ c     &               dble(asign(isplc)*csign(isplc))
      &         idxmsdis_c,  idxmsdis_a,
      &         gamdis_c, gamdis_a,
      &         len_str, idxel, value,
-     &         gsign, csign, asign, offsets, 
+     &         gsign, csign, asign, offsets,
      &         maps_c, maps_a,
      &         nmaps_c, nmaps_a,
      &         istr_csub,istr_asub,
      &         ldim_op_c,ldim_op_a,
-     &         coeff,overl)
+     &         coeff,overl,psign)
 
       ifree = mem_flushmark('spin_prj_blk')
 

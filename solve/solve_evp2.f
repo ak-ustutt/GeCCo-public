@@ -879,15 +879,13 @@ c dbgend
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr,
-     &     me_vort, me_mvort, me_res)
+     &     me_vort, me_mvort, me_res, me_mvpprj, me_metort)
       deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,
      &     ff_scr,ff_ext)
 
-!     not freeing xrsnrm is a memory leak.
-!     but deallocating it results in a double free error.
-!     I suspect an implicit reallocation somwhere with an incorrect intent(out)
-
-!     deallocate(xrsnrm)
+!     Arne says: Deallocating xrsnrm results in a double free error.
+!     So far, I haven't seen this error; hopefully it has disappeared...
+!      deallocate(xrsnrm)
 
       !causes an error for some reason.
       !call dealloc_formula_list(fl_mvp)
