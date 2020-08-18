@@ -776,14 +776,14 @@ c     &       str_info,orb_info)
 c        end if
 c dbg
 c dbg
-        ! very dirty: don't close file if needed for following opt.
-        if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
-     &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
-     &      opti_info%optref.eq.0.or.nopt.ne.n_states) then
+c        ! very dirty: don't close file if needed for following opt.
+c        if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
+c     &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
+c     &      opti_info%optref.eq.0.or.nopt.ne.n_states) then
 c dbgend
         call file_close_keep(ffopt(iopt)%fhand)
 c dbg
-        end if
+c        end if
 c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
