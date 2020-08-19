@@ -13,7 +13,7 @@ this_lib:=libmath.a
 
 include $(topdir)/make.config
 
-INST_PROGS:= 
+INST_PROGS:=
 INST_LIBS:= $(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
@@ -24,7 +24,7 @@ src:=$(wildcard *.f90 *.F *.f)
 
 mod_obj_list:=
 spc_obj_list:=
-hlo_obj_list:=
+hlo_obj_list:=check_diag.o check_inv.o dmdiagm.o dvdsbsp_assemble_residual.o dvdsbsp_contract.o dvdsbsp_del.o dvdsbsp_diagonalize.o dvdsbsp_init.o dvdsbsp_orthvec.o dvdsbsp_update.o dvdsbsp_util.o eigen_asym.o eigen_asym_met.o eispack.o gaussj.o invsqrt_mat.o jacobi.o linpack.o mat_svd_traf.o mgs.o regular_tikhonov.o spinsym_traf.o svd_drv.o svd_get_left.o vecsp_assemble_vector.o vecsp_del.o vecsp_get_list.o vecsp_init.o vecsp_orthvec.o
 llo_obj_list:=
 
 libs:=

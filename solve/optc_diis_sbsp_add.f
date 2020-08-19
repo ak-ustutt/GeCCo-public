@@ -51,7 +51,7 @@
      &     iord_vsbsp(mxdim_sbsp),iord_rsbsp(mxdim_sbsp)
       integer, intent(in) ::
      &     mxdim_sbsp,
-     &     nincore, nwfpar, 
+     &     nincore, nwfpar,
      &     lenbuf, typ_prc
       real(8), intent(inout) ::
      &     xbuf1(*), xbuf2(*), xbuf3(*), energy, xngrd(*)
@@ -195,7 +195,7 @@ c dbg
       else
 
         call quit(1,'optc_diis_sbsp_add','nincore<3 route not debugged')
-        
+
         if (typ_prc.eq.optinf_prc_blocked)
      &        call quit(1,'optc_diis_sbsp_add',
      &       '(2): blocked preconditioning for nincore==3, only')

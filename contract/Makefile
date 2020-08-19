@@ -13,7 +13,7 @@ this_lib:=libcontract.a
 
 include $(topdir)/make.config
 
-INST_PROGS:= 
+INST_PROGS:=
 INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
 INST_DATA:=
@@ -21,6 +21,8 @@ INST_DATA:=
 INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
+
+hlo_obj_list:=contr_blk1blk2_blocked_mm.o contr_blk1blk2_wmaps_c.o contr_op1op2.o contr_op1op2_wmaps_c.o invert.o invsqrt.o
 
 include $(topdir)/make.rules
 

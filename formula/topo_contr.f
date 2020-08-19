@@ -379,7 +379,7 @@ c dbg
         write(lulog,*) vtx_reo(1:nvtx)
       end if
 
-      deallocate(topomap,eqv_map,scr,neqv,idx_eqv)
+      deallocate(topomap,eqv_map,scr,neqv,idx_eqv,svmap,svertex)
 
       return
 

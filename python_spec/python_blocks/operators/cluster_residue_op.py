@@ -45,7 +45,7 @@ if (minexc==1 and maxexc==2):
       to1_frm='To1=T2g'
       lamo0_frm='LAMo0=LAM1+LAM2g'
       lamo1_frm='LAMo1=LAM2g'
-elif (minexc==2 and maxexc==2):  
+elif (minexc==2 and maxexc==2):
   t2g_shape='VV,VH|VV,HH|PV,VV|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
   t1_shape=',' # just to not leave it undefined
   t2ps_shape=',' # just to not leave it undefined
@@ -91,14 +91,15 @@ if (useT1):
 #-----------------------------------------------------------------#
 
 # formal operators for perturbation order exp.
-# + formulae for replacement 
+# + formulae for replacement
 new_target('DEF_ToX')
 depend('DEF_T')
 depend('DEF_LAM')
 depend('DEF_O')
-PRINT({STRING:'Info on PT definition:'})
+PRINT({STRING:''})
+PRINT({STRING:'Info on pertubation definition:'})
 PRINT({STRING:'Zeroth order: '+to0_shape})
-PRINT({STRING:'First order:  '+to1_shape})
+PRINT({STRING:'First order : '+to1_shape})
 
 DEF_OP_FROM_OCC({
         LABEL:'To0',

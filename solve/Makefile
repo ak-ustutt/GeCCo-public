@@ -13,7 +13,7 @@ this_lib:=libsolve.a
 
 include $(topdir)/make.config
 
-INST_PROGS:= 
+INST_PROGS:=
 INST_LIBS:=$(this_lib)
 INST_INCLUDES:=
 INST_DATA:=

@@ -66,12 +66,11 @@ _method="MRCC2"
 
 new_target('INPUT_INFO')
 
-PRINT({STRING: 'Doing icMRCC response in' + '    ' +  str(_method) + '      ' + 'framework' })
+PRINT({STRING: 'Performing icMRCC response in the ' + str(_method) + ' framework' })
 
-PRINT({STRING: 'IRREP, S2, Ms of the reference state:' + str(_isym_0) +
-       '       ' + str(_s2_0) + '          ' + str(_msc_0)  })
+PRINT({STRING: 'Irrep, S2, Ms of the reference state: ' + str(_isym_0) + ', ' +  str(_s2_0) + ', ' + str(_msc_0)})
 
-PRINT({STRING: 'factor for spin-combination' + '    ' + str(_msc_0)})
+PRINT({STRING: 'Factor for spin-combination: ' + str(_msc_0)})
 
 new_target("FORM_EXCITED_ENERGY")
 depend('DEF_RESPONSE_OPs')
@@ -379,10 +378,11 @@ for _icnt in range (0,_ncnt):
         _solve_evp_basis[N_ROOTS]=_no_root
         _solve_evp_basis[CHOICE_OPT]=_choice
         _solve_evp_basis[SOLVER] = "NEW"
-        PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) +
-                       '  and of spin multiplicity:    ' + str(_s2)})
+        PRINT({STRING: ''})
+        PRINT({STRING: 'Calculating excitation to irrep:   ' + str(_isym+1) +
+                       '  with spin multiplicity:   ' + str(_s2)})
 
-        PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
+        #PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
 
         SOLVE_EVP(_solve_evp_basis)
 

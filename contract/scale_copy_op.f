@@ -196,7 +196,7 @@
         call set_opti_info_signs(opti_info,1,1,
      &            me_vec,me_shape,me_shape,me_shape,.false.)
         deallocate(me_vec,me_shape)
-        print *,"left opti_info signs"
+        !print *,"left opti_info signs"
       else
         ifree = mem_alloc_int(opti_info%nsec,1,'nsec')
         ifree = mem_alloc_int(opti_info%nwfpsec,1,'nwfpsec')
