@@ -783,7 +783,7 @@ c dbg
       if(nrequest.eq.0)then
          write(lulog,'(x,a,i5,a)')
      &        'CONVERGED IN ',iter,' ITERATIONS'
-         if (luout.ne.lulog.and.iprlvl.ge.5)
+         if (luout.ne.lulog.and.iprlvl.ge.5 .and. .not. lmol)
      &        write(luout,'(x,a,i5,a)')
      &        'CONVERGED IN ',iter,' ITERATIONS'
       else
