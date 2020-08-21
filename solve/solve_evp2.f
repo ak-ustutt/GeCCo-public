@@ -1318,7 +1318,7 @@ c dbg
                   call switch_mel_record(me_metort(iopt)%mel,iroot)
                   call transform_forward_wrap(flist,depend,
      &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
-     &                 xrsnrm(iopt,iroot),
+     &                 xrsnrm(iroot,iopt),
      &                 iopt, nspecial,
      &                 me_trv(iopt)%mel,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
