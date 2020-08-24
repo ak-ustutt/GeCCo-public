@@ -582,7 +582,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
             end if
           end if
 
-          if (iprlvl.gt.0) then
+          if (iprlvl.gt.0 .and. .not. lmol) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
