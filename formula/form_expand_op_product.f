@@ -105,8 +105,10 @@
      &     'label not on list: '//trim(label_res))
       do ilabel = 1, nlabels
         len = len_trim(label(ilabel))
-        transpose = (label(ilabel)(len-1:len).eq.'^+') 
-        if (transpose) len = len-2
+        if (len.gt.0) then
+            transpose = (label(ilabel)(len-1:len).eq.'^+')
+            if (transpose) len = len-2
+        end if
         idxop(ilabel) = idx_oplist2(label(ilabel)(1:len),op_info)
         if (idxop(ilabel).le.0)
      &       call quit(1,'form_expand_op_product',

@@ -20,6 +20,8 @@ INST_DATA:=
 # module names are listed in smallcaps and wihtout any .mod
 INST_MODULES:=
 
+hlo_obj_list:=i8common_entry.o i8elsum.o i8list_cmp.o i8list_ovl.o i8mat_cmp.o i8mltlist.o zero_i8vec.o zero_ivec.o
+
 src:=$(wildcard *.f90 *.F *.f)
 
 include $(topdir)/make.rules

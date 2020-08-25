@@ -23,6 +23,7 @@ INST_MODULES:=
 src:=$(wildcard *.f90 *.F *.f)
 
 ##llo_obj_list:=leqc_init.o leqc_core.o
+hlo_obj_list:=solve_nleq.o solve_leq.o solve_evp.o solve_evp2.o
 
 include $(topdir)/make.rules
 
