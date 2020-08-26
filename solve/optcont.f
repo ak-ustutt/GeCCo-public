@@ -559,6 +559,8 @@ c      implicit none
        deallocate(c_opti_stat)
        c_opti_stat => c_opti_stat_2
       end do
+      deallocate(c_opti_stat)
+      nullify(c_opti_stat_2)
 
       return
       end subroutine
