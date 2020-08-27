@@ -34,7 +34,7 @@
       write(luout,*)
       write(luout,*) "Summery of cluster operator dimensions: "
       write(luout,*)
-      write(luout,*) "   Name      Excitation     Size"
+      write(luout,*) "   Name      Excitation        Size"
       do iblk = 1, nblk
         idxblk = (iblk-1)*nj+1
         call occ2descr(descr,len_descr,occ(1,1,idxblk),nj)
@@ -66,11 +66,11 @@
              ci_name = 'XX'
         end select
 
-        write(luout,'(4x,a2,11x,a5,i11)')
+        write(luout,'(4x,a2,11x,a5,i14)')
      &         ci_name,descr,length(iblk)
       end do
       write(luout,*)
-      write(luout,'(" Total number of elements: ",i6)') mel%len_op
+      write(luout,'(" Total number of elements: ",i9)') mel%len_op
       write(luout,*)
 
       else if (lmol .and. trim(mel%op%name)=='T1') then
