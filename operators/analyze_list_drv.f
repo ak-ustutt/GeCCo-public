@@ -18,7 +18,7 @@
       integer, intent(in) ::
      &     ncov, ncontrv, records(2)
       character(len=*), intent(in) ::
-     &     label_cov(ncov), label_contrv(ncontrv), mode 
+     &     label_cov(ncov), label_contrv(ncontrv), mode
 
       type(orbinf), intent(inout) ::
      &     orb_info
@@ -40,7 +40,7 @@
 
       if (ntest.ge.10) then
         call write_title(lulog,wst_dbg_subr,i_am)
-        write(lulog,*) ' mode = "',trim(mode),'"' 
+        write(lulog,*) ' mode = "',trim(mode),'"'
       end if
 
       if (ncov.ne.ncontrv) then
@@ -93,7 +93,7 @@
           call switch_mel_record(me_cov(jdx)%mel,idx)
           call switch_mel_record(me_contrv(jdx)%mel,idx)
         end do
-        
+
         call analyze_list_core(me_cov,me_contrv,ncov,idx,mode,
      &       orb_info,str_info)
 

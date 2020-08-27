@@ -762,6 +762,9 @@ c test
 
       end do opt_loop
 
+      ! Turn on molpro output in solve_evp
+      if (lmol) no_print = .false.
+
       call clean_formula_dependencies(depend)
 
       ! close files

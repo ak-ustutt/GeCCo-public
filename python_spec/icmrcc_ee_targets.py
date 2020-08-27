@@ -73,9 +73,11 @@ if (_mult == None):
 
 new_target('INPUT_INFO')
 
+PRINT({STRING: ''})
 PRINT({STRING: 'Performing icMRCC response in the ' + str(_method) + ' framework' })
 PRINT({STRING: 'Irrep, S2, Ms of the reference state: ' + str(_isym_0) + ', ' + str(_s2_0) + ', ' + str(_msc_0)})
 PRINT({STRING: 'Factor for spin-combination: ' + str(_msc_0)})
+PRINT({STRING: ''})
 
 ################################
 
@@ -729,8 +731,8 @@ for _icnt in range (0,_ncnt):
         ANALYZE_MEL({LISTS:['ME_R_mu'+_extnsn,'ME_R_q'+_extnsn],
                      LISTS_CV:['ME_R_mu'+_extnsn,'ME_SR_q'+_extnsn]})
 
-        PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) +
-                       '  and of spin multiplicity:    ' + str(_s2)})
+        #PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) +
+        #               '  and of spin multiplicity:    ' + str(_s2)})
 
 
         # Evaluate and print the exciation energies
