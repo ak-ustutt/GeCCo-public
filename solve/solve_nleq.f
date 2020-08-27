@@ -427,7 +427,7 @@ c     &       ff_trv,ff_h_trv,
 
          else
            ! Print out new molpro output
-           time_per_it = cpu0_t / (it_print+1)
+           time_per_it = cpu0_t / (it_print)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
      &                  "i6,f9.2,f10.2)"
 
