@@ -58,6 +58,8 @@ c      iprlvl = 3     ! print level
         lmol = .true.
         ! Print the inital ci iterations
         no_print = .false.
+      else
+        lmol = .false.
       end if
 
       ! init the file-handler
