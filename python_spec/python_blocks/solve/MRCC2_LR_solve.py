@@ -66,12 +66,11 @@ _method="MRCC2"
 
 new_target('INPUT_INFO')
 
-PRINT({STRING: 'Doing icMRCC response in' + '    ' +  str(_method) + '      ' + 'framework' })
+PRINT({STRING: 'Performing icMRCC response in the ' + str(_method) + ' framework' })
 
-PRINT({STRING: 'IRREP, S2, Ms of the reference state:' + str(_isym_0) +
-       '       ' + str(_s2_0) + '          ' + str(_msc_0)  })
+PRINT({STRING: 'Irrep, S2, Ms of the reference state: ' + str(_isym_0) + ', ' +  str(_s2_0) + ', ' + str(_msc_0)})
 
-PRINT({STRING: 'factor for spin-combination' + '    ' + str(_msc_0)})
+PRINT({STRING: 'Factor for spin-combination: ' + str(_msc_0)})
 
 new_target("FORM_EXCITED_ENERGY")
 depend('DEF_RESPONSE_OPs')
@@ -80,22 +79,51 @@ depend('DEF_RESPONSE_OPs')
 
 
 DEF_SCALAR({LABEL:"Exc_En"})
-EE = stf.GenForm("FORM_EXCITED_ENERGY","Exc_En")
-EE += "<(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')>"
-EE += "<(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')>"
-EE += "<R_mu^+*(AR_rspns_mu')>"
+#EE = stf.GenForm("FORM_EXCITED_ENERGY","Exc_En")
+#EE += "<(AR1_rspns_q')*R1_q^+*(AR1_rspns_q')>"
+#EE += "<(AR2g_rspns_q')*R2g_q^+*(AR2g_rspns_q')>"
+#EE += "<R_mu^+*(AR_rspns_mu')>"
+#EE.set_rule()
 
-EE.set_rule()
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:True,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
+                    OPERATORS:["AR1_rspns_q", "R1_q^+", "AR1_rspns_q"],
+                    IDX_SV   :[1, 2, 1],
+                    AVOID    :[1,3]})
 
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:False,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["AR2g_rspns_q", "R2g_q^+", "AR2g_rspns_q"],
+                   IDX_SV   :[1, 2, 1],
+                   AVOID    :[1,3]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:False,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["R_mu^+", "AR_rspns_mu"],
+                   IDX_SV   :[1, 2],
+                   CONNECT  :[1,2]})
 
 
 DEF_SCALAR({LABEL:"Exc_Sr"})
 
-SR = stf.GenForm("FORM_EXCITED_OVERLAPP","Exc_Sr")
-SR += "<(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')>"
-SR += "<(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')>"
-SR += "<R_mu^+*(SR_rspns_mu')>"
-SR.set_rule()
+#SR = stf.GenForm("FORM_EXCITED_OVERLAPP","Exc_Sr")
+#SR += "<(SR1_rspns_q')*R1_q^+*(SR1_rspns_q')>"
+#SR += "<(SR2g_rspns_q')*R2g_q^+*(SR2g_rspns_q')>"
+#SR += "<R_mu^+*(SR_rspns_mu')>"
+#SR.set_rule()
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:True,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["SR1_rspns_q", "R1_q^+", "SR1_rspns_q"],
+                   IDX_SV   :[1, 2, 1],
+                   AVOID    :[1,3]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:False,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["SR2g_rspns_q", "R2g_q^+", "SR2g_rspns_q"],
+                   IDX_SV   :[1, 2, 1],
+                   AVOID    :[1,3]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:False,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["R_mu^+", "SR_rspns_mu"],
+                   IDX_SV   :[1, 2],
+                   CONNECT  :[1,2]})
+
 
 new_target("FORM_LR_TRANSFORM")
 depend("DEF_RESPONSE_OPs")
@@ -350,11 +378,20 @@ for _icnt in range (0,_ncnt):
         _solve_evp_basis[N_ROOTS]=_no_root
         _solve_evp_basis[CHOICE_OPT]=_choice
         _solve_evp_basis[SOLVER] = "NEW"
+<<<<<<< HEAD
         PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) +
                        '  and of spin multiplicity:    ' + str(_s2)})
 
         PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
 
+=======
+        PRINT({STRING: ''})
+        PRINT({STRING: 'Calculating excitation to irrep:   ' + str(_isym+1) +
+                       '  with spin multiplicity:   ' + str(_s2)})
+
+        #PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
+
+>>>>>>> master
         SOLVE_EVP(_solve_evp_basis)
 
 
@@ -434,6 +471,11 @@ for _icnt in range (0,_ncnt):
 
             debug_MEL('ME_Exc_En'+_extnsn)
             debug_MEL('ME_Exc_Sr'+_extnsn)
+
+            SCALE({LIST_RES:'ME_Exc_En'+_extnsn,LIST_INP:'ME_Exc_En'+_extnsn,
+                   LIST_SCAL:'ME_Exc_Sr'+_extnsn,FAC:1.0,INV:True})
+
+            PUSH_RESULT({LIST:'ME_Exc_En'+_extnsn,COMMENT:'MRCC_STATE_'+str(_isym+1)+'.'+str(i), FORMAT:"SCAL F20.14"})
 
 
         for i in xrange(1,_no_root +1):

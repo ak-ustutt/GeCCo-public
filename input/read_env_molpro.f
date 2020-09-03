@@ -1,7 +1,7 @@
       subroutine read_env_molpro(orb_info)
 
       implicit none
-      
+
       include 'ioparam.h'
       include 'stdunit.h'
       include 'opdim.h'
@@ -30,7 +30,7 @@
 
       real(8) ::
      &     ecore
-      integer :: 
+      integer ::
      &     nirr, nel, isym, mult, mem_ext, istate, refstate,
      &     norbs(8), nocc(8), ncore(8),
      &     nclosed(8)
@@ -43,7 +43,7 @@
 
 
       if (ntest.ge.10) write(lulog,*) 'entered read_env_molpro'
- 
+
       iprint = max(iprlvl,ntest)
 
       call file_init(ffintf,'mpro_gecco_ifc.dat',ftyp_sq_frm,0)
@@ -79,13 +79,13 @@
       rd_ecore = .false.
 
       ! loop over file and read info
-      
+
       do
         read(luintf,'(a)',end=99) line
 
         idelim = min(len_trim(line)+1,index(line,' '))-1
         select case(line(1:idelim))
-        case('dumpfile') 
+        case('dumpfile')
           read (line(idelim+1:),'(a)') intfile
           rd_intfile = .true.
         case('memory')
@@ -212,22 +212,22 @@
       end if
 
       !if (iprint.ge.1) then
-        write(luout,'(1x,"GeCCo will use these orbital spaces:")') 
-        write(luout,'(1x," core      ",8i4)') ncore(1:nirr) 
-        write(luout,'(1x," inactive  ",8i4)') ninact(1:nirr) 
-        write(luout,'(1x," active    ",8i4)') nact(1:nirr) 
-        write(luout,'(1x," virtual   ",8i4)') nvirt(1:nirr) 
+        write(luout,'(1x,"GeCCo will use these orbital spaces:")')
+        write(luout,'(1x," core      ",8i4)') ncore(1:nirr)
+        write(luout,'(1x," inactive  ",8i4)') ninact(1:nirr)
+        write(luout,'(1x," active    ",8i4)') nact(1:nirr)
+        write(luout,'(1x," virtual   ",8i4)') nvirt(1:nirr)
       !end if
 
       ngas=1
-      if (sum(ncore(1:nirr)).gt.0)  ngas = ngas+1 
-      if (sum(ninact(1:nirr)).gt.0) ngas = ngas+1 
-      if (sum(nact(1:nirr)).gt.0)   ngas = ngas+1 
+      if (sum(ncore(1:nirr)).gt.0)  ngas = ngas+1
+      if (sum(ninact(1:nirr)).gt.0) ngas = ngas+1
+      if (sum(nact(1:nirr)).gt.0)   ngas = ngas+1
 
 
       ! set orb_info
       orb_info%nsym = nirr
-      orb_info%ngas = ngas 
+      orb_info%ngas = ngas
       orb_info%nspin = 1    ! no UHF
 
       orb_info%nbast = sum(norbs(1:nirr))
@@ -237,7 +237,7 @@
       orb_info%ims   = 1 - mod(mult,2) ! MS = 0 or 1/2
 
       orb_info%nxbast = 0 ! no CABS stuff so far
-      orb_info%caborb = 0      
+      orb_info%caborb = 0
 
       orb_info%nactel = nel - 2*sum(nclosed(1:nirr))
       orb_info%nactorb = sum(nact(1:nirr))

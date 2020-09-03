@@ -16,14 +16,14 @@
 *     in (p)article, (h)ole, and (v)alence spaces
 *
 *     for intermediates: Cx,Ax,etc. may break down in several blocks
-*     
+*
 *     in this routine we define the sequence in which the different blocks
 *     of the operator are to be stored; with "different blocks" we mean
 *     all the different cases of Ms and symmetry labels distributed among
-*     the strings (Cp,Ch,Cv,Ap,Ah,Av) such that they add up to the 
+*     the strings (Cp,Ch,Cv,Ap,Ah,Av) such that they add up to the
 *     required total Ms and IRREP
 *
-*     ipass = 1   set len_op_gmo, len_op_occ, 
+*     ipass = 1   set len_op_gmo, len_op_occ,
 *                     off_op_gmo, off_op_occ, len_op
 *                 and get dimension info for off_op_gmox
 *
@@ -51,7 +51,7 @@
 
       integer, parameter ::
      &     ntest = 000
-      
+
       integer, intent(in) ::
      &     ipass, ngam
       type(strinf), intent(in) ::
@@ -94,7 +94,7 @@ c     &     msd(ngastp,2), igamd(ngastp,2)
      &     next_msgamdist2, nondia_blk, nondia_distr
       integer, external ::
      &     msgmdid2, msgmdid, msa2idxms4op
-      
+
       op => mel%op
 
       if (ntest.gt.5) then
@@ -154,11 +154,11 @@ c dbg
           write(lulog,*) 'class: ',iblk
           call wrt_occ_n(lulog,hpvx_occ(1,1,iblkoff+1),njoined)
         end if
-        
+
         ! find the number sub-blocks for C and A
         call get_num_subblk(ncsub,nasub,hpvx_occ(1,1,iblkoff+1),njoined)
 
-        ! HPVX-info, OCC-info, 
+        ! HPVX-info, OCC-info,
         ! MS/IRREP-distributions, and string lengths
         allocate(hpvx_csub(ncsub),hpvx_asub(nasub),
      &           occ_csub(ncsub), occ_asub(nasub),
@@ -240,22 +240,22 @@ c          end if
           ! loop over IRREP of A-string (fixes IRREP of C-string)
           igama_loop: do igama = 1, ngam
             igamc = multd2h(igama,mel%gamt)
-            
+
             ! store the current position in offset array
             if (ipass.eq.2)
      &       mel%off_op_gmo(iblk)%gam_ms(igama,idxmsa) = idxstr
 
             ! now, to be general, we have to loop over all
             ! possible MS and IRREP distributions over X/H/P/V spaces
-            ! for both C and A strings 
-            ! (for intermediates, njoined>1, these are further 
+            ! for both C and A strings
+            ! (for intermediates, njoined>1, these are further
             ! subdivided into substrings, so even more work to come)
 
-            idxdis = 0            
+            idxdis = 0
 
             first = .true.
             distr_loop: do
-                  
+
               if (.not.next_msgamdist2(first,
      &            msdis_c,msdis_a,gamdis_c,gamdis_a,
      &            ncsub, nasub,
@@ -340,10 +340,10 @@ c dbg
                 end do search_loop
 
                 if (len_blk.le.0) cycle distr_loop
-              
+
                 ! increment distribution index
                 idxdis = idxdis+1
-              
+
                 if (njoined.eq.1.and.ntest.ge.150.or.
      &               (ms_fix.and.ipass.eq.2)) then
                   if(.not.ms_fix)
@@ -405,7 +405,7 @@ c dbg
                   write(lulog,*) idxmsdis_a(1:nasub)
                   write(lulog,*) gamdis_a(1:nasub)
                 end if
-              !end if 
+              !end if
 
                 ! increment string element index
                 idxstr = idxstr+len_blk
@@ -423,8 +423,8 @@ c dbg
                 end if
               else ! ipass == 1
                 idxdis = idxdis+1 ! just increment
-              end if 
-              
+              end if
+
             end do distr_loop
 
             if (ipass.eq.2)
@@ -499,7 +499,7 @@ c dbg
      &               d_gam_ms(1:mel%off_op_gmox(iblk)%
      &               ndis(igam,iexc),igam,iexc)
               end do
-            end do            
+            end do
           end do
           write(lulog,*) 'distribution IDs:'
           do iblk = 1, nblk
@@ -521,8 +521,10 @@ c dbg
           end do
 
         end if
-        
+
       end if
+
+      deallocate(lenstr_array)
 
       return
       end

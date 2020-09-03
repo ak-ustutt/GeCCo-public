@@ -287,7 +287,7 @@ c        call prt_contr2(lulog,contr,op_info)
 c        call wrt_occ_n(lulog,occ_vtx,nvtx_full+njoined)
 c dbg
       ! call kernel again for optimal sequence --> set fl_fact now
-      call form_fact_rec_new('SET',.true.,nlevel,ifact_best,fl_fact,
+      call form_fact_rec_new('SET ',.true.,nlevel,ifact_best,fl_fact,
      &     cost,iscale,iitem,
      &     contr,occ_vtx,irestr_vtx,info_vtx)
 

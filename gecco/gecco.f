@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
 !>     main program of GeCCo
 !>
-!>     started by andreas in march 2007 
+!>     started by andreas in march 2007
 !>     from a pilot version within LUCIA
 *----------------------------------------------------------------------*
       program GeCCo
@@ -18,6 +18,7 @@
       include 'event_counter.h'
       include 'ifc_memman.h'
       include 'ifc_input.h'
+      include 'molpro_out.h'
 
       logical ::
      &     l_infile,l_logfile,l_exit,l_molpro,one_more, do_stat
@@ -51,7 +52,15 @@ c      iprlvl = 3     ! print level
      &             name_infile,name_logfile)
       if (l_exit) goto 2308
 
-      if (l_molpro) iprlvl = 0
+      if (l_molpro) then
+        iprlvl = 0
+        ! Turn on new molpro output
+        lmol = .true.
+        ! Print the inital ci iterations
+        no_print = .false.
+      else
+        lmol = .false.
+      end if
 
       ! init the file-handler
       call fh_init(iprlvl)
@@ -68,7 +77,7 @@ c      iprlvl = 3     ! print level
       if (lulog.ne.luout.and..not.l_molpro) ! a bit less verbose inside molpro
      &  write(luout,'(x,"run starts at ",a,"   host: ",a)')
      &     trim(date),trim(host)
-      
+
       ! give information about compilation date etc.
       call printversion(lulog)
 
@@ -101,7 +110,7 @@ c      iprlvl = 3     ! print level
       ! get all possible information from environment:
       !  number of orbitals, symmetry etc.
       ! for savety:
-      if (l_molpro) orb_info%mem_ext = -1    
+      if (l_molpro) orb_info%mem_ext = -1
       call read_env(env_type,orb_info)
 
       ! read and parse input file
@@ -110,7 +119,7 @@ c      iprlvl = 3     ! print level
       ! post-process input up to first "calculate" block
       ! (data resides in module parse_input)
       call process_input(one_more,orb_info)
-      ! one_more is ignored, as we might have cases 
+      ! one_more is ignored, as we might have cases
       ! (export/import stuff) where no "calculate" block is
       ! specified
       call get_argument_value('general','memmax',ival=memmax)
@@ -124,7 +133,7 @@ c      iprlvl = 3     ! print level
 
       ! open statistics file, if requested
       call get_argument_value('general','statistics',lval=do_stat)
-      if (l_molpro) do_stat=.false. ! disable this when called by molpro      
+      if (l_molpro) do_stat=.false. ! disable this when called by molpro
       if (do_stat) then
         call file_init(ffstat,'STATISTICS',ftyp_sq_frm,idum)
         call file_open(ffstat)
@@ -136,7 +145,7 @@ c      iprlvl = 3     ! print level
 
       ! loop over calculations
       do
-      
+
         if (.not.one_more) exit
 
         call do_calc(orb_info,env_type,name_infile)
@@ -158,7 +167,7 @@ c      iprlvl = 3     ! print level
       else
         call file_close_delete(ffwarn)
       end if
-      
+
       call file_close_keep(ffres)
 
       if (lustat.gt.0) call file_close_keep(ffstat)

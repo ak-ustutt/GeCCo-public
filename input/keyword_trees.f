@@ -469,7 +469,8 @@
       parnode=> tree%curnode
 
       tree%curlevel=tree%curlevel+1
-      do while (tree%curlevel .ge.0)
+c FIX (unclear): avoid non-associated parnode here
+      do while (tree%curlevel .ge.0 .and. associated(parnode))
          icount=1
          nxtnode=> getSubnode(parnode,name,tag=tag,latest=.False. , 
      &        icount=icount)

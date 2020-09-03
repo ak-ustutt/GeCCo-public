@@ -27,6 +27,7 @@
       include 'def_me_list.h'
       include 'def_strinf.h'
       include 'def_orbinf.h'
+      include 'hpvxseq.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -46,12 +47,12 @@
      &     error
 
       logical ::
-     &     reo12, reo34, eqv12, eqv34, fail
+     &     reo12, reo34, eqv12, eqv34, fail, reverse
       integer ::
      &     igamt, mst, iblk, iblk_ca, iblk_ac, ihpvdx, ihpv, ica,
      &     jdx, idxcnt, idstr_ca, idstr_ac, nel, msstr, lenlast,
      &     nmsd, imsd, igraph, idx1, idx2, idx3, idx4, ndup,
-     &     idxms, ij, istr_ca, istr_ac
+     &     idxms, ij, ijdx, istr_ca, istr_ac
 
       integer ::
      &     iocc(ngastp,2,2), igmd(ngastp,2,2),
@@ -59,7 +60,7 @@
      &     idx(2), len(2), ipos,!(2),
      &     idorb(4), idspn(4), idspc(4), idgam(4),
      &     occ_c(2), occ_a(2), idxms_c(2), idxms_a(2),
-     &     gam_c(2), gam_a(2)
+     &     gam_c(2), gam_a(2), transp_c(2), transp_a(2)
 
       type(graph), pointer ::
      &     curgraph
@@ -106,6 +107,10 @@
       iocc(igtp(idx3),2,1) = 1
       iocc(igtp(idx2),1,2) = 1
       iocc(igtp(idx4),2,2) = 1
+      if (ntest.ge.100) then
+        write(lulog,*) ' iocc:'
+        call wrt_occ_n(lulog,iocc,2)
+      end if
 
       occ_c(1) = 1
       occ_c(2) = 1
@@ -130,16 +135,39 @@
       igmd(igtp(idx3),2,1) = igam(idx3)
       igmd(igtp(idx2),1,2) = igam(idx2)
       igmd(igtp(idx4),2,2) = igam(idx4)
- 
-      gam_c(1) = igam(idx1)
-      gam_c(2) = igam(idx2)
-      gam_a(1) = igam(idx3)
-      gam_a(2) = igam(idx4)
+
+      if (hpvxblkseq(igtp(idx1)).le.hpvxblkseq(igtp(idx2))) then 
+        gam_c(1) = igam(idx1)
+        gam_c(2) = igam(idx2)
+      else
+        gam_c(1) = igam(idx2)
+        gam_c(2) = igam(idx1)
+      end if
+      if (hpvxblkseq(igtp(idx1)).eq.hpvxblkseq(igtp(idx2))) then
+        transp_c(1:2) = (/2,1/)
+      else
+        transp_c(1:2) = (/1,2/)
+      end if
+      if (hpvxblkseq(igtp(idx3)).le.hpvxblkseq(igtp(idx4))) then
+        gam_a(1) = igam(idx3)
+        gam_a(2) = igam(idx4)
+      else
+        gam_a(1) = igam(idx4)
+        gam_a(2) = igam(idx3)
+      end if
+      if (hpvxblkseq(igtp(idx3)).eq.hpvxblkseq(igtp(idx4))) then
+        transp_a(1:2) = (/2,1/)
+      else
+        transp_a(1:2) = (/1,2/)
+      end if
  
       ! Which block of the operator does the passed integral represent?
       ! could be improved:
       iblk_ca = iblk_occ(iocc,.false.,hop,1)
       iblk_ac = iblk_occ(iocc,.true.,hop,1)
+      if (ntest.ge.100) then
+        write(lulog,*) 'iblk_ca, iblk_ac: ',iblk_ca,iblk_ac
+      end if
 
       ! no such block at all?
       if (iblk_ca.le.0.and.iblk_ac.le.0) return
@@ -225,15 +253,27 @@ c     &     cycle cnt_loop
         msd(igtp(idx3),2,1) = idspn(3)
         msd(igtp(idx4),2,2) = idspn(4)
 
-        idxms_c(1) = (2-idspn(1))/2+1
-        idxms_c(2) = (2-idspn(2))/2+1
-        idxms_a(1) = (2-idspn(3))/2+1
-        idxms_a(2) = (2-idspn(4))/2+1
+        if (hpvxblkseq(igtp(idx1)).le.hpvxblkseq(igtp(idx2))) then
+          idxms_c(1) = (2-idspn(1))/2+1
+          idxms_c(2) = (2-idspn(2))/2+1
+        else
+          idxms_c(1) = (2-idspn(2))/2+1
+          idxms_c(2) = (2-idspn(1))/2+1
+        end if
+        if (hpvxblkseq(igtp(idx3)).le.hpvxblkseq(igtp(idx4))) then
+          idxms_a(1) = (2-idspn(3))/2+1
+          idxms_a(2) = (2-idspn(4))/2+1
+        else
+          idxms_a(1) = (2-idspn(4))/2+1
+          idxms_a(2) = (2-idspn(3))/2+1
+        end if
 
         if (ntest.ge.100) then
           write(lulog,*) ' idxcnt = ',idxcnt
           write(lulog,*) ' spins = ',idspn(1:4)
           call wrt_occ_n(lulog,msd,2)
+          write(lulog,*) ' idxms_c: ',idxms_c(1:2)
+          write(lulog,*) ' idxms_a: ',idxms_a(1:2)
         end if
         if (ntest.ge.100) then
           write(lulog,*) 'current psqr: ',idorb(1:4)
@@ -263,7 +303,7 @@ c     &         msd,igmd,.true.,hlist,orb_info%nsym)
           idstr_ac = idx_msgmdst2(fail,iblk_ac,idxms,igamt,
      &         occ_c,idxms_c,gam_c,2,
      &         occ_a,idxms_a,gam_a,2,
-     &         .true.,(/1,2/),(/1,2/),hlist,orb_info%nsym)
+     &         .true.,transp_c,transp_a,hlist,orb_info%nsym)
         else
           idstr_ac = -1
         end if
@@ -289,12 +329,30 @@ c     &         msd,igmd,.true.,hlist,orb_info%nsym)
 
         iblk = iblk_ca
         if (iblk.le.0) iblk = iblk_ac
+c dbg
+c        write(lulog,*) 'nstr is still ',nstr
+c dbg
+ 
+c check here: iblk_ca and iblk_ac must not be non-zero simultaneously
+        if (iblk_ca.gt.0.and.iblk_ac.gt.0) then
+          call quit(0,'idx42str_nox','non-covered case')
+        end if
+        reverse = iblk_ac.gt.0
+c dbg
+c        write(lulog,*) 'reverse = ',reverse
+c dbg
+c switch here between forward and backward loop through ij
         lenlast = 1
         ihpv_loop: do ihpvdx = 1, ngastp
          ihpv = ihpvseq(ihpvdx)
-         idx(1:2) = 0
-         len(1:2) = 1
-         ij_loop: do ij = 1, 2
+         ij_loop: do ijdx = 1, 2
+          ij = ijdx
+          if (reverse) ij = 3 - ijdx
+          idx(1:2) = 0
+          len(1:2) = 1
+c dbg
+c          write(lulog,*) 'ij,ijdx:',ij,ijdx
+c dbg
           ica_loop: do ica = 1,2
             nel = iocc(ihpv,ica,ij)
             if (iocc(ihpv,ica,ij).eq.0) cycle ica_loop
@@ -305,8 +363,11 @@ c     &         msd,igmd,.true.,hlist,orb_info%nsym)
               igraph = hlist%idx_graph(ihpv,ica,(iblk-1)*2+ij)
             else
               ! in this case we have to fetch it from the adj. block
-              igraph = hlist%idx_graph(ihpv,3-ica,(iblk-1)*2+ij)
+              igraph = hlist%idx_graph(ihpv,3-ica,(iblk-1)*2+ijdx)
             end if
+c dbg
+c            write(lulog,'(x,3i4,a,i4)') ihpv,ica,ij,' --> ',igraph
+c dbg
             curgraph => str_info%g(igraph)
 
             ! check for restrictions
@@ -319,6 +380,9 @@ c     &         msd,igmd,.true.,hlist,orb_info%nsym)
               else
                 nstr = nstr-1
               end if
+c dbg
+c              write(lulog,*) 'not allowed'
+c dbg
               exit cnt_loop
             end if
 c dbg
@@ -349,6 +413,16 @@ c dbg
           if (istr_ac.gt.0)
      &      idxstr(istr_ac) = idxstr(istr_ac) +
      &           ((idx(1))*len(2) + idx(2))*lenlast
+c dbg
+c          write(lulog,'("idx>",a,2i5)') ' ihpv, ij: ',ihpv,ij
+c          write(lulog,'("idx>",a,2i5,a,2i5)') ' idx: ',idx(1:2), 
+c     &                                 ' len: ',len(1:2),
+c     &                                 ' lenlast: ',lenlast
+c          if (istr_ca.gt.0) write(lulog,'("idx>",a,i5)')' CA, computed',
+c     &                             ((idx(2))*len(1) + idx(1))*lenlast
+c          if (istr_ac.gt.0) write(lulog,'("idx>",a,i5)')' AC, computed',
+c     &                             ((idx(1))*len(2) + idx(2))*lenlast
+c dbg
           lenlast = lenlast*len(1)*len(2)
          end do ij_loop
         end do ihpv_loop

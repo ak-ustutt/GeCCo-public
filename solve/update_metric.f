@@ -117,7 +117,7 @@
           ! (c) invert
           call inv_op(1,trim(me_special(7)%mel%label),
      &                1,trim(me_special(7)%mel%label),
-     &                'pseudoinv',
+     &                'pseudoinv  ',
      &                op_info,orb_info,str_info,strmap_info)
         end if
       end if
@@ -128,12 +128,12 @@
         call inv_op(2,(/trim(me_special(5)%mel%label),
      &                  trim(me_special(7)%mel%label)/),
      &              1,trim(me_special(6)%mel%label),
-     &              'invsqrt',
+     &              'invsqrt    ',
      &              op_info,orb_info,str_info,strmap_info)
       else
         call inv_op(1,trim(me_special(5)%mel%label),
      &              1,trim(me_special(6)%mel%label),
-     &              'invsqrt',
+     &              'invsqrt    ',
      &              op_info,orb_info,str_info,strmap_info)
       end if
 

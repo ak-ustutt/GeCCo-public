@@ -85,13 +85,15 @@
       ifree = mem_setmark('import_h2')
 
       ! this is a preliminary version (as usual)
-      ! it is only tested for <HH|PP> integrals (= H,P;H,P)
+      ! it is only tested for <HH|xx> integrals (= H,x;H,x)  x is P or V
       error = hlist%op%n_occ_cls.ne.1
       error = error.or.hlist%op%njoined.ne.2
       error = error.or.(hlist%op%ihpvca_occ(IHOLE,1,1).ne.1
-     &              .or.hlist%op%ihpvca_occ(IPART,2,1).ne.1
+     &              .or.(hlist%op%ihpvca_occ(IPART,2,1).ne.1
+     &              .and.hlist%op%ihpvca_occ(IVALE,2,1).ne.1)
      &              .or.hlist%op%ihpvca_occ(IHOLE,1,2).ne.1
-     &              .or.hlist%op%ihpvca_occ(IPART,2,2).ne.1)
+     &              .or.(hlist%op%ihpvca_occ(IPART,2,2).ne.1
+     &              .and.hlist%op%ihpvca_occ(IVALE,2,2).ne.1))
       if (error) call quit(1,'import_hnox_molpro_ifc','untested block')
 
       iblkst = 1
@@ -186,11 +188,13 @@ c dbg
         call idx42str_nox(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
-        ! sign change if (CV and CP) xor (AV and AP)
-        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
-     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
-     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
-        !&           idxstr(1:nstr) = -idxstr(1:nstr)
+! I think there should be no sign problem here, as CV and CP etc. are in
+! different vertices
+!        ! sign change if (CV and CP) xor (AV and AP)
+!        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
+!     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
+!     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
+!        !&           idxstr(1:nstr) = -idxstr(1:nstr)
 
         ! store integral in h2scr
         do istr = 1, nstr
@@ -235,11 +239,12 @@ c dbg
         call idx42str_nox(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
-        ! sign change if (CV and CP) xor (AV and AP)
-        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
-     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
-     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
-!     &           idxstr(1:nstr) = -idxstr(1:nstr)
+! see above
+!        ! sign change if (CV and CP) xor (AV and AP)
+!        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
+!     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
+!     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
+!!     &           idxstr(1:nstr) = -idxstr(1:nstr)
 
         ! store integral in h2scr
         do istr = 1, nstr
@@ -281,11 +286,12 @@ c dbg
         call idx42str_nox(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
-        ! sign change if (CV and CP) xor (AV and AP)
-        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
-     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
-     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
-!     &           idxstr(1:nstr) = -idxstr(1:nstr)
+! see above
+!        ! sign change if (CV and CP) xor (AV and AP)
+!        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
+!     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
+!     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
+!!     &           idxstr(1:nstr) = -idxstr(1:nstr)
 
         ! store integral in h2scr
         do istr = 1, nstr
@@ -328,11 +334,12 @@ c dbg
         call idx42str_nox(nstr,idxstr,
      &           idxprqs,igam,idss,igtp,
      &           orb_info,str_info,hlist,hpvxseq,error)
-        ! sign change if (CV and CP) xor (AV and AP)
-        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
-     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
-     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
-!     &           idxstr(1:nstr) = -idxstr(1:nstr)
+! see above
+!        ! sign change if (CV and CP) xor (AV and AP)
+!        if ((igtp(1)*igtp(2).eq.6.and.igtp(3)*igtp(4).ne.6).or.
+!     &          (igtp(1)*igtp(2).ne.6.and.igtp(3)*igtp(4).eq.6))
+!     &           call quit(1,'import_hnox_molpro_ifc','not yet tested')
+!!     &           idxstr(1:nstr) = -idxstr(1:nstr)
 
         ! store integral in h2scr
         do istr = 1, nstr

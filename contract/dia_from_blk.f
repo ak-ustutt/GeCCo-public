@@ -9,7 +9,7 @@
 *     extended version, which implicitly assumes the input list
 *     to be multiplied with unit tensors for additional lines,
 *     and only adds to the output buffer (instead of replacing)
-*     
+*
 *     matthias, fall 2009
 *----------------------------------------------------------------------*
 
@@ -45,7 +45,7 @@
      &     first, ms_fix, fix_success
       integer ::
      &     njinp, njout, idxmsa, idxmsc, idxdis_1, idxdis_2,
-     &     ioff_1, ioff_2, ioffinp, ioffout, msa, msc, 
+     &     ioff_1, ioff_2, ioffinp, ioffout, msa, msc,
      &     igama, igamc, idxa, idxc, ngam, lena, lenc, iblkoff,
      &     ncblk, nablk, msc_max, msa_max, istr, idx1, idx2,
      &     icmp, ncablk2, igamca, msca, msca_max, idxmsca,
@@ -122,7 +122,7 @@
       ! sign for splitting middle vertex (due to normal ordering):
       ! \  ...  /     /0 b c d\           /a b c d\
       ! /e b c d\ --> \e 0 0 0/       --> \e f g h/
-      ! \e b c d/     /e 0 0 0\            ^-------- e odd : -1 
+      ! \e b c d/     /e 0 0 0\            ^-------- e odd : -1
       ! /  ...  \     \0 b c d/                      e even: +1
       fac = dble(1-2*mod(iocc0(1,2),2)) ! not relevant for unit tensors
 
@@ -210,7 +210,7 @@
         idxmsc = (msc_max-msc)/2 + 1
 
         ! Loop over Irrep of annihilator string.
-        igama_loop: do igama =1, ngam          
+        igama_loop: do igama =1, ngam
 
           igamc = multd2h(igama,meout%gamt)
 
@@ -255,7 +255,7 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
             end do
             do idx1 = 1, nablk0
                igamca = multd2h(igamca,gamdis_a0(idx1))
-            end do   
+            end do
 
             ! get ms, graph, hpvx strings of input operator,
             ! assuming that output operator represents the diagonal elements
@@ -383,7 +383,7 @@ c     &           meinp%len_op_gmo(iblkinp)%gam_ms(igamca,idxmsca)
                 else
 c dbg
 c                  write(lulog,'(1x,i5,f14.8," + ",f8.3," * ",f14.8,'//
-c     &'" = ",f14.8)') 
+c     &'" = ",f14.8)')
 c     &                    idx1,buffer_out(idx1),fac,buffer_inp(idx2),
 c     &                    buffer_out(idx1)+fac*buffer_inp(idx2)
 c dbg
@@ -395,9 +395,9 @@ c dbg
             end do idxc_loop
 
           end do distr_loop
-          
+
         end do igama_loop
-          
+
       end do msa_loop
 
       deallocate(hpvx_csub,hpvx_asub,
@@ -410,6 +410,7 @@ c dbg
      &         istr_csub,istr_asub,
      &         ldim_op_c,ldim_op_a,
      &         ldim_op_c2,ldim_op_a2,
+     &         istr_csub2,istr_asub2,
      &         hpvx_csub2,hpvx_asub2,
      &         occ_csub2, occ_asub2,
      &         graph_csub2, graph_asub2,
