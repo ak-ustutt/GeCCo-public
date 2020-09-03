@@ -511,8 +511,8 @@ c dbgend
       ! Header for molpro output
       if (lmol .and. .not. no_print) then
          write(luout,*)
-         write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
-     &      " CHANGE     RES       TIME   TIME/IT"
+         write(luout,'(A71)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &      " CHANGE     RES         TIME    TIME/IT"
       end if
 
 c dbg
@@ -551,7 +551,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
             if (lmol) then
                if (.not. no_print) then
                   time_per_it = cpu0_t / (iter-1)
-                  mol_format = '(i4,f18.8,f16.8,d12.2,f8.2,f10.2)'
+                  mol_format = '(i4,f18.8,f16.8,d12.2,f10.2,f11.2)'
                   mol_format2 = '(f22.8,f16.8,d12.2)'
 
                   if (conv) then

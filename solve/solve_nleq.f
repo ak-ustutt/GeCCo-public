@@ -353,9 +353,9 @@ cmh      end do
 
       if (lmol) then
          write(luout,*)
-         write(luout,'(A109)') "ITER.  NCI    TOTAL ENERGY    ENERGY
-     & CHANGE     RES       NSV    SV MIN     SV MAX    DIIS    TIME   "
-     & //"TIME/IT"
+         write(luout,'(A112)') "ITER.  NCI    TOTAL ENERGY    ENERGY
+     & CHANGE     RES       NSV    SV MIN     SV MAX    DIIS      TIME "
+     & //"   TIME/IT"
          ! Turn off the printing of ci iterations
          no_print = .true.
       end if
@@ -429,7 +429,7 @@ c     &       ff_trv,ff_h_trv,
            ! Print out new molpro output
            time_per_it = cpu0_t / (it_print)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
-     &                  "i6,f9.2,f10.2)"
+     &                  "i6,f11.2,f11.2)"
 
            if (multistate) then
 

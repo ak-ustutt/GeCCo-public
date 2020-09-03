@@ -571,8 +571,8 @@
      &     xbuf1,xbuf2,xbuf3,nincore, lenbuf)
 
       if (lmol) then
-         write(luout,'(A68)') "ITER.    TOTAL ENERGY    ENERGY"//
-     &     " CHANGE     RES       TIME   TIME/IT"
+         write(luout,'(A71)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &     " CHANGE     RES         TIME    TIME/IT"
       end if
 
       iter = 0
@@ -743,7 +743,7 @@ c dbg
          ! New molpro output
          if (lmol) then
             time_per_it = cpu0_t / iter
-            mol_format = '(i4,f17.8,f16.8,d13.2,f8.2,f10.2)'
+            mol_format = '(i4,f17.8,f16.8,d13.2,f10.2,f11.2)'
             mol_format2 = '(f21.8,f16.8,d13.2)'
 
             do i = 1, nroots
