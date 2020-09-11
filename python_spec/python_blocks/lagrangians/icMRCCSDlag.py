@@ -82,6 +82,8 @@ if keywords.is_keyword_set('method.MR_P.singles'): #remove single keyword or CEP
 else:
     if method in ["CEPT2","CCEPA","TCPT2"]:
         singles = 0
+    else:
+        singles = 8
     print("All singles operators are in the internal space")
 
 
@@ -633,25 +635,25 @@ elif method == 'TCPT2':
 
             LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
-        LAG_A1.append(_Lr_refexp("H*Te"))
-        LAG_A1.append(_Lr_refexp("H*Tr"))
-        LAG_A1.append(_Lr_refexp("-Te*H"))
-        LAG_A1.append(_Lr_refexp("-Tr*H"))
-        LAG_A1.append(_Lr_refexp("1/2*H*Te*Te"))
-        LAG_A1.append(_Lr_refexp("1/2*H*Tr*Tr"))
-        LAG_A1.append(_Lr_refexp("-Te*H*Te"))
-        LAG_A1.append(_Lr_refexp("-Tr*H*Tr"))
-        LAG_A1.append(_Lr_refexp("1/2*Te*Te*H"))
-        LAG_A1.append(_Lr_refexp("1/2*Tr*Tr*H"))
+        LAG_A1.append(_Ls_refexp("H*Te"))
+        LAG_A1.append(_Ls_refexp("H*Ts"))
+        LAG_A1.append(_Ls_refexp("-Te*H"))
+        LAG_A1.append(_Ls_refexp("-Ts*H"))
+        LAG_A1.append(_Ls_refexp("1/2*H*Te*Te"))
+        LAG_A1.append(_Ls_refexp("1/2*H*Ts*Ts"))
+        LAG_A1.append(_Ls_refexp("-Te*H*Te"))
+        LAG_A1.append(_Ls_refexp("-Ts*H*Ts"))
+        LAG_A1.append(_Ls_refexp("1/2*Te*Te*H"))
+        LAG_A1.append(_Ls_refexp("1/2*Ts*Ts*H"))
 
         LAG_A2.append(_Le_refexp("H*Te"))
-        LAG_A2.append(_Le_refexp("H*Tr"))
+        LAG_A2.append(_Le_refexp("H*Ts"))
         LAG_A2.append(_Le_refexp("-Te*H"))
-        LAG_A2.append(_Le_refexp("-Tr*H"))
+        LAG_A2.append(_Le_refexp("-Ts*H"))
         LAG_A2.append(_Le_refexp("1/2*H*Te*Te"))
-        LAG_A2.append(_Le_refexp("1/2*H*Tr*Tr"))
+        LAG_A2.append(_Le_refexp("1/2*H*Ts*Ts"))
         LAG_A2.append(_Le_refexp("-Te*H*Te"))
-        LAG_A2.append(_Le_refexp("-Tr*H*Tr"))
+        LAG_A2.append(_Le_refexp("-Ts*H*Ts"))
         LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
 
 elif method == 'CEPA0':
