@@ -1572,11 +1572,9 @@
 
       ! Reorder integrals into fixed slot order
       call reorder_integral(item%int(1),item%rank1,new_idx1,
-     &                      new_j,
-     &                      nt1,item%nops1)
+     &                      new_j,nt1,item%nops1)
       call reorder_integral(item%int(2),item%rank2,new_idx2,
-     &                      new_j,
-     &                      nt2,item%nops2)
+     &                      new_j,nt2,item%nops2)
 
       if (.not. item%inter(1) .and. .not. item%int(1)) then
          call reorder_amp(item%rank1, new_idx1)

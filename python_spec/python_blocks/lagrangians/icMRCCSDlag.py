@@ -604,12 +604,12 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'auicmrcc_mrccsd_11_doublet.itfaa',
-        TITLE:'auicmrcc_mrccsd_11_doublet.formulae',
+        OUTPUT:'icmrcc_mrccsd_11_doublet.itfaa',
+        TITLE:'icmrcc_mrccsd_11_doublet.formulae',
         MULTI:True,
         PROCESS:True,
         KEXT:False,
-        TASKS:True,
+        TASKS:False,
         INIT_RES:False,
         ITIN:True})
 

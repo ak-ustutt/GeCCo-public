@@ -353,6 +353,20 @@ if (not multi):
     print("tensor: Delta[ii],  Delta", file=f2)
     print("tensor: DeltaC[CC], DeltaC", file=f2)
 
+if (multi):
+    if (singles):
+        print("tensor: EDi1[], EDi1     // Direct 1st order energy", file=f2)
+        print("tensor: Nrm1[], Nrm1     // Singles amplitude norm", file=f2)
+        print("tensor: Var1[], Var1     // Singles residual norm", file=f2)
+    print("tensor: EDi2[], EDi2     // Direct 1st order energy", file=f2)
+    print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
+    print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
+    if (triples):
+        print("tensor: EDi3[], EDi3     // Direct 1st order energy", file=f2)
+        print("tensor: Nrm3[], Nrm3     // Singles amplitude norm", file=f2)
+        print("tensor: Var3[], Var3     // Singles residual norm", file=f2)
+    print(file=f2)
+
 # Declare density and overlap tensors
 if (multi):
     print(file=f2)
@@ -364,15 +378,14 @@ if (multi):
     print("tensor: fc:ee[ab], fc:ee", file=f2)
     print("tensor: fc:ca[ip], fc:ca", file=f2)
     print("", file=f2)
-    print("tensor: J:eacc[apij]", file=f2)
-    print("tensor: J:ecca[aijp]", file=f2)
     print("tensor: J:ecaa[aipq]", file=f2)
     print("tensor: J:eaaa[apqr]", file=f2)
     print("tensor: J:ccaa[ijpq]", file=f2)
     print("tensor: J:caaa[ipqr]", file=f2)
     print("tensor: J:ccca[ijkq]", file=f2)
+    print("tensor: J:eccc[aijk]", file=f2)
+    print("tensor: J:ecca[ajkp]", file=f2)
     print("tensor: K:ccaa[ijpq]", file=f2)
-    print("tensor: K:ecaa[aipq]", file=f2)
     print("", file=f2)
     print("// Effective Fock matricies",file=f2)
     print("tensor: g:aa[pq]", file=f2)
@@ -392,6 +405,8 @@ if (multi):
     print("tensor: Dm1H[pp],        DHm1",file=f2)
     print("tensor: Dm2H[pppp],      DHm2",file=f2)
     print("tensor: Dm3H[pppppp],    DHm3",file=f2)
+    print(file=f2)
+    print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
     print(file=f2)
 
     print("// Non-disk density matrix drivers",file=f2)
@@ -977,6 +992,12 @@ if (multi):
     print("drop Dm2HX",file=f2)
     print("drop deltaaa[**]",file=f2)
     print("store Dm3H",file=f2)
+    print("",file=f2)
+    print("alloc Ym1[pq]",file=f2)
+    print("load Dm1[pq]",file=f2)
+    print(".Ym1[pq] += .5*Dm1[pq]",file=f2)
+    print("drop Dm1[pq]",file=f2)
+    print("store Ym1[pq]",file=f2)
 
     print(file=f2)
     print(file=f2)

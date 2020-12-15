@@ -985,6 +985,8 @@ if (multi):
     print("tensor: Dm2H[pppp],      DHm2",file=f2)
     print("tensor: Dm3H[pppppp],    DHm3",file=f2)
     print(file=f2)
+    print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
+    print(file=f2)
 
     print("// Non-disk density matrix drivers",file=f2)
     print("// Can be loaded, but can not be stored.",file=f2)
@@ -1605,6 +1607,12 @@ if (multi):
     print("drop Dm2HX",file=f2)
     print("drop deltaaa[**]",file=f2)
     print("store Dm3H",file=f2)
+    print("",file=f2)
+    print("alloc Ym1",file=f2)
+    print("load Dm1",file=f2)
+    print(".Ym1[pq] += .5*Dm1[pq]",file=f2)
+    print("drop Dm1",file=f2)
+    print("store Ym1",file=f2)
 
     print(file=f2)
     print(file=f2)
