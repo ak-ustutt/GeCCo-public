@@ -873,12 +873,24 @@ for i in range(0, len(declare_ten)):
 declare_existing_tensors(declare_ten, "K-integral tensors", "K")
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
+if multi:
+    print("tensor: K4C[abmn], K4C", file=f2)
+
+
 if (kext):
     declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
 else:
     print(file=f2)
-    print("// Tensor to send to Kext", file=f2)
-    print("tensor: INTpp[abij], INTpp", file=f2)
+    if multi:
+        print("// Tensor to send to Kext", file=f2)
+        print("tensor: INTpp[abmn], INTpp", file=f2)
+        print("tensor: INTpp1[abmi], !Create{type:disk}, INTpp1", file=f2)
+        print("", file=f2)
+        print("tensor: deltaai[pm], DeltaActInt", file=f2)
+        print("tensor: deltaci[im], DeltaCloInt", file=f2)
+    else:
+        print("// Tensor to send to Kext", file=f2)
+        print("tensor: INTpp[abij], INTpp", file=f2)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
 #if (multi): print("tensor: R[I],  R:I", file=f2)
@@ -919,24 +931,25 @@ singles = False
 for i in range(0, len(declare_ten)):
     if ("T:ec" in declare_ten[i]):
         singles = True
-    break
+        break
+
+if (singles):
+    print("tensor: EDi1[], EDi1     // Direct 1st order energy", file=f2)
+    print("tensor: Nrm1[], Nrm1     // Singles amplitude norm", file=f2)
+    print("tensor: Var1[], Var1     // Singles residual norm", file=f2)
+print("tensor: EDi2[], EDi2     // Direct 1st order energy", file=f2)
+print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
+print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
+if (triples):
+    print("tensor: EDi3[], EDi3     // Direct 1st order energy", file=f2)
+    print("tensor: Nrm3[], Nrm3     // Singles amplitude norm", file=f2)
+    print("tensor: Var3[], Var3     // Singles residual norm", file=f2)
 
 if (not multi):
-    # Tensors needed in CCD
-    print("tensor: ERef[], ERef     // Reference energy", file=f2)
-    if (singles):
-        print("tensor: EMp1[], EMp1     // MP2 energy", file=f2)
-        print("tensor: EDi1[], EDi1     // Direct 1st order energy", file=f2)
-        print("tensor: Nrm1[], Nrm1     // Singles amplitude norm", file=f2)
-        print("tensor: Var1[], Var1     // Singles residual norm", file=f2)
+    # Tensors needed in single-reference CCSD
+    print("tensor: EMp1[], EMp1     // MP2 energy", file=f2)
     print("tensor: EMp2[], EMp2     // MP2 energy", file=f2)
-    print("tensor: EDi2[], EDi2     // Direct 1st order energy", file=f2)
-    print("tensor: Nrm2[], Nrm2     // Doubles amplitude norm", file=f2)
-    print("tensor: Var2[], Var2     // Doubles residual norm", file=f2)
-    if (triples):
-        print("tensor: EDi3[], EDi3     // Direct 1st order energy", file=f2)
-        print("tensor: Nrm3[], Nrm3     // Singles amplitude norm", file=f2)
-        print("tensor: Var3[], Var3     // Singles residual norm", file=f2)
+    print("tensor: ERef[], ERef     // Reference energy", file=f2)
     print(file=f2)
     print("// Tensors needed to calculate the reference energy", file=f2)
     print("tensor: f:CC[CC],   f:CC", file=f2)
@@ -956,15 +969,27 @@ if (multi):
     print("tensor: fc:ee[ab], fc:ee", file=f2)
     print("tensor: fc:ca[ip], fc:ca", file=f2)
     print("", file=f2)
-    print("tensor: J:eacc[apij]", file=f2)
-    print("tensor: J:ecca[aijp]", file=f2)
-    print("tensor: J:ecaa[aipq]", file=f2)
-    print("tensor: J:eaaa[apqr]", file=f2)
-    print("tensor: J:ccaa[ijpq]", file=f2)
-    print("tensor: J:caaa[ipqr]", file=f2)
-    print("tensor: J:ccca[ijkq]", file=f2)
-    print("tensor: K:ccaa[ijpq]", file=f2)
-    print("tensor: K:ecaa[aipq]", file=f2)
+    combined = '\t'.join(declare_ten)
+    if "J:eacc" not in combined:
+        print("tensor: J:eacc[apij]", file=f2)
+    if "J:ecca" not in combined:
+        print("tensor: J:ecca[aijp]", file=f2)
+    if "J:ecaa" not in combined:
+        print("tensor: J:ecaa[aipq]", file=f2)
+    if "J:eaaa" not in combined:
+        print("tensor: J:eaaa[apqr]", file=f2)
+    if "J:ccaa" not in combined:
+        print("tensor: J:ccaa[ijpq]", file=f2)
+    if "J:caaa" not in combined:
+        print("tensor: J:caaa[ipqr]", file=f2)
+    if "J:ccca" not in combined:
+        print("tensor: J:ccca[ijkp]", file=f2)
+    if "J:eccc" not in combined:
+        print("tensor: J:eccc[aijk]", file=f2)
+    if "K:ccaa" not in combined:
+        print("tensor: K:ccaa[ijpq]", file=f2)
+    if "K:ecaa" not in combined:
+        print("tensor: K:ecaa[aipq]", file=f2)
     print("", file=f2)
     print("// Effective Fock matricies",file=f2)
     print("tensor: g:aa[pq]", file=f2)
@@ -984,8 +1009,9 @@ if (multi):
     print("tensor: Dm1H[pp],        DHm1",file=f2)
     print("tensor: Dm2H[pppp],      DHm2",file=f2)
     print("tensor: Dm3H[pppppp],    DHm3",file=f2)
-    print(file=f2)
-    print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
+    if "Ym1" not in combined:
+        print(file=f2)
+        print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
     print(file=f2)
 
     print("// Non-disk density matrix drivers",file=f2)
@@ -1007,15 +1033,15 @@ if (multi):
     print("tensor: S1:I1[pp],       S1:I1",file=f2)
     print("tensor: S2:I1[pppppp],   S2:I1",file=f2)
     print("tensor: S3:I1[pppp],     S3:I1",file=f2)
-    print("tensor: S1:I2[pppp],     S1:I2",file=f2)
+    print("tensor: S2:I2[pppp],     S2:I2",file=f2)
     print("tensor: S1:S0[pp],       S1:S0",file=f2)
     print("tensor: S2:S0[pppppp],   S2:S0",file=f2)
     print("tensor: S3:S0[pppp],     S3:S0",file=f2)
     print("tensor: S2:S1[pppp],     S2:S1",file=f2)
     print("tensor: S3:S1[pp],       S3:S1",file=f2)
-    print("tensor: S1:S2[pp],       S1:S2",file=f2)
-    print("tensor: S1:P0[pppp],     S1:P0",file=f2)
-    print("tensor: S1:P1[pp],       S1:P1",file=f2)
+    print("tensor: S2:S2[pp],       S2:S2",file=f2)
+    print("tensor: S2:P0[pppp],     S2:P0",file=f2)
+    print("tensor: S2:P1[pp],       S2:P1",file=f2)
     print(file=f2)
     print("// Orthogonal residuals",file=f2)
     print("tensor: OR:I[I], OR:I", file=f2)
@@ -1024,7 +1050,7 @@ if (multi):
     print("tensor: OR:ea[ap], OR:ea", file=f2)
     print("tensor: OR:aacc[pqij], OR:aacc", file=f2)
     print("tensor: OR:aaac[pqri], OR:aaac", file=f2)
-    print("tensor: OR:eacc[apij], OR:eacx", file=f2)
+    print("tensor: OR:eacc[apij], OR:eacc", file=f2)
     print("tensor: OR:eaac[apqi], OR:eaac", file=f2)
     print("tensor: OR:eaaa[apqr], OR:eaaa", file=f2)
     print("tensor: OR:eecc[abij], OR:eecc", file=f2)
@@ -1038,12 +1064,22 @@ if (multi):
     print("tensor: OT:ea[ap], OT:ea", file=f2)
     print("tensor: OT:aacc[pqij], OT:aacc", file=f2)
     print("tensor: OT:aaac[pqri], OT:aaac", file=f2)
-    print("tensor: OT:eacc[apij], OT:eacx", file=f2)
+    print("tensor: OT:eacc[apij], OT:eacc", file=f2)
     print("tensor: OT:eaac[apqi], OT:eaac", file=f2)
     print("tensor: OT:eaaa[apqr], OT:eaaa", file=f2)
     print("tensor: OT:eecc[abij], OT:eecc", file=f2)
     print("tensor: OT:eeac[abpi], OT:eeac", file=f2)
     print("tensor: OT:eeaa[abpq], OT:eeaa", file=f2)
+
+    print("", file=f2)
+    print("// Active preconditioner blocks", file=f2)
+    print("tensor: A1[pp],    !Create{type:disk; sym:+01}", file=f2)
+    print("//tensor: A2[ppppp], !Create{type:disk; sym:012/345}", file=f2)
+    print("//tensor: A3[pppp], !Create{type:disk; sym:01/23}", file=f2)
+    print("tensor: A4[pp],    !Create{type:disk; sym:+01}", file=f2)
+    print("//tensor: A5[pppppp],  !Create{type:disk; sym:012/345}", file=f2)
+    print("//tensor: A6[pppp], !Create{type:disk; sym:01/23}", file=f2)
+    print("tensor: gminus[ij],!Create{type:disk; sym:+01}", file=f2)
 
 # Declare denominator shifts
 print(file=f2)
@@ -1136,13 +1172,26 @@ if (not multi):
 print(file=f2)
 print(file=f2)
 print('---- code("Update_Kext_Tensor")', file=f2)
+print("// Intermediate to pass to Kext", file=f2)
 if (not kext):
-    print("// Intermediate to pass to Kext", file=f2)
-    print("alloc INTpp[abij]",file=f2)
-    print("load T:eecc[abij]",file=f2)
-    print(".INTpp[abij] := T:eecc[abij]",file=f2)
-    print("drop T:eecc[abij]",file=f2)
-    print("store INTpp[abij]",file=f2)
+    if multi:
+        print("alloc INTpp1[abmi]", file=f2)
+        print("alloc INTpp[abmn]", file=f2)
+        print("load deltaci[im], deltaai[pm]", file=f2)
+        print("load T:eecc[abij], T:eeac[abpi]", file=f2)
+        print(".INTpp1[abmj] += T:eecc[abij] deltaci[im]", file=f2)
+        print(".INTpp1[abmi] += T:eeac[abpi] deltaai[pm]", file=f2)
+        print(".INTpp[abmn] += INTpp1[abmj] deltaci[jn]", file=f2)
+        print("drop T:eeac[abpi], T:eecc[abij]", file=f2)
+        print("drop deltaai[pm], deltaci[im]", file=f2)
+        print("store INTpp[abmn]", file=f2)
+        print("store INTpp1[abmi]", file=f2)
+    else:
+        print("alloc INTpp[abij]",file=f2)
+        print("load T:eecc[abij]",file=f2)
+        print(".INTpp[abij] := T:eecc[abij]",file=f2)
+        print("drop T:eecc[abij]",file=f2)
+        print("store INTpp[abij]",file=f2)
 else:
     kext_temp.seek(0)
     for line in kext_temp:
@@ -1150,6 +1199,22 @@ else:
 
     print("store INTpp[abij]",file=f2)
 
+# Transform K ext from internal indicies to closed and active
+if multi:
+    print("", file=f2)
+    print("", file=f2)
+    print('---- code("Transform_K")', file=f2)
+    print("alloc K4E1[abij], K4E2[abpi]", file=f2)
+    print("alloc INTpp1[abmi]", file=f2)
+    print("load deltaci[im], deltaai[pm]", file=f2)
+    print("load K4C[abmn]", file=f2)
+    print(".INTpp1[abmj] += K4C[abmn] deltaci[jn]", file=f2)
+    print(".K4E1[abij] += INTpp1[abmj] deltaci[im]", file=f2)
+    print(".K4E2[abpi] += INTpp1[abmi] deltaai[pm]", file=f2)
+    print("drop K4C[abmn]", file=f2)
+    print("drop deltaai[pm], deltaci[im]", file=f2)
+    print("drop INTpp1[abmi]", file=f2)
+    print("store K4E2[abpi], K4E1[abij]", file=f2)
 
 # Print out Init_Residual
 if (initalise):
@@ -1159,6 +1224,86 @@ if (initalise):
     init_res_temp.seek(0)
     for line in init_res_temp:
         print(line.strip(), file=f2)
+
+if multi:
+    print(file=f2)
+    print(file=f2)
+    print('---- code("Init_Residual")', file=f2)
+    combined = '\t'.join(declare_res)
+    if "R:eecc" in combined:
+        print("alloc R:eecc[abij]", file=f2)
+        print("load K:eecc[abij]", file=f2)
+        print(".R:eecc[abij] += K:eecc[abij]", file=f2)
+        print("drop K:eecc[abij]", file=f2)
+        print("store R:eecc[abji]", file=f2)
+        print("", file=f2)
+    if "R:eeac" in combined:
+        print("alloc R:eeac[bapi]", file=f2)
+        print("load K:eeac[baqi], Ym1[qp]", file=f2)
+        print(".R:eeac[bapi] -= K:eeac[baqi] Ym1[qp]", file=f2)
+        print("drop Ym1[qp], K:eeac[baqi]", file=f2)
+        print("store R:eeac[bapi]", file=f2)
+        print("", file=f2)
+    if "R:eacc" in combined:
+        print("alloc R:eacc[apij]", file=f2)
+        print("load K:eacc[apij]", file=f2)
+        print(".R:eacc[apij] += K:eacc[apij]", file=f2)
+        print("drop K:eacc[apij]", file=f2)
+        print("load Ym1[pq], K:eacc[aqij]", file=f2)
+        print(".R:eacc[apij] -= Ym1[pq] K:eacc[aqij]", file=f2)
+        print("drop K:eacc[aqij], Ym1[pq]", file=f2)
+        print("store R:eacc[apij]", file=f2)
+    if "R:ec" in combined:
+        print("", file=f2)
+        print("alloc R:ec[ai]", file=f2)
+        print("load f:ec[ai]", file=f2)
+        print(".R:ec[ai] += f:ec[ai]", file=f2)
+        print("drop f:ec[ai]", file=f2)
+        print("load Ym1[pq], K:eaca[aqip], K:eaac[aqpi]", file=f2)
+        print(".R:ec[ai] += Ym1[pq] (K:eaca[aqip] - K:eaac[aqpi])", file=f2)
+        print("drop K:eaac[aqpi], K:eaca[aqip], Ym1[pq]", file=f2)
+        print("load Ym1[pq], K:eaca[aqip]", file=f2)
+        print(".R:ec[ai] += Ym1[pq] K:eaca[aqip]", file=f2)
+        print("drop K:eaca[aqip], Ym1[pq]", file=f2)
+        print("store R:ec[ai]", file=f2)
+    if "R:ea" in combined:
+        print("", file=f2)
+        print("alloc R:ea[ap]", file=f2)
+        print("load f:ea[aq], Ym1[qp]", file=f2)
+        print(".R:ea[ap] += f:ea[aq] Ym1[qp]", file=f2)
+        print("drop Ym1[qp], f:ea[aq]", file=f2)
+        print("store R:ea[ap]", file=f2)
+    if "R:ac" in combined:
+        print("", file=f2)
+        print("alloc R:ac[pi]", file=f2)
+        print("load f:ac[pi]", file=f2)
+        print(".R:ac[pi] += f:ac[pi]", file=f2)
+        print("drop f:ac[pi]", file=f2)
+        print("load Ym1[pq], f:ac[qi]", file=f2)
+        print(".R:ac[pi] -= Ym1[pq] f:ac[qi]", file=f2)
+        print("drop f:ac[qi], Ym1[pq]", file=f2)
+        print("load Ym1[qr], K:aaac[rpqi]", file=f2)
+        print(".R:ac[pi] += Ym1[qr] (K:aaac[rpqi] - K:aaac[rqpi])", file=f2)
+        print(".R:ac[pi] += Ym1[qr] K:aaac[rpqi]", file=f2)
+        print("drop K:aaac[rpqi], Ym1[qr]", file=f2)
+        print("store R:ac[pi]", file=f2)
+    if "R:eaca" in combined:
+        print("", file=f2)
+        print("alloc R:eaca[apiq]", file=f2)
+        print("load Ym1[pq], f:ec[ai]", file=f2)
+        print(".R:eaca[apiq] -= Ym1[pq] f:ec[ai]", file=f2)
+        print("drop f:ec[ai], Ym1[pq]", file=f2)
+        print("load K:eaca[apir], Ym1[rq]", file=f2)
+        print(".R:eaca[apiq] -= K:eaca[apir] Ym1[rq]", file=f2)
+        print("drop Ym1[rq], K:eaca[apir]", file=f2)
+        print("store R:eaca[apiq]", file=f2)
+    if "R:eaac" in combined:
+        print("", file=f2)
+        print("alloc R:eaac[apqi]", file=f2)
+        print("load K:eaac[apqi], Ym1[rq]", file=f2)
+        print(".R:eaac[apqi] += K:eaac[apri] Ym1[rq]", file=f2)
+        print("drop Ym1[rq], K:eaac[apqi]", file=f2)
+        print("store R:eaac[apqi]", file=f2)
 
 
 # Print out residual equations
@@ -1316,6 +1461,29 @@ if (multi):
     print('drop K:aaaa[****]', file=f2)
     print('drop Dm1[**]', file=f2)
     print('store g:aa[**]', file=f2)
+    print("", file=f2)
+    print("// Construct active preconditoner blocks", file=f2)
+    print("alloc A1[**]", file=f2)
+    print("load f:aa[**], Dm1[**], K:aaaa[pqrs]", file=f2)
+    print(".A1[pq] += 2.*f:aa[pq]", file=f2)
+    print(".A1[ps] -= f:aa[pq] Dm1[qs]", file=f2)
+    print(".A1[pq] += K:aaaa[pqrs] Dm1[rs]", file=f2)
+    print("drop K:aaaa[pqrs], Dm1[**], f:aa[**]", file=f2)
+    print("store A1[**]", file=f2)
+    print("", file=f2)
+    print("alloc A4[**]", file=f2)
+    print("load f:aa[**], Dm1[**]", file=f2)
+    print(".A4[ps] += f:aa[pq] Dm1[qs]", file=f2)
+    print("drop Dm1[**], f:aa[**]", file=f2)
+    print("store A4[**]", file=f2)
+    print("", file=f2)
+    print("// Bug in ITF, for R:ac doesn't work with -g:cc[ii], does", file=f2)
+    print("// work with + g:cc[ii]. So add minus here...", file=f2)
+    print("alloc gminus[**]", file=f2)
+    print("load g:cc[**]", file=f2)
+    print(".gminus[ij] -= g:cc[ij]", file=f2)
+    print("drop g:cc[**]", file=f2)
+    print("store gminus[**]", file=f2)
 
 
 # Apply preconditioner and update amplitudes
@@ -1608,11 +1776,11 @@ if (multi):
     print("drop deltaaa[**]",file=f2)
     print("store Dm3H",file=f2)
     print("",file=f2)
-    print("alloc Ym1",file=f2)
-    print("load Dm1",file=f2)
+    print("alloc Ym1[pq]",file=f2)
+    print("load Dm1[pq]",file=f2)
     print(".Ym1[pq] += .5*Dm1[pq]",file=f2)
-    print("drop Dm1",file=f2)
-    print("store Ym1",file=f2)
+    print("drop Dm1[pq]",file=f2)
+    print("store Ym1[pq]",file=f2)
 
     print(file=f2)
     print(file=f2)
@@ -1651,11 +1819,11 @@ if (multi):
     print("store S3:I1[pqrs]",file=f2)
     print("",file=f2)
     print("// I2",file=f2)
-    print("alloc S1:I2[pqrs]",file=f2)
+    print("alloc S2:I2[pqrs]",file=f2)
     print("load Dm2H[pppp]",file=f2)
-    print(".S1:I2[pqrs] := Dm2H[pqrs]",file=f2)
+    print(".S2:I2[pqrs] := Dm2H[pqrs]",file=f2)
     print("drop Dm2H[pppp]",file=f2)
-    print("store S1:I2[pqrs]",file=f2)
+    print("store S2:I2[pqrs]",file=f2)
     print("",file=f2)
     print("// S0",file=f2)
     print("alloc S1:S0[pq]",file=f2)
@@ -1692,25 +1860,25 @@ if (multi):
     print("store S3:S1[pq]",file=f2)
     print("",file=f2)
     print("// S2",file=f2)
-    print("alloc S1:S2[pq]",file=f2)
+    print("alloc S2:S2[pq]",file=f2)
     print("load Dm1H[pq]",file=f2)
-    print(".S1:S2[pq] := Dm1H[pq]",file=f2)
+    print(".S2:S2[pq] := Dm1H[pq]",file=f2)
     print("drop Dm1H[pq]",file=f2)
-    print("store S1:S2[pq]",file=f2)
+    print("store S2:S2[pq]",file=f2)
     print("",file=f2)
     print("// P0",file=f2)
-    print("alloc S1:P0[pqrs]",file=f2)
+    print("alloc S2:P0[pqrs]",file=f2)
     print("load Dm2[pppp]",file=f2)
-    print(".S1:P0[pqrs] := Dm2[pqrs]",file=f2)
+    print(".S2:P0[pqrs] := Dm2[pqrs]",file=f2)
     print("drop Dm2[pppp]",file=f2)
-    print("store S1:P0[pqrs]",file=f2)
+    print("store S2:P0[pqrs]",file=f2)
     print("",file=f2)
     print("// P1",file=f2)
-    print("alloc S1:P1[pq]",file=f2)
+    print("alloc S2:P1[pq]",file=f2)
     print("load Dm1[pp]",file=f2)
-    print(".S1:P1[pq] := Dm1[pq]",file=f2)
+    print(".S2:P1[pq] := Dm1[pq]",file=f2)
     print("drop Dm1[pp]",file=f2)
-    print("store S1:P1[pq]",file=f2)
+    print("store S2:P1[pq]",file=f2)
     print(file=f2)
 
 print("---- end", file=f2)
