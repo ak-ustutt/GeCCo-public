@@ -947,7 +947,8 @@ if (triples):
 
 if (not multi):
     # Tensors needed in single-reference CCSD
-    print("tensor: EMp1[], EMp1     // MP2 energy", file=f2)
+    if singles:
+        print("tensor: EMp1[], EMp1     // MP2 energy", file=f2)
     print("tensor: EMp2[], EMp2     // MP2 energy", file=f2)
     print("tensor: ERef[], ERef     // Reference energy", file=f2)
     print(file=f2)

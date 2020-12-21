@@ -148,8 +148,7 @@
 * 1 DIIS
 * 2 RLE (ASSJ)
 * 3 2ND-ORDER optimization
-      !iroute = opti_info%mode_nleq
-      iroute = 0
+      iroute = opti_info%mode_nleq
 
       if (iprint.ge.5.or.imacit.eq.0) then
         write(lulog,*) 'Optimization algorithm:    ',name_alg(iroute)
