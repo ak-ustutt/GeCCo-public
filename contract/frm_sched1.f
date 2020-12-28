@@ -97,8 +97,9 @@
      &     iocc_op1op2(:,:,:),
      &     irst_op1op2(:,:,:,:,:),
      &     iocc_op1op2tmp(:,:,:),
-     &     irst_op1op2tmp(:,:,:,:,:),
-     &     svertex_itf(:)
+     &     irst_op1op2tmp(:,:,:,:,:)
+      integer ::
+     &     itf_index_info
       type(operator), pointer ::
      &     opscr(:), optmp
       type(me_list), pointer ::
@@ -375,7 +376,7 @@ c fix:
      &       merge_op1(10*nvtx*nvtx), ! a bit too large, I guess ...
      &       merge_op2(10*nvtx*nvtx),
      &       merge_op1op2(10*nvtx*nvtx),
-     &       merge_op2op1(10*nvtx*nvtx),svertex_itf(nvtx))
+     &       merge_op2op1(10*nvtx*nvtx))
         allocate(
      &       occ_vtx_red(ngastp,2,nvtx+njoined_res),
      &       irestr_vtx_red(2,orb_info%ngas,2,2,nvtx+njoined_res),
@@ -421,6 +422,8 @@ c          new = .false.!cur_contr%nvtx.ge.4
             call init_reo_info(reo_info)
           end if
 
+          itf_index_info=-1
+
           call get_bc_info3(bc_sign,idum,possible,
      &         idxop,iblkop,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
@@ -431,7 +434,7 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         igamtop,igamtop1op2,
      &         njoined_op, njoined_op1op2, njoined_cnt,
      &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
-     &         svertex_itf,
+     &         itf_index_info,
      &         cur_contr,occ_vtx,irestr_vtx,info_vtx,
      &         make_contr_red,
      &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
@@ -611,8 +614,7 @@ c            me_op1op2tmp%fix_vertex_ms = me_op1op2%fix_vertex_ms
         deallocate(
      &       occ_vtx,irestr_vtx,info_vtx,
      &       occ_vtx_red,irestr_vtx_red,info_vtx_red,
-     &       merge_op1,merge_op2,merge_op1op2,merge_op2op1,
-     &       svertex_itf)
+     &       merge_op1,merge_op2,merge_op1op2,merge_op2op1)
         deallocate(
      &       iocc_op1, iocc_op2,
      &       irst_op1, irst_op2,

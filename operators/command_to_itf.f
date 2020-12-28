@@ -643,11 +643,11 @@
       integer ::
      &   i,                  ! Loop index
      &   perm_case,          ! Info of permutation factors
-     &   ntest1 =  00,       ! Control debug: init_itf_contr
-     &   ntest2 =  00,       ! Control debug: assign_index
-     &   ntest3 =  00,       ! Control debug: determine permuation
-     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
-     &   ntest5 =  00,       ! Control debug: prepare permutation
+     &   ntest1 =  100,       ! Control debug: init_itf_contr
+     &   ntest2 =  100,       ! Control debug: assign_index
+     &   ntest3 =  100,       ! Control debug: determine permuation
+     &   ntest4 =  100,       ! Control debug: prepare_symmetrise
+     &   ntest5 =  100,       ! Control debug: prepare permutation
      &   ntest6 =  00,       ! Control debug: assign_spin
      &   ntest7 =  00,       ! Control debug: print_spin_cases
      &   ntest8 =  00,       ! Control debug: print_symmetrise
@@ -657,8 +657,11 @@
      &   intpp,              ! Use INTPP kext intermeidate
      &   pline               ! True if including a permuation line
 
+      logical, parameter :: new = .true.
+      
       if (ntest1>=100 .or. ntest2>=100) then
          write(itflog,*) "FORMULA NUMBER: ", counter(1)
+         call prt_bcontr(itflog,contr_info) 
       end if
 
       ! Begin a special block which the python processor will pull out
@@ -674,11 +677,12 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,counter,tasks,ntest1)
+     &                    inter_itype,counter,tasks,new,ntest1)
 
 
       ! 2. Assign index / Determine sign
-      call assign_index(item,ntest2)
+      if (new) call assign_index(item,contr_info,ntest2)
+      if (.not.new) call assign_index_old(item,ntest2)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -714,8 +718,9 @@
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,counter,tasks,ntest5)
-            call assign_index(pitem,ntest5)
+     &                           inter_itype,counter,tasks,new,ntest5)
+            if (new) call assign_index(pitem,contr_info,ntest5)
+            if (.not.new) call assign_index_old(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
             pitem%label_res = item%label_res
@@ -733,8 +738,9 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,counter,tasks,ntest5)
-         call assign_index(pitem,ntest5)
+     &                       inter_itype,counter,tasks,new,ntest5)
+         if (new) call assign_index(pitem,contr_info,ntest5)
+         if (.not.new) call assign_index_old(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
          pitem%label_res = item%label_res
@@ -803,7 +809,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,counter,tasks,ntest)
+     &                          itype,counter,tasks,use_sign,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -830,7 +836,8 @@
      &   ntest
       logical, intent(in) ::
      &   itin,
-     &   tasks
+     &   tasks,
+     &   use_sign
 
       integer ::
      &   i
@@ -870,9 +877,9 @@
       call itf_equiv_lines_factor(item%c, item%fact)
 
       ! Get any remaining factors from GeCCo
-      item%fact = item%fact * abs(contr_info%fact_itf)
+      if (use_sign) item%fact = item%fact * contr_info%fact_itf
+      if (.not.use_sign) item%fact = item%fact *abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
-
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
@@ -1033,10 +1040,10 @@
       ! Set vertex info, used to calculate overal sign in assign_index()
       allocate(item%vertex(contr_info%nj_op1 + contr_info%nj_op2))
       do i = 1, contr_info%nj_op1 + contr_info%nj_op2
-         item%vertex(i) = contr_info%svertex_itf(i)
+         item%vertex(i) = -1 ! OBSOLETE contr_info%svertex_itf(i)
       end do
 
-      !write(item%out,*) "vertex ", item%vertex
+      if (ntest>=0) write(item%out,*) "vertex ", item%vertex
 
       item%nj_op1 = contr_info%nj_op1
       item%nj_op2 = contr_info%nj_op2
@@ -2858,9 +2865,278 @@
       return
       end
 
+*----------------------------------------------------------------------*
+      subroutine set_index_str(str,index_info,nidx)
+*----------------------------------------------------------------------*
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) :: str
+      integer :: nidx, index_info(nidx)
+      
+      character, parameter ::
+     &     label(10,4) = (/(/'i','j','k','l','m','n','o',' ',' ',' '/),
+     &                     (/'a','b','c','d','e','f','g','h',' ',' '/),
+     &                     (/'p','q','r','s','t','u','v','w','x','y'/),
+     &                     (/'P','Q','R','S','T','U',' ',' ',' ',' '/)
+     &     /)
+      integer, parameter ::
+     &     shift_type(4) = (/3,1,2,4/)  ! 'canonical' values
+
+      integer :: ii, type, idx
+      
+      do ii = 1, nidx
+        type = index_info(ii) / 1000
+        idx  = mod(index_info(ii),1000)
+        str%str(ii) = label(idx,type)
+        str%itype(ii) = shift_type(type)
+      end do
+      
+      end subroutine
+      
+*----------------------------------------------------------------------*
+      subroutine assign_index(item,contr_info,ntest)
+*----------------------------------------------------------------------*
+!     Assign an ITF index string to each tensor in a line
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &     item                 ! ITF binary contraction
+      type(binary_contr), intent(in) ::
+     &     contr_info
+      integer, intent(in) ::
+     &   ntest
+
+      integer ::
+     &   c(ngastp,2),        ! Operator numbers of contraction index
+     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
+     &   e1(ngastp,2),       ! Operator numbers of external index 1
+     &   e2(ngastp,2),       ! Operator numbers of external index 2
+     &   shift,         ! List shift
+     &   sc,         ! List shift
+     &   n_cnt,         ! Number of contraction operators
+     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+     &   distance,      ! Distance from where an index should be
+     &   pp, pp2,            ! Paired position - position of paired index
+     &   i, j, k, l, idx, jdx, ioff, nidx, ncnt,
+     &   v1, v2,
+     &   itype(INDEX_LEN)
+      character(len=INDEX_LEN) ::
+     &   s1, s2, s3,  ! Tmp ITF index strings
+     &   tstr
+      character(len=50) ::
+     &   constr
+      character(len=1) ::
+     &   tmp       ! Scratch space to store index letter
+      real(8) ::
+     &   p_factor       ! Overall factor from contraction/rearrangment
+      integer, dimension(4) ::
+     &   e_shift,       ! Index shift for external indices
+     &   c_shift        ! Index shift for contraction indices
+      type(index_str) ::
+     &   str1,          ! Stores 'normal ordered' index string for T1
+     &   str2,          ! Stores 'normal ordered' index string for T2
+     &   str3           ! Stores 'normal ordered' index string for Res
+
+      logical ::        ! These are used when finding pairs of external ops
+     &   is_cnt,        ! True if the operator is a contraction op
+     &   p1, p2,
+     &   found
+
+      if (ntest>=100) call debug_header("assign_index", item%out)
+
+
+      ! Set operator numbers
+      c=item%c
+      e1=item%e1
+      e2=item%e2
+
+      ! Factor due to permuation of annhilation and creation indices
+      p_factor = 1.0d0
+
+      ! Set number of contraction indicies
+      n_cnt = item%contri
+
+      ! Allocate index_str objects
+      call init_index_str(str1, item%rank1, n_cnt)
+      call init_index_str(str2, item%rank2, n_cnt)
+      call init_index_str(str3, item%rank3, n_cnt)
+      
+      ioff = 3
+      nidx = contr_info%itf_index_info(1)
+      if (nidx.ne.item%rank1)
+     &     call quit(1,'assign_index','rank mismatch (1)')
+      call set_index_str(str1,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx) 
+
+      ioff = ioff+nidx
+      nidx = contr_info%itf_index_info(2)
+      if (nidx.ne.item%rank2)
+     &     call quit(1,'assign_index','rank mismatch (2)')
+      call set_index_str(str2,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx) 
+
+      ioff = ioff+nidx
+      nidx = contr_info%itf_index_info(3)
+      if (nidx.ne.item%rank3)
+     &     call quit(1,'assign_index','rank mismatch (3)')
+      call set_index_str(str3,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
+
+! get cnt_poss from index matching
+      ncnt = 0
+      do idx = 1, item%rank1
+        do jdx = 1, item%rank2
+          if (str1%str(idx)==str2%str(jdx)) then
+            ncnt = ncnt+1
+            str1%cnt_poss(ncnt) = idx
+            str2%cnt_poss(ncnt) = jdx
+          end if
+        end do
+      end do
+      
+      if (ntest>=100) then
+         write(item%out,*) "After create_index_str"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str1%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str1%cnt_poss
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str2%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str2%cnt_poss
+      end if
+
+
+
+      ! Rearrange intermediate index to match previously declared inter
+      ! index. This uses the itype array from the previous lines
+      if (item%inter(1)) then
+         call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
+     &                           item%itype, item%label_t1)
+         if (ntest>=100) then
+            write(item%out,*) "After arragne_inter_itpye, inter(1)"
+            write(item%out,*) "T1: {", str1%str, "}"
+            write(item%out,*) "itpye: {", str1%itype, "}"
+            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+            write(item%out,*) "previous itype: ", itype
+         end if
+      end if
+      if (item%inter(2)) then
+         call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
+     &                           item%itype, item%label_t2)
+         if (ntest>=100) then
+            write(item%out,*) "After arragne_inter_itpye, inter(2)"
+            write(item%out,*) "T2: {", str1%str, "}"
+            write(item%out,*) "itpye: {", str1%itype, "}"
+            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+            write(item%out,*) "previous itype: ", itype
+         end if
+      end if
+
+      if (ntest>=100) then
+         write(item%out,*) "Index strings in normal order"
+         write(item%out,*) "Result string in arbitary order"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,*) "Res: {", str3%str, "}"
+         write(item%out,*) "Contraction T1: ", str1%cnt_poss
+         write(item%out,*) "Contraction T2: ", str2%cnt_poss
+         write(item%out,*) "Inital factor: ", p_factor
+      end if
+
+      ! Due to how the R:ea residual is defined, {p a^+} instead of
+      ! {a^+ p}, we need an extra minus to flip the normal ordered
+      ! string.
+      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+         if (.not. item%inter(3)) then
+
+            p_factor = p_factor * -1.0d0
+            if (ntest>100) then
+               write(item%out,*) "Update factor (R:ea)", p_factor
+            end if
+         end if
+      end if
+
+      if (ntest>=100) then
+         write(item%out,*) "Result string in normal order"
+         write(item%out,*) "Res: {", str3%str, "}"
+      end if
+
+
+      ! TODO: put this in reorder_integral
+      if (item%rank1 == 2) then
+         if (str1%itype(1)>str1%itype(2)) then
+            tmp = str1%str(1)
+            str1%str(1) = str1%str(2)
+            str1%str(2) = tmp
+         end if
+      end if
+      if (item%rank2 == 2) then
+         if (str2%itype(1)>str2%itype(2)) then
+            tmp = str2%str(1)
+            str2%str(1) = str2%str(2)
+            str2%str(2) = tmp
+         end if
+      end if
+
+
+      s1 = ""
+      s2 = ""
+      s3 = ""
+
+      do i = 1, item%rank1/2
+         s1(i:i) = str1%str(i)
+         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+      end do
+      do i = 1, item%rank2/2
+         s2(i:i) = str2%str(i)
+         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+      end do
+      do i = 1, item%rank3/2
+         s3(i:i) = str3%str(i)
+         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+      end do
+
+      if (ntest>=100) then
+         if (p_factor>0.0d0) then
+            tmp = '+'
+         else
+            tmp = '-'
+         end if
+
+         write(item%out,*) "Final indices"
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+     &                         "}{",str2%str,"}"
+
+         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+     &                         "][",trim(s2),"]"
+         write(item%out,*) "---------------------------"
+      end if
+
+      item%idx1=trim(s1)
+      item%idx2=trim(s2)
+      item%idx3=trim(s3)
+      item%fact = item%fact * p_factor
+
+
+      call deinit_index_str(str1)
+      call deinit_index_str(str2)
+      call deinit_index_str(str3)
+
+      return
+      end
 
 *----------------------------------------------------------------------*
-      subroutine assign_index(item,ntest)
+      subroutine assign_index_old(item,ntest)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
@@ -2973,6 +3249,15 @@
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
      &                      .true.)
 
+      if (ntest>=100) then
+         write(item%out,*) "After create_index_str"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str1%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str1%cnt_poss
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str2%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str2%cnt_poss
+      end if
 
 !      e_shift = 0
 !

@@ -62,9 +62,9 @@ c      iblk_op   = contr%vertex(1)%iblk_op
       occ_op => op_add%ihpvca_occ(1:,1:,idxblk:idxblk-1+nj_op)
       rst_op => op_add%igasca_restr(1:,1:,1:,1:,1:,
      &                                   idxblk:idxblk-1+nj_op)
-      ! dummy map for itf
-      allocate(svdummy(nj_res))
-      svdummy(1:nj_res) = 1
+      ! dummy for itf
+      allocate(svdummy(3))
+      svdummy(1:3) = 0
 
       call store_bc(fl_item,
      &     contr%fac,contr%fac,

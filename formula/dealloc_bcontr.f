@@ -29,8 +29,11 @@
      &     deallocate(bcontr%merge_op1op2)
       if (associated(bcontr%merge_op2op1))
      &     deallocate(bcontr%merge_op2op1)
-      if (associated(bcontr%svertex_itf))
-     &     deallocate(bcontr%svertex_itf)
+      if (associated(bcontr%itf_index_info))
+     &     deallocate(bcontr%itf_index_info)
+      if (associated(bcontr%idx_op1)) deallocate(bcontr%idx_op1)
+      if (associated(bcontr%idx_op2)) deallocate(bcontr%idx_op2)
+      if (associated(bcontr%idx_op1op2)) deallocate(bcontr%idx_op1op2)
 
       bcontr%occ_res => null()
       bcontr%occ_op1 => null()
@@ -48,7 +51,10 @@
       bcontr%merge_op2 => null()
       bcontr%merge_op1op2 => null()
       bcontr%merge_op2op1 => null()
-      bcontr%svertex_itf => null()
+      bcontr%itf_index_info => null()
+      bcontr%idx_op1 => null()
+      bcontr%idx_op2 => null()
+      bcontr%idx_op1op2 => null()
 
       return
       end

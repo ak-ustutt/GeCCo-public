@@ -94,7 +94,7 @@
          flags = '--multi'
       endif
 
-      ! Is this a single-refenece or a multireferecne calculation?
+      ! will the molpro KEXT module be used?
       if (kext) then
          flags = trim(flags)//' --kext'
       else

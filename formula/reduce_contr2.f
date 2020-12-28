@@ -31,11 +31,11 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 000
+     &     ntest = 1000
 
       type(contraction), intent(in) ::
      &     contr
-      type(contraction), intent(out) ::
+      type(contraction), intent(inout) ::
      &     contr_red
       type(reorder_info), intent(inout) ::
      &     reo_info
@@ -73,6 +73,14 @@
         write(lulog,*) 'contraction on entry:'
         call prt_contr3(lulog,contr,-1)
         write(lulog,*) 'idxnew_op1op2:  ',idxnew_op1op2
+        if (contr%index_info) then
+          write(lulog,*) 'index info:'
+          call print_string(contr%contr_string,contr%nidx,contr%nvtx)
+          call print_string_cnt(
+     &                      contr%contr_string,contr%nidx,contr%nvtx)
+          call print_string_idx(
+     &                      contr%contr_string,contr%nidx,contr%nvtx)
+        end if
       end if
 
       nvtx = contr%nvtx
@@ -190,7 +198,7 @@ c dbg
 
       call topo_reo(svertex_new,vtx_new,topo_new,xlines_new,nvtx_new,
      &              svertex_reo,vtx,    topo,    xlines,    nvtx,
-     &              ireo2, njoined_res)
+     &     ireo2, njoined_res)
 
       call topo_rename_vtxs(svertex_new,vtx_new,
      &     nvtx+1,idxnew_op1op2,0,0,
@@ -237,37 +245,6 @@ c dbg
 
       njoined_op1op2 = nvtx_op1op2
 
-      ! unpack updated contraction, if requested
-      if (make_contr_red) then
-cmh        call init_contr(contr_red)
-cmh        contr_red is already initialized and possibly non-zero!
-        ! copy header
-        contr_red%idx_res  = contr%idx_res
-        contr_red%iblk_res = contr%iblk_res
-        contr_red%dagger = contr%dagger
-        contr_red%fac = contr%fac
-        call unpack_contr(contr_red,
-     &                  svertex_new,vtx_new,topo_new,xlines_new,
-     &                  nvtx_new,njoined_res)
-
-        if (ntest.ge.100) then
-          write(lulog,*) 'reduced contraction on exit:'
-          call prt_contr3(lulog,contr_red,-1)
-        end if
-
-      else
-        if (ntest.ge.100) then
-          write(lulog,*) 'no reduced contraction requested'
-        end if
-      end if
-
-      new_sign = sh_sign*cnt_sign*merge_sign
-      !itf_sign = sh_sign*cnt_sign*merge_sign_itf
-      itf_sign = sh_sign
-
-      if (ntest.ge.100)
-     &     write(lulog,*) 'new_sign = ',new_sign
-
       nvtx_red = nvtx_new
       ! new -> old reo; idx_old = ireo_vtx_no(idx_new)
       do ivtx = 1, nvtx
@@ -284,6 +261,55 @@ cmh        contr_red is already initialized and possibly non-zero!
         write(lulog,*) 'ireo_vtx_no = ',ireo_vtx_no(1:nvtx_red)
         write(lulog,*) 'ireo_vtx_on = ',ireo_vtx_on(1:nvtx)
       end if
+
+
+      ! unpack updated contraction, if requested
+      if (make_contr_red) then
+cmh        call init_contr(contr_red)
+cmh        contr_red is already initialized and possibly non-zero!
+        ! copy header
+        contr_red%idx_res  = contr%idx_res
+        contr_red%iblk_res = contr%iblk_res
+        contr_red%dagger = contr%dagger
+        contr_red%fac = contr%fac
+        call unpack_contr(contr_red,
+     &                  svertex_new,vtx_new,topo_new,xlines_new,
+     &                  nvtx_new,njoined_res)
+
+        if (contr%index_info)
+     &       call reduce_string_info(contr_red,contr,
+     &            nvtx,nvtx_new,arc_list,nlist,ireo_vtx_on)
+        
+        if (ntest.ge.100) then
+          write(lulog,*) 'reduced contraction on exit:'
+          call prt_contr3(lulog,contr_red,-1)
+          if (contr_red%index_info) then
+            write(lulog,*) 'index info:'
+            call print_string(
+     &           contr_red%contr_string,contr_red%nidx,contr_red%nvtx)
+            call print_string_cnt(
+     &           contr_red%contr_string,contr_red%nidx,contr_red%nvtx)
+            call print_string_idx(
+     &           contr_red%contr_string,contr_red%nidx,contr_red%nvtx)
+          end if
+
+        end if
+
+      else
+        if (ntest.ge.100) then
+          write(lulog,*) 'no reduced contraction requested'
+        end if
+      end if
+
+      new_sign = sh_sign*cnt_sign*merge_sign
+      !itf_sign = sh_sign*cnt_sign*merge_sign_itf
+      itf_sign = sh_sign
+      if (ntest.ge.100.and.itf_sign<0) 
+     &     write(lulog,*) 'negative ift_sign: ',itf_sign
+
+      if (ntest.ge.100)
+     &     write(lulog,*) 'new_sign = ',new_sign
+
 
       deallocate(vtx, topo, xlines, scr, ireo2,
      &     vtx_list,vtx_list_reo,vtx_list_new, svertex,

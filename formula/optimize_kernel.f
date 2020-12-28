@@ -736,8 +736,8 @@ c dbg
               if (watch) print *,'item inserted'
 c dbg
               ! dummy map for itf
-              allocate(svdummy(nj))
-              svdummy(1:nj) = 1
+              allocate(svdummy(3))
+              svdummy(1:3) = 0
               fl_pnt_mark2 => fl_pnt_mark2%next
               call store_bc(fl_pnt_mark2,
      &                  fact,fact_itf,

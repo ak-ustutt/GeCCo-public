@@ -44,7 +44,7 @@
       include 'routes.h'
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
       logical, parameter ::
      &     formal = .false., exact = .false.
 
@@ -86,7 +86,7 @@
       real(8) ::
      &     fact, fact_itf
       integer ::
-     &     nvtx, narc, ngas, nsym, idum, target, command,
+     &     nvtx, narc, ngas, nsym, idum, target, command, nidx,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
      &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2
@@ -127,9 +127,10 @@
      &     merge_stp1inv_0(2*contr%nvtx*contr%nvtx),
      &     merge_stp2_0(2*contr%nvtx*contr%nvtx),
      &     merge_stp2inv_0(2*contr%nvtx*contr%nvtx),
-     &     svertex_itf(contr%nvtx),
      &     iscale_new(ngastp)
-
+      integer, pointer ::
+     &     itf_index_info(:)
+      
       integer, pointer ::
      &     ihpvgas(:,:)
       
@@ -152,7 +153,7 @@
      &     flops, xmemtot, xmemblk, bc_sign, bc_sign_itf, factor
 
       integer, external ::
-     &     idxlist, int_expand, int_pack, maxxlvl_op
+     &     idxlist, int_expand, int_pack, maxxlvl_op,  get_nidx4contr
       logical, external ::
      &     check_grph4occ
       real(8), external ::
@@ -160,6 +161,7 @@
 
       if (ntest.gt.0) then
         call write_title(lulog,wst_dbg_subr,'this is process_bc')
+        write(lulog,*) 'mode = ',trim(mode)
       end if
 
       op_arr => op_info%op_arr
@@ -177,6 +179,12 @@
       call init_reo_info(reo_info0) ! FIX
       call init_reo_info(reo_info)
 
+      nidx = get_nidx4contr(contr)
+c     dbg
+      write(lulog,*) 'nidx for alloc: ',nidx
+c     dbg
+      allocate(itf_index_info(3+2*nidx))
+
       ! extract BC
       call get_bc_info3(bc_sign,bc_sign_itf,possible,
      &     idxop,iblkop,
@@ -188,7 +196,7 @@
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
-     &     svertex_itf,
+     &     itf_index_info,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     .true.,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
@@ -505,14 +513,14 @@ c     &        'operator with zero length?')
           end if
           fl_pnt => fl_pnt%next
           fact = bc_sign
-          fact_itf = bc_sign_itf
+          fact_itf = 1d0
           iblkop1op2 = 1
           command = command_bc
           if (reo_op1op2) command = command_bc_reo
         else
           label = op_arr(contr%idx_res)%op%name
           fact = bc_sign*contr%fac
-          fact_itf = bc_sign_itf*contr%fac
+          fact_itf = dble(contr%total_sign)*contr%fac
           iblkop1op2 = contr%iblk_res
           command = command_add_bc
           if (reo_op1op2) command = command_add_bc_reo
@@ -531,7 +539,7 @@ c     &        'operator with zero length?')
      &       irst_ex1,irst_ex2,irst_cnt,njoined_cnt,
      &       merge_op1,merge_op2,
      &       merge_op1op2,merge_op2op1,
-     &       svertex_itf,
+     &       itf_index_info,
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1
@@ -636,6 +644,8 @@ c     &        'operator with zero length?')
       else
         call quit(1,'process_bc','unknown mode: "'//trim(mode)//'"')
       end if
+
+      deallocate(itf_index_info)
 
       call dealloc_reo_info(reo_info)
       call dealloc_reo_info(reo_info0) ! FIX
