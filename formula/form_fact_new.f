@@ -151,7 +151,13 @@ c dbgend
           if (.not.reo_add) call dealloc_reo_info(reo_info0)
         end if
 
+        ! set index info for ITF here ... unclear, how ITF can cope with reordering
+        call contr_set_indices(contr,op_info)
+
         if (reo_add) then
+
+          call warn('form_fact_new','not clear if this works for ITF')
+          
           allocate(iocc_reo(ngastp,2,nvtx_max),
      &             iocc_ori(ngastp,2,nvtx_max),
      &             irst_reo(2,ngas,2,2,nvtx_max),

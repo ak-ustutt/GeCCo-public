@@ -140,10 +140,6 @@ c
      &     merge_op1(:), merge_op2(:),
      &     merge_op1op2(:), merge_op2op1(:),
      &     itf_index_info(:)
-      logical ::
-     &     index_info_available
-      integer, pointer ::    ! ((hpvx1,idx1),(hpvx2,idx2),....)
-     &     idx_op1(:,:), idx_op2(:,:), idx_op1op2(:,:)
       end type binary_contr
 
       type reorder

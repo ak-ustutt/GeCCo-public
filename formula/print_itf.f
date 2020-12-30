@@ -62,29 +62,43 @@
      &                          fl_item%command, inter_itype,
      &                          counter,tasks,x_dict)
 
+            if (fl_item%command==command_bc_reo) call warn('print_itf',
+     &           'check: [CONTRACT][REORDER] ')
+            
             ! Count the number of terms
             counter(1) = counter(1) + 1
 
          else if (fl_item%command==command_add_contribution) then
-            write(itflog,*) '[CONTR]',fl_item%target
+            write(itflog,*) '[CONTR]',fl_item%target  ! this case should not appear in an opt. formula
          else if (fl_item%command==command_add_bc_reo) then
             write(itflog,*) '[CONTRACT][REORDER][ADD]',
      &           fl_item%target
             call prt_bcontr(itflog,fl_item%bcontr)
             call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
          else if (fl_item%command==command_add_reo) then
             write(itflog,*) '[REORDER][ADD]',
      &           fl_item%target
             call prt_bcontr(itflog,fl_item%bcontr)
             call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [REORDER][ADD] ')
+         else if (fl_item%command==command_reorder) then
+            write(itflog,*) '[REORDER]',
+     &           fl_item%target
+            call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [REORDER] ')
          else if (fl_item%command==command_symmetrise) then
             write(itflog,*) '[SYMMETRISE]',fl_item%target
+            call warn('print_itf',
+     &           'uncovered case appeared: [SYMMETRISE] ')
          else if (fl_item%command==command_end_of_formula .or.
      &            fl_item%command==command_set_target_init .or.
      &            fl_item%command==command_set_target_update .or.
      &            fl_item%command==command_new_intermediate .or.
-     &            fl_item%command==command_del_intermediate .or.
-     &            fl_item%command==command_reorder) then
+     &            fl_item%command==command_del_intermediate ) then
             ! Do nothing
             ! write(itflog,*) '[END]'
             ! write(itflog,*) '[INIT TARGET]',fl_item%target

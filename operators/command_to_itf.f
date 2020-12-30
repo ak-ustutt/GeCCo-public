@@ -394,8 +394,8 @@
       write(logfile,*)
       write(logfile,*) "SPIN OF ", trim(label)
       write(logfile,*) "---------------------------------"
-      write(logfile,*) (spins(2,i), i=1, rank/2)
-      write(logfile,*) (spins(1,i), i=1, rank/2)
+      write(logfile,'(1x,10i4)') (spins(2,i), i=1, rank/2)
+      write(logfile,'(1x,10i4)') (spins(1,i), i=1, rank/2)
       write(logfile,*) "---------------------------------"
       write(logfile,*)
 
@@ -643,11 +643,11 @@
       integer ::
      &   i,                  ! Loop index
      &   perm_case,          ! Info of permutation factors
-     &   ntest1 =  100,       ! Control debug: init_itf_contr
-     &   ntest2 =  100,       ! Control debug: assign_index
-     &   ntest3 =  100,       ! Control debug: determine permuation
-     &   ntest4 =  100,       ! Control debug: prepare_symmetrise
-     &   ntest5 =  100,       ! Control debug: prepare permutation
+     &   ntest1 =  00,       ! Control debug: init_itf_contr
+     &   ntest2 =  00,       ! Control debug: assign_index
+     &   ntest3 =  00,       ! Control debug: determine permuation
+     &   ntest4 =  00,       ! Control debug: prepare_symmetrise
+     &   ntest5 =  00,       ! Control debug: prepare permutation
      &   ntest6 =  00,       ! Control debug: assign_spin
      &   ntest7 =  00,       ! Control debug: print_spin_cases
      &   ntest8 =  00,       ! Control debug: print_symmetrise
@@ -658,6 +658,8 @@
      &   pline               ! True if including a permuation line
 
       logical, parameter :: new = .true.
+
+      if (.not.new) call warn('command_to_itf','running in old mode!')
       
       if (ntest1>=100 .or. ntest2>=100) then
          write(itflog,*) "FORMULA NUMBER: ", counter(1)
@@ -971,15 +973,19 @@
          item%command = command_add_intm
       end if
 
+      ! OLD: see comment beneath
 
-      ! Assign factor --- use special ITF factor
-      ! the ITF factor is closer to the value expected from standard
-      ! diagram rules, but still some care has to be taken when translating
-      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
-      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      !item%fact=contr_info%fact_itf
+      ! OLD: Assign factor --- use special ITF factor
+      ! OLD: the ITF factor is closer to the value expected from standard
+      ! OLD: diagram rules, but still some care has to be taken when translating
+      ! OLD: to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+      ! OLD: <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+      ! OLD -- commented out code:item%fact=contr_info%fact_itf
 
-
+      ! All this is now set a few lines before ... the sign is now determined
+      ! exactly for the chosen index ordering, pairwise shifts of corresponding
+      ! indices will always be OK
+      
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
       if (item%command==command_cp_intm .or.
@@ -1043,7 +1049,7 @@
          item%vertex(i) = -1 ! OBSOLETE contr_info%svertex_itf(i)
       end do
 
-      if (ntest>=0) write(item%out,*) "vertex ", item%vertex
+      !if (ntest>=0) write(item%out,*) "vertex ", item%vertex
 
       item%nj_op1 = contr_info%nj_op1
       item%nj_op2 = contr_info%nj_op2
@@ -1276,6 +1282,10 @@
       !   end if
       !end if
 
+      if (item%rank1>4.or.item%rank2>4.or.item%rank3>4)
+     &     call quit(1,'convert_to_abba_block',
+     &                 'I cannot handle rank>4!!')
+      
       ! TODO: only work for rank 4
       if (item%rank1>2 .and. .not. item%inter(1)) then
          if (t_spin(1)%spin(1,1)>
@@ -1423,6 +1433,9 @@
       !end if
 
       actual_spin_cases = item%nspin_cases
+
+      if (actual_spin_cases<=1)
+     &     call warn('ITF:print_spin_cases','less than 2 spin cases')
 
       do j = 1, actual_spin_cases -1
 
@@ -2263,10 +2276,11 @@
      &              then
                      if (get_itype(idx(2:2))==2 .and.
      &                   get_itype(idx(3:3))==2) then
-                        ! K:eaac - K:ecaa
+                        ! K:eaac - K:ecaa   <---- ?? exchange should be: - K:eaca
                         st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &                      trimal(nt)//'['//
-     &                 f_index(idx,hrank,.false.,.false.,.false.,.true.)
+! ???     &                 f_index(idx,hrank,.false.,.false.,.false.,.true.)
+     &                 f_index(idx,hrank,.true.)
      &                 //']'//')'
                      else
                         st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
@@ -2868,6 +2882,9 @@
 *----------------------------------------------------------------------*
       subroutine set_index_str(str,index_info,nidx)
 *----------------------------------------------------------------------*
+*     use the information on index_info to create an index string
+*----------------------------------------------------------------------*
+ 
       implicit none
       include 'opdim.h'
       include 'def_contraction.h'
@@ -2894,6 +2911,105 @@
         str%itype(ii) = shift_type(type)
       end do
       
+      end subroutine
+
+*----------------------------------------------------------------------*
+      subroutine normalize_index_str(str,nidx,occ_op,nj_op)
+*----------------------------------------------------------------------*
+*     for operators that orignally consisted of several vertices
+*     we have to postprocess the index, such that all indices originally
+*     associated with creations are on the left
+*     we assume that this routine is called before cnt_poss is set!
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) :: str
+      integer :: nidx, nj_op, occ_op(ngastp,2,nj_op)
+
+      integer :: idx, nidx_c1, nidx_a1, nidx_v2 
+      
+      type(index_str) :: scr_str
+      integer :: ireo(nidx)
+
+      call init_index_str(scr_str,nidx,1) ! cnt_poss is dummy only
+
+
+      write(lulog,*) 'renormalize:'
+      call wrt_occ_n(lulog,occ_op,nj_op)
+      write(lulog,'(1x,10a1)') str%str(1:nidx)
+
+C      ! THIS DOES NOT WORK PROPERLY:
+C      ! set up a reodering array
+C      ! looks a bit complicated ... might be improved
+c      nidx_c = sum(occ_op(1:ngastp,1,1:nj_op))
+c      idxc = nidx_c
+c      idxa = nidx
+c      idxstr = 1
+c      do ij = 1, nj_op
+c        do ica = 1, 2
+c          do ihpvx = 1, ngastp
+c            nidx_ca_hpvx = occ_op(ihpvx,ica,ij)
+c            if (nidx_ca_hpvx==0) cycle
+c            do idx = 1, nidx_ca_hpvx
+c              if (idxstr.gt.nidx)
+c     &             call quit(1,'normalize_index_str',
+c     &                         'something is wrong!')
+c              if (ica==1) then
+c                ireo(idxstr) = idxc-nidx_ca_hpvx+idx
+c              else
+c                ireo(idxstr) = idxa-nidx_ca_hpvx+idx
+c              end if
+c              idxstr = idxstr+1
+c            end do
+c            if (ica==1) then
+c              idxc = idxc-nidx_ca_hpvx
+c            else
+c              idxa = idxa-nidx_ca_hpvx
+c            end if
+c          end do
+c        end do
+c     end do
+
+      if (nj_op.eq.2) then
+!     leave creations of first vertex in the front and move
+!     annihilations of first vertex behind second vertex -
+!     without changing their sequence
+        nidx_c1 = sum(occ_op(1:ngastp,1,1))
+        nidx_a1 = sum(occ_op(1:ngastp,2,1))
+        nidx_v2 = sum(occ_op(1:ngastp,1:2,2))
+        do idx = 1, nidx_c1
+          ireo(idx) = idx
+        end do
+        do idx = nidx_c1+1, nidx_c1+nidx_a1
+          ireo(idx) = idx+nidx_v2
+        end do
+        do idx = nidx_c1+nidx_a1+1, nidx
+          ireo(idx) = idx-nidx_a1
+        end do
+      else
+!     for 3 vertices, I have this idea:
+!     move all A from v1 behind v3 and all C from v3 between v1 and v2
+        call quit(1,'normalize_index_str','extend me!')
+      end if
+
+      do idx = 1, nidx
+        scr_str%str(ireo(idx)) = str%str(idx)
+        scr_str%itype(ireo(idx)) = str%itype(idx)
+      end do
+
+      str%str = scr_str%str
+      str%itype = scr_str%itype
+
+      write(lulog,'(1x,10a1)') str%str(1:nidx)
+
+      call deinit_index_str(scr_str)
+
+      return
       end subroutine
       
 *----------------------------------------------------------------------*
@@ -2969,13 +3085,23 @@
       call init_index_str(str1, item%rank1, n_cnt)
       call init_index_str(str2, item%rank2, n_cnt)
       call init_index_str(str3, item%rank3, n_cnt)
+
+c     dbg
+c      write(item%out,'(1x,"index info: ",3i6)')
+c     &     contr_info%itf_index_info(1:3)
+c      write(item%out,'(1x,"o1:  ",10i6)')
+c     &     contr_info%itf_index_info(3+1:3+contr_info%itf_index_info(1))
+c     dbg
       
       ioff = 3
       nidx = contr_info%itf_index_info(1)
       if (nidx.ne.item%rank1)
      &     call quit(1,'assign_index','rank mismatch (1)')
       call set_index_str(str1,
-     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx) 
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
+      if (contr_info%nj_op1.gt.1)
+     &     call normalize_index_str(str1,nidx,
+     &     contr_info%occ_op1,contr_info%nj_op1)
 
       ioff = ioff+nidx
       nidx = contr_info%itf_index_info(2)
@@ -2983,6 +3109,9 @@
      &     call quit(1,'assign_index','rank mismatch (2)')
       call set_index_str(str2,
      &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx) 
+      if (contr_info%nj_op2.gt.1)
+     &     call normalize_index_str(str2,nidx,
+     &     contr_info%occ_op2,contr_info%nj_op2)
 
       ioff = ioff+nidx
       nidx = contr_info%itf_index_info(3)
@@ -2990,6 +3119,9 @@
      &     call quit(1,'assign_index','rank mismatch (3)')
       call set_index_str(str3,
      &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
+      if (contr_info%nj_res.gt.1)
+     &     call normalize_index_str(str3,nidx,
+     &     contr_info%occ_res,contr_info%nj_res)
 
 ! get cnt_poss from index matching
       ncnt = 0
@@ -3051,19 +3183,30 @@
          write(item%out,*) "Inital factor: ", p_factor
       end if
 
-      ! Due to how the R:ea residual is defined, {p a^+} instead of
-      ! {a^+ p}, we need an extra minus to flip the normal ordered
-      ! string.
-      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-         if (.not. item%inter(3)) then
 
-            p_factor = p_factor * -1.0d0
-            if (ntest>100) then
-               write(item%out,*) "Update factor (R:ea)", p_factor
-            end if
-         end if
+! quick fix: the residuals with one active annihilation need a -1 for conversion to amplitudes
+!      write(item%out,*) 'label3: ',trim(item%label_res)
+!      write(item%out,*) 'occ_res(3,2,1): ',contr_info%occ_res(3,2,1)
+      if (item%label_res(1:1)=='O'.and.contr_info%occ_res(3,2,1)==1)
+     &     then
+!        write(item%out,*) 'switching sign!'
+        call warn('assign_index','fix for R active!! '//
+     &                                trim(item%label_res))
+        p_factor = p_factor * -1d0
       end if
+c      ! Due to how the R:ea residual is defined, {p a^+} instead of
+c      ! {a^+ p}, we need an extra minus to flip the normal ordered
+c      ! string.
+c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+c         if (.not. item%inter(3)) then
+c
+c            p_factor = p_factor * -1.0d0
+c            if (ntest>100) then
+c               write(item%out,*) "Update factor (R:ea)", p_factor
+c            end if
+c         end if
+c      end if
 
       if (ntest>=100) then
          write(item%out,*) "Result string in normal order"
@@ -3607,19 +3750,28 @@
          end do
       end if
 
-      ! Due to how the R:ea residual is defined, {p a^+} instead of
-      ! {a^+ p}, we need an extra minus to flip the normal ordered
-      ! string.
-      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-         if (.not. item%inter(3)) then
+c      ! Due to how the R:ea residual is defined, {p a^+} instead of
+c      ! {a^+ p}, we need an extra minus to flip the normal ordered
+c      ! string.
+c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+c         if (.not. item%inter(3)) then
+c
+c            p_factor = p_factor * -1.0d0
+c            if (ntest>100) then
+c               write(item%out,*) "Update factor (R:ea)", p_factor
+c            end if
+c         end if
+c       end if
 
-            p_factor = p_factor * -1.0d0
-            if (ntest>100) then
-               write(item%out,*) "Update factor (R:ea)", p_factor
-            end if
-         end if
+      !write(item%out,*) 'label3: ',trim(item%label_res),item%v3(1,3,2)
+      !write(item%out,*) item%v3
+      if (item%label_res(1:1)=='O'.and.item%v3(1,3,2)==1)
+     &     then
+        call warn('assign_index','fix for R active (old)!!')
+        p_factor = p_factor * -1d0
       end if
+
 
       if (ntest>=100) then
          write(item%out,*) "Result string in normal order"
@@ -4264,9 +4416,9 @@
          call debug_header("assign_spin", item%out)
          call print_spin(item%t_spin(3)%spin,item%rank3,item%label_res,
      &                   item%out)
-         call print_spin(item%t_spin(1)%spin,item%rank3,item%label_t1,
+         call print_spin(item%t_spin(1)%spin,item%rank1,item%label_t1,
      &                   item%out)
-         call print_spin(item%t_spin(2)%spin,item%rank3,item%label_t2,
+         call print_spin(item%t_spin(2)%spin,item%rank2,item%label_t2,
      &                   item%out)
          end if
 
@@ -5347,8 +5499,16 @@
             item%vnops2(i) = sum(sum(item%v2(i,:,:),dim=1)) +
      &                       sum(sum(item%vc2(i,:,:),dim=1))
             !write(item%out,*) "vnops2 ", item%vnops2(i)
-         end do
+          end do
 
+          do i = 1, contr_info%nj_res
+            do j = 1, ngastp
+              do k = 1, 2               
+                item%v3(i,j,k) =
+     &               contr_info%occ_res(j,k,i)
+              end do
+            end do
+          end do
          !write(item%out,*) "External"
          !do k = 1, contr_info%nj_op1
          !   do j = 1, 2

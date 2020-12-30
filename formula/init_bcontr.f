@@ -32,10 +32,6 @@
       bcontr%merge_op1op2 => null()
       bcontr%merge_op2op1 => null()
       bcontr%itf_index_info => null()
-      bcontr%index_info_available = .false.
-      bcontr%idx_op1 => null()
-      bcontr%idx_op2 => null()
-      bcontr%idx_op1op2 => null()
 
       return
       end

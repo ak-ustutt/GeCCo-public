@@ -1,7 +1,11 @@
       subroutine itf_set_index_info(itf_index_info,
      &     contr,contr_red,last_contr,
      &     isvtx1,isvtx2,ivtxres,nj_res)
-
+*     condense the information about index labels (on contraction info contr and contr_red)
+*     to an index array of the form
+*     itf_index_info(<len1>,<len2>,<len3>,<idx11>,<idx12>,...<idx1(len1)>,<idx21>,...,<idx31>,...)
+*     the indices contain orbital space (hpvx) and index (idx) as: 1000*hpvx+idx 
+      
       implicit none
 
       include 'opdim.h'
