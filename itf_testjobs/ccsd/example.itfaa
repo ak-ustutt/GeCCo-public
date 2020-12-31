@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 14-04-2020 09:40
+// Created on: 21-12-2020 12:47
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -39,15 +39,15 @@ tensor: R:eecc[abij], R:eecc
 
 // Energy and DIIS scalars
 tensor: ECC[], ECC
-tensor: ERef[], ERef     // Reference energy
-tensor: EMp1[], EMp1     // MP2 energy
 tensor: EDi1[], EDi1     // Direct 1st order energy
 tensor: Nrm1[], Nrm1     // Singles amplitude norm
 tensor: Var1[], Var1     // Singles residual norm
-tensor: EMp2[], EMp2     // MP2 energy
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: EMp1[], EMp1     // MP2 energy
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: ERef[], ERef     // Reference energy
 
 // Tensors needed to calculate the reference energy
 tensor: f:CC[CC],   f:CC
@@ -124,6 +124,7 @@ store ERef[]
 
 
 ---- code("Update_Kext_Tensor")
+// Intermediate to pass to Kext
 alloc INTpp[baji]
 alloc ITIN[baji]
 load T:ec[ai]

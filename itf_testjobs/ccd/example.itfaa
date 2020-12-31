@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Author: J.A. Black
 
-// Created on: 27-04-2020 14:37
+// Created on: 21-12-2020 12:47
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -34,11 +34,11 @@ tensor: R:eecc[abij], R:eecc
 
 // Energy and DIIS scalars
 tensor: ECC[], ECC
-tensor: ERef[], ERef     // Reference energy
-tensor: EMp2[], EMp2     // MP2 energy
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: ERef[], ERef     // Reference energy
 
 // Tensors needed to calculate the reference energy
 tensor: f:CC[CC],   f:CC
