@@ -3520,16 +3520,18 @@ c     dbg
       end if
 
 
-! quick fix: the residuals with one active annihilation need a -1 for conversion to amplitudes
-!      write(item%out,*) 'label3: ',trim(item%label_res)
-!      write(item%out,*) 'occ_res(3,2,1): ',contr_info%occ_res(3,2,1)
-      if (item%label_res(1:1)=='O'.and.contr_info%occ_res(3,2,1)==1)
-     &     then
-!        write(item%out,*) 'switching sign!'
-        call warn('assign_index','fix for R active!! '//
-     &                                trim(item%label_res))
-        p_factor = p_factor * -1d0
-      end if
+c     **** I have now removed this, the O->T update code now has an additional minus for the cases
+c     **** R:ea, R:eeac, R:eaac, R:eaca
+c! quick fix: the residuals with one active annihilation need a -1 for conversion to amplitudes
+c!      write(item%out,*) 'label3: ',trim(item%label_res)
+c!      write(item%out,*) 'occ_res(3,2,1): ',contr_info%occ_res(3,2,1)
+c      if (item%label_res(1:1)=='O'.and.contr_info%occ_res(3,2,1)==1)
+c     &     then
+c!        write(item%out,*) 'switching sign!'
+c        call warn('assign_index','fix for R active!! '//
+c     &                                trim(item%label_res))
+c        p_factor = p_factor * -1d0
+c      end if
 c      ! Due to how the R:ea residual is defined, {p a^+} instead of
 c      ! {a^+ p}, we need an extra minus to flip the normal ordered
 c      ! string.
