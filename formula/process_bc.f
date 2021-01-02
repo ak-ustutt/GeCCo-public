@@ -44,7 +44,9 @@
       include 'routes.h'
       
       integer, parameter ::
-     &     ntest = 100
+     &     ntest_ = 00
+      integer :: ntest
+      integer :: ntest_bc
       logical, parameter ::
      &     formal = .false., exact = .false.
 
@@ -159,6 +161,14 @@
       real(8), external ::
      &     scale_rank
 
+      if (mode(1:3)=='SET') then
+        ntest_bc = ntest_
+        ntest = ntest_
+      else
+        ntest = 0
+        ntest_bc = 0
+      end if
+      
       if (ntest.gt.0) then
         call write_title(lulog,wst_dbg_subr,'this is process_bc')
         write(lulog,*) 'mode = ',trim(mode)
@@ -180,9 +190,6 @@
       call init_reo_info(reo_info)
 
       nidx = get_nidx4contr(contr)
-c     dbg
-      write(lulog,*) 'nidx for alloc: ',nidx
-c     dbg
       allocate(itf_index_info(3+2*nidx))
 
       ! extract BC
@@ -202,7 +209,7 @@ c     dbg
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     .true.,reo_info,reo_info0, !FIX
      &     iarc,.true.,idx_intm,
-     &     irst_res,njoined_res,orb_info,op_info) ! irst_res is dummy
+     &     irst_res,njoined_res,orb_info,op_info,ntest_bc) ! irst_res is dummy
 
       reo_before = .false.
       reo_op1op2 = .false.

@@ -27,7 +27,7 @@
       type(formula_item), pointer ::
      &     fl_item                              ! Current formula_item
       integer ::
-     &     counter(4)                           ! Counter array
+     &     counter(4), cnt                      ! Counter array, 1 helper variable
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
      &   i
@@ -58,13 +58,20 @@
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
 
+            if (fl_item%command==command_bc_reo) then
+              ! patch the result of the contraction with the reordered intermediate info
+              ! itf_index_info is already set up correctly
+              if (fl_item%bcontr%nj_res < fl_item%reo%nj_out)
+     &             call quit(1,'print_itf','dimension trouble')
+              fl_item%bcontr%nj_res = fl_item%reo%nj_out
+              fl_item%bcontr%occ_res(:,:,1:fl_item%reo%nj_out) =
+     &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
+            end if
+            
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
      &                          counter,tasks,x_dict)
-
-            if (fl_item%command==command_bc_reo) call warn('print_itf',
-     &           'check: [CONTRACT][REORDER] ')
-            
+                        
             ! Count the number of terms
             counter(1) = counter(1) + 1
 
@@ -114,7 +121,8 @@
          ! Optionally print the formula items to another output file
          if (print_form) then
           write(formlog,*) "FORMULA NUMBER: ", counter(1)
-          call print_form_item2(formlog,'LONG',counter(1),fl_item,
+          cnt = counter(1) ! beware of print_form_item2: it increments the counter
+          call print_form_item2(formlog,'LONG',cnt,fl_item,
      &                          op_info)
          end if
 

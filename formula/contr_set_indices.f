@@ -26,7 +26,7 @@
       include 'mdef_operator_info.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=17), parameter ::
      &     i_am = 'contr_set_indices'
       

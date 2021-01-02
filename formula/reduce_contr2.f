@@ -6,7 +6,7 @@
      &     mergemap,ld_mmap, 
      &     make_contr_red,contr_red,idxnew_op1op2,
      &     contr,isvtx1,isvtx2,arc_list,nlist,njoined_res,
-     &     reo_info)
+     &     reo_info,ntest_in)
 *----------------------------------------------------------------------*
 *     new version of reduce_contr using the topo-representation of
 *     contractions for much more straight-forward processing
@@ -31,7 +31,9 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest_ = 000
+      integer, intent(in) :: ntest_in
+      integer :: ntest
 
       type(contraction), intent(in) ::
      &     contr
@@ -68,6 +70,8 @@
       integer, external ::
      &     idxlist
 
+      ntest = max(ntest_,ntest_in)
+      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'reduce_contr2')
         write(lulog,*) 'contraction on entry:'

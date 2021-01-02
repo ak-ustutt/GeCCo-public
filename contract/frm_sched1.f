@@ -440,7 +440,7 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &         set_reo,reo_info, reo_info,
      &         iarc,.false.,-ninter,
-     &         irst_res,njoined_res,orb_info,op_info)
+     &         irst_res,njoined_res,orb_info,op_info,0)
           if (.not.possible) then
             call prt_contr3(lulog,cur_contr,-1)
             write(lulog,*) 'get_bc_info did not raise "possible"-flag!'

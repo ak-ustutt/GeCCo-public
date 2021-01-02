@@ -60,7 +60,6 @@
             exit transp_loop
           end if
         end do transp_loop
-        write(lulog,*) ' sort: ',ii,ntransp
         string(ii-ntransp) = tmp
         if (mod(ntransp,2)>0) sign = -sign
       end do

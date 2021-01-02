@@ -14,7 +14,7 @@
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     set_reo, reo_info, reo_info_bef, !FIX
      &     iarc_contr,update_idxintm,idxintm,
-     &     irestr_res,njoined_res,orb_info,op_info)
+     &     irestr_res,njoined_res,orb_info,op_info,ntest_in)
 
       implicit none
 
@@ -28,7 +28,9 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest_ = 00
+      integer, intent(in) :: ntest_in
+      integer :: ntest
 
       type(contraction), intent(in), target ::
      &     contr_in
@@ -105,6 +107,8 @@
       logical, external ::
      &     allowed_contr
 
+      ntest = max(ntest_,ntest_in)
+      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'get_bc_info3')
         call prt_contr3(lulog,contr_in,-1)
@@ -283,7 +287,7 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     merge_map_op1op2,ld_mmap12,
      &     make_contr_red,contr_red,idxintm,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res,
-     &     reo_info)
+     &     reo_info,ntest_in)
 
       ! THIS WAS THE PREVIOUS PLACE
 !     use isvtx1/2 to get indices of input operators from contr

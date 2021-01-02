@@ -149,7 +149,7 @@ c dbg
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     .false.,reo_dum,reo_dum,
      &     iarc,.false.,-nlevel,
-     &     irst_res,njoined_res,orb_info,op_info)
+     &     irst_res,njoined_res,orb_info,op_info,0)
 c dbg
       print *,'iocc_op1op2 fresh from get_bc_info3'
       call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)
