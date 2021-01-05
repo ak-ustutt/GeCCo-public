@@ -56,5 +56,22 @@
      &       contr_src%inffac(1:ld_inffac,1:nfac)
       end if
 
+      if (contr_src%index_info) then
+        contr_tgt%index_info = .true.
+        if (associated(contr_tgt%contr_string))
+     &       deallocate(contr_tgt%contr_string)
+        if (associated(contr_tgt%result_string))
+     &       deallocate(contr_tgt%result_string)
+        allocate(contr_tgt%contr_string(contr_src%nidx))
+        if (contr_src%nxidx.gt.0)
+     &       allocate(contr_tgt%result_string(contr_src%nxidx))
+        contr_tgt%nidx = contr_src%nidx
+        contr_tgt%contr_string = contr_src%contr_string
+        contr_tgt%nxidx = contr_src%nxidx
+        if (contr_src%nxidx.gt.0)
+     &       contr_tgt%result_string = contr_src%result_string
+        contr_tgt%total_sign = contr_src%total_sign
+      end if
+      
       return
       end

@@ -1,7 +1,7 @@
       integer, parameter ::
      &     INDEX_LEN = 8,       ! Length of index string
      &     MAXINT = 8,          ! Maximum number of intermediates that contribute to a result
-     &     MAX_SPIN_CASES = 10,  ! Maximum number of intermediates that contribute to a result
+     &     MAX_SPIN_CASES = 64,  ! Maximum number of intermediates that contribute to a result
      &     MAXVTX = 10,  ! Maximum number of intermediates that contribute to a result
      &     MAXX = 20  ! Maximum number of X intermediates
 
@@ -151,7 +151,7 @@
       integer ::
      &      nspin_cases
       type(spin_cases2)
-     &     all_spins(20)
+     &     all_spins(MAX_SPIN_CASES)
 
       end type itf_contr
 

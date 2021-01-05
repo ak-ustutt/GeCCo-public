@@ -97,8 +97,8 @@
      &     check_inter
 
       ! Assume these are the names of intermediates
-      if (index(label, "STIN")>0 .or.
-     &    index(label, "LTIN")>0 .or.
+      if (index(label, "STIN")>0 .or.  ! <--- this is a bit dangerous: 
+     &    index(label, "LTIN")>0 .or.  !      the user might use a variable like 'FASTIN'
      &    index(label, "PTIN")>0) then
          check_inter=.true.
       else
@@ -394,8 +394,8 @@
       write(logfile,*)
       write(logfile,*) "SPIN OF ", trim(label)
       write(logfile,*) "---------------------------------"
-      write(logfile,*) (spins(2,i), i=1, rank/2)
-      write(logfile,*) (spins(1,i), i=1, rank/2)
+      write(logfile,'(1x,10i4)') (spins(2,i), i=1, rank/2)
+      write(logfile,'(1x,10i4)') (spins(1,i), i=1, rank/2)
       write(logfile,*) "---------------------------------"
       write(logfile,*)
 
@@ -464,6 +464,9 @@
       write(item%out,*) "Tensor2: ", item%label_t2, trim(item%idx2)
       write(item%out,*)
 
+! for debugging, it is better to exit here
+      call quit(1,'ITF','Trouble!')
+      
       return
       end
 
@@ -567,13 +570,20 @@
       if (ninter==0)
      &          call line_error("0 ninter in set_itype",item)
 
+      if (ninter.gt.MAXINT) then
+        write(item%out,'(1x,"MAXINT = ",i5,"  ninter=",i10)')
+     &       MAXINT, ninter
+        call quit(1,'set_itype','dimension error')
+      end if
 
       ! Clear all itype info from previous diagram
       if (i == 1) then
          itype = 0
       end if
 
-      if (item%rank3==2) then
+      if (item%rank3==0) then
+        ! nothing to do
+      else if (item%rank3==2) then
          itype(ninter,1) = get_itype(item%idx3(1:1))
          itype(ninter,2) = get_itype(item%idx3(2:2))
       else if (item%rank3==4) then
@@ -588,11 +598,18 @@
          itype(ninter,4) = get_itype(item%idx3(6:6))
          itype(ninter,5) = get_itype(item%idx3(5:5))
          itype(ninter,6) = get_itype(item%idx3(4:4))
+       else
+         write(item%out,*) 'rank3 = ',item%rank3
+         write(item%out,*) 'extend me for missing intermediate rank'
+         call quit(1,'set_itype',
+     &       'extend me for missing intermediate rank')   
       end if
 
 
       if (ntest>=100) then
          call debug_header("set_itype", item%out)
+         write(item%out,'(1x,"Have just registered: idx3= ",a)')
+     &        item%idx3
          do j = 1, MAXINT
             write(item%out,'(a6)',advance='no') "     {"
             do i = 1, item%rank3
@@ -657,8 +674,13 @@
      &   intpp,              ! Use INTPP kext intermeidate
      &   pline               ! True if including a permuation line
 
+      logical, parameter :: new = .true.
+
+      if (.not.new) call warn('command_to_itf','running in old mode!')
+      
       if (ntest1>=100 .or. ntest2>=100) then
          write(itflog,*) "FORMULA NUMBER: ", counter(1)
+         call prt_bcontr(itflog,contr_info) 
       end if
 
       ! Begin a special block which the python processor will pull out
@@ -674,11 +696,12 @@
 
       ! 1. Initalise itf_contr
       call itf_contr_init(contr_info,item,1,itin,command,itflog,
-     &                    inter_itype,counter,tasks,ntest1)
+     &                    inter_itype,counter,tasks,new,ntest1)
 
 
       ! 2. Assign index / Determine sign
-      call assign_index(item,ntest2)
+      if (new) call assign_index(item,contr_info,ntest2)
+      if (.not.new) call assign_index_old(item,ntest2)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -697,12 +720,9 @@
          write(item%out,*) "perm_case: ", perm_case
       end if
 
-
       ! 4. Decide whether to symmetrise after every term
       item%old_name = item%label_res
       call prepare_symmetrise(perm_case, item, ntest4)
-
-
 
       ! 5. Prepare permuation line if required
       if (item%symmetric .and. perm_case==2 .or.
@@ -710,12 +730,13 @@
      &    .not. item%nosym) then
 
          ! Don't need perm line for intermediates or tensor products
-         if (.not. item%inter(3) .and. .not. item%product) then
+         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not for tensor product?
             pline = .true.
-
+            
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                           inter_itype,counter,tasks,ntest5)
-            call assign_index(pitem,ntest5)
+     &                           inter_itype,counter,tasks,new,ntest5)
+            if (new) call assign_index(pitem,contr_info,ntest5)
+            if (.not.new) call assign_index_old(pitem,ntest5)
 
             pitem%old_name = pitem%label_res
             pitem%label_res = item%label_res
@@ -733,8 +754,9 @@
          pline = .true.
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
-     &                       inter_itype,counter,tasks,ntest5)
-         call assign_index(pitem,ntest5)
+     &                       inter_itype,counter,tasks,new,ntest5)
+         if (new) call assign_index(pitem,contr_info,ntest5)
+         if (.not.new) call assign_index_old(pitem,ntest5)
 
          pitem%old_name = pitem%label_res
          pitem%label_res = item%label_res
@@ -760,6 +782,7 @@
 
       ! 9. If an intermediate, set inter_itype for use in next line
       ! where the intermediate is created
+      
       call set_itype(item, inter_itype, ntest9)
 
 
@@ -803,7 +826,7 @@
 
 *----------------------------------------------------------------------*
       subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
-     &                          itype,counter,tasks,ntest)
+     &                          itype,counter,tasks,use_sign,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
 *----------------------------------------------------------------------*
@@ -830,7 +853,8 @@
      &   ntest
       logical, intent(in) ::
      &   itin,
-     &   tasks
+     &   tasks,
+     &   use_sign
 
       integer ::
      &   i
@@ -870,9 +894,9 @@
       call itf_equiv_lines_factor(item%c, item%fact)
 
       ! Get any remaining factors from GeCCo
-      item%fact = item%fact * abs(contr_info%fact_itf)
+      if (use_sign) item%fact = item%fact * contr_info%fact_itf
+      if (.not.use_sign) item%fact = item%fact *abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
-
 
       ! Assign labels
       item%label_t1=contr_info%label_op1
@@ -881,12 +905,12 @@
       item%inter(1) = check_inter(item%label_t1)
       if (.not. item%inter(1)) then
          ! Check if a density matrix
-         item%den(1) = check_den(item%label_t1)
+         item%den(1) = check_den(item%label_t1) ! <--- not needed anymore
 
          if (.not. item%den(1)) then
             ! Check if an integral
             item%int(1) = check_int(item%label_t1)
-            if (item%int(1) .and. item%rank1==4) then
+            if (item%int(1) .and. item%rank1==4) then   !<--- not needed anymore (I think)
                call check_j_integral(item%e1, item%c, item%nops1,
      &                               item%j_int, .false.)
             end if
@@ -908,11 +932,11 @@
          item%inter(2) = check_inter(item%label_t2)
 
          if (.not. item%inter(2)) then
-            item%den(2) = check_den(item%label_t2)
+            item%den(2) = check_den(item%label_t2)   !<--- not needed anymore
 
             if (.not. item%den(2)) then
                item%int(2) = check_int(item%label_t2)
-               if (item%int(2) .and. item%rank2==4) then
+               if (item%int(2) .and. item%rank2==4) then !<--- not needed anymore (I think)
                   call check_j_integral(item%e2, item%c, item%nops2,
      &                                  item%j_int, .true.)
                end if
@@ -964,15 +988,19 @@
          item%command = command_add_intm
       end if
 
+      ! OLD: see comment beneath
 
-      ! Assign factor --- use special ITF factor
-      ! the ITF factor is closer to the value expected from standard
-      ! diagram rules, but still some care has to be taken when translating
-      ! to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
-      ! <aj||bi> while the standard sign for ring terms assumes <aj||ib>
-      !item%fact=contr_info%fact_itf
+      ! OLD: Assign factor --- use special ITF factor
+      ! OLD: the ITF factor is closer to the value expected from standard
+      ! OLD: diagram rules, but still some care has to be taken when translating
+      ! OLD: to ITF tensors; e.g. the (HP;HP) integrals are stored by GeCCo as
+      ! OLD: <aj||bi> while the standard sign for ring terms assumes <aj||ib>
+      ! OLD -- commented out code:item%fact=contr_info%fact_itf
 
-
+      ! All this is now set a few lines before ... the sign is now determined
+      ! exactly for the chosen index ordering, pairwise shifts of corresponding
+      ! indices will always be OK
+      
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
       if (item%command==command_cp_intm .or.
@@ -1013,7 +1041,7 @@
       item%spin_cases = 1
 
 
-      ! Check if a tensor product
+      ! Check if a tensor product (i.e. no contraction)
       if (item%rank3==4 .and. item%rank1==2 .and. item%rank2==2) then
          item%product=.true.
       end if
@@ -1033,10 +1061,10 @@
       ! Set vertex info, used to calculate overal sign in assign_index()
       allocate(item%vertex(contr_info%nj_op1 + contr_info%nj_op2))
       do i = 1, contr_info%nj_op1 + contr_info%nj_op2
-         item%vertex(i) = contr_info%svertex_itf(i)
+         item%vertex(i) = -1 ! OBSOLETE contr_info%svertex_itf(i)
       end do
 
-      !write(item%out,*) "vertex ", item%vertex
+      !if (ntest>=0) write(item%out,*) "vertex ", item%vertex
 
       item%nj_op1 = contr_info%nj_op1
       item%nj_op2 = contr_info%nj_op2
@@ -1142,12 +1170,23 @@
       integer ::
      &   ex_itype,
      &   i, j,
-     &   shift
+     &   shift, rank_off
       character(len=1) ::
      &   ex_ind(2)
       character(len=INDEX_LEN) ::
      &   tmp1, tmp2
 
+      if (ntest>=100) then
+         call debug_header("create_permuation", item%out)
+         write(item%out,'(1x,"on entry: idx1 = ",a)') item%idx1
+         write(item%out,'(1x,"on entry: idx2 = ",a)') item%idx2
+         write(item%out,'(1x,"on entry: idx3 = ",a)') item%idx3
+      end if
+
+      ! be save
+      if (item%rank3/=4) call quit(1,'create permutation',
+     &                   'I only work for result rank 4')
+       
       tmp1 = item%idx1
       tmp2 = item%idx2
 
@@ -1159,10 +1198,22 @@
          end if
       end do
 
-
+      ! check whether C or A should by symmetrised
+      if (get_itype(item%idx3(1:1),.true.)==ex_itype.and.
+     &    get_itype(item%idx3(2:2),.true.)==ex_itype) then
+        rank_off = 0
+      else if (get_itype(item%idx3(3:3),.true.)==ex_itype.and.
+     &         get_itype(item%idx3(4:4),.true.)==ex_itype) then
+        rank_off = 2
+      else
+        write(item%out,*) 'trouble in create_permutation:'
+        write(item%out,*) 'idx3 = ',item%idx3,' ex_itype = ',ex_itype
+        call quit(1,'create_permutation','I''am in trouble')
+      end if
+      
       shift = 1
-      do i = 1, item%rank3
-         if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
+      do i = rank_off+1, rank_off+item%rank3/2
+         !if (get_itype(item%idx3(i:i),.true.)/=ex_itype) cycle
 
          do j = 1, item%rank1
             if (item%idx3(i:i)==item%idx1(j:j)) then
@@ -1188,6 +1239,7 @@
             exit
          end if
       end do
+      
       do i = 1, item%rank1
          if (item%idx1(i:i)==ex_ind(2)) then
             tmp1(i:i) = ex_ind(1)
@@ -1201,6 +1253,7 @@
             exit
          end if
       end do
+
       do i = 1, item%rank2
          if (item%idx2(i:i)==ex_ind(2)) then
             tmp2(i:i) = ex_ind(1)
@@ -1216,10 +1269,13 @@
       item%fact = item%fact * -1.0d+0
 
       if (ntest>=100) then
-         call debug_header("create_permuation", item%out)
+         write(item%out,*) "after create_permuation:"
          write(item%out,*) "external index: ", ex_ind
          write(item%out,*) "external itype: ", ex_itype
          write(item%out,*) "new factor: ", item%fact
+         write(item%out,*) "new idx1: ",item%idx1
+         write(item%out,*) "new idx2: ",item%idx2
+         write(item%out,*) "    idx3: ",item%idx3
       end if
 
       return
@@ -1269,6 +1325,12 @@
       !   end if
       !end if
 
+      if ((item%rank1>4.and..not.item%inter(1)).or.
+     &    (item%rank2>4.and..not.item%inter(2)).or.
+     &    (item%rank3>4.and.item%abba_line))
+     &     call quit(1,'convert_to_abba_block',
+     &                 'I cannot handle rank>4!!')
+      
       ! TODO: only work for rank 4
       if (item%rank1>2 .and. .not. item%inter(1)) then
          if (t_spin(1)%spin(1,1)>
@@ -1326,6 +1388,70 @@
       end
 
 
+*----------------------------------------------------------------------*
+      subroutine create_exchange_string(rank,spin,str,nxstr,str_x)
+*----------------------------------------------------------------------*
+*     create the corresponding exchange strings, depending on spin
+*     symmetry:
+*     rank = 4, aaaa/bbbb case:  [abij] -> [baij]
+*     rank = 6, aaaaaa/bbbbbb case: [abcijk] -> [bcaijk], [cabijk], etc.
+*     rank = 6, aaaabb/bbbbaa case: [abcijk] -> [acbijk]
+*
+*     andreas, dec 2020 based on routines by j.a.black
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      logical, intent(in) :: spin ! true if pure aaaa... or bbbb... case
+      integer, intent(in) :: rank ! rank of string
+      integer, intent(inout) :: nxstr ! in:  max. dim of str_x
+                                      ! out: number of gen. str_x
+      character(len=INDEX_LEN), intent(in) :: str  ! input str
+      character(len=INDEX_LEN), intent(out) :: str_x(nxstr) ! output str
+
+      if (rank<4) then
+        nxstr = 0
+        return                  ! nothing to do
+      end if
+      if (rank>6) call quit(1,'create_exchange_string',
+     &     'cannot handle rank > 6 at present!')
+
+      if (rank==4.and.spin) then
+        if (nxstr<1) call quit(1,'create_exchange_string',
+     &                           'dimension error (rk 4)')
+        str_x(1) = f_index(str,2)
+        nxstr = 1
+        return
+      else if (rank==4.and..not.spin) then
+        nxstr = 0
+        return
+      end if
+
+      if (rank==6.and.spin) then
+        if (nxstr<5) call quit(1,'create_exchange_string',
+     &       'dimension error (rk 6 a)')
+        str_x(1) = c_index(str,1)  ! cab
+        str_x(2) = c_index(str,2)  ! bca
+        str_x(3) = f_index(str,3)  ! acb
+        str_x(4) = f_index(c_index(str,1),3) ! cba
+        str_x(5) = f_index(c_index(str,2),3) ! bac
+        nxstr = 5
+        return
+      else
+        if (nxstr<1) call quit(1,'create_exchange_string',
+     &       'dimension error (rk 6 b)')
+        str_x(1) = f_index(str,3)  ! acb
+        nxstr = 1
+        return
+      end if
+
+      end subroutine
+      
+      
 *----------------------------------------------------------------------*
       subroutine prepare_symmetrise(perm_case, item, ntest)
 *----------------------------------------------------------------------*
@@ -1417,6 +1543,11 @@
 
       actual_spin_cases = item%nspin_cases
 
+c      if (actual_spin_cases<=1) write(item%out,*) 'Only 0 spin cases?',
+c     &     item%nspin_cases
+      if (actual_spin_cases<=1)
+     &     call warn('ITF:print_spin_cases','less than 2 spin cases')
+
       do j = 1, actual_spin_cases -1
 
             ! Decide if tensor is mixed spin
@@ -1493,11 +1624,14 @@
       integer, intent(in) ::
      &   ntest
 
+      integer, parameter :: maxxstr = 5
       character(len=MAXLEN_BC_LABEL) ::
-     &   nres, nt1, nt2          ! Name of tensors involved in the contraction
+     &   nres, nt1, nt2,         ! Name of tensors involved in the contraction
+     &   nt1x(maxxstr), nt2x(maxxstr)
       character(len=INDEX_LEN) ::
      &   slabel1, slabel2, slabel3,
-     &   new_idx1, new_idx2, new_idx3
+     &   new_idx1, new_idx2, new_idx3,
+     &   new_idx1_x(maxxstr), new_idx2_x(maxxstr)
       character(len=264) ::
      &   itf_line,          ! Line of ITF code
      &   st1, st2,          ! Name of spin summed tensors + index
@@ -1505,13 +1639,13 @@
      &   xst1, xst2           ! Name of spin summed tensors + index
       character(len=2) ::
      &   equal_op           ! ITF contraction operator; ie. +=, -=, :=
-      character(len=25) ::
+      character(len=MAXLEN_BC_LABEL) ::
      &   sfact,             ! String representation of factor
      &   sfact_star,        ! String representation of factor formatted for output
      &   k4e_no,            ! Counter of K4E tensors
-     &   nx
+     &   nx, nh
       integer ::
-     &   i,j,k
+     &   i,j,k,nxstr1,nxstr2
       real(8) ::
      &   c_fact               ! Copy of orginal factor
       logical ::
@@ -1521,6 +1655,8 @@
       new_idx1 = item%idx1
       new_idx2 = item%idx2
       new_idx3 = item%idx3
+      new_idx1_x = ""
+      new_idx2_x = ""
       c_fact = item%fact
       new_j = item%j_int
 
@@ -1538,11 +1674,27 @@
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
      &                           new_idx3, c_fact)
 
+      ! for pure aaaa or bbbb cases create exchange string
+      if (.not.item%inter(1)) then
+        nxstr1 = maxxstr        ! assure subroutine that enough space is there
+        call create_exchange_string(item%rank1,s1,new_idx1,
+     &                              nxstr1,new_idx1_x)
+      else
+        nxstr1 = 0
+      end if
+      if (.not.item%inter(2)) then
+        nxstr2 = maxxstr
+        call create_exchange_string(item%rank2,s2,new_idx2,
+     &                              nxstr2,new_idx2_x)
+      else
+        nxstr2 = 0
+      end if
+        
       if (ntest>=100) then
          write(item%out,*) "---------------------------"
          write(item%out,*) "After convert_to_abab_block"
-         write(item%out,*) "Idx1: ", new_idx1
-         write(item%out,*) "Idx2: ", new_idx2
+         write(item%out,*) "Idx1: ", new_idx1, new_idx1_x(1:nxstr1)
+         write(item%out,*) "Idx2: ", new_idx2, new_idx2_x(1:nxstr2)
          write(item%out,*) "Idx3: ", new_idx3
          write(item%out,*) "Factor: ", c_fact
          write(item%out,*) "---------------------------"
@@ -1553,44 +1705,70 @@
       nt1=rename_tensor(item%label_t1, item%rank1)
       nt2=rename_tensor(item%label_t2, item%rank2)
 
+      ! copy name to exchange contributions (some may get renamed)
+      nt1x(1:nxstr1) = nt1
+      nt2x(1:nxstr2) = nt2
+
       ! Add intermediate spin strings to names
       if (item%inter(1)) then
          call inter_spin_name(t_spin(1)%spin,item%rank1/2,slabel1)
          nt1 = trim(nt1)//trim(slabel1)
          call reorder_intermediate(item%rank1,new_idx1,item%nops1)
+       else         
+         call reorder_to_slots(item%int(1),item%rank1,
+     &                         new_idx1,
+     &                         nt1,item%nops1,item%out)
+         do i = 1, nxstr1
+           call reorder_to_slots(item%int(1),item%rank1,
+     &                         new_idx1_x(i),
+     &                         nt1x(i),item%nops1,item%out)
+         end do
       end if
       if (item%inter(2)) then
          call inter_spin_name(t_spin(2)%spin,item%rank2/2,slabel2)
          nt2 = trim(nt2)//trim(slabel2)
          call reorder_intermediate(item%rank2,new_idx2,item%nops2)
-      end if
+       else
+         call reorder_to_slots(item%int(2),item%rank2,
+     &                         new_idx2,
+     &                         nt2,item%nops2,item%out)
+         do i = 1, nxstr2
+           call reorder_to_slots(item%int(2),item%rank2,
+     &                         new_idx2_x(i),
+     &                         nt2x(i),item%nops2,item%out)
+         end do
+       end if
       if (item%inter(3)) then
          call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
          nres = trim(nres)//trim(slabel3)
          call reorder_intermediate(item%rank3,new_idx3,item%nops3)
-      end if
+       else
+         call reorder_to_slots(item%int(3),item%rank3,
+     &                         new_idx3,
+     &                         nres,item%nops3,item%out)
+       end if
 
-      ! Reorder integrals into fixed slot order
-      call reorder_integral(item%int(1),item%rank1,new_idx1,
-     &                      new_j,nt1,item%nops1)
-      call reorder_integral(item%int(2),item%rank2,new_idx2,
-     &                      new_j,nt2,item%nops2)
-
-      if (.not. item%inter(1) .and. .not. item%int(1)) then
-         call reorder_amp(item%rank1, new_idx1)
-      end if
-      if (.not. item%inter(2) .and. .not. item%int(2)) then
-         call reorder_amp(item%rank2, new_idx2)
-      end if
-      if (.not. item%inter(3) .and. .not. item%int(3)) then
-         call reorder_amp(item%rank3, new_idx3)
-      end if
+c      ! Reorder integrals into fixed slot order
+c      call reorder_integral(item%int(1),item%rank1,new_idx1,
+c     &                      new_j,nt1,item%nops1)
+c      call reorder_integral(item%int(2),item%rank2,new_idx2,
+c     &                      new_j,nt2,item%nops2)
+c
+c      if (.not. item%inter(1) .and. .not. item%int(1)) then
+c         call reorder_amp(item%rank1, new_idx1)
+c      end if
+c      if (.not. item%inter(2) .and. .not. item%int(2)) then
+c         call reorder_amp(item%rank2, new_idx2)
+c      end if
+c      if (.not. item%inter(3) .and. .not. item%int(3)) then
+c         call reorder_amp(item%rank3, new_idx3)
+c       end if
 
       if (ntest>=100) then
          write(item%out,*) "---------------------------"
          write(item%out,*) "After reorder()"
-         write(item%out,*) "Idx1: ", new_idx1
-         write(item%out,*) "Idx2: ", new_idx2
+         write(item%out,*) "Idx1: ", new_idx1, new_idx1_x(1:nxstr1)
+         write(item%out,*) "Idx2: ", new_idx2, new_idx2_x(1:nxstr2)
          write(item%out,*) "Idx3: ", new_idx3
          write(item%out,*) "Factor: ", c_fact
          write(item%out,*) "---------------------------"
@@ -1603,17 +1781,25 @@
          write(item%out,*) "s2: ", s2
       end if
 
-      ! Change tensor to spatial orbital quantity, unless it is an
-      ! intermediate
-      call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
-     &                1,item%binary,item%int(1),item%nops1,new_j,
-     &                item%out)
-      call spatial_string(st2,new_idx2,nt2,s2,item%inter(2),item%rank2,
-     &                2,item%binary,item%int(2),item%nops2,new_j,
-     &                item%out)
+c      ! Change tensor to spatial orbital quantity, unless it is an
+c      ! intermediate
+c      call spatial_string(st1,new_idx1,nt1,s1,item%inter(1),item%rank1,
+c     &                1,item%binary,item%int(1),item%nops1,new_j,
+c     &                item%out)
+c      call spatial_string(st2,new_idx2,nt2,s2,item%inter(2),item%rank2,
+c     &                2,item%binary,item%int(2),item%nops2,new_j,
+c     &                item%out)
 
-
-
+      ! create operands for ITF string, like K[abij] or (K[abij]-J[abji])
+      call create_tensor_string(st1,nt1,new_idx1,
+     &                              nt1x,new_idx1_x,nxstr1)
+      if (item%binary) then
+        call create_tensor_string(st2,nt2,new_idx2,
+     &                              nt2x,new_idx2_x,nxstr2)
+      else
+        st2=''
+      end if
+        
       ! Create intermediate instead of brackets
       if (item%tasks) then
 
@@ -1624,16 +1810,19 @@
             call check_x(item, x_dict, tst1, new_idx1, .true., old)
 
             if (.not. old) then
-
                ! Print out new X intermediate
-               write(nx,*) item%cntr(4)
+               write(nh,*) item%cntr(4)
+               nx = trimal('X'//trimal(nh))             
 
-               tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
-
-               call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
-     &                      item%rank1,
-     &                      1,item%binary,item%int(1),item%nops1,new_j,
-     &                      item%cntr(4),item%out)
+               call create_Xtensor_lines(tst1,xst1,nx,
+     &                       nt1,new_idx1,nt1x,new_idx1_x,nxstr1)
+               
+c               tst1='X'//trimal(nx)//'['//trim(new_idx1)//']'
+c               call spatial_string2(xst1,new_idx1,nt1,s1,item%inter(1),
+c     &                      item%rank1,
+c     &                      1,item%binary,item%int(1),item%nops1,new_j,
+c     &                      item%cntr(4),item%out)
+               
                write(item%out,'(a)') trim(xst1)
 
                ! Increase X counter
@@ -1645,19 +1834,23 @@
          end if
 
 
-         if (s2 .and. .not. item%inter(2)) then
+         if (item%binary .and. s2 .and. .not. item%inter(2)) then
 
             call check_x(item, x_dict, tst2, new_idx2, .false., old)
 
             if (.not. old) then
-               write(nx,*) item%cntr(4)
+               write(nh,*) item%cntr(4)
+               nx = trimal('X'//trimal(nh))   
 
-               tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
+               call create_Xtensor_lines(tst2,xst2,nx,
+     &                       nt2,new_idx2,nt2x,new_idx2_x,nxstr2)
+               
+c               tst2='X'//trimal(nx)//'['//trim(new_idx2)//']'
+c               call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
+c     &                      item%rank2,
+c     &                      2,item%binary,item%int(2),item%nops2,new_j,
+c     &                      item%cntr(4),item%out)
 
-               call spatial_string2(xst2,new_idx2,nt2,s2,item%inter(2),
-     &                      item%rank2,
-     &                      2,item%binary,item%int(2),item%nops2,new_j,
-     &                      item%cntr(4),item%out)
                write(item%out,'(a)') trim(xst2)
 
                item%cntr(4) = item%cntr(4) + 1
@@ -1844,7 +2037,147 @@
       return
       end
 
+*----------------------------------------------------------------------*
+      subroutine reorder_to_slots(integral,rank,idx,label,nops)
+*----------------------------------------------------------------------*
+*     analyse index string (on idx) and resort to match the actual
+*     storage convention of the associated tensors
+*     we only interchange indices according to the generally underlying
+*     symmetries
+*     .not.integral: assuming 1<>2 etc. particle exchange symmetry
+*               we will also interchange C and A if there are more
+*               external indices on A (deexcitation amplitudes)
+*     integral: assuming 1<>2 and individual C<>A symmetry
+*               map to special integrals, special orders if required
+*
+*     andreas, dec. 2020, based on routines by j.a.black
+*----------------------------------------------------------------------*
 
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      integer, intent(in) ::
+     &   rank,
+     &   nops(ngastp)
+      logical, intent(in) ::
+     &   integral
+      character(len=MAXLEN_BC_LABEL), intent(inout) ::
+     &   label
+
+       integer ::
+     &   itype(rank),
+     &   ii, jj,
+     &   itmp, exc, exa
+      character(len=1) ::
+     &   tmp
+      character(len=INDEX_LEN) ::
+     &   tstr
+      logical ::
+     &   all_same
+     
+      if (rank == 0 .or. rank == 2) return
+      if (mod(rank,1)>0) call quit(1,'reorder_to_slots','odd rank?')
+
+      ! get itypes
+      do ii = 1, rank
+        itype(ii) = get_itype(idx(ii:ii))
+      end do
+      
+      ! round one: C<>A exchange?
+      if (integral) then        ! for integrals, we assume C<>A symmetry for all pairs
+        do ii = 1, rank/2
+          if (itype(ii)>itype(ii+rank/2)) then
+            ! Swap creation and annhilation
+            tmp = idx(ii:ii)
+            idx(ii:ii) = idx(ii+rank/2:ii+rank/2)
+            idx(ii+rank/2:ii+rank/2) = tmp
+            ! Update itype
+            itmp = itype(ii)
+            itype(ii) = itype(ii+rank/2)
+            itype(ii+rank/2) = itmp
+          end if
+        end do
+      else                      ! otherwise check on which part of the string more external indices are
+        exc = 0
+        exa = 0
+        do ii = 1, rank/2
+          if (itype(ii)==1)        exc = exc+1
+          if (itype(ii+rank/2)==1) exa = exa+1
+        end do
+        if (exa>exc) then
+          ! permute all C and A
+          tstr(1:rank/2) = idx(rank/2+1:rank)
+          tstr(rank/2+1:rank) = idx(1:rank/2)
+          idx = tstr
+          ! set itype from new
+          do ii = 1, rank
+            itype(ii) = get_itype(idx(ii:ii))
+          end do
+        end if
+      end if
+
+      ! check if all C and A indices or of same itype
+      all_same = .true.
+      do ii = 2, rank/2
+        all_same = all_same.and.itype(ii)==itype(1)
+      end do
+      do ii= rank/2+2, rank
+        all_same = all_same.and.itype(ii)==itype(rank/2+1)
+      end do
+
+      ! in this case we can exit
+      if (all_same) return
+
+      ! beyond this point, we currently can only handle rank 4 correctly
+      ! rank 6+ requires proper sort algorithm
+      if (rank>4) call quit(1,'reorder_to_slots',
+     &                        'cannot handle this yet: '//trim(idx))
+
+      ! explicit rank 4 code
+      ! compare C, if C equal compare A
+      if ( itype(1)>itype(2).or.
+     &    (itype(1)==itype(2).and.itype(3)>itype(4))) then
+        ! switch
+        tmp = idx(1:1); idx(1:1) = idx(2:2); idx(2:2) = tmp
+        tmp = idx(3:3); idx(3:3) = idx(4:4); idx(4:4) = tmp
+        itmp = itype(1); itype(1) = itype(2); itype(2) = itmp
+        itmp = itype(3); itype(3) = itype(4); itype(4) = itmp
+      end if
+
+      ! handle a few special cases
+      if (integral) then
+        ! all integrals that have an ext. orbital in position 1 and 3
+        ! (this includes also 3-ext integrals) have a 1122 slot ordering
+        ! also the cases ecac and acac
+        if ((itype(1)==1.and.itype(3)==1).or.
+     &      all(itype==(/1,3,2,3/)).or.
+     &      all(itype==(/2,3,2,3/))) then
+          ! switch (abcd) to (acbd)
+          tmp = idx(2:2); idx(2:2) = idx(3:3); idx(3:3) = tmp
+          itmp = itype(2); itype(2) = itype(3); itype(3) = itmp  
+          ! unless the case of 3-externals, we have to rename K to J
+          if (nops(2).ne.3) label = 'J'
+          ! Need to have special case of J:eeca not J:eeac
+          if (all(itype==(/1,1,2,3/))) then
+            tmp = idx(1:1); idx(1:1) = idx(2:2); idx(2:2) = tmp
+            tmp = idx(3:3); idx(3:3) = idx(4:4); idx(4:4) = tmp
+          end if
+        end if
+        ! Need to have special case of K:ccca not K:accc
+        if (all(itype==(/2,3,3,3/))) then
+          ! we can make a cyclic permutation
+          tmp = idx(1:1)
+          idx(1:1) = idx(2:2); idx(2:2) = idx(3:3)
+          idx(3:3) = idx(4:4); idx(4:4) = tmp
+        end if
+      end if
+      
+      end subroutine
 *----------------------------------------------------------------------*
       subroutine reorder_amp(rank,idx)
 *----------------------------------------------------------------------*
@@ -1975,7 +2308,7 @@
          itype(i) = get_itype(idx(i:i))
       end do
 
-      symmetric = .true.
+      symmetric = .true.  ! <- unused?
       do i = 1, ngastp
          if (mod(nops(i),2) /= 0 .or. nops(i)>2) then
             symmetric = .false.
@@ -2028,7 +2361,7 @@
       ! Permute pairs
       if (nops(2)<3) then
          permute = .false.
-         do i = 1, rank/2-1
+         do i = 1, rank/2-1   ! <- may fail for rank 6, e.g. for a c e
             if (itype(i)>itype(i+1)) then
                tmp = idx(i:i)
                idx(i:i) = idx(i+1:i+1)
@@ -2186,6 +2519,106 @@
       return
       end
 
+*----------------------------------------------------------------------*
+      subroutine create_tensor_string(st,nt,idx,nt_x,idx_x,nidxx)
+*----------------------------------------------------------------------*
+*     construct tensor
+*        string "<nt>[<idx>]" if nidxx==0
+*            or "(<nt>[<idx>] - <nt_x>[<idx_x])" if nidxx==1
+*            or "(<nt>[<idx>] + ... + ... - ... - ... - ...)" if nidxx==5
+*
+*     andreas, dec 2020 based on routines by j.a.black
+*----------------------------------------------------------------------*
+      
+      use itf_utils
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=264), intent(inout) ::
+     &     st                   ! Name of spin summed tensors + index
+      integer, intent(in) ::
+     &     nidxx                ! Number of exchange contributions
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     nt                   ! Name of tensors involved in the contraction
+      character(len=INDEX_LEN), intent(in) ::
+     &     idx                  ! Index of tensor
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     nt_x(nidxx)          ! Name of tensors for exchange part
+      character(len=INDEX_LEN), intent(in) ::
+     &     idx_x(nidxx)         ! Index of tensor for exchange part
+
+
+      ! hard coded ... could generalize if array of signs is provided
+      if (nidxx==0) then
+        st=trimal(nt)//'['//trim(idx)//']'
+      else if (nidxx==1) then
+        st='('//trimal(nt)//'['//trim(idx)//'] - '//
+     &          trimal(nt_x(1))//'['//trim(idx_x(1))//'])'
+      else if (nidxx==5) then
+        st='('//trimal(nt)//'['//trim(idx)//'] + '//
+     &          trimal(nt_x(1))//'['//trim(idx_x(1))//'] + '//
+     &          trimal(nt_x(2))//'['//trim(idx_x(2))//'] - '//
+     &          trimal(nt_x(3))//'['//trim(idx_x(3))//'] - '//
+     &          trimal(nt_x(4))//'['//trim(idx_x(4))//'] - '//
+     &          trimal(nt_x(5))//'['//trim(idx_x(5))//'])'
+      else
+        call quit(1,'create_tensor_string','not prepared for this case')
+      end if
+      
+      end subroutine
+
+*----------------------------------------------------------------------*
+      subroutine create_Xtensor_lines(tst,st,nx,nt,idx,nt_x,idx_x,nidxx)
+*----------------------------------------------------------------------*
+*     construct line(s) defining X tensor, one for adressing
+*       tst = "<nx>[<idx>]"
+*     and one for defining      
+*       st  = ".<nx>[<idx>] += <nt>[<idx>] <newline>
+*              .<nx>[<idx>] -= <nt_x>[<idx_x]" 
+*
+*     andreas, dec 2020 based on routines by j.a.black
+*----------------------------------------------------------------------*
+      
+      use itf_utils
+
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      character(len=264), intent(inout) ::
+     &     tst,                 ! Name of intermediate w indices
+     &     st                   ! Name of spin summed tensors + index
+      integer, intent(in) ::
+     &     nidxx                ! Number of exchange contributions
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     nx,                  ! Name of intermediate
+     &     nt                   ! Name of tensors involved in the contraction
+      character(len=INDEX_LEN), intent(in) ::
+     &     idx                  ! Index of tensor
+      character(len=MAXLEN_BC_LABEL), intent(in) ::
+     &     nt_x(nidxx)          ! Name of tensors for exchange part
+      character(len=INDEX_LEN), intent(in) ::
+     &     idx_x(nidxx)         ! Index of tensor for exchange part
+
+
+      tst = trimal(nx)//'['//trim(idx)//']'
+      
+      ! hard coded ... could generalize if array of signs is provided
+      if (nidxx==1) then
+        st='.'//trimal(nx)//'['//trim(idx)//'] += '//
+     &          trimal(nt)//'['//trim(idx)//']'//new_line('a')//
+     &     '.'//trimal(nx)//'['//trim(idx)//'] -= '//
+     &          trimal(nt_x(1))//'['//trim(idx_x(1))//'])'
+      else
+        call quit(1,'create_Xtensor_lines','not prepared for this case')
+      end if
+      
+      end subroutine
+      
 
 *----------------------------------------------------------------------*
       subroutine spatial_string(st,idx,nt,spin,inter,rank,tensor,binary,
@@ -2256,10 +2689,11 @@
      &              then
                      if (get_itype(idx(2:2))==2 .and.
      &                   get_itype(idx(3:3))==2) then
-                        ! K:eaac - K:ecaa
+                        ! K:eaac - K:ecaa   <---- ?? exchange should be: - K:eaca
                         st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
      &                      trimal(nt)//'['//
-     &                 f_index(idx,hrank,.false.,.false.,.false.,.true.)
+! ???     &                 f_index(idx,hrank,.false.,.false.,.false.,.true.)
+     &                 f_index(idx,hrank,.true.)
      &                 //']'//')'
                      else
                         st='('//trimal(nt)//'['//trim(idx)//']'//' - '//
@@ -2858,9 +3292,427 @@
       return
       end
 
+*----------------------------------------------------------------------*
+      subroutine set_index_str(str,index_info,nidx)
+*----------------------------------------------------------------------*
+*     use the information on index_info to create an index string
+*----------------------------------------------------------------------*
+ 
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) :: str
+      integer :: nidx, index_info(nidx)
+      
+      character, parameter ::
+     &     label(10,4) = (/(/'i','j','k','l','m','n','o',' ',' ',' '/),
+     &                     (/'a','b','c','d','e','f','g','h',' ',' '/),
+     &                     (/'p','q','r','s','t','u','v','w','x','y'/),
+     &                     (/'P','Q','R','S','T','U',' ',' ',' ',' '/)
+     &     /)
+      integer, parameter ::
+     &     shift_type(4) = (/3,1,2,4/)  ! 'canonical' values
+
+      integer :: ii, type, idx
+      
+      do ii = 1, nidx
+        type = index_info(ii) / 1000
+        idx  = mod(index_info(ii),1000)
+        str%str(ii) = label(idx,type)
+        str%itype(ii) = shift_type(type)
+      end do
+      
+      end subroutine
 
 *----------------------------------------------------------------------*
-      subroutine assign_index(item,ntest)
+      subroutine normalize_index_str(str,nidx,occ_op,nj_op)
+*----------------------------------------------------------------------*
+*     for operators that orignally consisted of several vertices
+*     we have to postprocess the index, such that all indices originally
+*     associated with creations are on the left
+*     we assume that this routine is called before cnt_poss is set!
+*
+*     andreas, dec 2020
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) :: str
+      integer :: nidx, nj_op, occ_op(ngastp,2,nj_op)
+
+      integer :: idx, nidx_c1, nidx_a1, nidx_v2, nidx_c3, nidx_a3,
+     &           nidx0, ij, off_a, off_c
+      integer :: nidx_c(nj_op), nidx_a(nj_op)
+      
+      type(index_str) :: scr_str
+      integer :: ireo(nidx)
+
+      call init_index_str(scr_str,nidx,1) ! cnt_poss is dummy only
+
+
+c      write(lulog,*) 'renormalize:'
+c      call wrt_occ_n(lulog,occ_op,nj_op)
+c      write(lulog,'(1x,10a1)') str%str(1:nidx)
+
+      if (nj_op.eq.2) then
+!     leave creations of first vertex in the front and move
+!     annihilations of first vertex behind second vertex -
+!     without changing their sequence
+        nidx_c1 = sum(occ_op(1:ngastp,1,1))
+        nidx_a1 = sum(occ_op(1:ngastp,2,1))
+        nidx_v2 = sum(occ_op(1:ngastp,1:2,2))
+        do idx = 1, nidx_c1
+          ireo(idx) = idx  ! C1 stay at same place
+        end do
+        do idx = nidx_c1+1, nidx_c1+nidx_a1
+          ireo(idx) = idx+nidx_v2  ! A1 now behind C2A2
+        end do
+        do idx = nidx_c1+nidx_a1+1, nidx
+          ireo(idx) = idx-nidx_a1  ! C2A2 now directly after C1 (shift by length of A1)
+        end do
+      else if (nj_op.eq.3) then
+!     3 vertices:
+!     move all A from v1 behind v3 and all C from v3 between v1 and v2
+        nidx_c1 = sum(occ_op(1:ngastp,1,1))
+        nidx_a1 = sum(occ_op(1:ngastp,2,1))
+        nidx_v2 = sum(occ_op(1:ngastp,1:2,2))
+        nidx_c3 = sum(occ_op(1:ngastp,1,3))
+        nidx_a3 = sum(occ_op(1:ngastp,2,3))
+        do idx = 1, nidx_c1
+          ireo(idx) = idx  ! C1 in same place
+        end do
+        nidx0 = nidx_c1
+        do idx = nidx0+1, nidx0+nidx_a1
+          ireo(idx) = idx+nidx_c3+nidx_v2+nidx_a3 ! A1 now at the end
+        end do
+        nidx0 = nidx0+nidx_a1
+        do idx = nidx0+1, nidx0+nidx_v2
+          ireo(idx) = idx-nidx_a1+nidx_c3 ! C2A2 now after C1C3 (A1 is now away, but C3 is there)
+        end do
+        nidx0 = nidx0+nidx_v2
+        do idx = nidx0+1, nidx0+nidx_c3
+          ireo(idx) = idx-nidx_a1-nidx_v2 ! C3 is now after C1 (so A1 and C2A2 have moved away)
+        end do
+        nidx0 = nidx0+nidx_c3
+        do idx = nidx0+1, nidx
+          ireo(idx) = idx-nidx_a1 ! A3 is now directly after C2A2 (A1 has moved away)
+        end do
+      else
+        ! general strategy: compatible to 2-vertex case
+        ! but would give different order for 3-vertex case (can break pairing of middle vertex)
+        ! should not influence numerical result, efficiency of final code has to be checked
+        do ij = 1, nj_op
+          nidx_c(ij) = sum(occ_op(1:ngastp,1,ij))
+          nidx_a(ij) = sum(occ_op(1:ngastp,2,ij))
+        end do
+        nidx0 = 0
+        off_c = 0
+        off_a = sum(nidx_c(1:nj_op))+sum(nidx_a(2:nj_op))
+        do ij = 1, nj_op
+          do idx = 1, nidx_c(ij)
+            ireo(nidx0+idx) = off_c + idx
+          end do
+          nidx0 = nidx0+nidx_c(ij)
+          do idx = 1, nidx_a(ij)
+            ireo(nidx0+idx) = off_a + idx
+          end do
+          nidx0 = nidx0+nidx_a(ij)
+          off_c = off_c+nidx_c(ij)
+          if (ij<nj_op) off_a = off_a-nidx_a(ij+1)
+        end do
+      end if
+
+      do idx = 1, nidx
+        scr_str%str(ireo(idx)) = str%str(idx)
+        scr_str%itype(ireo(idx)) = str%itype(idx)
+      end do
+
+      str%str = scr_str%str
+      str%itype = scr_str%itype
+
+c      write(lulog,'(1x,10a1)') str%str(1:nidx)
+
+      call deinit_index_str(scr_str)
+
+      return
+      end subroutine
+      
+*----------------------------------------------------------------------*
+      subroutine assign_index(item,contr_info,ntest)
+*----------------------------------------------------------------------*
+!     Assign an ITF index string to each tensor in a line
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(inout) ::
+     &     item                 ! ITF binary contraction
+      type(binary_contr), intent(in) ::
+     &     contr_info
+      integer, intent(in) ::
+     &   ntest
+
+      integer ::
+     &   c(ngastp,2),        ! Operator numbers of contraction index
+     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
+     &   e1(ngastp,2),       ! Operator numbers of external index 1
+     &   e2(ngastp,2),       ! Operator numbers of external index 2
+     &   shift,         ! List shift
+     &   sc,         ! List shift
+     &   n_cnt,         ! Number of contraction operators
+     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
+     &   distance,      ! Distance from where an index should be
+     &   pp, pp2,            ! Paired position - position of paired index
+     &   i, j, k, l, idx, jdx, ioff, nidx, ncnt,
+     &   v1, v2,
+     &   itype(INDEX_LEN)
+      character(len=INDEX_LEN) ::
+     &   s1, s2, s3,  ! Tmp ITF index strings
+     &   tstr
+      character(len=50) ::
+     &   constr
+      character(len=1) ::
+     &   tmp       ! Scratch space to store index letter
+      real(8) ::
+     &   p_factor       ! Overall factor from contraction/rearrangment
+      integer, dimension(4) ::
+     &   e_shift,       ! Index shift for external indices
+     &   c_shift        ! Index shift for contraction indices
+      type(index_str) ::
+     &   str1,          ! Stores 'normal ordered' index string for T1
+     &   str2,          ! Stores 'normal ordered' index string for T2
+     &   str3           ! Stores 'normal ordered' index string for Res
+
+      logical ::        ! These are used when finding pairs of external ops
+     &   is_cnt,        ! True if the operator is a contraction op
+     &   p1, p2,
+     &   found
+
+      if (ntest>=100) call debug_header("assign_index", item%out)
+
+
+      ! Set operator numbers
+      c=item%c
+      e1=item%e1
+      e2=item%e2
+
+      ! Factor due to permuation of annhilation and creation indices
+      p_factor = 1.0d0 ! <-- now unused, can be removed
+
+      ! Set number of contraction indicies
+      n_cnt = item%contri
+
+      ! Allocate index_str objects
+      call init_index_str(str1, item%rank1, n_cnt)
+      call init_index_str(str2, item%rank2, n_cnt)
+      call init_index_str(str3, item%rank3, n_cnt)
+
+c     dbg
+c      write(item%out,'(1x,"index info: ",3i6)')
+c     &     contr_info%itf_index_info(1:3)
+c      write(item%out,'(1x,"o1:  ",10i6)')
+c     &     contr_info%itf_index_info(3+1:3+contr_info%itf_index_info(1))
+c     dbg
+      
+      ioff = 3 ! first three entries are dimensions
+      nidx = contr_info%itf_index_info(1)
+      if (nidx.ne.item%rank1)
+     &     call quit(1,'assign_index','rank mismatch (1)')
+      call set_index_str(str1,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
+      if (contr_info%nj_op1.gt.1)
+     &     call normalize_index_str(str1,nidx,
+     &     contr_info%occ_op1,contr_info%nj_op1)
+
+      ioff = ioff+nidx  ! shift offset by indices of tensor 1
+      nidx = contr_info%itf_index_info(2)
+      if (nidx.ne.item%rank2)
+     &     call quit(1,'assign_index','rank mismatch (2)')
+      call set_index_str(str2,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx) 
+      if (contr_info%nj_op2.gt.1)
+     &     call normalize_index_str(str2,nidx,
+     &     contr_info%occ_op2,contr_info%nj_op2)
+
+      ioff = ioff+nidx  ! shift offset by indices of tensor 2
+      nidx = contr_info%itf_index_info(3)
+      if (nidx.ne.item%rank3)
+     &     call quit(1,'assign_index','rank mismatch (3)')
+      call set_index_str(str3,
+     &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
+      if (contr_info%nj_res.gt.1)
+     &     call normalize_index_str(str3,nidx,
+     &     contr_info%occ_res,contr_info%nj_res)
+
+! get cnt_poss from index matching
+      ncnt = 0
+      do idx = 1, item%rank1
+        do jdx = 1, item%rank2
+          if (str1%str(idx)==str2%str(jdx)) then
+            ncnt = ncnt+1
+            str1%cnt_poss(ncnt) = idx
+            str2%cnt_poss(ncnt) = jdx
+          end if
+        end do
+      end do
+      
+      if (ntest>=100) then
+         write(item%out,*) "After set_index_str"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str1%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str1%cnt_poss
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str2%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str2%cnt_poss
+      end if
+
+
+
+      ! Rearrange intermediate index to match previously declared inter
+      ! index. This uses the itype array from the previous lines
+      if (item%inter(1)) then
+         call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
+     &                           item%itype, item%label_t1, item%out)
+         if (ntest>=100) then
+            write(item%out,*) "After arrange_inter_itype, inter(1)"
+            write(item%out,*) "T1: {", str1%str, "}"
+            write(item%out,*) "itpye: {", str1%itype, "}"
+            write(item%out,*) "cnt_poss: ", str1%cnt_poss
+            write(item%out,*) "previous itype: ", item%itype
+         end if
+      end if
+      if (item%inter(2)) then
+         call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
+     &                           item%itype, item%label_t2, item%out)
+         if (ntest>=100) then
+            write(item%out,*) "After arrange_inter_itype, inter(2)"
+            write(item%out,*) "T2: {", str2%str, "}"
+            write(item%out,*) "itpye: {", str2%itype, "}"
+            write(item%out,*) "cnt_poss: ", str2%cnt_poss
+            write(item%out,*) "previous itype: ", item%itype
+         end if
+      end if
+
+      if (ntest>=100) then
+         write(item%out,*) "Index strings in normal order"
+         write(item%out,*) "Result string in arbitrary order"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,*) "Res: {", str3%str, "}"
+         write(item%out,*) "Contraction T1: ", str1%cnt_poss
+         write(item%out,*) "Contraction T2: ", str2%cnt_poss
+         write(item%out,*) "Inital factor: ", p_factor
+      end if
+
+
+c     **** I have now removed this, the O->T update code now has an additional minus for the cases
+c     **** R:ea, R:eeac, R:eaac, R:eaca
+c! quick fix: the residuals with one active annihilation need a -1 for conversion to amplitudes
+c!      write(item%out,*) 'label3: ',trim(item%label_res)
+c!      write(item%out,*) 'occ_res(3,2,1): ',contr_info%occ_res(3,2,1)
+c      if (item%label_res(1:1)=='O'.and.contr_info%occ_res(3,2,1)==1)
+c     &     then
+c!        write(item%out,*) 'switching sign!'
+c        call warn('assign_index','fix for R active!! '//
+c     &                                trim(item%label_res))
+c        p_factor = p_factor * -1d0
+c      end if
+c      ! Due to how the R:ea residual is defined, {p a^+} instead of
+c      ! {a^+ p}, we need an extra minus to flip the normal ordered
+c      ! string.
+c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+c         if (.not. item%inter(3)) then
+c
+c            p_factor = p_factor * -1.0d0
+c            if (ntest>100) then
+c               write(item%out,*) "Update factor (R:ea)", p_factor
+c            end if
+c         end if
+c      end if
+
+      if (ntest>=100) then
+         write(item%out,*) "Result string in normal order"
+         write(item%out,*) "Res: {", str3%str, "}"
+      end if
+
+
+      ! TODO: put this in reorder_integral
+      if (item%rank1 == 2) then
+         if (str1%itype(1)>str1%itype(2)) then
+            tmp = str1%str(1)
+            str1%str(1) = str1%str(2)
+            str1%str(2) = tmp
+         end if
+      end if
+      if (item%rank2 == 2) then
+         if (str2%itype(1)>str2%itype(2)) then
+            tmp = str2%str(1)
+            str2%str(1) = str2%str(2)
+            str2%str(2) = tmp
+         end if
+      end if
+
+
+      s1 = ""
+      s2 = ""
+      s3 = ""
+
+      do i = 1, item%rank1/2
+         s1(i:i) = str1%str(i)
+         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
+      end do
+      do i = 1, item%rank2/2
+         s2(i:i) = str2%str(i)
+         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
+      end do
+      do i = 1, item%rank3/2
+         s3(i:i) = str3%str(i)
+         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
+      end do
+
+      if (ntest>=100) then
+         if (p_factor>0.0d0) then
+            tmp = '+'
+         else
+            tmp = '-'
+         end if
+
+         write(item%out,*) "Final indices"
+         write(item%out,*) "---------------------------"
+         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
+     &                         "}{",str2%str,"}"
+
+         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
+     &                         "][",trim(s2),"]"
+         write(item%out,*) "---------------------------"
+      end if
+
+      item%idx1=trim(s1)
+      item%idx2=trim(s2)
+      item%idx3=trim(s3)
+      item%fact = item%fact * p_factor
+
+
+      call deinit_index_str(str1)
+      call deinit_index_str(str2)
+      call deinit_index_str(str3)
+
+      return
+      end
+
+*----------------------------------------------------------------------*
+      subroutine assign_index_old(item,ntest)
 *----------------------------------------------------------------------*
 !     Assign an ITF index string to each tensor in a line
 *----------------------------------------------------------------------*
@@ -2973,6 +3825,15 @@
       call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
      &                      .true.)
 
+      if (ntest>=100) then
+         write(item%out,*) "After create_index_str"
+         write(item%out,*) "T1: {", str1%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str1%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str1%cnt_poss
+         write(item%out,*) "T2: {", str2%str, "}"
+         write(item%out,'(3x,a,10i4)') "itpye:    ", str2%itype
+         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str2%cnt_poss
+      end if
 
 !      e_shift = 0
 !
@@ -3111,7 +3972,7 @@
       ! index. This uses the itype array from the previous lines
       if (item%inter(1)) then
          call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
-     &                           item%itype, item%label_t1)
+     &                           item%itype, item%label_t1, item%out)
          if (ntest>=100) then
             write(item%out,*) "After arragne_inter_itpye, inter(1)"
             write(item%out,*) "T1: {", str1%str, "}"
@@ -3122,7 +3983,7 @@
       end if
       if (item%inter(2)) then
          call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
-     &                           item%itype, item%label_t2)
+     &                           item%itype, item%label_t2, item%out)
          if (ntest>=100) then
             write(item%out,*) "After arragne_inter_itpye, inter(2)"
             write(item%out,*) "T2: {", str1%str, "}"
@@ -3322,19 +4183,28 @@
          end do
       end if
 
-      ! Due to how the R:ea residual is defined, {p a^+} instead of
-      ! {a^+ p}, we need an extra minus to flip the normal ordered
-      ! string.
-      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-         if (.not. item%inter(3)) then
+c      ! Due to how the R:ea residual is defined, {p a^+} instead of
+c      ! {a^+ p}, we need an extra minus to flip the normal ordered
+c      ! string.
+c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
+c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
+c         if (.not. item%inter(3)) then
+c
+c            p_factor = p_factor * -1.0d0
+c            if (ntest>100) then
+c               write(item%out,*) "Update factor (R:ea)", p_factor
+c            end if
+c         end if
+c       end if
 
-            p_factor = p_factor * -1.0d0
-            if (ntest>100) then
-               write(item%out,*) "Update factor (R:ea)", p_factor
-            end if
-         end if
+      !write(item%out,*) 'label3: ',trim(item%label_res),item%v3(1,3,2)
+      !write(item%out,*) item%v3
+      if (item%label_res(1:1)=='O'.and.item%v3(1,3,2)==1)
+     &     then
+        call warn('assign_index','fix for R active (old)!!')
+        p_factor = p_factor * -1d0
       end if
+
 
       if (ntest>=100) then
          write(item%out,*) "Result string in normal order"
@@ -3420,7 +4290,7 @@
 
 *----------------------------------------------------------------------*
       subroutine arrange_inter_itype(rank1, rank2, idx1, idx2, itype,
-     &                               label)
+     &                               label,itflog)
 *----------------------------------------------------------------------*
 !     rearrange intermeidate index according to the itype of the
 !     previously declared intermediate
@@ -3434,7 +4304,8 @@
       integer, intent(in) ::
      &   rank1,
      &   rank2,
-     &   itype(maxint, index_len)
+     &   itype(maxint, index_len),
+     &   itflog
       type(index_str), intent(inout) ::
      &   idx1,
      &   idx2
@@ -3444,7 +4315,7 @@
       integer ::
      &   i, j,
      &   shift,
-     &   ninter
+     &   ninter, nfound
       character (len=index_len) ::
      &   tstr
       logical ::
@@ -3464,13 +4335,14 @@
 
       if (same) return
 
-
+      nfound = 0
       do i = 1, rank1/2
          do j = 1, rank1/2
             if (itype(ninter,i) == idx1%itype(j)) then
                tstr(i:i) = idx1%str(j)
-               idx1%str(j) = ''
-               idx1%itype(j) = 0
+               !idx1%str(j) = ''
+               !idx1%itype(j) = 0
+               nfound = nfound+1
                exit
             end if
          end do
@@ -3480,13 +4352,26 @@
          do j = rank1/2+1, rank1
             if (itype(ninter,i) == idx1%itype(j)) then
                tstr(i:i) = idx1%str(j)
-               idx1%str(j) = ''
-               idx1%itype(j) = 0
+               !idx1%str(j) = ''
+               !idx1%itype(j) = 0
+               nfound = nfound+1
                exit
             end if
          end do
       end do
 
+      if (nfound.ne.rank1) then
+        write(itflog,'(1x,"error in matching previous intermediate:")')
+        write(itflog,'(1x,"label = ",a)') trim(label)
+        write(itflog,'(1x,"idx1%itype      = ",12i3)')
+     &       idx1%itype(1:rank1)
+        write(itflog,'(1x,"itype(ninter,:) = ",12i3)')
+     &       itype(ninter,1:rank1)
+        
+        call quit(1,'arrange_inter_itype',
+     &                'error in matching previous intermediate')
+      end if
+          
       do i = 1, rank1
          idx1%str(i) = tstr(i:i)
       end do
@@ -3906,6 +4791,13 @@
       hr2 = item%rank2/2
       hr3 = item%rank3/2
 
+      if (ntest>=100) then
+        write(item%out,'(1x,"Top of assign_spin")')
+        write(item%out,'(1x,"idx1 = ",a)') item%idx1
+        write(item%out,'(1x,"idx2 = ",a)') item%idx2
+        write(item%out,'(1x,"idx3 = ",a)') item%idx3
+      end if
+
       ! Assign spin to indicies on the result tensor
       if (.not. item%inter(3)) then
          select case (item%rank3)
@@ -3929,6 +4821,8 @@
                   item%t_spin(3)%spin(2,2) = 2
                end if
             case(6)
+               call quit(1,'assign_spin',
+     &             'I think I am not ready for rank 6 results')
                do i=1, 2
                   ! aaaaaa
                   item%t_spin(3)%spin(1,i) = 1
@@ -3937,7 +4831,8 @@
                item%t_spin(3)%spin(1,3) = 1
                item%t_spin(3)%spin(2,3) = 1
             case default
-               call line_error("Could not determine tensor rank",item)
+               call line_error("Uncovered case for result tensor rank",
+     &                         item)
          end select
 
       ! Assign spin of external indicies to T1 and T2
@@ -3979,9 +4874,9 @@
          call debug_header("assign_spin", item%out)
          call print_spin(item%t_spin(3)%spin,item%rank3,item%label_res,
      &                   item%out)
-         call print_spin(item%t_spin(1)%spin,item%rank3,item%label_t1,
+         call print_spin(item%t_spin(1)%spin,item%rank1,item%label_t1,
      &                   item%out)
-         call print_spin(item%t_spin(2)%spin,item%rank3,item%label_t2,
+         call print_spin(item%t_spin(2)%spin,item%rank2,item%label_t2,
      &                   item%out)
          end if
 
@@ -4174,7 +5069,9 @@
       if (ntest>=100) then
          call print_spin(item%t_spin(1)%spin,item%rank1,"T1",item%out)
          call print_spin(item%t_spin(2)%spin,item%rank2,"T2",item%out)
-      end if
+         write(item%out,'(1x,"idx1 = ",a)') item%idx1
+         write(item%out,'(1x,"idx2 = ",a)') item%idx2
+       end if
 
       ! Get position information of contraction indicies, ie. look for
       ! zeros
@@ -4526,6 +5423,8 @@
      &                                          item%t_spin(3)%spin
             item%nspin_cases = item%nspin_cases + 1
 
+            if (item%nspin_cases .gt. MAX_SPIN_CASES)
+     &           call quit(1,'save_spin_case','extend max dimensions')
 
             if (ntest>=100) then
                write(item%out,*) "Saving spin case to item%t_spin:"
@@ -5062,8 +5961,16 @@
             item%vnops2(i) = sum(sum(item%v2(i,:,:),dim=1)) +
      &                       sum(sum(item%vc2(i,:,:),dim=1))
             !write(item%out,*) "vnops2 ", item%vnops2(i)
-         end do
+          end do
 
+          do i = 1, contr_info%nj_res
+            do j = 1, ngastp
+              do k = 1, 2               
+                item%v3(i,j,k) =
+     &               contr_info%occ_res(j,k,i)
+              end do
+            end do
+          end do
          !write(item%out,*) "External"
          !do k = 1, contr_info%nj_op1
          !   do j = 1, 2

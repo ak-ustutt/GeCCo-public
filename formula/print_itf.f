@@ -27,7 +27,7 @@
       type(formula_item), pointer ::
      &     fl_item                              ! Current formula_item
       integer ::
-     &     counter(4)                           ! Counter array
+     &     counter(4), cnt                      ! Counter array, 1 helper variable
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
      &   i
@@ -58,33 +58,54 @@
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo) then
 
+            if (fl_item%command==command_bc_reo) then
+              ! patch the result of the contraction with the reordered intermediate info
+              ! itf_index_info is already set up correctly
+              if (fl_item%bcontr%nj_res < fl_item%reo%nj_out)
+     &             call quit(1,'print_itf','dimension trouble')
+              fl_item%bcontr%nj_res = fl_item%reo%nj_out
+              fl_item%bcontr%occ_res(:,:,1:fl_item%reo%nj_out) =
+     &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
+            end if
+            
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
      &                          counter,tasks,x_dict)
-
+                        
             ! Count the number of terms
             counter(1) = counter(1) + 1
 
          else if (fl_item%command==command_add_contribution) then
-            write(itflog,*) '[CONTR]',fl_item%target
+            write(itflog,*) '[CONTR]',fl_item%target  ! this case should not appear in an opt. formula
          else if (fl_item%command==command_add_bc_reo) then
             write(itflog,*) '[CONTRACT][REORDER][ADD]',
      &           fl_item%target
             call prt_bcontr(itflog,fl_item%bcontr)
             call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
          else if (fl_item%command==command_add_reo) then
             write(itflog,*) '[REORDER][ADD]',
      &           fl_item%target
             call prt_bcontr(itflog,fl_item%bcontr)
             call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [REORDER][ADD] ')
+         else if (fl_item%command==command_reorder) then
+            write(itflog,*) '[REORDER]',
+     &           fl_item%target
+            call prt_reorder(itflog,fl_item%reo)
+            call warn('print_itf',
+     &           'uncovered case appeared: [REORDER] ')
          else if (fl_item%command==command_symmetrise) then
             write(itflog,*) '[SYMMETRISE]',fl_item%target
+            call warn('print_itf',
+     &           'uncovered case appeared: [SYMMETRISE] ')
          else if (fl_item%command==command_end_of_formula .or.
      &            fl_item%command==command_set_target_init .or.
      &            fl_item%command==command_set_target_update .or.
      &            fl_item%command==command_new_intermediate .or.
-     &            fl_item%command==command_del_intermediate .or.
-     &            fl_item%command==command_reorder) then
+     &            fl_item%command==command_del_intermediate ) then
             ! Do nothing
             ! write(itflog,*) '[END]'
             ! write(itflog,*) '[INIT TARGET]',fl_item%target
@@ -100,7 +121,8 @@
          ! Optionally print the formula items to another output file
          if (print_form) then
           write(formlog,*) "FORMULA NUMBER: ", counter(1)
-          call print_form_item2(formlog,'LONG',counter(1),fl_item,
+          cnt = counter(1) ! beware of print_form_item2: it increments the counter
+          call print_form_item2(formlog,'LONG',cnt,fl_item,
      &                          op_info)
          end if
 

@@ -23,15 +23,18 @@
      &     label_res, label_op
       integer ::
      &     iblk_res, iblk_op, nj_res, nj_op, idummy,
-     &     idxblk
+     &     idxblk, nidx
       logical ::
      &     tra_res, tra_op, ldummy
       integer, pointer ::
      &     occ_res(:,:,:), occ_op(:,:,:),
      &     rst_res(:,:,:,:,:,:), rst_op(:,:,:,:,:,:),
-     &     svdummy(:)
+     &     itf_index_info(:)
       type(operator), pointer ::
      &     op_res, op_add
+
+      integer, external ::
+     &     get_nidx4contr
 
 c dbg
 c      print *,'call to store_add_intm'
@@ -62,9 +65,12 @@ c      iblk_op   = contr%vertex(1)%iblk_op
       occ_op => op_add%ihpvca_occ(1:,1:,idxblk:idxblk-1+nj_op)
       rst_op => op_add%igasca_restr(1:,1:,1:,1:,1:,
      &                                   idxblk:idxblk-1+nj_op)
-      ! dummy map for itf
-      allocate(svdummy(nj_res))
-      svdummy(1:nj_res) = 1
+      ! dummy for itf
+      nidx = get_nidx4contr(contr)
+      allocate(itf_index_info(3+2*nidx)) ! need to store the index info twice
+
+      call itf_set_index_info(itf_index_info,
+     &     contr,contr,.true.,1,1,1,contr%nvtx) ! last two arguments are dummy
 
       call store_bc(fl_item,
      &     contr%fac,contr%fac,
@@ -78,10 +84,10 @@ c      iblk_op   = contr%vertex(1)%iblk_op
      &     idummy,idummy,idummy,0,
      &     idummy,idummy,
      &     idummy,idummy,
-     &     svdummy,
+     &     itf_index_info,
      &     orb_info)
      
-      deallocate(svdummy)
+      deallocate(itf_index_info)
 
       return
       end

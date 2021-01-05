@@ -33,6 +33,17 @@ c
 
       end type cntr_vtx
 
+      ! a type for storing explicit index information
+      type string_element
+        integer :: vtx     ! vertex to which current index belongs
+        integer :: ca      ! creation or annihilation
+        integer :: hpvx    ! orbital space
+        integer :: cnt     ! contraction (ext=F) or external vertex (ext=T) for index
+        integer :: idx     ! index number (within orbital space
+        logical :: ext     ! ext=F: cnt is contraction number; ext=T: cnt is external vertex
+        logical :: del     ! marker for internal purposes
+      end type string_element
+
       type contraction
 
         integer ::     ! type of result:
@@ -68,13 +79,22 @@ c
      &                    !  0: number of vertices, 1-nvtx: vertex numbers
      &       svertex(:)   !  supervertex to which vertex belongs (nvtx)
         integer, pointer ::
-     &       inffac(:,:) ! factorization info (4,nfac)
+     &       inffac(:,:)  ! factorization info (4,nfac)
         logical ::
-     &       unique_set  ! unique representation (topo etc.) defined?
+     &       unique_set   ! unique representation (topo etc.) defined?
         integer(8), pointer ::
      &       vtx(:), topo(:,:), xlines(:,:)
         integer(8) ::
-     &       hash      ! for quick comparison
+     &       hash         ! for quick comparison
+        logical ::
+     &       index_info         ! index information defined? (see below)
+        integer ::
+     &       nidx, nxidx
+        type(string_element), pointer ::
+     &       contr_string(:),   ! index information for contraction (= diagram labels)
+     &       result_string(:)   ! index information for final result (= pairing for open lines)
+        integer ::
+     &       total_sign         ! sign for explicitly labelled diagram
 *----------------------------------------------------------------------*
 *	factorization info organized as:
 *         ((vertex1,vertex2,intermediate1),
@@ -119,7 +139,7 @@ c
      &     rst_cnt(:,:,:,:,:,:),
      &     merge_op1(:), merge_op2(:),
      &     merge_op1op2(:), merge_op2op1(:),
-     &     svertex_itf(:)
+     &     itf_index_info(:)
       end type binary_contr
 
       type reorder

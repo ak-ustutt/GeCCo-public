@@ -21,7 +21,7 @@
       integer ::
      &     n_operands, nj_cnt, nj_res, nj_op1, nj_op2,
      &     ngas, nspin, len_m1, len_m2, len_m12, len_m21,
-     &     lenlab1, lenlab2, lenlab3
+     &     lenlab1, lenlab2, lenlab3, len_idxinf
 
       integer, external ::
      &     len_merge_map
@@ -31,7 +31,7 @@
 
         ! dimension record
         read(lu,end=100) n_operands, nj_cnt, nj_res, nj_op1, nj_op2,
-     &       ngas, nspin, len_m1, len_m2, len_m12, len_m21
+     &       ngas, nspin, len_m1, len_m2, len_m12, len_m21, len_idxinf
 
         allocate(bcontr%occ_res(ngastp,2,nj_res))
         allocate(bcontr%rst_res(2,ngas,2,2,nspin,nj_res))
@@ -55,7 +55,7 @@
           allocate(bcontr%merge_op1op2(len_m12))
           allocate(bcontr%merge_op2op1(len_m21))
         end if
-        allocate(bcontr%svertex_itf(nj_op1+nj_op2))
+        allocate(bcontr%itf_index_info(len_idxinf))
 
         bcontr%n_operands = n_operands
         bcontr%n_cnt = nj_cnt
@@ -76,7 +76,7 @@
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
      &       bcontr%occ_op1,bcontr%rst_op1,
-     &       bcontr%perm,bcontr%svertex_itf(1:nj_op1+nj_op2)
+     &       bcontr%perm,bcontr%itf_index_info(1:len_idxinf)
 
         ! extra records
         if (n_operands.eq.2)
@@ -118,9 +118,11 @@
           len_m21 = 0
         end if
 
+        len_idxinf = sum(bcontr%itf_index_info(1:3))+3
+
         ! dimension record
         write(lu,err=200) n_operands, nj_cnt, nj_res, nj_op1, nj_op2,
-     &       ngas, nspin, len_m1, len_m2, len_m12, len_m21
+     &       ngas, nspin, len_m1, len_m2, len_m12, len_m21, len_idxinf
 
         lenlab1 = len_trim(bcontr%label_res)
         lenlab2 = len_trim(bcontr%label_op1)
@@ -133,7 +135,7 @@
      &       bcontr%tra_res,bcontr%tra_op1,bcontr%tra_op2,
      &       bcontr%occ_res,bcontr%rst_res,
      &       bcontr%occ_op1,bcontr%rst_op1,
-     &       bcontr%perm,bcontr%svertex_itf(1:nj_op1+nj_op2)
+     &       bcontr%perm,bcontr%itf_index_info(1:len_idxinf)
 
         ! extra records
         if (n_operands.eq.2)

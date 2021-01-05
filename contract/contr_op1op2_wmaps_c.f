@@ -47,7 +47,7 @@
       include 'hpvxseq.h'
 
       integer, parameter ::
-     &     ntest = 5000
+     &     ntest =  000
 
       logical, intent(in) ::
      &     update
@@ -1093,8 +1093,8 @@ c dbg
      &         ms12i_a(idx_restr).eq.0.and.ms12i_a(3).eq.0.and.
      &         msc_c-msc_a.lt.0) fac_scal = fac_scal*2d0
 c dbg
-          print *,'processing: ',ms12i_a(1:3),
-     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
+c          print *,'processing: ',ms12i_a(1:3),
+c     &            'msc_c,msc_a: ',msc_c,msc_a,' fac = ',fac_scal
 c dbg
 
           if (ntest.ge.100) then

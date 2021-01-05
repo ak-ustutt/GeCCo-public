@@ -8,13 +8,13 @@
      &     gamt_op,gamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
-     &     svertex_itf,
+     &     itf_index_info,
      &     contr_in,occ_vtx_in,irestr_vtx_in,info_vtx,
      &     make_contr_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     set_reo, reo_info, reo_info_bef, !FIX
      &     iarc_contr,update_idxintm,idxintm,
-     &     irestr_res,njoined_res,orb_info,op_info)
+     &     irestr_res,njoined_res,orb_info,op_info,ntest_in)
 
       implicit none
 
@@ -28,7 +28,9 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest_ = 00
+      integer, intent(in) :: ntest_in
+      integer :: ntest
 
       type(contraction), intent(in), target ::
      &     contr_in
@@ -73,7 +75,7 @@
      &     irestr_op1op2(2,orb_info%ngas,2,2,*),
      &     mst_op(2), mst_op1op2, gamt_op(2), gamt_op1op2,
      &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*),
-     &     svertex_itf(*)
+     &     itf_index_info(*)
 
       type(contraction), pointer ::
      &     contr, contr_pnt
@@ -105,6 +107,8 @@
       logical, external ::
      &     allowed_contr
 
+      ntest = max(ntest_,ntest_in)
+      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'get_bc_info3')
         call prt_contr3(lulog,contr_in,-1)
@@ -121,6 +125,7 @@
       allocate(contr)
       call init_contr(contr)
       call copy_contr(contr_in,contr)
+
       occ_vtx    = occ_vtx_in
       irestr_vtx = irestr_vtx_in
 
@@ -211,11 +216,6 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
         gamt_op(2) = 1
       end if
 
-      ! some extra for ITF:
-      ! provide a map on svertex_itf(njoined_op(1)+njoined_op2(2)) 
-      ! from which the original arrangement 
-      ! of vertices can be reconstructed
-      idx=0
       ivtx1 = 0
       ivtx2 = 0
       do ivtx = 1, nvtx
@@ -225,8 +225,6 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         occ_vtx(1:ngastp,1:2,ivtx+njoined_res)
           irestr_op1(1:2,1:ngas,1:2,1:2,ivtx1) =
      &         irestr_vtx(1:2,1:ngas,1:2,1:2,ivtx+njoined_res)
-          idx=idx+1             ! itf
-          svertex_itf(idx)=1    ! itf
         end if
         if (contr%svertex(ivtx).eq.isvtx2.and..not.self) then
           ivtx2 = ivtx2+1
@@ -234,8 +232,6 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &         occ_vtx(1:ngastp,1:2,ivtx+njoined_res)
           irestr_op2(1:2,1:ngas,1:2,1:2,ivtx2) =
      &         irestr_vtx(1:2,1:ngas,1:2,1:2,ivtx+njoined_res)
-          idx=idx+1             ! itf
-          svertex_itf(idx)=2    ! itf
         end if
       end do
       
@@ -291,7 +287,16 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
      &     merge_map_op1op2,ld_mmap12,
      &     make_contr_red,contr_red,idxintm,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res,
-     &     reo_info)
+     &     reo_info,ntest_in)
+
+      ! THIS WAS THE PREVIOUS PLACE
+!     use isvtx1/2 to get indices of input operators from contr
+!     and ivtx_op1op2(1:njoined_op1op2) for output op from contr_red
+!     (or result string if this is the final res.)
+!      if (itf_index_info(1).ne.-1.and.contr%index_info)
+!     &     call itf_set_index_info(itf_index_info,
+!     &                        contr,contr_red,contr%narc==len_list,
+!     &                        isvtx1,isvtx2,ivtx_op1op2,njoined_op1op2)
 
       call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
@@ -448,6 +453,16 @@ c        end if
 
       end if
 
+      ! THIS IS THE NEW PLACE
+!     use isvtx1/2 to get indices of input operators from contr
+!     and ivtx_op1op2(1:njoined_op1op2) for output op from contr_red
+!     (or result string if this is the final res.)
+      if (itf_index_info(1).ne.-1.and.contr%index_info)
+     &     call itf_set_index_info(itf_index_info,
+     &                        contr,contr_red,contr%narc==len_list,
+     &                        isvtx1,isvtx2,ivtx_op1op2,njoined_op1op2)
+
+
       ! another FIX: skip (currently?) impossible contractions
       possible = possible.and.
      &           allowed_contr(contr,arc_list(1:len_list),len_list)
@@ -475,7 +490,6 @@ c        end if
         write(lulog,*) 'IRREP:        ',gamt_op(1), gamt_op(2),
      &                                                       gamt_op1op2
         write(lulog,*) 'sign: ',bc_sign
-        write(lulog,*) 'sign (ITF): ',bc_sign_itf
         if (.not.self) write(lulog,*) 'op1, op2, op1op2:'
         if (     self) write(lulog,*) 'op1, tr(op1):'
         call wrt_occ_n(lulog,iocc_op1,njoined_op(1))

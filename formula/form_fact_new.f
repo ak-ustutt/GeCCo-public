@@ -151,7 +151,17 @@ c dbgend
           if (.not.reo_add) call dealloc_reo_info(reo_info0)
         end if
 
+        ! set index info for ITF here ... unclear, how ITF can cope with reordering
+        call contr_set_indices(contr,op_info)
+
         if (reo_add) then
+
+c dbg     may later remove this again ... keep it until this is set for ITF or catched in ITF translator itself     
+          write(lulog,*) 'Check this!'
+          
+          call warn('form_fact_new','not clear if this works for ITF')
+c dbg
+          
           allocate(iocc_reo(ngastp,2,nvtx_max),
      &             iocc_ori(ngastp,2,nvtx_max),
      &             irst_reo(2,ngas,2,2,nvtx_max),
@@ -286,6 +296,10 @@ c      print *,'now SETting'
 c        call prt_contr2(lulog,contr,op_info)
 c        call wrt_occ_n(lulog,occ_vtx,nvtx_full+njoined)
 c dbg
+
+      ! analyze the diagram and set helper variables required for ITF translator
+      call contr_set_indices(contr,op_info)
+      
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET ',.true.,nlevel,ifact_best,fl_fact,
      &     cost,iscale,iitem,

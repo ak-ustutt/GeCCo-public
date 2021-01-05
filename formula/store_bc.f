@@ -11,7 +11,7 @@
      &       irstex1,irstex2,irstcnt,nj_cnt,
      &       merge1,merge2,
      &       merge12,merge21,
-     &       svertex_itf,
+     &       itf_index_info,
      &       orb_info)
 *----------------------------------------------------------------------*
 *     store info on unary or binary contraction on fl_item
@@ -55,7 +55,8 @@
      &     irstex1(2,orb_info%ngas,2,2,orb_info%nspin,nj1),
      &     irstex2(2,orb_info%ngas,2,2,orb_info%nspin,nj2),
      &     irstcnt(2,orb_info%ngas,2,2,orb_info%nspin,nj_cnt),
-     &     merge1(*), merge2(*), merge12(*), merge21(*), svertex_itf(*)
+     &     merge1(*), merge2(*), merge12(*), merge21(*),
+     &     itf_index_info(*)
 
       integer ::
      &     n_operands, lenmap, ngas, nspin
@@ -141,8 +142,9 @@
       end if
 
       ! extra for itf
-      allocate(fl_item%bcontr%svertex_itf(nj1+nj2))
-      fl_item%bcontr%svertex_itf(1:nj1+nj2) = svertex_itf(1:nj1+nj2)
+      lenmap = 3+sum(itf_index_info(1:3))
+      allocate(fl_item%bcontr%itf_index_info(lenmap))
+      fl_item%bcontr%itf_index_info(1:lenmap) = itf_index_info(1:lenmap)
 
       return
       end

@@ -499,56 +499,59 @@ EXPAND_OP_PRODUCT({LABEL:'CCD_FORM_PP',NEW:False,OP_RES:'INTpp',
 
 PRINT_FORMULA({LABEL:'CCD_FORM_PP',MODE:'SHORT'})
 
-# K4E
-# T:eecc
-#EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
+# K4E --- use this to remove certain parts of the code
+DEF_SCALAR({LABEL:'K4E'})
+# T:eecc 
+#EXPAND_OP_PRODUCT({LABEL:'F_K4E',NEW:True,OP_RES:'K4E',
 #                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
 #                   IDX_SV   :[1, 2, 3, 4, 5],
 #                   LABEL_DESCR:["2,3,,PP", "2,4,HH,", "3,4,,PP", "1,5,,V"]})
 
-EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:True,OP_RES:'MRCC_LAG_A2',
+# removes H30 PPPH
+EXPAND_OP_PRODUCT({LABEL:'F_K4E',NEW:True,OP_RES:'K4E',
                    OPERATORS:['C0^+','LAM2g','H','T1','C0'],
                    IDX_SV   :[1, 2, 3, 4, 5],
                    LABEL_DESCR:["2,3,H,PP", "2,4,H,", "3,4,,P", "1,5,,V"]})
 
 # T:eeac
-#EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
+#EXPAND_OP_PRODUCT({LABEL:'F_K4E',NEW:False,OP_RES:'K4E',
 #                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
 #                   IDX_SV   :[1, 2, 3, 4, 5],
 #                   LABEL_DESCR:["1,2,,V", "2,3,,PP", "2,4,H,", "3,4,,PP", "4,5,,V"]})
 
-# R:eeac K3E
-EXPAND_OP_PRODUCT({LABEL:'K4E',NEW:False,OP_RES:'MRCC_LAG_A2',
+# R:eeac K3E removes H33 PPPV
+EXPAND_OP_PRODUCT({LABEL:'F_K4E',NEW:False,OP_RES:'K4E',
                    OPERATORS:['C0^+','LAM2g','H','T1','C0'],
                    IDX_SV   :[1, 2, 3, 4, 5],
                    LABEL_DESCR:["1,2,,V", "2,3,,PP", "2,4,H,", "3,4,,P", "3,5,,V"]})
 
 
 # K3E
-# T:ec
-EXPAND_OP_PRODUCT({LABEL:'K4E1',NEW:True,OP_RES:'MRCC_LAG_A1',
+DEF_SCALAR({LABEL:'K4E1'})
+# T:ec -- removes H(20) HPPP
+EXPAND_OP_PRODUCT({LABEL:'F_K4E1',NEW:True,OP_RES:'K4E1',
                    OPERATORS:['C0^+','LAM1','H','T2g','C0'],
                    IDX_SV   :[1, 2, 3, 4, 5],
                    LABEL_DESCR:["2,3,,P", "2,4,H,", "3,4,H,PP", "1,5,,V"]})
 
-#EXPAND_OP_PRODUCT({LABEL:'K4E1',NEW:False,OP_RES:'MRCC_LAG_A1',
+#EXPAND_OP_PRODUCT({LABEL:'F_K4E1',NEW:False,OP_RES:'K4E1',
 #                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
 #                   IDX_SV   :[1, 2, 3, 4, 5],
 #                   LABEL_DESCR:["1,3,,V", "2,3,,P", "2,4,H,", "3,4,,PP", "4,5,,V"]})
 
 ## R:ec K3E (T:eeac)
-#EXPAND_OP_PRODUCT({LABEL:'K4E1',NEW:False,OP_RES:'MRCC_LAG_A1',
+#EXPAND_OP_PRODUCT({LABEL:'F_K4E1',NEW:False,OP_RES:'K4E1',
 #                   OPERATORS:['C0^+','LAM1','H','T2g','C0'],
 #                   IDX_SV   :[1, 2, 3, 4, 5],
 #                   LABEL_DESCR:["1,3,,V", "2,3,,P", "2,4,H,", "3,4,,PP", "4,5,,V"]})
 
 
 
-PRINT_FORMULA({LABEL:'K4E',MODE:'SHORT'})
-FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',INTERM:'K4E'})
+PRINT_FORMULA({LABEL:'F_K4E',MODE:'SHORT'})
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',INTERM:'F_K4E'})
 
-PRINT_FORMULA({LABEL:'K4E1',MODE:'SHORT'})
-FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',INTERM:'K4E1'})
+PRINT_FORMULA({LABEL:'F_K4E1',MODE:'SHORT'})
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',INTERM:'F_K4E1'})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})

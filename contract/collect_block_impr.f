@@ -22,7 +22,7 @@
       include 'stdunit.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest =  000
 
       real(8), intent(in) ::
      &     xop(*)
