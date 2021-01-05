@@ -191,6 +191,7 @@
 
       nidx = get_nidx4contr(contr)
       allocate(itf_index_info(3+2*nidx))
+      itf_index_info = 0
 
       ! extract BC
       call get_bc_info3(bc_sign,bc_sign_itf,possible,
