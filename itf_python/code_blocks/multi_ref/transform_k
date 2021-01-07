@@ -1,0 +1,13 @@
+---- code("Transform_K")
+alloc K4E1[abij], K4E2[abpi]
+alloc INTpp1[abmi]
+load deltaci[im], deltaai[pm]
+load K4C[abmn]
+.INTpp1[abmj] += K4C[abmn] deltaci[jn]
+.K4E1[abij] += INTpp1[abmj] deltaci[im]
+.K4E2[abpi] += INTpp1[abmi] deltaai[pm]
+drop K4C[abmn]
+drop deltaai[pm], deltaci[im]
+drop INTpp1[abmi]
+store K4E2[abpi], K4E1[abij]
+

@@ -1,0 +1,62 @@
+---- code("Transform_Residual")
+// I1
+alloc OR:ac[pi]
+load R:ac[pi], S1:I1[pq]
+.OR:ac[qi] += R:ac[pi] S1:I1[pq]
+drop S1:I1[pq], R:ac[pi]
+store OR:ac[pi]
+
+alloc OR:aaac[pqri]
+load R:aaac[pqri], S2:I1[pqrstu]
+.OR:aaac[stui] += R:aaac[pqri] S2:I1[pqrstu]
+drop S2:I1[pqrstu], R:aaac[pqri]
+store OR:aaac[pqri]
+
+// I2
+alloc OR:aacc[pqij]
+load R:aacc[pqij], S2:I2[pqrs]
+.OR:aacc[rsij] += R:aacc[pqij] S2:I2[pqrs]
+drop S2:I2[pqrs], R:aacc[pqij]
+store OR:aacc[pqij]
+
+// S0
+alloc OR:ea[ap]
+load R:ea[ap], S1:S0[pq]
+.OR:ea[aq] += R:ea[ap] S1:S0[pq]
+drop S1:S0[pq], R:ea[ap]
+store OR:ea[ap]
+
+// S1
+alloc OR:eaca[apiq]
+load R:eaca[apiq], S2:S1[pqrs]
+.OR:eaca[aris] += R:eaca[apiq] S2:S1[pqrs]
+drop S2:S1[pqrs], R:eaca[apiq]
+store OR:eaca[apiq]
+
+alloc OR:eaac[apqi]
+load R:eaac[apqi], S2:S1[pqrs]
+.OR:eaac[arsi] += R:eaac[apqi] S2:S1[pqrs]
+drop S2:S1[pqrs], R:eaac[apqi]
+store OR:eaac[apqi]
+
+// S2
+alloc OR:eacc[apij]
+load R:eacc[apij], S2:S2[pq]
+.OR:eacc[aqij] += R:eacc[apij] S2:S2[pq]
+drop S2:S2[pq], R:eacc[apij]
+store OR:eacc[apij]
+
+// P0
+alloc OR:eeaa[abpq]
+load R:eeaa[abpq], S2:P0[pqrs]
+.OR:eeaa[abrs] += R:eeaa[abpq] S2:P0[pqrs]
+drop S2:P0[pqrs], R:eeaa[abpq]
+store OR:eeaa[abpq]
+
+// P1
+alloc OR:eeac[abpi]
+load R:eeac[abpi], S2:P1[pq]
+.OR:eeac[abqi] += R:eeac[abpi] S2:P1[pq]
+drop S2:P1[pq], R:eeac[abpi]
+store OR:eeac[abpi]
+

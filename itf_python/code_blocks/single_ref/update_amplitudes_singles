@@ -1,0 +1,41 @@
+// Update singles
+load R:ec[ai]
+load f:ee[aa], f:cc[ii], ShiftS[]
+denom-scale R:ec[ai], f:ee[aa] - f:cc[ii] + ShiftS[]
+drop ShiftS[], f:cc[ii], f:ee[aa]
+
+alloc EDi1[], Nrm1[], Var1[]", file=f2)
+load T:ec[ai], f:ec[ai]
+.T:ec[ai] -= R:ec[ai]
+.EDi1[] += 2.0*T:ec[ai] f:ec[ai]
+.Nrm1[] += 2.0*T:ec[ai] T:ec[ai]
+.Var1[] += 2.0*R:ec[ai] R:ec[ai]
+drop f:ec[ai]
+store T:ec[ai]
+store Var1[], Nrm1[], EDi1[]
+drop R:ec[ai]
+
+// Update doubles
+load T:ec[ai]
+alloc EDi2[], Nrm2[], Var2[]
+load R:eecc[abij], K:eecc[abij]
+load T:eecc[abij]
+load f:ee[aa], f:cc[ii], ShiftP[]
+denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
+drop ShiftP[], f:cc[ii], f:ee[aa]
+
+.T:eecc[abij] -= R:eecc[abij]
+
+alloc C[abij]
+.C[abij] += T:eecc[abij]
+.C[abij] += T:ec[ai] T:ec[bj]
+.EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
+.Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
+drop C[abij]
+
+.Var2 += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+
+store T:eecc[abij]
+drop K:eecc[abij], R:eecc[abij]
+store Var2[], Nrm2[], EDi2[]
+drop T:ec[ai]

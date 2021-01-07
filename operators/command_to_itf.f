@@ -135,31 +135,31 @@
       end function
 
 
-*----------------------------------------------------------------------*
-      pure function check_den(label)
-*----------------------------------------------------------------------*
-!     Check if tensor is a density matrix
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      character(len=MAXLEN_BC_LABEL), intent(in) ::
-     &     label
-
-      logical ::
-     &     check_den
-
-      ! Assume these are the names of intermediates
-      if (index(label, "GAM")>0) then
-         check_den=.true.
-      else
-         check_den=.false.
-      end if
-
-      end function
+!*----------------------------------------------------------------------*
+!      pure function check_den(label)
+!*----------------------------------------------------------------------*
+!!     Check if tensor is a density matrix
+!*----------------------------------------------------------------------*
+!
+!      implicit none
+!      include 'opdim.h'
+!      include 'def_contraction.h'
+!      include 'def_itf_contr.h'
+!
+!      character(len=MAXLEN_BC_LABEL), intent(in) ::
+!     &     label
+!
+!      logical ::
+!     &     check_den
+!
+!      ! Assume these are the names of intermediates
+!      if (index(label, "GAM")>0) then
+!         check_den=.true.
+!      else
+!         check_den=.false.
+!      end if
+!
+!      end function
 
 
 *----------------------------------------------------------------------*

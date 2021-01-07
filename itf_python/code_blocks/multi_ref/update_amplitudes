@@ -1,0 +1,115 @@
+---- code("Update_Amplitudes")
+// I1
+alloc Nrm1[]
+load T:ac[pi]
+load OT:ac[pi], S1:I1[pq]
+.T:ac[qi] += OT:ac[pi] S1:I1[pq]
+.Nrm1[] += 2.*T:ac[pi] T:ac[pi]
+drop S1:I1[pq], OT:ac[pi]
+store T:ac[pi]
+store Nrm1[]
+
+alloc Nrm2[]
+load T:aaac[pqri]
+load OT:aaac[pqri], S2:I1[pqrstu]
+.T:aaac[stui] += OT:aaac[pqri] S2:I1[pqrstu]
+.Nrm2[] += T:aaac[pqri] T:aaac[pqri]
+drop S2:I1[pqrstu], OT:aaac[pqri]
+store T:aaac[pqri]
+store Nrm2[]
+
+// I2
+load Nrm2[]
+load T:aacc[pqij]
+load OT:aacc[pqij], S2:I2[pqrs]
+.T:aacc[rsij] += OT:aacc[pqij] S2:I2[pqrs]
+.Nrm2[] += (2.*T:aacc[pqij] - T:aacc[pqij]) T:aacc[pqij]
+drop S2:I2[pqrs], OT:aacc[pqij]
+store T:aacc[pqij]
+store Nrm2[]
+
+// S0
+load Nrm1[]
+load T:ea[ap]
+load OT:ea[ap], S1:S0[pq]
+.T:ea[aq] += OT:ea[ap] S1:S0[pq]
+.Nrm1[] += 2.*T:ea[ap] T:ea[ap]
+drop S1:S0[pq], OT:ea[ap]
+store T:ea[ap]
+
+// S1
+
+// S2
+
+load Var1[]
+load R:ec[ai]
+load g:ee[aa], g:cc[ii]
+denom-scale R:ec[ai], g:ee[aa] - g:cc[ii]
+drop g:cc[ii], g:ee[aa]
+load T:ec[ai]
+.T:ec[ai] -= R:ec[ai]
+.Nrm1[] += 2.*T:ec[ai] T:ec[ai]
+store T:ec[ai]
+.Var1[] += 2.*R:ec[ai] R:ec[ai]
+drop R:ec[ai]
+store Var1[]
+store Nrm1[]
+
+
+load Nrm2[]
+
+load T:eaca[apiq]
+load OT:eaca[apiq], S2:S1[pqrs]
+.T:eaca[aris] += OT:eaca[apiq] S2:S1[prqs]
+.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
+drop S2:S1[pqrs], OT:eaca[apiq]
+store T:eaca[apiq]
+
+load T:eaac[apqi]
+load OT:eaac[apqi], S2:S1[pqrs]
+.T:eaac[arsi] += OT:eaac[apqi] S2:S1[pqrs]
+.Nrm2[] += T:eaac[apqi] T:eaac[apqi]
+drop S2:S1[pqrs], OT:eaac[apqi]
+store T:eaac[apqi]
+
+load T:eacc[apij]
+load OT:eacc[apij], S2:S2[pq]
+.T:eacc[aqij] += OT:eacc[apij] S2:S2[pq]
+.Nrm2[] += T:eacc[apij] T:eacc[apij]
+drop S2:S2[pq], OT:eacc[apij]
+store T:eacc[apij]
+
+// P0
+load T:eeaa[abpq]
+load OT:eeaa[abpq], S2:P0[pqrs]
+.T:eeaa[abrs] += OT:eeaa[abpq] S2:P0[pqrs]
+.Nrm2[] += (2.*T:eeaa[abpq] - T:eeaa[bapq]) T:eeaa[abpq]
+drop S2:P0[pqrs], OT:eeaa[abpq]
+store T:eeaa[abpq]
+
+// P1
+load T:eeac[abpi]
+load OT:eeac[abpi], S2:P1[pq]
+.T:eeac[abqi] += OT:eeac[abpi] S2:P1[pq]
+.Nrm2[] += T:eeac[abpi] T:eeac[abpi]
+drop S2:P1[pq], OT:eeac[abpi]
+store T:eeac[abpi]
+
+// P2
+
+
+load Var2[]
+load R:eecc[abij]
+load g:ee[aa], g:cc[ii]
+denom-scale R:eecc[abij], g:ee[aa] + g:ee[bb] - g:cc[ii] - g:cc[jj]
+drop g:cc[ii], g:ee[aa]
+load T:eecc[abij]
+.T:eecc[abij] -= R:eecc[abij]
+.Nrm2[] += (2.*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+store T:eecc[abij]
+.Var2[] += (2.*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+drop R:eecc[abij]
+store Var2[]
+
+store Nrm2[]
+

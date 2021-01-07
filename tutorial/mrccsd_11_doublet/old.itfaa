@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
-// Author: J.A. Black
+// Authors: J.A. Black, A. Koehn
 
-// Created on: 07-01-2021 10:17
+// Created on: 07-01-2021 16:52
 
 ---- decl
 index-space: pqrstuvw, Active  , a
@@ -35,6 +35,16 @@ tensor: J:eacc[bqki], J:eacc
 tensor: J:eeaa[bcpq], J:eeaa
 tensor: J:eeca[caip], J:eeca
 tensor: J:eecc[bckj], J:eecc
+tensor: J:ecca[aijp], J:ecca
+tensor: J:ecaa[aipq], J:ecaa
+tensor: J:eaaa[apqr], J:eaaa
+tensor: J:ccaa[ijpq], J:ccaa
+tensor: J:caaa[ipqr], J:caaa
+tensor: J:ccca[ijkp], J:ccca
+tensor: J:eccc[aijk], J:eccc
+tensor: K:ccaa[ijpq], K:ccaa
+tensor: K:ecaa[aipq], K:ecaa
+
 
 // Special integral tensors
 tensor: K4E1[abij], K4E1
@@ -95,9 +105,12 @@ tensor: ECC[], ECC
 tensor: EDi1[], EDi1     // Direct 1st order energy
 tensor: Nrm1[], Nrm1     // Singles amplitude norm
 tensor: Var1[], Var1     // Singles residual norm
+tensor: ShiftS[], ShiftS
+
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: ShiftP[], ShiftP
 
 // Fock matricies, including core orbitals
 tensor: fc:aa[pq], fc:aa
@@ -106,16 +119,6 @@ tensor: fc:ea[aq], fc:ea
 tensor: fc:ec[ai], fc:ec
 tensor: fc:ee[ab], fc:ee
 tensor: fc:ca[ip], fc:ca
-
-tensor: J:ecca[aijp]
-tensor: J:ecaa[aipq]
-tensor: J:eaaa[apqr]
-tensor: J:ccaa[ijpq]
-tensor: J:caaa[ipqr]
-tensor: J:ccca[ijkp]
-tensor: J:eccc[aijk]
-tensor: K:ccaa[ijpq]
-tensor: K:ecaa[aipq]
 
 // Effective Fock matricies
 tensor: g:aa[pq]
@@ -201,10 +204,6 @@ tensor: A1[pp],    !Create{type:disk; sym:+01}
 tensor: A4[pp],    !Create{type:disk; sym:+01}
 //tensor: A5[pppppp],  !Create{type:disk; sym:012/345}
 //tensor: A6[pppp], !Create{type:disk; sym:01/23}
-tensor: gminus[ij],!Create{type:disk; sym:+01}
-
-tensor: ShiftS[], ShiftS
-tensor: ShiftP[], ShiftP
 
 // Intermediates
 tensor: ITIN[abij],        !Create{type:plain}
@@ -276,8 +275,6 @@ drop T:eeac[abpi], T:eecc[abij]
 drop deltaai[pm], deltaci[im]
 store INTpp[abmn]
 store INTpp1[abmi]
-
-
 ---- code("Transform_K")
 alloc K4E1[abij], K4E2[abpi]
 alloc INTpp1[abmi]
@@ -290,6 +287,8 @@ drop K4C[abmn]
 drop deltaai[pm], deltaci[im]
 drop INTpp1[abmi]
 store K4E2[abpi], K4E1[abij]
+
+
 
 
 ---- code("Residual")
@@ -1373,140 +1372,6 @@ load f:aa[**], Dm1[**]
 drop Dm1[**], f:aa[**]
 store A4[**]
 
-// Bug in ITF, for R:ac doesn't work with -g:cc[ii], does
-// work with + g:cc[ii]. So add minus here...
-alloc gminus[**]
-load g:cc[**]
-.gminus[ij] -= g:cc[ij]
-drop g:cc[**]
-store gminus[**]
-
-
----- code("Update_Amplitudes")
-alloc Var1[]
-
-load OR:ac[pi]
-load f:aa[pp], f:cc[ii]
-denom-scale OR:ac[pi], f:aa[pp] - f:cc[ii]
-drop f:cc[ii], f:aa[pp]
-alloc OT:ac[pi]
-.OT:ac[pi] -= OR:ac[pi]
-store OT:ac[pi]
-.Var1[] += 2.0*OR:ac[pi] OR:ac[pi]
-drop OR:ac[pi]
-
-load OR:ec[ai]
-load f:ee[aa], f:cc[ii]
-denom-scale OR:ec[ai], f:ee[aa] - f:cc[ii]
-drop f:cc[ii], f:ee[aa]
-alloc OT:ec[ai]
-.OT:ec[ai] -= OR:ec[ai]
-store OT:ec[ai]
-.Var1[] += 2.0*OR:ec[ai] OR:ec[ai]
-drop OR:ec[ai]
-
-load OR:ea[ap]
-load f:ee[aa], f:aa[pp]
-denom-scale OR:ea[ap], f:ee[aa] - f:aa[pp]
-drop f:aa[pp], f:ee[aa]
-alloc OT:ea[ap]
-// sign flip as R is formally {V}{P} while T is {PV}
-//.OT:ea[ap] -= OR:ea[ap]
-.OT:ea[ap] += OR:ea[ap]
-store OT:ea[ap]
-.Var1[] += 2.0*OR:ea[ap] OR:ea[ap]
-drop OR:ea[ap]
-
-store Var1[]
-alloc Var2[]
-
-load OR:aacc[pqij]
-load f:aa[pp], f:cc[ii]
-denom-scale OR:aacc[pqij], f:aa[pp] + f:aa[qq] - f:cc[ii] - f:cc[jj]
-drop f:cc[ii], f:aa[pp]
-alloc OT:aacc[pqij]
-.OT:aacc[pqij] -= OR:aacc[pqij]
-store OT:aacc[pqij]
-.Var2[] += (2.0*OR:aacc[pqij] - OR:aacc[qpij]) OR:aacc[pqij]
-drop OR:aacc[pqij]
-
-load OR:aaac[pqri]
-load f:aa[pp], f:cc[ii]
-denom-scale OR:aaac[pqri], f:aa[pp] + f:aa[qq] - f:aa[rr] - f:cc[ii]
-drop f:cc[ii], f:aa[pp]
-alloc OT:aaac[pqri]
-// sign flip as R is formally {V}{VVH} while T is {VVHV}
-//.OT:aaac[pqri] -= OR:aaac[pqri]
-.OT:aaac[pqri] += OR:aaac[pqri]
-store OT:aaac[pqri]
-.Var2[] += OR:aaac[pqri] OR:aaac[pqri]
-drop OR:aaac[pqri]
-
-load OR:eacc[apij]
-load f:ee[aa], f:aa[pp], f:cc[ii]
-denom-scale OR:eacc[apij], f:ee[aa] + f:aa[pp] - f:cc[ii] - f:cc[jj]
-drop f:cc[ii], f:aa[pp], f:ee[aa]
-alloc OT:eacc[apij]
-.OT:eacc[apij] -= OR:eacc[apij]
-store OT:eacc[apij]
-.Var2[] += OR:eacc[apij] OR:eacc[apij]
-drop OR:eacc[apij]
-
-load OR:eaac[apqi]
-load f:ee[aa], f:aa[pp], f:cc[ii]
-denom-scale OR:eaac[apqi], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:cc[ii]
-drop f:cc[ii], f:aa[pp], f:ee[aa]
-alloc OT:eaac[apqi]
-// sign flip as R is formally {V}{PVH} while T is {PVHV}
-//.OT:eaac[apqi] -= OR:eaac[apqi]
-.OT:eaac[apqi] += OR:eaac[apqi]
-store OT:eaac[apqi]
-.Var2[] += OR:eaac[apqi] OR:eaac[apqi]
-drop OR:eaac[apqi]
-
-load OR:eaaa[apqr]
-load f:ee[aa], f:aa[pp]
-denom-scale OR:eaaa[apqr], f:ee[aa] + f:aa[pp] - f:aa[qq] - f:aa[rr]
-drop f:aa[pp], f:ee[aa]
-alloc OT:eaaa[apqr]
-.OT:eaaa[apqr] -= OR:eaaa[apqr]
-store OT:eaaa[apqr]
-.Var2[] += OR:eaaa[apqr] OR:eaaa[apqr]
-drop OR:eaaa[apqr]
-
-load OR:eecc[abij]
-load f:ee[aa], f:cc[ii]
-denom-scale OR:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
-drop f:cc[ii], f:ee[aa]
-alloc OT:eecc[abij]
-.OT:eecc[abij] -= OR:eecc[abij]
-store OT:eecc[abij]
-.Var2[] += (2.0*OR:eecc[abij] - OR:eecc[baij]) OR:eecc[abij]
-drop OR:eecc[abij]
-
-load OR:eeac[abpi]
-load f:ee[aa], f:aa[pp], f:cc[ii]
-denom-scale OR:eeac[abpi], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:cc[ii]
-drop f:cc[ii], f:aa[pp], f:ee[aa]
-alloc OT:eeac[abpi]
-// sign flip as R is formally {V}{PPH} while T is {PPHV}
-//.OT:eeac[abpi] -= OR:eeac[abpi]
-.OT:eeac[abpi] += OR:eeac[abpi]
-store OT:eeac[abpi]
-.Var2[] += OR:eeac[abpi] OR:eeac[abpi]
-drop OR:eeac[abpi]
-
-load OR:eeaa[abpq]
-load f:ee[aa], f:aa[pp]
-denom-scale OR:eeaa[abpq], f:ee[aa] + f:ee[bb] - f:aa[pp] - f:aa[qq]
-drop f:aa[pp], f:ee[aa]
-alloc OT:eeaa[abpq]
-.OT:eeaa[abpq] -= OR:eeaa[abpq]
-store OT:eeaa[abpq]
-.Var2[] += (2.0*OR:eeaa[abpq] - OR:eeaa[bapq]) OR:eeaa[abpq]
-drop OR:eeaa[abpq]
-
-store Var2[]
 
 // Set up 3rd order denisty and hole tensors
 // This is taken from the cic code
@@ -1656,6 +1521,7 @@ load Dm1[pp]
 drop Dm1[pp]
 store S2:P1[pq]
 
+
 ---- code("Transform_Residual")
 // I1
 alloc OR:ac[pi]
@@ -1723,9 +1589,9 @@ store OR:eeac[abpi]
 alloc Var1[]
 
 load OR:ac[pi]
-load A1[pp], gminus[ii]
-denom-scale OR:ac[pi], A1[pp] + gminus[ii]
-drop gminus[ii], A1[pp]
+load A1[pp], g:cc[ii]
+denom-scale OR:ac[pi], A1[pp] - g:cc[ii]
+drop g:cc[ii], A1[pp]
 alloc OT:ac[pi]
 .OT:ac[pi] -= OR:ac[pi]
 store OT:ac[pi]
@@ -1739,7 +1605,7 @@ drop A4[pp], g:ee[aa]
 alloc OT:ea[ap]
 // sign flip as R is formally {V}{P} while T is {PV}
 //.OT:ea[ap] -= OR:ea[ap]
-.OT:ea[ap] += OR:ea[ap]
+.OT:ea[ap] -= OR:ea[ap]
 store OT:ea[ap]
 .Var1[] += 2.0*OR:ea[ap] OR:ea[ap]
 store OR:ea[ap]
@@ -1780,9 +1646,9 @@ store OT:eacc[apij]
 drop OR:eacc[apij]
 
 load OR:eaac[apqi]
-load g:ee[aa], gminus[ii]
-denom-scale OR:eaac[apqi], g:ee[aa] + gminus[ii]
-drop gminus[ii], g:ee[aa]
+load g:ee[aa], g:cc[ii]
+denom-scale OR:eaac[apqi], g:ee[aa] - g:cc[ii]
+drop g:cc[ii], g:ee[aa]
 alloc OT:eaac[apqi]
 // sign flip as R is formally {V}{PVH} while T is {PVHV}
 //.OT:eaac[apqi] -= OR:eaac[apqi]
@@ -1792,11 +1658,11 @@ store OT:eaac[apqi]
 drop OR:eaac[apqi]
 
 load OR:eaca[apiq]
-load g:ee[aa], gminus[ii]
-denom-scale OR:eaca[apiq], g:ee[aa] + gminus[ii]
-drop gminus[ii], g:ee[aa]
+load g:ee[aa], g:cc[ii]
+denom-scale OR:eaca[apiq], g:ee[aa] - g:cc[ii]
+drop g:cc[ii], g:ee[aa]
 alloc OT:eaca[apiq]
-.OT:eaca[apiq] -= OR:eaca[apiq]
+.OT:eaca[apiq] += OR:eaca[apiq]
 store OT:eaca[apiq]
 .Var2[] += OR:eaca[apiq] OR:eaca[apiq]
 drop OR:eaca[apiq]
@@ -1835,6 +1701,122 @@ drop OR:eeaa[abpq]
 
 
 store Var2[]
+
+
+---- code("Update_Amplitudes")
+// I1
+alloc Nrm1[]
+load T:ac[pi]
+load OT:ac[pi], S1:I1[pq]
+.T:ac[qi] += OT:ac[pi] S1:I1[pq]
+.Nrm1[] += 2.*T:ac[pi] T:ac[pi]
+drop S1:I1[pq], OT:ac[pi]
+store T:ac[pi]
+store Nrm1[]
+
+alloc Nrm2[]
+load T:aaac[pqri]
+load OT:aaac[pqri], S2:I1[pqrstu]
+.T:aaac[stui] += OT:aaac[pqri] S2:I1[pqrstu]
+.Nrm2[] += T:aaac[pqri] T:aaac[pqri]
+drop S2:I1[pqrstu], OT:aaac[pqri]
+store T:aaac[pqri]
+store Nrm2[]
+
+// I2
+load Nrm2[]
+load T:aacc[pqij]
+load OT:aacc[pqij], S2:I2[pqrs]
+.T:aacc[rsij] += OT:aacc[pqij] S2:I2[pqrs]
+.Nrm2[] += (2.*T:aacc[pqij] - T:aacc[pqij]) T:aacc[pqij]
+drop S2:I2[pqrs], OT:aacc[pqij]
+store T:aacc[pqij]
+store Nrm2[]
+
+// S0
+load Nrm1[]
+load T:ea[ap]
+load OT:ea[ap], S1:S0[pq]
+.T:ea[aq] += OT:ea[ap] S1:S0[pq]
+.Nrm1[] += 2.*T:ea[ap] T:ea[ap]
+drop S1:S0[pq], OT:ea[ap]
+store T:ea[ap]
+
+// S1
+
+// S2
+
+load Var1[]
+load R:ec[ai]
+load g:ee[aa], g:cc[ii]
+denom-scale R:ec[ai], g:ee[aa] - g:cc[ii]
+drop g:cc[ii], g:ee[aa]
+load T:ec[ai]
+.T:ec[ai] -= R:ec[ai]
+.Nrm1[] += 2.*T:ec[ai] T:ec[ai]
+store T:ec[ai]
+.Var1[] += 2.*R:ec[ai] R:ec[ai]
+drop R:ec[ai]
+store Var1[]
+store Nrm1[]
+
+
+load Nrm2[]
+
+load T:eaca[apiq]
+load OT:eaca[apiq], S2:S1[pqrs]
+.T:eaca[aris] += OT:eaca[apiq] S2:S1[prqs]
+.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
+drop S2:S1[pqrs], OT:eaca[apiq]
+store T:eaca[apiq]
+
+load T:eaac[apqi]
+load OT:eaac[apqi], S2:S1[pqrs]
+.T:eaac[arsi] += OT:eaac[apqi] S2:S1[pqrs]
+.Nrm2[] += T:eaac[apqi] T:eaac[apqi]
+drop S2:S1[pqrs], OT:eaac[apqi]
+store T:eaac[apqi]
+
+load T:eacc[apij]
+load OT:eacc[apij], S2:S2[pq]
+.T:eacc[aqij] += OT:eacc[apij] S2:S2[pq]
+.Nrm2[] += T:eacc[apij] T:eacc[apij]
+drop S2:S2[pq], OT:eacc[apij]
+store T:eacc[apij]
+
+// P0
+load T:eeaa[abpq]
+load OT:eeaa[abpq], S2:P0[pqrs]
+.T:eeaa[abrs] += OT:eeaa[abpq] S2:P0[pqrs]
+.Nrm2[] += (2.*T:eeaa[abpq] - T:eeaa[bapq]) T:eeaa[abpq]
+drop S2:P0[pqrs], OT:eeaa[abpq]
+store T:eeaa[abpq]
+
+// P1
+load T:eeac[abpi]
+load OT:eeac[abpi], S2:P1[pq]
+.T:eeac[abqi] += OT:eeac[abpi] S2:P1[pq]
+.Nrm2[] += T:eeac[abpi] T:eeac[abpi]
+drop S2:P1[pq], OT:eeac[abpi]
+store T:eeac[abpi]
+
+// P2
+
+
+load Var2[]
+load R:eecc[abij]
+load g:ee[aa], g:cc[ii]
+denom-scale R:eecc[abij], g:ee[aa] + g:ee[bb] - g:cc[ii] - g:cc[jj]
+drop g:cc[ii], g:ee[aa]
+load T:eecc[abij]
+.T:eecc[abij] -= R:eecc[abij]
+.Nrm2[] += (2.*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+store T:eecc[abij]
+.Var2[] += (2.*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+drop R:eecc[abij]
+store Var2[]
+
+store Nrm2[]
 
 
 ---- code("Construct_GS_Overlap")
@@ -1969,123 +1951,6 @@ store S3:S1[pq]
 //store S2:P1[pq]
 
 
-
----- code("Update_Amplitudes")
-// I1
-alloc Nrm1[]
-load T:ac[pi]
-load OT:ac[pi], S1:I1[pq]
-.T:ac[qi] += OT:ac[pi] S1:I1[pq]
-.Nrm1[] += 2.*T:ac[pi] T:ac[pi]
-drop S1:I1[pq], OT:ac[pi]
-store T:ac[pi]
-store Nrm1[]
-
-alloc Nrm2[]
-load T:aaac[pqri]
-load OT:aaac[pqri], S2:I1[pqrstu]
-.T:aaac[stui] += OT:aaac[pqri] S2:I1[pqrstu]
-.Nrm2[] += T:aaac[pqri] T:aaac[pqri]
-drop S2:I1[pqrstu], OT:aaac[pqri]
-store T:aaac[pqri]
-store Nrm2[]
-
-// I2
-load Nrm2[]
-load T:aacc[pqij]
-load OT:aacc[pqij], S2:I2[pqrs]
-.T:aacc[rsij] += OT:aacc[pqij] S2:I2[pqrs]
-.Nrm2[] += (2.*T:aacc[pqij] - T:aacc[pqij]) T:aacc[pqij]
-drop S2:I2[pqrs], OT:aacc[pqij]
-store T:aacc[pqij]
-store Nrm2[]
-
-// S0
-load Nrm1[]
-load T:ea[ap]
-load OT:ea[ap], S1:S0[pq]
-.T:ea[aq] += OT:ea[ap] S1:S0[pq]
-.Nrm1[] += 2.*T:ea[ap] T:ea[ap]
-drop S1:S0[pq], OT:ea[ap]
-store T:ea[ap]
-
-// S1
-
-// S2
-
-load Var1[]
-load R:ec[ai]
-load g:ee[aa], g:cc[ii]
-denom-scale R:ec[ai], g:ee[aa] - g:cc[ii]
-drop g:cc[ii], g:ee[aa]
-load T:ec[ai]
-.T:ec[ai] -= R:ec[ai]
-.Nrm1[] += 2.*T:ec[ai] T:ec[ai]
-store T:ec[ai]
-.Var1[] += 2.*R:ec[ai] R:ec[ai]
-drop R:ec[ai]
-store Var1[]
-store Nrm1[]
-
-
-load Nrm2[]
-
-load T:eaca[apiq]
-load OT:eaca[apiq], S2:S1[pqrs]
-.T:eaca[aris] += OT:eaca[apiq] S2:S1[prqs]
-.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
-drop S2:S1[pqrs], OT:eaca[apiq]
-store T:eaca[apiq]
-
-load T:eaac[apqi]
-load OT:eaac[apqi], S2:S1[pqrs]
-.T:eaac[arsi] += OT:eaac[apqi] S2:S1[pqrs]
-.Nrm2[] += T:eaac[apqi] T:eaac[apqi]
-drop S2:S1[pqrs], OT:eaac[apqi]
-store T:eaac[apqi]
-
-load T:eacc[apij]
-load OT:eacc[apij], S2:S2[pq]
-.T:eacc[aqij] += OT:eacc[apij] S2:S2[pq]
-.Nrm2[] += T:eacc[apij] T:eacc[apij]
-drop S2:S2[pq], OT:eacc[apij]
-store T:eacc[apij]
-
-// P0
-load T:eeaa[abpq]
-load OT:eeaa[abpq], S2:P0[pqrs]
-.T:eeaa[abrs] += OT:eeaa[abpq] S2:P0[pqrs]
-.Nrm2[] += (2.*T:eeaa[abpq] - T:eeaa[bapq]) T:eeaa[abpq]
-drop S2:P0[pqrs], OT:eeaa[abpq]
-store T:eeaa[abpq]
-
-// P1
-load T:eeac[abpi]
-load OT:eeac[abpi], S2:P1[pq]
-.T:eeac[abqi] += OT:eeac[abpi] S2:P1[pq]
-.Nrm2[] += T:eeac[abpi] T:eeac[abpi]
-drop S2:P1[pq], OT:eeac[abpi]
-store T:eeac[abpi]
-
-// P2
-
-
-load Var2[]
-load R:eecc[abij]
-load g:ee[aa], g:cc[ii]
-denom-scale R:eecc[abij], g:ee[aa] + g:ee[bb] - g:cc[ii] - g:cc[jj]
-drop g:cc[ii], g:ee[aa]
-load T:eecc[abij]
-.T:eecc[abij] -= R:eecc[abij]
-.Nrm2[] += (2.*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
-store T:eecc[abij]
-.Var2[] += (2.*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
-drop R:eecc[abij]
-store Var2[]
-
-store Nrm2[]
-
-
 ---- code("Construct_Projected_S2")
 // Set up overlap metric, ready to construct X used
 // in sequential orthogonalisation
@@ -2161,4 +2026,6 @@ load Dm1[pp]
 .S3:S1[pq] := Dm1[qp]
 drop Dm1[pp]
 store S3:S1[pq]
+
+
 ---- end
