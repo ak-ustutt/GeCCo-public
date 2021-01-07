@@ -2607,7 +2607,7 @@ c     &                      item%cntr(4),item%out)
         st='.'//trimal(nx)//'['//trim(idx)//'] += '//
      &          trimal(nt)//'['//trim(idx)//']'//new_line('a')//
      &     '.'//trimal(nx)//'['//trim(idx)//'] -= '//
-     &          trimal(nt_x(1))//'['//trim(idx_x(1))//'])'
+     &          trimal(nt_x(1))//'['//trim(idx_x(1))//']'
       else
         call quit(1,'create_Xtensor_lines','not prepared for this case')
       end if

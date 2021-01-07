@@ -5,6 +5,7 @@ import python_interface.gecco_modules.string_to_form as stf
 new_target('CCD_OPS')
 DEF_SCALAR({LABEL:'LCCD'})
 DEF_SCALAR({LABEL:'ECCD'})
+DEF_SCALAR({LABEL:'Kext'})
 DEF_EXCITATION({LABEL:'T2',MIN_RANK:2,MAX_RANK:2})
 DEF_EXCITATION({LABEL:'T1',MIN_RANK:1,MAX_RANK:1})
 CLONE_OPERATOR({LABEL:'O2',TEMPLATE:'T2'})
@@ -42,7 +43,7 @@ form_l1.set_rule()
 
 
 # Four external
-EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'LCCD',FAC:1.0,
+EXPAND_OP_PRODUCT({LABEL:'Ext3',NEW:True,OP_RES:'Kext',FAC:1.0,
                    OPERATORS:['T2^+','H','T1','T1'],
                    IDX_SV   :[1,2,3,4],
                    LABEL_DESCR:["1,2,,PP","1,3,H,","2,3,,P","1,4,H,","2,4,,P"]})
