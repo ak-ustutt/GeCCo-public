@@ -1,10 +1,11 @@
+---- code("Update_Amplitudes")
 // Update singles
 load R:ec[ai]
 load f:ee[aa], f:cc[ii], ShiftS[]
 denom-scale R:ec[ai], f:ee[aa] - f:cc[ii] + ShiftS[]
 drop ShiftS[], f:cc[ii], f:ee[aa]
 
-alloc EDi1[], Nrm1[], Var1[]", file=f2)
+alloc EDi1[], Nrm1[], Var1[]
 load T:ec[ai], f:ec[ai]
 .T:ec[ai] -= R:ec[ai]
 .EDi1[] += 2.0*T:ec[ai] f:ec[ai]

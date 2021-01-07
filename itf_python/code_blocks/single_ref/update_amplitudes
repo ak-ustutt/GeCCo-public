@@ -1,3 +1,4 @@
+---- code("Update_Amplitudes")
 // Update doubles
 alloc EDi2[], Nrm2[], Var2[]
 load R:eecc[abij], K:eecc[abij]
