@@ -358,7 +358,7 @@ if singles:
 if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
-    if "Ym1" not in combined:
+    if "Ym1" in combined:
         print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
 
 else:

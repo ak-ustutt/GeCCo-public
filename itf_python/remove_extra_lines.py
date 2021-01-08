@@ -1,5 +1,6 @@
 # =========================================================================================
-#
+# Read through a bcontr or task file in reverse order and remove all itermediates that
+# aren't used
 # =========================================================================================
 import argparse     # Parse arguments
 import os
@@ -89,6 +90,7 @@ for line in readlines_reverse(files[0]):
             #print('Needed ', line, words[0].split('[')[0], combined_inters)
 
 f2.close()
+
 
 f2 = open(out,"w+")
 # Read though temp file and reverse order

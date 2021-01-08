@@ -1,9 +1,9 @@
       integer, parameter ::
-     &     INDEX_LEN = 8,       ! Length of index string
-     &     MAXINT = 8,          ! Maximum number of intermediates that contribute to a result
-     &     MAX_SPIN_CASES = 64,  ! Maximum number of intermediates that contribute to a result
-     &     MAXVTX = 10,  ! Maximum number of intermediates that contribute to a result
-     &     MAXX = 20  ! Maximum number of X intermediates
+     &     INDEX_LEN = 10,       ! Length of index string
+     &     MAXINT = 10,          ! Maximum number of intermediates that contribute to a result
+     &     MAX_SPIN_CASES = 64,  ! Maximum number of spin cases for a binary contraction
+     &     MAXVTX = 10,          ! Maximum number of verticies
+     &     MAXX = 20             ! Maximum number of X intermediates
 
 *----------------------------------------------------------------------*
       type spin_cases
@@ -13,17 +13,16 @@
 *----------------------------------------------------------------------*
 
       character(len=MAXLEN_BC_LABEL) ::
-     &     name                 ! Name of tensor
+     &     name                  ! Name of tensor
       integer, dimension(INDEX_LEN,MAX_SPIN_CASES) ::
-     &     cases = 0                ! Matrix containing possible spin cases each row is a different case
+     &     cases = 0             ! Matrix containing possible spin cases each row is a different case
       integer ::
-     &     ncase = 0,           ! Number of different spin cases
+     &     ncase = 0,            ! Number of different spin cases
      &     itype(INDEX_LEN)
       logical ::
      &     symm_res = .false.    ! True if intermediate contributes to a symmetric residual
 
       end type spin_cases
-
 
 
 *----------------------------------------------------------------------*
@@ -207,7 +206,7 @@
 *----------------------------------------------------------------------*
       type x_inter
 *----------------------------------------------------------------------*
-!    Xn = (T[abij] - T[abij])
+!     Xn = (T[abij] - T[abij])
 *----------------------------------------------------------------------*
       integer ::
      &  n,       ! X number

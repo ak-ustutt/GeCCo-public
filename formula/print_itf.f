@@ -67,11 +67,11 @@
               fl_item%bcontr%occ_res(:,:,1:fl_item%reo%nj_out) =
      &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
             end if
-            
+
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
      &                          counter,tasks,x_dict)
-                        
+
             ! Count the number of terms
             counter(1) = counter(1) + 1
 

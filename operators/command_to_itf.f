@@ -4794,6 +4794,7 @@ c       end if
       end if
 
       ! Assign spin to indicies on the result tensor
+      ! If not an intermediate
       if (.not. item%inter(3)) then
          select case (item%rank3)
             case(0)
@@ -4878,6 +4879,8 @@ c       end if
          call spin_index(item, ntest)
 
       else
+         ! Else the result is an intermeidate, spin sum all possible
+         ! spin cases
 
       if (item%rank3>0) then
          do n = 1, 2

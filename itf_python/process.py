@@ -419,14 +419,6 @@ for line_o in f:
         continue
 
 
-    # Catch if K[ceec] or K[ecec] is on the line. Need to permute the index to [eecc],
-    # but also change name to J[eecc]
-    #if ("K:" in line or "KP:"):
-    #    if ("K:eecc" not in line or "K:eccc" not in line or "K:eecc" not in line or "K:cccc" not in line):
-    #        line = rename_integrals(line)
-    #        words=line.split()
-
-
     # Catch 4-external integrals and replace line with K4E intermediate
     # Note: this might not be general enough to handle all cases
     # ie. with brackets
