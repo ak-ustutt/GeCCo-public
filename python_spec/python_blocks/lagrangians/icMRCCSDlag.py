@@ -340,6 +340,7 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
 
 
 # A2 ============================
+# T:eecc
 EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    OPERATORS:['C0^+','LAM2g','H','C0'],
                    IDX_SV   :[1, 2, 3, 4],
@@ -527,13 +528,37 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    CONNECT:[2,3, 2,4, 3,4],
                    LABEL_DESCR:["2,,VH,PV,", "4,,V,H"]})
 
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,VH,PV,", "4,,P,H"]})
+
+# contains 3 ext int
 #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','C0'],
-#                   IDX_SV   :[1, 2, 3, 4],
-#                   LABEL_DESCR:["1,2,,V", "2,3,H,P", "2,4,,V"]})
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,HH"]})
 
-#C0^+(1) LAM2g(7) H(5) C0(1) [1,2,,V][2,3,H,P][2,4,,V]
+# contains 3 ext int
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,VH"]})
 
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HV"]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HH"]})
 
 
 
