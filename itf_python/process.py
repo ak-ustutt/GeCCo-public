@@ -559,95 +559,14 @@ for line_o in f:
 
         generic=generic_index(words[0])
 
-        if words[0] != prev_res and generic != prev_generic:
-            # Next result is different from previous, so close off block
+        if "R:eaac" in prev_res and "R:eaca" in words[0] or "R:eaca" in prev_res and "R:eaac" in words[0]:
 
-            if prev_res != '#####':
-                # Add generic index to residual tensor name
-                if ("R[" in prev_res):
-                    prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
-                elif ("G[" in prev_res):
-                    prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
-
-                # Don't print out store for speical code blocks (ie. not residuals)
-                if (not dont_store):
-                    print("store", prev_res.replace('.',''), file=out)
-                    print(file=out)
-
-                    if (init_alloc and initalise):
-                        print("store", prev_res.replace('.',''), file=init_res_temp)
-                        print(file=init_res_temp)
-                        init_alloc = False
-                # Finished special block, so we can start storeing again
-                dont_store=False
-
-            # Check whether to load previously allocated tensor
-            # To load, the tensor name and generic index associated with it must be equal
-            loaded=False
-            for i in range(0, len(declare_name)):
-                if words[0].split('[',1)[0].replace('.','') == declare_name[i]:
-                    if generic == declare_index[i]:
-                        # Generic index must be at same position as name it belongs to - dangerous!
-                        # Load previous tensor
-                        tmp_res=words[0]
-                        if ("R[" in words[0]):
-                            tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
-                        elif ("G[" in words[0]):
-                            tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
-
-                        print("load", tmp_res.replace('.',''), file=out)
-                        loaded=True
-                        break
-                else:
-                    continue
-
-            if not loaded:
-                # Add result to global list and alloc new result
-                declare_res.append(words[0].split('.',1)[1])
-                declare_index.append(generic)
-                declare_name.append(words[0].split('[',1)[0].replace('.',''))
-
-                # Add generic index to residual tensor name, ie. R:eecc
-                tmp_res=words[0]
-                if ("R[" in words[0]):
-                    tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
-                elif ("G[" in words[0]):
-                    tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
-
-                print("alloc", tmp_res.replace('.',''), file=out)
-                if (init_res and initalise):
-                    print("alloc", tmp_res.replace('.',''), file=init_res_temp)
-                    init_alloc = True
-
-            # Alloc intermediates if needed
-            if prev_inter:
-                print("alloc ", end="", flush=True, file=out)
-                print(*prev_inter,sep=", ", file=out)
-
-            # Print intermediates and load/drop relavant tensors
-            print_inter(prev_lines, init_inter_res)
-
-            # Print result line
-            #print_result(line)
-            print_result(line, False, init_res)
-
-            # Drop intermediates if needed
-            if prev_inter and not begin:
-                print("drop ", end="", flush=True, file=out)
-                print(*list(reversed(prev_inter)),sep=", ", file=out)
-
-            # Store intermediate so as to drop at the end of spin summed family
-            if begin and not end:
-                if not old_spin_iter:
-                    old_spin_iter=prev_inter
-
-            prev_res=words[0]
-            prev_lines=[]
-            prev_inter=[]
-
-        #elif words[0] == prev_res:
-        else:
             # Still within the same result block (ie. still with the same residual)
+            # This is a special case of the code below - R:eaac and R:eaca share the same intermediates and
+            # so should be consider the 'same' residual. This means both of this will form one residual
+            # block.
+            # The code below is repeated from the end of else statment. In the old days, you would use a
+            # goto instead...
 
             # Alloc intermediates if needed
             if prev_inter:
@@ -680,6 +599,146 @@ for line_o in f:
             prev_res=words[0]
             prev_lines=[]
             prev_inter=[]
+
+        else:
+            if words[0] != prev_res and generic != prev_generic:# and "R:eaac" not in prev_res and "R:eaca" not in words[0]:
+                # Next result is different from previous, so close off block
+
+                if prev_res != '#####':
+                    # Add generic index to residual tensor name
+                    if ("R[" in prev_res):
+                        prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
+                    elif ("G[" in prev_res):
+                        prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
+
+                    # Don't print out store for speical code blocks (ie. not residuals)
+                    if not dont_store:
+
+                        # store the special case of R:eaac and R:eaca
+                        if "R:eaac" in prev_res:
+                            prev_res = "R:eaca[****], " + prev_res
+
+                        if "R:eaca" in prev_res:
+                            prev_res = "R:eaac[****], " + prev_res
+
+                        print("store", prev_res.replace('.',''), file=out)
+                        print(file=out)
+
+                        if (init_alloc and initalise):
+                            print("store", prev_res.replace('.',''), file=init_res_temp)
+                            print(file=init_res_temp)
+                            init_alloc = False
+                    # Finished special block, so we can start storeing again
+                    dont_store=False
+
+                # Check whether to load previously allocated tensor
+                # To load, the tensor name and generic index associated with it must be equal
+                loaded=False
+                for i in range(0, len(declare_name)):
+                    if words[0].split('[',1)[0].replace('.','') == declare_name[i]:
+                        if generic == declare_index[i]:
+                            # Generic index must be at same position as name it belongs to - dangerous!
+                            # Load previous tensor
+                            tmp_res=words[0]
+
+                            if ("R[" in words[0]):
+                                tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+
+                            elif ("G[" in words[0]):
+                                tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
+
+                            print("load", tmp_res.replace('.',''), file=out)
+                            loaded=True
+                            break
+                    else:
+                        continue
+
+                if not loaded:
+                    # Add result to global list and alloc new result
+                    declare_res.append(words[0].split('.',1)[1])
+                    declare_index.append(generic)
+                    declare_name.append(words[0].split('[',1)[0].replace('.',''))
+
+                    # Add generic index to residual tensor name, ie. R:eecc
+                    tmp_res=words[0]
+                    if ("R[" in words[0]):
+                        tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                    elif ("G[" in words[0]):
+                        tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
+
+                    # allocate the special case of R:eaac and R:eaca
+                    if "R:eaac" in tmp_res:
+                        tmp_res = tmp_res + ", R:eaca[****]"
+
+                    if "R:eaca" in tmp_res:
+                        tmp_res = tmp_res + ", R:eaac[****]"
+
+                    print("alloc", tmp_res.replace('.',''), file=out)
+                    if (init_res and initalise):
+                        print("alloc", tmp_res.replace('.',''), file=init_res_temp)
+                        init_alloc = True
+
+                # Alloc intermediates if needed
+                if prev_inter:
+                    print("alloc ", end="", flush=True, file=out)
+                    print(*prev_inter,sep=", ", file=out)
+
+                # Print intermediates and load/drop relavant tensors
+                print_inter(prev_lines, init_inter_res)
+
+                # Print result line
+                #print_result(line)
+                print_result(line, False, init_res)
+
+                # Drop intermediates if needed
+                if prev_inter and not begin:
+                    print("drop ", end="", flush=True, file=out)
+                    print(*list(reversed(prev_inter)),sep=", ", file=out)
+
+                # Store intermediate so as to drop at the end of spin summed family
+                if begin and not end:
+                    if not old_spin_iter:
+                        old_spin_iter=prev_inter
+
+                prev_res=words[0]
+                prev_lines=[]
+                prev_inter=[]
+
+            #elif words[0] == prev_res:
+            else:
+                # Still within the same result block (ie. still with the same residual)
+
+                # Alloc intermediates if needed
+                if prev_inter:
+                    print("alloc ", end="", flush=True, file=out)
+                    print(*prev_inter,sep=", ", file=out)
+
+                # Print intermediates and load/drop relavant tensors
+                print_inter(prev_lines, init_inter_res)
+
+                # Print loop for 3-external integrals
+                if (begin and not end):
+                    print_loop(line, words)
+
+                # Print result line
+                #print_result(line, tab)
+                print_result(line, tab, init_res)
+                tab = False
+
+                # Drop intermediates if needed, don't drop if needed again in
+                # the next contraction which is part of the same spin summed family
+                if prev_inter and not begin:
+                    print("drop ", end="", flush=True, file=out)
+                    print(*list(reversed(prev_inter)),sep=", ", file=out)
+
+                # Store intermediate so as to drop at the end of spin summed family
+                if begin and not end:
+                    if not old_spin_iter:
+                        old_spin_iter=prev_inter
+
+                prev_res=words[0]
+                prev_lines=[]
+                prev_inter=[]
 
         # Update generic index for next line
         prev_generic=generic
