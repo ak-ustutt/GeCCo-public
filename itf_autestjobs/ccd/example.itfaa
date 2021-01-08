@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
-// Author: J.A. Black
+// Authors: J.A. Black, A. Koehn
 
-// Created on: 07-01-2021 17:23
+// Created on: 08-01-2021 09:57
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -35,11 +35,12 @@ tensor: R:eecc[abij], R:eecc
 // Energy and DIIS scalars
 tensor: ECC[], ECC
 
-tensor: ERef[], ERef     // Reference energy
-tensor: EMp2[], EMp2     // MP2 energy
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: ERef[], ERef     // Reference energy
+tensor: ShiftP[], ShiftP
 
 // Tensors needed to calculate the reference energy
 tensor: f:CC[CC],   f:CC
@@ -48,7 +49,10 @@ tensor: CoreH[CC],  h:CC
 tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
-tensor: ShiftP[], ShiftP
+// Used in amplitude update
+tensor: L2[abij],          !Create{type:plain}
+tensor: C[abij],           !Create{type:plain}
+
 
 // Intermediates
 tensor: ITIN[abij],        !Create{type:plain}
@@ -62,9 +66,6 @@ tensor: STIN90001bb[bd],   !Create{type:plain}
 tensor: STIN100001aaaa[dali], !Create{type:plain}
 tensor: STIN100001baab[dali], !Create{type:plain}
 tensor: STIN100001baba[dali], !Create{type:plain}
-
-tensor: L2[abij],          !Create{type:plain}
-tensor: C[abij],           !Create{type:plain}
 
 
 ---- code("Init_Amplitudes")
@@ -96,6 +97,8 @@ load f:CC[CC], CoreH[CC], DeltaC[CC]
 .ERef += CoreH[CD] DeltaC[CD]
 drop DeltaC, CoreH, f:CC
 store ERef[]
+
+
 
 
 ---- code("Update_Kext_Tensor")
@@ -159,8 +162,6 @@ save R:eecc, ECC[]
 .ECC[] += .5*K:eecc[baij] T:eecc[baij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-
-
 ---- code("Update_Amplitudes")
 // Update doubles
 alloc EDi2[], Nrm2[], Var2[]
@@ -183,4 +184,5 @@ drop C[abij]
 store T:eecc[abij]
 drop K:eecc[abij], R:eecc[abij]
 store Var2[], Nrm2[], EDi2[]
+
 ---- end

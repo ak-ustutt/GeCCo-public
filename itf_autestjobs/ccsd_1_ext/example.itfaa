@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
-// Author: J.A. Black
+// Authors: J.A. Black, A. Koehn
 
-// Created on: 07-01-2021 17:24
+// Created on: 08-01-2021 09:57
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -40,15 +40,21 @@ tensor: R:eecc[abij], R:eecc
 // Energy and DIIS scalars
 tensor: ECC[], ECC
 
-tensor: ERef[], ERef     // Reference energy
-tensor: EMp1[], EMp1     // MP2 energy
 tensor: EDi1[], EDi1     // Direct 1st order energy
 tensor: Nrm1[], Nrm1     // Singles amplitude norm
 tensor: Var1[], Var1     // Singles residual norm
-tensor: EMp2[], EMp2     // MP2 energy
+tensor: EMp1[], EMp1     // MP2 energy
+tensor: ShiftS[], ShiftS
+
+// Used in amplitdue update
+tensor: L1[ai],            !Create{type:plain}
+
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: EMp2[], EMp2     // MP2 energy
+tensor: ERef[], ERef     // Reference energy
+tensor: ShiftP[], ShiftP
 
 // Tensors needed to calculate the reference energy
 tensor: f:CC[CC],   f:CC
@@ -57,8 +63,10 @@ tensor: CoreH[CC],  h:CC
 tensor: Delta[ii],  Delta
 tensor: DeltaC[CC], DeltaC
 
-tensor: ShiftS[], ShiftS
-tensor: ShiftP[], ShiftP
+// Used in amplitude update
+tensor: L2[abij],          !Create{type:plain}
+tensor: C[abij],           !Create{type:plain}
+
 
 // Intermediates
 tensor: X1[baji],          !Create{type:plain}
@@ -131,10 +139,6 @@ tensor: STIN440003abab[blji], !Create{type:plain}
 tensor: STIN440003abba[blji], !Create{type:plain}
 tensor: STIN480001aa[bj],  !Create{type:plain}
 
-tensor: L1[ai],            !Create{type:plain}
-tensor: L2[abij],          !Create{type:plain}
-tensor: C[abij],           !Create{type:plain}
-
 
 ---- code("Init_Amplitudes")
 // Using MP2 amplitudes for starting guess
@@ -174,6 +178,8 @@ load f:CC[CC], CoreH[CC], DeltaC[CC]
 .ERef += CoreH[CD] DeltaC[CD]
 drop DeltaC, CoreH, f:CC
 store ERef[]
+
+
 
 
 ---- code("Update_Kext_Tensor")
@@ -368,8 +374,6 @@ save R:ec[ai], R:eecc, ECC[]
 .ECC[] += STIN480001aa[bj] T:ec[bj]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-
-
 ---- code("Update_Amplitudes")
 // Update singles
 load R:ec[ai]
@@ -412,4 +416,5 @@ store T:eecc[abij]
 drop K:eecc[abij], R:eecc[abij]
 store Var2[], Nrm2[], EDi2[]
 drop T:ec[ai]
+
 ---- end

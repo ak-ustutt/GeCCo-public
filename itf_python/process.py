@@ -706,6 +706,7 @@ f2.close()
 f2=open(outp, "w")
 gecco = os.environ["GECCO_DIR"]
 
+
 print_code_block('header', gecco, f2)
 now = datetime.datetime.now()
 print("// Created on:", now.strftime("%d-%m-%Y %H:%M"), file=f2)
@@ -865,7 +866,7 @@ else:
 
 
 # Calculate the reference energy for single-reference methods
-if (not multi):
+if not multi:
     print_code_block('single_ref/ref_energy', gecco, f2)
 
 
