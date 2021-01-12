@@ -205,9 +205,9 @@ def print_loop(line, words):
     global old_loop
 
     tab = False
-    if ("K:eeec" in line or "K:eeea" in line):
+    if ("J:eee" in line or "K:eee" in line):
         for i in range(0, len(words)):
-            if ("K:eeec" in words[i] or "K:eeea" in words[i]):
+            if ("J:eee" in words[i] or "K:eee" in words[i]):
                 tmp = words[i].split('[',1)[1].split(']',1)[0]
                 loop = "for ["+tmp[3:4]+"]:"
                 if (loop != old_loop):

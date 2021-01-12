@@ -22,7 +22,7 @@
       end function trimal
 
 *----------------------------------------------------------------------*
-      pure function rename_tensor(string, rank)
+      pure function rename_tensor(string, rank, nops)
 *----------------------------------------------------------------------*
 !     Rename tensor according to taste
 !     This should be expanded to rename all tensors so they correspond
@@ -36,7 +36,8 @@
       character(len=MAXLEN_BC_LABEL), intent(in) ::
      &    string
       integer, intent(in) ::
-     &    rank          ! Rank of tensor
+     &    rank,          ! Rank of tensor
+     &    nops(ngastp)   ! Number of creation/annhilation ops
       character(len=MAXLEN_BC_LABEL) ::
      &    rename_tensor
 
@@ -56,7 +57,12 @@
           if (rank==2) then
              rename_tensor='f'
           else
-             rename_tensor='K'
+             if (nops(2)==3) then
+                ! Currently use J:eeec for 3 external integrals
+                rename_tensor='J'
+             else
+                rename_tensor='K'
+             end if
           end if
       else if (trim(string).eq.'GAM0') then
           if (rank==2) then
@@ -914,9 +920,6 @@
          end if
       end if
 
-
-
-
       if (item%command/=command_cp_intm .or.
      &    item%command/=command_add_intm) then
 
@@ -1696,9 +1699,9 @@ c     &     item%nspin_cases
       end if
 
       ! Change names of specific tensors
-      nres=rename_tensor(item%label_res, item%rank3)
-      nt1=rename_tensor(item%label_t1, item%rank1)
-      nt2=rename_tensor(item%label_t2, item%rank2)
+      nres=rename_tensor(item%label_res, item%rank3, item%nops3)
+      nt1=rename_tensor(item%label_t1, item%rank1, item%nops1)
+      nt2=rename_tensor(item%label_t2, item%rank2, item%nops2)
 
       ! copy name to exchange contributions (some may get renamed)
       nt1x(1:nxstr1) = nt1
@@ -5591,7 +5594,7 @@ c       end if
 
       if (ntest>=100) call debug_header("print_symmetrise", item%out)
 
-      new = rename_tensor(item%old_name, item%rank3)
+      new = rename_tensor(item%old_name, item%rank3, item%nops3)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'
