@@ -29,10 +29,12 @@
       integer ::
      &     counter(4), cnt                      ! Counter array, 1 helper variable
       integer ::
-     &   inter_itype(MAXINT,INDEX_LEN),                 ! Store intermediate index-type (itype) info from previous line
+     &   inter_itype(MAXINT,INDEX_LEN),         ! Store intermediate index-type (itype) info from previous line
      &   i
       type(x_inter) ::
      &   x_dict(MAXX)
+      type(inter_spin_cases) ::
+     &   inter_spin_dict        ! Store intermediate spin cases from previous line
 
 
       ! Point to start of linked list of formulae
@@ -48,6 +50,11 @@
          x_dict(i)%label = ''
          x_dict(i)%ops = 0
       end do
+
+      do i = 1, MAX_SPIN_CASES
+         inter_spin_dict%names(i) = ''
+      end do
+      inter_spin_dict%ncase = 0
 
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
@@ -70,7 +77,8 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
-     &                          counter,tasks,x_dict)
+     &                          counter,tasks,x_dict,
+     &                          inter_spin_dict)
 
             ! Count the number of terms
             counter(1) = counter(1) + 1

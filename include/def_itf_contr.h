@@ -216,3 +216,16 @@
      &  label   ! Name of tensor
 
       end type x_inter
+
+
+*----------------------------------------------------------------------*
+      type inter_spin_cases
+*----------------------------------------------------------------------*
+!     Holds info about intermeidate spin cases
+*----------------------------------------------------------------------*
+      character(len=MAXLEN_BC_LABEL) ::
+     &     names(MAX_SPIN_CASES)
+      integer ::
+     &     ncase = 0                ! Number of different spin cases
+
+      end type inter_spin_cases

@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 08-01-2021 17:30
+// Created on: 12-01-2021 15:43
 
 ---- decl
 index-space: pqrstuvw, Active  , a
@@ -16,7 +16,7 @@ tensor: Ym1[qp],  !Create{type:disk}
 
 // K-integral tensors
 tensor: K:aaaa[qprs], K:aaaa
-tensor: K:aaac[qrsj], K:aaac
+tensor: K:aaac[qprj], K:aaac
 tensor: K:aacc[qpkj], K:aacc
 tensor: K:ccca[kjip], K:ccca
 tensor: K:cccc[klij], K:cccc
@@ -72,8 +72,8 @@ tensor: T:ea[bq], T:ea
 tensor: T:ec[bk], T:ec
 tensor: T:aaac[pqri], T:aaac
 tensor: T:aacc[pqij], T:aacc
-tensor: T:eaac[aqrj], T:eaac
-tensor: T:eaca[aqjr], T:eaca
+tensor: T:eaac[aqrk], T:eaac
+tensor: T:eaca[aqkr], T:eaca
 tensor: T:eacc[brik], T:eacc
 tensor: T:eeac[baqk], T:eeac
 tensor: T:eecc[abik], T:eecc
@@ -230,6 +230,11 @@ tensor: STIN0001baab[aprk], !Create{type:plain}
 tensor: STIN0001aa[cj],    !Create{type:plain}
 tensor: STIN0001abba[aqij], !Create{type:plain}
 tensor: STIN0001aa[qj],    !Create{type:plain}
+tensor: STIN0001abaaab[apqrij], !Create{type:plain}
+tensor: STIN0001abaaba[apqrij], !Create{type:plain}
+tensor: STIN0001abbbab[apqrij], !Create{type:plain}
+tensor: STIN0001abba[cpqj], !Create{type:plain}
+tensor: STIN0001bbbb[cpqj], !Create{type:plain}
 tensor: STIN0001aa[kj],    !Create{type:plain}
 tensor: STIN0001bb[pq],    !Create{type:plain}
 tensor: STIN0001abab[qpkj], !Create{type:plain}
@@ -239,7 +244,6 @@ tensor: STIN0001abab[pkrj], !Create{type:plain}
 tensor: STIN0001abba[pkrj], !Create{type:plain}
 tensor: STIN0001bbbb[pkrj], !Create{type:plain}
 tensor: STIN0001aa[ac],    !Create{type:plain}
-tensor: STIN0001abba[aqri], !Create{type:plain}
 tensor: STIN0001abab[aqps], !Create{type:plain}
 tensor: STIN0001abba[aqps], !Create{type:plain}
 tensor: STIN0001abba[pkji], !Create{type:plain}
@@ -272,10 +276,10 @@ alloc T:aaac[pqri]
 store T:aaac[pqri]
 alloc T:aacc[pqij]
 store T:aacc[pqij]
-alloc T:eaac[aqrj]
-store T:eaac[aqrj]
-alloc T:eaca[aqjr]
-store T:eaca[aqjr]
+alloc T:eaac[aqrk]
+store T:eaac[aqrk]
+alloc T:eaca[aqkr]
+store T:eaca[aqkr]
 alloc T:eacc[brik]
 store T:eacc[brik]
 alloc T:eeac[baqk]
@@ -680,6 +684,111 @@ load Ym1[pq]
 .R:eacc[apij] -= Ym1[pq] STIN0001abba[aqji]
 drop Ym1[pq]
 drop STIN0001abba[aqij], STIN0001abab[aqij]
+alloc STIN0001abaaab[apqrij], STIN0001abaaba[apqrij], STIN0001abbbab[apqrij]
+load K:eaac[cpqj], T:eeac[acri]
+.STIN0001abaaab[apqrij] -= K:eaac[cpqj] (T:eeac[acri] - T:eeac[cari])
+drop T:eeac[acri], K:eaac[cpqj]
+load K:eaac[cqpj], T:eeac[acri]
+.STIN0001abaaba[apqrij] += K:eaac[cqpj] T:eeac[acri]
+drop T:eeac[acri], K:eaac[cqpj]
+load K:eaac[cqpj], T:eeac[cari]
+.STIN0001abbbab[apqrij] -= (K:eaac[cqpj] - K:eaac[cpqj]) T:eeac[cari]
+drop T:eeac[cari], K:eaac[cqpj]
+load Ym1[rq]
+.R:eacc[apij] += Ym1[rq] STIN0001abaaab[apqrij]
+drop Ym1[rq]
+load Ym1[rq]
+.R:eacc[apij] += Ym1[rq] STIN0001abbbab[apqrij]
+drop Ym1[rq]
+load Ym1[rq]
+.R:eacc[apij] -= Ym1[rq] STIN0001abaaba[apqrji]
+drop Ym1[rq]
+drop STIN0001abbbab[apqrij], STIN0001abaaba[apqrij], STIN0001abaaab[apqrij]
+alloc STIN0001aa[ak]
+load Ym1[rq], T:eaac[aqrk], T:eaca[aqkr]
+.STIN0001aa[ak] += Ym1[rq] (T:eaac[aqrk] - T:eaca[aqkr])
+drop T:eaca[aqkr], T:eaac[aqrk], Ym1[rq]
+load Ym1[rq], T:eaca[aqkr]
+.STIN0001aa[ak] -= Ym1[rq] T:eaca[aqkr]
+drop T:eaca[aqkr], Ym1[rq]
+load K:ccca[kjip]
+.R:eacc[apij] += K:ccca[kjip] STIN0001aa[ak]
+drop K:ccca[kjip]
+drop STIN0001aa[ak]
+alloc STIN0001abab[rkji], STIN0001baab[rkji]
+load Ym1[rq], K:ccca[kjiq]
+.STIN0001abab[rkji] += Ym1[rq] K:ccca[kjiq]
+drop K:ccca[kjiq], Ym1[rq]
+load Ym1[rq], K:ccca[kijq]
+.STIN0001baab[rkji] -= Ym1[rq] K:ccca[kijq]
+drop K:ccca[kijq], Ym1[rq]
+load T:eaca[apkr]
+.R:eacc[apij] += STIN0001abab[rkji] T:eaca[apkr]
+drop T:eaca[apkr]
+load T:eaac[aprk]
+.R:eacc[apij] -= STIN0001baab[rkji] T:eaac[aprk]
+drop T:eaac[aprk]
+drop STIN0001baab[rkji], STIN0001abab[rkji]
+alloc STIN0001aa[cj], STIN0001bb[cj]
+load Ym1[rq], T:eaac[cqrj], T:eaca[cqjr]
+.STIN0001aa[cj] += Ym1[rq] (T:eaac[cqrj] - T:eaca[cqjr])
+drop T:eaca[cqjr], T:eaac[cqrj], Ym1[rq]
+load Ym1[rq], T:eaca[cqjr]
+.STIN0001aa[cj] -= Ym1[rq] T:eaca[cqjr]
+drop T:eaca[cqjr], Ym1[rq]
+load Ym1[rq], T:eaca[cqjr]
+.STIN0001bb[cj] -= Ym1[rq] T:eaca[cqjr]
+drop T:eaca[cqjr], Ym1[rq]
+load Ym1[rq], T:eaac[cqrj], T:eaca[cqjr]
+.STIN0001bb[cj] += Ym1[rq] (T:eaac[cqrj] - T:eaca[cqjr])
+drop T:eaca[cqjr], T:eaac[cqrj], Ym1[rq]
+load K:eeac[capi]
+.R:eacc[apij] -= K:eeac[capi] STIN0001bb[cj]
+drop K:eeac[capi]
+load J:eeca[cajp]
+.R:eacc[apij] -= J:eeca[cajp] STIN0001aa[ci]
+drop J:eeca[cajp]
+drop STIN0001bb[cj], STIN0001aa[cj]
+alloc STIN0001abab[cpqj], STIN0001abba[cpqj], STIN0001bbbb[cpqj]
+load T:eaac[cprj], Ym1[rq]
+.STIN0001abab[cpqj] += T:eaac[cprj] Ym1[rq]
+drop Ym1[rq], T:eaac[cprj]
+load T:eaca[cpjr], Ym1[rq]
+.STIN0001abba[cpqj] -= T:eaca[cpjr] Ym1[rq]
+drop Ym1[rq], T:eaca[cpjr]
+load T:eaac[cprj], T:eaca[cpjr], Ym1[rq]
+.STIN0001bbbb[cpqj] += (T:eaac[cprj] - T:eaca[cpjr]) Ym1[rq]
+drop Ym1[rq], T:eaca[cpjr], T:eaac[cprj]
+load J:eeca[caiq], K:eeac[caqi]
+.R:eacc[apij] -= STIN0001abab[cpqj] (J:eeca[caiq] - K:eeac[caqi])
+drop K:eeac[caqi], J:eeca[caiq]
+load K:eeac[caqi]
+.R:eacc[apij] += STIN0001bbbb[cpqj] K:eeac[caqi]
+drop K:eeac[caqi]
+load J:eeca[cajq]
+.R:eacc[apij] += STIN0001abba[cpqi] J:eeca[cajq]
+drop J:eeca[cajq]
+drop STIN0001bbbb[cpqj], STIN0001abba[cpqj], STIN0001abab[cpqj]
+alloc STIN0001abaaab[apqsij], STIN0001abaaba[apqsij], STIN0001abbbab[apqsij]
+load K:aaac[qprj], T:eaac[arsi], T:eaca[aris]
+.STIN0001abaaab[apqsij] -= K:aaac[qprj] (T:eaac[arsi] - T:eaca[aris])
+drop T:eaca[aris], T:eaac[arsi], K:aaac[qprj]
+load K:aaac[pqrj], T:eaac[arsi]
+.STIN0001abaaba[apqsij] += K:aaac[pqrj] T:eaac[arsi]
+drop T:eaac[arsi], K:aaac[pqrj]
+load K:aaac[pqrj], T:eaca[aris]
+.STIN0001abbbab[apqsij] -= (K:aaac[pqrj] - K:aaac[qprj]) T:eaca[aris]
+drop T:eaca[aris], K:aaac[pqrj]
+load Ym1[sq]
+.R:eacc[apij] += Ym1[sq] STIN0001abaaab[apqsij]
+drop Ym1[sq]
+load Ym1[sq]
+.R:eacc[apij] += Ym1[sq] STIN0001abbbab[apqsij]
+drop Ym1[sq]
+load Ym1[sq]
+.R:eacc[apij] -= Ym1[sq] STIN0001abaaba[apqsji]
+drop Ym1[sq]
+drop STIN0001abbbab[apqsij], STIN0001abaaba[apqsij], STIN0001abaaab[apqsij]
 alloc STIN0001aa[kj], STIN0001bb[kj]
 load f:cc[kj]
 .STIN0001aa[kj] += f:cc[kj]

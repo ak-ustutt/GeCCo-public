@@ -479,19 +479,17 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    CONNECT:[2,3, 2,4, 3,4],
                    LABEL_DESCR:["2,,HH,PV,", "4,,V,H"]})
 
-# rank 6 intermediates - missing a spin case?
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   CONNECT:[2,3, 2,4, 3,4],
-#                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,VH"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,VH"]})
 
-# rank 6 intermediates - missing a spin case?
-#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-#                   IDX_SV   :[1, 2, 3, 4, 5],
-#                   CONNECT:[2,3, 2,4, 3,4],
-#                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HV"]})
+EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+                   IDX_SV   :[1, 2, 3, 4, 5],
+                   CONNECT:[2,3, 2,4, 3,4],
+                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HV"]})
 
 EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
                    OPERATORS:['C0^+','LAM2g','H','T2g','C0'],

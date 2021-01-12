@@ -631,7 +631,8 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                           inter_itype, counter, tasks, x_dict)
+     &                          inter_itype, counter, tasks, x_dict,
+     &                          inter_spin_dict)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
 !     Includes antisymmetry of residual equations and spin summation.
@@ -659,6 +660,8 @@
      &   inter_itype(MAXINT, INDEX_LEN)      ! Store itypes of intermediates between lines
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
+      type(inter_spin_cases), intent(inout) ::
+     &   inter_spin_dict     ! Store intermediates spin cases between lines
 
       type(itf_contr) ::
      &   item,               ! ITF contraction object; holds all info about the ITF algo line
@@ -776,8 +779,9 @@
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, x_dict, ntest7)
-      if (pline) call print_spin_cases(pitem, x_dict, ntest7)
+      call print_spin_cases(item, x_dict, inter_spin_dict, ntest7)
+      if (pline) call print_spin_cases(pitem, x_dict, inter_spin_dict,
+     &                                 ntest7)
 
 
       ! 8. Print symmetrisation term
@@ -822,6 +826,10 @@
       ! Update X number
       counter(4) = item%cntr(4)
 
+      ! Reset inter_spin_dict
+      if (.not. item%inter(3)) then
+         inter_spin_dict%ncase = 0
+      end if
 
       ! Deallocate memroy used when construcitng item
       call itf_deinit(item)
@@ -1504,7 +1512,7 @@
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, x_dict, ntest)
+      subroutine print_spin_cases(item, x_dict, inter_spin_dict, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1519,6 +1527,8 @@
      &   item
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
+      type(inter_spin_cases), intent(inout) ::
+     &   inter_spin_dict
       integer, intent(in) ::
      &   ntest
 
@@ -1590,7 +1600,7 @@ c     &     item%nspin_cases
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          x_dict, ntest)
+     &                          x_dict, inter_spin_dict, ntest)
 
       end do
 
@@ -1598,7 +1608,8 @@ c     &     item%nspin_cases
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_itf_line(item,s1,s2,t_spin,x_dict,ntest)
+      subroutine print_itf_line(item, s1, s2, t_spin, x_dict,
+     &                          inter_spin_dict, ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1619,6 +1630,8 @@ c     &     item%nspin_cases
      &   t_spin(3)
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
+      type(inter_spin_cases), intent(inout) ::
+     &   inter_spin_dict
       integer, intent(in) ::
      &   ntest
 
@@ -1648,7 +1661,8 @@ c     &     item%nspin_cases
      &   c_fact               ! Copy of orginal factor
       logical ::
      &   new_j,
-     &   old
+     &   old,
+     &   found
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
@@ -1709,7 +1723,7 @@ c     &     item%nspin_cases
 
       ! Add intermediate spin strings to names
       if (item%inter(1)) then
-         call inter_spin_name(t_spin(1)%spin,item%rank1/2,slabel1)
+         call inter_spin_name(t_spin(1)%spin,item%rank1/2, slabel1)
          nt1 = trim(nt1)//trim(slabel1)
          call reorder_intermediate(item%rank1,new_idx1,item%nops1)
        else
@@ -1722,6 +1736,7 @@ c     &     item%nspin_cases
      &                         nt1x(i),item%nops1,item%out)
          end do
       end if
+
       if (item%inter(2)) then
          call inter_spin_name(t_spin(2)%spin,item%rank2/2,slabel2)
          nt2 = trim(nt2)//trim(slabel2)
@@ -1735,16 +1750,44 @@ c     &     item%nspin_cases
      &                         new_idx2_x(i),
      &                         nt2x(i),item%nops2,item%out)
          end do
-       end if
+      end if
+
       if (item%inter(3)) then
          call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
          nres = trim(nres)//trim(slabel3)
          call reorder_intermediate(item%rank3,new_idx3,item%nops3)
+
+         ! Save spin cases name to dictionary
+         ! When the residual line is printed, the intermediate will be
+         ! checked against this list to see if it exists (ie. is 0 or not)
+         inter_spin_dict%names(inter_spin_dict%ncase+1) = nres
+         inter_spin_dict%ncase = inter_spin_dict%ncase + 1
+
        else
          call reorder_to_slots(item%int(3),item%rank3,
      &                         new_idx3,
      &                         nres,item%nops3,item%out)
-       end if
+      end if
+
+      ! If a residual depends on a non-existant intermediate spin case
+      ! (ie. a non-totally spin conserving case = 0), then skip printing
+      ! out the line. This may not be the case for ionisation/spin flip
+      ! cases.
+      if (.not. item%inter(3)) then
+         if (inter_spin_dict%ncase > 0) then
+            found = .false.
+            do i = 1, inter_spin_dict%ncase
+               if (nt1 == inter_spin_dict%names(i) .or.
+     &             nt2 == inter_spin_dict%names(i)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+
+            if (.not. found) return
+         end if
+      end if
+
 
 c      ! Reorder integrals into fixed slot order
 c      call reorder_integral(item%int(1),item%rank1,new_idx1,
