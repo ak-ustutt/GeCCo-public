@@ -1769,11 +1769,11 @@ c     &     item%nspin_cases
      &                         nres,item%nops3,item%out)
       end if
 
-      ! If a residual depends on a non-existant intermediate spin case
+      ! If a residual (or intermediate) depends on a non-existant intermediate spin case
       ! (ie. a non-totally spin conserving case = 0), then skip printing
       ! out the line. This may not be the case for ionisation/spin flip
       ! cases.
-      if (.not. item%inter(3)) then
+      if (item%inter(1) .or. item%inter(2))then
          if (inter_spin_dict%ncase > 0) then
             found = .false.
             do i = 1, inter_spin_dict%ncase
