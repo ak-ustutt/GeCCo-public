@@ -280,13 +280,33 @@ if multi:
 
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
+if multi:
+    print("tensor: K4C[abmn], K4C", file=f2)
+
+#if (kext):
+#    declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
+#else:
+#    print(file=f2)
+#    print("// Tensor to send to Kext", file=f2)
+#    print("tensor: INTpp[abij], INTpp", file=f2)
 
 if (kext):
     declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
 else:
     print(file=f2)
-    print("// Tensor to send to Kext", file=f2)
-    print("tensor: INTpp[abij], INTpp", file=f2)
+    if multi:
+        print("// Tensor to send to Kext", file=f2)
+        print("tensor: INTpp[abmn], INTpp", file=f2)
+        print("tensor: INTpp1[abmi], !Create{type:disk}, INTpp1", file=f2)
+        print("", file=f2)
+        print("tensor: deltaai[pm], DeltaActInt", file=f2)
+        print("tensor: deltaci[im], DeltaCloInt", file=f2)
+    else:
+        print("// Tensor to send to Kext", file=f2)
+        print("tensor: INTpp[abij], INTpp", file=f2)
+
+
+
 
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
 declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
@@ -411,9 +431,16 @@ print('', file=f2)
 
 print('---- task("Update_Kext_Tensor")', file=f2)
 if (not kext):
-    print("init INTpp",file=f2)
-    print("save INTpp",file=f2)
-    print(".INTpp[abij] += T:eecc[abij]",file=f2)
+    if multi:
+        print("init INTpp1[abmi], INTpp[abmn]",file=f2)
+        print("save INTpp1[abmi], INTpp[abmn]",file=f2)
+        print(".INTpp1[abmj] += T:eecc[abij] deltaci[im]", file=f2)
+        print(".INTpp1[abmi] += T:eeac[abpi] deltaai[pm]", file=f2)
+        print(".INTpp[abmn] += INTpp1[abmj] deltaci[jn]", file=f2)
+    else:
+        print("init INTpp",file=f2)
+        print("save INTpp",file=f2)
+        print(".INTpp[abij] += T:eecc[abij]",file=f2)
 else:
     print("init INTpp, ITIN[abij]",file=f2)
     print("save INTpp",file=f2)
@@ -425,6 +452,9 @@ else:
     print(".INTpp[abij] += ITIN[baji]",file=f2)
 
 print('', file=f2)
+
+if multi:
+    print_code_block('multi_ref/transform_k', gecco, f2)
 
 
 ## Print out Init_Residual
