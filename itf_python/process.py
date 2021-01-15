@@ -508,6 +508,7 @@ for line_o in f:
 
     # Process the line, print it out and decide what to alloc/load/drop/store
     if "TIN" in words[0]:
+        # The result of the line is an intermediate
         # Check if contraction forms and intermediate
         prev_lines.append(line)
 
@@ -615,11 +616,8 @@ for line_o in f:
                     if not dont_store:
 
                         # store the special case of R:eaac and R:eaca
-                        if "R:eaac" in prev_res:
-                            prev_res = "R:eaca[****], " + prev_res
-
-                        if "R:eaca" in prev_res:
-                            prev_res = "R:eaac[****], " + prev_res
+                        if "R:eaac" in prev_res or "R:eaca" in prev_res:
+                            prev_res = "R:eaac[apqi], R:eaca[apiq]"
 
                         print("store", prev_res.replace('.',''), file=out)
                         print(file=out)
@@ -647,6 +645,10 @@ for line_o in f:
                             elif ("G[" in words[0]):
                                 tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
+                            # load the special case of R:eaac and R:eaca
+                            if "R:eaac" in tmp_res or "R:eaca" in tmp_res:
+                                tmp_res = "R:eaca[apiq], R:eaac[apqi]"
+
                             print("load", tmp_res.replace('.',''), file=out)
                             loaded=True
                             break
@@ -667,11 +669,8 @@ for line_o in f:
                         tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
                     # allocate the special case of R:eaac and R:eaca
-                    if "R:eaac" in tmp_res:
-                        tmp_res = tmp_res + ", R:eaca[****]"
-
-                    if "R:eaca" in tmp_res:
-                        tmp_res = tmp_res + ", R:eaac[****]"
+                    if "R:eaac" in tmp_res or "R:eaca" in tmp_res:
+                        tmp_res = "R:eaca[apiq], R:eaac[apqi]"
 
                     print("alloc", tmp_res.replace('.',''), file=out)
                     if (init_res and initalise):
