@@ -33,6 +33,9 @@
       type(operator), pointer ::
      &     op_res, op_add
 
+      real(8) ::
+     &     fact, fact_itf
+
       integer, external ::
      &     get_nidx4contr
 
@@ -69,11 +72,16 @@ c      iblk_op   = contr%vertex(1)%iblk_op
       nidx = get_nidx4contr(contr)
       allocate(itf_index_info(3+2*nidx)) ! need to store the index info twice
 
+      fact = contr%fac
+      if (contr%total_sign==0)
+     &     call quit(1,'store_add_intm','Something is wicked !')
+      fact_itf = dble(contr%total_sign)*contr%fac
+      
       call itf_set_index_info(itf_index_info,
      &     contr,contr,.true.,1,1,1,contr%nvtx) ! last two arguments are dummy
 
       call store_bc(fl_item,
-     &     contr%fac,contr%fac,
+     &     fact,fact_itf,
      &     label_res,label_op,'---',
      &     iblk_res,iblk_op,idummy,
      &     tra_res,tra_op,ldummy,

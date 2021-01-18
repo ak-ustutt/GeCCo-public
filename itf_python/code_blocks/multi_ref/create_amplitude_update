@@ -16,8 +16,7 @@ load g:ee[aa], A4[pp]
 denom-scale OR:ea[ap], g:ee[aa] - A4[pp]
 drop A4[pp], g:ee[aa]
 alloc OT:ea[ap]
-// sign flip as R is formally {V}{P} while T is {PV}
-//.OT:ea[ap] -= OR:ea[ap]
+// no sign flip for T:ea!
 .OT:ea[ap] -= OR:ea[ap]
 store OT:ea[ap]
 .Var1[] += 2.0*OR:ea[ap] OR:ea[ap]
@@ -41,7 +40,7 @@ load g:aa[pp], g:cc[ii]
 denom-scale OR:aaac[pqri], g:aa[pp] + g:aa[qq] - g:aa[rr] - g:cc[ii]
 drop g:cc[ii], g:aa[pp]
 alloc OT:aaac[pqri]
-// sign flip as R is formally {V}{VVH} while T is {VVHV}
+// sign flip due to formal T = A^{-1} R contraction
 //.OT:aaac[pqri] -= OR:aaac[pqri]
 .OT:aaac[pqri] += OR:aaac[pqri]
 store OT:aaac[pqri]
@@ -63,7 +62,7 @@ load g:ee[aa], g:cc[ii]
 denom-scale OR:eaac[apqi], g:ee[aa] - g:cc[ii]
 drop g:cc[ii], g:ee[aa]
 alloc OT:eaac[apqi]
-// sign flip as R is formally {V}{PVH} while T is {PVHV}
+// sign flip due to formal T = A^{-1} R contraction
 //.OT:eaac[apqi] -= OR:eaac[apqi]
 .OT:eaac[apqi] += OR:eaac[apqi]
 store OT:eaac[apqi]
@@ -95,7 +94,7 @@ load g:ee[aa], g:cc[ii], A4[pp]
 denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] - A4[pp] - g:cc[ii]
 drop A4[pp], g:cc[ii], g:ee[aa]
 alloc OT:eeac[abpi]
-// sign flip as R is formally {V}{PPH} while T is {PPHV}
+// sign flip due to formal T = A^{-1} R contraction
 //.OT:eeac[abpi] -= OR:eeac[abpi]
 .OT:eeac[abpi] += OR:eeac[abpi]
 store OT:eeac[abpi]

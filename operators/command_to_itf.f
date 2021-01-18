@@ -739,7 +739,8 @@
      &    .not. item%nosym) then
 
          ! Don't need perm line for intermediates or tensor products
-         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not for tensor product?
+c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not for tensor product?
+         if (.not. item%inter(3) ) then  ! <--- why not for tensor product?
             pline = .true.
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
@@ -909,6 +910,10 @@
 
       ! Get any remaining factors from GeCCo
       if (use_sign) item%fact = item%fact * contr_info%fact_itf
+      ! note: fact_itf contains the general contraction prefactor as defined in GeCCo and a possible sign
+      ! change according to the sign conventions employed for ITF code generation
+      
+      ! this is old (to be deleted soon):
       if (.not.use_sign) item%fact = item%fact *abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
 
