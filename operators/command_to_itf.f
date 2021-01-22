@@ -471,7 +471,7 @@
       write(item%out,*)
 
 ! for debugging, it is better to exit here
-      call quit(1,'ITF','Trouble!')
+      call quit(1,'ITF','Trouble! Check bcontr.tmp')
 
       return
       end
@@ -1297,7 +1297,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
      &                                 new_idx3, new_fact)
 *----------------------------------------------------------------------*
-!     Convert integrals and amplitudes to abab spn blocks, this may also
+!     Convert integrals and amplitudes to abab spin blocks, this may also
 !     intoduce a sign change
 *----------------------------------------------------------------------*
 
@@ -1338,9 +1338,10 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
       if ((item%rank1>4.and..not.item%inter(1)).or.
      &    (item%rank2>4.and..not.item%inter(2)).or.
-     &    (item%rank3>4.and.item%abba_line))
-     &     call quit(1,'convert_to_abba_block',
-     &                 'I cannot handle rank>4!!')
+     &    (item%rank3>4.and.item%abba_line)) then
+           call line_error('convert_to_abba_block: I cannot handle rank'
+     &                      //' >4',item)
+      end if
 
       ! TODO: only work for rank 4
       if (item%rank1>2 .and. .not. item%inter(1)) then
