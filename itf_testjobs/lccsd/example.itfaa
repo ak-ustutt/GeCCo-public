@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 07-01-2021 17:07
+// Created on: 09-02-2021 12:30
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -13,10 +13,10 @@ index-space: CD, Core, C
 tensor: K:cccc[klij], K:cccc
 tensor: K:eccc[bkji], K:eccc
 tensor: K:eecc[baji], K:eecc
-tensor: K:eeec[acbj], K:eeec
 
 // J-integral tensors
 tensor: J:eecc[abji], J:eecc
+tensor: J:eeec[acbj], J:eeec
 
 // Special integral tensors
 tensor: K4E1[abij], K4E1
@@ -154,15 +154,15 @@ load K:eccc[bkji], T:eecc[abkj]
 .R:ec[ai] -= .5*K:eccc[bkji] T:eecc[abkj]
 drop T:eecc[abkj], K:eccc[bkji]
 for [j]:
-    load K:eeec[acbj], T:eecc[bcij]
-    .R:ec[ai] -= .5*(K:eeec[acbj] - K:eeec[abcj]) (T:eecc[bcij] - T:eecc[cbij])
-    drop T:eecc[bcij], K:eeec[acbj]
-    load K:eeec[abcj], T:eecc[bcij]
-    .R:ec[ai] += .5*K:eeec[abcj] T:eecc[bcij]
-    drop T:eecc[bcij], K:eeec[abcj]
-    load K:eeec[acbj], T:eecc[cbij]
-    .R:ec[ai] += .5*K:eeec[acbj] T:eecc[cbij]
-    drop T:eecc[cbij], K:eeec[acbj]
+    load J:eeec[acbj], T:eecc[bcij]
+    .R:ec[ai] -= .5*(J:eeec[acbj] - J:eeec[abcj]) (T:eecc[bcij] - T:eecc[cbij])
+    drop T:eecc[bcij], J:eeec[acbj]
+    load J:eeec[abcj], T:eecc[bcij]
+    .R:ec[ai] += .5*J:eeec[abcj] T:eecc[bcij]
+    drop T:eecc[bcij], J:eeec[abcj]
+    load J:eeec[acbj], T:eecc[cbij]
+    .R:ec[ai] += .5*J:eeec[acbj] T:eecc[cbij]
+    drop T:eecc[cbij], J:eeec[acbj]
 store R:ec[ai]
 
 alloc R:eecc[abij]
@@ -182,9 +182,9 @@ drop T:ec[bk], K:eccc[akij]
 drop ITIN[abij]
 alloc ITIN[abij]
 for [i]:
-    load K:eeec[bcai], T:ec[cj]
-    .ITIN[abij] += K:eeec[bcai] T:ec[cj]
-    drop T:ec[cj], K:eeec[bcai]
+    load J:eeec[bcai], T:ec[cj]
+    .ITIN[abij] += J:eeec[bcai] T:ec[cj]
+    drop T:ec[cj], J:eeec[bcai]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
