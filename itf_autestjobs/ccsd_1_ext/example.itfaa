@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 08-01-2021 09:57
+// Created on: 09-02-2021 12:31
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -12,11 +12,11 @@ index-space: CD, Core, C
 // K-integral tensors
 tensor: K:eecc[baji], K:eecc
 tensor: K:eccc[bkji], K:eccc
-tensor: K:eeec[acbj], K:eeec
 tensor: K:cccc[klij], K:cccc
 
 // J-integral tensors
 tensor: J:eecc[abji], J:eecc
+tensor: J:eeec[acbj], J:eeec
 
 // Special integral tensors
 tensor: K4E1[abij], K4E1
@@ -217,18 +217,18 @@ save R:ec[ai], R:eecc, ECC[]
 .R:ec[ai] += .5*X3[bkji] X2[abjk]
 .R:ec[ai] -= .5*K:eccc[bjki] T:eecc[abjk]
 .R:ec[ai] -= .5*K:eccc[bkji] T:eecc[abkj]
-.X4[acbj] += K:eeec[acbj]
-.X4[acbj] -= K:eeec[abcj]
+.X4[acbj] += J:eeec[acbj]
+.X4[acbj] -= J:eeec[abcj]
 .R:ec[ai] -= .5*X4[acbj] X2[bcij]
-.R:ec[ai] += .5*K:eeec[abcj] T:eecc[bcij]
-.R:ec[ai] += .5*K:eeec[acbj] T:eecc[cbij]
+.R:ec[ai] += .5*J:eeec[abcj] T:eecc[bcij]
+.R:ec[ai] += .5*J:eeec[acbj] T:eecc[cbij]
 .STIN80001aa[ji] += f:ec[bj] T:ec[bi]
 .R:ec[ai] -= STIN80001aa[ji] T:ec[aj]
 .STIN90001aa[ki] += X3[bkji] T:ec[bj]
 .STIN90001aa[ki] += K:eccc[bkji] T:ec[bj]
 .R:ec[ai] -= STIN90001aa[ki] T:ec[ak]
 .STIN100001aa[ac] += X4[acbj] T:ec[bj]
-.STIN100001aa[ac] += K:eeec[acbj] T:ec[bj]
+.STIN100001aa[ac] += J:eeec[acbj] T:ec[bj]
 .R:ec[ai] += STIN100001aa[ac] T:ec[ci]
 .X5[bcjk] += K:eecc[bcjk]
 .X5[bcjk] -= K:eecc[bckj]
@@ -254,7 +254,7 @@ save R:ec[ai], R:eecc, ECC[]
 .R:ec[ai] -= STIN140002aa[ki] T:ec[ak]
 .ITIN[abij] += .5*K:eecc[abij]
 .ITIN[abij] -= K:eccc[akij] T:ec[bk]
-.ITIN[abij] += K:eeec[bcai] T:ec[cj]
+.ITIN[abij] += J:eeec[bcai] T:ec[cj]
 .ITIN[abij] -= f:cc[kj] T:eecc[abik]
 .ITIN[abij] += f:ee[bc] T:eecc[acij]
 .ITIN[abij] += .25*K:cccc[klij] T:eecc[abkl]
@@ -307,16 +307,16 @@ save R:ec[ai], R:eecc, ECC[]
 .STIN330001bb[kj] -= K:eccc[cklj] T:ec[cl]
 .STIN330001bb[kj] += X3[clkj] T:ec[cl]
 .ITIN[abij] += STIN330001bb[kj] T:eecc[abik]
-.STIN340001baab[akji] -= .5*K:eeec[acdk] T:eecc[cdij]
-.STIN340001baab[akji] -= .5*K:eeec[adck] T:eecc[dcij]
+.STIN340001baab[akji] -= .5*J:eeec[acdk] T:eecc[cdij]
+.STIN340001baab[akji] -= .5*J:eeec[adck] T:eecc[dcij]
 .ITIN[abij] += STIN340001baab[akji] T:ec[bk]
-.STIN350001abab[cbkj] += K:eeec[bdck] T:ec[dj]
-.STIN350001abba[cbkj] -= K:eeec[bcdk] T:ec[dj]
+.STIN350001abab[cbkj] += J:eeec[bdck] T:ec[dj]
+.STIN350001abba[cbkj] -= J:eeec[bcdk] T:ec[dj]
 .STIN350001bbbb[cbkj] += X4[bdck] T:ec[dj]
 .ITIN[abij] += STIN350001abab[cbkj] X2[acik]
 .ITIN[abij] += STIN350001bbbb[cbkj] T:eecc[acik]
 .ITIN[abij] += STIN350001abba[cbki] T:eecc[ackj]
-.STIN360001bb[bc] -= K:eeec[bcdk] T:ec[dk]
+.STIN360001bb[bc] -= J:eeec[bcdk] T:ec[dk]
 .STIN360001bb[bc] += X4[bdck] T:ec[dk]
 .ITIN[abij] -= STIN360001bb[bc] T:eecc[acij]
 .STIN370001baab[klij] += K:eccc[clki] T:ec[cj]
@@ -325,8 +325,8 @@ save R:ec[ai], R:eecc, ECC[]
 .STIN370002abba[blji] += STIN370001baba[klij] T:ec[bk]
 .ITIN[abij] += .5*STIN370002abab[blji] T:ec[al]
 .ITIN[abij] -= .5*STIN370002abba[blij] T:ec[al]
-.STIN380001baab[daki] += K:eeec[adck] T:ec[ci]
-.STIN380001baba[daki] -= K:eeec[acdk] T:ec[ci]
+.STIN380001baab[daki] += J:eeec[adck] T:ec[ci]
+.STIN380001baba[daki] -= J:eeec[acdk] T:ec[ci]
 .STIN380002baab[akji] += STIN380001baba[daki] T:ec[dj]
 .STIN380002baba[akji] += STIN380001baab[daki] T:ec[dj]
 .ITIN[abij] += .5*STIN380002baab[akji] T:ec[bk]
