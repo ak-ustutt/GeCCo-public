@@ -325,13 +325,13 @@ declare_res_multi=[
         "R:I[I]",
         "R:ac[pi]","R:ec[ai]","R:ea[ap]",
         "R:aacc[pqij]","R:aaac[pqri]",
-        "R:eacc[apij]","R:eaac[apqi]","R:eaaa[apqr]",
+        "R:eacc[apij]","R:eaac[apqi]","R:eaca[apiq]","R:eaaa[apqr]",
         "R:eecc[abij]","R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
 declare_amp_multi=[
         "T:I[I]",
         "T:ac[pi]","T:ec[ai]","T:ea[ap]",
         "T:aacc[pqij]","T:aaac[pqri]",
-        "T:eacc[apij]","T:eaac[apqi]","T:eaaa[apqr]",
+        "T:eacc[apij]","T:eaac[apqi]","T:eaca[apiq]","T:eaaa[apqr]",
         "T:eecc[abij]","T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
 
 declare_inter=[]        # Global list of intermediates
@@ -661,6 +661,18 @@ for line_o in f:
                     declare_index.append(generic)
                     declare_name.append(words[0].split('[',1)[0].replace('.',''))
 
+                    # If allocating R:eaac OR R:eaca, then also add its partner to
+                    # declare_res (both will be allocated at the same time)
+                    if "R:eaac" in words[0]:
+                        declare_res.append("R:eaca[apiq]")
+                        declare_index.append(['e','a','c','a'])
+                        declare_name.append("R:eaca")
+
+                    elif "R:eaca" in words[0]:
+                        declare_res.append("R:eaac[apqi]")
+                        declare_index.append(['e','a','a','c'])
+                        declare_name.append("R:eaac")
+
                     # Add generic index to residual tensor name, ie. R:eecc
                     tmp_res=words[0]
                     if ("R[" in words[0]):
@@ -807,6 +819,8 @@ if multi:
         print("tensor: K:ccaa[ijpq], K:ccaa", file=f2)
     if "K:ecaa" not in combined:
         print("tensor: K:ecaa[aipq], K:ecaa", file=f2)
+    if "K:cccc" not in combined:
+        print("tensor: K:cccc[ijkl], K:cccc", file=f2)
     print("", file=f2)
 
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)

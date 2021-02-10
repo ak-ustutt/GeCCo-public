@@ -52,6 +52,13 @@ CLONE_OPERATOR({LABEL:'INTpp',TEMPLATE:'T2g'})
 DEF_ME_LIST({LIST:'ME_INTpp',OPERATOR:'INTpp',IRREP:1,'2MS':0,AB_SYM:+1})
 
 
+T2_shape = 'PP,HH|PV,HV|PV,HH|PP,HV'
+#T2_shape = 'PP,HH|VV,VH|VV,HH|PV,VV|PV,HV|PV,HH|PP,VV|PP,HV'
+DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
+CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
+
+
+
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
 def _refexp(x):
     return "<C0^+*(" + x + ")*C0>"
@@ -61,7 +68,8 @@ def _L1_refexp(x):
     return _refexp("LAM1(" + x + ")")
 
 def _L2_refexp(x):
-    return _refexp("LAM2g(" + x + ")")
+    #return _refexp("LAM2g(" + x + ")")
+    return _refexp("L2(" + x + ")")
 
 def _L3_refexp(x):
     return _refexp("-LAM2g(" + x + ")")
@@ -71,13 +79,13 @@ def _L4_refexp(x):
 
 LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
 LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
-LAG_A1.append(_L4_refexp("H"))
+#LAG_A1.append(_L4_refexp("H"))
 
 LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
-LAG_A2.append(_L3_refexp("H"))
+#LAG_A2.append(_L3_refexp("H"))
 
 LAG_E.append(_refexp("[H,T1]"))
-LAG_E.append(_refexp("[H,T2g]"))
+LAG_E.append(_refexp("[H,T2]"))
 LAG_E.append(_refexp("0.5*[[H,T1],T1]"))
 
 # Error with these terms
@@ -92,8 +100,8 @@ LAG_E.append(_refexp("0.5*[[H,T1],T1]"))
 #LAG_A1.append(_L1_refexp("[H,T2g]"))
 #LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
 
-#LAG_A2.append(_L2_refexp("[H,T1]"))
-#LAG_A2.append(_L2_refexp("[H,T2g]"))
+LAG_A2.append(_L2_refexp("[H,T1]"))
+LAG_A2.append(_L2_refexp("[H,T2]"))
 #LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
 
@@ -340,216 +348,215 @@ EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
 
 # A2 ============================
 # T:eecc
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','C0'],
-                   IDX_SV   :[1, 2, 3, 4],
-                   LABEL_DESCR:["2,,HH,PP"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,P,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,VH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   LABEL_DESCR:["1,3,,V", "2,3,HH,", "2,4,,PP", "3,4,H,", "4,5,,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   LABEL_DESCR:["1,3,,V", "2,3,H,P", "2,4,H,P", "3,4,,P", "4,5,,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,P,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,V,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,PV,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 3,4],
-                   LABEL_DESCR:["2,,HH,PP,", "4,,PV,HV"]})
-
-
-
-
-# T:eeac
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','C0'],
-                   IDX_SV   :[1, 2, 3, 4],
-                   LABEL_DESCR:["2,,VH,PP"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,PP,VH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,P,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,PP,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,P,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,V,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,PV,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PP,", "4,,PV,HV"]})
-
-
-
-# T:eacc
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','C0'],
-                   IDX_SV   :[1, 2, 3, 4],
-                   LABEL_DESCR:["2,,HH,PV"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,P,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,P,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,V,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,VH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HV"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,HH"]})
-
-
-
-
-# T:eaac
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','C0'],
-                   IDX_SV   :[1, 2, 3, 4],
-                   LABEL_DESCR:["2,,VH,PV"]})
-
-# No terms
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,P,V"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,V,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,P,H"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,HH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,VH"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HV"]})
-
-EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
-                   IDX_SV   :[1, 2, 3, 4, 5],
-                   CONNECT:[2,3, 2,4, 3,4],
-                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HH"]})
-
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   LABEL_DESCR:["2,,HH,PP"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,P,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,PP,VH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["1,3,,V", "2,3,HH,", "2,4,,PP", "3,4,H,", "4,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   LABEL_DESCR:["1,3,,V", "2,3,H,P", "2,4,H,P", "3,4,,P", "4,5,,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,P,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,V,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,PV,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 3,4],
+#                   LABEL_DESCR:["2,,HH,PP,", "4,,PV,HV"]})
+#
+#
+#
+#
+## T:eeac
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   LABEL_DESCR:["2,,VH,PP"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,PP,VH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,P,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,PP,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,P,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,V,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,PV,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PP,", "4,,PV,HV"]})
+#
+#
+#
+## T:eacc
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   LABEL_DESCR:["2,,HH,PV"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,P,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,P,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,V,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,VH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HV"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,PV,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,HH,PV,", "4,,PP,HH"]})
+#
+#
+#
+#
+## T:eaac
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','C0'],
+#                   IDX_SV   :[1, 2, 3, 4],
+#                   LABEL_DESCR:["2,,VH,PV"]})
+#
+## No terms
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,P,V"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,V,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T1','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,P,H"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,HH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PP,VH"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HV"]})
+#
+#EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+#                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
+#                   IDX_SV   :[1, 2, 3, 4, 5],
+#                   CONNECT:[2,3, 2,4, 3,4],
+#                   LABEL_DESCR:["2,,VH,PV,", "4,,PV,HH"]})
 
 
 
@@ -622,6 +629,12 @@ PRINT_FORMULA({LABEL:'CCD_FORM_PP',MODE:'SHORT'})
 
 #PRINT_FORMULA({LABEL:'F_K4E1',MODE:'SHORT'})
 #FACTOR_OUT({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',INTERM:'F_K4E1'})
+
+
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2','T2g']})
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T2','T2g']})
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2','T2g','L2','LAM2g']})
+
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
