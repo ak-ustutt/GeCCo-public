@@ -26,6 +26,12 @@ load R:ea[ap], S1:S0[pq]
 drop S1:S0[pq], R:ea[ap]
 store OR:ea[ap]
 
+alloc OR:eaaa[apqr]
+load R:eaaa[apqr], S2:S0[pqrstu]
+.OR:eaaa[astu] += R:eaaa[apqr] S2:S0[pqrstu]
+drop S2:S0[pqrstu], R:eaaa[apqr]
+store OR:eaaa[apqr]
+
 // S1
 alloc OR:eaca[apiq]
 load R:eaca[apiq], S2:S1[pqrs]

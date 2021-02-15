@@ -799,6 +799,12 @@ declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 # If not declared already, declare integrals needed in calculating fock matricies etc.
 combined = '\t'.join(declare_ten)
 if multi:
+    if "f:ac" not in combined:
+        print("tensor: f:ac[pi], f:ac", file=f2)
+    if "f:ea" not in combined:
+        print("tensor: f:ea[ap], f:ea", file=f2)
+    if "f:aa" not in combined:
+        print("tensor: f:aa[pq], f:aa", file=f2)
     if "J:eacc" not in combined:
         print("tensor: J:eacc[apij], J:eacc", file=f2)
     if "J:ecca" not in combined:
@@ -821,6 +827,8 @@ if multi:
         print("tensor: K:ecaa[aipq], K:ecaa", file=f2)
     if "K:cccc" not in combined:
         print("tensor: K:cccc[ijkl], K:cccc", file=f2)
+    if "K:aaaa" not in combined:
+        print("tensor: K:aaaa[pqrs], K:aaaa", file=f2)
     print("", file=f2)
 
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
