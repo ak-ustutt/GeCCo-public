@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine process_rule(rule,tgt_info,
+      subroutine process_rule(rule,tgt_info,virtual,
      &     form_info,op_info,str_info,strmap_info,orb_info)
 *----------------------------------------------------------------------*
 *     new driver routine for processing rules
@@ -26,6 +26,8 @@
      &     rule
       type(target_info), intent(inout) ::
      &     tgt_info
+      logical, intent(in) ::
+     &     virtual
       type(formula_info), intent(inout) ::
      &     form_info
       type(operator_info), intent(inout) ::
@@ -98,6 +100,7 @@
 
       ! form_test = true skips time consuming steps -> dry run
       call get_argument_value('general','form_test',lval=form_test)
+      form_test = form_test.or.virtual  ! do the same for virtual mode
 
 *----------------------------------------------------------------------*
 *     branch according to command

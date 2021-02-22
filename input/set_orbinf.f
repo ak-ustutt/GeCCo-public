@@ -244,10 +244,12 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         do idx = ntoob+1, ntoob+caborb
           orb_info%ireost(idx) = idx
         end do
-      case ('molpro_ifc','MOLPRO_IFC')
+      case ('molpro_ifc','MOLPRO_IFC','virtual','VIRTUAL')
         ! the interface removes the core orbitals and shifts the numbering
         ! we just pretend that the symmetry ordering is done for core and other
         ! orbitals separately
+        ! the "virtual molecule" is just handled analogous to that
+        ! (although we will never do actual calculations with it)
         if (hole_rv) call quit(1,'set_orbinf','who needs hole_rv??')
         jdx = 0
         do ipass = 1,2 ! two passes: 1-deleted core, 2-others
