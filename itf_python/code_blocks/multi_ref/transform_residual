@@ -33,16 +33,30 @@ drop S2:S0[pqrstu], R:eaaa[apqr]
 store OR:eaaa[apqr]
 
 // S1
+//alloc OR:eaca[apiq]
+//load R:eaca[apiq], S2:S1[pqrs]
+//.OR:eaca[aris] += R:eaca[apiq] S2:S1[pqrs]
+//drop S2:S1[pqrs], R:eaca[apiq]
+//store OR:eaca[apiq]
+
 alloc OR:eaca[apiq]
-load R:eaca[apiq], S2:S1[pqrs]
-.OR:eaca[aris] += R:eaca[apiq] S2:S1[pqrs]
-drop S2:S1[pqrs], R:eaca[apiq]
+load R:eaca[apiq], R:eaac[apqi], S4:S1[pqrs], S2x:S1[pqrs]
+.OR:eaca[aris] += R:eaca[apiq] S4:S1[pqrs]
+.OR:eaca[aris] += R:eaac[apqi] S2x:S1[pqrs]
+drop S2x:S1[pqrs], S4:S1[pqrs], R:eaac[apqi], R:eaca[apiq]
 store OR:eaca[apiq]
 
+//alloc OR:eaac[apqi]
+//load R:eaac[apqi], S2:S1[pqrs]
+//.OR:eaac[arsi] += R:eaac[apqi] S2:S1[pqrs]
+//drop S2:S1[pqrs], R:eaac[apqi]
+//store OR:eaac[apqi]
+
 alloc OR:eaac[apqi]
-load R:eaac[apqi], S2:S1[pqrs]
-.OR:eaac[arsi] += R:eaac[apqi] S2:S1[pqrs]
-drop S2:S1[pqrs], R:eaac[apqi]
+load R:eaac[apqi], R:eaca[apiq], S2:S1[pqrs], S4x:S1[pqrs]
+.OR:eaac[arsi] += R:eaca[apiq] S2:S1[pqrs]
+.OR:eaac[arsi] += R:eaac[apqi] S4x:S1[pqrs]
+drop S4x:S1[pqrs], S2:S1[pqrs], R:eaca[apiq], R:eaac[apqi]
 store OR:eaac[apqi]
 
 // S2
