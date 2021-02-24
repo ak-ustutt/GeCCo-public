@@ -37,10 +37,8 @@ load OT:ea[ap], S1:S0[pq]
 drop S1:S0[pq], OT:ea[ap]
 store T:ea[ap]
 
-// S1
 
 // S2
-
 load Var1[]
 load R:ec[ai]
 load g:ee[aa], g:cc[ii]
@@ -58,36 +56,24 @@ store Nrm1[]
 
 load Nrm2[]
 
-//load T:eaca[apiq]
-//load OT:eaca[apiq], S2:S1[pqrs]
-//.T:eaca[aris] += OT:eaca[apiq] S2:S1[prqs]
-//.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
-//drop S2:S1[pqrs], OT:eaca[apiq]
-//store T:eaca[apiq]
-
-load T:eaca[apiq]
-load OT:eaca[apiq], OT:eaac[apqi], S2x:S1[pqrs], S4:S1[prqs]
-.T:eaca[aris] += OT:eaac[apqi] S2x:S1[pqrs]
-.T:eaca[aris] += OT:eaac[apqi] S4:S1[pqrs]
-.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
-drop S4:S1[prqs], S2x:S1[pqrs], OT:eaac[apqi], OT:eaca[apiq]
-store T:eaca[apiq]
-
-//load T:eaac[apqi]
-//load OT:eaac[apqi], S2:S1[pqrs]
-//.T:eaac[arsi] += OT:eaac[apqi] S2:S1[pqrs]
-//.Nrm2[] += T:eaac[apqi] T:eaac[apqi]
-//drop S2:S1[pqrs], OT:eaac[apqi]
-//store T:eaac[apqi]
-
+// S1
 load T:eaac[apqi]
 load OT:eaac[apqi], OT:eaca[apiq], S2:S1[pqrs], S4x:S1[pqrs]
-.T:eaac[arsi] += OT:eaca[apiq] S2:S1[prqs]
-.T:eaac[arsi] += OT:eaac[apqi] S4x:S1[prqs]
+.T:eaac[arsi] += OT:eaac[apqi] S2:S1[prqs]
+.T:eaac[arsi] += OT:eaca[apiq] S4x:S1[prqs]
 .Nrm2[] += T:eaac[apqi] T:eaac[apqi]
 drop S4x:S1[pqrs], S2:S1[pqrs], OT:eaca[apiq], OT:eaac[apqi]
 store T:eaac[apqi]
 
+load T:eaca[apiq]
+load OT:eaca[apiq], OT:eaac[apqi], S2x:S1[pqrs], S4:S1[prqs]
+.T:eaca[aris] += OT:eaac[apqi] S2x:S1[pqrs]
+.T:eaca[aris] += OT:eaca[apiq] S4:S1[pqrs]
+.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
+drop S4:S1[prqs], S2x:S1[pqrs], OT:eaac[apqi], OT:eaca[apiq]
+store T:eaca[apiq]
+
+// S2
 load T:eacc[apij]
 load OT:eacc[apij], S2:S2[pq]
 .T:eacc[aqij] += OT:eacc[apij] S2:S2[pq]
@@ -112,8 +98,6 @@ drop S2:P1[pq], OT:eeac[abpi]
 store T:eeac[abpi]
 
 // P2
-
-
 load Var2[]
 load R:eecc[abij]
 load g:ee[aa], g:cc[ii]
