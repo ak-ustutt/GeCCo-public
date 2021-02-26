@@ -805,6 +805,10 @@ if multi:
         print("tensor: f:ea[ap], f:ea", file=f2)
     if "f:aa" not in combined:
         print("tensor: f:aa[pq], f:aa", file=f2)
+    if "f:ee" not in combined:
+        print("tensor: f:ee[ab], f:ee", file=f2)
+    if "f:cc" not in combined:
+        print("tensor: f:cc[ij], f:cc", file=f2)
     if "J:eacc" not in combined:
         print("tensor: J:eacc[apij], J:eacc", file=f2)
     if "J:ecca" not in combined:
@@ -821,6 +825,12 @@ if multi:
         print("tensor: J:ccca[ijkp], J:ccca", file=f2)
     if "J:eccc" not in combined:
         print("tensor: J:eccc[aijk], J:eccc", file=f2)
+    if "J:eecc" not in combined:
+        print("tensor: J:eecc[abij], J:eecc", file=f2)
+    if "J:eeaa" not in combined:
+        print("tensor: J:eeaa[abpq], J:eeaa", file=f2)
+    if "K:eeaa" not in combined:
+        print("tensor: K:eeaa[abpq], K:eeaa", file=f2)
     if "K:ccaa" not in combined:
         print("tensor: K:ccaa[ijpq], K:ccaa", file=f2)
     if "K:ecaa" not in combined:
@@ -902,7 +912,9 @@ if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
     if "Ym1" not in combined:
-        print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
+        print("tensor: Ym1[pq],   !Create{type:disk}",file=f2)
+    if "Ym2" not in combined:
+        print("tensor: Ym2[pqrs], !Create{type:disk}",file=f2)
 
 else:
     print_code_block('single_ref/declare_tensors', gecco, f2)

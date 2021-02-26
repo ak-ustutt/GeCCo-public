@@ -2,7 +2,7 @@
 // I1
 alloc OR:ac[pi]
 load R:ac[pi], S1:I1[pq]
-.OR:ac[qi] += R:ac[pi] S1:I1[pq]
+.OR:ac[qi] += 2*R:ac[pi] S1:I1[pq]
 drop S1:I1[pq], R:ac[pi]
 store OR:ac[pi]
 
@@ -22,7 +22,7 @@ store OR:aacc[pqij]
 // S0
 alloc OR:ea[ap]
 load R:ea[ap], S1:S0[pq]
-.OR:ea[aq] += R:ea[ap] S1:S0[pq]
+.OR:ea[aq] += 2*R:ea[ap] S1:S0[pq]
 drop S1:S0[pq], R:ea[ap]
 store OR:ea[ap]
 
@@ -35,7 +35,7 @@ store OR:eaaa[apqr]
 // S1
 alloc OR:eaac[apqi]
 load R:eaac[apqi], R:eaca[apiq], S2:S1[pqrs], S4x:S1[pqrs]
-.OR:eaac[arsi] += R:eaac[apqi] S2:S1[pqrs]
+.OR:eaac[arsi] += 2*R:eaac[apqi] S2:S1[pqrs]
 .OR:eaac[arsi] += R:eaca[apiq] S4x:S1[pqrs]
 drop S4x:S1[pqrs], S2:S1[pqrs], R:eaca[apiq], R:eaac[apqi]
 store OR:eaac[apqi]
@@ -50,7 +50,7 @@ store OR:eaca[apiq]
 // S2
 alloc OR:eacc[apij]
 load R:eacc[apij], S2:S2[pq]
-.OR:eacc[aqij] += R:eacc[apij] S2:S2[pq]
+.OR:eacc[aqij] += 2*R:eacc[apij] S2:S2[pq]
 drop S2:S2[pq], R:eacc[apij]
 store OR:eacc[apij]
 
@@ -64,7 +64,7 @@ store OR:eeaa[abpq]
 // P1
 alloc OR:eeac[abpi]
 load R:eeac[abpi], S2:P1[pq]
-.OR:eeac[abqi] += R:eeac[abpi] S2:P1[pq]
+.OR:eeac[abqi] += 2*R:eeac[abpi] S2:P1[pq]
 drop S2:P1[pq], R:eeac[abpi]
 store OR:eeac[abpi]
 
