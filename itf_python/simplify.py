@@ -46,6 +46,7 @@ for line in f1:
     # Removes the CASSCF energy
     #if ("ECC[]" in line and "Dm[]" in line): continue
     if ("ECC[]" in line and "Ym1" in line and "f" in line): continue
+    if ("ECC[]" in line and "Ym2" in line and "K" in line): continue
 
 
     # If the current line is the same as the precceding line, increment a factor

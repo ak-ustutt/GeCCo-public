@@ -68,9 +68,9 @@
           if (rank==2) then
              rename_tensor='Ym1'
           else if (rank==4) then
-             rename_tensor='Dm2'
+             rename_tensor='Ym2'
           else if (rank==6) then
-             rename_tensor='Dm3'
+             rename_tensor='Ym3'
           else
              rename_tensor='Dm'
           end if
@@ -912,7 +912,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       if (use_sign) item%fact = item%fact * contr_info%fact_itf
       ! note: fact_itf contains the general contraction prefactor as defined in GeCCo and a possible sign
       ! change according to the sign conventions employed for ITF code generation
-      
+
       ! this is old (to be deleted soon):
       if (.not.use_sign) item%fact = item%fact *abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
