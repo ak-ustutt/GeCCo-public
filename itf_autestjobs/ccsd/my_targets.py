@@ -105,7 +105,8 @@ TRANSLATE_ITF({LABEL: 'CCD_OPT',
                MULTI:False,
                TASKS:True,
                KEXT:True,
-               ITIN:True})
+               ITIN:True,
+               RENAME:['ECCD','ECC','T1','T','T2','T','O1','R','O2','R']})
 PRINT_FORMULA({LABEL:'CCD_OPT',MODE:'SHORT'})
 
 
