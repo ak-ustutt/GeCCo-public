@@ -29,6 +29,7 @@ depend('DEF_O')
 #depend('DEF_O2g')
 #depend('DEF_O1')
 
+
 depend('GAM0_CALC')
 
 DEF_SCALAR({
@@ -51,7 +52,8 @@ DEF_SCALAR({
 CLONE_OPERATOR({LABEL:'INTpp',TEMPLATE:'T2g'})
 DEF_ME_LIST({LIST:'ME_INTpp',OPERATOR:'INTpp',IRREP:1,'2MS':0,AB_SYM:+1})
 
-
+# for proper T1/T2 orthogonalization, declare T2 like this:
+#T2_shape = 'V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
 #T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|VV,VH|PV,HV'
 #T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'
 T2_shape = 'PP,HH'
@@ -757,7 +759,8 @@ TRANSLATE_ITF({
         KEXT:False,
         TASKS:False,
         INIT_RES:False,
-        ITIN:True})
+        ITIN:True,
+        RENAME:['MRCC_LAG','ECC','T1','T','T2g','T','O1','R','O2g','R','GAM0','Ym<RANK>']})
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')

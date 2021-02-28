@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine form_itf(f_input,name_out,form_out,multi,process,kext,
-     &                    tasks,init_res,itin,op_info)
+     &                    tasks,init_res,itin,rename_list,nlist,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -12,6 +12,8 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'mdef_formula_info.h'
+      include 'def_itf_contr.h'
+      include 'def_target.h'
 
       character(len=*), intent(in) ::
      &     name_out,    ! Output file name for ITF algo code
@@ -27,13 +29,19 @@
      &     tasks,       ! True if using ITF tasks to generate algos
      &     init_res,    ! Produce Init_residual algo code
      &     itin         ! Produce ITIN lines, or symmetrise residual at end
+      integer, intent(in) ::
+     &     nlist
+      character(len_command_par) ::
+     &     rename_list(nlist)
 
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
      &     fitf,        ! File for ITF algo code
      &     fform        ! File for GeCco formulae
       type(formula_item) ::
-     &     flist        ! Linked list of binary contractions
+     &     flist                ! Linked list of binary contractions
+      type(tensor_names) ::
+     &     itf_names    ! contains renaming information (processed from rename_list)
       logical ::
      &     print_form   ! If true, outputs GeCco formulae to file
       integer ::
@@ -65,6 +73,9 @@
          write(fform%unit,*) "Generated formulae"
       end if
 
+      ! Set the rename list
+      call itf_set_tensor_names(itf_names,rename_list,nlist)
+      
       ! Read in input formula
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist,.true.)
@@ -81,7 +92,7 @@
 
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,itin,op_info,print_form,
-     &               fform%unit,tasks)
+     &               fform%unit,tasks,itf_names)
 
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'Time to process formulae',
