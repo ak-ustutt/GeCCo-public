@@ -21,7 +21,7 @@ INST_DATA:=
 INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
-hlo_obj_list:=command_to_itf.o
+hlo_obj_list:=
 
 include $(topdir)/make.rules
 

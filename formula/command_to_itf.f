@@ -20,70 +20,75 @@
       str2 = trim(adjustl(str1))
 
       end function trimal
-
-*----------------------------------------------------------------------*
-      pure function rename_tensor(string, rank, nops)
-*----------------------------------------------------------------------*
-!     Rename tensor according to taste
-!     This should be expanded to rename all tensors so they correspond
-!     with the ITF algo file
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-
-      character(len=MAXLEN_BC_LABEL), intent(in) ::
-     &    string
-      integer, intent(in) ::
-     &    rank,          ! Rank of tensor
-     &    nops(ngastp)   ! Number of creation/annhilation ops
-      character(len=MAXLEN_BC_LABEL) ::
-     &    rename_tensor
-
-      if (trim(string).eq.'O2g' .or. trim(string).eq.'O2') then
-          rename_tensor='R'
-      else if (trim(string).eq.'O1') then
-          rename_tensor='R'
-      else if (trim(string).eq.'O3') then
-          rename_tensor='R'
-      else if (trim(string).eq.'T2g' .or. trim(string).eq.'T2') then
-          rename_tensor='T'
-      else if (trim(string).eq.'T1') then
-          rename_tensor='T'
-      else if (trim(string).eq.'T3') then
-          rename_tensor='T'
-      else if (trim(string).eq.'H') then
-          if (rank==2) then
-             rename_tensor='f'
-          else
-             if (nops(2)==3) then
-                ! Currently use J:eeec for 3 external integrals
-                rename_tensor='J'
-             else
-                rename_tensor='K'
-             end if
-          end if
-      else if (trim(string).eq.'GAM0') then
-          if (rank==2) then
-             rename_tensor='Ym1'
-          else if (rank==4) then
-             rename_tensor='Ym2'
-          else if (rank==6) then
-             rename_tensor='Ym3'
-          else
-             rename_tensor='Dm'
-          end if
-      else if (trim(string).eq.'ECCD' .or. trim(string).eq.'MRCC_LAG')
-     & then
-          rename_tensor='ECC'
-      else
-          rename_tensor=trim(string)
-      end if
-
-      if (rename_tensor(1:1)=='_') rename_tensor(1:1)=''
-
-      end function
+* 
+c     * moved to extra file as the compiler incorrectly quits with
+c     * an error message (error #6633)
+c*----------------------------------------------------------------------*
+c      pure function rename_tensor(string, rank, nops, itf_names)
+c*----------------------------------------------------------------------*
+c!     Rename tensor according to taste
+c!     This should be expanded to rename all tensors so they correspond
+c!     with the ITF algo file
+c*----------------------------------------------------------------------*
+c
+c      implicit none
+c      include 'stdunit.h'
+c      include 'opdim.h'
+c      include 'def_contraction.h'
+c      include 'def_itf_contr.h'
+c
+c      character(len=MAXLEN_BC_LABEL), intent(in) ::
+c     &    string
+c      integer, intent(in) ::
+c     &    rank,          ! Rank of tensor
+c     &    nops(ngastp)   ! Number of creation/annhilation ops per excitation space
+c      type(tensor_names), intent(in) ::
+c     &     itf_names            ! contains renaming information
+c      character(len=MAXLEN_BC_LABEL) ::
+c     &     rename_tensor
+c
+c      logical ::
+c     &     found
+c      integer ::
+c     &     ii
+c
+c      found = .false.
+c      do ii = 1, itf_names%nrename
+c        if (trim(string)==trim(itf_names%gc_itf_rename(1,ii))) then
+c          found = .true.
+c          select case(itf_names%rename_type(ii))
+c          case(RENAME_BASIC)
+c            rename_tensor = trim(itf_names%gc_itf_rename(2,ii))
+c          case(RENAME_HAMILTONIAN)
+c            if (rank==2) then
+c              rename_tensor='f'
+c            else
+c              if (nops(2)==3) then
+c                rename_tensor='J' ! Currently use J:eeec for 3 external integrals
+c              else
+c                rename_tensor='K'
+c              end if
+c            end if
+c          case(RENAME_ADD_RANK)
+c            if (rank>18) then
+c              !write(lulog,*) 'rank = ',rank
+c              rename_tensor='ERROR_unexp_lg_rank'
+c            end if
+c            write(rename_tensor,'(a,i1)')
+c     &           trim(itf_names%gc_itf_rename(2,ii)),rank/2
+c          case default
+c            !write(lulog,*) 'case ',itf_names%rename_type
+c            rename_tensor='ERROR_unknown_case'
+c          end select
+c          exit
+c        end if
+c      end do
+c
+c      if (.not.found) rename_tensor = trim(string)
+c      
+c      if (rename_tensor(1:1)=='_') rename_tensor(1:1)=''
+c
+c      end function
 
 *----------------------------------------------------------------------*
       pure function check_inter(label)
@@ -631,7 +636,9 @@
 
 *----------------------------------------------------------------------*
       subroutine command_to_itf(contr_info, itin, itflog, command,
-     &                          inter_itype, counter, tasks, x_dict,
+     &                          inter_itype,
+     &                          itf_names,
+     &                          counter, tasks, x_dict,
      &                          inter_spin_dict)
 *----------------------------------------------------------------------*
 !     Take GeCco binary contraction and produce ITF algo code.
@@ -647,7 +654,9 @@
       include 'def_itf_contr.h'
 
       type(binary_contr), intent(inout) ::
-     &   contr_info          ! Information about binary contraction
+     &     contr_info           ! Information about binary contraction
+      type(tensor_names), intent(in)   ::
+     &     itf_names            ! contains renaming information
       logical, intent(in) ::
      &   itin,               ! Print ITIN lines or not
      &   tasks
@@ -780,14 +789,15 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
       ! 7. Loop over spin cases and print out each line
-      call print_spin_cases(item, x_dict, inter_spin_dict, ntest7)
+      call print_spin_cases(item, x_dict, inter_spin_dict, itf_names,
+     &                      ntest7)
       if (pline) call print_spin_cases(pitem, x_dict, inter_spin_dict,
-     &                                 ntest7)
+     &                                 itf_names, ntest7)
 
 
       ! 8. Print symmetrisation term
       if (.not. item%inter(3)) then
-         if (.not. tasks) call print_symmetrise(item, ntest8)
+         if (.not. tasks) call print_symmetrise(item, itf_names, ntest8)
       end if
 
 
@@ -1518,7 +1528,8 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
 *----------------------------------------------------------------------*
-      subroutine print_spin_cases(item, x_dict, inter_spin_dict, ntest)
+      subroutine print_spin_cases(item, x_dict, inter_spin_dict,
+     &                            itf_names, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -1534,7 +1545,9 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
       type(inter_spin_cases), intent(inout) ::
-     &   inter_spin_dict
+     &     inter_spin_dict
+      type(tensor_names), intent(in) ::
+     &     itf_names            ! contains renaming information
       integer, intent(in) ::
      &   ntest
 
@@ -1606,7 +1619,7 @@ c     &     item%nspin_cases
             end if
 
             call print_itf_line(item,s1,s2,item%all_spins(j)%t_spin,
-     &                          x_dict, inter_spin_dict, ntest)
+     &                        x_dict, inter_spin_dict, itf_names, ntest)
 
       end do
 
@@ -1615,7 +1628,7 @@ c     &     item%nspin_cases
 
 *----------------------------------------------------------------------*
       subroutine print_itf_line(item, s1, s2, t_spin, x_dict,
-     &                          inter_spin_dict, ntest)
+     &                          inter_spin_dict, itf_names, ntest)
 *----------------------------------------------------------------------*
 !     Print line of ITF code
 *----------------------------------------------------------------------*
@@ -1637,7 +1650,9 @@ c     &     item%nspin_cases
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
       type(inter_spin_cases), intent(inout) ::
-     &   inter_spin_dict
+     &     inter_spin_dict
+      type(tensor_names), intent(in) ::
+     &     itf_names            ! contains renaming information
       integer, intent(in) ::
      &   ntest
 
@@ -1669,6 +1684,9 @@ c     &     item%nspin_cases
      &   new_j,
      &   old,
      &   found
+
+      character(len=MAXLEN_BC_LABEL), external ::
+     &     rename_tensor
 
       new_idx1 = item%idx1
       new_idx2 = item%idx2
@@ -1719,9 +1737,12 @@ c     &     item%nspin_cases
       end if
 
       ! Change names of specific tensors
-      nres=rename_tensor(item%label_res, item%rank3, item%nops3)
-      nt1=rename_tensor(item%label_t1, item%rank1, item%nops1)
-      nt2=rename_tensor(item%label_t2, item%rank2, item%nops2)
+      nres = rename_tensor(item%label_res,
+     &                     item%rank3, item%nops3, itf_names)
+      nt1  = rename_tensor(item%label_t1,
+     &                     item%rank1, item%nops1, itf_names)
+      nt2  = rename_tensor(item%label_t2,
+     &                     item%rank2, item%nops2, itf_names)
 
       ! copy name to exchange contributions (some may get renamed)
       nt1x(1:nxstr1) = nt1
@@ -5609,7 +5630,7 @@ c       end if
       end
 
 *----------------------------------------------------------------------*
-      subroutine print_symmetrise(item, ntest)
+      subroutine print_symmetrise(item, itf_names, ntest)
 *----------------------------------------------------------------------*
 !
 *----------------------------------------------------------------------*
@@ -5621,7 +5642,9 @@ c       end if
       include 'def_itf_contr.h'
 
       type(itf_contr), intent(inout) ::
-     &   item
+     &     item
+      type(tensor_names) ::
+     &     itf_names    ! contains renaming information
       integer, intent(in) ::
      &   ntest
 
@@ -5630,7 +5653,10 @@ c       end if
       character(len=INDEX_LEN) ::
      &   tindex
       character(len=MAXLEN_BC_LABEL) ::
-     &   new
+     &     new
+      
+      character(len=MAXLEN_BC_LABEL), external ::
+     &     rename_tensor
 
       ! Return if an intermediate or result rank less than 2
       if (item%inter(3) .or. item%rank3<=2) return
@@ -5643,7 +5669,8 @@ c       end if
 
       if (ntest>=100) call debug_header("print_symmetrise", item%out)
 
-      new = rename_tensor(item%old_name, item%rank3, item%nops3)
+      new = rename_tensor(item%old_name,
+     &                    item%rank3, item%nops3, itf_names)
 
       line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
      &       trim(item%label_res)//'['//trim(item%idx3)//']'

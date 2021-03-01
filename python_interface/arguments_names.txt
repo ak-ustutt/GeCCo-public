@@ -119,6 +119,7 @@ OUTPUT str
 PROCESS log
 RANK int
 REC int
+RENAME label
 REORDER log
 REPLACE log
 S2 int

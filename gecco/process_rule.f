@@ -707,8 +707,10 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('TASKS',rule,tgt_info,val_log=tasks)
         call get_arg('INIT_RES',rule,tgt_info,val_log=init_res)
         call get_arg('ITIN',rule,tgt_info,val_log=itin)
+        call get_arg('RENAME',rule,tgt_info,
+     &       val_label_list=label_list(1:),ndim=nint)
         call form_itf(form_pnt,title,title2,multi,process,
-     &                kext,tasks,init_res,itin,op_info)
+     &                kext,tasks,init_res,itin,label_list,nint,op_info)
 *----------------------------------------------------------------------*
       case(PRINT_FORMULA)
 *----------------------------------------------------------------------*

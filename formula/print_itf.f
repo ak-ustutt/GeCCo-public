@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
-     &                     formlog,tasks)
+     &                     formlog,tasks,itf_names)
 *----------------------------------------------------------------------*
 *     Print ITF lines to itflog
 *----------------------------------------------------------------------*
@@ -19,6 +19,8 @@
      &     fl_head                              ! Linked list of formulae
       type(operator_info), intent(in) ::
      &     op_info                              ! Operator info for printing formulae
+      type(tensor_names), intent(in) ::
+     &     itf_names                            ! contains renaming information
       logical, intent(in) ::
      &     itin,                                ! Create ITIN lines or symmetrise residual at the end
      &     print_form,                          ! Print to optional formulae file
@@ -77,6 +79,7 @@
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
+     &                          itf_names,
      &                          counter,tasks,x_dict,
      &                          inter_spin_dict)
 

@@ -60,7 +60,8 @@ TRANSLATE_ITF({LABEL: 'CCD_OPT',
                TITLE: 'icmrcc_ccd.formulae',
                TASKS:False,
                MULTI:False,
-               ITIN:False})
+               ITIN:False,
+               RENAME:['ECCD','ECC','T2','T','O2','R']})
 PRINT_FORMULA({LABEL:'CCD_OPT',MODE:'SHORT'})
 
 
