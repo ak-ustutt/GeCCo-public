@@ -7,6 +7,6 @@ method
   MR maxexc=2
 calculate
   solve maxiter=40,conv=1d-13,maxsub=10
-  solve non_linear optref=0,method=PERT
+  solve non_linear optref=0
   skip_E
   routes maxbranch=0,sv_thresh=1d-6,spinadapt=3,auto_opt=F,use_tr=F

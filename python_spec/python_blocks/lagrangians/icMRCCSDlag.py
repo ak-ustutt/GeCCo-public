@@ -104,12 +104,12 @@ else:
 
     # The terms with the Lambda are always enclosed by <C0^+|LAM1 and C0> or <C0^+|LAM2g and C0>
     def _L1_refexp(x):
-        return _refexp("LAM1(" + x + ")")
-        #return _refexp("L1n(" + x + ")")
+        #return _refexp("LAM1(" + x + ")")
+        return _refexp("L1n(" + x + ")")
 
     def _L2_refexp(x):
-        return _refexp("LAM2g(" + x + ")")
-        #return _refexp("L2(" + x + ")")
+        #return _refexp("LAM2g(" + x + ")")
+        return _refexp("L2(" + x + ")")
 
     def _L3_refexp(x):
         return _refexp("-LAM2g(" + x + ")")
@@ -119,13 +119,13 @@ else:
 
     LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
     LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
-    LAG_A1.append(_L4_refexp("H"))
+    #LAG_A1.append(_L4_refexp("H"))
 
     LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
-    LAG_A2.append(_L3_refexp("H"))
+    #LAG_A2.append(_L3_refexp("H"))
 
-    #LAG_E.append(_refexp("[H,T1n]"))
-    #LAG_E.append(_refexp("[H,T2]"))
+    LAG_E.append(_refexp("[H,T1n]"))
+    LAG_E.append(_refexp("[H,T2]"))
     #LAG_E.append(_refexp("0.5*[[H,T1t],T1t]"))
     #LAG_E.append(_refexp("0.5*[[H,T1n],T2]"))
     #LAG_E.append(_refexp("0.5*[[H,T2],T1n]"))
@@ -139,12 +139,12 @@ else:
     #LAG_E.append(_refexp("0.5*[[H,T2g],T2g]"))
 
 
-    #LAG_A1.append(_L1_refexp("[H,T1n]"))
-    #LAG_A1.append(_L1_refexp("[H,T2]"))
+    LAG_A1.append(_L1_refexp("[H,T1n]"))
+    LAG_A1.append(_L1_refexp("[H,T2]"))
     #LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
 
-    #LAG_A2.append(_L2_refexp("[H,T1n]"))
-    #LAG_A2.append(_L2_refexp("[H,T2]"))
+    LAG_A2.append(_L2_refexp("[H,T1n]"))
+    LAG_A2.append(_L2_refexp("[H,T2]"))
     #LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
 
@@ -214,11 +214,11 @@ else:
 
     # E ============================
     # Using fomula above
-    EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
-                       OPERATORS:['C0^+','H','T1','C0'],
-                       IDX_SV   :[1, 2, 3, 4],
-                       CONNECT:[2,3],
-                       LABEL_DESCR:["3,,P,H"]})
+    #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+    #                   OPERATORS:['C0^+','H','T1','C0'],
+    #                   IDX_SV   :[1, 2, 3, 4],
+    #                   CONNECT:[2,3],
+    #                   LABEL_DESCR:["3,,P,H"]})
 
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
     #                   OPERATORS:['C0^+','H','T1','C0'],
@@ -232,11 +232,11 @@ else:
     #                   CONNECT:[2,3],
     #                   LABEL_DESCR:["3,,V,H"]})
     #
-    EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
-                       OPERATORS:['C0^+','H','T2g','C0'],
-                       IDX_SV   :[1, 2, 3, 4],
-                       CONNECT:[2,3],
-                       LABEL_DESCR:["3,,PP,HH"]})
+    #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+    #                   OPERATORS:['C0^+','H','T2g','C0'],
+    #                   IDX_SV   :[1, 2, 3, 4],
+    #                   CONNECT:[2,3],
+    #                   LABEL_DESCR:["3,,PP,HH"]})
 
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
     #                   OPERATORS:['C0^+','H','T2g','C0'],
@@ -259,10 +259,10 @@ else:
 
 
     # A1 ============================
-    EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
-                       OPERATORS:['C0^+','LAM1','H','C0'],
-                       IDX_SV   :[1, 2, 3, 4],
-                       LABEL_DESCR:["2,,H,P"]})
+    #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
+    #                   OPERATORS:['C0^+','LAM1','H','C0'],
+    #                   IDX_SV   :[1, 2, 3, 4],
+    #                   LABEL_DESCR:["2,,H,P"]})
 
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A1',NEW:False,OP_RES:'MRCC_LAG_A1',
     #                   OPERATORS:['C0^+','LAM1','H','T1','C0'],
@@ -391,10 +391,10 @@ else:
 
     # A2 ============================
     # T:eecc
-    EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
-                       OPERATORS:['C0^+','LAM2g','H','C0'],
-                       IDX_SV   :[1, 2, 3, 4],
-                       LABEL_DESCR:["2,,HH,PP"]})
+    #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
+    #                   OPERATORS:['C0^+','LAM2g','H','C0'],
+    #                   IDX_SV   :[1, 2, 3, 4],
+    #                   LABEL_DESCR:["2,,HH,PP"]})
 
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_A2',NEW:False,OP_RES:'MRCC_LAG_A2',
     #                   OPERATORS:['C0^+','LAM2g','H','T2g','C0'],
