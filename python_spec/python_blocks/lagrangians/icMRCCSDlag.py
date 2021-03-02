@@ -1,6 +1,7 @@
 """An implementation of the icMRCCSD Lagrangian, done term by term and separated T1 and T2.
 
-
+ **** THIS IS A TEST VERSION FOR INITIAL TESTS OF THE ITF TRANSLATOR ****
+ **** DO NOT MERGE INTO THE MAIN BRANCH !!                           ****
 
 History:
 
@@ -55,13 +56,12 @@ DEF_ME_LIST({LIST:'ME_INTpp',OPERATOR:'INTpp',IRREP:1,'2MS':0,AB_SYM:+1})
 # for proper T1/T2 orthogonalization, declare T2 like this:
 #T2_shape = 'V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
 #T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|VV,VH|PV,HV'
-#T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'
-T2_shape = 'PP,HH'
+T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
 CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
 
-#T1_shape = 'P,H|P,V|V,H'
-T1_shape = 'P,H'
+T1_shape = 'P,H|P,V|V,H'
+#T1_shape = 'P,H'
 DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
 CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
 
@@ -71,7 +71,7 @@ CLONE_OPERATOR({LABEL:'L1t',TEMPLATE:'T1t',ADJOINT:True})
 
 
 
-doublet = False
+doublet = True
 if doublet:
     # Every term in the Lagrangian is enclosed by <C0^+ and C0>
     def _refexp(x):
@@ -85,16 +85,19 @@ if doublet:
         return _refexp("L2(" + x + ")")
 
     LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
-    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
+    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H-H"))
 
-    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
-
+    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L1_refexp("H"))
+    LAG_A2.append(_L2_refexp("H"))
+    
     LAG_E.append(_refexp("[H,T1n]"))
     LAG_E.append(_refexp("[H,T2]"))
 
-    LAG_A1.append(_L1_refexp("[H,T1n]"))
-    LAG_A1.append(_L1_refexp("[H,T2]"))
+#    LAG_A1.append(_L1_refexp("[H,T1n]"))
+#    LAG_A1.append(_L1_refexp("[H,T2]"))
 
+    LAG_A2.append(_L1_refexp("[H,T1n]"))
+    LAG_A2.append(_L1_refexp("[H,T2]"))
     LAG_A2.append(_L2_refexp("[H,T1n]"))
     LAG_A2.append(_L2_refexp("[H,T2]"))
 
@@ -207,13 +210,14 @@ else:
     #LAG_A2.append(_L2_refexp("(1/2)*(T1 *T2g*H)"))
     #LAG_A2.append(_L2_refexp("(1/2)*(T2g*T1 *H)"))
     #LAG_A2.append(_L2_refexp("(1/2)*(T2g*T2g*H)"))
+#### end of if (doublet)
 
 
+LAG_E.set_rule()
+LAG_A1.set_rule()
+LAG_A2.set_rule()
 
-    LAG_E.set_rule()
-    LAG_A1.set_rule()
-    LAG_A2.set_rule()
-
+### careful: if is already closed here
     # E ============================
     # Using fomula above
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
@@ -689,9 +693,9 @@ REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2','T
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T2','T2g']})
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2','T2g','L2','LAM2g']})
 
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1n','T1']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1n','T1', 'L1n', 'LAM1']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1n','T1']})
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1n','T2g']})
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
+REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
 
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1t','T1']})
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1t','T1', 'L1n', 'LAM1']})
@@ -727,6 +731,7 @@ FACTOR_OUT({
 
 
 #Make the Derivative with respect to LAM
+# only dummy
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_Amp1',
@@ -746,7 +751,7 @@ OPTIMIZE({
         LABELS_IN:['FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 
