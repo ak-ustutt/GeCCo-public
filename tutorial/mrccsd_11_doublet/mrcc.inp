@@ -10,7 +10,7 @@ method
   MR excrestr=(0,0,2,2,0,0)
   MR maxexc=2
 calculate
-  solve maxiter=50,conv=1d-8,maxsub=10
+  solve maxiter=50,conv=1d-13,maxsub=10
   solve non_linear optref=0
   skip_E
   routes maxbranch=0,sv_thresh=1d-6,spinadapt=3,auto_opt=F,use_tr=F
