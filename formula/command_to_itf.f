@@ -1804,12 +1804,24 @@ c     &     item%nspin_cases
       ! (ie. a non-totally spin conserving case = 0), then skip printing
       ! out the line. This may not be the case for ionisation/spin flip
       ! cases.
-      if (item%inter(1) .or. item%inter(2))then
+      if (item%inter(1))then
          if (inter_spin_dict%ncase > 0) then
             found = .false.
             do i = 1, inter_spin_dict%ncase
-               if (nt1 == inter_spin_dict%names(i) .or.
-     &             nt2 == inter_spin_dict%names(i)) then
+               if (nt1 == inter_spin_dict%names(i)) then
+                  found = .true.
+                  exit
+               end if
+            end do
+
+            if (.not. found) return
+         end if
+      end if
+      if (item%inter(2))then
+         if (inter_spin_dict%ncase > 0) then
+            found = .false.
+            do i = 1, inter_spin_dict%ncase
+               if (nt2 == inter_spin_dict%names(i)) then
                   found = .true.
                   exit
                end if

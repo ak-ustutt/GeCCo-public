@@ -185,6 +185,8 @@ OPTIMIZE({
 
 EVALUATE({
         FORM:'FOPT_GAM_S'})
+
+debug_MEL('ME_GAM_S')
  
 if False : # (gno >= 0 and l_iccc) 
     if (spinadapt >= 2): 

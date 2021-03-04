@@ -284,6 +284,7 @@ c dbgend
            write(lulog,*) 'iocc_cls = ',iocc_cls
            write(lulog,*) 'formal:   ',op_inp%formal_blk(iocc_cls)
            write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
+           write(lulog,*) 'len_op_occ: ', mel_inp%len_op_occ(iocc_cls)
           call wrt_occ_n(lulog,op_inp%ihpvca_occ(1,1,iblkoff+1),njoined)
         end if
 
@@ -690,6 +691,10 @@ c dbgend
           flmap(1:ndim,1:3) = 1
           ! loops over coupling blocks. Must be in correct order!
           jocc_cls = iocc_cls
+
+          if (ntest.ge.100)
+     &         write(lulog,'(" looking for coupling blocks")')
+
           jblkoff = (jocc_cls-1)*njoined
           na1 = na1mx
           nc1 = nc1mx
@@ -1003,10 +1008,11 @@ c dbgend
            off_line2 = off_linmax
           end do
 c dbg
-c            if (iprint.ge.100) then
-c              write(lulog,*) 'initial overlap matrix:'
-c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
-c            end if
+          if (iprint.ge.100) then
+              write(lulog,*) 'initial overlap matrix: jocc_cls = ',
+     &                        jocc_cls
+              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
+          end if
 c dbgend
 c dbg
 c          print *,'index matrix:'
@@ -1022,11 +1028,14 @@ c dbgend
            rdim = rankdim(irank)
            idxst = rankoff(irank) + 1
            idxnd = rankoff(irank) + rdim
+           if (ntest.ge.100) write(lulog,*) '---- irank = ',irank
 
            ! build projector and apply to current block
            if (irank.ge.2) then
             if (iprint.ge.15)
      &        write(lulog,'(x,a,i8)') 'next rank:',irank
+            if (ntest.ge.100) write(lulog,*) 'building projector'
+
             select case(project)
             case (1,2)
              if (project.eq.1) then
@@ -1163,9 +1172,15 @@ c dbgend
                scratch(idxnd+1:ndim,idxst:idxnd) = 0d0
              end if
 
+c ==========================================
+c Here the usual Gram-Schmidt stuff happens:
+c ==========================================
             case (3,4)
              ! Gram-Schmidt step: substract lower-rank components from
              ! the diagonal block and the blocks above
+
+             if (ntest.ge.100) write(lulog,*) 'GS projection follows'
+
              do jrank = irank, nrank ! target block: row j, column i
               rdim2 = rankdim(jrank)
               idxst2 = rankoff(jrank) + 1
@@ -1176,6 +1191,11 @@ c dbgend
                idxnd3 = rankoff(krank) + rdim3
 ! Evil Hacking ahead:
 ! see above
+c dbg
+c               write(lulog,'(" (",i4,",",i4,")x(",i4,",",i4,")'//
+c     &                    ' -> (",i4,",",i4,")")') 
+c     &                    idxst3,idxst2,idxst3,idxst,idxst2,idxst 
+c dbg
                call dgemm('t','n',rdim2,rdim,rdim3,
      &                  -1d0,scratch(idxst3,idxst2),ndim,
      &                  scratch(idxst3,idxst),ndim,
@@ -1195,6 +1215,11 @@ c dbgend
                idxnd3 = rankoff(krank) + rdim3
 ! Evil Hacking ahead:
 ! see above
+c dbg
+c               write(lulog,'(" (",i4,",",i4,")x(",i4,",",i4,")'//
+c     &                    ' -> (",i4,",",i4,")")') 
+c     &                    idxst3,idxst,idxst2,idxst3,idxst,idxst2 
+c dbg
                call dgemm('t','t',rdim,rdim2,rdim3,
      &                  -1d0,scratch(idxst3,idxst),ndim,
      &                  scratch(idxst2,idxst3),ndim,
@@ -1206,10 +1231,20 @@ c dbgend
               call quit(1,'invsqrt','unknown case for keyword project')
             end select
            end if
-
+c dbg
+            if (iprint.ge.100) then
+              write(lulog,*) 'overlap matrix after projections ',
+     &                        jocc_cls
+              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
+            end if
+c dbgend
           ! core step: singular value decomposition
           if (ms1.eq.0.and.rdim.gt.1.and..not.lmodspc) then
             ! here a splitting into "singlet" and "triplet" blocks is needed:
+c dbg
+            if (ntest.ge.100) write(lulog,*) 
+     &          'have to split matrix into "singlet" and "triplet"'
+c dbg
 
 c dbg
 c            write(lulog,*) 'flmap:'
@@ -1321,6 +1356,9 @@ c dbgend
             deallocate(sing,trip)
 
           else if (lmodspc) then
+c dbg
+            if (ntest.ge.100) write(lulog,*) 'lmodspc case'
+c dbg
 
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
@@ -1345,6 +1383,9 @@ c dbgend
 
           else if (.not.half.and.get_u) then
 ! calculate S^(-0.5)
+c dbg
+            if (ntest.ge.100) write(lulog,*) '.not.half.and.get_u case'
+c dbg
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1376,6 +1417,9 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
           else if (.not.half) then
+c dbg
+            if (ntest.ge.100) write(lulog,*) 'half case'
+c dbg
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1398,6 +1442,9 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
           else if (get_u) then
+c dbg
+            if (ntest.eq.100) write(lulog,*) 'get_u case'
+c dbg
             ! calculate S^(-0.5)
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
@@ -1421,6 +1468,9 @@ c dbgend
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
           else
+c dbg
+            if (ntest.ge.100) write(lulog,*) 'else case'
+c dbg
             ! calculate S^(-0.5)
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
