@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 04-03-2021 12:26
+// Created on: 04-03-2021 12:45
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -135,20 +135,20 @@ save R:eecc[abij], ECC[]
 .ITIN[abij] += .5*K4E1[abij]
 .X3[cdkl] += K:eecc[cdkl]
 .X3[cdkl] -= K:eecc[cdlk]
-.STIN70001bb[lj] -= .5*K:eecc[cdkl] T:eecc[cdkj]
-.STIN70001bb[lj] -= .5*K:eecc[dckl] T:eecc[dckj]
-.STIN70001bb[lj] += .5*X3[cdkl] X1[cdjk]
-.ITIN[abij] += STIN70001bb[lj] T:eecc[abil]
-.STIN80001abab[klij] += .5*K:eecc[cdkl] T:eecc[cdij]
-.STIN80001abab[klij] += .5*K:eecc[dckl] T:eecc[dcij]
-.STIN80001baab[klij] -= .5*K:eecc[cdlk] T:eecc[cdij]
-.STIN80001baab[klij] -= .5*K:eecc[dclk] T:eecc[dcij]
-.ITIN[abij] += .25*STIN80001abab[klij] T:eecc[abkl]
-.ITIN[abij] -= .25*STIN80001baab[klij] T:eecc[ablk]
-.STIN90001bb[bd] -= .5*K:eecc[cdkl] T:eecc[cbkl]
-.STIN90001bb[bd] -= .5*K:eecc[cdlk] T:eecc[cblk]
-.STIN90001bb[bd] += .5*X3[cdkl] X1[bckl]
-.ITIN[abij] += STIN90001bb[bd] T:eecc[adij]
+.STIN70001bb[lj] -= K:eecc[cdkl] T:eecc[cdkj]
+.STIN70001bb[lj] -= K:eecc[dckl] T:eecc[dckj]
+.STIN70001bb[lj] += X3[cdkl] X1[cdjk]
+.ITIN[abij] += .5*STIN70001bb[lj] T:eecc[abil]
+.STIN80001abab[klij] += K:eecc[cdkl] T:eecc[cdij]
+.STIN80001abab[klij] += K:eecc[dckl] T:eecc[dcij]
+.STIN80001baab[klij] -= K:eecc[cdlk] T:eecc[cdij]
+.STIN80001baab[klij] -= K:eecc[dclk] T:eecc[dcij]
+.ITIN[abij] += .125*STIN80001abab[klij] T:eecc[abkl]
+.ITIN[abij] -= .125*STIN80001baab[klij] T:eecc[ablk]
+.STIN90001bb[bd] -= K:eecc[cdkl] T:eecc[cbkl]
+.STIN90001bb[bd] -= K:eecc[cdlk] T:eecc[cblk]
+.STIN90001bb[bd] += X3[cdkl] X1[bckl]
+.ITIN[abij] += .5*STIN90001bb[bd] T:eecc[adij]
 .STIN100001aaaa[dali] += X3[cdkl] X1[acik]
 .STIN100001aaaa[dali] += K:eecc[dclk] T:eecc[acik]
 .STIN100001baab[dali] += K:eecc[dckl] T:eecc[acki]

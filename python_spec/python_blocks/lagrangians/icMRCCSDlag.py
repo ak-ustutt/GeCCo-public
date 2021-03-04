@@ -746,7 +746,7 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 
-filename = 'auicmrcc_mrccsd_11'
+filename = 'icmrcc_mrccsd_11'
 if doublet:
     filename = filename + '_doublet'
 filename = filename + '.itfaa'
@@ -759,7 +759,7 @@ TRANSLATE_ITF({
         MULTI:True,
         PROCESS:True,
         KEXT:False,
-        TASKS:True,
+        TASKS:False,
         INIT_RES:False,
         ITIN:True,
         RENAME:['MRCC_LAG','ECC','T1','T','T2g','T','O1','R','O2g','R','GAM0','Ym<RANK>']})
