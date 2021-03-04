@@ -70,8 +70,9 @@
         contr_tgt%nxidx = contr_src%nxidx
         if (contr_src%nxidx.gt.0)
      &       contr_tgt%result_string = contr_src%result_string
-        contr_tgt%total_sign = contr_src%total_sign
       end if
+      contr_tgt%total_sign = contr_src%total_sign
+      contr_tgt%eqvl_fact = contr_src%eqvl_fact
       
       return
       end

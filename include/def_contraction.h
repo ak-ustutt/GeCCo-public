@@ -95,6 +95,8 @@ c
      &       result_string(:)   ! index information for final result (= pairing for open lines)
         integer ::
      &       total_sign         ! sign for explicitly labelled diagram
+        real(8) ::
+     &       eqvl_fact          ! equivalent line factor for external post processing
 *----------------------------------------------------------------------*
 *	factorization info organized as:
 *         ((vertex1,vertex2,intermediate1),

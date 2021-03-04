@@ -916,8 +916,12 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
       ! Determine factor from equivalent lines
       item%fact = 1.0d+0
-      call itf_equiv_lines_factor(item%c, item%fact)
-
+      !! is now contained in fact_itf
+      !!call itf_equiv_lines_factor(item%c, item%fact)
+      
+      if (ntest>=100 .and. abs(item%fact-1d0).gt.1d-12)
+     &    write(item%out,'(1x,"eqv. lines factor was",f20.12)')item%fact
+      
       ! Get any remaining factors from GeCCo
       if (use_sign) item%fact = item%fact * contr_info%fact_itf
       ! note: fact_itf contains the general contraction prefactor as defined in GeCCo and a possible sign

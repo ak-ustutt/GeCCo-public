@@ -299,6 +299,7 @@ c dbg
 
       ! analyze the diagram and set helper variables required for ITF translator
       call contr_set_indices(contr,op_info)
+      call contr_get_eqv_line_factor(contr,op_info)
       
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET ',.true.,nlevel,ifact_best,fl_fact,
