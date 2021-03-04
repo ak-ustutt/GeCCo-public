@@ -51,8 +51,8 @@ store Ym1[pq]
 
 alloc Ym2[pqrs]
 load Dm2[pqrs]
-.Ym2[pqrs] += (2./6.)*Dm2[pqrs]
-.Ym2[pqrs] += (1./6.)*Dm2[pqsr]
+.Ym2[pqrs] -= (2./6.)*Dm2[pqrs]
+.Ym2[pqrs] -= (1./6.)*Dm2[pqsr]
 drop Dm2[pqrs]
 store Ym2[pqrs]
 
