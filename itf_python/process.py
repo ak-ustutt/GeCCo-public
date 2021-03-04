@@ -786,7 +786,7 @@ declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
     if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
-        or "Dm" in declare_ten[i] or "J:" in declare_ten[i] or "INTpp" in declare_ten[i]): continue
+        or "Dm" in declare_ten[i] or "J:" in declare_ten[i] or "INTpp" in declare_ten[i] or "Ym" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
@@ -809,6 +809,8 @@ if multi:
         print("tensor: f:ee[ab], f:ee", file=f2)
     if "f:cc" not in combined:
         print("tensor: f:cc[ij], f:cc", file=f2)
+    if "f:ec" not in combined:
+        print("tensor: f:ec[ai], f:ec", file=f2)
     if "J:eacc" not in combined:
         print("tensor: J:eacc[apij], J:eacc", file=f2)
     if "J:ecca" not in combined:
@@ -911,10 +913,11 @@ if singles:
 if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
-    if "Ym1" not in combined:
-        print("tensor: Ym1[pq],   !Create{type:disk}",file=f2)
-    if "Ym2" not in combined:
-        print("tensor: Ym2[pqrs], !Create{type:disk}",file=f2)
+    #if "Ym1" not in combined:
+    print("tensor: Ym1[pq], Ym1",file=f2)
+    #if "Ym2" not in combined:
+    print("tensor: Ym2[pqrs], Ym2",file=f2)
+    print(file=f2)
 
 else:
     print_code_block('single_ref/declare_tensors', gecco, f2)
