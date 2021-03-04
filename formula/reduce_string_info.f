@@ -176,7 +176,8 @@ c     dbg
         contr_red%nxidx = contr%nxidx
       end if
       contr_red%total_sign = contr%total_sign
-
+      contr_red%eqvl_fact = contr%eqvl_fact
+      
       contr_red%index_info = .true.
       
       end

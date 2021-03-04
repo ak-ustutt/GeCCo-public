@@ -527,8 +527,8 @@ c     &        'operator with zero length?')
           if (reo_op1op2) command = command_bc_reo
         else
           label = op_arr(contr%idx_res)%op%name
-          fact = bc_sign*contr%fac
-          fact_itf = dble(contr%total_sign)*contr%fac
+          fact = bc_sign*contr%fac      
+          fact_itf = dble(contr%total_sign)*contr%fac*contr%eqvl_fact
           iblkop1op2 = contr%iblk_res
           command = command_add_bc
           if (reo_op1op2) command = command_add_bc_reo

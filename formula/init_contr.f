@@ -38,6 +38,7 @@
       contr%nidx = 0
       contr%nxidx = 0
       contr%total_sign = 0
+      contr%eqvl_fact = 1d0
       
       return
       end
