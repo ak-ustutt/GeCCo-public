@@ -256,6 +256,18 @@ declare_existing_tensors(declare_ten, "K-integral tensors", "K")
 # If not declared already, declare integrals needed in calculating fock matricies etc.
 combined = '\t'.join(declare_ten)
 if multi:
+    if "f:ac" not in combined:
+        print("tensor: f:ac[pi], f:ac", file=f2)
+    if "f:ea" not in combined:
+        print("tensor: f:ea[ap], f:ea", file=f2)
+    if "f:aa" not in combined:
+        print("tensor: f:aa[pq], f:aa", file=f2)
+    if "f:ee" not in combined:
+        print("tensor: f:ee[ab], f:ee", file=f2)
+    if "f:cc" not in combined:
+        print("tensor: f:cc[ij], f:cc", file=f2)
+    if "f:ec" not in combined:
+        print("tensor: f:ec[ai], f:ec", file=f2)
     if "J:eacc" not in combined:
         print("tensor: J:eacc[apij], J:eacc", file=f2)
     if "J:ecca" not in combined:
@@ -272,10 +284,20 @@ if multi:
         print("tensor: J:ccca[ijkp], J:ccca", file=f2)
     if "J:eccc" not in combined:
         print("tensor: J:eccc[aijk], J:eccc", file=f2)
+    if "J:eecc" not in combined:
+        print("tensor: J:eecc[abij], J:eecc", file=f2)
+    if "J:eeaa" not in combined:
+        print("tensor: J:eeaa[abpq], J:eeaa", file=f2)
+    if "K:eeaa" not in combined:
+        print("tensor: K:eeaa[abpq], K:eeaa", file=f2)
     if "K:ccaa" not in combined:
         print("tensor: K:ccaa[ijpq], K:ccaa", file=f2)
     if "K:ecaa" not in combined:
         print("tensor: K:ecaa[aipq], K:ecaa", file=f2)
+    if "K:cccc" not in combined:
+        print("tensor: K:cccc[ijkl], K:cccc", file=f2)
+    if "K:aaaa" not in combined:
+        print("tensor: K:aaaa[pqrs], K:aaaa", file=f2)
     print("", file=f2)
 
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
@@ -320,8 +342,12 @@ for i in range(0, len(declare_ten)):
         gindex = gindex.split(':')[1]
         #print("tensor: R%-18s" % (":"+gindex+"["+ declare_ten[i].split('[')[1] + ", R:" + gindex), file=f2)
         print("tensor: R:" + gindex + "[" + declare_ten[i].split('[')[1] + ", " + "R:" + gindex, file=f2)
-        init.append("R:"+gindex)
-        save.append("R:"+gindex)
+        init.append("R:" + gindex + "[" + declare_ten[i].split('[')[1])
+        save.append("R:" + gindex + "[" + declare_ten[i].split('[')[1])
+
+        # Add R to declare tensor
+        declare_ten.append("R:"+gindex+"[]")
+
     elif "R" in declare_ten[i]:
         print("tensor: " + declare_ten[i] + ", " + declare_ten[i].split('[')[0], file=f2)
         init.append(declare_ten[i])
@@ -378,8 +404,10 @@ if singles:
 if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
-    if "Ym1" in combined:
-        print("tensor: Ym1[pp], !Create{type:disk}",file=f2)
+    #if "Ym1" in combined:
+    print("tensor: Ym1[pp], Ym1",file=f2)
+    #if "Ym2" in combined:
+    print("tensor: Ym2[pppp], Ym2",file=f2)
 
 else:
     print_code_block('single_ref/declare_tensors', gecco, f2)
@@ -393,7 +421,10 @@ for i in range(0, len(declare_ten)):
         if ("[]" in declare_ten[i]):
             print("tensor: %-18s !Create{type:scalar}" % (declare_ten[i] + ","), file=f2)
         else:
-            print("tensor: %-18s !Create{type:plain}" % (declare_ten[i] + ","), file=f2)
+            # TODO: possible bug is ItfTasks.cpp, it stores a plain tensor. For now
+            # declare everything as disk.
+            #print("tensor: %-18s !Create{type:plain}" % (declare_ten[i] + ","), file=f2)
+            print("tensor: %-18s !Create{type:disk}" % (declare_ten[i] + ","), file=f2)
         init.append(declare_ten[i])
 
 

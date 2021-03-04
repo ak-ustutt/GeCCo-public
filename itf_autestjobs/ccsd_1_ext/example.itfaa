@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 09-02-2021 12:31
+// Created on: 04-03-2021 12:26
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -69,75 +69,75 @@ tensor: C[abij],           !Create{type:plain}
 
 
 // Intermediates
-tensor: X1[baji],          !Create{type:plain}
-tensor: X2[abij],          !Create{type:plain}
-tensor: X3[bkji],          !Create{type:plain}
-tensor: X4[acbj],          !Create{type:plain}
-tensor: STIN80001aa[ji],   !Create{type:plain}
-tensor: STIN90001aa[ki],   !Create{type:plain}
-tensor: STIN100001aa[ac],  !Create{type:plain}
-tensor: X5[bcjk],          !Create{type:plain}
-tensor: STIN110001aa[ki],  !Create{type:plain}
-tensor: STIN120001aaaa[bkji], !Create{type:plain}
-tensor: STIN120001abba[bkji], !Create{type:plain}
-tensor: STIN120001baba[bkji], !Create{type:plain}
-tensor: STIN130001aa[bj],  !Create{type:plain}
-tensor: STIN130001bb[bj],  !Create{type:plain}
-tensor: STIN140001aa[ck],  !Create{type:plain}
-tensor: STIN140002aa[ki],  !Create{type:plain}
-tensor: ITIN[abij],        !Create{type:plain}
-tensor: STIN230001bb[lj],  !Create{type:plain}
-tensor: STIN240001abab[klij], !Create{type:plain}
-tensor: STIN240001baab[klij], !Create{type:plain}
-tensor: STIN250001bb[bd],  !Create{type:plain}
-tensor: STIN260001aaaa[dali], !Create{type:plain}
-tensor: STIN260001baab[dali], !Create{type:plain}
-tensor: STIN260001baba[dali], !Create{type:plain}
-tensor: STIN270001abab[blji], !Create{type:plain}
-tensor: STIN280001baab[akji], !Create{type:plain}
-tensor: STIN280001baba[akji], !Create{type:plain}
-tensor: STIN290001baab[akji], !Create{type:plain}
-tensor: STIN300001bb[kj],  !Create{type:plain}
-tensor: STIN310001baab[alji], !Create{type:plain}
-tensor: STIN310001baba[alji], !Create{type:plain}
-tensor: STIN320001abab[klij], !Create{type:plain}
-tensor: STIN320001baab[klij], !Create{type:plain}
-tensor: STIN330001bb[kj],  !Create{type:plain}
-tensor: STIN340001baab[akji], !Create{type:plain}
-tensor: STIN350001abab[cbkj], !Create{type:plain}
-tensor: STIN350001abba[cbkj], !Create{type:plain}
-tensor: STIN350001bbbb[cbkj], !Create{type:plain}
-tensor: STIN360001bb[bc],  !Create{type:plain}
-tensor: STIN370001baab[klij], !Create{type:plain}
-tensor: STIN370001baba[klij], !Create{type:plain}
-tensor: STIN370002abab[blji], !Create{type:plain}
-tensor: STIN370002abba[blji], !Create{type:plain}
-tensor: STIN380001baab[daki], !Create{type:plain}
-tensor: STIN380001baba[daki], !Create{type:plain}
-tensor: STIN380002baab[akji], !Create{type:plain}
-tensor: STIN380002baba[akji], !Create{type:plain}
-tensor: STIN390001baab[klij], !Create{type:plain}
-tensor: STIN390002abab[blji], !Create{type:plain}
-tensor: STIN400001abab[clkj], !Create{type:plain}
-tensor: STIN400001abba[clkj], !Create{type:plain}
-tensor: STIN400001bbbb[clkj], !Create{type:plain}
-tensor: STIN400002baab[alji], !Create{type:plain}
-tensor: STIN400002baba[alji], !Create{type:plain}
-tensor: STIN410001bb[cl],  !Create{type:plain}
-tensor: STIN410002baab[alji], !Create{type:plain}
-tensor: STIN420001abab[dlkj], !Create{type:plain}
-tensor: STIN420001baab[dlkj], !Create{type:plain}
-tensor: STIN420002abab[klij], !Create{type:plain}
-tensor: STIN420002baab[klij], !Create{type:plain}
-tensor: STIN430001bb[dk],  !Create{type:plain}
-tensor: STIN430002bb[kj],  !Create{type:plain}
-tensor: STIN440001baab[dlki], !Create{type:plain}
-tensor: STIN440001baba[dlki], !Create{type:plain}
-tensor: STIN440002baab[klij], !Create{type:plain}
-tensor: STIN440002baba[klij], !Create{type:plain}
-tensor: STIN440003abab[blji], !Create{type:plain}
-tensor: STIN440003abba[blji], !Create{type:plain}
-tensor: STIN480001aa[bj],  !Create{type:plain}
+tensor: X1[baji],          !Create{type:disk}
+tensor: X2[abij],          !Create{type:disk}
+tensor: X3[bkji],          !Create{type:disk}
+tensor: X4[acbj],          !Create{type:disk}
+tensor: STIN80001aa[ji],   !Create{type:disk}
+tensor: STIN90001aa[ki],   !Create{type:disk}
+tensor: STIN100001aa[ac],  !Create{type:disk}
+tensor: X5[bcjk],          !Create{type:disk}
+tensor: STIN110001aa[ki],  !Create{type:disk}
+tensor: STIN120001aaaa[bkji], !Create{type:disk}
+tensor: STIN120001abba[bkji], !Create{type:disk}
+tensor: STIN120001baba[bkji], !Create{type:disk}
+tensor: STIN130001aa[bj],  !Create{type:disk}
+tensor: STIN130001bb[bj],  !Create{type:disk}
+tensor: STIN140001aa[ck],  !Create{type:disk}
+tensor: STIN140002aa[ki],  !Create{type:disk}
+tensor: ITIN[abij],        !Create{type:disk}
+tensor: STIN230001bb[lj],  !Create{type:disk}
+tensor: STIN240001abab[klij], !Create{type:disk}
+tensor: STIN240001baab[klij], !Create{type:disk}
+tensor: STIN250001bb[bd],  !Create{type:disk}
+tensor: STIN260001aaaa[dali], !Create{type:disk}
+tensor: STIN260001baab[dali], !Create{type:disk}
+tensor: STIN260001baba[dali], !Create{type:disk}
+tensor: STIN270001abab[blji], !Create{type:disk}
+tensor: STIN280001baab[akji], !Create{type:disk}
+tensor: STIN280001baba[akji], !Create{type:disk}
+tensor: STIN290001baab[akji], !Create{type:disk}
+tensor: STIN300001bb[kj],  !Create{type:disk}
+tensor: STIN310001baab[alji], !Create{type:disk}
+tensor: STIN310001baba[alji], !Create{type:disk}
+tensor: STIN320001abab[klij], !Create{type:disk}
+tensor: STIN320001baab[klij], !Create{type:disk}
+tensor: STIN330001bb[kj],  !Create{type:disk}
+tensor: STIN340001baab[akji], !Create{type:disk}
+tensor: STIN350001abab[cbkj], !Create{type:disk}
+tensor: STIN350001abba[cbkj], !Create{type:disk}
+tensor: STIN350001bbbb[cbkj], !Create{type:disk}
+tensor: STIN360001bb[bc],  !Create{type:disk}
+tensor: STIN370001baab[klij], !Create{type:disk}
+tensor: STIN370001baba[klij], !Create{type:disk}
+tensor: STIN370002abab[blji], !Create{type:disk}
+tensor: STIN370002abba[blji], !Create{type:disk}
+tensor: STIN380001baab[daki], !Create{type:disk}
+tensor: STIN380001baba[daki], !Create{type:disk}
+tensor: STIN380002baab[akji], !Create{type:disk}
+tensor: STIN380002baba[akji], !Create{type:disk}
+tensor: STIN390001baab[klij], !Create{type:disk}
+tensor: STIN390002abab[blji], !Create{type:disk}
+tensor: STIN400001abab[clkj], !Create{type:disk}
+tensor: STIN400001abba[clkj], !Create{type:disk}
+tensor: STIN400001bbbb[clkj], !Create{type:disk}
+tensor: STIN400002baab[alji], !Create{type:disk}
+tensor: STIN400002baba[alji], !Create{type:disk}
+tensor: STIN410001bb[cl],  !Create{type:disk}
+tensor: STIN410002baab[alji], !Create{type:disk}
+tensor: STIN420001abab[dlkj], !Create{type:disk}
+tensor: STIN420001baab[dlkj], !Create{type:disk}
+tensor: STIN420002abab[klij], !Create{type:disk}
+tensor: STIN420002baab[klij], !Create{type:disk}
+tensor: STIN430001bb[dk],  !Create{type:disk}
+tensor: STIN430002bb[kj],  !Create{type:disk}
+tensor: STIN440001baab[dlki], !Create{type:disk}
+tensor: STIN440001baba[dlki], !Create{type:disk}
+tensor: STIN440002baab[klij], !Create{type:disk}
+tensor: STIN440002baba[klij], !Create{type:disk}
+tensor: STIN440003abab[blji], !Create{type:disk}
+tensor: STIN440003abba[blji], !Create{type:disk}
+tensor: STIN480001aa[bj],  !Create{type:disk}
 
 
 ---- code("Init_Amplitudes")
@@ -199,8 +199,8 @@ drop T:eecc[abij]
 
 
 ---- task("Residual")
-init R:ec[ai], R:eecc, ECC[], X1[baji], X2[abij], X3[bkji], X4[acbj], STIN80001aa[ji], STIN90001aa[ki], STIN100001aa[ac], X5[bcjk], STIN110001aa[ki], STIN120001aaaa[bkji], STIN120001abba[bkji], STIN120001baba[bkji], STIN130001aa[bj], STIN130001bb[bj], STIN140001aa[ck], STIN140002aa[ki], ITIN[abij], STIN230001bb[lj], STIN240001abab[klij], STIN240001baab[klij], STIN250001bb[bd], STIN260001aaaa[dali], STIN260001baab[dali], STIN260001baba[dali], STIN270001abab[blji], STIN280001baab[akji], STIN280001baba[akji], STIN290001baab[akji], STIN300001bb[kj], STIN310001baab[alji], STIN310001baba[alji], STIN320001abab[klij], STIN320001baab[klij], STIN330001bb[kj], STIN340001baab[akji], STIN350001abab[cbkj], STIN350001abba[cbkj], STIN350001bbbb[cbkj], STIN360001bb[bc], STIN370001baab[klij], STIN370001baba[klij], STIN370002abab[blji], STIN370002abba[blji], STIN380001baab[daki], STIN380001baba[daki], STIN380002baab[akji], STIN380002baba[akji], STIN390001baab[klij], STIN390002abab[blji], STIN400001abab[clkj], STIN400001abba[clkj], STIN400001bbbb[clkj], STIN400002baab[alji], STIN400002baba[alji], STIN410001bb[cl], STIN410002baab[alji], STIN420001abab[dlkj], STIN420001baab[dlkj], STIN420002abab[klij], STIN420002baab[klij], STIN430001bb[dk], STIN430002bb[kj], STIN440001baab[dlki], STIN440001baba[dlki], STIN440002baab[klij], STIN440002baba[klij], STIN440003abab[blji], STIN440003abba[blji], STIN480001aa[bj]
-save R:ec[ai], R:eecc, ECC[]
+init R:ec[ai], R:eecc[abij], ECC[], X1[baji], X2[abij], X3[bkji], X4[acbj], STIN80001aa[ji], STIN90001aa[ki], STIN100001aa[ac], X5[bcjk], STIN110001aa[ki], STIN120001aaaa[bkji], STIN120001abba[bkji], STIN120001baba[bkji], STIN130001aa[bj], STIN130001bb[bj], STIN140001aa[ck], STIN140002aa[ki], ITIN[abij], STIN230001bb[lj], STIN240001abab[klij], STIN240001baab[klij], STIN250001bb[bd], STIN260001aaaa[dali], STIN260001baab[dali], STIN260001baba[dali], STIN270001abab[blji], STIN280001baab[akji], STIN280001baba[akji], STIN290001baab[akji], STIN300001bb[kj], STIN310001baab[alji], STIN310001baba[alji], STIN320001abab[klij], STIN320001baab[klij], STIN330001bb[kj], STIN340001baab[akji], STIN350001abab[cbkj], STIN350001abba[cbkj], STIN350001bbbb[cbkj], STIN360001bb[bc], STIN370001baab[klij], STIN370001baba[klij], STIN370002abab[blji], STIN370002abba[blji], STIN380001baab[daki], STIN380001baba[daki], STIN380002baab[akji], STIN380002baba[akji], STIN390001baab[klij], STIN390002abab[blji], STIN400001abab[clkj], STIN400001abba[clkj], STIN400001bbbb[clkj], STIN400002baab[alji], STIN400002baba[alji], STIN410001bb[cl], STIN410002baab[alji], STIN420001abab[dlkj], STIN420001baab[dlkj], STIN420002abab[klij], STIN420002baab[klij], STIN430001bb[dk], STIN430002bb[kj], STIN440001baab[dlki], STIN440001baba[dlki], STIN440002baab[klij], STIN440002baba[klij], STIN440003abab[blji], STIN440003abba[blji], STIN480001aa[bj]
+save R:ec[ai], R:eecc[abij], ECC[]
 .R:ec[ai] += f:ec[ai]
 .R:ec[ai] -= f:cc[ji] T:ec[aj]
 .R:ec[ai] += f:ee[ab] T:ec[bi]

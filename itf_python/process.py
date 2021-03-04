@@ -809,6 +809,8 @@ if multi:
         print("tensor: f:ee[ab], f:ee", file=f2)
     if "f:cc" not in combined:
         print("tensor: f:cc[ij], f:cc", file=f2)
+    if "f:ec" not in combined:
+        print("tensor: f:ec[ai], f:ec", file=f2)
     if "J:eacc" not in combined:
         print("tensor: J:eacc[apij], J:eacc", file=f2)
     if "J:ecca" not in combined:

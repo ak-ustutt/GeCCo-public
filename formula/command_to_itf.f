@@ -4336,7 +4336,6 @@ c       end if
       item%idx3=trim(s3)
       item%fact = item%fact * p_factor
 
-
       call deinit_index_str(str1)
       call deinit_index_str(str2)
       call deinit_index_str(str3)

@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 09-02-2021 12:31
+// Created on: 04-03-2021 12:26
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -55,17 +55,17 @@ tensor: C[abij],           !Create{type:plain}
 
 
 // Intermediates
-tensor: ITIN[abij],        !Create{type:plain}
-tensor: X1[acik],          !Create{type:plain}
-tensor: X2[cbkj],          !Create{type:plain}
-tensor: X3[cdkl],          !Create{type:plain}
-tensor: STIN70001bb[lj],   !Create{type:plain}
-tensor: STIN80001abab[klij], !Create{type:plain}
-tensor: STIN80001baab[klij], !Create{type:plain}
-tensor: STIN90001bb[bd],   !Create{type:plain}
-tensor: STIN100001aaaa[dali], !Create{type:plain}
-tensor: STIN100001baab[dali], !Create{type:plain}
-tensor: STIN100001baba[dali], !Create{type:plain}
+tensor: ITIN[abij],        !Create{type:disk}
+tensor: X1[acik],          !Create{type:disk}
+tensor: X2[cbkj],          !Create{type:disk}
+tensor: X3[cdkl],          !Create{type:disk}
+tensor: STIN70001bb[lj],   !Create{type:disk}
+tensor: STIN80001abab[klij], !Create{type:disk}
+tensor: STIN80001baab[klij], !Create{type:disk}
+tensor: STIN90001bb[bd],   !Create{type:disk}
+tensor: STIN100001aaaa[dali], !Create{type:disk}
+tensor: STIN100001baab[dali], !Create{type:disk}
+tensor: STIN100001baba[dali], !Create{type:disk}
 
 
 ---- code("Init_Amplitudes")
@@ -118,8 +118,8 @@ drop T:eecc[abij]
 
 
 ---- task("Residual")
-init R:eecc, ECC[], ITIN[abij], X1[acik], X2[cbkj], X3[cdkl], STIN70001bb[lj], STIN80001abab[klij], STIN80001baab[klij], STIN90001bb[bd], STIN100001aaaa[dali], STIN100001baab[dali], STIN100001baba[dali]
-save R:eecc, ECC[]
+init R:eecc[abij], ECC[], ITIN[abij], X1[acik], X2[cbkj], X3[cdkl], STIN70001bb[lj], STIN80001abab[klij], STIN80001baab[klij], STIN90001bb[bd], STIN100001aaaa[dali], STIN100001baab[dali], STIN100001baba[dali]
+save R:eecc[abij], ECC[]
 .ITIN[abij] += .5*K:eecc[abij]
 .ITIN[abij] -= f:cc[kj] T:eecc[abik]
 .ITIN[abij] += f:ee[bc] T:eecc[acij]
