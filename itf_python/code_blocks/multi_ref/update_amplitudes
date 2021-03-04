@@ -57,21 +57,18 @@ store Nrm1[]
 load Nrm2[]
 
 // S1
-load T:eaac[apqi]
-load OT:eaac[apqi], OT:eaca[apiq], S2:S1[pqrs], S4x:S1[pqrs]
-.T:eaac[arsi] += OT:eaac[apqi] S2:S1[pqrs]
-.T:eaac[arsi] += OT:eaca[apiq] S4x:S1[pqrs]
-.Nrm2[] += T:eaac[apqi] T:eaac[apqi]
-drop S4x:S1[pqrs], S2:S1[pqrs], OT:eaca[apiq], OT:eaac[apqi]
-store T:eaac[apqi]
-
-load T:eaca[apiq]
-load OT:eaca[apiq], OT:eaac[apqi], S2x:S1[pqrs], S4:S1[prqs]
-.T:eaca[aris] += OT:eaac[apqi] S2x:S1[pqrs]
-.T:eaca[aris] += OT:eaca[apiq] S4:S1[pqrs]
-.Nrm2[] += T:eaca[apiq] T:eaca[apiq]
-drop S4:S1[prqs], S2x:S1[pqrs], OT:eaac[apqi], OT:eaca[apiq]
+load T:eaac[apqi], T:eaca[apiq]
+load OT:eaac[apqi], OT:eaca[apiq] 
+load S2:S1[pqrs], S2x:S1[pqrs], S4:S1[pqrs], S4x:S1[pqrs]
+.T:eaac[arsi] += OT:eaac[apqi] (2*S2:S1[pqrs]+S4:S1[pqrs])
+.T:eaac[arsi] += OT:eaca[apiq] (2*S4x:S1[prqs]+S2x:S1[prqs])
+.T:eaca[aris] += OT:eaac[apqi] (S2:S1[pqrs]+2*S4:S1[pqrs])
+.T:eaca[aris] += OT:eaca[apiq] (S4x:S1[pqrs]+2*S2x:S1[pqrs])
+.Nrm2[] += (2*T:eaac[apqi]-T:eaca[aqip]) T:eaac[apqi]
+drop S4x:S1[prqs], S4:S1[pqrs], S2x:S1[pqrs], S2:S1[pqrs]
+drop OT:eaca[apiq], OT:eaac[apqi]
 store T:eaca[apiq]
+store T:eaac[apqi]
 
 // S2
 load T:eacc[apij]
