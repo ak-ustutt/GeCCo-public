@@ -56,22 +56,18 @@ DEF_ME_LIST({LIST:'ME_INTpp',OPERATOR:'INTpp',IRREP:1,'2MS':0,AB_SYM:+1})
 # for proper T1/T2 orthogonalization, declare T2 like this:
 #T2_shape = 'V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
 #T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|VV,VH|PV,HV'
-T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'
+#T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'
+T2_shape = 'PP,HH'
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
 CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
 
-T1_shape = 'P,H|P,V|V,H'
-#T1_shape = 'P,H'
+#T1_shape = 'P,H|P,V|V,H'
+T1_shape = 'P,H'
 DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
 CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
 
-T1t_shape = 'P,H'
-DEF_OP_FROM_OCC({LABEL:'T1t',DESCR:T1t_shape})
-CLONE_OPERATOR({LABEL:'L1t',TEMPLATE:'T1t',ADJOINT:True})
 
-
-
-doublet = True
+doublet = False
 if doublet:
     # Every term in the Lagrangian is enclosed by <C0^+ and C0>
     def _refexp(x):
@@ -89,7 +85,7 @@ if doublet:
 
     LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L1_refexp("H"))
     LAG_A2.append(_L2_refexp("H"))
-    
+
     LAG_E.append(_refexp("[H,T1n]"))
     LAG_E.append(_refexp("[H,T2]"))
 
@@ -100,6 +96,10 @@ if doublet:
     LAG_A2.append(_L1_refexp("[H,T2]"))
     LAG_A2.append(_L2_refexp("[H,T1n]"))
     LAG_A2.append(_L2_refexp("[H,T2]"))
+
+    LAG_E.set_rule()
+    LAG_A1.set_rule()
+    LAG_A2.set_rule()
 
 else:
 
@@ -123,33 +123,28 @@ else:
         return _refexp("-LAM1(" + x + ")")
 
     LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
-    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
+    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H-H"))
     #LAG_A1.append(_L4_refexp("H"))
 
     LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
     #LAG_A2.append(_L3_refexp("H"))
 
-    LAG_E.append(_refexp("[H,T1n]"))
-    LAG_E.append(_refexp("[H,T2]"))
+    #LAG_E.append(_refexp("[H,T1n]"))
+    #LAG_E.append(_refexp("[H,T2]"))
+
     #LAG_E.append(_refexp("0.5*[[H,T1t],T1t]"))
     #LAG_E.append(_refexp("0.5*[[H,T1n],T2]"))
     #LAG_E.append(_refexp("0.5*[[H,T2],T1n]"))
     #LAG_E.append(_refexp("0.5*[[H,T2],T2]"))
 
-    # Error with these terms
-    #LAG_E.append(_refexp("0.5*[[H,T2g],T1]"))
-    #LAG_E.append(_refexp("0.5*[[H,T1],T2g]"))
-
-    # Rank 6 intermediate - missing spin case?
-    #LAG_E.append(_refexp("0.5*[[H,T2g],T2g]"))
-
-
-    LAG_A1.append(_L1_refexp("[H,T1n]"))
-    LAG_A1.append(_L1_refexp("[H,T2]"))
+    #LAG_A1.append(_L1_refexp("[H,T1n]"))
+    #LAG_A1.append(_L1_refexp("[H,T2]"))
     #LAG_A1.append(_L1_refexp("(1/2)*[[H,T1],T2g]"))
 
-    LAG_A2.append(_L2_refexp("[H,T1n]"))
-    LAG_A2.append(_L2_refexp("[H,T2]"))
+    #LAG_A2.append(_L1_refexp("[H,T1n]"))
+    #LAG_A2.append(_L1_refexp("[H,T2]"))
+    #LAG_A2.append(_L2_refexp("[H,T1n]"))
+    #LAG_A2.append(_L2_refexp("[H,T2]"))
     #LAG_A2.append(_L2_refexp("(1/2)*[[H,T2g],T2g]"))
 
 
@@ -210,14 +205,11 @@ else:
     #LAG_A2.append(_L2_refexp("(1/2)*(T1 *T2g*H)"))
     #LAG_A2.append(_L2_refexp("(1/2)*(T2g*T1 *H)"))
     #LAG_A2.append(_L2_refexp("(1/2)*(T2g*T2g*H)"))
-#### end of if (doublet)
 
+    LAG_E.set_rule()
+    LAG_A1.set_rule()
+    LAG_A2.set_rule()
 
-LAG_E.set_rule()
-LAG_A1.set_rule()
-LAG_A2.set_rule()
-
-### careful: if is already closed here
     # E ============================
     # Using fomula above
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
@@ -237,12 +229,12 @@ LAG_A2.set_rule()
     #                   IDX_SV   :[1, 2, 3, 4],
     #                   CONNECT:[2,3],
     #                   LABEL_DESCR:["3,,V,H"]})
-    #
-    #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
-    #                   OPERATORS:['C0^+','H','T2g','C0'],
-    #                   IDX_SV   :[1, 2, 3, 4],
-    #                   CONNECT:[2,3],
-    #                   LABEL_DESCR:["3,,PP,HH"]})
+
+    EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
+                       OPERATORS:['C0^+','H','T2g','C0'],
+                       IDX_SV   :[1, 2, 3, 4],
+                       CONNECT:[2,3],
+                       LABEL_DESCR:["3,,PP,HH"]})
 
     #EXPAND_OP_PRODUCT({LABEL:'FORM_MRCC_LAG_E',NEW:False,OP_RES:'MRCC_LAG',
     #                   OPERATORS:['C0^+','H','T2g','C0'],
@@ -697,11 +689,6 @@ REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1n','
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
 
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1t','T1']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1t','T1', 'L1n', 'LAM1']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1t','T1']})
-
-
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
@@ -755,9 +742,15 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 
+filename = 'icmrcc_mrccsd_11'
+if doublet:
+    filename = filename + '_doublet'
+filename = filename + '.itfaa'
+
+
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:'icmrcc_mrccsd_11_doublet.itfaa',
+        OUTPUT:filename,
         TITLE:'icmrcc_mrccsd_11_doublet.formulae',
         MULTI:True,
         PROCESS:True,
