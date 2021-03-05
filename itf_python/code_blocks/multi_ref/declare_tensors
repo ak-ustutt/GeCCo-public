@@ -58,6 +58,25 @@ tensor: S4x:S1[pppp],    S4x:S1
 tensor: S2:S2[pp],       S2:S2
 tensor: S2:P0[pppp],     S2:P0
 tensor: S2:P1[pp],       S2:P1
+
+// X transformation tensors
+tensor: X1:I1[pp],       X1:I1
+tensor: X2:I1[pppppp],   X2:I1
+tensor: X3:I1[pppp],     X3:I1
+tensor: X2:I2[pppp],     X2:I2
+tensor: X1:S0[pp],       X1:S0
+tensor: X2:S0[pppppp],   X2:S0
+tensor: X3:S0[pppp],     X3:S0
+tensor: X2:S1[pppp],     X2:S1
+tensor: X2x:S1[pppp],    X2x:S1
+tensor: X3:S1[pp],       X3:S1
+tensor: X3x:S1[pp],      X3x:S1
+tensor: X4:S1[pppp],     X4:S1
+tensor: X4x:S1[pppp],    X4x:S1
+tensor: X2:S2[pp],       X2:S2
+tensor: X2:P0[pppp],     X2:P0
+tensor: X2:P1[pp],       X2:P1
+
 tensor: I1[pppp], !Create{type:plain}
 tensor: I2[pppp], !Create{type:plain}
 tensor: I3[pppppp], !Create{type:plain}
