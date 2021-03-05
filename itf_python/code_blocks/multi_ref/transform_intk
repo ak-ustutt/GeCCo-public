@@ -1,0 +1,19 @@
+---- code("Transform_INTK")
+// transform intermediate for Kext into single block over internal orbitals
+alloc INTpp[abmn]
+load deltaci[im], deltaai[pm]
+load INTkx:eecc[abij], INTkx:eeac[abpi], INTkx:eeaa[abpq]
+alloc INTpp1[abmi]
+.INTpp1[abmj] += INTkx:eecc[abij] deltaci[im]
+.INTpp1[abmi] += INTkx:eeac[abpi] deltaai[pm]
+.INTpp[abmn] += INTpp1[abmj] deltaci[jn]
+drop INTpp1[abmi]
+alloc INTpp2[abmq]
+.INTpp2[abmq] += INTkx:eeaa[abpq] deltaai[pm]
+.INTpp[abmn] += INTpp2[abmq] deltaai[qn]
+drop INTpp2[abmq]
+drop INTkx:eeaa[abpq], INTkx:eeac[abpi], INTkx:eecc[abij]
+drop deltaai[pm], deltaci[im]
+store INTpp[abmn]
+
+

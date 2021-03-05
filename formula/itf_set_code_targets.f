@@ -60,7 +60,7 @@
           ncodes = ncodes+1
         else
           if (ii==1) then
-            write(lulog,*) 'Found:', item
+            write(lulog,*) 'Found:', trim(item)
             call quit(0,i_am,'First entry must be <code name>')
           end if
           ntargets = ntargets+1
@@ -89,7 +89,7 @@
           idxtarget = idxtarget+1
           idxop = idx_oplist2(item,op_info)
           if (idxop.le.0) then
-            write(lulog,*) 'Found:', item
+            write(lulog,*) 'Found:', trim(item)
             call quit(0,i_am,'Operator not on list')
           end if
           itf_targets%idx_target(idxtarget) = idxop

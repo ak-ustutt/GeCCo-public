@@ -2020,7 +2020,9 @@ c     &                      item%cntr(4),item%out)
 
          itf_line='.'//trimal(nres)//
      &      '['//trim(new_idx3)//'] '//equal_op//' '//
-     &      trim(sfact_star)//'K4E'//trim(adjustl(k4e_no))//
+c     &      trim(sfact_star)//'K4E'//trim(adjustl(k4e_no))//
+c without number:
+     &      trim(sfact_star)//'K4E'//
      &      '['//trim(new_idx3)//']'
       end if
 

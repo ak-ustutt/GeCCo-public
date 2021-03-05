@@ -1,13 +1,19 @@
 ---- code("Transform_K")
-alloc K4E1[abij], K4E2[abpi]
-alloc INTpp1[abmi]
+// Transform output form Kext into separate blocks
+alloc K4E:eecc[abij], K4E:eeac[abpi], K4E:eeaa[abpq]
 load deltaci[im], deltaai[pm]
 load K4C[abmn]
+alloc INTpp1[abmi]
 .INTpp1[abmj] += K4C[abmn] deltaci[jn]
-.K4E1[abij] += INTpp1[abmj] deltaci[im]
-.K4E2[abpi] += INTpp1[abmi] deltaai[pm]
+.K4E:eecc[abij] += INTpp1[abmj] deltaci[im]
+.K4E:eeac[abpi] += INTpp1[abmi] deltaai[pm]
+drop INTpp1[abmi]
+alloc INTpp2[abnp]
+.INTpp2[abmq] += K4C[abmn] deltaai[qn]
+.K4E:eeaa[abpq] += INTpp2[abmq] deltaai[pm]
+drop INTpp2[abnp]
 drop K4C[abmn]
 drop deltaai[pm], deltaci[im]
-drop INTpp1[abmi]
-store K4E2[abpi], K4E1[abij]
+store K4E:eeaa[abpq], K4E:eeac[abpi], K4E:eecc[abij]
+
 

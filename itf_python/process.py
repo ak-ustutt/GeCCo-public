@@ -18,8 +18,8 @@ class itf_line:
     def rename_line(self):
         """Add generic index to tensors within a line"""
         # Need to replace residual and amplitude (R and T) tensor names
-        # with there names defined in C++, ie. R:eecc
-        names = ["R", "G", "T", "K", "f"]
+        # with their names defined in C++, ie. R:eecc
+        names = ["R", "G", "T", "K", "f", "K4E", "INTkx"]
         for i in range(0, len(names)):
             self.rename_line_names(names[i])
         self.line = " ".join(self.parts)
@@ -65,6 +65,8 @@ def change_line(line_o):
     change_line_names("K", line_o, words)
     change_line_names("J", line_o, words)
     change_line_names("f", line_o, words)
+    change_line_names("K4E", line_o, words)
+    change_line_names("INTkx", line_o, words)
     line = " ".join(words)
     return line
 
@@ -839,7 +841,7 @@ for i in range(0, len(declare_ten)):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
         print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
-
+        
 # Print already existing tensor, ie. don't need !Create{type:disk}
 declare_existing_tensors(declare_ten, "K-integral tensors", "K")
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
@@ -847,6 +849,12 @@ declare_existing_tensors(declare_ten, "J-integral tensors", "J")
 # If not declared already, declare integrals needed in calculating fock matricies etc.
 combined = '\t'.join(declare_ten)
 if multi:
+    if ("INTkx:eecc" not in combined):
+        print("tensor: INTkx:eecc[abij], !Create{type:disk}", file=f2)
+    if ("INTkx:eeac" not in combined):
+        print("tensor: INTkx:eeac[abpj], !Create{type:disk}", file=f2)
+    if ("INTkx:eeaa" not in combined):
+        print("tensor: INTkx:eeaa[abpq], !Create{type:disk}", file=f2)
     if "f:ac" not in combined:
         print("tensor: f:ac[pi], f:ac", file=f2)
     if "f:ea" not in combined:
@@ -893,11 +901,24 @@ if multi:
 
 declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
 if multi:
+    if ("K4E:eecc" not in combined):
+        print("tensor: K4E:eecc[abij], K4E:eecc", file=f2)
+    if ("K4E:eeac" not in combined):
+        print("tensor: K4E:eeac[abpj], K4E:eeac", file=f2)
+    if ("K4E:eeaa" not in combined):
+        print("tensor: K4E:eeaa[abpq], K4E:eeaa", file=f2)
     print("tensor: K4C[abmn], K4C", file=f2)
 
 # if -kext flag was set
 if (kext):
     declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
+    if multi:
+        print("tensor: INTpp[abmn], INTpp", file=f2)
+        print("tensor: INTpp1[abmi], !Create{type:disk}, INTpp1", file=f2)
+        print("tensor: INTpp2[abmq], !Create{type:disk}, INTpp2", file=f2)
+        print("", file=f2)
+        print("tensor: deltaai[pm], DeltaActInt", file=f2)
+        print("tensor: deltaci[im], DeltaCloInt", file=f2)
 else:
     print(file=f2)
     if multi:
@@ -962,9 +983,9 @@ if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
     #if "Ym1" not in combined:
-    print("tensor: Ym1[pq], Ym1",file=f2)
+    print("tensor: Ym1[pq],!Create{type:disk} Ym1",file=f2)
     #if "Ym2" not in combined:
-    print("tensor: Ym2[pqrs], Ym2",file=f2)
+    print("tensor: Ym2[pqrs],!Create{type:disk} Ym2",file=f2)
     print(file=f2)
 
 else:
@@ -1038,9 +1059,11 @@ if (not kext):
 #    print("store INTpp[abij]",file=f2)
 
 
-# Transform K ext from internal indicies to closed and active
+# Transform K ext from internal indicies to closed and active and back
 if multi:
+    print(file=f2)
     print_code_block('multi_ref/transform_k', gecco, f2)
+    print_code_block('multi_ref/transform_intk', gecco, f2)
 
 
 # Print out Init_Residual
