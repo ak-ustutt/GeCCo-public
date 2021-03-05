@@ -1,6 +1,7 @@
 *----------------------------------------------------------------------*
-      subroutine form_itf(f_input,name_out,form_out,multi,process,kext,
-     &                    tasks,init_res,itin,rename_list,nlist,op_info)
+      subroutine form_itf(f_input,name_out,form_out,
+     &                    multi,process,kext,tasks,init_res,itin,
+     &                    rename_list,nrlist,target_list,ntlist,op_info)
 *----------------------------------------------------------------------*
 *     Driver for outputing ITF algo code
 *----------------------------------------------------------------------*
@@ -30,9 +31,9 @@
      &     init_res,    ! Produce Init_residual algo code
      &     itin         ! Produce ITIN lines, or symmetrise residual at end
       integer, intent(in) ::
-     &     nlist
+     &     nrlist, ntlist
       character(len_command_par) ::
-     &     rename_list(nlist)
+     &     rename_list(nrlist), target_list(ntlist)
 
       type(filinf) ::
      &     fline,       ! Temporary file which contrains ITF binary contractions
@@ -42,6 +43,8 @@
      &     flist                ! Linked list of binary contractions
       type(tensor_names) ::
      &     itf_names    ! contains renaming information (processed from rename_list)
+      type(code_targets) ::
+     &     itf_targets  ! contains names of itf "codes" and the GeCCo targets that are grouped into a code
       logical ::
      &     print_form   ! If true, outputs GeCco formulae to file
       integer ::
@@ -74,7 +77,10 @@
       end if
 
       ! Set the rename list
-      call itf_set_tensor_names(itf_names,rename_list,nlist)
+      call itf_set_tensor_names(itf_names,rename_list,nrlist)
+
+      ! set the target list
+      call itf_set_code_targets(itf_targets,target_list,ntlist,op_info)
       
       ! Read in input formula
       call init_formula(flist)
@@ -92,7 +98,7 @@
 
       ! Translate formula list into ITF binary contractions
       call print_itf(fline%unit,flist,itin,op_info,print_form,
-     &               fform%unit,tasks,itf_names)
+     &               fform%unit,tasks,itf_names,itf_targets)
 
       call atim_csw(cpu,sys,wall)
       call prtim(lulog,'Time to process formulae',

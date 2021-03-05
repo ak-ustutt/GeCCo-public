@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine print_itf(itflog,fl_head,itin,op_info,print_form,
-     &                     formlog,tasks,itf_names)
+     &                     formlog,tasks,itf_names,itf_targets)
 *----------------------------------------------------------------------*
 *     Print ITF lines to itflog
 *----------------------------------------------------------------------*
@@ -21,6 +21,8 @@
      &     op_info                              ! Operator info for printing formulae
       type(tensor_names), intent(in) ::
      &     itf_names                            ! contains renaming information
+      type(code_targets), intent(in) ::
+     &     itf_targets                          ! contains info for generating ITF code sections
       logical, intent(in) ::
      &     itin,                                ! Create ITIN lines or symmetrise residual at the end
      &     print_form,                          ! Print to optional formulae file
@@ -28,11 +30,13 @@
 
       type(formula_item), pointer ::
      &     fl_item                              ! Current formula_item
+      type(operator), pointer ::
+     &     op
       integer ::
      &     counter(4), cnt                      ! Counter array, 1 helper variable
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN),         ! Store intermediate index-type (itype) info from previous line
-     &   i
+     &   ii, idx_code, idx
       type(x_inter) ::
      &   x_dict(MAXX)
       type(inter_spin_cases) ::
@@ -48,16 +52,18 @@
       counter(4) = 1    ! x intermediate
       inter_itype = 0
 
-      do i = 1, MAXX
-         x_dict(i)%label = ''
-         x_dict(i)%ops = 0
+      do ii = 1, MAXX
+         x_dict(ii)%label = ''
+         x_dict(ii)%ops = 0
       end do
 
-      do i = 1, MAX_SPIN_CASES
-         inter_spin_dict%names(i) = ''
+      do ii = 1, MAX_SPIN_CASES
+         inter_spin_dict%names(ii) = ''
       end do
       inter_spin_dict%ncase = 0
 
+      idx_code = 0
+      
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
@@ -112,6 +118,30 @@
             write(itflog,*) '[SYMMETRISE]',fl_item%target
             call warn('print_itf',
      &           'uncovered case appeared: [SYMMETRISE] ')
+         else if (fl_item%command==command_set_target_init ) then
+            ! try to find target on target list
+            idx = -1
+            do ii = 1, itf_targets%ntargets
+              if (itf_targets%idx_target(ii)==fl_item%target) then
+                idx = ii
+                exit
+              end if
+            end do
+            if (idx > 0) then
+              ! check if this starts a new code section
+              if (itf_targets%idx_code(idx).ne.idx_code) then
+                idx_code = itf_targets%idx_code(idx)
+                write(itflog,'("CODE_BLOCK: ",a)')
+     &               trim(itf_targets%code_name(idx_code))
+              end if
+            else
+              op => op_info%op_arr(fl_item%target)%op
+              call warn('print_itf','undeclared target '//trim(op%name))
+            end if            
+            !write(itflog,*) '[INIT TARGET] ',trim(op%name)
+         else if (fl_item%command==command_set_target_update ) then
+           call quit(1,'print_itf','not prepared for switching targets')
+           !write(itflog,*) '[SET TARGET]',fl_item%target
          else if (fl_item%command==command_end_of_formula .or.
      &            fl_item%command==command_set_target_init .or.
      &            fl_item%command==command_set_target_update .or.

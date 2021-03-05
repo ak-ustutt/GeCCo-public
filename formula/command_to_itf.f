@@ -704,10 +704,10 @@ c      end function
       ! Begin a special block which the python processor will pull out
       ! into its own code block
       intpp = .false.
-      if (contr_info%label_res=='INTpp') then
-         intpp = .true.
-         write(itflog,'(a)') "BEGIN_INTPP"
-      end if
+      !if (contr_info%label_res=='INTpp') thenend
+      !   intpp = .true.
+      !   write(itflog,'(a)') "BEGIN_INTPP"
+      !end if
 
       ! Mark begining of spin summed block
       if (.not. tasks) write(itflog,'(a5)') 'BEGIN'

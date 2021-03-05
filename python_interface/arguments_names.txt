@@ -12,6 +12,7 @@ CA_SYM int
 CA_SYMMETRY int
 CHARGE int
 CHECK_THRESH real
+CODE label
 COMMENT str
 CONNECT int
 CORE int
