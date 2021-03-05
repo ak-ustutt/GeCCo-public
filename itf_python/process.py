@@ -358,8 +358,15 @@ old_spin_iter=[]    # Stores list of intermediates used throughout the spin summ
 # This can be expanded upon if different parts need to end up in different ---code blocks
 special_begin=False
 special_end=False
+# instead of the above, use CODE_BLOCKS
+code_blocks = []
+code_block_tmp = {}
+current_code_block = ''
 # Don't store tensors from these code blocks; instead these are printed out at the end
 dont_store=False
+
+# Flag that code block changed
+switched_block=False
 
 # Flag if dealing with triples
 triples = False
@@ -390,11 +397,41 @@ for line_o in f:
         dont_store=True
         continue
 
-    # Decide which file to write to
-    if (special_begin and not special_end):
-        out = kext_temp
-    else:
-        out = output
+    # switch code block
+    if (words[0]=='CODE_BLOCK:'):
+        # quickly check that this name is no duplicate
+        new_block = True
+        for block_name in code_blocks:
+            if (words[1]==block_name):
+                new_block = False
+
+        # keep info about previous temp file to finish last block on that file
+        if (current_code_block!=''):
+            out_prev = out
+            switched_block = True
+        else:
+            switched_block = False
+            
+        # set current code block and switch output
+        current_code_block = words[1]
+        if (new_block):
+            # add to list and open corresp. temp. file
+            code_blocks.append(current_code_block)
+            code_block_tmp[current_code_block] = tempfile.TemporaryFile(mode='w+t')
+
+        out = code_block_tmp[current_code_block]
+
+        continue
+
+    # make sure that at this point a code block is assigned
+    if (current_code_block==''):
+        print("Error in python ITF processor: Must start with CODE_BLOCK statement")
+        exit(1)
+#    # Decide which file to write to
+#    if (special_begin and not special_end):
+#        out = kext_temp
+#    else:
+#        out = output
 
 
     # Check for spin summed block
@@ -507,7 +544,7 @@ for line_o in f:
 
 
     # Process the line, print it out and decide what to alloc/load/drop/store
-    if "TIN" in words[0]:
+    if "TIN" in words[0]:  ## <<--- this fragment seems too generic to distinguish form other tensor names
         # The result of the line is an intermediate
         # Check if contraction forms and intermediate
         prev_lines.append(line)
@@ -612,6 +649,7 @@ for line_o in f:
                     elif ("G[" in prev_res):
                         prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
 
+                    # dont_store obsolete, assume False always    
                     # Don't print out store for speical code blocks (ie. not residuals)
                     if not dont_store:
 
@@ -619,8 +657,14 @@ for line_o in f:
                         if "R:eaac" in prev_res or "R:eaca" in prev_res:
                             prev_res = "R:eaac[apqi], R:eaca[apiq]"
 
-                        print("store", prev_res.replace('.',''), file=out)
-                        print(file=out)
+                        if (not switched_block):
+                            print("store", prev_res.replace('.',''), file=out)
+                            print(file=out)
+                        else:
+                            # write to previous temp file if code block switched
+                            print("store", prev_res.replace('.',''), file=out_prev)
+                            print(file=out_prev)
+                            switched_block = False # reset flag
 
                         if (init_alloc and initalise):
                             print("store", prev_res.replace('.',''), file=init_res_temp)
@@ -756,14 +800,18 @@ for line_o in f:
 
 
 # Close off final result block
-print("store", prev_res.replace('.',''), file=output)
-output.close()
+print("store", prev_res.replace('.',''), file=out)
+
+#Close input file
 f.close()
 
+#output.close()
+
+# should not be needed as now everything is on temp files
 # Open and write file again so as to prepend the declaration of tensors
-f2=open(outp, "r")
-tmp=f2.read()
-f2.close()
+#f2=open(outp, "r")
+#tmp=f2.read()
+#f2.close()
 
 f2=open(outp, "w")
 gecco = os.environ["GECCO_DIR"]
@@ -847,7 +895,7 @@ declare_existing_tensors(declare_ten, "Special integral tensors", "K4E",True)
 if multi:
     print("tensor: K4C[abmn], K4C", file=f2)
 
-
+# if -kext flag was set
 if (kext):
     declare_existing_tensors(declare_ten, "Tensor to send to Kext", "INTpp",True)
 else:
@@ -958,11 +1006,11 @@ if not multi:
 
 
 # Print out INTpp update
-print(file=f2)
-print(file=f2)
-print('---- code("Update_Kext_Tensor")', file=f2)
-print("// Intermediate to pass to Kext", file=f2)
 if (not kext):
+    print(file=f2)
+    print(file=f2)
+    print('---- code("Update_Kext_Tensor")', file=f2)
+    print("// Intermediate to pass to Kext", file=f2)
     if multi:
         print("alloc INTpp1[abmi]", file=f2)
         print("alloc INTpp[abmn]", file=f2)
@@ -981,12 +1029,13 @@ if (not kext):
         print(".INTpp[abij] := T:eecc[abij]",file=f2)
         print("drop T:eecc[abij]",file=f2)
         print("store INTpp[abij]",file=f2)
-else:
-    kext_temp.seek(0)
-    for line in kext_temp:
-        print(line.strip(), file=f2)
+# Now treated via CODE_BLOCK:
+#else:
+#    kext_temp.seek(0)
+#    for line in kext_temp:
+#        print(line.strip(), file=f2)
 
-    print("store INTpp[abij]",file=f2)
+#    print("store INTpp[abij]",file=f2)
 
 
 # Transform K ext from internal indicies to closed and active
@@ -1083,13 +1132,22 @@ if multi:
 #        print("drop Ym1[rq], K:eaac[apqi]", file=f2)
 #        print("store R:eaac[apqi]", file=f2)
 
+# Print out all code blocks generated from input
+for block_name in code_blocks:
+    code_block_tmp[block_name].seek(0)
+    print('---- code("'+block_name+'")', file=f2)
+    for line in code_block_tmp[block_name]:
+        print(line.rstrip(), file=f2)
+    
+    code_block_tmp[block_name].close()
 
-# Print out residual equations
-if (not initalise): print(file=f2)
-print(file=f2)
-print('---- code("Residual")', file=f2)
-f2.write(tmp)
+## Print out residual equations
+#if (not initalise): print(file=f2)
+#print(file=f2)
+#print('---- code("Residual")', file=f2)
+#f2.write(tmp)
 
+# JOSH: the following seems to belong to a code block
 # Symmetrise tensors
 if "G:eecc[abij]" in declare_res:
     print("", file=f2)

@@ -383,6 +383,8 @@
      &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',TRANSLATE_ITF,'RENAME',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'CODE',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,

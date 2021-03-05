@@ -238,8 +238,6 @@
 *----------------------------------------------------------------------*
       integer ::
      &     nrename
-!      character(len=MAXLEN_BC_LABEL) ::
-!     &     gc_hamiltonian       ! the name of the Hamiltonian in GeCCo (usually "H")
       character(len=MAXLEN_BC_LABEL), pointer ::
      &     gc_itf_rename(:,:)  ! dim: 2,nrename
       integer, pointer ::
@@ -251,3 +249,18 @@
      &     RENAME_BASIC = 0,       ! replace GeCCo name (entry 1) by ITF name (entry 2)
      &     RENAME_ADD_RANK  = 1,   ! replace GeCCo name (entry 1) by ITF name (entry 2) and append rank index to name
      &     RENAME_HAMILTONIAN = 2  ! replace GeCCo name (entry 1) by generic ITF Hamiltonian names (f, K, J)
+
+*----------------------------------------------------------------------*
+      type code_targets
+*----------------------------------------------------------------------*
+*     assignment of targets to itf "code" sections
+*----------------------------------------------------------------------*
+      integer ::
+     &     ncodes, ntargets
+      character(len=MAXLEN_BC_LABEL), pointer ::
+     &     code_name(:)         ! dim: ncodes  ... names of the codes
+      integer, pointer ::
+     &     idx_target(:),       ! dim: ntarget ... index number of the operator target
+     &     idx_code(:)          ! dim: ntarget ... corresp. index of the code in code_name(:)
+
+      end type code_targets
