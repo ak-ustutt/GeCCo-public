@@ -1783,27 +1783,20 @@ c     &     item%nspin_cases
          end do
       end if
 
-      if (item%inter(3)) then
-         call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
-         nres = trim(nres)//trim(slabel3)
-         call reorder_intermediate(item%rank3,new_idx3,item%nops3)
-
-         ! Save spin cases name to dictionary
-         ! When the residual line is printed, the intermediate will be
-         ! checked against this list to see if it exists (ie. is 0 or not)
-         inter_spin_dict%names(inter_spin_dict%ncase+1) = nres
-         inter_spin_dict%ncase = inter_spin_dict%ncase + 1
-
-       else
-         call reorder_to_slots(item%int(3),item%rank3,
-     &                         new_idx3,
-     &                         nres,item%nops3,item%out)
-      end if
-
       ! If a residual (or intermediate) depends on a non-existant intermediate spin case
       ! (ie. a non-totally spin conserving case = 0), then skip printing
       ! out the line. This may not be the case for ionisation/spin flip
-      ! cases.
+! cases.
+c     dbg
+c      write(item%out,*) 'Names: ',trim(nt1),' ',trim(nt2)
+c      if (trim(nt1)==' STIN0002abba') then
+c        write(item%out,*) 'Now it becomes interesting'
+c        write(item%out,*) 'inter_spin_dict:'
+c        do i = 1,  inter_spin_dict%ncase
+c          write(item%out,'(i4,a)') i,trim(inter_spin_dict%names(i))
+c        end do
+c      end if
+c dbg
       if (item%inter(1))then
          if (inter_spin_dict%ncase > 0) then
             found = .false.
@@ -1831,7 +1824,24 @@ c     &     item%nspin_cases
          end if
       end if
 
+      if (item%inter(3)) then
+         call inter_spin_name(t_spin(3)%spin,item%rank3/2,slabel3)
+         nres = trim(nres)//trim(slabel3)
+         call reorder_intermediate(item%rank3,new_idx3,item%nops3)
 
+         ! Save spin cases name to dictionary
+         ! When the residual line is printed, the intermediate will be
+         ! checked against this list to see if it exists (ie. is 0 or not)
+         inter_spin_dict%names(inter_spin_dict%ncase+1) = nres
+         inter_spin_dict%ncase = inter_spin_dict%ncase + 1
+
+      else
+         call reorder_to_slots(item%int(3),item%rank3,
+     &                         new_idx3,
+     &                         nres,item%nops3,item%out)
+      end if
+
+      
 c      ! Reorder integrals into fixed slot order
 c      call reorder_integral(item%int(1),item%rank1,new_idx1,
 c     &                      new_j,nt1,item%nops1)
@@ -1959,7 +1969,7 @@ c     &                      item%cntr(4),item%out)
       sfact=''
       sfact_star=''
       if (abs(abs(c_fact) - 1.0d+0) > 1.0d-15) then
-            write(sfact,*) c_fact
+            write(sfact,'(f20.11)') c_fact
 
             if (c_fact < 0.0d+0) then
                do i = 1, len(sfact)
