@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 04-03-2021 12:37
+// Created on: 08-03-2021 17:11
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -19,7 +19,7 @@ tensor: J:eecc[abji], J:eecc
 tensor: J:eeec[acbj], J:eeec
 
 // Special integral tensors
-tensor: K4E1[abij], K4E1
+tensor: K4E:eecc[abij], K4E:eecc
 
 // Tensor to send to Kext
 tensor: INTpp[abij], INTpp
@@ -112,15 +112,13 @@ store ERef[]
 
 
 
----- code("Update_Kext_Tensor")
+---- code("Update_INTkx")
 // Intermediate to pass to Kext
 alloc INTpp[abij]
 load T:eecc[abij]
 .INTpp[abij] := T:eecc[abij]
 drop T:eecc[abij]
 store INTpp[abij]
-
-
 ---- code("Residual")
 alloc R:ec[ai]
 load f:ec[ai]
@@ -140,17 +138,11 @@ load K:eecc[abij], T:ec[bj]
 drop T:ec[bj], K:eecc[abij]
 load f:ec[bj], T:eecc[abij]
 .R:ec[ai] += f:ec[bj] (T:eecc[abij] - T:eecc[baij])
-drop T:eecc[abij], f:ec[bj]
-load f:ec[bj], T:eecc[abij]
 .R:ec[ai] += f:ec[bj] T:eecc[abij]
 drop T:eecc[abij], f:ec[bj]
 load K:eccc[bkji], T:eecc[abjk]
 .R:ec[ai] += .5*(K:eccc[bkji] - K:eccc[bjki]) (T:eecc[abjk] - T:eecc[bajk])
-drop T:eecc[abjk], K:eccc[bkji]
-load K:eccc[bjki], T:eecc[abjk]
 .R:ec[ai] -= .5*K:eccc[bjki] T:eecc[abjk]
-drop T:eecc[abjk], K:eccc[bjki]
-load K:eccc[bkji], T:eecc[abkj]
 .R:ec[ai] -= .5*K:eccc[bkji] T:eecc[abkj]
 drop T:eecc[abkj], K:eccc[bkji]
 for [j]:
@@ -205,8 +197,6 @@ drop ITIN[abij]
 alloc ITIN[abij]
 load K:cccc[klij], T:eecc[abkl]
 .ITIN[abij] += .25*K:cccc[klij] T:eecc[abkl]
-drop T:eecc[abkl], K:cccc[klij]
-load K:cccc[lkij], T:eecc[ablk]
 .ITIN[abij] += .25*K:cccc[lkij] T:eecc[ablk]
 drop T:eecc[ablk], K:cccc[lkij]
 .R:eecc[abij] += ITIN[abij]
@@ -226,9 +216,9 @@ drop T:eecc[ackj], J:eecc[bcki]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
 alloc ITIN[abij]
-load K4E1[abij]
-.ITIN[abij] += .5*K4E1[abij]
-drop K4E1[abij]
+load K4E:eecc[abij]
+.ITIN[abij] += .5*K4E:eecc[abij]
+drop K4E:eecc[abij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
 drop ITIN[abij]
@@ -237,11 +227,7 @@ store R:eecc[abij]
 alloc ECC[]
 load K:eecc[abij], T:eecc[abij]
 .ECC[] += .5*(K:eecc[abij] - K:eecc[abji]) (T:eecc[abij] - T:eecc[baij])
-drop T:eecc[abij], K:eecc[abij]
-load K:eecc[abij], T:eecc[abij]
 .ECC[] += .5*K:eecc[abij] T:eecc[abij]
-drop T:eecc[abij], K:eecc[abij]
-load K:eecc[baij], T:eecc[baij]
 .ECC[] += .5*K:eecc[baij] T:eecc[baij]
 drop T:eecc[baij], K:eecc[baij]
 load f:ec[ai], T:ec[ai]

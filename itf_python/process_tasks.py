@@ -19,6 +19,8 @@ def change_line(line_o):
     change_line_names("K", line_o, words)
     change_line_names("J", line_o, words)
     change_line_names("f", line_o, words)
+    change_line_names("K4E", line_o, words)
+    change_line_names("INTkx", line_o, words)
     line = " ".join(words)
     return line
 
@@ -169,6 +171,13 @@ declare_ten_name=[]     # Global list of tensor names
 # This can be expanded upon if different parts need to end up in different ---code blocks
 special_begin=False
 special_end=False
+# instead of the above, use CODE_BLOCKS
+code_blocks = []
+code_block_tmp = {}
+current_code_block = ''
+# Don't store tensors from these code blocks; instead these are printed out at the end
+dont_store=False
+
 
 # Flag if dealing with triples
 triples = False
@@ -194,11 +203,42 @@ for line_o in f:
         special_end = True
         continue
 
+    # switch code block
+    if (words[0]=='CODE_BLOCK:'):
+        # quickly check that this name is no duplicate
+        new_block = True
+        for block_name in code_blocks:
+            if (words[1]==block_name):
+                new_block = False
+
+        # keep info about previous temp file to finish last block on that file
+        if (current_code_block!=''):
+            out_prev = out
+            switched_block = True
+        else:
+            switched_block = False
+
+        # set current code block and switch output
+        current_code_block = words[1]
+        if (new_block):
+            # add to list and open corresp. temp. file
+            code_blocks.append(current_code_block)
+            code_block_tmp[current_code_block] = tempfile.TemporaryFile(mode='w+t')
+
+        out = code_block_tmp[current_code_block]
+
+        continue
+
+    # make sure that at this point a code block is assigned
+    if (current_code_block==''):
+        print("Error in python ITF processor: Must start with CODE_BLOCK statement")
+        exit(1)
+
     # Decide which file to write to
-    if (special_begin and not special_end):
-        out = kext_temp
-    else:
-        out = output
+    #if (special_begin and not special_end):
+    #    out = kext_temp
+    #else:
+    #    out = output
 
     # Check if brackets in the binary contraction
     if (len(words)>=4):
@@ -454,13 +494,13 @@ if not multi:
 # Print out INTpp update
 print(file=f2)
 print(file=f2)
-print('---- code("Update_Kext_Tensor")', file=f2)
+print('---- code("Update_INTkx")', file=f2)
 print('load T:eecc[abij]', file=f2)
 print('drop T:eecc[abij]', file=f2)
 print('', file=f2)
 print('', file=f2)
 
-print('---- task("Update_Kext_Tensor")', file=f2)
+print('---- task("Update_INTkx")', file=f2)
 if (not kext):
     if multi:
         print("init INTpp1[abmi], INTpp[abmn]",file=f2)
@@ -486,6 +526,7 @@ print('', file=f2)
 
 if multi:
     print_code_block('multi_ref/transform_k', gecco, f2)
+    print_code_block('multi_ref/transform_intk', gecco, f2)
 
 
 ## Print out Init_Residual
@@ -498,42 +539,55 @@ if multi:
 #        print(line.strip(), file=f2)
 
 
+# Print out all code blocks generated from input
+for block_name in code_blocks:
+    code_block_tmp[block_name].seek(0)
+    print('---- task("'+block_name+'")', file=f2)
+
+    # TODO: hack, every code_block should have it's own init and save
+    if block_name == 'Residual':
+        print("init ", end="", flush=True, file=f2)
+        print(*init, sep=", ", file=f2)
+        print("save ", end="", flush=True, file=f2)
+        print(*save, sep=", ", file=f2)
+
+    for line in code_block_tmp[block_name]:
+        print(line.rstrip(), file=f2)
+
+    if block_name == 'Residual':
+        # Symmetrise tensors
+        for i in range(0, len(declare_ten)):
+            if "ITIN" in declare_ten[i]:
+                # Pick out specific tensor we wish to symmetrise
+                if "".join(generic_index(declare_ten[i])) == 'eecc':
+                    gindex = declare_ten[i].split('[')[0]+":"+"".join(generic_index(declare_ten[i]))
+                    gindex = gindex.split(':')[1]
+                    res_ten = "R:" + gindex + "[" + declare_ten[i].split('[')[1]
+
+                    index = declare_ten[i].split('[')[1]
+                    index = index.replace("]","")
+                    index2 = ""
+                    index2 += index[1:2]
+                    index2 += index[0:1]
+                    index2 += index[3:4]
+                    index2 += index[2:3]
+
+                    print("." + res_ten + " += " + declare_ten[i], file=f2)
+                    print("." + res_ten + " += " + declare_ten[i].split('[')[0] + "[" + index2 + "]", file=f2)
+
+
+    code_block_tmp[block_name].close()
+
+
 # Print out residual equations
 print(file=f2)
 print('---- code("Residual")', file=f2)
 print('load T:eecc[abij]', file=f2)
 print('drop T:eecc[abij]', file=f2)
-
-if (not initalise): print(file=f2)
 print(file=f2)
-print('---- task("Residual")', file=f2)
-print("init ", end="", flush=True, file=f2)
-print(*init, sep=", ", file=f2)
-print("save ", end="", flush=True, file=f2)
-print(*save, sep=", ", file=f2)
 
 f2.write(tmp)
 
-
-# Symmetrise tensors
-for i in range(0, len(declare_ten)):
-    if "ITIN" in declare_ten[i]:
-        # Pick out specific tensor we wish to symmetrise
-        if "".join(generic_index(declare_ten[i])) == 'eecc':
-            gindex = declare_ten[i].split('[')[0]+":"+"".join(generic_index(declare_ten[i]))
-            gindex = gindex.split(':')[1]
-            res_ten = "R:" + gindex + "[" + declare_ten[i].split('[')[1]
-
-            index = declare_ten[i].split('[')[1]
-            index = index.replace("]","")
-            index2 = ""
-            index2 += index[1:2]
-            index2 += index[0:1]
-            index2 += index[3:4]
-            index2 += index[2:3]
-
-            print("." + res_ten + " += " + declare_ten[i], file=f2)
-            print("." + res_ten + " += " + declare_ten[i].split('[')[0] + "[" + index2 + "]", file=f2)
 
 
 # Print out Generate_Fock_Matricies

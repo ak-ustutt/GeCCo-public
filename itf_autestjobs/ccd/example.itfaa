@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 04-03-2021 12:45
+// Created on: 08-03-2021 17:35
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -17,7 +17,7 @@ tensor: K:cccc[klij], K:cccc
 tensor: J:eecc[bckj], J:eecc
 
 // Special integral tensors
-tensor: K4E1[abij], K4E1
+tensor: K4E:eecc[abij], K4E:eecc
 
 // Tensor to send to Kext
 tensor: INTpp[abij], INTpp
@@ -101,21 +101,15 @@ store ERef[]
 
 
 
----- code("Update_Kext_Tensor")
+---- code("Update_INTkx")
 load T:eecc[abij]
 drop T:eecc[abij]
 
 
----- task("Update_Kext_Tensor")
+---- task("Update_INTkx")
 init INTpp
 save INTpp
 .INTpp[abij] += T:eecc[abij]
-
-
----- code("Residual")
-load T:eecc[abij]
-drop T:eecc[abij]
-
 
 ---- task("Residual")
 init R:eecc[abij], ECC[], ITIN[abij], X1[acik], X2[cbkj], X3[cdkl], STIN70001bb[lj], STIN80001abab[klij], STIN80001baab[klij], STIN90001bb[bd], STIN100001aaaa[dali], STIN100001baab[dali], STIN100001baba[dali]
@@ -132,7 +126,7 @@ save R:eecc[abij], ECC[]
 .X2[cbkj] -= J:eecc[bckj]
 .ITIN[abij] += X2[cbkj] T:eecc[acik]
 .ITIN[abij] -= J:eecc[bcki] T:eecc[ackj]
-.ITIN[abij] += .5*K4E1[abij]
+.ITIN[abij] += .5*K4E:eecc[abij]
 .X3[cdkl] += K:eecc[cdkl]
 .X3[cdkl] -= K:eecc[cdlk]
 .STIN70001bb[lj] -= K:eecc[cdkl] T:eecc[cdkj]
@@ -162,6 +156,11 @@ save R:eecc[abij], ECC[]
 .ECC[] += .5*K:eecc[baij] T:eecc[baij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
+
+---- code("Residual")
+load T:eecc[abij]
+drop T:eecc[abij]
+
 ---- code("Update_Amplitudes")
 // Update doubles
 alloc EDi2[], Nrm2[], Var2[]

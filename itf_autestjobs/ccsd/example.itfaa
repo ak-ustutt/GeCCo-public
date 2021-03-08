@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 04-03-2021 12:45
+// Created on: 08-03-2021 17:35
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -19,7 +19,7 @@ tensor: J:eecc[abji], J:eecc
 tensor: J:eeec[acbj], J:eeec
 
 // Special integral tensors
-tensor: K4E1[abij], K4E1
+tensor: K4E:eecc[abij], K4E:eecc
 
 // Tensor to send to Kext
 tensor: INTpp[abjk], INTpp
@@ -156,25 +156,20 @@ store ERef[]
 
 
 
----- code("Update_Kext_Tensor")
+---- code("Update_INTkx")
 load T:eecc[abij]
 drop T:eecc[abij]
 
 
----- task("Update_Kext_Tensor")
+---- task("Update_INTkx")
 init INTpp, ITIN[abij]
 save INTpp
-.ITIN[abij] += .5*T:ec[ai] T:ec[bj]
-.ITIN[abij] += .5*T:eecc[abij]
 .INTpp[abij] += ITIN[abij]
 .INTpp[abij] += ITIN[baji]
 
-
----- code("Residual")
-load T:eecc[abij]
-drop T:eecc[abij]
-
-
+---- task("Update_INTkx")
+.ITIN[abij] += .5*T:ec[ai] T:ec[bj]
+.ITIN[abij] += .5*T:eecc[abij]
 ---- task("Residual")
 init R:eecc[abij], R:ec[ai], ECC[], ITIN[abij], X1[baji], X2[abij], X3[bkji], X4[abjk], X5[acbj], STIN100001aa[ji], X6[bcjk], STIN110001aa[ki], STIN120001aaaa[bkji], STIN120001abba[bkji], STIN120001baba[bkji], STIN130001aa[bj], STIN130001bb[bj], STIN220001bb[lj], STIN230001abab[klij], STIN230001baab[klij], STIN240001bb[bd], STIN250001aaaa[dali], STIN250001baab[dali], STIN250001baba[dali], STIN260001baab[akji], STIN260001baba[akji], STIN270001baab[akji], STIN280001bb[kj], STIN290001baab[alji], STIN290001baba[alji], STIN300001abab[klij], STIN300001baab[klij], STIN310001bb[kj], STIN320001baab[akji], STIN330001abab[cbkj], STIN330001abba[cbkj], STIN330001bbbb[cbkj], STIN340001bb[bc], STIN350001baab[klij], STIN350002abab[blji], STIN360001abab[clkj], STIN360001abba[clkj], STIN360001bbbb[clkj], STIN360002baab[alji], STIN360002baba[alji], STIN400001aa[bj]
 save R:eecc[abij], R:ec[ai], ECC[]
@@ -231,7 +226,7 @@ save R:eecc[abij], R:ec[ai], ECC[]
 .ITIN[abij] += K:eecc[cbkj] X2[acik]
 .ITIN[abij] += X1[cbkj] T:eecc[acik]
 .ITIN[abij] -= J:eecc[bcki] T:eecc[ackj]
-.ITIN[abij] += .5*K4E1[abij]
+.ITIN[abij] += .5*K4E:eecc[abij]
 .STIN220001bb[lj] -= K:eecc[cdkl] INTpp[cdkj]
 .STIN220001bb[lj] -= K:eecc[dckl] INTpp[dckj]
 .STIN220001bb[lj] += X6[cdkl] X4[cdjk]
@@ -307,6 +302,11 @@ save R:eecc[abij], R:ec[ai], ECC[]
 .ECC[] += STIN400001aa[bj] T:ec[bj]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
+
+---- code("Residual")
+load T:eecc[abij]
+drop T:eecc[abij]
+
 ---- code("Update_Amplitudes")
 // Update singles
 load R:ec[ai]

@@ -1064,7 +1064,7 @@ if not multi:
 if (not kext):
     print(file=f2)
     print(file=f2)
-    print('---- code("Update_Kext_Tensor")', file=f2)
+    print('---- code("Update_INTkx")', file=f2)
     print("// Intermediate to pass to Kext", file=f2)
     if multi:
         print("alloc INTpp1[abmi]", file=f2)
