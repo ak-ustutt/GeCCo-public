@@ -155,6 +155,8 @@ def print_result(line, indent=False, init=False):
         # Check if the line is within a loop
         if (indent):
             load_ten="    load "
+            # Check if (T - T^+) tensors need to be loaded inside the loop
+            load_extra_loop_tensors(line, result)
         else:
             load_ten="load "
 
@@ -163,7 +165,7 @@ def print_result(line, indent=False, init=False):
             load_ten = load_ten + tensor + ', '
         load_ten = load_ten + result[-1]
 
-        # Print out load, line and drop
+        # Print out load, line, and drop
         print(load_ten, file=out)
         print(line, file=out)
         print_drop_tensors(load_ten, indent)
@@ -253,6 +255,38 @@ def declare_existing_tensors(declare_list, name, tensor, energy=False):
             tmp_ten = declare_list[i] + ", " + declare_list[i].split('[',1)[0]
 
             print("tensor:", tmp_ten, file=f2)
+
+
+# Check if exchange of a tensor (T[apij] - T[apji]) needs to be loaded
+# inside a loop. This is the case if the loop index is
+# the index that is permuted so as to generate T[apji]
+def load_extra_loop_tensors(line, result):
+
+    words=line.split()
+
+    # Find the loop index
+    loop = ''
+    for i in range(0, len(words)):
+        if ("J:eee" in words[i] or "K:eee" in words[i]):
+            tmp = words[i].split('[',1)[1].split(']',1)[0]
+            loop = tmp[3:4]
+
+    # See if the loop index is in the same position for the (T - T^+) tensors
+    if '(' in words[2] and '(' in words[5]:
+        if "eaac" not in words[2] and "eaca" not in words[2]:
+            if (words[2].split('(')[1].find(loop) != words[4].find(loop)):
+                result.append(words[4].replace(')',''))
+        if "eaac" not in words[5] and "eaca" not in words[5]:
+            if (words[5].split('(')[1].find(loop) != words[7].find(loop)):
+                result.append(words[7].replace(')',''))
+    elif '(' in words[3]:
+        if "eaac" not in words[3] and "eaca" not in words[3]:
+            if (words[3].split('(')[1].find(loop) != words[5].find(loop)):
+                result.append(words[5].replace(')',''))
+    elif '(' in words[2] :
+        if "eaac" not in words[2] and "eaca" not in words[2]:
+            if (words[2].split('(')[1].find(loop) != words[4].find(loop)):
+                result.append(words[4].replace(')',''))
 
 
 def print_code_block(code_block, gecco_dir, output):
@@ -413,7 +447,7 @@ for line_o in f:
             switched_block = True
         else:
             switched_block = False
-            
+
         # set current code block and switch output
         current_code_block = words[1]
         if (new_block):
@@ -651,7 +685,7 @@ for line_o in f:
                     elif ("G[" in prev_res):
                         prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
 
-                    # dont_store obsolete, assume False always    
+                    # dont_store obsolete, assume False always
                     # Don't print out store for speical code blocks (ie. not residuals)
                     if not dont_store:
 
@@ -841,7 +875,7 @@ for i in range(0, len(declare_ten)):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
     else:
         print("tensor:", declare_ten[i] + ",  !Create{type:disk}", file=f2)
-        
+
 # Print already existing tensor, ie. don't need !Create{type:disk}
 declare_existing_tensors(declare_ten, "K-integral tensors", "K")
 declare_existing_tensors(declare_ten, "J-integral tensors", "J")
@@ -1161,7 +1195,7 @@ for block_name in code_blocks:
     print('---- code("'+block_name+'")', file=f2)
     for line in code_block_tmp[block_name]:
         print(line.rstrip(), file=f2)
-    
+
     code_block_tmp[block_name].close()
 
 ## Print out residual equations

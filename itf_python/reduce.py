@@ -29,6 +29,11 @@ old_line = ""
 # Read each line of bcontr.tmp
 for line in f1:
 
+    loop = False
+    # Check if inside a loop (loops begin with 4x whitspace)
+    if line.startswith(('   ')):
+        loop = True
+
     # Look for consecutive load and drop line and see if they do the same thing
     if ('load' in line and 'drop' in old_line):
 
@@ -40,8 +45,13 @@ for line in f1:
             tmp1=[]
             tmp2=[]
             for i in range(1, len(words1)):
-                tmp1.append(words1[i].split('[')[0])
-                tmp2.append(words2[len(words2)-i].split('[',1)[0])
+                if not loop:
+                    tmp1.append(words1[i].split('[')[0])
+                    tmp2.append(words2[len(words2)-i].split('[',1)[0])
+                else:
+                    # Inside a loop, so should compare indices
+                    tmp1.append(words1[i].split(']')[0])
+                    tmp2.append(words2[len(words2)-i].split(']',1)[0])
             if (tmp1 == tmp2):
                 #print("OLD2 ", old_line, end="", flush=True, file=f2)
                 #print("OLD1 ", line, end="", flush=True, file=f2)
