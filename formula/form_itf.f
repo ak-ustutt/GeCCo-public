@@ -249,31 +249,31 @@
          end if
          end if
 
-!         ! Quick and dirty scan to remove unnecessary load and drop lines
-!         call atim_csw(cpu0,sys0,wall0)
-!
-!         exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
-!     &             //trim(name_out)
-!         write(lulog,*) "Executing: ", exe_line
-!         call execute_command_line(trim(exe_line),exitstat=e)
-!
-!         call atim_csw(cpu,sys,wall)
-!         call prtim(lulog,'Time to reduce ITF algo file',
-!     &              cpu-cpu0,sys-sys0,wall-wall0)
-!
-!         if (e > 0) then
-!            write(lulog,*) "Error in executing reduce.py"
-!            call quit(1,'Please check the ITF algo file')
-!         end if
-!
-!         exe_line='mv tmp.itfaa '//trim(name_out)
-!         write(lulog,*) "Executing: ", exe_line
-!         call execute_command_line(trim(exe_line),exitstat=e)
-!
-!         if (e > 0) then
-!            write(lulog,*) "Error in renaming files"
-!            call quit(1,'Please check the ITF algo file')
-!         end if
+         ! Quick and dirty scan to remove unnecessary load and drop lines
+         call atim_csw(cpu0,sys0,wall0)
+
+         exe_line='python3 $GECCO_DIR/itf_python/reduce.py -i '
+     &             //trim(name_out)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         call atim_csw(cpu,sys,wall)
+         call prtim(lulog,'Time to reduce ITF algo file',
+     &              cpu-cpu0,sys-sys0,wall-wall0)
+
+         if (e > 0) then
+            write(lulog,*) "Error in executing reduce.py"
+            call quit(1,'Please check the ITF algo file')
+         end if
+
+         exe_line='mv tmp.itfaa '//trim(name_out)
+         write(lulog,*) "Executing: ", exe_line
+         call execute_command_line(trim(exe_line),exitstat=e)
+
+         if (e > 0) then
+            write(lulog,*) "Error in renaming files"
+            call quit(1,'Please check the ITF algo file')
+         end if
       end if
 
       ! Close binary contraction file
