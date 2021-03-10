@@ -5,42 +5,42 @@
 // I1
 alloc S1:I1[pq]
 load Dm1H[pq]
-.S1:I1[pq] := Dm1H[pq]
+.S1:I1[pq] := Dm1H[qp]
 drop Dm1H[pq]
 store S1:I1[pq]
 
 // S0
 alloc S1:S0[pq]
 load Dm1[pp]
-.S1:S0[pq] := Dm1[pq]
+.S1:S0[pq] := Dm1[qp]
 drop Dm1[pp]
 store S1:S0[pq]
 
 // I2
 alloc S2:I2[pqrs]
 load Dm2H[pppp]
-.S2:I2[pqrs] := Dm2H[pqrs]
+.S2:I2[pqrs] := Dm2H[qprs]
 drop Dm2H[pppp]
 store S2:I2[pqrs]
 
 // S2
 alloc S2:S2[pq]
 load Dm1H[pq]
-.S2:S2[pq] := Dm1H[pq]
+.S2:S2[pq] := Dm1H[qp]
 drop Dm1H[pq]
 store S2:S2[pq]
 
 // P0
 alloc S2:P0[pqrs]
 load Dm2[pppp]
-.S2:P0[pqrs] := Dm2[pqrs]
+.S2:P0[pqrs] := Dm2[qprs]
 drop Dm2[pppp]
 store S2:P0[pqrs]
 
 // P1
 alloc S2:P1[pq]
 load Dm1[pp]
-.S2:P1[pq] := Dm1[pq]
+.S2:P1[pq] := Dm1[qp]
 drop Dm1[pp]
 store S2:P1[pq]
 
