@@ -575,16 +575,16 @@ for block_name in code_blocks:
                     print("." + res_ten + " += " + declare_ten[i], file=f2)
                     print("." + res_ten + " += " + declare_ten[i].split('[')[0] + "[" + index2 + "]", file=f2)
 
+    # Print out dummy code block for each task block
+    print('---- code("'+block_name+'")', file=f2)
+    print('load T:eecc[abij]', file=f2)
+    print('drop T:eecc[abij]', file=f2)
+    print(file=f2)
+
 
     code_block_tmp[block_name].close()
 
 
-# Print out residual equations
-print(file=f2)
-print('---- code("Residual")', file=f2)
-print('load T:eecc[abij]', file=f2)
-print('drop T:eecc[abij]', file=f2)
-print(file=f2)
 
 f2.write(tmp)
 

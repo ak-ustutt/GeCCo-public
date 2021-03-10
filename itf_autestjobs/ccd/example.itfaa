@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 08-03-2021 17:35
+// Created on: 10-03-2021 17:25
 
 ---- decl
 index-space: ijklmn, Closed  , c
@@ -156,7 +156,6 @@ save R:eecc[abij], ECC[]
 .ECC[] += .5*K:eecc[baij] T:eecc[baij]
 .R:eecc[abij] += ITIN[abij]
 .R:eecc[abij] += ITIN[baji]
-
 ---- code("Residual")
 load T:eecc[abij]
 drop T:eecc[abij]

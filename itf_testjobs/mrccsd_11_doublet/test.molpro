@@ -7,7 +7,7 @@ basis,vdz(p)
 occ,4,0,0,0
 closed,3,0,0,0
 wf,7,1,1}
-{cmrcc,max_en=1,max_res=1,maxit=60
+{cmrcc,max_en=1,max_res=1,maxit=40
 core,1,0,0,0}
 e = energy
 

@@ -57,6 +57,11 @@ if test == "none" or test not in known_tests:
 else:
     print "Performing the "+test+" testjob"
 
+tasks = keywords.get('method.ITF.tasks')
+tasks = str(tasks).strip() if tasks is not None else "F"
+
+print "Using tasks: "+tasks
+
 T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'    # <- this is the full doubles set
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
 CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
@@ -232,6 +237,11 @@ if test=='doublet':
 elif test=='triplet':
     filename = 'icmrcc_mrccsd_11.itfaa'
 
+if tasks=='T':
+    do_tasks = True
+    filename = 'au'+filename
+else:
+    do_tasks = False
 
 TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
@@ -239,7 +249,7 @@ TRANSLATE_ITF({
         MULTI:True,
         PROCESS:True,
         KEXT:True,
-        TASKS:False,
+        TASKS:do_tasks,
         INIT_RES:False,
         ITIN:True,
         RENAME:['MRCC_LAG','ECC','T1','T','T2g','T','O1','R','O2g','R','GAM0','Ym<RANK>'],

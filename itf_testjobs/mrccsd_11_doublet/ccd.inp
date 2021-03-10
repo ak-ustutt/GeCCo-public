@@ -3,7 +3,7 @@ general
   form_test=T
 method
   MR_P
-  ITF test=doublet
+  ITF test=doublet,tasks=F
   MR excrestr=(0,0,1,1,1,1)
   MR excrestr=(1,1,0,0,1,1)
   MR excrestr=(2,2,0,0,0,0)
