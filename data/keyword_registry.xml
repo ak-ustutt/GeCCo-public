@@ -28,6 +28,7 @@
         <keyword name="ITF" status="A">
           <argument length="10" name="en_type" status="A" type="8" value="1"/>
           <argument length="10" name="res_type" status="A" type="8" value="1"/>
+          <argument length="10" name="test" status="A" type="8" value="none"/>
         </keyword>
         <keyword name="MP" status="A">
           <argument length="1" name="level" status="A" type="2" value="2"/>
