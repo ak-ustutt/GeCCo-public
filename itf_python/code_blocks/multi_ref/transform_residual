@@ -15,7 +15,7 @@ store OR:aaac[pqri]
 // I2
 alloc OR:aacc[pqij]
 load R:aacc[pqij], X2:I2[pqrs]
-.OR:aacc[rsij] += R:aacc[pqij] X2:I2[pqrs]
+.OR:aacc[rsij] += 6*R:aacc[pqij] X2:I2[pqrs]
 drop X2:I2[pqrs], R:aacc[pqij]
 store OR:aacc[pqij]
 
@@ -57,7 +57,7 @@ store OR:eacc[apij]
 // P0
 alloc OR:eeaa[abpq]
 load R:eeaa[abpq], X2:P0[pqrs]
-.OR:eeaa[abrs] += R:eeaa[abpq] X2:P0[pqrs]
+.OR:eeaa[abrs] += 6*R:eeaa[abpq] X2:P0[pqrs]
 drop X2:P0[pqrs], R:eeaa[abpq]
 store OR:eeaa[abpq]
 
