@@ -37,7 +37,7 @@ load OT:ea[aq], X1:S0[pq]
 drop X1:S0[pq], OT:ea[aq]
 store T:ea[ap]
 
-// S2
+// S1
 load Var1[]
 load R:ec[ai]
 load g:ee[aa], g:cc[ii]
@@ -45,6 +45,14 @@ denom-scale R:ec[ai], g:ee[aa] - g:cc[ii]
 drop g:cc[ii], g:ee[aa]
 load T:ec[ai]
 .T:ec[ai] -= R:ec[ai]
+
+// Add off-diag orthogonalisation term
+// Factor of 2 comes from effective weighting between T:ec and T:eaac/T:eaca
+load SX12a:S1[pq], OT:eaca[apiq], SX12b:S1[pq], OT:eaac[apqi]
+.T:ec[ai] += 2*SX12a:S1[pq] OT:eaca[apiq]
+.T:ec[ai] += 2*SX12b:S1[pq] OT:eaac[apqi]
+drop OT:eaac[apqi], SX12b:S1[pq], OT:eaca[apiq], SX12a:S1[pq]
+
 .Nrm1[] += 2.*T:ec[ai] T:ec[ai]
 store T:ec[ai]
 .Var1[] += 2.*R:ec[ai] R:ec[ai]
@@ -52,10 +60,8 @@ drop R:ec[ai]
 store Var1[]
 store Nrm1[]
 
-
 load Nrm2[]
 
-// S1
 load T:eaac[apqi], T:eaca[apiq]
 load OT:eaac[apqi], OT:eaca[apiq], X2:S1[pqrs], X4x:S1[pqrs], X2x:S1[pqrs], X4:S1[prqs]
 .T:eaac[apqi] += OT:eaac[arsi] (2*X2:S1[pqrs] + X4:S1[pqrs])
