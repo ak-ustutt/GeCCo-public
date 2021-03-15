@@ -254,7 +254,6 @@ REORDER_MEL({
         ADJOINT:True})
 
 
-print("hello2")
 debug_MEL('ME_X_TRM',only_this=True)
 
 

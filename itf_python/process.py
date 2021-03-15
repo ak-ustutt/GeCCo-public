@@ -1245,6 +1245,7 @@ if multi:
     print_code_block('multi_ref/construct_gs_overlap', gecco, f2)
     print_code_block('multi_ref/construct_s2', gecco, f2)
     print_code_block('multi_ref/construct_projected_s2', gecco, f2)
+    print_code_block('multi_ref/construct_offdiag_x', gecco, f2)
 else:
     if singles:
         print_code_block('single_ref/update_amplitudes_singles', gecco, f2)
