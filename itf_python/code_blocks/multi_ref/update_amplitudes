@@ -47,10 +47,10 @@ load T:ec[ai]
 .T:ec[ai] -= R:ec[ai]
 
 // Add off-diag orthogonalisation term
-// Factor of 2 comes from effective weighting between T:ec and T:eaac/T:eaca
+// unclear ---> Factor of 2 comes from effective weighting between T:ec and T:eaac/T:eaca
 load SX12a:S1[pq], OT:eaca[apiq], SX12b:S1[pq], OT:eaac[apqi]
-.T:ec[ai] += 2*SX12a:S1[pq] OT:eaca[apiq]
-.T:ec[ai] += 2*SX12b:S1[pq] OT:eaac[apqi]
+.T:ec[ai] += SX12a:S1[pq] OT:eaca[apiq]
+.T:ec[ai] += SX12b:S1[pq] OT:eaac[apqi]
 drop OT:eaac[apqi], SX12b:S1[pq], OT:eaca[apiq], SX12a:S1[pq]
 
 .Nrm1[] += 2.*T:ec[ai] T:ec[ai]
@@ -64,13 +64,13 @@ load Nrm2[]
 
 load T:eaac[apqi], T:eaca[apiq]
 load OT:eaac[apqi], OT:eaca[apiq], X2:S1[pqrs], X4x:S1[pqrs], X2x:S1[pqrs], X4:S1[prqs]
-.T:eaac[apqi] += OT:eaac[arsi] (2*X2:S1[pqrs] + X4:S1[pqrs])
-.T:eaac[apqi] += OT:eaca[aris] (2*X4x:S1[pqrs] + X2x:S1[pqrs])
+.T:eaac[apqi] += OT:eaac[arsi] (2*X2:S1[pqrs] + X4x:S1[pqrs])
+.T:eaac[apqi] += OT:eaca[aris] (2*X4:S1[pqrs] + X2x:S1[pqrs])
 
-.T:eaca[apiq] += OT:eaac[arsi] (X2:S1[pqrs] + 2*X4:S1[pqrs])
-.T:eaca[apiq] += OT:eaca[aris] (X4x:S1[pqrs] + 2*X2x:S1[pqrs])
+.T:eaca[apiq] += OT:eaac[arsi] (X2:S1[pqrs] + 2*X4x:S1[pqrs])
+.T:eaca[apiq] += OT:eaca[aris] (X4:S1[pqrs] + 2*X2x:S1[pqrs])
 
-.Nrm2[] += (2*T:eaac[apqi]-T:eaca[aqip]) T:eaac[apqi]
+.Nrm2[] += (2*T:eaac[apqi]-T:eaca[apiq]) T:eaac[apqi]
 drop X4:S1[pqrs], X2x:S1[pqrs], X4x:S1[prqs], X2:S1[pqrs], OT:eaca[apiq], OT:eaac[apqi]
 store T:eaca[apiq], T:eaac[apqi]
 

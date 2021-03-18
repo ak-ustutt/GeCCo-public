@@ -55,8 +55,6 @@ tensor: S3:S1[pp],       S3:S1
 tensor: S3x:S1[pp],      S3x:S1
 tensor: S4:S1[pppp],     S4:S1
 tensor: S4x:S1[pppp],    S4x:S1
-tensor: SX12a:S1[pp],    SX12a:S1
-tensor: SX12b:S1[pp],    SX12b:S1
 tensor: S2:S2[pp],       S2:S2
 tensor: S2:P0[pppp],     S2:P0
 tensor: S2:P1[pp],       S2:P1
@@ -71,6 +69,10 @@ tensor: X2:S1[pppp],     X2:S1
 tensor: X2x:S1[pppp],    X2x:S1
 tensor: X4:S1[pppp],     X4:S1
 tensor: X4x:S1[pppp],    X4x:S1
+tensor: SX12a:S1[pp],    SX12a:S1
+tensor: SX12b:S1[pp],    SX12b:S1
+tensor: XS12a:S1[pp],    XS12a:S1
+tensor: XS12b:S1[pp],    XS12b:S1
 tensor: X2:S2[pp],       X2:S2
 tensor: X2:P0[pppp],     X2:P0
 tensor: X2:P1[pp],       X2:P1
