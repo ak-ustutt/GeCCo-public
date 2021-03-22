@@ -1,0 +1,16 @@
+general
+  print=0
+  form_test=T
+method
+  MR_P
+  ITF test=triplet,tasks=F
+  MR excrestr=(0,0,1,1,1,1)
+  MR excrestr=(1,1,0,0,1,1)
+  MR excrestr=(2,2,0,0,0,0)
+  MR excrestr=(0,0,2,2,0,0)
+  MR maxexc=2
+calculate
+  solve maxiter=50,conv=1d-13,maxsub=10
+  solve non_linear optref=0
+  skip_E
+  routes maxbranch=0,sv_thresh=1d-6,spinadapt=3,auto_opt=F,use_tr=F

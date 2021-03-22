@@ -12,14 +12,16 @@ for dir in */; do
     echo $dir
 
     cd $dir
-    rm icmrcc_${dir}.itfaa
+    rm icmrcc_*.itfaa
     gecco.x ccd.inp > ccd.out
 
     echo "Results for icmrcc_${dir}:"
-    diff icmrcc_${dir}.itfaa example.itfaa
+    #diff icmrcc_${dir}.itfaa example.itfaa
+    diff icmrcc_*.itfaa example.itfaa
 
     echo "Molpro results:"
-    cp icmrcc_${dir}.itfaa $MOLPRO/src/algo/
+    #cp icmrcc_${dir}.itfaa $MOLPRO/src/algo/
+    cp icmrcc_*.itfaa $MOLPRO/src/algo/
     cd $MOLPRO
     make -j4 > /dev/null
 

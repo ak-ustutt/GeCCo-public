@@ -47,7 +47,7 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
-known_tests=["doublet"]
+known_tests=["doublet","triplet"]
 test = keywords.get('method.ITF.test')
 test = str(test).strip() if test is not None else "none"
 
@@ -62,13 +62,25 @@ tasks = str(tasks).strip() if tasks is not None else "F"
 
 print "Using tasks: "+tasks
 
-T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'    # <- this is the full doubles set
+T2_shape = ''
+T1_shape = ''
+
+if test=='doublet':
+    T2_shape = 'PP,HH|VV,HH|PV,VV|PV,HH|PP,VV|PP,HV|PV,HV|VV,VH'    # <- this is the full doubles set
+    T1_shape = 'P,H|P,V|V,H'
+elif test=='triplet':
+    T2_shape = 'PP,HH|VV,HH|PV,HH|PP,VV|PP,HV|PV,HV' # <- for triplet
+    T1_shape = 'P,H|P,V|V,H'
+else:
+    print "Unknown method: " + test
+    exit()
+
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
 CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
 
-T1_shape = 'P,H|P,V|V,H'
 DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
 CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
+
 
 if test=='doublet':
 
@@ -129,14 +141,14 @@ elif test=='triplet':
 
     LAG_E.append(_refexp("[H,T1n]"))
     LAG_E.append(_refexp("[H,T2]"))
-    #LAG_E.append(_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
+    LAG_E.append(_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
 
     LAG_A2.append(_L1_refexp("[H,T1n]"))
     LAG_A2.append(_L1_refexp("[H,T2]"))
-    #LAG_A2.append(_L1_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
+    LAG_A2.append(_L1_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
     LAG_A2.append(_L2_refexp("[H,T1n]"))
     LAG_A2.append(_L2_refexp("[H,T2]"))
-    #LAG_A2.append(_L2_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
+    LAG_A2.append(_L2_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
 
 
 LAG_E.set_rule()

@@ -20,7 +20,7 @@
       str2 = trim(adjustl(str1))
 
       end function trimal
-* 
+*
 c     * moved to extra file as the compiler incorrectly quits with
 c     * an error message (error #6633)
 c*----------------------------------------------------------------------*
@@ -85,7 +85,7 @@ c        end if
 c      end do
 c
 c      if (.not.found) rename_tensor = trim(string)
-c      
+c
 c      if (rename_tensor(1:1)=='_') rename_tensor(1:1)=''
 c
 c      end function
@@ -918,10 +918,10 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       item%fact = 1.0d+0
       !! is now contained in fact_itf
       !!call itf_equiv_lines_factor(item%c, item%fact)
-      
+
       if (ntest>=100 .and. abs(item%fact-1d0).gt.1d-12)
      &    write(item%out,'(1x,"eqv. lines factor was",f20.12)')item%fact
-      
+
       ! Get any remaining factors from GeCCo
       if (use_sign) item%fact = item%fact * contr_info%fact_itf
       ! note: fact_itf contains the general contraction prefactor as defined in GeCCo and a possible sign
@@ -1335,25 +1335,10 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       integer ::
      &   ops(4,2)
 
-      ! TODO: Don't bother for eeee or cccc integrals - a hack for now
-      ! to allow the summation of K:eeee terms in simplfy.py
-      !ops = item%e1 + item%c
-      !if (ops(2,2)==2 .and. ops(2,1)==2) then
-      !   if (.not. item%inter(1)) then
-      !      return
-      !   end if
-      !end if
-
-      !if (ops(1,2)==2 .and. ops(1,1)==2) then
-      !   if (.not. item%inter(1) .and. .not. item%inter(3)) then
-      !      return
-      !   end if
-      !end if
-
       if ((item%rank1>4.and..not.item%inter(1)).or.
      &    (item%rank2>4.and..not.item%inter(2)).or.
      &    (item%rank3>4.and.item%abba_line)) then
-           call line_error('convert_to_abba_block: I cannot handle rank'
+           call line_error('convert_to_abab_block: I cannot handle rank'
      &                      //' >4',item)
       end if
 
@@ -1841,7 +1826,7 @@ c dbg
      &                         nres,item%nops3,item%out)
       end if
 
-      
+
 c      ! Reorder integrals into fixed slot order
 c      call reorder_integral(item%int(1),item%rank1,new_idx1,
 c     &                      new_j,nt1,item%nops1)
@@ -5681,7 +5666,7 @@ c       end if
      &   tindex
       character(len=MAXLEN_BC_LABEL) ::
      &     new
-      
+
       character(len=MAXLEN_BC_LABEL), external ::
      &     rename_tensor
 
