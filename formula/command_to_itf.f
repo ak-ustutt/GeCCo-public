@@ -1308,8 +1308,8 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
 *----------------------------------------------------------------------*
-      subroutine convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
-     &                                 new_idx3, new_fact)
+      subroutine convert_to_abab_block(item, t_spin, idx1, idx2,
+     &                                 idx3, fact)
 *----------------------------------------------------------------------*
 !     Convert integrals and amplitudes to abab spin blocks, this may also
 !     intoduce a sign change
@@ -1324,76 +1324,150 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       type(itf_contr), intent(inout) ::
      &   item
       type(spin_info2), intent(in) ::
-     &      t_spin(3)
+     &   t_spin(3)
       character(len=INDEX_LEN), intent(inout) ::
-     &     new_idx1, new_idx2, new_idx3
+     &   idx1, idx2, idx3
       real(8), intent(inout) ::
-     &     new_fact
+     &   fact
 
       character(len=1) ::
      &   tmp
       integer ::
      &   ops(4,2)
 
-      if ((item%rank1>4.and..not.item%inter(1)).or.
-     &    (item%rank2>4.and..not.item%inter(2)).or.
-     &    (item%rank3>4.and.item%abba_line)) then
-           call line_error('convert_to_abab_block: I cannot handle rank'
-     &                      //' >4',item)
+
+      if (item%rank1 > 2 .and. .not. item%inter(1)) then
+         call reorder_spin_index(item, t_spin(1)%spin, item%rank1,
+     &                           idx1, fact)
       end if
 
-      ! TODO: only work for rank 4
-      if (item%rank1>2 .and. .not. item%inter(1)) then
-         if (t_spin(1)%spin(1,1)>
-     &       t_spin(1)%spin(1,2)) then
-            tmp = new_idx1(2:2)
-            new_idx1(2:2) = new_idx1(1:1)
-            new_idx1(1:1) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
-         if (t_spin(1)%spin(2,1)>
-     &       t_spin(1)%spin(2,2)) then
-            tmp = new_idx1(3:3)
-            new_idx1(3:3) = new_idx1(4:4)
-            new_idx1(4:4) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
-      end if
-
-      if (item%rank2>2 .and. .not. item%inter(2)) then
-         if (t_spin(2)%spin(1,1)>
-     &       t_spin(2)%spin(1,2)) then
-            tmp = new_idx2(2:2)
-            new_idx2(2:2) = new_idx2(1:1)
-            new_idx2(1:1) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
-         if (t_spin(2)%spin(2,1)>
-     &       t_spin(2)%spin(2,2)) then
-            tmp = new_idx2(3:3)
-            new_idx2(3:3) = new_idx2(4:4)
-            new_idx2(4:4) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
+      if (item%rank2 > 2 .and. .not. item%inter(2)) then
+         call reorder_spin_index(item, t_spin(2)%spin, item%rank2,
+     &                           idx2, fact)
       end if
 
       ! For the R[apiq] abba case, we need to rearange
-      if (item%rank3>2 .and. item%abba_line) then
-         if (t_spin(3)%spin(1,1)>
-     &       t_spin(3)%spin(1,2)) then
-            tmp = new_idx3(2:2)
-            new_idx3(2:2) = new_idx3(1:1)
-            new_idx3(1:1) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
-         if (t_spin(3)%spin(2,1)>
-     &       t_spin(3)%spin(2,2)) then
-            tmp = new_idx3(3:3)
-            new_idx3(3:3) = new_idx3(4:4)
-            new_idx3(4:4) = tmp
-            new_fact = new_fact * -1.0d+0
-         end if
+      if (item%rank3 > 2 .and. item%abba_line
+     &    .and. .not. item%inter(3)) then
+         call reorder_spin_index(item, t_spin(3)%spin, item%rank3,
+     &                           idx3, fact)
       end if
+
+
+      return
+      end
+
+
+*----------------------------------------------------------------------*
+      subroutine reorder_spin_index(item, spin, rank, idx, fact)
+*----------------------------------------------------------------------*
+!     Reorder index according to spin.
+!     All alpha indicies are moved to the left
+*----------------------------------------------------------------------*
+
+      use itf_utils
+      implicit none
+      include 'opdim.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(itf_contr), intent(in) ::
+     &   item
+      integer, intent(in) ::
+     &   spin(2,*)            ! Spin info of a tensor
+      integer, intent(in) ::
+     &   rank
+      character(len=INDEX_LEN), intent(inout) ::
+     &   idx
+      real(8), intent(inout) ::
+     &   fact                 ! Overall factor
+
+      character(len=INDEX_LEN) ::
+     &   tmp
+      integer ::
+     &   a_shift,             ! Position of the next alpha index
+     &   s,
+     &   i, j, k, l,          ! Loop indices
+     &   z
+
+
+      ! Loop over covarient/contravarient indcies
+      do l = 1, 2
+
+         if (l == 1) then
+            a_shift = 1
+         else
+            a_shift = 1 + rank/2
+         end if
+
+!         write(item%out,*) "Old index:"
+!         do k = 1, rank
+!            write(item%out,*) idx(k:k)
+!         end do
+!         write(item%out,*) "Old factor: ", fact
+!         call print_spin(spin, rank, "reorder_spin_index", item%out)
+
+         ! Loop over spin information
+         do i = 1, rank/2
+
+            if (l == 1) then
+               z = i
+            else
+               z = i + rank/2
+            end if
+
+            ! Find a alpha spin index
+            if (spin(l,i)==1) then
+
+               ! Skip if alpha index already in position
+               if (z == a_shift) then
+                  a_shift = a_shift + 1
+                  cycle
+               end if
+
+               ! Move index to the left
+!               write(item%out,*) "Moving index: ", idx(z:z)
+!               write(item%out,*) "Spin: ", spin(l,i)
+               tmp(a_shift:a_shift) = idx(z:z)
+
+               ! Calculate factor from permuting indices
+               !write(item%out,*) "distance ", z - a_shift
+               if (mod(z-a_shift,2)/=0)then
+                  fact = fact * -1.0d0
+               end if
+
+               ! Arrange renaiming indicies into tmp
+               s = 1
+               do j = 1, rank
+                  if (j == z) cycle
+                  if (s == a_shift) then
+                     tmp(s+1:s+1) = idx(j:j)
+                     s = s + 2
+                  else
+                     tmp(s:s) = idx(j:j)
+                     s = s + 1
+                  end if
+               end do
+
+               ! Update a_shift for next alpha position
+               a_shift = a_shift + 1
+
+               ! Replace idx with tmp
+               do k = 1, rank
+                  idx(k:k) = tmp(k:k)
+               end do
+
+!               write(item%out,*) "New index:"
+!               do k = 1, rank
+!                  write(item%out,*) idx(k:k)
+!               end do
+!               write(item%out,*) "New factor: ", fact
+
+            end if
+         end do
+
+      end do
+
 
       return
       end
