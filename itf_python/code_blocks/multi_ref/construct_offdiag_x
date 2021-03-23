@@ -8,7 +8,7 @@ load S3:S1[pq], S3x:S1[pq]
 load X2:S1[pqrs], X2x:S1[pqrs], X4:S1[pqrs], X4x:S1[pqrs]
 
 // S1 residual transformation
-// -0.5 factor from -X1 X1^+
+// -0.5 factor from -X1 X1^+ ... and another factor 0.5 for not yet clear reasons (see below)
 alloc XS12a:S1[rs], XS12b:S1[rs]
 
 .XS12a:S1[rs] -= .25*S3:S1[pq] X2x:S1[pqrs]
@@ -20,7 +20,7 @@ alloc XS12a:S1[rs], XS12b:S1[rs]
 store XS12b:S1[rs], XS12a:S1[rs]
 
 // S1 amplitude back transformation
-// prefactor sqrt(2)
+// prefactor 0.5 is currently empirical and not well understood
 alloc SX12a:S1[rs], SX12b:S1[rs]
 
 .SX12a:S1[rs] -= .5*S3:S1[pq]  (X4:S1[pqrs] + 2*X2x:S1[pqrs])
