@@ -239,10 +239,10 @@ c      end function
          itype = vals(1)
       else if (scan("ijklmno",idx)>0) then
          itype = vals(2)
-      else if (scan("pqrstuvw",idx)>0) then
+      else if (scan("pqrstuvwxyz",idx)>0) then
          itype = vals(3)
-      else if (scan("xyz",idx)>0) then
-         itype = vals(4)
+      !else if (scan("xyz",idx)>0) then
+      !   itype = vals(4)
       end if
 
       end function get_itype
@@ -609,6 +609,26 @@ c      end function
          itype(ninter,4) = get_itype(item%idx3(6:6))
          itype(ninter,5) = get_itype(item%idx3(5:5))
          itype(ninter,6) = get_itype(item%idx3(4:4))
+      else if (item%rank3==8) then
+         itype(ninter,1) = get_itype(item%idx3(1:1))
+         itype(ninter,2) = get_itype(item%idx3(2:2))
+         itype(ninter,3) = get_itype(item%idx3(3:3))
+         itype(ninter,4) = get_itype(item%idx3(4:4))
+         itype(ninter,5) = get_itype(item%idx3(8:8))
+         itype(ninter,6) = get_itype(item%idx3(7:7))
+         itype(ninter,7) = get_itype(item%idx3(6:6))
+         itype(ninter,8) = get_itype(item%idx3(5:5))
+      else if (item%rank3==10) then
+         itype(ninter,1) = get_itype(item%idx3(1:1))
+         itype(ninter,2) = get_itype(item%idx3(2:2))
+         itype(ninter,3) = get_itype(item%idx3(3:3))
+         itype(ninter,4) = get_itype(item%idx3(4:4))
+         itype(ninter,5) = get_itype(item%idx3(5:5))
+         itype(ninter,6) = get_itype(item%idx3(10:10))
+         itype(ninter,7) = get_itype(item%idx3(9:9))
+         itype(ninter,8) = get_itype(item%idx3(8:8))
+         itype(ninter,9) = get_itype(item%idx3(7:7))
+         itype(ninter,10)= get_itype(item%idx3(6:6))
        else
          write(item%out,*) 'rank3 = ',item%rank3
          write(item%out,*) 'extend me for missing intermediate rank'
@@ -1516,22 +1536,24 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
         return
       end if
 
-      if (rank==6.and.spin) then
-        if (nxstr<5) call quit(1,'create_exchange_string',
-     &       'dimension error (rk 6 a)')
-        str_x(1) = c_index(str,1)  ! cab
-        str_x(2) = c_index(str,2)  ! bca
-        str_x(3) = f_index(str,3)  ! acb
-        str_x(4) = f_index(c_index(str,1),3) ! cba
-        str_x(5) = f_index(c_index(str,2),3) ! bac
-        nxstr = 5
-        return
-      else
-        if (nxstr<1) call quit(1,'create_exchange_string',
-     &       'dimension error (rk 6 b)')
-        str_x(1) = f_index(str,3)  ! acb
-        nxstr = 1
-        return
+      if (rank == 6) then
+         if (spin) then
+           if (nxstr<5) call quit(1,'create_exchange_string',
+     &          'dimension error (rk 6 a)')
+           str_x(1) = c_index(str,1)  ! cab
+           str_x(2) = c_index(str,2)  ! bca
+           str_x(3) = f_index(str,3)  ! acb
+           str_x(4) = f_index(c_index(str,1),3) ! cba
+           str_x(5) = f_index(c_index(str,2),3) ! bac
+           nxstr = 5
+           return
+         else
+           if (nxstr<1) call quit(1,'create_exchange_string',
+     &          'dimension error (rk 6 b)')
+           str_x(1) = f_index(str,3)  ! acb
+           nxstr = 1
+           return
+         end if
       end if
 
       end subroutine
@@ -5194,7 +5216,7 @@ c       end if
       type(twodarray), pointer ::
      &   poss(:,:) => null()
       integer ::
-     &   i, j, k, l, m, n, shift,
+     &   i, j, k, l, m, n, o, p, q, r, shift,
      &   i1, i2, i3, i4,
      &   z1, z2, r1, r2
       character(len=INDEX_LEN) ::
@@ -5310,87 +5332,139 @@ c       end if
 
       if (item%contri/=0) then
       do i = 1, 2
-         i1 = poss(1,1)%elements(1)
-         i2 = poss(1,1)%elements(2)
-         i3 = poss(2,1)%elements(1)
-         i4 = poss(2,1)%elements(2)
-         item%t_spin(z1)%spin(i1, i2) = i
-         item%t_spin(z2)%spin(i3, i4) = i
-         if (shift <= 1) then
-            call save_spin_case(item,eloop,ntest)
+       i1 = poss(1,1)%elements(1)
+       i2 = poss(1,1)%elements(2)
+       i3 = poss(2,1)%elements(1)
+       i4 = poss(2,1)%elements(2)
+       item%t_spin(z1)%spin(i1, i2) = i
+       item%t_spin(z2)%spin(i3, i4) = i
+       if (shift <= 1) then
+        call save_spin_case(item,eloop,ntest)
+       end if
+       if (shift > 1) then
+        do j = 1, 2
+         i1 = poss(1,2)%elements(1)
+         i2 = poss(1,2)%elements(2)
+         i3 = poss(2,2)%elements(1)
+         i4 = poss(2,2)%elements(2)
+         item%t_spin(z1)%spin(i1, i2) = j
+         item%t_spin(z2)%spin(i3, i4) = j
+         if (shift <= 2) then
+          ! For scalar results, only need half of the spin
+          ! cases, the rest are the same
+          if (item%rank3 == 0 .and. i == 2) exit
+          call save_spin_case(item,eloop,ntest)
          end if
-         if (shift > 1) then
-            do j = 1, 2
-               i1 = poss(1,2)%elements(1)
-               i2 = poss(1,2)%elements(2)
-               i3 = poss(2,2)%elements(1)
-               i4 = poss(2,2)%elements(2)
-               item%t_spin(z1)%spin(i1, i2) = j
-               item%t_spin(z2)%spin(i3, i4) = j
-               if (shift <= 2) then
-                  ! For scalar results, only need half of the spin
-                  ! cases, the rest are the same
+         if (shift > 2) then
+          do k = 1, 2
+           i1 = poss(1,3)%elements(1)
+           i2 = poss(1,3)%elements(2)
+           i3 = poss(2,3)%elements(1)
+           i4 = poss(2,3)%elements(2)
+           item%t_spin(z1)%spin(i1, i2) = k
+           item%t_spin(z2)%spin(i3, i4) = k
+           if (shift <= 3) then
+            call save_spin_case(item,eloop,ntest)
+           end if
+           if (shift > 3) then
+            do l = 1, 2
+             i1 = poss(1,4)%elements(1)
+             i2 = poss(1,4)%elements(2)
+             i3 = poss(2,4)%elements(1)
+             i4 = poss(2,4)%elements(2)
+             item%t_spin(z1)%spin(i1, i2) = l
+             item%t_spin(z2)%spin(i3, i4) = l
+             if (shift <= 4) then
+              if (item%rank3 == 0 .and. i == 2) exit
+              call save_spin_case(item,eloop,ntest)
+             end if
+             if (shift > 4) then
+              do m = 1, 2
+               i1 = poss(1,5)%elements(1)
+               i2 = poss(1,5)%elements(2)
+               i3 = poss(2,5)%elements(1)
+               i4 = poss(2,5)%elements(2)
+               item%t_spin(z1)%spin(i1, i2) = m
+               item%t_spin(z2)%spin(i3, i4) = m
+               if (shift <= 5) then
+                call save_spin_case(item,eloop,ntest)
+               end if
+               if (shift > 5) then
+                do n = 1, 2
+                 i1 = poss(1,6)%elements(1)
+                 i2 = poss(1,6)%elements(2)
+                 i3 = poss(2,6)%elements(1)
+                 i4 = poss(2,6)%elements(2)
+                 item%t_spin(z1)%spin(i1, i2) = n
+                 item%t_spin(z2)%spin(i3, i4) = n
+                 if (shift <= 6) then
                   if (item%rank3 == 0 .and. i == 2) exit
                   call save_spin_case(item,eloop,ntest)
-               end if
-               if (shift > 2) then
-                  do k = 1, 2
-                     i1 = poss(1,3)%elements(1)
-                     i2 = poss(1,3)%elements(2)
-                     i3 = poss(2,3)%elements(1)
-                     i4 = poss(2,3)%elements(2)
-                     item%t_spin(z1)%spin(i1, i2) = k
-                     item%t_spin(z2)%spin(i3, i4) = k
-                     if (shift <= 3) then
+                 end if
+                 if (shift > 6) then
+                  do o = 1, 2
+                   i1 = poss(1,7)%elements(1)
+                   i2 = poss(1,7)%elements(2)
+                   i3 = poss(2,7)%elements(1)
+                   i4 = poss(2,7)%elements(2)
+                   item%t_spin(z1)%spin(i1, i2) = o
+                   item%t_spin(z2)%spin(i3, i4) = o
+                   if (shift <= 7) then
+                    call save_spin_case(item,eloop,ntest)
+                   end if
+                   if (shift > 7) then
+                    do p = 1, 2
+                     i1 = poss(1,8)%elements(1)
+                     i2 = poss(1,8)%elements(2)
+                     i3 = poss(2,8)%elements(1)
+                     i4 = poss(2,8)%elements(2)
+                     item%t_spin(z1)%spin(i1, i2) = p
+                     item%t_spin(z2)%spin(i3, i4) = p
+                     if (shift <= 8) then
+                      if (item%rank3 == 0 .and. i == 2) exit
+                      call save_spin_case(item,eloop,ntest)
+                     end if
+                     if (shift > 8) then
+                      do q = 1, 2
+                       i1 = poss(1,9)%elements(1)
+                       i2 = poss(1,9)%elements(2)
+                       i3 = poss(2,9)%elements(1)
+                       i4 = poss(2,9)%elements(2)
+                       item%t_spin(z1)%spin(i1, i2) = q
+                       item%t_spin(z2)%spin(i3, i4) = q
+                       if (shift <= 9) then
                         call save_spin_case(item,eloop,ntest)
-                     end if
-                     if (shift > 3) then
-                        do l = 1, 2
-                           i1 = poss(1,4)%elements(1)
-                           i2 = poss(1,4)%elements(2)
-                           i3 = poss(2,4)%elements(1)
-                           i4 = poss(2,4)%elements(2)
-                           item%t_spin(z1)%spin(i1, i2) = l
-                           item%t_spin(z2)%spin(i3, i4) = l
-                           if (shift <= 4) then
-                              if (item%rank3 == 0 .and. i == 2) exit
-                              call save_spin_case(item,eloop,ntest)
-                           end if
-                           if (shift > 4) then
-                              do m = 1, 2
-                                 i1 = poss(1,5)%elements(1)
-                                 i2 = poss(1,5)%elements(2)
-                                 i3 = poss(2,5)%elements(1)
-                                 i4 = poss(2,5)%elements(2)
-                                 item%t_spin(z1)%spin(i1, i2) = m
-                                 item%t_spin(z2)%spin(i3, i4) = m
-                                 if (shift <= 5) then
-                                    call
-     &                                  save_spin_case(item,eloop,ntest)
-                                 end if
-                                 if (shift > 5) then
-                                    do n = 1, 2
-                                       i1 = poss(1,6)%elements(1)
-                                       i2 = poss(1,6)%elements(2)
-                                       i3 = poss(2,6)%elements(1)
-                                       i4 = poss(2,6)%elements(2)
-                                       item%t_spin(z1)%spin(i1, i2) = n
-                                       item%t_spin(z2)%spin(i3, i4) = n
-                                       if (shift <= 6) then
-                                  if (item%rank3 == 0 .and. i == 2) exit
-                                       call
-     &                                  save_spin_case(item,eloop,ntest)
-                                       end if
-                                    end do
-                                 end if
-                              end do
-                           end if
+                       end if
+                       if (shift > 9) then
+                        do r = 1, 2
+                         i1 = poss(1,10)%elements(1)
+                         i2 = poss(1,10)%elements(2)
+                         i3 = poss(2,10)%elements(1)
+                         i4 = poss(2,10)%elements(2)
+                         item%t_spin(z1)%spin(i1, i2) = r
+                         item%t_spin(z2)%spin(i3, i4) = r
+                         if (shift <= 10) then
+                          if (item%rank3 == 0 .and. i == 2) exit
+                          call save_spin_case(item,eloop,ntest)
+                         end if
                         end do
+                       end if
+                      end do
                      end if
+                    end do
+                   end if
                   end do
+                 end if
+                end do
                end if
+              end do
+             end if
             end do
+           end if
+          end do
          end if
+        end do
+       end if
       end do
 
       else

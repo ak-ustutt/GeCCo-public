@@ -230,7 +230,7 @@ def generic_index(tensor):
 
     hole     = ['i','j','k','l','m','n','o']
     particle = ['a','b','c','d','e','f','g','h']
-    valence  = ['p','q','r','s','t','u','v','w']
+    valence  = ['p','q','r','s','t','u','v','w','x','y','z']
 
     gen=[]
     for i in range (0,len(index)):
@@ -1016,10 +1016,14 @@ if singles:
 if multi:
     print_code_block('multi_ref/declare_tensors', gecco, f2)
 
-    #if "Ym1" not in combined:
-    print("tensor: Ym1[pq],!Create{type:disk} Ym1",file=f2)
-    #if "Ym2" not in combined:
-    print("tensor: Ym2[pqrs],!Create{type:disk} Ym2",file=f2)
+    #if "Ym1" in combined:
+    print("tensor: Ym1[pp],      !Create{type:disk} Ym1",file=f2)
+    #if "Ym2" in combined:
+    print("tensor: Ym2[pppp],    !Create{type:disk} Ym2",file=f2)
+    #if "Ym3" in combined:
+    print("tensor: Ym3[pppppp],  !Create{type:disk} Ym3",file=f2)
+    if "Ym4" in combined:
+        print("tensor: Ym4[pppppppp],!Create{type:disk} Ym4",file=f2)
     print(file=f2)
 
 else:
