@@ -1773,7 +1773,8 @@ c     &     item%nspin_cases
       call convert_to_abab_block(item, t_spin, new_idx1, new_idx2,
      &                           new_idx3, c_fact)
 
-      ! for pure aaaa or bbbb cases create exchange string
+
+      ! For pure aaaa or bbbb cases create exchange string
       if (.not.item%inter(1)) then
         nxstr1 = maxxstr        ! assure subroutine that enough space is there
         call create_exchange_string(item%rank1,s1,new_idx1,
@@ -1781,6 +1782,7 @@ c     &     item%nspin_cases
       else
         nxstr1 = 0
       end if
+
       if (.not.item%inter(2)) then
         nxstr2 = maxxstr
         call create_exchange_string(item%rank2,s2,new_idx2,
@@ -2028,7 +2030,7 @@ c     &                      item%cntr(4),item%out)
       sfact=''
       sfact_star=''
       if (abs(abs(c_fact) - 1.0d+0) > 1.0d-15) then
-            write(sfact,'(f20.11)') c_fact
+            write(sfact,'(f24.15)') c_fact
 
             if (c_fact < 0.0d+0) then
                do i = 1, len(sfact)
