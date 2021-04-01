@@ -108,3 +108,106 @@ drop S4:S1[rpqs]
 store S4x:S1[rpqs]
 
 
+
+// Construct preconditoner
+alloc Eact[]
+load Dm1[pq], g:aa[pq]
+.Eact[] += Dm1[pq] g:aa[pq]
+drop g:aa[pq], Dm1[pq]
+store Eact[]
+
+alloc D1f[pq]
+load Dm2[pqrs], g:aa[qs]
+.D1f[ps] += Dm2[pqrs] g:aa[qr]
+drop g:aa[qs], Dm2[pqrs]
+store D1f[pq]
+
+alloc D2f[pqrs]
+load Dm3[pqrstu], g:aa[pq]
+.D2f[pqtu] += Dm3[pqrstu] g:aa[rs]
+drop g:aa[pq], Dm3[pqrstu]
+store D2f[pqrs]
+
+
+// P1
+alloc Y2:P1[pq]
+load D1f[pq]
+.Y2:P1[pq] += D1f[pq]
+drop D1f[pq]
+store Y2:P1[pq]
+
+// S1
+alloc YA:S1[pqrs]
+load D1f[pq], D2f[pqrs], Dm1[pq], Dm2[pqru], g:aa[rs], deltaaa[rs]
+load S2:S1[pqrs]
+.YA:S1[pqrs] += D1f[pr] deltaaa[qs]
+.YA:S1[pqrs] += Dm1[pr] g:aa[qs]
+.YA:S1[pqrs] += D2f[psrq]
+.YA:S1[pqrs] += g:aa[st] Dm2[ptrq]
+.YA:S1[pqrs] += Dm2[psrt] g:aa[tq]
+drop S2:S1[pqrs]
+drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
+store YA:S1[pqrs]
+
+alloc YB:S1[pqrs]
+load D1f[pq], D2f[pqrs], Dm1[pq], Dm2[pqru], g:aa[rs], deltaaa[rs]
+.YB:S1[pqrs] += 2*D1f[pr] deltaaa[qs]
+.YB:S1[pqrs] += 2*Dm1[pr] g:aa[qs]
+.YB:S1[pqrs] -= D2f[psrq]
+.YB:S1[pqrs] -= g:aa[st] Dm2[ptrq]
+.YB:S1[pqrs] -= Dm2[psrt] g:aa[tq]
+drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
+store YB:S1[pqrs]
+
+// Optimised code (ie. fewer contractions)
+//alloc YA:S1[pqrs]
+//alloc YB:S1[pqrs]
+//
+//load D1f[pq], deltaaa[qs]
+//alloc I1[pqrs]
+//.I1[pqrs] += D1f[pr] deltaaa[qs]
+//.YA:S1[pqrs] += I1[pqrs]
+//.YB:S1[pqrs] += 2*I1[pqrs]
+//drop I1[pqrs]
+//drop deltaaa[qs], D1f[pq]
+//
+//load Dm1[pr], g:aa[qs]
+//alloc I1[pqrs]
+//.I1[pqrs] += Dm1[pr] g:aa[qs]
+//.YA:S1[pqrs] += I1[pqrs]
+//.YB:S1[pqrs] += 2*I1[pqrs]
+//drop I1[pqrs]
+//drop g:aa[qs], Dm1[pr]
+//
+//load D2f[pqrs]
+//.YA:S1[pqrs] += D2f[psrq]
+//.YB:S1[pqrs] -= D2f[psrq]
+//drop D2f[pqrs]
+//
+//load Dm2[pqru], g:aa[rs]
+//alloc I1[pqrs]
+//.I1[pqrs] += g:aa[st] Dm2[ptrq]
+//.YA:S1[pqrs] += I1[pqrs]
+//.YB:S1[pqrs] -= I1[pqrs]
+//drop I1[pqrs]
+//
+//alloc I1[pqrs]
+//.I1[pqrs] += Dm2[psrt] g:aa[tq]
+//.YA:S1[pqrs] += I1[pqrs]
+//.YB:S1[pqrs] -= I1[pqrs]
+//drop I1[pqrs]
+//drop g:aa[rs], Dm2[pqru]
+//
+//store YB:S1[pqrs]
+//store YA:S1[pqrs]
+
+// S2
+//alloc Y2:S2[pq]
+//load Dm1[pq], Eact[]
+//.Y2:S2[pq] += Eact[] Dm1[pq]
+//drop Eact[], Dm1[pq]
+//load D1f[pq]
+//.Y2:S2[pq] += D1f[pq]
+//drop D1f[pq]
+//drop Y2:S2[pq]
+
