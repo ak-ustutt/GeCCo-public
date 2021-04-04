@@ -145,6 +145,13 @@ load S2:S1[pqrs]
 .YA:S1[pqrs] += D2f[psrq]
 .YA:S1[pqrs] += g:aa[st] Dm2[ptrq]
 .YA:S1[pqrs] += Dm2[psrt] g:aa[tq]
+// subtract Eact * Overlap (S2x without GS projection)
+load Eact[], S3:S1[pr], S2x:S1[pqrs]
+// undo GS projection here:
+.S2x:S1[pqrs] += .5*S3:S1[pq] S3:S1[rs]
+// factor 0.5 as S2x is twice the overlap
+.YA:S1[pqrs] -= 0.5*Eact[] S2x:S1[pqrs]
+drop S2x:S1[pqrs], S3:S1[pr], Eact[]
 drop S2:S1[pqrs]
 drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
 store YA:S1[pqrs]
@@ -153,9 +160,15 @@ alloc YB:S1[pqrs]
 load D1f[pq], D2f[pqrs], Dm1[pq], Dm2[pqru], g:aa[rs], deltaaa[rs]
 .YB:S1[pqrs] += 2*D1f[pr] deltaaa[qs]
 .YB:S1[pqrs] += 2*Dm1[pr] g:aa[qs]
-.YB:S1[pqrs] -= D2f[psrq]
-.YB:S1[pqrs] -= g:aa[st] Dm2[ptrq]
-.YB:S1[pqrs] -= Dm2[psrt] g:aa[tq]
+.YB:S1[pqrs] -= D2f[psqr]
+.YB:S1[pqrs] -= g:aa[st] Dm2[ptqr]
+.YB:S1[pqrs] -= Dm2[pstr] g:aa[tq]
+// subtract Eact * Overlap (S2x without GS projection)
+load Eact[], S3x:S1[pr], S2:S1[pqrs]
+// undo GS projection here:
+.S2:S1[pqrs] += .5*S3x:S1[pq] S3x:S1[rs]
+.YB:S1[pqrs] -= Eact[] S2:S1[pqrs]
+drop S2:S1[pqrs], S3x:S1[pq], Eact[]
 drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
 store YB:S1[pqrs]
 
