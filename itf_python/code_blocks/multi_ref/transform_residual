@@ -34,10 +34,10 @@ store OR:eaaa[apqr]
 
 // S1
 alloc OR:eaac[apqi]
-load R:eaac[apqi], R:eaca[apiq], X2:S1[pqrs], X4x:S1[pqrs]
-.OR:eaac[arsi] += 1.5*R:eaac[apqi] X2:S1[pqrs]
-.OR:eaac[arsi] += 1.5*R:eaca[apiq] X4x:S1[pqrs]
-drop X4x:S1[pqrs], X2:S1[pqrs], R:eaca[apiq], R:eaac[apqi]
+load R:eaac[apqi], R:eaca[apiq], X2B:S1[pqrs], X4B:S1[pqrs]
+.OR:eaac[arsi] += 1.5*R:eaac[apqi] X2B:S1[pqrs]
+.OR:eaac[arsi] += 1.5*R:eaca[apiq] X4B:S1[pqrs]
+drop X4B:S1[pqrs], X2B:S1[pqrs], R:eaca[apiq], R:eaac[apqi]
 
 // Off-diag orthogonalisation term
 load XS12b:S1[rs], R:ec[ai]
@@ -46,10 +46,10 @@ drop R:ec[ai], XS12b:S1[rs]
 store OR:eaac[apqi]
 
 alloc OR:eaca[apiq]
-load R:eaca[apiq], R:eaac[apqi], X4:S1[pqrs], X2x:S1[pqrs]
-.OR:eaca[aris] += 1.5*R:eaac[apqi] X4:S1[pqrs]
-.OR:eaca[aris] += 1.5*R:eaca[apiq] X2x:S1[pqrs]
-drop X2x:S1[pqrs], X4:S1[pqrs], R:eaac[apqi], R:eaca[apiq]
+load R:eaca[apiq], R:eaac[apqi], X4A:S1[pqrs], X2A:S1[pqrs]
+.OR:eaca[aris] += 1.5*R:eaac[apqi] X4A:S1[pqrs]
+.OR:eaca[aris] += 1.5*R:eaca[apiq] X2A:S1[pqrs]
+drop X2A:S1[pqrs], X4A:S1[pqrs], R:eaac[apqi], R:eaca[apiq]
 
 // Off-diag orthogonalisation term
 load XS12a:S1[rs], R:ec[ai]
