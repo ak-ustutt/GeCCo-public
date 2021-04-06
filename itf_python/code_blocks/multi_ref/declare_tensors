@@ -39,6 +39,7 @@ tensor: Dm3HX[pppppp],   !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep
 // Delta tensors
 tensor: deltacc[ij],      DeltaCloClo
 tensor: deltaaa[pq],      DeltaActAct
+tensor: deltap[ppK],      DeltaPair
 tensor: delta4[pppp],     !Create{type:plain}, Delta4  // Intermediate rank4 delta tensor
 
 // Overlap tensors labeled by the exciation class
