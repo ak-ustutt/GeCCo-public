@@ -6,4 +6,4 @@ index-space: abcd       , External, e
 index-space: mno        , Internal, i
 
 index-space: I          , ConfigI0, I
-index-space: K          , OrthActPair, K
+index-space: KJ         , OrthActPair, K

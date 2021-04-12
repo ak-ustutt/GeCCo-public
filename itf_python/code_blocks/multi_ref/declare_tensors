@@ -2,6 +2,7 @@ tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
 tensor: ShiftP[], ShiftP
+tensor: ShiftI[], ShiftI
 
 // Fock matricies, including core orbitals
 tensor: fc:aa[pq], fc:aa
@@ -144,3 +145,11 @@ tensor: Eact[],     !Create{type:scalar}
 tensor: D1f[pp],    !Create{type:disk}
 tensor: D2f[pppp],  !Create{type:disk}
 
+tensor: OR:eaca[aiK], !Create{type:disk}
+tensor: OR:eaac[aiK], !Create{type:disk}
+tensor: YA:S1[KJ],    !Create{type:disk}
+tensor: YA:S1i[Krs],  !Create{type:disk}
+tensor: YB:S1[KJ],    !Create{type:disk}
+tensor: YB:S1i[Krs],  !Create{type:disk}
+tensor: OT:eaca[aiK], !Create{type:disk}
+tensor: OT:eaac[aiK], !Create{type:disk}

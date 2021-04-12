@@ -57,6 +57,22 @@ load XS12a:S1[rs], R:ec[ai]
 drop R:ec[ai], XS12a:S1[rs]
 store OR:eaca[apiq]
 
+// Transporm to pair index K
+alloc OR:eaca[aiK], OR:eaac[aiK], YA:S1[KJ], YB:S1[KJ]
+alloc YA:S1i[Krs], YB:S1i[Krs]
+load OR:eaca[apiq], OR:eaac[apqi], YA:S1[pqrs], YB:S1[pqrs]
+load deltap[pqK]
+.OR:eaca[aiK] += OR:eaca[apiq] deltap[pqK]
+.OR:eaac[aiK] += OR:eaac[apqi] deltap[pqK]
+.YA:S1i[Krs] += YA:S1[pqrs] deltap[pqK]
+.YA:S1[KJ] += YA:S1i[Krs] deltap[rsJ]
+.YB:S1i[Krs] += YB:S1[pqrs] deltap[pqK]
+.YB:S1[KJ] += YB:S1i[Krs] deltap[rsJ]
+drop deltap[pqK]
+drop YB:S1[pqrs], YA:S1[pqrs], OR:eaac[apqi], OR:eaca[apiq]
+drop YB:S1i[Krs], YA:S1i[Krs]
+store YB:S1[KJ], YA:S1[KJ], OR:eaac[aiK], OR:eaca[aiK]
+
 // S2
 alloc OR:eacc[apij]
 load R:eacc[apij], X2:S2[pq]
