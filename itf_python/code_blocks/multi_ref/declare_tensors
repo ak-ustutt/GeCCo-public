@@ -138,7 +138,7 @@ tensor: Y2:S0[pp],  !Create{type:disk}
 tensor: YA:S1[pppp], YA:S1
 tensor: YB:S1[pppp], YB:S1
 tensor: Y2:S2[pp],  !Create{type:disk}
-tensor: Y2:P0[pp],  !Create{type:disk}
+tensor: Y2:P0[pppp], Y2:P0
 tensor: Y2:P1[pp],  !Create{type:disk}
 
 tensor: Eact[],     !Create{type:scalar}

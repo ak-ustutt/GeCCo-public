@@ -124,6 +124,12 @@ load Dm3[pqrstu], g:aa[pq]
 drop g:aa[pq], Dm3[pqrstu]
 store D2f[pqrs]
 
+// P0
+alloc Y2:P0[pqrs]
+load D2f[pqrs]
+.Y2:P0[pqrs] += 0.25*D2f[prsq]
+drop D2f[pqrs]
+store Y2:P0[pqrs]
 
 // P1
 alloc Y2:P1[pq]
@@ -135,7 +141,6 @@ store Y2:P1[pq]
 // S1
 alloc YA:S1[pqrs]
 load D1f[pq], D2f[pqrs], Dm1[pq], Dm2[pqru], g:aa[rs], deltaaa[rs]
-load S2B:S1[pqrs]
 .YA:S1[pqrs] += D1f[pr] deltaaa[qs]
 .YA:S1[pqrs] += Dm1[pr] g:aa[qs]
 .YA:S1[pqrs] += D2f[psrq]
@@ -148,7 +153,6 @@ load Eact[], S3A:S1[pr], S2A:S1[pqrs]
 // factor 0.5 as S2x is twice the overlap
 .YA:S1[pqrs] -= 0.5*Eact[] S2A:S1[pqrs]
 drop S2A:S1[pqrs], S3A:S1[pr], Eact[]
-drop S2B:S1[pqrs]
 drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
 store YA:S1[pqrs]
 
