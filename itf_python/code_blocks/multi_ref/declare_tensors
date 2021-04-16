@@ -122,34 +122,30 @@ tensor: A4[pp],    !Create{type:disk; sym:+01}
 //tensor: A6[pppp], !Create{type:disk; sym:01/23}
 
 // New preconditioner blocks
-// TODO: create these in C++
-tensor: D:I1[pp],   !Create{type:disk; sym:+01}
-tensor: D:I2[pp],   !Create{type:disk; sym:+01}
-tensor: D:S0[pp],   !Create{type:disk; sym:+01}
-tensor: D:S1[pppp], !Create{type:disk; sym:01/23}
-tensor: Dx:S1[pppp],!Create{type:disk; sym:01/23}
-tensor: D:S2[pp],   !Create{type:disk; sym:+01}
-tensor: D:P0[pp],   !Create{type:disk; sym:+01}
-tensor: D:P1[pp],   !Create{type:disk; sym:+01}
-
-tensor: Y2:I1[pp],  !Create{type:disk}
-tensor: Y2:I2[pp],  !Create{type:disk}
-tensor: Y2:S0[pp],  !Create{type:disk}
-tensor: YA:S1[pppp], YA:S1
-tensor: YB:S1[pppp], YB:S1
-tensor: Y2:S2[pp],  !Create{type:disk}
-tensor: Y2:P0[pppp], Y2:P0
-tensor: Y2:P1[pp],  !Create{type:disk}
+tensor: Y2:I1[pppppp], Y2:I1
+tensor: Y2:I2[pppp],   Y2:I2
+tensor: Y2:S0[pppppp], Y2:S0
+tensor: YA:S1[pppp],   YA:S1
+tensor: YB:S1[pppp],   YB:S1
+tensor: Y2:S2[pp],     Y2:S2
+tensor: Y2:P0[pppp],   Y2:P0
+tensor: Y2:P1[pp],     Y2:P1
 
 tensor: Eact[],     !Create{type:scalar}
 tensor: D1f[pp],    !Create{type:disk}
 tensor: D2f[pppp],  !Create{type:disk}
 
+tensor: OR:aacc[Kij], !Create{type:disk}
 tensor: OR:eaca[aiK], !Create{type:disk}
 tensor: OR:eaac[aiK], !Create{type:disk}
+tensor: OR:eeaa[abK], !Create{type:disk}
+tensor: Y2:I2[KJ],    !Create{type:disk}
 tensor: YA:S1[KJ],    !Create{type:disk}
-tensor: YA:S1i[Krs],  !Create{type:disk}
 tensor: YB:S1[KJ],    !Create{type:disk}
-tensor: YB:S1i[Krs],  !Create{type:disk}
+tensor: Y2:P0[KJ],    !Create{type:disk}
+tensor: Yi[Krs],      !Create{type:disk}
+tensor: OT:aacc[Kij], !Create{type:disk}
 tensor: OT:eaca[aiK], !Create{type:disk}
 tensor: OT:eaac[aiK], !Create{type:disk}
+tensor: OT:eeaa[abK], !Create{type:disk}
+tensor: I1[pq],       !Create{type:disk}

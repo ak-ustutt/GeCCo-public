@@ -44,3 +44,69 @@ load Dm1[pp]
 drop Dm1[pp]
 store S2:P1[pq]
 
+// Construct new preconditioner
+alloc Eact[]
+load Dm1[pq], g:aa[pq]
+.Eact[] += Dm1[pq] g:aa[pq]
+drop g:aa[pq], Dm1[pq]
+store Eact[]
+
+alloc D1f[pq]
+load Dm2[pqrs], g:aa[qs]
+.D1f[ps] += Dm2[pqrs] g:aa[qr]
+drop g:aa[qs], Dm2[pqrs]
+store D1f[pq]
+
+alloc D2f[pqrs]
+load Dm3[pqrstu], g:aa[pq]
+.D2f[pqtu] += Dm3[pqrstu] g:aa[rs]
+drop g:aa[pq], Dm3[pqrstu]
+store D2f[pqrs]
+
+// I2
+// Factor of 0.25 included here instead of in the transformation
+alloc Y2:I2[pqrs]
+load Eact[], deltaaa[pr], deltaaa[qs], g:aa[pr], Dm1[qs], D1f[rq], D2f[pqsr], S2:I2[pqts]
+.Y2:I2[pqrs] += deltaaa[pr] deltaaa[qs]
+element* Y2:I2[pqrs], Eact[]
+.Y2:I2[pqrs] -= g:aa[pr] Dm1[qs]
+.Y2:I2[pqrs] += 2*g:aa[pr] deltaaa[qs]
+alloc I1[pq]
+.I1[pq] += g:aa[pr] D1f[rq]
+.Y2:I2[pqrs] -= deltaaa[qs] I1[pr]
+drop I1[pq]
+alloc I1[pq]
+.I1[pq] += Dm1[pr] g:aa[rq]
+.Y2:I2[pqrs] -= deltaaa[qs] I1[pr]
+drop I1[pq]
+.Y2:I2[pqrs] -= deltaaa[qs] D1f[pr]
+.Y2:I2[pqrs] -= .5*D2f[pqsr]
+.Y2:I2[pqrs] += .25*g:aa[rt] S2:I2[pqts]
+.Y2:I2[pqrs] += .25*g:aa[pt] S2:I2[rstq]
+drop S2:I2[pqts], D2f[pqsr], D1f[rq], Dm1[qs], g:aa[pr], deltaaa[qs], deltaaa[pr], Eact[]
+store Y2:I2[pqrs]
+
+// S2
+alloc Y2:S2[pq]
+load Eact[], Dm1[pq], D1f[pq], S2:S2[pr], g:aa[rq]
+.Y2:S2[pq] += Eact[] Dm1[pq]
+.Y2:S2[pq] += D1f[pq]
+.Y2:S2[pq] += S2:S2[pr] g:aa[rq]
+.Y2:S2[pq] -= g:aa[pr] Dm1[rq]
+drop g:aa[rq], S2:S2[pr], D1f[pq], Dm1[pq], Eact[]
+store Y2:S2[pq]
+
+// P0
+alloc Y2:P0[pqrs]
+load D2f[pqrs]
+.Y2:P0[pqrs] += 0.25*D2f[prsq]
+drop D2f[pqrs]
+store Y2:P0[pqrs]
+
+// P1
+alloc Y2:P1[pq]
+load D1f[pq]
+.Y2:P1[pq] += D1f[pq]
+drop D1f[pq]
+store Y2:P1[pq]
+
