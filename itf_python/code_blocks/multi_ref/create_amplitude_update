@@ -1,6 +1,7 @@
 ---- code("Create_Amplitude_Update")
 alloc Var1[]
 
+// I1
 load OR:ac[pi]
 load g:aa[pp], g:cc[ii], ShiftI[]
 denom-scale OR:ac[pi], g:aa[pp] - g:cc[ii] + ShiftI[]
@@ -11,6 +12,7 @@ store OT:ac[pi]
 .Var1[] += 2.0*OR:ac[pi] OR:ac[pi]
 store OR:ac[pi]
 
+// S1
 load OR:ea[ap]
 load g:ee[aa], g:aa[pp], ShiftS[]
 denom-scale OR:ea[ap], g:ee[aa] - g:aa[pp] + ShiftS[]
@@ -24,17 +26,10 @@ store OR:ea[ap]
 
 store Var1[]
 
-alloc Var2[]
-load OR:aacc[pqij]
-load g:aa[pp], g:cc[ii], ShiftI[]
-denom-scale OR:aacc[pqij], g:aa[pp] + g:aa[qq] - g:cc[ii] - g:cc[jj] + ShiftI[]
-drop ShiftI[], g:cc[ii], g:aa[pp]
-alloc OT:aacc[pqij]
-.OT:aacc[pqij] -= OR:aacc[pqij]
-store OT:aacc[pqij]
-.Var2[] += (2.0*OR:aacc[pqij] - OR:aacc[qpij]) OR:aacc[pqij]
-drop OR:aacc[pqij]
 
+alloc Var2[]
+
+// I1
 load OR:aaac[pqri]
 load g:aa[pp], g:cc[ii], ShiftI[]
 denom-scale OR:aaac[pqri], g:aa[pp] + g:aa[qq] - g:aa[rr] - g:cc[ii] + ShiftI[]
@@ -45,16 +40,29 @@ store OT:aaac[pqri]
 .Var2[] += OR:aaac[pqri] OR:aaac[pqri]
 drop OR:aaac[pqri]
 
-load OR:eacc[apij]
-load g:ee[aa], g:aa[pp], g:cc[ii], ShiftS[]
-denom-scale OR:eacc[apij], g:ee[aa] + g:aa[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
-drop ShiftS[], g:cc[ii], g:aa[pp], g:ee[aa]
-alloc OT:eacc[apij]
-.OT:eacc[apij] -= OR:eacc[apij]
-store OT:eacc[apij]
-.Var2[] += OR:eacc[apij] OR:eacc[apij]
-drop OR:eacc[apij]
+// I2
+load OR:aacc[pqij]
+load g:aa[pp], g:cc[ii], ShiftI[]
+denom-scale OR:aacc[pqij], g:aa[pp] + g:aa[qq] - g:cc[ii] - g:cc[jj] + ShiftI[]
+drop ShiftI[], g:cc[ii], g:aa[pp]
+alloc OT:aacc[pqij]
+.OT:aacc[pqij] -= OR:aacc[pqij]
+store OT:aacc[pqij]
+.Var2[] += (2.0*OR:aacc[pqij] - OR:aacc[qpij]) OR:aacc[pqij]
+drop OR:aacc[pqij]
 
+// S0
+load OR:eaaa[apqr]
+load g:ee[aa], g:aa[pp], ShiftS[]
+denom-scale OR:eaaa[apqr], g:ee[aa] + g:aa[pp] - g:aa[qq] - g:aa[rr] + ShiftS[]
+drop ShiftS[], g:aa[pp], g:ee[aa]
+alloc OT:eaaa[apqr]
+.OT:eaaa[apqr] -= OR:eaaa[apqr]
+store OT:eaaa[apqr]
+.Var2[] += OR:eaaa[apqr] OR:eaaa[apqr]
+drop OR:eaaa[apqr]
+
+// S1
 //load OR:eaac[apqi]
 ////load g:ee[aa], g:cc[ii], g:aa[pp]
 ////denom-scale OR:eaac[apqi], g:ee[aa] + g:aa[pp] - g:aa[qq] - g:cc[ii]
@@ -84,6 +92,7 @@ drop OR:eacc[apij]
 //.Var2[] += OR:eaca[apiq] OR:eaca[apiq]
 //drop OR:eaca[apiq]
 
+// S1
 load OR:eaac[aiK]
 load g:ee[aa], g:cc[ii], YB:S1[KK], ShiftS[]
 denom-scale OR:eaac[aiK], g:ee[aa] + YB:S1[KK] - g:cc[ii] + ShiftS[]
@@ -114,28 +123,18 @@ store OT:eaca[apiq]
 .Var2[] += OR:eaca[aiK] OR:eaca[aiK]
 drop OR:eaca[aiK]
 
+// S2
+load OR:eacc[apij]
+load g:ee[aa], g:aa[pp], g:cc[ii], ShiftS[]
+denom-scale OR:eacc[apij], g:ee[aa] + g:aa[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
+drop ShiftS[], g:cc[ii], g:aa[pp], g:ee[aa]
+alloc OT:eacc[apij]
+.OT:eacc[apij] -= OR:eacc[apij]
+store OT:eacc[apij]
+.Var2[] += OR:eacc[apij] OR:eacc[apij]
+drop OR:eacc[apij]
 
-
-load OR:eaaa[apqr]
-load g:ee[aa], g:aa[pp], ShiftS[]
-denom-scale OR:eaaa[apqr], g:ee[aa] + g:aa[pp] - g:aa[qq] - g:aa[rr] + ShiftS[]
-drop ShiftS[], g:aa[pp], g:ee[aa]
-alloc OT:eaaa[apqr]
-.OT:eaaa[apqr] -= OR:eaaa[apqr]
-store OT:eaaa[apqr]
-.Var2[] += OR:eaaa[apqr] OR:eaaa[apqr]
-drop OR:eaaa[apqr]
-
-load OR:eeac[abpi]
-load g:ee[aa], g:cc[ii], g:aa[pp], ShiftP[]
-denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] - g:aa[pp] - g:cc[ii] + ShiftP[]
-drop ShiftP[], g:aa[pp], g:cc[ii], g:ee[aa]
-alloc OT:eeac[abpi]
-.OT:eeac[abpi] -= OR:eeac[abpi]
-store OT:eeac[abpi]
-.Var2[] += OR:eeac[abpi] OR:eeac[abpi]
-store OR:eeac[abpi]
-
+// P0
 load OR:eeaa[abpq]
 load g:ee[aa], g:aa[pp], ShiftP[]
 denom-scale OR:eeaa[abpq], g:ee[aa] + g:ee[bb] - g:aa[pp] - g:aa[qq] + ShiftP[]
@@ -146,6 +145,16 @@ store OT:eeaa[abpq]
 .Var2[] += (2.0*OR:eeaa[abpq] - OR:eeaa[bapq]) OR:eeaa[abpq]
 drop OR:eeaa[abpq]
 
+// P1
+load OR:eeac[abpi]
+load g:ee[aa], g:cc[ii], g:aa[pp], ShiftP[]
+denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] - g:aa[pp] - g:cc[ii] + ShiftP[]
+drop ShiftP[], g:aa[pp], g:cc[ii], g:ee[aa]
+alloc OT:eeac[abpi]
+.OT:eeac[abpi] -= OR:eeac[abpi]
+store OT:eeac[abpi]
+.Var2[] += OR:eeac[abpi] OR:eeac[abpi]
+store OR:eeac[abpi]
 
 store Var2[]
 
