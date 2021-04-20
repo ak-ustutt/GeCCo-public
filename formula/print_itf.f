@@ -63,7 +63,7 @@
       inter_spin_dict%ncase = 0
 
       idx_code = 0
-      
+
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
@@ -137,7 +137,7 @@
             else
               op => op_info%op_arr(fl_item%target)%op
               call warn('print_itf','undeclared target '//trim(op%name))
-            end if            
+            end if
             !write(itflog,*) '[INIT TARGET] ',trim(op%name)
          else if (fl_item%command==command_set_target_update ) then
            call quit(1,'print_itf','not prepared for switching targets')

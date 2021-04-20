@@ -178,13 +178,14 @@ SCALE_COPY({
 
 PRINT_MEL({
         LIST:'ME_PRECON2g',
-        COMMENT:'hello'})
+        COMMENT:'hello1'})
 
 PRINT_MEL_INFO({
         LIST:'ME_PRECON2g'})
 
 PRINT_MEL({
-        LIST:'A_TRF_LST'})
+        LIST:'A_TRF_LST',
+        COMMENT:'hello2'})
 
 debug_MEL('ME_PRECON2g')
 

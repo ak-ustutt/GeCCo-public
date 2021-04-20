@@ -3,12 +3,20 @@ gthresh,orbital=1d-13,energy=1d-13
 
 geom={c;h,1,1.4}
 basis,vdz(p)
-{casscf
+{casscf;orbital,2104.2
 occ,4,0,0,0
 closed,3,0,0,0
 wf,7,1,1}
+!{cmrcc,max_en=1,max_res=1,maxit=40
+!core,1,0,0,0}
+
+symmetry,nosym
+{casscf;start,2104.2
+occ,4
+closed,3
+wf,7,1,1}
 {cmrcc,max_en=1,max_res=1,maxit=40
-core,1,0,0,0}
+core,1}
 e = energy
 
 eold = -37.829750326557
