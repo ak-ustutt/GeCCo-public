@@ -19,6 +19,17 @@ load R:aacc[pqij], X2:I2[pqrs]
 drop X2:I2[pqrs], R:aacc[pqij]
 store OR:aacc[pqij]
 
+// Transform to pair index K
+alloc OR:aacc[Kij], Y2:I2[KJ]
+load OR:aacc[pqij], Y2:I2[pqrs], deltap[pqK]
+.OR:aacc[Kij] += OR:aacc[pqij] deltap[pqK]
+alloc Yi[Krs]
+.Yi[Krs] += Y2:I2[pqrs] deltap[pqK]
+.Y2:I2[KJ] += Yi[Krs] deltap[rsJ]
+drop Yi[Krs]
+drop deltap[pqK], Y2:I2[pqrs], OR:aacc[pqij]
+store Y2:I2[KJ], OR:aacc[Kij]
+
 // S0
 alloc OR:ea[ap]
 load R:ea[ap], X1:S0[pq]
@@ -57,6 +68,24 @@ load XS12a:S1[rs], R:ec[ai]
 drop R:ec[ai], XS12a:S1[rs]
 store OR:eaca[apiq]
 
+// Transporm to pair index K
+alloc OR:eaca[aiK], OR:eaac[aiK], YA:S1[KJ], YB:S1[KJ]
+load OR:eaca[apiq], OR:eaac[apqi], YA:S1[pqrs], YB:S1[pqrs]
+load deltap[pqK]
+.OR:eaca[aiK] += OR:eaca[apiq] deltap[pqK]
+.OR:eaac[aiK] += OR:eaac[apqi] deltap[pqK]
+alloc Yi[Krs]
+.Yi[Krs] += YA:S1[pqrs] deltap[pqK]
+.YA:S1[KJ] += Yi[Krs] deltap[rsJ]
+drop Yi[Krs]
+alloc Yi[Krs]
+.Yi[Krs] += YB:S1[pqrs] deltap[pqK]
+.YB:S1[KJ] += Yi[Krs] deltap[rsJ]
+drop Yi[Krs]
+drop deltap[pqK]
+drop YB:S1[pqrs], YA:S1[pqrs], OR:eaac[apqi], OR:eaca[apiq]
+store YB:S1[KJ], YA:S1[KJ], OR:eaac[aiK], OR:eaca[aiK]
+
 // S2
 alloc OR:eacc[apij]
 load R:eacc[apij], X2:S2[pq]
@@ -70,6 +99,17 @@ load R:eeaa[abpq], X2:P0[pqrs]
 .OR:eeaa[abrs] += 2*R:eeaa[abpq] X2:P0[pqrs]
 drop X2:P0[pqrs], R:eeaa[abpq]
 store OR:eeaa[abpq]
+
+// Transform to pair index K
+alloc OR:eeaa[abK], Y2:P0[KJ]
+load OR:eeaa[abpq], Y2:P0[pqrs], deltap[pqK]
+.OR:eeaa[abK] += OR:eeaa[abpq] deltap[pqK]
+alloc Yi[Krs]
+.Yi[Krs] += Y2:P0[pqrs] deltap[pqK]
+.Y2:P0[KJ] += Yi[Krs] deltap[rsJ]
+drop Yi[Krs]
+drop deltap[pqK], Y2:P0[pqrs], OR:eeaa[abpq]
+store Y2:P0[KJ], OR:eeaa[abK]
 
 // P1
 alloc OR:eeac[abpi]

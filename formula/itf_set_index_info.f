@@ -4,8 +4,8 @@
 *     condense the information about index labels (on contraction info contr and contr_red)
 *     to an index array of the form
 *     itf_index_info(<len1>,<len2>,<len3>,<idx11>,<idx12>,...<idx1(len1)>,<idx21>,...,<idx31>,...)
-*     the indices contain orbital space (hpvx) and index (idx) as: 1000*hpvx+idx 
-      
+*     the indices contain orbital space (hpvx) and index (idx) as: 1000*hpvx+idx
+
       implicit none
 
       include 'opdim.h'
@@ -31,7 +31,7 @@
      &     nvtxop, ivtx, ii, icnt, idx, idx1, idx2, idx3
       logical ::
      &     on_list
-      
+
       nvtxop = 0
       do ivtx = 1, contr%nvtx
         if (contr%svertex(ivtx)==isvtx1) then
@@ -65,7 +65,7 @@
             ivtxop(nvtxop) = ivtx
           end if
         end do
-        
+
         icnt = 0
         do idx = 1, contr%nidx
           on_list = .false.
@@ -95,7 +95,7 @@
           icnt = icnt+1
           itf_index_info(ii)=contr_red%contr_string(idx)%hpvx*1000
      &         +contr_red%contr_string(idx)%idx
-        end do       
+        end do
       else
         do idx = 1, contr_red%nxidx
           ii = ii+1

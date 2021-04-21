@@ -106,36 +106,10 @@ store S4B:S1[rpqs]
 
 
 // Construct preconditoner
-alloc Eact[]
-load Dm1[pq], g:aa[pq]
-.Eact[] += Dm1[pq] g:aa[pq]
-drop g:aa[pq], Dm1[pq]
-store Eact[]
-
-alloc D1f[pq]
-load Dm2[pqrs], g:aa[qs]
-.D1f[ps] += Dm2[pqrs] g:aa[qr]
-drop g:aa[qs], Dm2[pqrs]
-store D1f[pq]
-
-alloc D2f[pqrs]
-load Dm3[pqrstu], g:aa[pq]
-.D2f[pqtu] += Dm3[pqrstu] g:aa[rs]
-drop g:aa[pq], Dm3[pqrstu]
-store D2f[pqrs]
-
-
-// P1
-alloc Y2:P1[pq]
-load D1f[pq]
-.Y2:P1[pq] += D1f[pq]
-drop D1f[pq]
-store Y2:P1[pq]
 
 // S1
 alloc YA:S1[pqrs]
 load D1f[pq], D2f[pqrs], Dm1[pq], Dm2[pqru], g:aa[rs], deltaaa[rs]
-load S2B:S1[pqrs]
 .YA:S1[pqrs] += D1f[pr] deltaaa[qs]
 .YA:S1[pqrs] += Dm1[pr] g:aa[qs]
 .YA:S1[pqrs] += D2f[psrq]
@@ -148,7 +122,6 @@ load Eact[], S3A:S1[pr], S2A:S1[pqrs]
 // factor 0.5 as S2x is twice the overlap
 .YA:S1[pqrs] -= 0.5*Eact[] S2A:S1[pqrs]
 drop S2A:S1[pqrs], S3A:S1[pr], Eact[]
-drop S2B:S1[pqrs]
 drop deltaaa[rs], g:aa[rs], Dm2[pqru], Dm1[pq], D2f[pqrs], D1f[pq]
 store YA:S1[pqrs]
 

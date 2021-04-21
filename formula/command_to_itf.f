@@ -1730,7 +1730,7 @@ c     &     item%nspin_cases
      &   item
       logical, intent(in) ::
      &   s1,s2
-      type(spin_info2), intent(in) ::
+      type(spin_info2), intent(inout) ::
      &   t_spin(3)
       type(x_inter), intent(inout) ::
      &   x_dict(MAXX)
@@ -1822,6 +1822,45 @@ c     &     item%nspin_cases
          write(item%out,*) "Factor: ", c_fact
          write(item%out,*) "---------------------------"
       end if
+
+      ! If dealing with a result line, check the spin of any
+      ! intermediates that contribute to it. If the intermediates begin
+      ! with a beta spin, then the spin will be flipped,
+      ! i.e. baab -> abba. These spin cases are the same, so we don't
+      ! need to contruct both intermediates.
+      !if (.not. item%inter(3)) then
+         if (item%inter(1) .and. item%rank1 /= 0) then
+            if (t_spin(1)%spin(1,1) == 2) then
+
+               do i = 1, 2
+                  do j = 1, item%rank1/2
+                     if (t_spin(1)%spin(i,j) == 2) then
+                        t_spin(1)%spin(i,j) = 1
+                     else
+                        t_spin(1)%spin(i,j) = 2
+                     end if
+                  end do
+               end do
+
+            end if
+         end if
+         if (item%inter(2) .and. item%rank2 /= 0) then
+            if (t_spin(2)%spin(1,1) == 2) then
+
+               do i = 1, 2
+                  do j = 1, item%rank2/2
+                     if (t_spin(2)%spin(i,j) == 1) then
+                        t_spin(2)%spin(i,j) = 2
+                     else
+                        t_spin(2)%spin(i,j) = 1
+                     end if
+                  end do
+               end do
+
+            end if
+         end if
+      !end if
+
 
       ! Change names of specific tensors
       nres = rename_tensor(item%label_res,
@@ -2040,7 +2079,7 @@ c     &                      item%cntr(4),item%out)
       end if
 
 
-      ! Add factor to scalar result cases (going to skip half the spin
+      ! Add factor to scalar result (ie. the energy) cases (going to skip half the spin
       ! cases as these are the same, so add a factor of two to the
       ! remaining ones)
       if (item%rank3 == 0 .and. item%rank1/=0) then
@@ -5066,7 +5105,14 @@ c       end if
          ! spin cases
 
       if (item%rank3>0) then
-         do n = 1, 2
+         ! This first index only runs from 1 and not 2. This is because
+         ! abba == baab, so we don't need all the spin cases where beta
+         ! is the first spin index. In print_itf_line(), the
+         ! intermeidates that have a beta as the first spin undergo a
+         ! spin flip (baba -> abab). This reduces the number of intermediates and
+         ! contractions, as well as speeding up the python
+         ! post-processing
+         do n = 1, 1
             item%t_spin(3)%spin(1,1) = n
             do m = 1, 2
                item%t_spin(3)%spin(2,1) = m
