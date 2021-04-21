@@ -58,6 +58,8 @@ c      include 'def_contraction_list.h'
         call print_form_list(luprint,flist,op_info)
       else if  (mode.eq.'short'.or.mode.eq.'SHORT') then
         call print_form_list_short(luprint,flist,op_info)
+      else if (mode.eq.'export'.or.mode.eq.'EXPORT') then
+        call export_form_list(luprint,flist,op_info)
       else
         call warn('PRINT_FORMULA','unknown mode: '//trim(mode))
       end if
