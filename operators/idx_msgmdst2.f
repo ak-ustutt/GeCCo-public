@@ -71,6 +71,10 @@
           occ_a_tra = occ_a(tra_map_a(1:na))
           idxms_c_tra = idxms_c(tra_map_c(1:nc))
           idxms_a_tra = idxms_a(tra_map_a(1:na))
+c dbg
+c          write(lulog,*) 'idxms_c_tra: ',idxms_c_tra(1:nc)
+c          write(lulog,*) 'idxms_a_tra: ',idxms_a_tra(1:na)
+c dbg
           gam_c_tra = gam_c(tra_map_c(1:nc))
           gam_a_tra = gam_a(tra_map_a(1:na))
           mgdid = msgmdid2(occ_a_tra,idxms_a_tra,gam_a_tra,na,
@@ -83,6 +87,12 @@
       idx_msgmdst2 = -1
 
       idx_end = mel%off_op_gmox(iblk)%ndis(gama_blk,idxmsa_blk)
+c dbg
+c          write(lulog,*) 'mgdid: ', mgdid, ' for ',gama_blk,idxmsa_blk 
+c          write(lulog,*) 'didarr:',
+c     &       didarr(1:idx_end,gama_blk,idxmsa_blk)
+c
+c dbg
 c dbg
 c      print *,'-->',gama_blk,idxmsa_blk,idx_end
 c dbg

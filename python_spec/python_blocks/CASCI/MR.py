@@ -76,8 +76,15 @@ elif False: # ref_proj !=0
 
 SOLVE_EVP(SOLVE_map)
 
+OPTIMIZE({
+        LABEL_OPT:'FOPT_EREF',
+        LABELS_IN:'FORM_EREF'})
 
+EVALUATE({
+        FORM:'FOPT_EREF'})
 
+PRINT_MEL({LIST:'ME_E0',COMMENT:'Reference energy',FORMAT:'SCAL F24.14'})
+PUSH_RESULT({LIST:'ME_E0',COMMENT:"Reference", FORMAT:"SCAL F24.14"})
 
 
 new_target("FOPT_GAM0")
@@ -102,7 +109,7 @@ OPTIMIZE({
         LABEL_OPT:'FOPT_GAM0',
         LABELS_IN:'FORM_GAM0'})
 PRINT({
-        STRING:'Setup densities up to 3rd order'})
+        STRING:'Setup density matrices'})
 
 new_target('GAM0_CALC')#for comparison to cut of the reference state calculation 
 depend("FOPT_GAM0")
@@ -112,14 +119,27 @@ EVALUATE({
 debug_MEL('GAM0_LST')
 
 
+# YAA tmp: Small formula for testing the density
+# Just for testing.
+# Why does the density needs AB_sym=msc for a
+# correct behaviour?
+#
+# EXPAND_OP_PRODUCT({
+#         LABEL:'FORM_GAM0_cpy',
+#         NEW:True,
+#         OP_RES:'GAM0_cpy',
+#         OPERATORS:['GAM0_cpy','C0^+','GAM0_cpy','GAM0_cpy','C0','GAM0_cpy'],
+#         IDX_SV:[1,2,1,1,3,1]})
+# debug_FORM('FORM_GAM0_cpy')
+# OPTIMIZE({
+#         LABEL_OPT:'FOPT_GAM0_cpy',
+#         LABELS_IN:'FORM_GAM0_cpy'})
+# EVALUATE({
+#         FORM:'FOPT_GAM0_cpy'})
+# debug_MEL('GAM0_LST')
+# debug_MEL('GAM0_LST_cpy')
+
+
 new_target("EVAL_E0")
 depend("MakeRefState")
-OPTIMIZE({
-        LABEL_OPT:'FOPT_EREF',
-        LABELS_IN:'FORM_EREF'})
-
-EVALUATE({
-        FORM:'FOPT_EREF'})
-
-PRINT_MEL({LIST:'ME_E0',COMMENT:'Reference energy',FORMAT:'SCAL F24.14'})
-PUSH_RESULT({LIST:'ME_E0',COMMENT:"Reference", FORMAT:"SCAL F24.14"})
+# moved evaluation of E0 into target MakeRefState

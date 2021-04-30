@@ -1,4 +1,3 @@
-#
 #This is a python interface for GeCCo to calculate excitation energies using ic-MRCEOM-LRT.
 #This code is originally written as an experimental file by Pradipta Samanta on October, 2012.
 #This particular interface is written on November, 2014 by Pradipta Samanta.
@@ -6,6 +5,7 @@
 import sys,os
 sys.path=[os.getenv("GECCO_DIR")]+sys.path
 from python_interface.gecco_interface import *
+from python_interface.gecco_modules.NoticeUtil import *
 
 _inp = GeCCo_Input()
 _orb = Orb_Info()
@@ -73,25 +73,24 @@ if (_mult == None):
 
 new_target('INPUT_INFO')
 
-PRINT({STRING: 'Doing icMRCC response in' + '    ' +  str(_method) + '      ' + 'framework' })
-
-PRINT({STRING: 'IRREP, S2, Ms of the reference state:' + str(_isym_0) + 
-       '       ' + str(_s2_0) + '          ' + str(_msc_0)  })
-
-PRINT({STRING: 'factor for spin-combination' + '    ' + str(_msc_0)})
+PRINT({STRING: ''})
+PRINT({STRING: 'Performing icMRCC response in the ' + str(_method) + ' framework' })
+PRINT({STRING: 'Irrep, S2, Ms of the reference state: ' + str(_isym_0) + ', ' + str(_s2_0) + ', ' + str(_msc_0)})
+PRINT({STRING: 'Factor for spin-combination: ' + str(_msc_0)})
+PRINT({STRING: ''})
 
 ################################
 
 #################################
-# Defining the operators required 
+# Defining the operators required
 #################################
 # 'R_q' is the response vector corresponding to the cluster amplitude T.
 # 'R_mu' is the response vector corresponding to the reference coefficient C_mu.
 # 'R_prime_q' is the response of T in the independent excitation basis.
 # 'AR_rspns_q' and 'AR_rspns_mu' are the matrix vector product contributing to the equations to solve
-# 'R_q' and 'R_mu' respectively. 
+# 'R_q' and 'R_mu' respectively.
 # 'SR_rspns_q' and 'SR_rspns_mu' are the metric vector product contributing to the equations to solve
-# 'R_q' and 'R_mu' respectively. 
+# 'R_q' and 'R_mu' respectively.
 
 new_target('RSPNS_OP')
 
@@ -113,8 +112,35 @@ DEF_SCALAR({LABEL:'den12'})
 DEF_SCALAR({LABEL:'RED_LAG'})
 
 
+new_target("FORM_EXCITED_ENERGY")
+depend('RSPNS_OP')
+
+DEF_SCALAR({LABEL:"Exc_En"})
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:True,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
+                    OPERATORS:["AR_rspns_q", "R_q^+", "AR_rspns_q"],
+                    IDX_SV   :[1, 2, 1],
+                    AVOID    :[1,3]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_ENERGY',NEW:False,OP_RES:'Exc_En',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["R_mu^+", "AR_rspns_mu"],
+                   IDX_SV   :[1, 2],
+                   CONNECT  :[1,2]})
+
+
+DEF_SCALAR({LABEL:"Exc_Sr"})
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:True,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["SR_rspns_q", "R_q^+", "SR_rspns_q"],
+                   IDX_SV   :[1, 2, 1],
+                   AVOID    :[1,3]})
+
+EXPAND_OP_PRODUCT({LABEL:'FORM_EXCITED_OVERLAPP',NEW:False,OP_RES:'Exc_Sr',FAC:1.0,FIX_VTX:True,
+                   OPERATORS:["R_mu^+", "SR_rspns_mu"],
+                   IDX_SV   :[1, 2],
+                   CONNECT  :[1,2]})
+
+
 #################################
-# Setting up the formula for matrix vector product 'AR_rspns_q' 
+# Setting up the formula for matrix vector product 'AR_rspns_q'
 #################################
 
 new_target('FORM_AR_RSPNS_Q')
@@ -247,7 +273,7 @@ elif (_lr_opt == 2):
 
 
 #### The next two targets has been used to form an intermediate for 'FORM_AR_RSPNS_Q'
-## involving the integrals with more particle indices.   
+## involving the integrals with more particle indices.
 
 new_target('F_prePPrint')
 
@@ -290,7 +316,7 @@ if (_lr_opt == 1):
 
     depend('F_OMG_C0',
            'E(MR)')
- 
+
     DERIVATIVE({LABEL_RES:'F_AR_rspns_mu',
                 LABEL_IN:'F_OMG_C0',
                 OP_RES:'AR_rspns_mu',
@@ -337,7 +363,7 @@ elif (_lr_opt == 2):
                 LABEL_IN:'F_AR_rspns_c',
                 OP_RES:'AR_rspns_mu',
                 OP_DERIV:'C0^+'})
-    
+
 
 
 EXPAND_OP_PRODUCT({LABEL:'F_AR_rspns_mu',
@@ -350,7 +376,7 @@ EXPAND_OP_PRODUCT({LABEL:'F_AR_rspns_mu',
 ##################################
 #Setting up the formula for the metric vector products 'SR_rspns_q' and 'SR_rspns_mu' respectively
 #################################
-## The LR method involves a non unit metric matrix, it has expression with 'R_q' and 'T'. 
+## The LR method involves a non unit metric matrix, it has expression with 'R_q' and 'T'.
 ## For EOM it is simply an unit matrix
 
 
@@ -362,7 +388,7 @@ depend('Dtr','F_T','Ttr','RSPNS_OP','C0')
 if (_lr_opt == 1):
 
     _expand_product_basis={LABEL:'F_den12',
-                           NEW:True, 
+                           NEW:True,
                            OP_RES:'den12'}
 
 
@@ -372,7 +398,7 @@ if (_lr_opt == 1):
     EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
 
     _expand_product_basis={LABEL:'F_den12',
-                           NEW:False, 
+                           NEW:False,
                            OP_RES:'den12'}
 
     _ops_contract={OPERATORS:['den12','C0^+','L','R_q','T','C0','den12'],
@@ -456,7 +482,7 @@ DERIVATIVE({LABEL_RES:'F_SR_rspns_q',
             OP_DERIV:'L'})
 
 _expand_product_basis={LABEL:'F_SR_rspns_mu',
-                       NEW:True, 
+                       NEW:True,
                        OP_RES:'SR_rspns_mu'}
 
 
@@ -475,9 +501,9 @@ REPLACE({LABEL_RES:'F_R_q',LABEL_IN:'F_R_q',
 
 
 
-## Finish setting up formulas 
+## Finish setting up formulas
 ###########################
-#Here starts the iterations to get excited states of all the different 
+#Here starts the iterations to get excited states of all the different
 #spatial symmetry and spin multiplicity possible
 
 _first_iter = True
@@ -489,7 +515,7 @@ for _icnt in range (0,_ncnt):
 
     _ms = 0
     if ((_s2 % 2) == 0):
-        _ms = 1    
+        _ms = 1
     if ((_ms == 0) and ((_s2 % 4) == 1)):
         _msc = 1
     elif ((_ms == 0) and ((_s2 % 4) == 3)):
@@ -503,9 +529,9 @@ for _icnt in range (0,_ncnt):
 
         if( _no_root == 0):
             continue
-        
+
         _isym_r = _multd2h[_isym][_isym_0-1]
-       
+
         if (_s2 == _s2_0):
             s2_r = 1
         elif (abs(_s2-_s2_0) == 2):
@@ -515,34 +541,34 @@ for _icnt in range (0,_ncnt):
 
         _ms_r = _ms - _ms_0
         _msc_r = 0
-      
+
         if ((_ms_r == 0) and (s2_r == 1)):
                 _msc_r = 1
         elif ((_ms_r == 0) and (s2_r == 3)):
                 _msc_r = -1
-      
+
         _extnsn = str(_isym+1) + '_' + str(_msc+1)
-      
+
         _list_rspns = 'LIST_RSPNS_' + _extnsn
 
-      
+
 ### Defining the lists for all the operators involved
 
         new_target(_list_rspns)
         depend('RSPNS_OP','DEF_ME_C0','DEF_ME_Dtrdag','H0','DEF_ME_T',
                'DIA_T','DIA_C0','DEF_ME_E(MR)','F_prePPrint')
-        
+
         _op_list={'R_q':[_isym_r,_ms_r,_msc_r],
                   'R_mu':[_isym+1,_ms_0,_msc],
                   'R_prime_q':[_isym_r,_ms_r,0]}
-        
+
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
                         '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2],MIN_REC:1,MAX_REC:_no_root})
 
 #       DEF_ME_LIST({LIST:'ME_DIAG_t'+_extnsn,OPERATOR:'DAI_T',IRREP:_op_list[_op][0],
 #                    '2MS':0,AB_SYM:_op_list[_op][1],MIN_REC:1,MAX_REC:_no_root})
-#     
+#
 #       DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
 #                    '2MS':0,AB_SYM:_op_list[_op][1],MIN_REC:1,MAX_REC:_no_root})
 
@@ -551,105 +577,107 @@ for _icnt in range (0,_ncnt):
                   'SR_rspns_q':[_isym_r,_ms_r,_msc_r],
                   'SR_rspns_mu':[_isym+1,_ms_0,_msc],
                   'INT_PPr':[_isym_r,_ms_r,_msc_r]}
-        
+
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][0],
-                        '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2]})
-        
+                        '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2],
+                        MIN_REC:1,
+                        MAX_REC:_no_root})
+
         _op_list={'DIA_T':['ME_DIAG_t',_isym_r,_ms_r],
                   'DIA_C0':['ME_DIAG_c',_isym+1,_ms_0]}
-        
+
         for _op in _op_list:
             DEF_ME_LIST({LIST:_op_list[_op][0]+_extnsn,OPERATOR:_op,IRREP:_op_list[_op][1],
                         '2MS':_op_list[_op][2]})
-        
+
         DEF_ME_LIST({LIST:'ME_MINEN'+_extnsn,
                      OPERATOR:'E(MR)',
                      IRREP:1,
                      '2MS':0})
-        
+
         ASSIGN_ME2OP({LIST:'ME_E(MR)',OPERATOR:'E(MR)'})
-        
+
         _diag_cal_q = 'DIAG_CAL_q_' + _extnsn
 
 ### Setting up the preconditioner corresponding to the equations to solve 'R_q'
 
         new_target(_diag_cal_q)
-        
+
         depend(_list_rspns)
         depend('EVAL_FREF','FOPT_Atr')
-        
+
         PRECONDITIONER({LIST_PRC:'ME_DIAG_t'+_extnsn,
                         LIST_INP:'ME_FREF'})
-        
+
         ASSIGN_ME2OP({LIST:'ME_Dtr',
                      OPERATOR:'Dtr'})
-       
+
         EVALUATE({FORM:'FOPT_Atr'})
-        
+
         EXTRACT_DIAG({LIST_RES:'ME_DIAG_t'+_extnsn,
                     LIST_IN:'ME_A',
                      MODE:'extend'})
-        
+
 
         _diag_cal_mu = 'DIAG_CAL_mu_' + _extnsn
 
 ### Setting up the preconditioner corresponding to the equations to solve 'R_q'
 
         new_target(_diag_cal_mu)
-      
+
         depend(_list_rspns)
-       
+
         PRECONDITIONER({LIST_PRC:'ME_DIAG_c'+_extnsn,
                         LIST_INP:'H0',
                         MODE:'dia-H'})
-        
+
         SCALE_COPY({LIST_RES:'ME_MINEN'+_extnsn,
                     LIST_INP:'ME_E(MR)',
                     FAC:-1.0})
-        
+
         EXTRACT_DIAG({LIST_RES:'ME_DIAG_c'+_extnsn,
                      LIST_IN:'ME_MINEN'+_extnsn,
                      MODE:'ext_act'})
-        
-        
+
+
         _rspns_opt = 'RSPNS_OPT_' + _extnsn
 
 
 ### Optimising all the Formula.
-        
+
         new_target(_rspns_opt)
-        
+
         depend('RSPNS_FORM ',_list_rspns,'FORM_AR_RSPNS_Q','FORM_AR_RSPNS_MU',
                'DEF_ME_E(MR)','F_PPrint')
-        
+
         OPTIMIZE({LABEL_OPT:'RSPNS_OPT'+_extnsn,
                   LABELS_IN:['F_AR_rspns_q','F_AR_rspns_mu','F_SR_rspns_q','F_SR_rspns_mu','F_R_q'],
                   INTERM:'F_PPrint'})
-        
 
-#### projecting out the elements of the ground state during the solution for the 
+
+#### projecting out the elements of the ground state during the solution for the
 #### states with same symmetry as the ground state
 
         if (_first_iter):
             _prj_form = 'PRJ_FORM_'
             new_target(_prj_form)
-            
+
             EXPAND_OP_PRODUCT({LABEL:'F_prj',
                                OP_RES:'R_mu',
                                OPERATORS:['R_mu','C0','C0^+','R_mu','R_mu'],
                                IDX_SV:[1,2,3,4,1],
                                AVOID:[1,4,3,5],
                                FAC:-1.0})
-            
+
             OPTIMIZE({LABEL_OPT:'FOPT_prj',
                       LABELS_IN:'F_prj'})
-        
-   
+
+
             _first_iter = False
 
 #### Finally solving the eigen value equation to get the excitation energies
-        
+
         _solve_eqn = 'SOLVE_EQN_' + _extnsn
 
         new_target(_solve_eqn)
@@ -658,33 +686,32 @@ for _icnt in range (0,_ncnt):
         depend(_diag_cal_q)
         depend(_diag_cal_mu)
         depend(_prj_form)
-        
+
         _solve_evp_basis={}
         _solve_evp_basis[LIST_OPT]=['ME_R_q'+_extnsn,'ME_R_mu'+_extnsn]
-        _solve_evp_basis[LIST_PRC]=['ME_DIAG_t'+_extnsn,'ME_DIAG_c'+_extnsn] 
-        _solve_evp_basis[OP_MVP]=['AR_rspns_q','AR_rspns_mu'] 
-        _solve_evp_basis[OP_SVP]=['SR_rspns_q','SR_rspns_mu'] 
+        _solve_evp_basis[LIST_PRC]=['ME_DIAG_t'+_extnsn,'ME_DIAG_c'+_extnsn]
+        _solve_evp_basis[OP_MVP]=['AR_rspns_q','AR_rspns_mu']
+        _solve_evp_basis[OP_SVP]=['SR_rspns_q','SR_rspns_mu']
         _solve_evp_basis[FORM]='RSPNS_OPT'+_extnsn
         _solve_evp_basis[LIST_SPC]=['ME_R_prime_q'+_extnsn,'ME_Dtr','ME_Dtrdag']
         _solve_evp_basis[MODE]='TRF PRJ'
         _solve_evp_basis[FORM_SPC]='FOPT_prj'
         _solve_evp_basis[N_ROOTS]=_no_root
         _solve_evp_basis[CHOICE_OPT]=_choice
-        _solve_evp_basis[SOLVER]="OLD"
 
-        PRINT({STRING: 'Doing calculation of irrep:    ' + str(_isym+1) + 
-                       '  and of spin multiplicity:    ' + str(_s2)})
+        PRINT({STRING: 'Calculating excitation to irrep:    ' + str(_isym+1) +
+                       '  with spin multiplicity:    ' + str(_s2)})
+        #PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
 
-        PRINT({STRING: 'isym_r, msc_r:' + str(_isym_r) + ',  ' + str(_msc_r)})
-        
         SOLVE_EVP(_solve_evp_basis)
- 
 
-        _get_mel_inf = 'GET_MEL_INF' + _extnsn 
+
+        _get_mel_inf = 'GET_MEL_INF' + _extnsn
 
         new_target(_get_mel_inf,True)
-        
+
         depend(_solve_eqn)
+        depend("FORM_EXCITED_ENERGY")
 
         DEF_ME_LIST({LIST:'ME_SR_q'+_extnsn,
                      OPERATOR:'SR_rspns_q',
@@ -700,12 +727,72 @@ for _icnt in range (0,_ncnt):
         TRANSFORM({LIST_IN:'ME_R_q'+_extnsn,
                    LIST_OUT:'ME_SR_q'+_extnsn,
                    FORM:'F_OPT_SR'+_extnsn})
-       
+
         ANALYZE_MEL({LISTS:['ME_R_mu'+_extnsn,'ME_R_q'+_extnsn],
                      LISTS_CV:['ME_R_mu'+_extnsn,'ME_SR_q'+_extnsn]})
 
-        PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) + 
-                       '  and of spin multiplicity:    ' + str(_s2)})
+        #PRINT({STRING: 'Done calculation of irrep:    ' + str(_isym+1) +
+        #               '  and of spin multiplicity:    ' + str(_s2)})
+
+
+        # Evaluate and print the exciation energies
+        DEF_ME_LIST({LIST:'ME_Exc_En'+_extnsn,
+                     OPERATOR:'Exc_En',
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:0,
+                     MIN_REC:1,MAX_REC:_no_root})
+
+        DEF_ME_LIST({LIST:'ME_Exc_Sr'+_extnsn,
+                     OPERATOR:'Exc_Sr',
+                     IRREP:1,
+                     '2MS':0,
+                     AB_SYM:0,
+                     MIN_REC:1,MAX_REC:_no_root})
+
+        _op_list={'R_q':[_isym_r,_ms_r,_msc_r],
+                  'R_mu':[_isym+1,_ms_0,_msc],
+                  'R_prime_q':[_isym_r,_ms_r,0],
+                  'AR_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'AR_rspns_mu':[_isym+1,_ms_0,_msc],
+                  'SR_rspns_q':[_isym_r,_ms_r,_msc_r],
+                  'SR_rspns_mu':[_isym+1,_ms_0,_msc]}
+
+        for _op in _op_list:
+            ASSIGN_ME2OP({LIST:'ME_'+_op+_extnsn,
+                          OPERATOR:_op })
+
+
+        OPTIMIZE({LABEL_OPT:'FOPT_SR'+_extnsn,
+                  LABELS_IN:['F_AR_rspns_q','F_AR_rspns_mu',
+                             'F_SR_rspns_q', 'F_SR_rspns_mu']})
+
+        debug_FORM("FORM_EXCITED_OVERLAPP")
+        debug_FORM("FORM_EXCITED_ENERGY")
+
+        OPTIMIZE({LABEL_OPT:"FOPT_Exc_En"+_extnsn,
+                  LABELS_IN:["FORM_EXCITED_OVERLAPP","FORM_EXCITED_ENERGY"]})
+
+        for i in xrange(1,_no_root +1):
+            SET_STATE({LISTS:['ME_AR_rspns_q'+_extnsn,
+                              'ME_AR_rspns_mu'+_extnsn,
+                              'ME_SR_rspns_q'+_extnsn,
+                              'ME_SR_rspns_mu'+_extnsn,
+                              'ME_R_q'+_extnsn,
+                              'ME_R_mu'+_extnsn] ,
+                       ISTATE:i})
+            EVALUATE({FORM:'FOPT_SR'+_extnsn})
+
+            EVALUATE({FORM:'FOPT_Exc_En'+_extnsn})
+            debug_MEL('ME_Exc_En'+_extnsn)
+            debug_MEL('ME_Exc_Sr'+_extnsn)
+
+            SCALE({LIST_RES:'ME_Exc_En'+_extnsn,LIST_INP:'ME_Exc_En'+_extnsn,
+                   LIST_SCAL:'ME_Exc_Sr'+_extnsn,FAC:1.0,INV:True})
+
+            #SCALE_COPY({LIST_RES:'ME_Exc_En'+_extnsn, LIST_INP:'ME_Exc_Sr'+_extnsn, FAC:1.0, MODE:'precond'})
+
+            PUSH_RESULT({LIST:'ME_Exc_En'+_extnsn,COMMENT:'MRCC_STATE_'+str(_isym+1)+'.'+str(i), FORMAT:"SCAL F20.14"})
 
 
 export_targets();

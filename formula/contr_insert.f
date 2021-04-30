@@ -55,7 +55,7 @@
      &     neqv(:), idx_eqv(:,:)
       logical, pointer ::
      &     vil_new(:) !vtxinlist_new
-      
+
       integer(8), external ::
      &     pack_vtx, int8_pack, occ_overlap_p
       integer, external ::
@@ -296,7 +296,7 @@ c dbgend
           ! deexcitation part
           do ivtx = insert(iins)+1, nvtx+iins
             if (vil_new(ivtx)) then
-              overlap = 
+              overlap =
      &         occ_overlap_p(topo_new(ins_at_vtx(iins),ivtx),occ_ins_d)
               topo_new(insert(iins),ivtx) = overlap
               topo_new(ins_at_vtx(iins),insert(iins)) =
@@ -312,7 +312,7 @@ c dbgend
           ! excitation part
           do ivtx = insert(iins)+1, nvtx+iins
             if (vil_new(ivtx)) then
-              overlap =      
+              overlap =
      &         occ_overlap_p(topo_new(ivtx,ins_at_vtx(iins)),occ_ins_x)
               topo_new(ivtx,insert(iins)) = overlap
               topo_new(insert(iins),ins_at_vtx(iins)) =
@@ -329,7 +329,7 @@ c dbgend
           ! excitation part
           do ivtx = insert(iins)-1, 1, -1
             if (vil_new(ivtx)) then
-              overlap =      
+              overlap =
      &         occ_overlap_p(topo_new(ins_at_vtx(iins),ivtx),occ_ins_x)
               topo_new(insert(iins),ivtx) = overlap
               topo_new(ins_at_vtx(iins),insert(iins)) =
@@ -396,6 +396,8 @@ c dbgend
       end if
 
       deallocate(vtx,topo,xlines,svertex)
+      deallocate(occ_sum_x,occ_sum_d,insert,
+     &           ins_at_vtx)
       if (nins.gt.0)
      &     deallocate(svertex_new,vtx_new,topo_new,xlines_new,
      &                vil_new)

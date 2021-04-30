@@ -13,20 +13,20 @@
 *
 * General optimization control routine for non-linear optimization.
 *
-* The optimization strategy is set in opti_info, see def_optinf.h 
+* The optimization strategy is set in opti_info, see def_optinf.h
 * for further comments.
 *
 * It holds track of the macro/micro-iterations and expects to be
 * called with imacit/imicit set to zero at the first time.
 *
 * optcont() requests information via the itask parameter (bit flags):
-*     
+*
 *     1: calculate energy
 *     2: calculate gradient/vectorfunction
 *     4: calculate Hessian/Jacobian(H/A) times trialvector product
 *     8: exit
 *
-* Files (now: ME-lists, i.e. files + some more info): 
+* Files (now: ME-lists, i.e. files + some more info):
 * a) passed to slave routines
 *   me_opt   -- new set of wave-function parameters
 *
@@ -35,14 +35,14 @@
 *              and dto. for left wave-function and orb-rotations
 *
 * b) passed from slave routines
-*   me_grd   -- gradient or vectorfunction 
+*   me_grd   -- gradient or vectorfunction
 *
 *   2nd order
 *   me_h_trv   -- H/A matrix-vector product
 *              and dto. for ....
 *
 * c) own book keeping files
-*   ffgrvfold -- previous gradient/vectorfunction 
+*   ffgrvfold -- previous gradient/vectorfunction
 *   ff_h_trv_old  -- previous H/A matrix-vector product
 *   ff_newstp -- current new step (scratch)
 *   ffst_sbsp -- subspace of previous steps
@@ -66,7 +66,7 @@
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
-      
+
 * parameters
       integer, parameter ::
      &     ntest = 00
@@ -107,12 +107,12 @@
       type(me_list_array), intent(in) ::
      &     me_opt(*), me_grd(*), me_dia(*), me_special(nspecial),
      &     me_trv(*), me_h_trv(*)
-      
+
       type(optimize_info), intent(in) ::
      &     opti_info
       type(optimize_status), intent(inout), target ::
      &     opti_stat
-      
+
 *     buffers for incore/out-of-core work:
       integer ::
      &     nincore, nbuf, lenbuf
@@ -301,8 +301,8 @@ c          if (opti_info%norder.eq.2.and.imicit.eq.0) itransf = 1
 c          call optc_prepnext()
           opti_stat%energy_last = energy(0)
           task = 3
-          
-        else 
+
+        else
 *----------------------------------------------------------------------*
 * clean up
 *----------------------------------------------------------------------*
@@ -420,7 +420,7 @@ c      implicit none
       if (nbuf.eq.3)
      &     ifree = mem_alloc_real(xbuf3,len3,'buffer_3')
       if (nbuf.ne.3) xbuf3 => null()
-      
+
       if (iprint.ge.5) then
         write(lulog,*) ' allocated ',nbuf,' buffers'
         write(lulog,*) ' # incore vectors: ',nincore
@@ -443,7 +443,7 @@ c      implicit none
 *     initialize counters, open files and allocate some arrays
 *
 *----------------------------------------------------------------------*
-      
+
 c      implicit none
 
 c      include 'stdunit.h'
@@ -559,6 +559,8 @@ c      implicit none
        deallocate(c_opti_stat)
        c_opti_stat => c_opti_stat_2
       end do
+      deallocate(c_opti_stat)
+      nullify(c_opti_stat_2)
 
       return
       end subroutine

@@ -192,6 +192,8 @@ c dbg
 c                  print *,'skipping difficult reo (x)'
 c dbg
                   possible = .false.
+                  if (.not.modify_contr) deallocate(xarc_scr)
+                  deallocate(reo_generated)
                   return
 c                  call quit(1,'reorder_supvtx','not yet')
                   

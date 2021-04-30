@@ -12,12 +12,20 @@ MRCCSD_mode = keywords.is_keyword_set("method.MRCC2.MRCCSD_mode")
 lagrangian = keywords.get('method.MRCC2.lagrangian')
 lag_type = int(lagrangian) if lagrangian is not None else 4
 
-lagrangian = keywords.get('method.MRCC2.maxcom_en')
-maxcom_en = int(lagrangian) if lagrangian is not None else lag_type
-lagrangian = keywords.get('method.MRCC2.maxcom_res1')
-maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
-lagrangian = keywords.get('method.MRCC2.maxcom_res2')
-maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
+metric = keywords.get('method.MRCC2.metric')
+met_type = int(metric) if metric is not None else lag_type
+
+metric = keywords.get('method.MRCC2.maxcom_m1')
+maxcom_m1 = int(metric) if metric is not None else met_type
+metric = keywords.get('method.MRCC2.maxcom_m2')
+maxcom_m2 = int(metric) if metric is not None else met_type
+
+#lagrangian = keywords.get('method.MRCC2.maxcom_en')
+#maxcom_en = int(lagrangian) if lagrangian is not None else lag_type
+#lagrangian = keywords.get('method.MRCC2.maxcom_res1')
+#maxcom_res1 = int(lagrangian) if lagrangian is not None else lag_type
+#lagrangian = keywords.get('method.MRCC2.maxcom_res2')
+#maxcom_res2 = int(lagrangian) if lagrangian is not None else lag_type
 
 
 
@@ -26,7 +34,7 @@ new_target("DEF_FORM_AR_RSPNS_q")
 depend("DEF_FORM_PT_LAG2")
 depend('DEF_RESPONSE_OPs')
 
-DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A1_RAW',
+DERIVATIVE({LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_AR1_RSPNS_q_INT',
         OP_RES:'O1',
         OP_DERIV:'LAM1'
@@ -48,7 +56,7 @@ SUM_TERMS({
 debug_FORM("FORM_AR1_RSPNS_q")
 
 DERIVATIVE({
-        LABEL_IN:'FORM_PT_LAG_A2_RAW',
+        LABEL_IN:'FORM_PT_LAG_A_RAW',
         LABEL_RES:'FORM_AR2g_RSPNS_q_INT',
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'
@@ -103,49 +111,53 @@ new_target("DEF_FORMS_METRIC")
 depend('DEF_RESPONSE_OPs')
 
 
-
-def create_metric_for_T1( label, OP_res, maxcom, MRCCSD_mode = False):
-    SR1=stf.GenForm(label=label, OP_res=OP_res)
-    if not  0 < maxcom < 5:
-        raise Exception("unknown lagrangian")
-    if maxcom >=1:
-        if MRCCSD_mode:
-            SR1 += "<C0^+*(LAM1)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1+T2g])*C0>"
-        else:
-            SR1 += "<C0^+*(LAM1)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1+T2g])*C0>"
-    if maxcom >=2:
-        if MRCCSD_mode:
-            SR1 += "1/6<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1+T2g])*C0>"
-        else:
-            SR1 += "1/6<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1]+[[R1_q+R2g_q,T1],T2g]+[[R1_q,T2g],T2g])*C0>"
-    if maxcom >=3:
-        if MRCCSD_mode:            
-            SR1 += "1/24<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g])*C0>"
-        else:
-            SR1 += "1/24<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1],T1]+[[[R1_q+R2g_q,T1],T2g],T1]+[[[R1_q+R2g_q,T1],T1],T2g]+"\
-            "[[[R1_q,T2g],T2g],T1]+[[[R1_q,T2g],T1],T2g]+[[[R1_q,T1],T2g],T2g])*C0>"
-    if maxcom >=4:
-        if MRCCSD_mode:
-            SR1 += "1/120<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g],T1+T2g])*C0>"
-        else:
-            SR1 += "1/120<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+[[[[R1_q+R2g_q,T1],T2g],T1],T1]+[[[[R1_q+R2g_q,T1],T1],T2g],T1]+"\
-            "[[[[R1_q+R2g_q,T1],T1],T1],T2g]+"\
-            "[[[[R1_q,T2g],T2g],T1],T1]+[[[[R1_q,T2g],T1],T2g],T1]+[[[[R1_q,T2g],T1],T1],T2g]+"\
-            "[[[[R1_q,T1],T2g],T2g],T1]+[[[[R1_q,T1],T2g],T1],T2g]+[[[[R1_q,T1],T1],T2g],T2g]"\
-            ")*C0>"
+def MRCCSD_T1_metric( label, OP_res, maxcom):
+    SR1 = stf.GenForm(label=label, OP_res=OP_res)
+    if not  0 <= maxcom < 5:
+       raise Exception("unknown lagrangian")
+    if maxcom >= 0 :
+       SR1 += "<C0^+*(LAM1)*(R1_q+R2g_q)*C0>"
+    if maxcom >= 1 :
+       SR1 += "<C0^+*(LAM1)*(1/2[R1_q+R2g_q,T1+T2g])*C0>"
+    if maxcom >= 2 :
+       SR1 += "1/6<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1+T2g])*C0>"
+    if maxcom >= 3 :
+       SR1 += "1/24<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g])*C0>"
+    if maxcom >= 4 :
+       SR1 += "1/120<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g],T1+T2g])*C0>"
     return SR1
 
-create_metric_for_T1("FORM_SR1t","Scal_S1",maxcom_res1).set_rule()
+
+
+def MRCC2_T1_metric( label, OP_res, maxcom):
+    SR1 = stf.GenForm(label=label, OP_res=OP_res)
+    if not  0 <= maxcom < 5:
+       raise Exception("unknown lagrangian")
+    if maxcom >=0:
+       SR1 += "<C0^+*(LAM1)*(R1_q+R2g_q)*C0>"
+    if maxcom >=1:
+       SR1 += "<C0^+*(LAM1)*(1/2[R1_q+R2g_q,T1+T2g])*C0>"
+    if maxcom >=2:
+       SR1 += "1/6<C0^+*(LAM1)*([[R1_q+R2g_q,T1+T2g],T1]+[[R1_q+R2g_q,T1],T2g]+[[R1_q,T2g],T2g])*C0>"
+    if maxcom >=3:
+       SR1 += "1/24<C0^+*(LAM1)*( [[[R1_q+R2g_q,T1+T2g],T1],T1]+[[[R1_q+R2g_q,T1],T2g],T1]+[[[R1_q+R2g_q,T1],T1],T2g]+"\
+              "[[[R1_q,T2g],T2g],T1]+[[[R1_q,T2g],T1],T2g]+[[[R1_q,T1],T2g],T2g])*C0>"
+    if maxcom >=4:
+       SR1 += "1/120<C0^+*(LAM1)*( [[[[R1_q+R2g_q,T1+T2g],T1],T1],T1]+[[[[R1_q+R2g_q,T1],T2g],T1],T1]+[[[[R1_q+R2g_q,T1],T1],T2g],T1]"\
+                                 "+[[[[R1_q+R2g_q,T1],T1],T1],T2g]"\
+                                 "+[[[[R1_q,T2g],T2g],T1],T1]+[[[[R1_q,T2g],T1],T2g],T1]+[[[[R1_q,T2g],T1],T1],T2g]"\
+                                 "+[[[[R1_q,T1],T2g],T2g],T1]+[[[[R1_q,T1],T2g],T1],T2g]+[[[[R1_q,T1],T1],T2g],T2g]"\
+	              ")*C0>"
+    return SR1
+
+metric_creator = MRCCSD_T1_metric if MRCCSD_mode else MRCC2_T1_metric
+metric_creator("FORM_SR1t","Scal_S1",maxcom_m1).set_rule()
 
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS1_q',
                 LABEL_IN:'FORM_SR1t',
                 TYPE:'nonzero',
                 MODE:'sum'})
-
-
-
-
 
 DERIVATIVE({LABEL_RES:'FORM_S1',
             LABEL_IN:'FORM_DENS1_q',
@@ -154,37 +166,43 @@ DERIVATIVE({LABEL_RES:'FORM_S1',
 
 debug_FORM("FORM_S1")
 
-
-
-def create_metric_for_T2( label, OP_res, maxcom, MRCCSD_mode=False):
+def MRCCSD_T2_metric(label, OP_res, maxcom):
     SR2=stf.GenForm(label=label, OP_res=OP_res)
-    if not  0 < maxcom < 5:
+    if not  0 <= maxcom < 5:
         raise Exception("unknown lagrangian")
-    if maxcom >=1:
-        if MRCCSD_mode:
-            SR2 += "<C0^+*(LAM2g)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1+T2g])*C0>"
-        else:
-            SR2 += "<C0^+*(LAM2g)*(R1_q+R2g_q+1/2[R1_q+R2g_q,T1]+1/2[R1_q,T2g])*C0>"
-    if maxcom >=2:
-        if MRCCSD_mode:
-            SR2 += "1/6<C0^+*(LAM2g)*([[R1_q+R2g_q,T1+T2g],T1+T2g])*C0>"
-        else:
-            SR2 += "1/6<C0^+*(LAM2g)*([[R1_q+R2g_q,T1],T1]+[[R1_q,T2g],T1]+[[R1_q,T1],T2g])*C0>"
-    if maxcom >=3:
-        if MRCCSD_mode:
-            SR2 += "1/24<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g])*C0>"
-        else:
-            SR2 += "1/24<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1],T1],T1]"\
-        "+[[[R1_q,T2g],T1],T1]+[[[R1_q,T1],T2g],T1]+[[[R1_q,T1],T1],T2g])*C0>"
-    if maxcom >=4:
-        if MRCCSD_mode:
-            SR2 += "1/120<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g],T1+T2g])*C0>"
-        else:
-            SR2 += "1/120<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1],T1],T1],T1]"\
-            "[[[[R1_q,T1+T2g],T1],T1],T1]+[[[[R1_q,T1],T2g],T1],T1]+[[[[R1_q,T1],T1],T2g],T1]+[[[[R1_q,T1],T1],T1],T2g])*C0>"
+    if maxcom >=0:
+        SR2 +="<C0^+*(LAM2g)*(R1_q+R2g_q)*C0>"
+    if maxcom >= 1 :
+        SR2 += "<C0^+*(LAM2g)*(1/2[R1_q+R2g_q,T1+T2g])*C0>"
+    if maxcom >= 2 :
+        SR2 += "1/6<C0^+*(LAM2g)*([[R1_q+R2g_q,T1+T2g],T1+T2g])*C0>"
+    if maxcom >= 3 :
+        SR2 += "1/24<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g])*C0>"
+    if maxcom >= 4 :
+        SR2 += "1/120<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1+T2g],T1+T2g],T1+T2g],T1+T2g])*C0>"
     return SR2
 
-create_metric_for_T2("FORM_SR2t","Scal_S2", maxcom_res2).set_rule()
+def MRCC2_T2_metric(label, OP_res, maxcom):
+    SR2=stf.GenForm(label=label, OP_res=OP_res)
+    if not  0 <= maxcom < 5:
+        raise Exception("unknown lagrangian")
+    if maxcom >=0:
+        SR2 +="<C0^+*(LAM2g)*(R1_q+R2g_q)*C0>"
+    if maxcom >=1:
+        SR2 += "<C0^+*(LAM2g)*(1/2[R1_q+R2g_q,T1]+1/2[R1_q,T2g])*C0>"
+    if maxcom >=2:
+        SR2 += "1/6<C0^+*(LAM2g)*([[R1_q+R2g_q,T1],T1]+[[R1_q,T2g],T1]+[[R1_q,T1],T2g])*C0>"
+    if maxcom >=3:
+        SR2 += "1/24<C0^+*(LAM2g)*([[[R1_q+R2g_q,T1],T1],T1]"\
+                                 "+[[[R1_q,T2g],T1],T1]+[[[R1_q,T1],T2g],T1]+[[[R1_q,T1],T1],T2g])*C0>"
+    if maxcom >=4:
+        SR2 += "1/120<C0^+*(LAM2g)*([[[[R1_q+R2g_q,T1],T1],T1],T1]"\
+                                  "+[[[[R1_q,T1+T2g],T1],T1],T1]+[[[[R1_q,T1],T2g],T1],T1]+[[[[R1_q,T1],T1],T2g],T1]+[[[[R1_q,T1],T1],T1],T2g])*C0>"
+    return SR2
+
+
+metric_creator = MRCCSD_T2_metric if MRCCSD_mode else MRCC2_T2_metric
+metric_creator("FORM_SR2t","Scal_S2",maxcom_m2).set_rule()
 
 SELECT_SPECIAL({LABEL_RES:'FORM_DENS2_q',
                 LABEL_IN:'FORM_SR2t',

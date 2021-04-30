@@ -75,7 +75,7 @@
      &     reo_info
 
       logical ::
-     &     bufop1, bufop2, bufop1op2, 
+     &     bufop1, bufop2, bufop1op2,
      &     first1, first2, first3, first4, first5,
      &     ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
      &     reject, fix_success1, fix_success2, fix_success12,
@@ -85,7 +85,7 @@
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
      &     nc_op1, na_op1, nc_op2, na_op2,
-     &     nc_ex1, na_ex1, nc_ex2, na_ex2, 
+     &     nc_ex1, na_ex1, nc_ex2, na_ex2,
      &     nc_op1op2, na_op1op2,
      &     nc_op1op2tmp, na_op1op2tmp,
      &     nc_cnt, na_cnt, idx_restr,
@@ -103,9 +103,9 @@
      &     idxms, idxdis, lenmap, lbuf_op1op2, lblk_op1op2tmp,
      &     idxdis_op1op2, idx, ii, maxidxms
       integer ::
-     &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1, 
-     &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2, 
-     &     ncblk_op1op2, nablk_op1op2, ncblk_op1op2tmp, nablk_op1op2tmp, 
+     &     ncblk_op1, nablk_op1, ncblk_ex1, nablk_ex1,
+     &     ncblk_op2, nablk_op2, ncblk_ex2, nablk_ex2,
+     &     ncblk_op1op2, nablk_op1op2, ncblk_op1op2tmp, nablk_op1op2tmp,
      &     ncblk_cnt, nablk_cnt,
      &     ncblk_op1op2_0, nablk_op1op2_0,
      &     ncblk_reo12,    nablk_reo12,
@@ -133,7 +133,7 @@
      &     dmap_op1c(:),dmap_op1a(:),
      &     dmap_op2c(:),dmap_op2a(:),
      &     dmap_op1op2tmpc(:),dmap_op1op2tmpa(:)
-          
+
 
       real(8) ::
      &     xnrm, fac_scal, fac_scal0, fac_ab, xret_last
@@ -267,7 +267,7 @@ c dbg
      &     call quit(1,'contr_op1op2_wmaps_c',
      &     'reo_info is not consistent')
       if (ntest.ge.10) write(lulog,*) 'reo_op1op2: ',reo_op1op2
-      if (ntest.ge.10.and.reo_op1op2) 
+      if (ntest.ge.10.and.reo_op1op2)
      &            write(lulog,*) 'reo_sign: ',reo_info%sign_reo
       if (ntest.ge.10 .and. reo_op1op2) then
         write(lulog,*) 'op1op2tmp: ',trim(op1op2tmp%name),
@@ -279,7 +279,7 @@ c dbg
       nablk_op1 = cnt_info%nablk_op1 ! 2,1
       ncblk_ex1 = cnt_info%ncblk_ex1 ! 1,4
       nablk_ex1 = cnt_info%nablk_ex1 ! 2,4
-      ncblk_op2 = cnt_info%ncblk_op2 ! 1,2 
+      ncblk_op2 = cnt_info%ncblk_op2 ! 1,2
       nablk_op2 = cnt_info%nablk_op2 ! 2,2
       ncblk_ex2 = cnt_info%ncblk_ex2 ! 1,5
       nablk_ex2 = cnt_info%nablk_ex2 ! 2,5
@@ -300,17 +300,17 @@ c dbg - call statistics
       if (ncblk_ex1.eq.0.and.nablk_ex1.eq.0.or.
      &    ncblk_ex1.eq.0.and.nablk_cnt.eq.0.or.
      &    ncblk_cnt.eq.0.and.nablk_ex1.eq.0.or.
-     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0) 
+     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0)
      &         st_noop1_reo = st_noop1_reo+1
       if (ncblk_ex2.eq.0.and.nablk_ex2.eq.0.or.
      &    ncblk_ex2.eq.0.and.ncblk_cnt.eq.0.or.
      &    nablk_cnt.eq.0.and.nablk_ex2.eq.0.or.
-     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0) 
+     &    ncblk_cnt.eq.0.and.nablk_cnt.eq.0)
      &         st_noop2_reo = st_noop2_reo+1
       if (ncblk_ex1.eq.0.and.nablk_ex1.eq.0.or.
      &    ncblk_ex1.eq.0.and.nablk_ex2.eq.0.or.
      &    ncblk_ex2.eq.0.and.nablk_ex1.eq.0.or.
-     &    ncblk_ex2.eq.0.and.nablk_ex2.eq.0) 
+     &    ncblk_ex2.eq.0.and.nablk_ex2.eq.0)
      &         st_noop12_reo = st_noop12_reo+1
 c dbg
 
@@ -494,12 +494,68 @@ c     &    me_op1op2%op%formal_blk(iblkop1op2)) then
         call quit(1,'contr_op1op2_wmaps_c','called for formal block')
       else if (me_op1op2%op%formal_blk(iblkop1op2)) then
         ! do nothing for formal block
+        if(ms_fix1) deallocate(dum1_c,dum1_a,hpvx1_c,hpvx1_a)
+        if(ms_fix2) deallocate(dum2_c,dum2_a,hpvx2_c,hpvx2_a)
+
+        deallocate(
+     &       gmop1dis_c, gmop1dis_a,
+     &       gmop2dis_c, gmop2dis_a,
+     &       gmex1dis_c, gmex1dis_a,
+     &       gmex2dis_c, gmex2dis_a,
+     &       gmc_dis_c , gmc_dis_a ,
+     &       gmi_dis_c , gmi_dis_a ,
+     &       msop1dis_c, msop1dis_a,
+     &       msop2dis_c, msop2dis_a,
+     &       msex1dis_c, msex1dis_a,
+     &       msex2dis_c, msex2dis_a,
+     &       msc_dis_c , msc_dis_a ,
+     &       msi_dis_c , msi_dis_a ,
+     &       idxmsop1dis_c, idxmsop1dis_a,
+     &       idxmsop2dis_c, idxmsop2dis_a,
+     &       idxmsex1dis_c, idxmsex1dis_a,
+     &       idxmsex2dis_c, idxmsex2dis_a,
+     &       idxmsc_dis_c , idxmsc_dis_a ,
+     &       idxmsi_dis_c , idxmsi_dis_a ,
+     &       lstrex1,lstrex2,lstrcnt,
+     &       lstrop1,lstrop2,lstrop1op2tmp)
+        deallocate(dmap_op1c,dmap_op1a,
+     &             dmap_op2c,dmap_op2a,
+     &             dmap_op1op2tmpc,dmap_op1op2tmpa)
         return
       end if
 
       ! skip if result operator has zero length
-      if (lenop1op2.eq.0) return
-        
+      if (lenop1op2.eq.0) then
+         if(ms_fix1) deallocate(dum1_c,dum1_a,hpvx1_c,hpvx1_a)
+         if(ms_fix2) deallocate(dum2_c,dum2_a,hpvx2_c,hpvx2_a)
+
+         deallocate(
+     &        gmop1dis_c, gmop1dis_a,
+     &        gmop2dis_c, gmop2dis_a,
+     &        gmex1dis_c, gmex1dis_a,
+     &        gmex2dis_c, gmex2dis_a,
+     &        gmc_dis_c , gmc_dis_a ,
+     &        gmi_dis_c , gmi_dis_a ,
+     &        msop1dis_c, msop1dis_a,
+     &        msop2dis_c, msop2dis_a,
+     &        msex1dis_c, msex1dis_a,
+     &        msex2dis_c, msex2dis_a,
+     &        msc_dis_c , msc_dis_a ,
+     &        msi_dis_c , msi_dis_a ,
+     &        idxmsop1dis_c, idxmsop1dis_a,
+     &        idxmsop2dis_c, idxmsop2dis_a,
+     &        idxmsex1dis_c, idxmsex1dis_a,
+     &        idxmsex2dis_c, idxmsex2dis_a,
+     &        idxmsc_dis_c , idxmsc_dis_a ,
+     &        idxmsi_dis_c , idxmsi_dis_a ,
+     &        lstrex1,lstrex2,lstrcnt,
+     &        lstrop1,lstrop2,lstrop1op2tmp)
+         deallocate(dmap_op1c,dmap_op1a,
+     &              dmap_op2c,dmap_op2a,
+     &              dmap_op1op2tmpc,dmap_op1op2tmpa)
+         return
+      end if
+
 c      ! we accept that certain non-totally symmetric operator blocks
 c      ! may have zero length ...
 c      if (lenop1.eq.0.and.igamtop1.ne.1 .or.
@@ -779,7 +835,7 @@ c dbg
       call sum_occ(na_cnt,cinfo_cnta,nablk_cnt)
 
       tra_op1_ = tra_op1
-c     a) incorrect for cases with X 
+c     a) incorrect for cases with X
 c     b) no impact on run-time (needs to be re-checked)
 c      ! decide, whether we might use the transposed operator
 c      if (op1%hermitian.eq.1.and.ncblk_op1.eq.nablk_op1) then
@@ -879,7 +935,7 @@ cc dbg
 
       if (irt_contr.gt.2) then
         ! preliminary: a wild guess
-        lenblock = len_str_block 
+        lenblock = len_str_block
         lenscr = max(3*lenblock*lenblock,
      &        (max_dis_blk(0,me_op1op2tmp,iblkop1op2tmp,orb_info)
      &         + max_dis_blk(0,me_op1,iblkop1,orb_info)
@@ -891,7 +947,7 @@ cc dbg
 
       ! minimum Ms(A) for ...
       msbnd(1,1) = -na_op1 ! operator 1
-      msbnd(1,2) = -na_op2 ! operator 2        
+      msbnd(1,2) = -na_op2 ! operator 2
       msbnd(1,3) = -na_op1op2 ! product
       ! if use_tr is active, restrict the operator with larger max MS:
       idx_restr = 1
@@ -938,7 +994,7 @@ cc dbg
         msc_ac = ms12i_a(1) + ms12i_a(2) - ms12i_a(3)
 
         if (mscmx_a+mscmx_c.lt.abs(msc_ac)) cycle ms_loop
-          
+
         ! time-reversal symmetry (spin-flip) used:
         ! process only cases with MS(A) >= 0 for OP1, OP1OP2
         if (use_tr_here.and.
@@ -1002,7 +1058,7 @@ c dbg
             xop1op2(1:lenblock) = 0d0
           end if
           idxms_op1op2_last = idxms
-          
+
         end if
 
         msc_loop: do msc_a = mscmx_a, -mscmx_a, -2
@@ -1017,7 +1073,7 @@ c dbg
           msex1_a = ms12i_a(1) - msc_a
           if (abs(msex1_a).gt.na_ex1)
      &         cycle msc_loop
-          msex2_a = ms12i_a(2) - msc_c   ! other way 
+          msex2_a = ms12i_a(2) - msc_c   ! other way
           msex2_c = ms12i_c(2) - msc_a   ! round (!!)
           if (abs(msex2_c).gt.nc_ex2)
      &         cycle msc_loop
@@ -1031,7 +1087,7 @@ c dbg
 c          print *,'skipping: ',ms12i_a(1:3),'msc_c,msc_a: ',msc_c,msc_a
 c dbg
             cycle msc_loop
-          end if          
+          end if
           fac_scal = fac_scal0
           if (use_tr_here.and.
      &         ms12i_a(idx_restr).eq.0.and.ms12i_a(3).eq.0.and.
@@ -1086,7 +1142,7 @@ c dbg
             ! set up start addresses
             ! need to be modified, if more than one distribution
             ! exists, see below
-            
+
             idxms = msa2idxms4op(ms12i_a(1),mstop1,
      &                           na_op1,nc_op1)
             if (len_gam_ms_op1(igam12i_raw(1),idxms).eq.0)
@@ -1143,9 +1199,9 @@ c dbg
      &             idoffop1op2+ioff_op1op2+lenblock)
               end if
               igam_op1op2_last = igam12i_raw(3)
-                
+
             end if
-              
+
 
 c            idxms = (na_op1op2-ms12i_a(3))/2 + 1
             ! relevant for case where no reordering necessary
@@ -1186,7 +1242,7 @@ c     &                - idxst_op1op2+1
 
 c              call atim_cs(cpu00,sys00)
 
-              ! loop over distributions of current Ms and IRREP 
+              ! loop over distributions of current Ms and IRREP
               ! of Aex1 and Cex1 over ngastypes
               first3 = .true.
               caex1_loop: do
@@ -1225,15 +1281,15 @@ c     &               cinfo_ex1a,nablk_ex1)
      &                  cinfo_ex1a(1,2),idxmsex1dis_a,
      &                                 gmex1dis_a,cinfo_ex1a(1,3),
      &                  hpvxseq,.false.)
-                
+
                 ! test C and A separately to avoid overflow
                 if ( ncblk_ex1+nablk_ex1.gt.0 .and.
      &               idxlist(0,lstrex1,
      &                          ncblk_ex1+nablk_ex1,1).gt.0)
      &               cycle
 
-                ! loop over distributions of current Ms and IRREP 
-                ! of Aex2 and Cex2 over ngastypes            
+                ! loop over distributions of current Ms and IRREP
+                ! of Aex2 and Cex2 over ngastypes
                 first4 = .true.
                 caex2_loop: do
                   if (.not.next_msgamdist2(first4,
@@ -1310,7 +1366,7 @@ c     &                   cinfo_op1op2tmpa,nablk_op1op2tmp)
      &                   cinfo_op1op2tmpa(1,2),idxmsi_dis_a,
      &                                  gmi_dis_a,cinfo_op1op2tmpa(1,3),
      &                   hpvxseq,.false.)
-                  
+
                   if ( ncblk_op1op2tmp+nablk_op1op2tmp.gt.0 .and.
      &                 idxlist(0,lstrop1op2tmp,
      &                          ncblk_op1op2tmp+nablk_op1op2tmp,1).gt.0)
@@ -1325,7 +1381,7 @@ c                  ifree = mem_setmark('ex_str')
 c dbg
 c                  print *,'lenmap C: ',lenmap
 c dbg
-                  
+
 c                  ifree = mem_alloc_int(map_ex1ex2c,lenmap,'strmap_c')
                   ! for C: ex1,ex2 sequence !
                   call get_strmap_blk_c(map_ex1ex2c,
@@ -1355,7 +1411,7 @@ c                  ifree = mem_alloc_int(map_ex1ex2a,lenmap,'strmap_a')
      &                 gmex2dis_a,gmex1dis_a,map_info_12a,
      &                 strmap_info,nsym,str_info%ngraph)
 
-                  ! get distribution index                  
+                  ! get distribution index
                   idxms = msa2idxms4op(ms12i_a(3),mstop1op2,
      &                                 na_op1op2,nc_op1op2)
 c                  idxms = (na_op1op2-ms12i_a(3))/2 + 1
@@ -1405,7 +1461,7 @@ c dbg
 
                     ! relevant for case w/o reordering
                     ! then we have op1op2tmp == op1op2
-                    idxop1op2 = 
+                    idxop1op2 =
      &                   d_gam_ms_op1op2(idxdis,igam12i_raw(3),idxms)+1
 c     &                   - idxst_op1op2+1
      &                   - ioff_op1op2
@@ -1428,8 +1484,8 @@ c                    xop1op2blk => xop1op2(idxop1op2:)
                     xbf12tmp(1:lblk_op1op2tmp) = 0d0
                   end if
 
-                  ! loop over distributions of current Ms and IRREP 
-                  ! of AC and CC over ngastypes            
+                  ! loop over distributions of current Ms and IRREP
+                  ! of AC and CC over ngastypes
                   first5 = .true.
                   cac_loop: do
                     if (.not.next_msgamdist2(first5,
@@ -1562,7 +1618,7 @@ c dbg
      &                      ncblk_op1,me_op1%msdiag,
      &                      me_op1%gamdiag)) cycle cac_loop
                     end if
-                    
+
                     ! get distribution index
                     idxms =
      &                   msa2idxms4op(ms12i_a(1),mstop1,na_op1,nc_op1)
@@ -1580,7 +1636,7 @@ c dbg
      &                              gmop1dis_a,nablk_op1,
      &                     tra_op1_,dmap_op1c,dmap_op1a,me_op1,nsym)
 
-                      idxop1 = 
+                      idxop1 =
      &                     d_gam_ms_op1(idxdis,igam12i_raw(1),idxms) + 1
 c     &                     - idxst_op1+1-ioff_op1
      &                     - ioff_op1
@@ -1695,7 +1751,7 @@ c dbg
      &                              gmop2dis_a,nablk_op2,
      &                     tra_op2_,dmap_op2c,dmap_op2a,me_op2,nsym)
 
-                      idxop2 = 
+                      idxop2 =
      &                     d_gam_ms_op2(idxdis,igam12i_raw(2),idxms)+1
 c     &                     - idxst_op2+1
      &                     - ioff_op2
@@ -1767,9 +1823,9 @@ c                    ifree = mem_alloc_int(map_ex2cnta,lenmap,'strmap_a')
      &                                   cinfo_op2a(1,2),
      &                   idxmsc_dis_c,idxmsex2dis_a,
      &                   gmc_dis_c,gmex2dis_a,map_info_2a,
-     &                   strmap_info,nsym,str_info%ngraph)                    
+     &                   strmap_info,nsym,str_info%ngraph)
 
-c                    call atim_cs(cpu0,sys0)                    
+c                    call atim_cs(cpu0,sys0)
 
                     ! make the contraction for this block
                     if (ntest.ge.100)
@@ -1853,7 +1909,7 @@ c dbg
      &                   map_ex1ex2c, map_ex1ex2a,
      &                   map_ex1cntc, map_ex1cnta,
      &                   map_ex2cntc, map_ex2cnta
-     &                   )                     
+     &                   )
 c dbg
 c                      if (lenop1op2.eq.1) then
 c                        print *,'xop1op2blk after: ',xop1op2blk(1),
@@ -1882,7 +1938,7 @@ c dbg
      &                   map_ex1ex2c, map_ex1ex2a,
      &                   map_ex1cntc, map_ex1cnta,
      &                   map_ex2cntc, map_ex2cnta
-     &                   )                     
+     &                   )
                     end if
                     if (ntest.ge.100)
      &                   write(lulog,*) 'after blk1blk2'
@@ -1895,7 +1951,7 @@ c                    call atim_cs(cpu,sys)
                     cnt_kernel(2) = cnt_kernel(2)+sys-sys0
 
                   end do cac_loop
-                  
+
                   ! if necessary, reorder op1op2 block:
                   if (reo_op1op2.and.nonzero) then
 c dbg
@@ -1977,7 +2033,7 @@ c          print *,'punching GAM blk for op1op2, ',igam12i_a(3),idxms
 c dbg
               call put_vec(ffop1op2,xop1op2,idoffop1op2+ioff_op1op2+1,
      &             idoffop1op2+ioff_op1op2+lenblock)
-                
+
             end if
 
           end do gam_loop
@@ -2064,6 +2120,9 @@ c      call atim_cs(cpu0,sys0)
 c      call atim_cs(cpu,sys)
       cnt_wr(1) = cnt_wr(1)+cpu-cpu0
       cnt_wr(2) = cnt_wr(2)+sys-sys0
+
+      if(ms_fix1) deallocate(dum1_c,dum1_a,hpvx1_c,hpvx1_a)
+      if(ms_fix2) deallocate(dum2_c,dum2_a,hpvx2_c,hpvx2_a)
 
       deallocate(
      &     gmop1dis_c, gmop1dis_a,

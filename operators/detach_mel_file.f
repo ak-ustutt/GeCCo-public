@@ -41,9 +41,11 @@
 
 
       if (remove) then
+        if (iprlvl.ge.20) write(lulog,*) '---- file is removed'
         call file_delete(ffop)
 
         if (ffop%buffered) then
+          if (iprlvl.ge.20) write(lulog,*) '---- buffer is removed'
           call mem_pushmark()
           ifree = mem_gotomark(me_list_def)
 

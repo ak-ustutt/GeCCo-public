@@ -114,7 +114,7 @@ c      ntest=max(ntest,iprlvl)
             iset = iset+1
             if (idx.gt.0) then
               idx = idx+1
-              if (iset.gt.nset) iset = 1
+              if (iset.ge.nset) iset = 1
             end if
             zero_buff = .true.
           end do

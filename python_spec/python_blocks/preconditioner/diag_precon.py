@@ -150,14 +150,13 @@ DEF_ME_LIST({
         OPERATOR:'PRECON',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1})
+        AB_SYM:0}) # AB not well defined for orthog. basis!
+#        AB_SYM:+1})
 
 #extract preconditioner 
 PRECONDITIONER({
         LIST_PRC:'ME_PRECON2g',
         LIST_INP:'FOCK_EFF_INACT_LST'})
-
-debug_MEL('ME_PRECON2g')
 
 EXTRACT_DIAG({
         LIST_RES:'ME_PRECON2g',
@@ -170,7 +169,6 @@ SCALE_COPY({
         MODE:'prc_thresh'})
 
 debug_MEL('ME_PRECON2g')
-
 
 #----------------------------------------------------------
 #Preconditioner for T1
@@ -185,7 +183,7 @@ if (useT1):
         OPERATOR:'PRECON1',
         IRREP:1,
         '2MS':0,
-        AB_SYM:+1})
+        AB_SYM:0})
 
   #extract preconditioner 
   PRECONDITIONER({

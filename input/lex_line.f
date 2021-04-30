@@ -118,7 +118,7 @@ c dbg
           ! skip further white space
           do while (cmp_ch_list(line(ipos:ipos),ws_list,nws))
             ipos = ipos + 1
-            if (ipos.gt.len_line) exit
+            if (ipos.ge.len_line) exit
           end do
 c dbg
 c          print *,'after search ipos = ',ipos

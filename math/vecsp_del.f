@@ -39,8 +39,10 @@
                call file_delete(fhand)
             end if
          end if
+         deallocate (vecspace%vectors(ii)%fhand%last_mod)
          deallocate (vecspace%vectors(ii)%fhand)
       end do
+      deallocate(vecspace%vectors)
       vecspace%maxvec=0
       vecspace%nvec=0
       vecspace%nlists=0

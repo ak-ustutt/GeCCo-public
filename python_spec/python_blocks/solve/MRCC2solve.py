@@ -53,6 +53,8 @@ debug_FORM('FORM_T1_orth')
 
 debug_FORM('FORM_T2_orth')
 
+PRINT_MEL_INFO({LIST:'ME_T1'})
+PRINT_MEL_INFO({LIST:'ME_T2g'})
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],
@@ -67,6 +69,7 @@ SOLVE_NLEQ({
 
 
 
+PRINT_MEL({LIST:'PT_LAG_LST',COMMENT:'MRCC2 energy',FORMAT:'SCAL F24.14'})
 PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
 
@@ -119,29 +122,15 @@ SOLVE_EVP(SOLVE_map)
 new_target("SOLVE_MRCC2_refopt")
 depend('DEF_FORM_PT_LAG2')
 depend('BUILD_PRECON')
-depend("MakeRefState")
 depend("FOPT_OMG_C0")
-
-
-
-DEF_ME_LIST({LIST:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
-             OPERATOR:"D0",
-             IRREP:int(orbitals.get('lsym')),
-             "2MS":int(orbitals.get('ims')),
-             AB_SYM:ab_sym(int(orbitals.get('ims')),int(orbitals.get('imult')))
-})
-
-SCALE_COPY({LIST_RES:me_list_label("DIA",orbitals.get('lsym'),0,0,0,False)+"C0",
-            LIST_INP:"ME_D0",
-            FAC:1,})
-
 
 
 ASSIGN_ME2OP({
         LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM'})
 
-
+PRINT_MEL_INFO({LIST:'ME_T1'})
+PRINT_MEL_INFO({LIST:'ME_T2g'})
 
 SOLVE_NLEQ({
         LIST_OPT:['ME_T1','ME_T2g'],
@@ -156,6 +145,7 @@ SOLVE_NLEQ({
         })
 
 
+PRINT_MEL({LIST:'PT_LAG_LST',COMMENT:'MRCC2 energy',FORMAT:'SCAL F24.14'})
 PUSH_RESULT({LIST:'PT_LAG_LST',COMMENT:"MRCC2", FORMAT:"SCAL F20.14"})
 
 

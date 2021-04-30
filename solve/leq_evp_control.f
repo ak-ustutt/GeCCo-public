@@ -62,10 +62,11 @@ c     &                   ffopt,fftrv,ffmvp,ffmet,ffrhs,ffdia,
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_dependency_info.h'
+      include 'molpro_out.h'
       
 * parameters
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=10), parameter ::
      &     name_alg_leq(0:1) =
      &     (/"  CONJGRAD","  SUBSPACE"/),
@@ -334,7 +335,7 @@ c     &         ffopt,fftrv,ffmvp,ffdia,
       if (lconv)
      &       write(lulog,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
-      if (lconv.and.luout.ne.lulog.and.iprlvl.ge.5)
+      if (lconv.and.luout.ne.lulog.and.iprlvl.ge.5 .and. .not. lmol)
      &       write(luout,'(x,a,i5,a)')
      &         'CONVERGED IN ',iter,' ITERATIONS'
       if (lconv) conv = .true.

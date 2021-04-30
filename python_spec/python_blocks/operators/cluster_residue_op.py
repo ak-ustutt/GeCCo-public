@@ -13,6 +13,11 @@ spinadapt=0
 if keywords.is_keyword_set('calculate.routes.spinadapt'):
     spinadapt=int(keywords.get('calculate.routes.spinadapt'))
 
+shift_terms = False
+if keywords.is_keyword_set('method.MRCC2.shift_terms'):
+    shift_terms=True if keywords.get('method.MRCC2.shift_terms') == 'T' else False
+
+
 #-----------------------------------------------------------------#
 # operators associated with T
 #-----------------------------------------------------------------#
@@ -25,13 +30,38 @@ if keywords.is_keyword_set('method.MR.maxexc'):
 if (minexc==1 and maxexc==2):
   t1_shape='V,H|P,V|P,H'
   t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH' #compatible with Matthias
+  t2ps_shape='V,H|VV,VH|P,V|PV,VV|P,H|PV,HV' #pseudo-doubles
+  to0_shape=t1_shape
+  to1_shape=t2g_shape
+  to0_frm='To0=T1'
+  to1_frm='To1=T2g'
+  lamo0_frm='LAMo0=LAM1'
+  lamo1_frm='LAMo1=LAM2g'
   useT1=True
-elif (minexc==2 and maxexc==2):  
+  if (shift_terms):
+      to0_shape='V,H|VV,VH|P,V|PV,VV|P,H|PV,HV'
+      to1_shape='VV,HH|PV,HH|PP,VV|PP,HV|PP,HH'
+      to0_frm='To0=T1+T2g'
+      to1_frm='To1=T2g'
+      lamo0_frm='LAMo0=LAM1+LAM2g'
+      lamo1_frm='LAMo1=LAM2g'
+elif (minexc==2 and maxexc==2):
   t2g_shape='VV,VH|VV,HH|PV,VV|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
   t1_shape=',' # just to not leave it undefined
+  t2ps_shape=',' # just to not leave it undefined
   useT1=False
+  to0_shape=t1_shape
+  to1_shape=t2g_shape
+  # ... not clear that this works ... so ...
+  raise Exception(i_am+": minexc==maxexc==2 -> check this case!")
+  to0_frm='To0=T1'
+  to1_frm='To1=T2g'
+  lamo0_frm='LAMo0=LAM1'
+  lamo1_frm='LAMo1=LAM2g'
 else:
   raise Exception(i_am+": covered only minexc=1,2 and maxexc=2 so far ...")
+
+
 
 #-----------------------------------------------------------------#
 # targets to be included from other places
@@ -59,6 +89,53 @@ if (useT1):
 #-----------------------------------------------------------------#
 # specific targets (to be included with care)
 #-----------------------------------------------------------------#
+
+# formal operators for perturbation order exp.
+# + formulae for replacement
+new_target('DEF_ToX')
+depend('DEF_T')
+depend('DEF_LAM')
+depend('DEF_O')
+PRINT({STRING:''})
+PRINT({STRING:'Info on pertubation definition:'})
+PRINT({STRING:'Zeroth order: '+to0_shape})
+PRINT({STRING:'First order : '+to1_shape})
+
+DEF_OP_FROM_OCC({
+        LABEL:'To0',
+        DESCR:to0_shape})
+
+# pseudo-doubles
+DEF_OP_FROM_OCC({
+        LABEL:'T2ps',
+        DESCR:t2ps_shape})
+
+DEF_OP_FROM_OCC({
+        LABEL:'To1',
+        DESCR:to1_shape})
+
+DEF_FORMULA({LABEL:'FORM_To0',FORMULA:to0_frm})
+DEF_FORMULA({LABEL:'FORM_To1',FORMULA:to1_frm})
+
+CLONE_OPERATOR({
+        LABEL:'LAMo0',
+        TEMPLATE:'To0',
+        ADJOINT:True})
+
+CLONE_OPERATOR({
+        LABEL:'LAM2ps',
+        TEMPLATE:'T2ps',
+        ADJOINT:True})
+
+CLONE_OPERATOR({
+        LABEL:'LAMo1',
+        TEMPLATE:'To1',
+        ADJOINT:True})
+
+DEF_FORMULA({LABEL:'FORM_LAMo0',FORMULA:lamo0_frm})
+DEF_FORMULA({LABEL:'FORM_LAMo1',FORMULA:lamo1_frm})
+
+
 
 new_target('DEF_T2g')
 comment('Cluster Operators')
@@ -177,6 +254,9 @@ ME_param={
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
+if spinadapt>=2:
+    ME_param['S2']= 0
+
 
 DEF_ME_LIST(ME_param)
 
@@ -203,6 +283,8 @@ ME_param={
         IRREP:1,
         '2MS':0,
         AB_SYM:+1}
+if spinadapt>=2:
+    ME_param['S2']= 0
 
 DEF_ME_LIST(ME_param)
 

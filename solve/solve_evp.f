@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
 !>     solve eigenvalue problem  Mx = lambda x
 !!
-!!     the formula with label "label_form" describes how to calculate 
+!!     the formula with label "label_form" describes how to calculate
 !!     the matrix trial-vector products and the r.h.s.
 !!
 !!     @para nopt                  number of x operators to be solved for
@@ -33,7 +33,7 @@
 !!     init: it is used to initialise guesses for each of list_opt(s)
 !!           from existing files instead of going through 'init_guess'.
 !!           The same can also be done using the keyword 'calculate.solve.eigen.resume',
-!!           But that would be imposed to all the calls of this solver during the process. 
+!!           But that would be imposed to all the calls of this solver during the process.
 !----------------------------------------------------------------------*
       subroutine solve_evp(mode_str,
      &     nopt,nroots,targ_root,label_opt,label_prc,label_op_mvp,
@@ -62,9 +62,10 @@
       include 'ifc_memman.h'
       include 'mdef_target_info.h'
       include 'ifc_input.h'
+      include 'molpro_out.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
 
       integer, intent(in) ::
      &     nopt, nroots, nspecial, nspcfrm, targ_root,choice_opt
@@ -89,7 +90,7 @@
      &     strmap_info
       type(orbinf) ::
      &     orb_info
-      logical, intent(in) :: 
+      logical, intent(in) ::
      &     init
 
       logical ::
@@ -103,7 +104,8 @@
      &     jdx, nspec_, nextra_, idxspc
       real(8) ::
      &     xresmax, xdum, xnrm,
-     &     xeig(nroots,2), xresnrm(nroots*nopt)
+     &     xeig(nroots,2), xresnrm(nroots*nopt),
+     &     old_eig(nroots,2)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:), me_trv(:), me_mvp(:), me_met(:),
      &     me_special(:), me_scr(:), me_home(:), me_ext(:)
@@ -138,6 +140,22 @@
      &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
      &     fndmnx, da_ddot
+
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall ! variables for timing information
+      character(len=512)::
+     &     timing_msg
+      character(len=50)::
+     &     output
+      character(len=80)::
+     &     mol_format,
+     &     mol_format2
+      real(8)::
+     &     time_per_it
+      integer ::
+     &     i, print_iter
 
       ifree = mem_setmark('solve_evp')
 
@@ -234,7 +252,7 @@
         if (opti_info%typ_prc(iopt).eq.optinf_prc_traf.or.
      &      opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc) then
           if (iopt.ne.1) then
-            write(lulog,*) 
+            write(lulog,*)
      &      'Detected TRF or TR0 option, but not for first vector!'
             error = .true.
           end if
@@ -253,7 +271,7 @@
           if (opti_info%typ_prc(iopt).ne.optinf_prc_prj) then
             nspec_ = nspec_-1  ! # "special" lists for TRF (if there)
             idxspc = nspecial  ! idx "special" list for SPP or SRP
-          end if 
+          end if
         end if
       end do
       nextra_ = nspecial - nspec_
@@ -289,7 +307,7 @@
         me_scr(iopt)%mel   => op_info%mel_arr(idxmel)%mel
         ff_scr(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
 
-        ! Here is a new ME-list that will be fed in the 
+        ! Here is a new ME-list that will be fed in the
         ! routine 'optc_minspace'. Previously ff_scr was
         ! used there but the use was erroneous
         write(fname,'("ext_",i3.3)') iopt
@@ -344,7 +362,7 @@
      &         op_info,orb_info,str_info,strmap_info)
           idxmel = idx_mel_list(fname,op_info)
           me_met(iopt)%mel   => op_info%mel_arr(idxmel)%mel
-          ff_met(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand          
+          ff_met(iopt)%fhand => op_info%mel_arr(idxmel)%mel%fhand
         end if
 
       end do
@@ -456,10 +474,10 @@ c dbgend
           inquire(file=trim(ffopt(iopt)%fhand%name),exist=restart)
           if (.not.restart) call warn('solve_evp',
      &         'No amplitude file found for restart! Setting to zero.')
-          if (restart) then 
+          if (restart) then
             write(lulog,'(x,a,i1,a)')
      &         'Using old amplitude file for vector ',iopt,'!'
-!           if(iopt.eq.1) call zeroop(me_opt(iopt)%mel) 
+!           if(iopt.eq.1) call zeroop(me_opt(iopt)%mel)
             do iroot = 1, nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
               call switch_mel_record(me_opt(iopt)%mel,iroot)
@@ -468,7 +486,7 @@ c dbgend
           else
             do iroot = 1, nroots
               call switch_mel_record(me_trv(iopt)%mel,iroot)
-              call zeroop(me_trv(iopt)%mel) 
+              call zeroop(me_trv(iopt)%mel)
             enddo
           endif
         enddo
@@ -489,22 +507,30 @@ c dbgend
      &                  opti_info,orb_info,op_info,str_info,strmap_info)
         end if
       endif
- 
+
+      ! Header for molpro output
+      if (lmol .and. .not. no_print) then
+         write(luout,*)
+         write(luout,'(A71)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &      " CHANGE     RES         TIME    TIME/IT"
+      end if
 
 c dbg
-c     do iopt = 1,nopt
+c      do iopt = 1,nopt
 c        write(lulog,*) 'starting trial vector (before): iopt = ',iopt
 c        call wrt_mel_file(lulog,5,
-c    &        me_trv(iopt)%mel,
-c    &        1,me_trv(iopt)%mel%op%n_occ_cls,
-c    &        str_info,orb_info)
-c     enddo
-
+c     &        me_trv(iopt)%mel,
+c     &        1,me_trv(iopt)%mel%op%n_occ_cls,
+c     &        str_info,orb_info)
+c      enddo
+c
 c dbgend
       ! start optimization loop
       iter = 0
       task = 0
+      old_eig = 0d0
       opt_loop: do while(task.lt.8)
+      call atim_csw(cpu0_t,sys0_t,wall0_t)
         call leq_evp_control
      &       ('EVP',iter,
      &       task,conv,xresnrm,xeig,
@@ -520,9 +546,43 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
         if (iter.gt.1) then
           xresmax = fndmnx(xresnrm,nroots*nopt,2)
           write(lulog,'("E>>",i3,24x,x,g10.4)') iter-1,xresmax
-          if (lulog.ne.luout) 
-     &      write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
-          if (iprlvl.gt.0) then
+
+          if (lulog.ne.luout) then
+            if (lmol) then
+               if (.not. no_print) then
+                  time_per_it = cpu0_t / (iter-1)
+                  mol_format = '(i4,f18.8,f16.8,d12.2,f10.2,f11.2)'
+                  mol_format2 = '(f22.8,f16.8,d12.2)'
+
+                  if (conv) then
+                     print_iter = iter
+                  else
+                     print_iter = iter-1
+                  end if
+
+                  do i = 1, nroots
+                     if (i==1) then
+                        write(luout,mol_format)
+     &                  print_iter,xeig(i,1),xeig(i,1)-old_eig(i,1),
+     &                  xresnrm(i),cpu0_t,time_per_it
+                     else
+                        write(luout,mol_format2)
+     &                  xeig(i,1),xeig(i,1)-old_eig(i,1),xresnrm(i)
+                     end if
+
+                  end do
+                  if (nroots>1) write(luout,*)
+
+                  do i = 1, nroots
+                     old_eig(i,1) = xeig(i,1)
+                  end do
+               end if
+            else
+               write(luout,'("   ",i3,24x,x,g10.4)') iter-1,xresmax
+            end if
+          end if
+
+          if (iprlvl.gt.0 .and. .not. lmol) then
             do iroot = 1, nroots
               if (xeig(iroot,2).eq.0d0) then
                 write(lulog,'(" E>",3x,f24.12,x,3g10.4)')
@@ -548,7 +608,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
 
         ! 4 - get residual
         if (iand(task,4).eq.4) then
-          ! preliminary solution: 
+          ! preliminary solution:
           !   outside loop over requested Mv-products
           do irequest = 1, nrequest
             do iopt = 1, nopt
@@ -557,16 +617,16 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
               if (use_s(iopt))
      &             call switch_mel_record(me_met(iopt)%mel,
      &                                                irecmet(irequest))
-              
+
               ! enforce MS-combination symmetry of trial vectors
               ! (if requested)
 c              if (me_trv(iopt)%mel%absym.ne.0)
 c dbg
 c        write(lulog,*) 'current trial vector (before): iopt = ',iopt
 c        call wrt_mel_file(lulog,5,
-c     &       me_trv(iopt)%mel,
-c     &       1,me_trv(iopt)%mel%op%n_occ_cls,
-c     &       str_info,orb_info)
+c    &       me_trv(iopt)%mel,
+c    &       1,me_trv(iopt)%mel%op%n_occ_cls,
+c    &       str_info,orb_info)
 c dbgend
               if (iter.gt.1.and.me_trv(iopt)%mel%absym.ne.0)
      &             call sym_ab_list(
@@ -578,7 +638,7 @@ c dbgend
               call touch_file_rec(me_trv(iopt)%mel%fhand)
             end do
 
-c dbg   
+c dbg
 c            do iopt = 1, nopt
 c            write(lulog,*) 'input for request, iopt: ',irequest, iopt
 c            call wrt_mel_file(lulog,5,me_trv(iopt)%mel,
@@ -680,8 +740,20 @@ c dbg
 
           end do
         end if
+      call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for iteration ')")
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
 
       end do opt_loop
+
+      if (lmol .and. nroots<2 .and. .not. no_print)
+     &    write(luout,*)
+
+      ! Set ci_iter from molpro_out.h for use in molpro output
+      ci_iter = iter
 
       do iopt = 1, nopt
 
@@ -728,7 +800,7 @@ c dbgend
           end do
           ifree = mem_flushmark()
           if (idx.ne.targ_root) then
-            write(lulog,'(a,i4,a,f8.4)') 
+            write(lulog,'(a,i4,a,f8.4)')
      &            'Homing in on root ',idx,' with overlap ',xresmax
             ! Interchange this record and the current record
             ! and leave everything else unchanged (a bit dirty)
@@ -782,8 +854,8 @@ c dbgend
 
       return
 
-      contains 
-      
+      contains
+
       subroutine print_roots(lu)
 
       integer, intent(in) :: lu
@@ -794,7 +866,7 @@ c dbgend
       write(lu,'("E>>",2x,'//
      &     '"root     eigenvalue (real)       eigenvalue (img.)'//
      &     '  |residual|")')
-      write(lu,'("E>>",66("-"))') 
+      write(lu,'("E>>",66("-"))')
       do iroot = 1, nroots
         if (xeig(iroot,2).eq.0d0) then
           write(lu,'("E>>",2x,i3,x,f22.12,20x,"---",2x,x,g10.4)')
@@ -814,9 +886,9 @@ c    &             1,me_opt(iopt)%mel%op%n_occ_cls,
 c    &             str_info,orb_info)
 c         enddo
 c        end if
-c dbg     
+c dbg
       end do
-      write(lu,'("E>>",66("="))') 
+      write(lu,'("E>>",66("="))')
 
       end subroutine
 

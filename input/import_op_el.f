@@ -46,7 +46,7 @@
       real(8) ::
      &     xdum
       logical ::
-     &     anti, list_exists, act_orbs
+     &     anti, list_exists, act_orbs, watch
       type(me_list), pointer ::
      &     mel_target
 
@@ -274,14 +274,17 @@ c     &                                str_info,orb_info)
      &                    'unknown type "'//trim(env_type)//'"')
       end select
 
-      if (ntest.ge.10.and.(.not.mel_target%op%formal)) then
+      !debug: set here a specific target to get more output
+      watch = .false.
+      !watch = trim(op_label).eq.'Hnox_INT'
+      if (ntest.ge.10.and.(.not.mel_target%op%formal).or.watch) then
         write(lulog,*)
         write(lulog,*) 'imported list: ',trim(mel_target%label)
         if (ntest.ge.10) ipri = 1
         if (ntest.ge.50) ipri = 2
         if (ntest.ge.100) ipri = 3
         if (ntest.ge.500) ipri = 4
-        if (ntest.ge.1000) ipri = 5
+        if (ntest.ge.1000.or.watch) ipri = 5
         call wrt_mel_file(lulog,ipri,mel_target,
      &       1,mel_target%op%n_occ_cls,
      &       str_info,orb_info)

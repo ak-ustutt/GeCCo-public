@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine resize_contr(contr,nvtx,narc,nxarc,nfac)
 *----------------------------------------------------------------------*
-*     check max dimensions of contr (mxvtx,mxarc,mxxarc,mxfac) and 
+*     check max dimensions of contr (mxvtx,mxarc,mxxarc,mxfac) and
 *     resize if necessary
 *     data-save version:
 *     we first allocate new memory, deallocate the old one, and
@@ -62,8 +62,9 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
         contr%joined => joined_new
         contr%svertex => svertex_new
         contr%mxvtx = nvtx
+        nullify(vtx_new,joined_new,svertex_new)
       end if
-      
+
       if (contr%mxarc.lt.narc) then
         allocate(arc_new(narc))
         nsave = min(contr%mxarc,contr%narc)
@@ -72,6 +73,7 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
         if (contr%mxarc.gt.0) deallocate(contr%arc)
         contr%arc => arc_new
         contr%mxarc = narc
+        nullify(arc_new)
       end if
 
       if (contr%mxxarc.lt.nxarc) then
@@ -82,6 +84,7 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
         if (contr%mxxarc.gt.0) deallocate(contr%xarc)
         contr%xarc => xarc_new
         contr%mxxarc = nxarc
+        nullify(xarc_new)
       end if
 
       if (contr%mxfac.lt.nfac) then
@@ -93,6 +96,7 @@ c fix for newly introduced dagger flag -- ensure that it is always def.'d
         if (contr%mxfac.gt.0) deallocate(contr%inffac)
         contr%inffac => inf_new
         contr%mxfac = nfac
+        nullify(inf_new)
       end if
 
       ! unique representation will look different

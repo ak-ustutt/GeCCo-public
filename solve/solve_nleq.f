@@ -10,7 +10,7 @@
 *
 *     solve non-linear equations
 *
-*     the formula with label "label_form" describes how to calculate 
+*     the formula with label "label_form" describes how to calculate
 *     energy and residual
 *
 *     nopt               number of operators to be simultaneously optimized
@@ -18,7 +18,7 @@
 *     label_opt(1..nop_opt) labels of preconditioners
 *     label_res(nop_opt+1,..)   residuals
 *     label_en                  energy
-*     
+*
 *     op_info:  operator definitions and files
 *     str_info: string information (to be passed to subroutines)
 *     orb_info: orbital space information (to be passed)
@@ -46,12 +46,13 @@ c dbg it's now itegral
 c dbgend
       include 'routes.h'
       include 'mdef_target_info.h'
+      include 'molpro_out.h'
 
       integer, parameter ::
      &     ntest = 000
       character(len=*),parameter::
      &     i_am = "solve_nleq"
-      
+
       integer, intent(in) ::
      &     nopt, nspecial, nspcfrm, n_states
       character(*), intent(in) ::
@@ -88,7 +89,7 @@ c dbgend
       real(8) ::
      &     xresnrm(nopt), xdum
       real(8), allocatable ::
-     &     thr_suggest(:), energy(:)
+     &     thr_suggest(:), energy(:), old_energy(:)
       real(8), pointer ::
      &     xret(:)
       type(dependency_info) ::
@@ -124,6 +125,9 @@ c dbgend
      &     mel_C0, mel_pnt
       character(50) ::
      &     out_format
+      character(80) ::
+     &     mol_format,
+     &     mol_format2
       character(5) ::
      &     evp_mode
       character(2) ::
@@ -131,6 +135,14 @@ c dbgend
       character(len=5)::
      &     fname
 
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall, ! variables for timing information
+     &     time_per_it, ! Molpro timing variables
+     &     res_sum ! Sum of seperated residuals
+      character(len=512)::
+     &     timing_msg
       ifree = mem_setmark('solve_nleq')
 
       call get_argument_value('method.MR','multistate',
@@ -176,7 +188,7 @@ c dbgend
          else
             ffopt(iopt)%fhand => me_opt(iopt)%mel%fhand
          end if
-         
+
          me_grd(iopt)%mel => get_mel_h(label_res(iopt), op_info)
          if (.not.mel_has_file_h( me_grd(iopt)%mel))then
             call quit(1,i_am,
@@ -184,7 +196,7 @@ c dbgend
          else
             ffgrd(iopt)%fhand => me_grd(iopt)%mel%fhand
          end if
-         
+
          me_dia(iopt)%mel   => get_mel_h(label_prc(iopt),op_info)
          if (.not.mel_has_file_h( me_dia(iopt)%mel))then
             call quit(1,i_am,
@@ -193,7 +205,7 @@ c dbgend
             ffdia(iopt)%fhand => me_dia(iopt)%mel%fhand
          end if
       end do
-      
+
       ! special lists needed?
       do idx = 1, nspecial
          me_special(idx)%mel => get_mel_h(label_special(idx), op_info)
@@ -258,7 +270,7 @@ cmh     if file already open, use as initial guess!
         if (ffspecial(idx)%fhand%unit.le.0)
      &       call file_open(ffspecial(idx)%fhand)
       end do
-      
+
 cmh      ! get initial amplitudes
 cmh      do iopt = 1, nopt
 cmhc        if (.not.file_exists(me_opt(iopt)%mel%fhand)) then
@@ -284,7 +296,7 @@ cmh      end do
 
 
 
-      
+
       ! read formula
       call read_form_list(form_en_res%fhand,fl_en_res,.true.)
 
@@ -308,6 +320,7 @@ cmh      end do
       end if
       allocate(idx_en_xret(0:n_energies))
       allocate(energy(0:n_energies))
+      allocate(old_energy(0:n_energies))
 
       ! find out, which entries of xret are the ones that we need
       idx_en_xret(0) = idx_xret(label_en,op_info,depend)
@@ -321,11 +334,11 @@ cmh      end do
      &       'formula does not provide an update for all the energies')
        end do
       end if
-      
+
       if (idx_en_xret(0).le.0)
      &     call quit(1,i_am,
      &     'formula does not provide an update for the energy')
-      
+
       do iopt = 1, nopt
         idx_res_xret(iopt) = idx_xret(label_res(iopt),op_info,depend)
         if (idx_res_xret(iopt).le.0)
@@ -338,13 +351,23 @@ cmh      end do
       if (idxmel.GT.0)
      &     mel_C0 => op_info%mel_arr(idxmel)%mel
 
+      if (lmol) then
+         write(luout,*)
+         write(luout,'(A112)') "ITER.  NCI    TOTAL ENERGY    ENERGY
+     & CHANGE     RES       NSV    SV MIN     SV MAX    DIIS      TIME "
+     & //"   TIME/IT"
+         ! Turn off the printing of ci iterations
+         no_print = .true.
+      end if
+
       ! start optimization loop
       imacit = 0
       imicit = 0
       imicit_tot = 0
       task = 0
+      old_energy = 0.0
       opt_loop: do !while(task.lt.8)
-
+      call atim_csw(cpu0_t,sys0_t,wall0_t)
        if (multistate.and.MRCC_type.NE.'SU')
      &     call opt_solve_Heff(n_states,
      &     op_info,form_info,str_info,strmap_info,orb_info)
@@ -388,23 +411,83 @@ c     &       ff_trv,ff_h_trv,
      &        '(1x,i3,',n_states,'(f24.12,',nopt_state,
      &        '(x,g10.4)))'
          if (imacit.gt.1) then
-          if(multistate)then
-           write(luout,out_format)
-     &          it_print, [(
-     &          [energy(i_state),
-     &          xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
-     &          ,i_state = 1,n_states)]
+          if (.not. lmol) then
+           if (multistate) then
+            write(luout,out_format)
+     &           it_print, [(
+     &           [energy(i_state),
+     &           xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
+     &           ,i_state = 1,n_states)]
+           else
+
+            write(luout,out_format)
+     &            it_print,energy(0),xresnrm(1:nopt)
+           end if
+
+
+         else
+           ! Print out new molpro output
+           time_per_it = cpu0_t / (it_print)
+           mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
+     &                  "i6,f11.2,f11.2)"
+
+           if (multistate) then
+
+            mol_format2 = "(f27.8,f16.8,d12.2)"
+
+            do i_state = 1, n_states
+             if (i_state==1) then
+             write(luout,mol_format)
+     &             it_print,ci_iter,energy(i_state),
+     &             energy(i_state)-old_energy(i_state),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
+     &             n_sv,sv_min,sv_max,
+     &             opti_stat%ndim_rsbsp,cpu0_t,
+     &             time_per_it
+             else
+             write(luout,mol_format2)
+     &             energy(i_state),
+     &             energy(i_state)-old_energy(i_state),
+     &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)
+             end if
+            end do
+            write(luout,*)
+
+            do i_state = 1, n_states
+               old_energy(i_state) = energy(i_state)
+            end do
+
           else
-           write(luout,out_format)
-     &          it_print,energy(0),xresnrm(1:nopt)
+
+            ! MRCC2 reports back seperate singles and doubles residuals,
+            ! add them up and print out sum
+            res_sum = 0.0
+            do i_state = 1, nopt
+             res_sum = res_sum + xresnrm(i_state)
+            end do
+
+            write(luout,mol_format)
+     &            it_print,ci_iter,energy(0),
+     &            energy(0)-old_energy(0),
+     &            res_sum,
+     &            n_sv,sv_min,sv_max,
+     &            opti_stat%ndim_rsbsp,cpu0_t,time_per_it
+
+            old_energy(0) = energy(0)
           end if
+
+        end if
+
+
          end if
          if (task.ge.8) then
+          write(luout,*)
           if (conv) then
            write(luout,'("    CONVERGED")')
           else
            write(luout,'("    NOT CONVERGED!")')
           end if
+          write(luout,*)
          end if
         end if
 
@@ -513,7 +596,7 @@ c     &       ff_trv,ff_h_trv,
      &            op_info,form_info,str_info,strmap_info,orb_info)
 
           end if
-          
+
            if (multistate) then ! save the just calculated ME_C0 in ME_C0//c_st2
               ! FIXME: No explicit reference to list names
               idxmel = idx_mel_list("ME_C0"//trim(c_st2),op_info)
@@ -631,7 +714,7 @@ c test
         end if
 
         ! report untransformed residual
-        if (traf) 
+        if (traf)
      &   write(lulog,'(x,"norm of untransformed residual ",4(x,g10.4))')
      &   xresnrm(1:opti_info%nopt)
 
@@ -670,8 +753,17 @@ c test
           ! get norm of projected gradient and report as gradient norm
           xresnrm(1) = xdum
         end if
+      call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for iteration ')")
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
 
       end do opt_loop
+
+      ! Turn on molpro output in solve_evp
+      if (lmol) no_print = .false.
 
       call clean_formula_dependencies(depend)
 
@@ -683,18 +775,18 @@ c        if (iopt.eq.2) then
 c          write(lulog,*) ' iopt = ',iopt
 c          call wrt_mel_file(lulog,1000,me_opt(iopt)%mel,
 c     &       1,me_opt(iopt)%mel%op%n_occ_cls,
-c     &       str_info,orb_info)        
+c     &       str_info,orb_info)
 c        end if
 c dbg
 c dbg
-        ! very dirty: don't close file if needed for following opt.
-        if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
-     &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
-     &      opti_info%optref.eq.0.or.nopt.ne.n_states) then
+c        ! very dirty: don't close file if needed for following opt.
+c        if ((opti_info%typ_prc(1).ne.optinf_prc_traf.and.
+c     &       opti_info%typ_prc(1).ne.optinf_prc_invH0).or.
+c     &      opti_info%optref.eq.0.or.nopt.ne.n_states) then
 c dbgend
         call file_close_keep(ffopt(iopt)%fhand)
 c dbg
-        end if
+c        end if
 c dbgend
         ! open corresponding residuals ...
         call file_close_keep(ffgrd(iopt)%fhand)
@@ -709,6 +801,8 @@ c dbgend
       end do
 
       deallocate(thr_suggest)
+      deallocate(energy)
+      deallocate(old_energy)
 
       deallocate(ffopt,ffdia,ffgrd,ffspecial,
      &     me_opt,me_dia,me_grd,me_special,me_trv,me_h_trv,xret)

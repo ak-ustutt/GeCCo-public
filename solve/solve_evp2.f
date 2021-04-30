@@ -65,10 +65,11 @@
       include 'ifc_input.h'
       include 'def_davidson_subspace.h'
       include "def_guess_gen.h"
-      
-      
+      include 'molpro_out.h'
+
+
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 000
       character(len=*),parameter::
      &     i_am="solve_evp2"
 
@@ -114,7 +115,8 @@
      &     xresmax, xdum, xnrm,
      &     xeig(nroots,2),reig(nroots,2),
      &     xresnrm(nroots,nopt),
-     &     xnrm2(nroots)
+     &     xnrm2(nroots),
+     &     old_eig(nroots,2)
       type(me_list_array), pointer ::
      &     me_opt(:), me_dia(:),
      &     me_trv(:), me_mvp(:), me_mvpprj(:),
@@ -158,7 +160,22 @@
      &     idx_formlist, idx_mel_list, idx_xret
       real(8), external ::
      &     da_ddot
-      
+      real(8)::
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall  ! variables for timing information
+      character(len=80)::
+     &     mol_format,
+     &     mol_format2
+      integer ::
+     &     i
+      real(8) ::
+     &     time_per_it,
+     &     var(nopt)
+      real(8),external::
+     &     fndmnx
+      character(len=512)::
+     &     timing_msg
 
       ifree = mem_setmark('solve_evp')
 
@@ -190,7 +207,7 @@
      &     ff_trv(nopt),ff_mvp(nopt),ff_met(nopt),ffspecial(nspecial),
      &     ff_scr(nopt),ff_ext(nopt) )
       allocate(xrsnrm(nroots,nopt))
-      
+
       do iopt = 1, nopt
          ! lists to be optimized
          me_opt(iopt)%mel   => get_mel_h(label_opt(iopt), op_info)
@@ -238,13 +255,13 @@
          ! does any operator use a metric
          if (use_s(iopt)) use_s_t = .true.
       end do
-      
+
       do iopt=1,nopt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         
+
 !     intermediate lists in normal space
          ! mvp = matrix vector product
-         write(fname,'("mvp_",i3.3)') iopt 
+         write(fname,'("mvp_",i3.3)') iopt
          me_mvp(iopt)%mel => me_from_template(
      &        fname, label_op_mvp(iopt), me_opt(iopt)%mel,
      &        nvectors,
@@ -269,20 +286,20 @@
      &       op_info,  orb_info, str_info, strmap_info)
 
 
-        
+
 ! use of metric requested?
         if (use_s(iopt)) then
              ! get a ME list for metric-times-vector products
 ! (have same symmtry properties as result!)
 !S * vector product -- svp
-           write(fname,'("svp_",i3.3)') iopt 
+           write(fname,'("svp_",i3.3)') iopt
            me_met(iopt)%mel => me_from_template(
      &          fname, label_op_met(iopt) , me_trv(iopt)%mel,
      &          nvectors,
      &          op_info,  orb_info, str_info, strmap_info)
            ff_met(iopt)%fhand => me_met(iopt)%mel%fhand
         else
-           me_met(iopt)%mel => me_trv(iopt)%mel 
+           me_met(iopt)%mel => me_trv(iopt)%mel
        end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -301,7 +318,7 @@
           trafo(iopt)=.false.
           me_vort(iopt)%mel => me_opt(iopt)%mel
        end if
-       
+
          ! scr = scratch used for mvp is orthogonal space
          write(fname,'("scr_",i3.3)') iopt
          me_scr(iopt)%mel => me_from_template(
@@ -397,7 +414,7 @@
           else
             me_pnt => me_opt(iopt)%mel
           end if
-          
+
           fname = "home"
           me_home(1)%mel => me_from_template(
      &         fname, me_opt(iopt)%mel%op%name,me_pnt,
@@ -407,7 +424,7 @@
           call file_open(me_home(1)%mel%fhand)
           call assign_me_list(me_trv(iopt)%mel%label,
      &         me_opt(iopt)%mel%op%name,op_info)
-          
+
           call list_copy(me_opt(iopt)%mel,me_home(1)%mel,.false.)
         end if
         call file_ensure_open(me_opt(iopt)%mel%fhand)
@@ -431,7 +448,7 @@
         call assign_me_list(me_trv(iopt)%mel%label,
      &       me_opt(iopt)%mel%op%name,op_info)
       end do
-      
+
       ! set dependency info for submitted formula list
       call set_formula_dependencies(depend,fl_mvp,op_info)
 
@@ -479,13 +496,12 @@
         end do
         call init_guess_gen(guess_gen, max(1000,4*nroots),
      &       me_dia, me_vort, nopt,
-     &       op_info,str_info,strmap_info, orb_info)
+     &       op_info,str_info,strmap_info, orb_info, opti_info)
         iroot = 1
         trial_gen_loop: do while(iroot .le.nroots)
-        
         do iopt = 1,nopt
           call switch_mel_record(me_vort(iopt)%mel,iroot)
-          call zeroop(me_trv(iopt)%mel)
+          call zeroop(me_vort(iopt)%mel)
           call switch_mel_record(me_trv(iopt)%mel,iroot)
           call touch_file_rec(me_trv(iopt)%mel%fhand)
           call zeroop(me_trv(iopt)%mel)
@@ -495,22 +511,26 @@
      &       call quit(1,i_am,
      &       'Could not find enough guess vectors')
         if (trafo(iopt))then
-          call transform_back_wrap(fl_mvp,depend,
+           if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
+              call set_blks(me_vort(iopt)%mel,
+     &             "P,H|P,V|V,H|V,V",0d0)
+           end if
+           call transform_back_wrap(fl_mvp,depend,
      &         me_special,me_vort(iopt)%mel,me_trv(iopt)%mel,
      &         trf_nrm,
      &         iopt,nspecial,
      &         me_trv(iopt)%mel,
      &         op_info, str_info, strmap_info, orb_info, opti_info)
 ! guess vectors of wrong spin symmetry and twinned guess vectors will be discarded
-            if (should_discard_vector_h(trf_nrm, nopt,nroots,
+           if (should_discard_vector_h(trf_nrm, nopt,nroots,
      &           iroot,xnrm2,me_trv, opti_info) )then
               cycle trial_gen_loop
-            else
+           else
               xnrm2(iroot) = trf_nrm**2
-            end if 
            end if
-           
-           if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
+        end if
+
+        if (opti_info%typ_prc(iopt).eq.optinf_prc_spinp.or.
      &          opti_info%typ_prc(iopt).eq.optinf_prc_prj.or.
      &          opti_info%typ_prc(iopt).eq.optinf_prc_spinrefp) then
              call  spin_proj_h(opti_info%typ_prc(iopt),
@@ -526,30 +546,34 @@
              else if (iroot.gt.1) then
                call orthogonalize_roots_h(iroot, opti_info%nwfpar(iopt),
      &              xnrm2,xnrm**2,me_trv(iopt)%mel)
-             else 
+             else
                xnrm2(iroot) = xnrm**2
              end if
-           end if
+        end if
 ! Assumption: If the controlflow reaches here, a new guess vector was created
-         iroot = iroot +1
+        iroot = iroot +1
        end do trial_gen_loop
        call del_guess_gen(guess_gen)
       endif
-
       deallocate(xret)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))
-      
+
       do iroot=1,nroots
          do iopt=1,nopt
             call switch_mel_record(me_trv(iopt)%mel,iroot)
             call touch_file_rec(me_trv(iopt)%mel%fhand)
          end do
       end do
-      
+
       call init_buffers(opti_info%nwfpar, nopt,
-     &     xbuf1,xbuf2,xbuf3,nincore, lenbuf) 
+     &     xbuf1,xbuf2,xbuf3,nincore, lenbuf)
+
+      if (lmol) then
+         write(luout,'(A71)') "ITER.    TOTAL ENERGY    ENERGY"//
+     &     " CHANGE     RES         TIME    TIME/IT"
+      end if
 
       iter = 0
       task = 4
@@ -557,14 +581,16 @@
       xrsnrm=0d0
       xeig=0d0
       reig=0d0
-                  
+      old_eig=0d0
+
       opt_loop: do while(task.lt.8)
+         call atim_csw(cpu0_t,sys0_t,wall0_t)
          iter=iter+1
-         if (iter.gt.1) then
+         if (iter.gt.1 .and. .not. lmol) then
             call print_step_results(iter-1,xrsnrm, xeig,
      &           nroots, nopt)
          end if
-         
+
 
 ! 4 - get residual
         if (iand(task,4).eq.4) then
@@ -585,16 +611,16 @@
 
               ! enforce MS-combination symmetry of trial vectors
 ! (if requested)
-                 if (me_trv(iopt)%mel%absym.ne.0) 
-     &                call sym_ab_list(
+                 if (me_trv(iopt)%mel%absym.ne.0)then
+                     call sym_ab_list(
      &                0.5d0,me_trv(iopt)%mel,me_trv(iopt)%mel,
      &                xdum,.false.,
      &                op_info,str_info,strmap_info,orb_info)
-
+                  end if
                  call touch_file_rec(me_trv(iopt)%mel%fhand)
               end do
 
-              
+
 
               call frm_sched(xret,fl_mvp,depend,0,0,
      &             .true.,.false.,op_info,str_info,strmap_info,orb_info)
@@ -617,7 +643,7 @@ c            call wrt_mel_file(lulog,5,me_mvp(1)%mel,
 c     &           1,me_mvp(1)%mel%op%n_occ_cls,
 c     &           str_info,orb_info)
 c dbg
-            
+
 ! enforce MS-combination symmetry of Mv-products:
 ! (if requested)
             do iopt = 1, nopt
@@ -666,18 +692,18 @@ c dbg
             end do
          end do
       end if
-      ! 
+      !
       call transform_forward_h(
      &     me_mvp, me_mvort,
      &     me_met, me_metort,
-     &     me_trv, 
+     &     me_trv,
      &     nopt, nrequest,
      &     me_special, nspecial,
      &     fl_mvp, depend,
      &     xrsnrm,
      &     trafo, use_s,
      &     op_info, str_info, strmap_info, orb_info, opti_info)
-      
+
         call davidson_driver(
      &     dvdsbsp,
      &     iter, task, nrequest,
@@ -702,6 +728,7 @@ c dbg
           me_pnt_list=>me_trv
           nlists = nrequest
         end if
+
        call transform_back_h(fl_mvp,depend,
      &      trafo,
      &      me_special,
@@ -712,27 +739,57 @@ c dbg
      &      op_info,str_info,
      &      strmap_info, orb_info,
      &      opti_info)
-        
-        
-        
-        if (iand(task,8).eq.8)
-     &       call print_step_results(iter,
-     &       xrsnrm, xeig,nroots, nopt)
+
+         ! New molpro output
+         if (lmol) then
+            time_per_it = cpu0_t / iter
+            mol_format = '(i4,f17.8,f16.8,d13.2,f10.2,f11.2)'
+            mol_format2 = '(f21.8,f16.8,d13.2)'
+
+            do i = 1, nroots
+               var(i) = fndmnx(xrsnrm(i,1:nopt),nopt,2)
+               if (i==1) then
+                  write(luout,mol_format)
+     &            iter,xeig(i,1),xeig(i,1)-old_eig(i,1),var(i),
+     &            cpu0_t,time_per_it
+               else
+                  write(luout,mol_format2)
+     &            xeig(i,1),xeig(i,1)-old_eig(i,1),var(i)
+               end if
+            end do
+            if (nroots>1) write(luout,*)
+
+            do i = 1, nroots
+               old_eig(i,1) = xeig(i,1)
+            end do
+         end if
+
+        if (iand(task,8).eq.8 .and. .not. lmol)
+     &         call print_step_results(iter,
+     &         xrsnrm, xeig,nroots, nopt)
+
+      call atim_csw(cpu,sys,wall)
+         if(iprlvl.ge.5)then
+         write (timing_msg,"(x,'time for iteration ')")
+         call prtim(lulog,trim(timing_msg),
+     &          cpu-cpu0_t,sys-sys0_t,wall-wall0_t)
+         end if
 
       end do opt_loop
 
-      
+      if (lmol .and. nroots<2) write(luout,*)
+
+
       if(nrequest.eq.0)then
          write(lulog,'(x,a,i5,a)')
      &        'CONVERGED IN ',iter,' ITERATIONS'
-         if (luout.ne.lulog.and.iprlvl.ge.5)
+         if (luout.ne.lulog.and.iprlvl.ge.5 .and. .not. lmol)
      &        write(luout,'(x,a,i5,a)')
      &        'CONVERGED IN ',iter,' ITERATIONS'
       else
          write(lulog,'(x,a,i5,a)') "Stopping after",iter,"iterations"
          call warn('linear solver', 'NO CONVERGENCE OBTAINED')
       end if
-      
       do iopt = 1, nopt
 
 
@@ -758,7 +815,7 @@ c dbg
 
 
 c        ! solution vector has been updated (if we had some iteration)
-         
+
          call touch_file_rec(me_opt(iopt)%mel%fhand)
 
          if (home_in) then
@@ -822,17 +879,18 @@ c dbgend
       ! note that only the pointer array ffopt (but not the entries)
       ! is deallocated:
       deallocate(me_opt,me_dia,me_trv,me_mvp,me_met,me_special,me_scr,
-     &     me_vort, me_mvort, me_res)
+     &     me_vort, me_mvort, me_res, me_mvpprj, me_metort)
       deallocate(ff_trv,ff_mvp,ffdia,ffopt,ff_met,xret,ffspecial,
      &     ff_scr,ff_ext)
 
-!     not freeing xrsnrm is a memory leak.
-!     but deallocating it results in a double free error.
-!     I suspect an implicit reallocation somwhere with an incorrect intent(out)
+!     Arne says: Deallocating xrsnrm results in a double free error.
+!     So far, I haven't seen this error; hopefully it has disappeared...
+      deallocate(xrsnrm)
 
-!     deallocate(xrsnrm) 
- 
+!     Arne says: Deallocating fl_mvp results in an error
+!     So far, I haven't seen this error; hopefully it has disappeared...
       call dealloc_formula_list(fl_mvp)
+
       do jdx = 1, nspcfrm
          call dealloc_formula_list(fl_spc(jdx))
       end do
@@ -1175,7 +1233,7 @@ c dbg
       write(lu,'(x,a,3i10)')
      &     'modes      ',
      &     opti_info%typ_prc(1:opti_info%nopt)
-      
+
 
       end subroutine
 *----------------------------------------------------------------------*
@@ -1187,9 +1245,9 @@ c dbg
       integer, intent(in)::
      &     lu
 
-      write(lu,*) "This is the 'NEW' solver by Arne Bargholz 2017"
+      write(lu,*) "New solver by Arne Bargholz, 2017"
       end subroutine
-      
+
 *----------------------------------------------------------------------*
 !!    transforms mvp and metric into orthogonal state
 *----------------------------------------------------------------------*
@@ -1205,7 +1263,7 @@ c dbg
      &     op_info, str_info, strmap_info, orb_info, opti_info)
 *----------------------------------------------------------------------*
       implicit none
-  
+
       integer,intent(in)::
      &     nnew, nopt,
      &     nspecial
@@ -1217,7 +1275,7 @@ c dbg
      &     me_met(nopt), me_metort(nopt),
      &     me_special(nspecial),
      &     me_trv(nopt)                  ! needed as target for transformation formula
-   
+
       real(8),intent(inout)::
      &     xrsnrm(nnew,nopt)
       type(formula_item), intent(inout) ::
@@ -1225,7 +1283,7 @@ c dbg
 
       type(dependency_info) ,intent(in)::
      &     depend
-      
+
       type(optimize_info), intent(in) ::
      &     opti_info
       type(orbinf), intent(in) ::
@@ -1236,7 +1294,7 @@ c dbg
      &     str_info
       type(strmapinf), intent(in)::
      &     strmap_info
-      
+
       integer ::
      &     iroot,iopt
       do iroot = 1, nnew
@@ -1254,13 +1312,13 @@ c dbg
                if (opti_info%typ_prc(iopt).eq.optinf_prc_traf_spc)then
                 call set_blks(me_Mvort(iopt)%mel,"P,H|P,V|V,H|V,V",0d0)
                endif
-               
+
                if (use_s(iopt))then
                   call switch_mel_record(me_met(iopt)%mel,iroot)
                   call switch_mel_record(me_metort(iopt)%mel,iroot)
                   call transform_forward_wrap(flist,depend,
      &                 me_special,me_met(iopt)%mel,me_metort(iopt)%mel, !met-> metort
-     &                 xrsnrm(iopt,iroot),
+     &                 xrsnrm(iroot,iopt),
      &                 iopt, nspecial,
      &                 me_trv(iopt)%mel,
      &                op_info,str_info,strmap_info, orb_info, opti_info)
@@ -1280,7 +1338,7 @@ c dbg
            end if
         end do !iopt
       end do !iroot
-      
+
       return
       end subroutine
 
@@ -1296,12 +1354,12 @@ c dbg
      &     iroot
       type(me_list)::
      &     me_root
-  
+
       integer::
      &     ifree,jroot,len_buf
       real(8)::
      &     xnrm2(*),xnrm
-      
+
       real(8),pointer::
      &     xbuf1(:),xbuf2(:)
       real(8)::
@@ -1321,6 +1379,8 @@ c dbg
      &        len_op,
      &        xbuf1, xbuf2,
      &        len_buf)
+! if the two are to similar then |j * i|/|j|*|i|=1   ==>   (j * i)^2/(j^2 * i^2) = 1    ==>    (j * i)^2/j^2 - i^2 = 0
+! xover =  j* i  , xnrm2(j) = j^2 ,   xnrm = i^2
          if(abs(xover**2/xnrm2(jroot)-xnrm).lt.1d-6)then
             if (iprlvl.ge.5) write(lulog,*)
      &           'Discarding redundant guess vector.'
@@ -1345,7 +1405,7 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
          if (jroot.eq.iroot-1) xnrm2(iroot) = xnrm
       end do
       ifree = mem_flushmark()
-      end subroutine 
+      end subroutine
 
 *----------------------------------------------------------------------*
 *----------------------------------------------------------------------*
@@ -1381,20 +1441,20 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
      &         'Discarding twin guess vector.'
           should_discard_vector_h =.true.
         end if
-        
-      end if 
+
+      end if
       return
       end function
 *----------------------------------------------------------------------*
-!>    check the last guess for twinning 
+!>    check the last guess for twinning
 *----------------------------------------------------------------------*
       function check_last_guess_h( nopt, iopt,nroots,iroot,guess_norm2,
-     &     xnrm2, me_trv,opti_info) 
+     &     xnrm2, me_trv,opti_info)
 *----------------------------------------------------------------------*
       implicit none
       logical ::
      &     check_last_guess_h
-      
+
       integer,intent(in)::
      &     nopt, iopt,
      &     nroots,iroot
@@ -1407,7 +1467,7 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
       type(optimize_info), intent(in)::
      &     opti_info
 
-      
+
       integer::
      &     ifree
       real(8)::
@@ -1420,7 +1480,7 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
       if (iroot .eq.1) then
          check_last_guess_h = .true.
          return
-      end if  
+      end if
       ifree = mem_setmark('init_guess.check_guess')
       ifree = mem_alloc_real(xbuf1,opti_info%nwfpar(iopt),
      &     'xbuf1')
@@ -1437,18 +1497,18 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
          check_last_guess_h = .false.
       else
          check_last_guess_h = .true.
-      end if  
+      end if
       return
       end function
 
-    
+
 *----------------------------------------------------------------------*
 !>    projects out spin parts
 *----------------------------------------------------------------------*
       subroutine spin_proj_h( typ_prc,len_list,me_root,me_special,
      &     nspecial, nextra, idxspc,
      &     fl_spc, xnrm,
-     &     opti_info, orb_info, op_info,str_info, strmap_info) 
+     &     opti_info, orb_info, op_info,str_info, strmap_info)
 *----------------------------------------------------------------------*
       implicit none
       integer,intent(in)::
@@ -1472,10 +1532,10 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
      &     str_info
       type(strmapinf)::
      &     strmap_info
-      
+
       real(8),pointer::
      &     xbuf1(:),xbuf2(:)
-      
+
       integer::
      &     ifree, len_buf
       len_buf = len_list
@@ -1535,7 +1595,7 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
      &     me_special(nspecial),
      &     me_vort(nopt),me_trv(nopt),
      &     me_tgt(nopt)
-      
+
       type(orbinf), intent(in) ::
      &     orb_info
       type(operator_info), intent(inout) ::
@@ -1551,7 +1611,7 @@ c                  xnrm = xnrm - xover**2/xnrm2(jroot) ! new norm**2
      &     iroot,iopt
       real(8)::
      &     xdummy
-      
+
       do iroot=1,maxvec
         do iopt=1,nopt
           call switch_mel_record(me_vort(iopt)%mel,iroot)

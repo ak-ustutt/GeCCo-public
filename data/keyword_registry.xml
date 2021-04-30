@@ -202,6 +202,7 @@
             <!--(0=off)-->
           </argument>
         </keyword>
+        <keyword name="NEW" status="A"/>
         <keyword name="MR_P" status="A">
           <argument length="1" name="maxroot" status="A" type="2" value="-1">
             <!--max trial roots for wf-->
@@ -287,9 +288,18 @@
           </keyword>
           <argument length="1" name="lagrangian" status="A" type="2" value="0">
             <!--type of lagrangian-->
+          </argument>
+          <argument length="1" name="metric" status="A" type="2" value="0">
+            <!--commutators in metric-->
+          </argument>
+	    <argument length="1" name="maxcom_m1" status="A" type="2" value="0"/>
+	    <argument length="1" name="maxcom_m2" status="A" type="2" value="0"/>
+            <argument length="1" name="shift_terms" type="1" value="false"/>
+            <argument length="1" name="lin_psD" status="A" type="2" value="0" >
+              <!-- order to which pseudo doubles are introduced-->
+	    </argument>
 	    <argument length="1" name="maxcom_res" status="A" type="2" value="0"/>
             <argument length="1" name="maxcom_en" status="A" type="2" value="0"/>
-          </argument>
           <argument length="4" name="hamiltonian" status="A" type="8" value="DYALL">
             <!--the unperturbed hamiltonian one of "DYALL"(H_Dyall)(default) "F_EFF" (F_eff) or "REPL" (Finks excitation conserving hamiltonian) or "FULL" (full hamiltonian perturbation is 0) -->
           </argument>
@@ -303,6 +313,9 @@
           <argument length="1" name="connected" status="A" type="1" value="true">
             <!--Toggle connected expression for H0 matrix-->
           </argument>
+          <argument length="10" name="ampl_type" status="A" type="8" value="PT2"><!--The type of amplitude equations--></argument>
+          <argument length="1" name="test_terms" status="A" type="1"/><!--Evalulate specific terms-->
+          <argument length="1" name="stabm" status="A" type="2" value="0"/>     <!--Calculate 'stabm' roots of stability matrix (Jacobian), doesn't do anything by default-->
         </keyword>
         <keyword name="truncate" status="A">
           <argument length="1" name="trunc_type" status="A" type="2" value="0"/>
@@ -333,7 +346,7 @@
         <keyword name="unit_test" status="A">
           <argument length="256" name="tests" status="A" type="8"/>
         </keyword>
-      </keyword>
+      <keyword name="MRCC_new" status="A"/></keyword>
       <keyword name="calculate" status="A">
         <keyword name="check" status="A">
           <keyword name="formulae" status="A"/>
