@@ -12,7 +12,7 @@ store OT:ac[pi]
 .Var1[] += 2.0*OR:ac[pi] OR:ac[pi]
 store OR:ac[pi]
 
-// S1
+// S0
 load OR:ea[ap]
 load g:ee[aa], g:aa[pp], ShiftS[]
 denom-scale OR:ea[ap], g:ee[aa] - g:aa[pp] + ShiftS[]

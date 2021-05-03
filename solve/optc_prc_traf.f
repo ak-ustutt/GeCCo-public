@@ -34,7 +34,7 @@
       include 'mdef_target_info.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       integer, intent(in) ::
      &     nspecial, iopt, nspcfrm, nwfpar, imacit, i_state
