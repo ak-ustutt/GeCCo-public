@@ -63,6 +63,13 @@ load Dm3[pqrstu], g:aa[pq]
 drop g:aa[pq], Dm3[pqrstu]
 store D2f[pqrs]
 
+// I1
+alloc Y1:I1[pq]
+load g:aa[rq]
+.Y1:I1[pq] := g:aa[pq]
+drop g:aa[rq]
+store Y1:I1[pq]
+
 // I2
 // Factor of 0.25 included here instead of in the transformation
 alloc Y2:I2[pqrs]
@@ -85,6 +92,13 @@ drop I1[pq]
 .Y2:I2[pqrs] += .25*g:aa[pt] S2:I2[rstq]
 drop S2:I2[pqts], D2f[pqsr], D1f[rq], Dm1[qs], g:aa[pr], deltaaa[qs], deltaaa[pr], Eact[]
 store Y2:I2[pqrs]
+
+// S0
+alloc Y1:S0[pq]
+load g:aa[rq]
+.Y1:S0[pq] := g:aa[pq]
+drop g:aa[rq]
+store Y1:S0[pq]
 
 // S2
 alloc Y2:S2[pq]

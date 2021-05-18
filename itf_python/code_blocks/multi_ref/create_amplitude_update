@@ -3,9 +3,9 @@ alloc Var1[]
 
 // I1
 load OR:ac[pi]
-load g:aa[pp], g:cc[ii], ShiftI[]
-denom-scale OR:ac[pi], g:aa[pp] - g:cc[ii] + ShiftI[]
-drop ShiftI[], g:cc[ii], g:aa[pp]
+load Y1:I1[pp], g:cc[ii], ShiftI[]
+denom-scale OR:ac[pi], Y1:I1[pp] - g:cc[ii] + ShiftI[]
+drop ShiftI[], g:cc[ii], Y1:I1[pp]
 alloc OT:ac[pi]
 .OT:ac[pi] -= OR:ac[pi]
 store OT:ac[pi]
@@ -14,9 +14,9 @@ store OR:ac[pi]
 
 // S0
 load OR:ea[ap]
-load g:ee[aa], g:aa[pp], ShiftS[]
-denom-scale OR:ea[ap], g:ee[aa] - g:aa[pp] + ShiftS[]
-drop ShiftS[], g:aa[pp], g:ee[aa]
+load g:ee[aa], Y1:S0[pp], ShiftS[]
+denom-scale OR:ea[ap], g:ee[aa] - Y1:S0[pp] + ShiftS[]
+drop ShiftS[], Y1:S0[pp], g:ee[aa]
 alloc OT:ea[ap]
 // no sign flip for T:ea!
 .OT:ea[ap] -= OR:ea[ap]

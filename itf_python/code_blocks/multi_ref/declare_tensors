@@ -122,8 +122,10 @@ tensor: A4[pp],    !Create{type:disk; sym:+01}
 //tensor: A6[pppp], !Create{type:disk; sym:01/23}
 
 // New preconditioner blocks
+tensor: Y1:I1[pp],     Y1:I1
 tensor: Y2:I1[pppppp], Y2:I1
 tensor: Y2:I2[pppp],   Y2:I2
+tensor: Y1:S0[pp],     Y1:S0
 tensor: Y2:S0[pppppp], Y2:S0
 tensor: YA:S1[pppp],   YA:S1
 tensor: YB:S1[pppp],   YB:S1
