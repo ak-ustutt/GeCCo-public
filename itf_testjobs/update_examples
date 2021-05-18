@@ -7,6 +7,6 @@ for dir in */; do
     echo updating $dir
 
     cd $dir
-    cp icmrcc_${dir}.itfaa example.itfaa
+    cp icmrcc_*.itfaa example.itfaa
     cd $TESTJOB
 done
