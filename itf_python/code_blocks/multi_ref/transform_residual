@@ -52,7 +52,7 @@ drop X4B:S1[pqrs], X2B:S1[pqrs], R:eaca[apiq], R:eaac[apqi]
 
 // Off-diag orthogonalisation term
 load XS12b:S1[rs], R:ec[ai]
-.OR:eaac[arsi] += 1.5*XS12b:S1[sr] R:ec[ai]
+.OR:eaac[arsi] += 1.5*XS12b:S1[rs] R:ec[ai]
 drop R:ec[ai], XS12b:S1[rs]
 store OR:eaac[apqi]
 
@@ -64,7 +64,7 @@ drop X2A:S1[pqrs], X4A:S1[pqrs], R:eaac[apqi], R:eaca[apiq]
 
 // Off-diag orthogonalisation term
 load XS12a:S1[rs], R:ec[ai]
-.OR:eaca[aris] += 1.5*XS12a:S1[sr] R:ec[ai]
+.OR:eaca[aris] += 1.5*XS12a:S1[rs] R:ec[ai]
 drop R:ec[ai], XS12a:S1[rs]
 store OR:eaca[apiq]
 
