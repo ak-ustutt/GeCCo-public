@@ -63,12 +63,12 @@ load Dm3[pqrstu], g:aa[pq]
 drop g:aa[pq], Dm3[pqrstu]
 store D2f[pqrs]
 
-// I1
-alloc Y1:I1[pq]
-load g:aa[rq]
-.Y1:I1[pq] := g:aa[pq]
-drop g:aa[rq]
-store Y1:I1[pq]
+// I1 -- TEST: Use Y2:S2 for this case
+//alloc Y1:I1[pq]
+//load g:aa[rq]
+//.Y1:I1[pq] := g:aa[pq]
+//drop g:aa[rq]
+//store Y1:I1[pq]
 
 // I2
 // Factor of 0.25 included here instead of in the transformation
@@ -96,22 +96,29 @@ drop S2:I2[pqrs], Eact[]
 drop S2:I2[pqts], D2f[pqsr], D1f[rq], Dm1[qs], g:aa[pr], deltaaa[qs], deltaaa[pr], Eact[]
 store Y2:I2[pqrs]
 
-// S0
-alloc Y1:S0[pq]
-load g:aa[rq]
-.Y1:S0[pq] := g:aa[pq]
-drop g:aa[rq]
-store Y1:S0[pq]
+// S0 -- TEST: Use Y2:P1 for that case
+//alloc Y1:S0[pq]
+//load g:aa[rq]
+//.Y1:S0[pq] := g:aa[pq]
+//drop g:aa[rq]
+//store Y1:S0[pq]
 
 // S2
 alloc Y2:S2[pq]
 load Eact[], Dm1[pq], D1f[pq], S2:S2[pr], g:aa[rq]
-.Y2:S2[pq] += Eact[] Dm1[pq]
+.Y2:S2[pq] -= Eact[] Dm1[pq]
 .Y2:S2[pq] += D1f[pq]
 .Y2:S2[pq] += S2:S2[pr] g:aa[rq]
 .Y2:S2[pq] -= g:aa[pr] Dm1[rq]
 drop g:aa[rq], S2:S2[pr], D1f[pq], Dm1[pq], Eact[]
 store Y2:S2[pq]
+
+// TEST: I1 <-- use Y2:S2 for this case
+alloc Y1:I1[pq]
+load Y2:S2[pq]
+.Y1:I1[pq] := Y2:S2[pq]
+drop Y2:S2[pq]
+store Y1:I1[pq]
 
 // P0
 alloc Y2:P0[pqrs]
@@ -128,4 +135,11 @@ load D1f[pq], Eact[], S2:P1[pq]
 .Y2:P1[pq] -= Eact[] S2:P1[pq]
 drop S2:P1[pq], Eact[], D1f[pq]
 store Y2:P1[pq]
+
+// TEST: S0 <--- use Y2:P1 for that case
+alloc Y1:S0[pq]
+load Y2:P1[rq]
+.Y1:S0[pq] := Y2:P1[pq]
+drop Y2:P1[rq]
+store Y1:S0[pq]
 
