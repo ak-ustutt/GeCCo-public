@@ -90,6 +90,9 @@ drop I1[pq]
 .Y2:I2[pqrs] -= .5*D2f[pqsr]
 .Y2:I2[pqrs] += .25*g:aa[rt] S2:I2[pqts]
 .Y2:I2[pqrs] += .25*g:aa[pt] S2:I2[rstq]
+load Eact[], S2:I2[pqrs]
+.Y2:I2[pqrs] -= Eact[] S2:I2[pqrs]
+drop S2:I2[pqrs], Eact[]
 drop S2:I2[pqts], D2f[pqsr], D1f[rq], Dm1[qs], g:aa[pr], deltaaa[qs], deltaaa[pr], Eact[]
 store Y2:I2[pqrs]
 
@@ -112,15 +115,17 @@ store Y2:S2[pq]
 
 // P0
 alloc Y2:P0[pqrs]
-load D2f[pqrs]
+load D2f[pqrs], Eact[], S2:P0[pqrs]
 .Y2:P0[pqrs] += 0.25*D2f[prsq]
-drop D2f[pqrs]
+.Y2:P0[pqrs] -= Eact[] S2:P0[pqrs]
+drop S2:P0[pqrs], Eact[], D2f[pqrs]
 store Y2:P0[pqrs]
 
 // P1
 alloc Y2:P1[pq]
-load D1f[pq]
+load D1f[pq], Eact[], S2:P1[pq]
 .Y2:P1[pq] += D1f[pq]
-drop D1f[pq]
+.Y2:P1[pq] -= Eact[] S2:P1[pq]
+drop Eact[], S2:P1[pq], D1f[pq]
 store Y2:P1[pq]
 
