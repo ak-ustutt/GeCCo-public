@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 18-05-2021 13:34
+// Created on: 20-05-2021 09:55
 
 ---- decl
 index-space: pqrstuvwxyz, Active  , a
@@ -61948,20 +61948,10 @@ store OT:aaac[pqri]
 drop OR:aaac[pqri]
 
 // I2
-//load OR:aacc[pqij]
-//load g:aa[pp], g:cc[ii], ShiftI[]
-//denom-scale OR:aacc[pqij], g:aa[pp] + g:aa[qq] - g:cc[ii] - g:cc[jj] + ShiftI[]
-//drop ShiftI[], g:cc[ii], g:aa[pp]
-//alloc OT:aacc[pqij]
-//.OT:aacc[pqij] -= OR:aacc[pqij]
-//store OT:aacc[pqij]
-//.Var2[] += (2.0*OR:aacc[pqij] - OR:aacc[qpij]) OR:aacc[pqij]
-//drop OR:aacc[pqij]
-
 load OR:aacc[Kij]
-load Y2:I2[JK], g:cc[ii], ShiftI[], Eact[]
-denom-scale OR:aacc[Kij], 2*Y2:I2[KK] - Eact[] - g:cc[ii] - g:cc[jj] + ShiftI[]
-drop Eact[], ShiftI[], g:cc[ii], Y2:I2[KJ]
+load Y2:I2[JK], g:cc[ii], ShiftI[]
+denom-scale OR:aacc[Kij], 2*Y2:I2[KK] - g:cc[ii] - g:cc[jj] + ShiftI[]
+drop ShiftI[], g:cc[ii], Y2:I2[KJ]
 alloc OT:aacc[pqij]
 alloc OT:aacc[Kij]
 .OT:aacc[Kij] -= OR:aacc[Kij]
@@ -61985,36 +61975,6 @@ alloc OT:eaaa[apqr]
 store OT:eaaa[apqr]
 .Var2[] += OR:eaaa[apqr] OR:eaaa[apqr]
 drop OR:eaaa[apqr]
-
-// S1
-//load OR:eaac[apqi]
-////load g:ee[aa], g:cc[ii], g:aa[pp]
-////denom-scale OR:eaac[apqi], g:ee[aa] + g:aa[pp] - g:aa[qq] - g:cc[ii]
-////drop g:aa[pp], g:cc[ii], g:ee[aa]
-//load g:ee[aa], g:cc[ii], YB:S1[pppp]
-//denom-scale OR:eaac[apqi], g:ee[aa] + YB:S1[pppp] - YB:S1[qqqq] - g:cc[ii]
-//// in principle it should be this (but segfault in ITF): (+ introducing shifts is recomm.)
-//// denom-scale OR:eaac[apqi], g:ee[aa] + YB:S1[pqpq] - g:cc[ii] + ShiftS[]
-//drop YB:S1[pppp], g:cc[ii], g:ee[aa]
-//alloc OT:eaac[apqi]
-//.OT:eaac[apqi] -= OR:eaac[apqi]
-//store OT:eaac[apqi]
-//.Var2[] += OR:eaac[apqi] OR:eaac[apqi]
-//drop OR:eaac[apqi]
-//
-//load OR:eaca[apiq]
-////load g:ee[aa], g:cc[ii], g:aa[pp]
-////denom-scale OR:eaca[apiq], g:ee[aa] + g:aa[pp] - g:cc[ii] - g:aa[qq]
-////drop g:aa[pp], g:cc[ii], g:ee[aa]
-//load g:ee[aa], g:cc[ii], YA:S1[pppp]
-//// see above
-//denom-scale OR:eaca[apiq], g:ee[aa] + YA:S1[pppp] - g:cc[ii] - YA:S1[qqqq]
-//drop YA:S1[pppp], g:cc[ii], g:ee[aa]
-//alloc OT:eaca[apiq]
-//.OT:eaca[apiq] -= OR:eaca[apiq]
-//store OT:eaca[apiq]
-//.Var2[] += OR:eaca[apiq] OR:eaca[apiq]
-//drop OR:eaca[apiq]
 
 // S1
 load OR:eaac[aiK]
@@ -62052,9 +62012,6 @@ load OR:eacc[apij]
 load g:ee[aa], Y2:S2[pp], g:cc[ii], ShiftS[]
 denom-scale OR:eacc[apij], g:ee[aa] + Y2:S2[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
 drop ShiftS[], g:cc[ii], Y2:S2[pp], g:ee[aa]
-//load g:ee[aa], g:aa[pp], g:cc[ii], ShiftS[]
-//denom-scale OR:eacc[apij], g:ee[aa] + g:aa[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
-//drop ShiftS[], g:cc[ii], g:aa[pp], g:ee[aa]
 alloc OT:eacc[apij]
 .OT:eacc[apij] -= OR:eacc[apij]
 store OT:eacc[apij]
@@ -62062,20 +62019,10 @@ store OT:eacc[apij]
 drop OR:eacc[apij]
 
 // P0
-//load OR:eeaa[abpq]
-//load g:ee[aa], g:aa[pp], ShiftP[]
-//denom-scale OR:eeaa[abpq], g:ee[aa] + g:ee[bb] - g:aa[pp] - g:aa[qq] + ShiftP[]
-//drop ShiftP[], g:aa[pp], g:ee[aa]
-//alloc OT:eeaa[abpq]
-//.OT:eeaa[abpq] -= OR:eeaa[abpq]
-//store OT:eeaa[abpq]
-//.Var2[] += (2.0*OR:eeaa[abpq] - OR:eeaa[bapq]) OR:eeaa[abpq]
-//drop OR:eeaa[abpq]
-
 load OR:eeaa[abK]
-load g:ee[aa], Y2:P0[KK], ShiftP[], Eact[]
-denom-scale OR:eeaa[abK], g:ee[aa] + g:ee[bb] - Y2:P0[KK] - Eact[] + ShiftP[]
-drop Eact[], ShiftP[], Y2:P0[KK], g:ee[aa]
+load g:ee[aa], Y2:P0[KK], ShiftP[]
+denom-scale OR:eeaa[abK], g:ee[aa] + g:ee[bb] - Y2:P0[KK] + ShiftP[]
+drop ShiftP[], Y2:P0[KK], g:ee[aa]
 alloc OT:eeaa[abpq]
 alloc OT:eeaa[abK]
 .OT:eeaa[abK] -= OR:eeaa[abK]
@@ -62089,9 +62036,9 @@ drop OR:eeaa[abK]
 
 // P1
 load OR:eeac[abpi]
-load g:ee[aa], g:cc[ii], g:aa[pp], ShiftP[]
-denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] - g:aa[pp] - g:cc[ii] + ShiftP[]
-drop ShiftP[], g:aa[pp], g:cc[ii], g:ee[aa]
+load g:ee[aa], g:cc[ii], Y2:P1[pp], ShiftP[]
+denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] - Y2:P1[pp] - g:cc[ii] + ShiftP[]
+drop ShiftP[], Y2:P1[pp], g:cc[ii], g:ee[aa]
 alloc OT:eeac[abpi]
 .OT:eeac[abpi] -= OR:eeac[abpi]
 store OT:eeac[abpi]
@@ -62310,6 +62257,9 @@ drop I1[pq]
 .Y2:I2[pqrs] -= .5*D2f[pqsr]
 .Y2:I2[pqrs] += .25*g:aa[rt] S2:I2[pqts]
 .Y2:I2[pqrs] += .25*g:aa[pt] S2:I2[rstq]
+load Eact[], S2:I2[pqrs]
+.Y2:I2[pqrs] -= Eact[] S2:I2[pqrs]
+drop S2:I2[pqrs], Eact[]
 drop S2:I2[pqts], D2f[pqsr], D1f[rq], Dm1[qs], g:aa[pr], deltaaa[qs], deltaaa[pr], Eact[]
 store Y2:I2[pqrs]
 
@@ -62332,16 +62282,18 @@ store Y2:S2[pq]
 
 // P0
 alloc Y2:P0[pqrs]
-load D2f[pqrs]
+load D2f[pqrs], Eact[], S2:P0[pqrs]
 .Y2:P0[pqrs] += 0.25*D2f[prsq]
-drop D2f[pqrs]
+.Y2:P0[pqrs] -= Eact[] S2:P0[pqrs]
+drop S2:P0[pqrs], Eact[], D2f[pqrs]
 store Y2:P0[pqrs]
 
 // P1
 alloc Y2:P1[pq]
-load D1f[pq]
+load D1f[pq], Eact[], S2:P1[pq]
 .Y2:P1[pq] += D1f[pq]
-drop D1f[pq]
+.Y2:P1[pq] -= Eact[] S2:P1[pq]
+drop S2:P1[pq], Eact[], D1f[pq]
 store Y2:P1[pq]
 
 

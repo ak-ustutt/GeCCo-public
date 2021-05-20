@@ -126,6 +126,6 @@ alloc Y2:P1[pq]
 load D1f[pq], Eact[], S2:P1[pq]
 .Y2:P1[pq] += D1f[pq]
 .Y2:P1[pq] -= Eact[] S2:P1[pq]
-drop Eact[], S2:P1[pq], D1f[pq]
+drop S2:P1[pq], Eact[], D1f[pq]
 store Y2:P1[pq]
 
