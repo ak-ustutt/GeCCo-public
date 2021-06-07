@@ -47,7 +47,7 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
-known_tests=["doublet","triplet"]
+known_tests=["doublet","triplet","cas22"]
 test = keywords.get('method.ITF.test')
 test = str(test).strip() if test is not None else "none"
 
@@ -70,6 +70,9 @@ if test=='doublet':
     T1_shape = 'P,H|P,V|V,H'
 elif test=='triplet':
     T2_shape = 'PP,HH|VV,HH|PV,HH|PP,VV|PP,HV|PV,HV' # <- for triplet
+    T1_shape = 'P,H|P,V|V,H'
+elif test=='cas22':
+    T2_shape = 'PP,HH|VV,HH|PV,HH|PP,VV|PP,HV|PV,HV' # <- same as triplet (triplet is just a special case of cas22)
     T1_shape = 'P,H|P,V|V,H'
 else:
     print "Unknown method: " + test
@@ -149,6 +152,41 @@ elif test=='triplet':
     LAG_A2.append(_L2_refexp("[H,T1n]"))
     LAG_A2.append(_L2_refexp("[H,T2]"))
     LAG_A2.append(_L2_refexp("1/2*[[H,T1n+T2],T1n+T2]"))
+
+elif test=='cas22':
+
+    # Every term in the Lagrangian is enclosed by <C0^+ and C0>
+    def _refexp(x):
+        return "<C0^+*(" + x + ")*C0>"
+
+    # The terms with the Lambda are always enclosed by <C0^+|LAM1 and C0> or <C0^+|LAM2g and C0>
+    def _L1_refexp(x):
+        #return _refexp("LAM1(" + x + ")")
+        return _refexp("L1n(" + x + ")")
+
+    def _L2_refexp(x):
+        #return _refexp("LAM2g(" + x + ")")
+        return _refexp("L2(" + x + ")")
+
+    def _L3_refexp(x):
+        return _refexp("-LAM2g(" + x + ")")
+
+    def _L4_refexp(x):
+        return _refexp("-LAM1(" + x + ")")
+
+    LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
+    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H-H"))
+
+    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L1_refexp("H"))
+    LAG_A2.append(_L2_refexp("H"))
+
+    LAG_E.append(_refexp("[H,T1n]"))
+    LAG_E.append(_refexp("[H,T2]"))
+
+    LAG_A2.append(_L1_refexp("[H,T1n]"))
+    LAG_A2.append(_L1_refexp("[H,T2]"))
+    LAG_A2.append(_L2_refexp("[H,T1n]"))
+    LAG_A2.append(_L2_refexp("[H,T2]"))
 
 
 LAG_E.set_rule()
@@ -244,10 +282,13 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
 
+# _22_ is the number of n-fold commutators in the energy and amplitude equations
 if test=='doublet':
-    filename = 'icmrcc_mrccsd_11_doublet.itfaa'
+    filename = 'icmrcc_mrccsd_22_doublet.itfaa'
 elif test=='triplet':
-    filename = 'icmrcc_mrccsd_11.itfaa'
+    filename = 'icmrcc_mrccsd_22_cas22.itfaa'
+elif test=='cas22':
+    filename = 'icmrcc_mrccsd_11_cas22.itfaa'
 
 if tasks=='T':
     do_tasks = True

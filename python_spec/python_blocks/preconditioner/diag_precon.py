@@ -95,8 +95,8 @@ EXPAND({
         INTERM:'FORM_T2_orth'})
 SELECT_SPECIAL({
         LABEL_IN:'FORM_A_TRF',
-        LABEL_RES:'FORM_A_TRF', 
-        OPERATORS:['T2_orth','LAM_TRF'], 
+        LABEL_RES:'FORM_A_TRF',
+        OPERATORS:['T2_orth','LAM_TRF'],
         TYPE:'SAME'})
 
 #Double derivative to T' and T'^+ to get A_TRF=<|t^+[H,t]|>
@@ -158,13 +158,34 @@ DEF_ME_LIST({
         AB_SYM:0}) # AB not well defined for orthog. basis!
 #        AB_SYM:+1})
 
-#extract preconditioner 
+# Uncomment to get a print out of the active preconditioner
+#CLONE_OPERATOR({
+#        LABEL:'TEST_PRECON',
+#        TEMPLATE:'T2g'})
+#DEF_ME_LIST({
+#        LIST:'TEST',
+#        OPERATOR:'TEST_PRECON',
+#        IRREP:1,
+#        '2MS':0,
+#        AB_SYM:0})
+#DEF_ME_LIST({
+#        LIST:'TEST_DIFF',
+#        OPERATOR:'TEST_PRECON',
+#        IRREP:1,
+#        '2MS':0,
+#        AB_SYM:0})
+
+#extract preconditioner
 PRECONDITIONER({
         LIST_PRC:'ME_PRECON2g',
         LIST_INP:'FOCK_EFF_INACT_LST'})
-
-PRINT_MEL({
-        LIST:'ME_PRECON2g'})
+#PRECONDITIONER({
+#        LIST_PRC:'TEST',
+#        LIST_INP:'FOCK_EFF_INACT_LST'})
+#
+#PRINT_MEL({
+#        LIST:'ME_PRECON2g',
+#        COMMENT:'hello: inactive'})
 
 EXTRACT_DIAG({
         LIST_RES:'ME_PRECON2g',
@@ -176,16 +197,27 @@ SCALE_COPY({
         FAC:0.2,
         MODE:'prc_thresh'})
 
-PRINT_MEL({
-        LIST:'ME_PRECON2g',
-        COMMENT:'hello1'})
+#PRINT_MEL({
+#        LIST:'ME_PRECON2g',
+#        COMMENT:'hello: inactive + active'})
+
+#PRINT_MEL({
+#        LIST:'TEST',
+#        COMMENT:'hello: test1'})
+#ADD({LIST_SUM:'TEST_DIFF',
+#     LISTS:['TEST', 'ME_PRECON2g'],
+#     FAC:[-1,1]})
+#
+#PRINT_MEL({
+#        LIST:'TEST_DIFF',
+#        COMMENT:'hello: test2'})
 
 PRINT_MEL_INFO({
         LIST:'ME_PRECON2g'})
 
-PRINT_MEL({
-        LIST:'A_TRF_LST',
-        COMMENT:'hello2'})
+#PRINT_MEL({
+#        LIST:'A_TRF_LST',
+#        COMMENT:'hello: active'})
 
 debug_MEL('ME_PRECON2g')
 
@@ -204,7 +236,7 @@ if (useT1):
         '2MS':0,
         AB_SYM:0})
 
-  #extract preconditioner 
+  #extract preconditioner
   PRECONDITIONER({
         LIST_PRC:'ME_PRECON1',
         LIST_INP:'FOCK_EFF_INACT_LST'})

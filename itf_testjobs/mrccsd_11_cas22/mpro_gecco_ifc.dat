@@ -11,8 +11,8 @@ nclosed      3     0
 ncore      0     0
 eref  0.000000000000000E+00
 ecore  0.605804212964527E+01
-refsym    2
-refmult    3
+refsym    1
+refmult    1
 itype-array
    1   1   1   1   1   1   1   1   1   1
    1   1   1   1   1   2   2   2   2
