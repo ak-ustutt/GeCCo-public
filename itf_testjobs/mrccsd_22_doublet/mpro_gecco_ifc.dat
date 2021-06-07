@@ -1,0 +1,18 @@
+interface file v1.0
+dumpfile moints
+memory                      150000000
+nirrep    4
+istate   -1
+refstate   -1
+nelec    7
+norbs      8     3     3     0
+nocc      4     0     0     0
+nclosed      3     0     0     0
+ncore      1     0     0     0
+eref -0.377544907674512E+02
+ecore -0.295023061757652E+02
+refsym    1
+refmult    2
+itype-array
+   1   1   1   1   1   1   1   2   2   2
+   3   3   3
