@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 07-06-2021 11:48
+// Created on: 10-06-2021 13:14
 
 ---- decl
 index-space: ijklmn, Closed  , c

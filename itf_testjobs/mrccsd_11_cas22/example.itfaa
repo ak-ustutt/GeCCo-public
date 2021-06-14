@@ -1,7 +1,7 @@
 // This ITF algo file was created using the GeCCo ITF translator
 // Authors: J.A. Black, A. Koehn
 
-// Created on: 07-06-2021 11:48
+// Created on: 10-06-2021 13:15
 
 ---- decl
 index-space: pqrstuvwxyz, Active  , a
@@ -6131,13 +6131,13 @@ element* Y2:I2[pqrs], Eact[]
 .Y2:I2[pqrs] += 2*g:aa[pr] deltaaa[qs]
 alloc I1[pq]
 .I1[pq] += g:aa[pr] D1f[rq]
-.Y2:I2[pqrs] -= deltaaa[qs] I1[pr]
+.Y2:I2[pqrs] -= I1[pr] deltaaa[qs]
 drop I1[pq]
 alloc I1[pq]
 .I1[pq] += Dm1[pr] g:aa[rq]
-.Y2:I2[pqrs] -= deltaaa[qs] I1[pr]
+.Y2:I2[pqrs] -= I1[pr] deltaaa[qs]
 drop I1[pq]
-.Y2:I2[pqrs] -= deltaaa[qs] D1f[pr]
+.Y2:I2[pqrs] -= D1f[pr] deltaaa[qs]
 .Y2:I2[pqrs] -= .5*D2f[pqsr]
 .Y2:I2[pqrs] += .25*g:aa[rt] S2:I2[pqts]
 .Y2:I2[pqrs] += .25*g:aa[pt] S2:I2[rstq]
