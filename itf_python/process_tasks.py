@@ -598,9 +598,14 @@ if multi:
 # Print out Update_Amplitudes
 if multi:
     print_code_block('multi_ref/form_dm3', gecco, f2)
+    # OLD
     print_code_block('multi_ref/transform_residual', gecco, f2)
     print_code_block('multi_ref/create_amplitude_update', gecco, f2)
     print_code_block('multi_ref/update_amplitudes', gecco, f2)
+    # NEW:
+    print_code_block('multi_ref/amplitude_update',gecco, f2)
+    print_code_block('multi_ref/transform_to_pair_index',gecco, f2)
+    #
     print_code_block('multi_ref/construct_gs_overlap', gecco, f2)
     print_code_block('multi_ref/construct_s2', gecco, f2)
     print_code_block('multi_ref/construct_projected_s2', gecco, f2)

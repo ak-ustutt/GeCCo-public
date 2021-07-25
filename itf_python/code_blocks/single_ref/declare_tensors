@@ -1,6 +1,7 @@
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: LCor2[], LCor2   // Lagrange correction
 tensor: EMp2[], EMp2     // MP2 energy
 tensor: ERef[], ERef     // Reference energy
 tensor: ShiftP[], ShiftP

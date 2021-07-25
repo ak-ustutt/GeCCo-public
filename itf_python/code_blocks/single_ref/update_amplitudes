@@ -1,8 +1,11 @@
 ---- code("Update_Amplitudes")
 // Update doubles
-alloc EDi2[], Nrm2[], Var2[]
+alloc LCor2[], EDi2[], Nrm2[], Var2[]
 load R:eecc[abij], K:eecc[abij]
 load T:eecc[abij]
+
+.LCor2 += (2.0*T:eecc[abij] - T:eecc[baij]) R:eecc[abij]
+
 load f:ee[aa], f:cc[ii], ShiftP[]
 denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
 drop ShiftP[], f:cc[ii], f:ee[aa]
@@ -19,4 +22,5 @@ drop C[abij]
 
 store T:eecc[abij]
 drop K:eecc[abij], R:eecc[abij]
-store Var2[], Nrm2[], EDi2[]
+store Var2[], Nrm2[], EDi2[], LCor2[]
+

@@ -1,6 +1,7 @@
 tensor: EDi2[], EDi2     // Direct 1st order energy
 tensor: Nrm2[], Nrm2     // Doubles amplitude norm
 tensor: Var2[], Var2     // Doubles residual norm
+tensor: LCor2[], LCor2   // Doubles Lagrange correction
 tensor: ShiftP[], ShiftP
 tensor: ShiftI[], ShiftI
 
@@ -151,3 +152,14 @@ tensor: OT:eaca[aiK], !Create{type:disk}
 tensor: OT:eaac[aiK], !Create{type:disk}
 tensor: OT:eeaa[abK], !Create{type:disk}
 tensor: I1[pq],       !Create{type:disk}
+tensor: X2:I2[pqK],    !Create{type:disk}
+tensor: X2:P0[pqK],    !Create{type:disk}
+tensor: X2A:S1[pqK],    !Create{type:disk}
+tensor: X2B:S1[pqK],    !Create{type:disk}
+tensor: X4A:S1[pqK],    !Create{type:disk}
+tensor: X4B:S1[pqK],    !Create{type:disk}
+tensor: SX12a:S1[K],   !Create{type:disk}
+tensor: SX12b:S1[K],   !Create{type:disk}
+tensor: XS12a:S1[K],   !Create{type:disk}
+tensor: XS12b:S1[K],   !Create{type:disk}
+

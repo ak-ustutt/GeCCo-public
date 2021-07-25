@@ -1,4 +1,5 @@
 tensor: EDi1[], EDi1     // Direct 1st order energy
 tensor: Nrm1[], Nrm1     // Singles amplitude norm
 tensor: Var1[], Var1     // Singles residual norm
+tensor: LCor1[], LCor1   // Singles Lagrange correction
 tensor: ShiftS[], ShiftS
