@@ -2,49 +2,49 @@
 // Update singles
 alloc LCor1[], EDi1[], Nrm1[], Var1[]
 
-load R:ec[ai]
-load T:ec[ai]
-.LCor1[] += 2.0*R:ec[ai] T:ec[ai] 
+load R1:ec[ai]
+load T1:ec[ai]
+.LCor1[] += 2.0*R1:ec[ai] T1:ec[ai] 
 
 load f:ee[aa], f:cc[ii], ShiftS[]
-denom-scale R:ec[ai], f:ee[aa] - f:cc[ii] + ShiftS[]
+denom-scale R1:ec[ai], f:ee[aa] - f:cc[ii] + ShiftS[]
 drop ShiftS[], f:cc[ii], f:ee[aa]
 
 load f:ec[ai]
-.T:ec[ai] -= R:ec[ai]
-.EDi1[] += 2.0*T:ec[ai] f:ec[ai]
-.Nrm1[] += 2.0*T:ec[ai] T:ec[ai]
-.Var1[] += 2.0*R:ec[ai] R:ec[ai]
+.T1:ec[ai] -= R1:ec[ai]
+.EDi1[] += 2.0*T1:ec[ai] f:ec[ai]
+.Nrm1[] += 2.0*T1:ec[ai] T1:ec[ai]
+.Var1[] += 2.0*R1:ec[ai] R1:ec[ai]
 drop f:ec[ai]
-store T:ec[ai]
-drop R:ec[ai]
+store T1:ec[ai]
+drop R1:ec[ai]
 
 store Var1[], Nrm1[], EDi1[], LCor1[]
 
 // Update doubles
-load T:ec[ai]
+load T1:ec[ai]
 alloc EDi2[], Nrm2[], Var2[], LCor2[]
-load R:eecc[abij], K:eecc[abij]
-load T:eecc[abij]
+load R2:eecc[abij], K:eecc[abij]
+load T2:eecc[abij]
 
-.LCor2[] += (2.0*T:eecc[abij] - T:eecc[baij]) R:eecc[abij]
+.LCor2[] += (2.0*T2:eecc[abij] - T2:eecc[baij]) R2:eecc[abij]
 
 load f:ee[aa], f:cc[ii], ShiftP[]
-denom-scale R:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
+denom-scale R2:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj] + ShiftP[]
 drop ShiftP[], f:cc[ii], f:ee[aa]
 
-.T:eecc[abij] -= R:eecc[abij]
+.T2:eecc[abij] -= R2:eecc[abij]
 
 alloc C[abij]
-.C[abij] += T:eecc[abij]
-.C[abij] += T:ec[ai] T:ec[bj]
+.C[abij] += T2:eecc[abij]
+.C[abij] += T1:ec[ai] T1:ec[bj]
 .EDi2 += (2.0*C[abij] - C[baij]) K:eecc[abij]
 .Nrm2 += (2.0*C[abij] - C[baij]) C[abij]
 drop C[abij]
 
-.Var2 += (2.0*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+.Var2 += (2.0*R2:eecc[abij] - R2:eecc[baij]) R2:eecc[abij]
 
-store T:eecc[abij]
-drop K:eecc[abij], R:eecc[abij]
+store T2:eecc[abij]
+drop K:eecc[abij], R2:eecc[abij]
 store LCor2[], Var2[], Nrm2[], EDi2[]
-drop T:ec[ai]
+drop T1:ec[ai]

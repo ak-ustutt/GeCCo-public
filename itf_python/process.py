@@ -60,13 +60,19 @@ def change_line(line_o):
     # with there names defined in C++, ie. R:eecc
     words=line_o.split()
     change_line_names("R", line_o, words)
+    change_line_names("R1", line_o, words)
+    change_line_names("R2", line_o, words)
     change_line_names("G", line_o, words)
     change_line_names("T", line_o, words)
+    change_line_names("T1", line_o, words)
+    change_line_names("T1s", line_o, words)
+    change_line_names("T2", line_o, words)
     change_line_names("K", line_o, words)
     change_line_names("J", line_o, words)
     change_line_names("f", line_o, words)
     change_line_names("K4E", line_o, words)
     change_line_names("INTkx", line_o, words)
+    change_line_names("INT3ext", line_o, words)
     line = " ".join(words)
     return line
 
@@ -302,6 +308,7 @@ import datetime     # Get tima and date
 import time         # For timings
 import tempfile     # For temporary files
 import os           # For environment variables
+#import re           # regular expressions lib
 
 # Parse arguments from gecco
 parser = argparse.ArgumentParser(
@@ -359,16 +366,19 @@ declare_name=[]           # Global of just result tensor names
 # TODO: Now all residuals are declared for the mutli cases, don't need all of them, all of the time
 declare_res_multi=[
         "R:I[I]",
-        "R:ac[pi]","R:ec[ai]","R:ea[ap]",
-        "R:aacc[pqij]","R:aaac[pqri]",
-        "R:eacc[apij]","R:eaac[apqi]","R:eaca[apiq]","R:eaaa[apqr]",
-        "R:eecc[abij]","R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
+        "R1:ac[pi]","R1:ec[ai]","R1:ea[ap]",
+        "R2:ac[pi]","R2:ec[ai]","R2:ea[ap]",
+        "R2:aacc[pqij]","R2:aaac[pqri]",
+        "R2:eacc[apij]","R2:eaac[apqi]","R2:eaca[apiq]","R2:eaaa[apqr]",
+        "R2:eecc[abij]","R2:eeac[abpi]","R2:eeaa[abpq]"]      # List of all residuals in multireference case
 declare_amp_multi=[
         "T:I[I]",
-        "T:ac[pi]","T:ec[ai]","T:ea[ap]",
-        "T:aacc[pqij]","T:aaac[pqri]",
-        "T:eacc[apij]","T:eaac[apqi]","T:eaca[apiq]","T:eaaa[apqr]",
-        "T:eecc[abij]","T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
+        "T1:ac[pi]","T1:ec[ai]","T1:ea[ap]",
+        #"T1s:ac[pi]","T1s:ec[ai]","T1s:ea[ap]",
+        "T2:ac[pi]","T2:ec[ai]","T2:ea[ap]",
+        "T2:aacc[pqij]","T2:aaac[pqri]",
+        "T2:eacc[apij]","T2:eaac[apqi]","T2:eaca[apiq]","T2:eaaa[apqr]",
+        "T2:eecc[abij]","T2:eeac[abpi]","T2:eeaa[abpq]"]      # List of all residuals in multireference case
 
 declare_inter=[]        # Global list of intermediates
 declare_inter_index=[]  # Global list of intermediates
@@ -533,7 +543,7 @@ for line_o in f:
     # to the first iteration where all amps = 0
     init_res = False
     init_inter_res = False
-    if (("R:" in line or "G:" in line) and not "STIN" in line and initalise):
+    if (("R:" in line or "R1:" in line or "R2:" in line or "G:" in line) and not "STIN" in line and initalise):
         if ("K:" in line or "f" in line):
             init_res = True
     if ("ITIN" in line and not "STIN" in line and initalise):
@@ -633,7 +643,8 @@ for line_o in f:
 
         generic=generic_index(words[0])
 
-        if "R:eaac" in prev_res and "R:eaca" in words[0] or "R:eaca" in prev_res and "R:eaac" in words[0]:
+        # TODO (if required): this code frag. is very specific ... I changed R to R2 here hard-coded ...
+        if "R2:eaac" in prev_res and "R2:eaca" in words[0] or "R2:eaca" in prev_res and "R2:eaac" in words[0]:
 
             # Still within the same result block (ie. still with the same residual)
             # This is a special case of the code below - R:eaac and R:eaca share the same intermediates and
@@ -680,8 +691,10 @@ for line_o in f:
 
                 if prev_res != '#####':
                     # Add generic index to residual tensor name
-                    if ("R[" in prev_res):
-                        prev_res = prev_res.replace("R[", "R:" + "".join(generic_index(prev_res)) + "[")
+                    if ("R1[" in prev_res):
+                        prev_res = prev_res.replace("R1[", "R1:" + "".join(generic_index(prev_res)) + "[")
+                    elif ("R2[" in prev_res):
+                        prev_res = prev_res.replace("R2[", "R2:" + "".join(generic_index(prev_res)) + "[")
                     elif ("G[" in prev_res):
                         prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
 
@@ -690,8 +703,8 @@ for line_o in f:
                     if not dont_store:
 
                         # store the special case of R:eaac and R:eaca
-                        if "R:eaac" in prev_res or "R:eaca" in prev_res:
-                            prev_res = "R:eaac[apqi], R:eaca[apiq]"
+                        if "R2:eaac" in prev_res or "R2:eaca" in prev_res:
+                            prev_res = "R2:eaac[apqi], R2:eaca[apiq]"
 
                         if (not switched_block):
                             print("store", prev_res.replace('.',''), file=out)
@@ -719,15 +732,18 @@ for line_o in f:
                             # Load previous tensor
                             tmp_res=words[0]
 
-                            if ("R[" in words[0]):
-                                tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                            if ("R1[" in words[0]):
+                                tmp_res = words[0].replace("R1[", "R1:" + "".join(generic_index(words[0])) + "[")
+
+                            elif ("R2[" in words[0]):
+                                tmp_res = words[0].replace("R2[", "R2:" + "".join(generic_index(words[0])) + "[")
 
                             elif ("G[" in words[0]):
                                 tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
                             # load the special case of R:eaac and R:eaca
-                            if "R:eaac" in tmp_res or "R:eaca" in tmp_res:
-                                tmp_res = "R:eaca[apiq], R:eaac[apqi]"
+                            if "R2:eaac" in tmp_res or "R2:eaca" in tmp_res:
+                                tmp_res = "R2:eaca[apiq], R2:eaac[apqi]"
 
                             print("load", tmp_res.replace('.',''), file=out)
                             loaded=True
@@ -743,26 +759,28 @@ for line_o in f:
 
                     # If allocating R:eaac OR R:eaca, then also add its partner to
                     # declare_res (both will be allocated at the same time)
-                    if "R:eaac" in words[0]:
-                        declare_res.append("R:eaca[apiq]")
+                    if "R2:eaac" in words[0]:
+                        declare_res.append("R2:eaca[apiq]")
                         declare_index.append(['e','a','c','a'])
-                        declare_name.append("R:eaca")
+                        declare_name.append("R2:eaca")
 
-                    elif "R:eaca" in words[0]:
-                        declare_res.append("R:eaac[apqi]")
+                    elif "R2:eaca" in words[0]:
+                        declare_res.append("R2:eaac[apqi]")
                         declare_index.append(['e','a','a','c'])
-                        declare_name.append("R:eaac")
+                        declare_name.append("R2:eaac")
 
                     # Add generic index to residual tensor name, ie. R:eecc
                     tmp_res=words[0]
-                    if ("R[" in words[0]):
-                        tmp_res = words[0].replace("R[", "R:" + "".join(generic_index(words[0])) + "[")
+                    if ("R1[" in words[0]):
+                        tmp_res = words[0].replace("R1[", "R1:" + "".join(generic_index(words[0])) + "[")
+                    elif ("R2[" in words[0]):
+                        tmp_res = words[0].replace("R2[", "R2:" + "".join(generic_index(words[0])) + "[")
                     elif ("G[" in words[0]):
                         tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
                     # allocate the special case of R:eaac and R:eaca
-                    if "R:eaac" in tmp_res or "R:eaca" in tmp_res:
-                        tmp_res = "R:eaca[apiq], R:eaac[apqi]"
+                    if "R2:eaac" in tmp_res or "R2:eaca" in tmp_res:
+                        tmp_res = "R2:eaca[apiq], R2:eaac[apqi]"
 
                     print("alloc", tmp_res.replace('.',''), file=out)
                     if (init_res and initalise):
@@ -869,7 +887,8 @@ else:
 declare_ten.sort()
 declare_ten.sort(key=len)
 for i in range(0, len(declare_ten)):
-    if ("T:" in declare_ten[i] or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
+    if ("T1:" in declare_ten[i] or "T2:" in declare_ten[i] or "R1:" in declare_ten[i] or "R2:" in declare_ten[i]\
+        or "K:" in declare_ten[i] or "K4E" in declare_ten[i] or "f:" in declare_ten[i]\
         or "Dm" in declare_ten[i] or "J:" in declare_ten[i] or "INTpp" in declare_ten[i] or "Ym" in declare_ten[i]): continue
     if ("[]" in declare_ten[i]):
         print("tensor:", declare_ten[i] + ",  !Create{type:scalar}", file=f2)
@@ -966,16 +985,18 @@ else:
         print("// Tensor to send to Kext", file=f2)
         print("tensor: INTpp[abij], INTpp", file=f2)
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
-declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
+declare_existing_tensors(declare_ten, "Singles amplitude tensors", "T1")
+declare_existing_tensors(declare_ten, "Doubles amplitude tensors", "T2")
 #if (multi): print("tensor: R[I],  R:I", file=f2)
-declare_existing_tensors(declare_res, "Residual tensors", "R")
+declare_existing_tensors(declare_res, "Singles residual tensors", "R1")
+declare_existing_tensors(declare_res, "Doubles residual tensors", "R2")
 
 g_residual = False
 if "G:eecc[abij]" in declare_res:
     g_residual = True
-    print("tensor: R:eecc[abij], R:eecc", file=f2)
+    print("tensor: R2:eecc[abij], R2:eecc", file=f2)
 
-if (any('R:eeeccc' in s for s in declare_res)):
+if (any('R2:eeeccc' in s for s in declare_res)):
    triples = True
 
 if (multi):
@@ -1003,7 +1024,7 @@ declare_existing_tensors(declare_res, "Energy and DIIS scalars", "ECC", True)
 # Check if we have singles amplitudes
 singles = False
 for i in range(0, len(declare_ten)):
-    if ("T:ec" in declare_ten[i]):
+    if ("T1:ec" in declare_ten[i]):
         singles = True
         break
 
@@ -1048,7 +1069,7 @@ print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
 if (multi):
     for i in range(0, len(declare_ten)):
-        if ("T:" in declare_ten[i]):
+        if ("T1:" in declare_ten[i] or "T2:" in declare_ten[i]):
             print("alloc", declare_ten[i], file=f2)
             print("store", declare_ten[i], file=f2)
 else:
@@ -1104,95 +1125,6 @@ if multi:
     print_code_block('multi_ref/transform_intk', gecco, f2)
 
 
-# Print out Init_Residual
-#if (initalise):
-#    print(file=f2)
-#    print(file=f2)
-#    print('---- code("Init_Residual")', file=f2)
-#    init_res_temp.seek(0)
-#    for line in init_res_temp:
-#        print(line.strip(), file=f2)
-
-#if multi:
-#    print(file=f2)
-#    print(file=f2)
-#    print('---- code("Init_Residual")', file=f2)
-#    combined = '\t'.join(declare_res)
-#    if "R:eecc" in combined:
-#        print("alloc R:eecc[abij]", file=f2)
-#        print("load K:eecc[abij]", file=f2)
-#        print(".R:eecc[abij] += K:eecc[abij]", file=f2)
-#        print("drop K:eecc[abij]", file=f2)
-#        print("store R:eecc[abji]", file=f2)
-#        print("", file=f2)
-#    if "R:eeac" in combined:
-#        print("alloc R:eeac[bapi]", file=f2)
-#        print("load K:eeac[baqi], Ym1[qp]", file=f2)
-#        print(".R:eeac[bapi] -= K:eeac[baqi] Ym1[qp]", file=f2)
-#        print("drop Ym1[qp], K:eeac[baqi]", file=f2)
-#        print("store R:eeac[bapi]", file=f2)
-#        print("", file=f2)
-#    if "R:eacc" in combined:
-#        print("alloc R:eacc[apij]", file=f2)
-#        print("load K:eacc[apij]", file=f2)
-#        print(".R:eacc[apij] += K:eacc[apij]", file=f2)
-#        print("drop K:eacc[apij]", file=f2)
-#        print("load Ym1[pq], K:eacc[aqij]", file=f2)
-#        print(".R:eacc[apij] -= Ym1[pq] K:eacc[aqij]", file=f2)
-#        print("drop K:eacc[aqij], Ym1[pq]", file=f2)
-#        print("store R:eacc[apij]", file=f2)
-#    if "R:ec" in combined:
-#        print("", file=f2)
-#        print("alloc R:ec[ai]", file=f2)
-#        print("load f:ec[ai]", file=f2)
-#        print(".R:ec[ai] += f:ec[ai]", file=f2)
-#        print("drop f:ec[ai]", file=f2)
-#        print("load Ym1[pq], K:eaca[aqip], K:eaac[aqpi]", file=f2)
-#        print(".R:ec[ai] += Ym1[pq] (K:eaca[aqip] - K:eaac[aqpi])", file=f2)
-#        print("drop K:eaac[aqpi], K:eaca[aqip], Ym1[pq]", file=f2)
-#        print("load Ym1[pq], K:eaca[aqip]", file=f2)
-#        print(".R:ec[ai] += Ym1[pq] K:eaca[aqip]", file=f2)
-#        print("drop K:eaca[aqip], Ym1[pq]", file=f2)
-#        print("store R:ec[ai]", file=f2)
-#    if "R:ea" in combined:
-#        print("", file=f2)
-#        print("alloc R:ea[ap]", file=f2)
-#        print("load f:ea[aq], Ym1[qp]", file=f2)
-#        print(".R:ea[ap] += f:ea[aq] Ym1[qp]", file=f2)
-#        print("drop Ym1[qp], f:ea[aq]", file=f2)
-#        print("store R:ea[ap]", file=f2)
-#    if "R:ac" in combined:
-#        print("", file=f2)
-#        print("alloc R:ac[pi]", file=f2)
-#        print("load f:ac[pi]", file=f2)
-#        print(".R:ac[pi] += f:ac[pi]", file=f2)
-#        print("drop f:ac[pi]", file=f2)
-#        print("load Ym1[pq], f:ac[qi]", file=f2)
-#        print(".R:ac[pi] -= Ym1[pq] f:ac[qi]", file=f2)
-#        print("drop f:ac[qi], Ym1[pq]", file=f2)
-#        print("load Ym1[qr], K:aaac[rpqi]", file=f2)
-#        print(".R:ac[pi] += Ym1[qr] (K:aaac[rpqi] - K:aaac[rqpi])", file=f2)
-#        print(".R:ac[pi] += Ym1[qr] K:aaac[rpqi]", file=f2)
-#        print("drop K:aaac[rpqi], Ym1[qr]", file=f2)
-#        print("store R:ac[pi]", file=f2)
-#    if "R:eaca" in combined:
-#        print("", file=f2)
-#        print("alloc R:eaca[apiq]", file=f2)
-#        print("load Ym1[pq], f:ec[ai]", file=f2)
-#        print(".R:eaca[apiq] -= Ym1[pq] f:ec[ai]", file=f2)
-#        print("drop f:ec[ai], Ym1[pq]", file=f2)
-#        print("load K:eaca[apir], Ym1[rq]", file=f2)
-#        print(".R:eaca[apiq] -= K:eaca[apir] Ym1[rq]", file=f2)
-#        print("drop Ym1[rq], K:eaca[apir]", file=f2)
-#        print("store R:eaca[apiq]", file=f2)
-#    if "R:eaac" in combined:
-#        print("", file=f2)
-#        print("alloc R:eaac[apqi]", file=f2)
-#        print("load K:eaac[apqi], Ym1[rq]", file=f2)
-#        print(".R:eaac[apqi] += K:eaac[apri] Ym1[rq]", file=f2)
-#        print("drop Ym1[rq], K:eaac[apqi]", file=f2)
-#        print("store R:eaac[apqi]", file=f2)
-
 # Print out all code blocks generated from input
 for block_name in code_blocks:
     code_block_tmp[block_name].seek(0)
@@ -1212,24 +1144,13 @@ for block_name in code_blocks:
 # Symmetrise tensors
 if "G:eecc[abij]" in declare_res:
     print("", file=f2)
-    print("alloc R:eecc[abij]", file=f2)
+    print("alloc R2:eecc[abij]", file=f2)
     print("load G:eecc[abij]", file=f2)
-    print(".R:eecc[abij] += G:eecc[abij]", file=f2)
-    print(".R:eecc[abij] += G:eecc[baji]", file=f2)
+    print(".R2:eecc[abij] += G:eecc[abij]", file=f2)
+    print(".R2:eecc[abij] += G:eecc[baji]", file=f2)
     print("drop G:eecc[abij]", file=f2)
-    print("store R:eecc[abij]", file=f2)
+    print("store R2:eecc[abij]", file=f2)
 
-#if "R[pqij]" in declare_res:
-#    print("load R:aacc[pqij]", file=f2)
-#    print(".R:aacc[pqij] += R:aacc[qpji]", file=f2)
-#    print("store R:aacc[pqij]", file=f2)
-#    print(file=f2)
-#
-#if "R[abpq]" in declare_res:
-#    print("load R:eeaa[abpq]", file=f2)
-#    print(".R:eeaa[abpq] += R:eeaa[baqp]", file=f2)
-#    print("store R:eeaa[abpq]", file=f2)
-#    print(file=f2)
 
 print(file=f2)
 print(file=f2)
@@ -1243,11 +1164,6 @@ if multi:
 # Print out Update_Amplitudes
 if multi:
     print_code_block('multi_ref/form_dm3', gecco, f2)
-    # OLD:
-    print_code_block('multi_ref/transform_residual', gecco, f2)
-    print_code_block('multi_ref/create_amplitude_update', gecco, f2)
-    print_code_block('multi_ref/update_amplitudes', gecco, f2)
-    # NEW:
     print_code_block('multi_ref/amplitude_update',gecco, f2)
     print_code_block('multi_ref/transform_to_pair_index',gecco, f2)
     #

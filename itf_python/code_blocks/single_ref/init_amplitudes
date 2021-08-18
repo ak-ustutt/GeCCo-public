@@ -1,13 +1,13 @@
 // Using MP2 amplitudes for starting guess
 alloc EMp2[], Nrm2[]
 for [i,j]:
-   alloc T:eecc[abij]
+   alloc T2:eecc[abij]
    load K:eecc[**ij], f:ee[aa], f:cc[ii], f:cc[jj]
-   .T:eecc[abij] -= K:eecc[abij]
-   denom-scale T:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
-   .EMp2[] += (2.0*T:eecc[abij] - T:eecc[baij]) K:eecc[abij]
-   .Nrm2[] += (2.0*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
+   .T2:eecc[abij] -= K:eecc[abij]
+   denom-scale T2:eecc[abij], f:ee[aa] + f:ee[bb] - f:cc[ii] - f:cc[jj]
+   .EMp2[] += (2.0*T2:eecc[abij] - T2:eecc[baij]) K:eecc[abij]
+   .Nrm2[] += (2.0*T2:eecc[abij] - T2:eecc[baij]) T2:eecc[abij]
    drop f:cc[jj], f:cc[ii], f:ee[aa], K:eecc[**ij]
-   store T:eecc[**ij]
+   store T2:eecc[**ij]
 store Nrm2[], EMp2[]
 

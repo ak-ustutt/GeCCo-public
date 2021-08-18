@@ -1,4 +1,4 @@
----- code("Amplitude_Update")
+---- code("Update_Amplitudes")
 // the new condensed amplitude update
 alloc Nrm1[], Nrm2[]
 alloc LCor1[], LCor2[]
@@ -6,278 +6,294 @@ alloc Var1[], Var2[]
 load ShiftI[], ShiftS[], ShiftP[]
 
 // === I1 ===
-load R:ac[pi]
-load T:ac[pi]
+load R1:ac[pi]
+load T1:ac[pi]
 
 // Amplitude norm and Lagrange correction
-.Nrm1 += 2*T:ac[pi] T:ac[pi]
-.LCor1 += 2*T:ac[pi] R:ac[pi]
+.Nrm1 += 2*T1:ac[pi] T1:ac[pi]
+.LCor1 += 2*T1:ac[pi] R1:ac[pi]
 
 // Transform, divide by preconditioner and transform back
 load X1:I1[pq]
-alloc OR:ac[pi]
-.OR:ac[qi] += 2*R:ac[pi] X1:I1[pq]
-.Var1 += 2*OR:ac[pi] OR:ac[pi]
+alloc OR1:ac[pi]
+.OR1:ac[qi] += 2*R1:ac[pi] X1:I1[pq]
+.Var1 += 2*OR1:ac[pi] OR1:ac[pi]
 
 load Y1:I1[pp], g:cc[ii]
-denom-scale OR:ac[pi], Y1:I1[pp] - g:cc[ii] + ShiftI[]
+denom-scale OR1:ac[pi], Y1:I1[pp] - g:cc[ii] + ShiftI[]
 drop g:cc[ii], Y1:I1[pp]
 
-.R:ac[pi] := OR:ac[qi] X1:I1[pq]
-drop OR:ac[pi]
+.R1:ac[pi] := OR1:ac[qi] X1:I1[pq]
+drop OR1:ac[pi]
 drop X1:I1[pq]
 
 // update ampltidues
-.T:ac[pi] -= R:ac[pi]
+.T1:ac[pi] -= R1:ac[pi]
 
-store T:ac[pi]   // store new amplitudes
-store R:ac[pi]   // store preconditioned residuals for DIIS error vector
+store T1:ac[pi]   // store new amplitudes
+store R1:ac[pi]   // store preconditioned residuals for DIIS error vector
 
 
 // === S0 ===
-load R:ea[ap]
-load T:ea[ap]
+load R1:ea[ap]
+load T1:ea[ap]
 
 // Amplitude norm and Lagrange correction
-.Nrm1 += 2*T:ea[ap] T:ea[ap]
-.LCor1 += 2*T:ea[ap] R:ea[ap]
+.Nrm1 += 2*T1:ea[ap] T1:ea[ap]
+.LCor1 += 2*T1:ea[ap] R1:ea[ap]
 
 // Transform, divide by preconditioner and transform back
 load X1:S0[pq]
-alloc OR:ea[ap]
-.OR:ea[aq] += 2*R:ea[ap] X1:S0[pq]
-.Var1 += 2*OR:ea[ap] OR:ea[ap]
+alloc OR1:ea[ap]
+.OR1:ea[aq] += 2*R1:ea[ap] X1:S0[pq]
+.Var1 += 2*OR1:ea[ap] OR1:ea[ap]
 
 load Y1:S0[pp], g:ee[aa]
-denom-scale OR:ea[ap], g:ee[aa] + Y1:S0[pp] + ShiftS[]
+denom-scale OR1:ea[ap], g:ee[aa] + Y1:S0[pp] + ShiftS[]
 drop g:ee[aa], Y1:S0[pp]
 
-.R:ea[ap] := OR:ea[aq] X1:S0[pq]
-drop OR:ea[ap]
+.R1:ea[ap] := OR1:ea[aq] X1:S0[pq]
+drop OR1:ea[ap]
 drop X1:S0[pq]
 
 // update ampltidues
-.T:ea[ap] -= R:ea[ap]
+.T1:ea[ap] -= R1:ea[ap]
 
-store T:ea[ap]   // store new amplitudes
-store R:ea[ap]   // store preconditioned residuals for DIIS error vector
+store T1:ea[ap]   // store new amplitudes
+store R1:ea[ap]   // store preconditioned residuals for DIIS error vector
 
 
-// === S1 ===
-load R:ec[ai], R:eaac[apqi], R:eaca[apiq]
-load T:ec[ai], T:eaac[apqi], T:eaca[apiq]
+// === S1 singles ===
+load R1:ec[ai]
+load T1:ec[ai]
 
-.Nrm1 +=  2*T:ec[ai] T:ec[ai]
-.LCor1 += 2*T:ec[ai] R:ec[ai]
-.Var1 +=  2*R:ec[ai] R:ec[ai]
+// Amplitude norm and Lagrange correction
+.Nrm1 += 2*T1:ec[ai] T1:ec[ai]
+.LCor1 += 2*T1:ec[ai] R1:ec[ai]
 
-.Nrm2 += (2*T:eaca[apiq]-T:eaac[apqi]) T:eaca[apiq]
-.Nrm2 += T:eaac[apqi] (T:eaac[apqi] -T:eaca[apiq])
-.LCor2 += (2*T:eaca[apiq]-T:eaac[apqi]) R:eaca[apiq]
-.LCor2 += (2*T:eaac[apqi]-T:eaca[apiq]) R:eaac[apqi]
+load g:ee[aa], g:cc[ii]
+denom-scale R1:ec[ai], g:ee[aa] - g:cc[ii] + ShiftS[]
+drop g:cc[ii], g:ee[aa]
 
-alloc OR:eaac[aiK]
+// update ampltidues
+.T1:ec[ai] -= R1:ec[ai]
+
+store T1:ec[ai]   // store new amplitudes
+store R1:ec[ai]   // store preconditioned residuals for DIIS error vector
+
+// === S1 doubles ===
+
+load R2:ec[ai], R2:eaac[apqi], R2:eaca[apiq]
+load T2:ec[ai], T2:eaac[apqi], T2:eaca[apiq]
+
+.Nrm2 +=  2*T2:ec[ai] T2:ec[ai]
+.LCor2 += 2*T2:ec[ai] R2:ec[ai]
+.Var2 +=  2*R2:ec[ai] R2:ec[ai]
+
+.Nrm2 += (2*T2:eaca[apiq]-T2:eaac[apqi]) T2:eaca[apiq]
+.Nrm2 += T2:eaac[apqi] (T2:eaac[apqi] -T2:eaca[apiq])
+.LCor2 += (2*T2:eaca[apiq]-T2:eaac[apqi]) R2:eaca[apiq]
+.LCor2 += (2*T2:eaac[apqi]-T2:eaca[apiq]) R2:eaac[apqi]
+
+alloc OR2:eaac[aiK]
 load X2B:S1[pqK], X4B:S1[pqK]
-.OR:eaac[aiK] += 1.5*R:eaac[apqi] X2B:S1[pqK]
-.OR:eaac[aiK] += 1.5*R:eaca[apiq] X4B:S1[pqK]
+.OR2:eaac[aiK] += 1.5*R2:eaac[apqi] X2B:S1[pqK]
+.OR2:eaac[aiK] += 1.5*R2:eaca[apiq] X4B:S1[pqK]
 drop X4B:S1[pqK], X2B:S1[pqK]
 
 // Off-diag orthogonalisation term
 load XS12b:S1[K]
-.OR:eaac[aiK] += 1.5*XS12b:S1[K] R:ec[ai]
+.OR2:eaac[aiK] += 1.5*XS12b:S1[K] R2:ec[ai]
 drop XS12b:S1[K]
 
-.Var2 += OR:eaac[aiK] OR:eaac[aiK]
+.Var2 += OR2:eaac[aiK] OR2:eaac[aiK]
 
 load g:ee[aa], g:cc[ii], YB:S1[KK]
-denom-scale OR:eaac[aiK], g:ee[aa] + YB:S1[KK] - g:cc[ii] + ShiftS[]
+denom-scale OR2:eaac[aiK], g:ee[aa] + YB:S1[KK] - g:cc[ii] + ShiftS[]
 drop YB:S1[KK], g:cc[ii], g:ee[aa]
 
-alloc OR:eaca[aiK]
+alloc OR2:eaca[aiK]
 load X4A:S1[pqK], X2A:S1[pqK]
-.OR:eaca[aiK] += 1.5*R:eaac[apqi] X4A:S1[pqK]
-.OR:eaca[aiK] += 1.5*R:eaca[apiq] X2A:S1[pqK]
+.OR2:eaca[aiK] += 1.5*R2:eaac[apqi] X4A:S1[pqK]
+.OR2:eaca[aiK] += 1.5*R2:eaca[apiq] X2A:S1[pqK]
 drop X2A:S1[pqK], X4A:S1[pqK]
 
 // Off-diag orthogonalisation term
 load XS12a:S1[K]
-.OR:eaca[aiK] += 1.5*XS12a:S1[K] R:ec[ai]
+.OR2:eaca[aiK] += 1.5*XS12a:S1[K] R2:ec[ai]
 drop XS12a:S1[K]
 
-.Var2 += OR:eaca[aiK] OR:eaca[aiK]
+.Var2 += OR2:eaca[aiK] OR2:eaca[aiK]
 
 load g:ee[aa], g:cc[ii], YA:S1[KK]
-denom-scale OR:eaca[aiK], g:ee[aa] + YA:S1[KK] - g:cc[ii] + ShiftS[]
+denom-scale OR2:eaca[aiK], g:ee[aa] + YA:S1[KK] - g:cc[ii] + ShiftS[]
 drop YA:S1[KK], g:cc[ii], g:ee[aa]
 
-load g:ee[aa], g:cc[ii]
-denom-scale R:ec[ai], g:ee[aa] - g:cc[ii] + ShiftS[]
-drop g:cc[ii], g:ee[aa]
-
 // Add off-diag orthogonalisation term
-// unclear ---> Factor of 2 comes from effective weighting between T:ec and T:eaac/T:eaca
+// unclear ---> Factor of 2 comes from effective weighting between T2:ec and T2:eaac/T2:eaca
 load SX12a:S1[K], SX12b:S1[K]
-.R:ec[ai] += SX12a:S1[K] OR:eaca[aiK]
-.R:ec[ai] += SX12b:S1[K] OR:eaac[aiK]
+// note that this resets R2:ec 
+.R2:ec[ai] := SX12a:S1[K] OR2:eaca[aiK]
+.R2:ec[ai] += SX12b:S1[K] OR2:eaac[aiK]
 drop SX12b:S1[K], SX12a:S1[K]
 
-.T:ec[ai] -= R:ec[ai]
+.T2:ec[ai] -= R2:ec[ai]
 
 load X2B:S1[pqK], X4B:S1[pqK], X2A:S1[pqK], X4A:S1[pqK]
-.R:eaac[apqi] := OR:eaac[aiK] (2*X2B:S1[pqK] + X4B:S1[pqK])
-.R:eaac[apqi] += OR:eaca[aiK] (2*X4A:S1[pqK] + X2A:S1[pqK])
-.T:eaac[apqi] -= R:eaac[apqi]
+.R2:eaac[apqi] := OR2:eaac[aiK] (2*X2B:S1[pqK] + X4B:S1[pqK])
+.R2:eaac[apqi] += OR2:eaca[aiK] (2*X4A:S1[pqK] + X2A:S1[pqK])
+.T2:eaac[apqi] -= R2:eaac[apqi]
 
-.R:eaca[apiq] := OR:eaac[aiK] (X2B:S1[pqK] + 2*X4B:S1[pqK])
-.R:eaca[apiq] += OR:eaca[aiK] (X4A:S1[pqK] + 2*X2A:S1[pqK])
-.T:eaca[apiq] -= R:eaca[apiq]
+.R2:eaca[apiq] := OR2:eaac[aiK] (X2B:S1[pqK] + 2*X4B:S1[pqK])
+.R2:eaca[apiq] += OR2:eaca[aiK] (X4A:S1[pqK] + 2*X2A:S1[pqK])
+.T2:eaca[apiq] -= R2:eaca[apiq]
 drop X4A:S1[pqK], X2A:S1[pqK], X4B:S1[pqK], X2B:S1[pqK]
 
-drop OR:eaca[aiK], OR:eaac[aiK]
+drop OR2:eaca[aiK], OR2:eaac[aiK]
 
-store T:eaca[apiq], T:eaac[apqi], T:ec[ai]
-store R:eaca[apiq], R:eaac[apqi], R:ec[ai]
+store T2:eaca[apiq], T2:eaac[apqi], T2:ec[ai]
+store R2:eaca[apiq], R2:eaac[apqi], R2:ec[ai]
 
 // === I2 ===
-load R:aacc[pqij]
-load T:aacc[pqij]
+load R2:aacc[pqij]
+load T2:aacc[pqij]
 
 // Amplitude norm and Lagrange correction
-.Nrm2 +=  (2*T:aacc[pqij] - T:aacc[qpij]) T:aacc[pqij]
-.LCor2 += (2*T:aacc[pqij] - T:aacc[qpij]) R:aacc[pqij]
+.Nrm2 +=  (2*T2:aacc[pqij] - T2:aacc[qpij]) T2:aacc[pqij]
+.LCor2 += (2*T2:aacc[pqij] - T2:aacc[qpij]) R2:aacc[pqij]
 
 // Transform, divide by preconditioner and transform back
 load X2:I2[pqK]
 
-alloc OR:aacc[Kij]
-.OR:aacc[Kij] += 2*R:aacc[pqij] X2:I2[pqK]
-.Var2 += OR:aacc[Kij] OR:aacc[Kij]
+alloc OR2:aacc[Kij]
+.OR2:aacc[Kij] += 2*R2:aacc[pqij] X2:I2[pqK]
+.Var2 += OR2:aacc[Kij] OR2:aacc[Kij]
 
 load Y2:I2[JK], g:cc[ii]
-denom-scale OR:aacc[Kij], 2*Y2:I2[KK] - g:cc[ii] - g:cc[jj] + ShiftI[]
+denom-scale OR2:aacc[Kij], 2*Y2:I2[KK] - g:cc[ii] - g:cc[jj] + ShiftI[]
 drop g:cc[ii], Y2:I2[KJ]
 
-.R:aacc[pqij] := OR:aacc[Kij] X2:I2[pqK]
-drop OR:aacc[Kij]
+.R2:aacc[pqij] := OR2:aacc[Kij] X2:I2[pqK]
+drop OR2:aacc[Kij]
 drop X2:I2[pqK]
 
 // update ampltidues
-.T:aacc[pqij] -= R:aacc[pqij]
+.T2:aacc[pqij] -= R2:aacc[pqij]
 
-store T:aacc[pqij]   // store new amplitudes
-store R:aacc[pqij]   // store preconditioned residuals for DIIS error vector
+store T2:aacc[pqij]   // store new amplitudes
+store R2:aacc[pqij]   // store preconditioned residuals for DIIS error vector
 
 
 // === S2 ===
-load R:eacc[apij]
-load T:eacc[apij]
+load R2:eacc[apij]
+load T2:eacc[apij]
 
 // Amplitude norm and Lagrange correction
-.Nrm2 +=  (2*T:eacc[apij] - T:eacc[apji]) T:eacc[apij]
-.LCor2 += (2*T:eacc[apij] - T:eacc[apji]) R:eacc[apij]
+.Nrm2 +=  (2*T2:eacc[apij] - T2:eacc[apji]) T2:eacc[apij]
+.LCor2 += (2*T2:eacc[apij] - T2:eacc[apji]) R2:eacc[apij]
 
 // Transform, divide by preconditioner and transform back
 load X2:S2[pq]
 
-alloc OR:eacc[apij]
-.OR:eacc[aqij] += 2*R:eacc[apij] X2:S2[pq]
-.Var2 += OR:eacc[apij] OR:eacc[apij]
+alloc OR2:eacc[apij]
+.OR2:eacc[aqij] += 2*R2:eacc[apij] X2:S2[pq]
+.Var2 += OR2:eacc[apij] OR2:eacc[apij]
 
 load g:ee[aa], Y2:S2[pp], g:cc[ii]
-denom-scale OR:eacc[apij], g:ee[aa] + Y2:S2[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
+denom-scale OR2:eacc[apij], g:ee[aa] + Y2:S2[pp] - g:cc[ii] - g:cc[jj] + ShiftS[]
 drop g:cc[ii], Y2:S2[pp], g:ee[aa]
 
-.R:eacc[apij] := OR:eacc[aqij] X2:S2[pq]
-drop OR:eacc[aqij]
+.R2:eacc[apij] := OR2:eacc[aqij] X2:S2[pq]
+drop OR2:eacc[aqij]
 drop X2:S2[pq]
 
 // update ampltidues
-.T:eacc[apij] -= R:eacc[apij]
+.T2:eacc[apij] -= R2:eacc[apij]
 
-store T:eacc[apij]   // store new amplitudes
-store R:eacc[apij]   // store preconditioned residuals for DIIS error vector
+store T2:eacc[apij]   // store new amplitudes
+store R2:eacc[apij]   // store preconditioned residuals for DIIS error vector
 
 
 // === P0 ===
-load R:eeaa[abpq]
-load T:eeaa[abpq]
+load R2:eeaa[abpq]
+load T2:eeaa[abpq]
 
 // Amplitude norm and Lagrange correction
-.Nrm2 +=  (2*T:eeaa[abpq] - T:eeaa[bapq]) T:eeaa[abpq]
-.LCor2 += (2*T:eeaa[abpq] - T:eeaa[bapq]) R:eeaa[abpq]
+.Nrm2 +=  (2*T2:eeaa[abpq] - T2:eeaa[bapq]) T2:eeaa[abpq]
+.LCor2 += (2*T2:eeaa[abpq] - T2:eeaa[bapq]) R2:eeaa[abpq]
 
 // Transform, divide by preconditioner and transform back
 load X2:P0[pqK]
 
-alloc OR:eeaa[abK]
-.OR:eeaa[abK] += 2*R:eeaa[abpq] X2:P0[pqK]
-.Var2 += OR:eeaa[abK] OR:eeaa[abK]
+alloc OR2:eeaa[abK]
+.OR2:eeaa[abK] += 2*R2:eeaa[abpq] X2:P0[pqK]
+.Var2 += OR2:eeaa[abK] OR2:eeaa[abK]
 
 load g:ee[aa], Y2:P0[KK]
-denom-scale OR:eeaa[abK], g:ee[aa] + g:ee[bb] + Y2:P0[KK] + ShiftP[]
+denom-scale OR2:eeaa[abK], g:ee[aa] + g:ee[bb] + Y2:P0[KK] + ShiftP[]
 drop Y2:P0[KK], g:ee[aa]
 
-.R:eeaa[abpq] := OR:eeaa[abK] X2:P0[pqK]
-drop OR:eeaa[abK]
+.R2:eeaa[abpq] := OR2:eeaa[abK] X2:P0[pqK]
+drop OR2:eeaa[abK]
 drop X2:P0[pqK]
 
 // update ampltidues
-.T:eeaa[abpq] -= R:eeaa[abpq]
+.T2:eeaa[abpq] -= R2:eeaa[abpq]
 
-store T:eeaa[abpq]   // store new amplitudes
-store R:eeaa[abpq]   // store preconditioned residuals for DIIS error vector
+store T2:eeaa[abpq]   // store new amplitudes
+store R2:eeaa[abpq]   // store preconditioned residuals for DIIS error vector
 
 
 // === P1 ===
-load R:eeac[abpi]
-load T:eeac[abpi]
+load R2:eeac[abpi]
+load T2:eeac[abpi]
 
 // Amplitude norm and Lagrange correction
-.Nrm2 +=  (2*T:eeac[abpi] - T:eeac[bapi]) T:eeac[abpi]
-.LCor2 += (2*T:eeac[abpi] - T:eeac[bapi]) R:eeac[abpi]
+.Nrm2 +=  (2*T2:eeac[abpi] - T2:eeac[bapi]) T2:eeac[abpi]
+.LCor2 += (2*T2:eeac[abpi] - T2:eeac[bapi]) R2:eeac[abpi]
 
 // Transform, divide by preconditioner and transform back
 load X2:P1[pq]
 
-alloc OR:eeac[abpi]
-.OR:eeac[abqi] += 2*R:eeac[abpi] X2:P1[pq]
-.Var2 += OR:eeac[abpi] OR:eeac[abpi]
+alloc OR2:eeac[abpi]
+.OR2:eeac[abqi] += 2*R2:eeac[abpi] X2:P1[pq]
+.Var2 += OR2:eeac[abpi] OR2:eeac[abpi]
 
 load g:ee[aa], g:cc[ii], Y2:P1[pp]
-denom-scale OR:eeac[abpi], g:ee[aa] + g:ee[bb] + Y2:P1[pp] - g:cc[ii] + ShiftP[]
+denom-scale OR2:eeac[abpi], g:ee[aa] + g:ee[bb] + Y2:P1[pp] - g:cc[ii] + ShiftP[]
 drop Y2:P1[pp], g:cc[ii], g:ee[aa]
 
-.R:eeac[abpi] := OR:eeac[abqi] X2:P1[pq]
-drop OR:eeac[abpi]
+.R2:eeac[abpi] := OR2:eeac[abqi] X2:P1[pq]
+drop OR2:eeac[abpi]
 drop X2:P1[pq]
 
 // update ampltidues
-.T:eeac[abpi] -= R:eeac[abpi]
+.T2:eeac[abpi] -= R2:eeac[abpi]
 
-store T:eeac[abpi]   // store new amplitudes  
-store R:eeac[abpi]   // store preconditioned residuals for DIIS error vector
+store T2:eeac[abpi]   // store new amplitudes  
+store R2:eeac[abpi]   // store preconditioned residuals for DIIS error vector
 
 
 
 // === P2 ===
-load R:eecc[abij]
-load T:eecc[abij]
+load R2:eecc[abij]
+load T2:eecc[abij]
 
 // Amplitude norm and Lagrange correction
-.Nrm2 +=  (2*T:eecc[abij] - T:eecc[baij]) T:eecc[abij]
-.LCor2 += (2*T:eecc[abij] - T:eecc[baij]) R:eecc[abij]
+.Nrm2 +=  (2*T2:eecc[abij] - T2:eecc[baij]) T2:eecc[abij]
+.LCor2 += (2*T2:eecc[abij] - T2:eecc[baij]) R2:eecc[abij]
 
-.Var2 += (2*R:eecc[abij] - R:eecc[baij]) R:eecc[abij]
+.Var2 += (2*R2:eecc[abij] - R2:eecc[baij]) R2:eecc[abij]
 
 load g:ee[aa], g:cc[ii]
-denom-scale R:eecc[abij], g:ee[aa] + g:ee[bb] - g:cc[ii] - g:cc[jj] + ShiftP[]
+denom-scale R2:eecc[abij], g:ee[aa] + g:ee[bb] - g:cc[ii] - g:cc[jj] + ShiftP[]
 drop g:cc[ii], g:ee[aa]
 
 // update ampltidues
-.T:eecc[abij] -= R:eecc[abij]
+.T2:eecc[abij] -= R2:eecc[abij]
 
-store T:eecc[abij]   // store new amplitudes
-store R:eecc[abij]   // store preconditioned residuals for DIIS error vector
+store T2:eecc[abij]   // store new amplitudes
+store R2:eecc[abij]   // store preconditioned residuals for DIIS error vector
 
 
 

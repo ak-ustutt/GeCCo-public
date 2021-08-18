@@ -30,7 +30,7 @@ ASSIGN_ME2OP({
         LIST:'ME_X_TRM_DAG',
         OPERATOR:'X_TRM'})
 
-if (False): # switch if for debug purposes only solving for T2g component is requested set to False
+if (True): # switch if for debug purposes only solving for T2g component is requested set to False
     if optref:
         depend("FOPT_OMG_C0")
         _form_spc = ['FOPT_T1_orth','FOPT_GAM_S','FOPT_T2_orth']
