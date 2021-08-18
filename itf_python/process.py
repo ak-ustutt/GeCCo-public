@@ -1158,7 +1158,7 @@ print(file=f2)
 
 # Print out Generate_Fock_Matricies
 if multi:
-    print_code_block('multi_ref/generate_fock_matricies', gecco, f2)
+    print_code_block('multi_ref/generate_fock_matrices', gecco, f2)
 
 
 # Print out Update_Amplitudes

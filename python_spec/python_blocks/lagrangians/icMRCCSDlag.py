@@ -49,9 +49,10 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
+tasks=False
 
 nc_en=4
-nc_rs=4
+nc_rs=2
 select=True     # for nc_rs>2: select terms that contribute in SR case
 #linear = True
 doublet = True
@@ -323,7 +324,10 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
 
-filename = 'icmrcc_mrccsd_'+str(nc_en)+str(nc_rs)
+if not tasks:
+    filename = 'icmrcc_mrccsd_'+str(nc_en)+str(nc_rs)
+else:
+    filename = 'auicmrcc_mrccsd_'+str(nc_en)+str(nc_rs)    
 if nc_rs>2 and select:
     filename = filename + 's'
 if doublet:
@@ -341,7 +345,7 @@ TRANSLATE_ITF({
         MULTI:True,
         PROCESS:True,
         KEXT:True,
-        TASKS:False,
+        TASKS:tasks,
         INIT_RES:False,
         ITIN:True,
         RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],

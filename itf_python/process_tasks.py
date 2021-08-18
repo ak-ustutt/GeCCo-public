@@ -14,13 +14,19 @@ def change_line(line_o):
     # with there names defined in C++, ie. R:eecc
     words=line_o.split()
     change_line_names("R", line_o, words)
+    change_line_names("R1", line_o, words)
+    change_line_names("R2", line_o, words)
     change_line_names("G", line_o, words)
     change_line_names("T", line_o, words)
+    change_line_names("T1", line_o, words)
+    change_line_names("T1s", line_o, words)
+    change_line_names("T2", line_o, words)
     change_line_names("K", line_o, words)
     change_line_names("J", line_o, words)
     change_line_names("f", line_o, words)
     change_line_names("K4E", line_o, words)
     change_line_names("INTkx", line_o, words)
+    change_line_names("INT3ext", line_o, words)
     line = " ".join(words)
     return line
 
@@ -151,16 +157,18 @@ init_alloc = False
 # TODO: Now all residuals are declared for the mutli cases, don't need all of them, all of the time
 declare_res_multi=[
         "R:I[I]",
-        "R:ac[pi]","R:ec[ai]","R:ea[ap]",
-        "R:aacc[pqij]","R:aaac[pqri]",
-        "R:eacc[apij]","R:eaac[apqi]","R:eaaa[apqr]",
-        "R:eeac[abpi]","R:eeaa[abpq]"]      # List of all residuals in multireference case
+        "R1:ac[pi]","R1:ec[ai]","R1:ea[ap]",
+        "R2:ac[pi]","R2:ec[ai]","R2:ea[ap]",
+        "R2:aacc[pqij]","R2:aaac[pqri]",
+        "R2:eacc[apij]","R2:eaac[apqi]","R2:eaca[apiq]","R2:eaaa[apqr]",
+        "R2:eecc[abij]","R2:eeac[abpi]","R2:eeaa[abpq]"]      # List of all residuals in multireference case
 declare_amp_multi=[
         "T:I[I]",
-        "T:ac[pi]","T:ec[ai]","T:ea[ap]",
-        "T:aacc[pqij]","T:aaac[pqri]",
-        "T:eacc[apij]","T:eaac[apqi]","T:eaaa[apqr]",
-        "T:eeac[abpi]","T:eeaa[abpq]"]      # List of all residuals in multireference case
+        "T1:ac[pi]","T1:ec[ai]","T1:ea[ap]",
+        "T2:ac[pi]","T2:ec[ai]","T2:ea[ap]",
+        "T2:aacc[pqij]","T2:aaac[pqri]",
+        "T2:eacc[apij]","T2:eaac[apqi]","T2:eaca[apiq]","T2:eaaa[apqr]",
+        "T2:eecc[abij]","T2:eeac[abpi]","T2:eeaa[abpq]"]      # List of all amplitudes in multireference case
 
 declare_ten=[]          # Global list of tensors involved in binary contractions
 declare_ten_index=[]    # Global list of tensor indicies
@@ -371,7 +379,8 @@ else:
 
 
 declare_existing_tensors(declare_ten, "Fock tensors", "f")
-declare_existing_tensors(declare_ten, "Amplitude tensors", "T")
+declare_existing_tensors(declare_ten, "Singles amplitude tensors", "T1")
+declare_existing_tensors(declare_ten, "Doubles amplitude tensors", "T2")
 print("",file=f2)
 
 
@@ -381,14 +390,14 @@ for i in range(0, len(declare_ten)):
         gindex = declare_ten[i].split('[')[0]+":"+"".join(generic_index(declare_ten[i]))
         gindex = gindex.split(':')[1]
         #print("tensor: R%-18s" % (":"+gindex+"["+ declare_ten[i].split('[')[1] + ", R:" + gindex), file=f2)
-        print("tensor: R:" + gindex + "[" + declare_ten[i].split('[')[1] + ", " + "R:" + gindex, file=f2)
-        init.append("R:" + gindex + "[" + declare_ten[i].split('[')[1])
-        save.append("R:" + gindex + "[" + declare_ten[i].split('[')[1])
+        print("tensor: R2:" + gindex + "[" + declare_ten[i].split('[')[1] + ", " + "R2:" + gindex, file=f2)
+        init.append("R2:" + gindex + "[" + declare_ten[i].split('[')[1])
+        save.append("R2:" + gindex + "[" + declare_ten[i].split('[')[1])
 
         # Add R to declare tensor
-        declare_ten.append("R:"+gindex+"[]")
+        declare_ten.append("R2:"+gindex+"[]")
 
-    elif "R" in declare_ten[i]:
+    elif "R1" in declare_ten[i] or "R2" in declare_ten[i]:
         print("tensor: " + declare_ten[i] + ", " + declare_ten[i].split('[')[0], file=f2)
         init.append(declare_ten[i])
         save.append(declare_ten[i])
@@ -431,7 +440,7 @@ print("",file=f2)
 # Check if we have singles amplitudes
 singles = False
 for i in range(0, len(declare_ten)):
-    if ("T:ec" in declare_ten[i]):
+    if ("T1:ec" in declare_ten[i]):
         singles = True
         break
 
@@ -448,7 +457,11 @@ if multi:
     print("tensor: Ym1[pp], Ym1",file=f2)
     #if "Ym2" in combined:
     print("tensor: Ym2[pppp], Ym2",file=f2)
-
+    #if "Ym3" in combined:
+    print("tensor: Ym3[pppppp],  !Create{type:disk} Ym3",file=f2)
+    if "Ym4" in combined:
+        print("tensor: Ym4[pppppppp],!Create{type:disk} Ym4",file=f2)
+    print(file=f2)
 else:
     print_code_block('single_ref/declare_tensors', gecco, f2)
 
@@ -475,7 +488,7 @@ print(file=f2)
 print('---- code("Init_Amplitudes")',file=f2)
 if (multi):
     for i in range(0, len(declare_ten)):
-        if ("T:" in declare_ten[i]):
+        if ("T1:" in declare_ten[i] or "T2:" in declare_ten[i]):
             print("alloc", declare_ten[i], file=f2)
             print("store", declare_ten[i], file=f2)
 else:
@@ -492,35 +505,37 @@ if not multi:
 
 
 # Print out INTpp update
-print(file=f2)
-print(file=f2)
-print('---- code("Update_INTkx")', file=f2)
-print('load T:eecc[abij]', file=f2)
-print('drop T:eecc[abij]', file=f2)
-print('', file=f2)
-print('', file=f2)
+#print(file=f2)
+#print(file=f2)
+#print('---- code("Update_INTkx")', file=f2)
+#print('load T:eecc[abij]', file=f2)
+#print('drop T:eecc[abij]', file=f2)
+#print('', file=f2)
+#print('', file=f2)
 
-print('---- task("Update_INTkx")', file=f2)
+#print('---- task("Update_INTkx")', file=f2)
 if (not kext):
-    if multi:
-        print("init INTpp1[abmi], INTpp[abmn]",file=f2)
-        print("save INTpp1[abmi], INTpp[abmn]",file=f2)
-        print(".INTpp1[abmj] += T:eecc[abij] deltaci[im]", file=f2)
-        print(".INTpp1[abmi] += T:eeac[abpi] deltaai[pm]", file=f2)
-        print(".INTpp[abmn] += INTpp1[abmj] deltaci[jn]", file=f2)
-    else:
-        print("init INTpp",file=f2)
-        print("save INTpp",file=f2)
-        print(".INTpp[abij] += T:eecc[abij]",file=f2)
-else:
-    print("init INTpp, ITIN[abij]",file=f2)
-    print("save INTpp",file=f2)
-    kext_temp.seek(0)
-    for line in kext_temp:
-        print(line.strip(), file=f2)
+    print("no kext is not supported any more: make sure that an appropriat CODE_BLOCK for INTkx is declared")
+    exit(1)
+#    if multi:
+#        print("init INTpp1[abmi], INTpp[abmn]",file=f2)
+#        print("save INTpp1[abmi], INTpp[abmn]",file=f2)
+#        print(".INTpp1[abmj] += T:eecc[abij] deltaci[im]", file=f2)
+#        print(".INTpp1[abmi] += T:eeac[abpi] deltaai[pm]", file=f2)
+#        print(".INTpp[abmn] += INTpp1[abmj] deltaci[jn]", file=f2)
+#    else:
+#        print("init INTpp",file=f2)
+#        print("save INTpp",file=f2)
+#        print(".INTpp[abij] += T:eecc[abij]",file=f2)
+#else:
+#    print("init INTpp, ITIN[abij]",file=f2)
+#    print("save INTpp",file=f2)
+#    kext_temp.seek(0)
+#    for line in kext_temp:
+#        print(line.strip(), file=f2)
 
-    print(".INTpp[abij] += ITIN[abij]",file=f2)
-    print(".INTpp[abij] += ITIN[baji]",file=f2)
+#    print(".INTpp[abij] += ITIN[abij]",file=f2)
+#    print(".INTpp[abij] += ITIN[baji]",file=f2)
 
 print('', file=f2)
 
@@ -562,7 +577,7 @@ for block_name in code_blocks:
                 if "".join(generic_index(declare_ten[i])) == 'eecc':
                     gindex = declare_ten[i].split('[')[0]+":"+"".join(generic_index(declare_ten[i]))
                     gindex = gindex.split(':')[1]
-                    res_ten = "R:" + gindex + "[" + declare_ten[i].split('[')[1]
+                    res_ten = "R2:" + gindex + "[" + declare_ten[i].split('[')[1]
 
                     index = declare_ten[i].split('[')[1]
                     index = index.replace("]","")
@@ -590,25 +605,21 @@ f2.write(tmp)
 
 
 
-# Print out Generate_Fock_Matricies
+# Print out Generate_Fock_Matrices
 if multi:
-    print_code_block('multi_ref/generate_fock_matricies', gecco, f2)
+    print_code_block('multi_ref/generate_fock_matrices', gecco, f2)
 
 
 # Print out Update_Amplitudes
 if multi:
     print_code_block('multi_ref/form_dm3', gecco, f2)
-    # OLD
-    print_code_block('multi_ref/transform_residual', gecco, f2)
-    print_code_block('multi_ref/create_amplitude_update', gecco, f2)
-    print_code_block('multi_ref/update_amplitudes', gecco, f2)
-    # NEW:
     print_code_block('multi_ref/amplitude_update',gecco, f2)
     print_code_block('multi_ref/transform_to_pair_index',gecco, f2)
     #
     print_code_block('multi_ref/construct_gs_overlap', gecco, f2)
     print_code_block('multi_ref/construct_s2', gecco, f2)
     print_code_block('multi_ref/construct_projected_s2', gecco, f2)
+    print_code_block('multi_ref/construct_offdiag_x', gecco, f2)
 else:
     if singles:
         print_code_block('single_ref/update_amplitudes_singles', gecco, f2)
