@@ -56,6 +56,8 @@
       integer(8), pointer ::
      &     topo(:,:), topo_spl(:,:), vtx(:), vtx_spl(:),
      &     xlines(:,:), xlines_spl(:,:)
+      logical, pointer ::
+     &     svtx_found(:)
 
       integer, external ::
      &     ifndmax, maxblk_in_contr, njres_contr, int8_expand,
@@ -88,6 +90,7 @@
 
       nj = njres_contr(contr)
       nj_spl = njres_contr(contr_spl)
+      if (ntest.ge.100) write(lulog,*) 'nj, nj_spl: ',nj, nj_spl
 
       allocate(vtxmap(nvtx),
      &         vtx(nvtx),topo(nvtx,nvtx),xlines(nvtx,nj),
@@ -225,6 +228,8 @@ c              vtxmap(ivtx) = ij
         end if
       end do
       ! fill up zeros / try to add missing target vertices
+      if (ntest.ge.100)
+     &    write(lulog,*) 'before: isuper_tgt: ',isuper_tgt(1:nvtx)
       ivtx_rem = nj_spl
       do ivtx = nvtx, 1, -1
         if (vtxmap(ireo2(ivtx)).gt.0) then
@@ -245,6 +250,8 @@ c              vtxmap(ivtx) = ij
           end if
         end if
       end do
+      if (ntest.ge.100)
+     &    write(lulog,*) 'after: isuper_tgt: ',isuper_tgt(1:nvtx)
 
       if (sh_sign.ne.1) then
 c dbg
@@ -292,12 +299,25 @@ c     &     write(lulog, *) 'vtxmap (new): ',vtxmap
       ivtx_rem = 0
       ivtx_spl_last = -1
       isuper_spl_last = -1
+      ! as is rare cases the supervertices are not numbered in ascending order, the old algo failed
+      ! we use this array instead:
+      allocate(svtx_found(nj_spl))
+      svtx_found = .false.
       do ivtx = 1, nvtx
         jvtx = ireo2(ivtx)
         if (vtxmap(jvtx).gt.0) then
-          if (isuper_tgt(ivtx).gt.isuper_spl_last .and.
-     &         isuper_spl_last.ne.0) then
+c     dbg
+c          write(lulog,*) 'isuper_tgt(ivtx), isuper_spl_last ',
+c     &         isuper_tgt(ivtx), isuper_spl_last
+c     dbg
+          if (isuper_tgt(ivtx).lt.1.or.isuper_tgt(ivtx).gt.nj_spl)
+     &         call quit(1,'join_contr2a','error trap')
+          if (.not.svtx_found(isuper_tgt(ivtx))) then
+            svtx_found(isuper_tgt(ivtx))=.true.
             ivtx_rem = ivtx_rem+1
+c     dbg
+c            write(lulog,*) '1: ivtx_rem increased for jvtx = ',jvtx
+c     dbg
             ivtx_new(jvtx) = -ivtx_rem
             if (isuper_tgt(ivtx).ne.0)
      &         isuper_spl_last = isuper_tgt(ivtx) !vtxmap(jvtx)
@@ -306,11 +326,16 @@ c     &     write(lulog, *) 'vtxmap (new): ',vtxmap
             ivtx_new(jvtx) = -ivtx_spl_last
           end if
         else
+c     dbg
+c          write(lulog,*) '2: ivtx_rem increased for jvtx = ',jvtx
+c     dbg
+
           ivtx_rem = ivtx_rem + 1
           ivtx_new(jvtx) = ivtx_rem
         end if
       end do
-
+      deallocate(svtx_found)
+      
       nvtx_rem = ivtx_rem
       if (ntest.eq.100)
      &     write(lulog, *) 'ivtx_new: ',ivtx_new

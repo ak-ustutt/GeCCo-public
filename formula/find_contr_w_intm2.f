@@ -177,6 +177,7 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
         iterm = 0
         do
           ! make target contractions that we need to find
+          if (ntest.ge.100) write(lulog,*) 'call to join_contr2a - 1'
           call join_contr2a(1,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &           contr_t0,fpl_intm_pnt%item%contr,
      &           idxop_tgt,iblk_tgt,op_info)
@@ -355,6 +356,7 @@ c                end if
         fl_t0_i_pnt => fl_t0_i
 
         ! make new contraction
+        if (ntest.ge.100) write(lulog,*) 'call to join_contr2a - 2'
         call join_contr2a(0,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)
