@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # =========================================================================================
 # This file is used to post-proccess the ITF algo file and reduce the size of the file.
 # So far, this removes repeated load/drop lines which invlove the same tensors
