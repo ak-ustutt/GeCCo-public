@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # =========================================================================================
 # Read through a bcontr or task file in reverse order and remove all itermediates that
 # aren't used

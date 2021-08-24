@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 class itf_line:
     # TODO: Finish class
     """
