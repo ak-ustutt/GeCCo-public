@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # =========================================================================================
 # This file is used to pre-proccess the bcontr.tmp file and find simple simplifications.
 # So far this includes collecting lines together which are the same and introducing
