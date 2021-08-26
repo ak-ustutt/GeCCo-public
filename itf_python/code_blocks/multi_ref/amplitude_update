@@ -87,8 +87,10 @@ load R2:ec[ai], R2:eaac[apqi], R2:eaca[apiq]
 load T2:ec[ai], T2:eaac[apqi], T2:eaca[apiq]
 
 .Nrm2 +=  2*T2:ec[ai] T2:ec[ai]
-.LCor2 += 2*T2:ec[ai] R2:ec[ai]
-.Var2 +=  2*R2:ec[ai] R2:ec[ai]
+// R2:ec itself is not necessarily brought to zero
+// it is transformed to contribute to OR2:eaac/eaca and will be there accounted for
+// .LCor2 += 2*T2:ec[ai] R2:ec[ai]
+// .Var2 +=  2*R2:ec[ai] R2:ec[ai] 
 
 .Nrm2 += (2*T2:eaca[apiq]-T2:eaac[apqi]) T2:eaca[apiq]
 .Nrm2 += T2:eaac[apqi] (T2:eaac[apqi] -T2:eaca[apiq])
@@ -97,13 +99,13 @@ load T2:ec[ai], T2:eaac[apqi], T2:eaca[apiq]
 
 alloc OR2:eaac[aiK]
 load X2B:S1[pqK], X4B:S1[pqK]
-.OR2:eaac[aiK] += 1.5*R2:eaac[apqi] X2B:S1[pqK]
-.OR2:eaac[aiK] += 1.5*R2:eaca[apiq] X4B:S1[pqK]
+.OR2:eaac[aiK] += (4*R2:eaac[apqi] - 2*R2:eaca[apiq]) X2B:S1[pqK]
+.OR2:eaac[aiK] += (4*R2:eaca[apiq] - 2*R2:eaac[apqi]) X4B:S1[pqK]
 drop X4B:S1[pqK], X2B:S1[pqK]
 
 // Off-diag orthogonalisation term
 load XS12b:S1[K]
-.OR2:eaac[aiK] += 1.5*XS12b:S1[K] R2:ec[ai]
+.OR2:eaac[aiK] += 2*XS12b:S1[K] R2:ec[ai]
 drop XS12b:S1[K]
 
 .Var2 += OR2:eaac[aiK] OR2:eaac[aiK]
@@ -114,13 +116,13 @@ drop YB:S1[KK], g:cc[ii], g:ee[aa]
 
 alloc OR2:eaca[aiK]
 load X4A:S1[pqK], X2A:S1[pqK]
-.OR2:eaca[aiK] += 1.5*R2:eaac[apqi] X4A:S1[pqK]
-.OR2:eaca[aiK] += 1.5*R2:eaca[apiq] X2A:S1[pqK]
+.OR2:eaca[aiK] += (4*R2:eaac[apqi] - 2*R2:eaca[apiq]) X4A:S1[pqK]
+.OR2:eaca[aiK] += (4*R2:eaca[apiq] - 2*R2:eaac[apqi]) X2A:S1[pqK]
 drop X2A:S1[pqK], X4A:S1[pqK]
 
 // Off-diag orthogonalisation term
 load XS12a:S1[K]
-.OR2:eaca[aiK] += 1.5*XS12a:S1[K] R2:ec[ai]
+.OR2:eaca[aiK] += 2*XS12a:S1[K] R2:ec[ai]
 drop XS12a:S1[K]
 
 .Var2 += OR2:eaca[aiK] OR2:eaca[aiK]
@@ -140,12 +142,12 @@ drop SX12b:S1[K], SX12a:S1[K]
 .T2:ec[ai] -= R2:ec[ai]
 
 load X2B:S1[pqK], X4B:S1[pqK], X2A:S1[pqK], X4A:S1[pqK]
-.R2:eaac[apqi] := OR2:eaac[aiK] (2*X2B:S1[pqK] + X4B:S1[pqK])
-.R2:eaac[apqi] += OR2:eaca[aiK] (2*X4A:S1[pqK] + X2A:S1[pqK])
+.R2:eaac[apqi] := OR2:eaac[aiK] (X2B:S1[pqK] + 0.5*X4B:S1[pqK])
+.R2:eaac[apqi] += OR2:eaca[aiK] (X4A:S1[pqK] + 0.5*X2A:S1[pqK])
 .T2:eaac[apqi] -= R2:eaac[apqi]
 
-.R2:eaca[apiq] := OR2:eaac[aiK] (X2B:S1[pqK] + 2*X4B:S1[pqK])
-.R2:eaca[apiq] += OR2:eaca[aiK] (X4A:S1[pqK] + 2*X2A:S1[pqK])
+.R2:eaca[apiq] := OR2:eaac[aiK] (0.5*X2B:S1[pqK] + X4B:S1[pqK])
+.R2:eaca[apiq] += OR2:eaca[aiK] (0.5*X4A:S1[pqK] + X2A:S1[pqK])
 .T2:eaca[apiq] -= R2:eaca[apiq]
 drop X4A:S1[pqK], X2A:S1[pqK], X4B:S1[pqK], X2B:S1[pqK]
 

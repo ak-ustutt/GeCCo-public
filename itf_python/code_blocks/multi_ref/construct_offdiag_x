@@ -25,11 +25,11 @@ store XS12b:S1[rs], XS12a:S1[rs]
 // prefactor 0.5 is currently empirical and not well understood
 alloc SX12a:S1[rs], SX12b:S1[rs]
 
-.SX12a:S1[rs] -= .5*S3A:S1[pq]  (X4A:S1[pqrs] + 2*X2A:S1[pqrs])
-.SX12a:S1[rs] -= .5*S3B:S1[pq] (2*X4A:S1[pqrs] + X2A:S1[pqrs])
+.SX12a:S1[rs] -= .5*S3A:S1[pq] (0.5*X4A:S1[pqrs] + X2A:S1[pqrs])
+.SX12a:S1[rs] -= .5*S3B:S1[pq] (X4A:S1[pqrs] + 0.5*X2A:S1[pqrs])
 
-.SX12b:S1[rs] -= .5*S3A:S1[pq]  (X2B:S1[pqrs] + 2*X4B:S1[pqrs])
-.SX12b:S1[rs] -= .5*S3B:S1[pq] (2*X2B:S1[pqrs] + X4B:S1[pqrs])
+.SX12b:S1[rs] -= .5*S3A:S1[pq] (0.5*X2B:S1[pqrs] + X4B:S1[pqrs])
+.SX12b:S1[rs] -= .5*S3B:S1[pq] (X2B:S1[pqrs] + 0.5*X4B:S1[pqrs])
 
 store SX12b:S1[rs], SX12a:S1[rs]
 
