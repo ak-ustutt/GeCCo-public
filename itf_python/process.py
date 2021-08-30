@@ -187,7 +187,8 @@ def print_result(line, indent=False, init=False):
 def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
     # Add tensor to global lists, so it can be declared at the start of the algo file
 
-    if word.split('*',1)[-1] not in declare_ten and "TIN" not in word:
+    tmp = word.split('*',1)[-1]
+    if tmp not in declare_ten and tmp != "+" and tmp != "-" and "TIN" not in word:    # quick fix to overlook wrongly parsed "+" and "-"
         index=list(word[word.find("[")+1:word.find("]")])
 
         # Construct generic index
@@ -283,18 +284,33 @@ def load_extra_loop_tensors(line, result):
     if '(' in words[2] and '(' in words[5]:
         if "eaac" not in words[2] and "eaca" not in words[2]:
             if (words[2].split('(')[1].find(loop) != words[4].find(loop)):
-                result.append(words[4].replace(')',''))
+                tmp = words[4].replace(')','')
+                if '*' in tmp:
+                    tmp = tmp.split("*",1)[1]
+                result.append(tmp)
         if "eaac" not in words[5] and "eaca" not in words[5]:
             if (words[5].split('(')[1].find(loop) != words[7].find(loop)):
-                result.append(words[7].replace(')',''))
+                tmp = words[7].replace(')','')
+                if '*' in tmp:
+                    tmp = tmp.split("*",1)[1]
+                result.append(tmp)
+                #result.append(words[7].replace(')',''))
     elif '(' in words[3]:
         if "eaac" not in words[3] and "eaca" not in words[3]:
             if (words[3].split('(')[1].find(loop) != words[5].find(loop)):
-                result.append(words[5].replace(')',''))
+                tmp = words[5].replace(')','')
+                if '*' in tmp:
+                    tmp = tmp.split("*",1)[1]
+                result.append(tmp)
+                #result.append(words[5].replace(')',''))
     elif '(' in words[2] :
         if "eaac" not in words[2] and "eaca" not in words[2]:
             if (words[2].split('(')[1].find(loop) != words[4].find(loop)):
-                result.append(words[4].replace(')',''))
+                tmp = words[4].replace(')','')
+                if '*' in tmp:
+                    tmp = tmp.split("*",1)[1]
+                result.append(tmp)
+                #result.append(words[4].replace(')',''))
 
 
 def print_code_block(code_block, gecco_dir, output):
@@ -434,7 +450,7 @@ for line_o in f:
 
     # Check if we are in a special block which will end up in its own ---code block
     # In this case we are checking for the INTpp interemediate that is passed to Kext
-    if (words[0]=='BEGIN_INTPP'):
+    if (words[0]=='BEGIN_INTPP'): ## obsolete
         special_begin = True
         special_end = False
         continue
@@ -554,6 +570,9 @@ for line_o in f:
 
 
     # Check if brackets in the binary contraction
+    # parsing must be improved ... terms may look differently
+    # currently not a problem as all tensors seem to appear at least once in an early position
+    # I have just fixed add_to_global to ignore wrongly parsed "+" or "-" signs
     if (len(words)>=4):
         if len(words)==5:
             # I += (K - J)
