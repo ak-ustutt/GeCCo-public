@@ -280,6 +280,18 @@
       call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(ASSUME_CONST,tgt_info)
+      call set_arg('_PROTO_',ASSUME_CONST,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'OP_LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'VAL_LIST',1,tgt_info,
+     &     val_rl8=(/1.0d0/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(SUM_HERMIT,tgt_info)
       call set_arg('_PROTO_',SUM_HERMIT,'LABEL_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

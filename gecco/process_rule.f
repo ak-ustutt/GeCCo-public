@@ -598,6 +598,23 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       op_info
      &       )
 *----------------------------------------------------------------------*
+      case(ASSUME_CONST)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,val_label=label)
+        call get_form(form0_pnt,trim(label),OLD)
+        call get_arg('OP_LIST',rule,tgt_info,
+     &               val_label_list=label_list,ndim=nop)
+        call get_arg('VAL_LIST',rule,tgt_info,
+     &               val_rl8_list=fac,ndim=nfac)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_op_assume_const(form_pnt,form0_pnt,
+     &       title,
+     &       min(nop,nfac),label_list,fac,
+     &       op_info
+     &       )
+*----------------------------------------------------------------------*
       case(INVARIANT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)

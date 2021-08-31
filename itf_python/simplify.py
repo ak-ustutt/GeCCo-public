@@ -391,6 +391,8 @@ parser = argparse.ArgumentParser(
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-i','--input',default=None,help='ITF binary contraction file')
 parser.add_argument('-o','--output',default=None,help='ITF binary contraction file')
+parser.add_argument('-t','--tasks',dest='tasks',action='store_true',help='toggle task mode')
+parser.set_defaults(tasks=False)
 args = parser.parse_args()
 
 if args.input is None:
@@ -402,6 +404,7 @@ if args.output is None:
 
 inp = args.input
 out = args.output
+tasks = args.tasks
 
 # Open bcontr.tmp file to read from
 f1 = open(inp,"r")
@@ -440,10 +443,12 @@ for line in f1:
             prev_r_index  = ""
             
             continue
-        # if we arrive here, something is wrong
-        print("Error: Found unexpected line:", file=f2)
-        print(line, end="", flush=True, file=f2)
-        quit()
+
+        if not tasks:
+            # if we arrive here, something is wrong
+            print("Error: Found unexpected line:", file=f2)
+            print(line, end="", flush=True, file=f2)
+            quit()
 
     # at this point, in_section must be True
     if "END" in line:
@@ -473,6 +478,11 @@ for line in f1:
 
     if (debug):
         print("O: ",line,end="",file=f2)
+
+    # for tasks just echo the file
+    if tasks:
+        print(line, end="", flush=True, file=f2)
+        continue
         
     words = line.split()
 

@@ -592,8 +592,8 @@ for block_name in code_blocks:
 
     # Print out dummy code block for each task block
     print('---- code("'+block_name+'")', file=f2)
-    print('load T:eecc[abij]', file=f2)
-    print('drop T:eecc[abij]', file=f2)
+    print('load T2:eecc[abij]', file=f2)
+    print('drop T2:eecc[abij]', file=f2)
     print(file=f2)
 
 

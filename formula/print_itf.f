@@ -71,9 +71,11 @@
      &       fl_item%command==command_cp_intm .or.
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
-     &       fl_item%command==command_bc_reo) then
+     &       fl_item%command==command_bc_reo .or.
+     &       fl_item%command==command_add_bc_reo) then
 
-            if (fl_item%command==command_bc_reo) then
+            if (fl_item%command==command_bc_reo .or.
+     &          fl_item%command==command_add_bc_reo ) then
               ! patch the result of the contraction with the reordered intermediate info
               ! itf_index_info is already set up correctly
               if (fl_item%bcontr%nj_res < fl_item%reo%nj_out)
@@ -82,6 +84,13 @@
               fl_item%bcontr%occ_res(:,:,1:fl_item%reo%nj_out) =
      &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
             end if
+
+! dbg
+c            if (fl_item%command==command_add_bc_reo) then
+c              call prt_bcontr(itflog,fl_item%bcontr)
+c              call prt_reorder(itflog,fl_item%reo)
+c            end if
+! dbg              
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
@@ -94,13 +103,13 @@
 
          else if (fl_item%command==command_add_contribution) then
             write(itflog,*) '[CONTR]',fl_item%target  ! this case should not appear in an opt. formula
-         else if (fl_item%command==command_add_bc_reo) then
-            write(itflog,*) '[CONTRACT][REORDER][ADD]',
-     &           fl_item%target
-            call prt_bcontr(itflog,fl_item%bcontr)
-            call prt_reorder(itflog,fl_item%reo)
-            call warn('print_itf',
-     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
+c         else if (fl_item%command==command_add_bc_reo) then
+c            write(itflog,*) '[CONTRACT][REORDER][ADD]',
+c     &           fl_item%target
+c            call prt_bcontr(itflog,fl_item%bcontr)
+c            call prt_reorder(itflog,fl_item%reo)
+c            call warn('print_itf',
+c     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
          else if (fl_item%command==command_add_reo) then
             write(itflog,*) '[REORDER][ADD]',
      &           fl_item%target

@@ -52,11 +52,13 @@ DEF_SCALAR({
 tasks=False
 
 nc_en=4
-nc_rs=2
+nc_rs=4
 select=True     # for nc_rs>2: select terms that contribute in SR case
 #linear = True
-doublet = True
-cas22 = False
+doublet = False
+cas22 = True
+
+remove_gamma0 = True # remove the scalar part of GAM0 (which is just 1.0)
 
 if doublet or cas22:
     T2_shape = 'VV,HH|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'  # skipped VVV amps here
@@ -155,15 +157,35 @@ FACTOR_OUT({
         LABEL_RES:'FORM_MRCC_LAG_E',
         INTERM:'FORM_GAM0'})
 
+# currently, this messes up the FACTOR_OUT routines
+# remove the scalar GAM0 part only at the end 
+# remove fully contracted part of C0^+C0
+#ASSUME_CONST({
+#        LABEL_IN:'FORM_MRCC_LAG_E',
+#        LABEL_RES:'FORM_MRCC_LAG_E',
+#        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
 FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_A1',
         INTERM:'FORM_GAM0'})
 
+# remove fully contracted part of C0^+C0
+#ASSUME_CONST({
+#        LABEL_IN:'FORM_MRCC_LAG_A1',
+#        LABEL_RES:'FORM_MRCC_LAG_A1',
+#        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
 FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'FORM_GAM0'})
+
+# remove fully contracted part of C0^+C0
+#ASSUME_CONST({
+#        LABEL_IN:'FORM_MRCC_LAG_A2',
+#        LABEL_RES:'FORM_MRCC_LAG_A2',
+#        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
@@ -228,27 +250,27 @@ PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 # only dummy
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A1',
-        LABEL_RES:'FORM_MRCC_LAG_Amp1',
+        LABEL_RES:'FORM_MRCC_RES1_0',
         OP_RES:'O1',
         OP_DERIV:'LAM1'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_LAG_Amp1',LABEL_RES:'FORM_MRCC_LAG_Amp1'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1_0',LABEL_RES:'FORM_MRCC_RES1_0'})
 
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A2',
-        LABEL_RES:'FORM_MRCC_LAG_Amp2',
+        LABEL_RES:'FORM_MRCC_RES2_0',
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_LAG_Amp2',LABEL_RES:'FORM_MRCC_LAG_Amp2'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
 
 # Replace in singles residual as much as possible by singles part of doubles residual
 # in cases where T1 and T2 are treated on the same footing, this replaces everything
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_Amp1',LABEL_RES:'FORM_MRCC_LAG_Amp1',INTERM:'FORM_MRCC_LAG_Amp2'})
+FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'FORM_MRCC_RES2_0'})
 
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
+#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+#PRINT_FORMULA({LABEL:'FORM_MRCC_RES2_0',MODE:'SHORT'})
 
 
 K4E = True
@@ -262,7 +284,7 @@ if (K4E):
     DEF_OP_FROM_OCC({LABEL:'Hpppp',DESCR:'PP;PP'}) 
 
     # replace relevant blocks of Hamiltonian with Hpppp
-    REPLACE({LABEL_RES:'F_preINTkx',LABEL_IN:'FORM_MRCC_LAG_Amp2',OP_LIST:['H','Hpppp']})
+    REPLACE({LABEL_RES:'F_preINTkx',LABEL_IN:'FORM_MRCC_RES2_0',OP_LIST:['H','Hpppp']})
     # remove all terms that do not include Hpppp
     INVARIANT({LABEL_RES:'F_preINTkx',LABEL_IN:'F_preINTkx',OPERATORS:'H',OP_RES:'O2g'})
     # now, take derivative with respct to Hpppp
@@ -272,19 +294,22 @@ if (K4E):
     PRINT_FORMULA({LABEL:'F_INTkx',MODE:'SHORT'})
 
     FACTOR_OUT({
-        LABEL_IN:'FORM_MRCC_LAG_Amp1',
-        LABEL_RES:'FORM_MRCC_LAG_Amp1',
+        LABEL_IN:'FORM_MRCC_LAG_A1',
+        LABEL_RES:'FORM_MRCC_LAG_A1',
         INTERM:'F_INTkx'})
 
     FACTOR_OUT({
-        LABEL_IN:'FORM_MRCC_LAG_Amp2',
-        LABEL_RES:'FORM_MRCC_LAG_Amp2',
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'F_INTkx'})
     
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
 
 ### Add here more terms to be factored out ...
-if (True):
+I3ext = True
+if (I3ext):
     # try this for 3externals
     # has the shape of O2g
     CLONE_OPERATOR({LABEL:'INT3ext',TEMPLATE:'O2g'})
@@ -294,7 +319,7 @@ if (True):
     DEF_OP_FROM_OCC({LABEL:'Hppph',DESCR:'PP;PH|PP;PV'})
 
     # replace relevant blocks of Hamiltonian with Hppph
-    REPLACE({LABEL_RES:'F_preINT3ext',LABEL_IN:'FORM_MRCC_LAG_Amp2',OP_LIST:['H','Hppph']})
+    REPLACE({LABEL_RES:'F_preINT3ext',LABEL_IN:'FORM_MRCC_RES2_0',OP_LIST:['H','Hppph']})
     # remove all terms that do not include Hppph
     INVARIANT({LABEL_RES:'F_preINT3ext',LABEL_IN:'F_preINT3ext',OPERATORS:'H',OP_RES:'O2g'})
     # now, take derivative with respct to Hppph
@@ -304,25 +329,77 @@ if (True):
     PRINT_FORMULA({LABEL:'F_INT3ext',MODE:'SHORT'})
 
     FACTOR_OUT({
-        LABEL_IN:'FORM_MRCC_LAG_Amp1',
-        LABEL_RES:'FORM_MRCC_LAG_Amp1',
+        LABEL_IN:'FORM_MRCC_LAG_A1',
+        LABEL_RES:'FORM_MRCC_LAG_A1',
         INTERM:'F_INT3ext'})
 
     FACTOR_OUT({
-        LABEL_IN:'FORM_MRCC_LAG_Amp2',
-        LABEL_RES:'FORM_MRCC_LAG_Amp2',
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'F_INT3ext'})
 
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
-    
+    PRINT_FORMULA({LABEL:'FORM_MRCC_RES2_0',MODE:'SHORT'})
 
-OPTIMIZE({
+
+# now creating the actual residuals
+DERIVATIVE({
+        LABEL_IN:'FORM_MRCC_LAG_A1',
+        LABEL_RES:'FORM_MRCC_RES1',
+        OP_RES:'O1',
+        OP_DERIV:'LAM1'})
+
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1_0',LABEL_RES:'FORM_MRCC_RES1_0'})
+
+DERIVATIVE({
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_RES2',
+        OP_RES:'O2g',
+        OP_DERIV:'LAM2g'})
+
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
+
+
+if (remove_gamma0):
+    if (K4E):
+        ASSUME_CONST({
+            LABEL_IN:'F_INTkx',
+            LABEL_RES:'F_INTkx',
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+    if (I3ext):
+        ASSUME_CONST({
+            LABEL_IN:'F_INT3ext',
+            LABEL_RES:'F_INT3ext',
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
+    ASSUME_CONST({
+        LABEL_IN:'FORM_MRCC_RES2',
+        LABEL_RES:'FORM_MRCC_RES2',
+        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
+    ASSUME_CONST({
+        LABEL_IN:'FORM_MRCC_RES1',
+        LABEL_RES:'FORM_MRCC_RES1',
+        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
+    ASSUME_CONST({
+        LABEL_IN:'FORM_MRCC_LAG_E',
+        LABEL_RES:'FORM_MRCC_LAG_E',
+        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
+    
+if (I3ext):
+    OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
-        LABELS_IN:['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_LAG_Amp2','FORM_MRCC_LAG_Amp1','FORM_MRCC_LAG_E']})
+        LABELS_IN:['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
+else:
+    
+    OPTIMIZE({
+        LABEL_OPT:'FOPT_MRCC_LAG',
+        LABELS_IN:['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp1',MODE:'SHORT'}) # only dummy
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_Amp2',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_RES1',MODE:'SHORT'}) # only dummy
+PRINT_FORMULA({LABEL:'FORM_MRCC_RES2',MODE:'SHORT'})
 
 if not tasks:
     filename = 'icmrcc_mrccsd_'+str(nc_en)+str(nc_rs)
@@ -337,8 +414,8 @@ elif cas22:
 filename2 = filename + '.formulae'
 filename = filename + '.itfaa'
 
-
-TRANSLATE_ITF({
+if (I3ext):
+    TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:filename,
         TITLE:filename2,
@@ -350,6 +427,19 @@ TRANSLATE_ITF({
         ITIN:True,
         RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
         CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']})
+else:
+    TRANSLATE_ITF({
+        LABEL:'FOPT_MRCC_LAG',
+        OUTPUT:filename,
+        TITLE:filename2,
+        MULTI:True,
+        PROCESS:True,
+        KEXT:True,
+        TASKS:tasks,
+        INIT_RES:False,
+        ITIN:True,
+        RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
+        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']})
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')

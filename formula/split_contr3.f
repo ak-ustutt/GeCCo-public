@@ -311,7 +311,7 @@ c          write(lulog,*) 'isuper_tgt(ivtx), isuper_spl_last ',
 c     &         isuper_tgt(ivtx), isuper_spl_last
 c     dbg
           if (isuper_tgt(ivtx).lt.1.or.isuper_tgt(ivtx).gt.nj_spl)
-     &         call quit(1,'join_contr2a','error trap')
+     &         call quit(1,'split_contr3','error trap')
           if (.not.svtx_found(isuper_tgt(ivtx))) then
             svtx_found(isuper_tgt(ivtx))=.true.
             ivtx_rem = ivtx_rem+1
@@ -334,6 +334,18 @@ c     dbg
           ivtx_new(jvtx) = ivtx_rem
         end if
       end do
+      ! error trap:
+      if (.not.all(svtx_found)) then
+        write(lulog,*) 'contr:'
+        call prt_contr2(lulog,contr,op_info)
+        write(lulog,*) 'contr_spl:'
+        call prt_contr2(lulog,contr_spl,op_info)
+        write(lulog,*) 'nj_spl = ',nj_spl
+        write(lulog,*)
+     &       'could not assign all super vertices of contr_spl: ',
+     &       svtx_found
+        call quit(1,'split_contr3','problem with vertices')
+      end if
       deallocate(svtx_found)
       
       nvtx_rem = ivtx_rem

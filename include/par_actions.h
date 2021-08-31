@@ -35,6 +35,7 @@
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
      &     EXPAND*6                 = 'EXPAND',
      &     REPLACE*7                = 'REPLACE',
+     &     ASSUME_CONST*12          = 'ASSUME_CONST',
      &     SUM_HERMIT*13            = 'SUM_HERMITIAN',
      &     SUMTERMS*9               = 'SUM_TERMS',
      &     INVARIANT*9              = 'INVARIANT',
