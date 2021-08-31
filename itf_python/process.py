@@ -1126,9 +1126,9 @@ if (not kext):
         print("store INTpp1[abmi]", file=f2)
     else:
         print("alloc INTpp[abij]",file=f2)
-        print("load T:eecc[abij]",file=f2)
-        print(".INTpp[abij] := T:eecc[abij]",file=f2)
-        print("drop T:eecc[abij]",file=f2)
+        print("load T2:eecc[abij]",file=f2)
+        print(".INTpp[abij] := T2:eecc[abij]",file=f2)
+        print("drop T2:eecc[abij]",file=f2)
         print("store INTpp[abij]",file=f2)
 # Now treated via CODE_BLOCK:
 #else:
