@@ -104,18 +104,23 @@ tensor: OR2:eeaa[abpq], OR2:eeaa
 
 // Orthogonal amplitudes
 //tensor: OT:I[I], OT:I
-//tensor: OT:ac[pi], OT:ac
-//tensor: OT:ec[ai], OT:ec
-//tensor: OT:ea[ap], OT:ea
-//tensor: OT:aacc[pqij], OT:aacc
-//tensor: OT:aaac[pqri], OT:aaac
-//tensor: OT:eacc[apij], OT:eacc
-//tensor: OT:eaac[apqi], OT:eaac
-//tensor: OT:eaca[apiq], OT:eaca
-//tensor: OT:eaaa[apqr], OT:eaaa
-//tensor: OT:eecc[abij], OT:eecc
-//tensor: OT:eeac[abpi], OT:eeac
-//tensor: OT:eeaa[abpq], OT:eeaa
+tensor: OT1:ac[pi], !Create{type:plain}
+tensor: OT1:ec[ai], !Create{type:plain}
+tensor: OT1:ea[ap], !Create{type:plain}
+tensor: OT2:aacc[Kij], !Create{type:plain}
+//tensor: OT2:aaac[pqri], !Create{type:plain}
+tensor: OT2:eacc[apij], !Create{type:plain}
+tensor: OT2:eaac[aiK], !Create{type:plain}
+tensor: OT2:eaca[aiK], !Create{type:plain}
+//tensor: OT2:eaaa[apqr], !Create{type:plain}
+tensor: OT2:eeac[abpi], !Create{type:plain}
+tensor: OT2:eeaa[abK], !Create{type:plain}
+
+tensor: R1SCR[ai], !Create{type:plain}
+tensor: R2SCR[abij], !Create{type:plain}
+
+tensor: Tmp1[], !Create{type:plain}
+tensor: Tmp2[], !Create{type:plain}
 
 // Active preconditioner blocks
 tensor: A1[pp],    !Create{type:disk; sym:+01}

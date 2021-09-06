@@ -39,6 +39,10 @@
       integer, external ::
      &     idx_oplist2
 
+      ! for timings:
+      real(8) ::
+     &     cpu, wall, sys, cpu0, wall0, sys0
+
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,
      &       'here speaks form_sum_terms')
@@ -46,6 +50,8 @@
         write(lulog,*) ' f_output = ',trim(f_output%label)
         write(lulog,*) ' thresh   = ',thresh
       end if
+
+      call atim_csw(cpu0,sys0,wall0)
 
       same = trim(f_input%label).eq.trim(f_output%label)
 
@@ -66,6 +72,11 @@
       call write_form_list(f_output%fhand,flist,title)
 
       call dealloc_formula_list(flist)
+
+      call atim_csw(cpu,sys,wall)
+      call prtim(lulog,'Sum terms',
+     &     cpu-cpu0,sys-sys0,wall-wall0)
+
       
       return
       end

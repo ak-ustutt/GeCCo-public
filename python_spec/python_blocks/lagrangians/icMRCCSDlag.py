@@ -13,6 +13,52 @@ from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
 import ref_relaxation
 
+
+#===================================================================================#
+# quick helper routine
+#===================================================================================#
+def create_plist(n1,sym1,n2,sym2):
+    plist = []
+    # create an entry with all set to sym2
+    entry0 = []
+    for ii in range(n1+n2):
+        entry0.append(sym2)
+
+    #print('e0:', entry0)
+    make_plist_rec(entry0,sym1,0,0,n1,plist)
+    
+    return plist
+    
+def make_plist_rec(curentry,sym,curlevel,iimin,maxlevel,plist):
+    
+    #print('>> entered level ',curlevel,' of ',maxlevel)
+    
+    newentry = list(curentry)
+    
+    if (iimin>len(newentry)):
+        return
+
+    if (curlevel==maxlevel):
+        #print ('===========> writing ',newentry)
+        plist.append(newentry)
+        return
+    
+    for ii in range(iimin,len(newentry)):
+        
+        
+        if newentry[ii]!=sym:
+            vnewentry = list(newentry)
+            vnewentry[ii] = sym
+
+            #print('level: ',curlevel,' ii = ',ii,vnewentry)
+            
+            make_plist_rec(vnewentry,sym,curlevel+1,ii,maxlevel,plist)
+        #else:
+        #    print ('level: ',curlevel,'ii = ',ii)
+
+#===================================================================================#
+
+
 i_am="icMRCCSDlag.py"
 
 new_target('DEF_FORM_MRCC_LAG')
@@ -54,6 +100,7 @@ tasks=False
 nc_en=4
 nc_rs=4
 select=True     # for nc_rs>2: select terms that contribute in SR case
+#select = False
 #linear = True
 doublet = False
 cas22 = True
@@ -110,7 +157,31 @@ if nc_rs > 2:
         LAG_A1.append(_L1_refexp("1/6*[[[H,T1+T2],T1+T2],T1+T2]"))
 if nc_rs > 3:
     if not select:
-        LAG_A1.append(_L1_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
+        for nsingles in range(5):
+            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+            for entryT in listT:
+                print "Generating: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+                LAG_A1.append(_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
+
+#        LAG_A1.append(_L1_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 4:
+    if not select:
+        for nsingles in range(6):
+            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
+            for entryT in listT:
+                print "Generating: "+_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
+                LAG_A1.append(_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
+#        LAG_A1.append(_L1_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 5:
+    if not select:
+        LAG_A1.append(_L1_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+# I think that singles can accomodate at most 6-fold
+#if nc_rs > 6:
+#    if not select:
+#        LAG_A1.append(_L1_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 7:
+#    if not select:
+#        LAG_A1.append(_L1_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
 
 LAG_A2.append(_L2_refexp("[H,T1]"))
 LAG_A2.append(_L2_refexp("[H,T2]"))
@@ -128,10 +199,37 @@ if nc_rs > 3:
     if select:
         LAG_A2.append(_L2_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
     else:
-        LAG_A2.append(_L2_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
+        for nsingles in range(5):
+            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+            for entryT in listT:
+                print "Generating: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+                LAG_A2.append(_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
 
+        #LAG_A2.append(_L2_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 4:
+    if not select:
+        for nsingles in range(6):
+            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
+            for entryT in listT:
+                print "Generating: "+_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
+                LAG_A2.append(_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
+
+       # LAG_A2.append(_L2_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 5:
+    if not select:
+        LAG_A2.append(_L2_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 6:
+    if not select:
+        LAG_A2.append(_L2_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+if nc_rs > 7:
+    if not select:
+        LAG_A2.append(_L2_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+
+PRINT({STRING:"Now expanding energy"})
 LAG_E.set_rule()
+PRINT({STRING:"Now expanding singles projection"})
 LAG_A1.set_rule()
+PRINT({STRING:"Now expanding doubles projection"})
 LAG_A2.set_rule()
 
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2','T2g']})
@@ -338,7 +436,41 @@ if (I3ext):
         LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'F_INT3ext'})
 
-    PRINT_FORMULA({LABEL:'FORM_MRCC_RES2_0',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
+# experimental area:
+HGamma = False
+if (HGamma):
+    DEF_OP_FROM_OCC({LABEL:'INT_HGAM',JOIN:2,DESCR:',;[HPV],[HPV]|,V;[PV],|,V;,H|,V;[HPV]V,[HPV]|,V;[HPV]P,[HV]|,V;[HPV],[HPV]H|,VV;[PV][PV],|,VV;[PV],H|,VV;,HH'})
+    HGproto = stf.Formula("F_HGprotoL:MRCC_LAG="+_L2_refexp("[H,T1]"))
+    HGproto.set_rule()
+    FACTOR_OUT({
+        LABEL_IN:'F_HGprotoL',
+        LABEL_RES:'F_HGprotoL',
+        INTERM:'FORM_GAM0'})
+
+    PRINT_FORMULA({LABEL:'F_HGprotoL',MODE:'SHORT'})
+
+    DERIVATIVE({LABEL_IN:'F_HGprotoL',
+        LABEL_RES:'F_HGprotoO',OP_RES:'O2g',OP_DERIV:'L2'})
+    DERIVATIVE({LABEL_IN:'F_HGprotoO',
+        LABEL_RES:'F_HGAM',OP_RES:'INT_HGAM',OP_DERIV:'T1'})
+    SUM_TERMS({LABEL_IN:'F_HGAM',LABEL_RES:'F_HGAM'})
+    REORDER_FORMULA({LABEL_IN:'F_HGAM',LABEL_RES:'F_HGAM'})
+    
+    PRINT_FORMULA({LABEL:'F_HGAM',MODE:'SHORT'})
+
+    FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_A1',
+        LABEL_RES:'FORM_MRCC_LAG_A1',
+        INTERM:'F_HGAM'})
+
+    FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_LAG_A2',
+        INTERM:'F_HGAM'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 
 # now creating the actual residuals
@@ -388,14 +520,20 @@ if (remove_gamma0):
 
     
 if (I3ext):
-    OPTIMIZE({
-        LABEL_OPT:'FOPT_MRCC_LAG',
-        LABELS_IN:['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
+    _opt_label_list = ['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
 else:
+    _opt_label_list = ['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']
     
-    OPTIMIZE({
+#    OPTIMIZE({
+#        LABEL_OPT:'FOPT_MRCC_LAG',
+#        LABELS_IN:['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
+
+    
+OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
-        LABELS_IN:['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
+        LABELS_IN:_opt_label_list})
 
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_RES1',MODE:'SHORT'}) # only dummy
@@ -414,8 +552,20 @@ elif cas22:
 filename2 = filename + '.formulae'
 filename = filename + '.itfaa'
 
-if (I3ext):
-    TRANSLATE_ITF({
+#    TRANSLATE_ITF({
+#        LABEL:'FOPT_MRCC_LAG',
+#        OUTPUT:filename,
+#        TITLE:filename2,
+#        MULTI:True,
+#        PROCESS:True,
+#        KEXT:True,
+#        TASKS:tasks,
+#        INIT_RES:False,
+#        ITIN:True,
+#        RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
+#        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']})
+
+TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:filename,
         TITLE:filename2,
@@ -426,20 +576,7 @@ if (I3ext):
         INIT_RES:False,
         ITIN:True,
         RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
-        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']})
-else:
-    TRANSLATE_ITF({
-        LABEL:'FOPT_MRCC_LAG',
-        OUTPUT:filename,
-        TITLE:filename2,
-        MULTI:True,
-        PROCESS:True,
-        KEXT:True,
-        TASKS:tasks,
-        INIT_RES:False,
-        ITIN:True,
-        RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
-        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']})
+        CODE:_itf_code_list})
 
 #-----
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')

@@ -148,7 +148,8 @@
 
            if (e > 0) then
              write(lulog,*) "Error in executing simplify.py"
-             call quit(1,'Please check the bcontr.tmp file')
+             call quit(1,'form_itf>simplify.py',
+     &            'Please check the bcontr.tmp file')
            end if
 
 
@@ -164,7 +165,8 @@
 
            if (e > 0) then
              write(lulog,*) "Error in executing remove_extra_lines.py"
-             call quit(1,'Please check the bcontr2.tmp file')
+             call quit(1,'form_itf>remove_extra_linexs.py',
+     &            'Please check the bcontr2.tmp file')
            end if
 
 
@@ -183,7 +185,8 @@
 
            if (e > 0) then
              write(lulog,*) "Error in executing process.py"
-             call quit(1,'Please check the bcontr3.tmp file')
+             call quit(1,'form_itf>process.py',
+     &            'Please check the bcontr3.tmp file')
            end if
 
 
@@ -200,7 +203,8 @@
 
            if (e > 0) then
              write(lulog,*) "Error in executing simplify.py"
-             call quit(1,'Please check the tasks.tmp file')
+             call quit(1,'form_itf>simplify.py',
+     &            'Please check the tasks.tmp file')
            end if
 
            exe_line=
@@ -214,8 +218,9 @@
      &              cpu-cpu0,sys-sys0,wall-wall0)
 
            if (e > 0) then
-             write(lulog,*) "Error in executing remove_exta_lines.py"
-             call quit(1,'Please check the tasks2.tmp file')
+             write(lulog,*) "Error in executing remove_extra_lines.py"
+             call quit(1,'form_itf>remove_extra_lines.py',
+     &            'Please check the tasks2.tmp file')
            end if
 
            exe_line=
@@ -230,7 +235,8 @@
 
            if (e > 0) then
              write(lulog,*) "Error in executing remove_exta_lines2.py"
-             call quit(1,'Please check the tasks3.tmp file')
+             call quit(1,'form_itf>remove_extra_lines2.py',
+     &            'Please check the tasks3.tmp file')
            end if
 
 
@@ -247,8 +253,9 @@
      &              cpu-cpu0,sys-sys0,wall-wall0)
 
            if (e > 0) then
-             write(lulog,*) "Error in executing process.py"
-             call quit(1,'Please check the tasks4.tmp file')
+             write(lulog,*) "Error in executing process_tasks.py"
+             call quit(1,'form_itf>process_tasks.py',
+     &            'Please check the tasks4.tmp file')
            end if
          end if
 
@@ -266,7 +273,8 @@
 
          if (e > 0) then
             write(lulog,*) "Error in executing reduce.py"
-            call quit(1,'Please check the ITF algo file')
+            call quit(1,'form_itf>reduce.py',
+     &           'Please check the ITF algo file')
          end if
 
          exe_line='mv tmp.itfaa '//trim(name_out)
@@ -275,7 +283,8 @@
 
          if (e > 0) then
             write(lulog,*) "Error in renaming files"
-            call quit(1,'Please check the ITF algo file')
+            call quit(1,'form_itf>mv',
+     &           'Please check the ITF algo file')
          end if
       end if
 

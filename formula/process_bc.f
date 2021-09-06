@@ -91,7 +91,8 @@
      &     nvtx, narc, ngas, nsym, idum, target, command, nidx,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
-     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2
+     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2,
+     &     iscal
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
@@ -395,6 +396,10 @@ c     &        'operator with zero length?')
           if (reo_other)  factor = factor+reo_factor
           if (reo_op1op2) factor = factor+reo_factor
 
+          ! get a penalty for large intermediates
+          !iscal = max(1,sum(iscale(1:ngastp,2))-3)
+          !factor = factor*2d0**dble(iscal)
+          
           cost(1) = cost(1)+flops*factor
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)

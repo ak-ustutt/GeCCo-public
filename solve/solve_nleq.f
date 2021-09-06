@@ -49,7 +49,7 @@ c dbgend
       include 'molpro_out.h'
 
       integer, parameter ::
-     &     ntest = 1000
+     &     ntest = 000
       character(len=*),parameter::
      &     i_am = "solve_nleq"
 

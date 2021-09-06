@@ -1657,8 +1657,8 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 c      if (actual_spin_cases<=1) write(item%out,*) 'Only 0 spin cases?',
 c     &     item%nspin_cases
-      if (actual_spin_cases<=1)
-     &     call warn('ITF:print_spin_cases','less than 2 spin cases')
+c      if (actual_spin_cases<=1)
+c     &     call warn('ITF:print_spin_cases','less than 2 spin cases')
 
       do j = 1, actual_spin_cases -1
 
@@ -1720,6 +1720,7 @@ c     &     item%nspin_cases
 
       use itf_utils
       implicit none
+      include 'stdunit.h' ! for low-level debug
       include 'opdim.h'
       include 'mdef_operator_info.h' ! For def_formular_item.h
       include 'def_contraction.h'
@@ -5153,6 +5154,10 @@ c       end if
                               item%t_spin(3)%spin(1,3) = i
                               do j = 1, 2
                                  item%t_spin(3)%spin(2,3) = j
+                                 if (item%rank3>6)
+     &                                call quit(1,
+     &                                'command_to_ift>assign_spin',
+     &                                'adapt for rank>6')
                                  ! Assign spin of external indicies to T1 and T2
                                  item%t_spin(1)%spin = 0
                                  item%t_spin(2)%spin = 0
@@ -5735,6 +5740,7 @@ c       end if
 
       implicit none
 
+      include 'stdunit.h'
       include 'opdim.h'
       include 'def_contraction.h'
       include 'def_itf_contr.h'
@@ -5767,7 +5773,6 @@ c       end if
       end do
 
       label = spin_name
-
       return
       end
 
