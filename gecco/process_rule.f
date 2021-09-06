@@ -64,7 +64,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps, trplt, inv,
+     &     use_1,trnsps, trplt, inv, split,
      &     multi,    ! Multireference or single reference ITF code
      &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
@@ -548,10 +548,11 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_form(form0_pnt,trim(label),OLD)
         call get_arg('INTERM',rule,tgt_info,
      &       val_label_list=label_list,ndim=nint)
+        call get_arg('SPLIT',rule,tgt_info,val_log=split)
         call get_arg('TITLE',rule,tgt_info,val_str=title)
         call form_factor_out(form_pnt,form0_pnt,
      &       title,
-     &       nint,label_list,
+     &       nint,label_list,split,
      &       op_info,form_info
      &       )
 *----------------------------------------------------------------------*

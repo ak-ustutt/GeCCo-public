@@ -220,7 +220,7 @@ c        call quit(1,DEF_FORMULA,'not yet')
         form0_pnt => form_info%form_arr(jdx)%form
         call form_factor_out(form_pnt,form0_pnt,
      &       title,
-     &       nint,rule%labels(ioff+2),
+     &       nint,rule%labels(ioff+2),.false.,
      &       op_info,form_info
      &       )
       case(SUM_HERMIT)

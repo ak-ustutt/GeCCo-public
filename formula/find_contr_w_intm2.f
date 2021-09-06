@@ -1,7 +1,7 @@
 *----------------------------------------------------------------------*
       subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
      &                             fl_tgt,fpl_intm,iposs,
-     &                             nmod_max,nmod,imod,xmod,
+     &                             nmod_max,nmod,imod,xmod,split,
      &                             op_info)
 *----------------------------------------------------------------------*
 *
@@ -14,8 +14,14 @@
 *     originating from T0*I_j (i/=j)
 *     
 *     slightly improved version: allows factorization of intermediates
-*       which imply symmetrization of external lines in their defining
-*       formula (like Ttilde(iajb) = T(iajb) + T(ia)T(jb))
+*     which imply symmetrization of external lines in their defining
+*     formula (like Ttilde(iajb) = T(iajb) + T(ia)T(jb))
+*
+*     split = true ... allow for more flexible factor out, i.e. if factors
+*                   do not fit, only a part of the term is factored out
+*                   e.g.
+*
+*           target (a+b)  and  ac + 3/2 bc =>  (a+b)*c + 1/2 bc
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -39,6 +45,8 @@
      &     nmod, imod(nmod_max)
       real(8), intent(out) ::
      &     xmod(nmod_max)
+      logical, intent(in) ::
+     &     split
       type(formula_item), target, intent(in) ::
      &     fl_tgt
       type(formula_item_list), intent(out), target ::
@@ -247,8 +255,8 @@ c              print *,'assigned: ',assigned(1:nterms_gen)
 c              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
 c              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
 c dbg
-              if (cmp_contr(fl_tgt_pnt%contr,
-     &                      fl_t0_i_pnt%contr,.false.)) then
+c              if (cmp_contr(fl_tgt_pnt%contr,
+c     &                      fl_t0_i_pnt%contr,.false.)) then
 
 c      If you wish to factor out two identical intermediates in a term,
 c      e.g. 1/2*(a+b)(a+b), comment out the previous two lines
@@ -256,9 +264,9 @@ c      and comment in the following three lines
 c      and the paragraph titled "would factor have to be changed?"
 c      Then factor out (a+b) twice. This should lead to
 c      1/2*aa+ab+1/2*bb --> 1/2*a(a+b)+1/2*b(a+b) --> 1/2*(a+b)(a+b)
-c              if (cmp_contr(fl_tgt_pnt%contr,
-c     &                      fl_t0_i_pnt%contr,.true.)
-c     &            .and.nmod.lt.nmod_max) then
+              if (cmp_contr(fl_tgt_pnt%contr,         ! if split==true -> be more flexible
+     &                      fl_t0_i_pnt%contr,split)  !   no need to exactly match factor
+     &            .and.nmod.lt.nmod_max) then
 
 c dbg
 c                print *,'OK!'
@@ -273,17 +281,18 @@ c dbg
                 end if
 c      Please don't delete, could be of use (see comment above)
 c                ! would factor have to be changed?
-c                if (abs(fl_tgt_pnt%contr%fac-fl_t0_i_pnt%contr%fac)
-c     &              .ge.1d-12) then
-c                  if (nfound.eq.1) call quit(1,'find_contr_w_intm2',
-c     &                 'factor change of leading term needed')
-c                  nmod = nmod + 1
-c                  if (nmod.eq.nmod_max) call warn('find_contr_w_intm2',
-c     &            'consider increasing nmod_max in factor_out_subexpr2')
-c                  imod(nmod) = nfound
-c                  xmod(nmod) = fl_tgt_pnt%contr%fac
-c     &                         - fl_t0_i_pnt%contr%fac
-c                end if
+                if (abs(fl_tgt_pnt%contr%fac-fl_t0_i_pnt%contr%fac)
+     &              .ge.1d-12) then
+c this is not a problem:
+c                 if (nfound.eq.1) call quit(1,'find_contr_w_intm2',
+c     &                 'factor change of leading term needed')  ! this should not happen
+                  nmod = nmod + 1
+                  if (nmod.eq.nmod_max) call warn('find_contr_w_intm2',
+     &            'consider increasing nmod_max in factor_out_subexpr2')
+                  imod(nmod) = nfound
+                  xmod(nmod) = fl_tgt_pnt%contr%fac
+     &                         - fl_t0_i_pnt%contr%fac
+                end if
                 fpl_found_pnt%item => fl_tgt_pnt
                 ! all terms found? let's go
                 success2 =  nfound.eq.nterms_gen
@@ -374,10 +383,10 @@ c                end if
       end if
 
       call dealloc_contr(contr_t0)
-      if (nmod_max.gt.0) then
-        imod(1)=0
-        xmod(1)=0d0
-      end if
+      !if (nmod_max.gt.0) then
+      !  imod(1)=0
+      !  xmod(1)=0d0
+      !end if
 
       return
       end

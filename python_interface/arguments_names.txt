@@ -129,6 +129,7 @@ SET_X log
 SHIFT real
 SOLVER str
 SPECIES int
+SPLIT log
 STRING str
 SWITCH int
 TASKS log

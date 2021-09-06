@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine factor_out_subexpr2(fl_tgt,fl_intm,nrpl,op_info)
+      subroutine factor_out_subexpr2(fl_tgt,fl_intm,split,
+     &                               nrpl,nspl,op_info)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
@@ -7,6 +8,7 @@
 *     modify fl_tgt accordingly
 *     on output: a reduced formula on fl_tgt, 
 *                the number of replacements on nrpl (info)
+*                the number of splits of expressions (info)
 *----------------------------------------------------------------------*
       implicit none
 
@@ -26,13 +28,15 @@
       type(formula_item), target, intent(inout) ::
      &     fl_tgt
       integer, intent(out) ::
-     &     nrpl
+     &     nrpl, nspl
+      logical, intent(in) ::
+     &     split
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
 
       integer, parameter ::
-     &     nmod_max = 10
+     &     nmod_max = 1024
       integer ::
      &     nterms, nposs, idxop_tgt, iblk_tgt, iterm, iblk_int,
      &     nmod, idx, imod(nmod_max)
@@ -61,7 +65,8 @@
         write(lulog,*) '==================================='
       end if
 
-      nrpl = 0   
+      nrpl = 0
+      nspl = 0
 
       call init_contr(contr_rpl)
 
@@ -106,7 +111,7 @@ c dbgend
      &       call quit(1,'factor_out_subexpr2','I''m confused ...')
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
-        if (ntest.ge.100) then
+        if (ntest.ge.1000) then
           write(lulog,*) 'current term:'
           call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
@@ -122,7 +127,12 @@ c dbgend
         call find_possible_subexpr(nposs,fpl_intm_start,
      &       fl_tgt_current,fl_intm,op_info)
 
-        if (ntest.ge.100) then
+        if (ntest.ge.1000) then
+          write(lulog,*) '# of possible replacements: ',nposs
+        end if
+        if (ntest.ge.100.and.ntest.lt.1000.and.nposs.gt.0) then
+          write(lulog,*) 'found this term:'
+          call prt_contr2(lulog,fl_tgt_current%contr,op_info)
           write(lulog,*) '# of possible replacements: ',nposs
         end if
 
@@ -165,7 +175,7 @@ c dbgend
             ! contr_rpl
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
      &         fl_tgt_current,fpl_intm_c2blk,iposs_blk(iblk_int),
-     &         nmod_max,nmod,imod,xmod,
+     &         nmod_max,nmod,imod,xmod,split,
      &         op_info)
 
             if (ntest.ge.100.and..not.success) then
@@ -186,8 +196,10 @@ c dbgend
               do while(associated(fpl_intm_in_tgt_pnt%next))
                 fpl_intm_in_tgt_pnt => fpl_intm_in_tgt_pnt%next
                 iterm = iterm + 1
-                idx = idxlist(iterm,imod,nmod,1)
+                idx = idxlist(iterm,imod,nmod,1)  ! is the current term on the list?
                 if (idx.gt.0) then ! just change factor
+                  nspl = nspl + 1 ! report this as "split"
+                  if (ntest.ge.100) write(lulog,*) 'splitting active'
                   fpl_intm_in_tgt_pnt%item%contr%fac = xmod(idx)
                   cycle
                 end if

@@ -255,6 +255,8 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',FACTOR_OUT,'INTERM',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',FACTOR_OUT,'SPLIT',0,tgt_info,
+     &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',FACTOR_OUT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
