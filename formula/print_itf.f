@@ -7,6 +7,7 @@
       implicit none
 
       include 'opdim.h'
+      include 'stdunit.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
@@ -32,8 +33,19 @@
      &     fl_item                              ! Current formula_item
       type(operator), pointer ::
      &     op
+      logical ::
+     &     last_was_reo                         ! last command was a pure [REORDER]
       integer ::
-     &     counter(4), cnt                      ! Counter array, 1 helper variable
+     &     counter(4), cnt      ! Counter array, 1 helper variable
+      integer, parameter ::
+     &     maxreo = 1
+      integer ::
+     &     nreo,
+     &     occ_shift(ngastp,2,maxreo), from_to(2,maxreo)
+      real(8) ::
+     &     fact_reo
+      character(len=maxlen_bc_label) ::
+     &     label_op_ori, label_op_reo
       integer ::
      &   inter_itype(MAXINT,INDEX_LEN),         ! Store intermediate index-type (itype) info from previous line
      &   ii, idx_code, idx
@@ -64,6 +76,8 @@
 
       idx_code = 0
 
+      last_was_reo = .false.
+
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
@@ -72,10 +86,12 @@
      &       fl_item%command==command_add_bc .or.
      &       fl_item%command==command_bc .or.
      &       fl_item%command==command_bc_reo .or.
-     &       fl_item%command==command_add_bc_reo) then
+     &       fl_item%command==command_add_bc_reo .or.
+     &       fl_item%command==command_add_reo ) then
 
             if (fl_item%command==command_bc_reo .or.
-     &          fl_item%command==command_add_bc_reo ) then
+     &          fl_item%command==command_add_bc_reo .or.
+     &          fl_item%command==command_add_reo) then
               ! patch the result of the contraction with the reordered intermediate info
               ! itf_index_info is already set up correctly
               if (fl_item%bcontr%nj_res < fl_item%reo%nj_out)
@@ -85,12 +101,16 @@
      &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
             end if
 
-! dbg
-c            if (fl_item%command==command_add_bc_reo) then
-c              call prt_bcontr(itflog,fl_item%bcontr)
-c              call prt_reorder(itflog,fl_item%reo)
-c            end if
-! dbg              
+            ! check if there is info about previous 1reordering on the list
+            if (last_was_reo) then
+              last_was_reo = .false.
+              !write(itflog,'(1x,"patching with: (nreo = ",i4,")")') nreo
+              !call wrt_occ_n(itflog,occ_shift,nreo)
+              call patch_bcontr_for_reo(fl_item%bcontr,
+     &             label_op_ori, label_op_reo, from_to, occ_shift,
+     &             nreo)
+              !write(itflog,'(1x,"patched!")')
+            end if
 
             call command_to_itf(fl_item%bcontr,itin,itflog,
      &                          fl_item%command, inter_itype,
@@ -110,19 +130,41 @@ c            call prt_bcontr(itflog,fl_item%bcontr)
 c            call prt_reorder(itflog,fl_item%reo)
 c            call warn('print_itf',
 c     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
-         else if (fl_item%command==command_add_reo) then
-            write(itflog,*) '[REORDER][ADD]',
-     &           fl_item%target
-            call prt_bcontr(itflog,fl_item%bcontr)
-            call prt_reorder(itflog,fl_item%reo)
-            call warn('print_itf',
-     &           'uncovered case appeared: [REORDER][ADD] ')
+c         else if (fl_item%command==command_add_reo) then
+c            write(itflog,*) '[REORDER][ADD]',
+c     &           fl_item%target
+c            call prt_bcontr(itflog,fl_item%bcontr)
+c            call prt_reorder(itflog,fl_item%reo)
+c            call warn('print_itf',
+c     &           'uncovered case appeared: [REORDER][ADD] ')
          else if (fl_item%command==command_reorder) then
-            write(itflog,*) '[REORDER]',
-     &           fl_item%target
-            call prt_reorder(itflog,fl_item%reo)
-            call warn('print_itf',
-     &           'uncovered case appeared: [REORDER] ')
+!     save here info about reordered operator
+            if (last_was_reo) then
+              call quit(1,'print_itf',
+     &             'did not expect double reordering')
+            end if
+            last_was_reo = .true.
+            label_op_ori = fl_item%reo%label_in
+            label_op_reo = fl_item%reo%label_out
+            if (fl_item%reo%nj_in.ne.fl_item%reo%nj_out) then
+              call quit(1,'print_itf',
+     &             'mismatch of nj!')
+            end if
+            nreo = fl_item%reo%nreo+fl_item%reo%nreo_i0
+            if (nreo.gt.maxreo) then
+              call quit(1,'print_ift',
+     &             'maxreo restricted to max. tested case. Extend!')
+            end if
+            from_to(1:2,1:nreo) = fl_item%reo%from_to(1:2,1:nreo)
+            occ_shift(1:ngastp,1:2,1:nreo) =
+     &           fl_item%reo%occ_shift(1:ngastp,1:2,1:nreo)
+            !fact_reo = dble(fl_item%reo%sign) factor should not change as the reordering step does not change our
+                                             ! previous interpretation of the diagram
+c            write(itflog,*) '[REORDER]',
+c     &           fl_item%target
+c            call prt_reorder(itflog,fl_item%reo)
+c            call warn('print_itf',
+c     &           'uncovered case appeared: [REORDER] ')
          else if (fl_item%command==command_symmetrise) then
             write(itflog,*) '[SYMMETRISE]',fl_item%target
             call warn('print_itf',
@@ -182,4 +224,60 @@ c     &           'uncovered case appeared: [CONTRACT][REORDER][ADD] ')
       end do
 
       return
+
+      contains
+
+      subroutine patch_bcontr_for_reo(bcontr,
+     &             label_op_ori, label_op_reo, from_to, occ_shift,
+     &             nreo)
+      ! patch bcontr such that the info about the reordered operator is transformed back to that of the original one
+      
+      type(binary_contr), intent(inout) ::
+     &     bcontr
+      character(len=*), intent(in) ::
+     &     label_op_ori, label_op_reo
+      integer, intent(in) ::
+     &     nreo,
+     &     from_to(2,nreo),
+     &     occ_shift(ngastp,2,nreo)
+      integer ::
+     &     ii
+
+      ! check, which of the operators to patch
+      if (trim(label_op_reo)==trim(bcontr%label_op1)) then
+        bcontr%label_op1 = label_op_ori
+        do ii = 1, nreo
+          bcontr%occ_op1(:,:,from_to(1,ii)) =
+     &         bcontr%occ_op1(:,:,from_to(1,ii)) + occ_shift(:,:,ii)
+          bcontr%occ_op1(:,:,from_to(2,ii)) =
+     &         bcontr%occ_op1(:,:,from_to(2,ii)) - occ_shift(:,:,ii)
+          bcontr%occ_ex1(:,:,from_to(1,ii)) =
+     &         bcontr%occ_ex1(:,:,from_to(1,ii)) + occ_shift(:,:,ii)
+          bcontr%occ_ex1(:,:,from_to(2,ii)) =
+     &         bcontr%occ_ex1(:,:,from_to(2,ii)) - occ_shift(:,:,ii)
+        end do
+      else if (trim(label_op_reo)==trim(bcontr%label_op2)) then
+        bcontr%label_op2 = label_op_ori
+        do ii = 1, nreo
+          bcontr%occ_op2(:,:,from_to(1,ii)) =
+     &         bcontr%occ_op2(:,:,from_to(1,ii)) + occ_shift(:,:,ii)
+          bcontr%occ_op2(:,:,from_to(2,ii)) =
+     &         bcontr%occ_op2(:,:,from_to(2,ii)) - occ_shift(:,:,ii)
+          bcontr%occ_ex2(:,:,from_to(1,ii)) =
+     &         bcontr%occ_ex2(:,:,from_to(1,ii)) + occ_shift(:,:,ii)
+          bcontr%occ_ex2(:,:,from_to(2,ii)) =
+     &         bcontr%occ_ex2(:,:,from_to(2,ii)) - occ_shift(:,:,ii)
+        end do
+      else
+        write(lulog,*) 'Error: no operator matches with ',
+     &       trim(label_op_reo)
+        write(lulog,*) 'op1, op2: ',
+     &       trim(bcontr%label_op1),
+     &       trim(bcontr%label_op2)
+        write(lulog,*) 'see also last output on bcontr.tmp'
+        call quit(1,'print_itf','problem with [REORDER]')
+      end if
+
+      end subroutine
+      
       end

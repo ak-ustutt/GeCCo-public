@@ -137,7 +137,8 @@ c      end function
      &     check_int
 
       ! Assume these are the names of intermediates
-      if (index(label, "H")>0) then
+cc      if (index(label, "H")>0) then
+      if (trim(label)=="H") then
          check_int=.true.
       else
          check_int=.false.
@@ -668,6 +669,7 @@ c      end function
       use itf_utils
       implicit none
       include 'opdim.h'
+      include 'stdunit.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
@@ -715,8 +717,9 @@ c      end function
       logical, parameter :: new = .true.
 
       if (.not.new) call warn('command_to_itf','running in old mode!')
-
+      
       if (ntest1>=100 .or. ntest2>=100) then
+         write(lulog,*) "DEBUG MODE: look for output in file bcontr.tmp"
          write(itflog,*) "FORMULA NUMBER: ", counter(1)
          call prt_bcontr(itflog,contr_info)
       end if
@@ -738,8 +741,7 @@ c      end function
 
 
       ! 2. Assign index / Determine sign
-      if (new) call assign_index(item,contr_info,ntest2)
-      if (.not.new) call assign_index_old(item,ntest2)
+      call assign_index(item,contr_info,ntest2)
 
 
       ! 3. Determine if we need a permutation line and create new item
@@ -755,6 +757,8 @@ c      end function
 
       if (ntest3>=100) then
          call debug_header("Determine permutation", item%out)
+         write(item%out,'(1x,"contr_info%perm was ",10i4)')
+     &        contr_info%perm(1:ngastp)        
          write(item%out,*) "perm_case: ", perm_case
       end if
 
@@ -774,8 +778,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
             call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                           inter_itype,counter,tasks,new,ntest5)
-            if (new) call assign_index(pitem,contr_info,ntest5)
-            if (.not.new) call assign_index_old(pitem,ntest5)
+            call assign_index(pitem,contr_info,ntest5)
 
             pitem%old_name = pitem%label_res
             pitem%label_res = item%label_res
@@ -794,8 +797,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
          call itf_contr_init(contr_info,pitem,1,itin,command,itflog,
      &                       inter_itype,counter,tasks,new,ntest5)
-         if (new) call assign_index(pitem,contr_info,ntest5)
-         if (.not.new) call assign_index_old(pitem,ntest5)
+         call assign_index(pitem,contr_info,ntest5)
 
          pitem%old_name = pitem%label_res
          pitem%label_res = item%label_res
@@ -870,7 +872,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_contr_init(contr_info,item,perm,itin,comm,lulog,
+      subroutine itf_contr_init(contr_info,item,perm,itin,comm,loclog,
      &                          itype,counter,tasks,use_sign,ntest)
 *----------------------------------------------------------------------*
 !     Initialise ITF contraction object
@@ -892,7 +894,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       integer, intent(in) ::
      &   perm,        ! Permutation information
      &   comm,        ! formula_item command
-     &   lulog,        ! Output file
+     &   loclog,        ! Output file
      &   itype(MAXINT,INDEX_LEN),
      &   counter(4),
      &   ntest
@@ -904,10 +906,14 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       integer ::
      &   i
       character(len=60) ::
-     &   tmp
+     &     tmp
+
+      if (ntest>=100) then
+        call debug_header("itf_contr_init", loclog)
+      end if
 
       ! Assign output file
-      item%out=lulog
+      item%out=loclog
 
       ! Set tasks file
       item%tasks = tasks
@@ -920,14 +926,30 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       item%idx2 = ''
       item%idx3 = ''
 
+      item%binary = .true.
+      if (item%command==command_cp_intm .or.
+     &     item%command==command_add_intm .or.
+     &     item%command==command_add_reo ) then
+         ! For [ADD] and [COPY]
+         ! Not a binary contraction
+         item%binary = .false.
+      end if
+      
       ! Get number of contraction and external indices on each tensor
-      call itf_ops(contr_info, item%c, item%e1, item%e2, item%command)
+      call itf_ops(contr_info, item%c, item%e1, item%e2, item%binary)
 
       ! Set ranks of tensors using matricies from itf_ops
       call itf_rank(item%e1, item%c, item%rank1, item%nops1, .false.)
-      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)
+      call itf_rank(item%e2, item%c, item%rank2, item%nops2, .false.)  ! should be fine for non-binary cmd.
       call itf_rank(item%e1, item%e2, item%rank3, item%nops3, .false.)
 
+      if (ntest>=100) then
+        write(item%out,'(1x,"determined rankX: ",3i6)')
+     &       item%rank1, item%rank2, item%rank3
+        write(item%out,'(1x,"determined nopsX: ",3i6)')
+     &       item%nops1, item%nops2, item%nops3        
+      end if
+      
       ! Set number of contraction indicies
       item%contri = sum(sum(item%c, dim=1))
 
@@ -951,6 +973,9 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       if (.not.use_sign) item%fact = item%fact *abs(contr_info%fact_itf)
       !item%fact = item%fact * contr_info%fact_itf
 
+      if (ntest>=100)
+     &     write(item%out,'(1x,"factor set to: ",f12.6)') item%fact
+
       ! Assign labels
       item%label_t1=contr_info%label_op1
 
@@ -960,53 +985,51 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
          if (.not. item%den(1)) then
             ! Check if an integral
             item%int(1) = check_int(item%label_t1)
-            !if (item%int(1) .and. item%rank1==4) then   !<--- not needed anymore (I think)
-            !   call check_j_integral(item%e1, item%c, item%nops1,
-     &      !                         item%j_int, .false.)
-            !end if
          end if
       end if
 
-      if (item%command/=command_cp_intm .or.
-     &    item%command/=command_add_intm) then
+      ! Operator 2 does not exist in [ADD] or [COPY]
+      if (item%binary) then
 
-         ! Operator 2 does not exist in [ADD] or [COPY]
          item%label_t2=contr_info%label_op2
-
-         ! Assign permutation number
-         item%permute=perm
 
          item%inter(2) = check_inter(item%label_t2)
 
          if (.not. item%inter(2)) then
             if (.not. item%den(2)) then
                item%int(2) = check_int(item%label_t2)
-               !if (item%int(2) .and. item%rank2==4) then !<--- not needed anymore (I think)
-               !   call check_j_integral(item%e2, item%c, item%nops2,
-     &         !                         item%j_int, .true.)
-               !end if
             end if
          end if
+      else
+         item%label_t2="" 
       end if
+
+      ! Assign permutation number
+      item%permute=perm
 
       item%label_res=contr_info%label_res
       item%inter(3) = check_inter(item%label_res)
       item%int(3) = .false.
 
-      call check_symmetric(contr_info, item%command, item%symmetric,
-     &                     item%nosym)
+      item%symm_res = .false. ! do not leave it undefined although never used
+      call check_symmetric(contr_info, item%binary, item%symmetric,
+     &                     item%nosym, item%out)
 
       ! If a residual, is it symmetric (R_{ab}^{ij] = R_{ba}^{ji})?
       if (.not. item%inter(3)) then
-         call check_symmetric(contr_info, item%command, item%symm_res,
-     &                        item%nosym)
+         call check_symmetric(contr_info, item%binary, item%symm_res,
+     &                        item%nosym, item%out)
 
          ! Add factor to account for factor of two when the residual is
          ! symmetrised:
          ! R:eecc[abij] += G:eecc[abij]
          ! R:eecc[abij] += G:eecc[baji]
          if (item%symm_res .and. item%permute==0) then
+            if (contr_info%label_res=='INTpp')
+     &          call quit(1,'command_to_itf','does this happen?')
+            ! dirty explicit reference
             if (contr_info%label_res/='INTpp') then
+               write(item%out,*) "0.5 for ",trim(contr_info%label_res) 
                item%fact = item%fact * 0.5d+0
             end if
          end if
@@ -1014,6 +1037,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
       ! Remove zeorth-body density from equations
+      ! will be redundant soon; direct reference to name is problematic
       if (item%label_t2 == 'GAM0' .and. item%rank2 == 0) then
          item%label_t2 = ''
          item%command = command_add_intm
@@ -1048,13 +1072,6 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
       ! Assign index string. Tensor ranks and number
       ! of operators are also set here
-      if (item%command==command_cp_intm .or.
-     &    item%command==command_add_intm) then
-         ! For [ADD] and [COPY]
-         ! Not a binary contraction
-         item%binary = .false.
-      end if
-
 
       ! TODO: bit of a hack to avoid seg faults for rank == 0
       ! Instead have a check when assiging spins if == 0
@@ -1098,6 +1115,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       item%itype = itype
 
       ! Set K4E info
+      item%k4e_line = .false. ! do not leave it undefined!
       if (item%int(1) .or. item%int(2))then
          call check_k4e(contr_info, item%command, item%k4e_line)
       end if
@@ -1146,7 +1164,6 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
 
 
       if (ntest>=100) then
-         call debug_header("itf_contr_init", item%out)
          call print_itf_contr(item)
       end if
 
@@ -1583,8 +1600,11 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       ! Return if not a symmetric result
       if (.not. item%symmetric) return
 
+c      write(item%out,'(1x,"in prepare_symmetrise: ",2l4)')
+c     &     item%symmetric, item%symm_res
+
       ! Return if INTPP block
-      if (item%intpp) return
+      if (item%intpp) return  ! now deprecated
 
       if (ntest>=100) then
          call debug_header("prepare_symmetrise", item%out)
@@ -2329,6 +2349,7 @@ c without number:
           if (itype(ii+rank/2)==1) exa = exa+1
         end do
         if (exa>exc) then
+          tstr(1:INDEX_LEN) = " "
           ! permute all C and A
           tstr(1:rank/2) = idx(rank/2+1:rank)
           tstr(rank/2+1:rank) = idx(1:rank/2)
@@ -3512,6 +3533,41 @@ c without number:
       end
 
 *----------------------------------------------------------------------*
+      subroutine revert_index_str(str,nidx)
+*----------------------------------------------------------------------*
+*     revert squence (for transposed operator)
+*----------------------------------------------------------------------*
+
+      implicit none
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'def_contraction.h'
+      include 'def_itf_contr.h'
+
+      type(index_str), intent(inout) :: str
+      integer, intent(in) :: nidx
+
+      integer :: idx
+      type(index_str) :: scr_str
+      
+      call init_index_str(scr_str,nidx,1) ! cnt_poss is dummy only
+
+      do idx = 1, nidx
+        scr_str%str(idx) = str%str(idx)
+        scr_str%itype(idx) = str%itype(idx)
+      end do
+
+      do idx = 1, nidx
+        str%str(idx) = scr_str%str(nidx+1-idx)
+        str%itype(idx) = scr_str%itype(nidx+1-idx)
+      end do
+
+      call deinit_index_str(scr_str)
+
+      return
+      end subroutine
+      
+*----------------------------------------------------------------------*
       subroutine set_index_str(str,index_info,nidx)
 *----------------------------------------------------------------------*
 *     use the information on index_info to create an index string
@@ -3682,51 +3738,19 @@ c      write(lulog,'(1x,10a1)') str%str(1:nidx)
      &   ntest
 
       integer ::
-     &   c(ngastp,2),        ! Operator numbers of contraction index
-     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
-     &   e1(ngastp,2),       ! Operator numbers of external index 1
-     &   e2(ngastp,2),       ! Operator numbers of external index 2
-     &   shift,         ! List shift
-     &   sc,         ! List shift
      &   n_cnt,         ! Number of contraction operators
-     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
-     &   distance,      ! Distance from where an index should be
-     &   pp, pp2,            ! Paired position - position of paired index
-     &   i, j, k, l, idx, jdx, ioff, nidx, ncnt,
-     &   v1, v2,
-     &   itype(INDEX_LEN)
+     &   i, idx, jdx, ioff, nidx, ncnt
       character(len=INDEX_LEN) ::
-     &   s1, s2, s3,  ! Tmp ITF index strings
-     &   tstr
-      character(len=50) ::
-     &   constr
+     &   s1, s2, s3  ! Tmp ITF index strings
       character(len=1) ::
      &   tmp       ! Scratch space to store index letter
-      real(8) ::
-     &   p_factor       ! Overall factor from contraction/rearrangment
-      integer, dimension(4) ::
-     &   e_shift,       ! Index shift for external indices
-     &   c_shift        ! Index shift for contraction indices
       type(index_str) ::
      &   str1,          ! Stores 'normal ordered' index string for T1
      &   str2,          ! Stores 'normal ordered' index string for T2
      &   str3           ! Stores 'normal ordered' index string for Res
 
-      logical ::        ! These are used when finding pairs of external ops
-     &   is_cnt,        ! True if the operator is a contraction op
-     &   p1, p2,
-     &   found
-
       if (ntest>=100) call debug_header("assign_index", item%out)
 
-
-      ! Set operator numbers
-      c=item%c
-      e1=item%e1
-      e2=item%e2
-
-      ! Factor due to permuation of annhilation and creation indices
-      p_factor = 1.0d0 ! <-- now unused, can be removed
 
       ! Set number of contraction indicies
       n_cnt = item%contri
@@ -3737,6 +3761,8 @@ c      write(lulog,'(1x,10a1)') str%str(1:nidx)
       call init_index_str(str3, item%rank3, n_cnt)
 
 c     dbg
+c      write(item%out,'(1x,"ranks:",3i6)')
+c     &     item%rank1, item%rank2, item%rank3
 c      write(item%out,'(1x,"index info: ",3i6)')
 c     &     contr_info%itf_index_info(1:3)
 c      write(item%out,'(1x,"o1:  ",10i6)')
@@ -3752,7 +3778,8 @@ c     dbg
       if (contr_info%nj_op1.gt.1)
      &     call normalize_index_str(str1,nidx,
      &     contr_info%occ_op1,contr_info%nj_op1)
-
+      if (contr_info%tra_op1) call revert_index_str(str1,nidx) ! invert sequence if transposition was requested
+      
       ioff = ioff+nidx  ! shift offset by indices of tensor 1
       nidx = contr_info%itf_index_info(2)
       if (nidx.ne.item%rank2)
@@ -3762,6 +3789,7 @@ c     dbg
       if (contr_info%nj_op2.gt.1)
      &     call normalize_index_str(str2,nidx,
      &     contr_info%occ_op2,contr_info%nj_op2)
+      if (contr_info%tra_op2) call revert_index_str(str2,nidx) ! invert sequence if transposition was requested
 
       ioff = ioff+nidx  ! shift offset by indices of tensor 2
       nidx = contr_info%itf_index_info(3)
@@ -3772,6 +3800,7 @@ c     dbg
       if (contr_info%nj_res.gt.1)
      &     call normalize_index_str(str3,nidx,
      &     contr_info%occ_res,contr_info%nj_res)
+      if (contr_info%tra_res) call revert_index_str(str3,nidx) ! invert sequence if transposition was requested
 
 ! get cnt_poss from index matching
       ncnt = 0
@@ -3830,598 +3859,6 @@ c     dbg
          write(item%out,*) "Res: {", str3%str, "}"
          write(item%out,*) "Contraction T1: ", str1%cnt_poss
          write(item%out,*) "Contraction T2: ", str2%cnt_poss
-         write(item%out,*) "Inital factor: ", p_factor
-      end if
-
-
-c     **** I have now removed this, the O->T update code now has an additional minus for the cases
-c     **** R:ea, R:eeac, R:eaac, R:eaca
-c! quick fix: the residuals with one active annihilation need a -1 for conversion to amplitudes
-c!      write(item%out,*) 'label3: ',trim(item%label_res)
-c!      write(item%out,*) 'occ_res(3,2,1): ',contr_info%occ_res(3,2,1)
-c      if (item%label_res(1:1)=='O'.and.contr_info%occ_res(3,2,1)==1)
-c     &     then
-c!        write(item%out,*) 'switching sign!'
-c        call warn('assign_index','fix for R active!! '//
-c     &                                trim(item%label_res))
-c        p_factor = p_factor * -1d0
-c      end if
-c      ! Due to how the R:ea residual is defined, {p a^+} instead of
-c      ! {a^+ p}, we need an extra minus to flip the normal ordered
-c      ! string.
-c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-c         if (.not. item%inter(3)) then
-c
-c            p_factor = p_factor * -1.0d0
-c            if (ntest>100) then
-c               write(item%out,*) "Update factor (R:ea)", p_factor
-c            end if
-c         end if
-c      end if
-
-      if (ntest>=100) then
-         write(item%out,*) "Result string in normal order"
-         write(item%out,*) "Res: {", str3%str, "}"
-      end if
-
-
-      ! TODO: put this in reorder_integral
-      if (item%rank1 == 2) then
-         if (str1%itype(1)>str1%itype(2)) then
-            tmp = str1%str(1)
-            str1%str(1) = str1%str(2)
-            str1%str(2) = tmp
-         end if
-      end if
-      if (item%rank2 == 2) then
-         if (str2%itype(1)>str2%itype(2)) then
-            tmp = str2%str(1)
-            str2%str(1) = str2%str(2)
-            str2%str(2) = tmp
-         end if
-      end if
-
-
-      s1 = ""
-      s2 = ""
-      s3 = ""
-
-      do i = 1, item%rank1/2
-         s1(i:i) = str1%str(i)
-         s1(item%rank1/2+i:item%rank1/2+i)=str1%str(item%rank1-(i-1))
-      end do
-      do i = 1, item%rank2/2
-         s2(i:i) = str2%str(i)
-         s2(item%rank2/2+i:item%rank2/2+i)=str2%str(item%rank2-(i-1))
-      end do
-      do i = 1, item%rank3/2
-         s3(i:i) = str3%str(i)
-         s3(item%rank3/2+i:item%rank3/2+i)=str3%str(item%rank3-(i-1))
-      end do
-
-      if (ntest>=100) then
-         if (p_factor>0.0d0) then
-            tmp = '+'
-         else
-            tmp = '-'
-         end if
-
-         write(item%out,*) "Final indices"
-         write(item%out,*) "---------------------------"
-         write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
-     &                         "}{",str2%str,"}"
-
-         write(item%out,*) "[",trim(s3),"] ",tmp,"= [",trim(s1),
-     &                         "][",trim(s2),"]"
-         write(item%out,*) "---------------------------"
-      end if
-
-      item%idx1=trim(s1)
-      item%idx2=trim(s2)
-      item%idx3=trim(s3)
-      item%fact = item%fact * p_factor
-
-
-      call deinit_index_str(str1)
-      call deinit_index_str(str2)
-      call deinit_index_str(str3)
-
-      return
-      end
-
-*----------------------------------------------------------------------*
-      subroutine assign_index_old(item,ntest)
-*----------------------------------------------------------------------*
-!     Assign an ITF index string to each tensor in a line
-*----------------------------------------------------------------------*
-
-      use itf_utils
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      type(itf_contr), intent(inout) ::
-     &   item           ! ITF binary contraction
-      integer, intent(in) ::
-     &   ntest
-
-      integer ::
-     &   c(ngastp,2),        ! Operator numbers of contraction index
-     &   ci(ngastp,2),       ! Operator numbers of contraction index (inverse)
-     &   e1(ngastp,2),       ! Operator numbers of external index 1
-     &   e2(ngastp,2),       ! Operator numbers of external index 2
-     &   shift,         ! List shift
-     &   sc,         ! List shift
-     &   n_cnt,         ! Number of contraction operators
-     &   e1ops, e2ops,  ! Number of external ops on T1 and T2
-     &   distance,      ! Distance from where an index should be
-     &   pp, pp2,            ! Paired position - position of paired index
-     &   i, j, k, l,
-     &   v1, v2,
-     &   itype(INDEX_LEN)
-      character(len=INDEX_LEN) ::
-     &   s1, s2, s3,  ! Tmp ITF index strings
-     &   tstr
-      character(len=50) ::
-     &   constr
-      character(len=1) ::
-     &   tmp       ! Scratch space to store index letter
-      real(8) ::
-     &   p_factor       ! Overall factor from contraction/rearrangment
-      integer, dimension(4) ::
-     &   e_shift,       ! Index shift for external indices
-     &   c_shift        ! Index shift for contraction indices
-      type(index_str) ::
-     &   str1,          ! Stores 'normal ordered' index string for T1
-     &   str2,          ! Stores 'normal ordered' index string for T2
-     &   str3           ! Stores 'normal ordered' index string for Res
-      type(index_str), pointer ::
-     &   op1(:) => null(),
-     &   op2(:) => null()
-
-      logical ::        ! These are used when finding pairs of external ops
-     &   is_cnt,        ! True if the operator is a contraction op
-     &   p1, p2,
-     &   found
-
-      if (ntest>=100) call debug_header("assign_index", item%out)
-
-      allocate(op1(item%nj_op1))
-      allocate(op2(item%nj_op2))
-
-      do i = 1, item%nj_op1
-      call init_index_str(op1(i),item%rank1,
-     &         sum(sum(item%vc1(i,:,:),dim=1)))
-      end do
-      do i = 1, item%nj_op2
-      call init_index_str(op2(i),item%rank2,
-     &         sum(sum(item%vc2(i,:,:),dim=1)))
-      end do
-
-      ! Set operator numbers
-      c=item%c
-      e1=item%e1
-      e2=item%e2
-
-      ! Factor due to permuation of annhilation and creation indices
-      p_factor = 1.0d0
-
-      ! Set number of contraction indicies
-      n_cnt = item%contri
-
-      ! Allocate index_str objects
-      call init_index_str(str1, item%rank1, n_cnt)
-      call init_index_str(str2, item%rank2, n_cnt)
-      call init_index_str(str3, item%rank3, n_cnt)
-
-      ! Set letter shift values for contraction indices
-      do i = 1, 4
-         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
-      end do
-
-      ! Make 'tranpose' of c array, this corresponds to the operators on
-      ! the second tensor
-      do i = 1, 2
-         do j = 1, ngastp
-            if (i==1) then
-               k = 2
-            else
-               k = 1
-            end if
-            ci(j,i) = c(j,k)
-         end do
-      end do
-
-      ! Create an index string for T1 and T2
-      ! e_shift updates after each call - this indexs the external
-      ! operators; c_shift indexes the contraction operators. These are
-      ! needed to ensure the letters are different
-      e_shift = 0
-      call create_index_str(str1,c,e1, c_shift, e_shift, item%rank1,
-     &                      .false.)
-      call create_index_str(str2,ci,e2,c_shift, e_shift, item%rank2,
-     &                      .true.)
-
-      if (ntest>=100) then
-         write(item%out,*) "After create_index_str"
-         write(item%out,*) "T1: {", str1%str, "}"
-         write(item%out,'(3x,a,10i4)') "itpye:    ", str1%itype
-         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str1%cnt_poss
-         write(item%out,*) "T2: {", str2%str, "}"
-         write(item%out,'(3x,a,10i4)') "itpye:    ", str2%itype
-         write(item%out,'(3x,a,10i4)')   "cnt_poss: ", str2%cnt_poss
-      end if
-
-!      e_shift = 0
-!
-!      do i = 1, item%nj_op1
-!         call create_index_str2(op1(i),item%vc1(i,:,:),item%v1(i,:,:),
-!     &                         c_shift,
-!     &                         e_shift, item%rank1, .false.)
-!      !   write(item%out,*) "T1: {", op1(i)%str, "}"
-!      !   write(item%out,*) "Contraction T1: ", op1(i)%cnt_poss
-!      end do
-!
-!      ! Set letter shift values for contraction indices
-!      ! TODO: don't do this twice
-!      do i = 1, 4
-!         c_shift(i) = e1(i,1) + e1(i,2) + e2(i,1) + e2(i,2)
-!      end do
-!
-!      do i = 1, item%nj_op2
-!         call create_index_str2(op2(i),item%vc2(i,:,:),item%v2(i,:,:),
-!     &                         c_shift,
-!     &                         e_shift, item%rank2, .false.)
-!      !   write(item%out,*) "T2: {", op2(i)%str, "}"
-!      !   write(item%out,*) "Contraction T2: ", op2(i)%cnt_poss
-!      end do
-!
-!
-!      if (item%inter(1)) then
-!         call arrange_inter_itype2(item%rank1,item%rank2,op1(1),str2,
-!     &                           item%itype, item%vnops1(i),
-!     &                           item%label_t1)
-!         if (ntest>=100) then
-!            write(item%out,*) "After arragne_inter_itpye, inter(1)"
-!            write(item%out,*) "T1: {", str1%str, "}"
-!            write(item%out,*) "itpye: {", str1%itype, "}"
-!            write(item%out,*) "cnt_poss: ", str1%cnt_poss
-!            write(item%out,*) "previous itype: ", itype
-!         end if
-!      end if
-!      if (item%inter(2)) then
-!         call arrange_inter_itype2(item%rank2,item%rank1,op2(1),str1,
-!     &                       item%itype, item%vnops2(i),
-!     &                       item%label_t2)
-!         if (ntest>=100) then
-!            write(item%out,*) "After arragne_inter_itpye, inter(2)"
-!            write(item%out,*) "T2: {", str1%str, "}"
-!            write(item%out,*) "itpye: {", str1%itype, "}"
-!            write(item%out,*) "cnt_poss: ", str1%cnt_poss
-!            write(item%out,*) "previous itype: ", itype
-!         end if
-!      end if
-
-
-!      shift = 1
-!      sc = 1
-!      constr = ""
-!
-!      v1 = 1
-!      v2 = 1
-!      do k = 1, size(item%vertex)
-!         if (item%vertex(k) == 1) then
-!               do j = 1, item%rank1
-!                  if (associated(op1(v1)%str)) then
-!                     if (op1(v1)%str(j) /= " ") then
-!                        constr(shift:shift) = op1(v1)%str(j)
-!
-!                        shift = shift + 1
-!                     end if
-!                  end if
-!               end do
-!               v1 = v1 + 1
-!
-!         else
-!               sc = 1
-!               do j = 1, item%rank2
-!                  if (associated(op2(v2)%str)) then
-!                     if (op2(v2)%str(j) /= " ") then
-!                        constr(shift:shift) = op2(v2)%str(j)
-!
-!                        shift = shift + 1
-!                     end if
-!                  end if
-!               end do
-!               v2 = v2 + 1
-!         end if
-!      end do
-!
-!
-!      write(item%out,*) "constr: ", trim(constr)
-!
-!      shift = 1
-!      do i = 1, item%rank1 + item%rank2
-!         do j = i + 1, item%rank1 + item%rank2
-!            if (constr(i:i) == constr(j:j)) then
-!               !write(item%out,*) "distance ", j - i - 1
-!               if (mod(j-i-1,2)/=0)then
-!                  p_factor = p_factor * -1.0d0
-!               end if
-!               exit
-!            end if
-!         end do
-!      end do
-!
-!      do i = 1, item%rank1 + item%rank2
-!         do j = i + 1, item%rank1 + item%rank2
-!            if (constr(i:i) == constr(j:j)) then
-!               constr(i:i) = " "
-!               constr(j:j) = " "
-!               exit
-!            end if
-!         end do
-!      end do
-!
-!      shift = 1
-!      do i = 1, item%rank1 + item%rank2
-!         if (constr(i:i) /= " ") then
-!            str3%str(shift) = constr(i:i)
-!            shift = shift + 1
-!         end if
-!      end do
-!
-!      write(item%out,*) "hello ", str3%str
-!
-!
-!      if (ntest>=100) then
-!         write(item%out,*) "Inital index strings in normal order"
-!         write(item%out,*) "T1: {", str1%str, "}"
-!         write(item%out,*) "T2: {", str2%str, "}"
-!         write(item%out,*) "Res: {", str1%str, "}{", str2%str, "}"
-!         write(item%out,*) "Contraction T1: ", str1%cnt_poss
-!         write(item%out,*) "Contraction T2: ", str2%cnt_poss
-!         write(item%out,*) "Inital factor: ", p_factor
-!      end if
-
-
-      ! Rearrange intermediate index to matach previously declared inter
-      ! index. This uses the itype array from the previous lines
-      if (item%inter(1)) then
-         call arrange_inter_itype(item%rank1,item%rank2,str1,str2,
-     &                           item%itype, item%label_t1, item%out)
-         if (ntest>=100) then
-            write(item%out,*) "After arragne_inter_itpye, inter(1)"
-            write(item%out,*) "T1: {", str1%str, "}"
-            write(item%out,*) "itpye: {", str1%itype, "}"
-            write(item%out,*) "cnt_poss: ", str1%cnt_poss
-            write(item%out,*) "previous itype: ", itype
-         end if
-      end if
-      if (item%inter(2)) then
-         call arrange_inter_itype(item%rank2,item%rank1,str2,str1,
-     &                           item%itype, item%label_t2, item%out)
-         if (ntest>=100) then
-            write(item%out,*) "After arragne_inter_itpye, inter(2)"
-            write(item%out,*) "T2: {", str1%str, "}"
-            write(item%out,*) "itpye: {", str1%itype, "}"
-            write(item%out,*) "cnt_poss: ", str1%cnt_poss
-            write(item%out,*) "previous itype: ", itype
-         end if
-      end if
-
-
-      ! Work out the factor due to permuation of contraction indicies
-      if (.not. item%den(1) .and. .not. item%den(2)) then
-
-         do i = 1, n_cnt
-            if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1,2)
-     &          /=0)then
-               p_factor = p_factor * -1.0d0
-               if (ntest>=100) then
-                  write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-               end if
-            end if
-         end do
-
-      else if (item%den(1) .and. item%rank1/=0) then
-
-         do i = 1, n_cnt
-            if (str1%cnt_poss(i)<=item%rank1/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str1%cnt_poss(i)>item%rank1/2) then
-               ! Annhilation operator of density is contracted
-               ! NOTE: not removing previously conracted indicies from
-               ! the list - so this may be wrong in the long term. Seems
-               ! to produce the correct answer for now...
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank1/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      else if (item%den(2) .and. item%rank2/=0) then
-
-         do i = 1, n_cnt
-            if (str2%cnt_poss(i)<=item%rank2/2) then
-               ! Creation operator of density is contracted
-               if (mod(item%rank2-str2%cnt_poss(i)+str1%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 1 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            else if (str2%cnt_poss(i)>item%rank2/2) then
-               ! Annhilation operator of density is contracted
-               if (mod(item%rank1-str1%cnt_poss(i)+str2%cnt_poss(i)-1
-     &                 -item%rank2/2,2)/=0)then
-                  p_factor = p_factor * -1.0d0
-                  if (ntest>=100) then
-                     write(item%out,*)"Update factor 2 (contraction of "
-     &                             //"contraction indicies): ", p_factor
-                  end if
-               end if
-
-            end if
-         end do
-
-      end if
-
-
-      ! Create result index string from only external operators. Order
-      ! is not final...This is basically splicing str1 and str2 together
-      shift = 1
-      do i = 1, item%rank1
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str1%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str1%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      do i = 1, item%rank2
-         is_cnt = .false.
-         do j = 1, n_cnt
-            if (i == str2%cnt_poss(j)) then
-               is_cnt = .true.
-               exit
-            end if
-         end do
-         if (.not. is_cnt) then
-            str3%str(shift) = str2%str(i)
-            shift = shift + 1
-         end if
-      end do
-
-      if (ntest>=100) then
-         write(item%out,*) "Index strings in normal order"
-         write(item%out,*) "Result string in arbitary order"
-         write(item%out,*) "T1: {", str1%str, "}"
-         write(item%out,*) "T2: {", str2%str, "}"
-         write(item%out,*) "Res: {", str3%str, "}"
-         write(item%out,*) "Contraction T1: ", str1%cnt_poss
-         write(item%out,*) "Contraction T2: ", str2%cnt_poss
-         write(item%out,*) "Inital factor: ", p_factor
-      end if
-
-      ! Rearrange the result string so it is in normal order (all
-      ! creation operators to the left of the annhilation). This can
-      ! also introduce a sign change.
-      if (item%rank2/=0) then
-         tstr = ""
-         do i = 1, item%rank1/2
-            shift = 1
-            do j = 1, item%rank3
-
-               if (str3%str(j) == str1%str(i)) then
-                  tstr(shift:shift) = str3%str(j)
-                  shift = shift + 1
-
-                  do k = 1, item%rank3
-                     if (str3%str(k) /= str3%str(j)) then
-                        tstr(shift:shift) = str3%str(k)
-                        shift = shift + 1
-                     end if
-                  end do
-
-                  do k = 1, item%rank3
-                     str3%str(k) = tstr(k:k)
-                  end do
-
-                  if (mod(item%rank3-j,2)==0) then
-                     p_factor = p_factor * -1.0d0
-                     if (ntest>=100) then
-                        write(item%out,*) "Update factor 2 (rearrange",
-     &                 " the result string to normal order): ", p_factor
-                     end if
-                  end if
-                  exit
-               end if
-
-            end do
-         end do
-
-
-         do i = 1, item%rank2/2
-            shift = 1
-            do j = 1, item%rank3
-
-               if (str3%str(j) == str2%str(i)) then
-                  tstr(shift:shift) = str3%str(j)
-                  shift = shift + 1
-
-                  do k = 1, item%rank3
-                     if (str3%str(k) /= str3%str(j)) then
-                        tstr(shift:shift) = str3%str(k)
-                        shift = shift + 1
-                     end if
-                  end do
-
-                  do k = 1, item%rank3
-                     str3%str(k) = tstr(k:k)
-                  end do
-
-                  if (mod(item%rank3-j,2)==0) then
-                     p_factor = p_factor * -1.0d0
-                     if (ntest>=100) then
-                        write(item%out,*) "Update factor 2 (rearrange",
-     &                 " the result string to normal order): ", p_factor
-                     end if
-                  end if
-                  exit
-               end if
-
-            end do
-         end do
-      end if
-
-c      ! Due to how the R:ea residual is defined, {p a^+} instead of
-c      ! {a^+ p}, we need an extra minus to flip the normal ordered
-c      ! string.
-c      if (item%nops3(1)==0 .and. item%nops3(2)==1 .and.
-c     &    item%nops3(3)==1 .and. item%nops3(4)==0) then
-c         if (.not. item%inter(3)) then
-c
-c            p_factor = p_factor * -1.0d0
-c            if (ntest>100) then
-c               write(item%out,*) "Update factor (R:ea)", p_factor
-c            end if
-c         end if
-c       end if
-
-      !write(item%out,*) 'label3: ',trim(item%label_res),item%v3(1,3,2)
-      !write(item%out,*) item%v3
-      if (item%label_res(1:1)=='O'.and.item%v3(1,3,2)==1)
-     &     then
-        call warn('assign_index','fix for R active (old)!!')
-        p_factor = p_factor * -1d0
       end if
 
 
@@ -4466,12 +3903,7 @@ c       end if
       end do
 
       if (ntest>=100) then
-         if (p_factor>0.0d0) then
-            tmp = '+'
-         else
-            tmp = '-'
-         end if
-
+         tmp = '+'
          write(item%out,*) "Final indices"
          write(item%out,*) "---------------------------"
          write(item%out,*) "{",str3%str,"} ",tmp,"= {",str1%str,
@@ -4485,25 +3917,13 @@ c       end if
       item%idx1=trim(s1)
       item%idx2=trim(s2)
       item%idx3=trim(s3)
-      item%fact = item%fact * p_factor
 
       call deinit_index_str(str1)
       call deinit_index_str(str2)
       call deinit_index_str(str3)
 
-      do i = 1, item%nj_op1
-         call deinit_index_str(op1(i))
-      end do
-      do i = 1, item%nj_op2
-         call deinit_index_str(op2(i))
-      end do
-
-      allocate(op1(item%nj_op1))
-      allocate(op2(item%nj_op2))
-
       return
       end
-
 
 
 *----------------------------------------------------------------------*
@@ -5904,7 +5324,8 @@ c       end if
 
 
 *----------------------------------------------------------------------*
-      subroutine check_symmetric(contr_info, command, symmetric, nosym)
+      subroutine check_symmetric(contr_info, binary, symmetric, nosym,
+     &      lu)
 *----------------------------------------------------------------------*
 !     Check if a tensor has permutational symmetry
 *----------------------------------------------------------------------*
@@ -5918,7 +5339,9 @@ c       end if
       type(binary_contr), intent(in) ::
      &   contr_info     ! Information about binary contraction
       integer, intent(in) ::
-     &   command
+     &   lu
+      logical, intent(in) ::
+     &   binary
       logical, intent(inout) ::
      &   symmetric,  ! Check if tensor has R[abij] = R[baji] symmetry
      &   nosym       ! Check if tensor is R[apiq]
@@ -5927,13 +5350,17 @@ c       end if
      &   c(ngastp,2),
      &   e1(ngastp,2),
      &   e2(ngastp,2),
-     &   nops(ngastp),
-     &   i
+     &   nops(ngastp,2),
+     &   ii, jj, ij, nj
 
-      call itf_ops(contr_info, c, e1, e2, command)
+      call itf_ops(contr_info, c, e1, e2, binary)
 
-      nops = sum(e1, dim=2) + sum(e2, dim=2)
-
+      nops = e1 + e2
+c      nops = sum(e1, dim=2) + sum(e2, dim=2)
+c     dbg
+c      write(lu,'(1x,"nops:",4i4)') nops 
+c     dbg
+      
       if (sum(nops)==0) then
          ! Scalars don't have symmetry
          symmetric = .false.
@@ -5941,20 +5368,44 @@ c       end if
          return
       end if
 
+      !if (sum(nops)>4) then
+      !  call quit(1,'command_to_itf','review me for 3-index results')
+      !end if
+
+
+      ! new: do the check based on the actual info on contr_info
+      nj = contr_info%nj_res
       symmetric = .true.
-      do i = 1, ngastp
-         if (mod(nops(i),2) /= 0) then
-            symmetric = .false.
-         end if
+      do ij = 1, nj
+        do jj = 1, 2
+          do ii = 1, ngastp
+            if (contr_info%occ_res(ii,jj,ij).eq.1) then
+              symmetric = .false.
+            end if
+          end do
+        end do
       end do
+      
+c      symmetric = .true.
+c      do jj = 1, 2
+c        do ii = 1, ngastp
+c          if (mod(nops(ii,jj),2) /= 0) then
+c            symmetric = .false.
+c          end if
+c        end do
+c      end do
 
       nosym = .false.
-      if (nops(1)==1 .and. nops(2)==1 .and. nops(3)==2) then
+      if (sum(nops)>2 .and. nops(3,1)==1 .and. nops(3,2)==1) then
          if (.not. check_inter(contr_info%label_res)) then
             nosym = .true.
          end if
       end if
 
+c     dbg
+c      write(lu,*) 'symmetric, nosym: ',symmetric, nosym
+c     dbg
+      
       return
       end
 
@@ -6007,61 +5458,7 @@ c       end if
       return
       end
 
-
-*----------------------------------------------------------------------*
-      subroutine check_j_integral(e, c, nops, j_int, second)
-*----------------------------------------------------------------------*
-!     Check if the two electron integrals need to be mapped to the J
-!     array in Molpro
-*----------------------------------------------------------------------*
-
-      implicit none
-      include 'opdim.h'
-      include 'def_contraction.h'
-      include 'def_itf_contr.h'
-
-      integer, intent(in) ::
-     &   e(ngastp,2),
-     &   c(ngastp,2),
-     &   nops(ngastp)
-      logical, intent(in) ::
-     &   second
-      logical, intent(inout) ::
-     &   j_int
-
-      integer ::
-     &   i, j,
-     &   ct(ngastp,2)
-
-      j_int = .true.
-
-      if (nops(1)==1 .and. nops(2)==1 .and. nops(3)==2) then
-         ! K:eaca - K:eaac (there is no J:eaac)
-         j_int = .false.
-         return
-      end if
-
-      if (second) then
-         do i = 1, ngastp
-            ct(i,1) = c(i,2)
-            ct(i,2) = c(i,1)
-         end do
-      else
-         ct = c
-      end if
-
-      do i = 1, ngastp
-         do j = 1, 2
-            if (e(i,j) + ct(i,j) > 1) then
-               j_int = .false.
-            end if
-         end do
-      end do
-
-      return
-      end
-
-
+      
 *----------------------------------------------------------------------*
       subroutine itf_rank(ops1, ops2, rank, nops, flag)
 *----------------------------------------------------------------------*
@@ -6096,7 +5493,7 @@ c       end if
 
 
 *----------------------------------------------------------------------*
-      subroutine itf_ops(contr_info, c, e1, e2, command)
+      subroutine itf_ops(contr_info, c, e1, e2, binary)
 *----------------------------------------------------------------------*
 !     Assign contraction (c), external indicies 1 (e1) and external
 !     indicies 2 (e2) to ift_contr item
@@ -6117,8 +5514,8 @@ c       end if
      &   e1(ngastp,2),       ! Operator numbers of external index 1
      &   e2(ngastp,2)        ! Operator numbers of external index 2
 
-      integer, intent(in) ::
-     &   command
+      logical, intent(in) ::
+     &   binary
 
       integer ::
      &   i
@@ -6127,8 +5524,7 @@ c       end if
       e1=0
       e2=0
 
-      if (command==command_cp_intm .or.
-     &    command==command_add_intm) then
+      if (.not.binary) then
          do i = 1, contr_info%nj_op1
            call count_index(contr_info%occ_op1(1:,1:,i), e1)
          end do
@@ -6204,7 +5600,8 @@ c       end if
       op2 = 0
 
       if (command==command_cp_intm .or.
-     &    command==command_add_intm) then
+     &    command==command_add_intm .or.
+     &    command==command_add_reo) then
          do i = 1, contr_info%nj_op1
            call count_index(contr_info%occ_op1(1:,1:,i), item%v1(i,:,:))
            item%vnops1(i) = sum(sum(item%v1(i,:,:),dim=1))
