@@ -6,7 +6,7 @@
       implicit none
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       include 'stdunit.h'
       include 'opdim.h'
@@ -32,7 +32,7 @@
       integer ::
      &     idx, idx_form_op, idx_form_blk, idx_blk_out, ivtx,jvtx, iarc,
      &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join, ij, jdx,
-     &     isuper, nvtx_rem, nsvtx_rem, narc_rem
+     &     isuper, nvtx_rem, nsvtx_rem, narc_rem, nxarc_rem
       integer, allocatable ::
      &     occ_temp(:,:,:), vtx_chng_idx(:)
       integer, pointer ::
@@ -155,10 +155,6 @@ c          write(lulog,*) '[ADD]'
           end do
 
 
-c          if (remove) then
-c            call delete_fl_node(form_pnt)
-c            deallocate(form_pnt)
-
           if (change) then
 ! generate a map for new vertex numbers
             allocate(vtx_map(nvtx),vtx_map_rev(nvtx-nvtx_rem))
@@ -172,13 +168,6 @@ c            deallocate(form_pnt)
               end if
             end do
 
-            if (any(vtx_map(1:nvtx-nvtx_rem).eq.0)) then
-              write(lulog,*) 'Implemented but untested case!'
-              write(luout,*) '-- see source code ---'
-              ! check that the update of the vertices and arcs works!
-              ! so far, we only had the trivial case of removing the last vertices
-              call quit(1,'op_assume_const','check implementation !')
-            end if
             
             do ivtx = 1, nvtx-nvtx_rem
               contr%vertex(ivtx) = contr%vertex(vtx_map_rev(ivtx))
@@ -195,6 +184,17 @@ c            deallocate(form_pnt)
                 narc_rem = narc_rem + 1
               end if
             end do
+            nxarc = contr%nxarc
+            nxarc_rem = 0
+            do iarc = 1, nxarc
+              if (contr%xarc(iarc)%link(1).ne.0) then
+                ! only the vertex number changes:
+                contr%xarc(iarc)%link(1) =
+     &               vtx_map(contr%xarc(iarc)%link(1))
+              else
+                nxarc_rem = nxarc_rem + 1
+              end if
+            end do
 
             deallocate(vtx_map,vtx_map_rev)
 
@@ -207,7 +207,8 @@ c            deallocate(form_pnt)
             endif
             
             
-            if (narc_rem>0) then
+            if (narc_rem>0.or.nxarc_rem>0) then
+              write(luout,*) 'narc_rem, nxarc_rem: ',narc_rem, nxarc_rem
               write(luout,*) 'Sorry, but this is a case never tested.'
               write(luout,*) '-- see source code ---'
               ! so far, it seems that no dummy contractions (with zeros)
@@ -223,7 +224,7 @@ c            deallocate(form_pnt)
             call resize_contr(contr,nvtx,narc,nxarc,nfac)
 
             call update_svtx4contr(contr)
-          
+            
             allocate(vtx_map(nvtx)) ! dummy
             call canon_contr(contr,.false.,vtx_map)
             deallocate(vtx_map)
