@@ -422,13 +422,23 @@ class _Bracket(_AbstractBracket):
         Does not return anything, just set the avoid in the product, if the two operators
         are present
         """
-        op1 = Vertex(op_str1)
-        op2 = Vertex(op_str2)
+        if isinstance(op_str1, int) and isinstance(op_str2, int):
+            have_idx = True
+            idx1 = op_str1
+            idx2 = op_str2
+        else:
+            have_idx = False
+            op1 = Vertex(op_str1)
+            op2 = Vertex(op_str2)
 
         for prod in self.OP_products:
             try:
-                av1 = prod.arguments['IDX_SV'][prod.index(op1)]
-                av2 = prod.arguments['IDX_SV'][prod.index(op2)]
+                if have_idx:
+                    av1 = idx1
+                    av2 = idx2
+                else:
+                    av1 = prod.arguments['IDX_SV'][prod.index(op1)]
+                    av2 = prod.arguments['IDX_SV'][prod.index(op2)]
                 new_avoid = [av1, av2]
             except:
                 new_avoid = None
@@ -445,13 +455,23 @@ class _Bracket(_AbstractBracket):
         Does not return anything, just set the connect in the product, if the two operators
         are present
         """
-        op1 = Vertex(op_str1)
-        op2 = Vertex(op_str2)
+        if isinstance(op_str1, int) and isinstance(op_str2, int):
+            have_idx = True
+            idx1 = op_str1
+            idx2 = op_str2
+        else:
+            have_idx = False
+            op1 = Vertex(op_str1)
+            op2 = Vertex(op_str2)
 
         for prod in self.OP_products:
             try:
-                av1 = prod.arguments['IDX_SV'][prod.index(op1)]
-                av2 = prod.arguments['IDX_SV'][prod.index(op2)]
+                if have_idx:
+                    av1 = idx1
+                    av2 = idx2
+                else:
+                    av1 = prod.arguments['IDX_SV'][prod.index(op1)]
+                    av2 = prod.arguments['IDX_SV'][prod.index(op2)]
                 new_connect = [av1, av2]
             except:
                 new_connect = None
