@@ -107,6 +107,9 @@ cas22 = True
 
 remove_gamma0 = True # remove the scalar part of GAM0 (which is just 1.0)
 
+# make sure that GAM0 is recognized as a Hermitian operator (for transpose):
+SET_HERMITIAN({LABEL:'GAM0',CA_SYMMETRY:+1})
+
 if doublet or cas22:
     T2_shape = 'VV,HH|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'  # skipped VVV amps here
 else:
@@ -302,43 +305,57 @@ DEF_ME_LIST({LIST:'ME_T1s',OPERATOR:'T1s',IRREP:1,'2MS':0,AB_SYM:+1})
 
 DEF_FORMULA({LABEL:'F_T1SUM',FORMULA:'T1s=T1+T2g'})
 
-FT1SSQ = stf.Formula("F_T1SSQ:T1s2=<T1s2'*T1*T1*T1s2'>") # it seems that "avoid" is not accepted for Formula
-# as a work-around, we added this dummy term ^^^^^^^
-FT1SSQ.append("<0.5*T1s2'*T1s''*T1s'''*T1s2'>", avoid=["T1s''","T1s'''"])
-FT1SSQ.set_rule()
-INVARIANT({LABEL_RES:'F_T1SSQ',LABEL_IN:'F_T1SSQ',OPERATORS:'T1',OP_RES:'T1s2'}) # remove the dummy term
-PRINT_FORMULA({LABEL:'F_T1SSQ',MODE:'SHORT'})
-
-EXPAND({LABEL_RES:"F_T1SSQ2",LABEL_IN:"F_T1SSQ",INTERM:"F_T1SUM"})
-
-PRINT_FORMULA({LABEL:'F_T1SSQ2',MODE:'SHORT'})
-
-# Factor out linear terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM'})
-# One more call for quadratic terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM'})
-# And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ2'})
-EXPAND({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ'})
-
+# not required any more:
+#FT1SSQ = stf.Formula("F_T1SSQ:T1s2=<T1s2'*T1*T1*T1s2'>") # it seems that "avoid" is not accepted for Formula
+## as a work-around, we added this dummy term ^^^^^^^
+#FT1SSQ.append("<0.5*T1s2'*T1s''*T1s'''*T1s2'>", avoid=["T1s''","T1s'''"])
+#FT1SSQ.set_rule()
+#INVARIANT({LABEL_RES:'F_T1SSQ',LABEL_IN:'F_T1SSQ',OPERATORS:'T1',OP_RES:'T1s2'}) # remove the dummy term
+#PRINT_FORMULA({LABEL:'F_T1SSQ',MODE:'SHORT'})
+#
+#EXPAND({LABEL_RES:"F_T1SSQ2",LABEL_IN:"F_T1SSQ",INTERM:"F_T1SUM"})
+#
+#PRINT_FORMULA({LABEL:'F_T1SSQ2',MODE:'SHORT'})
 
 # Factor out linear terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM'})
+FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
 # One more call for quadratic terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM'})
+if nc_en > 1:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
+if nc_en > 2:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
+if nc_en > 3:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
 # And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ2'})
-EXPAND({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ'})
+#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ2'})
+#EXPAND({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ'})
 
 
 # Factor out linear terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM'})
+FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
 # One more call for quadratic terms
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM'})
+if nc_rs > 1:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
+if nc_rs > 2:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
 # And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ2'})
-EXPAND({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ'})
+#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ2'})
+#EXPAND({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ'})
 
+
+# Factor out linear terms
+FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
+# One more call for quadratic terms
+if nc_rs > 1:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
+if nc_rs > 2:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
+# And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
+#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ2'})
+#EXPAND({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ'})
+
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 
@@ -394,12 +411,12 @@ if (K4E):
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_A1',
-        INTERM:'F_INTkx'})
+        INTERM:'F_INTkx',SPLIT:True})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
-        INTERM:'F_INTkx'})
+        INTERM:'F_INTkx',SPLIT:True})
     
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
@@ -429,48 +446,77 @@ if (I3ext):
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_A1',
-        INTERM:'F_INT3ext'})
+        INTERM:'F_INT3ext',SPLIT:True})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
-        INTERM:'F_INT3ext'})
+        INTERM:'F_INT3ext',SPLIT:True})
 
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 # experimental area:
 HGamma = False
 if (HGamma):
-    DEF_OP_FROM_OCC({LABEL:'INT_HGAM',JOIN:2,DESCR:',;[HPV],[HPV]|,V;[PV],|,V;,H|,V;[HPV]V,[HPV]|,V;[HPV]P,[HV]|,V;[HPV],[HPV]H|,VV;[PV][PV],|,VV;[PV],H|,VV;,HH'})
-    HGproto = stf.Formula("F_HGprotoL:MRCC_LAG="+_L2_refexp("[H,T1]"))
-    HGproto.set_rule()
-    FACTOR_OUT({
-        LABEL_IN:'F_HGprotoL',
-        LABEL_RES:'F_HGprotoL',
-        INTERM:'FORM_GAM0'})
-
-    PRINT_FORMULA({LABEL:'F_HGprotoL',MODE:'SHORT'})
-
-    DERIVATIVE({LABEL_IN:'F_HGprotoL',
-        LABEL_RES:'F_HGprotoO',OP_RES:'O2g',OP_DERIV:'L2'})
-    DERIVATIVE({LABEL_IN:'F_HGprotoO',
-        LABEL_RES:'F_HGAM',OP_RES:'INT_HGAM',OP_DERIV:'T1'})
-    SUM_TERMS({LABEL_IN:'F_HGAM',LABEL_RES:'F_HGAM'})
-    REORDER_FORMULA({LABEL_IN:'F_HGAM',LABEL_RES:'F_HGAM'})
+    # define a number of intermediates where the Hamiltonian and the density are connected
+    DEF_OP_FROM_OCC({LABEL:'GM0',JOIN:2,DESCR:',;,'})
+    DEF_OP_FROM_OCC({LABEL:'GM1',JOIN:2,DESCR:',V;V,'})
+    DEF_OP_FROM_OCC({LABEL:'GM2',JOIN:2,DESCR:',VV;VV,'})
+    DEF_HAMILTONIAN({LABEL:'H2',MIN_RANK:2,MAX_RANK:2})
+    # A: effective fock operator:
+    #DEF_OP_FROM_OCC({LABEL:'INTHG0',JOIN:1,DESCR:'P,[HV];V,[HV];H,H;[HV],P;H,V'})
+    DEF_OP_FROM_OCC({LABEL:'INTHG0',JOIN:1,DESCR:'P,[HV];V,[HV];H,H'})
+    DEF_ME_LIST({LIST:'ME_INTHG0',OPERATOR:'INTHG0',IRREP:1,'2MS':0,AB_SYM:+1})
+    FHG0 = stf.Formula("F_HG0:INTHG0=<INTHG0'*GM0'*H*GM0'*INTHG0'>")
+    FHG0.append("<INTHG0'*GM1'*H*GM1'*INTHG0'>",connect=[2,3,3,4])
+    FHG0.set_rule()
+    REPLACE({LABEL_RES:'F_HG0',LABEL_IN:'F_HG0',OP_LIST:['GM0','GAM0','GM1','GAM0']})
+    REORDER_FORMULA({LABEL_IN:'F_HG0',LABEL_RES:'F_HG0'})
+    # B: H transformed with one-particle density on creation index
+    DEF_OP_FROM_OCC({LABEL:'INTHG1',JOIN:2,DESCR:'[HV],[HPV][HPV];V,|[HPV],[HPV][HV];V,'})
+    DEF_ME_LIST({LIST:'ME_INTHG1',OPERATOR:'INTHG1',IRREP:1,'2MS':0,AB_SYM:+1})
+    FHG1 = stf.Formula("F_HG1:INTHG1=<INTHG1'*INTHG1'*H*INTHG1'*INTHG1'>") # dummy term
+    FHG1.append("<INTHG1'*GM1'*H*INTHG1'*INTHG1'*GM1'*INTHG1'>",connect=[2,3,5,6])
+    FHG1.set_rule()
+    REPLACE({LABEL_RES:'F_HG1',LABEL_IN:'F_HG1',OP_LIST:['GM1','GAM0']})
+    REORDER_FORMULA({LABEL_IN:'F_HG1',LABEL_RES:'F_HG1'})
+    # C: H transformed with two-particle density on creation indices
+    DEF_OP_FROM_OCC({LABEL:'INTHG2',JOIN:2,DESCR:',[HPV][HPV];VV,'})
+    DEF_ME_LIST({LIST:'ME_INTHG2',OPERATOR:'INTHG2',IRREP:1,'2MS':0,AB_SYM:+1})
+    FHG2 = stf.Formula("F_HG2:INTHG2=<INTHG2'*INTHG2'*H*INTHG2'*INTHG2'>") # dummy term
+    FHG2.append("<INTHG2'*GM2'*H2*INTHG2'*INTHG2'*GM2'*INTHG2'>",connect=[2,3,5,6])
+    FHG2.set_rule()
+    REPLACE({LABEL_RES:'F_HG2',LABEL_IN:'F_HG2',OP_LIST:['GM2','GAM0','H2','H']})
+    REORDER_FORMULA({LABEL_IN:'F_HG2',LABEL_RES:'F_HG2'})
     
-    PRINT_FORMULA({LABEL:'F_HGAM',MODE:'SHORT'})
+#    DEF_OP_FROM_OCC({LABEL:'INTHGAM',JOIN:2,DESCR:',;[HPV],[HPV]|,V;[PV],|,V;,H|,V;[HPV]V,[HPV]|,V;[HPV]P,[HV]|,V;[HPV],[HPV]H|,VV;[PV][PV],|,VV;[PV],H|,VV;,HH'})
+#    HGproto = stf.Formula("F_HGprotoL:MRCC_LAG="+_L2_refexp("[H,T1]"))
+#    HGproto.set_rule()
+#    FACTOR_OUT({
+#        LABEL_IN:'F_HGprotoL',
+#        LABEL_RES:'F_HGprotoL',
+#        INTERM:'FORM_GAM0'})
 
+    PRINT_FORMULA({LABEL:'F_HG0',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'F_HG1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'F_HG2',MODE:'SHORT'})
+
+    
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_A1',
-        INTERM:'F_HGAM'})
+        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
-        INTERM:'F_HGAM'})
+        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
+    
+    
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
+    #ABORT({COMMENT:'Development Stop'})
 
 
 # now creating the actual residuals
@@ -480,7 +526,7 @@ DERIVATIVE({
         OP_RES:'O1',
         OP_DERIV:'LAM1'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1_0',LABEL_RES:'FORM_MRCC_RES1_0'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1',LABEL_RES:'FORM_MRCC_RES1_0'})
 
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A2',
@@ -488,7 +534,7 @@ DERIVATIVE({
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2',LABEL_RES:'FORM_MRCC_RES2_0'})
 
 
 if (remove_gamma0):
@@ -501,6 +547,11 @@ if (remove_gamma0):
         ASSUME_CONST({
             LABEL_IN:'F_INT3ext',
             LABEL_RES:'F_INT3ext',
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+    if (HGamma):
+        ASSUME_CONST({
+            LABEL_IN:'F_HG0',
+            LABEL_RES:'F_HG0',
             OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
     ASSUME_CONST({
@@ -519,9 +570,12 @@ if (remove_gamma0):
         OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
     
-if (I3ext):
+if (I3ext and not HGamma):
     _opt_label_list = ['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
     _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
+elif (I3ext and HGamma):
+    _opt_label_list = ['F_HG0','F_HG1','F_HG2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+    _itf_code_list = ['<Make_HGAM>','INTHG0','INTHG1','INTHG2','<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
 else:
     _opt_label_list = ['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
     _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']
@@ -565,7 +619,9 @@ filename = filename + '.itfaa'
 #        RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
 #        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']})
 
-TRANSLATE_ITF({
+skip_itf = False
+if not skip_itf:
+    TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:filename,
         TITLE:filename2,
