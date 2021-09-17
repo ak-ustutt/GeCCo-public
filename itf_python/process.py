@@ -156,8 +156,12 @@ def print_result(line, indent=False, init=False):
         seen = []
         result = []
         for item in t:
-            if item.split('[',1)[0] not in seen:
-                seen.append(item.split('[',1)[0])
+#            if item.split('[',1)[0] not in seen:
+#                seen.append(item.split('[',1)[0])
+#                result.append(item)
+            id =  str(item.split('[',1)[0])+str(generic_index( item.split('[',1)[1]))
+            if id not in seen:
+                seen.append(id)
                 result.append(item)
 
         # Check if the line is within a loop
@@ -195,6 +199,7 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
         generic = generic_index(word)
         #generic = word.split(':',1)[1].split('[',1)[0]
 
+        ###print("processing: ",tmp," idxgen: ",generic," ... ",end="")
         declared=False
         for i in range(0, len(declare_ten)):
             if word.split('[',1)[0].split('*',1)[-1] == declare_ten_name[i]:
@@ -207,11 +212,14 @@ def add_to_global(word,declare_ten,declare_ten_index,declare_ten_name):
                 continue
 
         if not declared:
+            ###print("NEW")
             # Add result to global list
             declare_ten.append(word.split('*',1)[-1])
             declare_ten_index.append(generic)
             declare_ten_name.append(word.split('[',1)[0].split('*',1)[-1])
-
+        ###else:
+            ###print("OLD")
+            
 
 def print_loop(line, words):
     global tab
@@ -451,11 +459,15 @@ for line_o in f:
     # Check if we are in a special block which will end up in its own ---code block
     # In this case we are checking for the INTpp interemediate that is passed to Kext
     if (words[0]=='BEGIN_INTPP'): ## obsolete
+        print("BEGIN_INTPP is obsolete!")
+        quit()
         special_begin = True
         special_end = False
         continue
 
     if (words[0]=='END_INTPP'):
+        print("END_INTPP is obsolete!")
+        quit()
         special_begin = False
         special_end = True
         dont_store=True
@@ -711,14 +723,6 @@ for line_o in f:
                 # Next result is different from previous, so close off block
 
                 if prev_res != '#####':
-                    # Add generic index to residual tensor name
-                    if ("R1[" in prev_res):
-                        prev_res = prev_res.replace("R1[", "R1:" + "".join(generic_index(prev_res)) + "[")
-                    elif ("R2[" in prev_res):
-                        prev_res = prev_res.replace("R2[", "R2:" + "".join(generic_index(prev_res)) + "[")
-                    elif ("G[" in prev_res):
-                        prev_res = prev_res.replace("G[", "G:" + "".join(generic_index(prev_res)) + "[")
-
                     # dont_store obsolete, assume False always
                     # Don't print out store for speical code blocks (ie. not residuals)
                     if not dont_store:
@@ -753,15 +757,6 @@ for line_o in f:
                             # Load previous tensor
                             tmp_res=words[0]
 
-                            if ("R1[" in words[0]):
-                                tmp_res = words[0].replace("R1[", "R1:" + "".join(generic_index(words[0])) + "[")
-
-                            elif ("R2[" in words[0]):
-                                tmp_res = words[0].replace("R2[", "R2:" + "".join(generic_index(words[0])) + "[")
-
-                            elif ("G[" in words[0]):
-                                tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
-
                             # load the special case of R:eaac and R:eaca
                             if "R2:eaac" in tmp_res or "R2:eaca" in tmp_res:
                                 tmp_res = "R2:eaca[apiq], R2:eaac[apqi]"
@@ -790,14 +785,7 @@ for line_o in f:
                         declare_index.append(['e','a','a','c'])
                         declare_name.append("R2:eaac")
 
-                    # Add generic index to residual tensor name, ie. R:eecc
                     tmp_res=words[0]
-                    if ("R1[" in words[0]):
-                        tmp_res = words[0].replace("R1[", "R1:" + "".join(generic_index(words[0])) + "[")
-                    elif ("R2[" in words[0]):
-                        tmp_res = words[0].replace("R2[", "R2:" + "".join(generic_index(words[0])) + "[")
-                    elif ("G[" in words[0]):
-                        tmp_res = words[0].replace("G[", "G:" + "".join(generic_index(words[0])) + "[")
 
                     # allocate the special case of R:eaac and R:eaca
                     if "R2:eaac" in tmp_res or "R2:eaca" in tmp_res:

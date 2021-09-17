@@ -6,6 +6,34 @@
 # =========================================================================================
 import argparse     # Parse arguments
 
+# =========================================================================================
+def generic_index(tensor):
+    # Construct generic index representation of specific tensor index
+    # Used to check if tensors index the same space, even if they have
+    # different indices
+
+    index=list(tensor[tensor.find("[")+1:tensor.find("]")])
+
+    hole     = ['i','j','k','l','m','n','o']
+    particle = ['a','b','c','d','e','f','g','h']
+    valence  = ['p','q','r','s','t','u','v','w','x','y','z']
+
+    gen=[]
+    for i in range (0,len(index)):
+        if index[i] in particle:
+            gen.append('e')
+        elif index[i] in valence:
+            gen.append('a')
+        elif index[i] in hole:
+            gen.append('c')
+    return gen
+
+# =========================================================================================
+# =========================================================================================
+#   main starts here:
+# =========================================================================================
+# =========================================================================================
+
 # Parse arguments from gecco
 parser = argparse.ArgumentParser(
                 description="""Reduce the size of the ITF algo file""",
@@ -48,8 +76,12 @@ for line in f1:
             tmp2=[]
             for i in range(1, len(words1)):
                 if not loop:
-                    tmp1.append(words1[i].split('[')[0])
-                    tmp2.append(words2[len(words2)-i].split('[',1)[0])
+                    try:
+                        tmp1.append(str(words1[i].split('[')[0])+str(generic_index(words1[i].split('[')[1])))
+                        tmp2.append(str(words2[len(words2)-i].split('[',1)[0])+str(generic_index(words2[len(words2)-i].split('[')[1])))
+                    except:
+                        tmp1.append(words1[i])
+                        tmp2.append(words2[len(words2)-i])
                 else:
                     # Inside a loop, so should compare indices
                     tmp1.append(words1[i].split(']')[0])
