@@ -108,7 +108,7 @@ c dbg
         else if (fl_intm_pnt%command.eq.command_add_contribution) then
           if (iblk_intm.gt.fl_intm_pnt%contr%iblk_res) then
             write(lulog,*) 
-     &         'FOR AN EASY FIX: SEE COMMENT IN FORM_FACTOR_OUT!'
+     &         'FOR AN EASY FIX: use REORDER_FORMULA before!'
             call quit(1,'find_possible_subexpr',
      &         'expected intermediate blocks in increasing sequence')
           end if

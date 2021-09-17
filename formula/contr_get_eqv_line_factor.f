@@ -20,7 +20,7 @@
       include 'mdef_operator_info.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
       character(len=25), parameter ::
      &     i_am = 'contr_get_eqv_line_factor'
       

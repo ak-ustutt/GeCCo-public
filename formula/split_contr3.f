@@ -26,7 +26,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(contraction), intent(in) ::
      &     contr, contr_spl
@@ -44,7 +44,7 @@
      &     nvtx, nvtx_spl, nvtx_rem, ivtx_spl_last, isupervtx_spl_last,
      &     narc, narc_spl, narc_rem,
      &     nxarc,nxarc_spl,nxarc_rem, nvtx_test,
-     &     ivtx_spl, ivtx_rem, ivtx, ivtx1, ivtx2, nj, nj_spl,
+     &     ivtx_spl, ivtx_rem, ivtx, ivtx1, ivtx2, nj, nj_spl, ispl,
      &     iarc, ixarc, iarc_rem, ixarc_rem, lenlist, jvtx, ij, kvtx,
      &     isuper_spl_last, sh_sign, icnt, occ_x(ngastp,2), ivtx3, nskip
       integer(8) ::
@@ -52,9 +52,11 @@
       integer, pointer ::
      &     ivtx_new(:), isupervtx_spl(:),
      &     vtxmap(:), ireo(:), ireo2(:), svertex(:), svertex_spl(:),
-     &     list(:), ivtx_tmp(:), isuper_tgt(:)
+     &     list(:), ivtx_tmp(:), isuper_tgt(:),
+     &     spl_map(:,:), spl_nxarc4vtx(:)
       integer(8), pointer ::
      &     topo(:,:), topo_spl(:,:), vtx(:), vtx_spl(:),
+     &     topo_sv(:,:),
      &     xlines(:,:), xlines_spl(:,:)
       logical, pointer ::
      &     svtx_found(:)
@@ -92,7 +94,7 @@
       nj_spl = njres_contr(contr_spl)
       if (ntest.ge.100) write(lulog,*) 'nj, nj_spl: ',nj, nj_spl
 
-      allocate(vtxmap(nvtx),
+      allocate(vtxmap(nvtx),topo_sv(nvtx,nvtx),
      &         vtx(nvtx),topo(nvtx,nvtx),xlines(nvtx,nj),
      &         vtx_spl(nvtx_spl),topo_spl(nvtx_spl,nvtx_spl),
      &         xlines_spl(nvtx_spl,nj_spl),ireo(nvtx),ireo2(nvtx),
@@ -100,6 +102,7 @@
      &         svertex_spl(nvtx_spl))
 
       call pack_contr(svertex,vtx,topo,xlines,contr,nj)
+      topo_sv = topo
       call pack_contr(svertex_spl,vtx_spl,topo_spl,xlines_spl,
      &                                        contr_spl,nj_spl)
 
@@ -148,7 +151,7 @@
       lenlist = lenlist*2
       call unique_list(list,lenlist)
 
-      if (ntest.eq.100)
+      if (ntest.ge.100)
      &     write(lulog, *) 'vtxmap: ',vtxmap
 
       ivtx_spl = 0
@@ -179,6 +182,7 @@ c              vtxmap(ivtx) = ij
      &      split_vtxs = .true.
 
       if (split_vtxs) then
+        if (ntest.ge.100) write(lulog,*) 'split_vtxs active!'
         sh_sign = 1
         do ivtx = 1, nvtx
           ireo(ivtx) = ivtx ! split_vtxs and reorder currently not allowed
@@ -200,6 +204,30 @@ c              vtxmap(ivtx) = ij
         ireo2(ireo(ivtx)) = ivtx
       end do
 
+      ! get also a mapping array from contr_spl xarc info
+      allocate(spl_nxarc4vtx(nvtx_spl), spl_map(nvtx_spl,nj_spl))
+      spl_nxarc4vtx = 0   ! how many xarcs contribute? (normally 1)
+      spl_map = 0         ! to which supervertices does this vertex of contr_spl contribute?
+      do iarc = 1, nxarc_spl
+        spl_nxarc4vtx(contr_spl%xarc(iarc)%link(1)) =
+     &       spl_nxarc4vtx(contr_spl%xarc(iarc)%link(1))+1
+        spl_map(contr_spl%xarc(iarc)%link(1),
+     &       spl_nxarc4vtx(contr_spl%xarc(iarc)%link(1))) =
+     &                                contr_spl%xarc(iarc)%link(2)
+      end do
+
+      if (ntest.ge.100) then
+        write(lulog,*) 'spl_map:'
+        do ij = 1, nvtx_spl
+          write(lulog,'(2x,i4,": ",10i4)')
+     &         ij, spl_map(ij,1:spl_nxarc4vtx(ij))
+        end do
+        call prt_contr_p(lulog,svertex,vtx,topo,
+     &       xlines,nvtx,nj)
+        call prt_contr_p(lulog,svertex_spl,vtx_spl,topo_spl,
+     &       xlines_spl,nvtx_spl,nj_spl)
+      end if
+      
       ! isuper_tgt: reordered copy of isupervtx_spl
       isuper_tgt(1:nvtx) = isupervtx_spl(ireo2(1:nvtx))
       ! allow reordering of neighbors
@@ -299,7 +327,7 @@ c     &     write(lulog, *) 'vtxmap (new): ',vtxmap
       ivtx_rem = 0
       ivtx_spl_last = -1
       isuper_spl_last = -1
-      ! as is rare cases the supervertices are not numbered in ascending order, the old algo failed
+      ! as in rare cases the supervertices are not numbered in ascending order, the old algo failed
       ! we use this array instead:
       allocate(svtx_found(nj_spl))
       svtx_found = .false.
@@ -375,7 +403,7 @@ c     dbg
         write(lulog,*) 'nvtx_rem: ',nvtx_rem
         write(lulog,*) 'ivtx_new (new): ',ivtx_new(1:nvtx)
         write(lulog,*) 'isupervtx_spl: ',isupervtx_spl(1:nvtx)
-        write(lulog,*) 'isuper_tgt: ',isuper_tgt(1:nvtx)
+        write(lulog,*) 'isuper_tgt: ',isuper_tgt(1:nvtx) ! not used
         write(lulog,*) 'split_vtxs: ',split_vtxs
       end if
       
@@ -424,66 +452,172 @@ c     dbg
       ! ---------
       ! set arcs
       ! ---------
+
+c     dbg
+      write(lulog,*) '>>>> new arc-setting <<<<'
+c     dbg
       iarc_rem = 0
       do iarc = 1, narc
         ivtx1 = contr%arc(iarc)%link(1)
         ivtx2 = contr%arc(iarc)%link(2)
+c     dbg
+        write(lulog,*) '  >> ivtx1, ivtx2 ',ivtx1, ivtx2
+c     dbg
         if (ivtx_new(ivtx1).lt.0.and.ivtx_new(ivtx2).lt.0) cycle
         iarc_rem = iarc_rem+1
         if (iarc_rem.gt.narc_rem)
      &       call quit(1,'split_contr3','na sowas ...!?!')
         if (ivtx_new(ivtx1).gt.0) then
+c     dbg
+          write(lulog,*) '    >> keeping ivtx1 '
+c     dbg
           contr_rem%arc(iarc_rem)%link(1) = ivtx_new(ivtx1)
-        else if (.not.split_vtxs) then
-          contr_rem%arc(iarc_rem)%link(1) = -isupervtx_spl(ivtx1)
         else
-          success = .false.
-          do ivtx3 = ivtx1, ivtx2-1
-            if (ivtx_new(ivtx3).gt.0) cycle
-            ivtx_spl = vtxmap(ivtx1)
-            ij = isupervtx_spl(ivtx3)
-            occ_x = 0
-            icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
-            if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.false.,
-     &                     occ_x,.false.)) then
-              xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)
-     &                      - topo(ivtx1,ivtx2)
-              success = .true.
-              exit
+          ivtx_spl = vtxmap(ivtx1) ! vertex in contr_spl
+c     dbg
+          write(lulog,*) '    >> analysing ivtx1 > ivtx_spl = ',ivtx_spl
+c     dbg
+          ! loop over all possible supervertices of contr_spl
+          do ispl = 1, nj_spl
+            ! read from spl_map the actual xarc of contr_spl
+            if (spl_map(ivtx_spl,ispl).eq.0) then ! should not happen
+c              call quit(1,'split_contr3','entered trap (1)')
+              ok = .false. ! give up -- use the above trap to better analyse this case
+              return
+            end if
+            ij = spl_map(ivtx_spl,ispl) ! this is the actual supervertex number
+c     dbg
+            write(lulog,*) '      >> ispl, ij, xlines = ',ispl, ij, 
+     &           xlines_spl(ivtx_spl,ij)
+c     dbg
+
+            if (xlines_spl(ivtx_spl,ij).gt.0) then ! still free places here?
+              ! check that it really fits:
+              occ_x = 0
+              icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
+c     dbg
+              call wrt_occ(lulog,occ_x)
+              call wrt_occ(lulog,contr%arc(iarc)%occ_cnt)
+c     dbg              
+              if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.false.,
+     &             occ_x,.false.)) then
+c     dbg
+                write(lulog,*) '      >> setting to ',-ij
+                write(lulog,*) '      >> topo is    ',
+     &               topo_sv(ivtx1,ivtx2)               
+                write(lulog,*) '      >> new xlines ',
+     &               xlines_spl(ivtx_spl,ij)- topo_sv(ivtx1,ivtx2)
+c     dbg
+                contr_rem%arc(iarc_rem)%link(1) = -ij ! set link
+                xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)    ! diminish xlines by 
+     &                                        - topo_sv(ivtx1,ivtx2)    ! this contraction
+                exit            ! exit the loop
+c              else if (iocc_bound('<=',occ_x,.false.,
+c     &               contr%arc(iarc)%occ_cnt,.false.).and.) then
+c                ! could try to split contraction here
+              end if
             end if
           end do
-          if (.not.success) then !call quit(1,'split_contr3','trap (1)')
-            ok = .false.
-            return
-          end if
-          contr_rem%arc(iarc_rem)%link(1) = -isupervtx_spl(ivtx3)
         end if
+c        else if (.not.split_vtxs) then
+c          contr_rem%arc(iarc_rem)%link(1) = -isupervtx_spl(ivtx1)
+c        else
+c          success = .false.
+c          do ivtx3 = ivtx1, ivtx2-1
+c            if (ivtx_new(ivtx3).gt.0) cycle
+c            ivtx_spl = vtxmap(ivtx1)
+c            ij = isupervtx_spl(ivtx3)
+c            occ_x = 0
+c            icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
+c            if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.false.,
+c     &                     occ_x,.false.)) then
+c              xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)
+c     &                      - topo(ivtx1,ivtx2)
+c              success = .true.
+c              exit
+c            end if
+c          end do
+c          if (.not.success) then !call quit(1,'split_contr3','trap (1)')
+c            ok = .false.
+c            return
+c          end if
+c          contr_rem%arc(iarc_rem)%link(1) = -isupervtx_spl(ivtx3)
+c        end if
         if (ivtx_new(ivtx2).gt.0) then
           contr_rem%arc(iarc_rem)%link(2) = ivtx_new(ivtx2)
-        else if (.not.split_vtxs) then
-          contr_rem%arc(iarc_rem)%link(2) = -isupervtx_spl(ivtx2)
+c     dbg
+          write(lulog,*) '    >> keeping ivtx2 '
+c     dbg
         else
-          success = .false.
-          do ivtx3 = ivtx1+1, ivtx2
-            if (ivtx_new(ivtx3).gt.0) cycle
-            ivtx_spl = vtxmap(ivtx2)
-            ij = isupervtx_spl(ivtx3)
-            occ_x = 0
-            icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
-            if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.true.,
-     &                     occ_x,.false.)) then
-              xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)
-     &                      - topo(ivtx2,ivtx1)
-              success = .true.
-              exit
+          ivtx_spl = vtxmap(ivtx2) ! vertex in contr_spl
+c     dbg
+          write(lulog,*) '    >> analysing ivtx2 > ivtx_spl = ',ivtx_spl
+c     dbg
+          do ispl = 1, nj_spl
+            ! read from spl_map the actual xarc of contr_spl
+            if (spl_map(ivtx_spl,ispl).eq.0) then 
+c     call quit(1,'split_contr3','entered trap (2)')
+              ok = .false.
+              return
+            end if
+            ij = spl_map(ivtx_spl,ispl)
+c     dbg
+            write(lulog,*) '      >> ispl, ij, xlines = ',ispl, ij, 
+     &           xlines_spl(ivtx_spl,ij)
+c     dbg
+            if (xlines_spl(ivtx_spl,ij).gt.0) then ! still free places here?
+              ! check that it really fits:
+              occ_x = 0
+              icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
+c     dbg
+              call wrt_occ(lulog,occ_x)
+              call wrt_occ(lulog,contr%arc(iarc)%occ_cnt)
+c     dbg              
+
+              if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.true.,
+     &             occ_x,.false.)) then
+c     dbg
+                write(lulog,*) '      >> setting to ',-ij
+                write(lulog,*) '      >> topo is    ',
+     &               topo_sv(ivtx2,ivtx1)               
+                write(lulog,*) '      >> new xlines ',
+     &               xlines_spl(ivtx_spl,ij)- topo_sv(ivtx2,ivtx1)
+c     dbg
+                contr_rem%arc(iarc_rem)%link(2) = -ij ! set link
+                xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)    ! diminish xlines by 
+     &                                        - topo_sv(ivtx2,ivtx1)    ! this contraction
+                exit            ! exit the loop
+              !else
+              !  call quit(1,'split_contr3','entered trap (2)')
+              end if
             end if
           end do
-          if (.not.success) then !call quit(1,'split_contr3','trap (2)')
-            ok = .false.
-            return
-          end if
-          contr_rem%arc(iarc_rem)%link(2) = -isupervtx_spl(ivtx3)
         end if
+
+c        else if (.not.split_vtxs) then
+c          contr_rem%arc(iarc_rem)%link(2) = -isupervtx_spl(ivtx2)
+c        else
+c          success = .false.
+c          do ivtx3 = ivtx1+1, ivtx2
+c            if (ivtx_new(ivtx3).gt.0) cycle
+c            ivtx_spl = vtxmap(ivtx2)
+c            ij = isupervtx_spl(ivtx3)
+c            occ_x = 0
+c            icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
+c            if (iocc_bound('<=',contr%arc(iarc)%occ_cnt,.true.,
+c     &                     occ_x,.false.)) then
+c              xlines_spl(ivtx_spl,ij) = xlines_spl(ivtx_spl,ij)
+c     &                      - topo(ivtx2,ivtx1)
+c              success = .true.
+c              exit
+c            end if
+c          end do
+c          if (.not.! should not happenbsuccess) then !call quit(1,'split_contr3','trap (2)')
+c            ok = .false.
+c            return
+c          end if
+c          contr_rem%arc(iarc_rem)%link(2) = -isupervtx_spl(ivtx3)
+c        end if
         contr_rem%arc(iarc_rem)%occ_cnt = contr%arc(iarc)%occ_cnt
       end do
       if (split_vtxs.and..not.all(xlines_spl.eq.0))
@@ -537,7 +671,7 @@ c     dbg
 
       deallocate(topo,topo_spl,vtx,vtx_spl,xlines,xlines_spl,ireo,ireo2,
      &       svertex,svertex_spl,list,ivtx_new,isupervtx_spl,vtxmap,
-     &       isuper_tgt)
+     &       isuper_tgt,spl_nxarc4vtx,spl_map,topo_sv)
 
       if (ntest.ge.100) then
         write(lulog,*) 'final contr_rem:'

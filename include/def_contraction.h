@@ -125,7 +125,7 @@ c
      &     ngas, nspin
       logical ::
      &     tra_res, tra_op1, tra_op2,
-     &     perm(ngastp)
+     &     perm(ngastp,2)
       integer, pointer ::
      &     occ_res(:,:,:),
      &     occ_op1(:,:,:),

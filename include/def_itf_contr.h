@@ -118,7 +118,7 @@
      &     symm_res = .false.,   ! True if intermediate contributes to a symmetric residual
      &     binary = .true.,     ! True if a binary contraction
      &     product = .false., ! True if the line is a tensor product
-     &     perm_case(4),
+!     &     perm_case(4),
      &     j_int = .false.,     ! True if integral is special
      &     symmetric = .false.,
      &     nosym = .false.,     ! True if R[apiq] (residual has no symmetry between indicies)

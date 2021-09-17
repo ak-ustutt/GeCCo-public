@@ -25,7 +25,7 @@
       character(len=18), parameter ::
      &     i_am = 'reduce_string_info'
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(contraction), intent(in) ::
      &     contr

@@ -173,6 +173,9 @@ c dbgend
             ! collect blocks on array fa_intm_in_tgt
             ! the new contraction with the intermediate is on
             ! contr_rpl
+            if (ntest.ge.100.and..not.success) then
+              write(lulog,*) 'Now calling find_contr_w_intm2'
+            end if
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
      &         fl_tgt_current,fpl_intm_c2blk,iposs_blk(iblk_int),
      &         nmod_max,nmod,imod,xmod,split,

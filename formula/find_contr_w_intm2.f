@@ -153,13 +153,14 @@ c          end if
 
       if (success1) then
         ! get factor, vertices and arcs associated with T_0
-c        if (fl_tgt%contr%nvtx.le.4) then
-c         call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
+        ! this split is just for testing
+c        if (fl_tgt%contr%nvtx.le.4.or.contr_i%nvtx.le.2) then 
+c          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info,
+c     &                      success1)
 c        else
-          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info,
+          call split_contr4(contr_t0,contr_i,fl_tgt%contr,op_info,
      &                      success1)
 c        end if
-c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
 
         if (ntest.ge.100.and.success1) then
           write(lulog,*) 'considering contraction:'
@@ -199,7 +200,9 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
 
         nterms_gen = iterm
         if (ntest.ge.100) then
-          write(lulog,*) 'looking for ',nterms_gen,' terms'
+          write(lulog,*)
+     &      'find_contr_w_intm2: looking for ',nterms_gen,' terms'
+          call print_form_list_short(lulog,fl_t0_i,op_info)
         end if
 
         allocate(assigned(nterms_gen))
@@ -238,6 +241,12 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
      &             'not prepared for that command (see above)')
           end select
 
+          if (ntest.ge.100) then
+            write(lulog,*)
+     &      'find_contr_w_intm2: next term from formula to be factored'
+            call prt_contr2(6,fl_tgt_pnt%contr,op_info)
+          end if
+
           ! compare with generated target contractions
           iterm = 0
           fl_t0_i_pnt => fl_t0_i
@@ -249,11 +258,12 @@ c        call split_contr2(.true.,contr_t0,contr_i,fl_tgt%contr,op_info)
      &                       'this should not happen')
 
             if (.not.assigned(iterm)) then
-c dbg
-c              print *,'comparing: iterm = ',iterm
-c              print *,'assigned: ',assigned(1:nterms_gen)
-c              call prt_contr2(6,fl_tgt_pnt%contr,op_info)
-c              call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
+
+              if (ntest.ge.100) then
+                write(lulog,*) 'assigned: ',assigned(1:nterms_gen)
+                write(lulog,*) 'comparing to term #', iterm
+                call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
+              end if
 c dbg
 c              if (cmp_contr(fl_tgt_pnt%contr,
 c     &                      fl_t0_i_pnt%contr,.false.)) then
@@ -268,9 +278,8 @@ c      1/2*aa+ab+1/2*bb --> 1/2*a(a+b)+1/2*b(a+b) --> 1/2*(a+b)(a+b)
      &                      fl_t0_i_pnt%contr,split)  !   no need to exactly match factor
      &            .and.nmod.lt.nmod_max) then
 
-c dbg
-c                print *,'OK!'
-c dbg
+                if (ntest.ge.100) write(lulog,*) 'OK!'
+
                 assigned(iterm) = .true.
                 nfound = nfound+1
                 if (nfound.eq.1) then
@@ -314,6 +323,11 @@ c     &                 'factor change of leading term needed')  ! this should n
 
 
         end do tgt_loop
+c dbg
+c        if (.not.(success1.and.success2)) write(lulog,'(" assigned:")') 
+c        if (.not.(success1.and.success2)) write(lulog,'(5l3,2x,5l3)')
+c     &        assigned 
+c dbg
 
         deallocate(assigned)
         call dealloc_formula_list(fl_t0_i)

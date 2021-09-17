@@ -698,7 +698,7 @@ cc      if (index(label, "H")>0) then
      &   item,               ! ITF contraction object; holds all info about the ITF algo line
      &   pitem               ! Permutation ITF contraction object
       integer ::
-     &   i,                  ! Loop index
+     &   i, j,                 ! Loop index
      &   perm_case,          ! Info of permutation factors
      &   ntest1 =  00,       ! Control debug: init_itf_contr
      &   ntest2 =  00,       ! Control debug: assign_index
@@ -752,13 +752,15 @@ cc      if (index(label, "H")>0) then
       pline = .false.
       perm_case = 0
       do i = 1, ngastp
-         if(contr_info%perm(i)) perm_case = perm_case + 1
+        do j = 1, 2
+          if(contr_info%perm(i,j)) perm_case = perm_case + 1
+        end do
       end do
 
       if (ntest3>=100) then
          call debug_header("Determine permutation", item%out)
-         write(item%out,'(1x,"contr_info%perm was ",10i4)')
-     &        contr_info%perm(1:ngastp)        
+         write(item%out,'(1x,"contr_info%perm was ",4l4,2x,4l4)')
+     &        contr_info%perm(1:ngastp,2)        
          write(item%out,*) "perm_case: ", perm_case
       end if
 
@@ -954,7 +956,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       item%contri = sum(sum(item%c, dim=1))
 
       ! Set external lines (used for permuations)
-      item%perm_case = contr_info%perm
+      ! UNUSED item%perm_case = contr_info%perm
 
       ! Determine factor from equivalent lines
       item%fact = 1.0d+0
@@ -1225,7 +1227,7 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       type(itf_contr), intent(inout) ::
      &   item        ! ITF contraction object; holds all info about the ITF algo line
       logical, intent(in) ::
-     &   perm(ngastp)
+     &   perm(ngastp,2)
       integer, intent(in) ::
      &   ntest
 
@@ -1253,11 +1255,13 @@ c         if (.not. item%inter(3) .and. .not. item%product) then  ! <--- why not
       tmp2 = item%idx2
 
       ! Identify and swap external indicies
-      do i = 1, ngastp
-         if (perm(i)) then
+      do j = 1, 2
+        do i = 1, ngastp
+          if (perm(i,j)) then
             ex_itype = i
             exit
-         end if
+          end if
+        end do
       end do
 
       ! check whether C or A should by symmetrised
@@ -5284,7 +5288,7 @@ c     dbg
       character(len=70) ::
      &   line
       character(len=INDEX_LEN) ::
-     &   tindex
+     &   tindex, new_idx
       character(len=MAXLEN_BC_LABEL) ::
      &     new
 
@@ -5305,17 +5309,22 @@ c     dbg
       new = rename_tensor(item%old_name,
      &                    item%rank3, item%nops3, itf_names)
 
-      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
-     &       trim(item%label_res)//'['//trim(item%idx3)//']'
+      new_idx = item%idx3
+      call reorder_to_slots(item%int(3),item%rank3,
+     &                      new_idx,
+     &                      new,item%nops3,item%out)
+      
+      line = '.'//trim(new)//'['//trim(new_idx)//'] += '//
+     &       trim(item%label_res)//'['//trim(new_idx)//']'
       write(item%out,'(a)') trim(line)
 
       tindex = ' '
-      tindex(1:1) = item%idx3(2:2)
-      tindex(2:2) = item%idx3(1:1)
-      tindex(3:3) = item%idx3(4:4)
-      tindex(4:4) = item%idx3(3:3)
+      tindex(1:1) = new_idx(2:2)
+      tindex(2:2) = new_idx(1:1)
+      tindex(3:3) = new_idx(4:4)
+      tindex(4:4) = new_idx(3:3)
 
-      line = '.'//trim(new)//'['//trim(item%idx3)//'] += '//
+      line = '.'//trim(new)//'['//trim(new_idx)//'] += '//
      &       trim(item%label_res)//'['//trimal(tindex)//']'
       write(item%out,'(a)') trim(line)
 
@@ -5396,12 +5405,27 @@ c        end do
 c      end do
 
       nosym = .false.
-      if (sum(nops)>2 .and. nops(3,1)==1 .and. nops(3,2)==1) then
-         if (.not. check_inter(contr_info%label_res)) then
-            nosym = .true.
-         end if
+c      if (sum(nops)>2 .and. nops(3,1)==1 .and. nops(3,2)==1) then
+c         if (.not. check_inter(contr_info%label_res)) then
+c            nosym = .true.
+c         end if
+c     end if
+      if (.not.check_inter(contr_info%label_res)) then
+        if (sum(nops)==4) then
+          nosym = .true.
+          do jj = 1, 2
+            do ii = 1, ngastp
+              if (nops(ii,jj)==2) nosym=.false. 
+            end do
+          end do 
+        end if
+        
+        if (sum(nops)>4) then
+          call quit(1,'command_to_itf->check_symmetric',
+     &         'extend me for ops with > 4 indices')
+        end if
       end if
-
+        
 c     dbg
 c      write(lu,*) 'symmetric, nosym: ',symmetric, nosym
 c     dbg

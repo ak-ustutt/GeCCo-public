@@ -40,12 +40,12 @@
      &     fl_abc_pnt
  
       logical ::
-     &     reo, unique, done
+     &     reo, unique, done, resort
       integer ::
      &     nvtx_abc, nvtx_ac, nvtx_a, nvtx_b, nvtx_c,
      &     narc_abc, narc_abc0, narc_ac, narc_b, nxarc_ac,
      &     idx, jdx, ivtx_abc, iarc, ivtx, jvtx, jvtx_last,
-     &     nproto_ac, nproto_b, idxsuper,
+     &     nproto_ac, nproto_b, idxsuper, idum,
      &     nsuper, nsuper_non0, njoined, isuper, njoined_abc,
      &     occ_x(ngastp,2), occ_over(ngastp,2), icnt, ioff
       integer(8) ::
@@ -57,7 +57,7 @@
      &     ivtx_ac_reo(:), ivtx_b_reo(:),
      &     occ_vtx(:,:,:), svmap(:), ivtx_old(:), svtx(:), ol_map(:)
       integer(8), pointer ::
-     &     vtx(:), topo(:,:), xlines(:,:)
+     &     vtx(:), topo(:,:), xlines(:,:), vtx_reo(:)
       logical, pointer ::
      &     fix_vtx(:), found(:)
 
@@ -82,6 +82,13 @@
         write(lulog,*) 'mode = ',mode
       end if
 
+      call contr_xarc_sort(contr_b) ! buggy
+
+      if (ntest.ge.100) then
+        write(lulog,*) 'modified B:'
+        call prt_contr2(lulog,contr_b,op_info)
+      end if
+      
       nvtx_ac = contr_ac%nvtx
       narc_ac = contr_ac%narc
       nxarc_ac = contr_ac%nxarc
@@ -137,21 +144,8 @@
           end do
         end if
         unique = .true.
-c        ! need to call old svmap4contr because svmap4contr2 cannot
-c        ! deal with single operator intermediates where open lines
-c        ! are not explicitly given
-c        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
-c        call occvtx4contr(0,occ_vtx,contr_b,op_info)
-c        call svmap4contr(svmap,contr_b,occ_vtx,njoined)
-c        deallocate(occ_vtx)
       else
-c        allocate(occ_vtx(ngastp,2,nvtx_b+njoined))
-c        call occvtx4contr(0,occ_vtx,contr_b,op_info)
-c dbg
-c        print *,'opres: ',trim(opres%name)
-c        print *,'njoined = ',njoined
-c        print *,'call in join_contr2a'
-c dbg
+
         call svmap4contr2(svmap,contr_b,unique)
 
         ! quick fix: middle zero vertex would not be accounted for
@@ -159,34 +153,14 @@ c dbg
          if(svmap(3).eq.3.and.svmap(2).eq.0) unique = .false.
         end if
 
-        if (.not.unique) call pseudo_svmap(svmap,contr_b,njoined)
+        if (.not.unique) call pseudo_svmap2(svmap,contr_b,njoined)
 c        deallocate(occ_vtx)
       end if
       ! largest index = number of super vertices (at least 1)
-c      nsuper = ifndmax(svmap,1,nvtx_b,1)
       nsuper = max(1,ifndmax(svmap,1,nvtx_b,1))
 
       ! check for zero occupations in B
       nsuper_non0 = nsuper
-c      if (nsuper.ne.nproto_ac) then
-cc dbg
-c        print *,'unique= ',unique
-c        print *,'svmap=',svmap
-cc dbg
-c        nsuper_non0 = 0
-c        ioff = (contr_b%iblk_res-1)*njoined
-c        do idx = 1, njoined
-c          if (iocc_nonzero(op_info%op_arr(
-c     &        contr_b%idx_res)%op%ihpvca_occ(1:ngastp,1:2,ioff+idx)))
-c     &    then
-c            nsuper_non0 = nsuper_non0+1
-c          else if (.not.unique) then
-c            do jdx = idx, nvtx_b
-c              svmap(jdx) = svmap(jdx)-1
-c            end do
-c          end if
-c        end do
-c      end if
 
       if (nsuper.ne.nproto_ac.and.nsuper_non0.gt.nproto_ac) then
         write(lulog,*) 'join_contr2a: joining: AC, B'
@@ -481,6 +455,19 @@ c      end if
         call prt_contr2(lulog,contr_abc,op_info)
       end if
 
+      ! check arc consistency
+      do iarc = 1, narc_abc
+        ! accept, if some arcs are zero, but wrong way round can be dangerous
+        if (contr_abc%arc(iarc)%link(1)*
+     &      contr_abc%arc(iarc)%link(2).ne.0 .and.
+     &                  contr_abc%arc(iarc)%link(1).ge.
+     &                  contr_abc%arc(iarc)%link(2)    ) then
+           write(lulog,*) 'Inconsistent arc settings generated:'
+           call prt_contr2(lulog,contr_abc,op_info)
+           call quit(1,'join_contr2a','inconsistent arcs!')
+        end if
+      end do
+
       ! set fix_vtx and occ_vtx arrays
       allocate(fix_vtx(nvtx_abc+2),
      &         occ_vtx(ngastp,2,nvtx_abc+2),
@@ -537,6 +524,11 @@ c      end if
       if (nterms.eq.0.or.mode.eq.0.and.nterms.gt.1) then
         write(lulog,*) 'proto-contraction:'
         call prt_contr2(lulog,contr_abc,op_info)
+        write(lulog,*)
+     &       'The above output may be unclean for result vertices'
+        write(lulog,*)
+     &       'This is the actual occ_vtx:'
+        call wrt_occ_n(lulog,occ_vtx,nvtx_abc+2)
         if (nterms.eq.0) call quit(1,'join_contr2a',
      &       'no possible connection found')
         write(lulog,*) 'generated terms:'

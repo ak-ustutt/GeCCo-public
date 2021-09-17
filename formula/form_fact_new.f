@@ -322,6 +322,12 @@ c dbg
       ! Optionally check for permutation factors used in
       ! the ITF translator
       ! TODO: make this optional
+
+      if (trim(op_info%op_arr(contr%idx_res)%op%name)=="INTHE1") then
+        write(lulog,*) 'HERE IT COMES: '
+        call prt_contr2(lulog,contr,op_info)
+      end if
+        
       call check_itf_permute(contr,fl_fact)
 
       return
@@ -549,6 +555,7 @@ c dbg
       implicit none
 
       include 'opdim.h'
+      include 'stdunit.h'
       include 'mdef_operator_info.h'
       include 'def_contraction.h'
       include 'def_formula_item.h'
@@ -563,10 +570,9 @@ c dbg
      &     icount,         ! Number of operators with odd number of external indices
      &     i, j, l         ! Loop index
       logical ::
-     &     permute(ngastp)      ! True if there is a permutation factor
+     &     permute(ngastp,2)      ! True if there is a permutation factor
       type(formula_item), pointer ::
      &     fl_pnt
-
 
       permute = .false.
 
@@ -574,19 +580,21 @@ c dbg
       ! If there is an odd number of external indices over multiple
       ! operators, then there is a factor
       do i = 1, ngastp
-         icount = 0
-         do l = 1, contr%nxarc
-            isum = 0
-            do j = 1, 2
-               isum = isum + contr%xarc(l)%occ_cnt(i,j)
-            end do
+        do j = 1, 2
+          icount = 0
+          do l = 1, contr%nxarc
+            isum = contr%xarc(l)%occ_cnt(i,j)
             if (mod(isum,2)>0) then
-               icount = icount + 1
+              icount = icount + 1
             end if
-         end do
-         if (icount>1) then
-            permute(i) = .true.
-         end if
+          end do
+c     dbg
+c          write(lulog,*) 'gas, icount: ',i, icount
+c     dbg
+          if (icount>1) then
+            permute(i,j) = .true.
+          end if
+        end do
       end do
 
       ! Loop through all the binary contractions and set the perm flags
