@@ -480,6 +480,19 @@ if (HGamma):
     FHG1.set_rule()
     REPLACE({LABEL_RES:'F_HG1',LABEL_IN:'F_HG1',OP_LIST:['GM1','GAM0']})
     REORDER_FORMULA({LABEL_IN:'F_HG1',LABEL_RES:'F_HG1'})
+    # B-1: H transformed with one-particle hole density on creation index
+    if (nc_rs<2):
+        DEF_OP_FROM_OCC({LABEL:'INTHE1',JOIN:2,DESCR:'[HPV][HPV],VV;,|[HPV]H,HV;,|[HV]H,PV;,'})
+        #DEF_OP_FROM_OCC({LABEL:'INTHE1',JOIN:2,DESCR:'HV,VV;,'})
+    else:
+        DEF_OP_FROM_OCC({LABEL:'INTHE1',JOIN:2,DESCR:'[HPV][HPV],[HV]V;,|[HPV][HV],[HPV]V;,'})
+    DEF_ME_LIST({LIST:'ME_INTHE1',OPERATOR:'INTHE1',IRREP:1,'2MS':0,AB_SYM:+1})
+    FHE1 = stf.Formula("F_HE1:INTHE1=<INTHE1'*GM0'*H*GM0'*INTHE1'*INTHE1'*INTHE1'>") # first term
+    FHE1.append("<INTHE1'*GM1'*H*GM1'*INTHE1'*INTHE1'*INTHE1'>",connect=[2,5,3,4])
+    FHE1.set_rule()
+    PRINT_FORMULA({LABEL:'F_HE1',MODE:'SHORT'})
+    REPLACE({LABEL_RES:'F_HE1',LABEL_IN:'F_HE1',OP_LIST:['GM0','GAM0','GM1','GAM0']})
+    REORDER_FORMULA({LABEL_IN:'F_HE1',LABEL_RES:'F_HE1'})
     # C: H transformed with two-particle density on creation indices
     DEF_OP_FROM_OCC({LABEL:'INTHG2',JOIN:2,DESCR:',[HPV][HPV];VV,'})
     DEF_ME_LIST({LIST:'ME_INTHG2',OPERATOR:'INTHG2',IRREP:1,'2MS':0,AB_SYM:+1})
@@ -488,35 +501,98 @@ if (HGamma):
     FHG2.set_rule()
     REPLACE({LABEL_RES:'F_HG2',LABEL_IN:'F_HG2',OP_LIST:['GM2','GAM0','H2','H']})
     REORDER_FORMULA({LABEL_IN:'F_HG2',LABEL_RES:'F_HG2'})
+    # C-1: H transformed with two-particle hole-density on creation indices
+    DEF_OP_FROM_OCC({LABEL:'INTHE2',JOIN:2,DESCR:'[HPV][HPV],VV;,'})
+    DEF_ME_LIST({LIST:'ME_INTHE2',OPERATOR:'INTHE2',IRREP:1,'2MS':0,AB_SYM:+1})
+    FHE2 = stf.Formula("F_HE2:INTHE2=<INTHE2'*GM0'*H*GM0'*INTHE2'*INTHE2'*INTHE2'>") # first term
+    FHE2.append("<INTHE2'*GM1'*H2*GM1'*INTHE2'*INTHE2'*INTHE2'>",connect=[2,5,3,4])
+    FHE2.append("<INTHE2'*GM2'*H2*GM2'*INTHE2'*INTHE2'*INTHE2'>",connect=[2,5,3,4],avoid=[2,4,1,4])
+    FHE2.set_rule()
+    REPLACE({LABEL_RES:'F_HE2',LABEL_IN:'F_HE2',OP_LIST:['GM0','GAM0','GM1','GAM0','GM2','GAM0','H2','H']})
+    REORDER_FORMULA({LABEL_IN:'F_HE2',LABEL_RES:'F_HE2'})
     
-#    DEF_OP_FROM_OCC({LABEL:'INTHGAM',JOIN:2,DESCR:',;[HPV],[HPV]|,V;[PV],|,V;,H|,V;[HPV]V,[HPV]|,V;[HPV]P,[HV]|,V;[HPV],[HPV]H|,VV;[PV][PV],|,VV;[PV],H|,VV;,HH'})
-#    HGproto = stf.Formula("F_HGprotoL:MRCC_LAG="+_L2_refexp("[H,T1]"))
-#    HGproto.set_rule()
-#    FACTOR_OUT({
-#        LABEL_IN:'F_HGprotoL',
-#        LABEL_RES:'F_HGprotoL',
-#        INTERM:'FORM_GAM0'})
-
     PRINT_FORMULA({LABEL:'F_HG0',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'F_HG1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'F_HE1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'F_HG2',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'F_HE2',MODE:'SHORT'})
 
     
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
         LABEL_RES:'FORM_MRCC_LAG_A1',
-        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
+#        INTERM:['F_HG0','F_HG0^+'],
+        INTERM:['F_HG0','F_HG0^+','F_HE2','F_HE2^+']})
+#        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
-        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
+#        INTERM:['F_HG0','F_HG0^+']})
+        INTERM:['F_HG0','F_HG0^+','F_HE2','F_HE2^+']})
+#        INTERM:['F_HG0','F_HG0^+','F_HG1','F_HG1^+','F_HG2','F_HG2^+']})
     
     
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
-    #ABORT({COMMENT:'Development Stop'})
+HTint = False
+if (HTint):
+
+    # this was my starting point:
+    #DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',V;V,V;V,'})
+    # slightly extended
+#    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',V;H,H;V,|,V;V,V;V,|,V;P,P;V,'})  # AA: 108 terms 
+#    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',V;[HPV],[HPV];V,'})  but only HH, PP, VV generate
+    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',;P,VH;V,'})
+#    DEF_OP_FROM_OCC({LABEL:'Ltgt',JOIN:1,DESCR:'HV,PV'})  # A.
+    DEF_OP_FROM_OCC({LABEL:'Ltgt',JOIN:1,DESCR:'HH,PP'})  # B.
+    DEF_OP_FROM_OCC({LABEL:'Ttgt',JOIN:1,DESCR:'PV,HV'})  # .A
+
+    # mask the target vertices
+    REPLACE({LABEL_RES:'F_preHT0',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2g','Ttgt','LAM2g','Ltgt']})
+
+    # IMPORTANT: our starting point is not the formula with all replacements made so far:
+    DERIVATIVE({
+        LABEL_IN:'F_preHT0',
+        LABEL_RES:'F_preHT1', # <<--- presently, this has to be a new name!
+        OP_RES:'O2g',
+        OP_DERIV:'Ltgt'})
+
+    REORDER_FORMULA({LABEL_IN:'F_preHT1',LABEL_RES:'F_preHT1'})
+    
+    DERIVATIVE({LABEL_RES:'F_INTHT',LABEL_IN:'F_preHT1',OP_RES:'INTHT',OP_DERIV:'Ttgt'})
+    REPLACE({LABEL_RES:'F_INTHT',LABEL_IN:'F_INTHT',OP_LIST:['Ttgt','T2g']})
+
+    # Very important: REORDER
+    REORDER_FORMULA({LABEL_IN:'F_INTHT',LABEL_RES:'F_INTHT'})
+
+    PRINT_FORMULA({LABEL:'F_INTHT',MODE:'SHORT'})
+
+    FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_A1',
+        LABEL_RES:'FORM_MRCC_LAG_A1',
+        INTERM:'F_INTHT',SPLIT:True})
+
+    FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_LAG_A2',
+        INTERM:'F_INTHT',SPLIT:True})
+    
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
+    # test
+    Ftest = stf.Formula("F_test:MRCC_LAG=<INTHT'*Ltgt*INTHT'*Ttgt*INTHT'>")
+    Ftest.set_rule()
+    PRINT_FORMULA({LABEL:'F_test',MODE:'SHORT'})
+
+    EXPAND({LABEL_IN:'F_test',LABEL_RES:'F_test_2',INTERM:'F_INTHT'})
+    REPLACE({LABEL_RES:'F_test_2',LABEL_IN:'F_test_2',OP_LIST:['Ttgt','T2g','Ltgt','LAM2g']})
+    
+    PRINT_FORMULA({LABEL:'F_test_2',MODE:'SHORT'})
+    
+    ABORT({COMMENT:'Development Stop'})
 
 
 # now creating the actual residuals
@@ -526,7 +602,7 @@ DERIVATIVE({
         OP_RES:'O1',
         OP_DERIV:'LAM1'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1',LABEL_RES:'FORM_MRCC_RES1_0'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1',LABEL_RES:'FORM_MRCC_RES1'})
 
 DERIVATIVE({
         LABEL_IN:'FORM_MRCC_LAG_A2',
@@ -534,7 +610,7 @@ DERIVATIVE({
         OP_RES:'O2g',
         OP_DERIV:'LAM2g'})
 
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2',LABEL_RES:'FORM_MRCC_RES2_0'})
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2',LABEL_RES:'FORM_MRCC_RES2'})
 
 
 if (remove_gamma0):
@@ -553,6 +629,15 @@ if (remove_gamma0):
             LABEL_IN:'F_HG0',
             LABEL_RES:'F_HG0',
             OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+        ASSUME_CONST({
+            LABEL_IN:'F_HE1',
+            LABEL_RES:'F_HE1',
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+        ASSUME_CONST({
+            LABEL_IN:'F_HE2',
+            LABEL_RES:'F_HE2',
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+
 
     ASSUME_CONST({
         LABEL_IN:'FORM_MRCC_RES2',
@@ -569,16 +654,51 @@ if (remove_gamma0):
         LABEL_RES:'FORM_MRCC_LAG_E',
         OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
+_opt_label_list = []
+_itf_code_list = []
+
+if (HGamma):
+    _opt_label_list.append('F_HG0')
+    #_opt_label_list.append('F_HG1')
+    #_opt_label_list.append('F_HG2')
+    #_opt_label_list.append('F_HE1')
+    _opt_label_list.append('F_HE2')
+    _itf_code_list.append('<Make_HGAM>')
+    _itf_code_list.append('INTHG0')
+    _itf_code_list.append('INTHG1')
+    _itf_code_list.append('INTHG2')
+    _itf_code_list.append('INTHE1')
+    _itf_code_list.append('INTHE2')
+
+_opt_label_list.append('F_T1SUM')
+_opt_label_list.append('F_INTkx')
+_itf_code_list.append('<Sum_T1>')
+_itf_code_list.append('T1s')
+_itf_code_list.append('<Update_INTkx>')
+_itf_code_list.append('INTkx')
+_itf_code_list.append('<Residual>')
+
+if (I3ext):
+    _opt_label_list.append('F_INT3ext')
+    _itf_code_list.append('INT3ext')
+
+_opt_label_list.append('FORM_MRCC_RES2')
+_opt_label_list.append('FORM_MRCC_RES1')
+_opt_label_list.append('FORM_MRCC_LAG_E')
+_itf_code_list.append('MRCC_LAG')
+_itf_code_list.append('O1')
+_itf_code_list.append('O2g')
     
-if (I3ext and not HGamma):
-    _opt_label_list = ['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
-elif (I3ext and HGamma):
-    _opt_label_list = ['F_HG0','F_HG1','F_HG2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-    _itf_code_list = ['<Make_HGAM>','INTHG0','INTHG1','INTHG2','<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
-else:
-    _opt_label_list = ['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']
+#if (I3ext and not HGamma):
+#    _opt_label_list = ['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+#    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
+#elif (I3ext and HGamma):
+#    _opt_label_list = ['F_HG0','F_HG1','F_HG2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+#    _opt_label_list = ['F_HG0','F_HE2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+#    _itf_code_list = ['<Make_HGAM>','INTHG0','INTHE1','INTHE2','INTHG1','INTHG2','<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
+#else:
+#    _opt_label_list = ['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
+#    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']
     
 #    OPTIMIZE({
 #        LABEL_OPT:'FOPT_MRCC_LAG',
@@ -605,19 +725,6 @@ elif cas22:
     filename = filename + '_cas22'
 filename2 = filename + '.formulae'
 filename = filename + '.itfaa'
-
-#    TRANSLATE_ITF({
-#        LABEL:'FOPT_MRCC_LAG',
-#        OUTPUT:filename,
-#        TITLE:filename2,
-#        MULTI:True,
-#        PROCESS:True,
-#        KEXT:True,
-#        TASKS:tasks,
-#        INIT_RES:False,
-#        ITIN:True,
-#        RENAME:['MRCC_LAG','ECC','T1','T1','T2g','T2','O1','R1','O2g','R2','GAM0','Ym<RANK>'],
-#        CODE:['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']})
 
 skip_itf = False
 if not skip_itf:
