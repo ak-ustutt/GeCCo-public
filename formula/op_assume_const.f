@@ -34,9 +34,11 @@
      &     ieqvfac, nvtx, narc, nxarc, nfac, njoined, idx_join, ij, jdx,
      &     isuper, nvtx_rem, nsvtx_rem, narc_rem, nxarc_rem
       integer, allocatable ::
-     &     occ_temp(:,:,:), vtx_chng_idx(:)
+     &     occ_temp(:,:,:), vtx_chng_idx(:), svertex_hlp(:)
       integer, pointer ::
      &     vtx_map(:), vtx_map_rev(:), occ_vtx(:,:,:), vtx_where(:)
+      type(cntr_vtx), pointer ::
+     &     vertex_hlp(:)
       type(contraction), pointer ::
      &     contr
       logical ::
@@ -168,10 +170,18 @@ c          write(lulog,*) '[ADD]'
               end if
             end do
 
-            
+            allocate(vertex_hlp(nvtx),svertex_hlp(nvtx))
+
+            vertex_hlp = contr%vertex
+            svertex_hlp = contr%svertex
+
             do ivtx = 1, nvtx-nvtx_rem
-              contr%vertex(ivtx) = contr%vertex(vtx_map_rev(ivtx))
+              contr%vertex(ivtx) = vertex_hlp(vtx_map_rev(ivtx))
+              contr%svertex(ivtx) = svertex_hlp(vtx_map_rev(ivtx))
             end do
+
+            deallocate(vertex_hlp,svertex_hlp)
+
             narc = contr%narc
             narc_rem = 0
             do iarc = 1, narc
@@ -224,7 +234,7 @@ c          write(lulog,*) '[ADD]'
             call resize_contr(contr,nvtx,narc,nxarc,nfac)
 
             call update_svtx4contr(contr)
-            
+      
             allocate(vtx_map(nvtx)) ! dummy
             call canon_contr(contr,.false.,vtx_map)
             deallocate(vtx_map)
