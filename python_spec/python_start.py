@@ -56,9 +56,9 @@ try:
         print "begin setting MRCCPT2 targets"
         import python_blocks.MRCCPT2
 
-    if ( keywords.is_keyword_set("method.ITF") ):
-        print "begin setting icMRCC targets"
-        import python_blocks.ITF
+#    if ( keywords.is_keyword_set("method.ITF") ):
+#        print "begin setting icMRCC targets"
+#        import python_blocks.ITF
 
     print ("end of python_start\n"+"-"*50)
 

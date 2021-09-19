@@ -285,12 +285,12 @@
           </argument>
           <argument length="1" name="Favg_fix" status="A" type="1" value="false"/>
           <argument length="1" name="set_up_T_corr" status="A" type="1" value="false"/>
-        <keyword name="response" status="A"><argument length="1" name="order" status="A" type="2" value="1"><!--order of the response properties to be calculated--></argument><argument length="1" name="freq" status="A" type="4" value="0.0"><!--frequency of the perturbation, if any--></argument><argument length="8" name="comp" status="A" type="8" value="Z"><!--cartesian component of the perturbation--></argument><argument length="8" name="pert" status="A" type="8" value="d"><!--type of the perturbation operators--></argument><argument length="1" name="use_b" status="A" type="1" value="true"><!--to use the B_\lambda_c term in the response equations--></argument></keyword><argument length="1" name="T3Lag" status="A" type="1" value="false"><!--Add Lagrange correction in (T) energy expression--></argument></keyword>
+        <keyword name="response" status="A"><argument length="1" name="order" status="A" type="2" value="1"><!--order of the response properties to be calculated--></argument><argument length="1" name="freq" status="A" type="4" value="0.0"><!--frequency of the perturbation, if any--></argument><argument length="8" name="comp" status="A" type="8" value="Z"><!--cartesian component of the perturbation--></argument><argument length="8" name="pert" status="A" type="8" value="d"><!--type of the perturbation operators--></argument><argument length="1" name="use_b" status="A" type="1" value="true"><!--to use the B_\lambda_c term in the response equations--></argument></keyword><argument length="1" name="T3Lag" status="A" type="1" value="false"><!--Add Lagrange correction in (T) energy expression--></argument><argument length="1" name="select" status="A" type="1" value="true"><!--Truncate higher commutators to those contributing in single-reference CC--></argument></keyword>
         <keyword name="MRCC2" status="A">
           <keyword name="excite" status="A">
             <argument length="8" name="method" status="A" type="8" value="LR      "/>
           </keyword>
-          <keyword name="MRCCSD_mode" status="A" > <!-- For debugging, extends the formulas  to full MRCCSD formulas the hamiltonian has to manually to be set to FULL -->
+          <keyword name="MRCCSD_mode" status="A"> <!-- For debugging, extends the formulas  to full MRCCSD formulas the hamiltonian has to manually to be set to FULL -->
           </keyword>
           <argument length="1" name="lagrangian" status="A" type="2" value="0">
             <!--type of lagrangian-->
@@ -301,7 +301,7 @@
 	    <argument length="1" name="maxcom_m1" status="A" type="2" value="0"/>
 	    <argument length="1" name="maxcom_m2" status="A" type="2" value="0"/>
             <argument length="1" name="shift_terms" type="1" value="false"/>
-            <argument length="1" name="lin_psD" status="A" type="2" value="0" >
+            <argument length="1" name="lin_psD" status="A" type="2" value="0">
               <!-- order to which pseudo doubles are introduced-->
 	    </argument>
 	    <argument length="1" name="maxcom_res" status="A" type="2" value="0"/>

@@ -15,7 +15,7 @@ import ref_relaxation
 
 
 #===================================================================================#
-# quick helper routine
+# helper routines
 #===================================================================================#
 def create_plist(n1,sym1,n2,sym2):
     plist = []
@@ -76,6 +76,46 @@ depend('DEF_O')
 #depend('DEF_O2g')
 #depend('DEF_O1')
 
+word = keywords.get('method.MRCC.maxcom_en')
+nc_en = int(word) if word is not None else 4
+word = keywords.get('method.MRCC.maxcom_res')
+nc_rs = int(word) if word is not None else 2
+
+word = keywords.get('method.MRCC.select')
+print("word = "+word)
+if word is None:
+    select =  True
+else:
+    if word == "F":
+        select = False
+    elif word == "T":
+        select = True
+    else:
+        quit_error('select must be T or F, found: '+word)
+
+itfgen = keywords.is_keyword_set('method.ITF')
+
+doublet=False
+cas22=False
+if itfgen:
+    orbinfo = Orb_Info()
+    nactel = orbinfo.get('nactel')
+    nactorb = orbinfo.get('nactorb')
+    if (nactel==1 and nactorb==1):
+        doublet=True
+    elif (nactel==2 and nactorb==2):
+        cas22=True
+    else:
+        quit_error('ITFgen called for case not considered yet!')
+
+print("Settings for MRCC generator:")
+print("maxcom_en  = "+str(nc_en))
+print("maxcom_res = "+str(nc_rs))
+print("select     = "+str(select))
+if (doublet):
+    print("detected CAS(1,1) case")
+if (cas22):
+    print("detected CAS(2,2) case")
 
 depend('GAM0_CALC')
 
@@ -95,15 +135,20 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
+
+itfgen=True
 tasks=False
 
-nc_en=4
-nc_rs=4
-select=True     # for nc_rs>2: select terms that contribute in SR case
+verbosity=10
+
+
+#nc_en=4
+#nc_rs=2
+#select=True     # for nc_rs>2: select terms that contribute in SR case
 #select = False
 #linear = True
-doublet = False
-cas22 = True
+#doublet = False
+#cas22 = True
 
 remove_gamma0 = True # remove the scalar part of GAM0 (which is just 1.0)
 
@@ -158,33 +203,33 @@ if nc_rs > 2:
         LAG_A1.append(_L1_refexp("1/6*[[[H,T1],T1],T1]"))
     else:
         LAG_A1.append(_L1_refexp("1/6*[[[H,T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 3:
-    if not select:
-        for nsingles in range(5):
-            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-            for entryT in listT:
-                print "Generating: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
-                LAG_A1.append(_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-
-#        LAG_A1.append(_L1_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 4:
-    if not select:
-        for nsingles in range(6):
-            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
-            for entryT in listT:
-                print "Generating: "+_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
-                LAG_A1.append(_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
-#        LAG_A1.append(_L1_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 5:
-    if not select:
-        LAG_A1.append(_L1_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-# I think that singles can accomodate at most 6-fold
-#if nc_rs > 6:
+#if nc_rs > 3:
 #    if not select:
-#        LAG_A1.append(_L1_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 7:
+#        for nsingles in range(5):
+#            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+#            for entryT in listT:
+#                print "Generating: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]#+"]")
+#                LAG_A1.append(_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))###
+#
+##        LAG_A1.append(_L1_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 4:
 #    if not select:
-#        LAG_A1.append(_L1_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#        for nsingles in range(6):
+#            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
+#            for entryT in listT:
+#                print "Generating: "+_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[#3]+"],"+entryT[4]+"]")
+#                LAG_A1.append(_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"#+entryT[4]+"]"))
+##        LAG_A1.append(_L1_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 5:
+#    if not select:
+#        LAG_A1.append(_L1_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+## I think that singles can accomodate at most 6-fold
+##if nc_rs > 6:
+##    if not select:
+##        LAG_A1.append(_L1_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+##if nc_rs > 7:
+##    if not select:
+##        LAG_A1.append(_L1_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
 
 LAG_A2.append(_L2_refexp("[H,T1]"))
 LAG_A2.append(_L2_refexp("[H,T2]"))
@@ -201,56 +246,74 @@ if nc_rs > 2:
 if nc_rs > 3:
     if select:
         LAG_A2.append(_L2_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
-    else:
-        for nsingles in range(5):
-            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-            for entryT in listT:
-                print "Generating: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
-                LAG_A2.append(_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
+#    else:
+#        for nsingles in range(5):
+#            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+#            for entryT in listT:
+#                print "Generating: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+#                LAG_A2.append(_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
 
         #LAG_A2.append(_L2_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 4:
-    if not select:
-        for nsingles in range(6):
-            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
-            for entryT in listT:
-                print "Generating: "+_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
-                LAG_A2.append(_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
+#if nc_rs > 4:
+#    if not select:
+#        for nsingles in range(6):
+#            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
+#            for entryT in listT:
+#                print "Generating: "+_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
+#                LAG_A2.append(_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
 
-       # LAG_A2.append(_L2_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 5:
-    if not select:
-        LAG_A2.append(_L2_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 6:
-    if not select:
-        LAG_A2.append(_L2_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 7:
-    if not select:
-        LAG_A2.append(_L2_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#       # LAG_A2.append(_L2_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 5:
+#    if not select:
+#        LAG_A2.append(_L2_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 6:
+#    if not select:
+#        LAG_A2.append(_L2_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
+#if nc_rs > 7:
+#    if not select:
+#        LAG_A2.append(_L2_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
 
 PRINT({STRING:"Now expanding energy"})
 LAG_E.set_rule()
 PRINT({STRING:"Now expanding singles projection"})
 LAG_A1.set_rule()
+if nc_rs > 3 and not select:
+    ngroups = 0
+    for nsingles in range(5):
+        listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+        for entryT in listT:
+            ngroups = ngroups+1
+            print "Generating input for: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+            LAG_A1_C4 = stf.Formula("LAG_A1_C4_"+str(ngroups)+":MRCC_LAG_A1="+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
+            LAG_A1_C4.set_rule()
+    groups = ["FORM_MRCC_LAG_A1"]
+    for igrp in range(1,ngroups+1):
+        groups.append("LAG_A1_C4_"+str(igrp))
+    CONCAT({LABEL_RES:"FORM_MRCC_LAG_A1",LABEL_IN:groups})
+    SUM_TERMS({LABEL_RES:"FORM_MRCC_LAG_A1",LABEL_IN:"FORM_MRCC_LAG_A1"})
+            
 PRINT({STRING:"Now expanding doubles projection"})
 LAG_A2.set_rule()
+if nc_rs > 3 and not select:
+    ngroups = 0
+    for nsingles in range(5):
+        listT = create_plist(nsingles,'T1',4-nsingles,'T2')
+        for entryT in listT:
+            ngroups = ngroups+1
+            print "Generating input for: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+            LAG_A2_C4 = stf.Formula("LAG_A2_C4_"+str(ngroups)+":MRCC_LAG_A2="+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
+            LAG_A2_C4.set_rule()
+    groups = ["FORM_MRCC_LAG_A2"]
+    for igrp in range(1,ngroups+1):
+        groups.append("LAG_A2_C4_"+str(igrp))
+    CONCAT({LABEL_RES:"FORM_MRCC_LAG_A2",LABEL_IN:groups})
+    SUM_TERMS({LABEL_RES:"FORM_MRCC_LAG_A2",LABEL_IN:"FORM_MRCC_LAG_A2"})
+
 
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2','T2g']})
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T2','T2g']})
 REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2','T2g','L2','LAM2g']})
 
-# currently redundant:
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1n','T2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1n','T2g', 'L1n', 'LAM2g']})
-
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T1t','T2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T1t','T2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T1t','T2g']})
-
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2t','T2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T2t','T2g']})
-#REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2t','T2g']})
 
 # --- factor out densities ---
 FACTOR_OUT({
@@ -288,9 +351,10 @@ FACTOR_OUT({
 #        LABEL_RES:'FORM_MRCC_LAG_A2',
 #        OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+if verbosity >= 100:
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 # define an operator that sums the two singles operators
 if doublet or cas22:
@@ -305,18 +369,6 @@ DEF_ME_LIST({LIST:'ME_T1s',OPERATOR:'T1s',IRREP:1,'2MS':0,AB_SYM:+1})
 
 DEF_FORMULA({LABEL:'F_T1SUM',FORMULA:'T1s=T1+T2g'})
 
-# not required any more:
-#FT1SSQ = stf.Formula("F_T1SSQ:T1s2=<T1s2'*T1*T1*T1s2'>") # it seems that "avoid" is not accepted for Formula
-## as a work-around, we added this dummy term ^^^^^^^
-#FT1SSQ.append("<0.5*T1s2'*T1s''*T1s'''*T1s2'>", avoid=["T1s''","T1s'''"])
-#FT1SSQ.set_rule()
-#INVARIANT({LABEL_RES:'F_T1SSQ',LABEL_IN:'F_T1SSQ',OPERATORS:'T1',OP_RES:'T1s2'}) # remove the dummy term
-#PRINT_FORMULA({LABEL:'F_T1SSQ',MODE:'SHORT'})
-#
-#EXPAND({LABEL_RES:"F_T1SSQ2",LABEL_IN:"F_T1SSQ",INTERM:"F_T1SUM"})
-#
-#PRINT_FORMULA({LABEL:'F_T1SSQ2',MODE:'SHORT'})
-
 # Factor out linear terms
 FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
 # One more call for quadratic terms
@@ -326,39 +378,29 @@ if nc_en > 2:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
 if nc_en > 3:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SUM',SPLIT:True})
-# And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ2'})
-#EXPAND({LABEL_IN:'FORM_MRCC_LAG_E',LABEL_RES:'FORM_MRCC_LAG_E',INTERM:'F_T1SSQ'})
-
 
 # Factor out linear terms
 FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
 # One more call for quadratic terms
 if nc_rs > 1:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
-if nc_rs > 2:
+if nc_rs > 2 and not select:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SUM',SPLIT:True})
-# And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ2'})
-#EXPAND({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'F_T1SSQ'})
-
 
 # Factor out linear terms
 FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
 # One more call for quadratic terms
 if nc_rs > 1:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
-if nc_rs > 2:
+if nc_rs > 2 and not select:
     FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
-# And a last set of call to correctly replace 0.5(T1+T2g)(T1+T2g)->0.5(T1s)(T1s)
-#FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ2'})
-#EXPAND({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SSQ'})
+if nc_rs > 3 and not select:
+    FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A2',LABEL_RES:'FORM_MRCC_LAG_A2',INTERM:'F_T1SUM',SPLIT:True})
 
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
-
-
+if verbosity >= 100:
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 
 #Make the Derivative with respect to LAM
@@ -384,7 +426,7 @@ REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
 FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'FORM_MRCC_RES2_0'})
 
 #PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
 #PRINT_FORMULA({LABEL:'FORM_MRCC_RES2_0',MODE:'SHORT'})
 
 
@@ -406,7 +448,8 @@ if (K4E):
     DERIVATIVE({LABEL_RES:'F_INTkx',LABEL_IN:'F_preINTkx',OP_RES:'INTkx',OP_DERIV:'Hpppp'})
     REORDER_FORMULA({LABEL_IN:'F_INTkx',LABEL_RES:'F_INTkx'})
 
-    PRINT_FORMULA({LABEL:'F_INTkx',MODE:'SHORT'})
+    if verbosity >= 10:
+        PRINT_FORMULA({LABEL:'F_INTkx',MODE:'SHORT'})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
@@ -417,12 +460,11 @@ if (K4E):
         LABEL_IN:'FORM_MRCC_LAG_A2',
         LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'F_INTkx',SPLIT:True})
-    
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
+    if verbosity >= 100:
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
-### Add here more terms to be factored out ...
 I3ext = True
 if (I3ext):
     # try this for 3externals
@@ -441,7 +483,8 @@ if (I3ext):
     DERIVATIVE({LABEL_RES:'F_INT3ext',LABEL_IN:'F_preINT3ext',OP_RES:'INT3ext',OP_DERIV:'Hppph'})
     REORDER_FORMULA({LABEL_IN:'F_INT3ext',LABEL_RES:'F_INT3ext'})
 
-    PRINT_FORMULA({LABEL:'F_INT3ext',MODE:'SHORT'})
+    if (verbosity >= 10):
+        PRINT_FORMULA({LABEL:'F_INT3ext',MODE:'SHORT'})
 
     FACTOR_OUT({
         LABEL_IN:'FORM_MRCC_LAG_A1',
@@ -453,7 +496,8 @@ if (I3ext):
         LABEL_RES:'FORM_MRCC_LAG_A2',
         INTERM:'F_INT3ext',SPLIT:True})
 
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+    if (verbosity >= 100):
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
 # experimental area:
 HGamma = False
@@ -544,7 +588,7 @@ if (HTint):
     # slightly extended
 #    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',V;H,H;V,|,V;V,V;V,|,V;P,P;V,'})  # AA: 108 terms 
 #    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',V;[HPV],[HPV];V,'})  but only HH, PP, VV generate
-    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',;P,VH;V,'})
+    DEF_OP_FROM_OCC({LABEL:'INTHT',JOIN:3,DESCR:',;P,VH;V,'}) # BA: this is the only block
 #    DEF_OP_FROM_OCC({LABEL:'Ltgt',JOIN:1,DESCR:'HV,PV'})  # A.
     DEF_OP_FROM_OCC({LABEL:'Ltgt',JOIN:1,DESCR:'HH,PP'})  # B.
     DEF_OP_FROM_OCC({LABEL:'Ttgt',JOIN:1,DESCR:'PV,HV'})  # .A
@@ -589,8 +633,21 @@ if (HTint):
 
     EXPAND({LABEL_IN:'F_test',LABEL_RES:'F_test_2',INTERM:'F_INTHT'})
     REPLACE({LABEL_RES:'F_test_2',LABEL_IN:'F_test_2',OP_LIST:['Ttgt','T2g','Ltgt','LAM2g']})
+    SUM_TERMS({LABEL_RES:'F_test_2',LABEL_IN:'F_test_2'})
     
     PRINT_FORMULA({LABEL:'F_test_2',MODE:'SHORT'})
+
+    SELECT_TERMS({LABEL_RES:'F_test_3',LABEL_IN:'F_preHT0',OP_RES:'MRCC_LAG',OP_INCL:['Ltgt','Ttgt'],BLK_INCL:[1,1]})
+    REPLACE({LABEL_RES:'F_test_3',LABEL_IN:'F_test_3',OP_LIST:['Ttgt','T2g','Ltgt','LAM2g']})
+
+    PRINT_FORMULA({LABEL:'F_test_3',MODE:'SHORT'})
+
+    CONCAT({LABEL_RES:'F_test_4',LABEL_IN:['F_test_3','F_test_2'],FAC:[1.0,-1.0]})
+    PRINT_FORMULA({LABEL:'F_test_4',MODE:'SHORT'})
+
+    SUM_TERMS({LABEL_RES:'F_test_4',LABEL_IN:'F_test_4'})
+
+    PRINT_FORMULA({LABEL:'F_test_4',MODE:'SHORT'})
     
     ABORT({COMMENT:'Development Stop'})
 
@@ -618,7 +675,7 @@ if (remove_gamma0):
         ASSUME_CONST({
             LABEL_IN:'F_INTkx',
             LABEL_RES:'F_INTkx',
-            OP_LIST:['GAM0'],VAL_LIST:[1.0]})
+            OP_LIST:['GAM0'],VAL_LIST:[1.0]})        
     if (I3ext):
         ASSUME_CONST({
             LABEL_IN:'F_INT3ext',
@@ -689,45 +746,33 @@ _itf_code_list.append('MRCC_LAG')
 _itf_code_list.append('O1')
 _itf_code_list.append('O2g')
     
-#if (I3ext and not HGamma):
-#    _opt_label_list = ['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-#    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
-#elif (I3ext and HGamma):
-#    _opt_label_list = ['F_HG0','F_HG1','F_HG2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-#    _opt_label_list = ['F_HG0','F_HE2','F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-#    _itf_code_list = ['<Make_HGAM>','INTHG0','INTHE1','INTHE2','INTHG1','INTHG2','<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','INT3ext','MRCC_LAG','O1','O2g']
-#else:
-#    _opt_label_list = ['F_T1SUM','F_INTkx','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']
-#    _itf_code_list = ['<Sum_T1>','T1s','<Update_INTkx>','INTkx','<Residual>','MRCC_LAG','O1','O2g']
-    
-#    OPTIMIZE({
-#        LABEL_OPT:'FOPT_MRCC_LAG',
-#        LABELS_IN:['F_T1SUM','F_INTkx','F_INT3ext','FORM_MRCC_RES2','FORM_MRCC_RES1','FORM_MRCC_LAG_E']})
-
     
 OPTIMIZE({
         LABEL_OPT:'FOPT_MRCC_LAG',
         LABELS_IN:_opt_label_list})
 
-PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-PRINT_FORMULA({LABEL:'FORM_MRCC_RES1',MODE:'SHORT'}) # only dummy
-PRINT_FORMULA({LABEL:'FORM_MRCC_RES2',MODE:'SHORT'})
+if verbosity >= 50:
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_RES1',MODE:'SHORT'}) # only dummy
+    PRINT_FORMULA({LABEL:'FORM_MRCC_RES2',MODE:'SHORT'})
 
-if not tasks:
-    filename = 'icmrcc_mrccsd_'+str(nc_en)+str(nc_rs)
-else:
-    filename = 'auicmrcc_mrccsd_'+str(nc_en)+str(nc_rs)    
-if nc_rs>2 and select:
-    filename = filename + 's'
-if doublet:
-    filename = filename + '_doublet'
-elif cas22:
-    filename = filename + '_cas22'
-filename2 = filename + '.formulae'
-filename = filename + '.itfaa'
+if verbosity >= 1000:
+    PRINT_FORMULA({LABEL:'FOPT_MRCC_LAG',OUTPUT:'FOPT.out'})
 
-skip_itf = False
-if not skip_itf:
+if itfgen:
+    if not tasks:
+        filename = 'icmrcc_mrccsd_'+str(nc_en)+str(nc_rs)
+    else:
+        filename = 'auicmrcc_mrccsd_'+str(nc_en)+str(nc_rs)    
+    if nc_rs>2 and select:
+        filename = filename + 's'
+    if doublet:
+        filename = filename + '_doublet'
+    elif cas22:
+        filename = filename + '_cas22'
+    filename2 = filename + '.formulae'
+    filename = filename + '.itfaa'
+
     TRANSLATE_ITF({
         LABEL:'FOPT_MRCC_LAG',
         OUTPUT:filename,
