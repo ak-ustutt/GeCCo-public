@@ -25,7 +25,7 @@
       include 'par_dalton.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       integer(8), parameter ::
      &     imsk16 = 65535,

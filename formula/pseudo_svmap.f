@@ -18,7 +18,7 @@
       include 'ifc_operators.h'
 
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(contraction), intent(in), target ::
      &     contr
