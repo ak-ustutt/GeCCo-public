@@ -353,7 +353,7 @@ c dbg
           call print_form_list(lulog,flist_lag,op_info)
         end if
 
-        call sum_terms(flist_lag,op_info)
+        call sum_terms(flist_lag,nterms,op_info)
         if (ntest.ge.1000) then
           call write_title(lulog,wst_title,'after summing terms')
           call print_form_list(lulog,flist_lag,op_info)
@@ -373,7 +373,7 @@ c dbg
           call print_form_list(lulog,flist_lag,op_info)
         end if
 
-        call sum_terms(flist_lag,op_info)
+        call sum_terms(flist_lag,nterms,op_info)
         if (ntest.ge.1000) then
           call write_title(lulog,wst_title,'after summing terms (2)')
           call print_form_list(lulog,flist_lag,op_info)

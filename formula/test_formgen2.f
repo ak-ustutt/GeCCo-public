@@ -19,7 +19,8 @@
      &     op
 
       integer ::
-     &     idxopa, idxopb, idxopc, idxopd, idxopr, idxoph, iformal
+     &     idxopa, idxopb, idxopc, idxopd, idxopr, idxoph, iformal,
+     &     nterms
       
       type(formula_item), target ::
      &     form_a_dc, form_bhb
@@ -139,7 +140,7 @@
       write(lulog,*) ' after summing terms: '
       write(lulog,*) '------------------------------------'
 
-      call sum_terms(form_bhb,op_info)
+      call sum_terms(form_bhb,nterms,op_info)
 
       call print_form_list(lulog,form_bhb,op_info)
 

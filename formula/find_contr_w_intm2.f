@@ -199,6 +199,9 @@ c        end if
         end do
 
         nterms_gen = iterm
+        ! we have to sum up duplicates, otherwise 'split' will not work
+        call sum_terms(fl_t0_i,nterms_gen,op_info)
+
         if (ntest.ge.100) then
           write(lulog,*)
      &      'find_contr_w_intm2: looking for ',nterms_gen,' terms'

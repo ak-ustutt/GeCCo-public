@@ -3775,8 +3775,10 @@ c     dbg
 
       ioff = 3 ! first three entries are dimensions
       nidx = contr_info%itf_index_info(1)
-      if (nidx.ne.item%rank1)
-     &     call quit(1,'assign_index','rank mismatch (1)')
+      if (nidx.ne.item%rank1) then
+        write(item%out,'(1x,"nidx/rank1: ",i4,"/",i4)') nidx,item%rank1
+        call quit(1,'assign_index','rank mismatch (1)')
+      end if
       call set_index_str(str1,
      &     contr_info%itf_index_info(ioff+1:ioff+nidx), nidx)
       if (contr_info%nj_op1.gt.1)

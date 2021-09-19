@@ -260,6 +260,16 @@
       call set_arg('_PROTO_',FACTOR_OUT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
+      call add_command_proto(CONCAT,tgt_info)
+      call set_arg('_PROTO_',CONCAT,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',CONCAT,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',CONCAT,'FAC',0,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',CONCAT,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
       call add_command_proto(EXPAND,tgt_info)
       call set_arg('_PROTO_',EXPAND,'LABEL_RES',0,tgt_info,
      &     val_label=(/' '/),req=.true.)

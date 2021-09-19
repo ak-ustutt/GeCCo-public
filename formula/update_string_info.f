@@ -45,8 +45,8 @@
         nidxvtx(vtx_last) =  nidxvtx(vtx_last)+1
       end do
 
-      write(lulog,'(a,10i4)') 'off: ',ivtxoff(1:contr%nvtx)
-      write(lulog,'(a,10i4)') 'len: ',nidxvtx(1:contr%nvtx)
+c      write(lulog,'(a,10i4)') 'off: ',ivtxoff(1:contr%nvtx)
+c      write(lulog,'(a,10i4)') 'len: ',nidxvtx(1:contr%nvtx)
         
       do iarc = 1, contr%narc
         ivtx1 = contr%arc(iarc)%link(1)

@@ -81,6 +81,14 @@
       ! Loop over formula_items, end of the list points to NULL
       do while (associated(fl_item%next))
 
+         ! Optionally print the formula items to another output file
+         if (print_form) then
+          write(formlog,*) "FORMULA NUMBER: ", counter(1)
+          cnt = counter(1)-1 ! beware of print_form_item2: it increments the counter
+          call print_form_item2(formlog,'LONG',cnt,fl_item,
+     &                          op_info)
+         end if
+
          if (fl_item%command==command_add_intm .or.
      &       fl_item%command==command_cp_intm .or.
      &       fl_item%command==command_add_bc .or.
@@ -101,7 +109,7 @@
      &             fl_item%reo%occ_opout(:,:,1:fl_item%reo%nj_out)
             end if
 
-            ! check if there is info about previous 1reordering on the list
+            ! check if there is info about previous reordering on the list
             if (last_was_reo) then
               last_was_reo = .false.
               !write(itflog,'(1x,"patching with: (nreo = ",i4,")")') nreo
@@ -208,14 +216,6 @@ c     &           'uncovered case appeared: [REORDER] ')
          else
             write(itflog,*) 'unknown command ',fl_item%command,
      &           fl_item%target
-         end if
-
-         ! Optionally print the formula items to another output file
-         if (print_form) then
-          write(formlog,*) "FORMULA NUMBER: ", counter(1)
-          cnt = counter(1) ! beware of print_form_item2: it increments the counter
-          call print_form_item2(formlog,'LONG',cnt,fl_item,
-     &                          op_info)
          end if
 
          ! Check if at the end of the list, if not, point to the next item

@@ -45,8 +45,8 @@
         idxnd = contr%nidx
         inc = 1
       end if
-      write(lulog,'(1x,a,16i4)') 'vtx before: ',
-     &     contr%contr_string(1:contr%nidx)%vtx
+c      write(lulog,'(1x,a,16i4)') 'vtx before: ',
+c     &     contr%contr_string(1:contr%nidx)%vtx
       do idx = idxst, idxnd, inc
         if ((contr%contr_string(idx)%vtx==from_vtx).and.
      &       (contr%contr_string(idx)%ext.eqv.ext)) then
@@ -54,14 +54,14 @@
           ica =  contr%contr_string(idx)%ca
           ihpvx =  contr%contr_string(idx)%hpvx
           if (occ_count(ihpvx,ica).lt.occ_shift(ihpvx,ica)) then
-            write(lulog,*) ' > ',idx,ica,ihpvx
+c            write(lulog,*) ' > ',idx,ica,ihpvx
             occ_count(ihpvx,ica) = occ_count(ihpvx,ica)+1
             contr%contr_string(idx)%vtx = to_vtx ! first round: just rename vertex
           end if
         end if
       end do
-      write(lulog,'(1x,a,16i4)') 'vtx after:  ',
-     &     contr%contr_string(1:contr%nidx)%vtx
+c      write(lulog,'(1x,a,16i4)') 'vtx after:  ',
+c     &     contr%contr_string(1:contr%nidx)%vtx
  
 !     need to sort all entries such that vtx are ascending
       do idx = 2, contr%nidx

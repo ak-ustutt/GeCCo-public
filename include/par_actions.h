@@ -33,6 +33,7 @@
      &     DEF_FORMULA*11           = 'DEF_FORMULA',
      &     EXPAND_OP_PRODUCT*17     = 'EXPAND_OP_PRODUCT',
      &     FACTOR_OUT*10            = 'FACTOR_OUT',
+     &     CONCAT*6                 = 'CONCAT',
      &     EXPAND*6                 = 'EXPAND',
      &     REPLACE*7                = 'REPLACE',
      &     ASSUME_CONST*12          = 'ASSUME_CONST',

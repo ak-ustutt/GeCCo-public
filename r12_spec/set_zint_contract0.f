@@ -33,7 +33,7 @@
 
       integer ::
      &     idx, idx_shape, nops ,nvtx, idx_temp, ndef, next,
-     &     idx_rg, idx_rr, idx_gr, icase,
+     &     idx_rg, idx_rr, idx_gr, icase, nterms,
      &     prj(8)
       real(8) ::
      &     fac
@@ -112,7 +112,7 @@ c dbg
       ! we have set the fjf terms in by straight-forward
       ! expansion of the projector terms; some of them cancel
       ! so we have to ....
-      call sum_terms(flist,op_info)
+      call sum_terms(flist,nterms,op_info)
 
       if (ntest.ge.100) then
         write(lulog,*)'Final formula: Z-Int.'

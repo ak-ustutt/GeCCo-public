@@ -60,7 +60,7 @@
       call init_formula(flist)
       call read_form_list(f_input%fhand,flist,.true.)
 
-      !call sum_terms(flist,op_info) <- is called below by option "sum"
+      ! sum_terms() is called below by option "sum"
       call del_zero_terms(flist,'sum',op_info,thresh)
 
       ! write result

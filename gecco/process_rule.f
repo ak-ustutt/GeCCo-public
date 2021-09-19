@@ -556,6 +556,21 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
      &       op_info,form_info
      &       )
 *----------------------------------------------------------------------*
+      case(CONCAT)
+*----------------------------------------------------------------------*
+        call get_arg('LABEL_RES',rule,tgt_info,val_label=label)
+        call get_form(form_pnt,trim(label),ANY)
+        call get_arg('LABEL_IN',rule,tgt_info,
+     &       val_label_list=label_list,ndim=nint)
+        call get_arg('FAC',rule,tgt_info,
+     &       val_rl8_list=fac,ndim=nfac)
+        call get_arg('TITLE',rule,tgt_info,val_str=title)
+        call form_concat(form_pnt,
+     &       title,
+     &       nint,label_list,nfac,fac,
+     &       op_info,form_info
+     &       )
+*----------------------------------------------------------------------*
       case(SUM_HERMIT)
 *----------------------------------------------------------------------*
         call get_arg('LABEL_RES',rule,tgt_info,val_label=label)

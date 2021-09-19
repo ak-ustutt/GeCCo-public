@@ -509,7 +509,7 @@ c        deallocate(occ_vtx)
      &                occ_vtx,ol_map,op_info)
 
       ! sum up duplicate terms
-      if (mode.eq.1) call sum_terms(fl_abc,op_info)
+      if (mode.eq.1) call sum_terms(fl_abc,nterms,op_info)
 
       ! count terms
       nterms = 0

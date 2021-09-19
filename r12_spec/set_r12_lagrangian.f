@@ -253,7 +253,7 @@ c      sbar_pnt%dagger = .true.
       call expand_subexpr(flist_lag,flist_t_cr,0,op_info)
 
       ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_lag,op_info)
+      call sum_terms(flist_lag,nterms,op_info)
 
       if (ntest.ge.1000) then
         call write_title(lulog,wst_title,'after replacing S')
@@ -287,7 +287,7 @@ c      end if
       end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_lag,op_info)
+      call sum_terms(flist_lag,nterms,op_info)
 
       ! replace T12 -> T
       if (r12fix.and.r12op.gt.0) then
