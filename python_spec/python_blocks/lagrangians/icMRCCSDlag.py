@@ -1,8 +1,5 @@
 """An implementation of the icMRCCSD Lagrangian, done term by term and separated T1 and T2.
 
- **** THIS IS A TEST VERSION FOR INITIAL TESTS OF THE ITF TRANSLATOR ****
- **** DO NOT MERGE INTO THE MAIN BRANCH !!                           ****
-
 History:
 
 Yuri august 2017: Creation based on MRCC2lag.py. Implementation up to maxcom=2
@@ -82,7 +79,7 @@ word = keywords.get('method.MRCC.maxcom_res')
 nc_rs = int(word) if word is not None else 2
 
 word = keywords.get('method.MRCC.select')
-print("word = "+word)
+#print("word = "+str(word))
 if word is None:
     select =  True
 else:
