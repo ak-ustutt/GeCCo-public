@@ -152,15 +152,9 @@ c          end if
       deallocate(len_list,iterm_list)
 
       if (success1) then
-        ! get factor, vertices and arcs associated with T_0
-        ! this split is just for testing
-c        if (fl_tgt%contr%nvtx.le.4.or.contr_i%nvtx.le.2) then 
-c          call split_contr3(contr_t0,contr_i,fl_tgt%contr,op_info,
-c     &                      success1)
-c        else
-          call split_contr4(contr_t0,contr_i,fl_tgt%contr,op_info,
+
+        call split_contr4(contr_t0,contr_i,fl_tgt%contr,op_info,
      &                      success1)
-c        end if
 
         if (ntest.ge.100.and.success1) then
           write(lulog,*) 'considering contraction:'
