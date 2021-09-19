@@ -162,7 +162,7 @@ c            if (nterms.le.1) print *,' got',nterms,'term(s)'
 c dbgend
 
             ! sum terms in expanded formula (saves time)
-            if (nterms.gt.1) call sum_terms(fl_expand,op_info)
+            if (nterms.gt.1) call sum_terms(fl_expand,nterms,op_info)
 
             ! and replace current term
             call replace_fl_node(fl_tgt_current,fl_expand)

@@ -1,4 +1,4 @@
-      subroutine get_bc_info3(bc_sign,possible,
+      subroutine get_bc_info3(bc_sign,bc_sign_itf,possible,
      &     idx_op,iblk_op,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
@@ -8,12 +8,13 @@
      &     gamt_op,gamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1, merge_op2, merge_op1op2, merge_op2op1,
+     &     itf_index_info,
      &     contr_in,occ_vtx_in,irestr_vtx_in,info_vtx,
      &     make_contr_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     set_reo, reo_info, reo_info_bef, !FIX
      &     iarc_contr,update_idxintm,idxintm,
-     &     irestr_res,njoined_res,orb_info,op_info)
+     &     irestr_res,njoined_res,orb_info,op_info,ntest_in)
 
       implicit none
 
@@ -27,7 +28,9 @@
       include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest_ = 00
+      integer, intent(in) :: ntest_in
+      integer :: ntest
 
       type(contraction), intent(in), target ::
      &     contr_in
@@ -57,7 +60,7 @@
      &     irestr_vtx_red(2,orb_info%ngas,2,2,*),
      &     info_vtx_red(2,*)
       real(8), intent(out) ::
-     &     bc_sign
+     &     bc_sign, bc_sign_itf
       logical, intent(out) ::
      &     tra_op1, tra_op2, tra_op1op2
       integer, intent(out) ::
@@ -71,7 +74,8 @@
      &     irestr_op2(2,orb_info%ngas,2,2,*),
      &     irestr_op1op2(2,orb_info%ngas,2,2,*),
      &     mst_op(2), mst_op1op2, gamt_op(2), gamt_op1op2,
-     &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*)
+     &     merge_op1(*), merge_op2(*), merge_op1op2(*), merge_op2op1(*),
+     &     itf_index_info(*)
 
       type(contraction), pointer ::
      &     contr, contr_pnt
@@ -82,7 +86,7 @@
      &     ld_mmap1, ld_mmap2, ld_mmap12, ngas,
      &     nvtx, ivtx, idx, iblk, idxnew_op1op2,
      &     ivtx1, ivtx2, isvtx1, isvtx2,
-     &     len_list, nvtx_red, sh_sign, cnt_sign, ireo, jreo
+     &     len_list, nvtx_red, sh_sign, cnt_sign, itf_sign, ireo, jreo
 
       integer, pointer ::
      &     ireo_vtx_no(:), ireo_vtx_on(:),
@@ -103,6 +107,8 @@
       logical, external ::
      &     allowed_contr
 
+      ntest = max(ntest_,ntest_in)
+      
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'get_bc_info3')
         call prt_contr3(lulog,contr_in,-1)
@@ -119,6 +125,7 @@
       allocate(contr)
       call init_contr(contr)
       call copy_contr(contr_in,contr)
+
       occ_vtx    = occ_vtx_in
       irestr_vtx = irestr_vtx_in
 
@@ -273,13 +280,23 @@ c     &     call quit(1,'get_bc_info3','I am confused ....')
 
       if (update_idxintm) idxintm = idxintm-1
 
-      call reduce_contr2(sh_sign,cnt_sign,iocc_op1op2,njoined_op1op2,
+      call reduce_contr2(sh_sign,cnt_sign,itf_sign,
+     &     iocc_op1op2,njoined_op1op2,
      &     ireo_vtx_no,ireo_vtx_on,ireo_after_contr,
      &     ivtx_op1op2,nvtx_red,
      &     merge_map_op1op2,ld_mmap12,
      &     make_contr_red,contr_red,idxintm,
      &     contr,isvtx1,isvtx2,arc_list,len_list,njoined_res,
-     &     reo_info)
+     &     reo_info,ntest_in)
+
+      ! THIS WAS THE PREVIOUS PLACE
+!     use isvtx1/2 to get indices of input operators from contr
+!     and ivtx_op1op2(1:njoined_op1op2) for output op from contr_red
+!     (or result string if this is the final res.)
+!      if (itf_index_info(1).ne.-1.and.contr%index_info)
+!     &     call itf_set_index_info(itf_index_info,
+!     &                        contr,contr_red,contr%narc==len_list,
+!     &                        isvtx1,isvtx2,ivtx_op1op2,njoined_op1op2)
 
       call condense_merge_map(merge_op1op2,
      &                merge_map_op1op2,ld_mmap12,njoined_op1op2,.false.)
@@ -436,11 +453,22 @@ c        end if
 
       end if
 
+      ! THIS IS THE NEW PLACE
+!     use isvtx1/2 to get indices of input operators from contr
+!     and ivtx_op1op2(1:njoined_op1op2) for output op from contr_red
+!     (or result string if this is the final res.)
+      if (itf_index_info(1).ne.-1.and.contr%index_info)
+     &     call itf_set_index_info(itf_index_info,
+     &                        contr,contr_red,contr%narc==len_list,
+     &                        isvtx1,isvtx2,ivtx_op1op2,njoined_op1op2)
+
+
       ! another FIX: skip (currently?) impossible contractions
       possible = possible.and.
      &           allowed_contr(contr,arc_list(1:len_list),len_list)
 
       bc_sign = dble(cnt_sign)
+      bc_sign_itf = dble(itf_sign)
 
       deallocate(arc_list)
       deallocate(ireo_vtx_no,ireo_vtx_on,ivtx_op1op2)

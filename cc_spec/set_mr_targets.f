@@ -102,6 +102,8 @@
       l_icci = is_keyword_set('method.MRCI').gt.0
       ! icMRCC calculation?
       l_iccc = is_keyword_set('method.MRCC').gt.0
+      ! if MRCC_NEW is set, we go the other route
+      l_iccc = l_iccc.and.is_keyword_set('method.MRCC_new').eq.0
       ! both at same time is not allowed
       if (l_icci.and.l_iccc) call quit(1,'set_mr_targets',
      &   'Now don''t be greedy, choose either icMRCI or icMRCC!')

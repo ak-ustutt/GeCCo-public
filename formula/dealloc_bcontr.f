@@ -29,6 +29,8 @@
      &     deallocate(bcontr%merge_op1op2)
       if (associated(bcontr%merge_op2op1))
      &     deallocate(bcontr%merge_op2op1)
+      if (associated(bcontr%itf_index_info))
+     &     deallocate(bcontr%itf_index_info)
 
       bcontr%occ_res => null()
       bcontr%occ_op1 => null()
@@ -46,6 +48,7 @@
       bcontr%merge_op2 => null()
       bcontr%merge_op1op2 => null()
       bcontr%merge_op2op1 => null()
+      bcontr%itf_index_info => null()
 
       return
       end

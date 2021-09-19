@@ -9,6 +9,7 @@
 
       implicit none
 
+      include 'stdunit.h'
       include 'opdim.h'
       include 'mdef_target_info.h'
 
@@ -121,6 +122,7 @@
           val_label =
      &         arg%val_label(1)
         else
+          write(lulog,*) 'arg_label = ',trim(arg_label)
           call quit(1,'get_arg','no output variable present (1)')          
         end if
       case(aatype_log)
@@ -145,7 +147,7 @@
           val_int =
      &         arg%val_int(1)
         else
-          call quit(1,'get_arg','no output variable present (1)')          
+          call quit(1,'get_arg','no output variable present (3)')          
         end if
       case(aatype_occ)
         if (.not.present(val_occ))
@@ -171,7 +173,7 @@
           val_rl8 =
      &         arg%val_rl8(1)
         else
-          call quit(1,'get_arg','no output variable present (1)')          
+          call quit(1,'get_arg','no output variable present (4)')          
         end if
       case(aatype_str)
         if (.not.present(val_str))

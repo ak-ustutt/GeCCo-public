@@ -71,6 +71,12 @@
         if (ok) env_type='CFOUR'
       end if
 
+      if (.not.ok) then
+        inquire(file='virtual_molecule.dat',exist=l_exist)
+        ok = l_exist
+        if (ok) env_type='VIRTUAL'
+      end if
+        
       ! future: try other possibilities here ...
       if (.not.ok) call quit(0,'where_am_I',
      &     'did not find proper environment')

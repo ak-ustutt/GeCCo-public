@@ -32,6 +32,13 @@
       nullify(contr%vtx)
       nullify(contr%topo)
       nullify(contr%xlines)
+      contr%index_info = .false.
+      nullify(contr%contr_string)
+      nullify(contr%result_string)
+      contr%nidx = 0
+      contr%nxidx = 0
+      contr%total_sign = 0
+      contr%eqvl_fact = 1d0
       
       return
       end

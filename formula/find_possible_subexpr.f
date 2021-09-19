@@ -43,7 +43,7 @@
       logical ::
      &     first
       integer ::
-     &     iblk_intm, idx, jdx, len_i
+     &     iblk_intm, idx, jdx, len_i, idxop_tgt, idxop_intm
       integer ::
      &     len_list(maxposs)
       type(formula_item), pointer ::
@@ -61,6 +61,8 @@
         write(lulog,*) '================================='
       end if
 
+      ! get the index of the result operator of the target formulat
+      idxop_tgt = fl_tgt%contr%idx_res
 c dbg
 c      call print_form_list(lulog,fl_intm,op_info)
 c dbg
@@ -85,13 +87,28 @@ c dbg
             call quit(1,'find_possible_subexpr',
      &         'expected [ADD] (intermediate)')
           end if
+          idxop_intm = fl_intm_pnt%contr%idx_res
+          ! disallow that the intermediate has the same name as the target
+          ! leads to confusion (and an inifinite loop in expand!)
+          if (idxop_intm==idxop_tgt) then
+            write(luout,*)
+     &          'Error: Target and Intermediate define the same result!'
+            write(luout,*) 'Target:       ',
+     &           trim(op_info%op_arr(idxop_tgt)%op%name)
+            write(luout,*) 'Intermediate: ',
+     &           trim(op_info%op_arr(idxop_intm)%op%name)
+            call quit(0,'FACTOR_OUT',
+     &           'find_possible_subexr detected an error, see above!')
+          ! TODO: return an error code instead, so that calling processes
+          ! can reveal details on the actual formulae
+          end if
           iblk_intm = fl_intm_pnt%contr%iblk_res
           ! new block -> remember the start item
           fl_intm_stblk => fl_intm_pnt
         else if (fl_intm_pnt%command.eq.command_add_contribution) then
           if (iblk_intm.gt.fl_intm_pnt%contr%iblk_res) then
             write(lulog,*) 
-     &         'FOR AN EASY FIX: SEE COMMENT IN FORM_FACTOR_OUT!'
+     &         'FOR AN EASY FIX: use REORDER_FORMULA before!'
             call quit(1,'find_possible_subexpr',
      &         'expected intermediate blocks in increasing sequence')
           end if

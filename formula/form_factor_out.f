@@ -1,15 +1,17 @@
 *----------------------------------------------------------------------*
       subroutine form_factor_out(f_output,f_input,
      &                      title,
-     &                      nintm,label_f_intm,
+     &                      nintm,label_f_intm,split,
      &                      op_info,form_info)
 *----------------------------------------------------------------------*
 *
 *     driver for factorizing intermediates from input formula
 *
+*     split: allow for factoring out by splitting certain terms
+*
 *     f_input and f_output may be identical
 *
-*     andreas, jan 2008
+*     andreas, jan 2008 (update: 2021)
 *
 *----------------------------------------------------------------------*
       implicit none
@@ -28,6 +30,8 @@ c      include 'def_contraction_list.h'
 
       integer, intent(in) ::
      &     nintm
+      logical, intent(in) ::
+     &     split
       character(*), intent(in) ::
      &     title,
      &     label_f_intm(nintm)
@@ -41,7 +45,7 @@ c      include 'def_contraction_list.h'
       logical ::
      &     same, transpose
       integer ::
-     &     iintm, idx, len, nrpl
+     &     iintm, idx, len, nrpl, nspl
       character ::
      &     name*(form_maxlen_label*2)
       real(8) ::
@@ -110,15 +114,20 @@ c dbgend
      &       call transpose_formula(fl_intm,op_info)
 
         call atim_csw(cpu0,sys0,wall0)
-        call factor_out_subexpr2(flist,fl_intm,nrpl,op_info)
+        call factor_out_subexpr2(flist,fl_intm,split,nrpl,nspl,op_info)
         call atim_csw(cpu,sys,wall)
 
-        if (iprlvl.ge.2) write(lulog,'(x,a40,": ",i6," replacements")')
-     &                  trim(label_f_intm(iintm)),nrpl 
+        if (iprlvl.ge.2) write(lulog,
+     &       '(x,a40,": ",i6," replacements with ",i6," splits")')
+     &                  trim(label_f_intm(iintm)),nrpl,nspl
         if (iprlvl.ge.2) then
           len = form_count(flist)
           write(lulog,'(x,"formula reduced to ",i10," items")') len
         end if
+
+        ! consider sum_terms here, if there were splits
+        if (nspl.gt.0) call del_zero_terms(flist,'sum',op_info,1d-12)
+        
         if (iprlvl.ge.2)
      &     call prtim(lulog,'factoring out',
      &     cpu-cpu0,sys-sys0,wall-wall0)

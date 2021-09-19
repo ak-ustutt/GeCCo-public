@@ -637,7 +637,7 @@ c dbgend
           do iopt = 1, nopt
             write(lulog,*) 'dump of '//trim(me_opt(iopt)%mel%label)
             write(lulog,*) 'iopt = ',iopt
-            call wrt_mel_file(lulog,5,
+            call wrt_mel_file(lulog,3,!5,
      &           me_opt(iopt)%mel,
      &           1,me_opt(iopt)%mel%op%n_occ_cls,
      &           str_info,orb_info)
@@ -688,7 +688,7 @@ c dbg
             do iopt = 1, nopt
               write(lulog,*) 'dump of residual '//
      &             trim(me_grd(iopt)%mel%label)
-              call wrt_mel_file(lulog,5,
+              call wrt_mel_file(lulog,3,!5,
      &           me_grd(iopt)%mel,
      &           1,me_grd(iopt)%mel%op%n_occ_cls,
      &           str_info,orb_info)

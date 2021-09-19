@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine store_bc(fl_item,
-     &       fact,
+     &       fact,fact_itf,
      &       label12,label1,label2,
      &       iblk12,iblk1,iblk2,
      &       tra12,tra1,tra2,
@@ -11,6 +11,7 @@
      &       irstex1,irstex2,irstcnt,nj_cnt,
      &       merge1,merge2,
      &       merge12,merge21,
+     &       itf_index_info,
      &       orb_info)
 *----------------------------------------------------------------------*
 *     store info on unary or binary contraction on fl_item
@@ -33,7 +34,7 @@
       type(orbinf), intent(in) ::
      &     orb_info
       real(8) ::
-     &     fact
+     &     fact, fact_itf  ! corrected factor for ITF post-proc.
       character(len=*), intent(in) ::
      &     label12,label1,label2
       integer, intent(in) ::
@@ -54,7 +55,8 @@
      &     irstex1(2,orb_info%ngas,2,2,orb_info%nspin,nj1),
      &     irstex2(2,orb_info%ngas,2,2,orb_info%nspin,nj2),
      &     irstcnt(2,orb_info%ngas,2,2,orb_info%nspin,nj_cnt),
-     &     merge1(*), merge2(*), merge12(*), merge21(*)
+     &     merge1(*), merge2(*), merge12(*), merge21(*),
+     &     itf_index_info(*)
 
       integer ::
      &     n_operands, lenmap, ngas, nspin
@@ -71,6 +73,7 @@
       if (label2(1:3).ne.'---') n_operands = 2
 
       fl_item%bcontr%fact = fact
+      fl_item%bcontr%fact_itf = fact_itf
       fl_item%bcontr%n_operands = n_operands
       fl_item%bcontr%n_cnt     = nj_cnt
       fl_item%bcontr%ngas      = ngas
@@ -137,6 +140,11 @@
         allocate(fl_item%bcontr%merge_op2op1(lenmap))
         fl_item%bcontr%merge_op2op1 = merge21(1:lenmap)
       end if
+
+      ! extra for itf
+      lenmap = 3+sum(itf_index_info(1:3))
+      allocate(fl_item%bcontr%itf_index_info(lenmap))
+      fl_item%bcontr%itf_index_info(1:lenmap) = itf_index_info(1:lenmap)
 
       return
       end

@@ -27,7 +27,7 @@
       include 'ifc_memman.h'
 
       integer, parameter ::
-     &     maxprt = 100
+     &     maxprt = 5 !100
 
       integer, intent(in) ::
      &     lulog, level, iblkst, iblknd

@@ -206,7 +206,7 @@
       call set_arg('_PROTO_',TRANSPS_FORMULA,'INIT',1,tgt_info,
      &     val_log=(/.true./),def=.true.)
       call set_arg('_PROTO_',TRANSPS_FORMULA,'MULTI',1,tgt_info,
-     &     val_log=(/.false./),def=.true.)
+     &     val_log=(/.true./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND_OP_PRODUCT,tgt_info)
       call set_arg('_PROTO_',EXPAND_OP_PRODUCT,'LABEL',0,tgt_info,
@@ -255,7 +255,19 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',FACTOR_OUT,'INTERM',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',FACTOR_OUT,'SPLIT',0,tgt_info,
+     &     val_log=(/.false./),def=.true.)
       call set_arg('_PROTO_',FACTOR_OUT,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(CONCAT,tgt_info)
+      call set_arg('_PROTO_',CONCAT,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',CONCAT,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',CONCAT,'FAC',0,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',CONCAT,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(EXPAND,tgt_info)
@@ -278,6 +290,18 @@
       call set_arg('_PROTO_',REPLACE,'OP_LIST',0,tgt_info,
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',REPLACE,'TITLE',1,tgt_info,
+     &     val_str='---',def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(ASSUME_CONST,tgt_info)
+      call set_arg('_PROTO_',ASSUME_CONST,'LABEL_RES',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'LABEL_IN',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'OP_LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'VAL_LIST',1,tgt_info,
+     &     val_rl8=(/1.0d0/),req=.true.)
+      call set_arg('_PROTO_',ASSUME_CONST,'TITLE',1,tgt_info,
      &     val_str='---',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SUM_HERMIT,tgt_info)
@@ -361,6 +385,30 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',OPTIMIZE,'INTERM',0,tgt_info,
      &     val_label=(/' '/),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(TRANSLATE_ITF,tgt_info)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'LABEL',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'OUTPUT',1,tgt_info,
+     &     val_str='stdout',req=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'TITLE',1,tgt_info,
+     &     val_str='stdout',req=.false.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'MULTI',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'PROCESS',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'KEXT',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'TASKS',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'INIT_RES',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'ITIN',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'RENAME',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',TRANSLATE_ITF,'CODE',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_FORMULA,tgt_info)
       call set_arg('_PROTO_',PRINT_FORMULA,'LABEL',0,tgt_info,

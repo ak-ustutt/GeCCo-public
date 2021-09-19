@@ -44,7 +44,7 @@
      &     idx, idx_intm, idx_t, idx_h, idx_heff, idx_op4, idx_op5,
      &     nvtx, nn, ii, jj, iblk_int, iblk_h, mini, tmax,
      &     iterm, nterm, icall, icall0, nsumcalls,
-     &     iu(2), ho(2), hu(2), tto(2), navoid
+     &     iu(2), ho(2), hu(2), tto(2), navoid, nterms
       character ::
      &     name*(form_maxlen_label*2)
       type(formula_item), target ::
@@ -268,7 +268,7 @@ c       &                   cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
                 call atim_csw(cpu10,sys10,wall10)
-                call sum_terms(start_pnt3,op_info)
+                call sum_terms(start_pnt3,nterms,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
 c              call prtim(lulog,'time in sum_terms (2) ',
@@ -285,7 +285,7 @@ c dbgend
 
                if (nsumcalls.ne.1) then
                  call atim_csw(cpu10,sys10,wall10)
-                 call sum_terms(start_pnt2,op_info)
+                 call sum_terms(start_pnt2,nterms,op_info)
                  call atim_csw(cpu1,sys1,wall1)
 c dbg
 c                 call prtim(lulog,'time in sum_terms ',
@@ -415,7 +415,7 @@ c       &                   cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
                 call atim_csw(cpu10,sys10,wall10)
-                call sum_terms(start_pnt3,op_info)
+                call sum_terms(start_pnt3,nterms,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
 c              call prtim(lulog,'time in sum_terms (2) ',
@@ -432,7 +432,7 @@ c dbgend
 
                if (nsumcalls.ne.1) then
                  call atim_csw(cpu10,sys10,wall10)
-                 call sum_terms(start_pnt2,op_info)
+                 call sum_terms(start_pnt2,nterms,op_info)
                  call atim_csw(cpu1,sys1,wall1)
 c dbg
 c                 call prtim(lulog,'time in sum_terms ',
@@ -521,7 +521,7 @@ c dbgend
           end do
           deallocate(idx_op_vtx,idx_op)
         end do
-        if (iterm.gt.0) call sum_terms(start_pnt1,op_info)
+        if (iterm.gt.0) call sum_terms(start_pnt1,nterms,op_info)
         ! delete disconnected terms or modify prefactors if requested
         call select_mrcc_wf(start_pnt1,label_op(1),op_info)
 

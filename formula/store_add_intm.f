@@ -23,14 +23,21 @@
      &     label_res, label_op
       integer ::
      &     iblk_res, iblk_op, nj_res, nj_op, idummy,
-     &     idxblk
+     &     idxblk, nidx
       logical ::
      &     tra_res, tra_op, ldummy
       integer, pointer ::
      &     occ_res(:,:,:), occ_op(:,:,:),
-     &     rst_res(:,:,:,:,:,:), rst_op(:,:,:,:,:,:)
+     &     rst_res(:,:,:,:,:,:), rst_op(:,:,:,:,:,:),
+     &     itf_index_info(:)
       type(operator), pointer ::
      &     op_res, op_add
+
+      real(8) ::
+     &     fact, fact_itf
+
+      integer, external ::
+     &     get_nidx4contr
 
 c dbg
 c      print *,'call to store_add_intm'
@@ -61,21 +68,34 @@ c      iblk_op   = contr%vertex(1)%iblk_op
       occ_op => op_add%ihpvca_occ(1:,1:,idxblk:idxblk-1+nj_op)
       rst_op => op_add%igasca_restr(1:,1:,1:,1:,1:,
      &                                   idxblk:idxblk-1+nj_op)
+      ! dummy for itf
+      nidx = get_nidx4contr(contr)
+      allocate(itf_index_info(3+2*nidx)) ! need to store the index info twice
+
+      fact = contr%fac
+      if (contr%total_sign==0)
+     &     call quit(1,'store_add_intm','Something is wicked !')
+      fact_itf = dble(contr%total_sign)*contr%fac
+      
+      call itf_set_index_info(itf_index_info,
+     &     contr,contr,.true.,1,1,1,contr%nvtx) ! last two arguments are dummy
 
       call store_bc(fl_item,
-     &     contr%fac,
+     &     fact,fact_itf,
      &     label_res,label_op,'---',
      &     iblk_res,iblk_op,idummy,
      &     tra_res,tra_op,ldummy,
-     &     nj_res,nj_op,idummy,
+     &     nj_res,nj_op,0,
      &     occ_res,occ_op,idummy,
      &     rst_res,rst_op,idummy,
      &     idummy,idummy,idummy,
      &     idummy,idummy,idummy,0,
      &     idummy,idummy,
      &     idummy,idummy,
+     &     itf_index_info,
      &     orb_info)
-     &     
+     
+      deallocate(itf_index_info)
 
       return
       end

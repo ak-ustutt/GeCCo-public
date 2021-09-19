@@ -1,0 +1,173 @@
+tensor: EDi2[], EDi2     // Direct 1st order energy
+tensor: Nrm2[], Nrm2     // Doubles amplitude norm
+tensor: Var2[], Var2     // Doubles residual norm
+tensor: LCor2[], LCor2   // Doubles Lagrange correction
+tensor: ShiftP[], ShiftP
+tensor: ShiftI[], ShiftI
+
+// Fock matricies, including core orbitals
+tensor: fc:aa[pq], fc:aa
+tensor: fc:cc[ki], fc:cc
+tensor: fc:ea[aq], fc:ea
+tensor: fc:ec[ai], fc:ec
+tensor: fc:ee[ab], fc:ee
+tensor: fc:ca[ip], fc:ca
+
+// Effective Fock matricies
+tensor: g:aa[pq]
+tensor: g:ac[pi]
+tensor: g:cc[ij]
+tensor: g:ea[ap]
+tensor: g:ec[ai]
+tensor: g:ee[ab]
+
+// Resuced density tensors (Icc-Icc coupling-coefficients)
+// these are created on C++ side in CreateMrciTensors method
+tensor: Dm1[pp],         DDm1
+tensor: Dm2[pppp],       DDm2
+tensor: Dm3[pppppp],     DDm3
+tensor: Dm1H[pp],        DHm1
+tensor: Dm2H[pppp],      DHm2
+tensor: Dm3H[pppppp],    DHm3
+
+// Non-disk density matrix drivers
+// Can be loaded, but can not be stored.
+// spec:<Ref|+-+-|Ref> means that Dm2X[pqrs] = <Ref|E^p_q R^r_s|Ref>
+tensor: Dm2X[pppp],      !Create{type:cc-drv; spec:<Ref|+-+-|Ref>; irrep:0;}
+tensor: Dm3X[pppppp],    !Create{type:cc-drv; spec:<Ref|+-+-+-|Ref>; irrep:0;}
+tensor: Dm2HX[pppp],     !Create{type:cc-drv; spec:<Ref|/+/-/+/-|Ref>; irrep:0;}
+tensor: Dm3HX[pppppp],   !Create{type:cc-drv; spec:<Ref|/+/-/+/-/+/-|Ref>; irrep:0;}
+
+// Delta tensors
+tensor: deltacc[ij],      DeltaCloClo
+tensor: deltaaa[pq],      DeltaActAct
+tensor: deltap[ppK],      DeltaPair
+tensor: delta4[pppp],     !Create{type:plain}, Delta4  // Intermediate rank4 delta tensor
+
+// Overlap tensors labeled by the exciation class
+tensor: S1:I1[pp],       S1:I1
+tensor: S2:I1[pppppp],   S2:I1
+tensor: S3:I1[pppp],     S3:I1
+tensor: S2:I2[pppp],     S2:I2
+tensor: S1:S0[pp],       S1:S0
+tensor: S2:S0[pppppp],   S2:S0
+tensor: S3:S0[pppp],     S3:S0
+tensor: S2B:S1[pppp],    S2B:S1
+tensor: S2A:S1[pppp],    S2A:S1
+tensor: S3A:S1[pp],       S3A:S1
+tensor: S3B:S1[pp],      S3B:S1
+tensor: S4A:S1[pppp],    S4A:S1
+tensor: S4B:S1[pppp],    S4B:S1
+tensor: S2:S2[pp],       S2:S2
+tensor: S2:P0[pppp],     S2:P0
+tensor: S2:P1[pp],       S2:P1
+
+// X transformation tensors
+tensor: X1:I1[pp],       X1:I1
+tensor: X2:I1[pppppp],   X2:I1
+tensor: X2:I2[pppp],     X2:I2
+tensor: X1:S0[pp],       X1:S0
+tensor: X2:S0[pppppp],   X2:S0
+tensor: X2B:S1[pppp],    X2B:S1
+tensor: X2A:S1[pppp],    X2A:S1
+tensor: X4A:S1[pppp],    X4A:S1
+tensor: X4B:S1[pppp],    X4B:S1
+tensor: SX12a:S1[pp],    SX12a:S1
+tensor: SX12b:S1[pp],    SX12b:S1
+tensor: XS12a:S1[pp],    XS12a:S1
+tensor: XS12b:S1[pp],    XS12b:S1
+tensor: X2:S2[pp],       X2:S2
+tensor: X2:P0[pppp],     X2:P0
+tensor: X2:P1[pp],       X2:P1
+
+tensor: I1[pppp], !Create{type:plain}
+tensor: I2[pppp], !Create{type:plain}
+tensor: I3[pppppp], !Create{type:plain}
+
+// Orthogonal residuals
+tensor: OR:I[I], OR:I
+tensor: OR1:ac[pi], OR1:ac
+tensor: OR1:ec[ai], OR1:ec
+tensor: OR1:ea[ap], OR1:ea
+tensor: OR2:ac[pi], OR2:ac
+tensor: OR2:ec[ai], OR2:ec
+tensor: OR2:ea[ap], OR2:ea
+tensor: OR2:aacc[pqij], OR2:aacc
+tensor: OR2:aaac[pqri], OR2:aaac
+tensor: OR2:eacc[apij], OR2:eacc
+tensor: OR2:eaac[apqi], OR2:eaac
+tensor: OR2:eaca[apiq], OR2:eaca
+tensor: OR2:eaaa[apqr], OR2:eaaa
+tensor: OR2:eecc[abij], OR2:eecc
+tensor: OR2:eeac[abpi], OR2:eeac
+tensor: OR2:eeaa[abpq], OR2:eeaa
+
+// Orthogonal amplitudes
+//tensor: OT:I[I], OT:I
+tensor: OT1:ac[pi], !Create{type:plain}
+tensor: OT1:ec[ai], !Create{type:plain}
+tensor: OT1:ea[ap], !Create{type:plain}
+tensor: OT2:aacc[Kij], !Create{type:plain}
+//tensor: OT2:aaac[pqri], !Create{type:plain}
+tensor: OT2:eacc[apij], !Create{type:plain}
+tensor: OT2:eaac[aiK], !Create{type:plain}
+tensor: OT2:eaca[aiK], !Create{type:plain}
+//tensor: OT2:eaaa[apqr], !Create{type:plain}
+tensor: OT2:eeac[abpi], !Create{type:plain}
+tensor: OT2:eeaa[abK], !Create{type:plain}
+
+tensor: R1SCR[ai], !Create{type:plain}
+tensor: R2SCR[abij], !Create{type:plain}
+
+tensor: Tmp1[], !Create{type:plain}
+tensor: Tmp2[], !Create{type:plain}
+
+// Active preconditioner blocks
+tensor: A1[pp],    !Create{type:disk; sym:+01}
+//tensor: A2[ppppp], !Create{type:disk; sym:012/345}
+//tensor: A3[pppp], !Create{type:disk; sym:01/23}
+tensor: A4[pp],    !Create{type:disk; sym:+01}
+//tensor: A5[pppppp],  !Create{type:disk; sym:012/345}
+//tensor: A6[pppp], !Create{type:disk; sym:01/23}
+
+// New preconditioner blocks
+tensor: Y1:I1[pp],     Y1:I1
+tensor: Y2:I1[pppppp], Y2:I1
+tensor: Y2:I2[pppp],   Y2:I2
+tensor: Y1:S0[pp],     Y1:S0
+tensor: Y2:S0[pppppp], Y2:S0
+tensor: YA:S1[pppp],   YA:S1
+tensor: YB:S1[pppp],   YB:S1
+tensor: Y2:S2[pp],     Y2:S2
+tensor: Y2:P0[pppp],   Y2:P0
+tensor: Y2:P1[pp],     Y2:P1
+
+tensor: Eact[],     !Create{type:scalar}
+tensor: D1f[pp],    !Create{type:disk}
+tensor: D2f[pppp],  !Create{type:disk}
+
+tensor: OR2:aacc[Kij], !Create{type:disk}
+tensor: OR2:eaca[aiK], !Create{type:disk}
+tensor: OR2:eaac[aiK], !Create{type:disk}
+tensor: OR2:eeaa[abK], !Create{type:disk}
+tensor: Y2:I2[KJ],    !Create{type:disk}
+tensor: YA:S1[KJ],    !Create{type:disk}
+tensor: YB:S1[KJ],    !Create{type:disk}
+tensor: Y2:P0[KJ],    !Create{type:disk}
+tensor: Yi[Krs],      !Create{type:disk}
+//tensor: OT:aacc[Kij], !Create{type:disk}
+//tensor: OT:eaca[aiK], !Create{type:disk}
+//tensor: OT:eaac[aiK], !Create{type:disk}
+//tensor: OT:eeaa[abK], !Create{type:disk}
+tensor: I1[pq],       !Create{type:disk}
+tensor: X2:I2[pqK],    !Create{type:disk}
+tensor: X2:P0[pqK],    !Create{type:disk}
+tensor: X2A:S1[pqK],    !Create{type:disk}
+tensor: X2B:S1[pqK],    !Create{type:disk}
+tensor: X4A:S1[pqK],    !Create{type:disk}
+tensor: X4B:S1[pqK],    !Create{type:disk}
+tensor: SX12a:S1[K],   !Create{type:disk}
+tensor: SX12b:S1[K],   !Create{type:disk}
+tensor: XS12a:S1[K],   !Create{type:disk}
+tensor: XS12b:S1[K],   !Create{type:disk}
+

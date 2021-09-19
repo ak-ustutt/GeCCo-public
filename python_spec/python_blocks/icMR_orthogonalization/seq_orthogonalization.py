@@ -185,6 +185,8 @@ OPTIMIZE({
 
 EVALUATE({
         FORM:'FOPT_GAM_S'})
+
+debug_MEL('ME_GAM_S')
  
 if False : # (gno >= 0 and l_iccc) 
     if (spinadapt >= 2): 
@@ -252,7 +254,7 @@ REORDER_MEL({
         ADJOINT:True})
 
 
-debug_MEL('ME_X_TRM')
+debug_MEL('ME_X_TRM',only_this=True)
 
 
 

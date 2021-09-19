@@ -82,7 +82,9 @@
         ! mask = 2: paths excluded in occupation graph
         if (.not.zero_ivec(rst1(:,:,:,2,ispin),2*ngas*2).or.
      &      .not.zero_ivec(rst2(:,:,:,2,ispin),2*ngas*2)) then
-          call quit(1,i_am,'adapt me for mask restrictions!')
+          write(lulog,'(1x,a,16i4)') 'rst1 (mask): ',rst1(:,:,:,2,ispin)
+          write(lulog,'(1x,a,16i4)') 'rst2 (mask): ',rst2(:,:,:,2,ispin)
+          call quit(1,i_am,'adapt me for mask restrictions !')
         end if
 
       end do

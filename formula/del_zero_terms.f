@@ -27,7 +27,7 @@
      &     mode
 
       integer ::
-     &     idxop_tgt, iterm
+     &     idxop_tgt, iterm, iterms
       type(formula_item), pointer ::
      &     fl_tgt_pnt, fl_tgt_pnt_next, fl_tgt_current
 
@@ -50,7 +50,7 @@
 
       ! first sum identical terms?
       if (trim(mode).eq.'sum'.or.trim(mode).eq.'SUM')
-     &   call sum_terms(fl_tgt,op_info)
+     &   call sum_terms(fl_tgt,iterms,op_info)
 
       iterm = 0
       fl_tgt_current => fl_tgt

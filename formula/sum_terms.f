@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine sum_terms(fl_tgt,op_info)
+      subroutine sum_terms(fl_tgt,nterms,op_info)
 *----------------------------------------------------------------------*
 *     look for equal terms and sum them
 *----------------------------------------------------------------------*
@@ -21,6 +21,8 @@
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
+      integer, intent(out) ::
+     &     nterms
 
       integer ::
      &     idxop_tgt, iblk_tgt, iterm, jterm, ivtx, iarc,
@@ -48,6 +50,7 @@
      &     iocc_zero
 
       ! if first entry is an [END]: do nothing
+      nterms = 0
       if (fl_tgt%command.eq.command_end_of_formula) return
 
       if (ntest.ge.100) then
@@ -236,6 +239,7 @@ c dbgend
 c dbg
 c      print *,' sum_terms yields',iterm,' terms.'
 c dbgend
-        
+      nterms = iterm
+
       return
       end

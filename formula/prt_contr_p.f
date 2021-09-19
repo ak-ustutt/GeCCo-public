@@ -22,7 +22,8 @@
       character(32) ::
      &     fmt
 
-      write(fmt,'("(x,i2,i5,""|"",",i2,"i9.8,""|"",",i1,"i9.8",")")')
+      write(fmt,
+     &     '("(x,i2,i10,""|"",",i2,"i9.8,""|"",",i1,"i9.8",")")')
      &     nvtx, nj
       if (nvtx.gt.0.and.svtx(1).gt.0) then
         do ivtx = 1, nvtx

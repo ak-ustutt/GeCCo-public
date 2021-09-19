@@ -59,9 +59,11 @@
      &     maxreo, idx, idxsuper, ica, ica_vtx, hpvx,
      &     iblk, ivtx, idxnew, ireo, ngas, nspin
       logical ::
-     &     renamed(contr%nvtx), update_int
+     &     renamed(contr%nvtx), update_int, modified
       logical, pointer ::
      &     reo_generated(:)
+      integer, pointer ::
+     &     arc_involved(:)
 
       integer, external ::
      &     imltlist
@@ -100,8 +102,9 @@ c     &       'call reorder_supvtx first')
         update_int = reo_before.and.reo_info%nreo.eq.0
 
       end if
-      allocate(reo_generated(maxreo))
+      allocate(reo_generated(maxreo),arc_involved(maxreo))
       reo_generated = .false.
+      arc_involved = -1
 
       nxarc = contr%nxarc
       if (modify_contr) then
@@ -267,6 +270,7 @@ c dbg
             if (iocc_nonzero(occ_shr)) then
               reo_info%nreo = reo_info%nreo+1
               reo_generated(reo_info%nreo) = .true.
+              arc_involved(reo_info%nreo) = ixarc
               idx = reo_info%nreo
               if (idx.gt.maxreo) then
                 write(lulog,*) 'idx,maxreo: ',idx,maxreo
@@ -299,6 +303,7 @@ c dbg
             if (iocc_nonzero(occ_shl)) then
               reo_info%nreo = reo_info%nreo+1
               reo_generated(reo_info%nreo) = .true.
+              arc_involved(reo_info%nreo) = jxarc
               idx = reo_info%nreo
               if (idx.gt.maxreo) then
                 write(lulog,*) 'idx,maxreo: ',idx,maxreo
@@ -345,12 +350,16 @@ c dbg
           if (nxarc_new.lt.ixarc) xarc(nxarc_new) = xarc(ixarc)
         end do
         contr%nxarc = nxarc_new
+        modified = nxarc_new.ne.nxarc
 
         ! a quickie: new intermediate
         renamed = .false.
         idxnew = idxop12-1
         do ireo = 1, reo_info%nreo          
           if (.not.reo_generated(ireo)) cycle
+
+          modified = .true.
+          
           reo_info%reo(ireo)%idxop_new = idxop12 ! default
           reo_info%reo(ireo)%dagger_new = .false. ! default
           idxsuper = reo_info%reo(idx)%idxsuper
@@ -368,17 +377,29 @@ c dbg
           end do
           if (iblk.ne.0) reo_info%reo(ireo)%idxop_new = idxnew
           if (iblk.ne.0) idxnew = idxnew-1
+
+          if (contr%index_info)
+     &         call reorder_string_info(contr,
+     &              reo_info%reo(ireo)%from_vtx,
+     &              reo_info%reo(ireo)%to_vtx,
+     &              arc_involved(ireo),
+     &              reo_info%reo(ireo)%occ_shift,
+     &              .true.)
+          
         end do
 
         ! set 0-contraction, if necessary
         ! as they were removed above
         call check_disconnected(contr)
 
+        if (contr%index_info.and.modified)
+     &       call update_string_info(contr)
+
       end if
 
       if (.not.modify_contr) deallocate(xarc_scr)
 
-      deallocate(reo_generated)
+      deallocate(reo_generated,arc_involved)
 
       if (ntest.ge.100) then
         write(lulog,*) 'contr at the end of reorder_supvtx_x: nreo = ',
