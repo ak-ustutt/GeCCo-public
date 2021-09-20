@@ -4,63 +4,56 @@
 *     return number of appearences of argument for keyword given 
 *     the keyword is given as "context" i.e. as string including all
 *     higher level keywords, e.g. key.key.key
+*     the keyword must be active (status > 0)
 *     the first appearance in history is evaluated, unless count is set
 *----------------------------------------------------------------------*
 
-      use keyword_trees, only:Node,tree_t,
-     &     tree_get_arg_from_context,
-     &     fetch_input_keyword_tree,fetch_registry_keyword_tree
+      use parse_input
       implicit none
-      include "stdunit.h"
-
-      integer,parameter::
-     &     ntest= 00
-      character(len=15),parameter ::
-     &     i_am="is_argument_set"
 
       character, intent(in) ::
      &     context*(*), argkey*(*)
       integer, intent(in), optional ::
      &     keycount
 
-      type(Node), pointer ::
+      type(keyword), pointer ::
+     &     curkey
+      type(argument), pointer ::
      &     curarg
-      type(tree_t)::
-     &     registry,input
-
       character ::
      &     curcontext*1024
       integer ::
-     &     iargcount, icount_target,ii
+     &     iargcount, icount_target
 
-      input=fetch_input_keyword_tree()
-      registry=fetch_registry_keyword_tree()
-      if (ntest.ge.100) then
-          call write_title(lulog,wst_dbg_subr,i_am)
-          write(lulog,*) 'looking for argument: ',argkey
-          write (lulog,*) 'in context: ',context
-      end if
+      if (.not.associated(keyword_history%down_h))
+     &     call quit(1,'is_argument_set','invalid keyword history')
 
       icount_target = 1
       if (present(keycount)) icount_target = keycount
-      
 
+      call find_active_node(keyword_history,curkey,
+     &     context,icount_target)
 
-      if (ntest.ge.100) then
-         write(lulog,*)"looking for the ",icount_target,"th attribute"
-      end if 
-      
-      iargcount=-1
-      curarg=> tree_get_arg_from_context(input,context,argkey,
-     &     latest=.false.,keycount=icount_target,argcount=iargcount)
+      iargcount = 0
 
-      
-      is_argument_set = -iargcount-1
+      if (associated(curkey).and.associated(curkey%arg_h)) then
+        curarg => curkey%arg_h
 
-      if (ntest.ge.100)then 
-         write (lulog,'("found ",i3," occurences")') is_argument_set
-         write (lulog,*) "of ",argkey," under ",context
+        arg_loop: do 
+
+          if (trim(curarg%key).eq.trim(argkey)) iargcount = iargcount+1
+
+          if (associated(curarg%next)) then
+            curarg => curarg%next
+          else
+            exit arg_loop
+          end if        
+          
+        end do arg_loop
+
       end if
-      
+
+      is_argument_set = iargcount
+
       return
       end

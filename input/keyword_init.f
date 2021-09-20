@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine show_keywords(lulog)
+      subroutine keyword_init()
 *----------------------------------------------------------------------*
 *     wrapper routine
 *----------------------------------------------------------------------*
@@ -7,10 +7,7 @@
       use parse_input
       implicit none
 
-      integer, intent(in) ::
-     &     lulog
-
-      call keyword_list(lulog,keyword_root,show_args=.true.)
+      call keyword_init_()
 
       return
       end

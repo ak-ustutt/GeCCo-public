@@ -19,6 +19,7 @@
 
       character ::
      &     argstr*256
+
       l_molpro = .false.
       l_exit = .false.
       l_infile = .false.

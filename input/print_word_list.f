@@ -30,7 +30,7 @@
       do 
 
         if (.not.just_moved_up) then
-          write(lulog,*) level,'"',trim(wl_pnt%word),
+          write(lulog,'(1x,i3,4a)') level,'"',trim(wl_pnt%word),
      &                   '", sep=',wl_pnt%sep
           write(lulog,'(9x,a,i4,a,i4)')               
      &                   ' line=',wl_pnt%line,
