@@ -23,20 +23,6 @@ dirs:=$(libdirs) $(progdirs)
 
 all: lib prog
 
-#-------------------------------------------
-# targets for the FoX (Fortran XML library)
-fox:
-	@set -e ; $(MAKE) -C $(foxdir) default
-sublib_make+=fox
-
-fox_clean:
-	@set -e ; $(MAKE) -C $(foxdir) clean
-sublib_clean+=fox_clean
-
-#------------------------------------------
-
-
-
 lib:$(sublib_make)
 	@$(mkinstalldirs) $(libdir)
 ifneq ($(libdirs),)
