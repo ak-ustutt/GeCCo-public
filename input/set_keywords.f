@@ -3,7 +3,8 @@
 *---------------------------------------------------------------------------*
 *
 *     set the keywords to interpret the gecco input file
-*     using the info in $GECCO_DIR/keyword_registry
+*     using the info in $GECCO_DIR/keyword_registry.xml
+*       (sloppy read of XML data)
 *
 *     reactivated from old pre-2016 version
 *
@@ -39,7 +40,7 @@ c      use parse_input
      &     name_found, type_found, value_found, length_found
       
       character(len=256) ::
-     &     keyword_file_name, context, word, name
+     &     keyword_file_name, context, word, name, word_cut
       character(len=1) ::
      &     sep
       type(filinf) ::
@@ -66,7 +67,8 @@ c      use parse_input
       ! read file contents to word list
       call init_word_list(keyword_defs)
       call lex_file(keyword_defs,keyword_file,
-     &                    'gecco keywords','end gecco keywords')
+     &                    '','')
+c     &                    'gecco keywords','end gecco keywords')
       if (ntest.ge.100)
      &     call print_word_list(lulog,keyword_defs)
 
@@ -92,7 +94,7 @@ c      use parse_input
         !-------------------------------------------------------------
         ! "keyword"
         !-------------------------------------------------------------
-        if (trim(word)=="keyword") then
+        if (index(trim(word),"<keyword").gt.0) then
            ! get next entry
            if (.not.advance_word_list_entry(keyword_defs,' ')) then
              call quit(1,'set_keywords','expected "name" but file ends')
@@ -121,7 +123,7 @@ c      use parse_input
         !-------------------------------------------------------------
         ! "argument"
         !-------------------------------------------------------------
-        else if (trim(word)=="argument") then
+        else if (index(trim(word),"<argument").gt.0) then
            name_found = .false.
            length_found = .false.
            type_found = .false.
@@ -173,44 +175,45 @@ c                 end if
      &                   'found "argument value" but type and length '//
      &                   'are not yet defined: '//trim(context) )
                  end if
+                 if (.not.advance_word_list_entry(keyword_defs,' '))then
+                    call quit(1,'set_keywords',
+     &                      'scanning "argument value entries"'//
+     &                      ' but file ends')
+                 end if
+                 call get_word_list_entry(word,sep,keyword_defs)
                  if (type==vtyp_log.or.type==vtyp_int.or.type==vtyp_rl8)
      &           then
                     log_array = .false.
                     int_array = 0
                     rl8_array = 0d0
+                    word_cut = word
                     do ival = 1, length
-                       if (.not.advance_word_list_entry
-     &                                         (keyword_defs,' ')) then
-                          call quit(1,'set_keywords',
-     &                      'scanning "argument value entries"'//
-     &                      ' but file ends')
+                       length2 = len_trim(word)
+                       ! here: cut and interpret word
+                       if (ival.lt.length) then
+                          idx = index(word,',')
+                          word_cut = word(1:idx)
+                          word = word(idx+1:length2)
                        end if
-                       call get_word_list_entry(word,sep,keyword_defs)
                        select case(type)
                         case (vtyp_log)
-                          if (trim(word)=="false") then
+                          if (trim(word_cut)=="false") then
                             log_array(ival) = .false.
-                           else if (trim(word)=="true") then
+                           else if (trim(word_cut)=="true") then
                             log_array(ival) = .true.
                            else
                              call quit(1,'set_keyword',
-     &                     'expected true or false, found:'//trim(word))
+     &                     'expected true or false, found:'
+     &                       //trim(word_cut))
                            end if
                         case (vtyp_int)
-                           read(word,*,err=100) int_array(ival)
+                           read(word_cut,*,err=101) int_array(ival)
                         case (vtyp_rl8)
-                           read(word,*,err=100) rl8_array(ival)
+                           read(word_cut,*,err=101) rl8_array(ival)
                        end select
                     end do
                  else if (type==vtyp_str) then
                     str_array = " "
-                    if (.not.advance_word_list_entry
-     &                                         (keyword_defs,' ')) then
-                          call quit(1,'set_keywords',
-     &                      'scanning "argument value entries"'//
-     &                      ' but file ends')
-                    end if
-                    call get_word_list_entry(word,sep,keyword_defs)
                     length2 = len_trim(word)
                     do ival = 1, min(length2,length)
                        str_array(ival) = word(ival:ival)
@@ -220,10 +223,23 @@ c                 end if
      &                      'unknown "argument type"'//
      &                      ' (use 1, 2, 4, 8)')
                  end if
-              else
-                 call quit(1,'set_keywords',
-     &                      'unexpected after "argument": '//
-     &                      trim(word))
+              ! comment begins (and does not directly end)
+              else if (index(trim(word),'<!').gt.0.and.
+     &                 index(trim(word),'-->').eq.0) then
+                 comment_loop: do
+                    if (.not.advance_word_list_entry(keyword_defs,' '))
+     &              then
+                       call quit(1,'set_keywords',
+     &                      'scanning comment line'//
+     &                      ' but file ends')
+                    end if
+                    call get_word_list_entry(word,sep,keyword_defs)                   
+                    if (index(word,'-->').gt.1) exit comment_loop
+                 end do comment_loop
+c              else
+c                 call quit(1,'set_keywords',
+c     &                      'unexpected after "argument": '//
+c     &                      trim(word))
               end if
               if (sep == "E") exit arg_loop
            end do arg_loop
@@ -257,9 +273,9 @@ c                 end if
      &                         len=length)
            end if
         !-------------------------------------------------------------
-        ! "end"
+        ! "</keyword>"
         !-------------------------------------------------------------
-        else if (trim(word)=="end") then
+        else if (index(trim(word),"</keyword").gt.0) then
           ! update context
           idx = index(context,".",back=.true.)
           if (idx.ge.0) then
@@ -267,10 +283,11 @@ c                 end if
           else
              context = ""
           end if
-        else
-          ! some info...
-          call quit(1,'set_keywords',
-     &   'unexpected content (expected "keyword", "argument" or "end"')
+        ! ignore anything else
+c        else
+c          ! some info...
+c          call quit(1,'set_keywords',
+c     &   'unexpected content (expected "keyword", "argument" or "end"')
         end if
 
          if (.not.advance_word_list_entry(keyword_defs,' '))
@@ -292,6 +309,8 @@ c                 end if
 
  100  call quit(1,'set_keywords','troubly reading from string "'
      &             //trim(word)//'"')
+ 101  call quit(1,'set_keywords','troubly reading from string "'
+     &             //trim(word_cut)//'"')
 
       contains
  
