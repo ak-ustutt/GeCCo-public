@@ -578,7 +578,7 @@ cc      if (index(label, "H")>0) then
       ! defined and used anywhere within the complete diagram
       ! WARNING: This won't work for more than 9 intermediates...
       i = len(trim(item%label_res))
-      read(item%label_res(i:i),'(1i)') ninter
+      read(item%label_res(i:i),*) ninter
       if (ninter==0)
      &          call line_error("0 ninter in set_itype",item)
 
@@ -3586,11 +3586,12 @@ c without number:
       integer :: nidx, index_info(nidx)
 
       character, parameter ::
-     &     label(10,4) = (/(/'i','j','k','l','m','n','o',' ',' ',' '/),
-     &                     (/'a','b','c','d','e','f','g','h',' ',' '/),
-     &                     (/'p','q','r','s','t','u','v','w','x','y'/),
-     &                     (/'P','Q','R','S','T','U',' ',' ',' ',' '/)
-     &     /)
+     &     label(10,4) = reshape(
+     &                     (/'i','j','k','l','m','n','o',' ',' ',' ',
+     &                       'a','b','c','d','e','f','g','h',' ',' ',
+     &                       'p','q','r','s','t','u','v','w','x','y',
+     &                       'P','Q','R','S','T','U',' ',' ',' ',' '/),
+     &                     (/10,4/))
       integer, parameter ::
      &     shift_type(4) = (/3,1,2,4/)  ! 'canonical' values
 
@@ -3967,7 +3968,7 @@ c     dbg
 
       ! find itype corresponding to numbered intermediate
       i = len(trim(label))
-      read(label(i:i),'(1i)') ninter
+      read(label(i:i),*) ninter
 
       same = .true.
       do i = 1, rank1
@@ -4091,7 +4092,7 @@ c     dbg
 
       ! find itype corresponding to numbered intermediate
       i = len(trim(label))
-      read(label(i:i),'(1i)') ninter
+      read(label(i:i),*) ninter
 
       same = .true.
       do i = 1, rank1
