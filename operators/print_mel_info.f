@@ -2,6 +2,7 @@
 
       implicit none
 
+      include "opdim.h"
       include "mdef_me_list.h"
       include "molpro_out.h"
 
@@ -32,9 +33,9 @@
      &    trim(mel%op%name)=='T') then
       ! Special molpro output for the cluster operators
       write(luout,*)
-      write(luout,*) "Summery of cluster operator dimensions: "
+      write(luout,*) "Summary of cluster operator dimensions: "
       write(luout,*)
-      write(luout,*) "   Name      Excitation        Size"
+      write(luout,*) "   Name      Excitation                 Size"
       do iblk = 1, nblk
         idxblk = (iblk-1)*nj+1
         call occ2descr(descr,len_descr,occ(1,1,idxblk),nj)
@@ -64,13 +65,27 @@
              ci_name = 'P2'
           case default
              ci_name = 'XX'
+             if (occ(IPART,1,idxblk).eq.0) ci_name(1:1) = 'I'
+             if (occ(IPART,1,idxblk).eq.1) ci_name(1:1) = 'S'
+             if (occ(IPART,1,idxblk).eq.2) ci_name(1:1) = 'P'
+             if (occ(IPART,1,idxblk).eq.3) ci_name(1:1) = 'T'
+             if (occ(IPART,1,idxblk).eq.4) ci_name(1:1) = 'Q'
+             if (occ(IPART,1,idxblk).eq.5) ci_name(1:1) = 'P'
+             if (occ(IPART,1,idxblk).eq.6) ci_name(1:1) = 'H'
+             if (occ(IHOLE,2,idxblk).eq.0) ci_name(2:2) = '0'
+             if (occ(IHOLE,2,idxblk).eq.1) ci_name(2:2) = '1'
+             if (occ(IHOLE,2,idxblk).eq.2) ci_name(2:2) = '2'
+             if (occ(IHOLE,2,idxblk).eq.3) ci_name(2:2) = '3'
+             if (occ(IHOLE,2,idxblk).eq.4) ci_name(2:2) = '4'
+             if (occ(IHOLE,2,idxblk).eq.5) ci_name(2:2) = '5'
+             if (occ(IHOLE,2,idxblk).eq.6) ci_name(2:2) = '6'
         end select
 
-        write(luout,'(4x,a2,11x,a5,i14)')
+        write(luout,'(4x,a2,10x,a11,i18)')
      &         ci_name,descr,length(iblk)
       end do
       write(luout,*)
-      write(luout,'(" Total number of elements: ",i9)') mel%len_op
+      write(luout,'(" Total number of elements: ",i18)') mel%len_op
       write(luout,*)
 
       else if (lmol .and. trim(mel%op%name)=='T1') then
