@@ -12,6 +12,7 @@ CA_SYM int
 CA_SYMMETRY int
 CHARGE int
 CHECK_THRESH real
+CODE label
 COMMENT str
 CONNECT int
 CORE int
@@ -39,11 +40,14 @@ IGAST int
 IMODE int
 ISTATE int
 INIT log
+INIT_RES log
 INPROJ int
 INTERM label
 INV log
 IRREP int
+ITIN log
 JOIN int
+KEXT log
 LABEL label
 LABEL_DESCR label
 LABELS_IN label
@@ -113,8 +117,10 @@ OP_TRF label
 OP_X label
 ORDER int
 OUTPUT str
+PROCESS log
 RANK int
 REC int
+RENAME label
 REORDER log
 REPLACE log
 S2 int
@@ -123,8 +129,10 @@ SET_X log
 SHIFT real
 SOLVER str
 SPECIES int
+SPLIT log
 STRING str
 SWITCH int
+TASKS log
 TARG_ROOT int
 TEMPLATE label
 TERMS int

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+MOLPRO=$HOME/programs/Molpro
+TESTJOB=$HOME/programs/GeCCo/itf_testjobs
+
+cd ../
+make -j4
+cd itf_testjobs
+
+for dir in */; do
+    dir=${dir%*/}
+    echo $dir
+
+    cd $dir
+    rm icmrcc_*.itfaa
+    gecco.x ccd.inp > ccd.out
+
+    echo "Results for icmrcc_${dir}:"
+    #diff icmrcc_${dir}.itfaa example.itfaa
+    diff icmrcc_*.itfaa example.itfaa
+
+    echo "Molpro results:"
+    #cp icmrcc_${dir}.itfaa $MOLPRO/src/algo/
+    cp icmrcc_*.itfaa $MOLPRO/src/algo/
+    cd $MOLPRO
+    make -j4 > /dev/null
+
+    cd $TESTJOB/${dir}
+    rm test.log
+    molpro -s test.molpro
+    grep 'ERRORS' test.log
+    echo
+    echo
+    cd $TESTJOB
+done

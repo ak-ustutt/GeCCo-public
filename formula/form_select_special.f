@@ -72,6 +72,8 @@
         call select_mrcc_trunc(flist,labels,nlabels,mode,op_info)
       case('MRCCrem0res','mrccrem0res')
         call select_mrcc_rem0res(flist,labels,nlabels,mode,op_info)
+      case('CONNECTED','connected')
+          call select_connected(flist,labels,nlabels,mode,op_info)
       case('OPT1','opt1')
         call select_xsp_opt1(flist,labels,nlabels,mode,op_info)
       case('SAME','same')

@@ -26,7 +26,7 @@
      &     op_info
 
       integer ::
-     &     idx_intm, nrpl, len
+     &     idx_intm, nrpl, nspl, len
 
       integer, external ::
      &     idx_formlist, form_count
@@ -62,9 +62,11 @@
       fintm_tail => form_ptr
 
       ! factor out the sub-expressions
-      call factor_out_subexpr2(form_link,fintm_head,nrpl,op_info)
-      if (iprlvl.ge.2) write(lulog,'(5x,i6," replacements")')
-     &     nrpl
+      call factor_out_subexpr2(form_link,fintm_head,.false.,
+     &                         nrpl,nspl,op_info)
+      if (iprlvl.ge.2) write(lulog,
+     &     '(5x,i6," replacements with ",i6," splits")')
+     &     nrpl, nspl
       if (iprlvl.ge.2) then
          len = form_count(form_link)
          write(lulog,'(5x,"formula reduced to ",i10," items")') len

@@ -8,7 +8,7 @@
 
       character(len=16) :: i_am = 'make_ext2typ_reo'
       integer, parameter ::
-     &     ntest = 100
+     &     ntest = 00
 
       type(orbinf), intent(inout) ::
      &     orb_info

@@ -22,7 +22,7 @@
       integer, parameter ::
      &     maxcount = 1000000, ! at most 1000000 iterations
      &     ndisconn = 14,     ! at most 4 extra levels for disconnected
-     &     ntest = 000                                   ! vertices
+     &     ntest = 00         ! vertices
 
       type(contraction), intent(inout) ::
      &     contr
@@ -86,7 +86,7 @@
      &     next_fact
       integer, external ::
      &     int_pack, ifac
-     
+
       if (ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'form_fact_new at work!')
         call prt_contr2(lulog,contr,op_info)
@@ -94,6 +94,7 @@
 c dbg
 c      call check_xarcs(contr,op_info)
 c dbg
+
 
       call atim_csw(cpu0,sys0,wall0)
 
@@ -150,7 +151,17 @@ c dbgend
           if (.not.reo_add) call dealloc_reo_info(reo_info0)
         end if
 
+        ! set index info for ITF here ... unclear, how ITF can cope with reordering
+        call contr_set_indices(contr,op_info)
+
         if (reo_add) then
+
+c dbg     may later remove this again ... keep it until this is set for ITF or catched in ITF translator itself     
+          write(lulog,*) 'Check this!'
+          
+          call warn('form_fact_new','not clear if this works for ITF')
+c dbg
+          
           allocate(iocc_reo(ngastp,2,nvtx_max),
      &             iocc_ori(ngastp,2,nvtx_max),
      &             irst_reo(2,ngas,2,2,nvtx_max),
@@ -285,6 +296,11 @@ c      print *,'now SETting'
 c        call prt_contr2(lulog,contr,op_info)
 c        call wrt_occ_n(lulog,occ_vtx,nvtx_full+njoined)
 c dbg
+
+      ! analyze the diagram and set helper variables required for ITF translator
+      call contr_set_indices(contr,op_info)
+      call contr_get_eqv_line_factor(contr,op_info)
+      
       ! call kernel again for optimal sequence --> set fl_fact now
       call form_fact_rec_new('SET ',.true.,nlevel,ifact_best,fl_fact,
      &     cost,iscale,iitem,
@@ -302,6 +318,17 @@ c dbg
         write(lulog,*) 'generated formula'
         call print_form_list(lulog,fl_fact,op_info)
       end if
+
+      ! Optionally check for permutation factors used in
+      ! the ITF translator
+      ! TODO: make this optional
+
+      if (trim(op_info%op_arr(contr%idx_res)%op%name)=="INTHE1") then
+        write(lulog,*) 'HERE IT COMES: '
+        call prt_contr2(lulog,contr,op_info)
+      end if
+        
+      call check_itf_permute(contr,fl_fact)
 
       return
 
@@ -516,3 +543,5 @@ c dbg
       end subroutine
 
       end
+
+

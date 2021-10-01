@@ -1,0 +1,9 @@
+---- decl
+index-space: pqrstuvwxyz, Active  , a
+index-space: ijkl       , Closed  , c
+index-space: gh         , ClosedF , f
+index-space: abcd       , External, e
+index-space: mno        , Internal, i
+
+index-space: I          , ConfigI0, I
+index-space: KJ         , OrthActPair, K

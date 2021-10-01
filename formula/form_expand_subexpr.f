@@ -41,7 +41,7 @@ c      include 'def_contraction_list.h'
       logical ::
      &     same, transpose
       integer ::
-     &     iintm, idx, len
+     &     iintm, idx, len, nterms
       character ::
      &     name*(form_maxlen_label*2)
 
@@ -108,7 +108,7 @@ c      include 'def_contraction_list.h'
 
         call expand_subexpr(flist,fl_intm,mode,op_info)
 
-        call sum_terms(flist,op_info)
+        call sum_terms(flist,nterms,op_info)
 
         call atim_csw(cpu,sys,wall)
         call prtim(lulog,'expand',cpu-cpu0,sys-sys0,wall-wall0)

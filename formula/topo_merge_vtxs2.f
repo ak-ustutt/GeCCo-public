@@ -1,5 +1,5 @@
       subroutine topo_merge_vtxs2(ireo,nvtx_new,nvtx_bcres,
-     &                           merge_sign,
+     &                           merge_sign,itf_sign,
      &                           topo,xlines,nvtx,nj,
      &                           svertex,isvtx1,isvtx2,
      &                           vtx_list,nlist)
@@ -17,7 +17,7 @@
       integer(8), intent(inout) ::
      &     topo(nvtx,nvtx), xlines(nvtx,nj)
       integer, intent(out) ::
-     &     ireo(nvtx), nvtx_new, nvtx_bcres, merge_sign
+     &     ireo(nvtx), nvtx_new, nvtx_bcres, merge_sign, itf_sign
       
       integer ::
      &     iord(nvtx)
@@ -27,7 +27,7 @@
      &     idx, jdx, kdx, jdxnd, ii, ivtx, ij,
      &     n_zero_vtx_res, n_zero_vtx, kdx_v, jdx_v,
      &     n_enclosed, isvtx_j, isvtx_k, ipass,
-     &     iv_to, iv_fr
+     &     iv_to, iv_fr, sign_loc
       logical ::
      &     merged(nvtx), reversed, right_sh
 
@@ -53,6 +53,8 @@
       end do
 
       merge_sign = 1
+      itf_sign   = 1  ! keep track of different sign convention req.d
+                      ! for generating ITF code
 
       ! count number of external vertices that contain
       ! no lines (dummy vertices to keep same number of 
@@ -180,17 +182,34 @@ c dbg
               ! {I0C I0A}{}{J0C J0A} -> {I0C J0C I0A J0A}{}{}
               merge_sign = merge_sign *
      &             sign_merge(occ_to,occ_fr,n_enclosed,reversed) 
+              ! for ITF: sign for interchanging I0A J0A:
+              if (mod(sum(occ_to(1:ngastp,2))*
+     &                sum(occ_fr(1:ngastp,2)),2).eq.1) 
+     &            itf_sign = -itf_sign
+!              ! for ITF: ... and sign for interchanging I0C J0C:
+!              if (mod(sum(occ_to(1:ngastp,1))*
+!     &                sum(occ_fr(1:ngastp,1)),2).eq.1) 
+!     &            itf_sign = -itf_sign
+
 c dbg
 c              print *,'after sign_merge: ',merge_sign
 c dbg
               ! get the sign for HPVX reordering
               ! {I0C J0C I0A J0A} -> {IJC IJA}
               if (.not.reversed) then
-                merge_sign = merge_sign *
-     &             sign_hpvx(2,occ_j,.false.,occ_k,.false.)
+                sign_loc = sign_hpvx(2,occ_j,.false.,occ_k,.false.)
               else
-                merge_sign = merge_sign *
-     &             sign_hpvx(2,occ_k,.false.,occ_j,.false.)
+                sign_loc = sign_hpvx(2,occ_k,.false.,occ_j,.false.)
+              end if
+              merge_sign = merge_sign*sign_loc
+
+              ! check different merge for ITF
+              if (.not.reversed) then
+                if(sign_loc.ne.sign_hpvx(1,occ_j,.false.,occ_k,.false.))
+     &             itf_sign = -itf_sign
+              else                
+                if(sign_loc.ne.sign_hpvx(1,occ_k,.false.,occ_j,.false.))
+     &             itf_sign = -itf_sign
               end if
 c dbg
 c              print *,'after hpvx: ',merge_sign
@@ -250,6 +269,8 @@ c dbg
       end do
 
       ireo = iord
+
+      itf_sign = merge_sign*itf_sign
 
       return
 

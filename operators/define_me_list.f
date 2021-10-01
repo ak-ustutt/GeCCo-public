@@ -54,7 +54,7 @@
      &     strmap_info
 
       integer ::
-     &     idx
+     &     idx, incore
       type(me_list), pointer ::
      &     mel
 
@@ -126,7 +126,10 @@ c dbg
       call set_op_dim2(2,mel,str_info,orb_info%nsym)
       
       ! initialize file
-      call init_mel_file(mel,rec,rec_lo,rec_hi,0)
+      ! set incore for scalar operators
+      incore = 0
+      !if (mel%len_op.eq.1) incore = 1 # requires debugging
+      call init_mel_file(mel,rec,rec_lo,rec_hi,incore)
 
       ! update op_list array in order to set up the lookup-table
       call update_op_arr(op_info)

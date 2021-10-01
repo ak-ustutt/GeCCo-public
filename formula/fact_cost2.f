@@ -88,7 +88,9 @@
      &     merge_op1op2(2*contr%nvtx*contr%nvtx),
      &     merge_op2op1(2*contr%nvtx*contr%nvtx),
      &     iscale_new(ngastp)
-
+      integer ::
+     &     itf_index_info
+      
       integer, pointer ::
      &     ihpvgas(:,:)
       
@@ -129,7 +131,9 @@ c dbg
       ! restriction on result:
       call set_restr_prel(irst_res,contr,op_info,ihpvgas,ngas)
 
-      call get_bc_info3(bc_sign,possible,
+      itf_index_info = -1
+      
+      call get_bc_info3(bc_sign,idum,possible,
      &     idxop,idar2,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
@@ -139,12 +143,13 @@ c dbg
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
+     &     itf_index_info,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     make_red,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     .false.,reo_dum,reo_dum,
      &     iarc,.false.,-nlevel,
-     &     irst_res,njoined_res,orb_info,op_info)
+     &     irst_res,njoined_res,orb_info,op_info,0)
 c dbg
       print *,'iocc_op1op2 fresh from get_bc_info3'
       call wrt_occ_n(6,iocc_op1op2,njoined_op1op2)

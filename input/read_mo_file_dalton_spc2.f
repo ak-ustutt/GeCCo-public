@@ -21,7 +21,7 @@
       include 'par_dalton.h'
 
       integer, parameter::
-     &     ntest= 100
+     &     ntest= 00
 
       real(8), intent(out) ::
      &     buffer(*)

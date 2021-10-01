@@ -73,7 +73,7 @@
       integer ::
      &     ilabel, idx, idxham,idxtbar, idxt, idxen, idxd,
      &     nvtx, min_n, nn, ii, jj, iblk, mini, maxc, off, nl, nham,
-     &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm,
+     &     kk, iblk_l, iblk_ham, iterm, icall, icall0, nterm, iterms,
      &     lu(2), ho(2), hu(2), tto(2), tto_l(2), idxddag, ioff, idx_h,
      &     max_n0, nsumcalls, G_level, ciroot, n_states, i_state
       integer, allocatable, dimension(:) ::
@@ -332,7 +332,7 @@ c dbgend
       end do
       ! sum terms
       call atim_csw(cpu10,sys10,wall10)
-      call sum_terms(start_pnt,op_info)
+      call sum_terms(start_pnt,iterms,op_info)
       call atim_csw(cpu1,sys1,wall1)
 c dbg
 c      call prtim(lulog,'time in sum_terms ',
@@ -494,7 +494,7 @@ c     &                     cpu1-cpu10,sys1-sys10,wall1-wall10)
 c dbgend
                 nsumcalls = nsumcalls + 1
                 call atim_csw(cpu10,sys10,wall10)
-                call sum_terms(start_pnt2,op_info)
+                call sum_terms(start_pnt2,iterms,op_info)
                 call atim_csw(cpu1,sys1,wall1)
 c dbg
 c            call prtim(lulog,'time in sum_terms (2) ',
@@ -580,7 +580,7 @@ c dbgend
 
              if (nsumcalls.ne.1) then
                call atim_csw(cpu10,sys10,wall10)
-               call sum_terms(start_pnt,op_info)
+               call sum_terms(start_pnt,iterms,op_info)
                call atim_csw(cpu1,sys1,wall1)
 c dbg
 c               call prtim(lulog,'time in sum_terms ',

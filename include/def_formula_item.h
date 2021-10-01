@@ -17,7 +17,7 @@
      &       contr
         ! pre-processed binary contraction
 	type(binary_contr), pointer ::
-     &       bcontr 
+     &       bcontr
         ! pre-processed reordering info
 	type(reorder), pointer ::
      &       reo
@@ -27,7 +27,7 @@
 
       integer, parameter ::
      &     command_end_of_formula = -1,
-     &     command_set_target_init = 0,   
+     &     command_set_target_init = 0,
      &     command_set_target_update = 1,
      &     command_new_intermediate = 2,
      &     command_del_intermediate = 3,

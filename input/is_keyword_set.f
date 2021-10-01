@@ -1,47 +1,61 @@
 *----------------------------------------------------------------------*
+      integer function is_keyword_set(context)
+*----------------------------------------------------------------------*
 *     return number of appearences of keyword in currently
 *     active keyword_history
 *     the keyword is given as "context" i.e. as string including all
 *     higher level keywords, e.g. key.key.key
 *----------------------------------------------------------------------*
-      integer function is_keyword_set(context)
-*----------------------------------------------------------------------*
 
-      use keyword_trees, only : tree_t,Node,
-     &     fetch_input_keyword_tree,tree_get_key_from_context
-      use FoX_dom, only : getNextSibling
+      use parse_input
       implicit none
-      include 'stdunit.h'
-
-      integer,parameter::
-     &     ntest=00
-      character(len=*),parameter ::
-     &     i_am="is_keyword_set"
 
       character, intent(in) ::
      &     context*(*)
-      type(tree_t)::
-     &     input
 
-      type(Node), pointer ::
+      type(keyword), pointer ::
      &     current
-
-
+      character ::
+     &     curcontext*1024
       integer ::
      &     icount
-      input=fetch_input_keyword_tree()
-      if (ntest.ge.100) then
-         call write_title(lulog,wst_dbg_subr,i_am)
-      end if
-      icount=-1
-      current => tree_get_key_from_context(input,context,latest=.false.,
-     &     keycount=icount)
-      
 
-      
-      is_keyword_set = -icount-1
-      if (ntest.ge.100)
-     &     write (lulog,*) i_am," has found",is_keyword_set,
-     &     "occurences of ",trim(context)
+      if (.not.associated(keyword_history%down_h))
+     &     call quit(1,'is_keyword_set','invalid keyword history')
+      current => keyword_history%down_h
+
+      icount = 0
+      key_loop: do 
+        if (current%status.gt.0) then
+          call keyword_get_context(curcontext,current)
+          if (trim(context).eq.trim(curcontext)) icount = icount+1 
+        end if
+
+        if (current%status.gt.0.and.associated(current%down_h)) then
+          ! go down
+          current => current%down_h
+        else if (associated(current%next)) then
+          ! else stay within level
+          current => current%next
+        else
+          ! else find an upper level, where a next
+          ! node exists:
+          up_loop: do
+            if (associated(current%up)) then
+              current => current%up
+              if (associated(current%next)) then
+                current => current%next
+                exit up_loop
+              end if
+            else
+              exit key_loop
+            end if
+          end do up_loop
+        end if        
+
+      end do key_loop
+
+      is_keyword_set = icount
+
       return
       end

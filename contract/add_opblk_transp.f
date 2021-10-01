@@ -121,15 +121,15 @@
      &    .not.iocc_equal_n(op_in%ihpvca_occ(1,1,iblkoff_in+1),tra_in,
      &                      op_out%ihpvca_occ(1,1,iblkoff+1),  tra_out,
      &                      njoined)) then
-        if (njoined.ne.op_out%njoined) then
-          write(lulog,*) njoined, op_out%njoined
-        else
-          write(lulog,*) 'IN, OUT: ',tra_in, tra_out
-          call wrt_occ_n(lulog,op_in%ihpvca_occ(1,1,iblkoff_in+1),
-     &                                                          njoined)
-          call wrt_occ_n(lulog,op_out%ihpvca_occ(1,1,iblkoff_in+1),
-     &                                                          njoined)
-        end if
+        write(lulog,*)    "IN: ",trim(op_in%name),
+     &                 "  OUT: ",trim(op_out%name)
+        write(lulog,*) njoined, op_out%njoined
+        write(lulog,*) 'IN, OUT: ',tra_in, tra_out
+        call wrt_occ_n(lulog,op_in%ihpvca_occ(1,1,
+     &                      (iblk_in-1)*op_in%njoined+1),op_in%njoined)
+        call wrt_occ_n(lulog,op_out%ihpvca_occ(1,1,
+     &                      (iblk_out-1)*op_out%njoined+1),
+     &                                                   op_out%njoined)
         call quit(1,'add_opblk_transp',
      &     'Input and output list do not have compatible operators')
       end if

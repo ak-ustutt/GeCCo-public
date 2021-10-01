@@ -44,7 +44,9 @@
       include 'routes.h'
       
       integer, parameter ::
-     &     ntest = 00
+     &     ntest_ = 00
+      integer :: ntest
+      integer :: ntest_bc
       logical, parameter ::
      &     formal = .false., exact = .false.
 
@@ -84,12 +86,13 @@
       character(len=len_opname) ::
      &     label, label1, label2, label_reo
       real(8) ::
-     &     fact
+     &     fact, fact_itf
       integer ::
-     &     nvtx, narc, ngas, nsym, idum, target, command,
+     &     nvtx, narc, ngas, nsym, idum, target, command, nidx,
      &     np_op1op2, nh_op1op2, nx_op1op2, np_cnt, nh_cnt, nx_cnt,
      &     idxop_reo, idxop_ori, iblkop_reo, iblkop_ori,
-     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2
+     &     ireo, idxs_reo, mode_rst_cnt, nv_op1op2, nv_cnt, nreo_op1op2,
+     &     iscal
       integer ::
      &     iocc_cnt(ngastp,2,contr%nvtx*(contr%nvtx+1)/2),
      &     iocc_ex1(ngastp,2,contr%nvtx),
@@ -128,7 +131,9 @@
      &     merge_stp2_0(2*contr%nvtx*contr%nvtx),
      &     merge_stp2inv_0(2*contr%nvtx*contr%nvtx),
      &     iscale_new(ngastp)
-
+      integer, pointer ::
+     &     itf_index_info(:)
+      
       integer, pointer ::
      &     ihpvgas(:,:)
       
@@ -148,17 +153,26 @@
      &     tra_op1, tra_op2, tra_op1op2, tra_reo, tra_ori,
      &     reo_op1op2, reo_other, reo_before
       real(8) ::
-     &     flops, xmemtot, xmemblk, bc_sign, factor
+     &     flops, xmemtot, xmemblk, bc_sign, bc_sign_itf, factor
 
       integer, external ::
-     &     idxlist, int_expand, int_pack, maxxlvl_op
+     &     idxlist, int_expand, int_pack, maxxlvl_op,  get_nidx4contr
       logical, external ::
      &     check_grph4occ
       real(8), external ::
      &     scale_rank
 
+      if (mode(1:3)=='SET') then
+        ntest_bc = ntest_
+        ntest = ntest_
+      else
+        ntest = 0
+        ntest_bc = 0
+      end if
+      
       if (ntest.gt.0) then
         call write_title(lulog,wst_dbg_subr,'this is process_bc')
+        write(lulog,*) 'mode = ',trim(mode)
       end if
 
       op_arr => op_info%op_arr
@@ -176,8 +190,12 @@
       call init_reo_info(reo_info0) ! FIX
       call init_reo_info(reo_info)
 
+      nidx = get_nidx4contr(contr)
+      allocate(itf_index_info(3+2*nidx))
+      itf_index_info = 0
+
       ! extract BC
-      call get_bc_info3(bc_sign,possible,
+      call get_bc_info3(bc_sign,bc_sign_itf,possible,
      &     idxop,iblkop,
      &     iocc_ex1,iocc_ex2,iocc_cnt,
      &     iocc_op1,iocc_op2,iocc_op1op2,
@@ -187,12 +205,13 @@
      &     igamt_op,igamt_op1op2,
      &     njoined_op, njoined_op1op2, njoined_cnt,
      &     merge_op1,merge_op2,merge_op1op2,merge_op2op1,
+     &     itf_index_info,
      &     contr,occ_vtx,irestr_vtx,info_vtx,
      &     .true.,
      &     contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &     .true.,reo_info,reo_info0, !FIX
      &     iarc,.true.,idx_intm,
-     &     irst_res,njoined_res,orb_info,op_info) ! irst_res is dummy
+     &     irst_res,njoined_res,orb_info,op_info,ntest_bc) ! irst_res is dummy
 
       reo_before = .false.
       reo_op1op2 = .false.
@@ -377,6 +396,10 @@ c     &        'operator with zero length?')
           if (reo_other)  factor = factor+reo_factor
           if (reo_op1op2) factor = factor+reo_factor
 
+          ! get a penalty for large intermediates
+          !iscal = max(1,sum(iscale(1:ngastp,2))-3)
+          !factor = factor*2d0**dble(iscal)
+          
           cost(1) = cost(1)+flops*factor
           cost(2) = max(cost(2),xmemtot)
           cost(3) = max(cost(3),xmemblk)
@@ -503,12 +526,14 @@ c     &        'operator with zero length?')
           end if
           fl_pnt => fl_pnt%next
           fact = bc_sign
+          fact_itf = 1d0
           iblkop1op2 = 1
           command = command_bc
           if (reo_op1op2) command = command_bc_reo
         else
           label = op_arr(contr%idx_res)%op%name
-          fact = bc_sign*contr%fac
+          fact = bc_sign*contr%fac      
+          fact_itf = dble(contr%total_sign)*contr%fac*contr%eqvl_fact
           iblkop1op2 = contr%iblk_res
           command = command_add_bc
           if (reo_op1op2) command = command_add_bc_reo
@@ -516,7 +541,7 @@ c     &        'operator with zero length?')
           
         call new_formula_item(fl_pnt,command,target)
         call store_bc(fl_pnt,
-     &       fact,
+     &       fact,fact_itf,
      &       label,label1,label2,
      &       iblkop1op2,iblkop(1),iblkop(2),
      &       tra_op1op2,tra_op1,tra_op2,
@@ -527,6 +552,7 @@ c     &        'operator with zero length?')
      &       irst_ex1,irst_ex2,irst_cnt,njoined_cnt,
      &       merge_op1,merge_op2,
      &       merge_op1op2,merge_op2op1,
+     &       itf_index_info,
      &       orb_info)
         if (reo_op1op2) then
           iblkop1op2tmp = 1
@@ -631,6 +657,8 @@ c     &        'operator with zero length?')
       else
         call quit(1,'process_bc','unknown mode: "'//trim(mode)//'"')
       end if
+
+      deallocate(itf_index_info)
 
       call dealloc_reo_info(reo_info)
       call dealloc_reo_info(reo_info0) ! FIX

@@ -211,7 +211,7 @@ c        call r12_opt_truncation(flist_metric,idxtbar,idxcbar,op_info)
 c      end if
 
       ! sum up duplicate terms (due to S->T+CR replacement)
-      call sum_terms(flist_metric,op_info)
+      call sum_terms(flist_metric,nterms,op_info)
 
       ! replace T12 -> T
       if (r12fix.and.r12op.gt.0) then

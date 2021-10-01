@@ -1,0 +1,28 @@
+memory,1000,m
+gthresh,orbital=1d-13,energy=1d-13
+
+symmetry,x
+geometry={c;h1,c,r;h2,c,r,h1,theta}
+r=1.1 angs,theta=115
+basis=vdz(sp)
+{multi;occ,4,1;closed,3,0;wf,sym=1,spin=0;}
+
+{cmrcc,max_en=1,max_res=1,maxit=80,shifts=0.0,shiftp=0.0,shifti=0.0
+core,0,0}
+
+e = energy
+
+eold = -38.979047402903
+
+dele = max(abs(e-eold))
+if(dele.gt.1e-12) then
+    table,name,e,e-eold;ftyp,,,d;digits,,11,11
+    save,test.log
+    title,Results for icmrcc_mrccsd_11_cas22.itfaa
+    title,ERRORS DETECTED in icmrcc_mrccsd_11_cas22.itfaa. Max error for energy=$dele
+    else
+    table,name,e,e-eold;ftyp,,,d;digits,,11,11
+    save,test.log
+    title,Results for job icmrcc_mrccsd_11_cas22.itfaa
+    title,No ERRORS in icmrcc_mrccsd_11_cas22.itfaa. Max error for energy=$dele
+endif

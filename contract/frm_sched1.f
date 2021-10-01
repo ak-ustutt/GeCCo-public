@@ -98,6 +98,8 @@
      &     irst_op1op2(:,:,:,:,:),
      &     iocc_op1op2tmp(:,:,:),
      &     irst_op1op2tmp(:,:,:,:,:)
+      integer ::
+     &     itf_index_info
       type(operator), pointer ::
      &     opscr(:), optmp
       type(me_list), pointer ::
@@ -420,7 +422,9 @@ c          new = .false.!cur_contr%nvtx.ge.4
             call init_reo_info(reo_info)
           end if
 
-          call get_bc_info3(bc_sign,possible,
+          itf_index_info=-1
+
+          call get_bc_info3(bc_sign,idum,possible,
      &         idxop,iblkop,
      &         iocc_ex1,iocc_ex2,iocc_cnt,
      &         iocc_op1,iocc_op2,iocc_op1op2,
@@ -430,12 +434,13 @@ c          new = .false.!cur_contr%nvtx.ge.4
      &         igamtop,igamtop1op2,
      &         njoined_op, njoined_op1op2, njoined_cnt,
      &         merge_op1,merge_op2,merge_op1op2, merge_op2op1,
+     &         itf_index_info,
      &         cur_contr,occ_vtx,irestr_vtx,info_vtx,
      &         make_contr_red,
      &         cur_contr_red,occ_vtx_red,irestr_vtx_red,info_vtx_red,
      &         set_reo,reo_info, reo_info,
      &         iarc,.false.,-ninter,
-     &         irst_res,njoined_res,orb_info,op_info)
+     &         irst_res,njoined_res,orb_info,op_info,0)
           if (.not.possible) then
             call prt_contr3(lulog,cur_contr,-1)
             write(lulog,*) 'get_bc_info did not raise "possible"-flag!'

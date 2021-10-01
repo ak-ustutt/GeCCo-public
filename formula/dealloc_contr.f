@@ -34,6 +34,12 @@
       contr%vtx => null()
       contr%topo => null()
       contr%xlines => null()
+      if (contr%index_info)
+     &     deallocate(contr%contr_string)
+      if (associated(contr%result_string))
+     &     deallocate(contr%result_string)
+      contr%contr_string => null()
+      contr%result_string => null()
 
       return
       end

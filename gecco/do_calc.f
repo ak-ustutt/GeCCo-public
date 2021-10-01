@@ -154,7 +154,7 @@ c     &       call quit(1,'do_calc','no rules for target?')
 
           else
             ! new route
-            call process_rule(rule,tgt_info,
+            call process_rule(rule,tgt_info,env_type=='VIRTUAL',
      &           form_info,op_info,str_info,strmap_info,orb_info)
           end if
           call atim_csw(cpu,sys,wall)

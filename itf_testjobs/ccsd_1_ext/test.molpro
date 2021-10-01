@@ -1,0 +1,22 @@
+gthresh,orbital=1d-12,energy=1d-12
+geom={he;he,1,1.0}
+basis,vdz
+rhf
+basis,vdz
+{cmrcc,cc_method=ccsd_1_ext}
+e = energy
+
+eold = -4.803106068096
+
+dele = max(abs(e-eold))
+if(dele.gt.1e-12) then
+    table,name,e,e-eold;ftyp,,,d;digits,,11,11
+    save,test.log
+    title,Results for icmrcc_ccsd_1_ext.itfaa
+    title,ERRORS DETECTED in icmrcc_ccsd_1_ext.itfaa. Max error for energy=$dele
+    else
+    table,name,e,e-eold;ftyp,,,d;digits,,11,11
+    save,test.log
+    title,Results for job icmrcc_ccsd_1_ext.itfaa
+    title,No ERRORS in icmrcc_ccsd_1_ext.itfaa. Max error for energy=$dele
+endif

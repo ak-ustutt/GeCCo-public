@@ -27,7 +27,7 @@
       integer, parameter ::
      &     ntest = 00
 
-      integer(4), parameter ::
+      integer(8), parameter ::
      &     imsk16 = 65535,
      &     imsk08 =   255
       
@@ -52,9 +52,11 @@ c     &     first, first_str
       ! gamess is i8:
       integer(8) ::
      &     idxpq, idxrs, ip, iq, ir, is, lbuf_, len_, itrlevel
+      integer(8) ::
+     &     ilabel
       integer ::
      &     nlabmx, lumo2, irat, lbuf,
-     &     len, ii, nstr, ilabel,
+     &     len, ii, nstr, 
      &     int_disk, int_nonr, int_ordr, ioff, istr,
      &     idxst, idxnd, nblk, nblkmax, ifree, luerr, nbuff,
      &     len_op, idum, ipass, iblk, iblkst

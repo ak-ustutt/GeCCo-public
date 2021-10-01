@@ -119,8 +119,9 @@ c     &       + intm%narc
           svmap(1:intm%nvtx) = 1
         else
           call svmap4contr2(svmap,intm,ok)
-          if (.not.ok) call quit(1,'expand_term',
-     &             'cannot handle non-unique svmap yet')
+          if (.not.ok) call pseudo_svmap2(svmap,intm,njoined)
+c          if (.not.ok) call quit(1,'expand_term',
+c     &             'cannot handle non-unique svmap yet')
         end if
 
         allocate(vtxmap(nvtx))

@@ -56,7 +56,7 @@
      &     cost_intm, size_intm, cost_ref, idx_rpl, iblk_op,
      &     idummy, icmp
       real(8) ::
-     &     fact,
+     &     fact, fact_itf, 
      &     cpu, sys, wall, cpu0, sys0, wall0
       type(formula_item), pointer ::
      &     fl_pnt_o, fl_pnt_i, 
@@ -72,7 +72,7 @@ c dbg
      &     intm_new, op
 
       integer, pointer ::
-     &     occ(:,:,:), rst(:,:,:,:,:,:)
+     &     occ(:,:,:), rst(:,:,:,:,:,:), svdummy(:)
       
       logical, external ::
      &     list_cmp
@@ -716,6 +716,7 @@ c dbg
             if (idx_rpl.eq.2) rst => fl_pnt_mark3%bcontr%rst_op2
 
             fact = fl_pnt_mark3%bcontr%fact
+            fact_itf = fl_pnt_mark3%bcontr%fact_itf
 c dbg
 c            print *,'  fact = ',fact
 c dbg
@@ -734,20 +735,26 @@ c dbg
 c dbg
               if (watch) print *,'item inserted'
 c dbg
+              ! dummy map for itf
+              allocate(svdummy(3))
+              svdummy(1:3) = 0
               fl_pnt_mark2 => fl_pnt_mark2%next
               call store_bc(fl_pnt_mark2,
-     &                  fact,
+     &                  fact,fact_itf,
      &                  label_new,label_op,'---',
      &                  1,iblk_op,idummy,
      &                  .false.,tra_op,ldummy,
-     &                  nj,nj,idummy,
+     &                  nj,nj,0,
      &                  occ,occ,idummy,
      &                  rst,rst,idummy,
      &                  idummy,idummy,idummy,
      &                  idummy,idummy,idummy,0,
      &                  idummy,idummy,
      &                  idummy,idummy,
+     &                  svdummy,
      &                  orb_info)
+
+              deallocate(svdummy)
 c dbg
               if (watch) print *,' ... and written'
 c dbg
@@ -791,6 +798,8 @@ c dbg
               call optk_move_bcontr(fl_pnt_mark4,fl_pnt_mark2)
               ! the result must be renamed and the fact must be adapted
               fl_pnt_mark4%bcontr%fact = fl_pnt_mark4%bcontr%fact*fact
+              fl_pnt_mark4%bcontr%fact_itf 
+     %                           = fl_pnt_mark4%bcontr%fact_itf*fact_itf
               fl_pnt_mark4%bcontr%label_res = label_new
               fl_pnt_mark4%bcontr%iblk_res = 1
               ! if not the first term: contract and add:
@@ -866,6 +875,7 @@ c dbg
      &          fl_pnt_mark1%bcontr%tra_op2 = .false.
             ! the factors were absorbed into the intermediate
             fl_pnt_mark1%bcontr%fact = 1d0
+            fl_pnt_mark1%bcontr%fact_itf = 1d0
             ! delete intm. thereafter
             call insert_fl_item(fl_pnt_mark1,
      &                          command_del_intermediate,-1)
