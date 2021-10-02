@@ -155,12 +155,6 @@ c dbgend
         call contr_set_indices(contr,op_info)
 
         if (reo_add) then
-
-c dbg     may later remove this again ... keep it until this is set for ITF or catched in ITF translator itself     
-          write(lulog,*) 'Check this!'
-          
-          call warn('form_fact_new','not clear if this works for ITF')
-c dbg
           
           allocate(iocc_reo(ngastp,2,nvtx_max),
      &             iocc_ori(ngastp,2,nvtx_max),
