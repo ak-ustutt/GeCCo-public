@@ -16,7 +16,7 @@ else:
     _msc = 0
 
 project= keywords.get('method.MR.project')
-print "project:",project
+print("project:",project)
 project = int(project) if project is not None else 2
     
 new_target('TEST_INVERT',True)

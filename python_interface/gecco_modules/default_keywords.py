@@ -135,7 +135,7 @@ class GeCCoValueExtractor(object):
                 argument.getAttribute("type")
             )
             self._typedict[itype] #trigger key error if not in 
-        except ValueError, KeyError:
+        except ValueError as KeyError:
             raise ValueError("Argument with unknown type"+argument.getAttribute("type"))
         else:
             return itype

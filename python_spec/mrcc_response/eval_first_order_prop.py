@@ -1,7 +1,7 @@
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
-from set_mrcc_response_targets import relax_ref
+from python_spec.mrcc_response.get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
+from python_spec.mrcc_response.set_mrcc_response_targets import relax_ref
 import math
 
 _inp = GeCCo_Input()
@@ -41,7 +41,7 @@ _maxord=_response_data['maxorder']
 
 _list_to_depend=[]
 
-for ipop in xrange (0,_npop):
+for ipop in range (0,_npop):
     _cur_ext=_pop_data['name'][ipop]+_pop_data['comp'][ipop]
     _pop_name='V'+_cur_ext
 
@@ -148,7 +148,7 @@ INVARIANT({LABEL_RES:'F_RSPNS(1)',
 
 _list_to_depend=[]
 
-for ipop in xrange (0,_npop):
+for ipop in range (0,_npop):
     _cur_ext=_pop_data['name'][ipop]+_pop_data['comp'][ipop]
     _pop_name='V'+_cur_ext
 

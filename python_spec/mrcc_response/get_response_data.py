@@ -112,7 +112,7 @@ part=lines[l].split()
 _npop=int(part[1])
 l=l+1
 #print 'npop', _npop
-for i in xrange (0,_npop):
+for i in range (0,_npop):
     part=lines[l].split()
     _pop_data['comp'].append(str(part[1]))
     part=lines[l+1].split()
@@ -133,8 +133,8 @@ _ncnt=int(part[0])
 #maximum order of the properties that has been asked for
 _maxord=int(part[1])
 l=l+1
-print '_ncnt', _ncnt, '_maxord', _maxord
-for i in xrange (0,_ncnt*_maxord):
+print('_ncnt', _ncnt, '_maxord', _maxord)
+for i in range (0,_ncnt*_maxord):
     part=lines[l].split()
     _cmp_data['pop_idx'].append(int(part[1]))
     part=lines[l+1].split()
@@ -151,21 +151,21 @@ _calc_data=[{} for i in range(_ncnt)]
 _calc_data[0]['order']=1
 part=lines[l].split()
 
-for i in xrange (0,_ncnt):
+for i in range (0,_ncnt):
     _calc_data[i]['order']=int(part[i+1])
 l=l+1
-for i in xrange (0,_ncnt):
+for i in range (0,_ncnt):
     part=lines[l].split()
     _calc_data[i]['prop_comp']=[]
-    for j in xrange (0,_calc_data[i]['order']):
+    for j in range (0,_calc_data[i]['order']):
         _calc_data[i]['prop_comp'].append(int(part[j+1]))
     part=lines[l+1].split()
     _calc_data[i]['conj_comp']=[]
-    for j in xrange (0,_calc_data[i]['order']):
+    for j in range (0,_calc_data[i]['order']):
         _calc_data[i]['conj_comp'].append(int(part[j+1]))
     part=lines[l+2].split()
     _calc_data[i]['conj_prop']=[]
-    for j in xrange (0,_calc_data[i]['order']):
+    for j in range (0,_calc_data[i]['order']):
         _calc_data[i]['conj_prop'].append(int(part[j+1]))
 
 #print 'calc_data', _calc_data
@@ -174,5 +174,5 @@ _response_data['nPop']=_npop
 _response_data['nCnt']=_ncnt
 _response_data['maxorder']=_maxord
 
-print 'Using following options for the response calculations:'
-print _response_data
+print('Using following options for the response calculations:')
+print(_response_data)

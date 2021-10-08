@@ -10,12 +10,12 @@ import python_interface.gecco_modules.default_keywords as dk
 #@date 10.11.15
 #@author arne bargholz
 
-import operators.cluster_residue_op 
-import operators.ref_wf_op
-import operators.H_0
+import python_blocks.operators.cluster_residue_op 
+import python_blocks.operators.ref_wf_op
+import python_blocks.operators.H_0
 
-import CASCI.spin_proj
-import CASCI.MR
+import python_blocks.CASCI.spin_proj
+import python_blocks.CASCI.MR
 
 
 modify_target("do_all")

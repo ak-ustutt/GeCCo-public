@@ -8,7 +8,7 @@ Yuri august 2017: Creation based on MRCC2lag.py. Implementation up to maxcom=2
 
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
-import ref_relaxation
+import python_blocks.lagrangians.ref_relaxation as ref_relaxation
 
 
 #===================================================================================#
@@ -106,9 +106,9 @@ if itfgen:
         quit_error('ITFgen called for case not considered yet!')
 
 print("Settings for MRCC generator:")
-print("maxcom_en  = "+str(nc_en))
-print("maxcom_res = "+str(nc_rs))
-print("select     = "+str(select))
+print(("maxcom_en  = "+str(nc_en)))
+print(("maxcom_res = "+str(nc_rs)))
+print(("select     = "+str(select)))
 if (doublet):
     print("detected CAS(1,1) case")
 if (cas22):
@@ -280,7 +280,7 @@ if nc_rs > 3 and not select:
         listT = create_plist(nsingles,'T1',4-nsingles,'T2')
         for entryT in listT:
             ngroups = ngroups+1
-            print "Generating input for: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+            print("Generating input for: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
             LAG_A1_C4 = stf.Formula("LAG_A1_C4_"+str(ngroups)+":MRCC_LAG_A1="+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
             LAG_A1_C4.set_rule()
     groups = ["FORM_MRCC_LAG_A1"]
@@ -297,7 +297,7 @@ if nc_rs > 3 and not select:
         listT = create_plist(nsingles,'T1',4-nsingles,'T2')
         for entryT in listT:
             ngroups = ngroups+1
-            print "Generating input for: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
+            print("Generating input for: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
             LAG_A2_C4 = stf.Formula("LAG_A2_C4_"+str(ngroups)+":MRCC_LAG_A2="+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
             LAG_A2_C4.set_rule()
     groups = ["FORM_MRCC_LAG_A2"]

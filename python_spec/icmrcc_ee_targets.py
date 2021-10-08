@@ -185,7 +185,7 @@ elif (_lr_opt == 2):
                    IDX_SV:[1,2,3,4,5],
                    CONNECT:[3,4]}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     _ops_contract={OPERATORS:['C0^+','L','R_q','H','C0'],
@@ -193,33 +193,33 @@ elif (_lr_opt == 2):
                    CONNECT:[3,4],
                    FAC:-1.0}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     _ops_contract={OPERATORS:['C0^+','L','H','T','R_q','C0'],
                    IDX_SV:[1,2,3,4,5,6]}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     _ops_contract={OPERATORS:['C0^+','L','R_q','H','T','C0'],
                    IDX_SV:[1,2,3,4,5,6],
                    FAC:-1.0}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     _ops_contract={OPERATORS:['C0^+','L','T','H','R_q','C0'],
                    IDX_SV:[1,2,3,4,5,6],
                    FAC:-1.0}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     _ops_contract={OPERATORS:['C0^+','L','R_q','T','H','C0'],
                    IDX_SV:[1,2,3,4,5,6]}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     if _maxcom == 3:
 
@@ -227,37 +227,37 @@ elif (_lr_opt == 2):
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:0.5}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
         _ops_contract={OPERATORS:['C0^+','L','T','H','T','R_q','C0'],
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:-1.0}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
         _ops_contract={OPERATORS:['C0^+','L','T','T','H','R_q','C0'],
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:0.5}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
         _ops_contract={OPERATORS:['C0^+','L','R_q','H','T','T','C0'],
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:-0.5}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
         _ops_contract={OPERATORS:['C0^+','L','R_q','T','H','T','C0'],
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:1.0}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
         _ops_contract={OPERATORS:['C0^+','L','R_q','T','T','H','C0'],
                        IDX_SV:[1,2,3,4,5,6,7],
                        FAC:-0.5}
 
-        EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+        EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 
     SELECT_SPECIAL({LABEL_RES:'F_AR_rspns_t',
@@ -395,7 +395,7 @@ if (_lr_opt == 1):
     _ops_contract={OPERATORS:['den12','C0^+','L','R_q','C0','den12'],
                    IDX_SV:[1,2,3,4,5,1]}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _expand_product_basis={LABEL:'F_den12',
                            NEW:False,
@@ -405,62 +405,62 @@ if (_lr_opt == 1):
                    IDX_SV:[1,2,3,4,5,6,1],
                    FAC:0.5}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','R_q','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,1],
                    FAC:-0.5}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','R_q','T','T','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:1.0/6}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','R_q','T','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:-0.33333333333333330}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','T','R_q','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:0.16666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','R_q','T','T','T','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:0.041666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','R_q','T','T','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:-0.125}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','T','R_q','T','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:0.125}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:['den12','C0^+','L','T','T','T','R_q','C0','den12'],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:-0.041666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     SELECT_SPECIAL({LABEL_RES:'F_den12',
                     LABEL_IN:'F_den12',
@@ -489,7 +489,7 @@ _expand_product_basis={LABEL:'F_SR_rspns_mu',
 _ops_contract={OPERATORS:['SR_rspns_mu','R_mu','SR_rspns_mu'],
                IDX_SV:[1,2,1]}
 
-EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
 INVARIANT({LABEL_RES:'F_R_q',
            LABEL_IN:'F_T',
@@ -773,7 +773,7 @@ for _icnt in range (0,_ncnt):
         OPTIMIZE({LABEL_OPT:"FOPT_Exc_En"+_extnsn,
                   LABELS_IN:["FORM_EXCITED_OVERLAPP","FORM_EXCITED_ENERGY"]})
 
-        for i in xrange(1,_no_root +1):
+        for i in range(1,_no_root +1):
             SET_STATE({LISTS:['ME_AR_rspns_q'+_extnsn,
                               'ME_AR_rspns_mu'+_extnsn,
                               'ME_SR_rspns_q'+_extnsn,

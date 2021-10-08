@@ -27,7 +27,7 @@ import re
 import sys
 import os
 import inspect
-from gecco_modules.default_keywords import RegistryHandler
+from .gecco_modules.default_keywords import RegistryHandler
 
 # ====================================================================
 # Some general functions and variables
@@ -46,7 +46,7 @@ def quit_error( msg):
 
 def warning( msg):
     """Print a warning message."""
-    print (' Warning from ' + _script_file_name + ': ' + msg)
+    print((' Warning from ' + _script_file_name + ': ' + msg))
 
 if not( "GECCO_DIR" in os.environ):
     quit_error( "Set the environment variable GECCO_DIR to the GeCCo location.")
@@ -194,7 +194,7 @@ class GeCCoInputParser(object):
     def set_keywords(self, keywords):
         if keywords == []:
             return
-        for i in xrange(len(self._cur_context),0,-1):
+        for i in range(len(self._cur_context),0,-1):
             context_str = ".".join([key.name for key in self._cur_context[1:i]])
             if self._registry.does_exist(context_str, keywords[0].name) :
                 self._cur_context = self._cur_context[:i]
@@ -233,10 +233,10 @@ class GeCCo_Input:
         self.root = GeCCoInputParser().parse(input_lines)
 
         if (do_print):
-            print "-"*50
-            print "Input information from python interface:"
-            print "TODO!"
-            print "-"*50
+            print("-"*50)
+            print("Input information from python interface:")
+            print("TODO!")
+            print("-"*50)
 
         # Check the package environment that GeCCo is currently using
         ok=False
@@ -380,15 +380,15 @@ class Orb_Info:
             self.data[varname] = {}
             self.data[varname]['dim'] = dim
             self.data[varname]['len'] = lengths
-            self.data[varname]['val'] = map(int,info[dim+1:])
+            self.data[varname]['val'] = list(map(int,info[dim+1:]))
 
         # Print the data
         if (do_print):
-            print "-"*50
-            print "Orbital information from python interface:"
+            print("-"*50)
+            print("Orbital information from python interface:")
             for key in self.data:
-                print key, ":", self.data[key]
-            print "-"*50
+                print(key, ":", self.data[key])
+            print("-"*50)
 
         return
 
@@ -519,19 +519,19 @@ class _target:
 # Function to print list
 #
 def print_tgt_list():
-    print "+=================+"
-    print "|   Target list   |"
-    print "+=================+"
+    print("+=================+")
+    print("|   Target list   |")
+    print("+=================+")
     for tgt in _target_list:
-        print "Name: ", tgt.name
-        print "Required: ",tgt.required
-        print "Dependencies:"
+        print("Name: ", tgt.name)
+        print("Required: ",tgt.required)
+        print("Dependencies:")
         for d in tgt.dependencies:
-            print d
-        print "Rules:"
+            print(d)
+        print("Rules:")
         for r in tgt.rules:
-            print r[0],r[1]
-        print "---"
+            print(r[0],r[1])
+        print("---")
 
 # Add a new target
 # 
@@ -711,7 +711,7 @@ _rules_names_file = _gecco_dir + "/python_interface/rules_names.txt"
 
 with open( _rules_names_file, 'r') as f:
     _rules = f.readlines()
-_rules = map( str.strip, _rules)
+_rules = list(map( str.strip, _rules))
 for _r in _rules:
     exec ('def ' + _r + ' ( arguments):\n\trule("' + _r + '", arguments)')
 
@@ -720,6 +720,7 @@ _inp = GeCCo_Input()
 _print_level = _inp.get('general.print')
 if _print_level == None:
     _print_level = 3
+_print_level = int(_print_level)
 
 # Variables for arguments
 _arguments_names_file = _gecco_dir + "/python_interface/arguments_names.txt"
@@ -727,7 +728,7 @@ _arguments_names_file = _gecco_dir + "/python_interface/arguments_names.txt"
 with  open( _arguments_names_file, 'r') as f:
     _keywords = f.readlines()
 
-_keywords = map( str.strip, _keywords)
+_keywords = list(map( str.strip, _keywords))
 for _k in _keywords:
     [_k_name, _k_type] =  _k.split()
     if (_k_type == 'int'):

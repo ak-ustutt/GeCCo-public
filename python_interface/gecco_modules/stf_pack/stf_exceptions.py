@@ -1,3 +1,4 @@
+from functools import reduce
 #Exceptions for the string_to_form package
 
 

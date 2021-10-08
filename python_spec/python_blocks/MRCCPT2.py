@@ -39,14 +39,14 @@ else :
 wf_sym=orbitals.get('lsym')        #symmetry of wavefunction
 
 
-import operators.cluster_residue_op 
-import operators.ref_wf_op
-import operators.H_0
+import python_blocks.operators.cluster_residue_op 
+import python_blocks.operators.ref_wf_op
+import python_blocks.operators.H_0
 #Important note: prepared for MR_P preparation of wavefunction
-import icMR_orthogonalization.seq_orthogonalization
-import preconditioner.diag_precon
-import lagrangians.MRCCPT2lag
-import solve.MRCCPT2solve
+import python_blocks.icMR_orthogonalization.seq_orthogonalization
+import python_blocks.preconditioner.diag_precon
+import python_blocks.lagrangians.MRCCPT2lag
+import python_blocks.solve.MRCCPT2solve
 
 #-----------------------------------------------------------------#
 # ... do it ...

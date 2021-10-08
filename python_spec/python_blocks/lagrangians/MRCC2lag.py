@@ -1,7 +1,7 @@
 
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
-import ref_relaxation
+import python_blocks.lagrangians.ref_relaxation as ref_relaxation
 
 i_am="MRCC2lag.py"
 

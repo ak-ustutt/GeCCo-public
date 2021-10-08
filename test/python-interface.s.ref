@@ -133,7 +133,7 @@ No module named gecco_interface
 /home/bargholz/Programme/GeCCo MP2.py
  Reading target file MP2.py.tgt_list: Python Interface (MP2.py)
 /home/bargholz/Programme/GeCCo orb_inp.py
- Is keywort set???
+ Is keyword set???
  calculate.interfaces:  True
  method.R12:  False
  Warning from orb_inp.py: We can give warnings!

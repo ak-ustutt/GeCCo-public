@@ -14,7 +14,7 @@ def parse_chk(chk_name):
     try:
         chk_file = open(chk_name, 'r')
     except:
-        print "Error: File " + chk_name + " was not found" ; sys.exit(2)
+        print("Error: File " + chk_name + " was not found") ; sys.exit(2)
 
     commands = {}  # create empty dict
 
@@ -37,16 +37,16 @@ def parse_chk(chk_name):
         if not key in key_list:
             # if we were not checking for a subkeyword this must be an error
             if not check_for_subkey:
-                print "Error: Unknown keyword -- " + items[0]
-                print "  list of known keywords: "
-                print "    " + str(key_list)
+                print("Error: Unknown keyword -- " + items[0])
+                print("  list of known keywords: ")
+                print("    " + str(key_list))
                 sys.exit(2)
             if not key in subkeys[current_key]:
-                print "Error: Unknown keyword -- " + items[0]
-                print "  list of known keywords: "
-                print "    " + str(key_list)
-                print "  allowed subkeywords for " + current_key
-                print "    " + str(subkeys[current_key])
+                print("Error: Unknown keyword -- " + items[0])
+                print("  list of known keywords: ")
+                print("    " + str(key_list))
+                print("  allowed subkeywords for " + current_key)
+                print("    " + str(subkeys[current_key]))
                 sys.exit(2)
         else :
             check_for_subkey = False
@@ -89,7 +89,7 @@ def parse_chk(chk_name):
             try:
                 commands[key][-1].append(chk_file.readline().lstrip().rstrip())
             except:
-                print "Error: confused while reading arguments to " + key
+                print("Error: confused while reading arguments to " + key)
 
     chk_file.close()
     

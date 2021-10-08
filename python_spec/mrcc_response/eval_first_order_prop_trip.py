@@ -1,6 +1,6 @@
 from python_interface.gecco_interface import *
-from get_response_data import _response_data
-from set_mrcc_response_targets import relax_ref
+from python_spec.mrcc_response.get_response_data import _response_data
+from python_spec.mrcc_response.set_mrcc_response_targets import relax_ref
 
 _triplet = _response_data['triplet']
 _inp = GeCCo_Input()

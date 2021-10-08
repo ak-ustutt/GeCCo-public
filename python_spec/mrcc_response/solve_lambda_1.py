@@ -2,7 +2,7 @@
 #calculate static and dynamic polarizability using the linear response method.
 
 from gecco_interface import *
-from get_response_data import _response_data
+from python_spec.mrcc_response.get_response_data import _response_data
 import math
 
 _inp=GeCCo_Input()

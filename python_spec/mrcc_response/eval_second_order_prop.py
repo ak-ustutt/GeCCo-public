@@ -2,7 +2,7 @@
 #order paramaters and the first order cluster amplitudes and ci coefficients.
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
+from python_spec.mrcc_response.get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 
 #Getting the frequency
 _freq=_response_data['freq']
@@ -255,7 +255,7 @@ DEF_ME_LIST({LIST:'ME_RSPNS(2)',
              IRREP:1,
              '2MS':0})
     
-for i in xrange (0,_n_formula):
+for i in range (0,_n_formula):
 
     j = str(i+1)
     new_target('EVAL_RSPNS(2)_'+j)
@@ -265,10 +265,10 @@ for i in xrange (0,_n_formula):
 
     _def_formula='RSPNS(2)_'+j+'='
 
-    for k in xrange (0,n_par):
+    for k in range (0,n_par):
         i_par = str(k+1)
 
-        print _formula_to_add[i][k]
+        print(_formula_to_add[i][k])
         depend(_formula_to_add[i][k])
 
         _def_formula= _def_formula+'RSPNS(2)_'+j+i_par

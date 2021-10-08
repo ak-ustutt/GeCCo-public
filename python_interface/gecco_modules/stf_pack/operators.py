@@ -1,5 +1,5 @@
 import re 
-from Util import _NumberCollectUtil
+from .Util import _NumberCollectUtil
 
 LABEL="LABEL"
 

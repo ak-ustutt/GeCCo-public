@@ -19,17 +19,17 @@ def check(chk_commands,options,basename):
     try:
         testfile = open(testname, 'r')
     except:
-        print "Error: File " + testname + " was not found" ; return USAGE_ERROR
+        print("Error: File " + testname + " was not found") ; return USAGE_ERROR
         
     try:
         ref_file = open(ref_name, 'r')
     except:
-        print "Error: File " + ref_name + " was not found" ; return SETUP_ERROR
+        print("Error: File " + ref_name + " was not found") ; return SETUP_ERROR
 
     try:
         res_file = open(res_name, 'w')
     except:
-        print "Error: File " + res_name + " could not be opened" ; return SETUP_ERROR
+        print("Error: File " + res_name + " could not be opened") ; return SETUP_ERROR
 
     res_file.write(chk_commands.get('title',[['*** no title ***']])[-1][-1] + '\n')
 
@@ -40,8 +40,8 @@ def check(chk_commands,options,basename):
     for check in chk_commands['check']:
 
         if DEBUG:
-            print 'top of outer loop'
-            print 'check = ' + str(check)
+            print('top of outer loop')
+            print('check = ' + str(check))
 
         check_OK = True
         line_OK  = True
@@ -51,8 +51,8 @@ def check(chk_commands,options,basename):
         for subkey, args in check:
 
             if DEBUG:
-                print 'current subkey: ' + subkey
-                print 'current args:   ' + str(args)
+                print('current subkey: ' + subkey)
+                print('current args:   ' + str(args))
             
             if subkey == 'rewind' :
                 # rewind the two files
@@ -62,7 +62,7 @@ def check(chk_commands,options,basename):
                 # find the next occurrence of the given REGEX
                 pattern = args[0]
                 if DEBUG:
-                    print 'Looking for regex: ' + pattern
+                    print('Looking for regex: ' + pattern)
 
                 success1 = False
                 success2 = False
@@ -78,16 +78,16 @@ def check(chk_commands,options,basename):
                         success2 = True; break
 
                 if DEBUG:
-                    print 'success: ' + str(success1) + str(success2)
-                    print 'line in ref:  ' + str(ref_line)
-                    print 'line in test: ' + str(testline)
+                    print('success: ' + str(success1) + str(success2))
+                    print('line in ref:  ' + str(ref_line))
+                    print('line in test: ' + str(testline))
 
                 # no success for reference file? pathologic:
                 if not success1:
-                    print 'ERROR: pattern not found in reference file'
-                    print ' the pattern was: ' + pattern
+                    print('ERROR: pattern not found in reference file')
+                    print(' the pattern was: ' + pattern)
                     if success2:
-                        print '  NOTE: the pattern was found in the test file'
+                        print('  NOTE: the pattern was found in the test file')
                         return SETUP_ERROR
                 elif not success2:
                     line_OK = False
@@ -98,7 +98,7 @@ def check(chk_commands,options,basename):
                 skip = int(items[0])
 
                 if DEBUG:
-                    print 'skipping ' + str(skip) + ' lines'
+                    print('skipping ' + str(skip) + ' lines')
 
                 count = 0
                 while count < skip:
@@ -110,8 +110,8 @@ def check(chk_commands,options,basename):
                     count += 1 
 
                 if DEBUG:
-                    print 'line in ref:  ' + str(ref_line)
-                    print 'line in test: ' + str(testline)
+                    print('line in ref:  ' + str(ref_line))
+                    print('line in test: ' + str(testline))
 
             elif subkey == 'label' :
 
@@ -120,9 +120,9 @@ def check(chk_commands,options,basename):
             elif subkey == 'compare' :
 
                 if DEBUG:
-                    print 'COMPARE:'
-                    print 'line in ref:  ' + str(ref_line)
-                    print 'line in test: ' + str(testline)
+                    print('COMPARE:')
+                    print('line in ref:  ' + str(ref_line))
+                    print('line in test: ' + str(testline))
 
                 items = args[0].split()
 
@@ -135,7 +135,7 @@ def check(chk_commands,options,basename):
                         if type == 'real' :
                             tol  = float(items[2])
                     except:
-                        print 'SYNTAX: compare <type> <column> [<tolerance>]'
+                        print('SYNTAX: compare <type> <column> [<tolerance>]')
                         return SETUP_ERROR
 
                     try:
@@ -145,8 +145,8 @@ def check(chk_commands,options,basename):
                             ref_items = ref_line.split()
                             ref_col   = ref_items[col]
                     except:
-                        print 'ERROR: column '+ str(col+1) + ' not found in reference'
-                        print '  line was: ' + str(ref_line)         
+                        print('ERROR: column '+ str(col+1) + ' not found in reference')
+                        print('  line was: ' + str(ref_line))         
                         return SETUP_ERROR
 
                     try:
@@ -176,7 +176,7 @@ def check(chk_commands,options,basename):
                             check_OK = check_OK and ref_col == testcol
                         
             else :
-                print "Unknown keyword: " + subkey; return SETUP_ERROR
+                print("Unknown keyword: " + subkey); return SETUP_ERROR
 
         if not line_OK :
             result = 'FAILED - LINE NOT FOUND'
@@ -186,7 +186,7 @@ def check(chk_commands,options,basename):
             result = 'OK'
 
         message = " *** %-40s -- %-30s" % (label,result)
-        print message
+        print(message)
         res_file.write(message + "\n")
 
         all_OK = all_OK and check_OK and line_OK

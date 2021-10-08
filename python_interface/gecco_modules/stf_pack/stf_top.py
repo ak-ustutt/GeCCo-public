@@ -13,13 +13,15 @@ import copy # to produce deepcopys of objects
 import re #support for Regular expressions
 import itertools as it # some iterators
 
-from stf_exceptions import * #custom made exceptions for this package
-from stf_regexp import * # The regular expressions for numbers ... 
-from stf_string_expansion import InputString,BracketRep  # what I actually need to expand the string 
-import Flags
+from .stf_exceptions import * #custom made exceptions for this package
+from .stf_regexp import * # The regular expressions for numbers ... 
+from .stf_string_expansion import InputString,BracketRep  # what I actually need to expand the string 
+#import python_interface.gecco_modules.stf_pack.Flags
+from .Flags import *
 
-from Util import combine_dicts,_IDXUtil,_NumberCollectUtil,remove_whites
-from operators import Vertex
+from .Util import combine_dicts,_IDXUtil,_NumberCollectUtil,remove_whites
+from .operators import Vertex
+from functools import reduce
 
 
 
@@ -115,7 +117,7 @@ except NameError:
     for i in _g_argument_names:
         exec(i +"='"+i+"'" )
     def quit_error(msg):
-        print msg
+        print(msg)
 
     logger=_Logger()
     for name in _g_required_functions:
@@ -142,8 +144,8 @@ _g_required_args=[LABEL,OP_RES,OPERATORS,IDX_SV]
 #Flags
 #----------------------------------------------------------------------------------------
 
-CLEANUP=Flags.Flag()
-NO_CLEANUP=Flags.Flag()
+CLEANUP=Flag()
+NO_CLEANUP=Flag()
 
 
 
@@ -298,7 +300,7 @@ class _OPProduct(object):
             return False
         else:
             return reduce(lambda x,y : x and y,
-                          [OPs1[i].identical(OPs2[i]) for i  in xrange(len(OPs1))])
+                          [OPs1[i].identical(OPs2[i]) for i  in range(len(OPs1))])
 
 
     ##@param bracket_dict,other_dict two dictionaries containing entries for FAC and FAC_INV
@@ -500,9 +502,9 @@ class _Bracket(_AbstractBracket):
 
         this is an optimization, as it avoids having to remove all redundancies in the backend
         """
-        ran =xrange(-len(OPProd_list),0,1) 
+        ran =range(-len(OPProd_list),0,1) 
         for i in ran:
-            for j in xrange(i,0,1):
+            for j in range(i,0,1):
                 if OPProd_list[i].compare(
                         OPProd_list[j]):
                     OPProd_list[j].add_prefac(OPProd_list[i])
@@ -584,7 +586,7 @@ class _Formula( _FormulaStringRepUtil):
             self._content.append(_Bracket(string))
             try:
                 string.goto("+")
-                string.next()
+                next(string)
             except ValueError:
                 break
 
@@ -663,7 +665,7 @@ class _Formula( _FormulaStringRepUtil):
         if isinstance(other, _Formula):
             self._content+=other._content
             self._string.extend(str(other._string))
-        elif isinstance(other, basestring):
+        elif isinstance(other, str):
             interm=_Formula()
             interm.set_members()
             #relying on the parent class, not GenFormula, 
@@ -773,7 +775,7 @@ class Formula(_Formula):
         self.arguments[LABEL]=string.substring
         if len(self.arguments[LABEL])==0:
             raise MissingLabelError("This formula label is empty")
-        string.next()
+        next(string)
         return string
         
     def _extract_OP_res(self,string):
@@ -787,7 +789,7 @@ class Formula(_Formula):
         self.arguments[OP_RES]=string.substring
         if len(self.arguments[OP_RES])==0:
             raise MissingOP_ResError("This result Operator is empty")
-        string.next()
+        next(string)
         return string
 
         ##@param string string to be preprocessed

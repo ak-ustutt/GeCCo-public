@@ -9,7 +9,7 @@ known_hamiltonians=["DYALL","DYALL-X","REPT","F_EFF","F_EFF-D","EXT_DYALL","SIMP
 hamiltonian="DYALL"
 if keywords.is_keyword_set('method.MRCCPT2.hamiltonian'):
     hamiltonian=str(keywords.get('method.MRCCPT2.hamiltonian')).strip()
-print("hamiltonian: ", hamiltonian, type(hamiltonian))
+print(("hamiltonian: ", hamiltonian, type(hamiltonian)))
 
 if hamiltonian not in known_hamiltonians :
     raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
@@ -42,7 +42,7 @@ if keywords.is_keyword_set('method.MRCCPT2.connected'):
         connected=False
     else :
         raise Exception(i_am+": unrecognised value for option connected (must be T or F)")
-print("connected ", connected, type(connected))
+print(("connected ", connected, type(connected)))
 
 # Third order term for the energy
 third_ord_energy = False
@@ -53,12 +53,12 @@ if keywords.is_keyword_set('method.MRCCPT2.3rd_E'):
         third_ord_energy=False
     else :
         raise Exception(i_am+": unrecognised value for option 3rd_E (must be T or F)")
-print("3rd_E ", third_ord_energy, type(third_ord_energy))
+print(("3rd_E ", third_ord_energy, type(third_ord_energy)))
 
 ampl_type = "PT2"
 if keywords.is_keyword_set('method.MRCCPT2.ampl_type'):
     ampl_type = keywords.get('method.MRCCPT2.ampl_type')
-print("ampl_type: ", ampl_type, type(ampl_type))
+print(("ampl_type: ", ampl_type, type(ampl_type)))
 
 
 # Evaluate specific terms
@@ -70,14 +70,14 @@ if keywords.is_keyword_set('method.MRCCPT2.test_terms'):
         test_terms=False
     else :
         raise Exception(i_am+": unrecognised value for option test_terms (must be T or F)")
-print("test_terms ", test_terms, type(test_terms))
+print(("test_terms ", test_terms, type(test_terms)))
 
 
 # Calculate 'stabm' roots of the stability matrix (Jacobian)
 stabm = 0
 if keywords.is_keyword_set('method.MRCCPT2.stabm'):
     stabm = keywords.get('method.MRCCPT2.stabm')
-print("Stability matrix roots: ", stabm, type(stabm))
+print(("Stability matrix roots: ", stabm, type(stabm)))
 
 
 spinadapt=0

@@ -19,9 +19,9 @@ for i in range( 0, len(shell_names)):
     shell = inp.get( 'orb_space.shell.def')[i]
     PRINT({STRING: shell_names[i] + ' shell: ' + str( shell)})
 
-print " Is keywort set???"
-print " calculate.interfaces: ", inp.is_keyword_set('calculate.interfaces')
-print " method.R12: ", inp.is_keyword_set('method.R12')
+print(" Is keyword set???")
+print(" calculate.interfaces: ", inp.is_keyword_set('calculate.interfaces'))
+print(" method.R12: ", inp.is_keyword_set('method.R12'))
 #
 # And how to get informations about the orbitals
 #

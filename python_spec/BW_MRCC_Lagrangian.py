@@ -75,7 +75,7 @@ for i_state in range(1, n_states+1):
         EXPAND_OP_PRODUCT({LABEL: lag_label,
                            OP_RES: res,
                            OPERATORS: op_list,
-                           IDX_SV: range(1, nop + 1),
+                           IDX_SV: list(range(1, nop + 1)),
                            NEW: i_state==1 and nL==0,
                            FIX_VTX: True,
                            FAC: fac})
@@ -90,7 +90,7 @@ for i_state in range(1, n_states+1):
         EXPAND_OP_PRODUCT({LABEL: lag_label,
                            OP_RES: res,
                            OPERATORS: op_list,
-                           IDX_SV: range(1, nop + 1),
+                           IDX_SV: list(range(1, nop + 1)),
                            NEW: False,
                            FIX_VTX: True,
                            FAC: -fac})

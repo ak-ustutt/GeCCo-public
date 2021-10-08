@@ -442,7 +442,7 @@ for _icnt in range (0,_ncnt):
 
 
 
-        for i in xrange(1,_no_root +1):
+        for i in range(1,_no_root +1):
             SET_STATE({LISTS:['ME_AR1_rspns_q'+_extnsn,
                               'ME_AR2g_rspns_q'+_extnsn,
                               'ME_AR_rspns_mu'+_extnsn,
@@ -470,7 +470,7 @@ for _icnt in range (0,_ncnt):
             PUSH_RESULT({LIST:'ME_Exc_En'+_extnsn,COMMENT:'MRCC_STATE_'+str(_isym+1)+'.'+str(i), FORMAT:"SCAL F20.14"})
 
 
-        for i in xrange(1,_no_root +1):
+        for i in range(1,_no_root +1):
             SET_STATE({LISTS:['ME_R2g_q'+_extnsn,
                               ],
                        ISTATE:i})

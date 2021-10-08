@@ -3,7 +3,7 @@
 #coeffients are not relaxed at all.
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data
+from python_spec.mrcc_response.get_response_data import _response_data
 
 #Getting the frequency
 _freq=_response_data['freq']

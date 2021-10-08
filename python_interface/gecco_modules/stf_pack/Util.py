@@ -1,7 +1,7 @@
 """Utility classes and functions"""
 import itertools as it
 import re
-from stf_regexp import stf_div_extract_regexp,stf_number_extract_regexp,stf_negative_extract_regexp
+from .stf_regexp import stf_div_extract_regexp,stf_number_extract_regexp,stf_negative_extract_regexp
 
 
 
@@ -15,7 +15,7 @@ class _IDXUtil(object):
         OPs_e=[] #list of already encountered OPs
         idx_sv=[]
         for OP in OPs:
-            for ii in xrange(len(OPs_e)):
+            for ii in range(len(OPs_e)):
                 if OP.same(OPs_e[ii]):                    
                     idx_sv.append(ii+1)       #xrange starts with 0 idx_sv starts with 1
                     break

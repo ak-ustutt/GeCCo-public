@@ -52,15 +52,15 @@ test = keywords.get('method.ITF.test')
 test = str(test).strip() if test is not None else "none"
 
 if test == "none" or test not in known_tests:
-    print "Unknown testjob "+test+", currently known: ", known_tests
+    print("Unknown testjob "+test+", currently known: ", known_tests)
     exit()
 else:
-    print "Performing the "+test+" testjob"
+    print("Performing the "+test+" testjob")
 
 tasks = keywords.get('method.ITF.tasks')
 tasks = str(tasks).strip() if tasks is not None else "F"
 
-print "Using tasks: "+tasks
+print("Using tasks: "+tasks)
 
 T2_shape = ''
 T1_shape = ''
@@ -75,7 +75,7 @@ elif test=='cas22':
     T2_shape = 'PP,HH|VV,HH|PV,HH|PP,VV|PP,HV|PV,HV' # <- same as triplet (triplet is just a special case of cas22)
     T1_shape = 'P,H|P,V|V,H'
 else:
-    print "Unknown method: " + test
+    print("Unknown method: " + test)
     exit()
 
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})

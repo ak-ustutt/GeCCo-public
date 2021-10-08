@@ -22,6 +22,10 @@ if (inp.is_keyword_set('method.R12')):
     solve_mrcc += '_F12' 
 
 densmix = inp.get('method.MR.densmix')
+if densmix is not None:
+  densmix = int(densmix)
+else:
+  densmix = 0
 
 # create the Tfix list, to be used by the (T) correction
 new_target('save_Tfix')

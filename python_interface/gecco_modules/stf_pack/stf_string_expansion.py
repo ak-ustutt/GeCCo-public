@@ -1,8 +1,9 @@
-from stf_regexp import stf_number_regexp, stf_negative_regexp, stf_div_regexp
+from .stf_regexp import stf_number_regexp, stf_negative_regexp, stf_div_regexp
 # The regular expressions for numbers ... 
-from operators import Vertex
+from .operators import Vertex
 #The operator object everything works
-from stf_exceptions import *
+from .stf_exceptions import *
+from functools import reduce
 # custom exceptions
 
 
@@ -194,7 +195,7 @@ class _HiddenMinusUtil(_InputStringBase):
         # Minus signs must be processed by two objects (_AddRep and _OPRep)
         # therefore only every second time we should advance over a minus the 
         # next() really will advance
-    def next(self):
+    def __next__(self):
         """advances to next char
         
         Sets pointer to next char
@@ -426,11 +427,11 @@ class _OPRep(_InitOperation,_SinglePartOperation):
             self.check_illegal_char(string,("<"))            
             if ( string.true_this_char == "+" and string.last_char == "^" ):
                 #Ignore ^+ combinations
-                string.next()
+                next(string)
             elif ( string.true_this_char=="-" and string.test_substring_match([stf_negative_regexp,
                                                                           stf_number_regexp,
                                                                           stf_div_regexp]) ): 
-                string.next()
+                next(string)
                 #ignore "-" that belong to a number -1.0d-4T1
                 #                                  -^----^
                 # thanks to toggle minus advance this will be done twice on the second minus
@@ -438,7 +439,7 @@ class _OPRep(_InitOperation,_SinglePartOperation):
                 self.content=[Vertex(string.substring)]
                 return 0
             else:
-                string.next()
+                next(string)
         raise UnexpectedEndOfStringError(string.display_error)
 
     
@@ -467,10 +468,10 @@ class _AddRep(_UInitOperation,_MultiPartOperation):
         while string.has_not_ended:
             if string.this_char=="+" and string.true_next_char =="-" :
                 # can occur with input: T1+-0.5T2 
-                string.next()
+                next(string)
  
             elif string.this_char=="+":
-                string.next()
+                next(string)
                 self.check_illegal_char(string, ("]",")",",","*","+","|")) 
                 self.part +=1
                 #string.i can point neither to * nor to + so part may point to out of scope
@@ -505,7 +506,7 @@ class _ComRep( _InitOperation,_DoublePartOperation):
 #        cls.counter+=1
 
     def process_string(self,string):                
-        string.next() # String pointed to "["
+        next(string) # String pointed to "["
         self.check_illegal_char(string, ("<",">","*","","+") ,"first")
         self.content[self.part]=self._create_next_operation(string)
         while string.i <len(string):
@@ -514,7 +515,7 @@ class _ComRep( _InitOperation,_DoublePartOperation):
             if string.this_char==",":
                 if self.part==0: # If not, it is a [,, combination
                     self.part=1
-                    string.next()
+                    next(string)
                     self.check_illegal_char(string,("<",")","",",","]","|"))
                     self.content[self.part]=self._create_next_operation(string)
                 else:
@@ -525,7 +526,7 @@ class _ComRep( _InitOperation,_DoublePartOperation):
             elif self.check_close_char(string,("]")):
                 if self.part==1: # If not, it is a [] combination
                     self.close()
-                    string.next()
+                    next(string)
                     return 
                 else:
                     raise MissingCommaError("All commutators are of the form [...,...]"+\
@@ -559,7 +560,7 @@ class _MultRep( _UInitOperation,_DoublePartOperation):
     def process_string(self,string,obj=''):
         if string.this_char=="*": 
             #not necessarily true since (F+V)(T1+T2) also triggers a Multiplication
-            string.next()
+            next(string)
 
         self.check_illegal_char(string, (")","]","*",",","","+","|") )
 
@@ -599,7 +600,7 @@ class _ParRep( _InitOperation,_SinglePartOperation):
     """Class to store the content of a parenthesis"""
 
     def process_string(self,string):
-        string.next()
+        next(string)
         self.check_illegal_char(string, ("<",">","*","]",")","","+"),"first") 
         self.content[self.part]=self._create_next_operation(string)
 
@@ -608,7 +609,7 @@ class _ParRep( _InitOperation,_SinglePartOperation):
 
             if self.check_close_char(string,(")")):
                 self.close()
-                string.next()
+                next(string)
                 return 
 
             elif string.this_char=="+": 
@@ -629,7 +630,7 @@ class _ParRep( _InitOperation,_SinglePartOperation):
 class BracketRep(_InitOperation,_SinglePartOperation):
  
     def process_string(self,string):
-        string.next()
+        next(string)
         self.check_illegal_char(string, ("<",",","]",")","") ) #
         self.content[self.part]=self._create_next_operation(string)
         
@@ -707,7 +708,7 @@ class Test(object):
         """
         if self.helpful=="undefined":
             while True:
-                answer=raw_input("Was this error-message helpful? (y/n)")
+                answer=input("Was this error-message helpful? (y/n)")
                 if answer in ("y","Y","yes","Yes","YES"):
                     return True
                 elif answer in ("n","N","no","No","NO"):
@@ -726,29 +727,29 @@ class Test(object):
 
         cls=self.test_class
         try:
-            print "input:" +str(string)
+            print("input:" +str(string))
             if issubclass(cls ,_UInitOperation):
                 handle=cls(self.OP1,string)
             else:
                 handle=cls(string)
-            print "Sucessfully created "+str(handle)
+            print("Sucessfully created "+str(handle))
             #res for result
             res=handle.extract()
             if res==exp_res:
-                print "the object was sucessfully extracted:"
-                print res
+                print("the object was sucessfully extracted:")
+                print(res)
                 return 1
             else:
-                print "Oh, no extraction didn't work as planned"
-                print "expected: " + str(exp_res)
-                print "result: " + str(res)
+                print("Oh, no extraction didn't work as planned")
+                print("expected: " + str(exp_res))
+                print("result: " + str(res))
                 return 0
         except(Exception):
-            print tb.print_exc()
+            print(tb.print_exc())
 
     def test_OPRep(self):
         """ testing _OPRep with valid strings"""
-        print self.test_OPRep.__doc__
+        print(self.test_OPRep.__doc__)
         
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=_OPRep
@@ -777,12 +778,12 @@ class Test(object):
         error_counter+=1-try_(Ts("T3("),[["T3"]])
         error_counter+=1-try_(Ts("T3["),[["T3"]])
         error_counter+=1-try_(Ts("T3]"),[["T3"]])
-        print "Testing operator creation, we encountered ",error_counter," errors."        
+        print("Testing operator creation, we encountered ",error_counter," errors.")        
         return error_counter
 
     def test_MultRep(self):
         """ testing _MultRep with valid strings"""
-        print self.test_MultRep.__doc__
+        print(self.test_MultRep.__doc__)
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=_MultRep
         error_counter=0
@@ -810,12 +811,12 @@ class Test(object):
         error_counter+=1-try_(Ts("T3]"),[["T1","T3"]])
         error_counter+=1-try_(Ts("T3-"),[["T1","T3"]])
         
-        print "Testing Multiplication, we encountered ",error_counter," errors."
+        print("Testing Multiplication, we encountered ",error_counter," errors.")
         return error_counter
 
     def test_AddRep(self):
         """ testing _AddRep with valid strings"""
-        print self.test_AddRep.__doc__
+        print(self.test_AddRep.__doc__)
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=_AddRep
         error_counter=0
@@ -844,14 +845,14 @@ class Test(object):
         
         error_counter+=1-try_(Ts("+T3*T4)"),[["T1","T2"],["T3","T4"]])
 
-        print "Testing Addition, we encountered ",error_counter," errors."
+        print("Testing Addition, we encountered ",error_counter," errors.")
         return error_counter
 
 
 
     def test_ParRep(self):
         """ testing _ParRep with valid strings"""
-        print self.test_ParRep.__doc__
+        print(self.test_ParRep.__doc__)
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=_ParRep
         error_counter=0
@@ -886,13 +887,13 @@ class Test(object):
                                                        ["T2","T4"]])
         error_counter+=1-try_(Ts("(T1-T3)"),[["T1"],["-T3"]])
 
-        print "Testing parentheses, we encountered ",error_counter," errors."
+        print("Testing parentheses, we encountered ",error_counter," errors.")
 
         return error_counter
 
     def test_ComRep(self):
         """ testing _ParRep with valid strings"""
-        print self.test_ComRep.__doc__
+        print(self.test_ComRep.__doc__)
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=_ComRep
         error_counter=0
@@ -920,7 +921,7 @@ class Test(object):
                                                ])
         error_counter+=1-try_(Ts("[T1,T3*T4]"),[["T1","T3","T4"],
                                                 ["-1","T3","T4","T1"]])
-        print "Testing commutation, we encountered ",error_counter," errors."
+        print("Testing commutation, we encountered ",error_counter," errors.")
         return error_counter
 #        error_counter+=1-try_(Ts("(3T3)"),[["3T3"]])
 #        error_counter+=1-try_(Ts("(-0.5T3)"),[["-0.5T3"]])
@@ -931,7 +932,7 @@ class Test(object):
  
     def test_BracketRep(self):
         """ testing _BracketRep with valid strings"""
-        print self.test_BracketRep.__doc__
+        print(self.test_BracketRep.__doc__)
         #self.test_class is a variable that tells try_ which class to test
         self.test_class=BracketRep
         error_counter=0
@@ -948,13 +949,13 @@ class Test(object):
         error_counter+=1-try_(Ts("<T1-T3>"),[["T1"],["-T3"]])
         error_counter+=1-try_(Ts("<(T1+T2)T3>"),[["T1","T3"],["T2","T3"]])
 
-        print "Testing brackets, we encountered ",error_counter," errors."
+        print("Testing brackets, we encountered ",error_counter," errors.")
         return error_counter
 
     def run_test(self,helpful="undefined"):
         """ Testsuite for string_to_form V0.8"""
         self.helpful=helpful
-        print( self.run_test.__doc__ )
+        print(( self.run_test.__doc__ ))
         
         error_counter=0
         error_counter+=self.test_OPRep()
@@ -962,5 +963,5 @@ class Test(object):
         error_counter+=self.test_AddRep()
         error_counter+=self.test_ComRep()
         error_counter+=self.test_BracketRep()
-        print("there were ",error_counter," Errors")
+        print(("there were ",error_counter," Errors"))
         

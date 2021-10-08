@@ -47,11 +47,11 @@ options, args = parse.parse_args(sys.argv[1:])
 try:
     basename = args[0]
 except:
-    print "ERROR: presumably you forgot to specify the test basename"
+    print("ERROR: presumably you forgot to specify the test basename")
     parse.print_help()
     sys.exit(1)
 if options.run and options.program == 'not defined':
-    print "ERROR: the program to be tested was not given and must be given"
+    print("ERROR: the program to be tested was not given and must be given")
     parse.print_help()
     sys.exit(1)
 
@@ -63,8 +63,8 @@ chk_commands = {}
 chk_commands = parse_chk(chk_name)
 
 if DEBUG:
-    print "resulting chk_commands structure:"
-    print chk_commands
+    print("resulting chk_commands structure:")
+    print(chk_commands)
 
 runtoken_dict={OK:"run_OK",
                FAILED:"run_failed",

@@ -3,7 +3,7 @@
 #This particular interface started to be written on September, 2015
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
+from python_spec.mrcc_response.get_response_data import _response_data, _pop_data, _cmp_data, _calc_data
 import math
 
 _inp = GeCCo_Input()
@@ -59,7 +59,7 @@ _first_order_param['conj_cmp']=[]
 _first_order_param['conj_pop']=[]
 _first_order_param['freq']=[]
 for i in range(0,_ncnt):
-    for j in xrange (0,_calc_data[i]['order']):
+    for j in range (0,_calc_data[i]['order']):
         pos=i*_maxord+j
         if (_cmp_data['order'][pos]==1 and _cmp_data['redun'][pos]==pos+1):
             n_par=n_par+1
@@ -81,9 +81,9 @@ _first_order_param['n_par']=n_par
 _option=_response_data['option']
 
 if _option == 1:
-    print 'Including the disputed term :D'
+    print('Including the disputed term :D')
 elif _option == 2:
-    print 'Excluding the disputed term :D'
+    print('Excluding the disputed term :D')
 else:
     quit_error('Input error: unknown option for ic-MRCC properties') 
     
@@ -384,7 +384,7 @@ for i in range(0,n_par):
     _ops_contract={OPERATORS:[_den,'C0^+','L',_op_t,'C0',_den],
                    IDX_SV:[1,2,3,4,5,1]}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
     
     _expand_product_basis={LABEL:_form,
                            NEW:False,
@@ -394,62 +394,62 @@ for i in range(0,n_par):
                    IDX_SV:[1,2,3,4,5,6,1],
                    FAC:0.5}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
     
     _ops_contract={OPERATORS:[_den,'C0^+','L','T',_op_t,'C0',_den],
                    IDX_SV:[1,2,3,4,5,6,1],
                    FAC:-0.5}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L',_op_t,'T','T','C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:1.0/6}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L','T',_op_t,'T','C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:-0.33333333333333330}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
     
     _ops_contract={OPERATORS:[_den,'C0^+','L','T','T',_op_t,'C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,1],
                    FIX_VTX:True,
                    FAC:0.16666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L',_op_t,'T','T','T','C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:0.041666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L','T',_op_t,'T','T','C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:-0.125}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L','T','T',_op_t,'T','C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:0.125}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
 
     _ops_contract={OPERATORS:[_den,'C0^+','L','T','T','T',_op_t,'C0',_den],
                    IDX_SV:[1,2,3,4,5,6,7,8,1],
                    FIX_VTX:True,
                    FAC:-0.041666666666666660}
 
-    EXPAND_OP_PRODUCT(dict(_expand_product_basis.items()+_ops_contract.items()))
+    EXPAND_OP_PRODUCT(dict(list(_expand_product_basis.items())+list(_ops_contract.items())))
     
     SELECT_SPECIAL({LABEL_RES:_form,
                     LABEL_IN:_form,

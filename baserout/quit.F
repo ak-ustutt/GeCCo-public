@@ -1,5 +1,8 @@
       subroutine quit(level,rout,str)
 
+#if defined(__INTEL_COMPILER)
+      use ifcore, only : tracebackqq
+#endif // if __INTEL_COMPILER     
       implicit none
 
       include 'stdunit.h'
@@ -27,7 +30,7 @@
      &     trim(date),trim(host)
        end if
 #if defined(__INTEL_COMPILER)
-       call tracebackqq()
+       call tracebackqq(user_exit_code = -1)
 #endif // if __INTEL_COMPILER
         stop 'error exit'
       else
@@ -41,7 +44,7 @@
         end if
 c dbg
 #if defined(__INTEL_COMPILER)
-        call tracebackqq()
+        call tracebackqq(user_exit_code = -1)
 #endif // if __INTEL_COMPILER
 c dbg
         stop 'internal error exit'

@@ -2,7 +2,7 @@ import sys,os
 sys.path=[os.getenv("GECCO_DIR")]+sys.path
 
 from python_interface.gecco_interface import *
-from get_response_data import _response_data
+from python_spec.mrcc_response.get_response_data import _response_data
 from python_interface.gecco_modules.python_target_graph import export_python_target_graph
 
 _inp = GeCCo_Input()
@@ -29,14 +29,14 @@ if(_pure_vv==None):
     _pure_vv=False
 _pure_vv=bool(_pure_vv)
 
-print 'pure_vv', _pure_vv
+print('pure_vv', _pure_vv)
 # b) optref:
 _optref=_inp.get('calculate.solve.non_linear.optref')
 if(_optref==None):
     _optref=-3
 
 _optref=int(_optref)
-print 'optref', _optref
+print('optref', _optref)
 # and c) nactel:
 _nactel=_orb.get('nactel')
 
@@ -45,46 +45,46 @@ if(_pure_vv or (_optref==0) or (_nactel==1)):
 else:
     relax_ref=True
 
-print 'relax_ref:', relax_ref
+print('relax_ref:', relax_ref)
 
 # first calculate the first order properties, need to solve the zeroeth order lambda parameters for that
 if (_response_data['order']>=1):
     if (relax_ref):
-        print 'importing solve_lambda_0 ...'
+        print('importing solve_lambda_0 ...')
         import solve_lambda_0
     else:
-        print 'importing solve_lambda_0_restr ...'
+        print('importing solve_lambda_0_restr ...')
         import solve_lambda_0_restr
 
     if (_triplet):
-        print 'importing eval_first_order_prop for triplet ...'
+        print('importing eval_first_order_prop for triplet ...')
         import eval_first_order_prop_trip
     else:
-        print 'importing eval_first_order_prop ...'
+        print('importing eval_first_order_prop ...')
         import eval_first_order_prop
 
 if (_response_data['order']>=2):
     if (relax_ref):
-        print 'importing solve_t_1 ...'
+        print('importing solve_t_1 ...')
         import solve_t_1
-        print 'importing eval_second_order_prop ...'
+        print('importing eval_second_order_prop ...')
         import eval_second_order_prop
     else:
-        print 'importing solve_t_1_restr ...'
+        print('importing solve_t_1_restr ...')
         import solve_t_1_restr
-        print 'importing eval_second_order_prop_restr ...'
+        print('importing eval_second_order_prop_restr ...')
         import eval_second_order_prop_restr
 
 if (_response_data['order']>=3):
     if (relax_ref):
-        print 'importing solve_lambda_1 ...'
+        print('importing solve_lambda_1 ...')
         import solve_lambda_1
-        print 'importing eval_second_order_prop_alt ...'
+        print('importing eval_second_order_prop_alt ...')
         import eval_second_order_prop_alt
     else:
-        print 'importing solve_lambda_0_restr ...'
+        print('importing solve_lambda_0_restr ...')
         import solve_lambda_1_restr
-        print 'importing eval_second_order_prop_alt_restr ...'
+        print('importing eval_second_order_prop_alt_restr ...')
         import eval_second_order_prop_alt_restr
 
 export_python_target_graph()

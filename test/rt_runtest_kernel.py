@@ -10,13 +10,13 @@ def runtest_kernel(commands, options, testname, basename):
     USAGE_ERROR = 2
     SETUP_ERROR = 3
 
-    print 'Next test:'
+    print('Next test:')
     for line in commands['title'][-1]:
-        print line
-    print 'Output in: ' + testname
+        print(line)
+    print('Output in: ' + testname)
 
     if options.program.lstrip() == ' ':
-        print 'the program to test was obviously not specified ...'
+        print('the program to test was obviously not specified ...')
         return USAGE_ERROR
         
     curdir = os.getcwd()
@@ -26,8 +26,8 @@ def runtest_kernel(commands, options, testname, basename):
 
     # in particular, let's make sure that this is a new directory
     if os.path.isdir(scrdir):
-        print "Error: directory does already exist!"
-        print str(scrdir)
+        print("Error: directory does already exist!")
+        print(str(scrdir))
         return SETUP_ERROR
 
     out_name = os.path.join(curdir,testname)
@@ -36,8 +36,8 @@ def runtest_kernel(commands, options, testname, basename):
     try:
         os.mkdir(scrdir)
     except:
-        print "Error: could not create scratch directory!"
-        print str(scrdir)
+        print("Error: could not create scratch directory!")
+        print(str(scrdir))
         return SETUP_ERROR
 
     moldir = os.path.join(options.mol_dir,commands['molecule'][-1][0].lstrip())
@@ -47,7 +47,7 @@ def runtest_kernel(commands, options, testname, basename):
         try:
             shutil.copy(mol_file,scrdir)
         except:
-            print "Error: could not copy file " + str(mol_file)
+            print("Error: could not copy file " + str(mol_file))
             return SETUP_ERROR
     os.chdir(curdir)
 
@@ -55,7 +55,7 @@ def runtest_kernel(commands, options, testname, basename):
     try:
         shutil.copy(input_name,scrdir)
     except:
-        print "Error: could not copy file " + str(input_name)
+        print("Error: could not copy file " + str(input_name))
         return SETUP_ERROR
 
     os.chdir(scrdir)
@@ -66,12 +66,12 @@ def runtest_kernel(commands, options, testname, basename):
 
     os.chdir(curdir)
 
-    print "now removing: " + scrdir
+    print("now removing: " + scrdir)
     if scrdir != scrdir_save:
-        print 'CAVEAT: scrdir has changed during execution of rt_runtest_kernel.py!!'
-        print '        scrdir      = ' + scrdir
-        print '        scrdir_save = ' + scrdir_save
-        print '        I will NOT remove any of the above directories!'
+        print('CAVEAT: scrdir has changed during execution of rt_runtest_kernel.py!!')
+        print('        scrdir      = ' + scrdir)
+        print('        scrdir_save = ' + scrdir_save)
+        print('        I will NOT remove any of the above directories!')
         return SETUP_ERROR
         
     shutil.rmtree(scrdir)

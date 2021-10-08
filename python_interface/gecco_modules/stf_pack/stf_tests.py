@@ -1,6 +1,6 @@
 import unittest as ut
-from stf_top import *
-from stf_top import _OPProduct,_Bracket
+from .stf_top import *
+from .stf_top import _OPProduct,_Bracket
 from python_interface.gecco_modules.stf_pack.operators import Vertex
 
 

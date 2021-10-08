@@ -53,7 +53,7 @@ class _TargetMatcher(object):
      
      def _is_arguments_match(self, target):
           for rule in target.rules:
-               for name in rule[1].values():
+               for name in list(rule[1].values()):
                     if isinstance( name,str):
                          if self._arguments_re.search( name  ) is not None :
                               return True
@@ -101,7 +101,7 @@ class _ClusterSubgraph(object):
          self._nodes.append(node)
     def __str__(self):
        id_ = self._id
-       attrs = ""+";\n".join(['{attr}="{value}"'.format(attr=attr,value=value) for attr,value in self._attrs.items() ])
+       attrs = ""+";\n".join(['{attr}="{value}"'.format(attr=attr,value=value) for attr,value in list(self._attrs.items()) ])
        node_list = ""+";\n".join( [str(node) for node in self._nodes] )
        return 'subgraph {id_}{{\n'\
               '{attrs};\n'\
@@ -189,10 +189,10 @@ def _write_graph(f, subgraphs, edges, matcher, external_nodes):
     f.write("digraph dependency_graph{\n")
     if str(matcher) != "" :
         f.write('''label="colored for '{matcher}'"\n'''.format(matcher=str(matcher)))
-    f.write("\n".join( [str(subgraph) for subgraph in subgraphs.values()]))
+    f.write("\n".join( [str(subgraph) for subgraph in list(subgraphs.values())]))
     f.write(";\n".join([str(edge) for edge in edges]) )
     f.write(";\n")
-    f.write(";\n".join([str(node) for node in external_nodes.values() ]) )
+    f.write(";\n".join([str(node) for node in list(external_nodes.values()) ]) )
     f.write("\n")
     f.write("}")
 

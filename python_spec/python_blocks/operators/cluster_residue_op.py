@@ -68,6 +68,7 @@ else:
 #-----------------------------------------------------------------#
 
 new_target('DEF_T')
+print("passing DEF_T!!")
 depend('DEF_T2g')
 if (useT1):
    depend('DEF_T1')

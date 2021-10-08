@@ -25,7 +25,7 @@ check
 check
   rewind
   label Is keyword set
-  find Is keywort set
+  find Is keyword set
   find calculate.interfaces
   compare str 2
   find method.R12
