@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #
 # $Id: mkdep90.py 1.1 03/10/31 15:14:43-00:00 jonas@ $
 #
