@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 #
 # $Id: mkdep90.py 1.1 03/10/31 15:14:43-00:00 jonas@ $
 #
@@ -15,7 +15,7 @@ class depfile:
 		self.oname=""
 		self.uses={}
 		self.includes={}
-		ri=string.rindex(name, '.')
+		ri=name.rindex('.')
 		self.oname=name[:ri]+'.o'
 	
 	def adduses(self, u):
@@ -36,39 +36,39 @@ def main():
 		for ln in buf:
 			m=mod.match(ln)
 			if m is not None:
-				allmods[string.lower(m.group(1))]=ff
+				allmods[m.group(1).lower()]=ff
 				continue
 
 			m=use.match(ln)
 			if m is not None:
-				dfiles[-1].adduses(string.lower(m.group(1)))
+				dfiles[-1].adduses(m.group(1).lower())
 				continue
 
 			m=include.match(ln)
 			if m is not None:
-				dfiles[-1].addincludes(string.lower(m.group(1)))
+				dfiles[-1].addincludes(m.group(1).lower())
 				continue
 
 	for df in dfiles:
 		deps=[]
-		for dd in df.uses.keys():
+		for dd in list(df.uses.keys()):
 			try:
 				if (allmods[dd] != df.name):
-					ri=string.rindex(allmods[dd], '.')
+					ri=allmods[dd].rindex('.')
 					omod='$(ARCH)/'+allmods[dd][:ri]+'.o'
 					deps.append(omod)
 			except:
-				print >> sys.stderr, 'Missing dependency for', dd, 'in',\
-				df.name
+				print('Missing dependency for', dd, 'in',\
+				df.name, file=sys.stderr)
 
-		for dd in df.includes.keys():
+		for dd in list(df.includes.keys()):
 				deps.append(dd)
 
 		if deps:
 			dstr='$(ARCH)/'+df.oname+': '
 			for i in deps:
 				dstr=dstr+i+' '
-			print dstr
+			print(dstr)
 
 
 if __name__ == '__main__':
