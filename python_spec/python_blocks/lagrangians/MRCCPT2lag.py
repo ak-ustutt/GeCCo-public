@@ -119,63 +119,22 @@ elif hamiltonian=="EXT_DYALL":
     depend('EVAL_HAM_EXT_D')
 elif hamiltonian=="SIMP_REPT":
     depend('EVAL_SIMP_REPT_HAM')
+#switcheroo
+te_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+ti_shape='PP,HV|PP,VV|PP,HH'
 
-#------------------this belongs in the operatorfile-----
-
-#te_shape='VV,HH|PV,HH|PP,HH|PP,VV|PV,HV|P,H|PV,HV|PV,VV|P,V|VV,VH|V,H'  #alles ab PPVV, PV,HV is here just to test stuff.
-#without_singles_1 / with_singles_1  ---- WRONG
-#te_shape='VV,HH|PV,HH|PP,HH'
-#--------------
-#without_singles_2 / with_singles_2
-te_shape='PP,HV|PP,VV|PP,HH'
-#--------------
-#with_singles_3
-#te_shape='PP,HV|PP,VV|PP,HH|P,V'
-#--------------
-#with_singles_4
-#te_shape='PP,HV|PP,VV|PP,HH|P,V|P,H'
-#--------------
-#with_singles_5
-#te_shape='PP,HV|PP,VV|PP,HH|P,H'
-#--------------
+#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+#te_shape='PP,HV|PP,VV|PP,HH'
 DEF_OP_FROM_OCC({LABEL:'Te',
                  DESCR:te_shape})
-
-
-
 
 CLONE_OPERATOR({LABEL:'LAMe',
                 TEMPLATE:'Te',
                 ADJOINT:True})
-#ti_form = 'T2g'
-#--------------
-#without_singles_1  wrong
-#ti_shape='VV,VH|PV,VV|PV,HV|PP,VV|PP,HV'
-#--------------
-#without_singles_2
-#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH'
-#--------------
-#with_singles_1  wrong
-#ti_shape='V,H|VV,VH|P,V|PV,VV|PV,HV|PP,VV|PP,HV|P,H'
-#--------------
-#with_singles_2   Problem in the sudo-doubles -> right now only this works.
-ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
-#--------------
-#with_singles_3
-#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,H'
-#--------------
-#with_singles_4
-#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H'
-#--------------
-#with_singles_5
-#ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V'
-#--------------
+
 DEF_OP_FROM_OCC({LABEL:'Ti',
 		 DESCR:ti_shape})
 
-#DEF_FORMULA({LABEL:'FORM_Ti',FORMULA:ti_form})
-
-#LAMi_form = 'LAM2g'
 CLONE_OPERATOR({LABEL:'LAMi',
                 TEMPLATE:'Ti',
                 ADJOINT:True})
@@ -266,7 +225,7 @@ _h1_ = "(H-" +_h0_ + ")"
 
 
 #Starting energy and amplitudes equations
-if ampl_type == 'CEPT2':
+if ampl_type in ['CEPT2','TCPT2']:
     LAG_E=stf.Formula("FORM_PT_LAG:PT_LAG="\
                       "<C0^+*H*C0>")
 #    LAG_A=stf.Formula("FORM_PT_LAG_A:PT_LAG="\
@@ -484,13 +443,33 @@ elif ampl_type == 'CEPT2':
 
     LAG_E.append("<C0^+*H*Ti*C0>")
     LAG_E.append("<C0^+*H*Te*C0>")
-#    LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Ti]*C0>") "connected"
-#    LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Te]*C0>")
-#    LAG_A.append("<C0^+*(LAMe)*["+_h0_+",Ti]*C0>")
-    LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Ti*C0>") # "not connected"
-    LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Te*C0>")
-    LAG_A.append("<C0^+*(LAMe)*("+_h0_+"-"+_h0exp_+")*Ti*C0>")
+    if hamiltonian=="DYALL":
+        LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Ti]*C0>")# "connected"
+        LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Te]*C0>")
+        LAG_A.append("<C0^+*(LAMe)*["+_h0_+",Ti]*C0>")
+    else:
+        LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Ti*C0>") # "not connected"
+        LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Te*C0>")
+        LAG_A.append("<C0^+*(LAMe)*("+_h0_+"-"+_h0exp_+")*Ti*C0>")
     LAG_A.append("<C0^+*(LAMe)*(H-ECEPA)*Te*C0>")
+
+elif ampl_type == 'TCPT2':
+
+    LAG_E.append("<C0^+*H*Ti*C0>")
+    LAG_E.append("<C0^+*H*Te*C0>")
+    LAG_E.append("<C0^+*1/2*H*Te*Te*C0>")
+    if hamiltonian=="DYALL":
+        LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Ti]*C0>")# "connected"
+        LAG_A.append("<C0^+*(LAMi)*["+_h0_+",Te]*C0>")
+        LAG_A.append("<C0^+*(LAMe)*["+_h0_+",Ti]*C0>")
+    else:
+        LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Ti*C0>") # "not connected"
+        LAG_A.append("<C0^+*(LAMi)*("+_h0_+"-"+_h0exp_+")*Te*C0>")
+        LAG_A.append("<C0^+*(LAMe)*("+_h0_+"-"+_h0exp_+")*Ti*C0>")
+    LAG_A.append("<C0^+*(LAMe)*[H,Te]*C0>")
+    LAG_A.append("1/2*<C0^+*(LAMe)*[[H,Te],Te]*C0>")
+
+
 #-----------------
 #DELETE IF NOT WORKING  
 elif ampl_type == 'CEPT2_TIS':
@@ -623,7 +602,7 @@ elif ampl_type == 'CEPT2_TIS':
          LABEL_IN:'FORM_PT_LAG_A',
          OP_LIST:['LAMi','LAM2g','LAMe','LAM2g']})
 #------------
-elif ampl_type in ['CEPT2','MRCEPA0alex','CASPT2testTeTi','CASPT2testKOMM','CCEPA']:
+elif ampl_type in ['CEPT2','MRCEPA0alex','CASPT2testTeTi','CASPT2testKOMM','CCEPA','TCPT2']:
     LAG_A.set_rule()
     PRINT_FORMULA({LABEL:'FORM_PT_LAG', MODE:"SHORT"})
     PRINT_FORMULA({LABEL:'FORM_PT_LAG_A', MODE:"SHORT"})

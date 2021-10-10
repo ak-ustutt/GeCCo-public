@@ -163,6 +163,13 @@ if method in ["CEPT2","CCEPA","TCPT2"]:
             CLONE_OPERATOR({LABEL:'LAMr',
                             TEMPLATE:'Tr',
                             ADJOINT:True})
+        elif (no_occ and singles==6):
+            DEF_OP_FROM_OCC({LABEL:'To',
+                             DESCR:tr_shape})
+
+            CLONE_OPERATOR({LABEL:'LAMr',
+                            TEMPLATE:'To',
+                            ADJOINT:True})
         else:
             DEF_OP_FROM_OCC({LABEL:'To',
                              DESCR:to_shape})
@@ -185,6 +192,12 @@ if method in ["CEPT2","CCEPA","TCPT2"]:
 #Define the Te and Ti operators and the corresponding LAMe and LAMi
 te_shape='PP,HV|PP,VV|PP,HH'
 ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+
+#ti_shape='PP,HV|PP,VV|PP,HH' #needed for INVERSE
+#te_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H' #needed for INVERSE
+#inverse
+#ti_shape='PP,HV|PP,VV|PP,HH'
+#te_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
 
 DEF_OP_FROM_OCC({LABEL:'Te',
                  DESCR:te_shape})
@@ -269,11 +282,11 @@ if method=='PT2':
 
     if hamiltonian == 'DYALL':
     
-        LAG_A1.append(_Ls_refexp("(["+_h0_+",T1])"))
-        LAG_A1.append(_Ls_refexp("(["+_h0_+",T2g])"))
+        LAG_A1.append(_L1_refexp("(["+_h0_+",T1])"))
+        LAG_A1.append(_L1_refexp("(["+_h0_+",T2g])"))
 
-        LAG_A2.append(_Ls_refexp("(["+_h0_+",T1])"))
-        LAG_A2.append(_Ls_refexp("(["+_h0_+",T2g])"))
+        LAG_A2.append(_L2_refexp("(["+_h0_+",T1])"))
+        LAG_A2.append(_L2_refexp("(["+_h0_+",T2g])"))
 
     else:
 
@@ -368,6 +381,7 @@ elif method == 'CEPT2':
     if singles == 0:
         LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
         LAG_A2.append(_Le_refexp("(H-ECEPA)*Te")) #this term stays the same
+#        LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts")) #this term is only valid for INVERSE computations
 
 #        LAG_A1.append(_Ls_refexp("(["+ham+",Ts])"))
 #        LAG_A1.append(_Ls_refexp("(["+ham+",Ti])"))
@@ -391,7 +405,7 @@ elif method == 'CEPT2':
             LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
             LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
 
-            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])"))
+            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])")) #this term needs to be a comment for INVERSE
             LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
 
         else:
@@ -404,7 +418,7 @@ elif method == 'CEPT2':
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts")) #this term needs to be a comment for INVERSE
             LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
     elif singles in [1,2,3,4,5,6]:
@@ -500,12 +514,19 @@ elif method == 'TCPT2':
     if singles == 0:
         LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
         LAG_E.append(_refexp("1/2*H*Te*Te"))
+#        LAG_E.append(_refexp("1/2*H*Ts*Ts")) #INVERSE
 
         LAG_A2.append(_Le_refexp("H*Te"))
         LAG_A2.append(_Le_refexp("-Te*H"))
         LAG_A2.append(_Le_refexp("1/2*H*Te*Te"))
         LAG_A2.append(_Le_refexp("-Te*H*Te"))
         LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
+
+#        LAG_A2.append(_Le_refexp("H*Ts")) #INVERSE
+#        LAG_A2.append(_Le_refexp("-Ts*H")) #INVERSE
+#        LAG_A2.append(_Le_refexp("1/2*H*Ts*Ts")) #INVERSE
+#        LAG_A2.append(_Le_refexp("-Ts*H*Ts")) #INVERSE
+#        LAG_A2.append(_Le_refexp("1/2*Ts*Ts*H")) #INVERSE
 
         if hamiltonian == "DYALL": #exchanges the "PT2" terms for the DYALL Ham
 
@@ -517,7 +538,7 @@ elif method == 'TCPT2':
             LAG_A2.append(_Li_refexp("(["+_h0_+",Ti])"))
             LAG_A2.append(_Li_refexp("(["+_h0_+",Te])"))
 
-            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])"))
+            LAG_A2.append(_Le_refexp("(["+_h0_+",Ts])")) #comment if INVERSE
             LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
 
         else:
@@ -530,7 +551,7 @@ elif method == 'TCPT2':
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
 
-            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
+            LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ts")) #comment if INVERSE
             LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
     if singles in [1,2,3,4,5,6]:
@@ -627,11 +648,11 @@ elif method == 'TCPT2':
             LAG_A2.append(_Le_refexp("(["+_h0_+",Ti])"))
         else:
 
-            LAG_A1.append(_Lr_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
+            LAG_A1.append(_Ls_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
             LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Te"))
-            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Tr"))
+            LAG_A2.append(_Li_refexp("("+_h0_+"-"+_h0exp_+")*Ts"))
 
             LAG_A2.append(_Le_refexp("("+_h0_+"-"+_h0exp_+")*Ti"))
 
@@ -655,6 +676,7 @@ elif method == 'TCPT2':
         LAG_A2.append(_Le_refexp("-Te*H*Te"))
         LAG_A2.append(_Le_refexp("-Ts*H*Ts"))
         LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
+        LAG_A2.append(_Le_refexp("1/2*Ts*Ts*H"))
 
 elif method == 'CEPA0':
     #here goes CEPA0
@@ -680,6 +702,7 @@ elif method == 'CCEPA':
     if singles == 0:
        LAG_E.append(_refexp("(H*Ts)+(H*(Te+Ti))"))
        LAG_E.append(_refexp("1/2*H*Te*Te"))
+#       LAG_E.append(_refexp("1/2*H*Ts*Ts")) #INVERSE
 
        LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ts"))
        LAG_A1.append(_Ls_refexp("(H-ECEPA)*Ti"))
@@ -689,13 +712,18 @@ elif method == 'CCEPA':
        LAG_A2.append(_Li_refexp("(H-ECEPA)*Ti"))
        LAG_A2.append(_Li_refexp("(H-ECEPA)*Te"))
 
-       LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts"))
+       LAG_A2.append(_Le_refexp("(H-ECEPA)*Ts")) #comment if INVERSE
        LAG_A2.append(_Le_refexp("(H-ECEPA)*Ti"))
        LAG_A2.append(_Le_refexp("H*Te"))
        LAG_A2.append(_Le_refexp("-Te*H"))
        LAG_A2.append(_Le_refexp("1/2*H*Te*Te"))
        LAG_A2.append(_Le_refexp("-Te*H*Te"))
        LAG_A2.append(_Le_refexp("1/2*Te*Te*H"))
+#       LAG_A2.append(_Le_refexp("H*Ts")) #INVERSE
+#       LAG_A2.append(_Le_refexp("-Ts*H")) #INVERSE
+#       LAG_A2.append(_Le_refexp("1/2*H*Ts*Ts")) #INVERSE
+#       LAG_A2.append(_Le_refexp("-Ts*H*Ts")) #INVERSE
+#       LAG_A2.append(_Le_refexp("1/2*Ts*Ts*H")) #INVERSE
 
     elif singles in [1,2,3,4,5,6]:
 
