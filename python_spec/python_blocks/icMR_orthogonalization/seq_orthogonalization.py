@@ -254,8 +254,7 @@ REORDER_MEL({
         ADJOINT:True})
 
 
-debug_MEL('ME_X_TRM',only_this=True)
-
+debug_MEL('ME_X_TRM')
 
 
 

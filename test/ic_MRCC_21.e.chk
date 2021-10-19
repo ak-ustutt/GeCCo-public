@@ -1,0 +1,26 @@
+title
+  CH2/dz; Molpro env.: ic-MRCCSD(2,1), CAS(2,2), no ref. rlx.
+molecule
+  CH2-DZ-MOLPRO
+input
+  ic_MRCC_21.inp
+check
+  label CASSCF energy
+  find CONVERGED
+  find ^...    1
+  compare real 3 1e-10
+  compare real 5 1e-10
+check
+  rewind
+  label Number of singular values
+  find INVERT
+  find singular values were
+  compare int 1
+  compare int 4
+check
+  label final energy
+  find CONV
+  find final energy
+  compare real 4 1e-8
+end
+

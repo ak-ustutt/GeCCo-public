@@ -113,6 +113,7 @@
          op_orth => me_special(7)%mel%op
          op_trf => me_special(2)%mel%op
          call list_copy(me_amp,me_special(7)%mel,.false.)
+         ! this is only approximately correct
          call set_blks(me_special(7)%mel,"P,H|P,V|V,H|V,V",0d0)
          call assign_me_list(me_special(7)%mel%label,
      &        op_orth%name,op_info)

@@ -40,7 +40,7 @@ if (True): # switch if for debug purposes only solving for T2g component is requ
         _form_spc = ['FOPT_T1_orth','FOPT_T2_orth']
         _list_spc = ['ME_T1_orth','ME_X_TRM','ME_X_TRM_DAG','ME_T2_orth']
 
-        SOLVE_NLEQ({
+    SOLVE_NLEQ({
             LIST_OPT:['ME_T1','ME_T2g'],
             LIST_RESID:['ME_O1','ME_O2g'],
             LIST_PRC:['ME_PRECON1','ME_PRECON2g'],
@@ -61,7 +61,7 @@ else:
         _form_spc = ['FOPT_T2_orth']
         _list_spc = ['ME_T2_orth','ME_X_TRM','ME_X_TRM_DAG']
 
-        SOLVE_NLEQ({
+    SOLVE_NLEQ({
             LIST_OPT:['ME_T2g'],
             LIST_RESID:['ME_O2g'],
             LIST_PRC:['ME_PRECON2g'],

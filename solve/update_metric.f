@@ -131,9 +131,10 @@
      &              'invsqrt    ',
      &              op_info,orb_info,str_info,strmap_info)
       else
-        call inv_op(1,trim(me_special(5)%mel%label),
-     &              1,trim(me_special(6)%mel%label),
-     &              'invsqrt    ',
+        ! "normal" route
+        call inv_op(1,trim(me_special(5)%mel%label),  ! input: overlaps (in active space)
+     &              1,trim(me_special(6)%mel%label),  ! output: inverse on non-sing. subspace
+     &              'invsqrt    ',                    !         note: (5) contains projector!
      &              op_info,orb_info,str_info,strmap_info)
       end if
 
@@ -154,8 +155,8 @@
       end if
 
       ! reorder to transformation matrix ...
-      call reo_mel(trim(me_special(2)%mel%label),
-     &             trim(me_special(6)%mel%label),.false.,
+      call reo_mel(trim(me_special(2)%mel%label),          ! out: the transf. matrix
+     &             trim(me_special(6)%mel%label),.false.,  ! in:  inverse from above
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
 c      ! ... and to adjoint of transformation matrix
@@ -165,8 +166,8 @@ c     &             op_info,str_info,strmap_info,orb_info,
 c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
 
       ! reorder projector ...
-      call reo_mel(trim(me_special(4)%mel%label),
-     &             trim(me_special(5)%mel%label),.false.,
+      call reo_mel(trim(me_special(4)%mel%label),          ! out: the projector
+     &             trim(me_special(5)%mel%label),.false.,  !      was overwritten with (raw) projector
      &             op_info,str_info,strmap_info,orb_info,
      &             13,.false.)  ! dirty: reo vtx. 1 --> 3
 

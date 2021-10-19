@@ -78,6 +78,9 @@ nc_en = int(word) if word is not None else 4
 word = keywords.get('method.MRCC.maxcom_res')
 nc_rs = int(word) if word is not None else 2
 
+word = keywords.get('general.print')
+verbosity = int(word) if word is not None else 0
+
 word = keywords.get('method.MRCC.select')
 #print("word = "+str(word))
 if word is None:
@@ -94,16 +97,15 @@ itfgen = keywords.is_keyword_set('method.ITF')
 
 doublet=False
 cas22=False
-if itfgen:
-    orbinfo = Orb_Info()
-    nactel = orbinfo.get('nactel')
-    nactorb = orbinfo.get('nactorb')
-    if (nactel==1 and nactorb==1):
-        doublet=True
-    elif (nactel==2 and nactorb==2):
-        cas22=True
-    else:
-        quit_error('ITFgen called for case not considered yet!')
+orbinfo = Orb_Info()
+nactel = orbinfo.get('nactel')
+nactorb = orbinfo.get('nactorb')
+if (nactel==1 and nactorb==1):
+    doublet=True
+elif (nactel==2 and nactorb==2):
+    cas22=True
+if (itfgen and not doublet and not cas22):
+    quit_error('ITFgen called for case not considered yet!')
 
 print("Settings for MRCC generator:")
 print(("maxcom_en  = "+str(nc_en)))
@@ -133,10 +135,7 @@ DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
 
-itfgen=True
 tasks=False
-
-verbosity=10
 
 
 #nc_en=4
@@ -313,10 +312,11 @@ REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2',
 
 
 # --- factor out densities ---
-FACTOR_OUT({
-        LABEL_IN:'FORM_MRCC_LAG_E',
-        LABEL_RES:'FORM_MRCC_LAG_E',
-        INTERM:'FORM_GAM0'})
+# do this later, as we need it for reference relaxation form
+#FACTOR_OUT({
+#        LABEL_IN:'FORM_MRCC_LAG_E',
+#        LABEL_RES:'FORM_MRCC_LAG_E',
+#        INTERM:'FORM_GAM0'})
 
 # currently, this messes up the FACTOR_OUT routines
 # remove the scalar GAM0 part only at the end 
@@ -352,6 +352,20 @@ if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+
+#Make the Derivative with respect to LAM
+DERIVATIVE({
+        LABEL_IN:'FORM_MRCC_LAG_A2',
+        LABEL_RES:'FORM_MRCC_RES2_0',
+        OP_RES:'O2g',
+        OP_DERIV:'LAM2g'})
+
+REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
+
+# Replace in singles residual as much as possible by singles part of doubles residual
+# in cases where T1 and T2 are treated on the same footing, this replaces everything
+FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'FORM_MRCC_RES2_0'})
+
 
 # define an operator that sums the two singles operators
 if doublet or cas22:
@@ -399,32 +413,6 @@ if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
 
-
-#Make the Derivative with respect to LAM
-# only dummy
-DERIVATIVE({
-        LABEL_IN:'FORM_MRCC_LAG_A1',
-        LABEL_RES:'FORM_MRCC_RES1_0',
-        OP_RES:'O1',
-        OP_DERIV:'LAM1'})
-
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES1_0',LABEL_RES:'FORM_MRCC_RES1_0'})
-
-DERIVATIVE({
-        LABEL_IN:'FORM_MRCC_LAG_A2',
-        LABEL_RES:'FORM_MRCC_RES2_0',
-        OP_RES:'O2g',
-        OP_DERIV:'LAM2g'})
-
-REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2_0',LABEL_RES:'FORM_MRCC_RES2_0'})
-
-# Replace in singles residual as much as possible by singles part of doubles residual
-# in cases where T1 and T2 are treated on the same footing, this replaces everything
-FACTOR_OUT({LABEL_IN:'FORM_MRCC_LAG_A1',LABEL_RES:'FORM_MRCC_LAG_A1',INTERM:'FORM_MRCC_RES2_0'})
-
-#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
-#PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
-#PRINT_FORMULA({LABEL:'FORM_MRCC_RES2_0',MODE:'SHORT'})
 
 
 K4E = True
@@ -666,6 +654,11 @@ DERIVATIVE({
 
 REORDER_FORMULA({LABEL_IN:'FORM_MRCC_RES2',LABEL_RES:'FORM_MRCC_RES2'})
 
+# factor now GAM0 in E but keep copy for reference relaxation
+FACTOR_OUT({
+        LABEL_IN:'FORM_MRCC_LAG_E',
+        LABEL_RES:'FORM_MRCC_LAG_ENGY',
+        INTERM:'FORM_GAM0'})
 
 if (remove_gamma0):
     if (K4E):
@@ -704,8 +697,8 @@ if (remove_gamma0):
         OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
     ASSUME_CONST({
-        LABEL_IN:'FORM_MRCC_LAG_E',
-        LABEL_RES:'FORM_MRCC_LAG_E',
+        LABEL_IN:'FORM_MRCC_LAG_ENGY',
+        LABEL_RES:'FORM_MRCC_LAG_ENGY',
         OP_LIST:['GAM0'],VAL_LIST:[1.0]})
 
 _opt_label_list = []
@@ -738,7 +731,7 @@ if (I3ext):
 
 _opt_label_list.append('FORM_MRCC_RES2')
 _opt_label_list.append('FORM_MRCC_RES1')
-_opt_label_list.append('FORM_MRCC_LAG_E')
+_opt_label_list.append('FORM_MRCC_LAG_ENGY')
 _itf_code_list.append('MRCC_LAG')
 _itf_code_list.append('O1')
 _itf_code_list.append('O2g')
@@ -749,7 +742,7 @@ OPTIMIZE({
         LABELS_IN:_opt_label_list})
 
 if verbosity >= 50:
-    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_ENGY',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_RES1',MODE:'SHORT'}) # only dummy
     PRINT_FORMULA({LABEL:'FORM_MRCC_RES2',MODE:'SHORT'})
 
@@ -784,4 +777,5 @@ if itfgen:
         CODE:_itf_code_list})
 
 #-----
+# this must be the equation that still contains C0
 ref_relaxation.make_form_for_optref_minus3('FORM_MRCC_LAG_E', 'DEF_FORM_MRCC_LAG')

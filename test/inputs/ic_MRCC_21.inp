@@ -1,0 +1,11 @@
+ general
+  print=5
+ method
+  MR_P
+  MRCC_new
+  MRCC maxcom_en=2,maxcom_res=1
+ calculate
+  solve maxiter=80,conv=1d-10,maxsub=6
+  solve non_linear optref=0
+  skip_E
+  routes maxbranch=0,sv_thresh=1d-6,spinadapt=3,auto_opt=F,use_tr=T
