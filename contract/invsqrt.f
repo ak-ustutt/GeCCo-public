@@ -168,7 +168,7 @@ c dbgend
 
       iprint=max(iprlvl,ntest)
 
-      if (iprint.ge.100) write(lulog,*) 'entered invsqrt'
+      if (iprint.ge.100) write(lulog,*) '==== entered invsqrt ===='
 
 c dbg
 c      ipass = 0
@@ -206,6 +206,12 @@ c dbgend
       if(ffinv%buffered) bufout = .true.
       bufu = .false.
       if (get_u.and.ffu%buffered) bufu = .true.
+      if (ntest.ge.100) then
+        write(lulog,*) 'in:  ',trim(mel_inp%label),' ',bufin
+        write(lulog,*) 'out: ',trim(mel_inv%label),' ',bufout
+        if (get_u)
+     &    write(lulog,*) 'U:   ',trim(mel_u%label),' ',bufu
+      end if
 
       ifree = mem_setmark('invsqrt')
 
@@ -228,7 +234,7 @@ c dbgend
      &       (curr_rec-1)*len_rec+nbuff)
       else
         if(iprint.ge.100)
-     &       write(lulog,*)'Invert: input not incore'
+     &       write(lulog,*)'Invert: input incore'
         buffer_in => ffinp%buffer(1:)
       endif
 
@@ -241,7 +247,7 @@ c dbgend
         buffer_out(1:nbuff) = 0d0
       else
         if(iprint.ge.100)
-     &       write(lulog,*)'Invert: output not incore'
+     &       write(lulog,*)'Invert: output incore'
         buffer_out => ffinv%buffer(1:)
       endif
 
@@ -254,7 +260,7 @@ c dbgend
         buffer_u(1:nbuff) = 0d0
       else if (get_u) then
         if(iprint.ge.100)
-     &       write(lulog,*)'Invert: output (2) not incore'
+     &       write(lulog,*)'Invert: output (2) incore'
         buffer_u => ffu%buffer(1:)
       endif
 
@@ -278,9 +284,11 @@ c dbgend
      &     'Input list will be overwritten by projector.'
 
       ! Loop over occupation class.
+      if (ntest.ge.100) write(lulog,*) 'entering iocc_loop:'
       iocc_loop: do iocc_cls = 1, nocc_cls !loops over occupations of input operator
         iblkoff = (iocc_cls-1)*njoined
         if (ntest.ge.100) then
+           write(lulog,'(1x,72("="))')
            write(lulog,*) 'iocc_cls = ',iocc_cls
            write(lulog,*) 'formal:   ',op_inp%formal_blk(iocc_cls)
            write(lulog,*) 'blk_used: ',blk_used(iocc_cls)
@@ -305,7 +313,7 @@ c dbgend
           icnt_cur = icnt_sv - icnt_sv0
           ioff = mel_inp%off_op_gmo(iocc_cls)%gam_ms(1,1)
           buffer_out(ioff+1) = buffer_in(ioff+1)
-          if (lmodspc) then
+          if (lmodspc) then ! only special mode
             call mat_svd_traf(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
@@ -479,7 +487,7 @@ c     &                         gam_ms(igama,idxmsa))))
      &            ndim,ndim,ioff,transp)
 
 
-              if (msc.eq.0.and..not.lmodspc) then
+             if (msc.eq.0.and..not.lmodspc) then
                 ! here a splitting into "singlet" and "triplet" blocks is needed:
 
 c dbg
@@ -543,7 +551,7 @@ c dbgend
                   deallocate(sing3,trip3)
                 end if
                 deallocate(sing,trip)
-              else
+             else ! msc.eq.0 .and. .not.lmodspc
 
                if (lmodspc) then
                   call mat_svd_traf(ndim,scratch,scratch2,
@@ -556,13 +564,13 @@ c dbgend
      &                             icnt_sv,icnt_sv0,xmax,xmin,
      &                             bins(1,iexc_cls))
                end if
-              end if
+             end if ! msc.eq.0 .and. .not.lmodspc
 
               ! Tikhonov regularization?
               if (reg_tik.and..not.lmodspc)
      &           call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
-              ! write to output buffer
+              ! write to output buffer (contains transformation matrix X)
               call copy_buffer_2_h(scratch, buffer_out,
      &             ndim,ndim,ioff,transp)
 
@@ -570,7 +578,12 @@ c dbgend
 
               if (.not.half.or.lmodspc) then
 ! write projector to input buffer
-                 call copy_buffer_2_h(scratch2, buffer_in,
+c dbg
+                if (ntest.ge.150) write(lulog,*) 
+     &                'wrote prj to buffer_in'
+c dbg
+                 ! write to ouptut buffer (contains projector)
+                 call copy_buffer_2_h(scratch2, buffer_in, 
      &                ndim,ndim,ioff,transp)
                  deallocate(scratch2)
               end if
@@ -600,8 +613,9 @@ c dbgend
           ifree = mem_flushmark('invsqrt_blk')
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &         blk_redundant(iocc_cls) = .false.
-          cycle iocc_loop
-       end if !onedis
+
+          cycle iocc_loop ! skip rest of the loop
+       end if !onedis, i.e. the simple cases
 
 
         ! Here comes the complicated part for densities with 3 vertices
@@ -1008,7 +1022,7 @@ c dbgend
            off_line2 = off_linmax
           end do
 c dbg
-          if (iprint.ge.100) then
+          if (ntest.ge.100) then
               write(lulog,*) 'initial overlap matrix: jocc_cls = ',
      &                        jocc_cls
               call wrtmat3(scratch,ndim,ndim,ndim,ndim)
@@ -1021,6 +1035,7 @@ c          do iline = 1, ndim
 c            write(*,'(i4,x,18i4)') iline, matrix(iline,1:ndim)
 c          end do
 c dbgend
+          if (ntest.ge.150) write(lulog,*) 'entering irank loop'
 
           ! loop over blocks that should be orthogonalized separately
           do irank = 1, nrank
@@ -1179,6 +1194,10 @@ c ==========================================
              ! Gram-Schmidt step: substract lower-rank components from
              ! the diagonal block and the blocks above
 
+             ! the way through all this is a bit involved; follow the marks
+             ! (1) (2) (3) (4)
+             ! (1) is at the end (look for "fourth mm")
+
              if (ntest.ge.100) write(lulog,*) 'GS projection follows'
 
              do jrank = irank, nrank ! target block: row j, column i
@@ -1196,10 +1215,30 @@ c               write(lulog,'(" (",i4,",",i4,")x(",i4,",",i4,")'//
 c     &                    ' -> (",i4,",",i4,")")') 
 c     &                    idxst3,idxst2,idxst3,idxst,idxst2,idxst 
 c dbg
+               ! (2)
+               ! we reach this point for irank=2
+               ! scatch() contains up to this point: illustrated for doubles:
+               !/   S2     S21 \
+               !\ X1+.S12   X1 /
+               !
+               if (ntest.ge.150) write(lulog,'(" first mm for",2i4)') 
+     &                       jrank, krank
+               if (ntest.ge.150) then 
+                  write(lulog,'(" offsets and dimensions: ")') 
+                  write(lulog,'(" matrix 1: ",4i6)') 
+     &                     idxst3,idxst2,rdim3,rdim2 
+                  write(lulog,'(" matrix 2: ",4i6)') 
+     &                     idxst3,idxst,rdim3,rdim 
+                  write(lulog,'(" matrix 3: ",4i6)') 
+     &                     idxst2,idxst,rdim2,rdim 
+               end if
                call dgemm('t','n',rdim2,rdim,rdim3,
-     &                  -1d0,scratch(idxst3,idxst2),ndim,
-     &                  scratch(idxst3,idxst),ndim,
-     &                  1d0,scratch(idxst2,idxst),ndim)
+     &                  -1d0,scratch(idxst3,idxst2),ndim,  ! (X1+.S12)+ = S21.X1
+     &                  scratch(idxst3,idxst),ndim,        ! X1.S12
+     &                  1d0,scratch(idxst2,idxst),ndim)    ! -> subtract from S2
+               ! state afterwards (S2' is projected S2):
+               !/   S2'    S21 \
+               !\ X1+.S12   X1 /
               end do
              end do
              ! compute the blocks below (intermediately stored on the right)
@@ -1220,10 +1259,25 @@ c               write(lulog,'(" (",i4,",",i4,")x(",i4,",",i4,")'//
 c     &                    ' -> (",i4,",",i4,")")') 
 c     &                    idxst3,idxst,idxst2,idxst3,idxst,idxst2 
 c dbg
+               if (ntest.ge.150) write(lulog,'(" second mm for",2i4)') 
+     &                       jrank, krank
+               if (ntest.ge.150) then 
+                  write(lulog,'(" offsets and dimensions: ")') 
+                  write(lulog,'(" matrix 1: ",4i6)') 
+     &                     idxst3,idxst,rdim3,rdim 
+                  write(lulog,'(" matrix 2: ",4i6)') 
+     &                     idxst2,idxst3,rdim3,rdim2 
+                  write(lulog,'(" matrix 3: ",4i6)') 
+     &                     idxst,idxst2,rdim,rdim2 
+               end if
+               ! (3)
                call dgemm('t','t',rdim,rdim2,rdim3,
-     &                  -1d0,scratch(idxst3,idxst),ndim,
-     &                  scratch(idxst2,idxst3),ndim,
-     &                  1d0,scratch(idxst,idxst2),ndim)
+     &                  -1d0,scratch(idxst3,idxst),ndim, ! (X1+.S12)+ = S21.X1
+     &                  scratch(idxst2,idxst3),ndim,     ! X1^+
+     &                  1d0,scratch(idxst,idxst2),ndim)  ! --> -S21.X1.X1+
+               ! state afterwards (before now sending S2' to invsqrt_mat)
+               !/   S2'   -S21.X1.X1+ \
+               !\ X1+.S12     X1      /
               end do
              end do
 
@@ -1418,7 +1472,7 @@ c dbg
      &           scratch_tmp1)
           else if (.not.half) then
 c dbg
-            if (ntest.ge.100) write(lulog,*) 'half case'
+            if (ntest.ge.100) write(lulog,*) '.not.half case'
 c dbg
             call extract_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
@@ -1428,16 +1482,16 @@ c dbg
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp2)
-            call invsqrt_mat(rdim,scratch_tmp1,
-     &                       scratch_tmp2,
+            call invsqrt_mat(rdim,scratch_tmp1,! out: X
+     &                       scratch_tmp2,     ! out: Projector X X-1
      &                       half,xdummy,get_u, !scratch3: dummy
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iexc_cls))
-            call insert_submatrix_h(scratch2,
+            call insert_submatrix_h(scratch2, ! contains now Proj.
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp2)
-            call insert_submatrix_h(scratch,
+            call insert_submatrix_h(scratch,  ! contains now X
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
@@ -1530,47 +1584,94 @@ c dbg
              idxnd2 = rankoff(jrank) + rdim2
 ! Evil Hacking ahead:
 ! see above
+             ! for the doubles, this is our last stop
+             ! state so far is:
+             !/   X2    -S21.X1.X1+ \
+             !\ X1+.S12     X1      /
+             if (ntest.ge.150) write(lulog,'(" third mm for",2i4)') 
+     &                       irank, jrank
+             if (ntest.ge.150) then 
+                write(lulog,'(" offsets and dimensions: ")') 
+                write(lulog,'(" matrix 1: ",4i6)') 
+     &                     idxst,idxst2,rdim,rdim2 
+                write(lulog,'(" matrix 2: ",4i6)') 
+     &                     idxst,idxst,rdim,rdim 
+                write(lulog,'(" matrix 3: ",4i6)') 
+     &                     idxst2,idxst,rdim2,rdim 
+             end if
              call dgemm('t','n',rdim2,rdim,rdim,
-     &            1d0,scratch(idxst,idxst2),ndim,
-     &            scratch(idxst,idxst),ndim,
-     &            0d0,scratch(idxst2,idxst),ndim)
+     &            1d0,scratch(idxst,idxst2),ndim, ! -(S21.X1.X1+)+ = -X1.X1+.S12
+     &            scratch(idxst,idxst),ndim,      ! X2
+     &            0d0,scratch(idxst2,idxst),ndim) ! --> -X1.X1+.S12.X2
              if(project.eq.4)then
-             !P12 =  X1^+ S12
-             call dgemm('t','n',rdim2,rdim,rdim,
-     &            1d0,scratch(idxst,idxst2),ndim,
-     &            scratch2(idxst,idxst),ndim,
-     &            0d0,scratch2(idxst2,idxst),ndim)
+               call dgemm('t','n',rdim2,rdim,rdim,
+     &            1d0,scratch(idxst,idxst2),ndim,  ! -(S21.X1.X1+)+ = -X1.X1+.S12 
+     &            scratch2(idxst,idxst),ndim,      ! P2
+     &            0d0,scratch2(idxst2,idxst),ndim) ! --> -X1.X1+.S12.X2
              end if
              scratch(idxst:idxnd,idxst2:idxnd2) = 0d0
+             ! so we have finally:
+             !/   X2              0 \
+             !\ -X1.X1+.S12.X2   X1 /
+             ! and for the projector (with term in [] for project==4)
+             !/    P2             0 \
+             !\ [-X1.X1+.S12.P2] P1 /
             end do
             do jrank = irank+1, nrank ! target: (i,j) input: (i,i) and (j,i)
              rdim2 = rankdim(jrank)
              idxst2 = rankoff(jrank) + 1
              idxnd2 = rankoff(jrank) + rdim2
+
+             ! (1) actually the first place that the program will reach
+             ! for the doubles case, this will be reached for irank=1, jrank=2
+             if (ntest.ge.150) write(lulog,'(" fourth mm for",i4)') 
+     &                       irank, jrank
+             if (ntest.ge.150) then 
+                write(lulog,'(" offsets and dimensions: ")') 
+                write(lulog,'(" matrix 1: ",4i6)') 
+     &                     idxst,idxst,rdim,rdim 
+                write(lulog,'(" matrix 2: ",4i6)') 
+     &                     idxst2,idxst,rdim,rdim2 
+                write(lulog,'(" matrix 3: ",4i6)') 
+     &                     idxst,idxst2,rdim,rdim2 
+             end if
+
+             ! comments refer to doubles case, we get here in the first round (irank=1)
              call dgemm('t','t',rdim,rdim2,rdim,
-     &                  1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,
-     &                  scratch(idxst2:idxnd2,idxst:idxnd),rdim2,
-     &                  0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)
-            end do
+     &                  1d0,scratch(idxst:idxnd,idxst:idxnd),rdim,  ! X1
+     &                  scratch(idxst2:idxnd2,idxst:idxnd),rdim2,   ! S21
+     &                  0d0,scratch(idxst:idxnd,idxst2:idxnd2),rdim)! -> X1+.S12
+            ! state after this multiply is then
+            !/   S2     S21 \
+            !\ X1+.S12   X1 /
+            end do ! jrank
 
            end select
+ 
+           if (iprint.ge.100) then
+              write(lulog,*) 
+     &           'current state of overlap matrix, after irank = ',irank
+              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
+           end if
 
            if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
 c     &        blk_redundant(iocc_cls+min(na1mx,nc1mx)+irank-nrank)
 c     &        blk_redundant(iocc_cls+irank-1)
      &        blk_redundant(iocc_cls+nrank-irank)
      &        = .false.
-          end do
+          end do ! irank
 
           ! Tikhonov regularization?
           if (reg_tik.and..not.lmodspc)
      &       call regular_tikhonov(ndim,ndim,scratch,svs,omega2)
 
 c dbg
-c            if (iprint.ge.100) then
-c              write(lulog,*) 'final transformation matrix:'
-c              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
-c            end if
+          if (iprint.ge.100) then
+              write(lulog,*) 'final transformation matrix:'
+              call wrtmat3(scratch,ndim,ndim,ndim,ndim)
+              write(lulog,*) 'final projection matrix:'
+              call wrtmat3(scratch2,ndim,ndim,ndim,ndim)
+          end if
 c dbgend
 
           ! write to output buffer

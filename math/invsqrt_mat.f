@@ -8,6 +8,10 @@
 *                   which is a projector matrix for eliminating
 *                   linear redundancies
 *
+*     on input:  mat contains the matrix to be inverted
+*     on output: mat contains U*mat^(-0.5)
+*                mat2 contains U*1s*U^+ (projector)
+*
 *     matthias, dec 2009
 *----------------------------------------------------------------------*
       implicit none
@@ -76,6 +80,8 @@
         write(lulog,'(x,a)') '-------------------'
         write(lulog,'(x,a)') 'invsqrt_mat at work'
         write(lulog,'(x,a)') '-------------------'
+        write(lulog,'(x,a,l)') 'half  = ',half
+        write(lulog,'(x,a,l)') 'get_u = ',get_u
         write(lulog,*) 'input S matrix:'
         call wrtmat3(mat,ndim,ndim,ndim,ndim)
       end if

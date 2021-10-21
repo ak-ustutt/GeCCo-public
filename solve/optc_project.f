@@ -91,7 +91,7 @@
      &     write(lulog,*) "Projecting now "
       
       call get_argument_value('method.MR','project',ival=project)
-      
+
       if (opti_info%optref.eq.-2) then
         ! update metric, trafo matrices and projector if not up to date
         c_st = state_label(i_state,.false.)
@@ -113,7 +113,8 @@
          op_orth => me_special(7)%mel%op
          op_trf => me_special(2)%mel%op
          call list_copy(me_amp,me_special(7)%mel,.false.)
-         ! this is only approximately correct
+         ! set singles blocks to zero
+         ! the projector should fill them again with the correct values
          call set_blks(me_special(7)%mel,"P,H|P,V|V,H|V,V",0d0)
          call assign_me_list(me_special(7)%mel%label,
      &        op_orth%name,op_info)

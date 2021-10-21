@@ -160,10 +160,10 @@ else:
 DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
 CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
 
-# test only
-T1_shape = 'P,H|P,V|V,H'
-DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
-CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
+## test only
+#T1_shape = 'P,H|P,V|V,H'
+#DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
+#CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
 
 
 # Every term in the Lagrangian is enclosed by <C0^+ and C0>
@@ -718,6 +718,7 @@ if (HGamma):
     _itf_code_list.append('INTHE2')
 
 _opt_label_list.append('F_T1SUM')
+_opt_label_list.append('FORM_GAM0')
 _opt_label_list.append('F_INTkx')
 _itf_code_list.append('<Sum_T1>')
 _itf_code_list.append('T1s')
