@@ -1,0 +1,17 @@
+general
+  print=10
+orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(1,0,0,0)
+  shell type=frozen,def=(1,0,0,0)
+method
+ MR ms=0,mult=3,sym=4,pure_vv=F,project=4,prc_traf=F
+ MR_P method=CEPT2
+ MR_P hamiltonian=F_EFF
+ MRCC_new
+calculate
+ skip_E
+ solve maxiter=50,conv=1d-8,maxsub=10
+ solve non_linear optref=-3
+ routes maxbranch=4,sv_thresh=1d-6,auto_opt=F,spinadapt=0
+
