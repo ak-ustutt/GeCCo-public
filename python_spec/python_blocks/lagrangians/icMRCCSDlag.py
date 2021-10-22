@@ -9,51 +9,7 @@ Yuri august 2017: Creation based on MRCC2lag.py. Implementation up to maxcom=2
 from python_interface.gecco_modules.NoticeUtil import *
 import python_interface.gecco_modules.string_to_form as stf
 import python_blocks.lagrangians.ref_relaxation as ref_relaxation
-
-
-#===================================================================================#
-# helper routines
-#===================================================================================#
-def create_plist(n1,sym1,n2,sym2):
-    plist = []
-    # create an entry with all set to sym2
-    entry0 = []
-    for ii in range(n1+n2):
-        entry0.append(sym2)
-
-    #print('e0:', entry0)
-    make_plist_rec(entry0,sym1,0,0,n1,plist)
-    
-    return plist
-    
-def make_plist_rec(curentry,sym,curlevel,iimin,maxlevel,plist):
-    
-    #print('>> entered level ',curlevel,' of ',maxlevel)
-    
-    newentry = list(curentry)
-    
-    if (iimin>len(newentry)):
-        return
-
-    if (curlevel==maxlevel):
-        #print ('===========> writing ',newentry)
-        plist.append(newentry)
-        return
-    
-    for ii in range(iimin,len(newentry)):
-        
-        
-        if newentry[ii]!=sym:
-            vnewentry = list(newentry)
-            vnewentry[ii] = sym
-
-            #print('level: ',curlevel,' ii = ',ii,vnewentry)
-            
-            make_plist_rec(vnewentry,sym,curlevel+1,ii,maxlevel,plist)
-        #else:
-        #    print ('level: ',curlevel,'ii = ',ii)
-
-#===================================================================================#
+import python_blocks.lagrangians.mrcc_methods as mrcc_methods
 
 
 i_am="icMRCCSDlag.py"
@@ -72,6 +28,10 @@ depend('DEF_LAM')
 depend('DEF_O')
 #depend('DEF_O2g')
 #depend('DEF_O1')
+
+# hybrid approximation?
+approx = keywords.get('method.MR_P.hybrid')
+hybrid = approx if approx is not None else "none"
 
 word = keywords.get('method.MRCC.maxcom_en')
 nc_en = int(word) if word is not None else 4
@@ -100,6 +60,7 @@ cas22=False
 orbinfo = Orb_Info()
 nactel = orbinfo.get('nactel')
 nactorb = orbinfo.get('nactorb')
+nocc_el = orbinfo.get('nactt_hpv',1)
 if (nactel==1 and nactorb==1):
     doublet=True
 elif (nactel==2 and nactorb==2):
@@ -107,14 +68,66 @@ elif (nactel==2 and nactorb==2):
 if (itfgen and not doublet and not cas22):
     quit_error('ITFgen called for case not considered yet!')
 
-print("Settings for MRCC generator:")
-print(("maxcom_en  = "+str(nc_en)))
-print(("maxcom_res = "+str(nc_rs)))
-print(("select     = "+str(select)))
+if (hybrid!="none"):
+    no_occ=False
+    if keywords.is_keyword_set('method.MR_P.no_occ'):
+        print("Use of no_occ is deprecated!")
+        string = (keywords.get('method.MR_P.no_occ'))
+        if string == 'T':
+            no_occ = True
+        elif string == 'F':
+            no_occ = False
+        else:
+            print("Didn't recognise no_occ argument; setting to False")
+            no_occ = False
+        print("Are there no occupied orbitals: ", no_occ)
+
+    if (no_occ and nocc_el>0):
+        print("WARNING: You set no_occ, but occupied orbitals are present!")
+
+    no_occ = no_occ or nocc_el==0
+
+    if keywords.is_keyword_set('method.MR_P.singles'): #remove single keyword or CEPA(0) and PT2 calculations will crash accordingly
+       singles = int((keywords.get('method.MR_P.singles')))
+       if singles == 0:
+            print("All singles operators are in the internal space")
+       else:
+            print("Singles operators are split between the internal and external spaces")
+    else:
+       if hybrid in ["CEPT2","CCEPA","TCPT2"]:
+           singles = 0
+       else:
+           singles = 8
+       print("All singles operators are in the internal space")
+
+    known_methods=["CEPT2","CCEPA","TCPT2","CEPA0","PT2"]
+    if hybrid not in known_methods :
+        raise Exception(i_am+": unknown method:"+str(hybrid))
+    print("Using the special "+str(hybrid)+" method.")
+
+# Select H0
+    ham = ''
+    hamiltonian = ''
+    if hybrid in ['CEPT2','PT2','TCPT2']:
+        known_hamiltonians=["DYALL","REPT","F_EFF"]
+        hamiltonian = keywords.get('method.MR_P.H0')
+        hamiltonian=str(hamiltonian).strip() if hamiltonian is not None else "DYALL"
+
+        if hamiltonian not in known_hamiltonians :
+            raise Exception(i_am+": unknown hamiltonian type:"+str(hamiltonian))
+
+
+else:
+    print("Settings for MRCC generator:")
+    print(("maxcom_en  = "+str(nc_en)))
+    print(("maxcom_res = "+str(nc_rs)))
+    print(("select     = "+str(select)))
+
 if (doublet):
     print("detected CAS(1,1) case")
 if (cas22):
     print("detected CAS(2,2) case")
+
 
 depend('GAM0_CALC')
 
@@ -134,182 +147,33 @@ DEF_SCALAR({
 DEF_SCALAR({
         LABEL:'MRCC_LAG_A2'})
 
-
 tasks=False
-
-
-#nc_en=4
-#nc_rs=2
-#select=True     # for nc_rs>2: select terms that contribute in SR case
-#select = False
-#linear = True
-#doublet = False
-#cas22 = True
-
 remove_gamma0 = True # remove the scalar part of GAM0 (which is just 1.0)
 
 # make sure that GAM0 is recognized as a Hermitian operator (for transpose):
 SET_HERMITIAN({LABEL:'GAM0',CA_SYMMETRY:+1})
 
-if doublet or cas22:
-    T2_shape = 'VV,HH|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'  # skipped VVV amps here
+# set requested method
+if (hybrid=="none"):
+    maxexc=2
+    mrcc_methods.set_mrcc(maxexc,nc_en,nc_rs,select,(doublet or cas22))
 else:
-    T2_shape = 'V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
+    mrcc_methods.set_hybrids(hybrid,hamiltonian,singles,no_occ,(doublet or cas22))
 
-# will later be replaced by "T2g" operators
-DEF_OP_FROM_OCC({LABEL:'T2',DESCR:T2_shape})
-CLONE_OPERATOR({LABEL:'L2',TEMPLATE:'T2',ADJOINT:True})
+if verbosity >= 100:
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+    
 
-## test only
-#T1_shape = 'P,H|P,V|V,H'
-#DEF_OP_FROM_OCC({LABEL:'T1n',DESCR:T1_shape})
-#CLONE_OPERATOR({LABEL:'L1n',TEMPLATE:'T1n',ADJOINT:True})
-
-
-# Every term in the Lagrangian is enclosed by <C0^+ and C0>
-def _refexp(x):
-    return "<C0^+*(" + x + ")*C0>"
-
-# The terms with the Lambda are always enclosed by <C0^+|LAM1 and C0> or <C0^+|LAM2g and C0>
-def _L1_refexp(x):
-    return _refexp("LAM1(" + x + ")")
-
-def _L2_refexp(x):
-    return _refexp("L2(" + x + ")")
-
-LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
-LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
-LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2_refexp("H"))
-
-LAG_E.append(_refexp("[H,T1]"))
-LAG_E.append(_refexp("[H,T2]"))
-if nc_en > 1:
-   LAG_E.append(_refexp("1/2*[[H,T1+T2],T1+T2]"))
-if nc_en > 2:
-   LAG_E.append(_refexp("1/6*[[[H,T1+T2],T1+T2],T1+T2]"))
-if nc_en > 3:
-   LAG_E.append(_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
-
-LAG_A1.append(_L1_refexp("[H,T1]"))
-LAG_A1.append(_L1_refexp("[H,T2]"))
-if nc_rs > 1:
-    LAG_A1.append(_L1_refexp("1/2*[[H,T1+T2],T1+T2]"))    
-if nc_rs > 2:
-    if select:
-        LAG_A1.append(_L1_refexp("1/6*[[[H,T1],T1],T1]"))
-    else:
-        LAG_A1.append(_L1_refexp("1/6*[[[H,T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 3:
-#    if not select:
-#        for nsingles in range(5):
-#            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-#            for entryT in listT:
-#                print "Generating: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]#+"]")
-#                LAG_A1.append(_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))###
-#
-##        LAG_A1.append(_L1_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 4:
-#    if not select:
-#        for nsingles in range(6):
-#            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
-#            for entryT in listT:
-#                print "Generating: "+_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[#3]+"],"+entryT[4]+"]")
-#                LAG_A1.append(_L1_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"#+entryT[4]+"]"))
-##        LAG_A1.append(_L1_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 5:
-#    if not select:
-#        LAG_A1.append(_L1_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-## I think that singles can accomodate at most 6-fold
-##if nc_rs > 6:
-##    if not select:
-##        LAG_A1.append(_L1_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-##if nc_rs > 7:
-##    if not select:
-##        LAG_A1.append(_L1_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-
-LAG_A2.append(_L2_refexp("[H,T1]"))
-LAG_A2.append(_L2_refexp("[H,T2]"))
-if nc_rs > 1:
-    LAG_A2.append(_L2_refexp("1/2*[[H,T1+T2],T1+T2]"))    
-if nc_rs > 2:
-    if select:
-        LAG_A2.append(_L2_refexp("1/6*[[[H,T1],T1],T1]"))
-        LAG_A2.append(_L2_refexp("1/6*[[[H,T2],T1],T1]"))
-        LAG_A2.append(_L2_refexp("1/6*[[[H,T1],T2],T1]"))
-        LAG_A2.append(_L2_refexp("1/6*[[[H,T1],T1],T2]"))
-    else:
-        LAG_A2.append(_L2_refexp("1/6*[[[H,T1+T2],T1+T2],T1+T2]"))
-if nc_rs > 3:
-    if select:
-        LAG_A2.append(_L2_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
-#    else:
-#        for nsingles in range(5):
-#            listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-#            for entryT in listT:
-#                print "Generating: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]")
-#                LAG_A2.append(_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-
-        #LAG_A2.append(_L2_refexp("1/24*[[[[H,T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 4:
-#    if not select:
-#        for nsingles in range(6):
-#            listT = create_plist(nsingles,'T1',5-nsingles,'T2')
-#            for entryT in listT:
-#                print "Generating: "+_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]")
-#                LAG_A2.append(_L2_refexp("1/120*[[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"],"+entryT[4]+"]"))
-
-#       # LAG_A2.append(_L2_refexp("1/120*[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 5:
-#    if not select:
-#        LAG_A2.append(_L2_refexp("1/720*[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 6:
-#    if not select:
-#        LAG_A2.append(_L2_refexp("1/5040*[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-#if nc_rs > 7:
-#    if not select:
-#        LAG_A2.append(_L2_refexp("1/40320*[[[[[[[[H,T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2],T1+T2]"))
-
-PRINT({STRING:"Now expanding energy"})
-LAG_E.set_rule()
-PRINT({STRING:"Now expanding singles projection"})
-LAG_A1.set_rule()
-if nc_rs > 3 and not select:
-    ngroups = 0
-    for nsingles in range(5):
-        listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-        for entryT in listT:
-            ngroups = ngroups+1
-            print("Generating input for: "+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-            LAG_A1_C4 = stf.Formula("LAG_A1_C4_"+str(ngroups)+":MRCC_LAG_A1="+_L1_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-            LAG_A1_C4.set_rule()
-    groups = ["FORM_MRCC_LAG_A1"]
-    for igrp in range(1,ngroups+1):
-        groups.append("LAG_A1_C4_"+str(igrp))
-    CONCAT({LABEL_RES:"FORM_MRCC_LAG_A1",LABEL_IN:groups})
-    SUM_TERMS({LABEL_RES:"FORM_MRCC_LAG_A1",LABEL_IN:"FORM_MRCC_LAG_A1"})
-            
-PRINT({STRING:"Now expanding doubles projection"})
-LAG_A2.set_rule()
-if nc_rs > 3 and not select:
-    ngroups = 0
-    for nsingles in range(5):
-        listT = create_plist(nsingles,'T1',4-nsingles,'T2')
-        for entryT in listT:
-            ngroups = ngroups+1
-            print("Generating input for: "+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-            LAG_A2_C4 = stf.Formula("LAG_A2_C4_"+str(ngroups)+":MRCC_LAG_A2="+_L2_refexp("1/24*[[[[H,"+entryT[0]+"],"+entryT[1]+"],"+entryT[2]+"],"+entryT[3]+"]"))
-            LAG_A2_C4.set_rule()
-    groups = ["FORM_MRCC_LAG_A2"]
-    for igrp in range(1,ngroups+1):
-        groups.append("LAG_A2_C4_"+str(igrp))
-    CONCAT({LABEL_RES:"FORM_MRCC_LAG_A2",LABEL_IN:groups})
-    SUM_TERMS({LABEL_RES:"FORM_MRCC_LAG_A2",LABEL_IN:"FORM_MRCC_LAG_A2"})
-
-
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_E',LABEL_IN:'FORM_MRCC_LAG_E',OP_LIST:['T2','T2g']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A1',LABEL_IN:'FORM_MRCC_LAG_A1',OP_LIST:['T2','T2g']})
-REPLACE({LABEL_RES:'FORM_MRCC_LAG_A2',LABEL_IN:'FORM_MRCC_LAG_A2',OP_LIST:['T2','T2g','L2','LAM2g']})
-
+if hybrid in ['CEPT2','CCEPA','CEPA0']:
+       # Construct energy operator for use in lagrangian
+   DEF_ME_LIST({LIST:'ME_CEPA',
+                OPERATOR:'ECEPA',
+                IRREP:1,
+                '2MS':0,
+                AB_SYM:+1})
+    
 
 # --- factor out densities ---
 # do this later, as we need it for reference relaxation form
@@ -717,6 +581,9 @@ if (HGamma):
     _itf_code_list.append('INTHE1')
     _itf_code_list.append('INTHE2')
 
+if hybrid in ['CEPT2','CCEPA','CEPA0']:
+    _opt_label_list.append('FORM_ECEPA')
+    
 _opt_label_list.append('F_T1SUM')
 _opt_label_list.append('FORM_GAM0')
 _opt_label_list.append('F_INTkx')
