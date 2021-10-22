@@ -60,6 +60,8 @@ c      include 'def_contraction_list.h'
         call print_form_list_short(luprint,flist,op_info)
       else if (mode.eq.'export'.or.mode.eq.'EXPORT') then
         call export_form_list(luprint,flist,op_info)
+      else if (mode.eq.'count'.or.mode.eq.'COUNT') then
+        call print_form_count(luprint,f_input%label,flist,op_info)
       else
         call warn('PRINT_FORMULA','unknown mode: '//trim(mode))
       end if

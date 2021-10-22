@@ -164,7 +164,10 @@ if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
-    
+
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'COUNT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'COUNT'})
+PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'COUNT'})
 
 if hybrid in ['CEPT2','CCEPA','CEPA0']:
        # Construct energy operator for use in lagrangian
@@ -616,6 +619,8 @@ if verbosity >= 50:
 
 if verbosity >= 1000:
     PRINT_FORMULA({LABEL:'FOPT_MRCC_LAG',OUTPUT:'FOPT.out'})
+
+PRINT_FORMULA({LABEL:'FOPT_MRCC_LAG',MODE:'COUNT'})
 
 if itfgen:
     if not tasks:
