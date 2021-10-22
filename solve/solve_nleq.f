@@ -524,6 +524,7 @@ c     &       ff_trv,ff_h_trv,
          exit opt_loop
         end if
 
+        ci_iter = 0  ! reset value (only for print out)
         ! quick and dirty (for experimental use):
         ! do C0 optimization if requested
         if (opti_info%optref.eq.-3.and.
