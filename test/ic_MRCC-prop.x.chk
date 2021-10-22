@@ -5,13 +5,6 @@ molecule
 input
   ic_MRCC-prop.inp
 check
-  label No of terms first order
-  find F_L_1
-  find read
-  compare int 2
-  find read
-  compare int 2
-check
   label first order property
   find First order prop
   compare real 4 1e-5

@@ -44,7 +44,7 @@ c dbg
       form_ptr => form_head
       ! we need init_formula here??? -->yes!
       if (init) call init_formula(form_ptr)
-      nterms = 0
+      nterms = 1 ! there is at least the [END] entry (and we exit befor incr. nterms)
       do while(rd_formula(ffform,form_ptr))
         if (form_ptr%command.eq.command_end_of_formula) exit
         nterms = nterms+1

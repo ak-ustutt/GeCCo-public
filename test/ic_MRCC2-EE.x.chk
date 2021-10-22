@@ -5,49 +5,6 @@ molecule
 input
   ic_MRCC2-EE.inp
 check
-  label Number of terms of Lagrangian
-  find DEF_FORM_PT_LAG2
-  find OPTIMIZE
-  find Reading in:
-  find FORM_PT_LAG_Amp2
-  find read
-  compare int 2
-  find FORM_PT_LAG_Amp1
-  find read
-  compare int 2
-  find FORM_PT_LAG
-  find read
-  compare int 2
-check
-  label No of terms
-  find RSPNS_OPT_2_2
-  find OPTIMIZE
-  find Reading in:
-  find FORM_AR1_RSPNS_q
-  find read
-  compare int 2
-  find FORM_AR2g_RSPNS_q
-  find read
-  compare int 2
-  find FORM_AR_RSPNS_mu
-  find read
-  compare int 2
-  find FORM_S1
-  find read
-  compare int 2
-  find FORM_S2g
-  find read
-  compare int 2
-  find FORM_SR_RSPNS_mu
-  find read
-  compare int 2
-  find FORM_R1_q
-  find read
-  compare int 2
-  find FORM_R2g_q
-  find read
-  compare int 2
-check
   label excitation energy 
   find CONVERGED
   find E>>    1

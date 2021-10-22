@@ -5,18 +5,6 @@ molecule
 input
   ic_MRCC-EE.inp
 check
-  label Number of terms of Lagrangian
-  find F_MRCC_LAG
-  find wrote
-  compare int 2
-check
-  label No of terms
-  find F_AR_rspns_q
-  find read
-  compare int 2
-  find read
-  compare int 2
-check
   label excitation energy 
   find CONVERGED
   find E>>    1

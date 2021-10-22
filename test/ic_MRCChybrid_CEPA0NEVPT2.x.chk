@@ -13,19 +13,6 @@ check
   compare real 3 1e-10
 check
   rewind
-  label Number of terms of Lagrangian
-  find FORM_MRCC_LAG
-  find FORM_MRCC_LAG
-  find read
-  compare int 2
-  find FORM_MRCC_LAG
-  find read
-  compare int 2
-  find FORM_MRCC_LAG
-  find read
-  compare int 2
-check
-  rewind
   label Number of singular values
   find INVERT
   find singular values were
