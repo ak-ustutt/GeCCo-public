@@ -234,7 +234,7 @@ def set_mrcc(maxexc,nc_en,nc_rs,select,noVVV):
 
 
 ###############################################################################################################################
-def set_hybrids(method,hamiltonian,singles,no_occ,noVVV):
+def set_hybrids(method,separation,hamiltonian,singles,no_occ,noVVV):
 ###############################################################################################################################
 
     if hamiltonian != "":
@@ -325,15 +325,26 @@ def set_hybrids(method,hamiltonian,singles,no_occ,noVVV):
     #--------------
     
     #Define the Te and Ti operators and the corresponding LAMe and LAMi
-    if (noVVV):
-        te_shape='PP,HV|PP,VV|PP,HH'
-        ti_shape='PV,HV|VV,HH|PV,HH|P,H'
-        t2_shape=te_shape+'|'+ti_shape
+    if separation == "SY":
+        if (noVVV):
+            te_shape='PP,HV|PP,VV|PP,HH'
+            ti_shape='PV,HV|VV,HH|PV,HH|P,H'
+            t2_shape=te_shape+'|'+ti_shape
+        else:
+            te_shape='PP,HV|PP,VV|PP,HH'
+            ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+            t2_shape=te_shape+'|'+ti_shape
+    elif separation == "SY-INV":
+        if (noVVV):
+            ti_shape='PP,HV|PP,VV|PP,HH'
+            te_shape='PV,HV|VV,HH|PV,HH|P,H'
+            t2_shape=te_shape+'|'+ti_shape
+        else:
+            ti_shape='PP,HV|PP,VV|PP,HH'
+            te_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
+            t2_shape=te_shape+'|'+ti_shape
     else:
-        te_shape='PP,HV|PP,VV|PP,HH'
-        ti_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H'
-        t2_shape=te_shape+'|'+ti_shape
-
+        raise Exception("set_hybrid: unknown separation: "+str(separation))
         
     #Ti_shape='PP,HV|PP,VV|PP,HH' #needed for INVERSE
     #te_shape='VV,VH|PV,VV|PV,HV|VV,HH|PV,HH|V,H|P,V|P,H' #needed for INVERSE
@@ -416,6 +427,8 @@ def set_hybrids(method,hamiltonian,singles,no_occ,noVVV):
 
     elif method=='Yuri':
 
+        # a term-by-term setup for tests only
+        
         #LAG_E.append(_refexp("[H,T1]"))
         #LAG_E.append(_refexp("[H,T2]"))
         #

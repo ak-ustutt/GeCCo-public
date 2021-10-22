@@ -234,6 +234,7 @@
            <argument length="1" name="singles" status="A" type="2" value="0"/>
            <argument length="1" name="no_occ" status="A" type="1" value="false"/>
            <argument length="8" name="hybrid" status="A" type="8" value="none"/>
+           <argument length="8" name="separation" status="A" type="8" value="SY"/>
            <argument length="8" name="H0" status="A" type="8" value="DYALL"/>
        </keyword>
        <keyword name="MRCI" >

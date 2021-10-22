@@ -87,6 +87,9 @@ if (hybrid!="none"):
 
     no_occ = no_occ or nocc_el==0
 
+    string = keywords.get('method.MR_P.separation')
+    separation = string if string is not None else "SY"  # standard: Saitow-Yanai separation
+
     if keywords.is_keyword_set('method.MR_P.singles'): #remove single keyword or CEPA(0) and PT2 calculations will crash accordingly
        singles = int((keywords.get('method.MR_P.singles')))
        if singles == 0:
@@ -105,6 +108,16 @@ if (hybrid!="none"):
         raise Exception(i_am+": unknown method:"+str(hybrid))
     print("Using the special "+str(hybrid)+" method.")
 
+    if hybrid in ["CEPT2","CCEPA","TCPT2"]:
+        if separation == "SY":
+            print("Saitow-Yanai separation")
+        if separation == "SY-INV":
+            print("inverted Saitow-Yanai separation")
+            singles = 7 # force this
+        # maybe:
+        #if separation == "WCSK":
+        #    print("Werner-Celani-Stoll-Knowles separation")
+    
 # Select H0
     ham = ''
     hamiltonian = ''
@@ -158,7 +171,7 @@ if (hybrid=="none"):
     maxexc=2
     mrcc_methods.set_mrcc(maxexc,nc_en,nc_rs,select,(doublet or cas22))
 else:
-    mrcc_methods.set_hybrids(hybrid,hamiltonian,singles,no_occ,(doublet or cas22))
+    mrcc_methods.set_hybrids(hybrid,separation,hamiltonian,singles,no_occ,(doublet or cas22))
 
 if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
