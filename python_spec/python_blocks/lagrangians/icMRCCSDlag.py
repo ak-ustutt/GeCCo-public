@@ -18,16 +18,10 @@ new_target('DEF_FORM_MRCC_LAG')
 heading('Defining the icMRCC Lagrangian')
 
 depend('DEF_T')
-#depend('DEF_T2g')
-#depend('DEF_T1')
 
 depend('DEF_LAM')
-#depend('DEF_LAM2g')
-#depend('DEF_LAM1')
 
 depend('DEF_O')
-#depend('DEF_O2g')
-#depend('DEF_O1')
 
 # hybrid approximation?
 approx = keywords.get('method.MR_P.hybrid')
@@ -37,6 +31,21 @@ word = keywords.get('method.MRCC.maxcom_en')
 nc_en = int(word) if word is not None else 4
 word = keywords.get('method.MRCC.maxcom_res')
 nc_rs = int(word) if word is not None else 2
+
+word = keywords.get('method.MR.maxexc')
+maxexc = int(word) if word is not None else 2
+
+# perturbative correction requested?
+word = keywords.get('method.MR.pertCorr')
+if word is None:
+    pertCorr =  False
+else:
+    if word == "F":
+        pertCorr = False
+    elif word == "T":
+        pertCorr = True
+    else:
+        quit_error('pertCorr must be T or F, found: '+word)
 
 word = keywords.get('general.print')
 verbosity = int(word) if word is not None else 0
@@ -168,8 +177,10 @@ SET_HERMITIAN({LABEL:'GAM0',CA_SYMMETRY:+1})
 
 # set requested method
 if (hybrid=="none"):
-    maxexc=2
-    mrcc_methods.set_mrcc(maxexc,nc_en,nc_rs,select,(doublet or cas22))
+    if maxexc == 2:
+        mrcc_methods.set_mrcc(nc_en,nc_rs,select,(doublet or cas22))
+    else:
+        mrcc_methods.set_mrcc_higher(maxexc,nc_en,nc_rs,select,(doublet or cas22))
 else:
     mrcc_methods.set_hybrids(hybrid,separation,hamiltonian,singles,no_occ,(doublet or cas22))
 
@@ -177,10 +188,22 @@ if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+    if (maxexc > 2):
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A3',MODE:'SHORT'})
+    if (maxexc > 3):
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'SHORT'})
 
+if (hybrid=="none" and maxexc==2 and pertCorr):
+    mrcc_methods.set_mrcc_pt()
+        
+    
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'COUNT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'COUNT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'COUNT'})
+if (maxexc > 2):
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A3',MODE:'COUNT'})
+if (maxexc > 3):
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'COUNT'})
 
 if hybrid in ['CEPT2','CCEPA','CEPA0']:
        # Construct energy operator for use in lagrangian

@@ -27,6 +27,7 @@ else:
   _X_TRM_shape='VV,VV;V,V|V,V;,|VV,VV;,|V,V;VV,VV|,;V,V|V,V;V,V|,;VV,VV|,;,'
   useT1=False
 
+  # TODO: extend for triples etc.
 
   
 _s2 = orbitals.get('imult')
@@ -90,7 +91,7 @@ DEF_OP_FROM_OCC({
         JOIN:3,
         DESCR:_GAM_S_shape})
 
-if spinadapt >= 2 : # and gno >= 0
+if spinadapt >= 2 : # and gno >=0 
     S2_val=0
 else:
     S2_val=-1  # the default

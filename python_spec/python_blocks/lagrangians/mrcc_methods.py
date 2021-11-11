@@ -62,6 +62,15 @@ def _L1_refexp(x):
 def _L2_refexp(x):
     return _refexp("L2(" + x + ")")
 
+def _L2g_refexp(x):
+    return _refexp("LAM2g(" + x + ")")
+
+def _L3g_refexp(x):
+    return _refexp("LAM3g(" + x + ")")
+
+def _L4g_refexp(x):
+    return _refexp("LAM4g(" + x + ")")
+
 def _Le_refexp(x):
     return _refexp("LAMe(" + x + ")")
 
@@ -83,7 +92,7 @@ def _Lr_refexp(x):
 
 
 ###############################################################################################################################
-def set_mrcc(maxexc,nc_en,nc_rs,select,noVVV):
+def set_mrcc(nc_en,nc_rs,select,noVVV):
 ###############################################################################################################################
 
     if noVVV:
@@ -232,6 +241,139 @@ def set_mrcc(maxexc,nc_en,nc_rs,select,noVVV):
 #end set_mrcc
 ###############################################################################################################################
 
+###############################################################################################################################
+def set_mrcc_pt():
+###############################################################################################################################
+#   set the (T) correction
+###############################################################################################################################
+    depend('EVAL_HAM_D')  ### CHECK: check carefully that the Dyall was set up using C0 before any relaxation (ideally from C00)
+
+    DEF_SCALAR({LABEL:'MRCC_EPT4'})
+    DEF_SCALAR({LABEL:'MRCC_EPT5'})
+    
+    DEF_SCALAR({LABEL:'MRCC_LPT'})
+
+    PT_E4 = stf.Formula('FORM_MRCC_PT_E4:MRCC_EPT4=<C0^+*T2g^+*([H,T3g])*C0>')
+    PT_E4.set_rule()
+    PT_E5 = stf.Formula('FORM_MRCC_PT_E5:MRCC_EPT5=<C0^+*T1^+*([H,T3g])*C0>')
+    PT_E5.set_rule()
+
+    PT_LAG = stf.Formula('FORM_MRCC_PT_LAG:MRCC_LPT=<C0^+*LAM3g*([HAM_D,T3g]+[H,T2g])*C0>')
+    PT_LAG.set_rule()
+
+    debug_FORM('FORM_MRCC_PT_E4',only_this=True)
+    debug_FORM('FORM_MRCC_PT_E5',only_this=True)
+    debug_FORM('FORM_MRCC_PT_LAG',only_this=True)
+
+
+
+###############################################################################################################################
+def set_mrcc_higher(maxexc,nc_en,nc_rs,select,noVVV):
+###############################################################################################################################
+
+    if not noVVV:
+        raise Exception("Sorry, higher order MRCC only for CAS(2,2)")
+        
+
+    LAG_E = stf.Formula("FORM_MRCC_LAG_E:MRCC_LAG=" + _refexp("H"))
+    LAG_A1 = stf.Formula("FORM_MRCC_LAG_A1:MRCC_LAG_A1=" + _L1_refexp("H"))
+    LAG_A2 = stf.Formula("FORM_MRCC_LAG_A2:MRCC_LAG_A2=" + _L2g_refexp("H"))
+    opT = 'T1+T2g'
+    if (maxexc > 2):
+        LAG_A3 = stf.Formula("FORM_MRCC_LAG_A3:MRCC_LAG_A3=" + _L3g_refexp("H"))
+        opT += '+T3g'
+    if (maxexc > 3):
+        LAG_A4 = stf.Formula("FORM_MRCC_LAG_A4:MRCC_LAG_A4=" + _L3g_refexp("H"))
+        opT += '+T4g'
+
+    LAG_E.append(_refexp("[H,T1+T2g]"))
+    if (maxexc>2):
+        LAG_E.append(_refexp("[H,T3g]"))  # PPV,HHV can contribute
+    if nc_en > 1:
+       LAG_E.append(_refexp("1/2*[[H,T1+T2g],T1+T2g]"))
+    if nc_en > 2:
+       LAG_E.append(_refexp("1/6*[[[H,T1+T2g],T1+T2g],T1+T2g]"))
+    if nc_en > 3:
+       LAG_E.append(_refexp("1/24*[[[[H,T1+T2g],T1+T2g],T1+T2g],T1+T2g]"))
+
+
+    LAG_A1.append(_L1_refexp("[H,"+opT+"]"))
+    LAG_A2.append(_L2g_refexp("[H,"+opT+"]"))
+    if (maxexc > 2):
+        LAG_A3.append(_L3g_refexp("[H,"+opT+"]"))
+    if (maxexc > 3):
+        LAG_A4.append(_L3g_refexp("[H,"+opT+"]"))
+
+    if nc_rs > 1:
+        LAG_A1.append(_L1_refexp("0.5*[[H,"+opT+"]+"+opT+"]"))
+        LAG_A2.append(_L2g_refexp("0.5*[[H,"+opT+"]+"+opT+"]"))
+        if (maxexc > 2):
+            LAG_A3.append(_L3g_refexp("0.5*[[H,"+opT+"]+"+opT+"]"))
+        if (maxexc > 3):
+            LAG_A4.append(_L4g_refexp("0.5*[[H,"+opT+"]+"+opT+"]"))
+
+    if (nc_rs > 2 and not select):
+        raise Exception("Higher-order CC with >2 commutators: Only for 'select' option!")
+
+    if nc_rs > 2:
+        LAG_A1.append(_L1_refexp("1/6*[[[H,T1],T1],T1]"))
+        LAG_A2.append(_L2g_refexp("1/6*[[[H,T1],T1],T1]"))
+        LAG_A2.append(_L2g_refexp("1/6*[[[H,T2g],T1],T1]"))
+        LAG_A2.append(_L2g_refexp("1/6*[[[H,T1],T2g],T1]"))
+        LAG_A2.append(_L2g_refexp("1/6*[[[H,T1],T1],T2g]"))   
+        if maxexc > 2:
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T1],T1],T1]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T2g+T3g],T1],T1]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T1],T2g+T3g],T1]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T1],T1],T2g+T3g]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T2g],T2g],T1]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T2g],T1],T2g]"))
+            LAG_A3.append(_L3g_refexp("1/6*[[[H,T1],T2g],T2g]"))
+        if maxexc > 3:
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T2g+T3g+T4g],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T2g+T3g+T4g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T1],T2g+T3g+T4g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T2g],T2g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T2g],T1],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T2g],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T2g],T3g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T2g],T3g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T3g],T1],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T2g],T1],T3g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T1],T3g],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/6*[[[H,T3g],T2g],T1]"))
+
+    if nc_rs > 3:
+        LAG_A2.append(_L2g_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
+        if maxexc > 2:
+            LAG_A3.append(_L3g_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
+            LAG_A3.append(_L3g_refexp("1/24*[[[[H,T2g],T1],T1],T1]"))
+            LAG_A3.append(_L3g_refexp("1/24*[[[[H,T1],T2g],T1],T1]"))
+            LAG_A3.append(_L3g_refexp("1/24*[[[[H,T1],T1],T2g],T1]"))
+            LAG_A3.append(_L3g_refexp("1/24*[[[[H,T1],T1],T1],T2g]"))
+        if maxexc > 3: 
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T2g],T1],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T2g],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T2g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T1],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T3g],T1],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T3g],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T3g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T1],T3g]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T2g],T2g],T1],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T2g],T1],T2g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T2g],T2g],T1]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T2g],T1],T1],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T2g],T1],T2g]"))
+            LAG_A4.append(_L4g_refexp("1/24*[[[[H,T1],T1],T2g],T2g]"))
+        
+###############################################################################################################################
+#end set_mrcc
+###############################################################################################################################
+
+    
 
 ###############################################################################################################################
 def set_hybrids(method,separation,hamiltonian,singles,no_occ,noVVV):

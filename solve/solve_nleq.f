@@ -337,13 +337,15 @@ cmh      end do
 
       if (idx_en_xret(0).le.0)
      &     call quit(1,i_am,
-     &     'formula does not provide an update for the energy')
+     &     'formula does not provide an update for the energy: '
+     &     //trim(label_en))
 
       do iopt = 1, nopt
         idx_res_xret(iopt) = idx_xret(label_res(iopt),op_info,depend)
         if (idx_res_xret(iopt).le.0)
      &       call quit(1,i_am,
-     &       'formula does not provide an update for all residuals')
+     &       'formula does not provide an update for residuals'
+     &       //trim(label_res(iopt)))   
       end do
 
       ! FIXME: no explicit referenc to list names
