@@ -86,10 +86,11 @@ elif (minexc==2 and maxexc==2):
   lamo0_frm='LAMo0=LAM1'
   lamo1_frm='LAMo1=LAM2g'
 elif (minexc==1 and maxexc==3):
-  # we impl. only the manifold req'd for CAS(2,2)
   t1_shape='V,H|P,V|P,H'
-  t2g_shape='VV,HH|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
-  t3g_shape='PVV,HHH|PP,HH|PPV,HHV|PPV,HHH|PPP,HVV|PPP,HHV|PPP,HHH'
+  t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
+  t3g_shape='PVV,HHH|PP,HH|PPV,HHV|PPV,HHH|PPP,HVV|PPP,HHV|PPP,HHH|PPP,VVV|VVV,HHH'
+  #t3g_shape+='|PPV,VVV|PVV,HVV|VVV,HHV'
+  #t3g_shape+='|PVV,VVV|VVV,HVV'
   useT1=True
 elif (minexc==1 and maxexc==4):
   # we impl. only the manifold req'd for CAS(2,2)

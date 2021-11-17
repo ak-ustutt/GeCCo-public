@@ -12,6 +12,17 @@ minexc = int(minexc) if minexc is not None else 1
 
 maxexc= keywords.get('method.MR.maxexc')
 maxexc = int(maxexc) if maxexc is not None else 1
+# perturbative correction requested?
+word = keywords.get('method.MR.pertCorr')
+if word is None:
+    pertCorr =  False
+else:
+    if word == "F":
+        pertCorr = False
+    elif word == "T":
+        pertCorr = True
+    else:
+        quit_error('pertCorr must be T or F, found: '+word)
 
 
 if (minexc==1):
@@ -28,6 +39,11 @@ else:
   useT1=False
 
   # TODO: extend for triples etc.
+if (maxexc>2 or pertCorr):
+    _Tv_shape+='|PPP,VVV|VVV,HHH'
+    _Ov_shape+='|,VVV;PPP,|,;VVV,HHH'
+    _GAM_S_shape+='|,;VVV,VVV;,|,VVV;,;VVV,'
+    _X_TRM_shape+='|VVV,VVV;,|,;VVV,VVV'
 
   
 _s2 = orbitals.get('imult')
