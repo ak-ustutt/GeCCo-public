@@ -52,8 +52,10 @@
 
       integer ::
      &     iunit
+      logical ::
+     &     lopen
       character ::
-     &     cstat*20
+     &     cstat*20, name*256
 
       write(lulog,'(2(/x,a))')
      &       'Status of unit numbers',
@@ -65,7 +67,12 @@
         if (ifrunit(iunit).eq.-2) cstat = 'OCCUPIED ON INIT    '
         if (ifrunit(iunit).eq.1)  cstat = 'RESERVED BY IGETUN  '
         if (ifrunit(iunit).eq.-1) cstat = 'OCCUPIED AFTER INIT '
-        write(lulog,'(x,i3,2x,a)') iunit, cstat
+        name = ''
+        if (ifrunit(iunit).eq.1) then
+          inquire(unit=iunit,name=name,opened=lopen)
+        end if
+        write(lulog,'(x,i3,2x,a,2x,l,2x,a)')
+     &        iunit, cstat, lopen, trim(name)
       end do
 
       end

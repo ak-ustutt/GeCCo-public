@@ -95,7 +95,7 @@
       real(8), allocatable, dimension(:) ::
      &     real_list
       integer, parameter ::
-     &     len_str = 256
+     &     len_str = 2048
       character(len_str) ::
      &     str
 
@@ -291,7 +291,7 @@
        ilett = ilett+1
        if(ilett.gt.len_str) then
         write(lulog,fmt='("get_targets_from_file: Warning: "'//
-     &       '"string is larget than len_str.")')
+     &       '"string is larger than len_str.")')
         exit
        end if
       end do

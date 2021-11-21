@@ -43,6 +43,19 @@ else:
 if (pertCorr):
   maxexc = maxexc+1
 
+if maxexc>2:
+    word = keywords.get('method.MR.triples')
+    if word is None:
+      triples=3
+    elif word == "B" or word == "3":
+      triples=3
+    elif word == "E" or word == "4":
+      triples=4
+    elif word == "F" or word == "5":
+      triples=5
+    else:
+      quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
+
 # set do defaults if unused
 to0_shape="unused"
 to1_shape="unused"
@@ -89,8 +102,10 @@ elif (minexc==1 and maxexc==3):
   t1_shape='V,H|P,V|P,H'
   t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
   t3g_shape='PVV,HHH|PP,HH|PPV,HHV|PPV,HHH|PPP,HVV|PPP,HHV|PPP,HHH|PPP,VVV|VVV,HHH'
-  #t3g_shape+='|PPV,VVV|PVV,HVV|VVV,HHV'
-  #t3g_shape+='|PVV,VVV|VVV,HVV'
+  if (triples>3):
+     t3g_shape+='|PPV,VVV|PVV,HVV|VVV,HHV'
+  if (triples>4):
+     t3g_shape+='|PVV,VVV|VVV,HVV'
   useT1=True
 elif (minexc==1 and maxexc==4):
   # we impl. only the manifold req'd for CAS(2,2)

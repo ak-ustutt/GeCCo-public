@@ -12,7 +12,7 @@ minexc = int(minexc) if minexc is not None else 1
 
 maxexc= keywords.get('method.MR.maxexc')
 maxexc = int(maxexc) if maxexc is not None else 1
-# perturbative correction requested?
+# Perturbative correction requested?
 word = keywords.get('method.MR.pertCorr')
 if word is None:
     pertCorr =  False
@@ -23,6 +23,19 @@ else:
         pertCorr = True
     else:
         quit_error('pertCorr must be T or F, found: '+word)
+
+if pertCorr or maxexc>2:
+    word = keywords.get('method.MR.triples')
+    if word is None:
+      triples=3
+    elif word == "B" or word == "3":
+      triples=3
+    elif word == "E" or word == "4":
+      triples=4
+    elif word == "F" or word == "5":
+      triples=5
+    else:
+      quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
 
 
 if (minexc==1):
@@ -38,13 +51,35 @@ else:
   _X_TRM_shape='VV,VV;V,V|V,V;,|VV,VV;,|V,V;VV,VV|,;V,V|V,V;V,V|,;VV,VV|,;,'
   useT1=False
 
-  # TODO: extend for triples etc.
+# extend for triples etc.
 if (maxexc>2 or pertCorr):
-    _Tv_shape+='|PPP,VVV|VVV,HHH'
-    _Ov_shape+='|,VVV;PPP,|,;VVV,HHH'
-    _GAM_S_shape+='|,;VVV,VVV;,|,VVV;,;VVV,'
-    _X_TRM_shape+='|VVV,VVV;,|,;VVV,VVV'
-
+    if (triples==3):
+        _Tv_shape+='|PPP,VVV|VVV,HHH'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH'
+        _GAM_S_shape+='|,;VVV,VVV;,|,VVV;,;VVV,'
+        _X_TRM_shape+='|VVV,VVV;,|,;VVV,VVV'
+    else:
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {4}')
+        _Tv_shape+='|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shape=',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|' \
+                     ',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,'
+        _X_TRM_shape='VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|'    \
+                     'VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|' \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV'
   
 _s2 = orbitals.get('imult')
 
