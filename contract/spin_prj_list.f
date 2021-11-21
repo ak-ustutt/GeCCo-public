@@ -107,15 +107,15 @@
      &     call quit(1,'spin_prj_list',
      &     'Input and output list do not have identical operators')
  
-      open_close_in  = ffin%unit.le.0
-      open_close_out = ffout%unit.le.0
-
-      if (open_close_in ) call file_open(ffin )
-      if (open_close_out.and..not.same) call file_open(ffout)
-
       ! Check whether files are buffered.
       bufin = ffin%buffered
       bufout = ffout%buffered
+
+      open_close_in  = ffin%unit.le.0.and..not.bufin
+      open_close_out = ffout%unit.le.0.and..not.bufout
+
+      if (open_close_in ) call file_open(ffin )
+      if (open_close_out.and..not.same) call file_open(ffout)
 
       ifree = mem_setmark('spin_prj_list')
 
@@ -133,7 +133,8 @@
         enddo
         ifree = mem_alloc_real(buffer_in,nbuff,'buffer_in')
       else
-        call quit(1,'spin_prj_list','buffered file: not yet')
+        if (me_in%len_op_occ(1).gt.1) ! allow for scalars
+     &       call quit(1,'spin_prj_list','buffered file: not yet')
         buffer_in => ffin%buffer(1:)
       endif
 
@@ -149,7 +150,8 @@
       else if (same) then
         buffer_out => buffer_in
       else
-        call quit(1,'spin_prj_list','buffered file: not yet')
+        if (me_out%len_op_occ(1).ge.1)
+     &       call quit(1,'spin_prj_list','buffered file: not yet')
         buffer_out => ffout%buffer(1:)
       endif
 
@@ -174,7 +176,9 @@
      &       write(lulog,*) 'iblk, ioff, lenblk: ',iblk, ioff, lenblk
         if (lenblk.eq.0) cycle
 
-        call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
+        ! buffer: works only for simplest case
+        if (.not.bufin)
+     &       call get_vec(ffin,buffer_in,ioff+1,ioff+lenblk)
 
         call spin_prj_blk(buffer_out,
      &                  buffer_in, fac, s2,
@@ -182,7 +186,9 @@
      &                  str_info,strmap_info,orb_info)
 
         ioff = me_out%off_op_occ(iblk)+idisc_off_out
-        call put_vec(ffout,buffer_out,ioff+1,ioff+lenblk)
+        ! see above
+        if (.not.bufout)
+     &       call put_vec(ffout,buffer_out,ioff+1,ioff+lenblk)
 
         ! update norm^2
         if (update_norm) then

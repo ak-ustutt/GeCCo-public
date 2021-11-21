@@ -162,7 +162,7 @@
      &     call quit(1,i_am,'no file handle defined for '//
      &                  trim(me_res%label))
 
-      open_close_res = ffop_tgt%unit.le.0
+      open_close_res = ffop_tgt%unit.le.0 .and..not.ffop_tgt%buffered
       if(open_close_res)then
         call file_open(ffop_tgt)
       endif
@@ -174,7 +174,7 @@
         if (.not.associated(ffop_src))
      &     call quit(1,i_am,'no file handle defined for '//
      &                  trim(me_inp%label))
-        open_close_inp = ffop_src%unit.le.0
+        open_close_inp = ffop_src%unit.le.0.and..not.ffop_src%buffered
         if (open_close_inp) then
           call file_open(ffop_src)
         endif
@@ -232,8 +232,9 @@
          len_op = max(len_op,opti_info%nwfpsec(isec))
       end do
 
-      if (.not.ffop_src%buffered .and.
-     &     .not.ffop_tgt%buffered) then
+      ! ignore buffering, get_vec and put_vec have been fixed
+c      if (.not.ffop_src%buffered .and.
+c     &     .not.ffop_tgt%buffered) then
 
          nblk = min((len_op-1)/ffop_src%reclen + 1,nblkmax)
 
@@ -260,11 +261,11 @@
          
         
          ifree = mem_flushmark()
-      else
+c      else
 
-         call quit(1,i_am,'adapt for buffering')
+c         call quit(1,i_am,'adapt for buffering')
          
-      end if
+c      end if
         
       call touch_file_rec(ffop_tgt)
 

@@ -85,7 +85,8 @@ c      ntest=max(ntest,iprlvl)
       ! offset on file (if more than one instance of operator ex.)
       idisc_off = ffop%length_of_record*(ffop%current_record-1)
 
-      if (.not.ffop%buffered) then
+c should work for simple cases
+      if (.not.ffop%buffered.or.mel%len_op.eq.1) then
 
         len_op = mel%len_op
         nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
@@ -125,37 +126,37 @@ c      ntest=max(ntest,iprlvl)
       else
 
         call quit(1,'set_list','no incore part yet')
-        ! zero the buffer (= all blocks which are incore)
-        ffop%buffer(1:ffop%nbuffer) = 0d0
+c        ! zero the buffer (= all blocks which are incore)
+c        ffop%buffer(1:ffop%nbuffer) = 0d0
+c
+c        ! zero all blocks on disc
+c        len_op = 0 ! look for largest block
+c        do iblk = 1, op%n_occ_cls
+c          if (ffop%incore(iblk).le.0) 
+c     &         len_op = max(len_op,mel%len_op_occ(iblk))
+c        end do
 
-        ! zero all blocks on disc
-        len_op = 0 ! look for largest block
-        do iblk = 1, op%n_occ_cls
-          if (ffop%incore(iblk).le.0) 
-     &         len_op = max(len_op,mel%len_op_occ(iblk))
-        end do
+c        if (len_op.gt.0) then
+c          nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
 
-        if (len_op.gt.0) then
-          nblk = min((len_op-1)/ffop%reclen + 1,nblkmax)
+c          nbuff = min(len_op,nblk*ffop%reclen)
+c          ifree = mem_alloc_real(buffer,nbuff,'buffer')
 
-          nbuff = min(len_op,nblk*ffop%reclen)
-          ifree = mem_alloc_real(buffer,nbuff,'buffer')
-
-          buffer(1:nbuff) = 0d0
-
-          do iblk = 1, op%n_occ_cls
-            if (ffop%incore(iblk).le.0) then
-              len_op = mel%len_op_occ(iblk)
-              idxst = idisc_off+mel%off_op_occ(iblk)+1
-              len_op = idxst-1+len_op
-              do while(idxst.le.len_op)
-                idxnd = min(len_op,idxst-1+nbuff)
-                call put_vec(ffop,buffer,idxst,idxnd)  
-                idxst = idxnd+1
-              end do
-            end if
-          end do
-        end if
+c          buffer(1:nbuff) = 0d0
+c
+c          do iblk = 1, op%n_occ_cls
+c            if (ffop%incore(iblk).le.0) then
+c              len_op = mel%len_op_occ(iblk)
+c              idxst = idisc_off+mel%off_op_occ(iblk)+1
+c              len_op = idxst-1+len_op
+c              do while(idxst.le.len_op)
+c                idxnd = min(len_op,idxst-1+nbuff)
+c                call put_vec(ffop,buffer,idxst,idxnd)  
+c                idxst = idxnd+1
+c              end do
+c            end if
+c          end do
+c        end if
 
       end if
 

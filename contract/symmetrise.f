@@ -138,7 +138,8 @@
         if (nbuff2.gt.0)
      &       ifree = mem_alloc_real(buffer_in2,nbuff,'buffer_in2')
       else
-        call quit(1,'symmetrise','buffered file: not yet')
+        if (nocc_cls.gt.1)
+     &     call quit(1,'symmetrise','buffered file: not yet')
         buffer_in => ffin%buffer(1:)
       endif
 
@@ -166,7 +167,7 @@
         buffer_out => buffer_in
         if (nbuff2.gt.0) buffer_out2 => buffer_in2
       else
-        call quit(1,'symmetrise','buffered file: not yet')
+        call quit(1,'symmetrise','buffered file 2: needed?')
         buffer_out => ffout%buffer(1:)
       endif
 
@@ -176,6 +177,14 @@
 
       if (ntest.ge.100) then
         write(lulog,*) 'size of buffer: ',nbuff,nbuff2
+      end if
+
+      ! quick exit for (rare) special case
+      if (bufin.and.bufout.and.nocc_cls.eq.1
+     &         .and.me_out%len_op_occ(1).eq.1) then
+         buffer_out(1) = fac*buffer_in(1)
+         ifree = mem_flushmark('symmetrise')
+         return
       end if
 
       ! Loop over occupation classes.
