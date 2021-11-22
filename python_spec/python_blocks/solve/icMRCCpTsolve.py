@@ -149,6 +149,25 @@ Tblocks['PPV-HHV']['nact']=2
 #Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
 #Tblocks['PPV-VVV']['nact']=4
 
+#if (triples>3):
+#    Tblocks['PVV-HVV']={}
+#    Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
+#    Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
+#    Tblocks['PVV-HVV']['nact']=4
+#    Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
+
+#    Tblocks['PPV-VVV']={}
+#    Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
+#    Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
+#    Tblocks['PPV-VVV']['nact']=4
+#    Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
+
+#    Tblocks['VVV-HHV']={}
+#    Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
+#    Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
+#    Tblocks['VVV-HHV']['nact']=4
+#    Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
+
 #Tblocks['VVV-HVV']={}
 #Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
 #Tblocks['VVV-HVV']['res']=',VV;VVV,H|,;V,H'
@@ -159,9 +178,9 @@ Tblocks['PPV-HHV']['nact']=2
 #Tblocks['PVV-VVV']['res']=',VVV;PVV,|,V;P,'
 #Tblocks['PVV-VVV']['nact']=5
 
+    
 #  DEF_FORMULA_TESTSTUFF
 #  TOTAL SUM
-
 DEF_SCALAR({LABEL:'EPTtotal'})
 DEF_ME_LIST({LIST:'ME-EPTtotal',OPERATOR:'EPTtotal',IRREP:1,'2MS':0,'ABSYM':0})
 
@@ -170,36 +189,14 @@ DEF_ME_LIST({LIST:'ME-Etotal',OPERATOR:'Etotal',IRREP:1,'2MS':0,'ABSYM':0})
 
 # EPT4 EP5 scalar and ME-list test
 
+EPT4str ='EPT4total=' # fills the EPT4 string for the energy summation later on 
 DEF_SCALAR({LABEL:'EPT4total'})
 DEF_ME_LIST({LIST:'ME-EPT4total',OPERATOR:'EPT4total',IRREP:1,'2MS':0,'ABSYM':0})
 
-DEF_SCALAR({LABEL:'EPT5total'})
+EPT5str ='EPT5total=' # fills the EPT5 string for the summation later 
+DEF_SCALAR({LABEL:'EPT5total'}) 
 DEF_ME_LIST({LIST:'ME-EPT5total',OPERATOR:'EPT5total',IRREP:1,'2MS':0,'ABSYM':0})
 
-# EPT4 iterative test
-
-#DEF_SCALAR({LABEL:'EPT4total_test'})
-#DEF_ME_LIST({LIST:'ME-EPT4total_test',OPERATOR:'EPT4total_test',IRREP:1,'2MS':0,'ABSYM':0})
-
-if (triples>3):
-    Tblocks['PVV-HVV']={}
-    Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
-    Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
-    Tblocks['PVV-HVV']['nact']=4
-    Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
-
-    Tblocks['PPV-VVV']={}
-    Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
-    Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
-    Tblocks['PPV-VVV']['nact']=4
-    Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
-
-    Tblocks['VVV-HHV']={}
-    Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
-    Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
-    Tblocks['VVV-HHV']['nact']=4
-    Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
-    
 
 # generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
@@ -278,6 +275,10 @@ for _Tb in Tblocks:
              LABELS_IN:['F_PTrhs_'+_Tb,'F_PTtrf_'+_Tb]})
    OPTIMIZE({LABEL_OPT:'FOPT_PTE-'+_Tb,
              LABELS_IN:['F_PT_E4_'+_Tb,'F_PT_E5_'+_Tb,'F_PT_LG_'+_Tb]})
+   
+   # Sums all terms and adds a + in the end
+   EPT4str = EPT4str + 'EPT4-' +_Tb + '+' 
+   EPT5str = EPT5str + 'EPT5-' +_Tb + '+'
 
    if Tblocks[_Tb]["nact"]>0:
       # and a transformation (that keeps T3 orth to T2 and T1)
@@ -335,16 +336,22 @@ for _Tb in Tblocks:
           EVALUATE({FORM:'FOPT_A_TRF-'+_Tb})
           debug_MEL('ME_A_TRF-'+_Tb,only_this=True)
           
-# TEST ITERATIVE SUMMATION
-#   DEF_FORMULA({LABEL:'FORM_EPT4tot_test',FORMULA:'EPT4tot_test=EPT4tot_test+EPT4-'+_Tb})
-#   OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot_test',LABELS_IN:'FORM_EPT4tot_test'})
+
+
 
 # TESTING DEF_FORMULA
-#   DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPTtotal+EPT4-'+_Tb})
-DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:'EPT4total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT4-PPV-HHH+EPT4-PPP-HVV+EPT4-PVV-HHH+EPT4-PPV-HHV'})
+
+# removes the last + 
+
+EPT4str=EPT4str[:-1]
+EPT5str=EPT5str[:-1]
+
+#DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:'EPT4total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT4-PPV-HHH+EPT4-PPP-HVV+EPT4-PVV-HHH+EPT4-PPV-HHV'})
+DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:EPT4str})
 OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot',LABELS_IN:'FORM_EPT4tot' })
 
-DEF_FORMULA({LABEL:'FORM_EPT5tot',FORMULA:'EPT5total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT5-PPV-HHH+EPT5-PPP-HVV+EPT5-PVV-HHH+EPT5-PPV-HHV'})
+#DEF_FORMULA({LABEL:'FORM_EPT5tot',FORMULA:'EPT5total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT5-PPV-HHH+EPT5-PPP-HVV+EPT5-PVV-HHH+EPT5-PPV-HHV'})
+DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:EPT5str})
 OPTIMIZE({LABEL_OPT:'FOPT_EPT5tot',LABELS_IN:'FORM_EPT5tot' })
 
 DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPT4total+EPT5total'})
