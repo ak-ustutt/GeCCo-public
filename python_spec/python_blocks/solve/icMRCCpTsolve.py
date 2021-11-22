@@ -7,8 +7,11 @@ Andreas Nov 2021: Creation of initial stub based on some earlier experiments
 """
 from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
-
+#test MRCCSD+(T)
+#from python_spec.python_blocks.solve.icMRCCSDsolve.py import MRCC_LAG_LST
 verbosity=100
+
+i_am="icMRCCSDpTsolve.py"
 
 _inp = GeCCo_Input()
 # get some info:
@@ -70,6 +73,7 @@ Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
 Tblocks['PPV-HHV']['nact']=2
 
 # for cas(2,2) we can skip these ...
+# Remove comment for these when IF filtering is implemented
 #Tblocks['PPP-VVV']={}
 #Tblocks['PPP-VVV']['occ']='PPP,VVV'
 #Tblocks['PPP-VVV']['res']=',VVV;PPP,'
@@ -91,8 +95,59 @@ Tblocks['PPV-HHV']['nact']=2
 #Tblocks['PVV-HHV']['nact']=3
 
 # TODO: also consider here the cases PVV-HVV VVV-HHV PPV-VVV and maybe PVV-VVV and VVV-VVH
+# Check if correct: especially the res
+# Should be redundant for CAS(4,4) according to Hanauer 2012
 
-# generat some operators to address the individual T3 blocks:
+#Tblocks['PVV-HVV']={}
+#Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
+#Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
+#Tblocks['PVV-HVV']['nact']=4
+
+#Tblocks['VVV-HHV']={}
+#Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
+#Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
+#Tblocks['VVV-HHV']['nact']=4
+
+#Tblocks['PPV-VVV']={}
+#Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
+#Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
+#Tblocks['PPV-VVV']['nact']=4
+
+#Tblocks['VVV-HVV']={}
+#Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
+#Tblocks['VVV-HVV']['res']=',VV;VVV,H|,;V,H'
+#Tblocks['VVV-HVV']['nact']=5
+
+#Tblocks['PVV-VVV']={}
+#Tblocks['PVV-VVV']['occ']='PVV,VVV|P,V'
+#Tblocks['PVV-VVV']['res']=',VVV;PVV,|,V;P,'
+#Tblocks['PVV-VVV']['nact']=5
+
+#  DEF_FORMULA_TESTSTUFF
+#  TOTAL SUM
+
+DEF_SCALAR({LABEL:'EPTtotal'})
+DEF_ME_LIST({LIST:'ME-EPTtotal',OPERATOR:'EPTtotal',IRREP:1,'2MS':0,'ABSYM':0})
+
+DEF_SCALAR({LABEL:'Etotal'})
+DEF_ME_LIST({LIST:'ME-Etotal',OPERATOR:'Etotal',IRREP:1,'2MS':0,'ABSYM':0})
+
+# EPT4 EP5 scalar and ME-list test
+
+DEF_SCALAR({LABEL:'EPT4total'})
+DEF_ME_LIST({LIST:'ME-EPT4total',OPERATOR:'EPT4total',IRREP:1,'2MS':0,'ABSYM':0})
+
+DEF_SCALAR({LABEL:'EPT5total'})
+DEF_ME_LIST({LIST:'ME-EPT5total',OPERATOR:'EPT5total',IRREP:1,'2MS':0,'ABSYM':0})
+
+# EPT4 iterative test
+
+#DEF_SCALAR({LABEL:'EPT4total_test'})
+#DEF_ME_LIST({LIST:'ME-EPT4total_test',OPERATOR:'EPT4total_test',IRREP:1,'2MS':0,'ABSYM':0})
+
+
+
+# generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
 
    DEF_OP_FROM_OCC({LABEL:'T3-'+_Tb,DESCR:Tblocks[_Tb]['occ']})
@@ -125,6 +180,7 @@ for _Tb in Tblocks:
    DEF_ME_LIST({LIST:'ME-EPT5-'+_Tb,OPERATOR:'EPT5-'+_Tb,IRREP:1,'2MS':0,'ABSYM':0})
    DEF_SCALAR({LABEL:'EPTLG-'+_Tb})
    DEF_ME_LIST({LIST:'ME-EPTLG-'+_Tb,OPERATOR:'EPTLG-'+_Tb,IRREP:1,'2MS':0,'ABSYM':0})
+
 
 # expressions for each block
 for _Tb in Tblocks:
@@ -189,6 +245,33 @@ for _Tb in Tblocks:
       debug_FORM('F_T3tr-'+_Tb,only_this=True)
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
+# TEST ITERATIVE SUMMATION
+#   DEF_FORMULA({LABEL:'FORM_EPT4tot_test',FORMULA:'EPT4tot_test=EPT4tot_test+EPT4-'+_Tb})
+#   OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot_test',LABELS_IN:'FORM_EPT4tot_test'})
+
+# TESTING DEF_FORMULA
+#   DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPTtotal+EPT4-'+_Tb})
+DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:'EPT4total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT4-PPV-HHH+EPT4-PPP-HVV+EPT4-PVV-HHH+EPT4-PPV-HHV'})
+OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot',LABELS_IN:'FORM_EPT4tot' })
+
+DEF_FORMULA({LABEL:'FORM_EPT5tot',FORMULA:'EPT5total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT5-PPV-HHH+EPT5-PPP-HVV+EPT5-PVV-HHH+EPT5-PPV-HHV'})
+OPTIMIZE({LABEL_OPT:'FOPT_EPT5tot',LABELS_IN:'FORM_EPT5tot' })
+
+DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPT4total+EPT5total'})
+OPTIMIZE({LABEL_OPT:'FOPT_EPTtot',LABELS_IN:'FORM_EPTtot' })
+
+# Trying to sum MRCCSD and (T)
+
+DEF_FORMULA({LABEL:'FORM_Etot',FORMULA:'Etotal=EPTtotal+MRCC_LAG'})
+OPTIMIZE({LABEL_OPT:'FOPT_Etot',LABELS_IN:'FORM_Etot' })
+
+# Printing Test terms
+
+PRINT_FORMULA({LABEL:'FORM_EPT4tot'})
+
+PRINT_FORMULA({LABEL:'FORM_EPT5tot'})
+
+PRINT_FORMULA({LABEL:'FORM_EPTtot'})
 
 # loop over blocks of T3
 for _Tb in Tblocks:
@@ -219,4 +302,42 @@ for _Tb in Tblocks:
    # compute E4, E5, ELG
    EVALUATE({FORM:'FOPT_PTE-'+_Tb})
 
+   PRINT_MEL({
+       LIST:'ME-EPT4-'+_Tb,
+       COMMENT:'EPT4 ('+_Tb+'):',
+       FORMAT:'SCAL F24.14'})
+
+   PRINT_MEL({
+       LIST:'ME-EPT5-'+_Tb,
+       COMMENT:'EPT5 ('+_Tb+'):',
+       FORMAT:'SCAL F24.14'})
+
+# DEF_FORMULA TEST   
+EVALUATE({FORM:'FOPT_EPT4tot'})
+PRINT_MEL({
+    LIST:'ME-EPT4total',
+    COMMENT:'Total 4. order triples correction:',
+    FORMAT:'SCAL F24.14'})
+
+EVALUATE({FORM:'FOPT_EPT5tot'})
+PRINT_MEL({
+    LIST:'ME-EPT5total',
+    COMMENT:'Total 5. order triples correction:',
+    FORMAT:'SCAL F24.14'})
+
+EVALUATE({FORM:'FOPT_EPTtot'})
+PRINT_MEL({
+    LIST:'ME-EPTtotal',
+    COMMENT:'Total icMRCCSD(T) triples correction:',
+    FORMAT:'SCAL F24.14'})
       
+EVALUATE({FORM:'FOPT_Etot'})
+PRINT_MEL({
+    LIST:'ME-Etotal',
+    COMMENT:'Total icMRCCSD(T) energy:',
+    FORMAT:'SCAL F24.14'})
+#EVALUATE({FORM:'FOPT_EPT4tot_test'})
+#PRINT_MEL({
+#    LIST:'ME-EPT4total_test',
+#    COMMENT:'TEST Total 4. order triples correction:',
+#    FORMAT:'SCAL F24.14'})
