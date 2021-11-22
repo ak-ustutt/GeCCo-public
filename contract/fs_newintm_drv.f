@@ -18,6 +18,7 @@
       include 'def_contraction.h'
       include 'def_formula_item.h'
       include 'def_orbinf.h'
+      include 'ifc_memman.h'
 
       integer, parameter ::
      &     ntest = 00
@@ -146,7 +147,7 @@ c     &       'S2 handling is not implemented!!!!')
 
       ! initialize file
       incore_ = fl_item%incore
-      small = me_new%len_op.lt.lblk_da*3/2
+      small = me_new%len_op.lt.max(mem_free_words()/100,lblk_da*10)
       if (small.and.incore_.eq.0) incore_ = 1 
       call init_mel_file(me_new,-1,-1,-1,incore_)
 

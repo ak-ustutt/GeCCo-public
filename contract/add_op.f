@@ -80,6 +80,7 @@
      &     call quit(1,'add_op','no file handle defined for '//
      &                  trim(me_res%label))
       open_close_res = me_res%fhand%unit.le.0
+     &    .and..not.(me_res%op%n_occ_cls.eq.1.and.me_res%fhand%buffered)
 
       do isum = 1, nsum
         idx_sum(isum) = idx_mel_list(label_sum(isum),op_info)
@@ -111,6 +112,8 @@
      &       call quit(1,'add_op',
      &       'incompatible njoined: '//trim(me_current%op%name))
         open_close_sum = me_current%fhand%unit.le.0
+     &        .and..not.(me_current%op%n_occ_cls.eq.1.and.
+     &                   me_current%fhand%buffered)
 
         if(open_close_sum)then
           call file_open(me_current%fhand)

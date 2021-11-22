@@ -34,6 +34,19 @@ else:
    _s2 = -1
 _msc = +1
 
+word = keywords.get('method.MR.triples')
+if word is None:
+      triples=3
+elif word == "B" or word == "3":
+      triples=3
+elif word == "E" or word == "4":
+      triples=4
+elif word == "F" or word == "5":
+      triples=5
+else:
+      quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
+
+
 
 new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
@@ -74,6 +87,7 @@ Tblocks['PPV-HHV']['nact']=2
 
 # for cas(2,2) we can skip these ...
 # Remove comment for these when IF filtering is implemented
+
 #Tblocks['PPP-VVV']={}
 #Tblocks['PPP-VVV']['occ']='PPP,VVV'
 #Tblocks['PPP-VVV']['res']=',VVV;PPP,'
@@ -83,6 +97,28 @@ Tblocks['PPV-HHV']['nact']=2
 #Tblocks['VVV-HHH']['occ']='VVV,HHH'
 #Tblocks['VVV-HHH']['res']=',;VVV,HHH'
 #Tblocks['VVV-HHH']['nact']=3
+
+#Tblocks['PPV-HVV']={}
+#Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
+#Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
+#Tblocks['PPV-HVV']['nact']=3
+
+#Tblocks['PVV-HHV']={}
+#Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
+#Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
+#Tblocks['PVV-HHV']['nact']=3
+
+#Tblocks['PPP-VVV']={}
+#Tblocks['PPP-VVV']['occ']='PPP,VVV'
+#Tblocks['PPP-VVV']['res']=',VVV;PPP,'
+#Tblocks['PPP-VVV']['nact']=3
+#Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
+
+#Tblocks['VVV-HHH']={}
+#Tblocks['VVV-HHH']['occ']='VVV,HHH'
+#Tblocks['VVV-HHH']['res']=',;VVV,HHH'
+#Tblocks['VVV-HHH']['nact']=3
+#Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
 
 #Tblocks['PPV-HVV']={}
 #Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
@@ -145,7 +181,25 @@ DEF_ME_LIST({LIST:'ME-EPT5total',OPERATOR:'EPT5total',IRREP:1,'2MS':0,'ABSYM':0}
 #DEF_SCALAR({LABEL:'EPT4total_test'})
 #DEF_ME_LIST({LIST:'ME-EPT4total_test',OPERATOR:'EPT4total_test',IRREP:1,'2MS':0,'ABSYM':0})
 
+if (triples>3):
+    Tblocks['PVV-HVV']={}
+    Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
+    Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
+    Tblocks['PVV-HVV']['nact']=4
+    Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
 
+    Tblocks['PPV-VVV']={}
+    Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
+    Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
+    Tblocks['PPV-VVV']['nact']=4
+    Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
+
+    Tblocks['VVV-HHV']={}
+    Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
+    Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
+    Tblocks['VVV-HHV']['nact']=4
+    Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
+    
 
 # generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
@@ -245,6 +299,42 @@ for _Tb in Tblocks:
       debug_FORM('F_T3tr-'+_Tb,only_this=True)
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
+
+      # for some T blocks, we need to compute extra blocks of the A matrix
+      if "A_extra" in Tblocks[_Tb].keys():
+          
+          _A_T_shape = Tblocks[_Tb]["A_extra"]
+          DEF_SCALAR({LABEL:'A_TRF_SCAL-'+_Tb})
+          DEF_OP_FROM_OCC({LABEL:'A_TRF-'+_Tb,JOIN:3,DESCR:_A_T_shape})
+          DEF_ME_LIST({LIST:'ME_A_TRF-'+_Tb,OPERATOR:'A_TRF-'+_Tb,IRREP:1,'2MS':0})
+
+          EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF-'+_Tb,OP_RES:'A_TRF_SCAL-'+_Tb,
+            OPERATORS:['C0^+','T3-'+_Tb+'^+','H','T3-'+_Tb,'C0'],
+            IDX_SV:[1,2,3,4,5],
+            NEW:True})
+          EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF-'+_Tb,OP_RES:'A_TRF_SCAL-'+_Tb,
+            OPERATORS:['C0^+','T3-'+_Tb+'^+','T3-'+_Tb,'H','C0'],
+            IDX_SV:[1,2,3,4,5],
+            FIX_VTX:True,FAC:-1,NEW:False})
+
+          SUM_TERMS({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb})
+
+          FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_GAM0'})
+
+          EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb+'^+'})
+          EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb})
+          # Probably unnecessary:
+          SELECT_SPECIAL({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,OPERATORS:['T3tr-'+_Tb,'T3tr-'+_Tb+'^+'],TYPE:'SAME'})
+          #PRINT_FORMULA({LABEL:'FORM_A_TRF-'+_Tb, MODE:'SHORT'})
+          
+          DERIVATIVE({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF_INT-'+_Tb,OP_RES:'O3-'+_Tb,OP_DERIV:'T3tr-'+_Tb+'^+'})
+          DERIVATIVE({LABEL_IN:'FORM_A_TRF_INT-'+_Tb,LABEL_RES:'FORM_A_TRF_FIN-'+_Tb,OP_RES:'A_TRF-'+_Tb,OP_DERIV:'T3tr-'+_Tb})
+
+          OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:'FORM_A_TRF_FIN-'+_Tb})
+
+          EVALUATE({FORM:'FOPT_A_TRF-'+_Tb})
+          debug_MEL('ME_A_TRF-'+_Tb,only_this=True)
+          
 # TEST ITERATIVE SUMMATION
 #   DEF_FORMULA({LABEL:'FORM_EPT4tot_test',FORMULA:'EPT4tot_test=EPT4tot_test+EPT4-'+_Tb})
 #   OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot_test',LABELS_IN:'FORM_EPT4tot_test'})
@@ -272,15 +362,19 @@ PRINT_FORMULA({LABEL:'FORM_EPT4tot'})
 PRINT_FORMULA({LABEL:'FORM_EPT5tot'})
 
 PRINT_FORMULA({LABEL:'FORM_EPTtot'})
-
 # loop over blocks of T3
 for _Tb in Tblocks:
    # set up preconditioner
    PRECONDITIONER({LIST_PRC:'ME-DIA-'+_Tb,LIST_INP:'FOCK_EFF_INACT_LST',MODE:'dia-F'})
 
    if Tblocks[_Tb]['nact']>0:
-      EXTRACT_DIAG({LIST_RES:'ME-DIA-'+_Tb,LIST_IN:'A_TRF_LST',MODE:'extend'})
-
+       if 'A_extra' not in Tblocks[_Tb].keys():
+           # standard list:
+           EXTRACT_DIAG({LIST_RES:'ME-DIA-'+_Tb,LIST_IN:'A_TRF_LST',MODE:'extend'})
+       else:
+           # special list:
+           EXTRACT_DIAG({LIST_RES:'ME-DIA-'+_Tb,LIST_IN:'ME_A_TRF-'+_Tb,MODE:'extend'})
+           
    # solve linear equations
    PRINT({STRING:'Now solving (T) equations for block '+Tblocks[_Tb]['occ']})
    if Tblocks[_Tb]['nact']>0:

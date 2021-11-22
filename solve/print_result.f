@@ -131,7 +131,7 @@
       value = 0d0
       if (.not.zero) then
         closeit = .false.
-        if (mel%fhand%unit.lt.0) then
+        if (mel%fhand%unit.lt.0.and..not.mel%fhand%buffered) then
           call file_open(mel%fhand)
           closeit = .true.
         end if

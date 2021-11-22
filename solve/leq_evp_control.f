@@ -134,7 +134,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffmet(*), ffrhs(*), ffdia(*)
       character(60) ::
      &     fname
       logical ::
-     &     lexit, lconv
+     &     lexit, lconv, triv_s
       integer ::
      &     iprint, iroute, ifree, iopt, idx, iroot, nsub,
      &     irequest
@@ -222,6 +222,8 @@ c        end if
 * set task -- mv-product:
         task = 4
 
+        triv_s = .false.  ! needed for quick return for trivial solution (LEQ)
+
         ! request slaves to put first few trial vectors and
         ! corresponding Mv-product to first nroot records on the
         ! respective files:        
@@ -236,6 +238,8 @@ c        end if
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)          
           opti_stat%nadd = opti_info%nroot ! ?? <-- check that for LEQ
+          triv_s = (opti_info%nroot==1.and.opti_info%nopt==1.and.
+     &        xrsnrm(1).lt.opti_info%thrgrd(1))
         else if (modestr(1:3).eq.'EVP') then
           opti_stat%nadd = opti_info%nroot ! <-- check that for LEQ
         else
@@ -257,6 +261,30 @@ c        end if
         end do          
 
         iter = 1
+
+        if (triv_s) then
+           write(lulog,'(1x,"DETECTED TRIVIAL SOLUTION")')
+           if (luout.ne.lulog)
+     &       write(luout,'(1x,"DETECTED TRIVIAL SOLUTION")')
+          do iopt = 1, opti_info%nopt
+            if (opti_stat%ffscr(iopt)%fhand%unit.gt.0) 
+     &             call file_close_delete(opti_stat%ffscr(iopt)%fhand)
+            if (opti_stat%ffext(iopt)%fhand%unit.gt.0)
+     &             call file_close_delete(opti_stat%ffext(iopt)%fhand)
+          end do
+
+          call leqevpc_cleanup()
+          ! release all temporary memory
+          ifree = mem_flushmark('leqevpc_temp')
+
+          ! flush all other memory allocated by optimizer
+          ifree = mem_flushmark('leqevpc_perm')
+
+          task = 8 ! stop it
+
+          return
+
+        end if
 
         ifree = mem_flushmark('leqevpc_temp')
 

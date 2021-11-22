@@ -49,6 +49,12 @@
       ! last index in last record
       idxrecl = idxnd - (irecnd-1)*lenr
 
+      ! handle buffered case for scalars:
+      if (fhand%buffered.and.idxst-idxnd==0) then
+         fhand%buffer(ioffrec1+1:ioffrec1+1) = buf(1:1)
+         return
+      end if
+
       ! unless we hit the block-size exactly,
       ! we will have to handle the "borders":
       if (ioffrec1.gt.0.or.idxrecl.lt.lenr)

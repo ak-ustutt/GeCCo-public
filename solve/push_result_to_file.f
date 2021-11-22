@@ -42,7 +42,7 @@
      &     xnormop
 
       ! open list (if necessary)
-      openit = mel%fhand%unit.lt.0
+      openit = mel%fhand%unit.lt.0.and..not.mel%fhand%buffered
       if (openit) call file_open(mel%fhand)
 
       select case(mode(1:4))

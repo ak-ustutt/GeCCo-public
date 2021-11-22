@@ -3,15 +3,32 @@ from python_interface.gecco_modules.NoticeUtil import *
 
 i_am='diag_precon'
 
-minexc=1
-if keywords.is_keyword_set('method.MR.minexc'):
-  minexc=int(keywords.get('method.MR.minexc'))
+minexc= keywords.get('method.MR.minexc')
+minexc = int(minexc) if minexc is not None else 1
+
+maxexc= keywords.get('method.MR.maxexc')
+maxexc = int(maxexc) if maxexc is not None else 1
+
 useT1=(minexc==1)
 
+# perturbative triples are handled differently, keep this for non-iterative cases
+if maxexc>2:
+    word = keywords.get('method.MR.triples')
+    if word is None:
+      triples=3
+    elif word == "B" or word == "3":
+      triples=3
+    elif word == "E" or word == "4":
+      triples=4
+    elif word == "F" or word == "5":
+      triples=5
+    else:
+      quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
+    quit_error('full triples: diag_precon requires adaptation')
+      
 #------------------------------------------------------------------
 #Setting up A_TRF
 #-------------------------------------------------------------------
-
 
 new_target('MAKE_A_TRF')
 depend('MakeOrthBasis')
@@ -27,18 +44,20 @@ depend('H0')
 
 comment('Setting up A_TRF')
 
-DEF_SCALAR({
-        LABEL:'A_TRF_SCAL'})
-DEF_OP_FROM_OCC({
-        LABEL:'A_TRF',
-        JOIN:3,
-        DESCR:',;V,V;,|'\
+_A_TRF_shape=',;V,V;,|'\
               ',V;VV,VV;V,|'\
               ',;VV,VV;,|'\
               ',V;,;V,|'\
               ',VV;V,V;VV,|'\
               ',V;V,V;V,|'\
-              ',VV;,;VV,'})
+              ',VV;,;VV,'
+
+DEF_SCALAR({
+        LABEL:'A_TRF_SCAL'})
+DEF_OP_FROM_OCC({
+        LABEL:'A_TRF',
+        JOIN:3,
+        DESCR:_A_TRF_shape})
 DEF_ME_LIST({
         LIST:'A_TRF_LST',
         OPERATOR:'A_TRF',

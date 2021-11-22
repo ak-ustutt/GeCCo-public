@@ -1,3 +1,3 @@
-      integer, parameter :: mxpunit = 100
+      integer, parameter :: mxpunit = 200
       integer :: ifrunit(mxpunit)
       common /freeunits/ ifrunit

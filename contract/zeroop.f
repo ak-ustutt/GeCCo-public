@@ -41,7 +41,7 @@
      &     call quit(1,'zeroop','No file assigned to list: '//
      &     trim(mel%label))
 
-      if (ffop%unit.le.0) then
+      if (ffop%unit.le.0.and..not.ffop%buffered) then
         call file_open(ffop)
         closeit = .true.
       else

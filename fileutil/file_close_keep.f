@@ -10,6 +10,8 @@
       type(filinf), intent(inout) ::
      &     fhand
 
+      if (fhand%buffered) return
+
       if (fhand%unit.le.0)
      &     call quit(1,'file_close_keep',
      &     'illegal unit number on handle')
