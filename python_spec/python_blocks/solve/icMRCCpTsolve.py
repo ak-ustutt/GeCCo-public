@@ -55,118 +55,92 @@ heading('Computing the (T) correction')
 # set the various occupation classes
 # might be done more elegantly, here we just enumerate everything:
 Tblocks={}
-Tblocks['PPP-HHH']={}
-Tblocks['PPP-HHH']['occ']='PPP,HHH'
-Tblocks['PPP-HHH']['res']=',;PPP,HHH'
-Tblocks['PPP-HHH']['nact']=0
+if _ninact_o > 1:
+   Tblocks['PPP-HHH']={}
+   Tblocks['PPP-HHH']['occ']='PPP,HHH'
+   Tblocks['PPP-HHH']['res']=',;PPP,HHH'
+   Tblocks['PPP-HHH']['nact']=0
 
-Tblocks['PPP-HHV']={}
-Tblocks['PPP-HHV']['occ']='PPP,HHV'
-Tblocks['PPP-HHV']['res']=',V;PPP,HH'
-Tblocks['PPP-HHV']['nact']=1
+if _ninact_o > 0:
+   Tblocks['PPP-HHV']={}
+   Tblocks['PPP-HHV']['occ']='PPP,HHV'
+   Tblocks['PPP-HHV']['res']=',V;PPP,HH'
+   Tblocks['PPP-HHV']['nact']=1
 
-Tblocks['PPV-HHH']={}
-Tblocks['PPV-HHH']['occ']='PPV,HHH'
-Tblocks['PPV-HHH']['res']=',;PPV,HHH'
-Tblocks['PPV-HHH']['nact']=1
+if _ninact_o > 1:
+   Tblocks['PPV-HHH']={}
+   Tblocks['PPV-HHH']['occ']='PPV,HHH'
+   Tblocks['PPV-HHH']['res']=',;PPV,HHH'
+   Tblocks['PPV-HHH']['nact']=1
 
-Tblocks['PPP-HVV']={}
-Tblocks['PPP-HVV']['occ']='PPP,HVV'
-Tblocks['PPP-HVV']['res']=',VV;PPP,H'
-Tblocks['PPP-HVV']['nact']=2
+if _ninact_o > 0:
+   Tblocks['PPP-HVV']={}
+   Tblocks['PPP-HVV']['occ']='PPP,HVV'
+   Tblocks['PPP-HVV']['res']=',VV;PPP,H'
+   Tblocks['PPP-HVV']['nact']=2
 
-Tblocks['PVV-HHH']={}
-Tblocks['PVV-HHH']['occ']='PVV,HHH'
-Tblocks['PVV-HHH']['res']=',;PVV,HHH'
-Tblocks['PVV-HHH']['nact']=2
+if _ninact_o > 1:
+   Tblocks['PVV-HHH']={}
+   Tblocks['PVV-HHH']['occ']='PVV,HHH'
+   Tblocks['PVV-HHH']['res']=',;PVV,HHH'
+   Tblocks['PVV-HHH']['nact']=2
 
-Tblocks['PPV-HHV']={}
-Tblocks['PPV-HHV']['occ']='PPV,HHV|PP,HH'
-Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
-Tblocks['PPV-HHV']['nact']=2
+if _ninact_o > 0:
+   Tblocks['PPV-HHV']={}
+   Tblocks['PPV-HHV']['occ']='PPV,HHV|PP,HH'
+   Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
+   Tblocks['PPV-HHV']['nact']=2
 
-# for cas(2,2) we can skip these ...
-# Remove comment for these when IF filtering is implemented
+#if _nact_e > 2:
+#   Tblocks['PPP-VVV']={}
+#   Tblocks['PPP-VVV']['occ']='PPP,VVV'
+#   Tblocks['PPP-VVV']['res']=',VVV;PPP,'
+#   Tblocks['PPP-VVV']['nact']=3
+#   Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
 
-#Tblocks['PPP-VVV']={}
-#Tblocks['PPP-VVV']['occ']='PPP,VVV'
-#Tblocks['PPP-VVV']['res']=',VVV;PPP,'
-#Tblocks['PPP-VVV']['nact']=3
+#if ((2*_nact_o) - _nact_e) > 2:
+#   Tblocks['VVV-HHH']={}
+#   Tblocks['VVV-HHH']['occ']='VVV,HHH'
+#   Tblocks['VVV-HHH']['res']=',;VVV,HHH'
+#   Tblocks['VVV-HHH']['nact']=3
+#   Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
 
-#Tblocks['VVV-HHH']={}
-#Tblocks['VVV-HHH']['occ']='VVV,HHH'
-#Tblocks['VVV-HHH']['res']=',;VVV,HHH'
-#Tblocks['VVV-HHH']['nact']=3
+#if _ninact_o > 0: # and _nact_e > 1:
+#   Tblocks['PPV-HVV']={}
+#   Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
+#   Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
+#   Tblocks['PPV-HVV']['nact']=3
 
-#Tblocks['PPV-HVV']={}
-#Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
-#Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
-#Tblocks['PPV-HVV']['nact']=3
-
-#Tblocks['PVV-HHV']={}
-#Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
-#Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
-#Tblocks['PVV-HHV']['nact']=3
-
-#Tblocks['PPP-VVV']={}
-#Tblocks['PPP-VVV']['occ']='PPP,VVV'
-#Tblocks['PPP-VVV']['res']=',VVV;PPP,'
-#Tblocks['PPP-VVV']['nact']=3
-#Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
-
-#Tblocks['VVV-HHH']={}
-#Tblocks['VVV-HHH']['occ']='VVV,HHH'
-#Tblocks['VVV-HHH']['res']=',;VVV,HHH'
-#Tblocks['VVV-HHH']['nact']=3
-#Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
-
-#Tblocks['PPV-HVV']={}
-#Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
-#Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
-#Tblocks['PPV-HVV']['nact']=3
-
-#Tblocks['PVV-HHV']={}
-#Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
-#Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
-#Tblocks['PVV-HHV']['nact']=3
+#if _ninact_o > 0:  
+#   Tblocks['PVV-HHV']={}
+#   Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
+#   Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
+#   Tblocks['PVV-HHV']['nact']=3
 
 # TODO: also consider here the cases PVV-HVV VVV-HHV PPV-VVV and maybe PVV-VVV and VVV-VVH
 # Check if correct: especially the res
 # Should be redundant for CAS(4,4) according to Hanauer 2012
 
-#Tblocks['PVV-HVV']={}
-#Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
-#Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
-#Tblocks['PVV-HVV']['nact']=4
+if (triples>3):
+    if _ninact_o > 0: #and _nact_e > 3:
+       Tblocks['PVV-HVV']={}
+       Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
+       Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
+       Tblocks['PVV-HVV']['nact']=4
+       Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
 
-#Tblocks['VVV-HHV']={}
-#Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
-#Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
-#Tblocks['VVV-HHV']['nact']=4
+    Tblocks['PPV-VVV']={}
+    Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
+    Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
+    Tblocks['PPV-VVV']['nact']=4
+    Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
 
-#Tblocks['PPV-VVV']={}
-#Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
-#Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
-#Tblocks['PPV-VVV']['nact']=4
-
-#if (triples>3):
-#    Tblocks['PVV-HVV']={}
-#    Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
-#    Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
-#    Tblocks['PVV-HVV']['nact']=4
-#    Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
-
-#    Tblocks['PPV-VVV']={}
-#    Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
-#    Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
-#    Tblocks['PPV-VVV']['nact']=4
-#    Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
-
-#    Tblocks['VVV-HHV']={}
-#    Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
-#    Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
-#    Tblocks['VVV-HHV']['nact']=4
-#    Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
+    if _ninact_o > 0:
+       Tblocks['VVV-HHV']={}
+       Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
+       Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
+       Tblocks['VVV-HHV']['nact']=4
+       Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
 
 #Tblocks['VVV-HVV']={}
 #Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
@@ -345,13 +319,12 @@ for _Tb in Tblocks:
 
 EPT4str=EPT4str[:-1]
 EPT5str=EPT5str[:-1]
+print(EPT4str)
 
-#DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:'EPT4total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT4-PPV-HHH+EPT4-PPP-HVV+EPT4-PVV-HHH+EPT4-PPV-HHV'})
 DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:EPT4str})
 OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot',LABELS_IN:'FORM_EPT4tot' })
 
-#DEF_FORMULA({LABEL:'FORM_EPT5tot',FORMULA:'EPT5total=EPT4-PPP-HHH+EPT4-PPP-HHV+EPT5-PPV-HHH+EPT5-PPP-HVV+EPT5-PVV-HHH+EPT5-PPV-HHV'})
-DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:EPT5str})
+DEF_FORMULA({LABEL:'FORM_EPT5tot',FORMULA:EPT5str})
 OPTIMIZE({LABEL_OPT:'FOPT_EPT5tot',LABELS_IN:'FORM_EPT5tot' })
 
 DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPT4total+EPT5total'})
