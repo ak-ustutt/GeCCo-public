@@ -1,3 +1,6 @@
+C
+C for some reason, we still use these ... see http://www.netlib.org/eispack/
+C
       SUBROUTINE CDIV(AR,AI,BR,BI,CR,CI)
       DOUBLE PRECISION AR,AI,BR,BI,CR,CI
 C
