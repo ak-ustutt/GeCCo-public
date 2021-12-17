@@ -56,6 +56,8 @@ c      use parse_input
       ! get keyword file
       keyword_file_name = get_keyword_file()
 
+      write(lulog,*) 'reading keywords from '//trim(keyword_file_name)
+
       ! open keyword file
       call file_init(keyword_file,keyword_file_name,ftyp_sq_frm,0)
 
