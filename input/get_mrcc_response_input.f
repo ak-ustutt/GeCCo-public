@@ -71,6 +71,10 @@
      &     lval=trplt)
 
       maxord = maxval(ord(:))
+
+      if (maxord.gt.1) call quit(1,'get_mrcc_response_input',
+     &           'maxord>1 is a WIP feature. Contact the main author.')
+
       allocate(prop_comp(ncnt,maxord))
       allocate(conj_comp(ncnt,maxord))
       allocate(conj_prop(ncnt,maxord))
