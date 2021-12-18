@@ -55,3 +55,6 @@ Compilation - quick guide: (all actions should be carried out in the root direct
     a shorter version is called by
     > make essential -j 8
 
+(6) Use it!
+    Documentation --> see Wiki
+    
