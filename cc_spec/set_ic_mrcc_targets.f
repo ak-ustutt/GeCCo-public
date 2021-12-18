@@ -1132,7 +1132,7 @@ c dbgend
 
 !     BW-MRCC - Lagrangian
       if (MRCC_type.EQ."BW")
-           call quit(1,'set_ic_mrcc_targets','disabled route')
+     &     call quit(1,'set_ic_mrcc_targets','disabled route')
 
       ! multireference CC lagrangian
       ! a) set up
