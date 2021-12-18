@@ -1,0 +1,18 @@
+title
+  CH2/MINI; DALTON env.: ic-MRCCD LR (2 el. in 2 act. orb.)
+molecule
+  CH2-MINI-DALTON
+input
+  ic_MRCC-EE.inp
+check
+  label excitation energy 
+  find CONVERGED
+  find E>>    1
+  compare real 3 1e-1
+  compare real 5 1e-1
+check
+  label NORM
+  find ANALYZE_MEL
+  find VV
+  compare real 3 1e-1
+end

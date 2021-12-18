@@ -1,0 +1,10 @@
+general
+ memmax=30000000
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+  CC maxexc=3
+calculate
+  solve non_linear method=diis,maxiter=25,conv=1d-10,maxsub=8
+  routes contract=2,simtraf=1
+ 

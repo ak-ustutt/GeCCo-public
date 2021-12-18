@@ -1,0 +1,24 @@
+The keyword registry uses a valid XML syntax (which will be read by the python part of GeCCo
+independently using a standard parser). The fortran code reads it only by a "sloppy" interpreter.
+In order to keep the fortran version functional, please adhere to the following rules when 
+extending the keywords:
+
+* Each keyword definition should look like this:  
+     <keyword name="my_new_keyword"> 
+     </keyword>
+  (no white space between "<" and "keyword", "</keyword>" should be in a new line, contracted
+  syntax like 
+          <keyword name="my_nonfunctioning_keyword_def" /> 
+  will NOT work.)
+
+* If you add an argument to a keyword, use this syntax:
+     <keyword name="my_new_keyword"> 
+        <argument name="arg_name" type="4" length="2" value="1.0,3.0" />
+     </keyword>  
+  (here, contracted syntax is OK; all values should be in "", value is optional, it must be a 
+   comma separated list; note: 1 - logical (use "true" or "false"), 2 - integer, 3 - real,
+   4 - string; no arrays for strings)
+
+* Comments must be embedded in an argument block (use <argument> </argument> then) and look like 
+  this:  <!--This is a comment--> 
+

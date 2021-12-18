@@ -1,0 +1,30 @@
+title
+  BeH2/3-21G; DALTON env., CAS(2,2): ic-MRCCSD(T), proj=3
+molecule
+  BeH2-MR-DALTON_3
+input
+  ic_MRCCpT_2.inp
+check
+  label Number of terms of Lagrangian
+  find DEF_MRCC_LAGRANGIAN
+  find SELECT_SPECIAL
+  find wrote
+  compare int 2
+check
+  label Optimized orthogonalized Jacobian formula
+  find FOPT_Atr
+  find wrote
+  compare int 2
+check
+  rewind
+  label Number of singular values
+  find INVERT
+  find singular values were
+  compare int 1
+  compare int 4
+check
+  label Total energy
+  find Total energy
+  compare real 5 1e-10
+end
+

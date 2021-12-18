@@ -1,0 +1,11 @@
+      SUBROUTINE IWRTMA_T(IMAT,NROW,NCOL,MAXROW,MAXCOL)
+      include 'stdunit.h'
+      DIMENSION IMAT(MAXROW,MAXCOL)
+C
+      DO 100 I = 1, NCOL
+        WRITE(lulog,1110) I,(IMAT(J,I),J= 1,NROW)
+  100 CONTINUE
+ 1110 FORMAT(/"<",I3,">",1X,10I8,/,(1X,10I8))
+C
+      RETURN
+      END

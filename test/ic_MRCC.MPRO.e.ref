@@ -1,0 +1,2713 @@
+ run starts at 2014-01-30 22:16:32.272   host: pauli.chemie.uni-mainz.de
+
+ Version compiled 30 Jan 2014 at 22:15:56 on pauli.chemie.uni-mainz.de           
+
+ compiled with: gfortran-mp-4.8
+ level 1 optimization: -O2 -arch x86_64 -fdefault-integer-8 -DM_I686 -I../include i
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal authors:                                      |
+        |       andreas koehn (university of mainz, germany)        |
+        |       matthias hanauer (university of mainz, germany)     |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       wenlan liu (university of mainz, germany)           |
+        |       gareth richings (university of mainz, germany)      |
+        |       pradipta k samanta (IACS kolkata, india)            |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: MOLPRO_DUMP
+ Namelist FCI:
+ NORB =     18
+ NELEC =     6
+ MS2 =       2
+ ISYM =      4
+ ORBSYM:
+   1  1  1  1  1  1  1  1  1  2  2  2  2  3  3  3  3  4
+ Reading input file ....
+ Input file: gecco.inp
+ +-----------------------------------------------------------------------------+
+ general
+   print=0
+ orb_space
+   shell type=occ,def=(3,1,1,0)
+   shell type=closed,def=(1,0,0,0)
+   shell type=frozen,def=(1,0,0,0)
+ method
+   MR maxexc=2,ms=0,mult=3,sym=4,prc_type=3,pure_vv=F
+   MRCC maxcom_res=2,maxcom_en=2
+ calculate
+  solve maxiter=50,conv=1d-8,maxsub=10
+  solve non_linear optref=-3
+  routes maxbranch=4,sv_thresh=1d-6
+ 
+ +-----------------------------------------------------------------------------+
+A keyword hist
+I   general
+       print 2  1
+  >                     0
+I   orb_space
+I     shell
+         type 8  3
+  > occ
+         def 2  4
+  >                     3                    1                    1                    0
+I     shell
+         type 8  6
+  > closed
+         def 2  4
+  >                     1                    0                    0                    0
+I     shell
+         type 8  6
+  > frozen
+         def 2  4
+  >                     1                    0                    0                    0
+I   method
+I     MR
+         maxexc 2  1
+  >                     2
+         ms 2  1
+  >                     0
+         mult 2  1
+  >                     3
+         sym 2  1
+  >                     4
+         prc_type 2  1
+  >                     3
+         pure_vv 1  1
+  >  F
+I     MRCC
+         maxcom_res 2  1
+  >                     2
+         maxcom_en 2  1
+  >                     2
+I   calculate
+I     solve
+         maxiter 2  1
+  >                    50
+         conv 4  1
+  >    1.0000000000000000E-008
+         maxsub 2  1
+  >                    10
+I     solve
+I       non_linear
+           optref 2  1
+  >                    -3
+I     routes
+         maxbranch 2  1
+  >                     4
+         sv_thresh 4  1
+  >    9.9999999999999995E-007
+A keyword hist
+A   general
+A   orb_space
+A     shell
+A     shell
+A     shell
+A   method
+A     MR
+A     MRCC
+A   calculate
+A     solve
+A     solve
+A       non_linear
+A     routes
+ printlevel is set to                     0
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     3                    1                    1                    0
+  defined shells: 
+   1     9   4   4   1
+  new shell definition: 
+   1     3   1   1   0
+   2     6   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     1                    0                    0                    0
+  defined shells: 
+   1     3   1   1   0
+   2     6   3   3   1
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   1   0
+   3     6   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     1                    0                    0                    0
+  defined shells: 
+   1     1   0   0   0
+   2     2   1   1   0
+   3     6   3   3   1
+  new shell definition: 
+   1     1   0   0   0
+   2     0   0   0   0
+   3     2   1   1   0
+   4     6   3   3   1
+ spin mult. =                     3
+ 2Ms        =                     0
+ cminh   =                     0
+ cmaxh   =                     0
+ cminp   =                     0
+ cmaxp   =                     0
+ cmaxv   =                     8
+ cmaxexc =                     0
+ nactel  =                     4
+ ciroot  =                     1
+ maxroot  =                     1
+ oldref  =  F
+ spinproj=                     0
+ maxcum       =                    -1
+ cum_appr_mode=                     3
+ =======================================
+ min.-max. ranks in the cluster operator
+ (for each excitation class)
+ ---------------------------------------
+ n_h\n_p       0       1       2
+       0     1-0     1-2     2-2
+ =======================================
+ gno     =                     0
+ sv_thr. =    9.9999999999999995E-007
+ Tikhonov=    0.0000000000000000     
+ sv_fix  =  F
+ project =                     1
+ prc_type=                     3
+ prc_shift=   0.0000000000000000     
+ maxcom_en    =                     2
+ maxcom_res   =                     2
+ G_level      =                    -1
+ preopt       =  F
+ Op_eqs       =  F
+ H1bar        =  F
+ HTT          =  F
+ maxtt        =                    -1
+ x_ansatz     =   0.50000000000000000     
+ Tred_mode    =                     0
+ trunc        =  F
+ simp         =                     0
+ My next target: E_REF
+ Rule: DEF_HAMILTONIAN
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Rule: SET_HERMITIAN
+ My next target: C0
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 4 0 0 0 0 0"
+ My next target: F_REF
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: A_C0
+ Rule: CLONE_OPERATOR
+ My next target: F_A_C0
+ Rule: DERIVATIVE
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer in geth2:        0.24Mb
+
+ 2-el. integrals on disk:                     0
+    thereof nonredundant:                     0
+     integrals reordered:                 31617
+ My next target: DEF_ME_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_A_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_E_REF
+ Rule: DEF_ME_LIST
+ My next target: FOPT_A_C0
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     4
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           ME_A_C0
+ ----------------------------------------
+ Number of lists defined:                     4
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+ ------------------------------------------------------------------------------
+ read                     4  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.137E+04(  85.7%)
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.224E+03(  14.0%)
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0 - flops:  0.438E+01(   0.3%)
+ Formally most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.534E-03
+  term #    2 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.534E-03
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.534E-03
+ wrote                     5  entries
+ My next target: DIA_C0
+ Rule: CLONE_OPERATOR
+ My next target: DIAG4SxxM00C0
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: SOLVE_REF
+ Rule: SOLVE_EVP
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                     4  entries
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-07
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+E>>  1                         0.1958    
+ @ time for target A_C0                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+E>>  2                         0.4969E-02
+ @ time for target A_C0                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+E>>  3                         0.2817E-03
+ @ time for target A_C0                cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ CONVERGED IN     4 ITERATIONS
+E>>  3                         0.2019E-13
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -54.982992955068                    ---   0.2019E-13
+E>>==================================================================
+ Rule: PRINT_MEL
+ CI coefficients :
++=============================================================================+
+  block no.    1 len =           10
+ /  0  0  4  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =           10  norm =  1.00000    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                    1
++.............................................................................+
+     1    2  3  4  5  --++    1111    -0.5028461501E-01
+     2    2  2  4  5  22-+    1111    -0.7013030662    
+     3    2  3  4  5  -+-+    1111    -0.8904747694E-10
+     4    2  3  4  5  +--+    1111     0.8904743003E-10
+     5    3  3  4  5  22-+    1111     0.7513632124E-01
+     6    2  2  4  5  22+-    1111    -0.7013030662    
+     7    2  3  4  5  -++-    1111    -0.8904743003E-10
+     8    2  3  4  5  +-+-    1111     0.8904747694E-10
+     9    3  3  4  5  22+-    1111     0.7513632124E-01
+    10    2  3  4  5  ++--    1111     0.5028461501E-01
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =    1.0000000000000000     
+ total norm =    1.0000000000000000     
+ My next target: S(S+1)
+ Rule: DEF_HAMILTONIAN
+ My next target: S+
+ Rule: DEF_OP_FROM_OCC
+ " 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0"
+ My next target: S-
+ Rule: CLONE_OPERATOR
+ My next target: F_REF_S(S+1)
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     3  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     2  entries
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     3  entries
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_S(S+1)
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_S+
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: DEF_ME_S-
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: FOPT_REF_S(S+1)
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     8
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+ ----------------------------------------
+ Number of lists defined:                     8
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+ ------------------------------------------------------------------------------
+ read                     4  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.452E+03(  46.5%)
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.260E+03(  26.7%)
+  term #    3 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.260E+03(  26.7%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 5 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 5 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.620+111
+  term #    2 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.620+111
+  term #    3 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.620+111
+ wrote                    17  entries
+ My next target: EVAL_REF_S(S+1)
+ Rule: EVALUATE
+ read                    16  entries
+ @ time for target S(S+1)              cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Rule: PRINT_MEL
+ Spin expectation value <C0| S^2 |C0> :      2.000000000000
+ My next target: NORM
+ Rule: DEF_HAMILTONIAN
+ My next target: L
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 1 0 0 0 0 2 0 0 1 1 0 0 0 2 0 0 2 0 0"
+ My next target: T
+ Rule: DEF_OP_FROM_OCC
+ " 0 1 0 0 0 0 1 0 0 1 1 0 0 0 2 0 0 2 0 0 0 0 2 0"
+ My next target: F_MRCC_LAG
+ Rule: DEF_MRCC_LAGRANGIAN
+ wrote                   281  entries
+ total # of initially generated terms:                   615
+     8 out of    209 calls (of exp_op_pr2) lead to zero terms
+ @ time for formula generation         cpu/sys/wall:      0.09 /     0.00 /     0.09 s
+ Rule: SELECT_SPECIAL
+ read                   280  entries
+ ----------------------------------------------------------------------------
+ Number of terms with n-fold commutators
+    n       0       1       2       3       4       5       6       7       8
+ ----------------------------------------------------------------------------
+            9      64     206       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ By number of T-T contractions
+    0       9      64     120       0       0       0       0       0       0
+    1       0       0      86       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ wrote                   281  entries
+ My next target: OMG
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0"
+ My next target: F_OMG
+ Rule: DERIVATIVE
+ Rule: SELECT_SPECIAL
+ read                   266  entries
+ ----------------------------------------------------------------------------
+ Number of terms with n-fold commutators
+    n       0       1       2       3       4       5       6       7       8
+ ----------------------------------------------------------------------------
+            6      58     201       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ By number of T-T contractions
+    0       6      58     117       0       0       0       0       0       0
+    1       0       0      84       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ wrote                   267  entries
+ My next target: E(MR)
+ Rule: DEF_HAMILTONIAN
+ My next target: F_MRCC_E
+ Rule: INVARIANT
+ read                   280  entries
+ wrote                    16  entries
+ Rule: PRINT_FORMULA
+ read                    15  entries
+ [INIT TARGET]                   13
+ [CONTR]                   13 ( term #                    1 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    1
+ C0^+ H   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H           1    0  0  0  0
+                      0  0  0  0
+ v03 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   3       0  0  0  0
+                     0  0  4  0
+ [CONTR]                   13 ( term #                    2 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H           4    0  0  1  0
+                      0  1  0  0
+ v03 T           1    0  1  0  0
+                      0  0  1  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  0  3  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+ [CONTR]                   13 ( term #                    3 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H           4    0  0  1  0
+                      0  1  0  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                    4 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ C0^+ H   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H           5    0  0  1  0
+                      0  0  1  0
+ v03 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  1  0
+  c      1   3       0  0  0  0
+                     0  0  3  0
+  c      2   3       0  0  0  0
+                     0  0  1  0
+ [CONTR]                   13 ( term #                    5 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           3    0  2  0  0
+                      0  0  2  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  2  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                    6 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:   0.50000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ C0^+ H   T   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      0  0  1  0
+ v04 T           1    0  1  0  0
+                      0  0  1  0
+ v05 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+  c      3   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                   13 ( term #                    7 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    7
+ C0^+ H   T   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 T           1    0  1  0  0
+                      0  0  1  0
+ v05 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      3   5       0  0  0  0
+                     0  0  2  0
+  c      4   5       0  0  0  0
+                     0  0  1  0
+ [CONTR]                   13 ( term #                    8 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:   0.50000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    6
+ C0^+ H   T   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           1    0  1  0  0
+                      0  0  1  0
+ v04 T           2    0  1  1  0
+                      0  0  2  0
+ v05 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      1   5       0  0  0  0
+                     0  0  2  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                    9 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:   0.50000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    8
+ C0^+ H   T   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 T           2    0  1  1  0
+                      0  0  2  0
+ v05 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+  c      1   5       0  0  0  0
+                     0  0  1  0
+  c      3   5       0  0  0  0
+                     0  0  1  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                   10 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:   0.50000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     5    5    7
+ C0^+ H   T   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          12    0  0  2  0
+                      0  2  0  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 T           2    0  1  1  0
+                      0  0  2  0
+ v05 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       0  0  0  0
+                     0  1  0  0
+  c      3   5       0  0  0  0
+                     0  0  2  0
+  c      4   5       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                   11 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    5
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          13    0  0  2  0
+                      0  1  1  0
+ v03 T           1    0  1  0  0
+                      0  0  1  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  c      2   4       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  1  0
+ [CONTR]                   13 ( term #                   12 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    4
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          13    0  0  2  0
+                      0  1  1  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  1  1  0
+  c      1   4       0  0  0  0
+                     0  0  2  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                   13 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     4    4    6
+ C0^+ H   T   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          13    0  0  2  0
+                      0  1  1  0
+ v03 T           2    0  1  1  0
+                      0  0  2  0
+ v04 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      1   3       0  0  0  0
+                     0  0  1  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+  c      1   4       0  0  0  0
+                     0  0  1  0
+  c      2   4       0  0  0  0
+                     0  0  1  0
+  c      3   4       0  0  0  0
+                     0  0  2  0
+ [CONTR]                   13 ( term #                   14 )
+ +++ contraction info +++
+  name (index) and block of result: E(MR)  (    13)   1
+  factor:    1.0000000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ C0^+ H   C0
+ v01 C0^+        1    0  0  0  0
+                      0  0  4  0
+ v02 H          14    0  0  2  0
+                      0  0  2  0
+ v03 C0          1    0  0  4  0
+                      0  0  0  0
+  c      1   2       0  0  0  0
+                     0  0  2  0
+  c      1   3       0  0  0  0
+                     0  0  2  0
+  c      2   3       0  0  0  0
+                     0  0  2  0
+ [END]
+ My next target: DEF_ME_T
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_OMG
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_E(MR)
+ Rule: DEF_ME_LIST
+ My next target: H_PP
+ Rule: DEF_OP_FROM_OCC
+ " 0 2 0 0 0 2 0 0 0 2 0 0 0 1 1 0 0 2 0 0 0 0 2 0"
+ My next target: F_prePPint
+ Rule: REPLACE
+ read                   266  entries
+ wrote                   267  entries
+ Rule: INVARIANT
+ read                   266  entries
+ wrote                    12  entries
+ My next target: INT_PP
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0"
+ My next target: F_PPint
+ Rule: DERIVATIVE
+ Rule: INVARIANT
+ read                    10  entries
+ wrote                    11  entries
+ My next target: DEF_ME_INT_PP
+ Rule: DEF_ME_LIST
+ My next target: FOPT_OMG
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    15
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+ ----------------------------------------
+ Number of lists defined:                    12
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+ ------------------------------------------------------------------------------
+ read                    15  entries
+ read                   266  entries
+ read                    10  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  209 - H^ 0 P^ 3 V^ 4 X^ 0 - flops:  0.175E+07(   7.2%)
+  term #  191 - H^ 0 P^ 4 V^ 2 X^ 0 - flops:  0.102E+07(   4.2%)
+  term #  188 - H^ 0 P^ 4 V^ 2 X^ 0 - flops:  0.102E+07(   4.2%)
+  term #  186 - H^ 0 P^ 3 V^ 3 X^ 0 - flops:  0.665E+06(   2.7%)
+  term #  201 - H^ 0 P^ 3 V^ 3 X^ 0 - flops:  0.664E+06(   2.7%)
+ Formally most expensive contractions: 
+  term #  237 - H^ 0 P^ 1 V^ 7 X^ 0
+  term #  209 - H^ 0 P^ 3 V^ 4 X^ 0
+  term #  236 - H^ 0 P^ 2 V^ 5 X^ 0
+  term #  145 - H^ 0 P^ 1 V^ 6 X^ 0
+  term #  150 - H^ 0 P^ 1 V^ 6 X^ 0
+ Largest intermediates occur in: 
+  term #  209 - H^ 0 P^ 2 V^ 4 X^ 0 - Mb:     0.404E+01
+  term #  236 - H^ 0 P^ 1 V^ 5 X^ 0 - Mb:     0.124E+01
+  term #  238 - H^ 0 P^ 1 V^ 5 X^ 0 - Mb:     0.711E+00
+  term #  106 - H^ 0 P^ 3 V^ 1 X^ 0 - Mb:     0.516E+00
+  term #  115 - H^ 0 P^ 3 V^ 1 X^ 0 - Mb:     0.516E+00
+ wrote                  1424  entries
+ My next target: FREF
+ Rule: DEF_HAMILTONIAN
+ My next target: F_FREF
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     7  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_FREF
+ Rule: DEF_ME_LIST
+ My next target: FOPT_FREF
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    16
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+ ----------------------------------------
+ Number of lists defined:                    13
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+ ------------------------------------------------------------------------------
+ read                     6  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    5 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.293E+04(  63.9%)
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.138E+04(  30.0%)
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.228E+03(   5.0%)
+  term #    4 - H^ 0 P^ 0 V^ 4 X^ 0 - flops:  0.466E+02(   1.0%)
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0 - flops:  0.444E+01(   0.1%)
+ Formally most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 5 X^ 0
+  term #    5 - H^ 0 P^ 0 V^ 5 X^ 0
+  term #    1 - H^ 0 P^ 0 V^ 4 X^ 0
+  term #    4 - H^ 0 P^ 0 V^ 4 X^ 0
+ Largest intermediates occur in: 
+  term #    4 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.516E-02
+  term #    5 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.516E-02
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.534E-03
+  term #    2 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.488E-03
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.763E-05
+ wrote                    17  entries
+ My next target: EVAL_FREF
+ Rule: EVALUATE
+ read                    16  entries
+ @ time for target FREF                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DIA_T
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00_T
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: Ex
+ Rule: DEF_OP_FROM_OCC
+ " 0 1 0 0 0 0 1 0 0 1 1 0 0 0 2 0 0 2 0 0 0 0 2 0"
+ Rule: SET_ORDER
+ Rule: SET_ORDER
+ My next target: DENS
+ Rule: DEF_OP_FROM_OCC
+ My next target: 1v
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0"
+ Rule: SET_HERMITIAN
+ My next target: 1scal
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0"
+ Rule: SET_HERMITIAN
+ My next target: 1
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 1 0 0 0 1 0 0"
+ Rule: SET_HERMITIAN
+ My next target: F_NORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     2  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     1  entries
+ wrote                     8  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ Rule: INSERT
+ read                     7  entries
+ wrote                     8  entries
+ Rule: INSERT
+ read                     7  entries
+ wrote                     8  entries
+ Rule: REPLACE
+ read                     7  entries
+ wrote                     8  entries
+ My next target: OMGred
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0"
+ Rule: SET_ORDER
+ My next target: F_SC0
+ Rule: DERIVATIVE
+ My next target: D
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0"
+ My next target: F_D
+ Rule: DERIVATIVE
+ My next target: DEF_ME_1
+ Rule: DEF_ME_LIST
+ defining diagonal blocks only!
+ Rule: ADD_UNITY
+ My next target: DEF_ME_D
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_1scal
+ Rule: DEF_ME_LIST
+ defining diagonal blocks only!
+ Rule: ADD_UNITY
+ My next target: DEF_ME_DENS
+ Rule: DEF_ME_LIST
+ My next target: preDENS
+ Rule: DEF_HAMILTONIAN
+ My next target: DENS_dag
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 3 0 0 0 3 0 0 0 4 0 0 0 4 0"
+ My next target: F_preDENS0
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     6  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: F_DENS0
+ Rule: DERIVATIVE
+ My next target: FOPT_D
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    26
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+ ----------------------------------------
+ Number of lists defined:                    18
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+ ------------------------------------------------------------------------------
+ read                     5  entries
+ read                     5  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    6 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.168E+04(  32.6%)
+  term #    3 - H^ 0 P^ 0 V^ 7 X^ 0 - flops:  0.157E+04(  30.4%)
+  term #    2 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.137E+04(  26.6%)
+  term #    4 - H^ 0 P^ 0 V^ 8 X^ 0 - flops:  0.306E+03(   5.9%)
+  term #    1 - H^ 0 P^ 0 V^ 5 X^ 0 - flops:  0.224E+03(   4.3%)
+ Formally most expensive contractions: 
+  term #    4 - H^ 0 P^ 0 V^ 8 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 7 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #    6 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #    1 - H^ 0 P^ 0 V^ 5 X^ 0
+ Largest intermediates occur in: 
+  term #    6 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+  term #    4 - H^ 0 P^ 0 V^ 8 X^ 0 - Mb:     0.374E-01
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.239E-01
+  term #    2 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.598E-02
+  term #    1 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.488E-03
+ wrote                    11  entries
+ My next target: EVAL_D
+ Rule: EVALUATE
+ read                    10  entries
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ My next target: Dtr
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0"
+ My next target: DEF_ME_Dinv
+ Rule: DEF_ME_LIST
+ Rule: INVERT
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.1543422480E-15
+ The smallest included singular value is    0.2528542506E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: ASSIGN_ME2OP
+ My next target: DEF_ME_Dtr
+ Rule: DEF_ME_LIST
+ Rule: REORDER_MEL
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: DEF_ME_Dtrdag
+ Rule: DEF_ME_LIST
+ Rule: REORDER_MEL
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: ASSIGN_ME2OP
+ My next target: Ttr
+ Rule: CLONE_OPERATOR
+ My next target: F_T
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     3  entries
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SELECT_LINE
+ read                     4  entries
+ wrote                     5  entries
+ My next target: DEF_ME_Ttr
+ Rule: DEF_ME_LIST
+ My next target: FOPT_T
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    28
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+   27     Dtr   2   3            ME_Dtr
+   28     Ttr   1   3            ME_Ttr
+ ----------------------------------------
+ Number of lists defined:                    22
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0         4328        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0         4328      Dtr                ME_Dtr_list.da
+   21       ME_Dtrdag  1  0         4328      Dtr             ME_Dtrdag_list.da
+   22          ME_Ttr  1  0         1614      Ttr                ME_Ttr_list.da
+ ------------------------------------------------------------------------------
+ read                     4  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 0 P^ 1 V^ 6 X^ 0 - flops:  0.815E+05(  83.6%)
+  term #    3 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.159E+05(  16.3%)
+  term #    1 - H^ 0 P^ 1 V^ 2 X^ 0 - flops:  0.104E+03(   0.1%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 0 P^ 1 V^ 6 X^ 0
+  term #    3 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #    1 - H^ 0 P^ 1 V^ 2 X^ 0
+ Largest intermediates occur in: 
+  term #    3 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.694E-01
+  term #    2 - H^ 0 P^ 1 V^ 3 X^ 0 - Mb:     0.444E-01
+  term #    1 - H^ 0 P^ 1 V^ 1 X^ 0 - Mb:     0.159E-02
+ wrote                     5  entries
+ My next target: Ltr
+ Rule: CLONE_OPERATOR
+ My next target: F_L
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     3  entries
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SELECT_LINE
+ read                     4  entries
+ wrote                     5  entries
+ My next target: F_E(MRCC)tr
+ Rule: DEF_MRCC_LAGRANGIAN
+ wrote                    60  entries
+ total # of initially generated terms:                   108
+     0 out of     57 calls (of exp_op_pr2) lead to zero terms
+ @ time for formula generation         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Rule: EXPAND
+ read                    59  entries
+ read                     4  entries
+ @ expand                              cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ read                     4  entries
+ @ expand                              cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ wrote                    60  entries
+ Rule: SELECT_SPECIAL
+ read                    59  entries
+ wrote                    30  entries
+ My next target: OMGtr
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0"
+ My next target: F_A_Ttr
+ Rule: DERIVATIVE
+ My next target: A
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0"
+ My next target: F_Atr
+ Rule: DERIVATIVE
+ My next target: DEF_ME_A
+ Rule: DEF_ME_LIST
+ My next target: FOPT_Atr
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           mvp_001
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+   27     Dtr   2   3            ME_Dtr
+   28     Ttr   1   3            ME_Ttr
+   29     Ltr   1   3                  
+   30   OMGtr   2   3                  
+   31       A   3   3              ME_A
+ ----------------------------------------
+ Number of lists defined:                    23
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0         4328        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0         4328      Dtr                ME_Dtr_list.da
+   21       ME_Dtrdag  1  0         4328      Dtr             ME_Dtrdag_list.da
+   22          ME_Ttr  1  0         1614      Ttr                ME_Ttr_list.da
+   23            ME_A  1  0         4328        A                  ME_A_list.da
+ ------------------------------------------------------------------------------
+ read                    17  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   12 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.125E+07(  12.1%)
+  term #   13 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.125E+07(  12.1%)
+  term #    7 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.966E+06(   9.3%)
+  term #    6 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.935E+06(   9.0%)
+  term #    4 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.903E+06(   8.7%)
+ Formally most expensive contractions: 
+  term #   12 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #    8 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #    4 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #    5 - H^ 0 P^ 0 V^ 9 X^ 0
+ Largest intermediates occur in: 
+  term #   12 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+  term #    8 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+  term #    4 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+  term #    5 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.383E+00
+ wrote                   114  entries
+ My next target: EVAL_Atr
+ Rule: EVALUATE
+ read                   113  entries
+ @ time for target A                   cpu/sys/wall:      0.42 /     0.11 /     0.53 s
+ Rule: EXTRACT_DIAG
+ @ time for extracting diagonal        cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SCALE_COPY
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ My next target: F_E_C0
+ Rule: INVARIANT
+ read                   280  entries
+ wrote                    16  entries
+ My next target: F_OMG_C0
+ Rule: DERIVATIVE
+ Rule: SELECT_SPECIAL
+ read                    15  entries
+ ----------------------------------------------------------------------------
+ Number of terms with n-fold commutators
+    n       0       1       2       3       4       5       6       7       8
+ ----------------------------------------------------------------------------
+            3       6       5       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ By number of T-T contractions
+    0       3       6       3       0       0       0       0       0       0
+    1       0       0       2       0       0       0       0       0       0
+ ----------------------------------------------------------------------------
+ wrote                    16  entries
+ My next target: FOPT_OMG_C0
+ Rule: ASSIGN_ME2OP
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    31
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           ME_A_C0
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+   27     Dtr   2   3            ME_Dtr
+   28     Ttr   1   3            ME_Ttr
+   29     Ltr   1   3                  
+   30   OMGtr   2   3                  
+   31       A   3   3              ME_A
+ ----------------------------------------
+ Number of lists defined:                    23
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0         4328        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0         4328      Dtr                ME_Dtr_list.da
+   21       ME_Dtrdag  1  0         4328      Dtr             ME_Dtrdag_list.da
+   22          ME_Ttr  1  0         1614      Ttr                ME_Ttr_list.da
+   23            ME_A  1  0         4328        A                  ME_A_list.da
+ ------------------------------------------------------------------------------
+ read                    15  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    9 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.102E+06(  31.0%)
+  term #   10 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.102E+06(  31.0%)
+  term #    7 - H^ 0 P^ 1 V^ 5 X^ 0 - flops:  0.298E+05(   9.1%)
+  term #    8 - H^ 0 P^ 1 V^ 5 X^ 0 - flops:  0.210E+05(   6.4%)
+  term #   13 - H^ 0 P^ 1 V^ 5 X^ 0 - flops:  0.204E+05(   6.2%)
+ Formally most expensive contractions: 
+  term #    9 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #    5 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #   10 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #    7 - H^ 0 P^ 1 V^ 5 X^ 0
+  term #   13 - H^ 0 P^ 1 V^ 5 X^ 0
+ Largest intermediates occur in: 
+  term #    9 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.694E-01
+  term #   10 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.694E-01
+  term #    7 - H^ 0 P^ 1 V^ 3 X^ 0 - Mb:     0.444E-01
+  term #   13 - H^ 0 P^ 1 V^ 3 X^ 0 - Mb:     0.444E-01
+  term #    6 - H^ 0 P^ 1 V^ 3 X^ 0 - Mb:     0.444E-01
+ wrote                    48  entries
+ My next target: Dproj
+ Rule: CLONE_OPERATOR
+ My next target: DEF_ME_Dproj
+ Rule: DEF_ME_LIST
+ Rule: REORDER_MEL
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: C00
+ Rule: CLONE_OPERATOR
+ My next target: DEF_ME_C00
+ Rule: DEF_ME_LIST
+ Rule: SCALE_COPY
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: Sz
+ Rule: CLONE_OPERATOR
+ My next target: F_T_S2
+ Rule: EXPAND_OP_PRODUCT
+ wrote                    59  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    58  entries
+ wrote                   116  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: EXPAND_OP_PRODUCT
+ read                   115  entries
+ wrote                   173  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: DEF_ME_Sz
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: FOPT_T_S2
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           ME_A_C0
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1                  
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+   27     Dtr   2   3            ME_Dtr
+   28     Ttr   1   3            ME_Ttr
+   29     Ltr   1   3                  
+   30   OMGtr   2   3                  
+   31       A   3   3              ME_A
+   32   Dproj   2   3          ME_Dproj
+   33     C00   1   1            ME_C00
+   34      Sz   1   2             ME_Sz
+ ----------------------------------------
+ Number of lists defined:                    26
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0         4328        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0         4328      Dtr                ME_Dtr_list.da
+   21       ME_Dtrdag  1  0         4328      Dtr             ME_Dtrdag_list.da
+   22          ME_Ttr  1  0         1614      Ttr                ME_Ttr_list.da
+   23            ME_A  1  0         4328        A                  ME_A_list.da
+   24        ME_Dproj  1  0         4328    Dproj              ME_Dproj_list.da
+   25          ME_C00  4  0           10      C00                ME_C00_list.da
+   26           ME_Sz  1  0          122       Sz                 ME_Sz_list.da
+ ------------------------------------------------------------------------------
+ read                   172  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  110 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.788E+05(   2.5%)
+  term #  167 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.788E+05(   2.5%)
+  term #   53 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.788E+05(   2.5%)
+  term #   52 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.492E+05(   1.6%)
+  term #  109 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.492E+05(   1.6%)
+ Formally most expensive contractions: 
+  term #   52 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #  112 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #  170 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #  109 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #  110 - H^ 0 P^ 2 V^ 4 X^ 0
+ Largest intermediates occur in: 
+  term #  110 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.144E+00
+  term #  167 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.144E+00
+  term #   53 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.144E+00
+  term #   55 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.694E-01
+  term #  112 - H^ 0 P^ 2 V^ 2 X^ 0 - Mb:     0.694E-01
+ wrote                  1541  entries
+ My next target: F_T_NORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     8  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_NORM
+ Rule: DEF_ME_LIST
+ My next target: FOPT_T_NORM
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1   E_REF   1   1          ME_E_REF
+    2       H   1  14                H0
+    3      C0   1   1             ME_C0
+    4    A_C0   1   1           ME_A_C0
+    5  DIA_C0   1   1     DIAG4SxxM00C0
+    6  S(S+1)   1   1         ME_S(S+1)
+    7      S+   1   2             ME_S+
+    8      S-   1   2             ME_S-
+    9    NORM   1   1           ME_NORM
+   10       L   1   3                  
+   11       T   1   3              ME_T
+   12     OMG   2   3            ME_OMG
+   13   E(MR)   1   1          ME_E(MR)
+   14    H_PP   1   3                  
+   15  INT_PP   2   2         ME_INT_PP
+   16    FREF   1   2           ME_FREF
+   17   DIA_T   1   3     DIAG1SxxM00_T
+   18      Ex   1   3                  
+   19    DENS   2   4           ME_DENS
+   20      1v   1   2                  
+   21   1scal   1   1          ME_1scal
+   22       1   1   3              ME_1
+   23  OMGred   2   3                  
+   24       D   3   3              ME_D
+   25 preDENS   1   1                  
+   26DENS_dag   1   4                  
+   27     Dtr   2   3            ME_Dtr
+   28     Ttr   1   3            ME_Ttr
+   29     Ltr   1   3                  
+   30   OMGtr   2   3                  
+   31       A   3   3              ME_A
+   32   Dproj   2   3          ME_Dproj
+   33     C00   1   1            ME_C00
+   34      Sz   1   2             ME_Sz
+ ----------------------------------------
+ Number of lists defined:                    27
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        31812        H                    H0_list.da
+    2           ME_C0  4  0           10       C0                 ME_C0_list.da
+    3         ME_A_C0  4  0           10     A_C0               ME_A_C0_list.da
+    4        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+    5   DIAG4SxxM00C0  4  0           10   DIA_C0         DIAG4SxxM00C0_list.da
+    6       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+    7           ME_S+  1  2           61       S+                 ME_S+_list.da
+    8           ME_S-  1 -2           61       S-                 ME_S-_list.da
+    9            ME_T  1  0         1614        T                  ME_T_list.da
+   10          ME_OMG  1  0         1614      OMG                ME_OMG_list.da
+   11        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+   12       ME_INT_PP  1  0         1578   INT_PP             ME_INT_PP_list.da
+   13         ME_FREF  1  0          111     FREF               ME_FREF_list.da
+   14   DIAG1SxxM00_T  1  0         1614    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0          214        1                  ME_1_list.da
+   16            ME_D  1  0         4328        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0          404     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0         4328        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0         4328      Dtr                ME_Dtr_list.da
+   21       ME_Dtrdag  1  0         4328      Dtr             ME_Dtrdag_list.da
+   22          ME_Ttr  1  0         1614      Ttr                ME_Ttr_list.da
+   23            ME_A  1  0         4328        A                  ME_A_list.da
+   24        ME_Dproj  1  0         4328    Dproj              ME_Dproj_list.da
+   25          ME_C00  4  0           10      C00                ME_C00_list.da
+   26           ME_Sz  1  0          122       Sz                 ME_Sz_list.da
+   27         ME_NORM  1  0            1     NORM               ME_NORM_list.da
+ ------------------------------------------------------------------------------
+ read                     7  entries
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    5 - H^ 0 P^ 1 V^ 5 X^ 0 - flops:  0.204E+05(  35.1%)
+  term #    6 - H^ 0 P^ 2 V^ 4 X^ 0 - flops:  0.173E+05(  29.7%)
+  term #    4 - H^ 0 P^ 1 V^ 5 X^ 0 - flops:  0.116E+05(  19.9%)
+  term #    2 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.429E+04(   7.4%)
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.429E+04(   7.4%)
+ Formally most expensive contractions: 
+  term #    6 - H^ 0 P^ 2 V^ 4 X^ 0
+  term #    4 - H^ 0 P^ 1 V^ 5 X^ 0
+  term #    5 - H^ 0 P^ 1 V^ 5 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 6 X^ 0
+ Largest intermediates occur in: 
+  term #    5 - H^ 0 P^ 1 V^ 3 X^ 0 - Mb:     0.444E-01
+  term #    2 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.598E-02
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.598E-02
+  term #    4 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.598E-02
+  term #    6 - H^ 0 P^ 0 V^ 4 X^ 0 - Mb:     0.598E-02
+ wrote                    32  entries
+ My next target: SOLVE_MRCC
+ Rule: SOLVE_NLEQ
+ read                     4  entries
+ read                    10  entries
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:     1614
+idstsec:        1
+signsec :      1.0
+ read                  1423  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-07
+ @ time for target INT_PP              cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target OMG                 cpu/sys/wall:      0.50 /     0.09 /     0.58 s
+ norm of untransformed residual  0.3201    
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>>  1        -54.982992955068 0.3790    
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-03
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.02 /     0.04 s
+E>>  1                         0.2060E-01
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  2                         0.6461E-03
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     3 ITERATIONS
+E>>  2                         0.1440E-04
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.017785688144                    ---   0.1440E-04
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.57 /     0.50 /     2.07 s
+ norm of untransformed residual  0.8081E-01
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.3006483250E-15
+ The smallest included singular value is    0.2280505158E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+>>>  2        -55.017785688144 0.9309E-01
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-03
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.1145E-02
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.02 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.5167E-04
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.024478859303                    ---   0.5167E-04
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.04 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.59 /     0.51 /     2.10 s
+ norm of untransformed residual  0.2344E-01
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         2
+  1E-15          0         0
+      0        176         4
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.3948782534E-13
+ The smallest included singular value is    0.2304190935E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+>>>  3        -55.024478859303 0.2629E-01
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-03
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.6195E-03
+ @ time for target A_C0                cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.3908E-04
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026881930860                    ---   0.3908E-04
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.54 /     0.49 /     2.03 s
+ norm of untransformed residual  0.3466E-02
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         2
+  1E-14          0         0
+  1E-15          0         0
+      0        176         4
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.8128368659E-12
+ The smallest included singular value is    0.2346383544E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+>>>  4        -55.026881930860 0.3650E-02
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.36E-04
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.03 s
+E>>  1                         0.3051E-03
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.1596E-04
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026968335710                    ---   0.1596E-04
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.58 /     0.52 /     2.09 s
+ norm of untransformed residual  0.1020E-02
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.3140184917E-15
+ The smallest included singular value is    0.2365624919E-02
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+>>>  5        -55.026968335710 0.1033E-02
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-04
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+E>>  1                         0.1947E-03
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.9935E-05
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026984988250                    ---   0.9935E-05
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.04 /     0.01 /     0.05 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.56 /     0.51 /     2.07 s
+ norm of untransformed residual  0.3171E-03
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         2
+      0        176         4
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.7614948425E-14
+ The smallest included singular value is    0.2376739547E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+>>>  6        -55.026984988250 0.3797E-03
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.38E-05
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.2866E-04
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.7935E-06
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026995124065                    ---   0.7935E-06
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.57 /     0.51 /     2.08 s
+ norm of untransformed residual  0.9616E-04
+ @ time for target DENS                cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.1614906465E-15
+ The smallest included singular value is    0.2379302826E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+>>>  7        -55.026995124065 0.1139E-03
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.11E-05
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.1873E-04
+ @ time for target A_C0                cpu/sys/wall:      0.04 /     0.01 /     0.04 s
+E>>  2                         0.1406E-05
+ @ time for target A_C0                cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ CONVERGED IN     3 ITERATIONS
+E>>  2                         0.5502E-07
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026994727308                    ---   0.5502E-07
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.64 /     0.53 /     2.17 s
+ norm of untransformed residual  0.3130E-04
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.3140184917E-15
+ The smallest included singular value is    0.2380588080E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>>  8        -55.026994727308 0.3510E-04
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.35E-06
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.3965E-05
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.00 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.1109E-06
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993180724                    ---   0.1109E-06
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.02 /     0.00 /     0.03 s
+ @ time for target E(MR)               cpu/sys/wall:      0.01 /     0.01 /     0.00 s
+ @ time for target OMG                 cpu/sys/wall:      1.56 /     0.50 /     2.07 s
+ norm of untransformed residual  0.9591E-05
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.1627708445E-15
+ The smallest included singular value is    0.2380492176E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>>  9        -55.026993180724 0.1033E-04
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.1682E-05
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.02 /     0.04 s
+E>>  2                         0.1093E-06
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     3 ITERATIONS
+E>>  2                         0.4664E-08
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993070193                    ---   0.4664E-08
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.55 /     0.50 /     2.06 s
+ norm of untransformed residual  0.2116E-05
+ @ time for target DENS                cpu/sys/wall:      0.01 /     0.01 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.2064084343E-15
+ The smallest included singular value is    0.2380574716E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>> 10        -55.026993070193 0.2480E-05
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.25E-07
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+E>>  1                         0.2635E-06
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.4826E-08
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993068945                    ---   0.4826E-08
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target OMG                 cpu/sys/wall:      1.57 /     0.51 /     2.09 s
+ norm of untransformed residual  0.5289E-06
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.2487170800E-15
+ The smallest included singular value is    0.2380572794E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+>>> 11        -55.026993068945 0.6592E-06
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-07
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+E>>  1                         0.6705E-07
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.4184E-08
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993059869                    ---   0.4184E-08
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.61 /     0.51 /     2.12 s
+ norm of untransformed residual  0.8830E-07
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.1425955489E-15
+ The smallest included singular value is    0.2380574736E-02
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>> 12        -55.026993059869 0.9575E-07
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-07
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.03 s
+ CONVERGED IN     1 ITERATIONS
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993059183                    ---   0.8505E-08
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.02 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.65 /     0.53 /     2.17 s
+ norm of untransformed residual  0.2646E-07
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.1425955489E-15
+ The smallest included singular value is    0.2380574736E-02
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+>>> 13        -55.026993059183 0.2889E-07
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       10
+idstsec:        1
+signsec :      1.0
+ read                    47  entries
+Using last vector as initial guess (iopt =   1)
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-07
+ Number of parameters:              10
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.02 /     0.04 s
+E>>  1                         0.1031E-07
+ @ time for target A_C0                cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ CONVERGED IN     2 ITERATIONS
+E>>  1                         0.1652E-09
+  Results for ME_C0
+ -------------------
+E>>==================================================================
+E>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+E>>------------------------------------------------------------------
+E>>    1       -55.026993059922                    ---   0.1652E-09
+E>>==================================================================
+ @ time for target INT_PP              cpu/sys/wall:      0.03 /     0.01 /     0.04 s
+ @ time for target E(MR)               cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for target OMG                 cpu/sys/wall:      1.59 /     0.50 /     2.09 s
+ norm of untransformed residual  0.6692E-08
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           0         0
+ n_p =           1         2
+ -----------------------------------------------------------------------------
+  1E+00          0         0
+  1E-01         38        10
+  1E-02         18         0
+  1E-03          0        12
+  1E-04          0         0
+  1E-05          0         0
+  1E-06          0         0
+  1E-07          0         0
+  1E-08          0         0
+  1E-09          0         0
+  1E-10          0         0
+  1E-11          0         0
+  1E-12          0         0
+  1E-13          0         0
+  1E-14          0         0
+  1E-15          0         0
+      0        176         6
+ =============================================================================
+       78 out of      260 singular values were included
+ The  largest excluded singular value is    0.2603679549E-15
+ The smallest included singular value is    0.2380574664E-02
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.01 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ CONVERGED IN    14 ITERATIONS
+>>> 14        -55.026993059922 0.7225E-08
+>>> CONVERGED <<<
+>>> final energy:        -55.026993059922 <<<
+ Rule: PRINT_MEL
+ final CI coefficients :
++=============================================================================+
+  block no.    1 len =           10
+ /  0  0  4  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =           10  norm =  1.00000    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                    1
++.............................................................................+
+     1    2  3  4  5  --++    1111     0.4879113305E-01
+     2    2  2  4  5  22-+    1111     0.7022205721    
+     3    2  3  4  5  -+-+    1111     0.2417094755E-02
+     4    2  3  4  5  +--+    1111    -0.2417094786E-02
+     5    3  3  4  5  22-+    1111    -0.6703736890E-01
+     6    2  2  4  5  22+-    1111     0.7022205721    
+     7    2  3  4  5  -++-    1111     0.2417094786E-02
+     8    2  3  4  5  +-+-    1111    -0.2417094755E-02
+     9    3  3  4  5  22+-    1111    -0.6703736890E-01
+    10    2  3  4  5  ++--    1111    -0.4879113305E-01
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =    1.0000000000000002     
+ total norm =    1.0000000000000002     
+ Rule: EVALUATE
+ read                    16  entries
+ @ time for target S(S+1)              cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_MEL
+ Spin expectation value <C0| S^2 |C0> :      2.000000000000
+ Rule: RESET_ME_LIST
+ Rule: EVALUATE
+ read                  1540  entries
+ @ time for target S(S+1)              cpu/sys/wall:      0.47 /     0.18 /     0.65 s
+ Rule: RESET_ME_LIST
+ Rule: EVALUATE
+ read                    31  entries
+ @ time for target NORM                cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: SCALE_COPY
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_MEL
+ Spin expectation value <C0|T^+ S^2 T|C0>/<C0|T^+ T|C0> :      2.000000000000
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   45148098 real(8)-words (  344.45 Mb)
+   Largest memory block:       43772792 real(8)-words (  333.96 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:     26.11 /     7.79 /    34.00 s
+ run ends at 2014-01-30 22:17:06.274   host: pauli.chemie.uni-mainz.de

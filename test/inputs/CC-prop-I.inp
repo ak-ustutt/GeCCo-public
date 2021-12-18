@@ -1,0 +1,11 @@
+general
+ memmax=30000000
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+  CC maxexc=3
+calculate
+  solve maxiter=35,conv=1d-10,maxsub=12
+  properties
+  routes contract=2,simtraf=1
+ 

@@ -1,0 +1,22 @@
+      SUBROUTINE WRTMAT2(A,NROW,NCOL,NMROW,NMCOL)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      include 'stdunit.h'
+      DIMENSION A(NMROW,NMCOL)
+C
+      ICOLMX=4
+      ICOLL=0
+      ICOLH=0
+      DO WHILE (ICOLH.NE.NCOL)
+        ICOLL = ICOLH+1
+        ICOLH = MIN(ICOLL-1+ICOLMX,NCOL)
+        WRITE(lulog,1000) (J,J=ICOLL,ICOLH)
+        DO I=1,NROW
+          WRITE(lulog,1010) I,(A(I,J),J=ICOLL,ICOLH)
+        END DO
+      END DO
+
+      RETURN
+ 1000 FORMAT(1H0,3X,2X,4(1X,6X,I6,6X))
+ 1010 FORMAT(1H0,I3,2X,4(1X,E18.10))
+      END

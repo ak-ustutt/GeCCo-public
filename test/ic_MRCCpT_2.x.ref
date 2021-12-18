@@ -1,0 +1,2369 @@
+ run starts at 2014-11-18 15:39:37.269   host: guest3.theochem.uni-stuttgart.de
+
+ Version compiled 18 Nov 2014 at 14:41:29 on guest3.theochem.uni-stuttgart.de    
+
+ compiled with: gfortran
+ level 1 optimization: -O2 -arch x86_64 -fdefault-integer-8 -DM_I686 -I../include i
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal authors:                                      |
+        |       andreas koehn (university of mainz, germany)        |
+        |       matthias hanauer (university of mainz, germany)     |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       wenlan liu (university of mainz, germany)           |
+        |       gareth richings (university of mainz, germany)      |
+        |       pradipta k samanta (IACS kolkata, india)            |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Trying 32-bit read-in routines ...
+ Reading data from environment ....
+ Environment type: DALTON
+   1       -5.5058357566TT
+   2       -1.1740062275TF
+   3       -0.5486785056TF
+   4       -0.2430303489TF
+   5       -0.2162331928TF
+   6       -0.0097305379TF
+   7        0.7839121638FF
+   8       -0.5854698086TF
+   9       -0.3188562655TF
+  10       -0.1436633774TF
+  11        0.6115676502FF
+  12       -0.4453514811TF
+  13       -0.1472386948TF
+ n_bound_orbs =                    11
+ n_freeze_rcmd =                     1
+ raw data from section "SIR IPH "
+ potnuc =    3.0313826109838984     
+ emy    =   -17.668304840650414     
+ eactiv =  -0.84395828836991316     
+ emcscf =   -15.480880518036429     
+ istate =            1
+ ispin  =            1
+ nactel =            2
+ lsym   =            1
+ nsym   =            4
+ mctype =            1
+ nrhf   =    2   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    2   0   0   0   0   0   0   0
+ nash   =    1   1   0   0   0   0   0   0
+ norb   =    7   4   2   0   0   0   0   0
+ nbas   =    7   4   2   0   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    1   1   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:       41      69
+ sym_bound_orbs:
+    1   1   2   1   3   2   1   1   3   2
+    1
+ n_freeze_rcmd:    1
+ valence shell is not high-spin ...
+ Reading input file ....
+ Input file: ic_MRCCpT.inp
+ +-----------------------------------------------------------------------------+
+ general
+  memmax=1000000000
+ orb_space
+  shell type=frozen,def=(1,0,0,0)
+ method
+  MR maxexc=3,triples=B,oldref=T,project=3
+  MRCC maxcom_en=2,maxcom_res=2,trunc_order=4,T1ord=2,Tfix=2,simp=2
+ calculate
+  solve linear maxiter=1
+  routes maxbranch=4,sv_thresh=1d-6
+ +-----------------------------------------------------------------------------+
+A keyword hist
+I   general
+       memmax 2  1
+  >            1000000000
+I   orb_space
+I     shell
+         type 8  6
+  > frozen
+         def 2  4
+  >                     1                    0                    0                    0
+I   method
+I     MR
+         maxexc 2  1
+  >                     3
+         triples 8  1
+  > B
+         oldref 1  1
+  >  T
+         project 2  1
+  >                     3
+I     MRCC
+         maxcom_en 2  1
+  >                     2
+         maxcom_res 2  1
+  >                     2
+         trunc_order 2  1
+  >                     4
+         T1ord 2  1
+  >                     2
+         Tfix 2  1
+  >                     2
+         simp 2  1
+  >                     2
+I   calculate
+I     solve
+I       linear
+           maxiter 2  1
+  >                     1
+I     routes
+         maxbranch 2  1
+  >                     4
+         sv_thresh 4  1
+  >    9.9999999999999995E-007
+A keyword hist
+A   general
+A   orb_space
+A     shell
+A   method
+A     MR
+A     MRCC
+A   calculate
+A     solve
+A       linear
+A     routes
+ printlevel is set to                     3
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                     1                    0                    0                    0
+  defined shells: 
+   1     2   0   0   0
+   2     1   1   0   0
+   3     4   3   2   0
+  new shell definition: 
+   1     1   0   0   0
+   2     1   0   0   0
+   3     1   1   0   0
+   4     4   3   2   0
+ Memory set to   1000000000 r8-words = ( 7629.39 Mb)
+ real-word/integer-word ratio =                     1
+ setting general targets ...
+ setting targets for multiref. wave function
+ cminh      =                     0
+ cmaxh      =                     0
+ cminp      =                     0
+ cmaxp      =                     0
+ cmaxv      =                     4
+ cmaxexc    =                     0
+ nactel     =                     2
+ ciroot     =                     1
+ maxroot    =                     1
+ multistate =  F
+ oldref     =  T
+ spinadapt  =                     0
+ setting targets for generalized normal ordering...
+ maxcum       =                    -1
+ cum_appr_mode=                     3
+ =======================================
+ min.-max. ranks in the cluster operator
+ (for each excitation class)
+ ---------------------------------------
+ n_h\n_p       0       1       2       3
+       0     1-0     1-2     2-2     1-0
+       1     1-2     1-2     2-3     3-3
+       2     2-2     2-3     2-3     3-3
+ =======================================
+ setting targets for internally contracted MR methods
+ gno     =                     0
+ sv_thr. =    9.9999999999999995E-007
+ Tikhonov=    0.0000000000000000     
+ sv_fix  =  F
+ project =                     3
+ prc_type=                     3
+ prc_shift=   0.0000000000000000     
+ setting icMRCC targets
+ maxcom_en    =                     2
+ maxcom_res   =                     2
+ G_level      =                    -1
+ preopt       =  F
+ Op_eqs       =  F
+ H1bar        =  F
+ HTT          =  F
+ maxtt        =                    -1
+ x_ansatz     =   0.50000000000000000     
+ Tred_mode    =                     0
+ trunc        =  T
+ Tfix         =                     2
+ T1ord        =                     2
+ simp         =                     2
+ My next target: Heff
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0"
+ Number of occupation classes for Heff:    3
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for H:   46
+ Rule: SET_HERMITIAN
+ My next target: L
+ Rule: DEF_OP_FROM_OCC
+ " 1 0 0 0 0 0 1 0 1 0 1 0 0 0 2 0 2 0 0 0 0 0 2 0 0 0 1 0 0 1 0 0 0 0 2 0 0 1 1 0 1 0 0 0 0 1 0 0 1 0 1 0 0 1 1 0 2 0 0 0 0 1 1 0 2 0 1 0 0 1 2 0 0 0 2 0 0 2 0 0 1 0 1 0 0 2 0 0 1 0 2 0 0 2 1 0 2 0 0 0 0 2 0 0 2 0 1 0 0 2 1 0 1 0 2 0 0 3 0 0 2 0 1 0 0 3 0 0"
+ Number of occupation classes for L:   16
+ My next target: T
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 1 0 0 0 0 0 2 0 1 0 1 0 0 0 2 0 2 0 0 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 2 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 1 1 0 2 0 0 0 0 1 2 0 2 0 1 0 0 2 0 0 0 0 2 0 0 2 0 0 1 0 1 0 0 2 1 0 1 0 2 0 0 2 0 0 2 0 0 0 0 2 1 0 2 0 1 0 0 3 0 0 1 0 2 0 0 3 0 0 2 0 1 0"
+ Number of occupation classes for T:   16
+ My next target: F_Heff
+ Rule: DEF_MRCC_INTM
+ wrote                   138  entries
+ My next target: C0
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 2 0 0 0 0 0"
+ Number of occupation classes for C0:    1
+ My next target: DEF_ME_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_T
+ Rule: DEF_ME_LIST
+ My next target: OMG
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 1 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 2 0 0 1 0 0 0 0 0 0 0 0 0 2 0 0 2 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0 0 0 0 1 0 0 2 1 0 2 0 0 0 0 0 0 0 0 0 2 0 0 3 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 3 0 0 2 0 0 0"
+ Number of occupation classes for OMG:   16
+ My next target: DEF_ME_OMG
+ Rule: DEF_ME_LIST
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ Trying new DALTON format ...
+ number of incore-blocks in geth2:                     3
+ size of buffer in geth2:        0.07Mb
+ passes over integral file:                     1
+
+ 2-el. integrals on disk:                  2724
+    thereof nonredundant:                  1086
+     integrals reordered:                  8808
+ My next target: Tfix
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 1 0 0 0 0 0 2 0 1 0 1 0 0 0 2 0 2 0 0 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 2 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 1 1 0 2 0 0 0 0 2 0 0 0 0 2 0 0 2 0 0 1 0 1 0 0 2 0 0 2 0 0 0"
+ Number of occupation classes for Tfix:   11
+ My next target: DEF_ME_Tfix
+ Rule: DEF_ME_LIST
+ My next target: T2fix
+ Rule: CLONE_OPERATOR
+ My next target: DEF_ME_T2fix
+ Rule: DEF_ME_LIST
+ My next target: E(MR)
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for E(MR):    1
+ My next target: FREF
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for FREF:    5
+ My next target: F_FREF
+ Rule: EXPAND_OP_PRODUCT
+ wrote                    13  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_FREF
+ Rule: DEF_ME_LIST
+ My next target: FOPT_FREF
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    10
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+ ----------------------------------------
+ Number of lists defined:                     7
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_FREF
+ read                    12  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   11 - H^ 0 P^ 2 V^ 2 X^ 0 - flops:  0.328E+03(  72.9%)
+  term #    7 - H^ 1 P^ 1 V^ 2 X^ 0 - flops:  0.400E+02(   8.9%)
+  term #    9 - H^ 1 P^ 1 V^ 2 X^ 0 - flops:  0.400E+02(   8.9%)
+  term #   10 - H^ 0 P^ 2 V^ 0 X^ 0 - flops:  0.206E+02(   4.6%)
+  term #    5 - H^ 2 P^ 0 V^ 2 X^ 0 - flops:  0.800E+01(   1.8%)
+ Formally most expensive contractions: 
+  term #   11 - H^ 0 P^ 2 V^ 2 X^ 0
+  term #    7 - H^ 1 P^ 1 V^ 2 X^ 0
+  term #    9 - H^ 1 P^ 1 V^ 2 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0
+  term #    5 - H^ 2 P^ 0 V^ 2 X^ 0
+ Largest intermediates occur in: 
+  term #   10 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.247E-02
+  term #   11 - H^ 0 P^ 2 V^ 0 X^ 0 - Mb:     0.247E-02
+  term #    6 - H^ 1 P^ 1 V^ 0 X^ 0 - Mb:     0.275E-03
+  term #    7 - H^ 1 P^ 1 V^ 0 X^ 0 - Mb:     0.275E-03
+  term #    8 - H^ 1 P^ 1 V^ 0 X^ 0 - Mb:     0.275E-03
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 2 X^ 0 - number of terms:                2
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:                1
+ H^ 2 P^ 0 V^ 2 X^ 0 - number of terms:                1
+ H^ 1 P^ 1 V^ 0 X^ 0 - number of terms:                2
+ H^ 1 P^ 1 V^ 2 X^ 0 - number of terms:                2
+ H^ 0 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 0 P^ 2 V^ 2 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.02 /     0.03 /     0.04 s
+ Optimizing for target operator: FREF
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                    34  entries
+ My next target: E_REF
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for E_REF:    1
+ My next target: F_REF
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: A_C0
+ Rule: CLONE_OPERATOR
+ My next target: F_A_C0
+ Rule: DERIVATIVE
+ My next target: DEF_ME_A_C0
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_E_REF
+ Rule: DEF_ME_LIST
+ My next target: FOPT_A_C0
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    12
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+ ----------------------------------------
+ Number of lists defined:                     9
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_A_C0
+ read                     4  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 0 P^ 0 V^ 3 X^ 0 - flops:  0.400E+01(  60.4%)
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0 - flops:  0.225E+01(  34.0%)
+  term #    1 - H^ 0 P^ 0 V^ 2 X^ 0 - flops:  0.375E+00(   5.7%)
+ Formally most expensive contractions: 
+  term #    3 - H^ 0 P^ 0 V^ 4 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 3 X^ 0
+  term #    1 - H^ 0 P^ 0 V^ 2 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.458E-04
+  term #    2 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.458E-04
+  term #    3 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.458E-04
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ Optimizing for target operator: A_C0
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                     5  entries
+ My next target: DIA_C0
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00C0
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+      and from rank 0 part of H
+      and from rank 2 part of H
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: SOLVE_REF
+ Rule: PRINT_MEL
+ CI coefficients:
++=============================================================================+
+  block no.    1 len =            2
+ /  0  0  2  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =            2  norm =  1.00000    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                    1
++.............................................................................+
+     1    3  3  22    11    -0.4804398102    
+     2    4  4  22    11     0.8770277013    
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =    1.0000000000000000     
+ total norm =    1.0000000000000000     
+ My next target: S(S+1)
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for S(S+1):    1
+ My next target: S+
+ Rule: DEF_OP_FROM_OCC
+ " 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0"
+ Number of occupation classes for S+:    3
+ My next target: S-
+ Rule: CLONE_OPERATOR
+ My next target: F_REF_S(S+1)
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     3  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     2  entries
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     3  entries
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_S(S+1)
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_S+
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: DEF_ME_S-
+ Rule: DEF_ME_LIST
+ Rule: ADD_UNITY
+ My next target: FOPT_REF_S(S+1)
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    16
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+ ----------------------------------------
+ Number of lists defined:                    13
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_REF_S(S+1)
+ read                     4  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 3 X^ 0 - flops:  0.838E+01(  33.3%)
+  term #    2 - H^ 0 P^ 0 V^ 3 X^ 0 - flops:  0.838E+01(  33.3%)
+  term #    3 - H^ 0 P^ 0 V^ 3 X^ 0 - flops:  0.838E+01(  33.3%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 3 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 3 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 3 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.122E-03
+  term #    2 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.122E-03
+  term #    3 - H^ 0 P^ 0 V^ 2 X^ 0 - Mb:     0.122E-03
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                3
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.02 /     0.00 /     0.02 s
+ Optimizing for target operator: S(S+1)
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                    17  entries
+ My next target: EVAL_REF_S(S+1)
+ Rule: EVALUATE
+ read                    16  entries
+ term #     1:    -1.000000000        -1.000000000    
+ term #     2:    0.5000000000       -0.5000000000    
+ term #     3:    0.5000000000         0.000000000    
+ @ time for target S(S+1)              cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  0.0000000000000    
+ Rule: PRINT_MEL
+ Spin expectation value <C0| S^2 |C0> :      0.000000000000
+ My next target: EVAL_FREF
+ Rule: EVALUATE
+ read                    33  entries
+ @ time for target FREF                cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  15.789173523732    
+ My next target: DYALL_HAM
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for Hdyall:    5
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for Hdact:    2
+ Rule: DEF_FORMULA
+ wrote                     7  entries
+ @ set formula                         cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: REPLACE
+ read                     6  entries
+ wrote                     7  entries
+ My next target: MRCC_PT_LAG
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     4  entries
+ wrote                    30  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    29  entries
+ wrote                   161  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: EXPAND_OP_PRODUCT
+ read                   160  entries
+ wrote                   298  entries
+ @ Operator product                    cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: EXPAND_OP_PRODUCT
+ read                   297  entries
+ wrote                   435  entries
+ @ Operator product                    cpu/sys/wall:      0.02 /     0.00 /     0.01 s
+ Rule: EXPAND_OP_PRODUCT
+ read                   434  entries
+ wrote                  1155  entries
+ @ Operator product                    cpu/sys/wall:      0.08 /     0.00 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  1154  entries
+ wrote                  1244  entries
+ @ Operator product                    cpu/sys/wall:      0.03 /     0.00 /     0.03 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  1243  entries
+ wrote                  2224  entries
+ @ Operator product                    cpu/sys/wall:      0.08 /     0.00 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  2223  entries
+ wrote                  3204  entries
+ @ Operator product                    cpu/sys/wall:      0.08 /     0.00 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  3203  entries
+ wrote                  4028  entries
+ @ Operator product                    cpu/sys/wall:      0.08 /     0.00 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  4027  entries
+ wrote                  4846  entries
+ @ Operator product                    cpu/sys/wall:      0.08 /     0.01 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  4845  entries
+ wrote                  5356  entries
+ @ Operator product                    cpu/sys/wall:      0.07 /     0.00 /     0.07 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  5355  entries
+ wrote                  5866  entries
+ @ Operator product                    cpu/sys/wall:      0.07 /     0.00 /     0.07 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  5865  entries
+ wrote                  6511  entries
+ @ Operator product                    cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ Rule: EXPAND_OP_PRODUCT
+ read                  6510  entries
+ wrote                  6625  entries
+ @ Operator product                    cpu/sys/wall:      0.05 /     0.00 /     0.06 s
+ Rule: SELECT_SPECIAL
+ read                  6624  entries
+ wrote                  2927  entries
+ Rule: EXPAND
+ read                  2926  entries
+ read                     6  entries
+ @ expand                              cpu/sys/wall:      0.15 /     0.00 /     0.15 s
+ wrote                  2927  entries
+ Rule: DERIVATIVE
+ Rule: INVARIANT
+ read                  2926  entries
+ wrote                  2168  entries
+ My next target: MRCC_PT_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    18
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+ ----------------------------------------
+ Number of lists defined:                    13
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_OMG_PT
+ read                   760  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #  562 - H^ 2 P^ 4 V^ 1 X^ 0 - flops:  0.499E+05(   7.6%)
+  term #  565 - H^ 1 P^ 4 V^ 1 X^ 0 - flops:  0.257E+05(   3.9%)
+  term #  568 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.242E+05(   3.7%)
+  term #  567 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.236E+05(   3.6%)
+  term #  631 - H^ 2 P^ 4 V^ 1 X^ 0 - flops:  0.132E+05(   2.0%)
+ Formally most expensive contractions: 
+  term #  597 - H^ 4 P^ 2 V^ 2 X^ 0
+  term #  601 - H^ 3 P^ 2 V^ 3 X^ 0
+  term #  432 - H^ 4 P^ 1 V^ 3 X^ 0
+  term #  431 - H^ 4 P^ 1 V^ 3 X^ 0
+  term #  631 - H^ 2 P^ 4 V^ 1 X^ 0
+ Largest intermediates occur in: 
+  term #  700 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #  548 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #  366 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #  565 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #  237 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:                7
+ H^ 0 P^ 0 V^ 5 X^ 0 - number of terms:                1
+ H^ 1 P^ 0 V^ 2 X^ 0 - number of terms:                3
+ H^ 1 P^ 0 V^ 3 X^ 0 - number of terms:               23
+ H^ 1 P^ 0 V^ 4 X^ 0 - number of terms:               14
+ H^ 1 P^ 0 V^ 5 X^ 0 - number of terms:                4
+ H^ 2 P^ 0 V^ 1 X^ 0 - number of terms:                1
+ H^ 2 P^ 0 V^ 2 X^ 0 - number of terms:               19
+ H^ 2 P^ 0 V^ 3 X^ 0 - number of terms:               28
+ H^ 2 P^ 0 V^ 4 X^ 0 - number of terms:               17
+ H^ 3 P^ 0 V^ 2 X^ 0 - number of terms:               14
+ H^ 3 P^ 0 V^ 3 X^ 0 - number of terms:                9
+ H^ 4 P^ 0 V^ 2 X^ 0 - number of terms:                2
+ H^ 0 P^ 1 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 1 V^ 3 X^ 0 - number of terms:               21
+ H^ 0 P^ 1 V^ 4 X^ 0 - number of terms:                2
+ H^ 1 P^ 1 V^ 1 X^ 0 - number of terms:                5
+ H^ 1 P^ 1 V^ 2 X^ 0 - number of terms:               28
+ H^ 1 P^ 1 V^ 3 X^ 0 - number of terms:               35
+ H^ 1 P^ 1 V^ 4 X^ 0 - number of terms:               15
+ H^ 2 P^ 1 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 1 V^ 1 X^ 0 - number of terms:               19
+ H^ 2 P^ 1 V^ 2 X^ 0 - number of terms:               54
+ H^ 2 P^ 1 V^ 3 X^ 0 - number of terms:               63
+ H^ 2 P^ 1 V^ 4 X^ 0 - number of terms:               18
+ H^ 3 P^ 1 V^ 1 X^ 0 - number of terms:               18
+ H^ 3 P^ 1 V^ 2 X^ 0 - number of terms:               18
+ H^ 3 P^ 1 V^ 3 X^ 0 - number of terms:               12
+ H^ 4 P^ 1 V^ 1 X^ 0 - number of terms:                2
+ H^ 4 P^ 1 V^ 3 X^ 0 - number of terms:                2
+ H^ 0 P^ 2 V^ 1 X^ 0 - number of terms:                1
+ H^ 0 P^ 2 V^ 2 X^ 0 - number of terms:               15
+ H^ 1 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 1 P^ 2 V^ 1 X^ 0 - number of terms:                9
+ H^ 1 P^ 2 V^ 2 X^ 0 - number of terms:               28
+ H^ 1 P^ 2 V^ 3 X^ 0 - number of terms:               38
+ H^ 2 P^ 2 V^ 0 X^ 0 - number of terms:                6
+ H^ 2 P^ 2 V^ 1 X^ 0 - number of terms:               34
+ H^ 2 P^ 2 V^ 2 X^ 0 - number of terms:               45
+ H^ 2 P^ 2 V^ 3 X^ 0 - number of terms:               26
+ H^ 3 P^ 2 V^ 0 X^ 0 - number of terms:                6
+ H^ 3 P^ 2 V^ 1 X^ 0 - number of terms:               13
+ H^ 3 P^ 2 V^ 2 X^ 0 - number of terms:                8
+ H^ 3 P^ 2 V^ 3 X^ 0 - number of terms:                1
+ H^ 4 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 4 P^ 2 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 3 V^ 1 X^ 0 - number of terms:                4
+ H^ 1 P^ 3 V^ 1 X^ 0 - number of terms:                9
+ H^ 1 P^ 3 V^ 2 X^ 0 - number of terms:               14
+ H^ 2 P^ 3 V^ 0 X^ 0 - number of terms:                6
+ H^ 2 P^ 3 V^ 1 X^ 0 - number of terms:               13
+ H^ 2 P^ 3 V^ 2 X^ 0 - number of terms:               12
+ H^ 3 P^ 3 V^ 0 X^ 0 - number of terms:                2
+ H^ 3 P^ 3 V^ 1 X^ 0 - number of terms:                2
+ H^ 0 P^ 4 V^ 0 X^ 0 - number of terms:                1
+ H^ 1 P^ 4 V^ 1 X^ 0 - number of terms:                3
+ H^ 2 P^ 4 V^ 0 X^ 0 - number of terms:                2
+ H^ 2 P^ 4 V^ 1 X^ 0 - number of terms:                2
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.68 /     0.02 /     0.69 s
+ Optimizing for target operator: OMG
+ @ time for optimization               cpu/sys/wall:      0.03 /     0.00 /     0.03 s
+ wrote                  3797  entries
+ My next target: DIA_T
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00_T
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of FREF
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: NORM
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for NORM:    1
+ My next target: Ex
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 1 0 0 0 0 0 2 0 1 0 1 0 0 0 2 0 2 0 0 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 2 0 0 1 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 1 1 0 2 0 0 0 0 1 2 0 2 0 1 0 0 2 0 0 0 0 2 0 0 2 0 0 1 0 1 0 0 2 1 0 1 0 2 0 0 2 0 0 2 0 0 0 0 2 1 0 2 0 1 0 0 3 0 0 1 0 2 0 0 3 0 0 2 0 1 0"
+ Number of occupation classes for Ex:   16
+ Rule: SET_ORDER
+ Rule: SET_ORDER
+ My next target: DENS
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for DENS:    2
+ My next target: 1v
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 3 0 0 0 3 0"
+ Number of occupation classes for 1v:    3
+ Rule: SET_HERMITIAN
+ My next target: 1scal
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0"
+ Number of occupation classes for 1scal:    1
+ Rule: SET_HERMITIAN
+ My next target: 1
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 3 0 0 0 3 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0"
+ Number of occupation classes for 1:    5
+ Rule: SET_HERMITIAN
+ My next target: F_NORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     7  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     6  entries
+ wrote                    42  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: INSERT
+ read                    41  entries
+ wrote                    42  entries
+ Rule: INSERT
+ read                    41  entries
+ wrote                    42  entries
+ Rule: REPLACE
+ read                    41  entries
+ wrote                    42  entries
+ My next target: OMGred
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 1 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 2 0 0 1 0 0 0 0 0 0 0 0 0 2 0 0 2 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0 0 0 0 1 0 0 2 1 0 2 0 0 0 0 0 0 0 0 0 2 0 0 3 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 3 0 0 2 0 0 0"
+ Number of occupation classes for OMGred:   16
+ Rule: SET_ORDER
+ My next target: F_SC0
+ Rule: DERIVATIVE
+ My next target: D
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0"
+ Number of occupation classes for D:   28
+ My next target: F_D
+ Rule: DERIVATIVE
+ My next target: DEF_ME_1
+ Rule: DEF_ME_LIST
+ defining diagonal blocks only!
+ Rule: ADD_UNITY
+ My next target: DEF_ME_D
+ Rule: DEF_ME_LIST
+ My next target: DEF_ME_1scal
+ Rule: DEF_ME_LIST
+ defining diagonal blocks only!
+ Rule: ADD_UNITY
+ My next target: DEF_ME_DENS
+ Rule: DEF_ME_LIST
+ My next target: preDENS
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for preDENS:    1
+ My next target: DENS_dag
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0"
+ Number of occupation classes for DENS_dag:    2
+ My next target: F_preDENS0
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: F_DENS0
+ Rule: DERIVATIVE
+ My next target: FOPT_D
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    29
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+   19   DIA_T   1  16     DIAG1SxxM00_T
+   20    NORM   1   1                  
+   21      Ex   1  16                  
+   22    DENS   2   2           ME_DENS
+   23      1v   1   3                  
+   24   1scal   1   1          ME_1scal
+   25       1   1   5              ME_1
+   26  OMGred   2  16                  
+   27       D   3  28              ME_D
+   28 preDENS   1   1                  
+   29DENS_dag   1   2                  
+ ----------------------------------------
+ Number of lists defined:                    18
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+   14   DIAG1SxxM00_T  1  0         2993    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0           78        1                  ME_1_list.da
+   16            ME_D  1  0          740        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0           14     DENS               ME_DENS_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_DENS0
+ read                     3  entries
+  -- F_D
+ read                    41  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   36 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.238E+02(  10.9%)
+  term #   31 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.238E+02(  10.9%)
+  term #   20 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.238E+02(  10.9%)
+  term #   14 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.238E+02(  10.9%)
+  term #   13 - H^ 0 P^ 0 V^ 6 X^ 0 - flops:  0.210E+02(   9.7%)
+ Formally most expensive contractions: 
+  term #   36 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #   14 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #   31 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #   30 - H^ 0 P^ 0 V^ 6 X^ 0
+  term #   20 - H^ 0 P^ 0 V^ 6 X^ 0
+ Largest intermediates occur in: 
+  term #   30 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   20 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   36 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   13 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   31 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 0 X^ 0 - number of terms:               27
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:                8
+ H^ 0 P^ 0 V^ 6 X^ 0 - number of terms:                6
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ Optimizing for target operator: DENS
+ Optimizing for target operator: D
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                    45  entries
+ My next target: EVAL_D
+ Rule: EVALUATE
+ read                    44  entries
+ @ time for target DENS                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target D                   cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  1.5132172009484    
+>>>    2 -->  8.8037889370246    
+ My next target: Dtr
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 2 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0"
+ Number of occupation classes for Dtr:   28
+ My next target: DEF_ME_Dinv
+ Rule: DEF_ME_LIST
+ Rule: INVERT
+ Calculating square root of inverse
+ Input list will be overwritten by projector.
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ n_h =           1         2         0         1         2         0         1         2         1         2
+ n_p =           0         0         1         1         1         2         2         2         3         3
+ -----------------------------------------------------------------------------
+  1E+00          0         1         0         3         0         1         0         3         1         0
+  1E-01          4         0         4         3         4         0         4         3         0         4
+  1E-02          0         0         0         0         0         0         0         0         0         0
+  1E-03          0         0         0         0         0         0         0         0         0         0
+  1E-04          0         0         0         0         0         0         0         0         0         0
+  1E-05          0         0         0         0         0         0         0         0         0         0
+  1E-06          0         0         0         0         0         0         0         0         0         0
+  1E-07          0         0         0         0         0         0         0         0         0         0
+  1E-08          0         0         0         0         0         0         0         0         0         0
+  1E-09          0         0         0         0         0         0         0         0         0         0
+  1E-10          0         0         0         0         0         0         0         0         0         0
+  1E-11          0         0         0         0         0         0         0         0         0         0
+  1E-12          0         0         0         0         0         0         0         0         0         0
+  1E-13          0         0         0         0         0         0         0         0         0         0
+  1E-14          0         0         0         0         0         0         0         0         0         0
+  1E-15          2         0         0         0         2         0         0         0         0         0
+      0         22         5        24        11        22         5        24        11         5         0
+ =============================================================================
+       35 out of      168 singular values were included
+ The  largest excluded singular value is    0.1517767249E-14
+ The smallest included singular value is    0.2308224112E+00
+ @ time for inversion                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: ASSIGN_ME2OP
+ My next target: DEF_ME_Dtr
+ Rule: DEF_ME_LIST
+ Rule: REORDER_MEL
+ @ time for reordering ME-list         cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ My next target: Ttr
+ Rule: CLONE_OPERATOR
+ My next target: F_T
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     6  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     5  entries
+ wrote                     7  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     6  entries
+ wrote                    11  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    10  entries
+ wrote                    15  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    14  entries
+ wrote                    19  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    18  entries
+ wrote                    20  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    19  entries
+ wrote                    24  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    23  entries
+ wrote                    28  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    27  entries
+ wrote                    29  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    28  entries
+ wrote                    30  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SELECT_LINE
+ read                    29  entries
+ wrote                    30  entries
+ My next target: Ltr
+ Rule: CLONE_OPERATOR
+ My next target: F_L
+ Rule: EXPAND_OP_PRODUCT
+ wrote                     6  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     5  entries
+ wrote                     7  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                     6  entries
+ wrote                    11  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    10  entries
+ wrote                    15  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    14  entries
+ wrote                    19  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    18  entries
+ wrote                    20  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    19  entries
+ wrote                    24  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    23  entries
+ wrote                    28  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    27  entries
+ wrote                    29  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                    28  entries
+ wrote                    30  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SELECT_LINE
+ read                    29  entries
+ wrote                    30  entries
+ My next target: F_E(MRCC)tr
+ Rule: DEF_MRCC_LAGRANGIAN
+ wrote                  1155  entries
+ total # of initially generated terms:                  1663
+    41 out of    890 calls (of exp_op_pr2) lead to zero terms
+ @ time for formula generation         cpu/sys/wall:      0.17 /     0.01 /     0.17 s
+ Rule: EXPAND
+ read                  1154  entries
+ read                    29  entries
+ @ expand                              cpu/sys/wall:      0.25 /     0.00 /     0.26 s
+ read                    29  entries
+ @ expand                              cpu/sys/wall:      0.61 /     0.00 /     0.61 s
+ wrote                  3978  entries
+ Rule: SELECT_SPECIAL
+ read                  3977  entries
+ wrote                   666  entries
+ My next target: OMGtr
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 1 1 0 1 0 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0 0 0"
+ Number of occupation classes for OMGtr:    8
+ My next target: F_A_Ttr
+ Rule: DERIVATIVE
+ My next target: A
+ Rule: DEF_OP_FROM_OCC
+ " 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 1 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0"
+ Number of occupation classes for A:    7
+ My next target: F_Atr
+ Rule: DERIVATIVE
+ My next target: DEF_ME_A
+ Rule: DEF_ME_LIST
+ My next target: FOPT_Atr
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+   19   DIA_T   1  16     DIAG1SxxM00_T
+   20    NORM   1   1                  
+   21      Ex   1  16                  
+   22    DENS   2   2           ME_DENS
+   23      1v   1   3                  
+   24   1scal   1   1          ME_1scal
+   25       1   1   5              ME_1
+   26  OMGred   2  16                  
+   27       D   3  28              ME_D
+   28 preDENS   1   1                  
+   29DENS_dag   1   2                  
+   30     Dtr   2  28            ME_Dtr
+   31     Ttr   1  16                  
+   32     Ltr   1  16                  
+   33   OMGtr   2   8                  
+   34       A   3   7              ME_A
+ ----------------------------------------
+ Number of lists defined:                    21
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+   14   DIAG1SxxM00_T  1  0         2993    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0           78        1                  ME_1_list.da
+   16            ME_D  1  0          740        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0           14     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0          740        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0          740      Dtr                ME_Dtr_list.da
+   21            ME_A  1  0          284        A                  ME_A_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_Atr
+ read                   105  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   38 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.154E+04(   6.1%)
+  term #   36 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.140E+04(   5.5%)
+  term #   52 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.137E+04(   5.4%)
+  term #   54 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.137E+04(   5.4%)
+  term #   56 - H^ 0 P^ 0 V^ 9 X^ 0 - flops:  0.137E+04(   5.4%)
+ Formally most expensive contractions: 
+  term #   38 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #   56 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #   52 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #   60 - H^ 0 P^ 0 V^ 9 X^ 0
+  term #   58 - H^ 0 P^ 0 V^ 9 X^ 0
+ Largest intermediates occur in: 
+  term #   56 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   60 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   42 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   44 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+  term #   46 - H^ 0 P^ 0 V^ 6 X^ 0 - Mb:     0.439E-02
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                3
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:               30
+ H^ 0 P^ 0 V^ 5 X^ 0 - number of terms:               10
+ H^ 0 P^ 0 V^ 6 X^ 0 - number of terms:               21
+ H^ 0 P^ 0 V^ 7 X^ 0 - number of terms:               29
+ H^ 0 P^ 0 V^ 9 X^ 0 - number of terms:               11
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.28 /     0.01 /     0.28 s
+ Optimizing for target operator: A
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                   730  entries
+ My next target: DEF_ME_Auni
+ Rule: DEF_ME_LIST
+ Rule: ASSIGN_ME2OP
+ My next target: EVAL_Atr
+ Rule: EVALUATE
+ read                   729  entries
+ @ time for target A                   cpu/sys/wall:      0.10 /     0.03 /     0.13 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.03 /     0.13 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  1.0717095600190    
+ Rule: INVERT
+ =============================================================================
+ Singular value histogram (by excitation classes)
+ class:          1         2         3         4         5         6         7
+ -----------------------------------------------------------------------------
+  1E+00          0         0         0         0         0         0         0
+  1E-01          0         0         1         4         0         0         1
+  1E-02          4         0         0         0         0         5         0
+  1E-03          0         0         0         0         0         0         0
+  1E-04          0         0         0         0         0         0         0
+  1E-05          0         0         0         0         0         0         0
+  1E-06          0         0         0         0         0         0         0
+  1E-07          0         0         0         0         0         0         0
+  1E-08          0         0         0         0         0         0         0
+  1E-09          0         0         0         0         0         0         0
+  1E-10          0         0         0         0         0         0         0
+  1E-11          0         0         0         0         0         0         0
+  1E-12          0         0         0         0         0         0         0
+  1E-13          0         0         0         0         0         0         0
+  1E-14          0         0         0         0         0         0         0
+  1E-15          0         0         0         0         0         0         0
+      0          0        24         5         0        24        11         5
+ =============================================================================
+       84 out of       84 singular values were included
+ The  largest excluded singular value is    0.0000000000E+00
+ The smallest included singular value is    0.0000000000E+00
+ @ time for inversion                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ Rule: REORDER_MEL
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Rule: EXTRACT_DIAG
+ @ time for extracting diagonal        cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SCALE_COPY
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DEF_ME_Dtrdag
+ Rule: DEF_ME_LIST
+ Rule: REORDER_MEL
+ Input list will be overwritten by its adjoint.
+ @ time for reordering ME-list         cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ Rule: ASSIGN_ME2OP
+ My next target: DEF_ME_Ttr
+ Rule: DEF_ME_LIST
+ My next target: FOPT_T
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1                  
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+   19   DIA_T   1  16     DIAG1SxxM00_T
+   20    NORM   1   1                  
+   21      Ex   1  16                  
+   22    DENS   2   2           ME_DENS
+   23      1v   1   3                  
+   24   1scal   1   1          ME_1scal
+   25       1   1   5              ME_1
+   26  OMGred   2  16                  
+   27       D   3  28              ME_D
+   28 preDENS   1   1                  
+   29DENS_dag   1   2                  
+   30     Dtr   2  28            ME_Dtr
+   31     Ttr   1  16            ME_Ttr
+   32     Ltr   1  16                  
+   33   OMGtr   2   8                  
+   34       A   3   7              ME_A
+ ----------------------------------------
+ Number of lists defined:                    24
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+   14   DIAG1SxxM00_T  1  0         2993    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0           78        1                  ME_1_list.da
+   16            ME_D  1  0          740        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0           14     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0          740        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0          740      Dtr                ME_Dtr_list.da
+   21            ME_A  1  0          284        A                  ME_A_list.da
+   22         ME_Auni  1  0          284        A               ME_Auni_list.da
+   23       ME_Dtrdag  1  0          740      Dtr             ME_Dtrdag_list.da
+   24          ME_Ttr  1  0         2993      Ttr                ME_Ttr_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_T
+ read                    29  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   22 - H^ 1 P^ 2 V^ 6 X^ 0 - flops:  0.110E+05(  43.9%)
+  term #   27 - H^ 1 P^ 3 V^ 4 X^ 0 - flops:  0.367E+04(  14.6%)
+  term #   26 - H^ 2 P^ 2 V^ 4 X^ 0 - flops:  0.245E+04(   9.8%)
+  term #   21 - H^ 1 P^ 2 V^ 4 X^ 0 - flops:  0.184E+04(   7.3%)
+  term #   20 - H^ 1 P^ 2 V^ 4 X^ 0 - flops:  0.184E+04(   7.3%)
+ Formally most expensive contractions: 
+  term #   22 - H^ 1 P^ 2 V^ 6 X^ 0
+  term #   17 - H^ 2 P^ 1 V^ 6 X^ 0
+  term #   27 - H^ 1 P^ 3 V^ 4 X^ 0
+  term #   26 - H^ 2 P^ 2 V^ 4 X^ 0
+  term #   28 - H^ 2 P^ 3 V^ 2 X^ 0
+ Largest intermediates occur in: 
+  term #   27 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #   22 - H^ 1 P^ 2 V^ 3 X^ 0 - Mb:     0.560E-01
+  term #   21 - H^ 1 P^ 2 V^ 3 X^ 0 - Mb:     0.560E-01
+  term #   28 - H^ 2 P^ 3 V^ 1 X^ 0 - Mb:     0.249E-01
+  term #   26 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 1 P^ 0 V^ 2 X^ 0 - number of terms:                1
+ H^ 1 P^ 0 V^ 4 X^ 0 - number of terms:                2
+ H^ 1 P^ 0 V^ 6 X^ 0 - number of terms:                1
+ H^ 2 P^ 0 V^ 4 X^ 0 - number of terms:                1
+ H^ 0 P^ 1 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 1 V^ 4 X^ 0 - number of terms:                2
+ H^ 0 P^ 1 V^ 6 X^ 0 - number of terms:                1
+ H^ 1 P^ 1 V^ 0 X^ 0 - number of terms:                1
+ H^ 1 P^ 1 V^ 2 X^ 0 - number of terms:                2
+ H^ 1 P^ 1 V^ 4 X^ 0 - number of terms:                1
+ H^ 2 P^ 1 V^ 2 X^ 0 - number of terms:                1
+ H^ 2 P^ 1 V^ 4 X^ 0 - number of terms:                2
+ H^ 2 P^ 1 V^ 6 X^ 0 - number of terms:                1
+ H^ 0 P^ 2 V^ 4 X^ 0 - number of terms:                1
+ H^ 1 P^ 2 V^ 2 X^ 0 - number of terms:                1
+ H^ 1 P^ 2 V^ 4 X^ 0 - number of terms:                2
+ H^ 1 P^ 2 V^ 6 X^ 0 - number of terms:                1
+ H^ 2 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 2 V^ 2 X^ 0 - number of terms:                2
+ H^ 2 P^ 2 V^ 4 X^ 0 - number of terms:                1
+ H^ 1 P^ 3 V^ 4 X^ 0 - number of terms:                1
+ H^ 2 P^ 3 V^ 2 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.02 /     0.01 /     0.02 s
+ Optimizing for target operator: T
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                    30  entries
+ My next target: DEF_ME_E(MR)
+ Rule: DEF_ME_LIST
+ My next target: FOPT_Ecorrected
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1          ME_E(MR)
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+   19   DIA_T   1  16     DIAG1SxxM00_T
+   20    NORM   1   1                  
+   21      Ex   1  16                  
+   22    DENS   2   2           ME_DENS
+   23      1v   1   3                  
+   24   1scal   1   1          ME_1scal
+   25       1   1   5              ME_1
+   26  OMGred   2  16                  
+   27       D   3  28              ME_D
+   28 preDENS   1   1                  
+   29DENS_dag   1   2                  
+   30     Dtr   2  28            ME_Dtr
+   31     Ttr   1  16            ME_Ttr
+   32     Ltr   1  16                  
+   33   OMGtr   2   8                  
+   34       A   3   7              ME_A
+ ----------------------------------------
+ Number of lists defined:                    25
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+   14   DIAG1SxxM00_T  1  0         2993    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0           78        1                  ME_1_list.da
+   16            ME_D  1  0          740        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0           14     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0          740        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0          740      Dtr                ME_Dtr_list.da
+   21            ME_A  1  0          284        A                  ME_A_list.da
+   22         ME_Auni  1  0          284        A               ME_Auni_list.da
+   23       ME_Dtrdag  1  0          740      Dtr             ME_Dtrdag_list.da
+   24          ME_Ttr  1  0         2993      Ttr                ME_Ttr_list.da
+   25        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- MRCC_PT_LAG
+ read                  2167  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term # 1025 - H^ 2 P^ 4 V^ 1 X^ 0 - flops:  0.499E+05(   4.8%)
+  term # 1015 - H^ 1 P^ 4 V^ 1 X^ 0 - flops:  0.257E+05(   2.5%)
+  term #  975 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.242E+05(   2.3%)
+  term #  974 - H^ 2 P^ 3 V^ 2 X^ 0 - flops:  0.236E+05(   2.3%)
+  term # 1031 - H^ 2 P^ 4 V^ 1 X^ 0 - flops:  0.132E+05(   1.3%)
+ Formally most expensive contractions: 
+  term # 1463 - H^ 3 P^ 2 V^ 3 X^ 0
+  term # 1412 - H^ 3 P^ 2 V^ 3 X^ 0
+  term #  959 - H^ 4 P^ 2 V^ 2 X^ 0
+  term #  888 - H^ 3 P^ 2 V^ 3 X^ 0
+  term # 1001 - H^ 2 P^ 2 V^ 4 X^ 0
+ Largest intermediates occur in: 
+  term # 1031 - H^ 2 P^ 3 V^ 1 X^ 0 - Mb:     0.249E-01
+  term #  996 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+  term #  997 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+  term #  998 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+  term #  999 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 0 V^ 4 X^ 0 - number of terms:               14
+ H^ 0 P^ 0 V^ 5 X^ 0 - number of terms:                2
+ H^ 1 P^ 0 V^ 1 X^ 0 - number of terms:                1
+ H^ 1 P^ 0 V^ 2 X^ 0 - number of terms:                4
+ H^ 1 P^ 0 V^ 3 X^ 0 - number of terms:               55
+ H^ 1 P^ 0 V^ 4 X^ 0 - number of terms:               23
+ H^ 1 P^ 0 V^ 5 X^ 0 - number of terms:               49
+ H^ 2 P^ 0 V^ 1 X^ 0 - number of terms:                1
+ H^ 2 P^ 0 V^ 2 X^ 0 - number of terms:               37
+ H^ 2 P^ 0 V^ 3 X^ 0 - number of terms:              104
+ H^ 2 P^ 0 V^ 4 X^ 0 - number of terms:               96
+ H^ 2 P^ 0 V^ 5 X^ 0 - number of terms:               15
+ H^ 2 P^ 0 V^ 6 X^ 0 - number of terms:                8
+ H^ 3 P^ 0 V^ 2 X^ 0 - number of terms:               17
+ H^ 3 P^ 0 V^ 3 X^ 0 - number of terms:               13
+ H^ 3 P^ 0 V^ 4 X^ 0 - number of terms:                4
+ H^ 4 P^ 0 V^ 2 X^ 0 - number of terms:                1
+ H^ 4 P^ 0 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 1 V^ 2 X^ 0 - number of terms:                2
+ H^ 0 P^ 1 V^ 3 X^ 0 - number of terms:               50
+ H^ 1 P^ 1 V^ 0 X^ 0 - number of terms:                1
+ H^ 1 P^ 1 V^ 1 X^ 0 - number of terms:               15
+ H^ 1 P^ 1 V^ 2 X^ 0 - number of terms:               43
+ H^ 1 P^ 1 V^ 3 X^ 0 - number of terms:              151
+ H^ 1 P^ 1 V^ 4 X^ 0 - number of terms:              148
+ H^ 2 P^ 1 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 1 V^ 1 X^ 0 - number of terms:               36
+ H^ 2 P^ 1 V^ 2 X^ 0 - number of terms:              180
+ H^ 2 P^ 1 V^ 3 X^ 0 - number of terms:              270
+ H^ 2 P^ 1 V^ 4 X^ 0 - number of terms:               39
+ H^ 3 P^ 1 V^ 1 X^ 0 - number of terms:               17
+ H^ 3 P^ 1 V^ 2 X^ 0 - number of terms:               19
+ H^ 3 P^ 1 V^ 3 X^ 0 - number of terms:               23
+ H^ 4 P^ 1 V^ 1 X^ 0 - number of terms:                1
+ H^ 4 P^ 1 V^ 2 X^ 0 - number of terms:                2
+ H^ 4 P^ 1 V^ 3 X^ 0 - number of terms:                1
+ H^ 0 P^ 2 V^ 1 X^ 0 - number of terms:                1
+ H^ 0 P^ 2 V^ 2 X^ 0 - number of terms:               36
+ H^ 1 P^ 2 V^ 0 X^ 0 - number of terms:                3
+ H^ 1 P^ 2 V^ 1 X^ 0 - number of terms:               14
+ H^ 1 P^ 2 V^ 2 X^ 0 - number of terms:               64
+ H^ 1 P^ 2 V^ 3 X^ 0 - number of terms:              132
+ H^ 2 P^ 2 V^ 0 X^ 0 - number of terms:               12
+ H^ 2 P^ 2 V^ 1 X^ 0 - number of terms:              126
+ H^ 2 P^ 2 V^ 2 X^ 0 - number of terms:              122
+ H^ 2 P^ 2 V^ 3 X^ 0 - number of terms:               80
+ H^ 2 P^ 2 V^ 4 X^ 0 - number of terms:                2
+ H^ 3 P^ 2 V^ 0 X^ 0 - number of terms:                8
+ H^ 3 P^ 2 V^ 1 X^ 0 - number of terms:               17
+ H^ 3 P^ 2 V^ 2 X^ 0 - number of terms:               12
+ H^ 3 P^ 2 V^ 3 X^ 0 - number of terms:                5
+ H^ 4 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 4 P^ 2 V^ 2 X^ 0 - number of terms:                1
+ H^ 0 P^ 3 V^ 1 X^ 0 - number of terms:                4
+ H^ 1 P^ 3 V^ 1 X^ 0 - number of terms:                9
+ H^ 1 P^ 3 V^ 2 X^ 0 - number of terms:               17
+ H^ 2 P^ 3 V^ 0 X^ 0 - number of terms:               10
+ H^ 2 P^ 3 V^ 1 X^ 0 - number of terms:               20
+ H^ 2 P^ 3 V^ 2 X^ 0 - number of terms:               12
+ H^ 3 P^ 3 V^ 0 X^ 0 - number of terms:                2
+ H^ 3 P^ 3 V^ 1 X^ 0 - number of terms:                2
+ H^ 0 P^ 4 V^ 0 X^ 0 - number of terms:                1
+ H^ 1 P^ 4 V^ 1 X^ 0 - number of terms:                3
+ H^ 2 P^ 4 V^ 0 X^ 0 - number of terms:                2
+ H^ 2 P^ 4 V^ 1 X^ 0 - number of terms:                2
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      6.41 /     0.06 /     6.48 s
+ Optimizing for target operator: E(MR)
+ @ time for optimization               cpu/sys/wall:      1.86 /     0.00 /     1.87 s
+ wrote                 11506  entries
+ My next target: FOPT_T_PT
+ Rule: SELECT_SPECIAL
+ read                    29  entries
+ wrote                    13  entries
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                    34
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1    Heff   1   3                  
+    2       H   1  46                H0
+    3       L   1  16                  
+    4       T   1  16              ME_T
+    5      C0   1   1             ME_C0
+    6     OMG   2  16            ME_OMG
+    7    Tfix   1  11           ME_Tfix
+    8   T2fix   1  11          ME_T2fix
+    9   E(MR)   1   1          ME_E(MR)
+   10    FREF   1   5           ME_FREF
+   11   E_REF   1   1          ME_E_REF
+   12    A_C0   1   1           ME_A_C0
+   13  DIA_C0   1   1     DIAG1SxxM00C0
+   14  S(S+1)   1   1         ME_S(S+1)
+   15      S+   1   3             ME_S+
+   16      S-   1   3             ME_S-
+   17  Hdyall   1   5                  
+   18   Hdact   1   2                  
+   19   DIA_T   1  16     DIAG1SxxM00_T
+   20    NORM   1   1                  
+   21      Ex   1  16                  
+   22    DENS   2   2           ME_DENS
+   23      1v   1   3                  
+   24   1scal   1   1          ME_1scal
+   25       1   1   5              ME_1
+   26  OMGred   2  16                  
+   27       D   3  28              ME_D
+   28 preDENS   1   1                  
+   29DENS_dag   1   2                  
+   30     Dtr   2  28            ME_Dtr
+   31     Ttr   1  16            ME_Ttr
+   32     Ltr   1  16                  
+   33   OMGtr   2   8                  
+   34       A   3   7              ME_A
+ ----------------------------------------
+ Number of lists defined:                    25
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1           ME_C0  1  0            2       C0                 ME_C0_list.da
+    2            ME_T  1  0         2993        T                  ME_T_list.da
+    3          ME_OMG  1  0         2993      OMG                ME_OMG_list.da
+    4              H0  1  0         8921        H                    H0_list.da
+    5         ME_Tfix  1  0          513     Tfix               ME_Tfix_list.da
+    6        ME_T2fix  1  0          513    T2fix              ME_T2fix_list.da
+    7         ME_FREF  1  0           77     FREF               ME_FREF_list.da
+    8         ME_A_C0  1  0            2     A_C0               ME_A_C0_list.da
+    9        ME_E_REF  1  0            1    E_REF              ME_E_REF_list.da
+   10   DIAG1SxxM00C0  1  0            2   DIA_C0         DIAG1SxxM00C0_list.da
+   11       ME_S(S+1)  1  0            1   S(S+1)             ME_S(S+1)_list.da
+   12           ME_S+  1  2           32       S+                 ME_S+_list.da
+   13           ME_S-  1 -2           32       S-                 ME_S-_list.da
+   14   DIAG1SxxM00_T  1  0         2993    DIA_T         DIAG1SxxM00_T_list.da
+   15            ME_1  1  0           78        1                  ME_1_list.da
+   16            ME_D  1  0          740        D                  ME_D_list.da
+   17        ME_1scal  1  0            1    1scal              ME_1scal_list.da
+   18         ME_DENS  1  0           14     DENS               ME_DENS_list.da
+   19         ME_Dinv  1  0          740        D               ME_Dinv_list.da
+   20          ME_Dtr  1  0          740      Dtr                ME_Dtr_list.da
+   21            ME_A  1  0          284        A                  ME_A_list.da
+   22         ME_Auni  1  0          284        A               ME_Auni_list.da
+   23       ME_Dtrdag  1  0          740      Dtr             ME_Dtrdag_list.da
+   24          ME_Ttr  1  0         2993      Ttr                ME_Ttr_list.da
+   25        ME_E(MR)  1  0            1    E(MR)              ME_E(MR)_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- F_T_PT
+ read                    12  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    6 - H^ 1 P^ 2 V^ 6 X^ 0 - flops:  0.110E+05(  48.3%)
+  term #   10 - H^ 1 P^ 3 V^ 4 X^ 0 - flops:  0.367E+04(  16.1%)
+  term #    9 - H^ 2 P^ 2 V^ 4 X^ 0 - flops:  0.245E+04(  10.7%)
+  term #    4 - H^ 1 P^ 2 V^ 4 X^ 0 - flops:  0.184E+04(   8.1%)
+  term #    5 - H^ 1 P^ 2 V^ 4 X^ 0 - flops:  0.184E+04(   8.1%)
+ Formally most expensive contractions: 
+  term #    6 - H^ 1 P^ 2 V^ 6 X^ 0
+  term #    3 - H^ 2 P^ 1 V^ 6 X^ 0
+  term #   10 - H^ 1 P^ 3 V^ 4 X^ 0
+  term #    9 - H^ 2 P^ 2 V^ 4 X^ 0
+  term #   11 - H^ 2 P^ 3 V^ 2 X^ 0
+ Largest intermediates occur in: 
+  term #   10 - H^ 1 P^ 3 V^ 2 X^ 0 - Mb:     0.747E-01
+  term #    5 - H^ 1 P^ 2 V^ 3 X^ 0 - Mb:     0.560E-01
+  term #    6 - H^ 1 P^ 2 V^ 3 X^ 0 - Mb:     0.560E-01
+  term #   11 - H^ 2 P^ 3 V^ 1 X^ 0 - Mb:     0.249E-01
+  term #    8 - H^ 2 P^ 2 V^ 2 X^ 0 - Mb:     0.187E-01
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 2 P^ 1 V^ 4 X^ 0 - number of terms:                2
+ H^ 2 P^ 1 V^ 6 X^ 0 - number of terms:                1
+ H^ 1 P^ 2 V^ 4 X^ 0 - number of terms:                2
+ H^ 1 P^ 2 V^ 6 X^ 0 - number of terms:                1
+ H^ 2 P^ 2 V^ 2 X^ 0 - number of terms:                2
+ H^ 2 P^ 2 V^ 4 X^ 0 - number of terms:                1
+ H^ 1 P^ 3 V^ 4 X^ 0 - number of terms:                1
+ H^ 2 P^ 3 V^ 2 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.01 /     0.00 /     0.02 s
+ Optimizing for target operator: T
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                    13  entries
+ My next target: EVAL_PERT_CORR
+ Rule: EVALUATE
+ read                  3796  entries
+ @ time for target OMG                 cpu/sys/wall:      0.55 /     0.16 /     0.71 s
+ @ formula evaluation                  cpu/sys/wall:      0.55 /     0.16 /     0.71 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.32800465858406    
+ Rule: SCALE_COPY
+ set_opti_info_signs:
+ --------------------
+nsec:        7
+nwfpsec:        2      10      94      84     214     150    2439
+idstsec:        1       3      13     107     191     405     555
+signsec :      1.0    -1.0     1.0    -1.0     1.0    -1.0     1.0
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: ASSIGN_ME2OP
+ Rule: ASSIGN_ME2OP
+ Rule: ASSIGN_ME2OP
+ Rule: EVALUATE
+ read                    12  entries
+ @ time for target T                   cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.01 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.38874432106985E-01
+ Rule: SCALE_COPY
+ @ time for scaling                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: ASSIGN_ME2OP
+ Rule: ASSIGN_ME2OP
+ Rule: ASSIGN_ME2OP
+ Rule: EVALUATE
+ read                    12  entries
+ @ time for target T                   cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.18766601921037E-01
+ Rule: RESET_ME_LIST
+ Rule: EVALUATE
+ read                 11505  entries
+ term #     1:    -14.63692223        -14.63692223    
+ term #     2:   -0.8894876349        -15.52640986    
+ term #     3:    0.3825781503E-02    -15.52258408    
+ term #     4:   -0.3847025575E-03    -15.52296879    
+ term #     5:   -0.7962993223E-05    -15.52297675    
+ term #     6:   -0.7687143197E-04    -15.52305362    
+ term #     7:     0.000000000        -15.52305362    
+ term #     8:   -0.9111467194E-03    -15.52396477    
+ term #     9:   -0.7545419925E-02    -15.53151019    
+ term #    10:   -0.1082455204E-01    -15.54233474    
+ term #    11:    0.1663757280E-03    -15.54216836    
+ term #    12:   -0.1065483342E-03    -15.54227491    
+ term #    13:     0.000000000        -15.54227491    
+ term #    14:     0.000000000        -15.54227491    
+ term #    15:   -0.3219174138E-05    -15.54227813    
+ term #    16:     0.000000000        -15.54227813    
+ term #    17:     0.000000000        -15.54227813    
+ term #    18:     0.000000000        -15.54227813    
+ term #    19:   -0.1610347168E-03    -15.54243917    
+ term #    20:    0.2869257964E-03    -15.54215224    
+ term #    21:    0.3235665734E-03    -15.54182867    
+ term #    22:    0.1244459182E-04    -15.54181623    
+ term #    23:   -0.2327933046E-07    -15.54181625    
+ term #    24:   -0.2432032819E-05    -15.54181868    
+ term #    25:     0.000000000        -15.54181868    
+ term #    26:     0.000000000        -15.54181868    
+ term #    27:     0.000000000        -15.54181868    
+ term #    28:    0.3284636641E-05    -15.54181540    
+ term #    29:    0.6569273282E-05    -15.54180883    
+ term #    30:     0.000000000        -15.54180883    
+ term #    31:     0.000000000        -15.54180883    
+ term #    32:     0.000000000        -15.54180883    
+ term #    33:     0.000000000        -15.54180883    
+ term #    34:    0.6377103074E-04    -15.54174506    
+ term #    35:   -0.1092291832E-03    -15.54185429    
+ term #    36:     0.000000000        -15.54185429    
+ term #    37:     0.000000000        -15.54185429    
+ term #    38:     0.000000000        -15.54185429    
+ term #    39:     0.000000000        -15.54185429    
+ term #    40:     0.000000000        -15.54185429    
+ term #    41:     0.000000000        -15.54185429    
+ term #    42:     0.000000000        -15.54185429    
+ term #    43:     0.000000000        -15.54185429    
+ term #    44:     0.000000000        -15.54185429    
+ term #    45:     0.000000000        -15.54185429    
+ term #    46:     0.000000000        -15.54185429    
+ term #    47:     0.000000000        -15.54185429    
+ term #    48:     0.000000000        -15.54185429    
+ term #    49:     0.000000000        -15.54185429    
+ term #    50:     0.000000000        -15.54185429    
+ term #    51:     0.000000000        -15.54185429    
+ term #    52:     0.000000000        -15.54185429    
+ term #    53:     0.000000000        -15.54185429    
+ term #    54:     0.000000000        -15.54185429    
+ term #    55:     0.000000000        -15.54185429    
+ term #    56:     0.000000000        -15.54185429    
+ term #    57:     0.000000000        -15.54185429    
+ term #    58:     0.000000000        -15.54185429    
+ term #    59:     0.000000000        -15.54185429    
+ term #    60:     0.000000000        -15.54185429    
+ term #    61:     0.000000000        -15.54185429    
+ term #    62:     0.000000000        -15.54185429    
+ term #    63:     0.000000000        -15.54185429    
+ term #    64:     0.000000000        -15.54185429    
+ term #    65:     0.000000000        -15.54185429    
+ term #    66:     0.000000000        -15.54185429    
+ term #    67:     0.000000000        -15.54185429    
+ term #    68:     0.000000000        -15.54185429    
+ term #    69:     0.000000000        -15.54185429    
+ term #    70:     0.000000000        -15.54185429    
+ term #    71:     0.000000000        -15.54185429    
+ term #    72:     0.000000000        -15.54185429    
+ term #    73:     0.000000000        -15.54185429    
+ term #    74:     0.000000000        -15.54185429    
+ term #    75:     0.000000000        -15.54185429    
+ term #    76:     0.000000000        -15.54185429    
+ term #    77:     0.000000000        -15.54185429    
+ term #    78:     0.000000000        -15.54185429    
+ term #    79:     0.000000000        -15.54185429    
+ term #    80:     0.000000000        -15.54185429    
+ term #    81:     0.000000000        -15.54185429    
+ term #    82:     0.000000000        -15.54185429    
+ term #    83:     0.000000000        -15.54185429    
+ term #    84:     0.000000000        -15.54185429    
+ term #    85:     0.000000000        -15.54185429    
+ term #    86:     0.000000000        -15.54185429    
+ term #    87:     0.000000000        -15.54185429    
+ term #    88:     0.000000000        -15.54185429    
+ term #    89:     0.000000000        -15.54185429    
+ term #    90:     0.000000000        -15.54185429    
+ term #    91:     0.000000000        -15.54185429    
+ term #    92:     0.000000000        -15.54185429    
+ term #    93:     0.000000000        -15.54185429    
+ term #    94:     0.000000000        -15.54185429    
+ term #    95:     0.000000000        -15.54185429    
+ term #    96:     0.000000000        -15.54185429    
+ term #    97:     0.000000000        -15.54185429    
+ term #    98:     0.000000000        -15.54185429    
+ term #    99:     0.000000000        -15.54185429    
+ term #   100:     0.000000000        -15.54185429    
+ term #   101:     0.000000000        -15.54185429    
+ term #   102:     0.000000000        -15.54185429    
+ term #   103:     0.000000000        -15.54185429    
+ term #   104:     0.000000000        -15.54185429    
+ term #   105:     0.000000000        -15.54185429    
+ term #   106:     0.000000000        -15.54185429    
+ term #   107:     0.000000000        -15.54185429    
+ term #   108:     0.000000000        -15.54185429    
+ term #   109:     0.000000000        -15.54185429    
+ term #   110:     0.000000000        -15.54185429    
+ term #   111:     0.000000000        -15.54185429    
+ term #   112:     0.000000000        -15.54185429    
+ term #   113:     0.000000000        -15.54185429    
+ term #   114:     0.000000000        -15.54185429    
+ term #   115:     0.000000000        -15.54185429    
+ term #   116:     0.000000000        -15.54185429    
+ term #   117:     0.000000000        -15.54185429    
+ term #   118:     0.000000000        -15.54185429    
+ term #   119:     0.000000000        -15.54185429    
+ term #   120:     0.000000000        -15.54185429    
+ term #   121:     0.000000000        -15.54185429    
+ term #   122:     0.000000000        -15.54185429    
+ term #   123:     0.000000000        -15.54185429    
+ term #   124:     0.000000000        -15.54185429    
+ term #   125:     0.000000000        -15.54185429    
+ term #   126:     0.000000000        -15.54185429    
+ term #   127:     0.000000000        -15.54185429    
+ term #   128:     0.000000000        -15.54185429    
+ term #   129:     0.000000000        -15.54185429    
+ term #   130:     0.000000000        -15.54185429    
+ term #   131:     0.000000000        -15.54185429    
+ term #   132:     0.000000000        -15.54185429    
+ term #   133:     0.000000000        -15.54185429    
+ term #   134:     0.000000000        -15.54185429    
+ term #   135:     0.000000000        -15.54185429    
+ term #   136:     0.000000000        -15.54185429    
+ term #   137:     0.000000000        -15.54185429    
+ term #   138:     0.000000000        -15.54185429    
+ term #   139:     0.000000000        -15.54185429    
+ term #   140:     0.000000000        -15.54185429    
+ term #   141:     0.000000000        -15.54185429    
+ term #   142:     0.000000000        -15.54185429    
+ term #   143:     0.000000000        -15.54185429    
+ term #   144:     0.000000000        -15.54185429    
+ term #   145:     0.000000000        -15.54185429    
+ term #   146:     0.000000000        -15.54185429    
+ term #   147:     0.000000000        -15.54185429    
+ term #   148:     0.000000000        -15.54185429    
+ term #   149:     0.000000000        -15.54185429    
+ term #   150:     0.000000000        -15.54185429    
+ term #   151:     0.000000000        -15.54185429    
+ term #   152:     0.000000000        -15.54185429    
+ term #   153:     0.000000000        -15.54185429    
+ term #   154:     0.000000000        -15.54185429    
+ term #   155:     0.000000000        -15.54185429    
+ term #   156:     0.000000000        -15.54185429    
+ term #   157:     0.000000000        -15.54185429    
+ term #   158:     0.000000000        -15.54185429    
+ term #   159:     0.000000000        -15.54185429    
+ term #   160:     0.000000000        -15.54185429    
+ term #   161:     0.000000000        -15.54185429    
+ term #   162:     0.000000000        -15.54185429    
+ term #   163:     0.000000000        -15.54185429    
+ term #   164:     0.000000000        -15.54185429    
+ term #   165:     0.000000000        -15.54185429    
+ term #   166:     0.000000000        -15.54185429    
+ term #   167:     0.000000000        -15.54185429    
+ term #   168:     0.000000000        -15.54185429    
+ term #   169:     0.000000000        -15.54185429    
+ term #   170:     0.000000000        -15.54185429    
+ term #   171:     0.000000000        -15.54185429    
+ term #   172:     0.000000000        -15.54185429    
+ term #   173:     0.000000000        -15.54185429    
+ term #   174:     0.000000000        -15.54185429    
+ term #   175:     0.000000000        -15.54185429    
+ term #   176:     0.000000000        -15.54185429    
+ term #   177:     0.000000000        -15.54185429    
+ term #   178:     0.000000000        -15.54185429    
+ term #   179:     0.000000000        -15.54185429    
+ term #   180:     0.000000000        -15.54185429    
+ term #   181:     0.000000000        -15.54185429    
+ term #   182:     0.000000000        -15.54185429    
+ term #   183:     0.000000000        -15.54185429    
+ term #   184:     0.000000000        -15.54185429    
+ term #   185:     0.000000000        -15.54185429    
+ term #   186:     0.000000000        -15.54185429    
+ term #   187:     0.000000000        -15.54185429    
+ term #   188:     0.000000000        -15.54185429    
+ term #   189:     0.000000000        -15.54185429    
+ term #   190:     0.000000000        -15.54185429    
+ term #   191:     0.000000000        -15.54185429    
+ term #   192:     0.000000000        -15.54185429    
+ term #   193:     0.000000000        -15.54185429    
+ term #   194:     0.000000000        -15.54185429    
+ term #   195:     0.000000000        -15.54185429    
+ term #   196:     0.000000000        -15.54185429    
+ term #   197:     0.000000000        -15.54185429    
+ term #   198:     0.000000000        -15.54185429    
+ term #   199:     0.000000000        -15.54185429    
+ term #   200:     0.000000000        -15.54185429    
+ term #   201:     0.000000000        -15.54185429    
+ term #   202:     0.000000000        -15.54185429    
+ term #   203:     0.000000000        -15.54185429    
+ term #   204:     0.000000000        -15.54185429    
+ term #   205:     0.000000000        -15.54185429    
+ term #   206:     0.000000000        -15.54185429    
+ term #   207:     0.000000000        -15.54185429    
+ term #   208:     0.000000000        -15.54185429    
+ term #   209:     0.000000000        -15.54185429    
+ term #   210:     0.000000000        -15.54185429    
+ term #   211:     0.000000000        -15.54185429    
+ term #   212:     0.000000000        -15.54185429    
+ term #   213:     0.000000000        -15.54185429    
+ term #   214:     0.000000000        -15.54185429    
+ term #   215:     0.000000000        -15.54185429    
+ term #   216:     0.000000000        -15.54185429    
+ term #   217:     0.000000000        -15.54185429    
+ term #   218:     0.000000000        -15.54185429    
+ term #   219:     0.000000000        -15.54185429    
+ term #   220:     0.000000000        -15.54185429    
+ term #   221:     0.000000000        -15.54185429    
+ term #   222:     0.000000000        -15.54185429    
+ term #   223:     0.000000000        -15.54185429    
+ term #   224:     0.000000000        -15.54185429    
+ term #   225:     0.000000000        -15.54185429    
+ term #   226:     0.000000000        -15.54185429    
+ term #   227:     0.000000000        -15.54185429    
+ term #   228:     0.000000000        -15.54185429    
+ term #   229:     0.000000000        -15.54185429    
+ term #   230:     0.000000000        -15.54185429    
+ term #   231:     0.000000000        -15.54185429    
+ term #   232:     0.000000000        -15.54185429    
+ term #   233:     0.000000000        -15.54185429    
+ term #   234:     0.000000000        -15.54185429    
+ term #   235:     0.000000000        -15.54185429    
+ term #   236:     0.000000000        -15.54185429    
+ term #   237:     0.000000000        -15.54185429    
+ term #   238:     0.000000000        -15.54185429    
+ term #   239:     0.000000000        -15.54185429    
+ term #   240:   -0.1903125878E-03    -15.54204460    
+ term #   241:    0.1400725363E-05    -15.54204320    
+ term #   242:    0.7392607561E-04    -15.54196927    
+ term #   243:   -0.8563200215E-05    -15.54197784    
+ term #   244:   -0.3816165764E-04    -15.54201600    
+ term #   245:   -0.2843617814E-05    -15.54201884    
+ term #   246:    0.6426804321E-05    -15.54201242    
+ term #   247:    0.9817071063E-04    -15.54191424    
+ term #   248:   -0.4562107094E-05    -15.54191881    
+ term #   249:    0.3696006601E-05    -15.54191511    
+ term #   250:    0.1016649992E-03    -15.54181345    
+ term #   251:    0.2150209975E-05    -15.54181130    
+ term #   252:     0.000000000        -15.54181130    
+ term #   253:    0.4695247853E-06    -15.54181083    
+ term #   254:   -0.3627401975E-04    -15.54184710    
+ term #   255:    0.5382759174E-05    -15.54184172    
+ term #   256:    0.2343156424E-06    -15.54184148    
+ term #   257:    0.7008148017E-07    -15.54184141    
+ term #   258:   -0.1400725363E-05    -15.54184281    
+ term #   259:    0.3816165764E-04    -15.54180465    
+ term #   260:   -0.8342206215E-07    -15.54180474    
+ term #   261:    0.5671156003E-05    -15.54179906    
+ term #   262:   -0.8469011149E-05    -15.54180753    
+ term #   263:    0.1628857327E-04    -15.54179124    
+ term #   264:   -0.6177427651E-04    -15.54185302    
+ term #   265:    0.1897276547E-04    -15.54183405    
+ term #   266:   -0.1151759487E-03    -15.54194922    
+ term #   267:     0.000000000        -15.54194922    
+ term #   268:     0.000000000        -15.54194922    
+ term #   269:     0.000000000        -15.54194922    
+ term #   270:     0.000000000        -15.54194922    
+ term #   271:     0.000000000        -15.54194922    
+ term #   272:     0.000000000        -15.54194922    
+ term #   273:     0.000000000        -15.54194922    
+ term #   274:     0.000000000        -15.54194922    
+ term #   275:     0.000000000        -15.54194922    
+ term #   276:     0.000000000        -15.54194922    
+ term #   277:     0.000000000        -15.54194922    
+ term #   278:     0.000000000        -15.54194922    
+ term #   279:     0.000000000        -15.54194922    
+ term #   280:     0.000000000        -15.54194922    
+ term #   281:     0.000000000        -15.54194922    
+ term #   282:     0.000000000        -15.54194922    
+ term #   283:     0.000000000        -15.54194922    
+ term #   284:     0.000000000        -15.54194922    
+ term #   285:     0.000000000        -15.54194922    
+ term #   286:     0.000000000        -15.54194922    
+ term #   287:     0.000000000        -15.54194922    
+ term #   288:     0.000000000        -15.54194922    
+ term #   289:     0.000000000        -15.54194922    
+ term #   290:   -0.2790867798E-04    -15.54197713    
+ term #   291:     0.000000000        -15.54197713    
+ term #   292:     0.000000000        -15.54197713    
+ term #   293:     0.000000000        -15.54197713    
+ term #   294:     0.000000000        -15.54197713    
+ term #   295:     0.000000000        -15.54197713    
+ term #   296:     0.000000000        -15.54197713    
+ term #   297:     0.000000000        -15.54197713    
+ term #   298:     0.000000000        -15.54197713    
+ term #   299:     0.000000000        -15.54197713    
+ term #   300:     0.000000000        -15.54197713    
+ term #   301:     0.000000000        -15.54197713    
+ term #   302:     0.000000000        -15.54197713    
+ term #   303:     0.000000000        -15.54197713    
+ term #   304:     0.000000000        -15.54197713    
+ term #   305:     0.000000000        -15.54197713    
+ term #   306:     0.000000000        -15.54197713    
+ term #   307:     0.000000000        -15.54197713    
+ term #   308:     0.000000000        -15.54197713    
+ term #   309:     0.000000000        -15.54197713    
+ term #   310:     0.000000000        -15.54197713    
+ term #   311:     0.000000000        -15.54197713    
+ term #   312:     0.000000000        -15.54197713    
+ term #   313:     0.000000000        -15.54197713    
+ term #   314:     0.000000000        -15.54197713    
+ term #   315:     0.000000000        -15.54197713    
+ term #   316:     0.000000000        -15.54197713    
+ term #   317:     0.000000000        -15.54197713    
+ term #   318:     0.000000000        -15.54197713    
+ term #   319:     0.000000000        -15.54197713    
+ term #   320:     0.000000000        -15.54197713    
+ term #   321:     0.000000000        -15.54197713    
+ term #   322:     0.000000000        -15.54197713    
+ term #   323:     0.000000000        -15.54197713    
+ term #   324:     0.000000000        -15.54197713    
+ term #   325:     0.000000000        -15.54197713    
+ term #   326:     0.000000000        -15.54197713    
+ term #   327:     0.000000000        -15.54197713    
+ term #   328:     0.000000000        -15.54197713    
+ term #   329:     0.000000000        -15.54197713    
+ term #   330:     0.000000000        -15.54197713    
+ term #   331:     0.000000000        -15.54197713    
+ term #   332:     0.000000000        -15.54197713    
+ term #   333:     0.000000000        -15.54197713    
+ term #   334:     0.000000000        -15.54197713    
+ term #   335:     0.000000000        -15.54197713    
+ term #   336:     0.000000000        -15.54197713    
+ term #   337:     0.000000000        -15.54197713    
+ term #   338:     0.000000000        -15.54197713    
+ term #   339:     0.000000000        -15.54197713    
+ term #   340:     0.000000000        -15.54197713    
+ term #   341:     0.000000000        -15.54197713    
+ term #   342:     0.000000000        -15.54197713    
+ term #   343:     0.000000000        -15.54197713    
+ term #   344:     0.000000000        -15.54197713    
+ term #   345:     0.000000000        -15.54197713    
+ term #   346:     0.000000000        -15.54197713    
+ term #   347:     0.000000000        -15.54197713    
+ term #   348:     0.000000000        -15.54197713    
+ term #   349:     0.000000000        -15.54197713    
+ term #   350:     0.000000000        -15.54197713    
+ term #   351:     0.000000000        -15.54197713    
+ term #   352:     0.000000000        -15.54197713    
+ term #   353:     0.000000000        -15.54197713    
+ term #   354:     0.000000000        -15.54197713    
+ term #   355:     0.000000000        -15.54197713    
+ term #   356:     0.000000000        -15.54197713    
+ term #   357:     0.000000000        -15.54197713    
+ term #   358:     0.000000000        -15.54197713    
+ term #   359:     0.000000000        -15.54197713    
+ term #   360:     0.000000000        -15.54197713    
+ term #   361:     0.000000000        -15.54197713    
+ term #   362:     0.000000000        -15.54197713    
+ term #   363:     0.000000000        -15.54197713    
+ term #   364:     0.000000000        -15.54197713    
+ term #   365:     0.000000000        -15.54197713    
+ term #   366:     0.000000000        -15.54197713    
+ term #   367:     0.000000000        -15.54197713    
+ term #   368:     0.000000000        -15.54197713    
+ term #   369:     0.000000000        -15.54197713    
+ term #   370:     0.000000000        -15.54197713    
+ term #   371:     0.000000000        -15.54197713    
+ term #   372:     0.000000000        -15.54197713    
+ term #   373:     0.000000000        -15.54197713    
+ term #   374:     0.000000000        -15.54197713    
+ term #   375:     0.000000000        -15.54197713    
+ term #   376:     0.000000000        -15.54197713    
+ term #   377:     0.000000000        -15.54197713    
+ term #   378:     0.000000000        -15.54197713    
+ term #   379:     0.000000000        -15.54197713    
+ term #   380:     0.000000000        -15.54197713    
+ term #   381:     0.000000000        -15.54197713    
+ term #   382:     0.000000000        -15.54197713    
+ term #   383:     0.000000000        -15.54197713    
+ term #   384:     0.000000000        -15.54197713    
+ term #   385:     0.000000000        -15.54197713    
+ term #   386:     0.000000000        -15.54197713    
+ term #   387:     0.000000000        -15.54197713    
+ term #   388:     0.000000000        -15.54197713    
+ term #   389:     0.000000000        -15.54197713    
+ term #   390:     0.000000000        -15.54197713    
+ term #   391:     0.000000000        -15.54197713    
+ term #   392:     0.000000000        -15.54197713    
+ term #   393:     0.000000000        -15.54197713    
+ term #   394:     0.000000000        -15.54197713    
+ term #   395:     0.000000000        -15.54197713    
+ term #   396:     0.000000000        -15.54197713    
+ term #   397:     0.000000000        -15.54197713    
+ term #   398:     0.000000000        -15.54197713    
+ term #   399:     0.000000000        -15.54197713    
+ term #   400:     0.000000000        -15.54197713    
+ term #   401:     0.000000000        -15.54197713    
+ term #   402:     0.000000000        -15.54197713    
+ term #   403:     0.000000000        -15.54197713    
+ term #   404:     0.000000000        -15.54197713    
+ term #   405:     0.000000000        -15.54197713    
+ term #   406:     0.000000000        -15.54197713    
+ term #   407:     0.000000000        -15.54197713    
+ term #   408:     0.000000000        -15.54197713    
+ term #   409:     0.000000000        -15.54197713    
+ term #   410:     0.000000000        -15.54197713    
+ term #   411:     0.000000000        -15.54197713    
+ term #   412:     0.000000000        -15.54197713    
+ term #   413:     0.000000000        -15.54197713    
+ term #   414:     0.000000000        -15.54197713    
+ term #   415:     0.000000000        -15.54197713    
+ term #   416:     0.000000000        -15.54197713    
+ term #   417:     0.000000000        -15.54197713    
+ term #   418:     0.000000000        -15.54197713    
+ term #   419:     0.000000000        -15.54197713    
+ term #   420:     0.000000000        -15.54197713    
+ term #   421:     0.000000000        -15.54197713    
+ term #   422:     0.000000000        -15.54197713    
+ term #   423:     0.000000000        -15.54197713    
+ term #   424:     0.000000000        -15.54197713    
+ term #   425:     0.000000000        -15.54197713    
+ term #   426:     0.000000000        -15.54197713    
+ term #   427:     0.000000000        -15.54197713    
+ term #   428:     0.000000000        -15.54197713    
+ term #   429:     0.000000000        -15.54197713    
+ term #   430:     0.000000000        -15.54197713    
+ term #   431:     0.000000000        -15.54197713    
+ term #   432:     0.000000000        -15.54197713    
+ term #   433:     0.000000000        -15.54197713    
+ term #   434:     0.000000000        -15.54197713    
+ term #   435:     0.000000000        -15.54197713    
+ term #   436:     0.000000000        -15.54197713    
+ term #   437:     0.000000000        -15.54197713    
+ term #   438:     0.000000000        -15.54197713    
+ term #   439:     0.000000000        -15.54197713    
+ term #   440:     0.000000000        -15.54197713    
+ term #   441:     0.000000000        -15.54197713    
+ term #   442:     0.000000000        -15.54197713    
+ term #   443:     0.000000000        -15.54197713    
+ term #   444:     0.000000000        -15.54197713    
+ term #   445:     0.000000000        -15.54197713    
+ term #   446:     0.000000000        -15.54197713    
+ term #   447:     0.000000000        -15.54197713    
+ term #   448:     0.000000000        -15.54197713    
+ term #   449:     0.000000000        -15.54197713    
+ term #   450:     0.000000000        -15.54197713    
+ term #   451:     0.000000000        -15.54197713    
+ term #   452:     0.000000000        -15.54197713    
+ term #   453:     0.000000000        -15.54197713    
+ term #   454:     0.000000000        -15.54197713    
+ term #   455:     0.000000000        -15.54197713    
+ term #   456:     0.000000000        -15.54197713    
+ term #   457:     0.000000000        -15.54197713    
+ term #   458:     0.000000000        -15.54197713    
+ term #   459:     0.000000000        -15.54197713    
+ term #   460:     0.000000000        -15.54197713    
+ term #   461:     0.000000000        -15.54197713    
+ term #   462:     0.000000000        -15.54197713    
+ term #   463:     0.000000000        -15.54197713    
+ term #   464:     0.000000000        -15.54197713    
+ term #   465:     0.000000000        -15.54197713    
+ term #   466:     0.000000000        -15.54197713    
+ term #   467:     0.000000000        -15.54197713    
+ term #   468:     0.000000000        -15.54197713    
+ term #   469:     0.000000000        -15.54197713    
+ term #   470:     0.000000000        -15.54197713    
+ term #   471:     0.000000000        -15.54197713    
+ term #   472:     0.000000000        -15.54197713    
+ term #   473:     0.000000000        -15.54197713    
+ term #   474:     0.000000000        -15.54197713    
+ term #   475:     0.000000000        -15.54197713    
+ term #   476:     0.000000000        -15.54197713    
+ term #   477:     0.000000000        -15.54197713    
+ term #   478:     0.000000000        -15.54197713    
+ term #   479:     0.000000000        -15.54197713    
+ term #   480:     0.000000000        -15.54197713    
+ term #   481:     0.000000000        -15.54197713    
+ term #   482:     0.000000000        -15.54197713    
+ term #   483:     0.000000000        -15.54197713    
+ term #   484:     0.000000000        -15.54197713    
+ term #   485:     0.000000000        -15.54197713    
+ term #   486:     0.000000000        -15.54197713    
+ term #   487:     0.000000000        -15.54197713    
+ term #   488:     0.000000000        -15.54197713    
+ term #   489:     0.000000000        -15.54197713    
+ term #   490:     0.000000000        -15.54197713    
+ term #   491:     0.000000000        -15.54197713    
+ term #   492:     0.000000000        -15.54197713    
+ term #   493:     0.000000000        -15.54197713    
+ term #   494:     0.000000000        -15.54197713    
+ term #   495:     0.000000000        -15.54197713    
+ term #   496:     0.000000000        -15.54197713    
+ term #   497:     0.000000000        -15.54197713    
+ term #   498:     0.000000000        -15.54197713    
+ term #   499:     0.000000000        -15.54197713    
+ term #   500:     0.000000000        -15.54197713    
+ term #   501:     0.000000000        -15.54197713    
+ term #   502:     0.000000000        -15.54197713    
+ term #   503:     0.000000000        -15.54197713    
+ term #   504:     0.000000000        -15.54197713    
+ term #   505:     0.000000000        -15.54197713    
+ term #   506:     0.000000000        -15.54197713    
+ term #   507:     0.000000000        -15.54197713    
+ term #   508:     0.000000000        -15.54197713    
+ term #   509:     0.000000000        -15.54197713    
+ term #   510:     0.000000000        -15.54197713    
+ term #   511:     0.000000000        -15.54197713    
+ term #   512:     0.000000000        -15.54197713    
+ term #   513:     0.000000000        -15.54197713    
+ term #   514:     0.000000000        -15.54197713    
+ term #   515:     0.000000000        -15.54197713    
+ term #   516:     0.000000000        -15.54197713    
+ term #   517:     0.000000000        -15.54197713    
+ term #   518:     0.000000000        -15.54197713    
+ term #   519:     0.000000000        -15.54197713    
+ term #   520:     0.000000000        -15.54197713    
+ term #   521:     0.000000000        -15.54197713    
+ term #   522:     0.000000000        -15.54197713    
+ term #   523:     0.000000000        -15.54197713    
+ term #   524:     0.000000000        -15.54197713    
+ term #   525:     0.000000000        -15.54197713    
+ term #   526:     0.000000000        -15.54197713    
+ term #   527:     0.000000000        -15.54197713    
+ term #   528:     0.000000000        -15.54197713    
+ term #   529:     0.000000000        -15.54197713    
+ term #   530:     0.000000000        -15.54197713    
+ term #   531:     0.000000000        -15.54197713    
+ term #   532:     0.000000000        -15.54197713    
+ term #   533:     0.000000000        -15.54197713    
+ term #   534:     0.000000000        -15.54197713    
+ term #   535:     0.000000000        -15.54197713    
+ term #   536:     0.000000000        -15.54197713    
+ term #   537:     0.000000000        -15.54197713    
+ term #   538:     0.000000000        -15.54197713    
+ term #   539:     0.000000000        -15.54197713    
+ term #   540:     0.000000000        -15.54197713    
+ term #   541:     0.000000000        -15.54197713    
+ term #   542:     0.000000000        -15.54197713    
+ term #   543:     0.000000000        -15.54197713    
+ term #   544:     0.000000000        -15.54197713    
+ term #   545:     0.000000000        -15.54197713    
+ term #   546:     0.000000000        -15.54197713    
+ term #   547:     0.000000000        -15.54197713    
+ term #   548:     0.000000000        -15.54197713    
+ term #   549:     0.000000000        -15.54197713    
+ term #   550:     0.000000000        -15.54197713    
+ term #   551:     0.000000000        -15.54197713    
+ term #   552:     0.000000000        -15.54197713    
+ term #   553:     0.000000000        -15.54197713    
+ term #   554:     0.000000000        -15.54197713    
+ term #   555:     0.000000000        -15.54197713    
+ term #   556:     0.000000000        -15.54197713    
+ term #   557:     0.000000000        -15.54197713    
+ term #   558:     0.000000000        -15.54197713    
+ term #   559:     0.000000000        -15.54197713    
+ term #   560:     0.000000000        -15.54197713    
+ term #   561:     0.000000000        -15.54197713    
+ term #   562:     0.000000000        -15.54197713    
+ term #   563:     0.000000000        -15.54197713    
+ term #   564:     0.000000000        -15.54197713    
+ term #   565:     0.000000000        -15.54197713    
+ @ time for target E(MR)               cpu/sys/wall:      1.21 /     0.32 /     1.54 s
+ @ formula evaluation                  cpu/sys/wall:      1.21 /     0.32 /     1.54 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> -15.541977130665    
+ Rule: PRINT_MEL
+ >>> Total energy :    -15.541977130665
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:  900177284 real(8)-words ( 6867.81 Mb)
+   Largest memory block:      898698833 real(8)-words ( 6856.53 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:     14.67 /     0.81 /    15.49 s
+ run ends at 2014-11-18 15:39:52.760   host: guest3.theochem.uni-stuttgart.de

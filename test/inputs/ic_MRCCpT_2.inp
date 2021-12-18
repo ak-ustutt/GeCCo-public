@@ -1,0 +1,11 @@
+general
+ memmax=10000000
+ print=5
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+ MR maxexc=3,triples=B,oldref=T,project=3
+ MRCC maxcom_en=2,maxcom_res=2,trunc_order=4,T1ord=2,Tfix=2,simp=2
+calculate
+ solve linear maxiter=1
+ routes maxbranch=4,sv_thresh=1d-6

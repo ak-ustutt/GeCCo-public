@@ -1,0 +1,152 @@
+#
+# Written by Jonas Juselius <jonas@iki.fi> Tue Dec  4 13:38:16 EET 2001
+#
+
+srcdir:=@srcdir@
+topdir:=@top_srcdir@
+top_srcdir:=@top_srcdir@
+
+include $(top_srcdir)/make.config
+
+sublib_make:=
+sublib_clean:=
+sublib_install:=
+sublib_tags:=
+sublib_TAGS:=
+
+libdirs:= crout math baserout memman fileutil input operators targets strings formula solve contract transform r12_spec cc_spec experimental
+progdirs:=gecco
+
+dirs:=$(libdirs) $(progdirs)
+
+.PHONY: all lib prog clean distclean dep deps $(sublib_make) $(sublib_clean)
+
+all: lib prog
+
+lib:$(sublib_make)
+	@$(mkinstalldirs) $(libdir)
+ifneq ($(libdirs),)
+	@set -e; \
+       for i in $(libdirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i all || exit 1; \
+			  fi; \
+			fi; \
+       done; 
+endif
+
+prog:lib
+	@$(mkinstalldirs) $(bindir)
+ifneq ($(progdirs),)
+	@set -e; \
+   for i in $(progdirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i all || exit 1; \
+		  fi; \
+		fi; \
+   done;
+endif
+
+dep deps:
+	@$(mkinstalldirs) $(bindir)
+ifneq ($(progdirs),)
+	@set -e; \
+   for i in $(dirs) ; do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+	 	        $(MAKE) -C $$i $@ || exit 1; \
+	          fi; \
+	        fi; \
+   done;
+endif
+
+clean:$(sublib_clean)
+ifneq ($(dirs),)
+	@set -e; \
+	 for i in $(dirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i $@ || exit 1; \
+		  fi; \
+		fi; \
+	 done; 
+endif
+
+realclean:$(sublib_clean)
+ifneq ($(dirs),)
+	@set -e; \
+	for i in $(dirs); do \
+		if [ -d $$i ]; then \
+		  if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i $@ || exit 1; \
+		  fi; \
+		fi; \
+	done; 
+endif
+
+distclean: realclean
+	-rm config.h config.log config.status Config.mk Makefile
+
+install:
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+
+install_bin:
+	@$(mkinstalldirs) $(bindir)
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+
+install_lib:
+	@$(mkinstalldirs) $(libdir)
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done; 
+endif
+
+TAGS:
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done;
+endif
+
+tags:
+ifneq ($(dirs),)
+	@set -e; \
+		for i in $(dirs); do \
+			if [ -d $$i ]; then \
+			  if [ -f $$i/Makefile ]; then \
+			    $(MAKE) -C $$i $@ || exit 1; \
+			  fi; \
+			fi; \
+		done;
+endif

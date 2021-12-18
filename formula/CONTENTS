@@ -1,0 +1,4 @@
+this library contains routines to set up and manipulate
+formula files. note that specific routines may be found in
+special libraries (e.g. cc_spec for CC-specific code)
+

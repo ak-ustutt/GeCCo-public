@@ -1,0 +1,71 @@
+title
+  python interface: HF, R_HF = 1.5, cc-pVDZ ; MOLPRO env ; MP2 energy by python
+molecule
+  HF-HF-MOLPRO
+input
+  python-interface.inp
+check
+  label Reading Python files
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
+  find Reading target file
+  compare str 4
+  compare str 5
+  compare str 6
+check
+  rewind
+  label Is keyword set
+  find Is keyword set
+  find calculate.interfaces
+  compare str 2
+  find method.R12
+  compare str 2
+check
+  rewind
+  label Python warnings
+  find Warning from
+  compare str 4
+  find Warning from
+  compare str 4
+  find Warning from
+  compare str 4
+  compare str 5
+  compare str 6
+  compare str 7
+check
+  label Final energy
+  find final energy
+  compare real 4 1e-12
+check
+  label Input information
+  find Information from input
+  find occ shell
+  compare str 3
+  compare str 4
+  compare str 5
+  compare str 6
+  find closed shell
+  compare str 3
+  compare str 4
+  compare str 5
+  compare str 6
+  find frozen shell
+  compare str 3
+  compare str 4
+  compare str 5
+  compare str 6
+check
+  label Orb_Inf information
+  find Number of active electrons:
+  compare int 5
+end

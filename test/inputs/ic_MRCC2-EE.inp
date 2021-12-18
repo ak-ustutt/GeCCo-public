@@ -1,0 +1,14 @@
+general
+  print=10
+  memmax=10000000
+method
+  MR_P
+  MRCC2 lagrangian=2
+  MRCC2 excite method=LR
+    relaxref
+calculate
+ solve maxiter=30,conv=1d-6,maxsub=10
+  eigen maxiter=20,maxsub=6
+  non_linear optref=0,maxiter=25
+ routes maxbranch=4,sv_thresh=1d-6,reo_factor=10,auto_opt=F,spinadapt=3
+ excitation sym=(0,2,0,0),mult=1

@@ -1,0 +1,64 @@
+title
+  CH2/DZ; DALTON env.: CCSD ionization energies
+molecule
+  CH2-DZ-DALTON
+input
+  CCSD-ionize-nroot.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CC_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label Factorization of right equations
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
+check
+  label Settings for ground state optimization
+  find Max.\ number of iterations
+  compare int 5
+  find Threshold for residual
+  compare real 4 1e-10
+check
+  label Final energy
+  find CONVERGED IN .* ITERATIONS
+  find final energy: [ ]*
+  compare real 4 1e-12
+check
+  label Factorization of right transformation
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
+check
+  label Settings for eigenvalue solver
+  find Max.\ number of iterations
+  compare int 5
+  find Threshold for residual
+  compare real 4 1e-10
+check
+  label Number of iterations in eigenvalue solver
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  rewind
+  label 2A1 state
+  find Results for RI0G1Sxx
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*... [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-10
+check
+  label 2B1 state
+  find Results for RI0G2Sxx
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*... [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-7
+  find ^.>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*... [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-7
+end
+

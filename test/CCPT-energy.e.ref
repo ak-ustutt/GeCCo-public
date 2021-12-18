@@ -1,0 +1,704 @@
+ run starts at 2009-05-27 23:04:14.671   host: dhcppc1
+
+ Version compiled 27 May 2009 at 23:03:20 on dhcppc1                             
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ raw data from section "SIR IPH "
+ potnuc =    6.04302693535581     
+ emy    =   -44.8649356820350     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -38.8219087466791     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   1   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   1   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =    7   4   2   0   0   0   0   0
+ nbas   =    7   4   2   0   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   41  69
+ sym_bound_orbs:    1   1   2   1
+ n_freeze_rcmd:    1
+ Reading input file ....
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:            1           0           0           0
+  defined shells: 
+   1     3   1   0   0
+   2     4   3   2   0
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   0   0
+   3     4   3   2   0
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           1           2
+ ngas_hpv:             2           1           0           0
+ nactt_hpv:            3           9           0           0
+ ioff_gas:             0           2           3           3
+ idx_gas:              1           3           4           4
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       2       1       1       1       1       2       2
+        2       3       3
+ igasorb:
+
+<  1>        1       2       2       2       3       3       3       3       3       3
+        3       3       3
+ mostnd:
+     1      1   1    2   1    2   1    2   1
+     2      2   3    4   4    5   4    5   4
+     3      5   8    9  11   12  13   14  13
+ ireost:
+
+<  1>        1       2       3       5       6       7       8       4       9      10
+       11      12      13
+ ireots:
+
+<  1>        1       2       3       8       4       5       6       7       9      10
+       11      12      13
+ iad_gas:
+
+<  1>        1
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting general targets for MP/CC ...
+ setting special targets for CC ...
+ setting special targets for CCPT ...
+ setting targets for CC properties ...
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Rule: SET_HERMITIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ set_new_graph:            2
+ set_new_graph:            3
+ set_new_graph:            4
+ Rule: IMPORT
+ number of incore-blocks in geth2:            3
+ size of buffer in geth2:        0.07Mb
+ passes over integral file:            1
+ 
+ 2-el. integrals on disk:         2724
+    thereof nonredundant:         1086
+     integrals reordered:         8808
+ 
+ imported list: H0
+  block no.    1 len =            1
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm =  38.8219    
+ norm (MS-Block) =    38.8219087466791     
+  block no.    2 len =           10
+  Ms(A) =   1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            4  norm = 0.974647    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            1  norm = 0.569759    
+ norm (MS-Block) =    1.12896548938274     
+  block no.    3 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    4 len =           22
+  Ms(A) =   1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =   1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  Ms(A) =  -1/2  IRREP(A) =  1  len =            8  norm = 0.104985E-08
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            3  norm = 0.462445E-09
+ norm (MS-Block) =   1.147185361293532E-009
+  block no.    5 len =           58
+  Ms(A) =   1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =   1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =   1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  Ms(A) =  -1/2  IRREP(A) =  1  len =           16  norm =  1.34394    
+  Ms(A) =  -1/2  IRREP(A) =  2  len =            9  norm =  1.13870    
+  Ms(A) =  -1/2  IRREP(A) =  3  len =            4  norm = 0.741359    
+ norm (MS-Block) =    1.91113048814630     
+  block no.    6 len =           51
+  Ms(A) =   2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =   2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  Ms(A) =   0/2  IRREP(A) =  1  len =           25  norm =  1.19779    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           16  norm = 0.990765    
+ norm (MS-Block) =    1.55444796745539     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =            1  norm = 0.399088    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =            4  norm = 0.562555    
+ norm (MS-Block) =   0.689739167749660     
+  block no.    7 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.    8 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.    9 len =          252
+  Ms(A) =   2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =   2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          110  norm = 0.407941    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           80  norm = 0.365993    
+ norm (MS-Block) =   0.548057473017485     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           11  norm = 0.138481    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           20  norm = 0.196248    
+ norm (MS-Block) =   0.240188079659063     
+  block no.   10 len =         1446
+  Ms(A) =   2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =   2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          484  norm =  2.00491    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          400  norm =  1.86579    
+  Ms(A) =   0/2  IRREP(A) =  3  len =           64  norm =  1.38201    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           16  norm = 0.879564    
+ norm (MS-Block) =    3.19129985578798     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          121  norm =  1.20098    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          100  norm =  1.18460    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           16  norm = 0.880982    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =            4  norm = 0.601055    
+ norm (MS-Block) =    1.99574961774712     
+  block no.   11 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   12 len =          309
+  Ms(A) =   2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          145  norm = 0.298403    
+  Ms(A) =   0/2  IRREP(A) =  2  len =           96  norm = 0.212607    
+ norm (MS-Block) =   0.366396112634608     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           10  norm = 0.516990E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =           24  norm = 0.838273E-01
+ norm (MS-Block) =   9.848752690352781E-002
+  block no.   13 len =         1842
+  Ms(A) =   2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          638  norm = 0.512571    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          480  norm = 0.468936    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          128  norm = 0.420683    
+  Ms(A) =   0/2  IRREP(A) =  4  len =           48  norm = 0.278522    
+ norm (MS-Block) =   0.858591396129372     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          110  norm = 0.194120    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          120  norm = 0.265759    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           32  norm = 0.227413    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           12  norm = 0.174775    
+ norm (MS-Block) =   0.436547327570825     
+  block no.   14 len =         2505
+  Ms(A) =   2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =   2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =   2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =   2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          841  norm =  2.12566    
+  Ms(A) =   0/2  IRREP(A) =  2  len =          576  norm =  1.72374    
+  Ms(A) =   0/2  IRREP(A) =  3  len =          256  norm =  1.56650    
+  Ms(A) =   0/2  IRREP(A) =  4  len =          144  norm =  1.32934    
+ norm (MS-Block) =    3.42210214070217     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =          100  norm = 0.966895    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =          144  norm =  1.08057    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =           64  norm =  1.02475    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =           36  norm = 0.908939    
+ norm (MS-Block) =    1.99469312434103     
+ total norm =    39.5165358376116     
+ My next target: T
+ Rule: DEF_EXCITATION
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: L(CC)
+ Rule: DEF_SCALAR
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: Lg0_CC
+ Rule: DEF_CC_LAGRANGIAN
+  ------------------------------------------
+     L    number of   n-fold commutators
+   class    terms    0    1    2    3    4
+  ------------------------------------------
+       0        4     1    2    1    0    0
+       1       14     1    6    6    1    0
+       2       31     1    7   15    7    1
+  ------------------------------------------
+ wrote           50  entries
+ Number of generated terms:           49
+ @ CC Lagrangian                       cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: TEX_FORMULA
+ -----------------
+  tex_formula_drv
+ -----------------
+  f_input  = Lg0_CC
+ read           50  entries
+ A TeX formatted version of formula Lg0_CC
+ is written to file: cc_lag.tex
+ My next target: E(CC)
+ Rule: DEF_SCALAR
+ My next target: E0_CC
+ Rule: INVARIANT
+ read           50  entries
+ wrote            6  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_CC
+ Rule: DERIVATIVE
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(CC)
+ Rule: DEF_ME_LIST
+ My next target: OMG_CC_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            7
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   2                T0
+    3     DIA   1   2       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   2                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   2                O0
+ ----------------------------------------
+ Number of lists defined:            5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          331      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          331      OMG                    O0_list.da
+    4              T0  1  0          331        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_CC
+ read            5  entries
+  -- OMG_CC
+ read           46  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   26 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.168E+05(  18.0%)
+  term #   39 - H^ 4 P^ 2 V^ 0 X^ 0 - flops:  0.580E+04(   6.2%)
+  term #   29 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.557E+04(   6.0%)
+  term #   37 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.528E+04(   5.7%)
+  term #   41 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.410E+04(   4.4%)
+ Formally most expensive contractions: 
+  term #   26 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   25 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   41 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   37 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   36 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   29 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.708E-02
+  term #   37 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   39 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   28 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   30 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+ wrote          134  entries
+ My next target: SOLVE-CC-GS
+ Rule: SOLVE_NLEQ
+ read          133  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         25
+ Threshold for residual:      0.10E-09
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.05 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.02 /     0.05 s
+>>>  1        -38.821908746679 0.3920    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.01 /     0.08 s
+>>>  2        -38.885227112091 0.9722E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.03 /     0.08 s
+>>>  3        -38.902027780004 0.2902E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+>>>  4        -38.906333519790 0.1185E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+>>>  5        -38.907353660831 0.6607E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.08 /     0.01 /     0.08 s
+>>>  6        -38.907509901448 0.3136E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+>>>  7        -38.907583511461 0.9373E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.04 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.04 /     0.08 s
+>>>  8        -38.907620702940 0.2360E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+>>>  9        -38.907616876977 0.5162E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+>>> 10        -38.907618968363 0.1585E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.08 s
+>>> 11        -38.907618813340 0.3562E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.00 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.08 /     0.01 /     0.08 s
+>>> 12        -38.907618754340 0.8351E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.00 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.00 /     0.08 s
+>>> 13        -38.907618795787 0.1777E-06
+ @ time in optimizer                   cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.02 /     0.09 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.02 /     0.09 s
+>>> 14        -38.907618801350 0.5080E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.08 /     0.00 /     0.21 s
+ @ formula evaluation                  cpu/sys/wall:      0.08 /     0.00 /     0.27 s
+>>> 15        -38.907618798568 0.1211E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.08 s
+>>> 16        -38.907618798095 0.2746E-08
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.02 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.07 /     0.02 /     0.08 s
+>>> 17        -38.907618798226 0.8467E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.02 /     0.08 s
+>>> 18        -38.907618798249 0.1844E-09
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.07 /     0.01 /     0.08 s
+ @ formula evaluation                  cpu/sys/wall:      0.08 /     0.01 /     0.08 s
+>>> 19        -38.907618798245 0.4827E-10
+ CONVERGED IN    19 ITERATIONS
+>>> final energy:        -38.907618798245 <<<
+ My next target: T(pt)
+ Rule: DEF_EXCITATION
+ My next target: DIA_PT
+ Rule: CLONE_OPERATOR
+ My next target: DIA_PTG1SxxM00
+ Rule: DEF_ME_LIST
+ set_new_graph:            5
+ set_new_graph:            6
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DL(PT)
+ Rule: DEF_SCALAR
+ My next target: DLg0_CCPT
+ Rule: DEF_CCPT_LAGRANGIAN
+ wrote           10  entries
+ Number of generated terms:          512
+ @ CCPT Lagrangian                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: DE(PT)
+ Rule: DEF_SCALAR
+ My next target: DE0_CCPT
+ Rule: INVARIANT
+ read            9  entries
+ wrote            6  entries
+ Rule: SUM_HERMITIAN
+ read            5  entries
+ wrote            6  entries
+ Rule: TEX_FORMULA
+ -----------------
+  tex_formula_drv
+ -----------------
+  f_input  = DE0_CCPT
+ read            5  entries
+ A TeX formatted version of formula DE0_CCPT
+ is written to file: pt_en.tex
+ My next target: H0.R
+ Rule: CLONE_OPERATOR
+ My next target: ETA(PT)
+ Rule: CLONE_OPERATOR
+ My next target: CCPT_H0_T
+ Rule: DERIVATIVE
+ Rule: LEQ_SPLIT
+ read            5  entries
+ wrote            4  entries
+ wrote            4  entries
+ My next target: DEF-DE0(PT)
+ Rule: DEF_ME_LIST
+ My next target: DEF-ETA(
+ Rule: DEF_ME_LIST
+ My next target: DEF-H0.T(p
+ Rule: DEF_ME_LIST
+ My next target: DEF-T(pt)0
+ Rule: DEF_ME_LIST
+ My next target: CCPT_H0_T_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           14
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   2                T0
+    3     DIA   1   2       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   2                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   2                O0
+    8   T(pt)   1   1            T(pt)0
+    9  DIA_PT   1   1    DIA_PTG1SxxM00
+   10  DL(PT)   1   1                  
+   11     _H_   1  13                  
+   12  DE(PT)   1   1           DE0(PT)
+   13    H0.R   1   1            H0.T(p
+   14 ETA(PT)   1   1          ETA(pt)0
+ ----------------------------------------
+ Number of lists defined:           10
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          331      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          331      OMG                    O0_list.da
+    4              T0  1  0          331        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6  DIA_PTG1SxxM00  1  0         1680   DIA_PT        DIA_PTG1SxxM00_list.da
+    7         DE0(PT)  1  0            1   DE(PT)               DE0(PT)_list.da
+    8        ETA(pt)0  1  0         1680  ETA(PT)              ETA(pt)0_list.da
+    9          H0.T(p  1  0         1680     H0.R                H0.T(p_list.da
+   10          T(pt)0  1  0         1680    T(pt)                T(pt)0_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- ETA_CCPT
+ read            3  entries
+  -- CCPT_H0_T
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.186E+05(  41.7%)
+  term #    1 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.928E+04(  20.9%)
+  term #    4 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.928E+04(  20.9%)
+  term #    3 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.736E+04(  16.5%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    4 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    1 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #    3 - H^ 4 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E-01
+  term #    2 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E-01
+  term #    3 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E-01
+  term #    4 - H^ 3 P^ 3 V^ 0 X^ 0 - Mb:     0.140E-01
+ wrote            7  entries
+ My next target: DE0_CCPT_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:           14
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   2                T0
+    3     DIA   1   2       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   2                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   2                O0
+    8   T(pt)   1   1            T(pt)0
+    9  DIA_PT   1   1    DIA_PTG1SxxM00
+   10  DL(PT)   1   1                  
+   11     _H_   1  13                  
+   12  DE(PT)   1   1           DE0(PT)
+   13    H0.R   1   1            H0.T(p
+   14 ETA(PT)   1   1          ETA(pt)0
+ ----------------------------------------
+ Number of lists defined:           10
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          331      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          331      OMG                    O0_list.da
+    4              T0  1  0          331        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6  DIA_PTG1SxxM00  1  0         1680   DIA_PT        DIA_PTG1SxxM00_list.da
+    7         DE0(PT)  1  0            1   DE(PT)               DE0(PT)_list.da
+    8        ETA(pt)0  1  0         1680  ETA(PT)              ETA(pt)0_list.da
+    9          H0.T(p  1  0         1680     H0.R                H0.T(p_list.da
+   10          T(pt)0  1  0         1680    T(pt)                T(pt)0_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- DE0_CCPT
+ read            5  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    4 - H^ 3 P^ 4 V^ 0 X^ 0 - flops:  0.191E+05(  50.5%)
+  term #    2 - H^ 4 P^ 3 V^ 0 X^ 0 - flops:  0.944E+04(  24.9%)
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.467E+04(  12.3%)
+  term #    3 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.467E+04(  12.3%)
+ Formally most expensive contractions: 
+  term #    4 - H^ 3 P^ 4 V^ 0 X^ 0
+  term #    2 - H^ 4 P^ 3 V^ 0 X^ 0
+  term #    1 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #    3 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    4 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #    2 - H^ 3 P^ 1 V^ 0 X^ 0 - Mb:     0.122E-02
+  term #    1 - H^ 1 P^ 1 V^ 0 X^ 0 - Mb:     0.244E-03
+  term #    3 - H^ 1 P^ 1 V^ 0 X^ 0 - Mb:     0.244E-03
+ wrote           14  entries
+ My next target: DL0(PT)
+ Rule: DEF_ME_LIST
+ My next target: SOLVE-CC-PT
+ Rule: SOLVE_LEQ
+ -------------------
+  entered solve_leq
+ -------------------
+ nopt   =            1
+ nroots =            1
+ read            6  entries
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Optimization algorithm:      SUBSPACE
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+ Number of parameters:            1680
+>>> |rhs|                      0.7020E-01
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ CONVERGED IN     1 ITERATIONS
+>>> conv.                      0.7323E-11
+ Rule: EVALUATE
+ read           13  entries
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> -.1467458671E-02
+ Rule: PRINT_MEL
+ >>> CC energy    :    -38.907618798245
+ Rule: PRINT_MEL
+ >>> CC-PT energy :     -0.001467458671
+ Rule: ADD
+ @ time for adding                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_MEL
+ >>> Total energy :    -38.909086256917
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27072103 real(8)-words (  206.54 Mb)
+   Largest memory block:       26363963 real(8)-words (  201.14 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      1.36 /     0.34 /     1.91 s
+ run ends at 2009-05-27 23:04:16.576   host: dhcppc1

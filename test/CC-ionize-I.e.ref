@@ -1,0 +1,668 @@
+ run starts at 2010-01-29 22:12:15.457   host: Pauli.local
+
+ Version compiled Jan 29 CET at 2010 on Pauli.local                              
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -i8 -traceback -DM_I686 -I../include -mo
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       matthias hanauer (university of mainz, germany)     |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: DALTON
+ raw data from section "SIR IPH "
+ potnuc =    6.04302693535581     
+ emy    =   -44.8649356820350     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -38.8219087466791     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   1   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   1   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =    7   4   2   0   0   0   0   0
+ nbas   =    7   4   2   0   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   41  69
+ sym_bound_orbs:    1   1   2   1
+ n_freeze_rcmd:    1
+ Reading input file ....
+ Input file: CCSD-ionize-nroot.inp
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                      1                     0
+                     0                     0
+  defined shells: 
+   1     3   1   0   0
+   2     4   3   2   0
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   0   0
+   3     4   3   2   0
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ real-word/integer-word ratio =                      1
+ ************
+  set_orbinf
+ ************
+ ihpvgas:                        1                     1                     2
+ ngas_hpv:                       2                     1                     0
+                     0
+ nactt_hpv:                      3                     9                     0
+                     0
+ ioff_gas:                       0                     2                     0
+                     0
+ idx_gas:                        1                     3                     0
+                     0
+ gas_reo:                     1                     2                     3
+ igamorb:
+
+<  1>        1       1       1       2       1       1       1       1       2       2
+        2       3       3
+ igasorb:
+
+<  1>        1       2       2       2       3       3       3       3       3       3
+        3       3       3
+ mostnd:
+     1      1   1    2   1    2   1    2   1
+     2      2   3    4   4    5   4    5   4
+     3      5   8    9  11   12  13   14  13
+ ireost:
+
+<  1>        1       2       3       5       6       7       8       4       9      10
+       11      12      13
+ ireots:
+
+<  1>        1       2       3       8       4       5       6       7       9      10
+       11      12      13
+ iad_gas:
+
+<  1>        1
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting general targets for MP/CC ...
+ setting special targets for CC ...
+ setting targets for CC properties ...
+ setting targets for CC ionized states ...
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for H:   14
+ Rule: SET_HERMITIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ number of incore-blocks in geth2:                      3
+ size of buffer in geth2:        0.07Mb
+ passes over integral file:                      1
+ 
+ 2-el. integrals on disk:                   2724
+    thereof nonredundant:                   1086
+     integrals reordered:                   8808
+ My next target: T
+ Rule: DEF_EXCITATION
+ Number of occupation classes for T:    2
+ My next target: DIA
+ Rule: CLONE_OPERATOR
+ My next target: DIAG1SxxM00
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: L(CC)
+ Rule: DEF_SCALAR
+ Number of occupation classes for L(CC):    1
+ My next target: TBAR
+ Rule: CLONE_OPERATOR
+ My next target: Lg0_CC
+ Rule: DEF_CC_LAGRANGIAN
+  ------------------------------------------
+     L    number of   n-fold commutators
+   class    terms    0    1    2    3    4
+  ------------------------------------------
+       0        4     1    2    1    0    0
+       1       14     1    6    6    1    0
+       2       31     1    7   15    7    1
+  ------------------------------------------
+ wrote                     50  entries
+ Number of generated terms:                     49
+ @ CC Lagrangian                       cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Rule: TEX_FORMULA
+ read                     50  entries
+ A TeX formatted version of formula Lg0_CC
+ is written to file: cc_lag.tex
+ My next target: E(CC)
+ Rule: DEF_SCALAR
+ Number of occupation classes for E(CC):    1
+ My next target: E0_CC
+ Rule: INVARIANT
+ read                     50  entries
+ wrote                      6  entries
+ My next target: OMG
+ Rule: CLONE_OPERATOR
+ My next target: OMG_CC
+ Rule: DERIVATIVE
+ My next target: DEF-O0
+ Rule: DEF_ME_LIST
+ My next target: DEF-T0
+ Rule: DEF_ME_LIST
+ My next target: DEF-E0(CC)
+ Rule: DEF_ME_LIST
+ My next target: Hbar
+ Rule: DEF_CC_HBAR_OP
+ My next target: HT_TRF
+ Rule: DEF_CC_HBAR
+ wrote                     51  entries
+ @ CC Hbar                             cpu/sys/wall:      0.04 /     0.00 /     0.03 s
+ My next target: DEF-Hbar
+ Rule: DEF_ME_LIST
+ My next target: OMG_CC_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                      8
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   2                T0
+    3     DIA   1   2       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   2                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   2                O0
+    8    Hbar   1   9             H0bar
+ ----------------------------------------
+ Number of lists defined:                      6
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          331      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          331      OMG                    O0_list.da
+    4              T0  1  0          331        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6           H0bar  1  0         2422     Hbar                 H0bar_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- E0_CC
+ read                      5  entries
+  -- OMG_CC
+ read                     46  entries
+  I will factor out the intermediate: HT_TRF ...
+ read                     51  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   63 - H^ 2 P^ 4 V^ 0 X^ 0 - flops:  0.168E+05(  19.0%)
+  term #   66 - H^ 1 P^ 4 V^ 0 X^ 0 - flops:  0.557E+04(   6.3%)
+  term #   69 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.528E+04(   6.0%)
+  term #   39 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.464E+04(   5.2%)
+  term #   70 - H^ 3 P^ 3 V^ 0 X^ 0 - flops:  0.410E+04(   4.6%)
+ Formally most expensive contractions: 
+  term #   63 - H^ 2 P^ 4 V^ 0 X^ 0
+  term #   70 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   69 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   68 - H^ 3 P^ 3 V^ 0 X^ 0
+  term #   39 - H^ 3 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   66 - H^ 1 P^ 3 V^ 0 X^ 0 - Mb:     0.708E-02
+  term #   62 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   57 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   71 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+  term #   59 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.443E-02
+ wrote                    133  entries
+ My next target: SOLVE-CC-GS
+ Rule: SOLVE_NLEQ
+ read                    132  entries
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-07
+ @ time for target                     cpu/sys/wall:      0.03 /     0.02 /     0.05 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:     0.000000000        -38.82190875    
+ term #    53:     0.000000000        -38.82190875    
+ term #    54:     0.000000000        -38.82190875    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+>>>  1        -38.821908746679 0.3920    
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:     0.000000000        -38.82190875    
+ term #    53:   -0.6331836541E-01    -38.88522711    
+ term #    54:     0.000000000        -38.88522711    
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>>  2        -38.885227112091 0.9722E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.2501110430E-11    -38.82190875    
+ term #    53:   -0.8012077182E-01    -38.90202952    
+ term #    54:    0.1738492713E-05    -38.90202778    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>>  3        -38.902027780004 0.2902E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.5492495347E-11    -38.82190875    
+ term #    53:   -0.8442788223E-01    -38.90633663    
+ term #    54:    0.3109111567E-05    -38.90633352    
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>>  4        -38.906333519790 0.1185E-01
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6075140391E-11    -38.82190875    
+ term #    53:   -0.8544912532E-01    -38.90735787    
+ term #    54:    0.4211162022E-05    -38.90735366    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>>  5        -38.907353660831 0.6607E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6117772955E-11    -38.82190875    
+ term #    53:   -0.8560606840E-01    -38.90751482    
+ term #    54:    0.4913623478E-05    -38.90750990    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>>  6        -38.907509901448 0.3136E-02
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.5975664408E-11    -38.82190875    
+ term #    53:   -0.8567966964E-01    -38.90758842    
+ term #    54:    0.4904851586E-05    -38.90758351    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>>  7        -38.907583511461 0.9373E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6117772955E-11    -38.82190875    
+ term #    53:   -0.8571672023E-01    -38.90762547    
+ term #    54:    0.4763965961E-05    -38.90762070    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.06 /     0.16 s
+>>>  8        -38.907620702940 0.2360E-03
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6203038083E-11    -38.82190875    
+ term #    53:   -0.8571286624E-01    -38.90762161    
+ term #    54:    0.4735932158E-05    -38.90761688    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>>  9        -38.907616876977 0.5162E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6210143511E-11    -38.82190875    
+ term #    53:   -0.8571495119E-01    -38.90762370    
+ term #    54:    0.4729500517E-05    -38.90761897    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>> 10        -38.907618968363 0.1585E-04
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571479302E-01    -38.90762354    
+ term #    54:    0.4726351811E-05    -38.90761881    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>> 11        -38.907618813340 0.3562E-05
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571473384E-01    -38.90762348    
+ term #    54:    0.4726169998E-05    -38.90761875    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>> 12        -38.907618754340 0.8351E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571477532E-01    -38.90762352    
+ term #    54:    0.4726203706E-05    -38.90761880    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.05 /     0.16 s
+>>> 13        -38.907618795787 0.1777E-06
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571478088E-01    -38.90762353    
+ term #    54:    0.4726200615E-05    -38.90761880    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>> 14        -38.907618801350 0.5080E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571477809E-01    -38.90762352    
+ term #    54:    0.4726197297E-05    -38.90761880    
+ @ time for target                     cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.06 /     0.16 s
+>>> 15        -38.907618798568 0.1211E-07
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.02 /     0.09 s
+ term #    51:    -38.82190875        -38.82190875    
+ term #    52:    0.6217248938E-11    -38.82190875    
+ term #    53:   -0.8571477762E-01    -38.90762352    
+ term #    54:    0.4726197865E-05    -38.90761880    
+ @ time for target                     cpu/sys/wall:      0.00 /     0.01 /     0.00 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.02 /     0.07 s
+ @ formula evaluation                  cpu/sys/wall:      0.09 /     0.05 /     0.16 s
+>>> 16        -38.907618798095 0.2746E-08
+ CONVERGED IN    16 ITERATIONS
+>>> final energy:        -38.907618798095 <<<
+ My next target: R(-1)
+ Rule: DEF_EXCITATION
+ Number of occupation classes for R(-1):    2
+ My next target: A.R(-1)
+ Rule: CLONE_OPERATOR
+ My next target: CC_A_R(-1)
+ Rule: DERIVATIVE
+ My next target: DEF-A.RI0
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: DEF-RI0
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: CC_A_R(-1)_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                     10
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2       T   1   2                T0
+    3     DIA   1   2       DIAG1SxxM00
+    4   L(CC)   1   1                  
+    5    TBAR   1   2                  
+    6   E(CC)   1   1            E0(CC)
+    7     OMG   1   2                O0
+    8    Hbar   1   9             H0bar
+    9   R(-1)   1   2       RI0G2SxxM01
+   10 A.R(-1)   1   2     A.RI0G2SxxM01
+ ----------------------------------------
+ Number of lists defined:                     10
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0         8921        H                    H0_list.da
+    2     DIAG1SxxM00  1  0          331      DIA           DIAG1SxxM00_list.da
+    3              O0  1  0          331      OMG                    O0_list.da
+    4              T0  1  0          331        T                    T0_list.da
+    5          E0(CC)  1  0            1    E(CC)                E0(CC)_list.da
+    6           H0bar  1  0         2422     Hbar                 H0bar_list.da
+    7   A.RI0G1SxxM01  1  1           44  A.R(-1)         A.RI0G1SxxM01_list.da
+    8   A.RI0G2SxxM01  2  1           43  A.R(-1)         A.RI0G2SxxM01_list.da
+    9     RI0G1SxxM01  1  1           44    R(-1)           RI0G1SxxM01_list.da
+   10     RI0G2SxxM01  2  1           43    R(-1)           RI0G2SxxM01_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- CC_A_R(-1)
+ read                     42  entries
+  Now looking for the optimal factorization of terms ...
+ testing new factorization
+  Formula factorization
+ -----------------------
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #   28 - H^ 4 P^ 2 V^ 0 X^ 0 - flops:  0.330E+04(  10.9%)
+  term #   26 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.325E+04(  10.7%)
+  term #   40 - H^ 3 P^ 2 V^ 0 X^ 0 - flops:  0.178E+04(   5.9%)
+  term #   29 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.160E+04(   5.3%)
+  term #   33 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.154E+04(   5.1%)
+ Formally most expensive contractions: 
+  term #   28 - H^ 4 P^ 2 V^ 0 X^ 0
+  term #   29 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   26 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   25 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #   33 - H^ 2 P^ 3 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #   26 - H^ 0 P^ 3 V^ 0 X^ 0 - Mb:     0.354E-02
+  term #   33 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.195E-02
+  term #   41 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
+  term #   40 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
+  term #   36 - H^ 1 P^ 2 V^ 0 X^ 0 - Mb:     0.177E-02
+ wrote                    133  entries
+ My next target: DIA(-1)
+ Rule: CLONE_OPERATOR
+ My next target: SOLVE-CC-RI0
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SOLVE_EVP
+ nspecial =                      0
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       44
+idstsec:        1
+signsec:      1.0
+ read                    132  entries
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ Number of parameters:              44
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+>>>  1                         0.2406    
+ >>             0.415004197272 0.2406    
+ @ time for target                     cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+>>>  2                         0.3542E-01
+ >>             0.355163718528 0.3542E-01
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+>>>  3                         0.1109E-01
+ >>             0.353895023389 0.1109E-01
+ @ time for target                     cpu/sys/wall:      0.06 /     0.03 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.03 /     0.11 s
+>>>  4                         0.2895E-02
+ >>             0.353897200372 0.2895E-02
+ @ time for target                     cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+>>>  5                         0.4561E-03
+ >>             0.353905015203 0.4561E-03
+ @ time for target                     cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+>>>  6                         0.6234E-04
+ >>             0.353902459905 0.6234E-04
+ @ time for target                     cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.04 /     0.11 s
+>>>  7                         0.1154E-04
+ >>             0.353902317604 0.1154E-04
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+>>>  8                         0.2200E-05
+ >>             0.353902324126 0.2200E-05
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.11 s
+>>>  9                         0.3153E-06
+ >>             0.353902325453 0.3153E-06
+ @ time for target                     cpu/sys/wall:      0.06 /     0.04 /     0.11 s
+ @ formula evaluation                  cpu/sys/wall:      0.06 /     0.04 /     0.11 s
+ CONVERGED IN    10 ITERATIONS
+>>>  9                         0.5195E-07
+ >>             0.353902327402 0.5195E-07
+  Results for RI0G1SxxM01
+ -------------------------
+>>>==================================================================
+>>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+>>>------------------------------------------------------------------
+>>>    1         0.353902327402                    ---   0.5195E-07
+>>>==================================================================
+ Rule: DELETE_ME_LIST
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: SOLVE_EVP
+ nspecial =                      0
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:       43
+idstsec:        1
+signsec:      1.0
+ read                    132  entries
+ Optimization algorithm:      DAVIDSON
+ Max. number of iterations:         50
+ Threshold for residual:      0.10E-06
+ Number of parameters:              43
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.09 s
+>>>  1                         0.2363    
+ >>             0.598517528826 0.2244    
+ >>             1.058663298866 0.2363    
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+>>>  2                         0.1103    
+ >>             0.549989442737 0.3323E-01
+ >>             0.953756323201 0.1103    
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+>>>  3                         0.3338E-01
+ >>             0.548970996299 0.8110E-02
+ >>             0.934933544176 0.3338E-01
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+>>>  4                         0.1935E-01
+ >>             0.548976823731 0.1708E-02
+ >>             0.932357464670 0.1935E-01
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+>>>  5                         0.6098E-02
+ >>             0.548975914699 0.3188E-03
+ >>             0.931699781694 0.6098E-02
+ @ time for target                     cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+>>>  6                         0.1128E-02
+ >>             0.548973987262 0.4216E-04
+ >>             0.931622504146 0.1128E-02
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+>>>  7                         0.2857E-03
+ >>             0.548973818664 0.4890E-05
+ >>             0.931619951989 0.2857E-03
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+>>>  8                         0.5424E-04
+ >>             0.548973832461 0.4558E-06
+ >>             0.931619563954 0.5424E-04
+ @ time for target                     cpu/sys/wall:      0.04 /     0.04 /     0.33 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.04 /     0.33 s
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+>>>  9                         0.1565E-04
+ >>             0.548973833802 0.5729E-07
+ >>             0.931619600976 0.1565E-04
+ @ time for target                     cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.03 /     0.10 s
+>>> 10                         0.2406E-05
+ >>             0.548973833755 0.5220E-07
+ >>             0.931619695671 0.2406E-05
+ @ time for target                     cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.05 /     0.03 /     0.10 s
+>>> 11                         0.3682E-06
+ >>             0.548973833751 0.5231E-07
+ >>             0.931619694456 0.3682E-06
+ @ time for target                     cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+ @ formula evaluation                  cpu/sys/wall:      0.04 /     0.04 /     0.10 s
+ CONVERGED IN    12 ITERATIONS
+>>> 11                         0.5526E-07
+ >>             0.548973833769 0.5124E-07
+ >>             0.931619693912 0.5526E-07
+  Results for RI0G2SxxM01
+ -------------------------
+>>>==================================================================
+>>>  root     eigenvalue (real)       eigenvalue (img.)  |residual|
+>>>------------------------------------------------------------------
+>>>    1         0.548973833769                    ---   0.5124E-07
+>>>    2         0.931619693912                    ---   0.5526E-07
+>>>==================================================================
+ Rule: DELETE_ME_LIST
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27085958 real(8)-words (  206.65 Mb)
+   Largest memory block:       26263470 real(8)-words (  200.37 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      3.08 /     1.90 /     6.14 s
+ run ends at 2010-01-29 22:12:21.602   host: Pauli.local

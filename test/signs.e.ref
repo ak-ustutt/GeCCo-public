@@ -1,0 +1,2210 @@
+ run starts at 2009-02-15 15:22:30.960   host: dhcppc1
+
+ Version compiled 15 Feb 2009 at 15:22:26 on dhcppc1                             
+
+ compiled with: ifort
+ level 1 optimization: -g -assume byterecl -traceback -I../include -mod i686-linux-
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal author:                                       |
+        |       andreas koehn (university of mainz, germany)        |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       gareth richings (university of mainz, germany)      |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: DALTON_SPECIAL
+ raw data from section "SIR IPH "
+ potnuc =    2.14693787982525     
+ emy    =   -27.2722697088377     
+ eactiv =   0.000000000000000E+000
+ emcscf =   -25.1253318290124     
+ istate =            1
+ ispin  =            1
+ nactel =            0
+ lsym   =            1
+ nsym   =            4
+ mctype =            0
+ nrhf   =    3   0   0   0   0   0   0   0
+ nfro   =    0   0   0   0   0   0   0   0
+ nish   =    3   0   0   0   0   0   0   0
+ nash   =    0   0   0   0   0   0   0   0
+ norb   =   10   4   4   1   0   0   0   0
+ cabs   =   26  13  13   5   0   0   0   0
+ nbas   =   10   4   4   1   0   0   0   0
+ abas   =   26  13  13   5   0   0   0   0
+ tbas   =   36  17  17   6   0   0   0   0
+ nas1   =    0   0   0   0   0   0   0   0
+ nas2   =    0   0   0   0   0   0   0   0
+ nas3   =    0   0   0   0   0   0   0   0
+ nnorbt,n2orbt:   76 133
+ Reading input file ....
+ Input file: signs.inp
+I keyword hist
+I   general
+       memmax 2  1
+  >     30000000
+I   calculate
+I     skip_E
+I     check
+         sign_test 2  1
+  >            1
+         sign_test 2  1
+  >            2
+I     routes
+         contract 2  1
+  >            3
+I keyword hist
+A   general
+A   calculate
+A     skip_E
+A     check
+A     routes
+ Memory set to     30000000 r8-words = (  228.88 Mb)
+ real-word/integer-word ratio =            2
+ ************
+  set_orbinf
+ ************
+ ihpvgas:              1           2           4
+ ngas_hpv:             1           1           0           1
+ nactt_hpv:            3          16           0          57
+ ioff_gas:             0           1           2           2
+ idx_gas:              1           2           3           3
+ gas_reo:           1           2           3
+ igamorb:
+
+<  1>        1       1       1       1       1       1       1       1       1       1
+        2       2       2       2       3       3       3       3       4       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       1       1       1       1       1
+        1       1       1       1       1       2       2       2       2       2
+        2       2       2       2       2       2       2       2       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       4       4       4       4       4
+ igasorb:
+
+<  1>        1       1       1       2       2       2       2       2       2       2
+        2       2       2       2       2       2       2       2       2       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3       3       3       3       3
+        3       3       3       3       3       3
+ mostnd:
+     1      1   3    4   3    4   3    4   3
+     2      4  10   11  14   15  18   19  19
+     3     20  45   46  58   59  71   72  76
+ ireost:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ ireots:
+
+<  1>        1       2       3       4       5       6       7       8       9      10
+       11      12      13      14      15      16      17      18      19
+ iad_gas:
+
+<  1>        2
+
+<  2>        2
+
+<  3>        2
+ setting general targets ...
+ setting test targets for R12 ...
+ My next target: TEST_RES
+ Rule: DEF_SCALAR
+ Number of occupation classes for TEST_RES:    1
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_A
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_A:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  0\   0  0   1  1   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_R
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_R:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  1\   0  0   1  1   1  1      0  0   0  0   0  0
+       \  1  1  0  0/   1  1   1  1   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: TEST_H
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_H:    1
+ According to your wishes, I set the following:
+    1  /  1  0  0  1\   1  1   0  0   1  1      0  0   0  0   0  0
+       \  0  2  0  0/   0  0   2  2   0  0      0  0   0  0   0  0
+ My next target: FORM_TEST_I
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+ [END]
+ wrote            3  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            2  entries
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+ [END]
+ My next target: DEF-ME_TEST_RES
+ Rule: DEF_ME_LIST
+ My next target: ME_TEST_H
+ Rule: DEF_ME_LIST
+ set_new_graph:            1
+ Memory for current weight array:        216 words (=  0.00 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      1     1    -1              3
+            1     1              3
+ set_new_graph:            2
+ Memory for current weight array:       2880 words (=  0.02 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      2     2    -2            120
+            2     0            256
+            2     2            120
+ set_new_graph:            3
+ Memory for current weight array:       4104 words (=  0.03 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      3     1    -1             57
+            1     1             57
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.03 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.00 /     0.00 s
+ size of buffer:        21200           3       63600
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.08 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.03 /     0.01 s
+ @ time in 2int import                 cpu/sys/wall:      0.14 /     0.01 /     0.15 s
+ 
+ imported list: ME_TEST_H
+  block no.    1 len =        34986
+  Ms(A) =   2/2  IRREP(A) =  1  len =         2574  norm = 0.200950    
+  Ms(A) =   2/2  IRREP(A) =  2  len =         1248  norm = 0.181092    
+  Ms(A) =   2/2  IRREP(A) =  3  len =         1248  norm = 0.181092    
+  Ms(A) =   2/2  IRREP(A) =  4  len =          345  norm = 0.113125    
+ norm (MS-Block) =   0.344625456187505     
+  Ms(A) =   0/2  IRREP(A) =  1  len =        12792  norm = 0.637561    
+  Ms(A) =   0/2  IRREP(A) =  2  len =         4992  norm = 0.479028    
+  Ms(A) =   0/2  IRREP(A) =  3  len =         4992  norm = 0.479028    
+  Ms(A) =   0/2  IRREP(A) =  4  len =         1380  norm = 0.352322    
+ norm (MS-Block) =   0.994761466351988     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =         2574  norm = 0.200950    
+  Ms(A) =  -2/2  IRREP(A) =  2  len =         1248  norm = 0.181092    
+  Ms(A) =  -2/2  IRREP(A) =  3  len =         1248  norm = 0.181092    
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          345  norm = 0.113125    
+ norm (MS-Block) =   0.344625456187505     
+ total norm =    1.10773813920242     
+ My next target: ME_TEST_R
+ Rule: DEF_ME_LIST
+ set_new_graph:            4
+ Memory for current weight array:       1152 words (=  0.01 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      4     1    -1             16
+            1     1             16
+ set_new_graph:            5
+ Memory for current weight array:        540 words (=  0.00 Mb)
+ Number of strings
+ -----------------
+   Graph electr.  MS      length   
+      5     2    -2              3
+            2     0              9
+            2     2              3
+ Rule: IMPORT
+ size of buffer:         2221           3        6663
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.02 /     0.00 s
+ @ time for sorting integrals          cpu/sys:           0.00 /     0.00 s
+ size of buffer:        21200           3       63600
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.07 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.08 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.17 /     0.01 /     0.19 s
+ 
+ imported list: ME_TEST_R
+  block no.    1 len =        72468
+  Ms(A) =   2/2  IRREP(A) =  1  len =         6111  norm = 0.212577E-01
+  Ms(A) =   2/2  IRREP(A) =  2  len =         2736  norm = 0.168824E-01
+  Ms(A) =   2/2  IRREP(A) =  3  len =         2736  norm = 0.168824E-01
+  Ms(A) =   2/2  IRREP(A) =  4  len =          495  norm = 0.800172E-02
+ norm (MS-Block) =   3.295369804216385E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =        24444  norm = 0.699349E-01
+  Ms(A) =   0/2  IRREP(A) =  2  len =        10944  norm = 0.536862E-01
+  Ms(A) =   0/2  IRREP(A) =  3  len =        10944  norm = 0.536862E-01
+  Ms(A) =   0/2  IRREP(A) =  4  len =         1980  norm = 0.233455E-01
+ norm (MS-Block) =   0.105831529150002     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =         6111  norm = 0.212577E-01
+  Ms(A) =  -2/2  IRREP(A) =  2  len =         2736  norm = 0.168824E-01
+  Ms(A) =  -2/2  IRREP(A) =  3  len =         2736  norm = 0.168824E-01
+  Ms(A) =  -2/2  IRREP(A) =  4  len =          495  norm = 0.800172E-02
+ norm (MS-Block) =   3.295369804216385E-002
+  block no.    2 len =          936
+  Ms(A) =   2/2  IRREP(A) =  1  len =           99  norm = 0.408510E-02
+ norm (MS-Block) =   4.085099618119476E-003
+  Ms(A) =   0/2  IRREP(A) =  1  len =          738  norm = 0.399393E-01
+ norm (MS-Block) =   3.993931220793191E-002
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           99  norm = 0.408510E-02
+ norm (MS-Block) =   4.085099618119476E-003
+ total norm =   0.122477466208926     
+ My next target: TEST_R2
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_R2:    2
+ According to your wishes, I set the following:
+    1  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: ME_TEST_R2
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:          379           3        1137
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.00 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.01 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.01 /     0.01 /     0.01 s
+ 
+ imported list: ME_TEST_R2
+  block no.    1 len =          504
+  Ms(A) =   2/2  IRREP(A) =  1  len =           63  norm = 0.191460E-01
+ norm (MS-Block) =   1.914600961992332E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          378  norm = 0.587613E-01
+ norm (MS-Block) =   5.876129322929352E-002
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           63  norm = 0.191460E-01
+ norm (MS-Block) =   1.914600961992332E-002
+  block no.    2 len =          936
+  Ms(A) =   2/2  IRREP(A) =  1  len =           99  norm = 0.408510E-02
+ norm (MS-Block) =   4.085099618119476E-003
+  Ms(A) =   0/2  IRREP(A) =  1  len =          738  norm = 0.399393E-01
+ norm (MS-Block) =   3.993931220793191E-002
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           99  norm = 0.408510E-02
+ norm (MS-Block) =   4.085099618119476E-003
+ total norm =   7.625322083777175E-002
+ My next target: ME_TEST_A
+ Rule: DEF_ME_LIST
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            3  entries
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            5
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_R   1   2         ME_TEST_R
+    4  TEST_H   1   1         ME_TEST_H
+    5 TEST_R2   2   2        ME_TEST_R2
+ ----------------------------------------
+ Number of lists defined:            5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        34986   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        73404   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         1440  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0          978   TEST_A             ME_TEST_A_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_A
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ factorizing term #            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ @ factorization                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           2
+ [ADD]           2 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_R2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_R2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+     1*    2->    7(    1)
+ [ADD]           2 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_A  (           2 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_R2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_R2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ Rule: EVALUATE
+ read            3  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_A
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.1073756758    
+ Rule: PRINT_MEL
+ TEST OPERATOR A: norm =    0.1073756758E+00
+ My next target: FOPT_TEST_I
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            5
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_R   1   2         ME_TEST_R
+    4  TEST_H   1   1         ME_TEST_H
+    5 TEST_R2   2   2        ME_TEST_R2
+ ----------------------------------------
+ Number of lists defined:            5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        34986   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        73404   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         1440  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0          978   TEST_A             ME_TEST_A_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_TEST_I
+ read            2  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ # of dummy contractions:          456
+ @ time in form_fact                   cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.131E+06( 100.0%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #    1 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.500E-01
+ @ factorization                       cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ [END]
+ wrote            3  entries
+ My next target: SIGN_TEST_I
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.01 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.01 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.02 /     0.01 /     0.03 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.1, opt. factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.03 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.01 /     0.01 s
+ @ IO write                            cpu/sys:           0.00 /     0.02 s
+ @ overhead contraction 2              cpu/sys:           0.06 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.03 /     0.14 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.2, 35221 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    2)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    5)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.03 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.01 /     0.01 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.05 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.10 /     0.02 /     0.12 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.3, 36521 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    5)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    5)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    1)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.05 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.02 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.02 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.04 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.03 /     0.15 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.4, 11121 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    1)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    1)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.01 /     0.01 s
+ @ overhead contraction 1              cpu/sys:           0.01 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.01 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.01 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.03 /     0.02 /     0.04 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.5, 75111 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    5)
+    -1*    2->   -3(    1)
+    -3*   -2->   -4(    1)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    3)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.02 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.02 /     0.00 /     0.03 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.6, 76321 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_I
+  f_output = FOPT_TEST_I
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    3)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    7)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    3)
+    -3*   -2->   -4(    2)
+    -4*    2->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_A      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      2   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       0  0  0  0
+                     0  1  0  0
+  c      3   5       1  0  0  0
+                     0  0  0  0
+  c      1   6       1  0  0  0
+                     0  0  0  0
+  c      3   6       0  0  0  0
+                     0  1  0  0
+     2*    3->   -1(    5)
+     4*    2->   -2(    6)
+    -1*    2->   -3(    4)
+    -3*   -2->   -4(    3)
+    -4*    2->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.3473677471E-07    0.3473677471E-07
+ @ contraction kernel                  cpu/sys:           0.03 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.01 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.03 /     0.01 /     0.03 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.3473677471E-07
+ Rule: PRINT_MEL
+ TEST I.7, 56431 factorization:    0.3473677471E-07
+ Rule: RESET_ME_LIST
+ My next target: TEST_B
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_B:    2
+ According to your wishes, I set the following:
+    1  /  0  1  0  0\   0  0   1  1   0  0      0  0   0  0   0  0
+       \  1  0  0  0/   1  1   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: FORM_TEST_II
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+ [END]
+ wrote            3  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            2  entries
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+ [END]
+ My next target: TEST_H2
+ Rule: DEF_OP_FROM_OCC
+ Number of occupation classes for TEST_H2:    2
+ According to your wishes, I set the following:
+    1  /  1  1  0  0\   1  1   1  1   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    1  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+    2  /  0  2  0  0\   0  0   2  2   0  0      0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0      0  0   0  0   0  0
+    2  /  0  0  0  0\   0  0   0  0   0  0      0  0   0  0   0  0
+       \  2  0  0  0/   2  2   0  0   0  0      0  0   0  0   0  0
+ My next target: ME_TEST_H2
+ Rule: DEF_ME_LIST
+ Rule: IMPORT
+ size of buffer:          379           3        1137
+ read in finished
+ @ time for reading integrals          cpu/sys:           0.01 /     0.01 s
+ @ time for sorting integrals          cpu/sys:           0.01 /     0.00 s
+ @ time in 2int import                 cpu/sys/wall:      0.02 /     0.01 /     0.02 s
+ 
+ imported list: ME_TEST_H2
+  block no.    1 len =          504
+  Ms(A) =   2/2  IRREP(A) =  1  len =           63  norm = 0.343612    
+ norm (MS-Block) =   0.343611923718073     
+  Ms(A) =   0/2  IRREP(A) =  1  len =          378  norm = 0.717152    
+ norm (MS-Block) =   0.717151824160121     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           63  norm = 0.343612    
+ norm (MS-Block) =   0.343611923718073     
+  block no.    2 len =          936
+  Ms(A) =   2/2  IRREP(A) =  1  len =           99  norm = 0.713401E-01
+ norm (MS-Block) =   7.134014689513836E-002
+  Ms(A) =   0/2  IRREP(A) =  1  len =          738  norm = 0.375840    
+ norm (MS-Block) =   0.375839821745072     
+  Ms(A) =  -2/2  IRREP(A) =  1  len =           99  norm = 0.713401E-01
+ norm (MS-Block) =   7.134014689513836E-002
+ total norm =   0.949673339557380     
+ My next target: ME_TEST_B
+ Rule: DEF_ME_LIST
+ Rule: EXPAND_OP_PRODUCT
+  Generated formula
+ -------------------
+ [INIT TARGET]           6
+ [ADD]           6 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           6 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: PRINT_FORMULA
+ read            3  entries
+ [INIT TARGET]           6
+ [ADD]           6 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+ [ADD]           6 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            7
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_R   1   2         ME_TEST_R
+    4  TEST_H   1   1         ME_TEST_H
+    5 TEST_R2   2   2        ME_TEST_R2
+    6  TEST_B   1   2         ME_TEST_B
+    7 TEST_H2   2   2        ME_TEST_H2
+ ----------------------------------------
+ Number of lists defined:            7
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        34986   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        73404   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         1440  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0          978   TEST_A             ME_TEST_A_list.da
+    6      ME_TEST_H2  1  0         1440  TEST_H2            ME_TEST_H2_list.da
+    7       ME_TEST_B  1  0          978   TEST_B             ME_TEST_B_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_B
+ read            3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ factorizing term #            2
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00( NaN  %)
+ Formally most expensive contractions: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+  term #    2 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ @ factorization                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           6
+ [ADD]           6 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    1
+ v01 TEST_H2     1    1  1  0  0
+                      0  0  0  0
+ v01 TEST_H2     2    0  0  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     1  0  0  0
+     1*    2->    7(    1)
+ [ADD]           6 ( term #           2 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_B  (           6 )           2
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    1    0
+ v01 TEST_H2     3    0  2  0  0
+                      0  0  0  0
+ v01 TEST_H2     4    0  0  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     0  0  0  0
+  x      2   1       0  0  0  0
+                     2  0  0  0
+ [END]
+ wrote            4  entries
+ Rule: EVALUATE
+ read            3  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_B
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ setting self-contraction sign to +1
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 -->  1.524084576    
+ Rule: PRINT_MEL
+ TEST OPERATOR B: norm =    0.1524084576E+01
+ My next target: FOPT_TEST_II
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:            7
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1TEST_RES   1   1       ME_TEST_RES
+    2  TEST_A   1   2         ME_TEST_A
+    3  TEST_R   1   2         ME_TEST_R
+    4  TEST_H   1   1         ME_TEST_H
+    5 TEST_R2   2   2        ME_TEST_R2
+    6  TEST_B   1   2         ME_TEST_B
+    7 TEST_H2   2   2        ME_TEST_H2
+ ----------------------------------------
+ Number of lists defined:            7
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1     ME_TEST_RES  1  0            1 TEST_RES           ME_TEST_RES_list.da
+    2       ME_TEST_H  1  0        34986   TEST_H             ME_TEST_H_list.da
+    3       ME_TEST_R  1  0        73404   TEST_R             ME_TEST_R_list.da
+    4      ME_TEST_R2  1  0         1440  TEST_R2            ME_TEST_R2_list.da
+    5       ME_TEST_A  1  0          978   TEST_A             ME_TEST_A_list.da
+    6      ME_TEST_H2  1  0         1440  TEST_H2            ME_TEST_H2_list.da
+    7       ME_TEST_B  1  0          978   TEST_B             ME_TEST_B_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- FORM_TEST_II
+ read            2  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #            1
+ # of dummy contractions:          456
+ @ time in form_fact                   cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1 - flops:  0.131E+06( 100.0%)
+ Formally most expensive contractions: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 1
+ Largest intermediates occur in: 
+  term #    1 - H^ 2 P^ 1 V^ 0 X^ 1 - Mb:     0.500E-01
+ @ factorization                       cpu/sys/wall:      0.04 /     0.00 /     0.04 s
+ +====================+
+ | Optimized formula: |
+ +====================+
+ [INIT TARGET]           1
+ [ADD]           1 ( term #           1 )
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -2*    6->   -3(    4)
+    -1*   -3->   -4(    1)
+    -4*    6->   -5(    1)
+ [END]
+ wrote            3  entries
+ My next target: SIGN_TEST_II
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.7374691068E-05    0.7374691068E-05
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.01 /     0.01 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.01 /     0.03 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.7374691068E-05
+ Rule: PRINT_MEL
+ TEST II.1, opt. factorization:    0.7374691068E-05
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_II
+  f_output = FOPT_TEST_II
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -2*    6->   -3(    4)
+    -1*   -3->   -4(    1)
+    -4*    6->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    1)
+     4*    2->   -2(    3)
+    -2*    6->   -3(    4)
+    -1*   -3->   -4(    1)
+    -4*    6->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    4)
+    -2*    6->   -3(    6)
+    -1*   -3->   -4(    2)
+    -4*    6->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.7374691068E-05    0.7374691068E-05
+ @ contraction kernel                  cpu/sys:           0.03 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.01 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.01 s
+ @ IO write                            cpu/sys:           0.00 /     0.02 s
+ @ overhead contraction 2              cpu/sys:           0.06 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.01 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.11 /     0.03 /     0.14 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.7374691068E-05
+ Rule: PRINT_MEL
+ TEST II.2, 34621 factorization:    0.7374691068E-05
+ Rule: RESET_ME_LIST
+ Rule: MODIFY_FACTORIZATION
+ ----------------------------
+  here speaks form_del_terms
+ ----------------------------
+  f_input  = FOPT_TEST_II
+  f_output = FOPT_TEST_II
+ read            2  entries
+ present term            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    4)
+    -2*    6->   -3(    6)
+    -1*   -3->   -4(    2)
+    -4*    6->   -5(    1)
+ nfac =            5
+ after resize            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    3)
+     4*    2->   -2(    4)
+    -2*    6->   -3(    6)
+    -1*   -3->   -4(    2)
+    -4*    6->   -5(    1)
+ modifying term #            1
+ +++ contraction info +++
+  name (index) and block of result: TEST_RES  (           1 )           1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     6    6    8
+ v01 TEST_A^+    1    1  0  0  0
+                      0  1  0  0
+ v02 TEST_R^+    1    1  1  0  0
+                      0  1  0  1
+ v03 TEST_H      1    1  0  0  1
+                      0  2  0  0
+ v04 TEST_A      1    0  1  0  0
+                      1  0  0  0
+ v05 TEST_B      1    0  1  0  0
+                      1  0  0  0
+ v06 TEST_B      1    0  1  0  0
+                      1  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  0  0  1
+  c      1   4       1  0  0  0
+                     0  0  0  0
+  c      3   4       0  0  0  0
+                     0  1  0  0
+  c      2   5       1  0  0  0
+                     0  0  0  0
+  c      3   5       0  0  0  0
+                     0  1  0  0
+  c      2   6       0  0  0  0
+                     0  1  0  0
+  c      3   6       1  0  0  0
+                     0  0  0  0
+     2*    3->   -1(    8)
+     4*    2->   -2(    5)
+    -2*    6->   -3(    4)
+    -1*   -3->   -4(    1)
+    -4*    6->   -5(    1)
+ wrote            3  entries
+ Rule: EVALUATE
+ read            2  entries
+ =============================
+ = Entered formula scheduler =
+ =============================
+ New target: ME_TEST_RES
+ term #     1:    0.7374691068E-05    0.7374691068E-05
+ @ contraction kernel                  cpu/sys:           0.03 /     0.01 s
+ @ overhead contraction 1              cpu/sys:           0.01 /     0.00 s
+ @ IO read                             cpu/sys:           0.01 /     0.02 s
+ @ IO write                            cpu/sys:           0.00 /     0.03 s
+ @ overhead contraction 2              cpu/sys:           0.08 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ @ formula evaluation                  cpu/sys/wall:      0.13 /     0.06 /     0.19 s
+  norms/values of output operators
+ ----------------------------------
+>>>    1 --> 0.7374691068E-05
+ Rule: PRINT_MEL
+ TEST II.3, 85411 factorization:    0.7374691068E-05
+ Rule: RESET_ME_LIST
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:   27075557 real(8)-words (  206.57 Mb)
+   Largest memory block:       26811595 real(8)-words (  204.56 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      1.11 /     0.26 /     1.39 s
+ run ends at 2009-02-15 15:22:32.347   host: dhcppc1

@@ -1,0 +1,29 @@
+title
+  CH2/DZ DALTON enviroment: CCSD(T) energy (automatic frozen core)
+molecule
+  CH2-DZ-DALTON
+input
+  CCSDpT-energy.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CC_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label CCSD energy
+  find CC energy [ ]*:
+  compare real 5 1e-12
+check
+  label (T) energy
+  find CC-PT energy [ ]*:
+  compare real 5 1e-12
+check
+  label Total CCSD(T) energy
+  find Total energy [ ]*
+  compare real 5 1e-12
+end
+

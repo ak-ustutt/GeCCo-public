@@ -1,0 +1,48 @@
+title
+  BeH2/3-21G; DALTON env.: ic-MRCCD (4 el. in 3 act. orb.)
+molecule
+  BeH2_4akt-MR-DALTON
+input
+  ic_MRCC.inp
+check
+  label CASSCF energy
+  find CONVERGED
+  find ^...    1
+  compare real 3 1e-10
+  compare real 5 1e-10
+check
+  rewind
+  label Number of terms of Lagrangian
+  find F_MRCC_LAG
+  find F_MRCC_LAG
+  find EXPAND
+  find EXPAND
+  find wrote
+  compare int 2
+check
+  rewind
+  label Optimized orthogonalized Jacobian formula
+  find FOPT_Atr
+  find wrote
+  compare int 2
+check
+  rewind
+  label Number of singular values
+  find INVERT
+  find singular values were
+  compare int 1
+  compare int 4
+check
+  label CC eq.: first iteration
+  find SOLVE_NLEQ
+  find ^>>>
+  compare int 2
+  compare real 3 1e-10
+  compare real 4 1e-6
+check
+  label final energy
+  find CONV
+  find final energy
+  compare real 4 1e-8
+end
+

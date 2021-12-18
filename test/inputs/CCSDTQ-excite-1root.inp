@@ -1,0 +1,12 @@
+general
+ memmax=30000000
+orb_space
+ shell type=frozen,def=(1,0,0,0)
+method
+  CC maxexc=4
+calculate
+  solve maxiter=30,conv=1d-8
+  eigen maxiter=50,maxsub=12,conv=1d-7
+  excitation sym=(0,1,0,0)
+  routes simtraf=2,contract=3
+

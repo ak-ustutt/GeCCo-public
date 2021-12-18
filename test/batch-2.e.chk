@@ -1,0 +1,29 @@
+title
+  Check of batching II
+molecule
+  NeHe-R12-DALTON
+input
+  batch-2.inp
+check
+  label Norm of test operator A
+  find TEST OPERATOR A: norm =
+  compare real 6 1e-12
+check
+  label Norm of test operator B
+  find TEST OPERATOR B: norm =
+  compare real 6 1e-12
+check
+  label Test III.1
+  rewind
+  find TEST III.1
+  compare real 5 1e-12
+check
+  label Test III.2
+  find TEST III.2
+  compare real 5 1e-12
+check
+  label Test III.3
+  find TEST III.3
+  compare real 5 1e-12
+end
+

@@ -1,0 +1,65 @@
+title
+  BH/pVDZ; DALTON env.: CCSD(F12)/3C singlet and triplet excitation energies
+molecule
+  BH-R12-DALTON
+input
+  CCSD-R12-3C-excite.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CCR12_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label Factorization of right equations
+  find My next target: CC-R12-OPT
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
+check
+  label Settings for ground state optimization
+  find Max.\ number of iterations
+  compare int 5
+  find Threshold for residual
+  compare real 4 1e-10
+check
+  label Final energy
+  find CONVERGED IN .* ITERATIONS
+  find final energy: [ ]*
+  compare real 4 1e-12
+check
+  label Factorization of right transformation
+  find Formally most expensive contractions:
+  skip 1
+  compare int 6
+  compare int 8
+check
+  label Settings for eigenvalue solver
+  find Max.\ number of iterations
+  compare int 5
+  find Threshold for residual
+  compare real 4 1e-10
+check
+  label Number of iterations in eigenvalue solver
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  rewind
+  label 1B1 excitation energies
+  find Results for RE0G2C\+1
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-10
+  find ^.>> [ ]* 2 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-10
+check
+  label 3A1 excitation energies
+  find Results for RE0G1C-1
+  find ^.>> [ ]* 1 [ ]* [0]\.[0-9]* [ ]*--- [ ]*
+  compare real 3 1e-7
+  compare real 5 1e-10
+end
+

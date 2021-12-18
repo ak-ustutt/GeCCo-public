@@ -1,0 +1,34 @@
+title
+  NH/cc-pVDZ; MOLPRO dump env.: CEPA(0)/CASPT2 (4 el. in 4 act. orb.)
+molecule
+  NH-MR-MOLPRO-DUMP
+input
+  ic_MRCChybrid_CEPA0CASPT2.inp
+check
+  label CASSCF energy
+  find CONVERGED
+  find ^...  3
+  find ^..
+  compare real 2 1e-10
+  compare real 3 1e-10
+check
+  rewind
+  label Number of singular values
+  find INVERT
+  find singular values were
+  compare int 1
+  compare int 4
+check
+  label CC eq.: first iteration
+  find SOLVE_NLEQ
+  find ^>>>
+  compare int 2
+  compare real 3 1e-10
+  compare real 4 1e-6
+check
+  label final energy
+  find CONV
+  find final energy
+  compare real 4 1e-8
+end
+

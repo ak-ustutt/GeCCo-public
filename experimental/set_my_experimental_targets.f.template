@@ -1,0 +1,127 @@
+*----------------------------------------------------------------------*
+      subroutine set_my_experimental_targets(tgt_info,orb_info,env_type)
+*----------------------------------------------------------------------*
+*     set targets for experiments with GeCCo
+*----------------------------------------------------------------------*
+      implicit none
+
+      include 'opdim.h'
+      include 'stdunit.h'
+      include 'mdef_target_info.h'
+      include 'def_orbinf.h'
+
+      include 'ifc_input.h'
+      include 'ifc_targets.h'
+
+      include 'par_opnames_gen.h'
+      include 'par_formnames_gen.h'
+      include 'par_gen_targets.h'
+      include 'par_actions.h'
+
+      type(target_info), intent(inout) ::
+     &     tgt_info
+      type(orbinf), intent(in) ::
+     &     orb_info
+      character(*), intent(in) ::
+     &     env_type
+
+      integer ::
+     &     msc,nblk,njoin,
+     &     occ_def(ngastp,2,40)
+
+      if (iprlvl.gt.0)
+     &     write(luout,*) 'setting experimental targets ...'
+
+      ! CAVEAT: should be adapted as soon as open-shell version
+      !         is up and running
+      msc = +1 ! assuming closed shell
+
+*----------------------------------------------------------------------*
+*     Operators:
+*----------------------------------------------------------------------*
+      ! e.g. 
+      call add_target2('MY_OP1',.false.,tgt_info)
+      call set_rule2('MY_OP1',DEF_SCALAR,tgt_info)
+      call set_arg('MY_OP1',DEF_SCALAR,'LABEL',1,tgt_info,
+     &     val_label=(/'MY_OP1'/))
+
+      occ_def = 0
+      nblk = 2
+      njoin = 1
+      occ_def(IHOLE,1,1) = 2
+      occ_def(IPART,2,1) = 2
+      occ_def(IPART,1,2) = 2
+      occ_def(IPART,2,2) = 2
+      call add_target2('MY_OP2',.false.,tgt_info)
+      call set_rule2('MY_OP2',DEF_OP_FROM_OCC,tgt_info)
+      call set_arg('MY_OP2',DEF_OP_FROM_OCC,'LABEL',1,tgt_info,
+     &     val_label=(/'MY_OP2'/))
+      call set_arg('MY_OP2',DEF_OP_FROM_OCC,'BLOCKS',1,tgt_info,
+     &     val_int=(/nblk/))
+      call set_arg('MY_OP2',DEF_OP_FROM_OCC,'OCC',nblk,tgt_info,
+     &     val_occ=occ_def(1:ngastp,1:2,1:2))
+      
+*----------------------------------------------------------------------*
+*     Formulae 
+*----------------------------------------------------------------------*
+      call add_target2('MY_FORM',.true.,tgt_info)
+      call set_dependency('MY_FORM','MY_OP1',tgt_info)
+      call set_dependency('MY_FORM','MY_OP2',tgt_info)
+      call set_dependency('MY_FORM','MY_OP3',tgt_info)
+      call set_rule2('MY_FORM',DEF_EXP_FORMULA,tgt_info)
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'LABEL',1,tgt_info,
+     &     val_label=(/'MY_FORM'/))
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'OP_RES',1,tgt_info,
+     &     val_label=(/'MY_OP1'/))
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'OPERATORS',2,tgt_info,
+     &     val_label=(/'MY_OP2','MY_OP3'/))
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'TITLE',1,tgt_info,
+     &     val_str='Title of my new formula and some explanations')
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'SWITCH',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('MY_FORM',DEF_EXP_FORMULA,'MODE',1,tgt_info,
+     &     val_str='mode string')
+
+*----------------------------------------------------------------------*
+*     Opt. Formulae 
+*----------------------------------------------------------------------*
+
+      ! e.g.:
+      call add_target2('MY_OPT_FORM',.false.,tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_FORM',tgt_info)
+      call set_dependency('MY_OPT_FORM','1_MORE_FORM',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL1',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL2',tgt_info)
+      call set_dependency('MY_OPT_FORM','MY_MEL3',tgt_info)
+      call set_rule2('MY_OPT_FORM',OPTIMIZE,tgt_info)
+      call set_arg('MY_OPT_FORM',OPTIMIZE,'LABEL_OPT',1,tgt_info,
+     &     val_label=(/'MY_OPT_FORM'/))
+      ! 2 formulae pasted into final formula
+      ! no intermediate to factor out so far ...
+      call set_arg('MY_OPT_FORM',OPTIMIZE,'LABELS_IN',1,tgt_info,
+     &     val_label=(/'MY_FORM','1_MORE_FORM'/))
+*----------------------------------------------------------------------*
+*     ME-lists
+*----------------------------------------------------------------------*
+
+      ! e.g.: 
+      call add_target2('MY_MEL1',.false.,tgt_info)
+      call set_dependency('MY_MEL1','MY_OP1',tgt_info)
+      call set_rule2('MY_MEL1',DEF_ME_LIST,tgt_info)
+      call set_arg('MY_MEL1',DEF_ME_LIST,'LIST',1,tgt_info,
+     &     val_label=(/'MY_MEL1'/))
+      call set_arg('MY_MEL1',DEF_ME_LIST,'OPERATOR',1,tgt_info,
+     &     val_label=(/'MY_OP1'/))
+      call set_arg('MY_MEL1',DEF_ME_LIST,'IRREP',1,tgt_info,
+     &     val_int=(/1/))
+      call set_arg('MY_MEL1',DEF_ME_LIST,'MS',1,tgt_info,
+     &     val_int=(/0/))
+      call set_arg('MY_MEL1',DEF_ME_LIST,'ABSYM',1,tgt_info,
+     &     val_int=(/msc/))
+
+*----------------------------------------------------------------------*
+*     general targets: solve equations, evaluate expressions
+*----------------------------------------------------------------------*
+
+      return
+      end

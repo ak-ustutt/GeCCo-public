@@ -1,0 +1,25 @@
+title
+  CH2/DZ DALTON enviroment: CCSDT energy, slow route
+molecule
+  CH2-DZ-DALTON
+input
+  CC-energy-II.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CC_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label H1TRF factored out?
+  find I will factor out the intermediate:
+  compare str 7
+check
+  label Number of iterations
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+check
+  label Final energy
+  find final energy: [ ]*
+  compare real 4 1e-12
+end
+

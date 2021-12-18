@@ -1,0 +1,13 @@
+title
+  the gecco_module string_to_form
+molecule
+  BH-R12-DALTON
+input
+  string_to_form_test.inp
+check
+  label Running all tests
+  find Ran
+  skip 2
+  compare str 1
+end
+

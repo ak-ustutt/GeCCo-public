@@ -1,0 +1,667 @@
+ run starts at 2016-01-12 20:06:21.070   host: linuxm5.theochem.uni-stuttgart.de
+
+ Version compiled 12 Jan 2016 at 18:48:01 on linuxm5.theochem.uni-stuttgart.de   
+
+ compiled with: ifort
+ level 1 optimization: -O2 -axAVX -warn nousage -fpp -assume byterecl -i8 -tracebac
+ level 2 optimization: 
+ level 3 optimization: 
+
+        *-----------------------------------------------------------*
+        |                                                           |
+        |                         G e C C o                         |
+        |          a string-based general contraction code          |
+        |                                                           |
+        |                                                           |
+        |   principal authors:                                      |
+        |       andreas koehn (university of mainz, germany)        |
+        |       matthias hanauer (university of mainz, germany)     |
+        |   contributing authors:                                   |
+        |       jeppe olsen (university of aarhus, denmark)         |
+        |       wenlan liu (university of mainz, germany)           |
+        |       gareth richings (university of mainz, germany)      |
+        |       pradipta k samanta (IACS kolkata, india)            |
+        |                                                           |
+        *-----------------------------------------------------------*
+
+ Reading data from environment ....
+ Environment type: MOLPRO_DUMP
+ Namelist FCI:
+ NORB =     19
+ NELEC =    10
+ MS2 =       0
+ ISYM =      1
+ ORBSYM:
+   1  1  1  1  1  1  1  1  1  1  2  2  2  2  3  3  3  3  4
+ Reading input file ....
+ Input file: python-interface.inp
+ +-----------------------------------------------------------------------------+
+ general
+  print=10
+ orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(3,1,1,0)
+  shell type=frozen,def=(1,0,0,0)
+ calculate
+  interfaces file=MP2.py,file=orb_inp.py
+ +-----------------------------------------------------------------------------+
+I keyword hist
+I   general
+       print 2  1
+  >                     10
+I   orb_space
+I     shell
+         type 8  3
+  > occ
+         def 2  4
+  >                      3                     1                     1
+                     0
+I     shell
+         type 8  6
+  > closed
+         def 2  4
+  >                      3                     1                     1
+                     0
+I     shell
+         type 8  6
+  > frozen
+         def 2  4
+  >                      1                     0                     0
+                     0
+I   calculate
+I     interfaces
+         file 8  6
+  > MP2.py
+         file 8 10
+  > orb_inp.py
+I keyword hist
+A   general
+A   orb_space
+A     shell
+A     shell
+A     shell
+A   calculate
+A     interfaces
+ printlevel is set to                     10
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                      3                     1
+                     1                     0
+  defined shells: 
+   1    10   4   4   1
+  new shell definition: 
+   1     3   1   1   0
+   2     7   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                      3                     1
+                     1                     0
+  defined shells: 
+   1     3   1   1   0
+   2     7   3   3   1
+  new shell definition: 
+   1     3   1   1   0
+   2     0   0   0   0
+   3     7   3   3   1
+ ------------------
+  add_frozen_shell
+ ------------------
+  shell to add:                      1                     0
+                     0                     0
+  defined shells: 
+   1     3   1   1   0
+   2     0   0   0   0
+   3     7   3   3   1
+  new shell definition: 
+   1     1   0   0   0
+   2     2   1   1   0
+   3     0   0   0   0
+   4     7   3   3   1
+ Memory set to     50000000 r8-words = (  381.47 Mb)
+ real-word/integer-word ratio =                      1
+warning gecco_interface could not be imported from $PYTHONPATH
+The following error message was recieved
+No module named gecco_interface
+/home/bargholz/Programme/GeCCo /home/bargholz/Programme/GeCCo/python_spec/setting_up_python_interface.py
+ Warning from setting_up_python_interface.py: "2MS" is not a valid name for a Python variable. Use quotes for this keyword.
+ Warning from setting_up_python_interface.py: "REPLACE" is an argument and a rule. Use quotes for this keyword.
+ Reading target file setting_up_python_interface.py.tgt_list: Python Interface (setting_up_python_interface.py)
+ setting general targets ...
+  Reading target file python_start.py.tgt_list: Python Interface (python_start.py)  ! manually inserted Arne Bargholz
+/home/bargholz/Programme/GeCCo MP2.py
+ Reading target file MP2.py.tgt_list: Python Interface (MP2.py)
+/home/bargholz/Programme/GeCCo orb_inp.py
+ Is keyword set???
+ calculate.interfaces:  True
+ method.R12:  False
+ Warning from orb_inp.py: We can give warnings!
+ Reading target file orb_inp.py.tgt_list: Python Interface (orb_inp.py)
+ My next target: H
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for H:   14
+    1  /  0  0  0  0\   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+    2  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    3  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+    4  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    5  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+    6  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+    7  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+    8  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+    9  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+   10  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+   11  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+   12  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+   13  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+   14  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+ Rule: SET_HERMITIAN
+ My next target: H0
+ Rule: DEF_ME_LIST
+ Memory for current weight array:        360 words (=  0.00 Mb)
+ Number of strings
+ -----------------
+   Graph space electr.  MS      length   
+      1     1     1    -1              4
+            1     1     1              4
+ Memory for current weight array:       1008 words (=  0.01 Mb)
+ Number of strings
+ -----------------
+   Graph space electr.  MS      length   
+      2     2     1    -1             14
+            2     1     1             14
+ Memory for current weight array:        900 words (=  0.01 Mb)
+ Number of strings
+ -----------------
+   Graph space electr.  MS      length   
+      3     1     2    -2              6
+            1     2     0             16
+            1     2     2              6
+ Memory for current weight array:       2520 words (=  0.02 Mb)
+ Number of strings
+ -----------------
+   Graph space electr.  MS      length   
+      4     2     2    -2             91
+            2     2     0            196
+            2     2     2             91
+ Rule: IMPORT
+ size of buffer in geth2:        0.31Mb
+ 
+ 2-el. integrals on disk:                      0
+    thereof nonredundant:                      0
+     integrals reordered:                  40554
+ @ time in 2int import                 cpu/sys/wall:      0.02 /     0.00 /     0.02 s
+ @ time in 1int import                 cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: MP2_OPS
+ Rule: DEF_SCALAR
+ Number of occupation classes for LMP2:    1
+    1  /  0  0  0  0\   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+ Rule: DEF_SCALAR
+ Number of occupation classes for EMP2:    1
+    1  /  0  0  0  0\   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  0  0  0/   0  0   0  0   0  0   0  0      0  0   0  0   0  0   0  0
+ Rule: DEF_EXCITATION
+ Number of occupation classes for T2:    1
+    1  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+ Rule: CLONE_OPERATOR
+ My next target: DIAG
+ Rule: CLONE_OPERATOR
+ Rule: DEF_ME_LIST
+ Rule: PRECONDITIONER
+ set up diagonal from rank 1 part of H
+ @ time in dia4op_ev                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ time for diagonal                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ My next target: MP2_HAM
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for FOCK_2:    4
+    1  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    2  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+    3  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    4  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for FOCK:    4
+    1  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    2  /  1  0  0  0\   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+    3  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  1  0  0  0/   0  0   1  1   0  0   0  0      0  0   0  0   0  0   0  0
+    4  /  0  1  0  0\   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+       \  0  1  0  0/   0  0   0  0   0  0   1  1      0  0   0  0   0  0   0  0
+ Rule: DEF_HAMILTONIAN
+ Number of occupation classes for PHI:    9
+    1  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+    2  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+    3  /  2  0  0  0\   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+    4  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+    5  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+    6  /  1  1  0  0\   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+    7  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  2  0  0  0/   0  0   2  2   0  0   0  0      0  0   0  0   0  0   0  0
+    8  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  1  1  0  0/   0  0   1  1   0  0   1  1      0  0   0  0   0  0   0  0
+    9  /  0  2  0  0\   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+       \  0  2  0  0/   0  0   0  0   0  0   2  2      0  0   0  0   0  0   0  0
+ My next target: MP2_FORM
+ Rule: EXPAND_OP_PRODUCT
+ wrote                      4  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                      3  entries
+ wrote                      5  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: EXPAND_OP_PRODUCT
+ read                      4  entries
+ wrote                      6  entries
+ @ Operator product                    cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ Rule: REPLACE
+ read                      5  entries
+ wrote                      6  entries
+ Rule: PRINT_FORMULA
+ read                      5  entries
+ [INIT TARGET]                     2
+ [CONTR]                     2 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ T2^+ H   T2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H           2    1  0  0  0
+                      1  0  0  0
+ v03 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  c      1   3       1  0  0  0
+                     0  2  0  0
+  c      2   3       1  0  0  0
+                     0  0  0  0
+ [CONTR]                     2 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     3    3    3
+ T2^+ H   T2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H           5    0  1  0  0
+                      0  1  0  0
+ v03 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  c      1   3       2  0  0  0
+                     0  1  0  0
+  c      2   3       0  0  0  0
+                     0  1  0  0
+ [CONTR]                     2 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ T2^+ H
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 H          12    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]                     2 ( term #                     4 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [END]
+ My next target: MP2_RES
+ Rule: DERIVATIVE
+ Rule: PRINT_FORMULA
+ read                      4  entries
+ [INIT TARGET]                     5
+ [CONTR]                     5 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           2    1  0  0  0
+                      1  0  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       1  0  0  0
+                     0  0  0  0
+  x      1   1       0  0  0  0
+                     1  0  0  0
+  x      2   1       0  2  0  0
+                     1  0  0  0
+ [CONTR]                     5 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           5    0  1  0  0
+                      0  1  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       0  0  0  0
+                     0  1  0  0
+  x      1   1       0  1  0  0
+                     0  0  0  0
+  x      2   1       0  1  0  0
+                     2  0  0  0
+ [CONTR]                     5 ( term #                     3 )
+ +++ contraction info +++
+  name (index) and block of result: O2  (     5)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     1    1    0
+ H
+ v01 H          12    0  2  0  0
+                      2  0  0  0
+  x      1   1       0  2  0  0
+                     2  0  0  0
+ [END]
+ My next target: MP2_EN
+ Rule: FACTOR_OUT
+ read                      5  entries
+ read                      4  entries
+                                  MP2_RES:      1 replacements
+ formula reduced to          4 items
+ @ factoring out                       cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                      4  entries
+ Rule: PRINT_FORMULA
+ read                      3  entries
+ [INIT TARGET]                     2
+ [CONTR]                     2 ( term #                     1 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ T2^+ O2
+ v01 T2^+        1    2  0  0  0
+                      0  2  0  0
+ v02 O2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [CONTR]                     2 ( term #                     2 )
+ +++ contraction info +++
+  name (index) and block of result: LMP2  (     2)   1
+  factor:    1.00000000000000     
+  number of prim.vertices/sup.vertices/arcs:     2    2    1
+ H   T2
+ v01 H           8    2  0  0  0
+                      0  2  0  0
+ v02 T2          1    0  2  0  0
+                      2  0  0  0
+  c      1   2       2  0  0  0
+                     0  2  0  0
+ [END]
+ My next target: MP2_LISTS
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ Rule: DEF_ME_LIST
+ My next target: MP2_OPT
+ Rule: OPTIMIZE
+ +======================+
+ | Formula optimization |
+ +======================+
+ Number of operators defined:                      9
+ ----------------------------------------
+  idx     op  vtx blk   current list
+ ----------------------------------------
+    1       H   1  14                H0
+    2    LMP2   1   1           ME_LMP2
+    3    EMP2   1   1                  
+    4      T2   1   1             ME_T2
+    5      O2   1   1             ME_O2
+    6      D2   1   1              DIAG
+    7  FOCK_2   1   4                  
+    8    FOCK   1   4                  
+    9     PHI   1   9                  
+ ----------------------------------------
+ Number of lists defined:                      5
+ ------------------------------------------------------------------------------
+  idx           list  sym spn      length   op.             file
+ ------------------------------------------------------------------------------
+    1              H0  1  0        40783        H                    H0_list.da
+    2            DIAG  1  0         1134       D2                  DIAG_list.da
+    3         ME_LMP2  1  0            1     LMP2               ME_LMP2_list.da
+    4           ME_T2  1  0         1134       T2                 ME_T2_list.da
+    5           ME_O2  1  0         1134       O2                 ME_O2_list.da
+ ------------------------------------------------------------------------------
+ Reading in:
+  -- MP2_RES
+ read                      4  entries
+  -- MP2_EN
+ read                      3  entries
+  Now looking for the optimal factorization of terms ...
+  Formula factorization
+ -----------------------
+ factorizing term #                      1
+ # of dummy contractions:                      1
+ @ time in form_fact_new               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ factorizing term #                      2
+ # of dummy contractions:                      1
+ @ time in form_fact_new               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ factorizing term #                      3
+ factorizing term #                      4
+ # of dummy contractions:                      1
+ @ time in form_fact_new               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ factorizing term #                      5
+ # of dummy contractions:                      1
+ @ time in form_fact_new               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+  Summary
+ ---------
+ Most expensive contractions: 
+  term #    2 - H^ 2 P^ 3 V^ 0 X^ 0 - flops:  0.384E+05(  74.1%)
+  term #    1 - H^ 3 P^ 2 V^ 0 X^ 0 - flops:  0.121E+05(  23.3%)
+  term #    4 - H^ 2 P^ 2 V^ 0 X^ 0 - flops:  0.662E+03(   1.3%)
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0 - flops:  0.662E+03(   1.3%)
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - flops:  0.000E+00(   0.0%)
+ Formally most expensive contractions: 
+  term #    2 - H^ 2 P^ 3 V^ 0 X^ 0
+  term #    1 - H^ 3 P^ 2 V^ 0 X^ 0
+  term #    4 - H^ 2 P^ 2 V^ 0 X^ 0
+  term #    5 - H^ 2 P^ 2 V^ 0 X^ 0
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0
+ Largest intermediates occur in: 
+  term #    1 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.807E-01
+  term #    2 - H^ 2 P^ 2 V^ 0 X^ 0 - Mb:     0.807E-01
+  term #    4 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.763E-05
+  term #    5 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.763E-05
+  term #    3 - H^ 0 P^ 0 V^ 0 X^ 0 - Mb:     0.000E+00
+ -------------------------------------------------------
+ Numbers of terms per formal scaling
+ -------------------------------------------------------
+ H^ 0 P^ 0 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 2 V^ 0 X^ 0 - number of terms:                2
+ H^ 3 P^ 2 V^ 0 X^ 0 - number of terms:                1
+ H^ 2 P^ 3 V^ 0 X^ 0 - number of terms:                1
+ -------------------------------------------------------
+ @ factorization                       cpu/sys/wall:      0.01 /     0.00 /     0.01 s
+ Optimizing for target operator: O2
+ Optimizing for target operator: LMP2
+ @ time for optimization               cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ wrote                      8  entries
+ My next target: MY_TARGET
+ Rule: PRINT
+ Now solving the equations ...
+ Rule: SOLVE_NLEQ
+ formula: MP2_OPT
+ solving for: ME_T2
+ set_opti_info_signs:
+ --------------------
+nsec:        1
+nwfpsec:     1134
+idstsec:        1
+signsec :      1.0
+ read                      7  entries
+
+ Optimization control
+ ====================
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+ New target: ME_O2
+ @ time for target O2                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ New target: ME_LMP2
+ term #     4:     0.000000000         0.000000000    
+ term #     5:     0.000000000         0.000000000    
+ @ time for target LMP2                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ check kernel                        cpu/sys:           0.00 /     0.00 s
+ @      in setup                       cpu/sys:           0.00 /     0.00 s
+ @      inner loop ?                   cpu/sys:           0.00 /     0.00 s
+ @      inner loop                     cpu/sys:           0.00 /     0.00 s
+ @     middle loop                     cpu/sys:           0.00 /     0.00 s
+ @      outer loop                     cpu/sys:           0.00 /     0.00 s
+ @      in collect 1                   cpu/sys:           0.00 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.01 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ calls to dgemm:                      0
+   avg dim1, sigma:         NaN         NaN
+   avg dim2, sigma:         NaN         NaN
+   avg cnt , sigma:         NaN         NaN
+
+  max. scratch:          0 =        0.000 Gbytes
+ @ formula evaluation                  cpu/sys/wall:      0.01 /     0.00 /     0.00 s
+ norm of untransformed residual   1.100    
+
+ Optimization control
+ ====================
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+  allocated                      3  buffers
+  # incore vectors:                      3
+  total size of buffers:                  12288
+  remaining core memory:               48626760
+ after iteration                      1
+  norm of gradient:   0.110E+01   threshold:   0.100E-05   converged:   F
+ @ time in optimizer                   cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+>>>  1          0.000000000000  1.100    
+ New target: ME_O2
+ @ time for target O2                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ New target: ME_LMP2
+ term #     4:     0.000000000         0.000000000    
+ term #     5:   -0.1961512914       -0.1961512914    
+ @ time for target LMP2                cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ @ contraction kernel                  cpu/sys:           0.00 /     0.00 s
+ @ check kernel                        cpu/sys:           0.00 /     0.00 s
+ @      in setup                       cpu/sys:           0.00 /     0.00 s
+ @      inner loop ?                   cpu/sys:           0.00 /     0.00 s
+ @      inner loop                     cpu/sys:           0.00 /     0.00 s
+ @     middle loop                     cpu/sys:           0.00 /     0.00 s
+ @      outer loop                     cpu/sys:           0.00 /     0.00 s
+ @      in collect 1                   cpu/sys:           0.00 /     0.00 s
+ @      in collect 2                   cpu/sys:           0.00 /     0.00 s
+ @          in dgemm                   cpu/sys:           0.00 /     0.00 s
+ @        in scatter                   cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 1              cpu/sys:           0.00 /     0.00 s
+ @ IO read                             cpu/sys:           0.00 /     0.00 s
+ @ IO write                            cpu/sys:           0.00 /     0.00 s
+ @ overhead contraction 2              cpu/sys:           0.00 /     0.00 s
+ @ overhead scheduler                  cpu/sys:           0.00 /     0.00 s
+ calls to dgemm:                     58
+   avg dim1, sigma:        2.48        1.99
+   avg dim2, sigma:       21.10       27.30
+   avg cnt , sigma:       19.50       62.75
+
+  max. scratch:        818 =        0.000 Gbytes
+ @ formula evaluation                  cpu/sys/wall:      0.00 /     0.00 /     0.00 s
+ norm of untransformed residual  0.6566E-14
+
+ Optimization control
+ ====================
+ Optimization algorithm:          DIIS
+ Max. number of iterations:         30
+ Threshold for residual:      0.10E-05
+  allocated                      3  buffers
+  # incore vectors:                      3
+  total size of buffers:                  12288
+  remaining core memory:               48626760
+ after iteration                      2
+  norm of gradient:   0.657E-14   threshold:   0.100E-05   converged:   T
+ CONVERGED IN     2 ITERATIONS
+>>>  2         -0.196151291382 0.6566E-14
+>>> CONVERGED <<<
+>>> final energy:          -0.196151291382 <<<
+ Rule: PRINT_MEL
+ ---
++=============================================================================+
+  block no.    1 len =            1
+ /  0  0  0  0\/
+ \  0  0  0  0/\
++=============================================================================+
+  Ms(A) =   0/2  IRREP(A) =  1  len =            1  norm = 0.196151    
++-----------------------------------------------------------------------------+
+ block contains only single distribution
+ index of first element:                     1
++.............................................................................+
+    -0.1961513
++-----------------------------------------------------------------------------+
+ norm (MS-Block) =   0.196151291381532     
+ total norm =   0.196151291381532     
+ Rule: PRINT
+ All over ...
+ My next target: INPUT_INFO
+ Rule: PRINT
+ >>> Information from input:
+ Rule: PRINT
+ occ shell: ['3', '1', '1', '0']
+ Rule: PRINT
+ closed shell: ['3', '1', '1', '0']
+ Rule: PRINT
+ frozen shell: ['1', '0', '0', '0']
+ My next target: ORB_INFO
+ Rule: PRINT
+ Number of active electrons: 0
+ ... all targets processed!
+ +----------------------------------------------------------------------------+
+   Maximum allocated memory:       45136547 real(8)-words (    344.36 Mb)
+   Largest memory block:           43773043 real(8)-words (    333.96 Mb)
+   Name of largest block:    contr1.contr_scr
+ +----------------------------------------------------------------------------+
+ @ total time in GeCCo run             cpu/sys/wall:      0.04 /     0.01 /     0.11 s
+ run ends at 2016-01-12 20:06:21.176   host: linuxm5.theochem.uni-stuttgart.de

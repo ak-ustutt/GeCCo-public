@@ -1,0 +1,16 @@
+general
+  print=10
+  memmax=10000000
+orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(1,0,0,0)
+  shell type=frozen,def=(0,0,0,0)
+method
+  MR ms=-1,sym=1,mult=2
+  MR_P
+  MRCCPT2 
+calculate
+ skip_E
+ solve maxiter=30,conv=1d-11,maxsub=10
+  non_linear optref=0,maxiter=20
+ routes maxbranch=4,sv_thresh=1d-6,reo_factor=10,auto_opt=T,spinadapt=3

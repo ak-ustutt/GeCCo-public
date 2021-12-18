@@ -1,0 +1,48 @@
+title
+  BH/pVDZ; DALTON env.: CCS(F12)-XSPopt,scr-T1x response props: alpha_xx
+molecule
+  BHresponse-R12-DALTON
+input
+  CCS-XSPoptscr-t1x-prop.inp
+check
+  label Number of terms in Lagrangian
+  find DEF_CCR12_LAGRANGIAN
+  find Number of generated terms
+  compare int 5
+check
+  label Final energy
+  find CONVERGED IN .* ITERATIONS
+  find final energy: [ ]*
+  compare real 4 1e-12
+check
+  label Lambda(0) residual
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+  find conv. [ ]*
+  compare real 3 1e-9
+check
+  label BX Intermediate
+  find EVAL_BdX
+  find 1 -->
+  compare real 4 1e-10
+  skip 1
+  compare real 4 1e-10
+  skip 1
+  compare real 4 1e-10
+check
+  label CX Intermediate
+  find EVAL_CdX
+  find 1 -->
+  compare real 4 1e-10
+check
+  label T(1) residual
+  find CONVERGED IN .* ITERATIONS
+  compare int 3
+  find conv. [ ]*
+  compare real 3 1e-9
+check
+  label Static polarizability alpha_xx
+  find Polarizability
+  compare real 4 1e-8
+end
+

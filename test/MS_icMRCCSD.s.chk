@@ -1,0 +1,42 @@
+title
+  Multistate icMRCC: LiF, r=4.0, Li:cc-pVDZ, F:aug-cc-pVDZ; MOLPRO env
+molecule
+  LiF_SA_CAS_MOLPRO
+input
+  MS_icMRCCSD.inp
+check
+  label verify multistate
+  find multistate =
+  compare str 3
+check
+  label Uncoupled final energies
+  find final energies:
+  compare real 4 1e-9
+  compare real 5 1e-9
+check
+  label Effective Hamiltonian elements
+  find EVAL_pack_Heff_MS
+  find Rule: EVALUATE
+  find >>>
+  compare real 4 1e-9
+  find Rule: EVALUATE
+  find >>>
+  compare real 4 1e-9
+  find Rule: EVALUATE
+  find >>>
+  compare real 4 1e-9
+  find Rule: EVALUATE
+  find >>>
+  compare real 4 1e-9
+check
+  label Effective Hamiltonian eigenproblem
+  find Multistate energies and eigenvectors:
+  find >>>
+  compare real 2 1e-9
+  compare real 3 1e-6
+  compare real 4 1e-6
+  find >>>
+  compare real 2 1e-9
+  compare real 3 1e-6
+  compare real 4 1e-6
+end

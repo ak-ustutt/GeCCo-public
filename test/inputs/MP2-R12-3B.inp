@@ -1,0 +1,5 @@
+method
+ MP level=2
+ R12 ansatz=3,maxexc=2,approx=B
+calculate
+ solve maxiter=30,conv=1d-9 

@@ -1,0 +1,6 @@
+ general
+   print=10
+   memmax=10000000
+   print_tgt_graph=T
+  method
+   unit_test tests=string_to_form
