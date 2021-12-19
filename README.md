@@ -19,7 +19,7 @@ Compilation - quick guide: (all actions should be carried out in the root direct
 
     > autoconf
     
-    Ignore warnings, the generated configure script should normally work
+Ignore warnings, the generated configure script should normally work
     
 (2) Configure: Try one of these
 
@@ -27,7 +27,8 @@ Compilation - quick guide: (all actions should be carried out in the root direct
     
     > FC=gfortran CC=gcc ./configure --with-blas='-lmkl_gf_lp64 -lmkl_core -lmkl_sequential -lpthread -lm'
     
-    I have not tried other blas libraries in a long time. Let me know about any other working solutions.
+I have not tried other blas libraries in a long time. Let me know about any other working solutions. GNU fortran 
+works for version 8.1; newer versions seem to be more picky about syntax issues, currently inquiring this.
     
 (3) Build:
 
@@ -35,8 +36,8 @@ Compilation - quick guide: (all actions should be carried out in the root direct
     
     > make -j 8    # or as many processes as you like to spend
     
-   The binary will be <root>/bin/<arch>/gecco.x where <arch> is something like x86_64-linux-gnu-gfortran
-   (you can use the same source code for building several versions on different systems or compilers)
+The binary will be <root>/bin/<arch>/gecco.x where <arch> is something like x86_64-linux-gnu-gfortran
+(you can use the same source code for building several versions on different systems or compilers)
     
 (4) Set environment variables (e.g. in your .bashrc or similar):
     
@@ -52,9 +53,9 @@ Compilation - quick guide: (all actions should be carried out in the root direct
     
     > make -j 8   # to test on 8 threads
     
-    a shorter version is called by
+a shorter version is called by
+    
     > make essential -j 8
 
-(6) Use it!
-    Documentation --> see Wiki
+(6) Use it! Documentation --> see Wiki
     
