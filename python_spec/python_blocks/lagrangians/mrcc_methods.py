@@ -261,9 +261,9 @@ def set_mrcc_pt():
     PT_LAG = stf.Formula('FORM_MRCC_PT_LAG:MRCC_LPT=<C0^+*LAM3g*([HAM_D,T3g]+[H,T2g])*C0>')
     PT_LAG.set_rule()
 
-    debug_FORM('FORM_MRCC_PT_E4',only_this=True)
-    debug_FORM('FORM_MRCC_PT_E5',only_this=True)
-    debug_FORM('FORM_MRCC_PT_LAG',only_this=True)
+    debug_FORM('FORM_MRCC_PT_E4')
+    debug_FORM('FORM_MRCC_PT_E5')
+    debug_FORM('FORM_MRCC_PT_LAG')
 
 
 
