@@ -91,31 +91,31 @@ if _ninact_o > 0:
    Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
    Tblocks['PPV-HHV']['nact']=2
 
-#if _nact_e > 2:
-#   Tblocks['PPP-VVV']={}
-#   Tblocks['PPP-VVV']['occ']='PPP,VVV'
-#   Tblocks['PPP-VVV']['res']=',VVV;PPP,'
-#   Tblocks['PPP-VVV']['nact']=3
-#   Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
+if _nact_e > 2:
+   Tblocks['PPP-VVV']={}
+   Tblocks['PPP-VVV']['occ']='PPP,VVV'
+   Tblocks['PPP-VVV']['res']=',VVV;PPP,'
+   Tblocks['PPP-VVV']['nact']=3
+   Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
 
-#if ((2*_nact_o) - _nact_e) > 2:
-#   Tblocks['VVV-HHH']={}
-#   Tblocks['VVV-HHH']['occ']='VVV,HHH'
-#   Tblocks['VVV-HHH']['res']=',;VVV,HHH'
-#   Tblocks['VVV-HHH']['nact']=3
-#   Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
+if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
+   Tblocks['VVV-HHH']={}
+   Tblocks['VVV-HHH']['occ']='VVV,HHH'
+   Tblocks['VVV-HHH']['res']=',;VVV,HHH'
+   Tblocks['VVV-HHH']['nact']=3
+   Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
 
-#if _ninact_o > 0: # and _nact_e > 1:
-#   Tblocks['PPV-HVV']={}
-#   Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
-#   Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
-#   Tblocks['PPV-HVV']['nact']=3
+if _ninact_o > 0: # and _nact_e > 1:
+   Tblocks['PPV-HVV']={}
+   Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
+   Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
+   Tblocks['PPV-HVV']['nact']=3
 
-#if _ninact_o > 0:  
-#   Tblocks['PVV-HHV']={}
-#   Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
-#   Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
-#   Tblocks['PVV-HHV']['nact']=3
+if _ninact_o > 0:  
+   Tblocks['PVV-HHV']={}
+   Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
+   Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
+   Tblocks['PVV-HHV']['nact']=3
 
 # TODO: also consider here the cases PVV-HVV VVV-HHV PPV-VVV and maybe PVV-VVV and VVV-VVH
 # Check if correct: especially the res
@@ -253,7 +253,6 @@ for _Tb in Tblocks:
    # Sums all terms and adds a + in the end
    EPT4str = EPT4str + 'EPT4-' +_Tb + '+' 
    EPT5str = EPT5str + 'EPT5-' +_Tb + '+'
-
    if Tblocks[_Tb]["nact"]>0:
       # and a transformation (that keeps T3 orth to T2 and T1)
       EXPAND_OP_PRODUCT({LABEL:'F_T3tr-'+_Tb,NEW:True,
