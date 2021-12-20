@@ -126,8 +126,8 @@ c          print *,'idxst, idxnd: ',idxst,idxnd
 c          call wrt_occ_n(6,occ,op%njoined)
 c dbg
           ! ... but only if we have off-diagonal blocks
-          ! or if we know that the operator is hermitian
-          if (.not.occ_is_diag_blk(occ,njoined).or.
+          ! *and* if we know that the operator is hermitian
+          if (.not.occ_is_diag_blk(occ,njoined).and.
      &         abs(op%hermitian).eq.1)
      &         then
             idx = iblk_occ(occ,.true.,op,
