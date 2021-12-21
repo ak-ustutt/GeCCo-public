@@ -238,11 +238,11 @@ for _Tb in Tblocks:
 #              OP_RES:'EPTLG-'+_Tb,OPERATORS:['T3g','T3g^+']})
    # we also need some transformations for the T3g block
    # ...
-   debug_FORM('F_PTrhs_'+_Tb,only_this=True)
-   debug_FORM('F_PTtrf_'+_Tb,only_this=True)
-   debug_FORM('F_PT_E4_'+_Tb,only_this=True)
-   debug_FORM('F_PT_E5_'+_Tb,only_this=True)
-   debug_FORM('F_PT_LG_'+_Tb,only_this=True)
+   debug_FORM('F_PTrhs_'+_Tb)#,only_this=True)
+   debug_FORM('F_PTtrf_'+_Tb)#,only_this=True)
+   debug_FORM('F_PT_E4_'+_Tb)#,only_this=True)
+   debug_FORM('F_PT_E5_'+_Tb)#,only_this=True)
+   debug_FORM('F_PT_LG_'+_Tb)#,only_this=True)
 
    # ... and the optimized formulas
    OPTIMIZE({LABEL_OPT:'FOPT_PTeq-'+_Tb,
@@ -267,10 +267,10 @@ for _Tb in Tblocks:
         OP_INCL:'T3tr-'+_Tb,
         IGAST:3,
         MODE:'no_ext'})
-      debug_FORM('F_T3tr-'+_Tb,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
       SELECT_SPECIAL({LABEL_RES:'F_T3tr-'+_Tb,LABEL_IN:'F_T3tr-'+_Tb,
              TYPE:'rank',MODE:'33',OPERATORS:['T3-'+_Tb,'T3tr-'+_Tb]})
-      debug_FORM('F_T3tr-'+_Tb,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
 
@@ -297,17 +297,19 @@ for _Tb in Tblocks:
 
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb+'^+'})
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb})
+          debug_FORM('FORM_A_TRF-'+_Tb)#,only_this=True)
           # Probably unnecessary:
           SELECT_SPECIAL({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,OPERATORS:['T3tr-'+_Tb,'T3tr-'+_Tb+'^+'],TYPE:'SAME'})
-          #PRINT_FORMULA({LABEL:'FORM_A_TRF-'+_Tb, MODE:'SHORT'})
+          debug_FORM('FORM_A_TRF-'+_Tb)#,only_this=True)
           
           DERIVATIVE({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF_INT-'+_Tb,OP_RES:'O3-'+_Tb,OP_DERIV:'T3tr-'+_Tb+'^+'})
           DERIVATIVE({LABEL_IN:'FORM_A_TRF_INT-'+_Tb,LABEL_RES:'FORM_A_TRF_FIN-'+_Tb,OP_RES:'A_TRF-'+_Tb,OP_DERIV:'T3tr-'+_Tb})
+          debug_FORM('FORM_A_TRF_FIN-'+_Tb)#,only_this=True)
 
           OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:'FORM_A_TRF_FIN-'+_Tb})
 
           EVALUATE({FORM:'FOPT_A_TRF-'+_Tb})
-          debug_MEL('ME_A_TRF-'+_Tb,only_this=True)
+          debug_MEL('ME_A_TRF-'+_Tb)#,only_this=True)
           
 
 

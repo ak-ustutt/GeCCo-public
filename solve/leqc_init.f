@@ -167,7 +167,7 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
               call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
      &                       nwfpar(iopt))
             end if
-            ! divide rhs's by preconditioner
+            ! divide rhs by preconditioner
             if (ntest.ge.100)
      &           write(lulog,*) 'xbuf1 norm = ',
      &                          dnrm2(nwfpar(iopt),xbuf1,1) 

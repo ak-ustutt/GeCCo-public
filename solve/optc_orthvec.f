@@ -366,7 +366,7 @@ c        print *,'test = ',ddot(nold+nnew,xmat(1,nold+inew),1,
 c     &                     xmat(1,nold+inew),1),nold,nnew,inew
 c dbg
         if (ddot(nold+nnew,xmat(1,nold+inew),1,
-     &                     xmat(1,nold+inew),1).lt.1d-10)
+     &                     xmat(1,nold+inew),1).lt.1d-16)
      &       cycle
         idx = idx+1
 c dbg

@@ -103,9 +103,9 @@ elif (minexc==1 and maxexc==3):
   t2g_shape='V,H|VV,VH|VV,HH|P,V|PV,VV|P,H|PV,HV|PV,HH|PP,VV|PP,HV|PP,HH'
   t3g_shape='PVV,HHH|PP,HH|PPV,HHV|PPV,HHH|PPP,HVV|PPP,HHV|PPP,HHH|PPP,VVV|VVV,HHH'
   if (triples>3):
-     t3g_shape+='|PPV,VVV|PVV,HVV|VVV,HHV'
+     t3g_shape+='|PP,VV|PPV,VVV|P,H|PV,HV|PVV,HVV|VV,HH|VVV,HHV'
   if (triples>4):
-     t3g_shape+='|PVV,VVV|VVV,HVV'
+     t3g_shape+='|P,V|PV,VV|PVV,VVV|V,H|VV,HV|VVV,HVV'
   useT1=True
 elif (minexc==1 and maxexc==4):
   # we impl. only the manifold req'd for CAS(2,2)
