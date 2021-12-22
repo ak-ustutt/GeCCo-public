@@ -391,13 +391,13 @@ for _Tb in Tblocks:
 EVALUATE({FORM:'FOPT_EPT4tot'})
 PRINT_MEL({
     LIST:'ME-EPT4total',
-    COMMENT:'Total 4th  order triples  correction:',
+    COMMENT:'Total 4th order triples correction  :',
     FORMAT:'SCAL F24.14'})
 
 EVALUATE({FORM:'FOPT_EPT5tot'})
 PRINT_MEL({
     LIST:'ME-EPT5total',
-    COMMENT:'Total 5th  order triples  correction:',
+    COMMENT:'Total 5th order triples correction  :',
     FORMAT:'SCAL F24.14'})
 
 EVALUATE({FORM:'FOPT_EPTtot'})
@@ -409,7 +409,7 @@ PRINT_MEL({
 EVALUATE({FORM:'FOPT_Etot'})
 PRINT_MEL({
     LIST:'ME-Etotal',
-    COMMENT:'Total icMRCCSD(T) energy:',
+    COMMENT:'Total icMRCCSD(T) energy            :',
     FORMAT:'SCAL F24.14'})
 #EVALUATE({FORM:'FOPT_EPT4tot_test'})
 #PRINT_MEL({
