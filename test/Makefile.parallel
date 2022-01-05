@@ -14,7 +14,7 @@
 #=$?;\
 
 %.out : %.chk $(GECCOPRG) 
-	@if  $(RUNTEST) $(RUNFLAGS) $(basename $<) &> $(basename $<).sum ;\
+	@if  $(RUNTEST) $(RUNFLAGS) $(basename $<) 2>&1 > $(basename $<).sum ;\
 	then \
 	 echo $(basename $<)" ran successfully.";\
 	else\
