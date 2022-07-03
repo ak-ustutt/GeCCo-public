@@ -41,7 +41,9 @@
                 <argument length="1" name="H0d"  type="1" value="false"/>
                 <argument length="1" name="maxexc_guess"  type="2" value="0">
                 <!--use T op with lower rank as initial guess-->
-                   </argument>
+	        </argument>
+		<keyword name="NEW">
+		</keyword>
             </keyword>
        <keyword name="CCPT" >
            <argument length="1" name="maxexc"  type="2" value="3"/>
@@ -460,6 +462,8 @@
        </keyword>
        <keyword name="ionization" >
            <argument length="8" name="sym"  type="2" value="1,0,0,0,0,0,0,0"/>
+	   <keyword name="Dyson" >
+           </keyword>
        </keyword>
        <keyword name="routes" >
            <argument length="1" name="schedule"  type="2" value="1"/>
