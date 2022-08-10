@@ -437,7 +437,7 @@ c     &       ff_trv,ff_h_trv,
            ! Print out new molpro output
            time_per_it = cpu0_t / (it_print)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
-     &                  "i6,f11.2,f11.2)"
+     &                  "i6,f11.2,f11.2,x,l)"
 
            if (multistate) then
 
@@ -451,7 +451,7 @@ c     &       ff_trv,ff_h_trv,
      &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
      &             n_sv,sv_min,sv_max,
      &             opti_stat%ndim_rsbsp,cpu0_t,
-     &             time_per_it
+     &             time_per_it,sv_fix
              else
              write(luout,mol_format2)
      &             energy(i_state),
@@ -562,7 +562,11 @@ c     &       ff_trv,ff_h_trv,
      &          min(xresnrm((i_state-1)*nopt_state+2)*
      &              opti_info%mic_ahead,1d-3)
              ! trying this: fix SVD if we are converged to 1e-3
-             sv_fix = xresnrm((i_state-1)*nopt_state+2).lt.1e-3
+             sv_fix = sv_fix.or.
+     &           xresnrm((i_state-1)*nopt_state+2).lt.1e-3 
+             ! DEBUG
+             write(luout,'("SV_FIX=",g10.2,l)')
+     &             xresnrm((i_state-1)*nopt_state+2),sv_fix
            end if
           end do
 
