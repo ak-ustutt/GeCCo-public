@@ -142,15 +142,16 @@ if (triples>3):
        Tblocks['VVV-HHV']['nact']=4
        Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
 
-#Tblocks['VVV-HVV']={}
-#Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
-#Tblocks['VVV-HVV']['res']=',VV;VVV,H|,;V,H'
-#Tblocks['VVV-HVV']['nact']=5
-
-#Tblocks['PVV-VVV']={}
-#Tblocks['PVV-VVV']['occ']='PVV,VVV|P,V'
-#Tblocks['PVV-VVV']['res']=',VVV;PVV,|,V;P,'
-#Tblocks['PVV-VVV']['nact']=5
+#if (triples>4):
+#   Tblocks['VVV-HVV']={}
+#   Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
+#   Tblocks['VVV-HVV']['res']=',VV;VVV,H|,;V,H'
+#   Tblocks['VVV-HVV']['nact']=5
+#
+#   Tblocks['PVV-VVV']={}
+#   Tblocks['PVV-VVV']['occ']='PVV,VVV|P,V'
+#   Tblocks['PVV-VVV']['res']=',VVV;PVV,|,V;P,'
+#   Tblocks['PVV-VVV']['nact']=5
 
     
 #  DEF_FORMULA_TESTSTUFF
@@ -161,8 +162,14 @@ DEF_ME_LIST({LIST:'ME-EPTtotal',OPERATOR:'EPTtotal',IRREP:1,'2MS':0,'ABSYM':0})
 DEF_SCALAR({LABEL:'Etotal'})
 DEF_ME_LIST({LIST:'ME-Etotal',OPERATOR:'Etotal',IRREP:1,'2MS':0,'ABSYM':0})
 
-# EPT4 EP5 scalar and ME-list test
+DEF_SCALAR({LABEL:'Etotal_B'})
+DEF_ME_LIST({LIST:'ME-Etotal_B',OPERATOR:'Etotal_B',IRREP:1,'2MS':0,'ABSYM':0})
+DEF_SCALAR({LABEL:'Etotal_E'})
+DEF_ME_LIST({LIST:'ME-Etotal_E',OPERATOR:'Etotal_E',IRREP:1,'2MS':0,'ABSYM':0})
+DEF_SCALAR({LABEL:'Etotal_F'})
+DEF_ME_LIST({LIST:'ME-Etotal_F',OPERATOR:'Etotal_F',IRREP:1,'2MS':0,'ABSYM':0})
 
+# EPT4 EP5 scalar and ME-list test
 EPT4str ='EPT4total=' # fills the EPT4 string for the energy summation later on 
 DEF_SCALAR({LABEL:'EPT4total'})
 DEF_ME_LIST({LIST:'ME-EPT4total',OPERATOR:'EPT4total',IRREP:1,'2MS':0,'ABSYM':0})
@@ -170,7 +177,28 @@ DEF_ME_LIST({LIST:'ME-EPT4total',OPERATOR:'EPT4total',IRREP:1,'2MS':0,'ABSYM':0}
 EPT5str ='EPT5total=' # fills the EPT5 string for the summation later 
 DEF_SCALAR({LABEL:'EPT5total'}) 
 DEF_ME_LIST({LIST:'ME-EPT5total',OPERATOR:'EPT5total',IRREP:1,'2MS':0,'ABSYM':0})
-
+# Cleaner output.
+#ETRIP_Bstr # shoiws energy up to {3} (3 active indices)
+ETRIP4_Bstr ='ETRIP4_B='
+DEF_SCALAR({LABEL:'ETRIP4_B'})
+DEF_ME_LIST({LIST:'ME-ETRIP4_B',OPERATOR:'ETRIP4_B',IRREP:1,'2MS':0,'ABSYM':0})
+ETRIP5_Bstr ='ETRIP5_B='
+DEF_SCALAR({LABEL:'ETRIP5_B'})
+DEF_ME_LIST({LIST:'ME-ETRIP5_B',OPERATOR:'ETRIP5_B',IRREP:1,'2MS':0,'ABSYM':0})
+#ETRIP_Estr # shows energy up to {4} (4 active indices)
+ETRIP4_Estr ='ETRIP4_E='
+DEF_SCALAR({LABEL:'ETRIP4_E'})
+DEF_ME_LIST({LIST:'ME-ETRIP4_E',OPERATOR:'ETRIP4_E',IRREP:1,'2MS':0,'ABSYM':0})
+ETRIP5_Estr ='ETRIP5_E='
+DEF_SCALAR({LABEL:'ETRIP5_E'})
+DEF_ME_LIST({LIST:'ME-ETRIP5_E',OPERATOR:'ETRIP5_E',IRREP:1,'2MS':0,'ABSYM':0})
+#ETRIP_Fstr # shows energy up to {5} once it works
+ETRIP4_Fstr ='ETRIP4_R='
+DEF_SCALAR({LABEL:'ETRIP4_F'})
+DEF_ME_LIST({LIST:'ME-ETRIP4_F',OPERATOR:'ETRIP4_F',IRREP:1,'2MS':0,'ABSYM':0})
+ETRIP5_Fstr ='ETRIP5_R='
+DEF_SCALAR({LABEL:'ETRIP5_F'})
+DEF_ME_LIST({LIST:'ME-ETRIP5_F',OPERATOR:'ETRIP5_F',IRREP:1,'2MS':0,'ABSYM':0})
 
 # generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
@@ -205,7 +233,7 @@ for _Tb in Tblocks:
    DEF_ME_LIST({LIST:'ME-EPT5-'+_Tb,OPERATOR:'EPT5-'+_Tb,IRREP:1,'2MS':0,'ABSYM':0})
    DEF_SCALAR({LABEL:'EPTLG-'+_Tb})
    DEF_ME_LIST({LIST:'ME-EPTLG-'+_Tb,OPERATOR:'EPTLG-'+_Tb,IRREP:1,'2MS':0,'ABSYM':0})
-
+   
 
 # expressions for each block
 for _Tb in Tblocks:
@@ -253,6 +281,15 @@ for _Tb in Tblocks:
    # Sums all terms and adds a + in the end
    EPT4str = EPT4str + 'EPT4-' +_Tb + '+' 
    EPT5str = EPT5str + 'EPT5-' +_Tb + '+'
+   if Tblocks[_Tb]["nact"]==3: #generate separate strings for better output for {3} etc..
+       ETRIP4_Bstr =ETRIP4_Bstr + 'EPT4-' +_Tb + '+'
+       ETRIP5_Bstr =ETRIP5_Bstr + 'EPT5-' +_Tb + '+'
+   if Tblocks[_Tb]["nact"]<5:
+       ETRIP4_Estr =ETRIP4_Estr + 'EPT4-' +_Tb + '+'
+       ETRIP5_Estr =ETRIP5_Estr + 'EPT5-' +_Tb + '+'
+   if Tblocks[_Tb]["nact"]<6:
+       ETRIP4_Fstr =ETRIP4_Fstr + 'EPT4-' +_Tb + '+'
+       ETRIP5_Fstr =ETRIP5_Fstr + 'EPT5-' +_Tb + '+'
    if Tblocks[_Tb]["nact"]>0:
       # and a transformation (that keeps T3 orth to T2 and T1)
       EXPAND_OP_PRODUCT({LABEL:'F_T3tr-'+_Tb,NEW:True,
@@ -320,8 +357,17 @@ for _Tb in Tblocks:
 
 EPT4str=EPT4str[:-1]
 EPT5str=EPT5str[:-1]
-print(EPT4str)
+#print(EPT4str)
+### better output for {3} etc..
+ETRIP4_Bstr =ETRIP4_Bstr[:-1]
+ETRIP5_Bstr =ETRIP5_Bstr[:-1]
 
+ETRIP4_Estr =ETRIP4_Estr[:-1] 
+ETRIP5_Estr =ETRIP5_Estr[:-1] 
+
+ETRIP4_Fstr =ETRIP4_Fstr[:-1] 
+ETRIP5_Fstr =ETRIP5_Fstr[:-1] 
+# optimizing summation formula
 DEF_FORMULA({LABEL:'FORM_EPT4tot',FORMULA:EPT4str})
 OPTIMIZE({LABEL_OPT:'FOPT_EPT4tot',LABELS_IN:'FORM_EPT4tot' })
 
@@ -331,6 +377,32 @@ OPTIMIZE({LABEL_OPT:'FOPT_EPT5tot',LABELS_IN:'FORM_EPT5tot' })
 DEF_FORMULA({LABEL:'FORM_EPTtot',FORMULA:'EPTtotal=EPT4total+EPT5total'})
 OPTIMIZE({LABEL_OPT:'FOPT_EPTtot',LABELS_IN:'FORM_EPTtot' })
 
+#DEF_SCALAR({LABEL:'Etotal'})
+#DEF_ME_LIST({LIST:'ME-Etotal',OPERATOR:'Etotal',IRREP:1,'2MS':0,'ABSYM':0})
+### better output for {3} -> could be more elegant though..
+DEF_FORMULA({LABEL:'FORM_ETRIP4_B',FORMULA:ETRIP4_Bstr})
+OPTIMIZE({LABEL_OPT:'FOPT_ETRIP4_B',LABELS_IN:'FORM_ETRIP4_B' })
+DEF_FORMULA({LABEL:'FORM_ETRIP5_B',FORMULA:ETRIP5_Bstr})
+OPTIMIZE({LABEL_OPT:'FOPT_ETRIP5_B',LABELS_IN:'FORM_ETRIP5_B' })
+DEF_FORMULA({LABEL:'FORM_Etot_B',FORMULA:'Etotal_B=ETRIP4_B+ETRIP5_B'})
+OPTIMIZE({LABEL_OPT:'FOPT_Etot_B',LABELS_IN:'FORM_Etot_B' })
+if triples > 3:
+
+    DEF_FORMULA({LABEL:'FORM_ETRIP4_E',FORMULA:ETRIP4_Estr})
+    OPTIMIZE({LABEL_OPT:'FOPT_ETRIP4_E',LABELS_IN:'FORM_ETRIP4_E' })
+    DEF_FORMULA({LABEL:'FORM_ETRIP5_E',FORMULA:ETRIP5_Estr})
+    OPTIMIZE({LABEL_OPT:'FOPT_ETRIP5_E',LABELS_IN:'FORM_ETRIP5_E' })
+    DEF_FORMULA({LABEL:'FORM_Etot_E',FORMULA:'Etotal_E=ETRIP4_E+ETRIP5_E'})
+    OPTIMIZE({LABEL_OPT:'FOPT_Etot_E',LABELS_IN:'FORM_Etot_E' })
+
+if triples > 4:
+
+    DEF_FORMULA({LABEL:'FORM_ETRIP4_F',FORMULA:ETRIP4_Fstr})
+    OPTIMIZE({LABEL_OPT:'FOPT_ETRIP4_F',LABELS_IN:'FORM_ETRIP4_F' })
+    DEF_FORMULA({LABEL:'FORM_ETRIP5_F',FORMULA:ETRIP5_Fstr})
+    OPTIMIZE({LABEL_OPT:'FOPT_ETRIP5_F',LABELS_IN:'FORM_ETRIP5_F' })
+    DEF_FORMULA({LABEL:'FORM_Etot_F',FORMULA:'Etotal_F=ETRIP4_F+ETRIP5_F'})
+    OPTIMIZE({LABEL_OPT:'FOPT_Etot_F',LABELS_IN:'FORM_Etot_F' })
 # Trying to sum MRCCSD and (T)
 
 DEF_FORMULA({LABEL:'FORM_Etot',FORMULA:'Etotal=EPTtotal+MRCC_LAG'})
@@ -399,6 +471,34 @@ PRINT_MEL({
     LIST:'ME-EPT5total',
     COMMENT:'Total 5th order triples correction  :',
     FORMAT:'SCAL F24.14'})
+
+# get elements from ME-PT, otherwise the formula will result in 0
+if triples > 3:
+    EVALUATE({FORM:'FOPT_ETRIP4_B'})
+    EVALUATE({FORM:'FOPT_ETRIP5_B'})
+    EVALUATE({FORM:'FOPT_Etot_B'})
+    PRINT_MEL({
+        LIST:'ME-Etotal_B',
+        COMMENT:'Total icMRCCSD(T) {3} triples correction:',
+        FORMAT:'SCAL F24.14'})
+    EVALUATE({FORM:'FOPT_ETRIP4_E'})
+    EVALUATE({FORM:'FOPT_ETRIP5_E'})
+    EVALUATE({FORM:'FOPT_Etot_E'})
+    PRINT_MEL({
+        LIST:'ME-Etotal_E',
+        COMMENT:'Total icMRCCSD(T) {4} triples correction:',
+        FORMAT:'SCAL F24.14'})
+
+
+if triples > 4:
+
+    EVALUATE({FORM:'FOPT_ETRIP4_F'})
+    EVALUATE({FORM:'FOPT_ETRIP5_F'})
+    EVALUATE({FORM:'FOPT_Etot_F'})
+    PRINT_MEL({
+        LIST:'ME-Etotal_F',
+        COMMENT:'Total icMRCCSD(T) {5} triples correction:',
+        FORMAT:'SCAL F24.14'})
 
 EVALUATE({FORM:'FOPT_EPTtot'})
 PRINT_MEL({
