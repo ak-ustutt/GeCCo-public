@@ -142,16 +142,19 @@ if (triples>3):
        Tblocks['VVV-HHV']['nact']=4
        Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
 
-#if (triples>4):
-#   Tblocks['VVV-HVV']={}
-#   Tblocks['VVV-HVV']['occ']='VVV,HVV|V,H'
-#   Tblocks['VVV-HVV']['res']=',VV;VVV,H|,;V,H'
-#   Tblocks['VVV-HVV']['nact']=5
-#
-#   Tblocks['PVV-VVV']={}
-#   Tblocks['PVV-VVV']['occ']='PVV,VVV|P,V'
-#   Tblocks['PVV-VVV']['res']=',VVV;PVV,|,V;P,'
-#   Tblocks['PVV-VVV']['nact']=5
+if (triples>4):
+    if _ninact_o > 0:
+       Tblocks['VVV-HVV']={}
+       Tblocks['VVV-HVV']['occ']='VVV,HVV|VV,HV|V,H'
+       Tblocks['VVV-HVV']['res']=',VV;VVV,H|,V;VV,H|,;V,H'
+       Tblocks['VVV-HVV']['nact']=5
+       Tblocks['VVV-HVV']['A_extra']=',VV;VVV,VVV;VV,|,V;VV,VV;V,|,;V,V;,'
+
+    Tblocks['PVV-VVV']={}
+    Tblocks['PVV-VVV']['occ']='PVV,VVV|PV,VV|P,V'
+    Tblocks['PVV-VVV']['res']=',VVV;PVV,|,VV;PV,|,V;P,'
+    Tblocks['PVV-VVV']['nact']=5
+    Tblocks['PVV-VVV']['A_extra']=',VVV;VV,VV;VVV,|,VV;V,V;VV,|,V;,;V,'
 
     
 #  DEF_FORMULA_TESTSTUFF
@@ -304,10 +307,10 @@ for _Tb in Tblocks:
         OP_INCL:'T3tr-'+_Tb,
         IGAST:3,
         MODE:'no_ext'})
-      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb,only_this=True)
       SELECT_SPECIAL({LABEL_RES:'F_T3tr-'+_Tb,LABEL_IN:'F_T3tr-'+_Tb,
              TYPE:'rank',MODE:'33',OPERATORS:['T3-'+_Tb,'T3tr-'+_Tb]})
-      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb,only_this=True)
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
 
