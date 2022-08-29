@@ -46,11 +46,30 @@ elif word == "F" or word == "5":
 else:
       quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
 
+pTH0 = "Dyall"
+word = keywords.get('method.MR.H0')
+if word is None:
+    pTH0 = "Dyall"
+elif word.upper() == "DYALL":
+    pTH0 = "Dyall"
+elif word.upper() == "FOCK":
+    pTH0 = "Fock"
+else:
+    quit_error('H0 must be either "Dyall" or "Fock"')
 
 
 new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
 heading('Computing the (T) correction')
+
+# for "FOCK" we have to compute <F> for current density (note: the density defining F_EFF is still the CASCI density!)
+if (pTH0 == "Fock"):
+   OPTIMIZE({
+        LABELS_IN:['FORM_F_EFF_EXP'],
+        LABEL_OPT:'FOPT_F_EFF_EXP'})
+   EVALUATE({
+        FORM:'FOPT_F_EFF_EXP'})
+
 
 # set the various occupation classes
 # might be done more elegantly, here we just enumerate everything:

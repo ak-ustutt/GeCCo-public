@@ -47,6 +47,18 @@ else:
     else:
         quit_error('pertCorr must be T or F, found: '+word)
 
+pTH0 = "Dyall"
+if pertCorr:
+    word = keywords.get('method.MR.H0')
+    if word is None:
+        pTH0 = "Dyall"
+    elif word.upper() == "DYALL":
+        pTH0 = "Dyall"
+    elif word.upper() == "FOCK":
+        pTH0 = "Fock"
+    else:
+        quit_error('H0 must be either "Dyall" or "Fock"')
+
 word = keywords.get('general.print')
 verbosity = int(word) if word is not None else 0
 
@@ -194,7 +206,7 @@ if verbosity >= 100:
         PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'SHORT'})
 
 if (hybrid=="none" and maxexc==2 and pertCorr):
-    mrcc_methods.set_mrcc_pt()
+    mrcc_methods.set_mrcc_pt(pTH0)
         
     
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'COUNT'})

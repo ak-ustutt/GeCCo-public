@@ -242,11 +242,17 @@ def set_mrcc(nc_en,nc_rs,select,noVVV):
 ###############################################################################################################################
 
 ###############################################################################################################################
-def set_mrcc_pt():
+def set_mrcc_pt(type_H0):
 ###############################################################################################################################
 #   set the (T) correction
 ###############################################################################################################################
-    depend('EVAL_HAM_D')  ### CHECK: check carefully that the Dyall was set up using C0 before any relaxation (ideally from C00)
+    if (type_H0=='Dyall'):
+        depend('EVAL_HAM_D')  ### CHECK: check carefully that the Dyall was set up using C0 before any relaxation (ideally from C00)
+    elif (type_H0=='Fock'):
+        depend('EVAL_F_EFF')
+    else:
+        print("set_mrcc_pt: type_H0 not known - ",type_H0)
+        raise Exception("Unknown type_H0: "+str(type_H0))
 
     DEF_SCALAR({LABEL:'MRCC_EPT4'})
     DEF_SCALAR({LABEL:'MRCC_EPT5'})
@@ -258,7 +264,12 @@ def set_mrcc_pt():
     PT_E5 = stf.Formula('FORM_MRCC_PT_E5:MRCC_EPT5=<C0^+*T1^+*([H,T3g])*C0>')
     PT_E5.set_rule()
 
-    PT_LAG = stf.Formula('FORM_MRCC_PT_LAG:MRCC_LPT=<C0^+*LAM3g*([HAM_D,T3g]+[H,T2g])*C0>')
+
+    if (type_H0=='Dyall'):
+        PT_LAG = stf.Formula('FORM_MRCC_PT_LAG:MRCC_LPT=<C0^+*LAM3g*([HAM_D,T3g]+[H,T2g])*C0>')
+    elif (type_H0=='Fock'):
+        PT_LAG = stf.Formula('FORM_MRCC_PT_LAG:MRCC_LPT=<C0^+*LAM3g*((FOCK_EFF-FOCK_EFF_EXP)*T3g+[H,T2g])*C0>')
+
     PT_LAG.set_rule()
 
     debug_FORM('FORM_MRCC_PT_E4')

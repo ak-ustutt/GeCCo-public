@@ -126,6 +126,9 @@
            <argument length="1" name="pertCorr"  type="1" value="false">
              <!--(new) switch for perturbation correction-->
            </argument>
+           <argument length="1" name="H0"  type="8" value="Dyall">
+             <!--which H0 to use for perturbation correction-->
+           </argument>
            <argument length="1" name="multistate"  type="1" value="false">
              <!--multi state version-->
            </argument>
