@@ -196,10 +196,10 @@ ETRIP5_Estr ='ETRIP5_E='
 DEF_SCALAR({LABEL:'ETRIP5_E'})
 DEF_ME_LIST({LIST:'ME-ETRIP5_E',OPERATOR:'ETRIP5_E',IRREP:1,'2MS':0,'ABSYM':0})
 #ETRIP_Fstr # shows energy up to {5} once it works
-ETRIP4_Fstr ='ETRIP4_R='
+ETRIP4_Fstr ='ETRIP4_F='
 DEF_SCALAR({LABEL:'ETRIP4_F'})
 DEF_ME_LIST({LIST:'ME-ETRIP4_F',OPERATOR:'ETRIP4_F',IRREP:1,'2MS':0,'ABSYM':0})
-ETRIP5_Fstr ='ETRIP5_R='
+ETRIP5_Fstr ='ETRIP5_F='
 DEF_SCALAR({LABEL:'ETRIP5_F'})
 DEF_ME_LIST({LIST:'ME-ETRIP5_F',OPERATOR:'ETRIP5_F',IRREP:1,'2MS':0,'ABSYM':0})
 
@@ -307,10 +307,10 @@ for _Tb in Tblocks:
         OP_INCL:'T3tr-'+_Tb,
         IGAST:3,
         MODE:'no_ext'})
-      debug_FORM('F_T3tr-'+_Tb,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
       SELECT_SPECIAL({LABEL_RES:'F_T3tr-'+_Tb,LABEL_IN:'F_T3tr-'+_Tb,
              TYPE:'rank',MODE:'33',OPERATORS:['T3-'+_Tb,'T3tr-'+_Tb]})
-      debug_FORM('F_T3tr-'+_Tb,only_this=True)
+      debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
 

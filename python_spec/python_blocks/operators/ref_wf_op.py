@@ -22,6 +22,9 @@ spinadapt=keywords.get('calculate.routes.spinadapt')
 spinadapt = int(spinadapt) if spinadapt is not None else 0
 
 
+triples = keywords.get('method.MR.triples')
+triples = triples if triples is not None else 0
+
 
 ims = int(orbitals.get('ims'))       
 imult =int(orbitals.get('imult'))
@@ -128,10 +131,15 @@ DEF_ME_LIST({
 debug_MEL('ME_H_C0',info_only=True)
 
 
+# note: we should probably have a better criterion:
 new_target('Make_GAM0')
 if (spinadapt > 0) :
-    comment('Density matrix up to fourth order')
-    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+    if (triples != '5' and triples != 'F'):
+        comment('Density matrix up to fourth order')
+        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+    else:
+        comment('Density matrix up to fifth order')
+        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
 else:
     comment('Density matrix up to third order')
     dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,'

@@ -58,7 +58,7 @@ if (maxexc>2 or pertCorr):
         _Ov_shape+='|,VVV;PPP,|,;VVV,HHH'
         _GAM_S_shape+='|,;VVV,VVV;,|,VVV;,;VVV,'
         _X_TRM_shape+='|VVV,VVV;,|,;VVV,VVV'
-    else:
+    elif (triples==4):
         if (minexc>1):
             quit_error('minexc /= 1 not supported for triples {4}')
         _Tv_shape+='|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV'
@@ -80,6 +80,29 @@ if (maxexc>2 or pertCorr):
                      'VV,VV;,|' \
                      'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
                      ',;VVV,VVV'
+    else:
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {5}')
+        _Tv_shape+='|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV|PVV,VVV|VVV,HVV'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH|,VVV;PVV,|,VV;VVV,H'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shape=',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,|' \
+                     ',VV;VVV,VVV;VV,|,VV;VVV,VV;V,|,VV;VVV,V;,|,V;VV,VVV;VV,|,V;VV,VV;V,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,|,;V,V;,|' \
+                     ',VVV;VV,VV;VVV,|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,V;VV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,|,V;,;V,' 
+        _X_TRM_shape='VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV|' \
+                     'VVV,VVV;VV,VV|VVV,VV;V,VV|VVV,V;,VV|VV,VVV;VV,V|VV,VV;V,V|VV,V;,V|V,VVV;VV,|V,VV;V,|V,V;,|'\
+                     'VV,VV;VVV,VVV|VV,V;VV,VVV|VV,;V,VVV|V,VV;VVV,VV|V,V;VV,VV|V,;V,VV|,VV;VVV,V|,V;VV,V|,;V,V' 
+
   
 _s2 = orbitals.get('imult')
 
@@ -221,7 +244,7 @@ DERIVATIVE({
         OP_RES:'GAM_S',
         OP_DERIV:'Tv'})
 
-debug_FORM('FORM_GAM_S')
+debug_FORM('FORM_GAM_S')#,only_this=True)
 
 
 
