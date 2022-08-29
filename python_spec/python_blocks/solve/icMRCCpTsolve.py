@@ -238,6 +238,12 @@ for _Tb in Tblocks:
    DEF_ME_LIST({LIST:'ME-EPTLG-'+_Tb,OPERATOR:'EPTLG-'+_Tb,IRREP:1,'2MS':0,'ABSYM':0})
    
 
+# insert density in all equations:
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_PT_LAG',LABEL_IN:'FORM_MRCC_PT_LAG',INTERM:'FORM_GAM0'})
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_PT_E4',LABEL_IN:'FORM_MRCC_PT_E4',INTERM:'FORM_GAM0'})
+FACTOR_OUT({LABEL_RES:'FORM_MRCC_PT_E5',LABEL_IN:'FORM_MRCC_PT_E5',INTERM:'FORM_GAM0'})
+
+
 # expressions for each block
 for _Tb in Tblocks:
    # we replace L3 and T3 by the relevant subblock
