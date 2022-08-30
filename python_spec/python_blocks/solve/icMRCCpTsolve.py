@@ -222,6 +222,7 @@ ETRIP5_Fstr ='ETRIP5_F='
 DEF_SCALAR({LABEL:'ETRIP5_F'})
 DEF_ME_LIST({LIST:'ME-ETRIP5_F',OPERATOR:'ETRIP5_F',IRREP:1,'2MS':0,'ABSYM':0})
 
+
 # generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
 
@@ -486,6 +487,12 @@ for _Tb in Tblocks:
        LIST:'ME-EPT5-'+_Tb,
        COMMENT:'EPT5 ('+_Tb+'):',
        FORMAT:'SCAL F24.14'})
+
+#MRCC-ENERGY for ease of use
+PRINT_MEL({
+    LIST:'MRCC_LAG_LST',
+    COMMENT:'MRCCSD energy                           :',
+    FORMAT:'SCAL F24.14'})
 
 # DEF_FORMULA TEST   
 EVALUATE({FORM:'FOPT_EPT4tot'})
