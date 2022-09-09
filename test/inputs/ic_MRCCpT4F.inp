@@ -1,0 +1,17 @@
+general
+ memmax=30000000
+orb_space
+  shell type=occ,def=(3,1,1,0)
+  shell type=closed,def=(1,0,0,0)
+  shell type=frozen,def=(1,0,0,0)
+method
+ MR_P
+ MRCC_new
+ MR ms=0,mult=3,sym=4,project=4,prc_traf=F,pertCorr=T,triples=4,H0=Fock
+ MRCC maxcom_en=4,maxcom_res=2,select=T
+calculate
+ solve maxiter=30,conv=1d-8,maxsub=18
+ skip_E
+ solve non_linear optref=-3
+ routes maxbranch=4,sv_thresh=1d-6,spinadapt=3,auto_opt=F,use_tr=T
+
