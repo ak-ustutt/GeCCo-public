@@ -9,7 +9,7 @@ from python_interface.gecco_interface import *
 from python_interface.gecco_modules.NoticeUtil import *
 #test MRCCSD+(T)
 #from python_spec.python_blocks.solve.icMRCCSDsolve.py import MRCC_LAG_LST
-verbosity=100
+verbosity=00
 
 i_am="icMRCCSDpTsolve.py"
 
@@ -60,6 +60,7 @@ else:
 
 new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
+depend('MakeOrthBasisPT') ## compute an extended set of lists for orth --> X_TRM_PT, X_TRM_PT_DAG
 heading('Computing the (T) correction')
 
 # for "FOCK" we have to compute <F> for current density (note: the density defining F_EFF is still the CASCI density!)
@@ -323,7 +324,7 @@ for _Tb in Tblocks:
       # and a transformation (that keeps T3 orth to T2 and T1)
       EXPAND_OP_PRODUCT({LABEL:'F_T3tr-'+_Tb,NEW:True,
                       OP_RES:'T3-'+_Tb,
-                      OPERATORS:['T3-'+_Tb,'X_TRM','T3tr-'+_Tb,'X_TRM','T3-'+_Tb],
+                      OPERATORS:['T3-'+_Tb,'X_TRM_PT','T3tr-'+_Tb,'X_TRM_PT','T3-'+_Tb],
                       IDX_SV:   [1,2,3,2,1],
                       AVOID:[2,4,1,4,2,5]})
       SELECT_LINE({
@@ -334,6 +335,11 @@ for _Tb in Tblocks:
         IGAST:3,
         MODE:'no_ext'})
       debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
+      # we can remove some parts of the transformation:
+      # for the transformation of the residual into the orthog. basis (where X_TRM is replaced by X_TRM_DAG)
+      # we only need the contributions of the low-rank residuals to the largest rank one
+      # for the transformation of the amplitude update, only the contributions from the largest rank will be
+      # kept and distributed to the lower ranks to get the orthogonalization tails
       SELECT_SPECIAL({LABEL_RES:'F_T3tr-'+_Tb,LABEL_IN:'F_T3tr-'+_Tb,
              TYPE:'rank',MODE:'33',OPERATORS:['T3-'+_Tb,'T3tr-'+_Tb]})
       debug_FORM('F_T3tr-'+_Tb)#,only_this=True)
@@ -346,7 +352,9 @@ for _Tb in Tblocks:
           _A_T_shape = Tblocks[_Tb]["A_extra"]
           DEF_SCALAR({LABEL:'A_TRF_SCAL-'+_Tb})
           DEF_OP_FROM_OCC({LABEL:'A_TRF-'+_Tb,JOIN:3,DESCR:_A_T_shape})
+          #CLONE_OPERATOR({LABEL:'A_INT-'+_Tb,TEMPLATE:'A_TRF-'+_Tb})
           DEF_ME_LIST({LIST:'ME_A_TRF-'+_Tb,OPERATOR:'A_TRF-'+_Tb,IRREP:1,'2MS':0})
+          #DEF_ME_LIST({LIST:'ME_A_INT-'+_Tb,OPERATOR:'A_INT-'+_Tb,IRREP:1,'2MS':0})
 
           EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF-'+_Tb,OP_RES:'A_TRF_SCAL-'+_Tb,
             OPERATORS:['C0^+','T3-'+_Tb+'^+','H','T3-'+_Tb,'C0'],
@@ -360,6 +368,17 @@ for _Tb in Tblocks:
           SUM_TERMS({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb})
 
           FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_GAM0'})
+          debug_FORM('FORM_A_TRF-'+_Tb)#,only_this=True)
+
+          # still buggy:
+          # generate intermediate without trafo matrix:
+          #DERIVATIVE({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_INT0-'+_Tb,OP_RES:'O3-'+_Tb,OP_DERIV:'T3-'+_Tb+'^+'})
+          #DERIVATIVE({LABEL_IN:'FORM_A_INT0-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb,OP_RES:'A_INT-'+_Tb,OP_DERIV:'T3-'+_Tb})
+          #REORDER_FORMULA({LABEL_IN:'FORM_A_INT-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb})
+          #debug_FORM('FORM_A_INT-'+_Tb,only_this=True)
+
+          #FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_A_INT-'+_Tb})
+          #debug_FORM('FORM_A_TRF-'+_Tb,only_this=True)
 
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb+'^+'})
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb})
@@ -372,7 +391,8 @@ for _Tb in Tblocks:
           DERIVATIVE({LABEL_IN:'FORM_A_TRF_INT-'+_Tb,LABEL_RES:'FORM_A_TRF_FIN-'+_Tb,OP_RES:'A_TRF-'+_Tb,OP_DERIV:'T3tr-'+_Tb})
           debug_FORM('FORM_A_TRF_FIN-'+_Tb)#,only_this=True)
 
-          OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:'FORM_A_TRF_FIN-'+_Tb})
+          ##OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_INT-'+_Tb,'FORM_A_TRF_FIN-'+_Tb]})
+          OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_TRF_FIN-'+_Tb]})
 
           EVALUATE({FORM:'FOPT_A_TRF-'+_Tb})
           debug_MEL('ME_A_TRF-'+_Tb)#,only_this=True)
@@ -438,12 +458,10 @@ DEF_FORMULA({LABEL:'FORM_Etot',FORMULA:'Etotal=EPTtotal+MRCC_LAG'})
 OPTIMIZE({LABEL_OPT:'FOPT_Etot',LABELS_IN:'FORM_Etot' })
 
 # Printing Test terms
+debug_FORM('FORM_EPT4tot')
+debug_FORM('FORM_EPT5tot')
+debug_FORM('FORM_EPTtot')
 
-PRINT_FORMULA({LABEL:'FORM_EPT4tot'})
-
-PRINT_FORMULA({LABEL:'FORM_EPT5tot'})
-
-PRINT_FORMULA({LABEL:'FORM_EPTtot'})
 # loop over blocks of T3
 for _Tb in Tblocks:
    # set up preconditioner
@@ -465,7 +483,7 @@ for _Tb in Tblocks:
               OP_SVP:'T3-'+_Tb,N_ROOTS:1,
               LIST_PRC:'ME-DIA-'+_Tb,
               FORM:'FOPT_PTeq-'+_Tb,
-              LIST_SPC:['ME-T3-'+_Tb,'ME-T3tr-'+_Tb,'ME_X_TRM','ME_X_TRM_DAG'],
+              LIST_SPC:['ME-T3-'+_Tb,'ME-T3tr-'+_Tb,'ME_X_TRM_PT','ME_X_TRM_PT_DAG'],
               FORM_SPC:'FOPT_T3tr-'+_Tb})
    else:
       # simpler case here (consider this non-iteratively)
