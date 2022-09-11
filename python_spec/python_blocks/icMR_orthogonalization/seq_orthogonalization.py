@@ -37,6 +37,11 @@ if pertCorr or maxexc>2:
     else:
       quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
 
+orb = Orb_Info()
+ninact_o = orb.get('nactt_hpv',1)
+nact_o = orb.get('nactt_hpv',3)
+nact_e = orb.get('nactel')
+
 
 if (minexc==1):
   _Tv_shape='V,H|P,V|P,H|PP,VV|PV,HV|VV,HH|PV,VV|VV,VH'
@@ -108,7 +113,7 @@ elif (maxexc==2 and pertCorr):
     # (required, as we do not want to compute the extended metric during the MRCCSD iterations
     if (triples==3):
         _Tv_shapePT = _Tv_shape+'|PPP,VVV|VVV,HHH'
-        _Ov_shapePT = _OV_shape+'|,VVV;PPP,|,;VVV,HHH'
+        _Ov_shapePT = _Ov_shape+'|,VVV;PPP,|,;VVV,HHH'
         _GAM_S_shapePT= _GAM_S_shape+'|,;VVV,VVV;,|,VVV;,;VVV,'
         _X_TRM_shapePT= _X_TRM_shape+'|VVV,VVV;,|,;VVV,VVV'
     elif (triples==4):
@@ -186,9 +191,19 @@ depend('GAM0_CALC')
 DEF_SCALAR({
         LABEL:'SSCAL'})
 
-DEF_OP_FROM_OCC({
-        LABEL:'1v_WE',
-        DESCR:'V,V|VV,VV'})
+if (maxexc>2 or pertCorr):
+    DEF_OP_FROM_OCC({
+            LABEL:'1v_WE',
+            DESCR:'V,V|VV,VV|VVV,VVV'})
+else:
+    DEF_OP_FROM_OCC({
+            LABEL:'1v_WE',
+            DESCR:'V,V|VV,VV'})
+
+# savety trap
+if (maxexc>3 and nact_o>2):
+    quit_error('Quadruples for more than two active orbitals? Reconsider 1v_WE definition!')
+
 SET_HERMITIAN({
         LABEL:'1v_WE',
         CA_SYMMETRY:+1})
@@ -431,7 +446,7 @@ SELECT_LINE({
         IGAST:3,
         MODE:'no_ext'})
 
-debug_FORM('FORM_T2_orth',only_this=True)
+debug_FORM('FORM_T2_orth')#,only_this=True)
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_T2_orth',
@@ -631,7 +646,7 @@ if (maxexc==2 and pertCorr):
     EVALUATE({
             FORM:'FOPT_GAM_S_PT'})
     
-    debug_MEL('ME_GAM_S_PT')
+    debug_MEL('ME_GAM_S_PT')#,only_this=True)
  
 
 

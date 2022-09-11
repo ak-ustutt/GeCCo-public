@@ -11,6 +11,8 @@ from python_interface.gecco_modules.NoticeUtil import *
 #from python_spec.python_blocks.solve.icMRCCSDsolve.py import MRCC_LAG_LST
 verbosity=00
 
+run_checks=False
+
 i_am="icMRCCSDpTsolve.py"
 
 _inp = GeCCo_Input()
@@ -62,6 +64,22 @@ new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
 depend('MakeOrthBasisPT') ## compute an extended set of lists for orth --> X_TRM_PT, X_TRM_PT_DAG
 heading('Computing the (T) correction')
+
+#DBG:
+if run_checks:
+    PRINT({STRING:'X_TRM:'})
+    ANALYZE_MEL({LISTS:'ME_X_TRM',LISTS_CV:'ME_X_TRM'})
+    PRINT({STRING:'X_TRM_DAG:'})
+    ANALYZE_MEL({LISTS:'ME_X_TRM_DAG',LISTS_CV:'ME_X_TRM_DAG'})
+    PRINT({STRING:'X_TRM_PT:'})
+    ANALYZE_MEL({LISTS:'ME_X_TRM_PT',LISTS_CV:'ME_X_TRM_PT'})
+    PRINT({STRING:'X_TRM_PT_DAG:'})
+    ANALYZE_MEL({LISTS:'ME_X_TRM_PT_DAG',LISTS_CV:'ME_X_TRM_PT_DAG'})
+    PRINT({STRING:'ME_P_PROJ_PT:'})
+    ANALYZE_MEL({LISTS:'ME_P_PROJ_PT',LISTS_CV:'ME_P_PROJ_PT'})
+    debug_MEL('ME_P_PROJ_PT')#,only_this=True)
+    debug_MEL('ME_X_TRM_PT')#,only_this=True)
+
 
 # for "FOCK" we have to compute <F> for current density (note: the density defining F_EFF is still the CASCI density!)
 if (pTH0 == "Fock"):
@@ -117,6 +135,7 @@ if _nact_e > 2:
    Tblocks['PPP-VVV']['res']=',VVV;PPP,'
    Tblocks['PPP-VVV']['nact']=3
    Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
+   Tblocks['PPP-VVV']['A_offdia']=''
 
 if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
    Tblocks['VVV-HHH']={}
@@ -124,6 +143,7 @@ if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
    Tblocks['VVV-HHH']['res']=',;VVV,HHH'
    Tblocks['VVV-HHH']['nact']=3
    Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
+   Tblocks['VVV-HHH']['A_offdia']=''
 
 if _ninact_o > 0: # and _nact_e > 1:
    Tblocks['PPV-HVV']={}
@@ -137,8 +157,6 @@ if _ninact_o > 0:
    Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
    Tblocks['PVV-HHV']['nact']=3
 
-# TODO: also consider here the cases PVV-HVV VVV-HHV PPV-VVV and maybe PVV-VVV and VVV-VVH
-# Check if correct: especially the res
 # Should be redundant for CAS(4,4) according to Hanauer 2012
 
 if (triples>3):
@@ -148,12 +166,14 @@ if (triples>3):
        Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
        Tblocks['PVV-HVV']['nact']=4
        Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
+       Tblocks['PVV-HVV']['A_offdia']='|,VV;VV,V;V,|,V;V,VV;VV,'
 
     Tblocks['PPV-VVV']={}
     Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
     Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
     Tblocks['PPV-VVV']['nact']=4
     Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
+    Tblocks['PPV-VVV']['A_offdia']='|,VVV;V,;VV,|,VV;,V;VVV,'
 
     if _ninact_o > 0:
        Tblocks['VVV-HHV']={}
@@ -161,6 +181,7 @@ if (triples>3):
        Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
        Tblocks['VVV-HHV']['nact']=4
        Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
+       Tblocks['VVV-HHV']['A_offdia']='|,V;VVV,VV;,|,;VV,VVV;V,'
 
 if (triples>4):
     if _ninact_o > 0:
@@ -169,12 +190,17 @@ if (triples>4):
        Tblocks['VVV-HVV']['res']=',VV;VVV,H|,V;VV,H|,;V,H'
        Tblocks['VVV-HVV']['nact']=5
        Tblocks['VVV-HVV']['A_extra']=',VV;VVV,VVV;VV,|,V;VV,VV;V,|,;V,V;,'
+       Tblocks['VVV-HVV']['A_offdia']='|,VV;VVV,VV;V,|VVV;V,V;,|,V;VV,VVV;VV,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,'
 
     Tblocks['PVV-VVV']={}
     Tblocks['PVV-VVV']['occ']='PVV,VVV|PV,VV|P,V'
     Tblocks['PVV-VVV']['res']=',VVV;PVV,|,VV;PV,|,V;P,'
     Tblocks['PVV-VVV']['nact']=5
     Tblocks['PVV-VVV']['A_extra']=',VVV;VV,VV;VVV,|,VV;V,V;VV,|,V;,;V,'
+    Tblocks['PVV-VVV']['A_offdia']='|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,'
+
+# for later: we need a dummy operator for virtual space only:
+DEF_OP_FROM_OCC({LABEL:'HVV_PT',DESCR:'V,V|VV,VV'})
 
     
 #  DEF_FORMULA_TESTSTUFF
@@ -223,6 +249,11 @@ ETRIP5_Fstr ='ETRIP5_F='
 DEF_SCALAR({LABEL:'ETRIP5_F'})
 DEF_ME_LIST({LIST:'ME-ETRIP5_F',OPERATOR:'ETRIP5_F',IRREP:1,'2MS':0,'ABSYM':0})
 
+# for DBG
+if run_checks:
+    DEF_SCALAR({LABEL:'OVL-TEST'})
+    DEF_ME_LIST({LIST:'ME-OVL-TEST',OPERATOR:'OVL-TEST',IRREP:1,'2MS':0,'ABSYM':0})
+
 
 # generate some operators to address the individual T3 blocks:
 for _Tb in Tblocks:
@@ -235,7 +266,7 @@ for _Tb in Tblocks:
    CLONE_OPERATOR({LABEL:'T3tr-'+_Tb,TEMPLATE:'T3-'+_Tb})
    DEF_ME_LIST({LIST:'ME-T3tr-'+_Tb,OPERATOR:'T3tr-'+_Tb,IRREP:1,'2MS':_ms,'ABSYM':_msc})
 
-   # create own diagonal?
+   # create own diagonal
    CLONE_OPERATOR({LABEL:'DIA-'+_Tb,TEMPLATE:'T3-'+_Tb})
    DEF_ME_LIST({LIST:'ME-DIA-'+_Tb,OPERATOR:'DIA-'+_Tb,IRREP:1,'2MS':_ms,'ABSYM':_msc})
 
@@ -265,6 +296,7 @@ FACTOR_OUT({LABEL_RES:'FORM_MRCC_PT_E4',LABEL_IN:'FORM_MRCC_PT_E4',INTERM:'FORM_
 FACTOR_OUT({LABEL_RES:'FORM_MRCC_PT_E5',LABEL_IN:'FORM_MRCC_PT_E5',INTERM:'FORM_GAM0'})
 
 
+PRINT({STRING:'Computing additional denominators'})
 # expressions for each block
 for _Tb in Tblocks:
    # we replace L3 and T3 by the relevant subblock
@@ -311,7 +343,7 @@ for _Tb in Tblocks:
    # Sums all terms and adds a + in the end
    EPT4str = EPT4str + 'EPT4-' +_Tb + '+' 
    EPT5str = EPT5str + 'EPT5-' +_Tb + '+'
-   if Tblocks[_Tb]["nact"]==3: #generate separate strings for better output for {3} etc..
+   if Tblocks[_Tb]["nact"]<4: #generate separate strings for better output for {3} etc..
        ETRIP4_Bstr =ETRIP4_Bstr + 'EPT4-' +_Tb + '+'
        ETRIP5_Bstr =ETRIP5_Bstr + 'EPT5-' +_Tb + '+'
    if Tblocks[_Tb]["nact"]<5:
@@ -346,39 +378,72 @@ for _Tb in Tblocks:
       OPTIMIZE({LABEL_OPT:'FOPT_T3tr-'+_Tb,
              LABELS_IN:'F_T3tr-'+_Tb})
 
+      # DBG -- test orthogonality
+      if Tblocks[_Tb]["nact"]>3 and run_checks:
+          EXPAND_OP_PRODUCT({LABEL:'FORM_ORTH-'+_Tb,OP_RES:'OVL-TEST',
+                OPERATORS:['C0^+','T1^+','T3-'+_Tb,'C0'],
+                IDX_SV:[1,2,3,4],
+                NEW:True})
+          EXPAND_OP_PRODUCT({LABEL:'FORM_ORTH-'+_Tb,OP_RES:'OVL-TEST',
+                OPERATORS:['C0^+','T2g^+','T3-'+_Tb,'C0'],
+                IDX_SV:[1,2,3,4],
+                NEW:False})
+          debug_FORM('FORM_ORTH-'+_Tb,only_this=True)
+          OPTIMIZE({LABEL_OPT:'FOPT_ORTH-'+_Tb,LABELS_IN:'FORM_ORTH-'+_Tb})
+
+          # create formula to project T3 into the contravariant basis:
+          CLONE_OPERATOR({LABEL:'ST3-'+_Tb,TEMPLATE:'O3-'+_Tb})
+          DEF_ME_LIST({LIST:'ME-ST3-'+_Tb,OPERATOR:'ST3-'+_Tb,IRREP:1,'2MS':_ms,'S2':_s2,'ABSYM':_msc})
+          EXPAND_OP_PRODUCT({LABEL:'F_ST3-0-'+_Tb,OP_RES:'OVL-TEST',  # OVL-TEST is only a dummy intermediate here
+                OPERATORS:['C0^+','T3-'+_Tb+'^+','T3-'+_Tb,'C0'],
+                IDX_SV:[1,2,3,4],
+                NEW:True})
+          FACTOR_OUT({LABEL_RES:'F_ST3-0-'+_Tb,LABEL_IN:'F_ST3-0-'+_Tb,INTERM:'FORM_GAM0'})
+          DERIVATIVE({LABEL_IN:'F_ST3-0-'+_Tb,LABEL_RES:'F_ST3-'+_Tb,OP_RES:'ST3-'+_Tb,OP_DERIV:'T3-'+_Tb+'^+'})
+          OPTIMIZE({LABEL_OPT:'FOPT-ST3-'+_Tb,LABELS_IN:'F_ST3-'+_Tb})
+
+
       # for some T blocks, we need to compute extra blocks of the A matrix
       if "A_extra" in Tblocks[_Tb].keys():
           
           _A_T_shape = Tblocks[_Tb]["A_extra"]
+          _A_TX_shape = _A_T_shape + Tblocks[_Tb]["A_offdia"]
           DEF_SCALAR({LABEL:'A_TRF_SCAL-'+_Tb})
           DEF_OP_FROM_OCC({LABEL:'A_TRF-'+_Tb,JOIN:3,DESCR:_A_T_shape})
+          DEF_OP_FROM_OCC({LABEL:'A_INT-'+_Tb,JOIN:3,DESCR:_A_TX_shape})
           #CLONE_OPERATOR({LABEL:'A_INT-'+_Tb,TEMPLATE:'A_TRF-'+_Tb})
           DEF_ME_LIST({LIST:'ME_A_TRF-'+_Tb,OPERATOR:'A_TRF-'+_Tb,IRREP:1,'2MS':0})
-          #DEF_ME_LIST({LIST:'ME_A_INT-'+_Tb,OPERATOR:'A_INT-'+_Tb,IRREP:1,'2MS':0})
+          DEF_ME_LIST({LIST:'ME_A_INT-'+_Tb,OPERATOR:'A_INT-'+_Tb,IRREP:1,'2MS':0})
 
+          # define only the terms involving the active part of H ... all other terms would be eliminated below anyway
           EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF-'+_Tb,OP_RES:'A_TRF_SCAL-'+_Tb,
-            OPERATORS:['C0^+','T3-'+_Tb+'^+','H','T3-'+_Tb,'C0'],
+            OPERATORS:['C0^+','T3-'+_Tb+'^+','HVV_PT','T3-'+_Tb,'C0'],
             IDX_SV:[1,2,3,4,5],
             NEW:True})
           EXPAND_OP_PRODUCT({LABEL:'FORM_A_TRF-'+_Tb,OP_RES:'A_TRF_SCAL-'+_Tb,
-            OPERATORS:['C0^+','T3-'+_Tb+'^+','T3-'+_Tb,'H','C0'],
+            OPERATORS:['C0^+','T3-'+_Tb+'^+','T3-'+_Tb,'HVV_PT','C0'],
             IDX_SV:[1,2,3,4,5],
             FIX_VTX:True,FAC:-1,NEW:False})
+          REPLACE({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,OP_LIST:['HVV_PT','H']})
 
           SUM_TERMS({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb})
 
           FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_GAM0'})
           debug_FORM('FORM_A_TRF-'+_Tb)#,only_this=True)
 
-          # still buggy:
-          # generate intermediate without trafo matrix:
-          #DERIVATIVE({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_INT0-'+_Tb,OP_RES:'O3-'+_Tb,OP_DERIV:'T3-'+_Tb+'^+'})
-          #DERIVATIVE({LABEL_IN:'FORM_A_INT0-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb,OP_RES:'A_INT-'+_Tb,OP_DERIV:'T3-'+_Tb})
-          #REORDER_FORMULA({LABEL_IN:'FORM_A_INT-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb})
-          #debug_FORM('FORM_A_INT-'+_Tb,only_this=True)
+          # insert the unit operator in V space: (is already defined when metric is set up for MRCCSD)
+          # we need this in order to define a proper intermediate after taking the double derivative
+          INSERT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,
+              OP_RES:'A_TRF_SCAL-'+_Tb,OP_INS:'1v_WE',OP_INCL:['T3-'+_Tb+'^+','T3-'+_Tb]})
 
-          #FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_A_INT-'+_Tb})
-          #debug_FORM('FORM_A_TRF-'+_Tb,only_this=True)
+          # generate intermediate without trafo matrix:
+          DERIVATIVE({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_INT0-'+_Tb,OP_RES:'O3-'+_Tb,OP_DERIV:'T3-'+_Tb+'^+'})
+          DERIVATIVE({LABEL_IN:'FORM_A_INT0-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb,OP_RES:'A_INT-'+_Tb,OP_DERIV:'T3-'+_Tb})
+          REORDER_FORMULA({LABEL_IN:'FORM_A_INT-'+_Tb,LABEL_RES:'FORM_A_INT-'+_Tb})
+          debug_FORM('FORM_A_INT-'+_Tb)#,only_this=True)
+
+          FACTOR_OUT({LABEL_RES:'FORM_A_TRF-'+_Tb,LABEL_IN:'FORM_A_TRF-'+_Tb,INTERM:'FORM_A_INT-'+_Tb})
+          debug_FORM('FORM_A_TRF-'+_Tb)#,only_this=True)
 
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb+'^+'})
           EXPAND({LABEL_IN:'FORM_A_TRF-'+_Tb,LABEL_RES:'FORM_A_TRF-'+_Tb,INTERM:'F_T3tr-'+_Tb})
@@ -391,13 +456,12 @@ for _Tb in Tblocks:
           DERIVATIVE({LABEL_IN:'FORM_A_TRF_INT-'+_Tb,LABEL_RES:'FORM_A_TRF_FIN-'+_Tb,OP_RES:'A_TRF-'+_Tb,OP_DERIV:'T3tr-'+_Tb})
           debug_FORM('FORM_A_TRF_FIN-'+_Tb)#,only_this=True)
 
-          ##OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_INT-'+_Tb,'FORM_A_TRF_FIN-'+_Tb]})
-          OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_TRF_FIN-'+_Tb]})
+          OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_INT-'+_Tb,'FORM_A_TRF_FIN-'+_Tb]})
+          #OPTIMIZE({LABEL_OPT:'FOPT_A_TRF-'+_Tb,LABELS_IN:['FORM_A_TRF_FIN-'+_Tb]})
 
           EVALUATE({FORM:'FOPT_A_TRF-'+_Tb})
           debug_MEL('ME_A_TRF-'+_Tb)#,only_this=True)
           
-
 
 
 # TESTING DEF_FORMULA
@@ -485,6 +549,36 @@ for _Tb in Tblocks:
               FORM:'FOPT_PTeq-'+_Tb,
               LIST_SPC:['ME-T3-'+_Tb,'ME-T3tr-'+_Tb,'ME_X_TRM_PT','ME_X_TRM_PT_DAG'],
               FORM_SPC:'FOPT_T3tr-'+_Tb})
+      # DBG
+      if Tblocks[_Tb]["nact"]>3 and run_checks:
+          ANALYZE_MEL({LISTS:'ME-T3-'+_Tb,LISTS_CV:'ME-T3-'+_Tb})
+          EVALUATE({FORM:'FOPT-ST3-'+_Tb})
+          PRINT({STRING:'Biorthogonal norm:'})
+          ANALYZE_MEL({LISTS:'ME-T3-'+_Tb,LISTS_CV:'ME-ST3-'+_Tb})
+          PRINT({STRING:'Vector in contrav. basis:'})
+          ANALYZE_MEL({LISTS:'ME-ST3-'+_Tb,LISTS_CV:'ME-ST3-'+_Tb})
+          ASSIGN_ME2OP({LIST:'ME_X_TRM_PT_DAG',OPERATOR:'X_TRM_PT'}) # reassign trafo matrix
+          ASSIGN_ME2OP({LIST:'ME-T3tr-'+_Tb,OPERATOR:'T3-'+_Tb}) # reassign result matrix
+          ASSIGN_ME2OP({LIST:'ME-ST3-'+_Tb,OPERATOR:'T3tr-'+_Tb}) # reassign input matrix
+          EVALUATE({FORM:'FOPT_T3tr-'+_Tb})
+          PRINT({STRING:'Vector in orth. basis:'})
+          ANALYZE_MEL({LISTS:'ME-T3tr-'+_Tb,LISTS_CV:'ME-T3tr-'+_Tb})
+          # and back trafo
+          ASSIGN_ME2OP({LIST:'ME_X_TRM_PT',OPERATOR:'X_TRM_PT'}) # reassign trafo matrix
+          ASSIGN_ME2OP({LIST:'ME-T3-'+_Tb,OPERATOR:'T3-'+_Tb}) # reassign result matrix
+          ASSIGN_ME2OP({LIST:'ME-T3tr-'+_Tb,OPERATOR:'T3tr-'+_Tb}) # reassign input matrix
+          EVALUATE({FORM:'FOPT_T3tr-'+_Tb})
+          PRINT({STRING:'Regenerated T3 vector:'})
+          ANALYZE_MEL({LISTS:'ME-T3-'+_Tb,LISTS_CV:'ME-T3-'+_Tb})
+
+
+          # test orthogonality
+          EVALUATE({FORM:'FOPT_ORTH-'+_Tb})
+          PRINT_MEL({LIST:'ME-OVL-TEST',
+              COMMENT:'<(T1+T2)T3> = ',
+              FORMAT:'SCAL F24.14'})
+
+
    else:
       # simpler case here (consider this non-iteratively)
       SOLVE_LEQ({LIST_OPT:'ME-T3-'+_Tb,MODE:'DIA',
