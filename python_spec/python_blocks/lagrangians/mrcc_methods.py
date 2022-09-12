@@ -242,14 +242,16 @@ def set_mrcc(nc_en,nc_rs,select,noVVV):
 ###############################################################################################################################
 
 ###############################################################################################################################
-def set_mrcc_pt(type_H0):
+def set_mrcc_pt(type_H0,extra_terms):
 ###############################################################################################################################
 #   set the (T) correction
 ###############################################################################################################################
     if (type_H0=='Dyall'):
         depend('EVAL_HAM_D')  ### CHECK: check carefully that the Dyall was set up using C0 before any relaxation (ideally from C00)
+        H0 = 'HAM_D'
     elif (type_H0=='Fock'):
         depend('EVAL_F_EFF')
+        H0 = 'FOCK_EFF'
     else:
         print("set_mrcc_pt: type_H0 not known - ",type_H0)
         raise Exception("Unknown type_H0: "+str(type_H0))
@@ -260,8 +262,18 @@ def set_mrcc_pt(type_H0):
     DEF_SCALAR({LABEL:'MRCC_LPT'})
 
     PT_E4 = stf.Formula('FORM_MRCC_PT_E4:MRCC_EPT4=<C0^+*T2g^+*([H,T3g])*C0>')
+    # set additional terms
+    if extra_terms > 0: # "direct term"
+        PT_E4.append('<C0^+*0.5*[[H,T2g],T3g]*C0>')
+        PT_E4.append('<C0^+*0.5*[[H,T3g],T2g]*C0>')
+    if extra_terms > 1: # "non-linear E4 term"
+        PT_E4.append('<C0^+*T2g^+*0.5*[['+H0+',T3g],T2g]*C0>')
+        PT_E4.append('<C0^+*T2g^+*0.5*[['+H0+',T2g],T3g]*C0>')
     PT_E4.set_rule()
     PT_E5 = stf.Formula('FORM_MRCC_PT_E5:MRCC_EPT5=<C0^+*T1^+*([H,T3g])*C0>')
+    if extra_terms > 2: # "non-linear E5 term"
+        PT_E5.append('<C0^+*T1^+*0.5*[['+H0+',T3g],T2g]*C0>')
+        PT_E5.append('<C0^+*T1^+*0.5*[['+H0+',T2g],T3g]*C0>')
     PT_E5.set_rule()
 
 

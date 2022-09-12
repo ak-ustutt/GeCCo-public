@@ -57,7 +57,18 @@ if pertCorr:
     elif word.upper() == "FOCK":
         pTH0 = "Fock"
     else:
-        quit_error('H0 must be either "Dyall" or "Fock"')
+        quit_error('value of MR.H0 must be either "Dyall" or "Fock"')
+
+extra_terms = 0
+if pertCorr:
+    word = keywords.get('method.MR.pTexpression')
+    if word is None:
+        extra_terms = 0
+    elif word == "0" or word == "1" or word == "2" or word == "3":
+        extra_terms = int(word)
+    else:
+        quit_error('unknown value for MR.pTexpression (should be integer 0 ... 3); found: '+word)
+
 
 word = keywords.get('general.print')
 verbosity = int(word) if word is not None else 0
@@ -206,7 +217,7 @@ if verbosity >= 100:
         PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'SHORT'})
 
 if (hybrid=="none" and maxexc==2 and pertCorr):
-    mrcc_methods.set_mrcc_pt(pTH0)
+    mrcc_methods.set_mrcc_pt(pTH0,extra_terms)
         
     
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'COUNT'})
