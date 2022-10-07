@@ -42,7 +42,7 @@
 
       integer ::
      &     idx_res, idx_inp, idx_fac, idx, idxnd,
-     &     njoined, iblk, ipri
+     &     njoined, iblk, ipri, idoff_fac
       logical ::
      &     open_close_res, open_close_inp, open_close_fac,
      &     same
@@ -152,10 +152,13 @@
 
       ! load factor
       if (mode.ge.2) then
+        idoff_fac = me_fac%fhand%length_of_record
+     &            *(me_fac%fhand%current_record-1)
         if (me_fac%fhand%buffered) then
+          if (idoff_fac.gt.0) call quit(1,'check this!')
           factor = me_fac%fhand%buffer(1)
         else
-          call get_vec(me_fac%fhand,factor,1,1)
+          call get_vec(me_fac%fhand,factor,idoff_fac+1,idoff_fac+1)
         end if
         if (mode.ge.3) factor = 1d0/factor
         if (ntest.ge.10) write(lulog,*)

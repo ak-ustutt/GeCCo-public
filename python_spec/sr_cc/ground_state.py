@@ -53,7 +53,7 @@ CLONE_OPERATOR({LABEL:'DIAG',TEMPLATE:'T'})
 CLONE_OPERATOR({LABEL:'OMG',TEMPLATE:'T'})
 CLONE_OPERATOR({LABEL:'LAM',TEMPLATE:'T',ADJOINT:True})
 
-DEF_OP_FROM_OCC({LABEL:'CC1DEN',JOIN:2,DESCR:',H;H,|,H;P,|,P;H,|,P;P,'})
+DEF_OP_FROM_OCC({LABEL:'CC1DEN',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
 
 # define the Lagrangian
 new_target('CC_LAGRANGIAN')
@@ -143,6 +143,9 @@ DEF_ME_LIST({LIST:'ME_CC1DEN',OPERATOR:'CC1DEN',IRREP:1,'2MS':0,AB_SYM:+1})
 
 # solve the equations
 new_target('SOLVE_LAMBDA')
+if keywords.is_keyword_set('calculate.properties'):
+    required()
+
 depend('SOLVE_CC','CC_LAMBDA_LISTS','CC_LAMBDA_EQS')
 
 PRINT({STRING:'Optimizing the LAMBDA equatons for numerical evaluation.'})

@@ -456,6 +456,10 @@
            </keyword>
            <keyword name="analyze" >
            </keyword>
+           <keyword name="moments">
+           </keyword>
+           <keyword name="z-vector">
+           </keyword>
            <argument length="8" name="sym"  type="2" value="1,0,0,0,0,0,0,0"/>
            <argument length="1" name="msc"  type="2" value="0"/>
            <argument length="1" name="mult"  type="2" value="1"/>

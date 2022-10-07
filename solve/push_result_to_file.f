@@ -29,7 +29,7 @@
       logical ::
      &     openit
       integer ::
-     &     nblk
+     &     nblk, idoff
       real(8) ::
      &     value
       type(filinf) ::
@@ -49,7 +49,8 @@
 
       case('NORM','SCAL')
         if (mode(1:4).eq.'SCAL') then
-          call get_vec(mel%fhand,value,1,1)
+          idoff =mel%fhand%length_of_record*(mel%fhand%current_record-1)
+          call get_vec(mel%fhand,value,idoff+1,idoff+1)
         else
           value = xnormop(mel)
         end if

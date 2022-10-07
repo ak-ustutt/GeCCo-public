@@ -53,6 +53,13 @@
      &       trim(gecco_path)//"/python_spec/sr_cc/ground_state.py",
      &       name_infile,fforbinf%name)
 
+        if (is_keyword_set('calculate.excitation').gt.0) then
+          write(lulog,*) 'reading EOMEE/LR targets'
+          call set_python_targets(tgt_info,
+     &       trim(gecco_path)//"/python_spec/sr_cc/eomee.py",
+     &       name_infile,fforbinf%name)
+        end if
+
         if (is_keyword_set('calculate.ionization').gt.0) then
           write(lulog,*) 'reading EOMIP targets'
           call set_python_targets(tgt_info,
