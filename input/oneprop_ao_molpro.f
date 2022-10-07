@@ -88,6 +88,8 @@ c dbg
       read(ffprop%unit,'(a)') line
       label = line(10:17)
 
+      if (ntest.ge.100) write(lulog,*) 'label: ',trim(label)
+
       read(ffprop%unit,*,end=3,err=6) xint_raw(1:nblkd)
 
       naoint = 0
@@ -109,7 +111,7 @@ c dbg
 
       if (ntest.ge.100) then 
         write(lulog,*) 'AO integrals (original):'
-        call wr_blkmat(xint_blk,orb_info%nbas,orb_info%ntoobs,
+        call wr_blkmat(xint_blk,orb_info%nbas,orb_info%nbas,
      &                     orb_info%nsym,0)
       end if
 
@@ -122,6 +124,8 @@ c dbg
                            ! molpro comes with the opposite sign 
 
       write(lulog,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
+      if (lulog.ne.luout)
+     &    write(luout,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
 
 
       call file_close_keep(ffprop)

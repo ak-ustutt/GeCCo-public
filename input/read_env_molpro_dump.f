@@ -20,13 +20,16 @@
      &     orb_info
 
       type(filinf) ::
-     &     ffdump
+     &     ffdump, ffdim
       integer ::
-     &     ludump, iprint, ngas, ii, nirr
+     &     ludump, ludim, iprint, ngas, ii, nirr, nirr2
 
       integer, parameter ::
      &     mxsym = 8
       character(len=256) :: line
+
+      logical ::
+     &     l_exist
 
       ! the namelist to read
       integer, parameter ::
@@ -116,6 +119,24 @@ C      if (ntest.ge.100) write(lulog,*) 'last rec: ',enuc, i1, i2, i3, i4
       orb_info%nxbas(1:nirr)=0
 
       call file_close_keep(ffdump)
+
+      ! fix: look for file DIMENSIONS to set other basis set dimension
+      inquire(file='DIMENSIONS',exist=l_exist)
+      if (l_exist) then
+         call file_init(ffdim,'DIMENSIONS',ftyp_sq_frm,0)
+         call file_open(ffdim)
+         ludim = ffdim%unit
+         
+         read(ludim,*) nirr2
+         if (nirr2.ne.nirr) then
+           write(lulog,*) 'mismatch of dimensions; expect = ',nirr,
+     &           ' found = ',nirr2
+           call quit(0,i_am,'mismatch in file DIMENSIONS')
+         end if
+         read(ludim,*) orb_info%nbas(1:nirr)
+         orb_info%nbast = sum(orb_info%nbas(1:nirr))
+         call file_close_keep(ffdim)
+      end if
 
       return
       end

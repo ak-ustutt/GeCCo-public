@@ -38,7 +38,7 @@
       ! obtain cmo coefficients on file ffcmo
       call file_init(ffcmo,'CMO.da',ftyp_da_unf,lblk_da)
       call file_open(ffcmo)
-      
+
       select case(env_type(1:1))
       case('m','M')
         call import_cmo_molpro(ffcmo,orb_info)

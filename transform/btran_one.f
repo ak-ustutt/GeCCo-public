@@ -37,7 +37,7 @@
       integer ::
      &     ifree, nsym, ngas, nspin, nblk, ncmo, nmo, nao, nhlf,
      &     isym, igas, ispin, iblk, idxst, idxnd, idxms, norb, njoined,
-     &     hpvx_a, hpvx_c, iblkoff, ijoin
+     &     hpvx_a, hpvx_c, iblkoff, ijoin, idoff
 
       integer, pointer ::
      &     nbas(:), ntoobs(:), mostnd(:,:,:),
@@ -131,6 +131,8 @@
         close_ffmo = .false.
       end if
 
+      idoff = ffmo%length_of_record*(ffmo%current_record-1)
+
       ! init to zero
       xao(1:nao) = 0d0 
 
@@ -169,7 +171,7 @@
           !if (nspin.eq.2) ispin = 2
         
           ! load density, or reassign buffer pointer
-          idxst = me_dens%off_op_gmo(iblk)%gam_ms(1,idxms) + 1
+          idxst = me_dens%off_op_gmo(iblk)%gam_ms(1,idxms) + 1 + idoff
           idxnd = idxst-1 
           do isym = 1, nsym
             idxnd = idxnd + me_dens%len_op_gmo(iblk)%gam_ms(isym,idxms)
