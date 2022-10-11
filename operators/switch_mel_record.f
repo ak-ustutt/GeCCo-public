@@ -35,6 +35,12 @@
      &       'requested record out of bounds')
       end if
 
+c dbg
+c      print *,'file: ',trim(ffop%name)
+c     print *,'unit: ',ffop%unit
+c      print *,'type: ',ffop%type
+c      print *,'switching to rec. ',rec
+c dbg
       if (ffop%buffered)
      &     call quit(1,'switch_mel_record',
      &     'switching and buffering: did you take care of that?')

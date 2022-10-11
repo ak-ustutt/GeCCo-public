@@ -148,12 +148,14 @@ debug_MEL('ME_H_C0',info_only=True)
 # note: we should probably have a better criterion:
 new_target('Define_GAM0')
 if (spinadapt > 0) :
-    if (triples != '5' and triples != 'F'):
-        comment('Density matrix up to fourth order')
-        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
-    else:
-        comment('Density matrix up to fifth order')
-        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
+#    if (triples != '5' and triples != 'F'):
+#        comment('Density matrix up to fourth order')
+#        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+#    else:
+    comment('Density matrix up to fifth order')
+#        comment('Density matrix up to fifth order')
+#        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
+    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
 else:
     comment('Density matrix up to third order')
     dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,'
