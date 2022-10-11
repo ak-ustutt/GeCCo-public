@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine set_cc_gsrsp_targets(tgt_info,orb_info)
+      subroutine set_cc_gsrsp_targets(tgt_info,orb_info,env_type)
 *----------------------------------------------------------------------*
 *     set targets needed in CC ground state response calculations
 *----------------------------------------------------------------------*
@@ -20,6 +20,8 @@
      &     tgt_info
       type(orbinf), intent(in) ::
      &     orb_info
+      character(*), intent(in) ::
+     &     env_type
 
       integer ::
      &     min_rank, max_rank,
@@ -237,7 +239,7 @@
       call set_dependency(eval_props,eval_1dens,tgt_info)
       labels(1:10)(1:len_target_name) = ' '
       labels(1) = mel_1dens
-      call evalprop_parameters(-1,parameters,1,1,'DALTON')
+      call evalprop_parameters(-1,parameters,1,1,env_type)
       call set_rule(eval_props,ttype_opme,EVALPROP,
      &     labels,1,0,
      &     parameters,1,tgt_info)

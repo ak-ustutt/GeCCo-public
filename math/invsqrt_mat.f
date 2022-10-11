@@ -58,6 +58,8 @@
       ifree = mem_setmark('invsqrt_mat')
       ifree = mem_alloc_real(wrk, lwrk,'wrk')
       
+      ! sv_fix comes from a global variable (common block) ... 
+      ! very bad, I know ...
       if (sv_fix) then
         inquire(file='SINGVALS',exist=l_exist)
         call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)

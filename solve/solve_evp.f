@@ -525,12 +525,13 @@ c     &        str_info,orb_info)
 c      enddo
 c
 c dbgend
+      call atim_csw(cpu0_r,sys0_r,wall0_r)
       ! start optimization loop
       iter = 0
       task = 0
       old_eig = 0d0
       opt_loop: do while(task.lt.8)
-      call atim_csw(cpu0_t,sys0_t,wall0_t)
+        call atim_csw(cpu0_t,sys0_t,wall0_t)
         call leq_evp_control
      &       ('EVP',iter,
      &       task,conv,xresnrm,xeig,
@@ -550,7 +551,7 @@ c     &       ffopt,ff_trv,ff_mvp,ff_met,ffdia,ffdia,  ! #5 is dummy
           if (lulog.ne.luout) then
             if (lmol) then
                if (.not. no_print) then
-                  time_per_it = cpu0_t / (iter-1)
+                  time_per_it = (cpu0_t-cpu0_r) / (iter-1)
                   mol_format = '(i4,f18.8,f16.8,d12.2,f10.2,f11.2)'
                   mol_format2 = '(f22.8,f16.8,d12.2)'
 
