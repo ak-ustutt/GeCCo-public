@@ -5,6 +5,10 @@
 #include<unistd.h>
 #include<sys/time.h>
 
+/* these are global: */
+double clocks_per_second;
+long time_of_day_initial;
+
 void init_time_(void)
 {
   struct timeval tmv;
