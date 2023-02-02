@@ -131,6 +131,9 @@
            <argument length="1" name="H0"  type="8" value="Dyall">
              <!--which H0 to use for perturbation correction-->
            </argument>
+           <argument length="1" name="shift"  type="4" value="0.">
+             <!--shift (for H0=="Fock") -->
+           </argument>
            <argument length="1" name="pTexpression"  type="2" value="0">
              <!--expression to be used for (T) energy-->
            </argument>

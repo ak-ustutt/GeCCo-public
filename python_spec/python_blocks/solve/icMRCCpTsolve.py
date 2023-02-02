@@ -59,6 +59,16 @@ elif word.upper() == "FOCK":
 else:
     quit_error('H0 must be either "Dyall" or "Fock"')
 
+shift = 0.0
+word = keywords.get('method.MR.shift')
+if word is None:
+    shfit = 0.0
+else:
+    try:
+        shift = float(word)
+    except:
+        quit_error('Undigestible input for shift: '+word)
+
 
 new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
@@ -98,42 +108,49 @@ if _ninact_o > 1:
    Tblocks['PPP-HHH']['occ']='PPP,HHH'
    Tblocks['PPP-HHH']['res']=',;PPP,HHH'
    Tblocks['PPP-HHH']['nact']=0
+   Tblocks['PPP-HHH']['shiftfac']=0.
 
 if _ninact_o > 0:
    Tblocks['PPP-HHV']={}
    Tblocks['PPP-HHV']['occ']='PPP,HHV'
    Tblocks['PPP-HHV']['res']=',V;PPP,HH'
    Tblocks['PPP-HHV']['nact']=1
+   Tblocks['PPP-HHV']['shiftfac']=1.
 
 if _ninact_o > 1:
    Tblocks['PPV-HHH']={}
    Tblocks['PPV-HHH']['occ']='PPV,HHH'
    Tblocks['PPV-HHH']['res']=',;PPV,HHH'
    Tblocks['PPV-HHH']['nact']=1
+   Tblocks['PPV-HHH']['shiftfac']=1.
 
 if _ninact_o > 0:
    Tblocks['PPP-HVV']={}
    Tblocks['PPP-HVV']['occ']='PPP,HVV'
    Tblocks['PPP-HVV']['res']=',VV;PPP,H'
    Tblocks['PPP-HVV']['nact']=2
+   Tblocks['PPP-HVV']['shiftfac']=1.
 
 if _ninact_o > 1:
    Tblocks['PVV-HHH']={}
    Tblocks['PVV-HHH']['occ']='PVV,HHH'
    Tblocks['PVV-HHH']['res']=',;PVV,HHH'
    Tblocks['PVV-HHH']['nact']=2
+   Tblocks['PVV-HHH']['shiftfac']=1.
 
 if _ninact_o > 0:
    Tblocks['PPV-HHV']={}
    Tblocks['PPV-HHV']['occ']='PPV,HHV|PP,HH'
    Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
    Tblocks['PPV-HHV']['nact']=2
+   Tblocks['PPV-HHV']['shiftfac']=2.
 
 if _nact_e > 2:
    Tblocks['PPP-VVV']={}
    Tblocks['PPP-VVV']['occ']='PPP,VVV'
    Tblocks['PPP-VVV']['res']=',VVV;PPP,'
    Tblocks['PPP-VVV']['nact']=3
+   Tblocks['PPP-VVV']['shiftfac']=1.
    Tblocks['PPP-VVV']['A_extra']=',VVV;,;VVV,'
    Tblocks['PPP-VVV']['A_offdia']=''
 
@@ -142,6 +159,7 @@ if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
    Tblocks['VVV-HHH']['occ']='VVV,HHH'
    Tblocks['VVV-HHH']['res']=',;VVV,HHH'
    Tblocks['VVV-HHH']['nact']=3
+   Tblocks['VVV-HHH']['shiftfac']=1.
    Tblocks['VVV-HHH']['A_extra']=',;VVV,VVV;,'
    Tblocks['VVV-HHH']['A_offdia']=''
 
@@ -150,12 +168,14 @@ if _ninact_o > 0: # and _nact_e > 1:
    Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
    Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
    Tblocks['PPV-HVV']['nact']=3
+   Tblocks['PPV-HVV']['shiftfac']=2.
 
 if _ninact_o > 0:  
    Tblocks['PVV-HHV']={}
    Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
    Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
    Tblocks['PVV-HHV']['nact']=3
+   Tblocks['PVV-HHV']['shiftfac']=2.
 
 # Should be redundant for CAS(4,4) according to Hanauer 2012
 
@@ -165,6 +185,7 @@ if (triples>3):
        Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
        Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
        Tblocks['PVV-HVV']['nact']=4
+       Tblocks['PVV-HVV']['shiftfac']=2.
        Tblocks['PVV-HVV']['A_extra']=',VV;VV,VV;VV,|,V;V,V;V,'
        Tblocks['PVV-HVV']['A_offdia']='|,VV;VV,V;V,|,V;V,VV;VV,'
 
@@ -172,6 +193,7 @@ if (triples>3):
     Tblocks['PPV-VVV']['occ']='PPV,VVV|PP,VV'
     Tblocks['PPV-VVV']['res']=',VVV;PPV,|,VV;PP,'
     Tblocks['PPV-VVV']['nact']=4
+    Tblocks['PPV-VVV']['shiftfac']=2.
     Tblocks['PPV-VVV']['A_extra']=',VVV;V,V;VVV,|,VV;,;VV,'
     Tblocks['PPV-VVV']['A_offdia']='|,VVV;V,;VV,|,VV;,V;VVV,'
 
@@ -180,6 +202,7 @@ if (triples>3):
        Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
        Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
        Tblocks['VVV-HHV']['nact']=4
+       Tblocks['VVV-HHV']['shiftfac']=2.
        Tblocks['VVV-HHV']['A_extra']=',V;VVV,VVV;V,|,;VV,VV;,'
        Tblocks['VVV-HHV']['A_offdia']='|,V;VVV,VV;,|,;VV,VVV;V,'
 
@@ -189,6 +212,7 @@ if (triples>4):
        Tblocks['VVV-HVV']['occ']='VVV,HVV|VV,HV|V,H'
        Tblocks['VVV-HVV']['res']=',VV;VVV,H|,V;VV,H|,;V,H'
        Tblocks['VVV-HVV']['nact']=5
+       Tblocks['VVV-HVV']['shiftfac']=2.
        Tblocks['VVV-HVV']['A_extra']=',VV;VVV,VVV;VV,|,V;VV,VV;V,|,;V,V;,'
        Tblocks['VVV-HVV']['A_offdia']='|,VV;VVV,VV;V,|VVV;V,V;,|,V;VV,VVV;VV,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,'
 
@@ -196,6 +220,7 @@ if (triples>4):
     Tblocks['PVV-VVV']['occ']='PVV,VVV|PV,VV|P,V'
     Tblocks['PVV-VVV']['res']=',VVV;PVV,|,VV;PV,|,V;P,'
     Tblocks['PVV-VVV']['nact']=5
+    Tblocks['PVV-VVV']['shiftfac']=2.
     Tblocks['PVV-VVV']['A_extra']=',VVV;VV,VV;VVV,|,VV;V,V;VV,|,V;,;V,'
     Tblocks['PVV-VVV']['A_offdia']='|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,'
 
@@ -542,6 +567,13 @@ for _Tb in Tblocks:
    # solve linear equations
    PRINT({STRING:'Now solving (T) equations for block '+Tblocks[_Tb]['occ']})
    if Tblocks[_Tb]['nact']>0:
+      # apply shift if requested:
+      if shift>0.0 and pTH0=="Fock":
+          shift_block = shift*Tblocks[_Tb]['shiftfac']
+          # have to subtract as ( F - <F> ) is evaluated 
+          PRINT({STRING:'Applied a shift of {:4.2f} to this block'.format(shift_block)})
+          MODIFY_BLOCKS({LIST:'FOCK_EFF_EXP_LST',FAC:-shift_block,DESCR:',',MODE:'SHIFT'})
+
       SOLVE_LEQ({LIST_OPT:'ME-T3-'+_Tb,MODE:'TRF',
               OP_MVP:'PTtrf-'+_Tb,OP_RHS:'PTrhs-'+_Tb,
               OP_SVP:'T3-'+_Tb,N_ROOTS:1,
@@ -549,6 +581,11 @@ for _Tb in Tblocks:
               FORM:'FOPT_PTeq-'+_Tb,
               LIST_SPC:['ME-T3-'+_Tb,'ME-T3tr-'+_Tb,'ME_X_TRM_PT','ME_X_TRM_PT_DAG'],
               FORM_SPC:'FOPT_T3tr-'+_Tb})
+
+      # undo shift:
+      if shift>0.0 and pTH0=="Fock":
+          MODIFY_BLOCKS({LIST:'FOCK_EFF_EXP_LST',FAC:shift_block,DESCR:',',MODE:'SHIFT'})
+
       # DBG
       if Tblocks[_Tb]["nact"]>3 and run_checks:
           ANALYZE_MEL({LISTS:'ME-T3-'+_Tb,LISTS_CV:'ME-T3-'+_Tb})
