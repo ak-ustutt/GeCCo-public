@@ -85,7 +85,7 @@
 
       integer ::
      &     idx_res, idx_inp, idx, idxnd_src, idxnd_tgt,  nbuff, lbuff,
-     &     ipri, idxst_tgt, idxst_src,
+     &     ipri, idxst_tgt, idxst_src, iblk,
      &     ifac, nblkmax, ifree, nblk, idx_shape,
      &     imode, len_op, isec
       logical ::
@@ -187,6 +187,19 @@
 
 ! if one list is shorter, we will just end copying process there
       
+      ! but we should make sure that we do not copy wildly between two
+      ! lists which do not match e.g. in block sequence
+      do iblk = 1, min(me_inp%op%n_occ_cls,me_res%op%n_occ_cls)
+         if (me_inp%len_op_occ(iblk).ne.me_res%len_op_occ(iblk)) then
+           write(lulog,*) 'sorry, detected incompatible block structure'
+           call print_mel_info(lulog,me_inp)
+           call print_mel_info(lulog,me_res)
+           write(luout,*) 'see log file for info'
+           call quit(1,'scale_copy','incompatible block structure') 
+
+         end if
+      end do 
+
       ! is there a sign correction (due to formal contraction)?
       if (idx_shape.ge.0) then
         allocate(me_vec(1),me_shape(1))
