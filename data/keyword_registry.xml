@@ -134,6 +134,9 @@
            <argument length="1" name="shift"  type="4" value="0.">
              <!--shift (for H0=="Fock") -->
            </argument>
+           <argument length="1" name="IPEA"  type="4" value="0.">
+             <!--IPEA-like shift (for H0=="Fock") -->
+           </argument>
            <argument length="1" name="pTexpression"  type="2" value="0">
              <!--expression to be used for (T) energy-->
            </argument>

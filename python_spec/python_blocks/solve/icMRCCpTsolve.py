@@ -69,6 +69,16 @@ else:
     except:
         quit_error('Undigestible input for shift: '+word)
 
+IPEAshift = 0.0
+word = keywords.get('method.MR.IPEA')
+if word is None:
+    IPEAshfit = 0.0
+else:
+    try:
+        IPEAshift = float(word)
+    except:
+        quit_error('Undigestible input for IPEA: '+word)
+
 
 new_target('SOLVE_MRCC_PT')
 depend('SOLVE_MRCC')
@@ -93,17 +103,50 @@ if run_checks:
 
 # for "FOCK" we have to compute <F> for current density (note: the density defining F_EFF is still the CASCI density!)
 if (pTH0 == "Fock"):
+   if abs(IPEAshift) > 0: # although it never is sensibly chosen negative ...
+      PRINT({STRING:'IPEA shift of {:5.3f} will be applied'.format(IPEAshift)})
+      # define and make a 1-hole density:  (we unfortunatly need the zero-body block to make the SCALE_COPY work)
+      DEF_OP_FROM_OCC({LABEL:'ETA1',DESCR:',;,|,V;V,',JOIN:2})
+      DEF_ME_LIST({LIST:'ME_ETA1',OPERATOR:'ETA1',IRREP:1,'2MS':0,AB_SYM:+1})
+      SCALE_COPY({LIST_RES:'ME_ETA1',LIST_INP:'GAM0_LST',FAC:-1.0})
+      ADD_UNITY({LIST:'ME_ETA1',FAC:1.0,INIT:False})
+      # define and make the IP shifted FOCKIAN:
+      DEF_OP_FROM_OCC({LABEL:'FOCK_IP',DESCR:'V,V'})
+      DEF_ME_LIST({LIST:'ME_FOCK_IP',OPERATOR:'FOCK_IP',IRREP:1,'2MS':0,AB_SYM:+1})
+      DEF_OP_FROM_OCC({LABEL:'ETA1R',DESCR:',|V,V'})
+      ASSIGN_ME2OP({LIST:'ME_ETA1',OPERATOR:'ETA1R'})
+      ADD({LIST_SUM:'ME_FOCK_IP',LISTS:['FOCK_EFF_LST','ME_ETA1'],FAC:[1.0,-0.5*IPEAshift]})
+      # define and make the EA shifted FOCKIAN:
+      DEF_OP_FROM_OCC({LABEL:'FOCK_EA',DESCR:'V,V'})
+      DEF_ME_LIST({LIST:'ME_FOCK_EA',OPERATOR:'FOCK_EA',IRREP:1,'2MS':0,AB_SYM:+1})
+      DEF_OP_FROM_OCC({LABEL:'GAM1R',DESCR:',|V,V'})
+      ASSIGN_ME2OP({LIST:'GAM0_LST',OPERATOR:'GAM1R'})
+      ADD({LIST_SUM:'ME_FOCK_EA',LISTS:['FOCK_EFF_LST','GAM0_LST'],FAC:[1.0,0.5*IPEAshift]})
+      ASSIGN_ME2OP({LIST:'GAM0_LST',OPERATOR:'GAM0'})
+
+      # define a modified expression for <F>, based on FOCK_IP
+      REPLACE({LABEL_RES:'FORM_F_IP_EXP',LABEL_IN:'FORM_F_EFF_EXP',OP_LIST:['FOCK_EFF','FOCK_IP']})
+      form_f_eff_exp = 'FORM_F_IP_EXP'
+
+   else:
+      form_f_eff_exp = 'FORM_F_EFF_EXP'
+
+   PRINT_MEL({LIST:'FOCK_EFF_EXP_LST',COMMENT:'Original active energy ',FORMAT:'SCAL F12.8'})
+
    OPTIMIZE({
-        LABELS_IN:['FORM_F_EFF_EXP'],
+        LABELS_IN:[form_f_eff_exp],
         LABEL_OPT:'FOPT_F_EFF_EXP'})
    EVALUATE({
         FORM:'FOPT_F_EFF_EXP'})
 
+   PRINT_MEL({LIST:'FOCK_EFF_EXP_LST',COMMENT:'Updated active energy  ',FORMAT:'SCAL F12.8'})
 
+IPEAchecked = True
 # set the various occupation classes
 # might be done more elegantly, here we just enumerate everything:
 Tblocks={}
 if _ninact_o > 1:
+   IPEAchecked = False  # make sure that shifts do not change this block's contributions!
    Tblocks['PPP-HHH']={}
    Tblocks['PPP-HHH']['occ']='PPP,HHH'
    Tblocks['PPP-HHH']['res']=',;PPP,HHH'
@@ -111,6 +154,7 @@ if _ninact_o > 1:
    Tblocks['PPP-HHH']['shiftfac']=0.
 
 if _ninact_o > 0:
+   IPEAchecked = False
    Tblocks['PPP-HHV']={}
    Tblocks['PPP-HHV']['occ']='PPP,HHV'
    Tblocks['PPP-HHV']['res']=',V;PPP,HH'
@@ -118,6 +162,7 @@ if _ninact_o > 0:
    Tblocks['PPP-HHV']['shiftfac']=1.
 
 if _ninact_o > 1:
+   IPEAchecked = False
    Tblocks['PPV-HHH']={}
    Tblocks['PPV-HHH']['occ']='PPV,HHH'
    Tblocks['PPV-HHH']['res']=',;PPV,HHH'
@@ -125,6 +170,7 @@ if _ninact_o > 1:
    Tblocks['PPV-HHH']['shiftfac']=1.
 
 if _ninact_o > 0:
+   IPEAchecked = False
    Tblocks['PPP-HVV']={}
    Tblocks['PPP-HVV']['occ']='PPP,HVV'
    Tblocks['PPP-HVV']['res']=',VV;PPP,H'
@@ -132,6 +178,7 @@ if _ninact_o > 0:
    Tblocks['PPP-HVV']['shiftfac']=1.
 
 if _ninact_o > 1:
+   IPEAchecked = False
    Tblocks['PVV-HHH']={}
    Tblocks['PVV-HHH']['occ']='PVV,HHH'
    Tblocks['PVV-HHH']['res']=',;PVV,HHH'
@@ -139,6 +186,7 @@ if _ninact_o > 1:
    Tblocks['PVV-HHH']['shiftfac']=1.
 
 if _ninact_o > 0:
+   IPEAchecked = False
    Tblocks['PPV-HHV']={}
    Tblocks['PPV-HHV']['occ']='PPV,HHV|PP,HH'
    Tblocks['PPV-HHV']['res']=',V;PPV,HH|,;PP,HH'
@@ -155,6 +203,7 @@ if _nact_e > 2:
    Tblocks['PPP-VVV']['A_offdia']=''
 
 if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
+   IPEAchecked = False
    Tblocks['VVV-HHH']={}
    Tblocks['VVV-HHH']['occ']='VVV,HHH'
    Tblocks['VVV-HHH']['res']=',;VVV,HHH'
@@ -164,6 +213,7 @@ if ((2*_nact_o) - _nact_e) > 2 and _ninact_o > 1:
    Tblocks['VVV-HHH']['A_offdia']=''
 
 if _ninact_o > 0: # and _nact_e > 1:
+   IPEAchecked = False
    Tblocks['PPV-HVV']={}
    Tblocks['PPV-HVV']['occ']='PPV,HVV|PP,HV'
    Tblocks['PPV-HVV']['res']=',VV;PPV,H|,V;PP,H'
@@ -171,6 +221,7 @@ if _ninact_o > 0: # and _nact_e > 1:
    Tblocks['PPV-HVV']['shiftfac']=2.
 
 if _ninact_o > 0:  
+   IPEAchecked = False
    Tblocks['PVV-HHV']={}
    Tblocks['PVV-HHV']['occ']='PVV,HHV|PV,HH'
    Tblocks['PVV-HHV']['res']=',V;PVV,HH|,;PV,HH'
@@ -181,6 +232,7 @@ if _ninact_o > 0:
 
 if (triples>3):
     if _ninact_o > 0: #and _nact_e > 3:
+       IPEAchecked = False
        Tblocks['PVV-HVV']={}
        Tblocks['PVV-HVV']['occ']='PVV,HVV|PV,HV|P,H'
        Tblocks['PVV-HVV']['res']=',VV;PVV,H|,V;PV,H|,;P,H'
@@ -198,6 +250,7 @@ if (triples>3):
     Tblocks['PPV-VVV']['A_offdia']='|,VVV;V,;VV,|,VV;,V;VVV,'
 
     if _ninact_o > 0:
+       IPEAchecked = False
        Tblocks['VVV-HHV']={}
        Tblocks['VVV-HHV']['occ']='VVV,HHV|VV,HH'
        Tblocks['VVV-HHV']['res']=',V;VVV,HH|,;VV,HH'
@@ -208,6 +261,7 @@ if (triples>3):
 
 if (triples>4):
     if _ninact_o > 0:
+       IPEAchecked = False
        Tblocks['VVV-HVV']={}
        Tblocks['VVV-HVV']['occ']='VVV,HVV|VV,HV|V,H'
        Tblocks['VVV-HVV']['res']=',VV;VVV,H|,V;VV,H|,;V,H'
@@ -216,6 +270,7 @@ if (triples>4):
        Tblocks['VVV-HVV']['A_extra']=',VV;VVV,VVV;VV,|,V;VV,VV;V,|,;V,V;,'
        Tblocks['VVV-HVV']['A_offdia']='|,VV;VVV,VV;V,|VVV;V,V;,|,V;VV,VVV;VV,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,'
 
+    IPEAchecked = False
     Tblocks['PVV-VVV']={}
     Tblocks['PVV-VVV']['occ']='PVV,VVV|PV,VV|P,V'
     Tblocks['PVV-VVV']['res']=',VVV;PVV,|,VV;PV,|,V;P,'
@@ -223,6 +278,12 @@ if (triples>4):
     Tblocks['PVV-VVV']['shiftfac']=2.
     Tblocks['PVV-VVV']['A_extra']=',VVV;VV,VV;VVV,|,VV;V,V;VV,|,V;,;V,'
     Tblocks['PVV-VVV']['A_offdia']='|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,'
+
+
+if not IPEAchecked:
+    print('sorry, one or more blocks have not yet been tested for IPEA shifts, see source code')
+    print('either remove IPEA or do the programming')
+    quit_error('IPEA encountered untested case!')
 
 # for later: we need a dummy operator for virtual space only:
 DEF_OP_FROM_OCC({LABEL:'HVV_PT',DESCR:'V,V|VV,VV'})
@@ -336,6 +397,16 @@ for _Tb in Tblocks:
    LEQ_SPLIT({LABEL_RAW:'F_PTeq_'+_Tb,
               LABEL_RHS:'F_PTrhs_'+_Tb,LABEL_TRF:'F_PTtrf_'+_Tb,
               OP_RHS:'PTrhs-'+_Tb,OP_TRF:'PTtrf-'+_Tb,OP_X:'T3-'+_Tb})
+   # IP-EA shift: Modify PTtrf to identify terms with FOCK_EA and FOCK_IP
+   if abs(IPEAshift) > 0:
+       PRINT({STRING:'IPEA shift applied for block '+_Tb})
+       # all operators directly connected to T3 are replaced (if they match FOCK_EA, i.e. if they are V,V)
+       SELECT_SPECIAL({LABEL_RES:'F_PTtrf_'+_Tb,LABEL_IN:'F_PTtrf_'+_Tb,
+             TYPE:'connected',MODE:'replace',OPERATORS:['FOCK_EFF','T3-'+_Tb,'FOCK_EA','T3-'+_Tb]})
+       # all the other Fockians (in V,V space) are replaced by FOCK_IP 
+       REPLACE({LABEL_RES:'F_PTtrf_'+_Tb,LABEL_IN:'F_PTtrf_'+_Tb,OP_LIST:['FOCK_EFF','FOCK_IP']})
+       debug_FORM('F_PTtrf_'+_Tb)#,only_this=True)
+
    # 4th order
    REPLACE({LABEL_RES:'F_PT_E4_'+_Tb,LABEL_IN:'FORM_MRCC_PT_E4',
             OP_LIST:['T3g','T3-'+_Tb,'T3g^+','T3-'+_Tb+'^+']})
