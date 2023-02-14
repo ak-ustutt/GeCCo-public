@@ -92,7 +92,7 @@ cas22=False
 orbinfo = Orb_Info()
 nactel = orbinfo.get('nactel')
 nactorb = orbinfo.get('nactorb')
-nocc_el = orbinfo.get('nactt_hpv',1)
+nocc_el = 2*orbinfo.get('nactt_hpv',1)
 if (nactel==1 and nactorb==1):
     doublet=True
 elif (nactel==2 and nactorb==2):
@@ -135,7 +135,7 @@ if (hybrid!="none"):
            singles = 8
        print("All singles operators are in the internal space")
 
-    known_methods=["CEPT2","CCEPA","TCPT2","CEPA0","PT2"]
+    known_methods=["CEPT2","CCEPA","TCPT2","CEPA0","PT2","ACPF"]
     if hybrid not in known_methods :
         raise Exception(i_am+": unknown method:"+str(hybrid))
     print("Using the special "+str(hybrid)+" method.")
@@ -228,7 +228,17 @@ if (maxexc > 2):
 if (maxexc > 3):
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'COUNT'})
 
-if hybrid in ['CEPT2','CCEPA','CEPA0']:
+if hybrid in ['ACPF']:
+   DEF_ME_LIST({LIST:'ME_SHIFT_FACT',
+                OPERATOR:'SHIFT_FACT',
+                IRREP:1,
+                '2MS':0,
+                AB_SYM:+1})
+   nel=float(nocc_el+nactel)
+   shift_fact=1.-((nel-2.)/nel)
+   MODIFY_BLOCKS({LIST:'ME_SHIFT_FACT',FAC:shift_fact,DESCR:',',MODE:'SET'})
+   PRINT_MEL({LIST:'ME_SHIFT_FACT',COMMENT:'ACPF shift factor:',FORMAT:'SCAL F24.14'})
+if hybrid in ['CEPT2','CCEPA','CEPA0','ACPF']:
        # Construct energy operator for use in lagrangian
    DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
@@ -643,7 +653,7 @@ if (HGamma):
     _itf_code_list.append('INTHE1')
     _itf_code_list.append('INTHE2')
 
-if hybrid in ['CEPT2','CCEPA','CEPA0']:
+if hybrid in ['CEPT2','CCEPA','CEPA0','ACPF']:
     _opt_label_list.append('FORM_ECEPA')
     
 _opt_label_list.append('F_T1SUM')

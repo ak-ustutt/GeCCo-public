@@ -987,6 +987,23 @@ def set_hybrids(method,separation,hamiltonian,singles,no_occ,noVVV):
     
         LAG_A2.append(_L2_refexp("(H-ECEPA)*T1"))
         LAG_A2.append(_L2_refexp("(H-ECEPA)*T2"))
+    elif method == 'ACPF':
+        #here goes ACPF
+        DEF_SCALAR({LABEL:'SHIFT_FACT'})
+
+        DEF_SCALAR({LABEL:'ECEPA'})
+    
+        E_CEPA=stf.Formula("FORM_ECEPA:ECEPA=<C0^+*H*C0>")
+        E_CEPA.append(_refexp("SHIFT_FACT*(H*T1)+SHIFT_FACT*(H*T2g)"))
+        E_CEPA.set_rule()
+    
+        LAG_E.append(_refexp("(H*T1)+(H*T2)"))
+    
+        LAG_A1.append(_L1_refexp("(H-ECEPA)*T1"))
+        LAG_A1.append(_L1_refexp("(H-ECEPA)*T2"))
+    
+        LAG_A2.append(_L2_refexp("(H-ECEPA)*T1"))
+        LAG_A2.append(_L2_refexp("(H-ECEPA)*T2"))
     elif method == 'CCEPA':
         #here goes the ccepa
         DEF_SCALAR({LABEL:'ECEPA'})
