@@ -41,7 +41,9 @@
                 <argument length="1" name="H0d"  type="1" value="false"/>
                 <argument length="1" name="maxexc_guess"  type="2" value="0">
                 <!--use T op with lower rank as initial guess-->
-                   </argument>
+	        </argument>
+		<keyword name="NEW">
+		</keyword>
             </keyword>
        <keyword name="CCPT" >
            <argument length="1" name="maxexc"  type="2" value="3"/>
@@ -122,6 +124,21 @@
            </argument>
            <argument length="1" name="ciroot"  type="2" value="1">
             <!--root to be taken for wf-->
+           </argument>
+           <argument length="1" name="pertCorr"  type="1" value="false">
+             <!--(new) switch for perturbation correction-->
+           </argument>
+           <argument length="1" name="H0"  type="8" value="Dyall">
+             <!--which H0 to use for perturbation correction-->
+           </argument>
+           <argument length="1" name="shift"  type="4" value="0.">
+             <!--shift (for H0=="Fock") -->
+           </argument>
+           <argument length="1" name="IPEA"  type="4" value="0.">
+             <!--IPEA-like shift (for H0=="Fock") -->
+           </argument>
+           <argument length="1" name="pTexpression"  type="2" value="0">
+             <!--expression to be used for (T) energy-->
            </argument>
            <argument length="1" name="multistate"  type="1" value="false">
              <!--multi state version-->
@@ -454,12 +471,18 @@
            </keyword>
            <keyword name="analyze" >
            </keyword>
+           <keyword name="moments">
+           </keyword>
+           <keyword name="z-vector">
+           </keyword>
            <argument length="8" name="sym"  type="2" value="1,0,0,0,0,0,0,0"/>
            <argument length="1" name="msc"  type="2" value="0"/>
            <argument length="1" name="mult"  type="2" value="1"/>
        </keyword>
        <keyword name="ionization" >
            <argument length="8" name="sym"  type="2" value="1,0,0,0,0,0,0,0"/>
+	   <keyword name="Dyson" >
+           </keyword>
        </keyword>
        <keyword name="routes" >
            <argument length="1" name="schedule"  type="2" value="1"/>

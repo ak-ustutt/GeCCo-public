@@ -39,6 +39,7 @@
       include 'opdim.h'
       include 'stdunit.h'
       include 'ioparam.h'
+      include 'molpro_out.h'
       include 'mdef_operator_info.h'
       include 'def_graph.h'
       include 'def_strinf.h'
@@ -111,6 +112,12 @@
      &     form_rhs_mvp
       type(formula_item) ::
      &     fl_rhs_mvp, fl_spc(nspcfrm)
+
+      real(8)::
+     &     time_per_it,
+     &     cpu0_r,sys0_r,wall0_r, ! beginning of a rule
+     &     cpu0_t,sys0_t,wall0_t, ! beginning of a target
+     &     cpu,sys,wall ! variables for timing information
 
       integer, pointer ::
      &     irecmvp(:), irectrv(:), irecmet(:), idxselect(:)
@@ -315,7 +322,7 @@ c dbg
 
       ! write information to opti_info about signs which occur
       ! in trv*mvp or trv*met or trv*rhs multiplication
-      ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 op's
+      ! relevant when trv is njoined=1 op. but mvp (met) are njoined=2 ops
       call set_opti_info_signs(opti_info,2,nopt,
      &                         me_trv,me_mvp,me_met,me_rhs,use_s)
 
@@ -399,6 +406,8 @@ c dbg
         end do
       end if
 
+      call atim_csw(cpu0_r,sys0_r,wall0_r)
+
       ! start optimization loop
       iter = 0
       task = 0
@@ -418,21 +427,36 @@ c     &       ffopt,ff_trv,ff_mvp,ff_mvp,ff_rhs,ffdia, ! dto.
      &       opti_info,opti_stat,
      &       orb_info,op_info,str_info,strmap_info)
 
+
+        call atim_csw(cpu0_t,sys0_t,wall0_t)
+        time_per_it = (cpu0_t-cpu0_r) / (iter)
         do iopt = 1, nopt
           xresmax = fndmnx(xresnrm(1:nroots,iopt),nroots,2)
           if (conv) then
             write(lulog,'("L>> conv.",21x,x,g10.4)') xresmax
-            if (lulog.ne.luout)
+            if (lulog.ne.luout.and..not.lmol)
      &         write(luout,'("    conv.",21x,x,g10.4)') xresmax
           else if (iter.eq.1) then
             write(lulog,'("L>> |rhs|",21x,x,g10.4)') xresmax
-            if (lulog.ne.luout)   
+            if (lulog.ne.luout.and..not.lmol)   
      &        write(luout,'("    |rhs|",21x,x,g10.4)') xresmax
             xrhsnorm = xresmax
           else
             write(lulog,'("L>>",i3,24x,x,g10.4)')iter-1,xresmax
-            if (lulog.ne.luout) 
+            if (lulog.ne.luout.and..not.lmol) 
      &         write(luout,'("   ",i3,24x,x,g10.4)')iter-1,xresmax
+          end if
+          if (lulog.ne.luout.and.lmol) then
+             if (conv) then
+                write(luout,'("   conv.",21x,x,g10.4,x,f10.2,x,f10.2)') 
+     &               xresmax, cpu0_t, time_per_it
+             else if (iter.eq.1) then
+                write(luout,'("   |rhs|",21x,x,g10.4,x,f10.2,x,f10.2)') 
+     &               xresmax, cpu0_t, time_per_it
+             else
+                write(luout,'("  ",i3,24x,x,g10.4,x,f10.2,x,f10.2)') 
+     &               iter-1, xresmax, cpu0_t, time_per_it
+             end if
           end if
         end do
 

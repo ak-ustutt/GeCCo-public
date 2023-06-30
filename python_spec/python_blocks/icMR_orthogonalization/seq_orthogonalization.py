@@ -11,7 +11,36 @@ minexc= keywords.get('method.MR.minexc')
 minexc = int(minexc) if minexc is not None else 1
 
 maxexc= keywords.get('method.MR.maxexc')
-maxexc = int(maxexc) if maxexc is not None else 1
+maxexc = int(maxexc) if maxexc is not None else 2
+# Perturbative correction requested?
+word = keywords.get('method.MR.pertCorr')
+if word is None:
+    pertCorr =  False
+else:
+    if word == "F":
+        pertCorr = False
+    elif word == "T":
+        pertCorr = True
+    else:
+        quit_error('pertCorr must be T or F, found: '+word)
+
+if pertCorr or maxexc>2:
+    word = keywords.get('method.MR.triples')
+    if word is None:
+      triples=3
+    elif word == "B" or word == "3":
+      triples=3
+    elif word == "E" or word == "4":
+      triples=4
+    elif word == "F" or word == "5":
+      triples=5
+    else:
+      quit_error('triples must be one of B,E,F,3,4,5; found: '+word)
+
+orb = Orb_Info()
+ninact_o = orb.get('nactt_hpv',1)
+nact_o = orb.get('nactt_hpv',3)
+nact_e = orb.get('nactel')
 
 
 if (minexc==1):
@@ -27,7 +56,113 @@ else:
   _X_TRM_shape='VV,VV;V,V|V,V;,|VV,VV;,|V,V;VV,VV|,;V,V|V,V;V,V|,;VV,VV|,;,'
   useT1=False
 
+# extend for triples etc.
+if (maxexc>2 and not pertCorr):
+    if (triples==3):
+        _Tv_shape+='|PPP,VVV|VVV,HHH'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH'
+        _GAM_S_shape+='|,;VVV,VVV;,|,VVV;,;VVV,'
+        _X_TRM_shape+='|VVV,VVV;,|,;VVV,VVV'
+    elif (triples==4):
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {4}')
+        _Tv_shape+='|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shape=',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|' \
+                     ',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,'
+        _X_TRM_shape='VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|'    \
+                     'VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|' \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV'
+    else:
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {5}')
+        _Tv_shape+='|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV|PVV,VVV|VVV,HVV'
+        _Ov_shape+='|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH|,VVV;PVV,|,VV;VVV,H'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shape=',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,|' \
+                     ',VV;VVV,VVV;VV,|,VV;VVV,VV;V,|,VV;VVV,V;,|,V;VV,VVV;VV,|,V;VV,VV;V,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,|,;V,V;,|' \
+                     ',VVV;VV,VV;VVV,|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,V;VV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,|,V;,;V,' 
+        _X_TRM_shape='VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV|' \
+                     'VVV,VVV;VV,VV|VVV,VV;V,VV|VVV,V;,VV|VV,VVV;VV,V|VV,VV;V,V|VV,V;,V|V,VVV;VV,|V,VV;V,|V,V;,|'\
+                     'VV,VV;VVV,VVV|VV,V;VV,VVV|VV,;V,VVV|V,VV;VVV,VV|V,V;VV,VV|V,;V,VV|,VV;VVV,V|,V;VV,V|,;V,V' 
 
+elif (maxexc==2 and pertCorr):
+    # for perturbative corrections: define a second set of operators
+    # (required, as we do not want to compute the extended metric during the MRCCSD iterations
+    if (triples==3):
+        _Tv_shapePT = _Tv_shape+'|PPP,VVV|VVV,HHH'
+        _Ov_shapePT = _Ov_shape+'|,VVV;PPP,|,;VVV,HHH'
+        _GAM_S_shapePT= _GAM_S_shape+'|,;VVV,VVV;,|,VVV;,;VVV,'
+        _X_TRM_shapePT= _X_TRM_shape+'|VVV,VVV;,|,;VVV,VVV'
+    elif (triples==4):
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {4}')
+        _Tv_shapePT = _Tv_shape+'|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV'
+        _Ov_shapePT = _Ov_shape+'|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shapePT=',V;VV,VV;V,|,V;VV,V;,|,;V,VV;V,|,;V,V;,|' \
+                     ',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;V,V;VV,|,VV;V,;V,|,V;,V;VV,|,V;,;V,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,'
+        _X_TRM_shapePT='VV,VV;V,V|VV,V;,V|V,VV;V,|V,V;,|'    \
+                     'VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'V,V;VV,VV|V,;V,VV|,V;VV,V|,;V,V|' \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV'
+    else:
+        if (minexc>1):
+            quit_error('minexc /= 1 not supported for triples {5}')
+        _Tv_shapePT = _Tv_shape+'|PPP,VVV|VVV,HHH|PPV,VVV|PVV,HVV|VVV,HHV|PVV,VVV|VVV,HVV'
+        _Ov_shapePT = _Ov_shape+'|,VVV;PPP,|,;VVV,HHH|,VVV;PPV,|,VV;PVV,H|,V;VVV,HH|,VVV;PVV,|,VV;VVV,H'
+        # must have this special sequence (as expected in inversion routine):
+        _GAM_S_shapePT=',V;VVV,VVV;V,|,V;VVV,VV;,|,;VV,VVV;V,|,;VV,VV;,|' \
+                     ',;VVV,VVV;,|' \
+                     ',VV;VV,VV;VV,|,VV;VV,V;V,|,VV;VV,;,|,V;V,VV;VV,|,V;V,V;V,|,V;V,;,|,;,VV;VV,|,;,V;V,|,;,;,|' \
+                     ',;VV,VV;,|' \
+                     ',VVV;V,V;VVV,|,VVV;V,;VV,|,VV;,V;VVV,|,VV;,;VV,|' \
+                     ',VVV;,;VVV,|' \
+                     ',VV;VVV,VVV;VV,|,VV;VVV,VV;V,|,VV;VVV,V;,|,V;VV,VVV;VV,|,V;VV,VV;V,|,V;VV,V;,|,;V,VVV;VV,|,;V,VV;V,|,;V,V;,|' \
+                     ',VVV;VV,VV;VVV,|,VVV;VV,V;VV,|,VVV;VV,;V,|,VV;V,VV;VVV,|,VV;V,V;VV,|,VV;V,;V,|,V;,VV;VVV,|,V;,V;VV,|,V;,;V,' 
+        _X_TRM_shapePT='VVV,VVV;V,V|VVV,VV;,V|VV,VVV;V,|VV,VV;,|' \
+                     'VVV,VVV;,|'  \
+                     'VV,VV;VV,VV|VV,V;V,VV|VV,;,VV|V,VV;VV,V|V,V;V,V|V,;,V|,VV;VV,|,V;V,|,;,|' \
+                     'VV,VV;,|' \
+                     'V,V;VVV,VVV|V,;VV,VVV|,V;VVV,VV|,;VV,VV|' \
+                     ',;VVV,VVV|' \
+                     'VVV,VVV;VV,VV|VVV,VV;V,VV|VVV,V;,VV|VV,VVV;VV,V|VV,VV;V,V|VV,V;,V|V,VVV;VV,|V,VV;V,|V,V;,|'\
+                     'VV,VV;VVV,VVV|VV,V;VV,VVV|VV,;V,VVV|V,VV;VVV,VV|V,V;VV,VV|V,;V,VV|,VV;VVV,V|,V;VV,V|,;V,V' 
+    
+elif (maxexc>2 and pertCorr):
+    quit_error('Perturbative correction beyond triples not implemented (use maxexc=2 for (T) calculations)!')
   
 _s2 = orbitals.get('imult')
 
@@ -56,9 +191,19 @@ depend('GAM0_CALC')
 DEF_SCALAR({
         LABEL:'SSCAL'})
 
-DEF_OP_FROM_OCC({
-        LABEL:'1v_WE',
-        DESCR:'V,V|VV,VV'})
+if (maxexc>2 or pertCorr):
+    DEF_OP_FROM_OCC({
+            LABEL:'1v_WE',
+            DESCR:'V,V|VV,VV|VVV,VVV'})
+else:
+    DEF_OP_FROM_OCC({
+            LABEL:'1v_WE',
+            DESCR:'V,V|VV,VV'})
+
+# savety trap
+if (maxexc>3 and nact_o>2):
+    quit_error('Quadruples for more than two active orbitals? Reconsider 1v_WE definition!')
+
 SET_HERMITIAN({
         LABEL:'1v_WE',
         CA_SYMMETRY:+1})
@@ -90,7 +235,7 @@ DEF_OP_FROM_OCC({
         JOIN:3,
         DESCR:_GAM_S_shape})
 
-if spinadapt >= 2 : # and gno >= 0
+if spinadapt >= 2 : # and gno >=0 
     S2_val=0
 else:
     S2_val=-1  # the default
@@ -169,7 +314,7 @@ DERIVATIVE({
         OP_RES:'GAM_S',
         OP_DERIV:'Tv'})
 
-debug_FORM('FORM_GAM_S')
+debug_FORM('FORM_GAM_S')#,only_this=True)
 
 
 
@@ -301,7 +446,7 @@ SELECT_LINE({
         IGAST:3,
         MODE:'no_ext'})
 
-debug_FORM('FORM_T2_orth')
+debug_FORM('FORM_T2_orth')#,only_this=True)
 
 OPTIMIZE({
         LABEL_OPT:'FOPT_T2_orth',
@@ -382,5 +527,209 @@ if (useT1):
 OPTIMIZE({
         LABEL_OPT:'FOPT_GES',
         LABELS_IN:['FORM_T2_orth']})
+
+
+
+
+if (maxexc==2 and pertCorr):
+    ###################################################################################
+    ##### do some of the above again for extra PT contributions                  ######
+    ###################################################################################
+
+    new_target('MakeOrthBasisPT')
+    #depend('DEF_T')
+    #depend('DEF_O')
+    #depend('DEF_LAM')
+
+    depend('MakeOrthBasis')
+    depend('SOLVE_MRCC')
+
+    # do we need to enforce recalculation?
+    #depend('GAM0_CALC')
+
+    PRINT({STRING:'Recomputing metric for PT correction'})
+
+    DEF_OP_FROM_OCC({
+            LABEL:'TvPT',
+            DESCR:_Tv_shapePT})
+    DEF_OP_FROM_OCC({
+            LABEL:'OvPT',
+            JOIN:2,
+            DESCR:_Ov_shapePT})
+
+
+    DEF_OP_FROM_OCC({
+            LABEL:'GAM_S_PT',
+            JOIN:3,
+            DESCR:_GAM_S_shapePT})
+
+    if spinadapt >= 2 : # and gno >=0 
+        S2_val=0
+    else:
+        S2_val=-1  # the default
+
+    DEF_ME_LIST({
+            LIST:'ME_GAM_S_PT',
+            OPERATOR:'GAM_S_PT',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:_msc,
+            S2:S2_val})
+
+    CLONE_OPERATOR({
+            LABEL:'ISQ_GAM_PT',
+            TEMPLATE:'GAM_S_PT'})
+
+    DEF_ME_LIST({
+            LIST:'ME_GAM_S_ISQ_PT',
+            OPERATOR:'ISQ_GAM_PT',
+            IRREP:1,
+            '2MS':0,
+            'S2':0,
+            AB_SYM:0,
+            CA_SYM:0})
+
+
+
+
+    # Formula for overlap matrix
+    EXPAND_OP_PRODUCT({
+            LABEL:'FORM_SMAT_PT',
+            NEW:True,
+            OP_RES:'SSCAL',
+            OPERATORS:['C0^+','TvPT^+','TvPT','C0'],
+            IDX_SV:[1,2,3,4]})
+    FACTOR_OUT({
+            LABEL_RES:'FORM_SMAT_PT',
+            LABEL_IN:'FORM_SMAT_PT',
+            INTERM:'FORM_GAM0'})
+
+    debug_FORM('FORM_SMAT_PT')
+
+    INSERT({
+            LABEL_RES:'FORM_SMAT_PT',
+            LABEL_IN:'FORM_SMAT_PT',
+            OP_RES:'SSCAL',
+            OP_INS:'1v_WE',
+            OP_INCL:['TvPT^+','TvPT']})
+
+    # Now the double derivative, eliminating T^+ T
+    comment('Derivative 1')
+    DERIVATIVE({
+            LABEL_RES:'FORM_TGAM0_PT',
+            LABEL_IN:'FORM_SMAT_PT',
+            OP_RES:'OvPT',
+            OP_DERIV:'TvPT^+'})
+
+    comment('Derivative 2')
+
+    DERIVATIVE({
+            LABEL_RES:'FORM_GAM_S_PT',
+            LABEL_IN:'FORM_TGAM0_PT',
+            OP_RES:'GAM_S_PT',
+            OP_DERIV:'TvPT'})
+
+    debug_FORM('FORM_GAM_S_PT')#,only_this=True)
+
+
+
+
+
+
+
+    # Evaluate the overlap densities
+    comment('Evaluate effective densities for overlap ...')
+    OPTIMIZE({
+            LABEL_OPT:'FOPT_GAM_S_PT',
+            LABELS_IN:['FORM_GAM_S_PT',"FORM_GAM0"]})
+    
+    EVALUATE({
+            FORM:'FOPT_GAM_S_PT'})
+    
+    debug_MEL('ME_GAM_S_PT')#,only_this=True)
+ 
+
+
+    # Singular value decomposition
+    # does this overwrite ME_GAM_S ? yes it does! ME_GAM_S is now the projector
+    INVERT({
+            LIST_INV:'ME_GAM_S_PT',
+            LIST:'ME_GAM_S_ISQ_PT',
+            MODE:'invsqrt'}) 
+
+    debug_MEL('ME_GAM_S_ISQ_PT')
+
+
+
+
+
+    # Reordering of S^-0.5' to Transformation matrix X (X_Tr(ansformation)M(atrix))
+    DEF_OP_FROM_OCC({
+            LABEL:'X_TRM_PT',
+            JOIN:2,
+            DESCR:_X_TRM_shapePT})
+
+    CLONE_OPERATOR({
+            LABEL:'X_TRM_PT_DAG',
+            TEMPLATE:'X_TRM_PT'})
+    DEF_ME_LIST({
+            LIST:'ME_X_TRM_PT',
+            OPERATOR:'X_TRM_PT',
+            IRREP:1,
+            '2MS':0,
+            S2:0,
+            AB_SYM:0,
+            CA_SYM:0})
+
+
+    DEF_ME_LIST({LIST:'ME_X_TRM_PT_DAG',
+            OPERATOR:'X_TRM_PT_DAG',
+            IRREP:1,
+            '2MS':0,
+            AB_SYM:0})
+    
+
+    REORDER_MEL({
+            LIST_RES:'ME_X_TRM_PT',
+            LIST_IN:'ME_GAM_S_ISQ_PT',
+            FROMTO: 13})
+
+
+
+
+    #IMPORTANT: transposes on the input list. 
+    REORDER_MEL({
+            LIST_RES:'ME_X_TRM_PT_DAG',
+            LIST_IN:'ME_GAM_S_ISQ_PT',
+            FROMTO: 13,
+            ADJOINT:True})
+
+
+    debug_MEL('ME_X_TRM_PT')
+
+
+
+    CLONE_OPERATOR({
+            LABEL:'P_PROJ_PT',
+            TEMPLATE:'X_TRM_PT'})
+
+    DEF_ME_LIST({
+            LIST:'ME_P_PROJ_PT',
+            OPERATOR:'P_PROJ_PT',
+            IRREP:1,
+            '2MS':0,
+            S2:0,
+            AB_SYM:0,
+            CA_SYM:0})
+    REORDER_MEL({
+            LIST_RES:'ME_P_PROJ_PT',
+            LIST_IN:'ME_GAM_S_PT',
+            FROMTO:13
+    })
+
+
+    # Transformation Formula for Excitation operators 
+    # will be created later by the PT module
+
 
 

@@ -212,7 +212,8 @@ c        fac_ccaa = -1d0
 
       ! open ME-list file
       close_again = .false.
-      if (fflist%unit.le.0) then
+      if (fflist%unit.le.0.and.
+     &       .not.fflist%buffered) then
         close_again = .true.
         call file_open(fflist)
       end if

@@ -34,7 +34,7 @@
       logical ::
      &     openit
       integer ::
-     &     nblk
+     &     nblk, idisc_off
       real(8) ::
      &     value
       type(filinf) ::
@@ -47,14 +47,16 @@
      &     xnormop
 
       ! open list (if necessary)
-      openit = mel%fhand%unit.lt.0
+      openit = mel%fhand%unit.lt.0.and..not.mel%fhand%buffered
       if (openit) call file_open(mel%fhand)
 
       select case(mode(1:4))
 
       case('NORM','SCAL')
         if (mode(1:4).eq.'SCAL') then
-          call get_vec(mel%fhand,value,1,1)
+          idisc_off = mel%fhand%length_of_record*
+     &               (mel%fhand%current_record-1)
+          call get_vec(mel%fhand,value,idisc_off+1,idisc_off+1)
         else
           value = xnormop(mel)
         end if

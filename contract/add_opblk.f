@@ -285,11 +285,16 @@ c     &              +buffer_out(1:lenbat)
      &                                    idoffout+ioffout+idxnd)
           end if
           idxst = idxnd+1
-          if (type.eq.1)
+          if (type.eq.1.and..not.bufout)
      &      xnorm2 = xnorm2 + ddot(lenbat,buffer_out,1,buffer_out,1)
+          if (type.eq.1.and.bufout)
+     &      xnorm2 = xnorm2 + ddot(lenbat,ffout%buffer(ioffout+idxst),1,
+     &                                    ffout%buffer(ioffout+idxst),1)
         end do
-        if (type.eq.2)
+        if (type.eq.2.and..not.bufout)
      &      xnorm2 = buffer_out(1)
+        if (type.eq.2.and.bufout)
+     &      xnorm2 = ffout%buffer(ioffout+1)
       else
         if (reset) ffout%buffer(ioffout+1:ioffout+len_op) = 0d0
         call daxpy(len_op,fac,ffin%buffer(ioffin+1),1,

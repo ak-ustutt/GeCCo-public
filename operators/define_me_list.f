@@ -128,7 +128,7 @@ c dbg
       ! initialize file
       ! set incore for scalar operators
       incore = 0
-      !if (mel%len_op.eq.1) incore = 1 # requires debugging
+      if (mel%len_op.eq.1.and.rec_lo==1.and.rec_hi==1) incore = 1 !# requires debugging
       call init_mel_file(mel,rec,rec_lo,rec_hi,incore)
 
       ! update op_list array in order to set up the lookup-table

@@ -34,6 +34,11 @@
       luda = ffda%unit
       lblk = ffda%reclen
 
+      if (ffda%buffered.and.len==1) then
+        ffda%buffer(idxvec:idxvec) = vec(1:1)
+        return
+      end if
+
       if (luda.lt.0)
      &     call quit(1,'vec_to_da',
      &     'file is not open: '//trim(ffda%name))

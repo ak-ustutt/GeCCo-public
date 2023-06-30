@@ -22,6 +22,9 @@ spinadapt=keywords.get('calculate.routes.spinadapt')
 spinadapt = int(spinadapt) if spinadapt is not None else 0
 
 
+triples = keywords.get('method.MR.triples')
+triples = triples if triples is not None else 0
+
 
 ims = int(orbitals.get('ims'))       
 imult =int(orbitals.get('imult'))
@@ -50,7 +53,7 @@ wf_sym=orbitals.get('lsym')
 #------------------------------------------------------------------
 
 
-new_target('Make_E0')
+new_target('Define_E0')
 heading('Operators for Reference State')
 
 comment('Reference energy')
@@ -65,7 +68,7 @@ DEF_ME_LIST({
         AB_SYM:0
         })
 
-new_target('Make_C0')
+new_target('Define_C0')
 comment('Reference coefficients')
 DEF_OP_FROM_OCC({
         LABEL:'C0',
@@ -73,6 +76,20 @@ DEF_OP_FROM_OCC({
 DEF_ME_LIST({
         LIST:'ME_C0',
         OPERATOR:'C0',
+        IRREP:wf_sym,
+        '2MS':ims,
+        # S2:s_ref,  # currently not supported, done by projection in SOLVE_EVP
+        AB_SYM:msc,
+        MIN_REC:1,
+        MAX_REC:maxroot
+        })
+# C00 keeps the unrelaxed reference
+DEF_OP_FROM_OCC({
+        LABEL:'C00',
+        DESCR:c0_shape})
+DEF_ME_LIST({
+        LIST:'ME_C00',
+        OPERATOR:'C00',
         IRREP:wf_sym,
         '2MS':ims,
         # S2:s_ref,  # currently not supported, done by projection in SOLVE_EVP
@@ -111,7 +128,7 @@ debug_MEL('ME_D0')
 
 
 
-new_target('Make_H_C0')
+new_target('Define_H_C0')
 comment('CASCI omg')
 CLONE_OPERATOR({
         LABEL:'H_C0',
@@ -128,10 +145,17 @@ DEF_ME_LIST({
 debug_MEL('ME_H_C0',info_only=True)
 
 
-new_target('Make_GAM0')
+# note: we should probably have a better criterion:
+new_target('Define_GAM0')
 if (spinadapt > 0) :
-    comment('Density matrix up to fourth order')
-    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+#    if (triples != '5' and triples != 'F'):
+#        comment('Density matrix up to fourth order')
+#        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,'
+#    else:
+    comment('Density matrix up to fifth order')
+#        comment('Density matrix up to fifth order')
+#        dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
+    dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,|,VVVV;VVVV,|,VVVVV;VVVVV,'
 else:
     comment('Density matrix up to third order')
     dstr=',;,|,V;V,|,VV;VV,|,VVV;VVV,'
@@ -145,22 +169,34 @@ DEF_ME_LIST({
         IRREP:1,
         '2MS':0,S2:s_op,
         AB_SYM:msc_op})
+# for the reference density we only need one and two-body part:
+dstr=',;,|,V;V,|,VV;VV,'
+DEF_OP_FROM_OCC({
+        LABEL:'GAM00',
+        JOIN:2,
+        DESCR:dstr})
+DEF_ME_LIST({
+        LIST:'GAM00_LST',
+        OPERATOR:'GAM00',
+        IRREP:1,
+        '2MS':0,S2:s_op,
+        AB_SYM:msc_op})
 
 debug_MEL('GAM0_LST',info_only=True)
 
 new_target('RefState-Operators')
-depend('Make_E0')
-depend('Make_C0')
+depend('Define_E0')
+depend('Define_C0')
 depend('MAKE_D0')
-depend('Make_H_C0')
-depend('Make_GAM0')
+depend('Define_H_C0')
+depend('Define_GAM0')
 
 
 
 #----------------------------------------------------------------------
 #
 new_target("DEF_A_C0")
-depend("Make_H_C0")
+depend("Define_H_C0")
 
 CLONE_OPERATOR({
      LABEL:"A_C0",

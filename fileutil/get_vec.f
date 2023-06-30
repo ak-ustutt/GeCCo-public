@@ -39,6 +39,12 @@
       ! last index in last record
       idxrecl = idxnd - (irecnd-1)*lenr
 
+      ! will only work for simple cases, must be save-guarded from the outside:
+      if (fhand%buffered.and.idxst-idxnd==0) then
+        buf(1:1) = fhand%buffer(ioffrec1+1:ioffrec1+1) ! make it work for scalars
+        return
+      end if
+
       if (irecst.eq.irecnd) then
         ! special case -- only one record to read:
         nread = idxrecl-ioffrec1

@@ -113,8 +113,8 @@
         nmo = orb_info%ntoobs(isym)
         do ii = 1, nmo
           do jj = 1, nao
-            ij = (ii-1)* nmo + jj
-            ji = (jj-1)* nao + ii
+            ij = (jj-1)* nmo + ii
+            ji = (ii-1)* nao + jj
             cmo(ji + ncoef) = cmo_tmp(ij + ncoef)
           end do
         end do
@@ -194,6 +194,10 @@ c dbg
       if (iprlvl.ge.10) 
      &     call prtim(lulog,'time in cmo import',
      &     cpu-cpu0,sys-sys0,wall-wall0)
+
+      if (ntest.ge.100) then
+         write(lulog,*) 'import of CMO finished!'
+      end if
 
       return
 

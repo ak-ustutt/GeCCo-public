@@ -60,7 +60,7 @@
 
       integer ::
      &     nnew,                !number of vectors the product is to be calculated to
-     &     irec,
+     &     idxrec,
      &     ivvec,imvvec,         !index of the vector and M*v vector
      &     ii,jj,ilist,          !running inices
      &     lenlist,
@@ -95,12 +95,12 @@
 
       nnew=0
       if (nincore.ge.2)then
-         do irec=1,nrec
+         do idxrec=1,nrec
             do ilist=1,nlists
-               call switch_mel_record(vvec(ilist)%mel,irec)
-               call switch_mel_record(mvvec(ilist)%mel,irec)
+               call switch_mel_record(vvec(ilist)%mel,idxrec)
+               call switch_mel_record(mvvec(ilist)%mel,idxrec)
                if(dvdsbsp%use_metric(ilist))then
-                  call switch_mel_record(svvec(ilist)%mel,irec)
+                  call switch_mel_record(svvec(ilist)%mel,idxrec)
                end if
             end do
             call dvdsbsp_append_lists(dvdsbsp, 
@@ -208,7 +208,7 @@
       real(8)::
      &     norm2
       integer::
-     &     ilist,ivec,idx
+     &     ilist,ivec,idx,irec
       
       call dvdsbsp_orthvecs(dvdsbsp, 
      &     me_MVlists,
@@ -298,7 +298,7 @@
       type(me_list_array),intent(inout)::
      &     me_vlists(nlists), me_Svlists(nlists),me_MVlists(nlists)
       integer::
-     &     ivec,irec, lenlist,
+     &     ivec, irec, lenlist,
      &     idx
       
       type(filinf),pointer::

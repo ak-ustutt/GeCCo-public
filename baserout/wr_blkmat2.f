@@ -9,9 +9,9 @@ C
       DIMENSION LROW(NBLK),LCOL(NBLK)
 C
       IBASE = 1
-      WRITE(6,*) ' Blocked matrix '
-      WRITE(6,*) '================'
-      WRITE(6,*)
+      WRITE(lulog,*) ' Blocked matrix '
+      WRITE(lulog,*) '================'
+      WRITE(lulog,*)
       DO IBLK = 1, NBLK
         JBLK = MULTD2H(IBLK,ISYM)
         IF (ITRI.NE.0 .AND. JBLK.LT.IBLK) CYCLE

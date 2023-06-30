@@ -76,7 +76,8 @@ c dbgend
      &     orb_info
 
       logical ::
-     &     conv, restart, traf, last_state, multistate, MS_coupled
+     &     conv, restart, traf, last_state, multistate, MS_coupled,
+     &     sv_fix_old
       character(len_opname) ::
      &     label, dia_label
       integer ::
@@ -143,6 +144,11 @@ c dbgend
      &     res_sum ! Sum of seperated residuals
       character(len=512)::
      &     timing_msg
+
+
+      ! keep a copy of the original state of sv_fix
+      sv_fix_old = sv_fix
+
       ifree = mem_setmark('solve_nleq')
 
       call get_argument_value('method.MR','multistate',
@@ -337,13 +343,15 @@ cmh      end do
 
       if (idx_en_xret(0).le.0)
      &     call quit(1,i_am,
-     &     'formula does not provide an update for the energy')
+     &     'formula does not provide an update for the energy: '
+     &     //trim(label_en))
 
       do iopt = 1, nopt
         idx_res_xret(iopt) = idx_xret(label_res(iopt),op_info,depend)
         if (idx_res_xret(iopt).le.0)
      &       call quit(1,i_am,
-     &       'formula does not provide an update for all residuals')
+     &       'formula does not provide an update for residuals'
+     &       //trim(label_res(iopt)))   
       end do
 
       ! FIXME: no explicit referenc to list names
@@ -409,7 +417,7 @@ c     &       ff_trv,ff_h_trv,
         if (luout.ne.lulog) then
          write(out_format,fmt='(A,i0,A,i0,A)')
      &        '(1x,i3,',n_states,'(f24.12,',nopt_state,
-     &        '(x,g10.4)))'
+     &        '(x,g10.4)),x,l)'
          if (imacit.gt.1) then
           if (.not. lmol) then
            if (multistate) then
@@ -417,11 +425,11 @@ c     &       ff_trv,ff_h_trv,
      &           it_print, [(
      &           [energy(i_state),
      &           xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state)]
-     &           ,i_state = 1,n_states)]
+     &           ,i_state = 1,n_states)],sv_fix
            else
 
             write(luout,out_format)
-     &            it_print,energy(0),xresnrm(1:nopt)
+     &            it_print,energy(0),xresnrm(1:nopt),sv_fix
            end if
 
 
@@ -429,7 +437,7 @@ c     &       ff_trv,ff_h_trv,
            ! Print out new molpro output
            time_per_it = cpu0_t / (it_print)
            mol_format = "(i4,i7,f16.8,f16.8,d12.2,i7,d11.2,d11.2,"//
-     &                  "i6,f11.2,f11.2)"
+     &                  "i6,f11.2,f11.2,x,l)"
 
            if (multistate) then
 
@@ -443,7 +451,7 @@ c     &       ff_trv,ff_h_trv,
      &             xresnrm((i_state-1)*nopt_state+1:i_state*nopt_state),
      &             n_sv,sv_min,sv_max,
      &             opti_stat%ndim_rsbsp,cpu0_t,
-     &             time_per_it
+     &             time_per_it,sv_fix
              else
              write(luout,mol_format2)
      &             energy(i_state),
@@ -543,8 +551,23 @@ c     &       ff_trv,ff_h_trv,
           dia_label = trim(dia_label)//'C0'
           ! use weaker convergence threshold for micro-iterations
           do i_state=1,n_states
-           thr_suggest(i_state) = min(xresnrm((i_state-1)*nopt_state+1)*
-     &          opti_info%mic_ahead,1d-3)
+           if (nopt==1) then
+             thr_suggest(i_state) = 
+     &          min(xresnrm((i_state-1)*nopt_state+1)*
+     &              opti_info%mic_ahead,1d-3)
+           else
+             ! ad hoc fix for new route where we have singles and
+             ! doubles residual
+             thr_suggest(i_state) = 
+     &          min(xresnrm((i_state-1)*nopt_state+2)*
+     &              opti_info%mic_ahead,1d-3)
+             ! trying this: fix SVD if we are converged to 1e-3
+             sv_fix = sv_fix.or.
+     &           xresnrm((i_state-1)*nopt_state+2).lt.1e-3 
+             ! DEBUG
+             write(luout,'("SV_FIX=",g10.2,l)')
+     &             xresnrm((i_state-1)*nopt_state+2),sv_fix
+           end if
           end do
 
           do i_state=1,n_states
@@ -812,6 +835,9 @@ c dbgend
         call dealloc_formula_list(fl_spc(jdx))
       end do
       ifree = mem_flushmark()
+
+      ! reset sv_fix
+      sv_fix = sv_fix_old
 
       return
       contains

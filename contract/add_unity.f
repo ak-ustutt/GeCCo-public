@@ -172,8 +172,14 @@ c        ! I think we know what we want for the H,;,H case (occ. density)
 c        if (njoined.eq.2.and.all(iocc(2:ngastp,1:2).eq.0)) then
 c          xsign=1d0
 c        else
+        ! I need it for the 1 hole density, just allow this case
+        if (njoined.eq.2.and.all(iocc(1:2,1:2).eq.0)
+     &                  .and.all(iocc(4,1:2).eq.0) 
+     &                  .and.all(iocc(3,1:2).eq.1) ) then
+          xsign=1d0
+        else
           call quit(1,'add_unity','for njoined>1, think about the sign')
-c        end if
+        end if
       else
         xsign = 1d0
       end if

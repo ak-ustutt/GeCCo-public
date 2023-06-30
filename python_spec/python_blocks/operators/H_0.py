@@ -61,7 +61,7 @@ new_target('MAKE_FOCK_REF')
 heading('Building of simple fock matrix')
 depend('H0')
 depend('MakeRefState')
-depend('GAM0_CALC')
+depend('GAM00_CALC')
 
 DEF_OP_FROM_OCC({
         LABEL:'FOCK_REF',
@@ -79,7 +79,7 @@ EXPAND_OP_PRODUCT({
         LABEL:'FORM_FOCK_REF',
         NEW:True,
         OP_RES:'FOCK_REF',
-        OPERATORS:['FOCK_REF','GAM0','H','GAM0','FOCK_REF'],
+        OPERATORS:['FOCK_REF','GAM00','H','GAM00','FOCK_REF'],
         AVOID:[1,5,2,4],
         IDX_SV:[1,2,3,2,1]
         })
@@ -97,7 +97,7 @@ new_target('MAKE_FOCK_EFF_D')
 heading('Building of effective fock matrix (diagonal blocks)')
 depend('H0')
 depend('MakeRefState')
-depend('GAM0_CALC')
+depend('GAM00_CALC')
 
 comment("defining effective fock operator and building formula")
 
@@ -135,7 +135,7 @@ EXPAND_OP_PRODUCT({
         LABEL:'FORM_F_EFF_D',
         NEW:False,
         OP_RES:'FOCK_EFF_D',
-        OPERATORS:['FOCK_EFF_D','GAM0','H','GAM0','FOCK_EFF_D'],
+        OPERATORS:['FOCK_EFF_D','GAM00','H','GAM00','FOCK_EFF_D'],
         LABEL_DESCR:['2,,,V'],
         CONNECT:[2,3],
         AVOID:[1,2,1,4,2,5,4,5],
@@ -143,6 +143,8 @@ EXPAND_OP_PRODUCT({
         })
 
 # expectation value <F_EFF_D> - the active energy is sufficient
+# note that GAM0 is used here, not GAM00 ... the operator is 
+# defined for GAM00 but the exp. value for the actual density
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_F_EFF_D_EXP',
@@ -180,7 +182,7 @@ new_target('MAKE_FOCK_EFF')
 heading('Building of effective fock matrix')
 depend('H0')
 depend('MakeRefState')
-depend('GAM0_CALC')
+depend('GAM00_CALC')
 
 comment("defining effective fock operator and building formula")
 
@@ -218,7 +220,7 @@ EXPAND_OP_PRODUCT({
         LABEL:'FORM_F_EFF',
         NEW:False,
         OP_RES:'FOCK_EFF',
-        OPERATORS:['FOCK_EFF','GAM0','H','GAM0','FOCK_EFF'],
+        OPERATORS:['FOCK_EFF','GAM00','H','GAM00','FOCK_EFF'],
         LABEL_DESCR:['2,,,V'],
         CONNECT:[2,3],
         AVOID:[1,2,1,4,2,5,4,5],
@@ -226,6 +228,7 @@ EXPAND_OP_PRODUCT({
         })
 
 # expectation value <F_EFF> - the active energy is sufficient
+# regarding GAM00 and GAM0 see comments above
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_F_EFF_EXP',
@@ -369,6 +372,7 @@ EXPAND_OP_PRODUCT({
 debug_FORM('FORM_HAM_D')
 
 # expectation value <HAM_D> - the active energy is sufficient
+# regarding GAM00 and GAM0 see comments above
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_HAM_D_EXP',
@@ -648,6 +652,7 @@ for hamC in ham_classes:
 debug_FORM('FORM_HAM_EXT_D')
 
 # expectation value <HAM_D> - the active energy is sufficient
+# regarding GAM00 and GAM0 see comments above
 
 EXPAND_OP_PRODUCT({
         LABEL:'FORM_HAM_EXT_D_EXP',

@@ -18,16 +18,10 @@ new_target('DEF_FORM_MRCC_LAG')
 heading('Defining the icMRCC Lagrangian')
 
 depend('DEF_T')
-#depend('DEF_T2g')
-#depend('DEF_T1')
 
 depend('DEF_LAM')
-#depend('DEF_LAM2g')
-#depend('DEF_LAM1')
 
 depend('DEF_O')
-#depend('DEF_O2g')
-#depend('DEF_O1')
 
 # hybrid approximation?
 approx = keywords.get('method.MR_P.hybrid')
@@ -37,6 +31,44 @@ word = keywords.get('method.MRCC.maxcom_en')
 nc_en = int(word) if word is not None else 4
 word = keywords.get('method.MRCC.maxcom_res')
 nc_rs = int(word) if word is not None else 2
+
+word = keywords.get('method.MR.maxexc')
+maxexc = int(word) if word is not None else 2
+
+# perturbative correction requested?
+word = keywords.get('method.MR.pertCorr')
+if word is None:
+    pertCorr =  False
+else:
+    if word == "F":
+        pertCorr = False
+    elif word == "T":
+        pertCorr = True
+    else:
+        quit_error('pertCorr must be T or F, found: '+word)
+
+pTH0 = "Dyall"
+if pertCorr:
+    word = keywords.get('method.MR.H0')
+    if word is None:
+        pTH0 = "Dyall"
+    elif word.upper() == "DYALL":
+        pTH0 = "Dyall"
+    elif word.upper() == "FOCK":
+        pTH0 = "Fock"
+    else:
+        quit_error('value of MR.H0 must be either "Dyall" or "Fock"')
+
+extra_terms = 0
+if pertCorr:
+    word = keywords.get('method.MR.pTexpression')
+    if word is None:
+        extra_terms = 0
+    elif word == "0" or word == "1" or word == "2" or word == "3":
+        extra_terms = int(word)
+    else:
+        quit_error('unknown value for MR.pTexpression (should be integer 0 ... 3); found: '+word)
+
 
 word = keywords.get('general.print')
 verbosity = int(word) if word is not None else 0
@@ -60,7 +92,7 @@ cas22=False
 orbinfo = Orb_Info()
 nactel = orbinfo.get('nactel')
 nactorb = orbinfo.get('nactorb')
-nocc_el = orbinfo.get('nactt_hpv',1)
+nocc_el = 2*orbinfo.get('nactt_hpv',1)
 if (nactel==1 and nactorb==1):
     doublet=True
 elif (nactel==2 and nactorb==2):
@@ -103,7 +135,7 @@ if (hybrid!="none"):
            singles = 8
        print("All singles operators are in the internal space")
 
-    known_methods=["CEPT2","CCEPA","TCPT2","CEPA0","PT2"]
+    known_methods=["CEPT2","CCEPA","TCPT2","CEPA0","PT2","ACPF"]
     if hybrid not in known_methods :
         raise Exception(i_am+": unknown method:"+str(hybrid))
     print("Using the special "+str(hybrid)+" method.")
@@ -168,8 +200,10 @@ SET_HERMITIAN({LABEL:'GAM0',CA_SYMMETRY:+1})
 
 # set requested method
 if (hybrid=="none"):
-    maxexc=2
-    mrcc_methods.set_mrcc(maxexc,nc_en,nc_rs,select,(doublet or cas22))
+    if maxexc == 2:
+        mrcc_methods.set_mrcc(nc_en,nc_rs,select,(doublet or cas22))
+    else:
+        mrcc_methods.set_mrcc_higher(maxexc,nc_en,nc_rs,select,(doublet or cas22))
 else:
     mrcc_methods.set_hybrids(hybrid,separation,hamiltonian,singles,no_occ,(doublet or cas22))
 
@@ -177,12 +211,34 @@ if verbosity >= 100:
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'SHORT'})
     PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'SHORT'})
+    if (maxexc > 2):
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A3',MODE:'SHORT'})
+    if (maxexc > 3):
+        PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'SHORT'})
 
+if (hybrid=="none" and maxexc==2 and pertCorr):
+    mrcc_methods.set_mrcc_pt(pTH0,extra_terms)
+        
+    
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_E',MODE:'COUNT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A1',MODE:'COUNT'})
 PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A2',MODE:'COUNT'})
+if (maxexc > 2):
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A3',MODE:'COUNT'})
+if (maxexc > 3):
+    PRINT_FORMULA({LABEL:'FORM_MRCC_LAG_A4',MODE:'COUNT'})
 
-if hybrid in ['CEPT2','CCEPA','CEPA0']:
+if hybrid in ['ACPF']:
+   DEF_ME_LIST({LIST:'ME_SHIFT_FACT',
+                OPERATOR:'SHIFT_FACT',
+                IRREP:1,
+                '2MS':0,
+                AB_SYM:+1})
+   nel=float(nocc_el+nactel)
+   shift_fact=1.-((nel-2.)/nel)
+   MODIFY_BLOCKS({LIST:'ME_SHIFT_FACT',FAC:shift_fact,DESCR:',',MODE:'SET'})
+   PRINT_MEL({LIST:'ME_SHIFT_FACT',COMMENT:'ACPF shift factor:',FORMAT:'SCAL F24.14'})
+if hybrid in ['CEPT2','CCEPA','CEPA0','ACPF']:
        # Construct energy operator for use in lagrangian
    DEF_ME_LIST({LIST:'ME_CEPA',
                 OPERATOR:'ECEPA',
@@ -597,7 +653,7 @@ if (HGamma):
     _itf_code_list.append('INTHE1')
     _itf_code_list.append('INTHE2')
 
-if hybrid in ['CEPT2','CCEPA','CEPA0']:
+if hybrid in ['CEPT2','CCEPA','CEPA0','ACPF']:
     _opt_label_list.append('FORM_ECEPA')
     
 _opt_label_list.append('F_T1SUM')

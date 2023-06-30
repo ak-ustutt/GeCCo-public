@@ -1,0 +1,21 @@
+title
+  NH from Molpro, CAS(4,4) -- new icMRCCSD(T){4} with Dyall-H0
+molecule
+  NH-MR-MOLPRO-DUMP
+input
+  ic_MRCCpT4D.inp
+check
+  rewind
+  label Total {3} correction
+  find Total icMRCCSD.T. .3. triples correction
+  compare real 6 1e-8
+check
+  label Total {4} correction
+  find Total icMRCCSD.T. .4. triples correction
+  compare real 6 1e-8
+check
+  label Total icMRCCSD(T) energy
+  find Total icMRCCSD.T. energy
+  compare real 5 1e-8
+end
+

@@ -131,9 +131,13 @@
       msa_max = ca_occ(2,iblk)
       nel = msc_max + msa_max
 
-      if (msc_max.ne.msa_max)
-     &      call quit(1,'spin_prj_blk',
+      if (msc_max.ne.msa_max) then
+         write(lulog,*) 'operator/block: ',trim(op%name),iblk
+         write(lulog,*) 'msc_max, msa_max: ',msc_max,msa_max
+         call wrt_occ_n(lulog,op%ihpvca_occ(1,1,iblkoff+1),njoined)
+         call quit(1,'spin_prj_blk',
      &                  'only particle-conserving operators!')
+      end if
 
       ! just scalar? Delete if not singlet
       if (msc_max.eq.0.and.msa_max.eq.0) then

@@ -73,7 +73,7 @@ c     &     ffopt(*), fftrv(*), ffmvp(*), ffrhs(*), ffdia(*)
 
 * local
       logical ::
-     &     zero_vec(opti_stat%ndim_vsbsp), trafo
+     &     zero_vec(opti_stat%ndim_vsbsp), trafo, triv_s
       integer ::
      &     idx, jdx, kdx, iroot, irhs,  nred, nadd, nnew, irecscr,
      &     imet, idamp, nopt, nroot, mxsub, lenmat, job, jopt,
@@ -146,6 +146,7 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
      &        write(lulog,*) 'xbuf2 norm = ',
      &                       dnrm2(nwfpar(iopt),xbuf2,1)
           do iroot = 1, nroot
+            triv_s = .false.
             if (trafo) then
               ! the present version works only, if we do this for root
               ! number 1; this is, because we modify the norm below
@@ -159,11 +160,14 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
      &                    orb_info,op_info,str_info,strmap_info)
               call vec_from_da(me_special(2)%mel%fhand,1,xbuf1,
      &                       nwfpar(iopt))
+              ! check for zero norm and suggest trivial solution in that case:
+              triv_s = xrsnrm(iroot,iopt).lt.opti_info%thrgrd(iopt)
+     &                 .and. nroot.eq.1 .and. nopt.eq.1 ! can currently only handle this for one root
             else
               call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
      &                       nwfpar(iopt))
             end if
-            ! divide rhs's by preconditioner
+            ! divide rhs by preconditioner
             if (ntest.ge.100)
      &           write(lulog,*) 'xbuf1 norm = ',
      &                          dnrm2(nwfpar(iopt),xbuf1,1) 
@@ -181,7 +185,7 @@ C            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
             if (ntest.ge.100)
      &           write(lulog,*) 'xbuf1 after division: ' //
      &                          ' norm = ', dnrm2(nwfpar(iopt),xbuf1,1)
-            if (trafo) then
+            if (trafo.and..not.triv_s) then
               call vec_to_da(me_special(2)%mel%fhand,1,
      &                       xbuf1,nwfpar(iopt))
               call optc_traf(me_opt(iopt)%mel,iroot,xdum,
@@ -193,6 +197,9 @@ C            call diavc(xbuf1,xbuf1,1d0/xnrm,xbuf2,opti_info%shift,
               ! original list was used to ensure spin symmetry if needed
               call switch_mel_record(me_scr(iopt)%mel,iroot)
               call list_copy(me_opt(iopt)%mel,me_scr(iopt)%mel,.false.)
+            else if (triv_s) then
+             xbuf1(1:nwfpar(iopt)) = 0.0d0
+             call vec_to_da(me_opt(iopt)%mel%fhand,1,xbuf1,nwfpar(iopt))
             else
               call vec_to_da(ffscr(iopt)%fhand,iroot,xbuf1,nwfpar(iopt))
             end if
@@ -272,12 +279,16 @@ c            xrsnrm(iroot,iopt) = xnrm
       end do
 
       ! orthogonalize initial subspace
-      call optc_orthvec(nadd,.false.,
+      if (.not.triv_s) then
+         call optc_orthvec(nadd,.false.,
      &                  opti_stat%ffssbsp,iord_ssbsp,1d0, !1d0:dummy
      &                  ffvsbsp,
      &                  iord_vsbsp,ndim_vsbsp,mxsub,zero_vec,
      &                  use_s,0,ffmet,ffscr,nroot,nopt,
      &                  nwfpar,nincore,xbuf1,xbuf2,xbuf3,lenbuf)
+      else
+         nadd = 1 ! note that we currently support this only for nroot==1
+      end if
 
       ! set nadd
       if (nadd.eq.0)

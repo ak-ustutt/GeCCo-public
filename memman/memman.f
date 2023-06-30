@@ -787,18 +787,18 @@ c      in_last_section = associated(cursection,mem_cursection)
             namscr = curslc%name
             if ((curslc%type.eq.1.or.curslc%type.eq.2).and.check) then
               if (patchk1.and.patchk2) then
-                write(lulog,'(6x,a,x,i2,x,i10,x,i10,x,l,2x,l)')
+                write(lulog,'(6x,a,x,i2,x,i20,x,i20,x,l,2x,l)')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum,patchk1,patchk2
               else
-                write(lulog,'(3x,"!",2x,a,x,i2,x,i10,'//
-     &               'x,i10,x,l,2x,l,x,"!")')
+                write(lulog,'(3x,"!",2x,a,x,i2,x,i20,'//
+     &               'x,i20,x,l,2x,l,x,"!")')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum,patchk1,patchk2
                 ierr = ierr+1
              end if
             else
-              write(lulog,'(6x,a,x,i2,x,i10,x,i10,x,"N/A")')
+              write(lulog,'(6x,a,x,i2,x,i20,x,i20,x,"N/A")')
      &               namscr(1:mem_maxname),curslc%type,
      &               curslc%len,memsum
             end if

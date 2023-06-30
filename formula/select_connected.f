@@ -7,7 +7,11 @@
 *     A warning is issued, if the operators on the list do not at all 
 *     appear in a contraction
 *
-*     mode is currently unused
+*     mode:
+*         '','DELETE': delete the disconnected terms
+*         'REPLACE' : only the first half of the operators on the label
+*              list are the targets; replace them by the operators of
+*              the second half when term is connected; no deletions
 *
 *     Andreas Koehn, Dec. 2020
 *
@@ -38,9 +42,9 @@
      &     labels(nlabels), mode
 
       logical ::
-     &     delete, error, connected
+     &     delete, error, connected, replace, dagin, dagout, all_found
       integer ::
-     &     nop, ii, nvtx, narc, nj, 
+     &     nop, ii, nvtx, narc, nj, nlabels_act, idxin, idxout,
      &     ij, ivtx, iarc, idxsvtx, ilink, jlink, iop, jop
       integer ::
      &     idxop(nlabels)
@@ -95,6 +99,14 @@
         call quit(1,i_am,'Labels not on list!')
       end if
 
+      replace = (mode=='replace') 
+
+      nlabels_act = nlabels
+      if (replace) nlabels_act = nlabels/2
+      if (replace .and. 2*nlabels_act .ne. nlabels) then
+         call quit(1,i_am,'replace mode: odd number of labels provided')
+      end if
+
       form_pnt => flist
       do ! loop over formula entries
         form_pnt_next => form_pnt%next
@@ -115,8 +127,9 @@
           svertex => contr%svertex
           joined  => contr%joined
 
-          if (contr%nxarc.gt.0) call quit(1,i_am,
-     &         'not yet adapted for open diagrams')
+          ! this should not be relevant, actually:
+c          if (contr%nxarc.gt.0) call quit(1,i_am,
+c     &         'not yet adapted for open diagrams')
  
           allocate(vtxlist(nvtx),vtxmap(nvtx))
           vtxmap(1:nvtx) = 0
@@ -131,7 +144,7 @@
           nop = 0
           idxsvtx = 0
           do ivtx = 1, nvtx
-            do ii = 1, nlabels
+            do ii = 1, nlabels_act
               ! check if operator on list and if this is our first visit to this supervertex
               ! new supervertex numbers always come in ascending order
               if (vertex(ivtx)%idx_op.eq.idxop(ii)
@@ -192,13 +205,13 @@
               end do
             end if
   
-              ! analyze topo by a graph search:
-            delete = .not.graph_connected(topo,nop)
+            ! analyze topo by a graph search:
+            connected = graph_connected(topo,nop)
         
             ! deallocate topo etc.
             deallocate(topo,vtxmap,vtxlist)
   
-            if (delete) then
+            if (.not.connected .and. .not.replace) then
               ! Print the deleted contraction.
               if(ntest.ge.1000)then
                 write(lulog,*) 'Deleted formula item:'
@@ -208,6 +221,21 @@
               ! Delete the node.
               call delete_fl_node(form_pnt)
               deallocate(form_pnt)
+            end if
+
+            if (connected .and. replace) then
+               ! loop over list and do replacements
+               do ii = 1, nlabels_act
+                  idxin = idxop(ii)
+                  dagin = .false.  ! TODO: adapt input string processing
+                  idxout = idxop(ii+nlabels_act)
+                  dagout = .false.
+                  if (idxin.ne.idxout) then ! avoid unnecessary calls
+                    call contr_op_replace(all_found,form_pnt%contr,  
+     &                            idxin,dagin,idxout,dagout,op_info)
+                    ! return value of all_found is ignored
+                  end if
+               end do
             end if
 
           end if    

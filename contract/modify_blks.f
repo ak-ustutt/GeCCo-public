@@ -167,14 +167,16 @@
      &          occ_def_cmp(1,1,(iocc_cmp-1)*njoined+1),.false.,
      &          occ_def(1,1,(iocc-1)*njoined+1),.false.,njoined))
      &          then
+                 if (ntest.ge.100) write(lulog,*)'modifying block ',iocc
                  idx_blk_st=mel%off_op_occ(iocc)+1
                  idx_blk_nd=idx_blk_st+mel%len_op_occ(iocc)-1
                  idxst=idx_blk_st
-                 do while (idxst.lt.idx_blk_nd)
+                 do while (idxst.le.idx_blk_nd)
 !     load either one buffer length or the full block/rest of block and modify it 
                     idxnd = min(idxst-1+nbuff,idx_blk_nd)
-                    call get_vec(ffop,buffer,
-     &                   idxst+idisc_off,idxnd+idisc_off)
+                    if (mode(1:3).ne.'SET')
+     &                  call get_vec(ffop,buffer,
+     &                       idxst+idisc_off,idxnd+idisc_off)
                     call l_modify_buf(buffer,idxnd-idxst+1
      &                   ,val,mode)
                     call put_vec(ffop,buffer,

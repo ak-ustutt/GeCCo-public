@@ -5,6 +5,10 @@
 *     intermediate-type operators with their actual counterparts.
 *     GWR November 2007
 *     CAVEAT: opin and opout are strings (operator names)!
+*     NOTE: This is an old version of a routine that is not superseeded
+*         by op_replace, but it is still call by some old routes,
+*         particularly for F12 intermediates (TODO: change that by do
+*         not use this routine any further)
 *-----------------------------------------------------------------------
       implicit none
 
