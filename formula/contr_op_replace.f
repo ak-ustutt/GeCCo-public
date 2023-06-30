@@ -5,6 +5,7 @@
 *     isolated sub from op_replace: for a given contraction, replace
 *              operators with index idx_opin
 *-----------------------------------------------------------------------
+      implicit none
 
       integer, parameter ::
      &     ntest = 00
@@ -19,6 +20,8 @@
 
       integer, intent(in) ::
      &     idx_opin, idx_opout
+      logical, intent(inout) ::
+     &     all_found
       logical, intent(in) ::
      &     dagin, dagout
       type(contraction), target, intent(inout) ::
