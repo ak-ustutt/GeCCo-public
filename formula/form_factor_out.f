@@ -43,7 +43,7 @@ c      include 'def_contraction_list.h'
      &     form_info
 
       logical ::
-     &     same, transpose
+     &     same, transpose, debug
       integer ::
      &     iintm, idx, len, nrpl, nspl
       character ::
@@ -80,6 +80,10 @@ c      include 'def_contraction_list.h'
 
         ! look for transposition label
         len = len_trim(label_f_intm(iintm))
+
+        ! trigger debug - uncomment (and set "ntest" in subroutines)
+        debug = .false. !label_f_intm(iintm)(1:6) == 'F_T1T2'
+
         transpose = (label_f_intm(iintm)(len-1:len).eq.'^+') 
         if (transpose) len = len-2
          
@@ -114,7 +118,8 @@ c dbgend
      &       call transpose_formula(fl_intm,op_info)
 
         call atim_csw(cpu0,sys0,wall0)
-        call factor_out_subexpr2(flist,fl_intm,split,nrpl,nspl,op_info)
+        call factor_out_subexpr2(flist,fl_intm,split,nrpl,nspl,
+     &                           op_info,debug)
         call atim_csw(cpu,sys,wall)
 
         if (iprlvl.ge.2) write(lulog,
