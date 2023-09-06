@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine invsqrt_mat(ndim,mat,mat2,half,umat,get_u,
+     &                       sv_thr, sv_fix, sv_file,
      &                       singval,icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins)
 *----------------------------------------------------------------------*
@@ -17,7 +18,6 @@
       implicit none
 
       include 'stdunit.h'
-      include 'routes.h'
       include 'def_filinf.h'
       include 'ifc_memman.h'
 
@@ -36,7 +36,11 @@
       real(8), intent(out) ::
      &     singval(ndim)
       logical, intent(in) ::
-     &     half, get_u
+     &     half, get_u, sv_fix
+      real(8), intent(in) ::
+     &     sv_thr
+      character(len=*), intent(in) ::
+     &     sv_file
       real(8) ::
      &     dum1,dum2,expo
       real(8), pointer ::
@@ -61,8 +65,8 @@
       ! sv_fix comes from a global variable (common block) ... 
       ! very bad, I know ...
       if (sv_fix) then
-        inquire(file='SINGVALS',exist=l_exist)
-        call file_init(ffsv,'SINGVALS',ftyp_sq_frm,0)
+        inquire(file=trim(sv_file),exist=l_exist)
+        call file_init(ffsv,trim(sv_file),ftyp_sq_frm,0)
         call file_open(ffsv)
         luinp = ffsv%unit
         read_file = l_exist !.and.sv_old
@@ -151,7 +155,7 @@ c      end if
         end do
 
         if (.not.(sv_fix.and.read_file)
-     &      .and.singval(idx).gt.sv_thresh.or.
+     &      .and.singval(idx).gt.sv_thr.or.
      &      sv_above) then
           sv_above = .true.
           if (abs(singval(idx)).lt.abs(xmin)) xmin = singval(idx)
