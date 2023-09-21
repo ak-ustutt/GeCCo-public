@@ -131,6 +131,9 @@ SOLVER str
 SPECIES int
 SPLIT log
 STRING str
+SV_THR real
+SV_FIX log
+SV_FILE str
 SWITCH int
 TASKS log
 TARG_ROOT int

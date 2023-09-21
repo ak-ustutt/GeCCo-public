@@ -686,6 +686,12 @@
      &     val_label=(/' '/),req=.true.)
       call set_arg('_PROTO_',INVERT,'MODE',0,tgt_info,
      &     val_str='-',def=.true.)
+      call set_arg('_PROTO_',INVERT,'SV_THR',1,tgt_info,
+     &     val_rl8=(/-1.0d0/),def=.true.)
+      call set_arg('_PROTO_',INVERT,'SV_FIX',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',INVERT,'SV_FILE',1,tgt_info,
+     &     val_str='SINGVALS',def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(TRANSF,tgt_info)
       call set_arg('_PROTO_',TRANSF,'LIST_IN',0,tgt_info,

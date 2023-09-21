@@ -1,5 +1,6 @@
       subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
      &     get_u,mel_u,pass_spc,mel_spc,lmodspc,
+     &     sv_thr,sv_fix,sv_file,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -40,7 +41,7 @@
       include 'hpvxseq.h'
       include 'multd2h.h'
       include 'ifc_input.h'
-      include 'routes.h'
+c      include 'routes.h'
       include 'molpro_out.h'
 
       type gam_generator_t
@@ -72,8 +73,12 @@
      &     mel_inp, mel_inv, mel_u, mel_spc
       integer, intent(in) ::
      &     nocc_cls
+      real(8), intent(in) ::
+     &     sv_thr(5)
       logical, intent(in) ::
-     &     half, get_u, pass_spc, lmodspc
+     &     half, get_u, pass_spc, lmodspc, sv_fix
+      character(len=*), intent(in) ::
+     &     sv_file
 
       integer, parameter ::
      &     maxrank = 5
@@ -104,14 +109,14 @@ c     &     loop(nocc_cls)
 c dbg
 c     &     ipass,
 c dbgend
-     &     off_linmax, maxbuf_tmp,
+     &     off_linmax, maxbuf_tmp, rank_den,
      &     rankdim(maxrank), rankoff(maxrank), rank_cls(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
      &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec,
      &     iprint
       real(8) ::
-     &     fac, xmax, xmin, xdum, omega2
+     &     fac, xmax, xmin, xdum, omega2, sv_thr_cur
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
@@ -179,8 +184,9 @@ c dbgend
       if (lmodspc.and.(get_u.or..not.half))
      &   call quit(1,'invsqrt','lmodspc only with get_u=F, half=T')
 
-      reg_tik = tikhonov.ne.0d0
-      omega2 = tikhonov**2
+      ! currently deactivated
+      reg_tik = .false. ! tikhonov.ne.0d0
+      omega2 = 0.1d0 !tikhonov**2
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand
@@ -316,6 +322,17 @@ c dbgend
 
         if (iprint.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
 
+        ! set sv threshold for current block
+        rank_den = sum(op_inp%
+     &             ihpvca_occ(1:ngastp,1:2,iblkoff+1:iblkoff+njoined))
+        rank_den = rank_den / 2
+        sv_thr_cur = sv_thr(max(1,min(5,rank_den)))
+
+        if (iprint.ge.10) 
+     &     write(lulog,*) 'current density rank: ',rank_den
+        if (iprint.ge.10) 
+     &     write(lulog,*) 'current sv_thr: ',sv_thr_cur
+
         ! only one element? easy!
         ! (also regularization is never needed in this case)
         if (mel_inp%len_op_occ(iocc_cls).eq.1) then
@@ -329,12 +346,14 @@ c dbgend
           else if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                         half,buffer_u(ioff+1),get_u,
+     &                         sv_thr_cur,sv_fix,sv_file,
      &                         xdum,icnt_sv,icnt_sv0,xmax,xmin,
      &                         bins(1,iocc_cls))
 
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,xdummy,get_u, !buffer_u: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,iocc_cls))
           end if
@@ -536,10 +555,12 @@ c dbgend
                 ! calculate T^(-0.5) for both blocks
                 if (iprint.ge.100) write(lulog,*) '+ case, nsing=',nsing
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                           sv_thr_cur,sv_fix,sv_file,
      &                           svs,icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins(1,iocc_cls))
                 if (iprint.ge.100) write(lulog,*) '- case, ntrip=',ntrip
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                           sv_thr_cur,sv_fix,sv_file,
      &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,
      &                           xmax,xmin,bins(1,iocc_cls))
@@ -569,7 +590,9 @@ c dbgend
                else
                   ! calculate S^(-0.5)
                   call invsqrt_mat(ndim,scratch,scratch2,
-     &                             half,scratch3,get_u,svs,
+     &                             half,scratch3,get_u,
+     &                             sv_thr_cur,sv_fix,sv_file,
+     &                             svs,
      &                             icnt_sv,icnt_sv0,xmax,xmin,
      &                             bins(1,iocc_cls))
                end if
@@ -1362,9 +1385,11 @@ c dbgend
      &           scratch_tmp1)
             ! calculate T^(-0.5) for both blocks
             call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins(1,rank_cls(irank)))
             call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst-1+nsing+min(1,ntrip)),!avoid segfault
      &                       icnt_sv,icnt_sv0,
      &                       xmax,xmin,bins(1,rank_cls(irank)))
@@ -1434,7 +1459,7 @@ c dbg
             call mat_svd_traf(rdim,scratch_tmp1,
      &                       scratch_tmp2,
      &                       icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,jocc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch2,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1466,6 +1491,7 @@ c dbg
      &                       scratch_tmp2,
      &                       half,
      &                       scratch_tmp3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch3,
@@ -1496,6 +1522,7 @@ c dbg
             call invsqrt_mat(rdim,scratch_tmp1,! out: X
      &                       scratch_tmp2,     ! out: Projector X X-1
      &                       half,xdummy,get_u, !scratch3: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch2, ! contains now Proj.
@@ -1523,6 +1550,7 @@ c dbg
             call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
      &                       scratch_tmp3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch3,
@@ -1546,6 +1574,7 @@ c dbg
             call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
      &                       xdummy,get_u, !scratch3: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
      &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch,
@@ -2318,7 +2347,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       nc1 = nc1mx
       rankoff = 0
       rankdim = 0
-      rank_cls = 0
+      rank_cls = 1
       r_cls = jocc_cls
       blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
