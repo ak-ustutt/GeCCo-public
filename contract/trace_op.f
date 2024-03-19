@@ -69,7 +69,7 @@
       logical ::
      &     bufop, buftrop, 
      &     first1, first2, first3, first4, first5,
-     &     reo_trop, nonzero, ms_fix, fix_success
+     &     reo_trop, nonzero, ms_fix, fix_success, ltmp
       integer ::
      &     mstop,msttrop,
      &     igamtop,igamttrop,
@@ -295,7 +295,10 @@ ctest        call warn('trace_op','zero length for operator?')
 
       ifree = mem_setmark('trace_op')
 
-      if (ffop%buffered.and.ffop%incore(iblkop).ge.0) then
+      ltmp = ffop%buffered
+      if (ltmp) ltmp = ffop%incore(iblkop).ge.0
+      !if (ffop%buffered.and.ffop%incore(iblkop).ge.0) then
+      if (ltmp) then
         bufop = .true.
         xop => ffop%buffer(idxst_op:)
       else
@@ -316,7 +319,10 @@ ctest        call warn('trace_op','zero length for operator?')
       ! get result vector as well (as we update)
       ! refers to reordered trop
       if (iblktrop.gt.0) then
-        if (fftrop%buffered.and.fftrop%incore(iblktrop).ge.0) then
+        ltmp = fftrop%buffered
+        if (ltmp) ltmp = fftrop%incore(iblktrop).ge.0
+        !if (fftrop%buffered.and.fftrop%incore(iblktrop).ge.0) then
+        if (ltmp) then
           buftrop = .true.
           xtrop => fftrop%buffer(idxst_trop:)
           if (.not.update) xtrop(1:lentrop) = 0d0

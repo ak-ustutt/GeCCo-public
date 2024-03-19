@@ -80,7 +80,7 @@
      &     ms_fix1, ms_fix2, ms_fix12, ms_fix_tmp,
      &     reject, fix_success1, fix_success2, fix_success12,
      &     reo_op1op2, nonzero, use_tr_here,
-     &     tra_op1_, tra_op2_
+     &     tra_op1_, tra_op2_, ltmp
       integer ::
      &     mstop1,mstop2,mstop1op2,
      &     igamtop1,igamtop2,igamtop1op2,
@@ -583,7 +583,9 @@ c      call atim_cs(cpu0,sys0)
       !    about 1/6th of the available remaining core
       lenscr = ifree/6
 
-      if (ffop1%buffered.and.ffop1%incore(iblkop1).ge.0) then
+      ltmp = ffop1%buffered
+      if (ltmp) ltmp = ffop1%incore(iblkop1).ge.0
+      if (ltmp) then
         buftyp1 = 0
         bufop1 = .true.
         xop1 => ffop1%buffer(idxst_op1:)
@@ -603,7 +605,9 @@ c        ifree = mem_alloc_real(xbf1,lenop1,'xbf1')
      &                          idoffop1+idxst_op1-1+lenop1)
         end if
       end if
-      if (ffop2%buffered.and.ffop2%incore(iblkop2).ge.0) then
+      ltmp = ffop2%buffered
+      if (ltmp) ltmp = ffop2%incore(iblkop2).ge.0
+      if (ltmp) then
         buftyp2 = 0
         bufop2 = .true.
         xop2 => ffop2%buffer(idxst_op2:)
@@ -628,8 +632,11 @@ c        ifree = mem_alloc_real(xbf2,lenop2,'xbf2')
 
       ! get result vector as well (as we update)
       ! refers to reordered op1op2
+      
       if (iblkop1op2.gt.0) then
-        if (ffop1op2%buffered.and.ffop1op2%incore(iblkop1op2).ge.0) then
+        ltmp = ffop1op2%buffered
+        if (ltmp) ltmp = ffop1op2%incore(iblkop1op2).ge.0
+        if (ltmp) then
           buftyp12 = 0
           bufop1op2 = .true.
           xop1op2 => ffop1op2%buffer(idxst_op1op2:)

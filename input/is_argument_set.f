@@ -24,6 +24,8 @@
      &     curcontext*1024
       integer ::
      &     iargcount, icount_target
+      logical ::
+     &     ltmp
 
       if (.not.associated(keyword_history%down_h))
      &     call quit(1,'is_argument_set','invalid keyword history')
@@ -36,7 +38,10 @@
 
       iargcount = 0
 
-      if (associated(curkey).and.associated(curkey%arg_h)) then
+      ltmp = associated(curkey)
+      if (ltmp) ltmp = associated(curkey%arg_h)
+      !if (associated(curkey).and.associated(curkey%arg_h)) then
+      if (ltmp) then
         curarg => curkey%arg_h
 
         arg_loop: do 

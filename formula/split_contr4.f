@@ -31,7 +31,7 @@
 
       type(contraction), intent(in) ::
      &     contr, contr_spl
-      type(contraction), intent(out) ::
+      type(contraction), intent(inout) ::
      &     contr_rem
 
       type(operator_info), intent(in) ::
