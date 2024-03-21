@@ -28,7 +28,9 @@ Ignore warnings, the generated configure script should normally work
     FC=gfortran CC=gcc ./configure --with-blas='-lmkl_gf_lp64 -lmkl_core -lmkl_sequential -lpthread -lm'
     
 I have not tried other blas libraries in a long time. Let me know about any other working solutions. GNU fortran 
-works for version 8.1; newer versions seem to be more picky about syntax issues, currently inquiring this.
+works for version 8.1; newer versions are more picky about syntax issues, we fixed this by additional compiler 
+command line parameters. Unfortunately, the code optimization of gfortran from version 10 on induces segmentation 
+fault errors (while the code seems to compile corretly with -O0).
     
 (3) Build:
 
