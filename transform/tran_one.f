@@ -29,7 +29,7 @@
 
 
       logical ::
-     &     closeit, close_ffmo, is_xmo
+     &     closeit, close_ffmo, is_xmo, ltmp
       integer ::
      &     ifree, nsym, ngas, nspin, nblk, ncmo, nmo, nao, nhlf,
      &     isym, jsym, igas, ispin, iblk, idxst, idxnd,
@@ -233,7 +233,9 @@
           do isym = 1, nsym
             idxnd = idxnd + me_mo%len_op_gmo(iblk)%gam_ms(isym,idxms)
           end do
-          if (ffmo%buffered.and.ffmo%incore(iblk).gt.0) then
+          ltmp = ffmo%buffered
+          if (ltmp) ltmp = ffmo%incore(iblk).gt.0
+          if (ltmp) then
             xop => ffmo%buffer(idxst:)
           else
             xop => xmo
@@ -249,7 +251,9 @@
      &         nbas,nxbas,mostnd,
      &         iad_gasca,hpvx_gas(1,ispin),ngas,nsym)
 
-          if (.not.ffmo%buffered.or.ffmo%incore(iblk).eq.0) then
+          ltmp = ffmo%buffered
+          if (ltmp) ltmp = ffmo%incore(iblk).ne.0
+          if (.not.ltmp) then
             call put_vec(ffmo,xop,idxst,idxnd)
           end if
 

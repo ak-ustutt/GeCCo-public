@@ -1,4 +1,5 @@
       subroutine inv_op(ninp,label_inp,nlist,label_inv,mode,
+     &     nthr,sv_thr_in,sv_fix_in,sv_file,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Wrapper subroutine used in the inversion of the matrix 
@@ -22,9 +23,10 @@
       include 'def_strmapinf.h'
       include 'ifc_memman.h'
       include 'par_opnames_gen.h'
+      include 'routes.h'
 
       integer, intent(in) ::
-     &     ninp, nlist
+     &     ninp, nlist, nthr
       character(*), intent(in) ::
      &     label_inp(ninp), label_inv(nlist)
       type(operator_info), intent(inout) ::
@@ -36,7 +38,11 @@
       type(strmapinf), intent(in) ::
      &     strmap_info
       character(len=*), intent(in) ::
-     &     mode
+     &     mode, sv_file
+      real(8), intent(in) ::
+     &     sv_thr_in(nthr)
+      logical, intent(in) ::
+     &     sv_fix_in
 
       type(me_list), pointer ::
      &     me_inp, me_inv, me_u, me_spc
@@ -46,8 +52,11 @@
      &     njoined, join_off, idx, nocc_cls, iocc_cls
       integer ::
      &     opinp_temp(ngastp,2), opinv_temp(ngastp,2)
+      real(8) ::
+     &     sv_thr(5)
       logical ::
-     &     open_close_inv, open_close_inp, open_close_u, open_close_spc
+     &     open_close_inv, open_close_inp, open_close_u, open_close_spc,
+     &     sv_fix_loc
       real(8) ::
      &     cpu, sys, wall, cpu0, sys0, wall0
 
@@ -66,6 +75,24 @@
         write(lulog,*) 'The inverse: ',trim(label_inv(1))
         if (nlist.eq.2)write(lulog,*)'Unitary mat.: ',trim(label_inv(2))
         if (ninp.eq.2) write(lulog,*) 'Spec. mat.: ',trim(label_inp(2))
+      end if
+
+      ! if sv_thr == -1.0 ... get value from common
+      if (sv_thr_in(1)<0.0d0) then
+         sv_thr(1:5) = sv_thresh
+      else
+         if (nthr.gt.5) 
+     &    call warn('INVERT',
+     &      'more than 5 thresholds provided, ignoring additional ones')
+         sv_thr(1:min(5,nthr)) = sv_thr_in(1:nthr)
+         sv_thr(min(5,nthr)+1:5) = sv_thr_in(min(5,nthr))
+      end if
+
+      ! if file is named SINGVAL get value for sv_fix from common
+      if (trim(sv_file)=='SINGVAL') then
+         sv_fix_loc = sv_fix
+      else
+         sv_fix_loc = sv_fix_in
       end if
 
       idx_inp = idx_mel_list(label_inp(1),op_info)
@@ -182,6 +209,7 @@
         write(lulog,*) 'Calculating square root of inverse'
         call invsqrt(me_inp,me_inv,nocc_cls,mode(8:11).eq.'half',
      &       nlist.eq.2,me_u,ninp.eq.2,me_spc,.false.,
+     &       sv_thr,sv_fix_loc,sv_file,
      &       op_info,orb_info,str_info,strmap_info)
       else if (mode(1:9).eq.'pseudoinv') then
         if (nlist.eq.2) call warn('inv_op','Unitary matrix unavailable')
@@ -191,6 +219,7 @@
         ! diagonalize matrix and get unitary matrix
         call invsqrt(me_inp,me_inv,nocc_cls,.true.,
      &       .false.,me_u,.false.,me_u,.true., ! dummies, special mode
+     &       sv_thr,sv_fix_loc,sv_file,
      &       op_info,orb_info,str_info,strmap_info)
         if (mode(8:11).eq.'mult') then
           if (nlist.ne.2)

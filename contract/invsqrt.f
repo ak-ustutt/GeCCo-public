@@ -1,5 +1,6 @@
       subroutine invsqrt(mel_inp,mel_inv,nocc_cls,half,
      &     get_u,mel_u,pass_spc,mel_spc,lmodspc,
+     &     sv_thr,sv_fix,sv_file,
      &     op_info,orb_info,str_info,strmap_info)
 *----------------------------------------------------------------------*
 *     Routine to calculate S^(-0.5) of density matrices.
@@ -40,7 +41,7 @@
       include 'hpvxseq.h'
       include 'multd2h.h'
       include 'ifc_input.h'
-      include 'routes.h'
+c      include 'routes.h'
       include 'molpro_out.h'
 
       type gam_generator_t
@@ -72,8 +73,12 @@
      &     mel_inp, mel_inv, mel_u, mel_spc
       integer, intent(in) ::
      &     nocc_cls
+      real(8), intent(in) ::
+     &     sv_thr(5)
       logical, intent(in) ::
-     &     half, get_u, pass_spc, lmodspc
+     &     half, get_u, pass_spc, lmodspc, sv_fix
+      character(len=*), intent(in) ::
+     &     sv_file
 
       integer, parameter ::
      &     maxrank = 5
@@ -88,7 +93,7 @@
 c      logical ::
 c     &     loop(nocc_cls)
       integer ::
-     &     ifree, nbuff, idxmsa, iocc_cls, iexc_cls,
+     &     ifree, nbuff, idxmsa, iocc_cls, 
      &     msmax, msa, igama, idx, jdx, ngam,
      &     ioff, njoined,
      &     idxdis, lenca, iblkoff, ncblk, nablk,
@@ -104,14 +109,14 @@ c     &     loop(nocc_cls)
 c dbg
 c     &     ipass,
 c dbgend
-     &     off_linmax, maxbuf_tmp,
-     &     rankdim(maxrank), rankoff(maxrank), nrank,
+     &     off_linmax, maxbuf_tmp, rank_den,
+     &     rankdim(maxrank), rankoff(maxrank), rank_cls(maxrank), nrank,
      &     irank, jrank, idxst, idxnd, rdim, idxst2, idxnd2, rdim2,
      &     icnt_cur, ih, ip, iexc, tocc_cls, gno, project,
      &     krank, idxst3, idxnd3, rdim3, curr_rec, len_rec,
      &     iprint
       real(8) ::
-     &     fac, xmax, xmin, xdum, omega2
+     &     fac, xmax, xmin, xdum, omega2, sv_thr_cur
       real(8), pointer ::
      &     buffer_in(:), buffer_out(:), scratch(:,:), scratch2(:,:),
      &     sing(:,:), trip(:,:), sing2(:,:), trip2(:,:),
@@ -149,7 +154,7 @@ c dbgend
      &     occ_csub2(:), occ_asub2(:),
      &     graph_csub2(:), graph_asub2(:),
      &     iocc2(:,:,:),idx_g2(:,:,:),
-     &     bins(:,:), ex2occ_cls(:)
+     &     bins(:,:), info_cls(:,:)
 
       type(filinf), pointer ::
      &     ffinp, ffinv, ffu
@@ -179,8 +184,9 @@ c dbgend
       if (lmodspc.and.(get_u.or..not.half))
      &   call quit(1,'invsqrt','lmodspc only with get_u=F, half=T')
 
-      reg_tik = tikhonov.ne.0d0
-      omega2 = tikhonov**2
+      ! currently deactivated
+      reg_tik = .false. ! tikhonov.ne.0d0
+      omega2 = 0.1d0 !tikhonov**2
 
       ffinp => mel_inp%fhand
       ffinv => mel_inv%fhand
@@ -270,12 +276,11 @@ c dbgend
       xmax = 0d0   ! largest excluded singular value
       xmin = 1234567890d0   ! smallest included singular value
       allocate(blk_used(nocc_cls),blk_redundant(nocc_cls),
-     &         bins(17,nocc_cls),ex2occ_cls(nocc_cls))
+     &         bins(17,nocc_cls),info_cls(3,nocc_cls))
       bins = 0 ! binning for singular values:
                ! >10E0,>10E-1,...,>10E-15,0
       blk_used(1:nocc_cls) = .false.
       blk_redundant(1:nocc_cls) = .true.
-      iexc_cls = 0
       tocc_cls = 0
 
       op_t => get_cluster_op_h(op_info) ! 'T' 'C' or null
@@ -296,16 +301,37 @@ c dbgend
           call wrt_occ_n(lulog,op_inp%ihpvca_occ(1,1,iblkoff+1),njoined)
         end if
 
-        if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined))
-     &     tocc_cls = tocc_cls + 1 ! increment occ.cls of corresp. Op.
+        if (occ_is_diag_blk(hpvx_occ(1,1,iblkoff+1),njoined)) then
+          info_cls(1,iocc_cls) = ! sum over all creations = rank
+     &       sum(hpvx_occ(IVALE,1,iblkoff+1:iblkoff+njoined))
+          info_cls(2,iocc_cls) = ! annihilations in first block = particles
+     &       hpvx_occ(IVALE,2,iblkoff+1)
+          if (njoined > 1) then ! should be always the case
+             info_cls(3,iocc_cls) = ! annihilations in second block = hole
+     &          hpvx_occ(IVALE,2,iblkoff+2)
+          else
+             info_cls(3,iocc_cls) = 0
+          end if
+        else
+          info_cls(1:3,iocc_cls) = 0 ! ignore offdiag blocks
+        end if
         if(op_inp%formal_blk(iocc_cls)) cycle iocc_loop
         if (blk_used(iocc_cls)) cycle iocc_loop
 
         blk_used(iocc_cls) = .true.
-        iexc_cls = iexc_cls + 1
-        ex2occ_cls(iexc_cls) = tocc_cls
 
         if (iprint.ge.10) write(lulog,*) 'current occ_cls: ',iocc_cls
+
+        ! set sv threshold for current block
+        rank_den = sum(op_inp%
+     &             ihpvca_occ(1:ngastp,1:2,iblkoff+1:iblkoff+njoined))
+        rank_den = rank_den / 2
+        sv_thr_cur = sv_thr(max(1,min(5,rank_den)))
+
+        if (iprint.ge.10) 
+     &     write(lulog,*) 'current density rank: ',rank_den
+        if (iprint.ge.10) 
+     &     write(lulog,*) 'current sv_thr: ',sv_thr_cur
 
         ! only one element? easy!
         ! (also regularization is never needed in this case)
@@ -316,18 +342,20 @@ c dbgend
           if (lmodspc) then ! only special mode
             call mat_svd_traf(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,iocc_cls))
           else if (get_u) then
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                         half,buffer_u(ioff+1),get_u,
+     &                         sv_thr_cur,sv_fix,sv_file,
      &                         xdum,icnt_sv,icnt_sv0,xmax,xmin,
-     &                         bins(1,iexc_cls))
+     &                         bins(1,iocc_cls))
 
           else
             call invsqrt_mat(1,buffer_out(ioff+1),buffer_in(ioff+1),
      &                       half,xdummy,get_u, !buffer_u: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       xdum,icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,iocc_cls))
           end if
           if (sgrm.and.icnt_cur.lt.icnt_sv-icnt_sv0)
      &       blk_redundant(iocc_cls) = .false.
@@ -527,13 +555,15 @@ c dbgend
                 ! calculate T^(-0.5) for both blocks
                 if (iprint.ge.100) write(lulog,*) '+ case, nsing=',nsing
                 call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                           sv_thr_cur,sv_fix,sv_file,
      &                           svs,icnt_sv,icnt_sv0,
-     &                           xmax,xmin,bins(1,iexc_cls))
+     &                           xmax,xmin,bins(1,iocc_cls))
                 if (iprint.ge.100) write(lulog,*) '- case, ntrip=',ntrip
                 call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                           sv_thr_cur,sv_fix,sv_file,
      &                           svs(nsing+min(1,ntrip)),!avoid segfault
      &                           icnt_sv,icnt_sv0,
-     &                           xmax,xmin,bins(1,iexc_cls))
+     &                           xmax,xmin,bins(1,iocc_cls))
 
                 ! partial undo of pre-diagonalization: Upre*T^(-0.5)
                 call spinsym_traf(2,ndim,scratch,flipmap_c,nsing,
@@ -556,13 +586,15 @@ c dbgend
                if (lmodspc) then
                   call mat_svd_traf(ndim,scratch,scratch2,
      &                 icnt_sv,icnt_sv0,xmax,xmin,
-     &                 bins(1,iexc_cls))
+     &                 bins(1,iocc_cls))
                else
                   ! calculate S^(-0.5)
                   call invsqrt_mat(ndim,scratch,scratch2,
-     &                             half,scratch3,get_u,svs,
+     &                             half,scratch3,get_u,
+     &                             sv_thr_cur,sv_fix,sv_file,
+     &                             svs,
      &                             icnt_sv,icnt_sv0,xmax,xmin,
-     &                             bins(1,iexc_cls))
+     &                             bins(1,iocc_cls))
                end if
              end if ! msc.eq.0 .and. .not.lmodspc
 
@@ -578,10 +610,8 @@ c dbgend
 
               if (.not.half.or.lmodspc) then
 ! write projector to input buffer
-c dbg
                 if (ntest.ge.150) write(lulog,*) 
      &                'wrote prj to buffer_in'
-c dbg
                  ! write to ouptut buffer (contains projector)
                  call copy_buffer_2_h(scratch2, buffer_in, 
      &                ndim,ndim,ioff,transp)
@@ -659,16 +689,16 @@ c dbg
         ! Ms/Gamma of C2/A2 is then already defined
 ! For now we consider densities: Ms(total)=0, Gamma(total) = 1
 
-        do ms1 = msmax_sub, -msmax_sub, -2
+        ms_loop: do ms1 = msmax_sub, -msmax_sub, -2
            ms2 = -ms1           ! particle conserving operator
 
-         do igam = 1, ngam ! irrep of the second dimension must be the same
+         gam_loop: do igam = 1, ngam ! irrep of the second dimension must be the same
             call calculate_rank_dimensions_h(
      &           mel_inp,op_inp,graphs,iocc_cls, njoined,
      &           ms1, igam,
      &           sgrm,project,
      &           na1mx,nc1mx,
-     &           ndim,nrank,rankoff,rankdim)
+     &           ndim,nrank,rankoff,rankdim,rank_cls)
 
           if (ndim.eq.0) cycle
 
@@ -743,6 +773,8 @@ c dbgend
               exit
             end if
 c dbg
+c            write(lulog,*) 
+c     &          'found for iocc_cls jocc_cls: ',iocc_cls,jocc_cls
 c            print *,'na1,nc1,na2,nc2,jocc_cls:',na1,nc1,na2,nc2,
 c     &          jocc_cls
 c            print *,'off_line2, off_col2: ',off_line2,off_col2
@@ -1353,12 +1385,14 @@ c dbgend
      &           scratch_tmp1)
             ! calculate T^(-0.5) for both blocks
             call invsqrt_mat(nsing,sing,sing2,half,sing3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,
-     &                       xmax,xmin,bins(1,iexc_cls))
+     &                       xmax,xmin,bins(1,rank_cls(irank)))
             call invsqrt_mat(ntrip,trip,trip2,half,trip3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst-1+nsing+min(1,ntrip)),!avoid segfault
      &                       icnt_sv,icnt_sv0,
-     &                       xmax,xmin,bins(1,iexc_cls))
+     &                       xmax,xmin,bins(1,rank_cls(irank)))
 
             ! partial undo of pre-diagonalization: Upre*T^(-0.5)
             call extract_submatrix_h(scratch,
@@ -1425,7 +1459,7 @@ c dbg
             call mat_svd_traf(rdim,scratch_tmp1,
      &                       scratch_tmp2,
      &                       icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch2,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1452,12 +1486,14 @@ c dbg
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp3)
+
             call invsqrt_mat(rdim,scratch_tmp1,
      &                       scratch_tmp2,
      &                       half,
      &                       scratch_tmp3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch3,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1482,11 +1518,13 @@ c dbg
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp2)
+
             call invsqrt_mat(rdim,scratch_tmp1,! out: X
      &                       scratch_tmp2,     ! out: Projector X X-1
      &                       half,xdummy,get_u, !scratch3: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch2, ! contains now Proj.
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1508,11 +1546,13 @@ c dbg
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp3)
+
             call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
      &                       scratch_tmp3,get_u,
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch3,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1530,11 +1570,13 @@ c dbg
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
      &           scratch_tmp1)
+
             call invsqrt_mat(rdim,scratch_tmp1,
      &                       xdummy,half, !scratch2: dummy
      &                       xdummy,get_u, !scratch3: dummy
+     &                       sv_thr_cur,sv_fix,sv_file,
      &                       svs(idxst),icnt_sv,icnt_sv0,xmax,xmin,
-     &                       bins(1,iexc_cls))
+     &                       bins(1,rank_cls(irank)))
             call insert_submatrix_h(scratch,
      &           ndim, idxst, idxnd,
      &           ndim, idxst, idxnd,
@@ -1681,12 +1723,12 @@ c dbgend
           na1 = na1mx
           nc1 = nc1mx
           off_line2 = 0
-          do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
+          c1_lp: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
            nc2 = na1mx
            off_col2 = 0
            off_linmax = 0
-           do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
+           c2_lp: do while(min(na2,nc2).ge.0.and.na2+nc2.ge.abs(ms1))
             ! no off-diagonal blocks in SepO (separate orthog.)
             if (sgrm.and.na1.ne.nc2) then
               na2 = na2 - 1
@@ -1849,11 +1891,11 @@ c dbgend
      &                -(na1mx+nc1mx-abs(ms1))/2
             jblkoff = (jocc_cls-1)*njoined
             off_col2 = off_colmax
-           end do
+           end do c2_lp
            na1 = na1 - 1
            nc1 = nc1 - 1
            off_line2 = off_linmax
-          end do
+          end do c1_lp
 
           deallocate(scratch,flmap,svs)
           if (.not.half.or.lmodspc) deallocate(scratch2)
@@ -1862,8 +1904,8 @@ c dbg
 c          deallocate(matrix)
 c dbgend
 
-         end do
-        end do
+         end do gam_loop
+        end do ms_loop
 
         deallocate(hpvx_csub,hpvx_asub,
      &           occ_csub, occ_asub,
@@ -1896,45 +1938,27 @@ c dbgend
          sv_max = xmax
       end if
 
+      ! new binning output:
       if (iprint.ge.5) then
-        write(lulog,'(x,77("="))')
+        write(lulog,'(x,79("="))')
         write(lulog,'(x,a)')
-     &       'Singular value histogram (by excitation classes)'
-        if (lmodspc) then
-          write(lulog,'(x,a,x,14i10)') 'class:', (idx,idx=1,iexc_cls)
-        else if (associated(op_t)) then
-          write(lulog,'(x,a,x,14i10)') 'n_h = ',
-     &         op_t%ihpvca_occ(IHOLE,2,ex2occ_cls(1:iexc_cls))
-          write(lulog,'(x,a,x,14i10)') 'n_p = ',
-     &         op_t%ihpvca_occ(IPART,1,ex2occ_cls(1:iexc_cls))
-        end if
-        write(lulog,'(x,77("-"))')
-        write(lulog,'(x,a,x,14i10)') ' 1E+00',bins(1,1:iexc_cls)
-c        if (lmodspc) then
-c          do idx = 2, 8
-c            write(lulog,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
-c     &                                        bins(idx,1:iexc_cls)
-c          end do
-c          write(lulog,'(x,a,x,14i10)') '     0',bins(9,1:iexc_cls)
-c          do idx = 10, 16
-c            write(lulog,'(x,a,i2.2,x,14i10)') '-1E-',17-idx,
-c     &                                        bins(idx,1:iexc_cls)
-c          end do
-c          write(lulog,'(x,a,x,14i10)') '-1E+00',bins(17,1:iexc_cls)
-c          write(lulog,'(x,77("="))')
-c          write(lulog,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
-c     &          ' out of ',icnt_sv,' eigenvalues were included'
-c          write(lulog,'(x,a,E19.10)')
-c     &          'The  largest excluded eigenvalue is ',xmax
-c          write(lulog,'(x,a,E19.10)')
-c     &          'The smallest included eigenvalue is ',xmin
-c        else
+c     &       'Singular value histogram (by excitation classes)'
+     &       'Singular value histogram (by occupation classes)'
+        write(lulog,'(x,a,30i5)') 'class: ', (idx,idx=1,nocc_cls)
+        write(lulog,'(x,a,30i5)') 
+     &                              'rank:  ', info_cls(1,1:nocc_cls)
+        write(lulog,'(x,a,30i5)') 
+     &                              'p-rank:', info_cls(2,1:nocc_cls)
+        write(lulog,'(x,a,30i5)') 
+     &                              'h-rank:', info_cls(3,1:nocc_cls)
+        write(lulog,'(x,79("-"))')
+        write(lulog,'(x,a,x,30i5)') ' 1E+00',bins(1,1:nocc_cls)
         do idx = 2, 16
-          write(lulog,'(x,a,i2.2,x,14i10)') ' 1E-',idx-1,
-     &                                      bins(idx,1:iexc_cls)
+          write(lulog,'(x,a,i2.2,x,30i5)') ' 1E-',idx-1,
+     &                                      bins(idx,1:nocc_cls)
         end do
-        write(lulog,'(x,a,x,14i10)') '     0',bins(17,1:iexc_cls)
-        write(lulog,'(x,77("="))')
+        write(lulog,'(x,a,x,30i5)') '     0',bins(17,1:nocc_cls)
+        write(lulog,'(x,79("="))')
         write(lulog,'(x,i8,a,i8,a)') icnt_sv-icnt_sv0,
      &        ' out of ',icnt_sv,' singular values were included'
         write(lulog,'(x,a,E19.10)')
@@ -1943,7 +1967,7 @@ c        else
      &        'The smallest included singular value is ',xmin
 c        end if
       end if
-      deallocate(bins,ex2occ_cls)
+      deallocate(bins,info_cls)
 
       if (sgrm.and.any(blk_redundant(1:nocc_cls))) then
         ! Print out which blocks are redundant
@@ -2287,7 +2311,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &     ms1, igam,
      &     sgrm,project,
      &     na1mx,nc1mx,
-     &     ndim,nrank,rankoff,rankdim)
+     &     ndim,nrank,rankoff,rankdim,rank_cls)
 !-----------------------------------------------------------------------!
       implicit none
       type(me_list),intent(in)::
@@ -2306,12 +2330,12 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       integer, intent(inout)::
      &     ndim, nrank
       integer, dimension(maxrank),intent(out)::
-     &     rankoff, rankdim
+     &     rankoff, rankdim, rank_cls
       integer::
      &     jocc_cls, jblkoff,   ! running indices for occupation class number and offset
      &     na1,nc1,
      &     na2,nc2,
-     &     rdim
+     &     rdim, r_cls
 
       ndim = 0
       nrank = 0
@@ -2323,6 +2347,8 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       nc1 = nc1mx
       rankoff = 0
       rankdim = 0
+      rank_cls = 1
+      r_cls = jocc_cls
       blk_loop: do while(min(na1,nc1).ge.0.and.na1+nc1.ge.abs(ms1))
            na2 = nc1mx
            nc2 = na1mx
@@ -2355,7 +2381,8 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
             if (na1.eq.0.and.nc1.eq.0) then
                if (igam.eq.1)then
                   ndim = ndim + 1
-                  call update_rankarrays_h(nrank,rankdim,rankoff,1)
+                  call update_rankarrays_h(nrank,rankdim,
+     &                                     rankoff,rank_cls,1,jocc_cls)
                end if
               exit blk_loop
            end if
@@ -2372,6 +2399,7 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
      &          jocc_cls,
      &          ms1,igam,
      &          graphs)
+           r_cls = jocc_cls
            call advance_block_n2_h(nc2,na2,ms1,nc1mx,na1mx,jocc_cls)
            jblkoff = occoff_h(jocc_cls,njoined)
            end do
@@ -2381,7 +2409,8 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 
            ndim = ndim + rdim
            if (project.gt.0.and.rdim.gt.0) then
-              call update_rankarrays_h(nrank,rankdim,rankoff,rdim)
+              call update_rankarrays_h(nrank,rankdim,
+     &                                 rankoff,rank_cls,rdim,r_cls)
            end if
         end do blk_loop
 
@@ -2647,15 +2676,17 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
 !!    because then the information for ,;,;, lies on rankdim(1)
 !!    on rankoff lies the offset for the respective rank.
 !------------------------------------------------------------------!
-      subroutine update_rankarrays_h(nrank,rankdim,rankoff,rdim)
+      subroutine update_rankarrays_h(nrank,rankdim,
+     &                               rankoff,rank_cls,rdim,cls)
 !------------------------------------------------------------------!
       implicit none
       integer,intent(inout)::
      &     nrank,
      &     rankdim(maxrank),
-     &     rankoff(maxrank)
+     &     rankoff(maxrank),
+     &     rank_cls(maxrank)
       integer,intent(in)::
-     &     rdim
+     &     rdim, cls
       integer::
      &     idx
 
@@ -2666,7 +2697,9 @@ c        write(lulog,'(x,a)') 'There are redundant blocks in T:'
       do idx=nrank,2,-1
          rankdim(idx)=rankdim(idx-1)
          rankoff(idx)=rankoff(idx-1)
+         rank_cls(idx)=rank_cls(idx-1)
       end do
+      rank_cls(1)=cls
       rankdim(1)=rdim
       rankoff(1)=0
       if(nrank.ge.2) rankoff(1)=rankoff(2)+rankdim(2)
