@@ -89,22 +89,22 @@
 
       write(lulog,'(2x,a)') '/CONTR_STRING/'
       idx = contr%nidx
-      write(lulog,'(2x,20i4)') contr%contr_string(1:idx)%vtx
-      write(lulog,'(2x,20i4)') contr%contr_string(1:idx)%ca
-      write(lulog,'(2x,20i4)') contr%contr_string(1:idx)%hpvx
-      write(lulog,'(2x,20l4)') contr%contr_string(1:idx)%ext
-      write(lulog,'(2x,20i4)') contr%contr_string(1:idx)%cnt
-      write(lulog,'(2x,20i4)') contr%contr_string(1:idx)%idx
+      write(lulog,'(2x,200i4)') contr%contr_string(1:idx)%vtx
+      write(lulog,'(2x,200i4)') contr%contr_string(1:idx)%ca
+      write(lulog,'(2x,200i4)') contr%contr_string(1:idx)%hpvx
+      write(lulog,'(2x,200l4)') contr%contr_string(1:idx)%ext
+      write(lulog,'(2x,200i4)') contr%contr_string(1:idx)%cnt
+      write(lulog,'(2x,200i4)') contr%contr_string(1:idx)%idx
 
       
       write(lulog,'(2x,a)') '/RESULT_STRING/'
       idx = contr%nxidx
-      write(lulog,'(2x,20i4)') contr%result_string(1:idx)%vtx
-      write(lulog,'(2x,20i4)') contr%result_string(1:idx)%ca
-      write(lulog,'(2x,20i4)') contr%result_string(1:idx)%hpvx
-      !write(lulog,'(2x,20l4)') contr%result_string(1:idx)%ext
-      write(lulog,'(2x,20i4)') contr%result_string(1:idx)%cnt
-      write(lulog,'(2x,20i4)') contr%result_string(1:idx)%idx
+      write(lulog,'(2x,200i4)') contr%result_string(1:idx)%vtx
+      write(lulog,'(2x,200i4)') contr%result_string(1:idx)%ca
+      write(lulog,'(2x,200i4)') contr%result_string(1:idx)%hpvx
+      !write(lulog,'(2x,200l4)') contr%result_string(1:idx)%ext
+      write(lulog,'(2x,200i4)') contr%result_string(1:idx)%cnt
+      write(lulog,'(2x,200i4)') contr%result_string(1:idx)%idx
       
       return
       end
