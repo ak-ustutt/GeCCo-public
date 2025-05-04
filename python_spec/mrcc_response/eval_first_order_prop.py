@@ -70,7 +70,7 @@ for ipop in range (0,_npop):
             TYPE:_int_type,
             ENV:_env})
 
-    PRINT_MEL({LIST:'ME_'+_pop_name})
+    #PRINT_MEL({LIST:'ME_'+_pop_name})
     _list_to_depend.append('IMPORT_'+_pop_name)
 
     new_target('DEF_RSPNS(1)'+_cur_ext)

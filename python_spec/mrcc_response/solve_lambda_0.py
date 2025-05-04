@@ -399,7 +399,7 @@ EXTRACT_DIAG({LIST_RES:'ME_DIA_C0_bar',
               LIST_IN:'ME_MINEN',
               MODE:'ext_act'})
 
-PRINT_MEL({LIST:'ME_E(MR)',COMMENT:'ENERGY ICMRCC:'})
+#PRINT_MEL({LIST:'ME_E(MR)',COMMENT:'ENERGY ICMRCC:'})
 
 # Optimizing all the five formulas together for solve_evp
 
