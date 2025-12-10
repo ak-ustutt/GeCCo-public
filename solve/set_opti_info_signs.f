@@ -73,7 +73,9 @@ c     &                             'only for LEQ and EVP solvers yet')
         op_trv => me_trv(iopt)%mel%op
         op_mvp => me_mvp(iopt)%mel%op
         if (use_s(iopt)) op_met => me_met(iopt)%mel%op
+        if (.not.use_s(iopt)) op_met => me_mvp(iopt)%mel%op  ! do not leave undefined
         if (mode.eq.2) op_rhs => me_rhs(iopt)%mel%op
+        if (mode.ne.2) op_rhs => me_mvp(iopt)%mel%op
         nsec => opti_info%nsec(iopt)
         nsec = 0
         sign_old = 0
@@ -82,8 +84,8 @@ c     &                             'only for LEQ and EVP solvers yet')
      &      use_s(iopt).and.op_trv%n_occ_cls.ne.op_met%n_occ_cls.or.
      &      mode.eq.2.and.op_trv%n_occ_cls.ne.op_rhs%n_occ_cls)
      &      call quit(1,'set_opti_info_signs','inconsistent n_occ_cls!')
-        if (use_s(iopt).and.op_mvp%njoined.ne.op_met%njoined.or.
-     &      mode.eq.2.and.op_mvp%njoined.ne.op_rhs%njoined)
+        if ((use_s(iopt).and.op_mvp%njoined.ne.op_met%njoined).or.
+     &      (mode.eq.2.and.op_mvp%njoined.ne.op_rhs%njoined))
      &      call quit(1,'set_opti_info_signs','inconsistent njoined!')
 
 c dbg

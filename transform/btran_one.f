@@ -33,7 +33,7 @@
 
 
       logical ::
-     &     closeit, close_ffmo
+     &     closeit, close_ffmo, ltmp
       integer ::
      &     ifree, nsym, ngas, nspin, nblk, ncmo, nmo, nao, nhlf,
      &     isym, igas, ispin, iblk, idxst, idxnd, idxms, norb, njoined,
@@ -176,7 +176,9 @@
           do isym = 1, nsym
             idxnd = idxnd + me_dens%len_op_gmo(iblk)%gam_ms(isym,idxms)
           end do
-          if (ffmo%buffered.and.ffmo%incore(iblk).gt.0) then
+          ltmp = ffmo%buffered
+          if (ltmp) ltmp = ffmo%incore(iblk).gt.0
+          if (ltmp) then
             xop => ffmo%buffer(idxst:)
           else
             call get_vec(ffmo,xmo,idxst,idxnd)

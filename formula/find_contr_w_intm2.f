@@ -2,7 +2,7 @@
       subroutine find_contr_w_intm2(success,fpl_found,contr_rpl,
      &                             fl_tgt,fpl_intm,iposs,
      &                             nmod_max,nmod,imod,xmod,split,
-     &                             op_info)
+     &                             op_info,debug)
 *----------------------------------------------------------------------*
 *
 *     given: a formula list starting at fl_tgt
@@ -39,6 +39,8 @@
       
       logical, intent(out) ::
      &     success
+      logical, intent(in) ::
+     &     debug
       integer, intent(in) ::
      &     iposs, nmod_max
       integer, intent(out) ::
@@ -79,7 +81,7 @@
       logical, external ::
      &     contr_in_contr, cmp_contr
 
-      if (ntest.ge.100) then
+      if (ntest.ge.100.and.debug) then
         write(lulog,*) '============================='
         write(lulog,*) ' entered find_contr_w_intm 2'
         write(lulog,*) '============================='
@@ -154,9 +156,9 @@ c          end if
       if (success1) then
 
         call split_contr4(contr_t0,contr_i,fl_tgt%contr,op_info,
-     &                      success1)
+     &                      success1,debug)
 
-        if (ntest.ge.100.and.success1) then
+        if (debug.and.ntest.ge.100.and.success1) then
           write(lulog,*) 'considering contraction:'
           call prt_contr2(lulog,fl_tgt%contr,op_info)
           write(lulog,*) 'split into T0 '
@@ -180,7 +182,8 @@ c          end if
         iterm = 0
         do
           ! make target contractions that we need to find
-          if (ntest.ge.100) write(lulog,*) 'call to join_contr2a - 1'
+          if (debug.and.ntest.ge.100) 
+     &           write(lulog,*) 'call to join_contr2a - 1'
           call join_contr2a(1,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &           contr_t0,fpl_intm_pnt%item%contr,
      &           idxop_tgt,iblk_tgt,op_info)
@@ -196,7 +199,7 @@ c          end if
         ! we have to sum up duplicates, otherwise 'split' will not work
         call sum_terms(fl_t0_i,nterms_gen,op_info)
 
-        if (ntest.ge.100) then
+        if (debug.and.ntest.ge.100) then
           write(lulog,*)
      &      'find_contr_w_intm2: looking for ',nterms_gen,' terms'
           call print_form_list_short(lulog,fl_t0_i,op_info)
@@ -238,7 +241,7 @@ c          end if
      &             'not prepared for that command (see above)')
           end select
 
-          if (ntest.ge.100) then
+          if (debug.and.ntest.ge.100) then
             write(lulog,*)
      &      'find_contr_w_intm2: next term from formula to be factored'
             call prt_contr2(6,fl_tgt_pnt%contr,op_info)
@@ -256,7 +259,7 @@ c          end if
 
             if (.not.assigned(iterm)) then
 
-              if (ntest.ge.100) then
+              if (debug.and.ntest.ge.100) then
                 write(lulog,*) 'assigned: ',assigned(1:nterms_gen)
                 write(lulog,*) 'comparing to term #', iterm
                 call prt_contr2(6,fl_t0_i_pnt%contr,op_info)
@@ -275,7 +278,7 @@ c      1/2*aa+ab+1/2*bb --> 1/2*a(a+b)+1/2*b(a+b) --> 1/2*(a+b)(a+b)
      &                      fl_t0_i_pnt%contr,split)  !   no need to exactly match factor
      &            .and.nmod.lt.nmod_max) then
 
-                if (ntest.ge.100) write(lulog,*) 'OK!'
+                if (debug.and.ntest.ge.100) write(lulog,*) 'OK!'
 
                 assigned(iterm) = .true.
                 nfound = nfound+1
@@ -332,7 +335,7 @@ c dbg
 
       end if
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         write(lulog,*) 'at the end: ',success1,success2
       end if
 
@@ -376,7 +379,8 @@ c dbg
         fl_t0_i_pnt => fl_t0_i
 
         ! make new contraction
-        if (ntest.ge.100) write(lulog,*) 'call to join_contr2a - 2'
+        if (debug.and.ntest.ge.100) 
+     &           write(lulog,*) 'call to join_contr2a - 2'
         call join_contr2a(0,fl_t0_i_pnt,nterms_gen,contr_rpl,
      &                  contr_t0,contr_int,
      &                  idxop_tgt,iblk_tgt,op_info)
@@ -386,7 +390,7 @@ c dbg
 
         call dealloc_contr(contr_int)
 
-        if (ntest.ge.100) then
+        if (debug.and.ntest.ge.100) then
           write(lulog,*) 'generated term:'
           call prt_contr2(lulog,contr_rpl,op_info)
         end if

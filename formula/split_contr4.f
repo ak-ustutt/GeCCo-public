@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
-      subroutine split_contr4(contr_rem,contr_spl,contr,op_info,ok)
+      subroutine split_contr4(contr_rem,contr_spl,contr,op_info,
+     &                        ok,debug)
 *----------------------------------------------------------------------*
 *     given a contraction contr and a contraction contr_spl (which
 *     must be contained in contr, check with contr_in_contr()!),
@@ -30,18 +31,20 @@
 
       type(contraction), intent(in) ::
      &     contr, contr_spl
-      type(contraction), intent(out) ::
+      type(contraction), intent(inout) ::
      &     contr_rem
 
       type(operator_info), intent(in) ::
      &     op_info
       logical, intent(out) ::
      &     ok
+      logical, intent(in) ::
+     &     debug
 
       logical ::
      &     success, check, conn, trsp
       integer ::
-     &     nvtx, nvtx_spl, nvtx_rem, nvtx_test, merge_sign,
+     &     nvtx, nvtx_spl, nvtx_rem, nvtx_test,
      &     narc, narc_spl, narc_rem,
      &     nxarc,nxarc_spl,nxarc_rem,
      &     ivtx_spl, ivtx_rem, ivtx1, ivtx2, nj, nj_spl, ispl,
@@ -70,7 +73,7 @@
       base = pack_base
       ok = .true.
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         call write_title(lulog,wst_dbg_subr,'split_contr4 at work')
         write(lulog,*) 'contr:'
         call prt_contr2(lulog,contr,op_info)
@@ -96,7 +99,8 @@
       !nj_spl = njres_contr(contr_spl) ! does not always work
       nj     = op_info%op_arr(contr%idx_res)%op%njoined
       nj_spl = op_info%op_arr(contr_spl%idx_res)%op%njoined
-      if (ntest.ge.100) write(lulog,*) 'nj, nj_spl: ',nj, nj_spl
+      if (debug.and.ntest.ge.100) 
+     &              write(lulog,*) 'nj, nj_spl: ',nj, nj_spl
 
       allocate(vtxmap(nvtx),vtxmap_i(nvtx),
      &         vtx(nvtx),topo(nvtx,nvtx),xlines(nvtx,nj),
@@ -129,7 +133,7 @@
         nskip = nskip + 1
       end do
 
-      if (ntest.ge.200) then
+      if (debug.and.ntest.ge.200) then
         write(lulog,'("ABC:")')
         call prt_contr_p(lulog,svertex,vtx,topo,
      &       xlines,nvtx,nj)
@@ -157,42 +161,26 @@
         if (vtxmap(ivtx).gt.0)
      &       vtxmap_i(vtxmap(ivtx)) = ivtx
       end do
-      
-      ! get list of all contractions of contr_spl
-      lenlist = 0
-      do ivtx = 1, nvtx
-        if (vtxmap(ivtx).eq.0) cycle
-        do jvtx = ivtx, nvtx
-          if (vtxmap(jvtx).eq.0) cycle
-          lenlist = lenlist+1
-          list(1+(lenlist-1)*2) = ivtx
-          list(2+(lenlist-1)*2) = jvtx
-        end do
-      end do
 
-      if (ntest.ge.100)
-     &     write(lulog, '(1x,a,10(1x,2i3))') 'list: ',list(1:lenlist*2)
-
-      ! remove contractions of contr_spl vertices
-      call topo_remove_arcs(topo,nvtx,list,lenlist)
-
-      if (ntest.ge.200) then
-        write(lulog,'("After topo_remove_arcs:")')
-        call prt_contr_p(lulog,svertex,vtx,topo,
-     &       xlines,nvtx,nj)
-      end if
-      
-      lenlist = lenlist*2
-      call unique_list(list,lenlist)
-
-      if (ntest.ge.100)
-     &    write(lulog, '(1x,a,10(1x,2i3))') 'list (u): ',list(1:lenlist)
-
-      if (ntest.ge.100)
+      if (debug.and.ntest.ge.100)
      &     write(lulog,'(1x,a,10i3)') 'vtxmap:   ',vtxmap
-      if (ntest.ge.100)
+      if (debug.and.ntest.ge.100)
      &     write(lulog,'(1x,a,10i3)') 'vtxmap_i: ',vtxmap_i
 
+
+      ! assemble a list of all vertices in contr that belong to
+      ! contr_spl:
+      list = 0
+      lenlist = 0
+      do ivtx = 1, nvtx
+        if (vtxmap(ivtx)==0) cycle
+        lenlist = lenlist+1
+        list(lenlist) = ivtx
+      end do
+
+      if (debug.and.ntest.ge.100)
+     &    write(lulog, '(1x,a,10(1x,2i3))') 'list: ',list(1:lenlist)
+      
       ! move contr_spl vertices together to avoid ambiguities in the
       ! placement of the "0" nodes and their connectivity
       ! new order on ireo:  ireo(oldvtx) = newvtx
@@ -211,7 +199,7 @@
             end if
          end do
          if (lenlist2.gt.1) then
-           if (ntest.ge.100)
+           if (debug.and.ntest.ge.100)
      &         write(lulog, '(1x,a,20(i3))') 'list2: ',
      &                                        list2(1:lenlist2)
            call topo_approach_vtxs(ireo,sh_sign,
@@ -220,14 +208,54 @@
            exit ! TODO: I currently cannot do this more than once
          end if
       end do
-      if (ntest.ge.200) then
+      if (debug.and.ntest.ge.200) then
         write(lulog,'("After topo_approach_vtxs:")')
+        write(lulog,'("sh_sign:",i4)') sh_sign
         call prt_contr_p(lulog,svertex,vtx,topo,
      &       xlines,nvtx,nj)
       end if
 c
-      if (ntest.ge.100)
-     &     write(lulog, '(1x,a,10i3)') 'ireo : ',ireo
+      ! ireo(oldvtx) = newvtx
+      ! inverted reordering array:
+      ! ireo_i(newvtx) = oldvtx
+      do ivtx = 1, nvtx
+        ireo_i(ireo(ivtx)) = ivtx
+      end do
+
+      if (debug.and.ntest.ge.100)
+     &     write(lulog, '(1x,a,10i3)') 'ireo:  ',ireo
+      if (debug.and.ntest.ge.100)
+     &     write(lulog, '(1x,a,10i3)') 'ireo_i: ',ireo_i
+      
+      ! now remove all contracted indices of contr_spl
+      ! get list of all contractions of contr_spl
+      lenlist = 0
+      list = 0
+      do ivtx = 1, nvtx
+        if (vtxmap(ireo_i(ivtx)).eq.0) cycle
+        do jvtx = ivtx, nvtx  ! no harm but it could be ivtx+1, I think
+          if (vtxmap(ireo_i(jvtx)).eq.0) cycle
+          lenlist = lenlist+1
+          list(1+(lenlist-1)*2) = ivtx
+          list(2+(lenlist-1)*2) = jvtx
+        end do
+      end do
+
+      if (debug.and.ntest.ge.100)
+     &     write(lulog, '(1x,a,10(1x,2i3))') 'list: ',list(1:lenlist*2)
+
+      ! remove contractions of contr_spl vertices
+      ! no sign control required here
+      call topo_remove_arcs(topo,nvtx,list,lenlist)
+
+      if (debug.and.ntest.ge.200) then
+        write(lulog,'("After topo_remove_arcs:")')
+        call prt_contr_p(lulog,svertex,vtx,topo,
+     &       xlines,nvtx,nj)
+      end if
+      
+c      lenlist = lenlist*2
+c      call unique_list(list,lenlist)
 
       ! set: reo
       !      vtxmap
@@ -246,7 +274,7 @@ c
           trsp = vtxmap(jvtx).ne.0                  ! if 2nd was non-zero, we have to transpose xline
           occ_cnt = 0
           icnt = int8_expand(cnt,base,occ_cnt)
-          if (ntest.ge.300) then
+          if (debug.and.ntest.ge.300) then
             write(lulog,'(1x,"ivtx,jvtx,reo(ivtx),reo(jvtx)",4i4)')
      &           ivtx,jvtx,ireo(ivtx),ireo(jvtx)
             write(lulog,'(1x,"ivtx_spl,cnt,trsp",i4,i10,x,l)')
@@ -255,12 +283,12 @@ c
           end if
           ! check overlap with corresp. xline
           ij_loop: do ij = 1, nj_spl
-            if (ntest.ge.300) write(lulog,'(4x,"ij:",i4,i10)')
+            if (debug.and.ntest.ge.300) write(lulog,'(4x,"ij:",i4,i10)')
      &           ij, xlines_spl(ivtx_spl,ij)
             if (xlines_spl(ivtx_spl,ij).ne.0) then
               occ_x = 0          
               icnt = int8_expand(xlines_spl(ivtx_spl,ij),base,occ_x)
-              if (ntest.ge.300) then
+              if (debug.and.ntest.ge.300) then
                 write(lulog,'(4x,">ij:",i4,2x,l)')
      &               ij,iocc_bound('<=',occ_cnt,.false.,occ_x,trsp)
                 call wrt_occ(lulog,occ_x)
@@ -284,29 +312,20 @@ c
         end do
       end do
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         write(lulog,'(1x,"ixrc_map:")')
         do ivtx = 1, nvtx
           write(lulog,'(1x,20i4)') ixrc_map(ivtx,1:nvtx)
         end do
       end if
         
-      ! inverted reordering array:
-      ! ireo_i(newvtx) = oldvtx
-      do ivtx = 1, nvtx
-        ireo_i(ireo(ivtx)) = ivtx
-      end do
       
       if (sh_sign.ne.1) then
-        if (ntest.ge.100) write(lulog,*) 'sign change!'
+        if (debug.and.ntest.ge.100) write(lulog,*) 'sign change!'
         contr_rem%fac = -contr_rem%fac
       end if
 
       ! make sure that isupervtx_spl(1) is set
-      if (ntest.ge.100)
-     &     write(lulog, '(1x,a,10i3)') 'ireo:  ',ireo
-      if (ntest.ge.100)
-     &     write(lulog, '(1x,a,10i3)') 'ireo_i: ',ireo_i
       
       ! use reo and vtxmap to build ivtx_new
       ! the vertices belonging to the spl are indicated by negative numbers
@@ -361,7 +380,7 @@ c dbg
       end do
 
       nvtx_rem = ivtx_rem
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         write(lulog,*) 'nvtx_rem: ',nvtx_rem
         write(lulog,'(1x,a,10i3)') 'ivtx_new0: ',
      &       ivtx_new0(1:nvtx_rem)
@@ -373,7 +392,7 @@ c dbg
      &       ivtx_new(ivtx_new0(ivtx)) = ivtx
       end do
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         write(lulog,'(1x,a,10i3)') 'ivtx_new:  ',
      &       ivtx_new(1:nvtx)
       end if
@@ -519,7 +538,7 @@ c     &       spl_nxarc4vtx,spl_map,topo_sv)
      &         svertex_spl)
       deallocate(ivtx_new0,ivtx_new)
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         if (ok) then
           write(lulog,*) 'final contr_rem:'
           call prt_contr2(lulog,contr_rem,op_info)

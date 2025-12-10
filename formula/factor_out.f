@@ -63,7 +63,7 @@
 
       ! factor out the sub-expressions
       call factor_out_subexpr2(form_link,fintm_head,.false.,
-     &                         nrpl,nspl,op_info)
+     &                         nrpl,nspl,op_info,.false.)
       if (iprlvl.ge.2) write(lulog,
      &     '(5x,i6," replacements with ",i6," splits")')
      &     nrpl, nspl

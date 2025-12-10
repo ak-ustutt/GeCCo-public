@@ -65,7 +65,7 @@
 
       logical ::
      &     bufopori, bufopreo, first,
-     &     nonzero, ms_fix, fix_success
+     &     nonzero, ms_fix, fix_success, ltmp
       integer ::
      &     njoined_opori, njoined_opreo, ngam,
      &     mstopori,mstopreo,
@@ -217,7 +217,9 @@
 
       ifree = mem_setmark('reo1')
 
-      if (ffopori%buffered.and.ffopori%incore(iblkopori).ge.0) then
+      ltmp = ffopori%buffered
+      if (ltmp) ltmp = ffopori%incore(iblkopori).ge.0
+      if (ltmp) then
         bufopori = .true.
         xopori => ffopori%buffer(idxst_opori:)
       else
@@ -232,7 +234,9 @@
         call get_vec(ffopori,xopori,idoffopori+idxst_opori,
      &                          idoffopori+idxst_opori-1+lenopori)
       end if
-      if (ffopreo%buffered.and.ffopreo%incore(iblkopreo).ge.0) then
+      ltmp = ffopreo%buffered
+      if (ltmp) ltmp = ffopreo%incore(iblkopreo).ge.0
+      if (ltmp) then
         bufopreo = .true.
         xopreo => ffopreo%buffer(idxst_opreo:)
       else

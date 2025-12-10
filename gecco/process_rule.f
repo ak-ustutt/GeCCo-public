@@ -64,7 +64,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps, trplt, inv, split,
+     &     use_1,trnsps, trplt, inv, split, fix,
      &     multi,    ! Multireference or single reference ITF code
      &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
@@ -1043,10 +1043,6 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
         call get_arg('LIST',rule,tgt_info,val_label=label)
         call get_arg('R-SYS',rule,tgt_info,val_int_list=iRdef,
      &               ndim=norb)
-c dbg
-        print *,'norb = ',norb
-        print *,'iRdef = ',iRdef(1:norb)
-c dbg
         ! trap, if we get so far ...
         if (norb.gt.maxterms)
      &       call quit(1,'process_rule','norb.gt.maxterms')
@@ -1242,9 +1238,6 @@ c dbg
        if(mel_pnt%fhand%unit.le.0) closeit = .true.
        do idx = nroots,1,-1
         call switch_mel_record(mel_pnt,idx)
-c dbg
-c        print*,trim(label_list(idx))
-c dbgend
         call get_mel(mel_pnt2,label_list(idx),OLD)
         closeit = .false.
         if(mel_pnt2%fhand%unit.le.0) then
@@ -1422,9 +1415,13 @@ c          mode = 'dia-R12'
         call get_arg('LIST',rule,tgt_info,
      &               val_label_list=label_list(nop+1:),ndim=nop2)
         call get_arg('MODE',rule,tgt_info,val_str=mode)
+        call get_arg('SV_THR',rule,tgt_info,val_rl8_list=fac,ndim=nfac)
+        call get_arg('SV_FIX',rule,tgt_info,val_log=fix)
+        call get_arg('SV_FILE',rule,tgt_info,val_str=strscr)
 
         if (form_test) return
         call inv_op(nop,label_list(1:),nop2,label_list(nop+1:),mode,
+     &       nfac,fac,fix,strscr,
      &       op_info,orb_info,str_info,strmap_info)
 
 *----------------------------------------------------------------------*

@@ -156,7 +156,7 @@ c     temp_del%op_name = op_c12
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm,.true.)
         call factor_out_subexpr2(flist,fl_intm,.false.,
-     &                           nrpl,nspl,op_info)
+     &                           nrpl,nspl,op_info,.false.)
 
         ! Now delete all terms including Z.
         allocate(del_list%del_cond_item(1))
@@ -188,7 +188,7 @@ c     temp_del%op_name = op_c12
         call init_formula(fl_intm)
         call read_form_list(ffintm,fl_intm,.true.)
         call factor_out_subexpr2(flist,fl_intm,.false.,
-     &                           nrpl,nspl,op_info)
+     &                           nrpl,nspl,op_info,.false.)
 
         ! Now delete all terms including Z and with >=2 F12 terms.
         allocate(del_list%del_cond_item(2))

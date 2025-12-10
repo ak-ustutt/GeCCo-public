@@ -181,6 +181,7 @@ c dbg
      &       rule%n_parameter_strings,title,imode,mode)
 
         call inv_op(1,rule%labels(2),1,rule%labels(1),mode,
+     &       1,-1.0,.false.,'DUMMY',
      &       op_info,orb_info,str_info,strmap_info)
 
       case(ADD)

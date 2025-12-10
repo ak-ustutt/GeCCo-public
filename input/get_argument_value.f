@@ -36,7 +36,7 @@
       integer ::
      &     iargcount, icount_target, iargcount_target, type, dim, idx
       logical ::
-     &     try_default, succ
+     &     try_default, succ, ltmp
 
       if (.not.associated(keyword_history%down_h))
      &     call quit(1,'get_argument_value','invalid keyword history')
@@ -55,7 +55,10 @@
       succ = .false.
 
       ! try default instead
-      if ((.not.associated(curkey).or..not.associated(curkey%arg_h))
+      ltmp = associated(curkey)
+      if (ltmp) ltmp = associated(curkey%arg_h)
+      !if ((.not.associated(curkey).or..not.associated(curkey%arg_h))
+      if (.not.ltmp
      &     .and.iargcount_target.eq.1) then
         try_default = .true.
         call find_node(keyword_root,curkey,context)

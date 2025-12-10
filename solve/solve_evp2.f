@@ -378,9 +378,6 @@
       end do
       ! read formula
       call read_form_list(form_mvp%fhand,fl_mvp,.true.)
-      ! number of info values returned on xret
-      nout = depend%ntargets
-      allocate(xret(nout))
 
       ! records with trial vectors and Mv-products, needed in evp_control:
       ifree = mem_alloc_int(irectrv,nroots,'rectrv')
@@ -555,7 +552,6 @@
        end do trial_gen_loop
        call del_guess_gen(guess_gen)
       endif
-      deallocate(xret)
       ! number of info values returned on xret
       nout = depend%ntargets
       allocate(xret(nout))

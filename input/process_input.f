@@ -22,7 +22,7 @@
      &     current
 
       integer ::
-     &     icnt, len, nfreeze, ncnt, ncnt2, nactel, iread
+     &     icnt, len, nfreeze, ncnt, ncnt2, nactel, iread, mult
       integer, allocatable ::
      &     iscr(:)
       character ::
@@ -271,8 +271,11 @@ cmh       Change of inactive orbitals currently leads to wrong Fock Op.
       if (spinadapt.lt.0) then ! set up by default
         ! full spin adaptation for non-singlet MRCC, else none
         spinadapt = 0
-        if (is_keyword_set('method.MRCC').gt.0.and.orb_info%imult.ne.1)
-     &     spinadapt = 3
+        if (is_keyword_set('method.MRCC').gt.0) then
+           call get_argument_value('method.MR','mult',ival=mult)
+           if (mult==0) mult = orb_info%imult
+           if (mult.ne.1) spinadapt = 3
+        end if
       end if
 
       return

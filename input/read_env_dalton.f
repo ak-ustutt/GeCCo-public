@@ -118,6 +118,7 @@
       ! If necessary, deal with auxiliary basis functions.
       caborb=0 
       linind(1:nsym)=0
+      auxbas(1:nsym)=0 ! make sure that it is initialized
       if(logaux)then
         open(file='AUXBAS',unit=999,status='old',form='formatted',
      &       access='sequential')

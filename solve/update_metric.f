@@ -118,6 +118,7 @@
           call inv_op(1,trim(me_special(7)%mel%label),
      &                1,trim(me_special(7)%mel%label),
      &                'pseudoinv  ',
+     &                1,-1.0,.false.,'SINGVALS',
      &                op_info,orb_info,str_info,strmap_info)
         end if
       end if
@@ -129,12 +130,14 @@
      &                  trim(me_special(7)%mel%label)/),
      &              1,trim(me_special(6)%mel%label),
      &              'invsqrt    ',
+     &              1,-1.0d0,.false.,'SINGVALS',   ! defaults
      &              op_info,orb_info,str_info,strmap_info)
       else
         ! "normal" route
         call inv_op(1,trim(me_special(5)%mel%label),  ! input: overlaps (in active space)
      &              1,trim(me_special(6)%mel%label),  ! output: inverse on non-sing. subspace
      &              'invsqrt    ',                    !         note: (5) contains projector!
+     &              1,-1.0d0,.false.,'SINGVALS',
      &              op_info,orb_info,str_info,strmap_info)
       end if
 
@@ -198,6 +201,7 @@ c     &             13,.true.)   ! dirty: reo vtx. 1 --> 3
      &              2,(/trim(me_special(idx_jacuni)%mel%label),
      &                  trim(me_special(6)%mel%label)/),
      &              'invdiagmult',
+     &              1,-1.0,.false.,'SINGVALS',
      &              op_info,orb_info,str_info,strmap_info)
         ! reorder (again) to transformation matrix
         call reo_mel(trim(me_special(2)%mel%label),

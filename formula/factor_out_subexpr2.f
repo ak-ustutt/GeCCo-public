@@ -1,6 +1,6 @@
 *----------------------------------------------------------------------*
       subroutine factor_out_subexpr2(fl_tgt,fl_intm,split,
-     &                               nrpl,nspl,op_info)
+     &                               nrpl,nspl,op_info,debug)
 *----------------------------------------------------------------------*
 *     input: a definition of an intermediate on fl_intm
 *            a target formula on fl_tgt
@@ -30,7 +30,7 @@
       integer, intent(out) ::
      &     nrpl, nspl
       logical, intent(in) ::
-     &     split
+     &     split, debug
       ! only for debug output:
       type(operator_info), intent(in) ::
      &     op_info
@@ -59,7 +59,7 @@
       integer, external ::
      &     idxlist
 
-      if (ntest.ge.100) then
+      if (debug.and.ntest.ge.100) then
         write(lulog,*) '==================================='
         write(lulog,*) ' factor_out_subexpr messing around'
         write(lulog,*) '==================================='
@@ -92,7 +92,7 @@ c dbgend
           if (.not.associated(fl_tgt_current%next))
      &         call quit(1,'factor_out_subexpr2',
      &         'unexpected end of list (target)')
-          if (ntest.ge.100) then
+          if (debug.and.ntest.ge.100) then
             write(lulog,'(70("="))')
             write(lulog,*) 'New operator target: ',idxop_tgt
             write(lulog,'(70("="))')
@@ -111,7 +111,7 @@ c dbgend
      &       call quit(1,'factor_out_subexpr2','I''m confused ...')
 
         iblk_tgt = fl_tgt_current%contr%iblk_res
-        if (ntest.ge.1000) then
+        if (debug.and.ntest.ge.1000) then
           write(lulog,*) 'current term:'
           call prt_contr2(lulog,fl_tgt_current%contr,op_info)
         end if
@@ -127,10 +127,11 @@ c dbgend
         call find_possible_subexpr(nposs,fpl_intm_start,
      &       fl_tgt_current,fl_intm,op_info)
 
-        if (ntest.ge.1000) then
+        if (debug.and.ntest.ge.1000) then
           write(lulog,*) '# of possible replacements: ',nposs
         end if
-        if (ntest.ge.100.and.ntest.lt.1000.and.nposs.gt.0) then
+        if (debug.and.ntest.ge.100.and.
+     &      ntest.lt.1000.and.nposs.gt.0) then
           write(lulog,*) 'found this term:'
           call prt_contr2(lulog,fl_tgt_current%contr,op_info)
           write(lulog,*) '# of possible replacements: ',nposs
@@ -153,7 +154,7 @@ c dbgend
             iblk_int = fl_intm_pnt%contr%iblk_res
             iposs_blk(iblk_int) = iposs_blk(iblk_int) + 1
 
-            if (ntest.ge.100) then
+            if (debug.and.ntest.ge.100) then
               write(lulog,'(x,2(a,i4))') 'poss. # ',iposs_blk(iblk_int),
      &           ' of block ',iblk_int,' (starts with:)'
               call prt_contr2(lulog,fl_intm_pnt%contr,op_info)
@@ -173,20 +174,20 @@ c dbgend
             ! collect blocks on array fa_intm_in_tgt
             ! the new contraction with the intermediate is on
             ! contr_rpl
-            if (ntest.ge.100.and..not.success) then
+            if (debug.and.ntest.ge.100.and..not.success) then
               write(lulog,*) 'Now calling find_contr_w_intm2'
             end if
             call find_contr_w_intm2(success,fpl_intm_in_tgt,contr_rpl,
      &         fl_tgt_current,fpl_intm_c2blk,iposs_blk(iblk_int),
      &         nmod_max,nmod,imod,xmod,split,
-     &         op_info)
+     &         op_info,debug)
 
-            if (ntest.ge.100.and..not.success) then
+            if (debug.and.ntest.ge.100.and..not.success) then
               write(lulog,*) 'NO SUCCESS'
             end if
 
             if (success) then
-              if (ntest.ge.100) then
+              if (debug.and.ntest.ge.100) then
                 write(lulog,*) 'SUCCESS'
                 write(lulog,*) 'now modifying formula list'
               end if
@@ -202,7 +203,8 @@ c dbgend
                 idx = idxlist(iterm,imod,nmod,1)  ! is the current term on the list?
                 if (idx.gt.0) then ! just change factor
                   nspl = nspl + 1 ! report this as "split"
-                  if (ntest.ge.100) write(lulog,*) 'splitting active'
+                  if (debug.and.ntest.ge.100) 
+     &                  write(lulog,*) 'splitting active'
                   fpl_intm_in_tgt_pnt%item%contr%fac = xmod(idx)
                   cycle
                 end if
