@@ -3453,6 +3453,14 @@ c dbg
       call set_rule('Z2INT_R12_DIR',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+c dbg
+c      call set_rule2('Z2INT_R12_DIR',PRINT_MEL,tgt_info)
+c      call set_arg('Z2INT_R12_DIR',PRINT_MEL,'LIST',1,tgt_info,
+c     &         val_label=(/'Z2LIST'/))
+c      call set_arg('Z2INT_R12_DIR',PRINT_MEL,'COMMENT',1,tgt_info,
+c     &         val_str='>>> Z2 (direct):')
+c
+c dbg
 
       ! set Z2 (reformulated evaluation)
       call add_target('Z2INT_R12_REF',ttype_frm,.false.,tgt_info)
@@ -3477,6 +3485,14 @@ c dbg
       call set_rule('Z2INT_R12_REF',ttype_opme,EVAL,
      &     labels,1,0,
      &     parameters,0,tgt_info)
+c dbg
+c      call set_rule2('Z2INT_R12_REF',PRINT_MEL,tgt_info)
+c      call set_arg('Z2INT_R12_REF',PRINT_MEL,'LIST',1,tgt_info,
+c     &         val_label=(/'Z2LIST'/))
+c      call set_arg('Z2INT_R12_REF',PRINT_MEL,'COMMENT',1,tgt_info,
+c     &         val_str='>>> Z2 (CABS):')
+c
+c dbg
 
       call add_target('Z2INT_R12_EVAL',ttype_frm,.false.,tgt_info)
       call set_dependency('Z2INT_R12_EVAL','DEF-Z2LIST',tgt_info)
