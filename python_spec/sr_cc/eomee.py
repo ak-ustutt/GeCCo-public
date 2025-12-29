@@ -47,7 +47,14 @@ _mult = keywords.get('calculate.excitation.mult')
 
 moments = keywords.is_keyword_set('calculate.excitation.moments')
 
+# special switch for transition moments from ground state: TODO - more detailed control
+moments0 = moments
+export = True
+
 use_z = keywords.is_keyword_set('calculate.excitation.z-vector')
+
+use_z0 = use_z
+
 
 print("In EOM-EE module")
 
@@ -79,6 +86,9 @@ maxexc = int(keywords.get('method.CC.maxexc'))
 maxexc = int(maxexc) if maxexc is not None else 2
 truncate = keywords.get('method.CC.truncate')
 
+formalism=keywords.get('method.CC.xs_formalism')
+formalism=formalism.upper() if formalism is not None else "EOM"
+
 #DEF_EXCITATION({LABEL:'REX',MIN_RANK:minexc,MAX_RANK:maxexc}) 
 CLONE_OPERATOR({LABEL:'REX',TEMPLATE:'T'})
 CLONE_OPERATOR({LABEL:'LEX',TEMPLATE:'REX',ADJOINT:True})
@@ -91,7 +101,13 @@ CLONE_OPERATOR({LABEL:'LEX_A',TEMPLATE:'REX',ADJOINT:True})
 DEF_SCALAR({LABEL:'L_EX'})
 DEF_SCALAR({LABEL:'E_EX'})
 
+# EOM formalism: reference state contribution to excited state
+DEF_SCALAR({LABEL:'REX0'})
+
 DEF_SCALAR({LABEL:'NORM_EX'})
+
+DEF_HAMILTONIAN({LABEL:'OP1',MIN_RANK:1,MAX_RANK:1})
+DEF_HAMILTONIAN({LABEL:'OP01',MIN_RANK:0,MAX_RANK:1})
 
 
 new_target("EOMEE_EQS")
@@ -99,10 +115,16 @@ depend('EOMEE_OPS','CC_LAGRANGIAN','CC_EQS')
 
 DERIVATIVE({LABEL_RES:'F_A_REX',LABEL_IN:'F_CC_OMG',OP_RES:'A_REX',OP_DERIV:'T',OP_MULT:'REX'})
 
-form_e_ip = stf.Formula("F_E_EX:E_EX=<REX^+*A_REX>")
-form_e_ip.set_rule()
+# expression for energy
+form_e_ex = stf.Formula("F_E_EX:E_EX=<REX^+*A_REX>")
+form_e_ex.set_rule()
 
-
+# expression for reference state contribution:
+form_e_rex0 = stf.Formula("F_REX0:REX0=<H*REX>")
+form_e_rex0.append("<[H,T]*REX>")
+form_e_rex0.set_rule()
+# Note: to get the actual REX0, it must be divided by the excitation energy
+# For all non-totally symmetric excitations, a zero should be provided or the contribution is skipped
 
 new_target("EOMEE_L_EQS")
 depend('EOMEE_OPS','CC_LAGRANGIAN','CC_LAMBDA_EQS')
@@ -124,7 +146,6 @@ DEF_OP_FROM_OCC({LABEL:'CC_EOM_D',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
 #DERIVATIVE({LABEL_RES:'F_EOM_D',LABEL_IN:'F_EOM_D_0B',OP_RES:'CC_EOM_D',OP_DERIV:'H'})
 
 # more EOM like:
-DEF_HAMILTONIAN({LABEL:'OP1',MIN_RANK:1,MAX_RANK:1})
 form_exprop = stf.Formula("F_EOM_D_0B:LCC=<LEX*OP1*REX>")
 form_exprop.append("<LEX*[OP1,T]*REX>")
 form_exprop.append("<LEX*(1/2)*[[OP1,T],T]*REX>")  # is at most quadratic in T
@@ -143,6 +164,81 @@ if use_z:
     form_expropZ.set_rule()
 
     DERIVATIVE({LABEL_RES:'F_EOM_DZ',LABEL_IN:'F_EOM_DZ_0B',OP_RES:'CC_EOM_DZ',OP_DERIV:'OP1'})
+
+
+# transition moments from ground state
+new_target("EOMEE_TM0F")
+depend('EOMEE_OPS','CC_LAGRANGIAN')
+
+DEF_OP_FROM_OCC({LABEL:'CC_EOM_TMF0',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
+DEF_OP_FROM_OCC({LABEL:'CC_EOM_TM0F',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
+# needed in some cases:
+DEF_OP_FROM_OCC({LABEL:'CC_EOM_TM0F_SUM',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
+
+# f0 transition moment
+# is the same for LR and EOM
+form_tmf0 = stf.Formula("F_EOM_TMF0_0:LCC=<LEX*OP1>")
+form_tmf0.append("<LEX*[OP1,T]>")
+form_tmf0.append("<LEX*(1/2)*[[OP1,T],T]>")
+form_tmf0.set_rule()
+
+DERIVATIVE({LABEL_RES:'F_EOM_TMF0',LABEL_IN:'F_EOM_TMF0_0',OP_RES:'CC_EOM_TMF0',OP_DERIV:'OP1'})
+
+# 0f transition moment
+if formalism == "EOM":
+   form_tm0f = stf.Formula("F_EOM_TM0F_0:LCC=<OP1*REX>")
+   form_tm0f.append("<[OP1,T]*REX>") # no contribution
+   form_tm0f.append("<(1/2)*[[OP1,T],T]*REX>") # no contribution
+   form_tm0f.append("<LAM*OP1*REX>")
+   form_tm0f.append("<LAM*[OP1,T]*REX>")
+   form_tm0f.append("<LAM*(1/2)*[[OP1,T],T]*REX>")
+   form_tm0f.set_rule()
+else:
+   form_tm0f = stf.Formula("F_EOM_TM0F_0:LCC=<OP1*REX>")
+   form_tm0f.append("<LAM*[OP1,REX]>")
+   form_tm0f.append("<LAM*[[OP1,T],REX]>")
+   form_tm0f.append("<LAM*(1/2)*[[[OP1,T],T],REX]>")
+   form_tm0f.set_rule()
+
+DERIVATIVE({LABEL_RES:'F_EOM_TM0F',LABEL_IN:'F_EOM_TM0F_0',OP_RES:'CC_EOM_TM0F',OP_DERIV:'OP1'})
+
+if formalism=="EOM":
+   # R0 contribution to 0f transition moment:
+   DEF_OP_FROM_OCC({LABEL:'CC_EOM_TM0F_R0',JOIN:2,DESCR:',;,|H,;,H|,;P,H|H,P;,|,P;P,'})
+   form_tm0f_r0 = stf.Formula("F_EOM_TM0F_R0_0:LCC=<OP01*REX0>")
+   form_tm0f_r0.append("<[OP01,T]*REX0>")
+   form_tm0f_r0.append("<(1/2)*[[OP01,T],T]*REX0>")
+   form_tm0f_r0.append("<LAM*OP01*REX0>")
+   form_tm0f_r0.append("<LAM*[OP01,T]*REX0>")
+   form_tm0f_r0.append("<LAM*(1/2)*[[OP01,T],T]*REX0>")
+   form_tm0f_r0.set_rule()
+
+   DERIVATIVE({LABEL_RES:'F_EOM_TM0F_R0',LABEL_IN:'F_EOM_TM0F_R0_0',OP_RES:'CC_EOM_TM0F_R0',OP_DERIV:'OP01'})
+
+if formalism=="LR":
+    depend("LREE_M")
+    DEF_OP_FROM_OCC({LABEL:'CC_EOM_TM0F_M',JOIN:2,DESCR:'H,;,H|,;P,H|H,P;,|,P;P,'})
+    form_tm0f_m = stf.Formula("F_EOM_TM0F_M_0:LCC=<M*OP1>")
+    form_tm0f_m.append("<M*[OP1,T]>")
+    form_tm0f_m.append("<M*(1/2)*[[OP1,T],T]>")
+    form_tm0f_m.set_rule()
+
+    DERIVATIVE({LABEL_RES:'F_EOM_TM0F_M',LABEL_IN:'F_EOM_TM0F_M_0',OP_RES:'CC_EOM_TM0F_M',OP_DERIV:'OP1'})
+
+
+new_target("LREE_M")
+depend('EOMEE_OPS','EOMEE_L_EQS','CC_LAMBDA_EQS')
+
+CLONE_OPERATOR({LABEL:'MRHS',TEMPLATE:'LEX'})
+CLONE_OPERATOR({LABEL:'M',TEMPLATE:'LEX'})
+CLONE_OPERATOR({LABEL:'M_A',TEMPLATE:'LEX'})
+
+# transformation
+DERIVATIVE({LABEL_RES:'F_LR_M_A',LABEL_IN:'F_CC_LAM_A',OP_RES:'M_A',OP_DERIV:'LAM',OP_MULT:'M'})
+
+# rhs
+DERIVATIVE({LABEL_RES:'F_LR_MRHS0',LABEL_IN:'F_CC_LAG',OP_RES:'NORM_EX',OP_DERIV:'T',OP_MULT:'REX'})  # NORM_EX is dummy
+DERIVATIVE({LABEL_RES:'F_LR_MRHS',LABEL_IN:'F_LR_MRHS0',OP_RES:'MRHS',OP_DERIV:'T'})
 
 
 new_target("EOMEE_Z")
@@ -208,6 +304,9 @@ for _icnt in range (0,_ncnt):
                   'DIAG_EX':[_isym+1,_ms_0,_msc],
                   'E_EX':[1,0,0]}
 
+        if _isym==0 and _msc==1:
+            _op_list['REX0']=[1,0,0]
+
         for _op in _op_list:
             DEF_ME_LIST({LIST:'ME_'+_op+_extension,OPERATOR:_op,IRREP:_op_list[_op][0],
                         '2MS':_op_list[_op][1],AB_SYM:_op_list[_op][2],MIN_REC:1,MAX_REC:n_root})
@@ -244,7 +343,8 @@ for _icnt in range (0,_ncnt):
                   LABELS_IN:'F_A_REX'})
         OPTIMIZE({LABEL_OPT:'FOPT_E_EX'+_extension,LABELS_IN:'F_E_EX'})
 
-
+        if _isym==0 and _msc==1:
+            OPTIMIZE({LABEL_OPT:'FOPT_REX0'+_extension,LABELS_IN:'F_REX0'})
 
       
         new_target('EOMEE_L_OPT_F'+_extension)
@@ -301,13 +401,24 @@ for _icnt in range (0,_ncnt):
 
             EVALUATE({FORM:'FOPT_E_EX'+_extension})
 
+            if _isym==0 and _msc==1:
+                SET_STATE({LISTS:['ME_REX0'+_extension],
+                           ISTATE:i})
+                EVALUATE({FORM:'FOPT_REX0'+_extension})
+                SCALE({LIST_RES:'ME_REX0'+_extension,LIST_INP:'ME_REX0'+_extension,
+                       LIST_SCAL:'ME_E_EX'+_extension,FAC:1.0,INV:True})
+
+
             PRINT_MEL({LIST:'ME_E_EX'+_extension,COMMENT:'EOM EE STATE '+str(_isym+1)+'.'+str(i)+' excitation energy: ',FORMAT:'SCAL F24.14'})
             PUSH_RESULT({LIST:'ME_E_EX'+_extension,COMMENT:'EOM-EE_'+str(_isym+1)+'.'+str(i), FORMAT:"SCAL F20.14"})
+            if _isym==0 and _msc==1 and formalism=="EOM":
+                PRINT_MEL({LIST:'ME_REX0'+_extension,COMMENT:'                             <0|R> = ',FORMAT:'SCAL F24.14'})
 
         PRINT({STRING:''})
         PRINT({STRING:'Analysis of excitation vectors: '})
         ANALYZE_MEL({LISTS:'ME_REX'+_extension,
                      LISTS_CV:'ME_REX'+_extension})
+
 
         
 ### Left equations to be solved (if req.)
@@ -355,6 +466,160 @@ for _icnt in range (0,_ncnt):
         ANALYZE_MEL({LISTS:'ME_REX'+_extension,
                      LISTS_CV:'ME_LEX_T'+_extension})
         PRINT({STRING:''})
+
+
+# do here a loop to compute all moments from ground to excited states:
+if moments0:
+    for _icnt in range (0,_ncnt):
+
+        _sym_arr = _sym[_icnt]
+        _s2 =int(_mult[_icnt])
+
+        _ms = 0
+        if ((_ms == 0) and (_s2  == 1)):
+            _msc = 1
+        elif ((_ms == 0) and (_s2 == 3)):
+            _msc = -1
+        else:
+            quit_error('EOMEE knows only singlets and triplets, found: (2S+1) = '+str(_s2))
+
+        for _isym in range (0,_nsym):
+
+            n_root = int(_sym_arr[_isym])
+
+            if( n_root == 0):
+                continue
+
+            _ms_0 = 0
+
+            _extension = '_' + str(_isym+1) + '_' + str(_msc)    
+
+            new_target('EOMEE_TM0'+_extension)
+            required()
+
+            depend('EOMEE_TM0F','EOMEE_LSOLVE'+_extension,'EOMEE_SOLVE'+_extension)
+
+            n_dens = n_root
+
+            PRINT({STRING:f'Transition moments in {formalism} formalism:'})
+
+            DEF_ME_LIST({LIST:'ME_CC_EOM_TM0F'+_extension,OPERATOR:'CC_EOM_TM0F',
+                IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+            DEF_ME_LIST({LIST:'ME_CC_EOM_TMF0'+_extension,OPERATOR:'CC_EOM_TMF0',
+                IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+
+            if _isym==0 and _msc==1 and formalism=="EOM":
+                DEF_ME_LIST({LIST:'ME_CC_EOM_TM0F_R0'+_extension,OPERATOR:'CC_EOM_TM0F_R0',
+                    IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+            
+            ASSIGN_ME2OP({LIST:'ME_LEX'+_extension,OPERATOR:'LEX'})
+            ASSIGN_ME2OP({LIST:'ME_REX'+_extension,OPERATOR:'REX'})
+
+
+            if formalism=="LR":
+                depend("LREE_M")
+
+                DEF_ME_LIST({LIST:'ME_CC_EOM_TM0F_M'+_extension,OPERATOR:'CC_EOM_TM0F_M',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+                DEF_ME_LIST({LIST:'ME_MRHS'+_extension,OPERATOR:'MRHS',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+                DEF_ME_LIST({LIST:'ME_M'+_extension,OPERATOR:'M',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+                for istate in range(n_root):
+                    SET_STATE({LISTS:['ME_M'+_extension,'ME_E_EX'+_extension],ISTATE:istate+1})
+                    SET_FREQ({LIST:'ME_M'+_extension,LIST_FREQ:'ME_E_EX'+_extension})
+                    PRINT_MEL({LIST:'ME_E_EX'+_extension,COMMENT:'Shift for root '+str(_isym+1)+'.'+str(i)+': ',FORMAT:'SCAL F24.14'})
+                DEF_ME_LIST({LIST:'ME_M_A'+_extension,OPERATOR:'M_A',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+                DEF_ME_LIST({LIST:'ME_DIAG_M'+_extension,OPERATOR:'DIAG_LEX',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1})
+
+                OPTIMIZE({LABEL_OPT:'FOPT_LR_M'+_extension,LABELS_IN:['F_LR_MRHS','F_LR_M_A']})
+                #OPTIMIZE({LABEL_OPT:'FOPT_LR_TM0F_M'+_extension,LABELS_IN:'F_EOM_TM0F_M'})
+
+                PRECONDITIONER({LIST_PRC:'ME_DIAG_M'+_extension,
+                        LIST_INP:'H0'})
+
+                PRINT({STRING:'Solving M equations for symmetry '+str(_isym+1)})
+                SOLVE_LEQ({LIST_OPT:'ME_M'+_extension,
+                        LIST_PRC:'ME_DIAG_M'+_extension,
+                        OP_MVP:'M_A',
+                        OP_SVP:'M',
+                        OP_RHS:'MRHS',
+                        FORM:'FOPT_LR_M'+_extension,
+                        MODE:'DIA',
+                        N_ROOTS:n_dens})
+
+            if formalism=="LR" or (formalism=="EOM" and _isym==0 and _msc==1):
+                DEF_ME_LIST({LIST:'ME_CC_EOM_TM0F_SUM'+_extension,OPERATOR:'CC_EOM_TM0F_SUM',
+                        IRREP:_isym+1,'2MS':0,AB_SYM:+1,MIN_REC:1,MAX_REC:n_dens})
+
+            label_list = ['F_EOM_TMF0','F_EOM_TM0F']
+            if _isym==0 and _msc==1 and formalism=="EOM":
+                label_list.append('F_EOM_TM0F_R0')
+            if formalism=="LR":
+                label_list.append('F_EOM_TM0F_M')
+            OPTIMIZE({LABEL_OPT:'FOPT_EOM_TM0F'+_extension,LABELS_IN:label_list})
+
+
+            for istate in range(n_root):
+                SET_STATE({LISTS:'ME_LEX'+_extension,ISTATE:istate+1})
+                SET_STATE({LISTS:'ME_REX'+_extension,ISTATE:istate+1})
+
+                SET_STATE({LISTS:'ME_CC_EOM_TM0F'+_extension,ISTATE:istate+1})
+                SET_STATE({LISTS:'ME_CC_EOM_TMF0'+_extension,ISTATE:istate+1})
+
+                if  _isym==0 and _msc==1 and formalism=="EOM":
+                    SET_STATE({LISTS:'ME_REX0'+_extension,ISTATE:istate+1})
+                    SET_STATE({LISTS:'ME_CC_EOM_TM0F_R0'+_extension,ISTATE:istate+1})
+                    SET_STATE({LISTS:'ME_CC_EOM_TM0F_SUM'+_extension,ISTATE:istate+1})
+                if formalism=="LR":
+                    SET_STATE({LISTS:'ME_M'+_extension,ISTATE:istate+1})
+                    SET_STATE({LISTS:'ME_CC_EOM_TM0F_M'+_extension,ISTATE:istate+1})
+                    SET_STATE({LISTS:'ME_CC_EOM_TM0F_SUM'+_extension,ISTATE:istate+1})
+
+                EVALUATE({FORM:'FOPT_EOM_TM0F'+_extension})
+
+                PRINT({STRING:''})
+
+                PRINT({STRING:'0F transition moment (ground state to state '+str(_isym+1)+'.'+str(istate+1)+')'})
+                EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TM0F'+_extension,ADD_REF:False})
+
+                if  _isym==0 and _msc==1 and formalism=="EOM":
+                    PRINT({STRING:'0F transition moment (ground state to state '+str(_isym+1)+'.'+str(istate+1)+') - R0 contr.'})
+                    EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TM0F_R0'+_extension,ADD_REF:False})
+                    ADD({LIST_SUM:'ME_CC_EOM_TM0F_SUM'+_extension,
+                             LISTS:['ME_CC_EOM_TM0F'+_extension,'ME_CC_EOM_TM0F_R0'+_extension],FAC:[1.0,1.0]})
+                    PRINT({STRING:'0F transition moment (ground state to state '+str(_isym+1)+'.'+str(istate+1)+') - sum'})
+                    EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TM0F_SUM'+_extension,ADD_REF:False})
+
+                if formalism=="LR":
+                    PRINT({STRING:'0F transition moment (ground state to state '+str(_isym+1)+'.'+str(istate+1)+') - M contr.'})
+                    EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TM0F_M'+_extension,ADD_REF:False})
+                    ADD({LIST_SUM:'ME_CC_EOM_TM0F_SUM'+_extension,
+                         LISTS:['ME_CC_EOM_TM0F'+_extension,'ME_CC_EOM_TM0F_M'+_extension],FAC:[1.0,1.0]})
+                    PRINT({STRING:'0F transition moment (ground state to state '+str(_isym+1)+'.'+str(istate+1)+') - sum'})
+                    EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TM0F_SUM'+_extension,ADD_REF:False})
+
+                PRINT({STRING:'F0 transition moment (state '+str(_isym+1)+'.'+str(istate+1)+' to ground state)'})
+                EVAL_PROP({RANK:1,DENS:'ME_CC_EOM_TMF0'+_extension,ADD_REF:False})
+
+                if export:
+                    if formalism=="EOM" and _isym==0 and _msc==1:
+                        EXPORT_DAO({RANK:1,DENS:'ME_CC_EOM_TM0F_SUM'+_extension,
+                            OUTPUT:'export_tm0f',ADD_REF:False})
+                    elif formalism=="EOM":
+                        EXPORT_DAO({RANK:1,DENS:'ME_CC_EOM_TM0F'+_extension,
+                            OUTPUT:'export_tm0f',ADD_REF:False})
+                    else:
+                        EXPORT_DAO({RANK:1,DENS:'ME_CC_EOM_TM0F_SUM'+_extension,
+                            OUTPUT:'export_tm0f',ADD_REF:False})
+                    EXPORT_DAO({RANK:1,DENS:'ME_CC_EOM_TMF0'+_extension,
+                        OUTPUT:'export_tmf0',ADD_REF:False})
+
+            PRINT({STRING:''})
+
+
 
 # do another loop to compute all possible moments
 if moments:

@@ -1,5 +1,6 @@
 2MS int
 AB_SYM int
+ADD_REF log
 ADJOINT log
 ANSATZ int
 AVOID int
@@ -63,6 +64,7 @@ LISTS label
 LISTS_CV label
 LIST_E label
 LIST_EVEC label
+LIST_FREQ label
 LIST_IN label
 LIST_INP label
 LIST_OUT label

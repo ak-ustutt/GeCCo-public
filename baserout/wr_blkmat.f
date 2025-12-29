@@ -8,9 +8,9 @@ C
       DIMENSION LROW(NBLK),LCOL(NBLK)
 C
       IBASE = 1
-      WRITE(6,*) ' Blocked matrix '
-      WRITE(6,*) '================'
-      WRITE(6,*)
+      WRITE(lulog,*) ' Blocked matrix '
+      WRITE(lulog,*) '================'
+      WRITE(lulog,*)
       DO 100 IBLK = 1, NBLK
         WRITE(lulog,'(A,I3)') ' Block ... ',IBLK
         IF(ISYM.EQ.0) THEN

@@ -76,6 +76,7 @@
      &     EVAL*8             = 'EVALUATE',
      &     TRANSF*9           = 'TRANSFORM',
      &     EVALPROP*9         = 'EVAL_PROP',
+     &     EXPORTDAO*10       = 'EXPORT_DAO',
      &     NORM_MEL*8         = 'NORM_MEL',
      &     SOLVENLEQ*10       = 'SOLVE_NLEQ',
      &     SOLVELEQ*9         = 'SOLVE_LEQ',

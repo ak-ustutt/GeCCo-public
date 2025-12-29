@@ -64,7 +64,7 @@
      &     iblk_exclude(maxterms), iRdef(maxterms)
       logical ::
      &     dagger, explicit, ms_fix, form_test, init, arg_there, reo,
-     &     use_1,trnsps, trplt, inv, split, fix,
+     &     use_1,trnsps, trplt, inv, split, fix, add_ref,
      &     multi,    ! Multireference or single reference ITF code
      &     process,  ! Process bcontr.tmp file to create .itfaa file
      &     kext,     ! Provide INTpp tensor for Kext contraction
@@ -1060,9 +1060,16 @@ c        call get_arg('MODE',rule,tgt_info,val_str=mode)
 *----------------------------------------------------------------------*
 
         call get_arg('LIST',rule,tgt_info,val_label=label)
+        call get_arg('LIST_FREQ',rule,tgt_info,val_label=label2)
         call get_arg('FREQ',rule,tgt_info,val_rl8=freq)
+        call get_arg('FAC',rule,tgt_info,val_rl8=fac(1))
         call get_mel(mel_pnt,label,OLD)
-        call set_frequency(mel_pnt,freq)
+        if (label2=="none") then
+           call set_frequency(mel_pnt,freq)
+        else
+           call get_mel(mel_pnt2,label2,OLD)
+           call set_frequency2(mel_pnt,mel_pnt2,fac(1))
+        end if
 
 *----------------------------------------------------------------------*
       case(PRINT_RES)
@@ -1521,8 +1528,25 @@ c          mode = 'dia-R12'
         call get_arg('ENV',rule,tgt_info,val_str=env_type)
         call get_arg('RANK',rule,tgt_info,val_int=rank)
         call get_arg('TRIPLET',rule,tgt_info,val_log=trplt)
+        call get_arg('ADD_REF',rule,tgt_info,val_log=add_ref)
 
-        call prop_evaluate(ndens,rank,label_list,trplt,
+        call prop_evaluate(ndens,rank,label_list,trplt,add_ref,
+     &       env_type,op_info,str_info,orb_info)
+
+*----------------------------------------------------------------------*
+      case(EXPORTDAO)
+*----------------------------------------------------------------------*
+
+        call get_arg('DENS',rule,tgt_info,
+     &       val_label_list=label_list,ndim=ndens)
+        call get_arg('OUTPUT',rule,tgt_info,val_str=title)
+        call get_arg('ENV',rule,tgt_info,val_str=env_type)
+        call get_arg('RANK',rule,tgt_info,val_int=rank)
+        call get_arg('TRIPLET',rule,tgt_info,val_log=trplt)
+        call get_arg('ADD_REF',rule,tgt_info,val_log=add_ref)
+
+        call export_density_ao(ndens,rank,label_list,title,
+     &       trplt,add_ref,
      &       env_type,op_info,str_info,orb_info)
 
 *----------------------------------------------------------------------*
