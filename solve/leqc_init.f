@@ -166,6 +166,9 @@ c     &     call quit(1,'leqc_init','not yet adapted for nopt>1')
             else
               call vec_from_da(me_rhs(iopt)%mel%fhand,iroot,xbuf1,
      &                       nwfpar(iopt))
+              triv_s =
+     &          dnrm2(nwfpar(iopt),xbuf1,1).lt.opti_info%thrgrd(iopt)
+     &          .and. nroot.eq.1 .and. nopt.eq.1 ! see above
             end if
             ! divide rhs by preconditioner
             if (ntest.ge.100)
