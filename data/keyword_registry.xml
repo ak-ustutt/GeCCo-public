@@ -40,6 +40,7 @@
                 <argument length="1" name="H0_T1ext"  type="2" value="0"/>
                 <argument length="1" name="H0d"  type="1" value="false"/>
                 <argument length="1" name="maxexc_guess"  type="2" value="0">
+                <argument length="8" name="xs_formalism"  type="8" value="EOM     "/>
                 <!--use T op with lower rank as initial guess-->
 	        </argument>
 		<keyword name="NEW">

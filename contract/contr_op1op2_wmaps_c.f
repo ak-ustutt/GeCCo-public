@@ -482,11 +482,21 @@ c     &    me_op1op2%op%formal_blk(iblkop1op2)) then
      &                 me_op1op2%op%formal_blk(iblkop1op2)
         write(lulog,*) 'op1: ',trim(op1%name),
      &       ' block ',iblkop1
+        call wrt_occ_n(lulog,
+     &           me_op1%op%ihpvca_occ(1,1,(iblkop1-1)*op1%njoined+1),
+     &           me_op1%op%njoined)
         write(lulog,*) 'op2: ',trim(op2%name),
      &       ' block ',iblkop2
+        call wrt_occ_n(lulog,
+     &           me_op2%op%ihpvca_occ(1,1,(iblkop2-1)*op2%njoined+1),
+     &           me_op2%op%njoined)
         if (iblkop1op2.gt.0) then
           write(lulog,*) 'op1op2: ',trim(op1op2%name),
      &       ' block ',iblkop1op2
+          call wrt_occ_n(lulog,
+     &           me_op1op2%op%ihpvca_occ(1,1,
+     &                               (iblkop1op2-1)*op1op2%njoined+1),
+     &           me_op1op2%op%njoined)
         else
           write(lulog,*) 'op1op2: scalar'
         end if
@@ -758,6 +768,7 @@ c      cnt_rd(2) = cnt_rd(2) + sys-sys0
           end if
         end if
 
+c        if (op1op2%name(1:6).eq.'Z2-INT') then
         if (iblkop1op2.gt.0) then
           write(lulog,*) 'operator 12 on entry (',trim(op1op2%name),
      &                                ',list=',trim(me_op1op2%label),')'
@@ -2103,6 +2114,7 @@ c          fac_ab = +1
       end if
 
 c      if (op1op2%name(1:3).eq.'_LT') then
+c      if (op1op2%name(1:6).eq.'Z2-INT') then
       if (ntest.ge.1000) then
         if (iblkop1op2.gt.0
      &       ) then

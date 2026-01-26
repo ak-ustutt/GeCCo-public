@@ -207,8 +207,13 @@ c     &       iord_ssbsp,ffssbsp(iopt)%fhand,fdum,
       ifree = mem_alloc_int (ipiv,nred,'LEQ_piv')
 
       ! get a copy of the subspace matrix
+      !c dbg
+      !write(lulog,*) 'shift: ',opti_info%shift
+      !write(luout,*) 'shift: ',opti_info%shift
+      !c dbg
       ! and apply shift (incl. metric if applicable)
-      if (opti_info%shift.eq.0d0.or..not.any(use_s(1:nopt))) then
+      !if (opti_info%shift.eq.0d0.or..not.any(use_s(1:nopt))) then
+      if (.not.any(use_s(1:nopt))) then
         kdx = 0
         do idx = 1, nred
           do jdx = 1, nred

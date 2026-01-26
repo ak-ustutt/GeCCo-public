@@ -51,6 +51,7 @@
      &       ival=trunc_type)
       end if
       call get_argument_value('method.R12','maxexc',ival=maxr12exc)
+      z2str(1:len_command_par) = ' '
       call get_argument_value('method.R12','Z2_appr',str=z2str)
 
       call get_argument_value('method.CCPT','extern',ival=extern)
@@ -97,6 +98,10 @@ c another patch
       if (is_keyword_set('method.ECC').gt.0)
      &     iformal = min(6,max(t1ext_mode+1,4))
 c patch end
+c dbg
+      write(lulog,*) 'iformal is set to: ',iformal
+      write(lulog,*) 'z2str was: "',trim(z2str),'"'
+c dbg
       call set_rule2(op_ham,DEF_HAMILTONIAN,tgt_info)
       call set_arg(op_ham,DEF_HAMILTONIAN,'LABEL',1,tgt_info,
      &     val_label=(/op_ham/))

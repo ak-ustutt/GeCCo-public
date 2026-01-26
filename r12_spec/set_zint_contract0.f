@@ -104,7 +104,7 @@ c dbg
 c 999  print *,'and jumped'
 c dbg
 
-      if (ntest.ge.100) then
+      if (ntest.ge.110) then
         write(lulog,*)'formula before summing: Z-Int.'
         call print_form_list(lulog,flist,op_info)
       end if

@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-      subroutine btran_one(ffao,ffcmo,trplt,me_dens,orb_info,
+      subroutine btran_one(ffao,ffcmo,trplt,add_ref,me_dens,orb_info,
      &                     str_info)
 *----------------------------------------------------------------------*
 *     transform one-particle density in MO basis (me_dens) to AO basis
@@ -16,9 +16,10 @@
       include 'def_graph.h'
       include 'def_strinf.h'
       include 'ifc_memman.h'
+      include 'multd2h.h'
 
       integer, parameter ::
-     &     ntest = 00
+     &     ntest = 100
 
       type(filinf), intent(inout) ::
      &     ffao, ffcmo
@@ -29,7 +30,7 @@
       type(strinf),intent(in) ::
      &     str_info
       logical, intent(in) ::
-     &     trplt
+     &     trplt, add_ref
 
 
       logical ::
@@ -37,7 +38,7 @@
       integer ::
      &     ifree, nsym, ngas, nspin, nblk, ncmo, nmo, nao, nhlf,
      &     isym, igas, ispin, iblk, idxst, idxnd, idxms, norb, njoined,
-     &     hpvx_a, hpvx_c, iblkoff, ijoin, idoff
+     &     hpvx_a, hpvx_c, iblkoff, ijoin, idoff, jsym
 
       integer, pointer ::
      &     nbas(:), ntoobs(:), mostnd(:,:,:),
@@ -64,9 +65,9 @@
      &       trim(me_dens%label)
       end if
 
-      if (me_dens%gamt.ne.1)
-     &     call quit(1,'btran_one',
-     &                 'adapt for non-totally symmetric density')
+c      if (me_dens%gamt.ne.1)
+c     &     call quit(1,'btran_one',
+c     &                 'adapt for non-totally symmetric density')
 
       ! set up some dimensions
       nsym = orb_info%nsym
@@ -83,7 +84,8 @@
 
       nao  = 0
       do isym = 1, nsym
-        nao  = nao  + nbas(isym)*nbas(isym)
+        jsym = multd2h(isym,me_dens%gamt)
+        nao  = nao  + nbas(isym)*nbas(jsym)
       end do
       ncmo = 0
       nmo  = 0
@@ -93,7 +95,8 @@
           idxcmo(isym,igas) = ncmo+1
           norb = mostnd(2,isym,igas)-mostnd(1,isym,igas)+1
           ncmo = ncmo + nbas(isym)*norb
-          nhlf = max(nhlf,ncmo)
+          nhlf = max(nhlf,nbas(isym)*norb)
+          nhlf = max(nhlf,nbas(multd2h(isym,me_dens%gamt))*norb)
         end do
       end do
 
@@ -137,7 +140,7 @@
       xao(1:nao) = 0d0 
 
       ! add reference contribution, if requested
-      if (.not.trplt) then
+      if (.not.trplt.and.add_ref) then
         call make_refmat(xao,cmo,orb_info)
       end if
 
@@ -194,7 +197,7 @@
 
       if (ntest.ge.100) then
         write(lulog,*) 'XAO after block,idxms: ',iblk, idxms
-        call wr_blkmat(xao,nbas,nbas,nsym,0)
+        call wr_blkmat2(xao,nbas,nbas,nsym,me_dens%gamt,0)
       end if
 
       if (close_ffmo)

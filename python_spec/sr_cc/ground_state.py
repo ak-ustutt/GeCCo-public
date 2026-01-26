@@ -40,6 +40,8 @@ elif minexc==1:
     mlabel = 'CC(X='+str(maxexc)+')'
 else:
     mlabel = 'CC(strange)'
+if truncate!="no":
+    mlabel=truncate
     
 
 # define the operators
@@ -73,7 +75,61 @@ if truncate == 'no':
 
     form_lag.set_rule()
 else:
-    quit_error('truncate not yet implemented, sorry')
+    # need some operator subclasses
+    DEF_HAMILTONIAN({LABEL:'F',MIN_RANK:1,MAX_RANK:1})
+    DEF_EXCITATION({LABEL:'T1',MIN_RANK:1,MAX_RANK:1})
+    DEF_EXCITATION({LABEL:'T2',MIN_RANK:2,MAX_RANK:2})
+    CLONE_OPERATOR({LABEL:'LAM1',TEMPLATE:'T1',ADJOINT:True})
+    CLONE_OPERATOR({LABEL:'LAM2',TEMPLATE:'T2',ADJOINT:True})
+    replace_list=['F','H','T1','T','T2','T','LAM1','LAM','LAM2','LAM']
+    if truncate == 'CC2':
+        if minexc != 1 and maxexc != 2:
+            quit_error(f'CC2 must have excitation levels 1 and 2, found {minexc} and {maxexc}')
+        form_lag.append("<[H,T]+(1/2)*[[H,T],T]>")
+        form_lag.append("<LAM1*H>")
+        form_lag.append("<LAM1*[H,T]>")
+        form_lag.append("<LAM1*(1/2)*[[H,T],T]>")
+        form_lag.append("<LAM1*(1/6)*[[[H,T],T],T]>")
+        form_lag.append("<LAM1*(1/24)*[[[[H,T],T],T],T]>")
+        form_lag.append("<LAM2*H>")
+        form_lag.append("<LAM2*[F,T2]>")
+        form_lag.append("<LAM2*[H,T1]>")
+        form_lag.append("<LAM2*(1/2)*[[H,T1],T1]>")
+        form_lag.append("<LAM2*(1/6)*[[[H,T1],T1],T1]>")
+        form_lag.append("<LAM2*(1/24)*[[[[H,T1],T1],T1],T1]>")
+
+    elif truncate == 'CC3':
+        if minexc != 1 and maxexc != 3:
+            quit_error(f'CC3 must have excitation levels 1 and 3, found {minexc} and {maxexc}')
+        DEF_EXCITATION({LABEL:'T3',MIN_RANK:3,MAX_RANK:3})
+        CLONE_OPERATOR({LABEL:'LAM3',TEMPLATE:'T3',ADJOINT:True})
+        replace_list.extend(['T3','T','LAM3','LAM'])
+        form_lag.append("<[H,T]+(1/2)*[[H,T],T]>")
+        form_lag.append("<LAM1*H>")
+        form_lag.append("<LAM1*[H,T]>")
+        form_lag.append("<LAM1*(1/2)*[[H,T],T]>")
+        form_lag.append("<LAM1*(1/6)*[[[H,T],T],T]>")
+        form_lag.append("<LAM1*(1/24)*[[[[H,T],T],T],T]>")
+        form_lag.append("<LAM2*H>")
+        form_lag.append("<LAM2*[H,T]>")
+        form_lag.append("<LAM2*(1/2)*[[H,T],T]>")
+        form_lag.append("<LAM2*(1/6)*[[[H,T],T],T]>")
+        form_lag.append("<LAM2*(1/24)*[[[[H,T],T],T],T]>")
+        #form_lag.append("<LAM3*H>")
+        form_lag.append("<LAM3*[F,T3]>")
+        form_lag.append("<LAM3*[H,T2]>")
+        form_lag.append("<LAM3*[[H,T2],T1]>")
+        form_lag.append("<LAM3*(1/2)*[[[H,T2],T1],T1]>")
+        form_lag.append("<LAM3*(1/6)*[[[[H,T2],T1],T1],T1]>")
+
+    else:
+        quit_error(f'this option ({truncate}) for truncate not (yet) implemented, sorry')
+
+    form_lag.set_rule()
+    # replace special operators by the general ones
+    REPLACE({LABEL_RES:'F_CC_LAG',LABEL_IN:'F_CC_LAG',
+                 OP_LIST:replace_list})
+
 
 # define CC equations:
 new_target('CC_EQS')

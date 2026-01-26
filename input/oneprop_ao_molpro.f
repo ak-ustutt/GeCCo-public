@@ -31,19 +31,19 @@
       logical ::
      &     closeit, ok
       integer ::
-     &     ifree, nfull, nblkd, isym, jsym, ierr,
+     &     ifree, nfull, nblkd, isym, jsym, ierr, sym,
      &     naoint, i, j, ij, ji, nao_i, nao_j
       type(filinf) ::
      &     ffprop
       real(8) ::
      &     xnorm, xtrace
-      character(len=256) ::
-     &     line
       real(8), pointer ::
      &     dao(:), xint_raw(:), xint_blk(:)
 
       real(8), external ::
      &     dnrm2, ddot
+      logical, external ::
+     &     next_proper
       
       ifree = mem_setmark('1prop_molpro')
 
@@ -80,53 +80,63 @@ c dbg
       ! loop over list of property integrals
       rewind ffprop%unit
 
+      if (ntest.ge.100) write(lulog,*) 'scanning ',aoproper
 c dbg
 c        print *,'LABEL: ',trim(label)
 c dbg
 
-      read(ffprop%unit,*)
-      read(ffprop%unit,'(a)') line
-      label = line(10:17)
+      do while(next_proper(ffprop%unit,sym,label))
 
-      if (ntest.ge.100) write(lulog,*) 'label: ',trim(label)
+         if (ntest.ge.100) write(lulog,*)'label: ',trim(label),
+     &                                   ' sym: ',sym
 
-      read(ffprop%unit,*,end=3,err=6) xint_raw(1:nblkd)
+         if (sym.ne.dens%gamt) cycle
 
-      naoint = 0
+         read(ffprop%unit,*,end=3,err=6) xint_raw(1:nblkd)
 
-      do isym = 1, orb_info%nsym
-        jsym = multd2h(isym,dens%gamt)
-        nao_i = orb_info%nbas(isym)
-        nao_j = orb_info%nbas(jsym)
-        do i = 1, nao_j
-          do j = 1, nao_i
-            ij = (i-1)* nao_j + j
-            ji = (j-1)* nao_i + i
-            xint_blk(ji + naoint) = xint_raw(ij + naoint)
-          end do
-        end do
-        naoint = naoint +
-     &       orb_info%nbas(jsym)*orb_info%nbas(isym)
-      end do
+         ! not clear, why ....
+c         naoint = 0
+c
+c         do isym = 1, orb_info%nsym
+c           jsym = multd2h(isym,dens%gamt)
+c           nao_i = orb_info%nbas(isym)
+c           nao_j = orb_info%nbas(jsym)
+c           write(lulog,*) 'isym, jsym, nao_i, nao_j, naoint:',
+c     &          isym, jsym, nao_i, nao_j, naoint
+c           do i = 1, nao_i
+c             do j = 1, nao_j
+c               ij = (i-1)* nao_j + j
+c               ji = (j-1)* nao_i + i
+c               xint_blk(ji + naoint) = xint_raw(ij + naoint)
+c               write(lulog,*) 'resorting: ',ij,' to ',ji
+c             end do
+c           end do
+c           naoint = naoint +
+c     &          orb_info%nbas(jsym)*orb_info%nbas(isym)
+c         end do
+         ! seems to be in correct order ...
+         xint_blk = xint_raw
 
-      if (ntest.ge.100) then 
-        write(lulog,*) 'AO integrals (original):'
-        call wr_blkmat(xint_blk,orb_info%nbas,orb_info%nbas,
-     &                     orb_info%nsym,0)
-      end if
+         if (ntest.ge.100) then 
+           write(lulog,*) 'AO integrals (original):'
+           call wr_blkmat2(xint_blk,orb_info%nbas,orb_info%nbas,
+     &                        orb_info%nsym,dens%gamt,0)
+         end if
 
-      ! check, whether integral block is nonzero:
-      xnorm = dnrm2(nblkd,xint_blk,1)
-!     if (xnorm.lt.1d-12) 
+         ! check, whether integral block is nonzero:
+         xnorm = dnrm2(nblkd,xint_blk,1)
+!        if (xnorm.lt.1d-12) 
 
-      xtrace = ddot(nblkd,xint_blk,1,dao,1)
-      xtrace = -1.0*xtrace ! multiplied with -1, unlike dalton, as the property integrals from
+         xtrace = ddot(nblkd,xint_blk,1,dao,1)
+         xtrace = -1.0*xtrace ! multiplied with -1, unlike dalton, as the property integrals from
                            ! molpro comes with the opposite sign 
 
-      write(lulog,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
-      if (lulog.ne.luout)
-     &    write(luout,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
+         write(lulog,'(2x,">>> ",a," : ",g20.10)') trim(label),xtrace
+         if (lulog.ne.luout)
+     &       write(luout,'(2x,">>> ",a," : ",g20.10)') 
+     &                                             trim(label),xtrace
 
+      end do
 
       call file_close_keep(ffprop)
 
@@ -141,3 +151,35 @@ c dbg
      &  integrals')
       end
 
+
+      logical function next_proper(lu,sym,label)
+
+      implicit none
+
+      include "stdunit.h"
+
+      integer, intent(in) :: lu
+      integer, intent(out) :: sym
+      character(len=8), intent(out) :: label
+     
+      integer ipos
+      character(len=256) line
+
+      do
+         read(lu,*,end=12) line
+         if (line(1:10)=='BEGIN_DATA') then
+            read(lu,'(a)',end=12) line
+            label(1:8) = ' '
+            label = line(10:17)
+            ipos = index(line,'SYMMETRY=')
+            if (ipos<=0) goto 12
+            read(line(ipos+9:),*) sym
+            next_proper = .true.
+            return
+         end if
+      end do
+
+ 12   next_proper = .false.
+      return
+
+      end

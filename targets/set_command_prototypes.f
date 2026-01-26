@@ -718,6 +718,22 @@
      &     val_str=env_type,def=.true.)
       call set_arg('_PROTO_',EVALPROP,'TRIPLET',1,tgt_info,
      &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',EVALPROP,'ADD_REF',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
+*----------------------------------------------------------------------*
+      call add_command_proto(EXPORTDAO,tgt_info)
+      call set_arg('_PROTO_',EXPORTDAO,'DENS',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EXPORTDAO,'OUTPUT',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',EXPORTDAO,'RANK',0,tgt_info,
+     &     val_int=(/1/),req=.true.)
+      call set_arg('_PROTO_',EXPORTDAO,'ENV',1,tgt_info,
+     &     val_str=env_type,def=.true.)
+      call set_arg('_PROTO_',EXPORTDAO,'TRIPLET',1,tgt_info,
+     &     val_log=(/.false./),def=.true.)
+      call set_arg('_PROTO_',EXPORTDAO,'ADD_REF',1,tgt_info,
+     &     val_log=(/.true./),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(NORM_MEL,tgt_info)
       call set_arg('_PROTO_',NORM_MEL,'LISTS',0,tgt_info,
@@ -808,6 +824,14 @@
      &     val_int=(/1/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(SET_FREQ,tgt_info)
+      call set_arg('_PROTO_',SET_FREQ,'LIST',0,tgt_info,
+     &     val_label=(/' '/),req=.true.)
+      call set_arg('_PROTO_',SET_FREQ,'FREQ',1,tgt_info,
+     &     val_rl8=(/0d0/),def=.true.)
+      call set_arg('_PROTO_',SET_FREQ,'FAC',1,tgt_info,
+     &     val_rl8=(/1d0/),def=.true.)
+      call set_arg('_PROTO_',SET_FREQ,'LIST_FREQ',1,tgt_info,
+     &     val_label=(/'none'/),def=.true.)
 *----------------------------------------------------------------------*
       call add_command_proto(PRINT_RES,tgt_info)
 *----------------------------------------------------------------------*
