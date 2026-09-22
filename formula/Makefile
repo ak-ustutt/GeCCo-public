@@ -22,6 +22,12 @@ INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
 
+# split_contr4.f is miscompiled by gfortran (15.2.0, arm64) at -O1/-O2:
+# a null-pointer dereference in the inlined pointer-component reallocation
+# from resize_contr; not reproducible with -O0. Build it unoptimized until
+# this is understood / fixed upstream.
+llo_obj_list:=split_contr4.o
+
 include $(topdir)/make.rules
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)

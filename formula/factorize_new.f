@@ -178,8 +178,8 @@ c dbgend
       write(lulog,'(x,"Most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
         write(lulog,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
-     &            '" - flops: ",e10.3,"(",f6.1"%)")')
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
+     &            '" - flops: ",e10.3,"(",f6.1,"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
      &       time_stat(iterm),time_stat(iterm)/xsum*100d0
       end do
@@ -192,7 +192,7 @@ c dbgend
       write(lulog,'(x,"Largest intermediates occur in: ")') 
       do iterm = 1, min(5,nterms)
         write(lulog,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
      &       mem_stat(iterm)/(128d0*1024d0)
@@ -204,15 +204,15 @@ c dbgend
       write(ffstat%unit,'(x,"Computational cost of contractions: ")') 
       do iterm = 1, nterms
         write(ffstat%unit,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
-     &            '" - flops: ",e10.3,"(",f6.1"%)")')
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
+     &            '" - flops: ",e10.3,"(",f6.1,"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
      &       time_stat(iterm),time_stat(iterm)/xsum*100d0
       end do
       write(ffstat%unit,'(x,"Max. size of intermediates: ")') 
       do iterm = 1, nterms
         write(ffstat%unit,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
      &       mem_stat(iterm)/(128d0*1024d0)
