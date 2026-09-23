@@ -24,6 +24,13 @@ src:=$(wildcard *.f90 *.F *.f)
 
 mod_obj_list:=parse_input.o
 
+# set_orbinf.f is miscompiled by gfortran at -O2 (arm64): corrupts the
+# heap during orbital-info setup, causing a SIGSEGV/malloc-heap-corruption
+# crash later (e.g. in the very next allocation, inside put_orbinfo.f's
+# I/O). Not reproducible with -O0. Same family of bug as split_contr4.f
+# and factorize_new.f (see formula/Makefile).
+llo_obj_list:=set_orbinf.o
+
 include $(topdir)/make.rules
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)

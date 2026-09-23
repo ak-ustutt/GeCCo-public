@@ -3,7 +3,7 @@
 *----------------------------------------------------------------------*
 *     set up orbital info arrays
 *
-*     symmetry ordering: 
+*     symmetry ordering:
 *        orbitals are ordered according to symmetry only
 *
 *     type ordering:
@@ -59,7 +59,7 @@
       ngas = orb_info%ngas
       nsym = orb_info%nsym
       ntoob = orb_info%ntoob
-      caborb=orb_info%caborb 
+      caborb=orb_info%caborb
 
       if (hole_rv.and.nspin.gt.1) then
         call quit(1,'set_orbinf',
@@ -68,7 +68,7 @@
 
       ! allocate some arrays on orb_info structure
       allocate(orb_info%ireots(ntoob+caborb),
-     &     orb_info%ireost(ntoob+caborb),orb_info%igamorb(ntoob+caborb), 
+     &     orb_info%ireost(ntoob+caborb),orb_info%igamorb(ntoob+caborb),
      &     orb_info%igasorb(ntoob+caborb),orb_info%mostnd(2,nsym,ngas),
      &     orb_info%ngas_hpv(ngastp),orb_info%nactt_hpv(ngastp),
      &     orb_info%idx_gas(ngastp),orb_info%ioff_gas(ngastp),
@@ -120,8 +120,8 @@
       ! index and offset array from ngas_hpv:
 c      idx = 1
 cmh adapted for use of valence space
-      orb_info%ioff_gas(1:ngas) = 0
-      orb_info%idx_gas(1:ngas) = 0
+      orb_info%ioff_gas(1:ngastp) = 0
+      orb_info%idx_gas(1:ngastp) = 0
       do igastp = 1, ngastp
         do idx = ngas,1,-1
           orb_info%ioff_gas(orb_info%ihpvgas(idx,1)) = idx-1
@@ -151,15 +151,15 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
       end do
       if (hole_rv) then
         igasr = 0
-        do igas = orb_info%ngas_hpv(ihole), 1, -1          
+        do igas = orb_info%ngas_hpv(ihole), 1, -1
           igasr = igasr + 1
           orb_info%gas_reo(igas) = igasr
         end do
       end if
 
       ! set up igamorb (IRREP per orbital in type ordering) and
-      ! set up igasorb (shell per orbital in type ordering)      
-      ! set up mostnd (start and end indices)      
+      ! set up igasorb (shell per orbital in type ordering)
+      ! set up mostnd (start and end indices)
       ! start with hole spaces
       if (hole_rv) then
         ! reverse counting
@@ -167,7 +167,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
         ind = 1
         inc = -1
         call quit(1,'set_orbinf','who needs hole_rv?? (1)')
-      else        
+      else
         ist = 1
         ind = orb_info%ngas_hpv(ihole)
         inc = +1
@@ -180,7 +180,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
           idxnd = idxst+orb_info%igassh(isym,igas)-1
           orb_info%mostnd(1:2,isym,igasr) = (/idxst,idxnd/)
           if (idxst.le.idxnd) then
-            orb_info%igamorb(idxst:idxnd) = isym 
+            orb_info%igamorb(idxst:idxnd) = isym
             orb_info%igasorb(idxst:idxnd) = igasr
           end if
           idxst = idxnd+1
@@ -194,8 +194,8 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
           idxnd = idxst+orb_info%igassh(isym,igas)-1
           orb_info%mostnd(1:2,isym,igas) = (/idxst,idxnd/)
           if (idxst.le.idxnd) then
-            orb_info%igamorb(idxst:idxnd) = isym 
-            orb_info%igasorb(idxst:idxnd) = igas 
+            orb_info%igamorb(idxst:idxnd) = isym
+            orb_info%igasorb(idxst:idxnd) = igas
           end if
           idxst = idxnd+1
         end do
@@ -275,7 +275,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
           orb_info%ireost(idx) = idx
         end do
       case ('cfour','CFOUR')
-        ! actually: symmetry ordering means "the way the external program 
+        ! actually: symmetry ordering means "the way the external program
         !   has ordered the orbitals"; cfour orders kind-of-type-ordering like
         !   we try to get this info by interpreting the ext_gamorb array
         call make_ext2typ_reo(orb_info)
@@ -312,7 +312,7 @@ c        idx = idx+orb_info%ngas_hpv(igastp)
 
         ! generate reverse mapping
         do idx = 1, ntoob+caborb
-          orb_info%ireots(orb_info%ireost(idx)) = idx 
+          orb_info%ireots(orb_info%ireost(idx)) = idx
         end do
 
       if (iprint.ge.100) then
