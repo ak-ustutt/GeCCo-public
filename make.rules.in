@@ -24,21 +24,24 @@ Fobjs:=$(addprefix $(ARCH)/,$(patsubst %.F,%.o,$(wildcard *.F)))
 all_objs:=$(c_objs) $(mod_objs) $(spc_objs) $(hlo_objs) $(llo_objs) $(objs) $(Fobjs)
 
 $(libdir)/$(this_lib): $(all_objs)
-	$(AR) rv $@ $(all_objs)
-	$(RAN) $@
+	rm -f $@
+	$(AR) rcs $@ $(all_objs)
 
 ifeq (, $(wildcard $(ARCH)))
-$(shell mkdir $(ARCH))
+$(shell mkdir -p $(ARCH))
 endif
 
 .PHONY: dep deps
 dep deps:
 	$(topdir)/config/mkdep90.py $(src) >deps.mk
 
-ifeq (, $(wildcard $(srcdir)/deps.mk))
-$(shell $(topdir)/config/mkdep90.py $(src) >deps.mk)
-endif
-include deps.mk
+# regenerate deps.mk automatically whenever a source file (or its
+# use/include statements) changes, instead of only when deps.mk is
+# altogether missing
+deps.mk: $(src)
+	@$(topdir)/config/mkdep90.py $(src) >deps.mk
+
+-include deps.mk
 
 
 # TAGS and tags are for people working with vi(m) or emacs who wants to

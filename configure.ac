@@ -30,26 +30,35 @@ AC_CACHE_SAVE
 
 # ACX_ macros are defined in aclocal.m4
 # Setup compilers for different architechtures
-case $host in 
+case $host in
 	*i*86*-linux*)
 		try_cc="gcc icc pgcc cc"
-		try_fc="ifort ifc pgf90 f90"
+		try_fc="gfortran ifort ifc pgf90 f90"
 		build_type="i386_linux"
 		;;
 	*ia*64*-linux*)
 		try_cc="gcc icc cc"
-		try_fc="ifort ifc pgf90 f90"
+		try_fc="gfortran ifort ifc pgf90 f90"
 		build_type="i64_linux"
 		;;
 	*x86*64*-linux*)
 		try_cc="gcc icc pgcc cc"
-		try_fc="pgf90 ifort ifc f90"
+		try_fc="gfortran pgf90 ifort ifc f90"
 		build_type="x86_64-linux"
 		;;
         *i*86*darwin*)
 		try_cc="gcc icc pgcc cc"
-		try_fc="ifort ifc pgf90 g95"
+		try_fc="gfortran ifort ifc pgf90 g95"
 		build_type="i386_apple"
+		;;
+	*arm*-apple-darwin*|*aarch64*-apple-darwin*)
+		# Apple Silicon (M1/M2/M3/... , "arm-apple-darwinNN" per
+		# config.guess); ifort/icc are not available on this
+		# platform, so gfortran/gcc (e.g. from Homebrew) are the
+		# only realistic options.
+		try_cc="gcc cc"
+		try_fc="gfortran ifort f90"
+		build_type="arm64_apple"
 		;;
 	*alpha*-linux*)
 		try_cc="ccc cc gcc"
@@ -84,7 +93,7 @@ case $host in
 	*) 	
 		AC_MSG_WARN([Unknown architecture! This might not work...])
 		try_cc="cc gcc ccc cl"
-		try_fc="f90 xlf90 ifc pgf90 epcf90 f95 xlf95 lf95 fort"
+		try_fc="gfortran f90 xlf90 ifc pgf90 epcf90 f95 xlf95 lf95 fort"
 		build_type="unknown"
 		;;
 esac
