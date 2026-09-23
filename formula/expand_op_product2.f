@@ -313,13 +313,19 @@ c dbg*
           end if
         end do
       end do
-      if (iblk_min_in(1).lt.0) then
-        iblk_min(1:nops) = 1
-      else
-        iblk_min(1:nops) = iblk_min_in(1:nops)
-        ! do not advance result blocks:
-        if (num_res.gt.0) iblk_min(num_res) = 1
-      end if
+      do iop = 1, nops
+        if (iop.eq.num_res) then
+          iblk_min(iop) = 1 ! do not advance result blocks
+          cycle
+        end if
+        if (iblk_min_in(1).lt.0) then
+          iblk_min(iop) = 1
+        else if (iblk_min_in(iop).le.0) then
+          iblk_min(iop) = 1
+        else
+          iblk_min(iop) = iblk_min_in(iop)
+        end if
+      end do
 
       if (ntest.ge.100) then
         write(lulog,*) 'iop_typ: ',iop_typ(1:nops)
