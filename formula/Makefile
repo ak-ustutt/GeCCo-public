@@ -26,7 +26,11 @@ src:=$(wildcard *.f90 *.F *.f)
 # a null-pointer dereference in the inlined pointer-component reallocation
 # from resize_contr; not reproducible with -O0. Build it unoptimized until
 # this is understood / fixed upstream.
-llo_obj_list:=split_contr4.o
+# factorize_new.f: same story -- gfortran -O2 miscompiles the idxsortx
+# calls at the end of the routine (wild-pointer SIGSEGV inside
+# idxsortx_qs_dsc, called on time_stat/mem_stat/scale_stat); not
+# reproducible with -O0, and bisected away from sortrout.f itself.
+llo_obj_list:=split_contr4.o factorize_new.o
 
 include $(topdir)/make.rules
 
