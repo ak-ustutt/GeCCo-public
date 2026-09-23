@@ -11,6 +11,13 @@ include $(topdir)/make.config
 
 GECCO_DIR:=$(CURDIR)/$(topdir)
 SCRDIR:=${GECCO_TMP}
+# GECCO_TMP was a site-specific expectation of the original developer's
+# cluster; fall back to a per-user temp dir (matching runtest.py's own
+# fallback) instead of leaving SCRDIR empty, which silently turns
+# mkscr's "mkdir $(SCRDIR)" into a no-op.
+ifeq ($(strip $(SCRDIR)),)
+  SCRDIR:=$(shell python3 -c "import tempfile;print(tempfile.gettempdir())")/gecco_$(shell whoami)
+endif
 
 #include $(topdir)/make.rules
 

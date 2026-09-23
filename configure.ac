@@ -115,6 +115,21 @@ AC_FC_WRAPPERS
 
 dnl ACX_GETKW([], AC_MSG_ERROR([libgetkw.a not found!]))
 
+# On Apple Silicon, a plain "-lblas" resolves to Apple's Accelerate
+# framework, which is not necessarily what's wanted/tested; there is
+# no reliable universal default here, so prefer Homebrew's openblas
+# (which also provides LAPACK) when it's installed and the user hasn't
+# already asked for a specific BLAS via --with-blas.
+if test "x$build_type" = xarm64_apple && test "x$with_blas" = x; then
+  if command -v brew >/dev/null 2>&1 && \
+     acx_openblas_prefix=`brew --prefix openblas 2>/dev/null` && \
+     test -n "$acx_openblas_prefix"; then
+    AC_MSG_NOTICE([defaulting to Homebrew's openblas at $acx_openblas_prefix (override with --with-blas=... --with-blas-dir=...)])
+    with_blas=openblas
+    with_blas_dir="$acx_openblas_prefix/lib"
+  fi
+fi
+
 AC_LANG_PUSH([Fortran])
 ACX_BLAS(,AC_MSG_ERROR([No working blas library found!]))
 ACX_LAPACK(,AC_MSG_ERROR([No working lapack library found!]))

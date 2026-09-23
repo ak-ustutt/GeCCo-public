@@ -30,7 +30,11 @@ srcdir:=.
 
 RUNTEST:=./runtest.py
 CHECK:=./runtest.py
-ifndef SCRDIR
+# test/Makefile always defines SCRDIR (:=${GECCO_TMP}), even to an
+# empty string when GECCO_TMP is unset, so "ifndef" here never
+# triggers; check for an empty value instead, so runtest.py's own
+# fallback (a per-user temp dir) can take over as intended.
+ifeq ($(strip $(SCRDIR)),)
   RUNFLAGS:=-r -p $(GECCOPRG)
 else
   RUNFLAGS:=-r -p $(GECCOPRG) -s $(SCRDIR)
