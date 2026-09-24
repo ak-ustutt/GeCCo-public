@@ -45,7 +45,7 @@ acx_blas_libs=""
 acx_blas_dir=""
 
 AC_ARG_WITH(blas,
-	[AC_HELP_STRING([--with-blas=LIB], [use BLAS library LIB])])
+	[AS_HELP_STRING([--with-blas=LIB], [use BLAS library LIB])])
 
 case $with_blas in
 	yes | "") ;;
@@ -55,7 +55,7 @@ case $with_blas in
 esac
 
 AC_ARG_WITH(blas_dir,
-	[AC_HELP_STRING([--with-blas-dir=DIR], [look for BLAS library in DIR])])
+	[AS_HELP_STRING([--with-blas-dir=DIR], [look for BLAS library in DIR])])
 
 case $with_blas_dir in
       yes | no | "") ;;

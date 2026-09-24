@@ -13,15 +13,15 @@ dnl @license AllPermissive
 AC_DEFUN([ACX_FC_SEARCH_PATH],[
 AC_PREREQ(2.59)
 
-AC_ARG_WITH([fc_search_path], AC_HELP_STRING([--with-fc-search-path=DIR],
+AC_ARG_WITH([fc_search_path], AS_HELP_STRING([--with-fc-search-path=DIR],
 	[Base path to installed Fortan libraries)]))
 
 dnl AC_ARG_WITH([fmoddir], 
-dnl   AC_HELP_STRING([--with-fc-modules-path=DIR],
+dnl   AS_HELP_STRING([--with-fc-modules-path=DIR],
 dnl   [Directory where Fortran module and include files can be found]))
 dnl   
 dnl AC_ARG_WITH([flibs], 
-dnl   AC_HELP_STRING([--with-fc-lib-path=DIR],
+dnl   AS_HELP_STRING([--with-fc-lib-path=DIR],
 dnl   [Directory where Fortran library files can be found]))
 
 case $with_fc_search_path in

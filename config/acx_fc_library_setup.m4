@@ -13,7 +13,7 @@ fi
 
 AS_VAR_SET([acx_$1_ok],["no"])
 
-AC_ARG_WITH([$1], AC_HELP_STRING([--with-$1=DIR],
+AC_ARG_WITH([$1], AS_HELP_STRING([--with-$1=DIR],
 [specify search path form $1 module and library]),
 [case $withval in
    yes|"") 

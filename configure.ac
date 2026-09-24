@@ -3,9 +3,9 @@
 #
 # $Id: configure.ac 1.7 05/05/05 22:13:58+02:00 jonas@radon $
 
-AC_INIT([GeCCo],[0.5],[andreas.koehn@uni-mainz.de])
+AC_INIT([GeCCo],[0.5],[andreas.koehn@theochem.uni-stuttgart.de])
 AC_CONFIG_SRCDIR(gecco/gecco.f)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_AUX_DIR(config)
 AC_PREFIX_DEFAULT([/usr/local])
 AC_PROG_MAKE_SET

@@ -11,7 +11,7 @@ dnl @license AllPermissive
 
 AC_DEFUN([AX_F90_MODULE_EXTENSION],[
 AC_CACHE_CHECK([fortran 90 modules extension],
-ax_f90_modext,
+ax_cv_f90_modext,
 [AC_LANG_PUSH(Fortran)
 i=0
 while test \( -f tmpdir_$i \) -o \( -d tmpdir_$i \) ; do
@@ -19,31 +19,33 @@ while test \( -f tmpdir_$i \) -o \( -d tmpdir_$i \) ; do
 done
 mkdir tmpdir_$i
 cd tmpdir_$i
-AC_COMPILE_IFELSE([module conftest_module
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([module conftest_module
    contains
    subroutine conftest_routine
    write(*,'(a)') 'gotcha!'
    end subroutine conftest_routine
    end module conftest_module
-  ],
-  [ax_f90_modext=`ls | sed -n 's,conftest_module\.,,p'`
-   ax_f90_modcase=lowercase
-   if test x$ax_f90_modext = x ; then
-     ax_f90_modcase=uppercase
+  ])],
+  [ax_cv_f90_modext=`ls | sed -n 's,conftest_module\.,,p'`
+   ax_cv_f90_modcase=lowercase
+   if test x$ax_cv_f90_modext = x ; then
+     ax_cv_f90_modcase=uppercase
 dnl Some F90 compilers put module filename in uppercase letters
-     ax_f90_modext=`ls | sed -n 's,CONFTEST_MODULE\.,,p'`
-     if test x$ax_f90_modext = x ; then
-       ax_f90_modext=unknown
-	   ax_f90_modcase=unknown
+     ax_cv_f90_modext=`ls | sed -n 's,CONFTEST_MODULE\.,,p'`
+     if test x$ax_cv_f90_modext = x ; then
+       ax_cv_f90_modext=unknown
+       ax_cv_f90_modcase=unknown
      fi
    fi
   ],
-  [ax_f90_modext=unknown; ax_f90_modcase=unknown])
+  [ax_cv_f90_modext=unknown; ax_cv_f90_modcase=unknown])
 cd ..
 rm -fr tmpdir_$i
-FC_MODEXT=$ax_f90_modext
-FC_MODCASE=$ax_f90_modcase
+AC_LANG_POP(Fortran)
+])
+ax_f90_modext=$ax_cv_f90_modext
+FC_MODEXT=$ax_cv_f90_modext
+FC_MODCASE=${ax_cv_f90_modcase:-unknown}
 AC_SUBST([FC_MODEXT])
 AC_SUBST([FC_MODCASE])
-AC_LANG_POP(Fortran)
-])])
+])
