@@ -111,7 +111,9 @@
      &             trim(context)//'->'//trim(argkey)//
      &             'no r-value array present')
               if (associated(curarg%val%cval)) then
-                do idx = 1, dim
+                ! blank-pad (str is intent(out)) and don't overrun it
+                str = ' '
+                do idx = 1, min(dim,len(str))
                   str(idx:idx) = curarg%val%cval(idx)
                 end do
                 succ = .true.

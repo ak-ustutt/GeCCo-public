@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # library imports:
-import sys, math, re, os
+import sys, math, re, os, tempfile
 from optparse import OptionParser
 
 # import of own functions:
@@ -19,8 +19,11 @@ DEBUG = False
 user = os.environ.get('USER','user_not_set')
 scrdir = os.environ.get('GECCO_TMP','')
 if scrdir == '':
-    # worth a try
-    scrdir = os.path.join('/work',user)
+    # /work/<user> was a site-specific default for the original
+    # developer's cluster and doesn't exist elsewhere; fall back to
+    # the platform's actual temp directory instead (still overridable
+    # via GECCO_TMP or -s/--scratch).
+    scrdir = os.path.join(tempfile.gettempdir(),'gecco_'+user)
 
 # define the options
 parse = OptionParser()

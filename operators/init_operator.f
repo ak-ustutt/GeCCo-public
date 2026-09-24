@@ -59,6 +59,12 @@
      &                             orb_info%nspin,nblkt),
      &           op%formal_blk(nblk),op%blk_version(nblk))
       op%blk_version(1:nblk) = 1
+      ! mask=2 slice (excluded-path restrictions) is not populated by
+      ! all operator-definition routines (e.g. cloned/derived operators);
+      ! zero it here so unset entries read as "no restriction" instead
+      ! of uninitialized heap memory (cf. set_genop/set_genop2, which
+      ! zero it explicitly for the paths they handle).
+      op%igasca_restr = 0
 
       call mem_popmark()
 

@@ -14,7 +14,7 @@ dnl @license AllPermissive
 AC_DEFUN([AX_FC_SEARCH_PATH],[
 AC_PREREQ(2.59)
 
-AC_ARG_WITH([fc_path], AC_HELP_STRING([--with-fc-path=PATH],
+AC_ARG_WITH([fc_path], AS_HELP_STRING([--with-fc-path=PATH],
 	[Base path to installed Fortran libraries]))
 
 case $with_fc_path in

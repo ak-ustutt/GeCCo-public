@@ -22,7 +22,7 @@
       if (wall.ne.-1d0) then
         write(lulog,
      &     '(x,"@ ",a,"  cpu/sys/wall: ",f9.2," /",f9.2," /",'//
-     &     'f9.2" s")') 
+     &     'f9.2," s")') 
      &     str_scr,cpu,sys,wall
       else
         write(lulog,

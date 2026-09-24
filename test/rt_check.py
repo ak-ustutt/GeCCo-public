@@ -132,7 +132,7 @@ def check(chk_commands,options,basename):
                     try:
                         type = items[0]
                         col  = int(items[1])-1
-                        if type == 'real' :
+                        if type == 'real' or type == 'abs_real' :
                             tol  = float(items[2])
                     except:
                         print('SYNTAX: compare <type> <column> [<tolerance>]')
@@ -160,19 +160,30 @@ def check(chk_commands,options,basename):
 
                     if line_OK:
                         if type == 'real' :
+                            # comparing floats within tolerance tol
                             try :
                                 check_OK = (check_OK and
                                             math.fabs(float(ref_col)-
                                                       float(testcol)) <= tol)
                             except:
                                 check_OK = False
+                        elif type == 'abs_real' :
+                            # comparing the absolute values of floats within tolerance tol
+                            try :
+                                check_OK = (check_OK and
+                                            math.fabs(math.fabs(float(ref_col))-
+                                                      math.fabs(float(testcol))) <= tol)
+                            except:
+                                check_OK = False
                         elif type == 'int' :
+                            # comparting integers
                             try :
                                 check_OK = (check_OK and
                                             int(ref_col) == int(testcol))
                             except:
                                 check_OK = False
                         elif type == 'str' :
+                            # comparing strings
                             check_OK = check_OK and ref_col == testcol
                         
             else :

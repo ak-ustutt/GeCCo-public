@@ -40,7 +40,7 @@ acx_lapack_libs=""
 acx_lapack_dir=""
 
 AC_ARG_WITH(lapack,
-	[AC_HELP_STRING([--with-lapack=LIB], [use LAPACK library LIB])])
+	[AS_HELP_STRING([--with-lapack=LIB], [use LAPACK library LIB])])
 
 case $with_lapack in
 	yes | "") ;;
@@ -50,7 +50,7 @@ case $with_lapack in
 esac
 
 AC_ARG_WITH(lapack_dir,
-	[AC_HELP_STRING([--with-lapack-dir=DIR], [look for LAPACK library in DIR])])
+	[AS_HELP_STRING([--with-lapack-dir=DIR], [look for LAPACK library in DIR])])
 
 case $with_lapack_dir in
       yes | no | "") ;;

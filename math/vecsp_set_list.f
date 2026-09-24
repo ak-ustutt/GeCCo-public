@@ -28,8 +28,6 @@
      &     islice, nslice,
      &     listlen,              !length of list to be copied
      &     irecst
-      type(filinf)::
-     &     mel_fhand, vec_fhand
 
       
       listlen=mel%len_op
@@ -37,11 +35,8 @@
      &     call quit(1,i_am,"not prepared for operator"//
      &     " longer than buffer.")
 
-      mel_fhand=mel%fhand
-      vec_fhand=vecsp%vectors(ilist)%fhand
-      
-      call vec_from_da(mel_fhand, mel_fhand%current_record, buf,listlen)
-      call vec_to_da(vec_fhand, ivec, buf, listlen)
+      call vec_from_da(mel%fhand,mel%fhand%current_record, buf,listlen)
+      call vec_to_da(vecsp%vectors(ilist)%fhand, ivec, buf, listlen)
       vecsp%nvec=max(vecsp%nvec,ivec)
       end subroutine 
 
@@ -74,8 +69,6 @@
      &     islice, nslice,
      &     listlen,              !length of list to be copied
      &     irecst
-      type(filinf)::
-     &     mel_fhand, vec_fhand
 
       
       listlen=vecsp%me_lists(ilist)%mel%len_op
@@ -83,7 +76,6 @@
      &     call quit(1,i_am,"not prepared for operator"//
      &     " longer than buffer.")
 
-      vec_fhand=vecsp%vectors(ilist)%fhand
-      call vec_to_da(vec_fhand, ivec, buf, listlen)
+      call vec_to_da(vecsp%vectors(ilist)%fhand, ivec, buf, listlen)
       vecsp%nvec=max(vecsp%nvec,ivec)
       end subroutine 

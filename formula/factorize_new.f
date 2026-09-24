@@ -45,7 +45,7 @@
       real(8), pointer ::
      &     time_stat(:), mem_stat(:), scale_stat(:)
       real(8) ::
-     &     cpu0, sys0, wall0, cpu, sys, wall, xsum
+     &     cpu0, sys0, wall0, cpu, sys, wall, xsum, xpercent
       type(filinf) ::
      &     ffstat
 
@@ -175,13 +175,20 @@ c dbgend
       call write_title(lulog,wst_subsection,
      &     'Summary')
 
-      write(lulog,'(x,"Most expensive contractions: ")') 
+      write(lulog,'(x,"Most expensive contractions: ")')
       do iterm = 1, min(5,nterms)
+        ! xsum may be zero (e.g. a single, too-fast-to-time term);
+        ! avoid 0/0 -> NaN in that case
+        if (xsum.gt.0d0) then
+          xpercent = time_stat(iterm)/xsum*100d0
+        else
+          xpercent = 0d0
+        end if
         write(lulog,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
-     &            '" - flops: ",e10.3,"(",f6.1"%)")')
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
+     &            '" - flops: ",e10.3,"(",f6.1,"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
-     &       time_stat(iterm),time_stat(iterm)/xsum*100d0
+     &       time_stat(iterm),xpercent
       end do
       write(lulog,'(x,"Formally most expensive contractions: ")') 
       do iterm = 1, min(5,nterms)
@@ -192,7 +199,7 @@ c dbgend
       write(lulog,'(x,"Largest intermediates occur in: ")') 
       do iterm = 1, min(5,nterms)
         write(lulog,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
      &       mem_stat(iterm)/(128d0*1024d0)
@@ -201,18 +208,23 @@ c dbgend
       call file_init(ffstat,trim(label)//'.statistics',ftyp_sq_frm,0)
       call file_open(ffstat)
 
-      write(ffstat%unit,'(x,"Computational cost of contractions: ")') 
+      write(ffstat%unit,'(x,"Computational cost of contractions: ")')
       do iterm = 1, nterms
+        if (xsum.gt.0d0) then
+          xpercent = time_stat(iterm)/xsum*100d0
+        else
+          xpercent = 0d0
+        end if
         write(ffstat%unit,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
-     &            '" - flops: ",e10.3,"(",f6.1"%)")')
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
+     &            '" - flops: ",e10.3,"(",f6.1,"%)")')
      &       ireo_t(iterm),iscale_stat(1:4,1,ireo_t(iterm)),
-     &       time_stat(iterm),time_stat(iterm)/xsum*100d0
+     &       time_stat(iterm),xpercent
       end do
       write(ffstat%unit,'(x,"Max. size of intermediates: ")') 
       do iterm = 1, nterms
         write(ffstat%unit,'(x," term #",i5,'//
-     &            '" - H^",i2," P^",i2," V^",i2," X^",i2'//
+     &            '" - H^",i2," P^",i2," V^",i2," X^",i2,'//
      &            '" - Mb:    ",e10.3)')
      &       ireo_m(iterm),iscale_stat(1:4,2,ireo_m(iterm)),
      &       mem_stat(iterm)/(128d0*1024d0)

@@ -22,6 +22,9 @@ INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
 
+# Files listed here are built with $(fopt_low)
+llo_obj_list:=
+
 include $(topdir)/make.rules
 
 all: $(INST_PROGS) $(INST_LIBS) $(INST_MODULES)

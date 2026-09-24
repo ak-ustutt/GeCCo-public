@@ -11,13 +11,13 @@ check
   find  block no. +4
   compare int 6
   find ^ +1596 
-  compare real 8 1e-5
+  compare abs_real 8 1e-5
   find ^ +1601
-  compare real 8 1e-5
+  compare abs_real 8 1e-5
   find  block no. +5
   compare int 6
   find ^ +1610
-  compare real 8 1e-5
+  compare abs_real 8 1e-5
   find  block no. +11
   compare int 6
   find MS-Block
@@ -29,9 +29,9 @@ check
   find MS-Block
   compare real 4 1e-10
   find ^ +3521
-  compare real 8 1e-5
+  compare abs_real 8 1e-5
   find ^ +3523
-  compare real 8 1e-5
+  compare abs_real 8 1e-5
   find MS-Block
   compare real 4 1e-10
 check

@@ -49,7 +49,7 @@ dnl @version 2005-01-14
 dnl @license AllPermissive
 
 AC_DEFUN([AX_F90_LIBRARY_SETUP],[
- AC_ARG_WITH([$1],AC_HELP_STRING([--with-$1=PATH], 
+ AC_ARG_WITH([$1],AS_HELP_STRING([--with-$1=PATH], 
  [specify search path form $1 module and library]),
    [if test x${withval} = xno ; then
      AC_MSG_WARN([$1 disabled at user option])
