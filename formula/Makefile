@@ -22,15 +22,14 @@ INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
 
-# split_contr4.f is miscompiled by gfortran (15.2.0, arm64) at -O1/-O2:
-# a null-pointer dereference in the inlined pointer-component reallocation
-# from resize_contr; not reproducible with -O0. Build it unoptimized until
-# this is understood / fixed upstream.
-# factorize_new.f: same story -- gfortran -O2 miscompiles the idxsortx
-# calls at the end of the routine (wild-pointer SIGSEGV inside
-# idxsortx_qs_dsc, called on time_stat/mem_stat/scale_stat); not
+# factorize_new.f is miscompiled by gfortran (15.2.0, arm64) at -O2: the
+# idxsortx calls at the end of the routine crash (wild-pointer SIGSEGV
+# inside idxsortx_qs_dsc, called on time_stat/mem_stat/scale_stat); not
 # reproducible with -O0, and bisected away from sortrout.f itself.
-llo_obj_list:=split_contr4.o factorize_new.o
+# (split_contr4.f used to be listed here too, but its crash turned out to
+# be a source bug -- an unassociated arc pointer passed to an
+# explicit-shape dummy -- now fixed there.)
+llo_obj_list:=factorize_new.o
 
 include $(topdir)/make.rules
 

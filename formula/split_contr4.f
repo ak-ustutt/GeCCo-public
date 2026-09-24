@@ -520,10 +520,17 @@ c      end do
 
       call update_svtx4contr(contr_rem)
 
-      call contr_clean_arcs(contr_rem%arc,contr_rem%narc)
-      call arc_sort(contr_rem%arc,contr_rem%narc,contr_rem%nvtx)
-      call contr_clean_arcs(contr_rem%xarc,contr_rem%nxarc)
-      call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
+      ! arc/xarc may be unassociated if nothing was ever allocated
+      ! (narc_rem/nxarc_rem = 0); passing them to explicit-shape dummies
+      ! then makes gfortran's copy-in read from a null base address
+      if (contr_rem%narc.gt.0) then
+        call contr_clean_arcs(contr_rem%arc,contr_rem%narc)
+        call arc_sort(contr_rem%arc,contr_rem%narc,contr_rem%nvtx)
+      end if
+      if (contr_rem%nxarc.gt.0) then
+        call contr_clean_arcs(contr_rem%xarc,contr_rem%nxarc)
+        call arc_sort(contr_rem%xarc,contr_rem%nxarc,contr_rem%nvtx)
+      end if
 
 c     deallocate(topo,topo_spl,vtx,vtx_spl,xlines,xlines_spl,ireo,ireo_i,
 c     &       svertex,svertex_spl,list,ivtx_new,ivtx_new0,vtxmap,
