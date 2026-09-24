@@ -244,6 +244,7 @@ cmh      if (nvtx_full.ne.njoined) call check_disconnected(contr)
       icount = 0
       ncost_eval = 0
       iscale = 0
+      cost = 0d0
 
       idx_intm = 0
 

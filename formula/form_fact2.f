@@ -148,6 +148,8 @@ c dbg
       nlevel = 1
       icount = 0
       ncost_eval = 0
+      iscale = 0
+      cost = 0d0
 c dbg
 c      print *,'now diving into the recursions, njoined = ',njoined
 c dbg

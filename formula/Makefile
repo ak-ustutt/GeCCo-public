@@ -22,14 +22,8 @@ INST_MODULES:=
 
 src:=$(wildcard *.f90 *.F *.f)
 
-# factorize_new.f is miscompiled by gfortran (15.2.0, arm64) at -O2: the
-# idxsortx calls at the end of the routine crash (wild-pointer SIGSEGV
-# inside idxsortx_qs_dsc, called on time_stat/mem_stat/scale_stat); not
-# reproducible with -O0, and bisected away from sortrout.f itself.
-# (split_contr4.f used to be listed here too, but its crash turned out to
-# be a source bug -- an unassociated arc pointer passed to an
-# explicit-shape dummy -- now fixed there.)
-llo_obj_list:=factorize_new.o
+# Files listed here are built with $(fopt_low)
+llo_obj_list:=
 
 include $(topdir)/make.rules
 
